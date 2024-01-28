@@ -12,7 +12,10 @@ import SwiftData
 struct VoltixApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            Item.self, // TODO: remove it later
+            Vault.self,
+            Coin.self,
+            Chain.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
