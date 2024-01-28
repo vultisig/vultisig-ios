@@ -15,6 +15,7 @@
 		DE49A17B2B65F6DB000F3AFB /* voltixAppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE49A17A2B65F6DB000F3AFB /* voltixAppTests.swift */; };
 		DE49A1852B65F6DB000F3AFB /* voltixAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE49A1842B65F6DB000F3AFB /* voltixAppUITests.swift */; };
 		DE49A1872B65F6DB000F3AFB /* voltixAppUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE49A1862B65F6DB000F3AFB /* voltixAppUITestsLaunchTests.swift */; };
+		DE49A1942B65F7B6000F3AFB /* Mediator in Resources */ = {isa = PBXBuildFile; fileRef = DE49A1932B65F7B6000F3AFB /* Mediator */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,6 +48,7 @@
 		DE49A1802B65F6DB000F3AFB /* voltixAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = voltixAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DE49A1842B65F6DB000F3AFB /* voltixAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = voltixAppUITests.swift; sourceTree = "<group>"; };
 		DE49A1862B65F6DB000F3AFB /* voltixAppUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = voltixAppUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		DE49A1932B65F7B6000F3AFB /* Mediator */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Mediator; path = ../Mediator; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +79,7 @@
 		DE49A15A2B65F6D9000F3AFB = {
 			isa = PBXGroup;
 			children = (
+				DE49A1932B65F7B6000F3AFB /* Mediator */,
 				DE49A1652B65F6D9000F3AFB /* voltixApp */,
 				DE49A1792B65F6DB000F3AFB /* voltixAppTests */,
 				DE49A1832B65F6DB000F3AFB /* voltixAppUITests */,
@@ -237,6 +240,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DE49A1712B65F6DB000F3AFB /* Preview Assets.xcassets in Resources */,
+				DE49A1942B65F7B6000F3AFB /* Mediator in Resources */,
 				DE49A16D2B65F6DB000F3AFB /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
