@@ -34,7 +34,7 @@ public class Mediator {
     
     // start the server
     public func start() {
-        do{
+        do {
             logger.log("\(self.server.routes)")
             try self.server.start(self.port)
         }
@@ -46,7 +46,7 @@ public class Mediator {
         // TODO: publish through bonjour
     }
     
-    public func stop(){
+    public func stop() {
         self.server.stop()
         self.cache.removeAllObjects()
     }
@@ -56,15 +56,15 @@ public class Mediator {
             return HttpResponse.badRequest(.text("sessionID is empty"))
         }
         let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
-        do{
+        do {
             let decoder = JSONDecoder()
             let message = try decoder.decode(Message.self, from: Data(req.body))
-            for recipient in message.To {
+            for recipient in message.to {
                 let key = "\(cleanSessionID)-\(recipient)" as NSString
                 if let cachedMessages = self.cache.object(forKey: key) as? cacheItem {
                     cachedMessages.messages.append(message)
                     self.cache.setObject(cachedMessages, forKey: key)
-                }else{
+                } else {
                     let newCacheItem = cacheItem(messages: [message])
                     self.cache.setObject(newCacheItem, forKey: key)
                 }
@@ -75,6 +75,7 @@ public class Mediator {
         }
         return HttpResponse.accepted
     }
+    
     func getMessages(req: HttpRequest) -> HttpResponse {
         guard let sessionID = req.params[":sessionID"] else {
             return HttpResponse.badRequest(.text("sessionID is empty"))
@@ -90,14 +91,15 @@ public class Mediator {
             return HttpResponse.notFound
         }
         let encoder = JSONEncoder()
-        do{
+        do {
             let result = try encoder.encode(cachedValue.messages)
             return HttpResponse.ok(.data(result, contentType: "application/json"))
-        }catch{
+        } catch {
             logger.error("fail to encode object to json,error:\(error)")
             return HttpResponse.internalServerError
         }
     }
+    
     func postSession(req: HttpRequest) -> HttpResponse{
         guard let sessionID = req.params[":sessionID"] else {
             logger.error("request session id is empty")
@@ -150,8 +152,7 @@ public class Mediator {
         }
     }
     
-    deinit{
+    deinit {
         self.cache.removeAllObjects() // clean up cache
     }
-    
 }
