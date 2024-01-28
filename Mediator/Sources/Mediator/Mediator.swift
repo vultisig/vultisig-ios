@@ -26,7 +26,9 @@ public class Mediator {
         self.server.DELETE["/:sessionID"] = self.deleteSession
         // GET all participants that are linked to a specific session
         self.server.GET["/:sessionID"] = self.getSession
+        // POST a message to a specific session
         self.server.POST["/message/:sessionID"] = self.sendMessage
+        // GET all messages for a specific session and participant
         self.server.GET["/message/:sessionID/:participantKey"] = self.getMessages
     }
     
@@ -41,77 +43,111 @@ public class Mediator {
             return
         }
         logger.info("server started successfully")
-        // publish through bonjour
+        // TODO: publish through bonjour
+    }
+    
+    public func stop(){
+        self.server.stop()
+        self.cache.removeAllObjects()
     }
     
     func sendMessage(req: HttpRequest) -> HttpResponse {
+        guard let sessionID = req.params[":sessionID"] else {
+            return HttpResponse.badRequest(.text("sessionID is empty"))
+        }
+        let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
+        do{
+            let decoder = JSONDecoder()
+            let message = try decoder.decode(Message.self, from: Data(req.body))
+            for recipient in message.To {
+                let key = "\(cleanSessionID)-\(recipient)" as NSString
+                if let cachedMessages = self.cache.object(forKey: key) as? cacheItem {
+                    cachedMessages.messages.append(message)
+                    self.cache.setObject(cachedMessages, forKey: key)
+                }else{
+                    let newCacheItem = cacheItem(messages: [message])
+                    self.cache.setObject(newCacheItem, forKey: key)
+                }
+            }
+        } catch {
+            logger.error("fail to decode message payload,error:\(error)")
+            return HttpResponse.badRequest(.text("fail to decode payload"))
+        }
         return HttpResponse.accepted
     }
-    
     func getMessages(req: HttpRequest) -> HttpResponse {
-        return HttpResponse.ok(.json(""))
+        guard let sessionID = req.params[":sessionID"] else {
+            return HttpResponse.badRequest(.text("sessionID is empty"))
+        }
+        guard let participantID = req.params[":participantKey"] else {
+            return HttpResponse.badRequest(.text("participantKey is empty"))
+        }
+        let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
+        let cleanParticipantKey = participantID.trimmingCharacters(in: .whitespacesAndNewlines)
+        let key = "\(cleanSessionID)-\(cleanParticipantKey)" as NSString
+        guard let cachedValue = self.cache.object(forKey: key) as? cacheItem else {
+            logger.error("cached object can't be retrieved")
+            return HttpResponse.notFound
+        }
+        let encoder = JSONEncoder()
+        do{
+            let result = try encoder.encode(cachedValue.messages)
+            return HttpResponse.ok(.data(result, contentType: "application/json"))
+        }catch{
+            logger.error("fail to encode object to json,error:\(error)")
+            return HttpResponse.internalServerError
+        }
     }
     func postSession(req: HttpRequest) -> HttpResponse{
-        let sessionID = req.params[":sessionID"]
-        if let sessionID {
-            let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
-            let key = "session-\(cleanSessionID)" as NSString
-            logger.debug("request session id is: \(cleanSessionID)")
+        guard let sessionID = req.params[":sessionID"] else {
+            logger.error("request session id is empty")
+            return HttpResponse.badRequest(.text("sessionID is empty"))
+        }
+        let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
+        let key = "session-\(cleanSessionID)" as NSString
+        logger.debug("request session id is: \(cleanSessionID)")
+        do {
+            let decoder = JSONDecoder()
+            let p = try decoder.decode([String].self, from: Data(req.body))
             
-            var p: [String]
-            do {
-                let decoder = JSONDecoder()
-                p = try decoder.decode([String].self, from: Data(req.body))
-            } catch {
-                logger.error("fail to decode json body,error:\(error)")
-                return HttpResponse.badRequest(.text("invalid json payload"))
-            }
-            let session = Session(SessionID: cleanSessionID, Participants: p)
-            if let cachedValue = self.cache.object(forKey: key){
-                let r = cachedValue as? Session
-                if let r {
-                    r.Participants.append(contentsOf: p)
-                    self.cache.setObject(r, forKey: key)
-                }else{
-                    self.cache.setObject(session, forKey: key)
-                }
-                
+            if let cachedValue = self.cache.object(forKey: key) as? Session{
+                cachedValue.Participants.append(contentsOf: p)
+                self.cache.setObject(cachedValue, forKey: key)
             } else {
+                let session = Session(SessionID: cleanSessionID, Participants: p)
                 self.cache.setObject(session, forKey: key)
             }
-        } else {
-            logger.error("request session id is empty")
-            return HttpResponse.badRequest(nil)
+        } catch {
+            logger.error("fail to decode json body,error:\(error)")
+            return HttpResponse.badRequest(.text("invalid json payload"))
         }
-        
         return HttpResponse.created
     }
-    
     func deleteSession(req: HttpRequest) -> HttpResponse {
-        let sessionID = req.params[":sessionID"]
-        if let sessionID {
-            let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
-            let key = "session-\(cleanSessionID)" as NSString
-            self.cache.removeObject(forKey: key)
+        guard let sessionID = req.params[":sessionID"] else {
+            return HttpResponse.badRequest(.text("sessionID is empty"))
         }
-        // return a status code ok , with empty body
-        return HttpResponse.ok(HttpResponseBody.text(""))
+        let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
+        let key = "session-\(cleanSessionID)" as NSString
+        self.cache.removeObject(forKey: key)
+        return HttpResponse.ok(.text(""))
     }
     
-    func getSession(req:HttpRequest) -> HttpResponse{
-        let sessionID = req.params[":sessionID"]
-        if let sessionID {
-            let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
-            let key = "session-\(cleanSessionID)" as NSString
-            if let cachedValue = self.cache.object(forKey: key){
-                let sessionObj = cachedValue as? Session
-                if let sessionObj {
-                    logger.info("session obj : \(sessionObj.SessionID), participants: \(sessionObj.Participants)")
-                    return HttpResponse.ok(.json(sessionObj.Participants))
-                }
-            }
+    func getSession(req: HttpRequest) -> HttpResponse {
+        guard let sessionID = req.params[":sessionID"] else {
+            return HttpResponse.badRequest(.text("sessionID is empty"))
         }
-        return HttpResponse.notFound
+        
+        let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
+        let key = "session-\(cleanSessionID)" as NSString
+        
+        if let cachedValue = self.cache.object(forKey: key) as? Session {
+            logger.info("session obj : \(cachedValue.SessionID), participants: \(cachedValue.Participants)")
+            return HttpResponse.ok(.json(cachedValue.Participants))
+        } else {
+            logger.error("cached object not found")
+            return HttpResponse.notFound
+        }
     }
     
     deinit{
