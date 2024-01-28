@@ -7,11 +7,12 @@
 
 import SwiftUI
 import SwiftData
+import Mediator
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var items: [Item]
-
+    private var mediator = Mediator(serverPort: 8080)
     var body: some View {
         NavigationSplitView {
             List {
@@ -40,7 +41,11 @@ struct ContentView: View {
                 }
             }
         } detail: {
-            Text("Select an item")
+            Button(action: {
+                self.mediator.start()
+            }){
+                Label("Start",systemImage: "start")
+            }
         }
     }
 

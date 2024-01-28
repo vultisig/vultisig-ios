@@ -24,6 +24,7 @@ struct voltixAppApp: App {
     }()
 
     var body: some Scene {
+        
         WindowGroup {
             ContentView()
         }
