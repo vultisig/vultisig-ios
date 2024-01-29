@@ -2,17 +2,23 @@
 //  WelcomeView.swift
 //  VoltixApp
 //
-//  Created by Rowan Willson on 29/1/2024.
-//
 
 import SwiftUI
 
 struct WelcomeView: View {
+    @Binding var presentationStack: Array<CurrentScreen>
+    
     var body: some View {
-        Text("Welcome Screen")
+        VStack {
+            Text("Welcome Screen")
+            Button("Continue >") {
+                presentationStack.append(.startScreen)
+            }
+        }
+        .navigationBarBackButtonHidden(true)
     }
 }
 
 #Preview {
-    WelcomeView()
+    WelcomeView(presentationStack: .constant([]))
 }

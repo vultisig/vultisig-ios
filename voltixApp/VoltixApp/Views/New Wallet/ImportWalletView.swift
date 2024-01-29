@@ -2,17 +2,23 @@
 //  ImportWallet.swift
 //  VoltixApp
 //
-//  Created by Rowan Willson on 29/1/2024.
-//
 
 import SwiftUI
 
-struct ImportWallet: View {
+struct ImportWalletView: View {
+    @Binding var presentationStack: Array<CurrentScreen>
+    @State var vaultShare = ""
+    
     var body: some View {
         Text("Import Wallet")
+        TextField("Paste Vault Share", text: $vaultShare)
+        Button("Continue") {
+            // TODO: Process data, validate, save
+            presentationStack = []  // Vault Assets List
+        }
     }
 }
 
 #Preview {
-    ImportWallet()
+    ImportWalletView(presentationStack: .constant([]))
 }

@@ -2,17 +2,17 @@
 //  SendInputDetailsView.swift
 //  VoltixApp
 //
-//  Created by Rowan Willson on 29/1/2024.
-//
 
 import SwiftUI
 
 struct SendInputDetailsView: View {
+    @Binding var presentationStack: Array<CurrentScreen>
+    
     var body: some View {
         Text("Send - input details view")
     }
 }
 
 #Preview {
-    SendInputDetailsView()
+    SendInputDetailsView(presentationStack: .constant([]))
 }

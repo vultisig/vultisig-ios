@@ -11,10 +11,8 @@ import Mediator
 
 @main
 struct VoltixApp: App {
-    @StateObject var appNavigationState = AppNavigationState()
-    private static let mediator = Mediator.shared  // initialise web server
+    private let mediator = Mediator.shared  // initialise web server
     @Environment(\.scenePhase) private var scenePhase
-    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
@@ -34,7 +32,8 @@ struct VoltixApp: App {
 
     var body: some Scene {
         WindowGroup {
-            MainNavigationView()
+            MainNavigationStack()
+                .environmentObject(ApplicationState.shared)  // Shared monolithic mutable state
         }
         .modelContainer(sharedModelContainer)
 //        .onChange(of: scenePhase) { phase in
@@ -42,16 +41,5 @@ struct VoltixApp: App {
 //                // TODO: Anything that needs doing on app backgrounded.
 //            }
 //        }
-    }
-}
-
-
-// App Delegate
-final class AppDelegate: NSObject, UIApplicationDelegate {
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-        // Remove default black background from SwiftUI List backed UITableView
-        UITableView.appearance().backgroundColor = .clear
-        UITableViewCell.appearance().backgroundColor = .clear
-        return true
     }
 }
