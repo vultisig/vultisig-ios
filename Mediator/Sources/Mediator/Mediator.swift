@@ -6,20 +6,21 @@ import Network
 import Foundation
 import OSLog
 
-public class Mediator {
+public final class Mediator {
     private let logger = Logger(subsystem: "Mediator", category: "communication")
-    let port: UInt16
+    let port: UInt16 = 8080
     let server = HttpServer()
     let cache = NSCache<NSString,AnyObject>()
     
-    public init(serverPort: UInt16){
-        self.port = serverPort
+    // Singleton
+    static public let shared = Mediator()
+    private init() {
         self.cache.name = "localcache"
         cache.countLimit = 1024
         setupRoute()
     }
     
-    func setupRoute(){
+    private func setupRoute() {
         // POST with a sessionID
         self.server.POST["/:sessionID"] = self.postSession
         // DELETE all messages related to the sessionID

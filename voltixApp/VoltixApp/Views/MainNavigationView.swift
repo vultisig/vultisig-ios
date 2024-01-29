@@ -7,12 +7,11 @@
 
 import SwiftUI
 import SwiftData
-import Mediator
 
-struct ContentView: View {
+struct MainNavigationView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var vault: [Vault]
-    private var mediator = Mediator(serverPort: 8080)
+    
     var body: some View {
         ScrollView{
             HStack{
@@ -34,6 +33,6 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    MainNavigationView()
         .modelContainer(for: Vault.self, inMemory: true)
 }
