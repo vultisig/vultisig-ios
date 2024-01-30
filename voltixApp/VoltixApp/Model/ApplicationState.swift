@@ -3,12 +3,14 @@
 //  VoltixApp
 //
 
-import Foundation
+import SwiftUI
 
 final class ApplicationState : ObservableObject {
-    //@Published var example: Int = 1
+    @Published var currentVault: Vault?
     
     // Singleton
     static let shared = ApplicationState()
-    private init() {}
+    private init() {
+        
+    }
 }

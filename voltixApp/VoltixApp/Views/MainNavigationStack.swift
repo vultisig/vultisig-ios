@@ -10,8 +10,8 @@ import SwiftData
 
 struct MainNavigationStack: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var vault: [Vault]
     
+    @EnvironmentObject var appState:ApplicationState
     // Push/pop onto this array to control presentation overlay globally
     @State private var presentationStack: [CurrentScreen] = [.welcome]
     
@@ -58,8 +58,16 @@ struct MainNavigationStack: View {
                         SwapVerifyView(presentationStack: $presentationStack)
                     case .swapDone:
                         SwapDoneView(presentationStack: $presentationStack)
+                    case .vaultSelection:
+                        VaultSelectionView(presentationStack: $presentationStack)
                     }
                 }
+            .onAppear(perform:{
+                if appState.currentVault == nil {
+                    self.presentationStack = [CurrentScreen.vaultSelection]
+                    return
+                }
+            })
         }
     }
 }
@@ -67,4 +75,5 @@ struct MainNavigationStack: View {
 #Preview {
     MainNavigationStack()
         .modelContainer(for: Vault.self, inMemory: true)
+        .environmentObject(ApplicationState.shared)
 }

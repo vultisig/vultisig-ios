@@ -1,6 +1,3 @@
-// The Swift Programming Language
-// https://docs.swift.org/swift-book
-
 import Swifter
 import Network
 import Foundation
@@ -36,23 +33,25 @@ public final class Mediator {
     // start the server
     public func start() {
         do {
-            logger.log("\(self.server.routes)")
             try self.server.start(self.port)
+            let service = NetService(domain: "local.", type: "_http._tcp", name: "VoltixApp",port: Int32(self.port))
+            service.publish()
         }
         catch{
             logger.error("fail to start http server on port: \(self.port), error:\(error)")
             return
         }
         logger.info("server started successfully")
-        // TODO: publish through bonjour
+        
     }
     
+    // stop mediator server
     public func stop() {
         self.server.stop()
         self.cache.removeAllObjects()
     }
     
-    func sendMessage(req: HttpRequest) -> HttpResponse {
+    private func sendMessage(req: HttpRequest) -> HttpResponse {
         guard let sessionID = req.params[":sessionID"] else {
             return HttpResponse.badRequest(.text("sessionID is empty"))
         }
@@ -77,7 +76,7 @@ public final class Mediator {
         return HttpResponse.accepted
     }
     
-    func getMessages(req: HttpRequest) -> HttpResponse {
+    private func getMessages(req: HttpRequest) -> HttpResponse {
         guard let sessionID = req.params[":sessionID"] else {
             return HttpResponse.badRequest(.text("sessionID is empty"))
         }
@@ -101,7 +100,7 @@ public final class Mediator {
         }
     }
     
-    func postSession(req: HttpRequest) -> HttpResponse{
+    private func postSession(req: HttpRequest) -> HttpResponse{
         guard let sessionID = req.params[":sessionID"] else {
             logger.error("request session id is empty")
             return HttpResponse.badRequest(.text("sessionID is empty"))
@@ -126,7 +125,8 @@ public final class Mediator {
         }
         return HttpResponse.created
     }
-    func deleteSession(req: HttpRequest) -> HttpResponse {
+    
+    private func deleteSession(req: HttpRequest) -> HttpResponse {
         guard let sessionID = req.params[":sessionID"] else {
             return HttpResponse.badRequest(.text("sessionID is empty"))
         }
@@ -136,7 +136,7 @@ public final class Mediator {
         return HttpResponse.ok(.text(""))
     }
     
-    func getSession(req: HttpRequest) -> HttpResponse {
+    private func getSession(req: HttpRequest) -> HttpResponse {
         guard let sessionID = req.params[":sessionID"] else {
             return HttpResponse.badRequest(.text("sessionID is empty"))
         }
