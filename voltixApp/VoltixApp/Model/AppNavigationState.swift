@@ -11,6 +11,7 @@ enum CurrentScreen: Hashable {
     // Onboarding
     case welcome // Welcome screen
     case startScreen  // New or Import wallet
+    case vaultSelection // a list of vault for selection
     case importWallet
     
     // Create new wallet from TSS

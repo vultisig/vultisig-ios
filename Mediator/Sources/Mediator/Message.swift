@@ -7,7 +7,7 @@
 
 import Foundation
 
-class Session: Codable {
+final class Session: Codable {
     var SessionID: String
     var Participants: [String]
     
@@ -24,7 +24,7 @@ struct Message: Codable {
     let body: String
 }
 
-class cacheItem: Codable{
+final class cacheItem: Codable{
     var messages: [Message]
     
     init(messages: [Message]) {

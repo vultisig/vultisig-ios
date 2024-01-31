@@ -8,7 +8,7 @@ import SwiftData
 @Model
 final class Coin {
     let chain: Chain
-    let symbol: String
+    @Attribute(.unique) let symbol: String
     let logo: String
     
     init(chain: Chain, symbol: String, logo: String) {

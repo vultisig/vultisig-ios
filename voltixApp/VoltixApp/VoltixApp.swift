@@ -11,12 +11,9 @@ import Mediator
 
 @main
 struct VoltixApp: App {
-    private let mediator = Mediator.shared  // initialise web server
-    @Environment(\.scenePhase) private var scenePhase
-    
+    @Environment(\.scenePhase) private var scenePhase    
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-//            Item.self, // TODO: remove it later
             Vault.self,
             Coin.self,
             Chain.self,
