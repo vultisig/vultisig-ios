@@ -17,7 +17,7 @@ struct MainNavigationStack: View {
     
     var body: some View {
         NavigationStack(path: $presentationStack) {
-            VaultAssetsView(presentationStack: $presentationStack)  // Default top level
+            StartView(presentationStack: $presentationStack)  // Default top level
                 .navigationDestination(for: CurrentScreen.self) { screen in
                     switch screen {
                     case .welcome:
@@ -60,6 +60,8 @@ struct MainNavigationStack: View {
                         SwapDoneView(presentationStack: $presentationStack)
                     case .vaultSelection:
                         VaultSelectionView(presentationStack: $presentationStack)
+                    case .joinKeygen:
+                        JoinKeygenView(presentationStack: $presentationStack)
                     }
                 }
             .onAppear(perform:{

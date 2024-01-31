@@ -8,12 +8,14 @@ public final class Mediator {
     let port: UInt16 = 8080
     let server = HttpServer()
     let cache = NSCache<NSString,AnyObject>()
+    private let service: NetService
     
     // Singleton
     static public let shared = Mediator()
     private init() {
         self.cache.name = "localcache"
         cache.countLimit = 1024
+        service = NetService(domain: "local.", type: "_http._tcp", name: "VoltixApp",port: Int32(port))
         setupRoute()
     }
     
@@ -34,7 +36,6 @@ public final class Mediator {
     public func start() {
         do {
             try self.server.start(self.port)
-            let service = NetService(domain: "local.", type: "_http._tcp", name: "VoltixApp",port: Int32(self.port))
             service.publish()
         }
         catch{

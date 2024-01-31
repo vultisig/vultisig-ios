@@ -18,6 +18,9 @@ struct StartView: View {
                 Button("New Wallet >") {
                     presentationStack.append(.newWalletInstructions)
                 }
+                Button("Join Keygen >") {
+                    presentationStack = [.joinKeygen]
+                }
                 Spacer()
             }
         }.navigationBarBackButtonHidden()

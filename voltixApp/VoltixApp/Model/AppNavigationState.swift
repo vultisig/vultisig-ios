@@ -18,6 +18,7 @@ enum CurrentScreen: Hashable {
     case newWalletInstructions
     case peerDiscovery
     case finishedTSSKeygen
+    case joinKeygen
     
     // Normal use (typically launches here if wallet imported/generated already)
     case vaultAssets  // Main landing page for normal use. Lists ETH, BTC, ... assets.
