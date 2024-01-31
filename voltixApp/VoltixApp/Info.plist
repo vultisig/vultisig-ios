@@ -4,7 +4,11 @@
 <dict>
 	<key>NSBonjourServices</key>
 	<array>
-		<string>Need to publish a service for discovery</string>
+		<string>_http._tcp.</string>
+		<string>_bonjour._tcp</string>
+		<string>_lnp._tcp.</string>
 	</array>
+	<key>UIRequiresPersistentWiFi</key>
+	<true/>
 </dict>
 </plist>
