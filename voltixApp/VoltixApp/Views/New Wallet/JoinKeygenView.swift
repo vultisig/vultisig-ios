@@ -6,15 +6,16 @@ import SwiftUI
 import OSLog
 import CodeScanner
 
+private let logger = Logger(subsystem: "join-committee", category: "communication")
 struct JoinKeygenView: View {
-    private let logger = Logger(subsystem: "peers-discory", category: "communication")
     @Binding var presentationStack: Array<CurrentScreen>
     @State private var isShowingScanner = false
     @State private var qrCodeResult: String? = nil
     @State private var waitingForKeygenStart = false
     @State private var seesionIDAcquired = false
-    private let ns = NetService(domain: "local.", type: "_http._tcp.", name: "VoltixApp")
-    private let sd = ServiceDelegate()
+    private let serviceBrowser = NetServiceBrowser()
+    private let serviceDelegate = ServiceDelegate()
+    private let netService = NetService(domain: "local.", type: "_http._tcp.", name: "VoltixApp")
     
     var body: some View {
         VStack{
@@ -27,8 +28,8 @@ struct JoinKeygenView: View {
                 })
             }
             
-            if sd.serverUrl != nil && qrCodeResult != nil {
-                if let serverUrl = sd.serverUrl {
+            if serviceDelegate.serverUrl != nil && qrCodeResult != nil {
+                if let serverUrl = serviceDelegate.serverUrl {
                     Text(serverUrl)
                 }
                 Text(qrCodeResult ?? "")
@@ -39,9 +40,10 @@ struct JoinKeygenView: View {
             }
             
         }.onAppear(){
-            // start to discover service
-            ns.delegate = self.sd
-            ns.resolve(withTimeout: TimeInterval(10))
+            logger.info("start to discover service")
+            netService.delegate = self.serviceDelegate
+            netService.resolve(withTimeout: TimeInterval(10))
+            
         }
         .task {
             // keep polling to decide whether keygen start or not
@@ -49,7 +51,7 @@ struct JoinKeygenView: View {
     }
     private func joinKeygenCommittee() {
         let deviceName = UIDevice.current.name
-        guard let serverUrl = sd.serverUrl else {
+        guard let serverUrl = serviceDelegate.serverUrl else {
             logger.error("didn't discover server url")
             return
         }
@@ -104,7 +106,11 @@ struct JoinKeygenView: View {
 final class ServiceDelegate : NSObject , NetServiceDelegate , ObservableObject {
     @Published var serverUrl: String?
     public func netServiceDidResolveAddress(_ sender: NetService) {
+        logger.info("find service:\(sender.name) , \(sender.hostName ?? "") , \(sender.port) \(sender.domain) \(sender)")
         serverUrl = "http://\(sender.hostName ?? ""):\(sender.port)"
+    }
+    public func netServiceWillResolve(_ sender: NetService) {
+        logger.debug("will find service:\(sender.name) , \(sender.hostName ?? "") , \(sender.port) \(sender.domain) \(sender)")
     }
 }
 
