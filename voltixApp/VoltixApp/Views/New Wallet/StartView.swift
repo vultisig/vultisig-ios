@@ -4,7 +4,9 @@
 //
 
 import SwiftUI
+import OSLog
 
+private let logger = Logger(subsystem: "peers-discory", category: "communication")
 struct StartView: View {
     @Binding var presentationStack: Array<CurrentScreen>
     
@@ -13,7 +15,7 @@ struct StartView: View {
             VStack{
                 Spacer()
                 Button("Import Wallet >") {
-                    presentationStack.append(.importWallet)
+                     presentationStack.append(.importWallet)
                 }
                 Button("New Wallet >") {
                     presentationStack.append(.newWalletInstructions)
@@ -25,6 +27,7 @@ struct StartView: View {
             }
         }.navigationBarBackButtonHidden()
     }
+    
 }
 
 #Preview {

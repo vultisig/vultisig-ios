@@ -9,8 +9,9 @@ import OSLog
 import CoreImage
 import CoreImage.CIFilterBuiltins
 
+private let logger = Logger(subsystem: "peers-discory", category: "communication")
 struct PeerDiscoveryView: View {
-    private let logger = Logger(subsystem: "peers-discory", category: "communication")
+    
     @Binding var presentationStack: Array<CurrentScreen>
     @State private var peersFound = [String]()
     @State private var selections = Set<String>()
@@ -46,6 +47,7 @@ struct PeerDiscoveryView: View {
                 }
             }
             Button("Create Wallet >") {
+                
                 
             }
             .disabled(selections.count != 2)
@@ -157,6 +159,8 @@ struct PeerDiscoveryView: View {
         }.resume()
     }
 }
+
+
 
 #Preview {
     PeerDiscoveryView(presentationStack: .constant([]))
