@@ -112,9 +112,12 @@ public final class Mediator {
         do {
             let decoder = JSONDecoder()
             let p = try decoder.decode([String].self, from: Data(req.body))
-            
             if let cachedValue = self.cache.object(forKey: key) as? Session{
-                cachedValue.Participants.append(contentsOf: p)
+                for newParticipant in p {
+                    if !cachedValue.Participants.contains(where: {$0 == newParticipant}) {
+                        cachedValue.Participants.append(newParticipant)
+                    }
+                }
                 self.cache.setObject(cachedValue, forKey: key)
             } else {
                 let session = Session(SessionID: cleanSessionID, Participants: p)

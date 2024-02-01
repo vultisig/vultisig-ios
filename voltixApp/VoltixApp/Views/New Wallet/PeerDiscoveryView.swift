@@ -27,7 +27,6 @@ struct PeerDiscoveryView: View {
                 .resizable()
                 .scaledToFit()
                 .padding()
-            
             Text("Available devices")
             List(peersFound, id: \.self, selection: $selections) { peer in
                 HStack {
@@ -47,9 +46,7 @@ struct PeerDiscoveryView: View {
                 }
             }
             Button("Create Wallet >") {
-                Task {
-                    
-                }
+                
             }
             .disabled(selections.count != 2)
         }
@@ -57,7 +54,8 @@ struct PeerDiscoveryView: View {
             Task{
                 repeat{
                     self.getParticipants()
-                }while(!self.discoverying)
+                    try await Task.sleep(nanoseconds: 1_000_000_000) // wait for a second to continue
+                }while(self.discoverying)
             }
         }
         .onAppear(){ // start the mediator server
@@ -148,7 +146,7 @@ struct PeerDiscoveryView: View {
                 let decoder = JSONDecoder()
                 let peers = try decoder.decode([String].self, from: data)
                 for peer in peers {
-                    if !self.peersFound.contains(peer){
+                    if !self.peersFound.contains(where:{$0 == peer}){
                         self.peersFound.append(peer)
                     }
                 }
