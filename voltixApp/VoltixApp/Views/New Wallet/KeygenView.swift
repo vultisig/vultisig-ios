@@ -5,11 +5,14 @@
 import SwiftUI
 import Tss
 import OSLog
+import Mediator
 
 private let logger = Logger(subsystem: "keygen", category: "tss")
-struct Keygen: View {
+struct KeygenView: View {
     @Binding var presentationStack: Array<CurrentScreen>
     let keygenCommittee: [String]
+    let mediatorURL: String
+    let sessionID: String
     private let localPartyKey = UIDevice.current.name
     @State private var isCreatingTss = false
     @State private var keygenInProgressECDSA = false
@@ -19,8 +22,9 @@ struct Keygen: View {
     @State private var keygenDone = false
     @State private var tssService: TssServiceImpl? = nil
     @State private var failToCreateTssInstance = false
-    private let tssMessenger = TssMessengerImpl()
+    @State private var tssMessenger: TssMessengerImpl? = nil
     private let stateAccess = LocalStateAccessorImpl()
+    
     var body: some View {
         VStack{
                 HStack{
@@ -61,8 +65,10 @@ struct Keygen: View {
             }
             
         }.onAppear(){
+            
             // create keygen instance , it takes time to generate the preparams
             isCreatingTss = true
+            tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL)
             var err: NSError?
             self.tssService = TssNewService(tssMessenger,stateAccess,&err)
             if let err {
@@ -98,9 +104,57 @@ struct Keygen: View {
             }
         }
     }
+    
+    private func pollInboundMessages() {
+        let urlString = "\(self.mediatorURL)/message/\(self.sessionID)/\(self.localPartyKey)"
+        logger.debug("url:\(urlString)")
+        let url = URL(string: urlString)
+        guard let url else{
+            logger.error("URL can't be construct from: \(urlString)")
+            return
+        }
+        var req = URLRequest(url: url)
+        req.httpMethod = "GET"
+        req.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        URLSession.shared.dataTask(with: req){data,resp,err in
+            if let err {
+                logger.error("fail to start session,error:\(err)")
+                return
+            }
+            guard let resp = resp as? HTTPURLResponse, (200...299).contains(resp.statusCode) else {
+                logger.error("invalid response code")
+                return
+            }
+            guard let data else {
+                logger.error("no participants available yet")
+                return
+            }
+            do{
+                let decoder = JSONDecoder()
+                let peers = try decoder.decode([String].self, from: data)
+                for peer in peers {
+                    if !self.peersFound.contains(where:{$0 == peer}){
+                        self.peersFound.append(peer)
+                    }
+                }
+            } catch {
+                logger.error("fail to decode response to json,\(data)")
+            }
+            
+        }.resume()
+    }
+    
 }
 
 final class TssMessengerImpl : NSObject,TssMessengerProtocol {
+    let mediatorUrl: String
+    let sessionID: String
+    
+    init(mediatorUrl: String,sessionID: String) {
+        self.mediatorUrl = mediatorUrl
+        self.sessionID = sessionID
+    }
+    
     func send(_ from: String?, to: String?, body: String?) throws {
         guard let from else {
             logger.error("from is nil")
@@ -114,7 +168,36 @@ final class TssMessengerImpl : NSObject,TssMessengerProtocol {
             logger.error("body is nil")
             return
         }
-        logger.info("sending messages from:\(from) , to:\(to) , body:\(body)")
+        let urlString = "\(self.mediatorUrl)/message/\(self.sessionID)"
+        logger.debug("url:\(urlString)")
+        let url = URL(string: urlString)
+        guard let url else{
+            logger.error("URL can't be construct from: \(urlString)")
+            return
+        }
+        var req = URLRequest(url: url)
+        req.httpMethod = "POST"
+        req.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        let msg = Message(session_id:sessionID,from:from to:[to],body:body)
+        do{
+            let jsonEncode = JSONEncoder()
+            let encodedBody = try jsonEncode.encode(msg)
+            req.httpBody = encodedBody
+        } catch {
+            logger.error("fail to encode body into json string,\(error)")
+            return
+        }
+        URLSession.shared.dataTask(with: req){data,resp,err in
+            if let err {
+                logger.error("fail to start session,error:\(err)")
+                return
+            }
+            guard let resp = resp as? HTTPURLResponse, (200...299).contains(resp.statusCode) else {
+                logger.error("invalid response code")
+                return
+            }
+            logger.info("Message send to mediator successfully")
+        }.resume()
     }
 }
 
@@ -131,5 +214,5 @@ final class LocalStateAccessorImpl : NSObject, TssLocalStateAccessorProtocol {
     
 }
 #Preview("keygen") {
-    Keygen(presentationStack: .constant([]),keygenCommittee: [] )
+    KeygenView(presentationStack: .constant([]), keygenCommittee: [], mediatorURL:"", sessionID: "")
 }

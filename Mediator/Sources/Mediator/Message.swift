@@ -17,7 +17,7 @@ final class Session: Codable {
     }
 }
 
-struct Message: Codable {
+public struct Message: Codable {
     let session_id: String
     let from: String
     let to: [String]
