@@ -12,17 +12,17 @@ struct JoinKeygenView: View {
         case DiscoverSessionID
         case DiscoverService
         case JoinKeygen
+        case WaitingForKeygenToStart
         case KeygenStarted
     }
     @Binding var presentationStack: Array<CurrentScreen>
     @State private var isShowingScanner = false
     @State private var qrCodeResult: String? = nil
-    @State private var waitingForKeygenStart = false
-    @State private var seesionIDAcquired = false
     private let serviceBrowser = NetServiceBrowser()
-    private let serviceDelegate = ServiceDelegate()
+    @ObservedObject private var serviceDelegate = ServiceDelegate()
     private let netService = NetService(domain: "local.", type: "_http._tcp.", name: "VoltixApp")
     @State private var currentStatus = JoinKeygenStatus.DiscoverService
+    @State private var keygenCommittee =  [String]()
     
     var body: some View {
         VStack{
@@ -36,24 +36,49 @@ struct JoinKeygenView: View {
                     CodeScannerView(codeTypes: [.qr], completion: self.handleScan)
                 })
             case .DiscoverService:
-                Text("discovering mediator service")
-                if serviceDelegate.serverUrl == nil {
-                    ProgressView()
-                        .progressViewStyle(.circular)
-                        .tint(.blue)
-                        .padding(2)
-                } else {
-                    Image(systemName: "checkmark").foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/).onAppear(){
-                        currentStatus = .DiscoverSessionID
+                HStack{
+                    Text("discovering mediator service")
+                    if serviceDelegate.serverUrl == nil{
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                            .tint(.blue)
+                            .padding(2)
+                    } else {
+                        Image(systemName: "checkmark").foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/).onAppear(){
+                            currentStatus = .DiscoverSessionID
+                        }
                     }
                 }
             case .JoinKeygen:
                 Button("Join Keygen to create a new wallet"){
                     // send request to keygen server
                     joinKeygenCommittee()
+                    currentStatus = .WaitingForKeygenToStart
+                }
+            case .WaitingForKeygenToStart:
+                HStack{
+                    Text("Waiting for keygen to start")
+                    ProgressView()
+                        .progressViewStyle(.circular)
+                        .tint(.blue)
+                        .padding(2)
+                }.onAppear(){
+                    Task{
+                        repeat{
+                            checkKeygenStarted()
+                            try await Task.sleep(nanoseconds: 1_000_000_000)
+                        }while(self.currentStatus == .WaitingForKeygenToStart)
+                    }
                 }
             case .KeygenStarted:
-                Text("Keygen start")
+                HStack{
+                    if serviceDelegate.serverUrl != nil && self.qrCodeResult != nil {
+                        // at here we already know these two optional has values
+                        KeygenView(presentationStack: $presentationStack, keygenCommittee: keygenCommittee, mediatorURL: serviceDelegate.serverUrl ?? "", sessionID: self.qrCodeResult ?? "")
+                    } else {
+                        Text("Mediator server url is empty or session id is empty")
+                    }
+                }
             }
             
         }.onAppear(){
@@ -61,13 +86,10 @@ struct JoinKeygenView: View {
             netService.delegate = self.serviceDelegate
             netService.resolve(withTimeout: TimeInterval(10))
         }
-        .task {
-            // keep polling to decide whether keygen start or not
-        }
+        
     }
     
     private func checkKeygenStarted() {
-        let deviceName = UIDevice.current.name
         guard let serverUrl = serviceDelegate.serverUrl else {
             logger.error("didn't discover server url")
             return
@@ -90,6 +112,10 @@ struct JoinKeygenView: View {
                 logger.error("fail to start session,error:\(err)")
                 return
             }
+            if let resp = resp as? HTTPURLResponse, resp.statusCode == 404 {
+                logger.error("keygen didn't start yet")
+                return
+            }
             guard let resp = resp as? HTTPURLResponse, (200...299).contains(resp.statusCode) else {
                 logger.error("invalid response code")
                 return
@@ -103,7 +129,8 @@ struct JoinKeygenView: View {
                 let peers = try decoder.decode([String].self, from: data)
                 let deviceName = UIDevice.current.name
                 if peers.contains(where: {$0 == deviceName}) {
-                    
+                    self.keygenCommittee.append(contentsOf: peers)
+                    self.currentStatus = .KeygenStarted
                 }
             } catch {
                 logger.error("fail to decode response to json,\(data)")
@@ -151,7 +178,6 @@ struct JoinKeygenView: View {
                 return
             }
             logger.info("join session successfully.")
-            self.waitingForKeygenStart = true
         }.resume()
     }
     
@@ -159,8 +185,7 @@ struct JoinKeygenView: View {
         switch result{
         case .success(let result):
             qrCodeResult = result.string
-            logger.info("\(result.string)")
-            seesionIDAcquired = true
+            logger.info("session id: \(result.string)")
         case .failure(let err):
             logger.error("fail to scan QR code,error:\(err.localizedDescription)")
         }
@@ -173,9 +198,6 @@ final class ServiceDelegate : NSObject , NetServiceDelegate , ObservableObject {
     public func netServiceDidResolveAddress(_ sender: NetService) {
         logger.info("find service:\(sender.name) , \(sender.hostName ?? "") , \(sender.port) \(sender.domain) \(sender)")
         serverUrl = "http://\(sender.hostName ?? ""):\(sender.port)"
-    }
-    public func netServiceWillResolve(_ sender: NetService) {
-        logger.debug("will find service:\(sender.name) , \(sender.hostName ?? "") , \(sender.port) \(sender.domain) \(sender)")
     }
 }
 
