@@ -30,6 +30,8 @@ public final class Mediator {
         self.server.POST["/message/:sessionID"] = self.sendMessage
         // GET all messages for a specific session and participant
         self.server.GET["/message/:sessionID/:participantKey"] = self.getMessages
+        // POST/GET , to notifiy all parties to start keygen/keysign
+        self.server["/start/:sessionID"] = self.startKeygenOrKeysign
     }
     
     // start the server
@@ -50,6 +52,37 @@ public final class Mediator {
     public func stop() {
         self.server.stop()
         self.cache.removeAllObjects()
+    }
+    
+    private func startKeygenOrKeysign(req: HttpRequest) -> HttpResponse {
+        guard let sessionID = req.params[":sessionID"] else {
+            return HttpResponse.badRequest(.text("sessionID is empty"))
+        }
+        let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
+        let key = "session-\(cleanSessionID)-start" as NSString
+        logger.debug("request session id is: \(cleanSessionID)")
+        switch req.method{
+        case "POST":
+            do{
+                let decoder = JSONDecoder()
+                let p = try decoder.decode([String].self, from: Data(req.body))
+                self.cache.setObject(Session(SessionID: cleanSessionID, Participants: p), forKey: key)
+            }catch{
+                logger.error("fail to start keygen/keysign,error:\(error.localizedDescription)")
+                return HttpResponse.badRequest(.none)
+            }
+            
+            return HttpResponse.ok(.text(""))
+        case "GET":
+            guard let cachedSession = self.cache.object(forKey: key) as? Session else{
+                logger.debug("session didn't start, can't find key:\(key)")
+                return HttpResponse.notFound
+            }
+            return HttpResponse.ok(.json(cachedSession.Participants))
+          
+        default:
+            return HttpResponse.notAcceptable
+        }
     }
     
     private func sendMessage(req: HttpRequest) -> HttpResponse {
@@ -137,6 +170,8 @@ public final class Mediator {
         let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
         let key = "session-\(cleanSessionID)" as NSString
         self.cache.removeObject(forKey: key)
+        let keyStart = NSString(string:"\(key)-start")
+        self.cache.removeObject(forKey: keyStart)
         return HttpResponse.ok(.text(""))
     }
     

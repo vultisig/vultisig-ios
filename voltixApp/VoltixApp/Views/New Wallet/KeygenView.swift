@@ -1,14 +1,23 @@
 //
 //  Keygen.swift
 //  VoltixApp
+//
 
 import SwiftUI
 import Tss
 import OSLog
 import Mediator
+import Foundation
 
 private let logger = Logger(subsystem: "keygen", category: "tss")
 struct KeygenView: View {
+    enum KeygenStatus{
+        case CreatingInstance
+        case KeygenECDSA
+        case KeygenEdDSA
+        case KeygenFinished
+    }
+    @State private var currentStatus = KeygenStatus.CreatingInstance
     @Binding var presentationStack: Array<CurrentScreen>
     let keygenCommittee: [String]
     let mediatorURL: String
@@ -27,6 +36,8 @@ struct KeygenView: View {
     
     var body: some View {
         VStack{
+            switch currentStatus {
+            case .CreatingInstance:
                 HStack{
                     Text("creating tss instance")
                     if isCreatingTss {
@@ -38,37 +49,42 @@ struct KeygenView: View {
                         Image(systemName: "checkmark").foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
                     }
                 }
-            
-            HStack{
-                if keygenInProgressECDSA {
-                    Text("Generating ECDSA key")
-                    ProgressView()
-                        .progressViewStyle(.circular)
-                        .tint(.blue)
-                        .padding(2)
+            case .KeygenECDSA:
+                HStack{
+                    if keygenInProgressECDSA {
+                        Text("Generating ECDSA key")
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                            .tint(.blue)
+                            .padding(2)
+                    }
+                    if pubKeyECDSA != nil  {
+                        Text("ECDSA pubkey:\(pubKeyECDSA ?? "")")
+                        Image(systemName: "checkmark").foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
+                    }
                 }
-                if pubKeyECDSA != nil  {
-                    Text("ECDSA pubkey:\(pubKeyECDSA ?? "")")
-                    Image(systemName: "checkmark").foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
+            case .KeygenEdDSA:
+                HStack{
+                    if keygenInProgressEDDSA {
+                        Text("Generating EdDSA key")
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                            .tint(.blue)
+                            .padding(2)
+                    }
+                    if pubKeyEdDSA != nil  {
+                        Text("EdDSA pubkey:\(pubKeyEdDSA ?? "")")
+                        Image(systemName: "checkmark").foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
+                    }
                 }
-                if keygenInProgressEDDSA {
-                    Text("Generating EdDSA key")
-                    ProgressView()
-                        .progressViewStyle(.circular)
-                        .tint(.blue)
-                        .padding(2)
-                }
-                if pubKeyEdDSA != nil  {
-                    Text("EdDSA pubkey:\(pubKeyEdDSA ?? "")")
-                    Image(systemName: "checkmark").foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
-                }
+            case .KeygenFinished:
+                Text("keygen finished")
             }
-            
         }.onAppear(){
             
             // create keygen instance , it takes time to generate the preparams
             isCreatingTss = true
-            tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL)
+            tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL,sessionID: self.sessionID)
             var err: NSError?
             self.tssService = TssNewService(tssMessenger,stateAccess,&err)
             if let err {
@@ -76,6 +92,7 @@ struct KeygenView: View {
                 failToCreateTssInstance = true
                 return
             }
+            self.currentStatus = .KeygenECDSA
             let keygenReq = TssKeygenRequest()
             keygenReq.localPartyID = localPartyKey
             keygenReq.allParties = keygenCommittee.joined(separator: ",")
@@ -88,6 +105,7 @@ struct KeygenView: View {
                 logger.error("fail to create ECDSA key,error:\(error.localizedDescription)")
                 return
             }
+            self.currentStatus = .KeygenEdDSA
             do{
                 if let tssService {
                     let eddsaResp = try tssService.keygenEDDSA(keygenReq)
@@ -100,12 +118,15 @@ struct KeygenView: View {
         }.task {
             // keep polling in messages
             Task{
-                
+                repeat{
+                    pollInboundMessages()
+                    try await Task.sleep(nanoseconds: 1_000_000_000) //back off 1s
+                } while(self.tssService != nil)
             }
         }
     }
     
-    private func pollInboundMessages() {
+    private func pollInboundMessages(){
         let urlString = "\(self.mediatorURL)/message/\(self.sessionID)/\(self.localPartyKey)"
         logger.debug("url:\(urlString)")
         let url = URL(string: urlString)
@@ -131,14 +152,12 @@ struct KeygenView: View {
             }
             do{
                 let decoder = JSONDecoder()
-                let peers = try decoder.decode([String].self, from: data)
-                for peer in peers {
-                    if !self.peersFound.contains(where:{$0 == peer}){
-                        self.peersFound.append(peer)
-                    }
+                let msgs = try decoder.decode([Message].self, from: data)
+                for msg in msgs {
+                    try self.tssService?.applyData(msg.body)
                 }
             } catch {
-                logger.error("fail to decode response to json,\(data)")
+                logger.error("fail to decode response to json,\(data),error:\(error)")
             }
             
         }.resume()
@@ -150,13 +169,13 @@ final class TssMessengerImpl : NSObject,TssMessengerProtocol {
     let mediatorUrl: String
     let sessionID: String
     
-    init(mediatorUrl: String,sessionID: String) {
+    init(mediatorUrl: String, sessionID: String) {
         self.mediatorUrl = mediatorUrl
         self.sessionID = sessionID
     }
     
-    func send(_ from: String?, to: String?, body: String?) throws {
-        guard let from else {
+    func send(_ fromParty: String?, to: String?, body: String?) throws {
+        guard let fromParty else {
             logger.error("from is nil")
             return
         }
@@ -178,7 +197,7 @@ final class TssMessengerImpl : NSObject,TssMessengerProtocol {
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        let msg = Message(session_id:sessionID,from:from to:[to],body:body)
+        let msg = Message(session_id: sessionID,from: fromParty, to: [to],body: body)
         do{
             let jsonEncode = JSONEncoder()
             let encodedBody = try jsonEncode.encode(msg)
@@ -189,14 +208,13 @@ final class TssMessengerImpl : NSObject,TssMessengerProtocol {
         }
         URLSession.shared.dataTask(with: req){data,resp,err in
             if let err {
-                logger.error("fail to start session,error:\(err)")
+                logger.error("fail to send message,error:\(err)")
                 return
             }
             guard let resp = resp as? HTTPURLResponse, (200...299).contains(resp.statusCode) else {
                 logger.error("invalid response code")
                 return
             }
-            logger.info("Message send to mediator successfully")
         }.resume()
     }
 }

@@ -8,6 +8,12 @@ import CodeScanner
 
 private let logger = Logger(subsystem: "join-committee", category: "communication")
 struct JoinKeygenView: View {
+    enum JoinKeygenStatus{
+        case DiscoverSessionID
+        case DiscoverService
+        case JoinKeygen
+        case KeygenStarted
+    }
     @Binding var presentationStack: Array<CurrentScreen>
     @State private var isShowingScanner = false
     @State private var qrCodeResult: String? = nil
@@ -16,39 +22,96 @@ struct JoinKeygenView: View {
     private let serviceBrowser = NetServiceBrowser()
     private let serviceDelegate = ServiceDelegate()
     private let netService = NetService(domain: "local.", type: "_http._tcp.", name: "VoltixApp")
+    @State private var currentStatus = JoinKeygenStatus.DiscoverService
     
     var body: some View {
         VStack{
-            if !seesionIDAcquired {
+            switch currentStatus {
+            case .DiscoverSessionID:
+                Text("Scan the barcode on another VoltixApp")
                 Button("Scan"){
                     isShowingScanner = true
                 }
                 .sheet(isPresented: $isShowingScanner, content: {
                     CodeScannerView(codeTypes: [.qr], completion: self.handleScan)
                 })
-            }
-            
-            if serviceDelegate.serverUrl != nil && qrCodeResult != nil {
-                if let serverUrl = serviceDelegate.serverUrl {
-                    Text(serverUrl)
+            case .DiscoverService:
+                Text("discovering mediator service")
+                if serviceDelegate.serverUrl == nil {
+                    ProgressView()
+                        .progressViewStyle(.circular)
+                        .tint(.blue)
+                        .padding(2)
+                } else {
+                    Image(systemName: "checkmark").foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/).onAppear(){
+                        currentStatus = .DiscoverSessionID
+                    }
                 }
-                Text(qrCodeResult ?? "")
-                Button("Join"){
+            case .JoinKeygen:
+                Button("Join Keygen to create a new wallet"){
                     // send request to keygen server
                     joinKeygenCommittee()
                 }
+            case .KeygenStarted:
+                Text("Keygen start")
             }
             
         }.onAppear(){
             logger.info("start to discover service")
             netService.delegate = self.serviceDelegate
             netService.resolve(withTimeout: TimeInterval(10))
-            
         }
         .task {
             // keep polling to decide whether keygen start or not
         }
     }
+    
+    private func checkKeygenStarted() {
+        let deviceName = UIDevice.current.name
+        guard let serverUrl = serviceDelegate.serverUrl else {
+            logger.error("didn't discover server url")
+            return
+        }
+        guard let sessionID = qrCodeResult else {
+            logger.error("session id has not acquired")
+            return
+        }
+        let urlString = "\(serverUrl)/start/\(sessionID)"
+        let url = URL(string: urlString)
+        guard let url else{
+            logger.error("URL can't be construct from: \(urlString)")
+            return
+        }
+        var req = URLRequest(url: url)
+        req.httpMethod = "GET"
+        req.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        URLSession.shared.dataTask(with: req){data,resp,err in
+            if let err {
+                logger.error("fail to start session,error:\(err)")
+                return
+            }
+            guard let resp = resp as? HTTPURLResponse, (200...299).contains(resp.statusCode) else {
+                logger.error("invalid response code")
+                return
+            }
+            guard let data else {
+                logger.error("no participants available yet")
+                return
+            }
+            do{
+                let decoder = JSONDecoder()
+                let peers = try decoder.decode([String].self, from: data)
+                let deviceName = UIDevice.current.name
+                if peers.contains(where: {$0 == deviceName}) {
+                    
+                }
+            } catch {
+                logger.error("fail to decode response to json,\(data)")
+            }
+            
+        }.resume()
+    }
+    
     private func joinKeygenCommittee() {
         let deviceName = UIDevice.current.name
         guard let serverUrl = serviceDelegate.serverUrl else {
@@ -88,8 +151,10 @@ struct JoinKeygenView: View {
                 return
             }
             logger.info("join session successfully.")
+            self.waitingForKeygenStart = true
         }.resume()
     }
+    
     private func handleScan(result: Result<ScanResult,ScanError>) {
         switch result{
         case .success(let result):
@@ -99,7 +164,7 @@ struct JoinKeygenView: View {
         case .failure(let err):
             logger.error("fail to scan QR code,error:\(err.localizedDescription)")
         }
-        isShowingScanner = false
+        currentStatus = .JoinKeygen
     }
 }
 

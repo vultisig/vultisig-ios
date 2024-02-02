@@ -1,9 +1,6 @@
 //
 //  File.swift
 //  
-//
-//  Created by Johnny Luo on 28/1/2024.
-//
 
 import Foundation
 
@@ -18,10 +15,17 @@ final class Session: Codable {
 }
 
 public struct Message: Codable {
-    let session_id: String
-    let from: String
-    let to: [String]
-    let body: String
+    public let session_id: String
+    public let from: String
+    public let to: [String]
+    public let body: String
+    
+    public init(session_id: String, from: String, to: [String], body: String) {
+        self.session_id = session_id
+        self.from = from
+        self.to = to
+        self.body = body
+    }
 }
 
 final class cacheItem: Codable{
