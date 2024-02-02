@@ -66,7 +66,7 @@ struct MainNavigationStack: View {
                 }
             .onAppear(perform:{
                 if appState.currentVault == nil {
-                    self.presentationStack = [CurrentScreen.startScreen]
+                    self.presentationStack = [CurrentScreen.vaultSelection]
                     return
                 }
             })

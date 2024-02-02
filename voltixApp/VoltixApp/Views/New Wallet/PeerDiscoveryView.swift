@@ -58,23 +58,20 @@ struct PeerDiscoveryView: View {
                 }
                 .disabled(selections.count < 3)
             case .Keygen:
-                
                 KeygenView(presentationStack: $presentationStack, keygenCommittee: selections.map{$0}, mediatorURL: serverAddr, sessionID: self.sessionID)
             }
             
         }
         .task {
+            self.mediator.start()
+            logger.info("mediator server started")
+            startSession()
             Task{
                 repeat{
                     self.getParticipants()
                     try await Task.sleep(nanoseconds: 1_000_000_000) // wait for a second to continue
                 }while(self.discoverying)
             }
-        }
-        .onAppear(){ // start the mediator server
-            self.mediator.start()
-            logger.info("mediator server started")
-            startSession()
         }
         .onDisappear(){
             logger.info("mediator server stopped")

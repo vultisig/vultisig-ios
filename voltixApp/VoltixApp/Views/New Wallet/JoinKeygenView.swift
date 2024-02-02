@@ -62,7 +62,7 @@ struct JoinKeygenView: View {
                         .progressViewStyle(.circular)
                         .tint(.blue)
                         .padding(2)
-                }.onAppear(){
+                }.task{
                     Task{
                         repeat{
                             checkKeygenStarted()

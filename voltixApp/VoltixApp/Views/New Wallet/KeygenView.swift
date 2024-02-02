@@ -23,7 +23,6 @@ struct KeygenView: View {
     let mediatorURL: String
     let sessionID: String
     private let localPartyKey = UIDevice.current.name
-    @State private var isCreatingTss = false
     @State private var keygenInProgressECDSA = false
     @State private var pubKeyECDSA: String? = nil
     @State private var keygenInProgressEDDSA = false
@@ -40,14 +39,10 @@ struct KeygenView: View {
             case .CreatingInstance:
                 HStack{
                     Text("creating tss instance")
-                    if isCreatingTss {
                         ProgressView()
                             .progressViewStyle(.circular)
                             .tint(.blue)
                             .padding(2)
-                    } else {
-                        Image(systemName: "checkmark").foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
-                    }
                 }
             case .KeygenECDSA:
                 HStack{
@@ -80,10 +75,8 @@ struct KeygenView: View {
             case .KeygenFinished:
                 Text("keygen finished")
             }
-        }.onAppear(){
-            
+        }.task {
             // create keygen instance , it takes time to generate the preparams
-            isCreatingTss = true
             tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL,sessionID: self.sessionID)
             var err: NSError?
             self.tssService = TssNewService(tssMessenger,stateAccess,&err)
@@ -91,6 +84,13 @@ struct KeygenView: View {
                 logger.error("fail to create TSS instance,error:\(err.localizedDescription )")
                 failToCreateTssInstance = true
                 return
+            }
+            // keep polling in messages
+            Task{
+                repeat{
+                    pollInboundMessages()
+                    try await Task.sleep(nanoseconds: 1_000_000_000) //back off 1s
+                } while(self.tssService != nil)
             }
             self.currentStatus = .KeygenECDSA
             let keygenReq = TssKeygenRequest()
@@ -115,14 +115,7 @@ struct KeygenView: View {
                 logger.error("fail to create EdDSA key,error:\(error.localizedDescription)")
                 return
             }
-        }.task {
-            // keep polling in messages
-            Task{
-                repeat{
-                    pollInboundMessages()
-                    try await Task.sleep(nanoseconds: 1_000_000_000) //back off 1s
-                } while(self.tssService != nil)
-            }
+            
         }
     }
     
