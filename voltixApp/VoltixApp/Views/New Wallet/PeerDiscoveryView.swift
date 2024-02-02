@@ -54,6 +54,7 @@ struct PeerDiscoveryView: View {
                     }
                 }
                 Button("Create Wallet >") {
+                    startKeygen(allParticipants: selections.map{$0})
                     self.currentState = .Keygen
                 }
                 .disabled(selections.count < 3)
