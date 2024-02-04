@@ -31,6 +31,7 @@ public final class Mediator {
         self.server.POST["/message/:sessionID"] = self.sendMessage
         // GET all messages for a specific session and participant
         self.server.GET["/message/:sessionID/:participantKey"] = self.getMessages
+        self.server.GET["/message/:sessionID/:participantKey/all"] = self.getAllMessages
         // POST/GET , to notifiy all parties to start keygen/keysign
         self.server["/start/:sessionID"] = self.startKeygenOrKeysign
     }
@@ -141,6 +142,28 @@ public final class Mediator {
             }
             
             let result = try encoder.encode(messages)
+            return HttpResponse.ok(.data(result, contentType: "application/json"))
+        } catch {
+            logger.error("fail to encode object to json,error:\(error)")
+            return HttpResponse.internalServerError
+        }
+    }
+    private func getAllMessages(req: HttpRequest) -> HttpResponse {
+        guard let sessionID = req.params[":sessionID"] else {
+            return HttpResponse.badRequest(.text("sessionID is empty"))
+        }
+        guard let participantID = req.params[":participantKey"] else {
+            return HttpResponse.badRequest(.text("participantKey is empty"))
+        }
+        let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
+        let cleanParticipantKey = participantID.trimmingCharacters(in: .whitespacesAndNewlines)
+        let key = "\(cleanSessionID)-\(cleanParticipantKey)" as NSString
+        guard let cachedValue = self.cache.object(forKey: key) as? cacheItem else {
+            return HttpResponse.notFound
+        }
+        let encoder = JSONEncoder()
+        do {
+            let result = try encoder.encode(cachedValue.messages)
             return HttpResponse.ok(.data(result, contentType: "application/json"))
         } catch {
             logger.error("fail to encode object to json,error:\(error)")

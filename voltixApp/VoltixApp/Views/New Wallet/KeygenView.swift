@@ -33,7 +33,7 @@ struct KeygenView: View {
     @State private var failToCreateTssInstance = false
     @State private var tssMessenger: TssMessengerImpl? = nil
     private let stateAccess = LocalStateAccessorImpl()
-    @State private var startPollingInbound = false
+    @State private var keygenError: String? = nil
     
     var body: some View {
         VStack{
@@ -79,7 +79,7 @@ struct KeygenView: View {
                 Text("ECDSA pubkey:\(pubKeyECDSA ?? "")")
                 Text("EdDSA pubkey:\(pubKeyEdDSA ?? "")")
             case .KeygenFailed:
-                Text("Sorry keygen failed, you can retry it")
+                Text("Sorry keygen failed, you can retry it,error:\(keygenError ?? "")")
             }
         }.task {
             Task.detached(priority: .high) {
@@ -97,7 +97,7 @@ struct KeygenView: View {
                     repeat{
                         pollInboundMessages()
                         try await Task.sleep(nanoseconds: 1_000_000_000) //back off 1s
-                    } while(self.tssService != nil && self.startPollingInbound == true)
+                    } while(self.tssService != nil)
                 }
                 self.currentStatus = .KeygenECDSA
                 keygenInProgressECDSA = true
@@ -112,10 +112,12 @@ struct KeygenView: View {
                 }catch{
                     logger.error("fail to create ECDSA key,error:\(error.localizedDescription)")
                     self.currentStatus = .KeygenFailed
+                    self.keygenError = error.localizedDescription
                     return
                 }
                 self.currentStatus = .KeygenEdDSA
                 keygenInProgressEDDSA = true
+                try await Task.sleep(nanoseconds: 1_000_000_000) // sleep one sec to allow other parties to get in the same step
                 do{
                     if let tssService {
                         let eddsaResp = try tssService.keygenEDDSA(keygenReq)
@@ -124,6 +126,7 @@ struct KeygenView: View {
                 }catch{
                     logger.error("fail to create EdDSA key,error:\(error.localizedDescription)")
                     self.currentStatus = .KeygenFailed
+                    self.keygenError = error.localizedDescription
                     return
                 }
                 self.currentStatus = .KeygenFinished
