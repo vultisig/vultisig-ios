@@ -2,6 +2,7 @@ import Swifter
 import Network
 import Foundation
 import OSLog
+import CryptoKit
 
 public final class Mediator {
     private let logger = Logger(subsystem: "Mediator", category: "communication")
@@ -121,12 +122,25 @@ public final class Mediator {
         let cleanParticipantKey = participantID.trimmingCharacters(in: .whitespacesAndNewlines)
         let key = "\(cleanSessionID)-\(cleanParticipantKey)" as NSString
         guard let cachedValue = self.cache.object(forKey: key) as? cacheItem else {
-            logger.error("cached object can't be retrieved")
             return HttpResponse.notFound
         }
         let encoder = JSONEncoder()
         do {
-            let result = try encoder.encode(cachedValue.messages)
+            var messages = [Message]()
+            for m in cachedValue.messages {
+                let hexValue = MD5(string: m.body)
+                let cacheKey = "\(cleanSessionID)-\(cleanParticipantKey)-\(hexValue)" as NSString
+                logger.debug("cache key: \(cacheKey)")
+                if self.cache.object(forKey: cacheKey) is NSString {
+                    // message has been passed to client already
+                    logger.debug("\(cacheKey) message has been passed to client, ignore")
+                    continue
+                }
+                self.cache.setObject(cacheKey, forKey: cacheKey)
+                messages.append(m)
+            }
+            
+            let result = try encoder.encode(messages)
             return HttpResponse.ok(.data(result, contentType: "application/json"))
         } catch {
             logger.error("fail to encode object to json,error:\(error)")
@@ -184,14 +198,19 @@ public final class Mediator {
         let key = "session-\(cleanSessionID)" as NSString
         
         if let cachedValue = self.cache.object(forKey: key) as? Session {
-            logger.info("session obj : \(cachedValue.SessionID), participants: \(cachedValue.Participants)")
+            logger.debug("session obj : \(cachedValue.SessionID), participants: \(cachedValue.Participants)")
             return HttpResponse.ok(.json(cachedValue.Participants))
         } else {
             logger.error("cached object not found")
             return HttpResponse.notFound
         }
     }
-    
+    private func MD5(string: String) -> String {
+        let digest = Insecure.MD5.hash(data: Data(string.utf8))
+        return digest.map {
+            String(format: "%02hhx", $0)
+        }.joined()
+    }
     deinit {
         self.cache.removeAllObjects() // clean up cache
     }
