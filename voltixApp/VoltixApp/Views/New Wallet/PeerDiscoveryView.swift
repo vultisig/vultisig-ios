@@ -38,11 +38,7 @@ struct PeerDiscoveryView: View {
                 Text("Available devices")
                 List(peersFound, id: \.self, selection: $selections) { peer in
                     HStack {
-                        if selections.contains(peer) {
-                            Image(systemName: "checkmark.circle")
-                        } else {
-                            Image(systemName: "circle")
-                        }
+                        Image(systemName: selections.contains(peer) ? "checkmark.circle" : "circle")
                         Text(peer)
                     }
                     .onTapGesture {
@@ -84,120 +80,142 @@ struct PeerDiscoveryView: View {
     
     private func getQrImage(size: CGFloat) -> UIImage {
         let context = CIContext()
-        let qrFilter = CIFilter.qrCodeGenerator()
-        qrFilter.setValue(self.sessionID.data(using: .utf8), forKey: "inputMessage")
-        if let qrCodeImage = qrFilter.outputImage {
-            let qrCodeImage = qrCodeImage.transformed(by: CGAffineTransform(scaleX: size, y: size))
-            if let qrCodeCGImage = context.createCGImage(qrCodeImage, from: qrCodeImage.extent) {
-                return UIImage(cgImage: qrCodeCGImage)
-            }
+        guard let qrFilter = CIFilter(name: "CIQRCodeGenerator") else {
+            return UIImage(systemName: "xmark") ?? UIImage()
         }
-        return UIImage(systemName: "xmark") ?? UIImage()
         
+        let data = Data(sessionID.utf8)
+        qrFilter.setValue(data, forKey: "inputMessage")
+        
+        guard let qrCodeImage = qrFilter.outputImage else {
+            return UIImage(systemName: "xmark") ?? UIImage()
+        }
+        
+        let transformedImage = qrCodeImage.transformed(by: CGAffineTransform(scaleX: size, y: size))
+        
+        guard let cgImage = context.createCGImage(transformedImage, from: transformedImage.extent) else {
+            return UIImage(systemName: "xmark") ?? UIImage()
+        }
+        
+        return UIImage(cgImage: cgImage)
     }
     
     private func startSession() {
         let deviceName = UIDevice.current.name
         let urlString = "\(self.serverAddr)/\(self.sessionID)"
         logger.debug("url:\(urlString)")
-        let url = URL(string: urlString)
-        guard let url else{
-            logger.error("URL can't be construct from: \(urlString)")
+        
+        guard let url = URL(string: urlString) else {
+            logger.error("URL can't be constructed from: \(urlString)")
             return
         }
-        var req = URLRequest(url: url)
-        req.httpMethod = "POST"
-        req.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
         let body = [deviceName]
-        do{
-            let jsonEncode = JSONEncoder()
-            let encodedBody = try jsonEncode.encode(body)
-            req.httpBody = encodedBody
+        
+        do {
+            let jsonEncoder = JSONEncoder()
+            request.httpBody = try jsonEncoder.encode(body)
         } catch {
-            logger.error("fail to encode body into json string,\(error)")
+            logger.error("Failed to encode body into JSON string: \(error)")
             return
         }
-        URLSession.shared.dataTask(with: req){data,resp,err in
-            if let err {
-                logger.error("fail to start session,error:\(err)")
+        
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                logger.error("Failed to start session, error: \(error)")
                 return
             }
-            guard let resp = resp as? HTTPURLResponse, (200...299).contains(resp.statusCode) else {
-                logger.error("invalid response code")
+            
+            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+                logger.error("Invalid response code")
                 return
             }
-            logger.info("start session successfully.")
-        }.resume()
+            
+            logger.info("Started session successfully.")
+        }
+        
+        task.resume()
     }
-    // this method need to send a request to mediator , so all parties will start keygen soon after
-    private func startKeygen(allParticipants:[String]) {
+    private func startKeygen(allParticipants: [String]) {
         let urlString = "\(self.serverAddr)/start/\(self.sessionID)"
         logger.debug("url:\(urlString)")
-        let url = URL(string: urlString)
-        guard let url else{
-            logger.error("URL can't be construct from: \(urlString)")
+        
+        guard let url = URL(string: urlString) else {
+            logger.error("URL can't be constructed from: \(urlString)")
             return
         }
-        var req = URLRequest(url: url)
-        req.httpMethod = "POST"
-        req.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        let body = allParticipants
-        do{
-            let jsonEncode = JSONEncoder()
-            let encodedBody = try jsonEncode.encode(body)
-            req.httpBody = encodedBody
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        do {
+            let jsonData = try JSONEncoder().encode(allParticipants)
+            request.httpBody = jsonData
         } catch {
-            logger.error("fail to encode body into json string,\(error)")
+            logger.error("Failed to encode body into JSON string: \(error)")
             return
         }
-        URLSession.shared.dataTask(with: req){data,resp,err in
-            if let err {
-                logger.error("fail to start session,error:\(err)")
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                logger.error("Failed to start session, error: \(error)")
                 return
             }
-            guard let resp = resp as? HTTPURLResponse, (200...299).contains(resp.statusCode) else {
-                logger.error("invalid response code")
+            
+            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+                logger.error("Invalid response code")
                 return
             }
-            logger.info("keygen start successfully.")
+            
+            logger.info("Keygen started successfully.")
         }.resume()
     }
     private func getParticipants() {
         let urlString = "\(self.serverAddr)/\(self.sessionID)"
         logger.debug("url:\(urlString)")
-        let url = URL(string: urlString)
-        guard let url else{
-            logger.error("URL can't be construct from: \(urlString)")
+        
+        guard let url = URL(string: urlString) else {
+            logger.error("URL can't be constructed from: \(urlString)")
             return
         }
-        var req = URLRequest(url: url)
-        req.httpMethod = "GET"
-        req.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        URLSession.shared.dataTask(with: req){data,resp,err in
-            if let err {
-                logger.error("fail to start session,error:\(err)")
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                logger.error("Failed to start session, error: \(error)")
                 return
             }
-            guard let resp = resp as? HTTPURLResponse, (200...299).contains(resp.statusCode) else {
-                logger.error("invalid response code")
+            
+            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+                logger.error("Invalid response code")
                 return
             }
-            guard let data else {
-                logger.error("no participants available yet")
+            
+            guard let data = data else {
+                logger.error("No participants available yet")
                 return
             }
-            do{
+            
+            do {
                 let decoder = JSONDecoder()
                 let peers = try decoder.decode([String].self, from: data)
+                
                 for peer in peers {
-                    if !self.peersFound.contains(where:{$0 == peer}){
+                    if !self.peersFound.contains(peer) {
                         self.peersFound.append(peer)
                     }
                 }
             } catch {
-                logger.error("fail to decode response to json,\(data)")
+                logger.error("Failed to decode response to JSON: \(error)")
             }
-            
         }.resume()
     }
 }

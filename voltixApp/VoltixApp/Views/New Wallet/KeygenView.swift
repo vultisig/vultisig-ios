@@ -41,10 +41,10 @@ struct KeygenView: View {
             case .CreatingInstance:
                 HStack{
                     Text("creating tss instance")
-                        ProgressView()
-                            .progressViewStyle(.circular)
-                            .tint(.blue)
-                            .padding(2)
+                    ProgressView()
+                        .progressViewStyle(.circular)
+                        .tint(.blue)
+                        .padding(2)
                 }
             case .KeygenECDSA:
                 HStack{
@@ -83,167 +83,176 @@ struct KeygenView: View {
             }
         }.task {
             Task.detached(priority: .high) {
-                // create keygen instance , it takes time to generate the preparams
-                tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL,sessionID: self.sessionID)
+                // Create keygen instance, it takes time to generate the preparams
+                tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID)
                 var err: NSError?
-                self.tssService = TssNewService(tssMessenger,stateAccess,&err)
+                self.tssService = TssNewService(tssMessenger, stateAccess, &err)
                 if let err {
-                    logger.error("fail to create TSS instance,error:\(err.localizedDescription )")
+                    logger.error("Failed to create TSS instance, error: \(err.localizedDescription)")
                     failToCreateTssInstance = true
                     return
                 }
-                // keep polling in messages
-                Task{
-                    repeat{
+                
+                // Keep polling for messages
+                Task {
+                    repeat {
                         pollInboundMessages()
-                        try await Task.sleep(nanoseconds: 1_000_000_000) //back off 1s
-                    } while(self.tssService != nil)
+                        try await Task.sleep(nanoseconds: 1_000_000_000) // Back off 1s
+                    } while self.tssService != nil
                 }
+                
                 self.currentStatus = .KeygenECDSA
                 keygenInProgressECDSA = true
                 let keygenReq = TssKeygenRequest()
                 keygenReq.localPartyID = localPartyKey
                 keygenReq.allParties = keygenCommittee.joined(separator: ",")
-                do{
-                    if let tssService {
+                
+                do {
+                    if let tssService = self.tssService {
                         let ecdsaResp = try tssService.keygenECDSA(keygenReq)
                         pubKeyECDSA = ecdsaResp.pubKey
                     }
-                }catch{
-                    logger.error("fail to create ECDSA key,error:\(error.localizedDescription)")
+                } catch {
+                    logger.error("Failed to create ECDSA key, error: \(error.localizedDescription)")
                     self.currentStatus = .KeygenFailed
                     self.keygenError = error.localizedDescription
                     return
                 }
+                
                 self.currentStatus = .KeygenEdDSA
                 keygenInProgressEDDSA = true
-                try await Task.sleep(nanoseconds: 1_000_000_000) // sleep one sec to allow other parties to get in the same step
-                do{
-                    if let tssService {
+                try await Task.sleep(nanoseconds: 1_000_000_000) // Sleep one sec to allow other parties to get in the same step
+                
+                do {
+                    if let tssService = self.tssService {
                         let eddsaResp = try tssService.keygenEDDSA(keygenReq)
                         pubKeyEdDSA = eddsaResp.pubKey
                     }
-                }catch{
-                    logger.error("fail to create EdDSA key,error:\(error.localizedDescription)")
+                } catch {
+                    logger.error("Failed to create EdDSA key, error: \(error.localizedDescription)")
                     self.currentStatus = .KeygenFailed
                     self.keygenError = error.localizedDescription
                     return
                 }
+                
                 self.currentStatus = .KeygenFinished
             }
         }
     }
     
-    private func pollInboundMessages(){
+    private func pollInboundMessages() {
         let urlString = "\(self.mediatorURL)/message/\(self.sessionID)/\(self.localPartyKey)"
-        let url = URL(string: urlString)
-        guard let url else{
-            logger.error("URL can't be construct from: \(urlString)")
+        guard let url = URL(string: urlString) else {
+            logger.error("URL can't be constructed from: \(urlString)")
             return
         }
-        var req = URLRequest(url: url)
-        req.httpMethod = "GET"
-        req.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        URLSession.shared.dataTask(with: req){data,resp,err in
-            if let err {
-                logger.error("fail to start session,error:\(err)")
+        
+        let req = URLRequest(url: url)
+        URLSession.shared.dataTask(with: req) { data, response, error in
+            if let error = error {
+                logger.error("Failed to start session, error: \(error)")
                 return
             }
-            if let resp = resp as? HTTPURLResponse, resp.statusCode == 404 {
-                // don't have messages yet
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                logger.error("Invalid response")
                 return
             }
-            guard let resp = resp as? HTTPURLResponse, (200...299).contains(resp.statusCode) else {
-                logger.error("invalid response code")
+            
+            if httpResponse.statusCode == 404 {
+                // No messages yet
                 return
             }
-            guard let data else {
-                logger.error("no participants available yet")
+            
+            guard (200...299).contains(httpResponse.statusCode) else {
+                logger.error("Invalid response code")
                 return
             }
-            do{
+            
+            guard let data = data else {
+                logger.error("No participants available yet")
+                return
+            }
+            
+            do {
                 let decoder = JSONDecoder()
                 let msgs = try decoder.decode([Message].self, from: data)
+                
                 for msg in msgs {
-                    logger.info("got message from:\(msg.from) , to:\(msg.to)")
+                    logger.debug("Got message from: \(msg.from), to: \(msg.to)")
                     try self.tssService?.applyData(msg.body)
                 }
             } catch {
-                logger.error("fail to decode response to json,\(data),error:\(error)")
+                logger.error("Failed to decode response to JSON, data: \(data), error: \(error)")
             }
-            
         }.resume()
     }
     
-}
-
-final class TssMessengerImpl : NSObject,TssMessengerProtocol {
-    let mediatorUrl: String
-    let sessionID: String
-    
-    init(mediatorUrl: String, sessionID: String) {
-        self.mediatorUrl = mediatorUrl
-        self.sessionID = sessionID
-    }
-    
-    func send(_ fromParty: String?, to: String?, body: String?) throws {
-        guard let fromParty else {
-            logger.error("from is nil")
-            return
-        }
-        guard let to else {
-            logger.error("to is nil")
-            return
-        }
-        guard let body else {
-            logger.error("body is nil")
-            return
-        }
-        logger.info("from:\(fromParty),to:\(to)")
-        let urlString = "\(self.mediatorUrl)/message/\(self.sessionID)"
-        let url = URL(string: urlString)
-        guard let url else{
-            logger.error("URL can't be construct from: \(urlString)")
-            return
-        }
-        var req = URLRequest(url: url)
-        req.httpMethod = "POST"
-        req.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        let msg = Message(session_id: sessionID,from: fromParty, to: [to],body: body)
-        do{
-            let jsonEncode = JSONEncoder()
-            let encodedBody = try jsonEncode.encode(msg)
-            req.httpBody = encodedBody
-        } catch {
-            logger.error("fail to encode body into json string,\(error)")
-            return
-        }
-        URLSession.shared.dataTask(with: req){data,resp,err in
-            if let err {
-                logger.error("fail to send message,error:\(err)")
-                return
-            }
-            guard let resp = resp as? HTTPURLResponse, (200...299).contains(resp.statusCode) else {
-                logger.error("invalid response code")
-                return
-            }
-            logger.debug("send message to mediator server successfully")
-        }.resume()
-    }
-}
-
-final class LocalStateAccessorImpl : NSObject, TssLocalStateAccessorProtocol {
-    func getLocalState(_ pubKey: String?, error: NSErrorPointer) -> String {
-        return ""
-    }
-    
-    func saveLocalState(_ pubkey: String?, localState: String?) throws {
+    final class TssMessengerImpl : NSObject,TssMessengerProtocol {
+        let mediatorUrl: String
+        let sessionID: String
         
+        init(mediatorUrl: String, sessionID: String) {
+            self.mediatorUrl = mediatorUrl
+            self.sessionID = sessionID
+        }
+        
+        func send(_ fromParty: String?, to: String?, body: String?) throws {
+            guard let fromParty else {
+                logger.error("from is nil")
+                return
+            }
+            guard let to else {
+                logger.error("to is nil")
+                return
+            }
+            guard let body else {
+                logger.error("body is nil")
+                return
+            }
+            logger.info("from:\(fromParty),to:\(to)")
+            let urlString = "\(self.mediatorUrl)/message/\(self.sessionID)"
+            let url = URL(string: urlString)
+            guard let url else{
+                logger.error("URL can't be construct from: \(urlString)")
+                return
+            }
+            var req = URLRequest(url: url)
+            req.httpMethod = "POST"
+            req.addValue("application/json", forHTTPHeaderField: "Content-Type")
+            let msg = Message(session_id: sessionID,from: fromParty, to: [to],body: body)
+            do{
+                let jsonEncode = JSONEncoder()
+                let encodedBody = try jsonEncode.encode(msg)
+                req.httpBody = encodedBody
+            } catch {
+                logger.error("fail to encode body into json string,\(error)")
+                return
+            }
+            URLSession.shared.dataTask(with: req){data,resp,err in
+                if let err {
+                    logger.error("fail to send message,error:\(err)")
+                    return
+                }
+                guard let resp = resp as? HTTPURLResponse, (200...299).contains(resp.statusCode) else {
+                    logger.error("invalid response code")
+                    return
+                }
+                logger.debug("send message to mediator server successfully")
+            }.resume()
+        }
     }
     
-    
-    
+    final class LocalStateAccessorImpl : NSObject, TssLocalStateAccessorProtocol {
+        func getLocalState(_ pubKey: String?, error: NSErrorPointer) -> String {
+            return ""
+        }
+        
+        func saveLocalState(_ pubkey: String?, localState: String?) throws {
+            
+        }
+    }
 }
-#Preview("keygen") {
+#Preview ("keygen") {
     KeygenView(presentationStack: .constant([]), keygenCommittee: [], mediatorURL:"", sessionID: "")
 }
