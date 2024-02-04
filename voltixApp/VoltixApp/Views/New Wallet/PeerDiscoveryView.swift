@@ -9,8 +9,13 @@ import OSLog
 import CoreImage
 import CoreImage.CIFilterBuiltins
 
+private let logger = Logger(subsystem: "peers-discory", category: "communication")
 struct PeerDiscoveryView: View {
-    private let logger = Logger(subsystem: "peers-discory", category: "communication")
+    enum PeerDiscoveryStatus{
+        case WaitingForDevices
+        case Keygen
+    }
+    
     @Binding var presentationStack: Array<CurrentScreen>
     @State private var peersFound = [String]()
     @State private var selections = Set<String>()
@@ -19,49 +24,56 @@ struct PeerDiscoveryView: View {
     private let serverAddr = "http://127.0.0.1:8080"
     private let sessionID = UUID().uuidString
     @State private var discoverying = true
+    @State private var currentState = PeerDiscoveryStatus.WaitingForDevices
     
     var body: some View {
         VStack {
-            Text("Scan the following QR code to join keygen session")
-            Image(uiImage: self.getQrImage(size:100))
-                .resizable()
-                .scaledToFit()
-                .padding()
-            Text("Available devices")
-            List(peersFound, id: \.self, selection: $selections) { peer in
-                HStack {
-                    if selections.contains(peer) {
-                        Image(systemName: "checkmark.circle")
-                    } else {
-                        Image(systemName: "circle")
+            switch currentState {
+            case .WaitingForDevices:
+                Text("Scan the following QR code to join keygen session")
+                Image(uiImage: self.getQrImage(size:100))
+                    .resizable()
+                    .scaledToFit()
+                    .padding()
+                Text("Available devices")
+                List(peersFound, id: \.self, selection: $selections) { peer in
+                    HStack {
+                        if selections.contains(peer) {
+                            Image(systemName: "checkmark.circle")
+                        } else {
+                            Image(systemName: "circle")
+                        }
+                        Text(peer)
                     }
-                    Text(peer)
-                }
-                .onTapGesture {
-                    if selections.contains(peer) {
-                        selections.remove(peer)
-                    } else {
-                        selections.insert(peer)
+                    .onTapGesture {
+                        if selections.contains(peer) {
+                            selections.remove(peer)
+                        } else {
+                            selections.insert(peer)
+                        }
                     }
                 }
+                Button("Create Wallet >") {
+                    startKeygen(allParticipants: selections.map{$0})
+                    self.currentState = .Keygen
+                    self.discoverying = false
+                }
+                .disabled(selections.count < 3)
+            case .Keygen:
+                KeygenView(presentationStack: $presentationStack, keygenCommittee: selections.map{$0}, mediatorURL: serverAddr, sessionID: self.sessionID)
             }
-            Button("Create Wallet >") {
-                
-            }
-            .disabled(selections.count != 2)
+            
         }
         .task {
+            self.mediator.start()
+            logger.info("mediator server started")
+            startSession()
             Task{
                 repeat{
                     self.getParticipants()
                     try await Task.sleep(nanoseconds: 1_000_000_000) // wait for a second to continue
                 }while(self.discoverying)
             }
-        }
-        .onAppear(){ // start the mediator server
-            self.mediator.start()
-            logger.info("mediator server started")
-            startSession()
         }
         .onDisappear(){
             logger.info("mediator server stopped")
@@ -117,7 +129,39 @@ struct PeerDiscoveryView: View {
             logger.info("start session successfully.")
         }.resume()
     }
-    
+    // this method need to send a request to mediator , so all parties will start keygen soon after
+    private func startKeygen(allParticipants:[String]) {
+        let urlString = "\(self.serverAddr)/start/\(self.sessionID)"
+        logger.debug("url:\(urlString)")
+        let url = URL(string: urlString)
+        guard let url else{
+            logger.error("URL can't be construct from: \(urlString)")
+            return
+        }
+        var req = URLRequest(url: url)
+        req.httpMethod = "POST"
+        req.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        let body = allParticipants
+        do{
+            let jsonEncode = JSONEncoder()
+            let encodedBody = try jsonEncode.encode(body)
+            req.httpBody = encodedBody
+        } catch {
+            logger.error("fail to encode body into json string,\(error)")
+            return
+        }
+        URLSession.shared.dataTask(with: req){data,resp,err in
+            if let err {
+                logger.error("fail to start session,error:\(err)")
+                return
+            }
+            guard let resp = resp as? HTTPURLResponse, (200...299).contains(resp.statusCode) else {
+                logger.error("invalid response code")
+                return
+            }
+            logger.info("keygen start successfully.")
+        }.resume()
+    }
     private func getParticipants() {
         let urlString = "\(self.serverAddr)/\(self.sessionID)"
         logger.debug("url:\(urlString)")
@@ -157,6 +201,8 @@ struct PeerDiscoveryView: View {
         }.resume()
     }
 }
+
+
 
 #Preview {
     PeerDiscoveryView(presentationStack: .constant([]))

@@ -2,6 +2,7 @@ import Swifter
 import Network
 import Foundation
 import OSLog
+import CryptoKit
 
 public final class Mediator {
     private let logger = Logger(subsystem: "Mediator", category: "communication")
@@ -30,6 +31,9 @@ public final class Mediator {
         self.server.POST["/message/:sessionID"] = self.sendMessage
         // GET all messages for a specific session and participant
         self.server.GET["/message/:sessionID/:participantKey"] = self.getMessages
+        self.server.GET["/message/:sessionID/:participantKey/all"] = self.getAllMessages
+        // POST/GET , to notifiy all parties to start keygen/keysign
+        self.server["/start/:sessionID"] = self.startKeygenOrKeysign
     }
     
     // start the server
@@ -50,6 +54,37 @@ public final class Mediator {
     public func stop() {
         self.server.stop()
         self.cache.removeAllObjects()
+    }
+    
+    private func startKeygenOrKeysign(req: HttpRequest) -> HttpResponse {
+        guard let sessionID = req.params[":sessionID"] else {
+            return HttpResponse.badRequest(.text("sessionID is empty"))
+        }
+        let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
+        let key = "session-\(cleanSessionID)-start" as NSString
+        logger.debug("request session id is: \(cleanSessionID)")
+        switch req.method{
+        case "POST":
+            do{
+                let decoder = JSONDecoder()
+                let p = try decoder.decode([String].self, from: Data(req.body))
+                self.cache.setObject(Session(SessionID: cleanSessionID, Participants: p), forKey: key)
+            }catch{
+                logger.error("fail to start keygen/keysign,error:\(error.localizedDescription)")
+                return HttpResponse.badRequest(.none)
+            }
+            
+            return HttpResponse.ok(.text(""))
+        case "GET":
+            guard let cachedSession = self.cache.object(forKey: key) as? Session else{
+                logger.debug("session didn't start, can't find key:\(key)")
+                return HttpResponse.notFound
+            }
+            return HttpResponse.ok(.json(cachedSession.Participants))
+          
+        default:
+            return HttpResponse.notAcceptable
+        }
     }
     
     private func sendMessage(req: HttpRequest) -> HttpResponse {
@@ -88,7 +123,42 @@ public final class Mediator {
         let cleanParticipantKey = participantID.trimmingCharacters(in: .whitespacesAndNewlines)
         let key = "\(cleanSessionID)-\(cleanParticipantKey)" as NSString
         guard let cachedValue = self.cache.object(forKey: key) as? cacheItem else {
-            logger.error("cached object can't be retrieved")
+            return HttpResponse.notFound
+        }
+        let encoder = JSONEncoder()
+        do {
+            var messages = [Message]()
+            for m in cachedValue.messages {
+                let hexValue = MD5(string: m.body)
+                let cacheKey = "\(cleanSessionID)-\(cleanParticipantKey)-\(hexValue)" as NSString
+                logger.debug("cache key: \(cacheKey)")
+                if self.cache.object(forKey: cacheKey) is NSString {
+                    // message has been passed to client already
+                    logger.debug("\(cacheKey) message has been passed to client, ignore")
+                    continue
+                }
+                self.cache.setObject(cacheKey, forKey: cacheKey)
+                messages.append(m)
+            }
+            
+            let result = try encoder.encode(messages)
+            return HttpResponse.ok(.data(result, contentType: "application/json"))
+        } catch {
+            logger.error("fail to encode object to json,error:\(error)")
+            return HttpResponse.internalServerError
+        }
+    }
+    private func getAllMessages(req: HttpRequest) -> HttpResponse {
+        guard let sessionID = req.params[":sessionID"] else {
+            return HttpResponse.badRequest(.text("sessionID is empty"))
+        }
+        guard let participantID = req.params[":participantKey"] else {
+            return HttpResponse.badRequest(.text("participantKey is empty"))
+        }
+        let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
+        let cleanParticipantKey = participantID.trimmingCharacters(in: .whitespacesAndNewlines)
+        let key = "\(cleanSessionID)-\(cleanParticipantKey)" as NSString
+        guard let cachedValue = self.cache.object(forKey: key) as? cacheItem else {
             return HttpResponse.notFound
         }
         let encoder = JSONEncoder()
@@ -137,6 +207,8 @@ public final class Mediator {
         let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
         let key = "session-\(cleanSessionID)" as NSString
         self.cache.removeObject(forKey: key)
+        let keyStart = NSString(string:"\(key)-start")
+        self.cache.removeObject(forKey: keyStart)
         return HttpResponse.ok(.text(""))
     }
     
@@ -149,14 +221,19 @@ public final class Mediator {
         let key = "session-\(cleanSessionID)" as NSString
         
         if let cachedValue = self.cache.object(forKey: key) as? Session {
-            logger.info("session obj : \(cachedValue.SessionID), participants: \(cachedValue.Participants)")
+            logger.debug("session obj : \(cachedValue.SessionID), participants: \(cachedValue.Participants)")
             return HttpResponse.ok(.json(cachedValue.Participants))
         } else {
             logger.error("cached object not found")
             return HttpResponse.notFound
         }
     }
-    
+    private func MD5(string: String) -> String {
+        let digest = Insecure.MD5.hash(data: Data(string.utf8))
+        return digest.map {
+            String(format: "%02hhx", $0)
+        }.joined()
+    }
     deinit {
         self.cache.removeAllObjects() // clean up cache
     }
