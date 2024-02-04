@@ -8,15 +8,22 @@ import SwiftData
 @Model
 final class Vault : ObservableObject,Identifiable{
     @Attribute(.unique) let name: String
-    let pubkey: String
-    let signers: [String]
-    let createdAt: Date
+    var signers: [String] = []
+    var createdAt: Date = Date.now
+    var pubKeyECDSA: String = ""
+    var pubKeyEdDSA: String = ""
+    var keyshares: [KeyShare] = []
     
-    init(name: String, pubkey: String, signers: [String], createdAt: Date) {
+    init(name: String){
         self.name = name
-        self.pubkey = pubkey
+    }
+    
+    init(name: String, signers: [String], pubKeyECDSA: String, pubKeyEdDSA: String) {
+        self.name = name
         self.signers = signers
-        self.createdAt = createdAt
+        self.createdAt = Date.now
+        self.pubKeyECDSA = pubKeyECDSA
+        self.pubKeyEdDSA = pubKeyEdDSA
     }
     
     static func predicate(searchName: String) ->Predicate<Vault>{
@@ -26,11 +33,21 @@ final class Vault : ObservableObject,Identifiable{
     }
 }
 
+@Model
+final class KeyShare: ObservableObject,Identifiable{
+    init(pubkey: String, keyshare: String) {
+        self.pubkey = pubkey
+        self.keyshare = keyshare
+    }
+    @Attribute(.unique) let pubkey: String
+    let keyshare: String
+}
+
 // define some functions used for test
 extension Vault{
     static func loadTestData(modelContext: ModelContext) {
-        modelContext.insert(Vault(name: "test", pubkey: "test pubkey", signers:["A","B","C"], createdAt: Date.now))
-        modelContext.insert(Vault(name: "test 1", pubkey: "test 1 pubkey", signers:["C","D","E"], createdAt: Date.now))
+        modelContext.insert(Vault(name: "test", signers:["A","B","C"],  pubKeyECDSA: "ECDSA PubKey", pubKeyEdDSA: "EdDSA PubKey"))
+        modelContext.insert(Vault(name: "test 1", signers:["C","D","E"], pubKeyECDSA: "ECDSA PubKey", pubKeyEdDSA: "EdDSA PubKey"))
     }
     
     static var sampleVaults: () throws -> ModelContainer =  {

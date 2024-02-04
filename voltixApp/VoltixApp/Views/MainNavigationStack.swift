@@ -11,7 +11,7 @@ import SwiftData
 struct MainNavigationStack: View {
     @Environment(\.modelContext) private var modelContext
     
-    @EnvironmentObject var appState:ApplicationState
+    @EnvironmentObject var appState: ApplicationState
     // Push/pop onto this array to control presentation overlay globally
     @State private var presentationStack: [CurrentScreen] = [.welcome]
     
@@ -31,7 +31,11 @@ struct MainNavigationStack: View {
                     case .peerDiscovery:
                         PeerDiscoveryView(presentationStack: $presentationStack)
                     case .finishedTSSKeygen:
-                        FinishedTSSKeygenView(presentationStack: $presentationStack)
+                        if let currentVault = appState.currentVault {
+                            FinishedTSSKeygenView(presentationStack: $presentationStack,vault: currentVault)
+                        } else {
+                            VaultSelectionView(presentationStack: $presentationStack)
+                        }
                     case .vaultAssets:
                         VaultAssetsView(presentationStack: $presentationStack)
                     case .vaultDetailAsset(let asset):

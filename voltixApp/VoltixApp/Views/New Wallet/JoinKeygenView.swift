@@ -77,7 +77,7 @@ struct JoinKeygenView: View {
                     } else {
                         Text("Mediator server url is empty or session id is empty")
                     }
-                }
+                }.navigationBarBackButtonHidden(true)
             }
             
         }.onAppear(){

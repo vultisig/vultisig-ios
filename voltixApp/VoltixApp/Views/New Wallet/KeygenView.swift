@@ -8,9 +8,11 @@ import Tss
 import OSLog
 import Mediator
 import Foundation
+import SwiftData
 
 private let logger = Logger(subsystem: "keygen", category: "tss")
 struct KeygenView: View {
+    @Environment(\.modelContext) private var context
     enum KeygenStatus{
         case CreatingInstance
         case KeygenECDSA
@@ -18,6 +20,7 @@ struct KeygenView: View {
         case KeygenFinished
         case KeygenFailed
     }
+    
     @State private var currentStatus = KeygenStatus.CreatingInstance
     @Binding var presentationStack: Array<CurrentScreen>
     let keygenCommittee: [String]
@@ -32,8 +35,9 @@ struct KeygenView: View {
     @State private var tssService: TssServiceImpl? = nil
     @State private var failToCreateTssInstance = false
     @State private var tssMessenger: TssMessengerImpl? = nil
-    private let stateAccess = LocalStateAccessorImpl()
+    @State private var stateAccess: LocalStateAccessorImpl? = nil
     @State private var keygenError: String? = nil
+    @State private var vault = Vault(name: "new vault")
     
     var body: some View {
         VStack{
@@ -75,16 +79,19 @@ struct KeygenView: View {
                     }
                 }
             case .KeygenFinished:
-                Text("keygen finished")
-                Text("ECDSA pubkey:\(pubKeyECDSA ?? "")")
-                Text("EdDSA pubkey:\(pubKeyEdDSA ?? "")")
+                FinishedTSSKeygenView(presentationStack: $presentationStack, vault: self.vault)                .onAppear(){
+                    // add the vault to modelcontext
+                    self.context.insert(self.vault)
+                }
             case .KeygenFailed:
                 Text("Sorry keygen failed, you can retry it,error:\(keygenError ?? "")")
+                    .navigationBarBackButtonHidden(false)
             }
         }.task {
             Task.detached(priority: .high) {
                 // Create keygen instance, it takes time to generate the preparams
                 tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID)
+                stateAccess = LocalStateAccessorImpl(vault: self.vault)
                 var err: NSError?
                 self.tssService = TssNewService(tssMessenger, stateAccess, &err)
                 if let err {
@@ -111,6 +118,7 @@ struct KeygenView: View {
                     if let tssService = self.tssService {
                         let ecdsaResp = try tssService.keygenECDSA(keygenReq)
                         pubKeyECDSA = ecdsaResp.pubKey
+                        self.vault.pubKeyECDSA = ecdsaResp.pubKey
                     }
                 } catch {
                     logger.error("Failed to create ECDSA key, error: \(error.localizedDescription)")
@@ -127,6 +135,7 @@ struct KeygenView: View {
                     if let tssService = self.tssService {
                         let eddsaResp = try tssService.keygenEDDSA(keygenReq)
                         pubKeyEdDSA = eddsaResp.pubKey
+                        self.vault.pubKeyEdDSA = eddsaResp.pubKey
                     }
                 } catch {
                     logger.error("Failed to create EdDSA key, error: \(error.localizedDescription)")
@@ -244,12 +253,40 @@ struct KeygenView: View {
     }
     
     final class LocalStateAccessorImpl : NSObject, TssLocalStateAccessorProtocol {
+        struct RuntimeError : LocalizedError{
+            let description: String
+            init(_ description: String) {
+                self.description = description
+            }
+            var errorDescription: String? {
+                description
+            }
+        }
+        let vault :Vault
+        init(vault: Vault) {
+            self.vault = vault
+        }
+        
         func getLocalState(_ pubKey: String?, error: NSErrorPointer) -> String {
+            guard let pubKey else {
+                return ""
+            }
+            for share in self.vault.keyshares {
+                if share.pubkey == pubKey {
+                    return share.keyshare
+                }
+            }
             return ""
         }
         
         func saveLocalState(_ pubkey: String?, localState: String?) throws {
-            
+            guard let pubkey else{
+                throw RuntimeError("pubkey is nil")
+            }
+            guard let localState else {
+                throw RuntimeError("localstate is nil")
+            }
+            vault.keyshares.append(KeyShare(pubkey: pubkey, keyshare: localState))
         }
     }
 }
