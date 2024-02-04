@@ -39,6 +39,7 @@ struct KeygenView: View {
     @State private var keygenError: String? = nil
     @State private var vault = Vault(name: "new vault")
     @State var vaultName :String
+    @State var pollingInboundMessages = true
     
     var body: some View {
         VStack{
@@ -90,10 +91,14 @@ struct KeygenView: View {
                     self.vault.name = vaultName
                     // add the vault to modelcontext
                     self.context.insert(self.vault)
+                    pollingInboundMessages = false
                 }
             case .KeygenFailed:
                 Text("Sorry keygen failed, you can retry it,error:\(keygenError ?? "")")
                     .navigationBarBackButtonHidden(false)
+                    .onAppear(){
+                        pollingInboundMessages = false
+                    }
             }
         }.task {
             Task.detached(priority: .high) {
@@ -112,9 +117,10 @@ struct KeygenView: View {
                 // Keep polling for messages
                 Task {
                     repeat {
+                        if Task.isCancelled {return }
                         pollInboundMessages()
                         try await Task.sleep(nanoseconds: 1_000_000_000) // Back off 1s
-                    } while self.tssService != nil
+                    } while self.tssService != nil && self.pollingInboundMessages
                 }
                 
                 self.currentStatus = .KeygenECDSA

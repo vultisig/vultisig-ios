@@ -28,7 +28,7 @@ struct FinishedTSSKeygenView: View {
            
             Button("Done >") {
                 appState.currentVault = vault
-                presentationStack.removeAll()  // Show Vault
+                presentationStack = [.vaultSelection]
             }
             
         }.onAppear(){
