@@ -38,6 +38,7 @@ struct KeygenView: View {
     @State private var stateAccess: LocalStateAccessorImpl? = nil
     @State private var keygenError: String? = nil
     @State private var vault = Vault(name: "new vault")
+    @State var vaultName :String
     
     var body: some View {
         VStack{
@@ -79,7 +80,14 @@ struct KeygenView: View {
                     }
                 }
             case .KeygenFinished:
-                FinishedTSSKeygenView(presentationStack: $presentationStack, vault: self.vault)                .onAppear(){
+                FinishedTSSKeygenView(presentationStack: $presentationStack, vault: self.vault).onAppear(){
+                    if let stateAccess {
+                        for item in stateAccess.keyshares {
+                            logger.info("keyshare:\(item.pubkey)")
+                        }
+                        self.vault.keyshares = stateAccess.keyshares
+                    }
+                    self.vault.name = vaultName
                     // add the vault to modelcontext
                     self.context.insert(self.vault)
                 }
@@ -89,6 +97,7 @@ struct KeygenView: View {
             }
         }.task {
             Task.detached(priority: .high) {
+                self.vault.signers.append(contentsOf: keygenCommittee)
                 // Create keygen instance, it takes time to generate the preparams
                 tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID)
                 stateAccess = LocalStateAccessorImpl(vault: self.vault)
@@ -252,7 +261,7 @@ struct KeygenView: View {
         }
     }
     
-    final class LocalStateAccessorImpl : NSObject, TssLocalStateAccessorProtocol {
+    final class LocalStateAccessorImpl : NSObject, TssLocalStateAccessorProtocol , ObservableObject {
         struct RuntimeError : LocalizedError{
             let description: String
             init(_ description: String) {
@@ -262,7 +271,8 @@ struct KeygenView: View {
                 description
             }
         }
-        let vault :Vault
+        @Published var keyshares =  [KeyShare]()
+        private var vault :Vault
         init(vault: Vault) {
             self.vault = vault
         }
@@ -286,10 +296,13 @@ struct KeygenView: View {
             guard let localState else {
                 throw RuntimeError("localstate is nil")
             }
-            vault.keyshares.append(KeyShare(pubkey: pubkey, keyshare: localState))
+            DispatchQueue.main.async {
+                self.keyshares.append(KeyShare(pubkey: pubkey, keyshare: localState))
+            }
+            
         }
     }
 }
 #Preview ("keygen") {
-    KeygenView(presentationStack: .constant([]), keygenCommittee: [], mediatorURL:"", sessionID: "")
+    KeygenView(presentationStack: .constant([]), keygenCommittee: [], mediatorURL:"", sessionID: "",vaultName: "Vault #1")
 }

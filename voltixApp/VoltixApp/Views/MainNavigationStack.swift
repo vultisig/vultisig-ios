@@ -27,7 +27,7 @@ struct MainNavigationStack: View {
                     case .importWallet:
                         ImportWalletView(presentationStack: $presentationStack)
                     case .newWalletInstructions:
-                        NewWalletInstructions(presentationStack: $presentationStack)
+                        NewWalletInstructions(presentationStack: $presentationStack,vaultName: "new vault")
                     case .peerDiscovery:
                         PeerDiscoveryView(presentationStack: $presentationStack)
                     case .finishedTSSKeygen:
@@ -65,7 +65,7 @@ struct MainNavigationStack: View {
                     case .vaultSelection:
                         VaultSelectionView(presentationStack: $presentationStack)
                     case .joinKeygen:
-                        JoinKeygenView(presentationStack: $presentationStack)
+                        JoinKeygenView(presentationStack: $presentationStack,vaultName: "")
                     }
                 }
             .onAppear(perform:{

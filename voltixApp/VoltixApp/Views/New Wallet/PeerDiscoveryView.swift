@@ -25,11 +25,16 @@ struct PeerDiscoveryView: View {
     private let sessionID = UUID().uuidString
     @State private var discoverying = true
     @State private var currentState = PeerDiscoveryStatus.WaitingForDevices
+    @State var vaultName = "vault #1"
     
     var body: some View {
         VStack {
             switch currentState {
             case .WaitingForDevices:
+                VStack(){
+                    Text("Enter new vault name")
+                    TextField("New vault name",text: $vaultName).textFieldStyle(.roundedBorder)
+                }
                 Text("Scan the following QR code to join keygen session")
                 Image(uiImage: self.getQrImage(size:100))
                     .resizable()
@@ -56,7 +61,7 @@ struct PeerDiscoveryView: View {
                 }
                 .disabled(selections.count < 3)
             case .Keygen:
-                KeygenView(presentationStack: $presentationStack, keygenCommittee: selections.map{$0}, mediatorURL: serverAddr, sessionID: self.sessionID)
+                KeygenView(presentationStack: $presentationStack, keygenCommittee: selections.map{$0}, mediatorURL: serverAddr, sessionID: self.sessionID,vaultName: vaultName)
             }
             
         }

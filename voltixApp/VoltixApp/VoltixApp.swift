@@ -17,6 +17,7 @@ struct VoltixApp: App {
             Vault.self,
             Coin.self,
             Chain.self,
+            KeyShare.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

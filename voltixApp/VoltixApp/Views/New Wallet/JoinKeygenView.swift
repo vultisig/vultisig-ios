@@ -23,13 +23,18 @@ struct JoinKeygenView: View {
     private let netService = NetService(domain: "local.", type: "_http._tcp.", name: "VoltixApp")
     @State private var currentStatus = JoinKeygenStatus.DiscoverService
     @State private var keygenCommittee =  [String]()
+    @State var vaultName :String
     
     var body: some View {
         VStack{
+            VStack(alignment:.center){
+                Text("Enter new vault name")
+                TextField("New vault name",text: $vaultName).textFieldStyle(.roundedBorder)
+            }.padding(.top,20)
             switch currentStatus {
             case .DiscoverSessionID:
                 Text("Scan the barcode on another VoltixApp")
-                Button("Scan"){
+                Button("Scan",systemImage: "qrcode.viewfinder"){
                     isShowingScanner = true
                 }
                 .sheet(isPresented: $isShowingScanner, content: {
@@ -73,7 +78,7 @@ struct JoinKeygenView: View {
                 HStack{
                     if serviceDelegate.serverUrl != nil && self.qrCodeResult != nil {
                         // at here we already know these two optional has values
-                        KeygenView(presentationStack: $presentationStack, keygenCommittee: keygenCommittee, mediatorURL: serviceDelegate.serverUrl ?? "", sessionID: self.qrCodeResult ?? "")
+                        KeygenView(presentationStack: $presentationStack, keygenCommittee: keygenCommittee, mediatorURL: serviceDelegate.serverUrl ?? "", sessionID: self.qrCodeResult ?? "",vaultName: vaultName)
                     } else {
                         Text("Mediator server url is empty or session id is empty")
                     }
@@ -217,5 +222,5 @@ final class ServiceDelegate : NSObject , NetServiceDelegate , ObservableObject {
 }
 
 #Preview {
-    JoinKeygenView(presentationStack: .constant([]))
+    JoinKeygenView(presentationStack: .constant([]),vaultName: "Vault #1")
 }

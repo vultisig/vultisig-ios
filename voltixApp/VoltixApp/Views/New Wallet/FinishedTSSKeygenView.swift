@@ -19,8 +19,11 @@ struct FinishedTSSKeygenView: View {
     var body: some View {
         VStack {
             Text("vault: \(vault.name)")
+            Text("ECDSA PubKey: \(vault.pubKeyECDSA)")
+            Text("EdDSA PubKey: \(vault.pubKeyEdDSA)")
+            
             Button("Backup local share"){
-                
+                // TODO , genereate a QRCode and let user to print it out
             }
            
             Button("Done >") {
@@ -28,6 +31,10 @@ struct FinishedTSSKeygenView: View {
                 presentationStack.removeAll()  // Show Vault
             }
             
+        }.onAppear(){
+            for item in vault.keyshares {
+                print("pubkey:\(item.pubkey) , share:\(item.keyshare)")
+            }
         }
         .navigationBarBackButtonHidden(true)
     }
