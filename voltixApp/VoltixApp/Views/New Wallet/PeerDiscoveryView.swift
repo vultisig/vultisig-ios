@@ -3,20 +3,22 @@
 //  VoltixApp
 //
 
-import SwiftUI
-import Mediator
-import OSLog
 import CoreImage
 import CoreImage.CIFilterBuiltins
+import Mediator
+import OSLog
+import SwiftUI
 
 private let logger = Logger(subsystem: "peers-discory", category: "communication")
 struct PeerDiscoveryView: View {
-    enum PeerDiscoveryStatus{
+    enum PeerDiscoveryStatus {
         case WaitingForDevices
         case Keygen
+        case Failure
     }
     
-    @Binding var presentationStack: Array<CurrentScreen>
+    @Binding var presentationStack: [CurrentScreen]
+    @EnvironmentObject var appState: ApplicationState
     @State private var peersFound = [String]()
     @State private var selections = Set<String>()
     private let mediator = Mediator.shared
@@ -25,18 +27,14 @@ struct PeerDiscoveryView: View {
     private let sessionID = UUID().uuidString
     @State private var discoverying = true
     @State private var currentState = PeerDiscoveryStatus.WaitingForDevices
-    @State var vaultName = "vault #1"
+    @State private var localPartyID = ""
     
     var body: some View {
         VStack {
             switch currentState {
             case .WaitingForDevices:
-                VStack(){
-                    Text("Enter new vault name")
-                    TextField("New vault name",text: $vaultName).textFieldStyle(.roundedBorder)
-                }
                 Text("Scan the following QR code to join keygen session")
-                Image(uiImage: self.getQrImage(size:100))
+                Image(uiImage: self.getQrImage(size: 100))
                     .resizable()
                     .scaledToFit()
                     .padding()
@@ -55,28 +53,41 @@ struct PeerDiscoveryView: View {
                     }
                 }
                 Button("Create Wallet >") {
-                    startKeygen(allParticipants: selections.map{$0})
+                    startKeygen(allParticipants: selections.map { $0 })
                     self.currentState = .Keygen
                     self.discoverying = false
                 }
                 .disabled(selections.count < 3)
             case .Keygen:
-                KeygenView(presentationStack: $presentationStack, keygenCommittee: selections.map{$0}, mediatorURL: serverAddr, sessionID: self.sessionID,vaultName: vaultName)
+                KeygenView(presentationStack: $presentationStack, keygenCommittee: selections.map { $0 }, mediatorURL: serverAddr, sessionID: self.sessionID, vaultName: appState.creatingVault?.name ?? "")
+            case .Failure:
+                Text("Something is wrong")
             }
-            
         }
         .task {
             self.mediator.start()
             logger.info("mediator server started")
             startSession()
-            Task{
-                repeat{
+            Task {
+                repeat {
                     self.getParticipants()
                     try await Task.sleep(nanoseconds: 1_000_000_000) // wait for a second to continue
-                }while(self.discoverying)
+                } while self.discoverying
+            }
+        }.onAppear {
+            // by this step , creatingVault should be available already
+            if appState.creatingVault == nil {
+                self.currentState = .Failure
+            }
+            
+            if let localPartyID = appState.creatingVault?.localPartyID, !localPartyID.isEmpty {
+                self.localPartyID = localPartyID
+            } else {
+                self.localPartyID = UIDevice.current.name
+                appState.creatingVault?.localPartyID = self.localPartyID
             }
         }
-        .onDisappear(){
+        .onDisappear {
             logger.info("mediator server stopped")
             self.discoverying = false
             self.mediator.stop()
@@ -106,7 +117,6 @@ struct PeerDiscoveryView: View {
     }
     
     private func startSession() {
-        let deviceName = UIDevice.current.name
         let urlString = "\(self.serverAddr)/\(self.sessionID)"
         logger.debug("url:\(urlString)")
         
@@ -119,7 +129,7 @@ struct PeerDiscoveryView: View {
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let body = [deviceName]
+        let body = [self.localPartyID]
         
         do {
             let jsonEncoder = JSONEncoder()
@@ -129,7 +139,7 @@ struct PeerDiscoveryView: View {
             return
         }
         
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        let task = URLSession.shared.dataTask(with: request) { _, response, error in
             if let error = error {
                 logger.error("Failed to start session, error: \(error)")
                 return
@@ -145,6 +155,7 @@ struct PeerDiscoveryView: View {
         
         task.resume()
     }
+
     private func startKeygen(allParticipants: [String]) {
         let urlString = "\(self.serverAddr)/start/\(self.sessionID)"
         logger.debug("url:\(urlString)")
@@ -166,7 +177,7 @@ struct PeerDiscoveryView: View {
             return
         }
         
-        URLSession.shared.dataTask(with: request) { data, response, error in
+        URLSession.shared.dataTask(with: request) { _, response, error in
             if let error = error {
                 logger.error("Failed to start session, error: \(error)")
                 return
@@ -180,6 +191,7 @@ struct PeerDiscoveryView: View {
             logger.info("Keygen started successfully.")
         }.resume()
     }
+
     private func getParticipants() {
         let urlString = "\(self.serverAddr)/\(self.sessionID)"
         logger.debug("url:\(urlString)")
@@ -224,8 +236,6 @@ struct PeerDiscoveryView: View {
         }.resume()
     }
 }
-
-
 
 #Preview {
     PeerDiscoveryView(presentationStack: .constant([]))

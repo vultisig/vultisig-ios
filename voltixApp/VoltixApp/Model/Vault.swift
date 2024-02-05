@@ -13,18 +13,22 @@ final class Vault : ObservableObject{
     var pubKeyECDSA: String = ""
     var pubKeyEdDSA: String = ""
     var keyshares = [KeyShare]()
+    // it is important to record the localPartID of the vault, when the vault is created, the local party id has been record as part of it's local keyshare , and keygen committee
+    // thus , when user change their device name , or if they lost the original device , and restore the keyshare to a new device , keysign can still work
+    var localPartyID: String = ""
     
     init(name: String){
         self.name = name
     }
     
-    init(name: String, signers: [String], pubKeyECDSA: String, pubKeyEdDSA: String, keyshares: [KeyShare]) {
+    init(name: String, signers: [String], pubKeyECDSA: String, pubKeyEdDSA: String, keyshares: [KeyShare], localPartyID: String) {
         self.name = name
         self.signers = signers
         self.createdAt = Date.now
         self.pubKeyECDSA = pubKeyECDSA
         self.pubKeyEdDSA = pubKeyEdDSA
         self.keyshares = keyshares
+        self.localPartyID = localPartyID
     }
     
     func addKeyshare(pubkey: String, keyshare:String) {
@@ -52,8 +56,8 @@ final class KeyShare {
 // define some functions used for test
 extension Vault{
     static func loadTestData(modelContext: ModelContext) {
-        modelContext.insert(Vault(name: "test", signers:["A","B","C"],  pubKeyECDSA: "ECDSA PubKey", pubKeyEdDSA: "EdDSA PubKey",keyshares: [KeyShare]()))
-        modelContext.insert(Vault(name: "test 1", signers:["C","D","E"], pubKeyECDSA: "ECDSA PubKey", pubKeyEdDSA: "EdDSA PubKey",keyshares: [KeyShare]()))
+        modelContext.insert(Vault(name: "test", signers:["A","B","C"],  pubKeyECDSA: "ECDSA PubKey", pubKeyEdDSA: "EdDSA PubKey",keyshares: [KeyShare](), localPartyID: "first"))
+        modelContext.insert(Vault(name: "test 1", signers:["C","D","E"], pubKeyECDSA: "ECDSA PubKey", pubKeyEdDSA: "EdDSA PubKey",keyshares: [KeyShare](), localPartyID: "second"))
     }
     
     static var sampleVaults: () throws -> ModelContainer =  {
