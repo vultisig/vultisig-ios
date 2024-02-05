@@ -22,7 +22,7 @@ struct VaultAssetsView: View {
         }
         
         Button("Join keysign stuff"){
-            presentationStack.append()
+            presentationStack.append(.JoinKeysign)
         }
     }
 }
