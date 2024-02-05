@@ -19,12 +19,14 @@ public struct Message: Codable {
     public let from: String
     public let to: [String]
     public let body: String
+    public let hash: String
     
-    public init(session_id: String, from: String, to: [String], body: String) {
+    public init(session_id: String, from: String, to: [String], body: String,hash: String) {
         self.session_id = session_id
         self.from = from
         self.to = to
         self.body = body
+        self.hash = hash
     }
 }
 

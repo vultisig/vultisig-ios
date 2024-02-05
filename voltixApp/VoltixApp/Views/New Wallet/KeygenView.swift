@@ -3,17 +3,18 @@
 //  VoltixApp
 //
 
+import CryptoKit
+import Foundation
+import Mediator
+import OSLog
+import SwiftData
 import SwiftUI
 import Tss
-import OSLog
-import Mediator
-import Foundation
-import SwiftData
 
 private let logger = Logger(subsystem: "keygen", category: "tss")
 struct KeygenView: View {
     @Environment(\.modelContext) private var context
-    enum KeygenStatus{
+    enum KeygenStatus {
         case CreatingInstance
         case KeygenECDSA
         case KeygenEdDSA
@@ -22,7 +23,7 @@ struct KeygenView: View {
     }
     
     @State private var currentStatus = KeygenStatus.CreatingInstance
-    @Binding var presentationStack: Array<CurrentScreen>
+    @Binding var presentationStack: [CurrentScreen]
     let keygenCommittee: [String]
     let mediatorURL: String
     let sessionID: String
@@ -38,14 +39,14 @@ struct KeygenView: View {
     @State private var stateAccess: LocalStateAccessorImpl? = nil
     @State private var keygenError: String? = nil
     @State private var vault = Vault(name: "new vault")
-    @State var vaultName :String
+    @State var vaultName: String
     @State var pollingInboundMessages = true
     
     var body: some View {
-        VStack{
-            switch currentStatus {
+        VStack {
+            switch self.currentStatus {
             case .CreatingInstance:
-                HStack{
+                HStack {
                     Text("creating tss instance")
                     ProgressView()
                         .progressViewStyle(.circular)
@@ -53,86 +54,86 @@ struct KeygenView: View {
                         .padding(2)
                 }
             case .KeygenECDSA:
-                HStack{
-                    if keygenInProgressECDSA {
+                HStack {
+                    if self.keygenInProgressECDSA {
                         Text("Generating ECDSA key")
                         ProgressView()
                             .progressViewStyle(.circular)
                             .tint(.blue)
                             .padding(2)
                     }
-                    if pubKeyECDSA != nil  {
-                        Text("ECDSA pubkey:\(pubKeyECDSA ?? "")")
-                        Image(systemName: "checkmark").foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
+                    if self.pubKeyECDSA != nil {
+                        Text("ECDSA pubkey:\(self.pubKeyECDSA ?? "")")
+                        Image(systemName: "checkmark").foregroundColor(/*@START_MENU_TOKEN@*/ .blue/*@END_MENU_TOKEN@*/)
                     }
                 }
             case .KeygenEdDSA:
-                HStack{
-                    if keygenInProgressEDDSA {
+                HStack {
+                    if self.keygenInProgressEDDSA {
                         Text("Generating EdDSA key")
                         ProgressView()
                             .progressViewStyle(.circular)
                             .tint(.blue)
                             .padding(2)
                     }
-                    if pubKeyEdDSA != nil  {
-                        Text("EdDSA pubkey:\(pubKeyEdDSA ?? "")")
-                        Image(systemName: "checkmark").foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/)
+                    if self.pubKeyEdDSA != nil {
+                        Text("EdDSA pubkey:\(self.pubKeyEdDSA ?? "")")
+                        Image(systemName: "checkmark").foregroundColor(/*@START_MENU_TOKEN@*/ .blue/*@END_MENU_TOKEN@*/)
                     }
                 }
             case .KeygenFinished:
-                FinishedTSSKeygenView(presentationStack: $presentationStack, vault: self.vault).onAppear(){
+                FinishedTSSKeygenView(presentationStack: self.$presentationStack, vault: self.vault).onAppear {
                     if let stateAccess {
                         for item in stateAccess.keyshares {
                             logger.info("keyshare:\(item.pubkey)")
                         }
                         self.vault.keyshares = stateAccess.keyshares
                     }
-                    self.vault.name = vaultName
+                    self.vault.name = self.vaultName
                     // add the vault to modelcontext
                     self.context.insert(self.vault)
-                    pollingInboundMessages = false
+                    self.pollingInboundMessages = false
                 }
             case .KeygenFailed:
-                Text("Sorry keygen failed, you can retry it,error:\(keygenError ?? "")")
+                Text("Sorry keygen failed, you can retry it,error:\(self.keygenError ?? "")")
                     .navigationBarBackButtonHidden(false)
-                    .onAppear(){
-                        pollingInboundMessages = false
+                    .onAppear {
+                        self.pollingInboundMessages = false
                     }
             }
         }.task {
             Task.detached(priority: .high) {
-                self.vault.signers.append(contentsOf: keygenCommittee)
+                self.vault.signers.append(contentsOf: self.keygenCommittee)
                 // Create keygen instance, it takes time to generate the preparams
-                tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID)
-                stateAccess = LocalStateAccessorImpl(vault: self.vault)
+                self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID)
+                self.stateAccess = LocalStateAccessorImpl(vault: self.vault)
                 var err: NSError?
-                self.tssService = TssNewService(tssMessenger, stateAccess, &err)
+                self.tssService = TssNewService(self.tssMessenger, self.stateAccess, &err)
                 if let err {
                     logger.error("Failed to create TSS instance, error: \(err.localizedDescription)")
-                    failToCreateTssInstance = true
+                    self.failToCreateTssInstance = true
                     return
                 }
                 
                 // Keep polling for messages
                 Task {
                     repeat {
-                        if Task.isCancelled {return }
-                        pollInboundMessages()
+                        if Task.isCancelled { return }
+                        self.pollInboundMessages()
                         try await Task.sleep(nanoseconds: 1_000_000_000) // Back off 1s
                     } while self.tssService != nil && self.pollingInboundMessages
                 }
                 
                 self.currentStatus = .KeygenECDSA
-                keygenInProgressECDSA = true
+                self.keygenInProgressECDSA = true
                 let keygenReq = TssKeygenRequest()
-                keygenReq.localPartyID = localPartyKey
-                keygenReq.allParties = keygenCommittee.joined(separator: ",")
+                keygenReq.localPartyID = self.localPartyKey
+                keygenReq.allParties = self.keygenCommittee.joined(separator: ",")
                 
                 do {
                     if let tssService = self.tssService {
                         let ecdsaResp = try tssService.keygenECDSA(keygenReq)
-                        pubKeyECDSA = ecdsaResp.pubKey
+                        self.pubKeyECDSA = ecdsaResp.pubKey
                         self.vault.pubKeyECDSA = ecdsaResp.pubKey
                     }
                 } catch {
@@ -143,13 +144,13 @@ struct KeygenView: View {
                 }
                 
                 self.currentStatus = .KeygenEdDSA
-                keygenInProgressEDDSA = true
+                self.keygenInProgressEDDSA = true
                 try await Task.sleep(nanoseconds: 1_000_000_000) // Sleep one sec to allow other parties to get in the same step
                 
                 do {
                     if let tssService = self.tssService {
                         let eddsaResp = try tssService.keygenEDDSA(keygenReq)
-                        pubKeyEdDSA = eddsaResp.pubKey
+                        self.pubKeyEdDSA = eddsaResp.pubKey
                         self.vault.pubKeyEdDSA = eddsaResp.pubKey
                     }
                 } catch {
@@ -212,7 +213,7 @@ struct KeygenView: View {
         }.resume()
     }
     
-    final class TssMessengerImpl : NSObject,TssMessengerProtocol {
+    final class TssMessengerImpl: NSObject, TssMessengerProtocol {
         let mediatorUrl: String
         let sessionID: String
         
@@ -220,7 +221,14 @@ struct KeygenView: View {
             self.mediatorUrl = mediatorUrl
             self.sessionID = sessionID
         }
-        
+
+        func getMessageBodyHash(msg: String) -> String {
+            let digest = Insecure.MD5.hash(data: Data(msg.utf8))
+            return digest.map {
+                String(format: "%02hhx", $0)
+            }.joined()
+        }
+
         func send(_ fromParty: String?, to: String?, body: String?) throws {
             guard let fromParty else {
                 logger.error("from is nil")
@@ -237,15 +245,15 @@ struct KeygenView: View {
             logger.info("from:\(fromParty),to:\(to)")
             let urlString = "\(self.mediatorUrl)/message/\(self.sessionID)"
             let url = URL(string: urlString)
-            guard let url else{
+            guard let url else {
                 logger.error("URL can't be construct from: \(urlString)")
                 return
             }
             var req = URLRequest(url: url)
             req.httpMethod = "POST"
             req.addValue("application/json", forHTTPHeaderField: "Content-Type")
-            let msg = Message(session_id: sessionID,from: fromParty, to: [to],body: body)
-            do{
+            let msg = Message(session_id: sessionID, from: fromParty, to: [to], body: body, hash: getMessageBodyHash(msg: body))
+            do {
                 let jsonEncode = JSONEncoder()
                 let encodedBody = try jsonEncode.encode(msg)
                 req.httpBody = encodedBody
@@ -253,7 +261,7 @@ struct KeygenView: View {
                 logger.error("fail to encode body into json string,\(error)")
                 return
             }
-            URLSession.shared.dataTask(with: req){data,resp,err in
+            URLSession.shared.dataTask(with: req) { _, resp, err in
                 if let err {
                     logger.error("fail to send message,error:\(err)")
                     return
@@ -267,18 +275,20 @@ struct KeygenView: View {
         }
     }
     
-    final class LocalStateAccessorImpl : NSObject, TssLocalStateAccessorProtocol , ObservableObject {
-        struct RuntimeError : LocalizedError{
+    final class LocalStateAccessorImpl: NSObject, TssLocalStateAccessorProtocol, ObservableObject {
+        struct RuntimeError: LocalizedError {
             let description: String
             init(_ description: String) {
                 self.description = description
             }
+
             var errorDescription: String? {
-                description
+                self.description
             }
         }
-        @Published var keyshares =  [KeyShare]()
-        private var vault :Vault
+
+        @Published var keyshares = [KeyShare]()
+        private var vault: Vault
         init(vault: Vault) {
             self.vault = vault
         }
@@ -296,7 +306,7 @@ struct KeygenView: View {
         }
         
         func saveLocalState(_ pubkey: String?, localState: String?) throws {
-            guard let pubkey else{
+            guard let pubkey else {
                 throw RuntimeError("pubkey is nil")
             }
             guard let localState else {
@@ -305,10 +315,10 @@ struct KeygenView: View {
             DispatchQueue.main.async {
                 self.keyshares.append(KeyShare(pubkey: pubkey, keyshare: localState))
             }
-            
         }
     }
 }
-#Preview ("keygen") {
-    KeygenView(presentationStack: .constant([]), keygenCommittee: [], mediatorURL:"", sessionID: "",vaultName: "Vault #1")
+
+#Preview("keygen") {
+    KeygenView(presentationStack: .constant([]), keygenCommittee: [], mediatorURL: "", sessionID: "", vaultName: "Vault #1")
 }

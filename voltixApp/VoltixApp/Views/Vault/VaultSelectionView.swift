@@ -25,7 +25,7 @@ struct VaultSelectionView: View {
                     }
             }
         }
-        .confirmationDialog(Text("..."), isPresented: $showingDeleteAlert,titleVisibility: .visible){
+        .confirmationDialog(Text("Delete Vault"), isPresented: $showingDeleteAlert,titleVisibility: .automatic){
             Button("Delete",role:.destructive){
                 withAnimation{
                     if let itemToDelete {
@@ -33,6 +33,8 @@ struct VaultSelectionView: View {
                     }
                 }
             }
+        } message: {
+            Text("Are you sure want to delete selected vault? \n Operation is not reversable")
         }
         .toolbar{
             ToolbarItemGroup(placement: .topBarLeading){
