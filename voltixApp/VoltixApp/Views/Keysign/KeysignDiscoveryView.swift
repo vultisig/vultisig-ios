@@ -3,8 +3,8 @@
 //  VoltixApp
 
 import Mediator
-import SwiftUI
 import OSLog
+import SwiftUI
 
 private let logger = Logger(subsystem: "keysign-discovery", category: "view")
 struct KeysignDiscoveryView: View {
@@ -12,7 +12,6 @@ struct KeysignDiscoveryView: View {
         case WaitingForDevices
         case FailToStart
         case Keysign
-        case KeysignFail
     }
 
     @Binding var presentationStack: [CurrentScreen]
@@ -51,14 +50,22 @@ struct KeysignDiscoveryView: View {
                         }
                     }
                 }
-                Button("Sign") {}
-                    .disabled(self.selections.count < self.appState.currentVault?.getThreshold() ?? Int.max)
+                Button("Sign") {
+                    self.startKeysign(allParticipants: self.selections.map { $0 })
+                    self.currentState = .Keysign
+                    self.discoverying = false
+                }
+                .disabled(self.selections.count < self.appState.currentVault?.getThreshold() ?? Int.max)
             case .FailToStart:
                 Text("fail to start keysign")
             case .Keysign:
-                Text("show keysign view")
-            case .KeysignFail:
-                Text("fail to sign")
+                KeysignView(presentationStack: self.$presentationStack,
+                            keysignCommittee: self.selections.map { $0 },
+                            mediatorURL: self.serverAddr,
+                            sessionID: self.sessionID,
+                            keysignType: self.chain.signingKeyType,
+                            messsageToSign: self.keysignMessage,
+                            localPartyKey: self.localPartyID)
             }
         }
         .onAppear {
@@ -83,11 +90,47 @@ struct KeysignDiscoveryView: View {
                 } while self.discoverying
             }
         }
-        .onDisappear(){
+        .onDisappear {
             logger.info("mediator server stopped")
             self.discoverying = false
             self.mediator.stop()
         }
+    }
+
+    private func startKeysign(allParticipants: [String]) {
+        let urlString = "\(self.serverAddr)/start/\(self.sessionID)"
+        logger.debug("url:\(urlString)")
+        
+        guard let url = URL(string: urlString) else {
+            logger.error("URL can't be constructed from: \(urlString)")
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        do {
+            let jsonData = try JSONEncoder().encode(allParticipants)
+            request.httpBody = jsonData
+        } catch {
+            logger.error("Failed to encode body into JSON string: \(error)")
+            return
+        }
+        
+        URLSession.shared.dataTask(with: request) { _, response, error in
+            if let error = error {
+                logger.error("Failed to start session, error: \(error)")
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+                logger.error("Invalid response code")
+                return
+            }
+            
+            logger.info("Keygen started successfully.")
+        }.resume()
     }
     
     private func startKeysignSession() {
@@ -208,5 +251,7 @@ struct KeysignMessage: Codable {
 }
 
 #Preview {
-    KeysignDiscoveryView(presentationStack: .constant([]), keysignMessage: "whatever",chain: Chain.THORChain)
+    KeysignDiscoveryView(presentationStack: .constant([]), 
+                         keysignMessage: "whatever",
+                         chain: Chain.THORChain)
 }

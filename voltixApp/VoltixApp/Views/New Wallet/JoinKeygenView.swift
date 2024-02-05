@@ -20,7 +20,6 @@ struct JoinKeygenView: View {
     @Binding var presentationStack: Array<CurrentScreen>
     @State private var isShowingScanner = false
     @State private var qrCodeResult: String? = nil
-    private let serviceBrowser = NetServiceBrowser()
     @ObservedObject private var serviceDelegate = ServiceDelegate()
     private let netService = NetService(domain: "local.", type: "_http._tcp.", name: "VoltixApp")
     @State private var currentStatus = JoinKeygenStatus.DiscoverService

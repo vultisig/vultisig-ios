@@ -59,7 +59,7 @@ struct PeerDiscoveryView: View {
                 }
                 .disabled(selections.count < 3)
             case .Keygen:
-                KeygenView(presentationStack: $presentationStack, keygenCommittee: selections.map { $0 }, mediatorURL: serverAddr, sessionID: self.sessionID, vaultName: appState.creatingVault?.name ?? "New Vault")
+                KeygenView(presentationStack: $presentationStack, keygenCommittee: selections.map { $0 }, mediatorURL: serverAddr, sessionID: self.sessionID,localPartyKey: localPartyID, vaultName: appState.creatingVault?.name ?? "New Vault")
             case .Failure:
                 Text("Something is wrong")
             }
