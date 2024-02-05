@@ -2,8 +2,6 @@
 //  VoltixApp.swift
 //  VoltixApp
 //
-//  Created by Johnny Luo on 28/1/2024.
-//
 
 import SwiftUI
 import SwiftData
@@ -17,6 +15,7 @@ struct VoltixApp: App {
             Vault.self,
             Coin.self,
             Chain.self,
+            KeyShare.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

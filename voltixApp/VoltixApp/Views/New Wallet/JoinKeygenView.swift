@@ -14,7 +14,9 @@ struct JoinKeygenView: View {
         case JoinKeygen
         case WaitingForKeygenToStart
         case KeygenStarted
+        case FailToStart
     }
+    @EnvironmentObject var appState: ApplicationState
     @Binding var presentationStack: Array<CurrentScreen>
     @State private var isShowingScanner = false
     @State private var qrCodeResult: String? = nil
@@ -23,13 +25,14 @@ struct JoinKeygenView: View {
     private let netService = NetService(domain: "local.", type: "_http._tcp.", name: "VoltixApp")
     @State private var currentStatus = JoinKeygenStatus.DiscoverService
     @State private var keygenCommittee =  [String]()
+    @State var localPartyID: String = ""
     
     var body: some View {
         VStack{
             switch currentStatus {
             case .DiscoverSessionID:
                 Text("Scan the barcode on another VoltixApp")
-                Button("Scan"){
+                Button("Scan",systemImage: "qrcode.viewfinder"){
                     isShowingScanner = true
                 }
                 .sheet(isPresented: $isShowingScanner, content: {
@@ -50,8 +53,7 @@ struct JoinKeygenView: View {
                     }
                 }
             case .JoinKeygen:
-                Button("Join Keygen to create a new wallet"){
-                    // send request to keygen server
+                Text("Join Keygen to create a new wallet").onAppear(){
                     joinKeygenCommittee()
                     currentStatus = .WaitingForKeygenToStart
                 }
@@ -74,17 +76,31 @@ struct JoinKeygenView: View {
                 HStack{
                     if serviceDelegate.serverUrl != nil && self.qrCodeResult != nil {
                         // at here we already know these two optional has values
-                        KeygenView(presentationStack: $presentationStack, keygenCommittee: keygenCommittee, mediatorURL: serviceDelegate.serverUrl ?? "", sessionID: self.qrCodeResult ?? "")
+                        KeygenView(presentationStack: $presentationStack, keygenCommittee: keygenCommittee, mediatorURL: serviceDelegate.serverUrl ?? "", sessionID: self.qrCodeResult ?? "",vaultName: appState.creatingVault?.name ?? "New Vault")
                     } else {
                         Text("Mediator server url is empty or session id is empty")
                     }
-                }
+                }.navigationBarBackButtonHidden(true)
+            case .FailToStart:
+                // TODO: update this message to be more friendly, it shouldn't happen
+                Text("fail to start")
             }
             
         }.onAppear(){
             logger.info("start to discover service")
             netService.delegate = self.serviceDelegate
             netService.resolve(withTimeout: TimeInterval(10))
+            // by this step , creatingVault should be available already
+            if appState.creatingVault == nil {
+                self.currentStatus = .FailToStart
+            }
+            
+            if let localPartyID = appState.creatingVault?.localPartyID, !localPartyID.isEmpty {
+                self.localPartyID = localPartyID
+            } else {
+                self.localPartyID = UIDevice.current.name
+                appState.creatingVault?.localPartyID = self.localPartyID
+            }
         }
         
     }
@@ -98,44 +114,54 @@ struct JoinKeygenView: View {
             logger.error("session id has not acquired")
             return
         }
+        
         let urlString = "\(serverUrl)/start/\(sessionID)"
-        let url = URL(string: urlString)
-        guard let url else{
-            logger.error("URL can't be construct from: \(urlString)")
+        guard let url = URL(string: urlString) else {
+            logger.error("URL can't be constructed from: \(urlString)")
             return
         }
+        
         var req = URLRequest(url: url)
         req.httpMethod = "GET"
         req.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        URLSession.shared.dataTask(with: req){data,resp,err in
-            if let err {
-                logger.error("fail to start session,error:\(err)")
+        
+        URLSession.shared.dataTask(with: req) { data, response, error in
+            if let error = error {
+                logger.error("Failed to start session, error: \(error)")
                 return
-            }
-            if let resp = resp as? HTTPURLResponse, resp.statusCode == 404 {
-                logger.error("keygen didn't start yet")
-                return
-            }
-            guard let resp = resp as? HTTPURLResponse, (200...299).contains(resp.statusCode) else {
-                logger.error("invalid response code")
-                return
-            }
-            guard let data else {
-                logger.error("no participants available yet")
-                return
-            }
-            do{
-                let decoder = JSONDecoder()
-                let peers = try decoder.decode([String].self, from: data)
-                let deviceName = UIDevice.current.name
-                if peers.contains(where: {$0 == deviceName}) {
-                    self.keygenCommittee.append(contentsOf: peers)
-                    self.currentStatus = .KeygenStarted
-                }
-            } catch {
-                logger.error("fail to decode response to json,\(data)")
             }
             
+            guard let httpResponse = response as? HTTPURLResponse else {
+                logger.error("Invalid response")
+                return
+            }
+            
+            switch httpResponse.statusCode {
+            case 200..<300:
+                guard let data = data else {
+                    logger.error("No participants available yet")
+                    return
+                }
+                
+                do {
+                    let decoder = JSONDecoder()
+                    let peers = try decoder.decode([String].self, from: data)
+                    let deviceName = UIDevice.current.name
+                    
+                    if peers.contains(deviceName) {
+                        self.keygenCommittee.append(contentsOf: peers)
+                        self.currentStatus = .KeygenStarted
+                    }
+                } catch {
+                    logger.error("Failed to decode response to JSON, \(data)")
+                }
+                
+            case 404:
+                logger.error("Keygen didn't start yet")
+                
+            default:
+                logger.error("Invalid response code: \(httpResponse.statusCode)")
+            }
         }.resume()
     }
     
@@ -149,35 +175,41 @@ struct JoinKeygenView: View {
             logger.error("session id has not acquired")
             return
         }
+        
         let urlString = "\(serverUrl)/\(sessionID)"
         logger.debug("url:\(urlString)")
-        let url = URL(string: urlString)
-        guard let url else{
-            logger.error("URL can't be construct from: \(urlString)")
+        
+        guard let url = URL(string: urlString) else {
+            logger.error("URL can't be constructed from: \(urlString)")
             return
         }
+        
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
         let body = [deviceName]
-        do{
-            let jsonEncode = JSONEncoder()
-            let encodedBody = try jsonEncode.encode(body)
-            req.httpBody = encodedBody
+        
+        do {
+            let jsonEncoder = JSONEncoder()
+            req.httpBody = try jsonEncoder.encode(body)
         } catch {
-            logger.error("fail to encode body into json string,\(error)")
+            logger.error("Failed to encode body into JSON string: \(error)")
             return
         }
-        URLSession.shared.dataTask(with: req){data,resp,err in
-            if let err {
-                logger.error("fail to join session,error:\(err)")
+        
+        URLSession.shared.dataTask(with: req) { data, response, error in
+            if let error = error {
+                logger.error("Failed to join session, error: \(error)")
                 return
             }
-            guard let resp = resp as? HTTPURLResponse, (200...299).contains(resp.statusCode) else {
-                logger.error("invalid response code")
+            
+            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+                logger.error("Invalid response code")
                 return
             }
-            logger.info("join session successfully.")
+            
+            logger.info("Joined session successfully.")
         }.resume()
     }
     
@@ -185,7 +217,7 @@ struct JoinKeygenView: View {
         switch result{
         case .success(let result):
             qrCodeResult = result.string
-            logger.info("session id: \(result.string)")
+            logger.debug("session id: \(result.string)")
         case .failure(let err):
             logger.error("fail to scan QR code,error:\(err.localizedDescription)")
         }

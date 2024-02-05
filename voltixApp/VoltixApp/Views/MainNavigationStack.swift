@@ -2,22 +2,20 @@
 //  ContentView.swift
 //  VoltixApp
 //
-//  Created by Johnny Luo on 28/1/2024.
-//
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct MainNavigationStack: View {
     @Environment(\.modelContext) private var modelContext
-    
-    @EnvironmentObject var appState:ApplicationState
+
+    @EnvironmentObject var appState: ApplicationState
     // Push/pop onto this array to control presentation overlay globally
     @State private var presentationStack: [CurrentScreen] = [.welcome]
-    
+
     var body: some View {
         NavigationStack(path: $presentationStack) {
-            StartView(presentationStack: $presentationStack)  // Default top level
+            StartView(presentationStack: $presentationStack) // Default top level
                 .navigationDestination(for: CurrentScreen.self) { screen in
                     switch screen {
                     case .welcome:
@@ -27,11 +25,15 @@ struct MainNavigationStack: View {
                     case .importWallet:
                         ImportWalletView(presentationStack: $presentationStack)
                     case .newWalletInstructions:
-                        NewWalletInstructions(presentationStack: $presentationStack)
+                        NewWalletInstructions(presentationStack: $presentationStack, vaultName: "new vault")
                     case .peerDiscovery:
                         PeerDiscoveryView(presentationStack: $presentationStack)
                     case .finishedTSSKeygen:
-                        FinishedTSSKeygenView(presentationStack: $presentationStack)
+                        if let currentVault = appState.currentVault {
+                            FinishedTSSKeygenView(presentationStack: $presentationStack, vault: currentVault)
+                        } else {
+                            VaultSelectionView(presentationStack: $presentationStack)
+                        }
                     case .vaultAssets:
                         VaultAssetsView(presentationStack: $presentationStack)
                     case .vaultDetailAsset(let asset):
@@ -64,12 +66,12 @@ struct MainNavigationStack: View {
                         JoinKeygenView(presentationStack: $presentationStack)
                     }
                 }
-            .onAppear(perform:{
-                if appState.currentVault == nil {
-                    self.presentationStack = [CurrentScreen.vaultSelection]
-                    return
-                }
-            })
+                .onAppear(perform: {
+                    if appState.currentVault == nil {
+                        self.presentationStack = [CurrentScreen.vaultSelection]
+                        return
+                    }
+                })
         }
     }
 }
