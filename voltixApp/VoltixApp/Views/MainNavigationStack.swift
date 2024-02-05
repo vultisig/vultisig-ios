@@ -64,6 +64,8 @@ struct MainNavigationStack: View {
                         VaultSelectionView(presentationStack: $presentationStack)
                     case .joinKeygen:
                         JoinKeygenView(presentationStack: $presentationStack)
+                    case .KeysignDiscovery(let keysignMsg, let chain):
+                        KeysignDiscoveryView(presentationStack: $presentationStack, keysignMessage: keysignMsg, chain: chain)
                     }
                 }
                 .onAppear(perform: {

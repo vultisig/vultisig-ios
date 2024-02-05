@@ -6,14 +6,16 @@ import Foundation
 import SwiftData
 
 @Model
-final class Chain {
-    @Attribute(.unique) let name: String
-    @Attribute(.unique) let ticker: String
-    @Relationship(deleteRule:.cascade) var coins: [Coin]
-    
-    init(name: String, ticker: String, coins: [Coin]) {
+final class Chain : ObservableObject {
+    @Attribute(.unique) var name: String
+    @Attribute(.unique) var ticker: String
+    var signingKeyType: KeyType
+
+    init(name: String, ticker: String, signingKeyType: KeyType) {
         self.name = name
         self.ticker = ticker
-        self.coins = coins
+        self.signingKeyType = signingKeyType
     }
+
+    static let THORChain = Chain(name: "THORChain", ticker: "RUNE", signingKeyType: KeyType.ECDSA)
 }

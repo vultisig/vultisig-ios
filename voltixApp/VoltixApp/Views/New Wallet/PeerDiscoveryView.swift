@@ -78,6 +78,7 @@ struct PeerDiscoveryView: View {
             // by this step , creatingVault should be available already
             if appState.creatingVault == nil {
                 self.currentState = .Failure
+                return
             }
             
             if let localPartyID = appState.creatingVault?.localPartyID, !localPartyID.isEmpty {
