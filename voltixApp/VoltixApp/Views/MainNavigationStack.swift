@@ -15,7 +15,7 @@ struct MainNavigationStack: View {
 
     var body: some View {
         NavigationStack(path: $presentationStack) {
-            StartView(presentationStack: $presentationStack) // Default top level
+            VaultAssetsView(presentationStack: $presentationStack) // Default top level
                 .navigationDestination(for: CurrentScreen.self) { screen in
                     switch screen {
                     case .welcome:
