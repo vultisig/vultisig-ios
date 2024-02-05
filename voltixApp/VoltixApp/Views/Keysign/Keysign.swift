@@ -35,6 +35,7 @@ struct KeysignView: View {
     @State private var stateAccess: LocalStateAccessorImpl? = nil
     @State private var keysignError: String? = nil
     @State private var pollingInboundMessages = true
+    @State private var signature: String = ""
 
     var body: some View {
         VStack {
@@ -55,7 +56,7 @@ struct KeysignView: View {
                         .tint(.blue)
                         .padding(2)
                 }
-                
+
             case .KeysignEdDSA:
                 HStack {
                     Text("Generating EdDSA key")
@@ -65,7 +66,9 @@ struct KeysignView: View {
                         .padding(2)
                 }
             case .KeysignFinished:
-                Text("Keysign finished").onAppear {
+                VStack {
+                    Text("Keysign finished")
+                }.onAppear {
                     self.pollingInboundMessages = false
                 }
             case .KeysignFailed:
@@ -92,7 +95,7 @@ struct KeysignView: View {
                     self.currentStatus = .KeysignFailed
                     return
                 }
-                
+
                 // Keep polling for messages
                 Task {
                     repeat {
@@ -101,7 +104,7 @@ struct KeysignView: View {
                         try await Task.sleep(nanoseconds: 1_000_000_000) // Back off 1s
                     } while self.tssService != nil && self.pollingInboundMessages
                 }
-                
+
                 self.keysignInProgress = true
                 let keysignReq = TssKeysignRequest()
                 keysignReq.localPartyKey = self.localPartyKey
@@ -110,13 +113,17 @@ struct KeysignView: View {
                     keysignReq.messageToSign = msgToSign
                 }
                 do {
+                    var resp: TssKeysignResponse?
                     switch self.keysignType {
                     case .ECDSA:
                         self.currentStatus = .KeysignECDSA
-                        let resp = try tssService?.keysignECDSA(keysignReq)
+                        resp = try self.tssService?.keysignECDSA(keysignReq)
                     case .EdDSA:
                         self.currentStatus = .KeysignEdDSA
-                        let resp = try tssService?.keysignEDDSA(keysignReq)
+                        resp = try self.tssService?.keysignEDDSA(keysignReq)
+                    }
+                    if let resp {
+                        self.signature = "R:\(resp.r), S:\(resp.s), RecoveryID:\(resp.recoveryID)"
                     }
                 } catch {
                     logger.error("fail to do keysign,error:\(error.localizedDescription)")
@@ -124,58 +131,35 @@ struct KeysignView: View {
                     self.currentStatus = .KeysignFailed
                     return
                 }
-                
+
                 self.currentStatus = .KeysignFinished
             }
         }
     }
-    
+
     private func pollInboundMessages() {
         let urlString = "\(self.mediatorURL)/message/\(self.sessionID)/\(self.localPartyKey)"
-        guard let url = URL(string: urlString) else {
-            logger.error("URL can't be constructed from: \(urlString)")
-            return
-        }
-        
-        let req = URLRequest(url: url)
-        URLSession.shared.dataTask(with: req) { data, response, error in
-            if let error = error {
-                logger.error("Failed to start session, error: \(error)")
-                return
-            }
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                logger.error("Invalid response")
-                return
-            }
-            
-            if httpResponse.statusCode == 404 {
-                // No messages yet
-                return
-            }
-            
-            guard (200 ... 299).contains(httpResponse.statusCode) else {
-                logger.error("Invalid response code")
-                return
-            }
-            
-            guard let data = data else {
-                logger.error("No participants available yet")
-                return
-            }
-            
-            do {
-                let decoder = JSONDecoder()
-                let msgs = try decoder.decode([Message].self, from: data)
-                
-                for msg in msgs {
-                    logger.debug("Got message from: \(msg.from), to: \(msg.to)")
-                    try self.tssService?.applyData(msg.body)
+        Utils.getRequest(urlString: urlString, completion: { result in
+            switch result {
+            case .success(let data):
+                do {
+                    let decoder = JSONDecoder()
+                    let msgs = try decoder.decode([Message].self, from: data)
+
+                    for msg in msgs {
+                        logger.debug("Got message from: \(msg.from), to: \(msg.to)")
+                        try self.tssService?.applyData(msg.body)
+                    }
+                } catch {
+                    logger.error("Failed to decode response to JSON, data: \(data), error: \(error)")
                 }
-            } catch {
-                logger.error("Failed to decode response to JSON, data: \(data), error: \(error)")
+            case .failure(let error):
+                let err = error as NSError
+                if err.code != 404 {
+                    logger.error("fail to get inbound message,error:\(error.localizedDescription)")
+                }
             }
-        }.resume()
+        })
     }
 }
 

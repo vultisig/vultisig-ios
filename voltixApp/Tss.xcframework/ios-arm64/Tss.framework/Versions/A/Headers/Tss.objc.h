@@ -18,7 +18,6 @@
 @class TssLocalState;
 @class TssMessageFromTss;
 @class TssServiceImpl;
-@class TssSignature;
 @protocol TssLocalStateAccessor;
 @class TssLocalStateAccessor;
 @protocol TssMessenger;
@@ -99,8 +98,10 @@
 
 - (nonnull instancetype)initWithRef:(_Nonnull id)ref;
 - (nonnull instancetype)init;
-// skipped field KeysignResponse.Signature with unsupported type: github.com/johnnyluo/mobile-tss-lib/tss.Signature
-
+@property (nonatomic) NSString* _Nonnull msg;
+@property (nonatomic) NSString* _Nonnull r;
+@property (nonatomic) NSString* _Nonnull s;
+@property (nonatomic) NSString* _Nonnull recoveryID;
 @end
 
 /**
@@ -147,18 +148,6 @@
 - (TssKeygenResponse* _Nullable)keygenEDDSA:(TssKeygenRequest* _Nullable)req error:(NSError* _Nullable* _Nullable)error;
 - (TssKeysignResponse* _Nullable)keysignECDSA:(TssKeysignRequest* _Nullable)req error:(NSError* _Nullable* _Nullable)error;
 - (TssKeysignResponse* _Nullable)keysignEDDSA:(TssKeysignRequest* _Nullable)req error:(NSError* _Nullable* _Nullable)error;
-@end
-
-@interface TssSignature : NSObject <goSeqRefInterface> {
-}
-@property(strong, readonly) _Nonnull id _ref;
-
-- (nonnull instancetype)initWithRef:(_Nonnull id)ref;
-- (nonnull instancetype)init;
-@property (nonatomic) NSString* _Nonnull msg;
-@property (nonatomic) NSString* _Nonnull r;
-@property (nonatomic) NSString* _Nonnull s;
-@property (nonatomic) NSString* _Nonnull recoveryID;
 @end
 
 // skipped function Contains with unsupported parameter or return types

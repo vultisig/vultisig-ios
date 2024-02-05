@@ -20,6 +20,10 @@ struct VaultAssetsView: View {
         Button("Sign stuff"){
             presentationStack.append(.KeysignDiscovery("stuff we need to keysign", Chain.THORChain))
         }
+        
+        Button("Join keysign stuff"){
+            presentationStack.append()
+        }
     }
 }
 

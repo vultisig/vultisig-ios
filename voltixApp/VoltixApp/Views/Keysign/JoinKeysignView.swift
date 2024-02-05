@@ -28,7 +28,8 @@ struct JoinKeysignView: View {
     @State private var keysignCommittee = [String]()
     @State var localPartyID: String = ""
     @State private var errorMsg: String = ""
-    
+    @State private var keysignType: KeyType = .ECDSA
+
     var body: some View {
         VStack {
             switch self.currentStatus {
@@ -94,7 +95,7 @@ struct JoinKeysignView: View {
                 // TODO: update this message to be more friendly, it shouldn't happen
                 Text("keysign fail to start")
             }
-            
+
         }.onAppear {
             logger.info("start to discover service")
             self.netService.delegate = self.serviceDelegate
@@ -104,7 +105,7 @@ struct JoinKeysignView: View {
                 self.errorMsg = "no vault"
                 self.currentStatus = .FailedToStart
             }
-            
+
             if let localPartyID = appState.currentVault?.localPartyID, !localPartyID.isEmpty {
                 self.localPartyID = localPartyID
             } else {
@@ -122,59 +123,32 @@ struct JoinKeysignView: View {
             logger.error("session id has not acquired")
             return
         }
-        
+
         let urlString = "\(serverUrl)/start/\(sessionID)"
-        guard let url = URL(string: urlString) else {
-            logger.error("URL can't be constructed from: \(urlString)")
-            return
-        }
-        
-        var req = URLRequest(url: url)
-        req.httpMethod = "GET"
-        req.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        URLSession.shared.dataTask(with: req) { data, response, error in
-            if let error = error {
-                logger.error("Failed to start session, error: \(error)")
-                return
-            }
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                logger.error("Invalid response")
-                return
-            }
-            
-            switch httpResponse.statusCode {
-            case 200 ..< 300:
-                guard let data = data else {
-                    logger.error("No participants available yet")
-                    return
-                }
-                
+        Utils.getRequest(urlString: urlString, completion: { result in
+            switch result {
+            case .success(let data):
                 do {
                     let decoder = JSONDecoder()
                     let peers = try decoder.decode([String].self, from: data)
-                    let deviceName = UIDevice.current.name
-                    
-                    if peers.contains(deviceName) {
+                    if peers.contains(self.localPartyID) {
                         self.keysignCommittee.append(contentsOf: peers)
                         self.currentStatus = .KeysignStarted
                     }
                 } catch {
                     logger.error("Failed to decode response to JSON, \(data)")
                 }
-                
-            case 404:
-                logger.error("Keygen didn't start yet")
-                
-            default:
-                logger.error("Invalid response code: \(httpResponse.statusCode)")
+            case .failure(let error):
+                let err = error as NSError
+                if err.code == 404 {
+                    return
+                }
+                logger.error("Failed to check keysign started, error: \(error)")
             }
-        }.resume()
+        })
     }
 
     private func joinKeysignCommittee() {
-        let deviceName = UIDevice.current.name
         guard let serverUrl = serviceDelegate.serverUrl else {
             logger.error("didn't discover server url")
             return
@@ -183,44 +157,17 @@ struct JoinKeysignView: View {
             logger.error("session id has not acquired")
             return
         }
-        
+
         let urlString = "\(serverUrl)/\(sessionID)"
-        logger.debug("url:\(urlString)")
-        
-        guard let url = URL(string: urlString) else {
-            logger.error("URL can't be constructed from: \(urlString)")
-            return
-        }
-        
-        var req = URLRequest(url: url)
-        req.httpMethod = "POST"
-        req.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        let body = [deviceName]
-        
-        do {
-            let jsonEncoder = JSONEncoder()
-            req.httpBody = try jsonEncoder.encode(body)
-        } catch {
-            logger.error("Failed to encode body into JSON string: \(error)")
-            return
-        }
-        
-        URLSession.shared.dataTask(with: req) { _, response, error in
-            if let error = error {
-                logger.error("Failed to join session, error: \(error)")
-                return
+        let body = [self.localPartyID]
+
+        Utils.sendRequest(urlString: urlString, method: "POST", body: body) { success in
+            if success {
+                logger.info("Joined keysign committee successfully.")
             }
-            
-            guard let httpResponse = response as? HTTPURLResponse, (200 ... 299).contains(httpResponse.statusCode) else {
-                logger.error("Invalid response code")
-                return
-            }
-            
-            logger.info("Joined session successfully.")
-        }.resume()
+        }
     }
-    
+
     private func handleScan(result: Result<ScanResult, ScanError>) {
         switch result {
         case .success(let result):
@@ -231,6 +178,7 @@ struct JoinKeysignView: View {
                     let keysignMsg = try decoder.decode(KeysignMessage.self, from: data)
                     self.sessionID = keysignMsg.sessionID
                     self.keysignMessage = keysignMsg.keysignMessage
+                    self.keysignType = keysignMsg.keysignType
                 } catch {
                     logger.error("fail to decode keysign message,error:\(error.localizedDescription)")
                     self.errorMsg = error.localizedDescription

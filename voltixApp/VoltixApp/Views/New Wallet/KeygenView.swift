@@ -167,50 +167,27 @@ struct KeygenView: View {
     
     private func pollInboundMessages() {
         let urlString = "\(self.mediatorURL)/message/\(self.sessionID)/\(self.localPartyKey)"
-        guard let url = URL(string: urlString) else {
-            logger.error("URL can't be constructed from: \(urlString)")
-            return
-        }
-        
-        let req = URLRequest(url: url)
-        URLSession.shared.dataTask(with: req) { data, response, error in
-            if let error = error {
-                logger.error("Failed to start session, error: \(error)")
-                return
-            }
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                logger.error("Invalid response")
-                return
-            }
-            
-            if httpResponse.statusCode == 404 {
-                // No messages yet
-                return
-            }
-            
-            guard (200 ... 299).contains(httpResponse.statusCode) else {
-                logger.error("Invalid response code")
-                return
-            }
-            
-            guard let data = data else {
-                logger.error("No participants available yet")
-                return
-            }
-            
-            do {
-                let decoder = JSONDecoder()
-                let msgs = try decoder.decode([Message].self, from: data)
-                
-                for msg in msgs {
-                    logger.debug("Got message from: \(msg.from), to: \(msg.to)")
-                    try self.tssService?.applyData(msg.body)
+        Utils.getRequest(urlString: urlString, completion: {result in
+            switch result{
+            case .success(let data):
+                do {
+                    let decoder = JSONDecoder()
+                    let msgs = try decoder.decode([Message].self, from: data)
+                    
+                    for msg in msgs {
+                        logger.debug("Got message from: \(msg.from), to: \(msg.to)")
+                        try self.tssService?.applyData(msg.body)
+                    }
+                } catch {
+                    logger.error("Failed to decode response to JSON, data: \(data), error: \(error)")
                 }
-            } catch {
-                logger.error("Failed to decode response to JSON, data: \(data), error: \(error)")
+            case .failure(let error):
+                let err = error as NSError
+                if err.code != 404 {
+                    logger.error("fail to get inbound message,error:\(error.localizedDescription)")
+                }
             }
-        }.resume()
+        })
     }
 }
 

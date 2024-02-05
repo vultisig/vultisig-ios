@@ -2,13 +2,13 @@
 //  JoinKeygen.swift
 //  VoltixApp
 
-import SwiftUI
-import OSLog
 import CodeScanner
+import OSLog
+import SwiftUI
 
 private let logger = Logger(subsystem: "join-committee", category: "communication")
 struct JoinKeygenView: View {
-    enum JoinKeygenStatus{
+    enum JoinKeygenStatus {
         case DiscoverSessionID
         case DiscoverService
         case JoinKeygen
@@ -16,66 +16,72 @@ struct JoinKeygenView: View {
         case KeygenStarted
         case FailToStart
     }
+
     @EnvironmentObject var appState: ApplicationState
-    @Binding var presentationStack: Array<CurrentScreen>
+    @Binding var presentationStack: [CurrentScreen]
     @State private var isShowingScanner = false
     @State private var qrCodeResult: String? = nil
     @ObservedObject private var serviceDelegate = ServiceDelegate()
     private let netService = NetService(domain: "local.", type: "_http._tcp.", name: "VoltixApp")
     @State private var currentStatus = JoinKeygenStatus.DiscoverService
-    @State private var keygenCommittee =  [String]()
+    @State private var keygenCommittee = [String]()
     @State var localPartyID: String = ""
     
     var body: some View {
-        VStack{
+        VStack {
             switch currentStatus {
             case .DiscoverSessionID:
                 Text("Scan the barcode on another VoltixApp")
-                Button("Scan",systemImage: "qrcode.viewfinder"){
+                Button("Scan", systemImage: "qrcode.viewfinder") {
                     isShowingScanner = true
                 }
                 .sheet(isPresented: $isShowingScanner, content: {
                     CodeScannerView(codeTypes: [.qr], completion: self.handleScan)
                 })
             case .DiscoverService:
-                HStack{
+                HStack {
                     Text("discovering mediator service")
-                    if serviceDelegate.serverUrl == nil{
+                    if serviceDelegate.serverUrl == nil {
                         ProgressView()
                             .progressViewStyle(.circular)
                             .tint(.blue)
                             .padding(2)
                     } else {
-                        Image(systemName: "checkmark").foregroundColor(/*@START_MENU_TOKEN@*/.blue/*@END_MENU_TOKEN@*/).onAppear(){
+                        Image(systemName: "checkmark").foregroundColor(/*@START_MENU_TOKEN@*/ .blue/*@END_MENU_TOKEN@*/).onAppear {
                             currentStatus = .DiscoverSessionID
                         }
                     }
                 }
             case .JoinKeygen:
-                Text("Join Keygen to create a new wallet").onAppear(){
+                Text("Join Keygen to create a new wallet").onAppear {
                     joinKeygenCommittee()
                     currentStatus = .WaitingForKeygenToStart
                 }
             case .WaitingForKeygenToStart:
-                HStack{
+                HStack {
                     Text("Waiting for keygen to start")
                     ProgressView()
                         .progressViewStyle(.circular)
                         .tint(.blue)
                         .padding(2)
-                }.task{
-                    Task{
-                        repeat{
+                }.task {
+                    Task {
+                        repeat {
                             checkKeygenStarted()
                             try await Task.sleep(nanoseconds: 1_000_000_000)
-                        }while(self.currentStatus == .WaitingForKeygenToStart)
+                        } while self.currentStatus == .WaitingForKeygenToStart
                     }
                 }
             case .KeygenStarted:
-                HStack{
+                HStack {
                     if serviceDelegate.serverUrl != nil && self.qrCodeResult != nil {
                         // at here we already know these two optional has values
-                        KeygenView(presentationStack: $presentationStack, keygenCommittee: keygenCommittee, mediatorURL: serviceDelegate.serverUrl ?? "", sessionID: self.qrCodeResult ?? "",vaultName: appState.creatingVault?.name ?? "New Vault")
+                        KeygenView(presentationStack: $presentationStack,
+                                   keygenCommittee: keygenCommittee,
+                                   mediatorURL: serviceDelegate.serverUrl ?? "",
+                                   sessionID: self.qrCodeResult ?? "",
+                                   localPartyKey: self.localPartyID,
+                                   vaultName: appState.creatingVault?.name ?? "New Vault")
                     } else {
                         Text("Mediator server url is empty or session id is empty")
                     }
@@ -85,7 +91,7 @@ struct JoinKeygenView: View {
                 Text("fail to start")
             }
             
-        }.onAppear(){
+        }.onAppear {
             logger.info("start to discover service")
             netService.delegate = self.serviceDelegate
             netService.resolve(withTimeout: TimeInterval(10))
@@ -101,7 +107,6 @@ struct JoinKeygenView: View {
                 appState.creatingVault?.localPartyID = self.localPartyID
             }
         }
-        
     }
     
     private func checkKeygenStarted() {
@@ -115,57 +120,32 @@ struct JoinKeygenView: View {
         }
         
         let urlString = "\(serverUrl)/start/\(sessionID)"
-        guard let url = URL(string: urlString) else {
-            logger.error("URL can't be constructed from: \(urlString)")
-            return
-        }
-        
-        var req = URLRequest(url: url)
-        req.httpMethod = "GET"
-        req.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        URLSession.shared.dataTask(with: req) { data, response, error in
-            if let error = error {
-                logger.error("Failed to start session, error: \(error)")
-                return
-            }
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                logger.error("Invalid response")
-                return
-            }
-            
-            switch httpResponse.statusCode {
-            case 200..<300:
-                guard let data = data else {
-                    logger.error("No participants available yet")
-                    return
-                }
-                
+        Utils.getRequest(urlString: urlString, completion: { result in
+            switch result {
+            case .success(let data):
                 do {
                     let decoder = JSONDecoder()
                     let peers = try decoder.decode([String].self, from: data)
-                    let deviceName = UIDevice.current.name
-                    
-                    if peers.contains(deviceName) {
+                        
+                    if peers.contains(self.localPartyID) {
                         self.keygenCommittee.append(contentsOf: peers)
                         self.currentStatus = .KeygenStarted
                     }
                 } catch {
                     logger.error("Failed to decode response to JSON, \(data)")
                 }
-                
-            case 404:
-                logger.error("Keygen didn't start yet")
-                
-            default:
-                logger.error("Invalid response code: \(httpResponse.statusCode)")
+            case .failure(let error):
+                let err = error as NSError
+                if err.code == 404 {
+                    return
+                }
+                logger.error("Failed to check keygen started, error: \(error)")
             }
-        }.resume()
+            
+        })
     }
     
     private func joinKeygenCommittee() {
-        let deviceName = UIDevice.current.name
         guard let serverUrl = serviceDelegate.serverUrl else {
             logger.error("didn't discover server url")
             return
@@ -176,44 +156,16 @@ struct JoinKeygenView: View {
         }
         
         let urlString = "\(serverUrl)/\(sessionID)"
-        logger.debug("url:\(urlString)")
-        
-        guard let url = URL(string: urlString) else {
-            logger.error("URL can't be constructed from: \(urlString)")
-            return
-        }
-        
-        var req = URLRequest(url: url)
-        req.httpMethod = "POST"
-        req.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        let body = [deviceName]
-        
-        do {
-            let jsonEncoder = JSONEncoder()
-            req.httpBody = try jsonEncoder.encode(body)
-        } catch {
-            logger.error("Failed to encode body into JSON string: \(error)")
-            return
-        }
-        
-        URLSession.shared.dataTask(with: req) { data, response, error in
-            if let error = error {
-                logger.error("Failed to join session, error: \(error)")
-                return
+        let body = [localPartyID]
+        Utils.sendRequest(urlString: urlString, method: "POST", body: body) { success in
+            if success {
+                logger.info("Joined keygen committee successfully.")
             }
-            
-            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
-                logger.error("Invalid response code")
-                return
-            }
-            
-            logger.info("Joined session successfully.")
-        }.resume()
+        }
     }
     
-    private func handleScan(result: Result<ScanResult,ScanError>) {
-        switch result{
+    private func handleScan(result: Result<ScanResult, ScanError>) {
+        switch result {
         case .success(let result):
             qrCodeResult = result.string
             logger.debug("session id: \(result.string)")
@@ -224,7 +176,7 @@ struct JoinKeygenView: View {
     }
 }
 
-final class ServiceDelegate : NSObject , NetServiceDelegate , ObservableObject {
+final class ServiceDelegate: NSObject, NetServiceDelegate, ObservableObject {
     @Published var serverUrl: String?
     public func netServiceDidResolveAddress(_ sender: NetService) {
         logger.info("find service:\(sender.name) , \(sender.hostName ?? "") , \(sender.port) \(sender.domain) \(sender)")

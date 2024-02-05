@@ -31,7 +31,7 @@ struct PeerDiscoveryView: View {
     
     var body: some View {
         VStack {
-            switch currentState {
+            switch self.currentState {
             case .WaitingForDevices:
                 Text("Scan the following QR code to join keygen session")
                 Image(uiImage: self.getQrImage(size: 100))
@@ -39,27 +39,32 @@ struct PeerDiscoveryView: View {
                     .scaledToFit()
                     .padding()
                 Text("Available devices")
-                List(peersFound, id: \.self, selection: $selections) { peer in
+                List(self.peersFound, id: \.self, selection: self.$selections) { peer in
                     HStack {
-                        Image(systemName: selections.contains(peer) ? "checkmark.circle" : "circle")
+                        Image(systemName: self.selections.contains(peer) ? "checkmark.circle" : "circle")
                         Text(peer)
                     }
                     .onTapGesture {
-                        if selections.contains(peer) {
-                            selections.remove(peer)
+                        if self.selections.contains(peer) {
+                            self.selections.remove(peer)
                         } else {
-                            selections.insert(peer)
+                            self.selections.insert(peer)
                         }
                     }
                 }
                 Button("Create Wallet >") {
-                    startKeygen(allParticipants: selections.map { $0 })
+                    self.startKeygen(allParticipants: self.selections.map { $0 })
                     self.currentState = .Keygen
                     self.discoverying = false
                 }
-                .disabled(selections.count < 3)
+                .disabled(self.selections.count < 3)
             case .Keygen:
-                KeygenView(presentationStack: $presentationStack, keygenCommittee: selections.map { $0 }, mediatorURL: serverAddr, sessionID: self.sessionID,localPartyKey: localPartyID, vaultName: appState.creatingVault?.name ?? "New Vault")
+                KeygenView(presentationStack: self.$presentationStack, 
+                           keygenCommittee: self.selections.map { $0 },
+                           mediatorURL: self.serverAddr,
+                           sessionID: self.sessionID,
+                           localPartyKey: self.localPartyID,
+                           vaultName: self.appState.creatingVault?.name ?? "New Vault")
             case .Failure:
                 Text("Something is wrong")
             }
@@ -67,7 +72,7 @@ struct PeerDiscoveryView: View {
         .task {
             self.mediator.start()
             logger.info("mediator server started")
-            startSession()
+            self.startSession()
             Task {
                 repeat {
                     self.getParticipants()
@@ -76,7 +81,7 @@ struct PeerDiscoveryView: View {
             }
         }.onAppear {
             // by this step , creatingVault should be available already
-            if appState.creatingVault == nil {
+            if self.appState.creatingVault == nil {
                 self.currentState = .Failure
                 return
             }
@@ -85,7 +90,7 @@ struct PeerDiscoveryView: View {
                 self.localPartyID = localPartyID
             } else {
                 self.localPartyID = UIDevice.current.name
-                appState.creatingVault?.localPartyID = self.localPartyID
+                self.appState.creatingVault?.localPartyID = self.localPartyID
             }
         }
         .onDisappear {
@@ -119,122 +124,49 @@ struct PeerDiscoveryView: View {
     
     private func startSession() {
         let urlString = "\(self.serverAddr)/\(self.sessionID)"
-        logger.debug("url:\(urlString)")
-        
-        guard let url = URL(string: urlString) else {
-            logger.error("URL can't be constructed from: \(urlString)")
-            return
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        
         let body = [self.localPartyID]
-        
-        do {
-            let jsonEncoder = JSONEncoder()
-            request.httpBody = try jsonEncoder.encode(body)
-        } catch {
-            logger.error("Failed to encode body into JSON string: \(error)")
-            return
-        }
-        
-        let task = URLSession.shared.dataTask(with: request) { _, response, error in
-            if let error = error {
-                logger.error("Failed to start session, error: \(error)")
-                return
+        Utils.sendRequest(urlString: urlString, method: "POST", body: body) { success in
+            if success {
+                logger.info("Started session successfully.")
+            } else {
+                logger.info("Failed to start session.")
             }
-            
-            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
-                logger.error("Invalid response code")
-                return
-            }
-            
-            logger.info("Started session successfully.")
         }
-        
-        task.resume()
     }
 
     private func startKeygen(allParticipants: [String]) {
         let urlString = "\(self.serverAddr)/start/\(self.sessionID)"
-        logger.debug("url:\(urlString)")
-        
-        guard let url = URL(string: urlString) else {
-            logger.error("URL can't be constructed from: \(urlString)")
-            return
+        Utils.sendRequest(urlString: urlString, method: "POST", body: allParticipants) { _ in
+            logger.info("kicked off keygen successfully")
         }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        do {
-            let jsonData = try JSONEncoder().encode(allParticipants)
-            request.httpBody = jsonData
-        } catch {
-            logger.error("Failed to encode body into JSON string: \(error)")
-            return
-        }
-        
-        URLSession.shared.dataTask(with: request) { _, response, error in
-            if let error = error {
-                logger.error("Failed to start session, error: \(error)")
-                return
-            }
-            
-            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
-                logger.error("Invalid response code")
-                return
-            }
-            
-            logger.info("Keygen started successfully.")
-        }.resume()
     }
-
+    
     private func getParticipants() {
         let urlString = "\(self.serverAddr)/\(self.sessionID)"
-        logger.debug("url:\(urlString)")
-        
-        guard let url = URL(string: urlString) else {
-            logger.error("URL can't be constructed from: \(urlString)")
-            return
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
+        Utils.getRequest(urlString: urlString) { result in
+            switch result {
+            case .success(let data):
+                if data.isEmpty {
+                    logger.error("No participants available yet")
+                    return
+                }
+                do {
+                    let decoder = JSONDecoder()
+                    let peers = try decoder.decode([String].self, from: data)
+                    
+                    for peer in peers {
+                        if !self.peersFound.contains(peer) {
+                            self.peersFound.append(peer)
+                        }
+                    }
+                } catch {
+                    logger.error("Failed to decode response to JSON: \(error)")
+                }
+            case .failure(let error):
                 logger.error("Failed to start session, error: \(error)")
                 return
             }
-            
-            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
-                logger.error("Invalid response code")
-                return
-            }
-            
-            guard let data = data else {
-                logger.error("No participants available yet")
-                return
-            }
-            
-            do {
-                let decoder = JSONDecoder()
-                let peers = try decoder.decode([String].self, from: data)
-                
-                for peer in peers {
-                    if !self.peersFound.contains(peer) {
-                        self.peersFound.append(peer)
-                    }
-                }
-            } catch {
-                logger.error("Failed to decode response to JSON: \(error)")
-            }
-        }.resume()
+        }
     }
 }
 

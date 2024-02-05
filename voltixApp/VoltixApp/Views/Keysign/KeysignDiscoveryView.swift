@@ -26,7 +26,7 @@ struct KeysignDiscoveryView: View {
     @State private var localPartyID = ""
     let keysignMessage: String
     let chain: Chain
-    
+
     var body: some View {
         VStack {
             switch self.currentState {
@@ -99,121 +99,49 @@ struct KeysignDiscoveryView: View {
 
     private func startKeysign(allParticipants: [String]) {
         let urlString = "\(self.serverAddr)/start/\(self.sessionID)"
-        logger.debug("url:\(urlString)")
-        
-        guard let url = URL(string: urlString) else {
-            logger.error("URL can't be constructed from: \(urlString)")
-            return
+        Utils.sendRequest(urlString: urlString, method: "POST", body: allParticipants) { _ in
+            logger.info("kicked off keygen successfully")
         }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        do {
-            let jsonData = try JSONEncoder().encode(allParticipants)
-            request.httpBody = jsonData
-        } catch {
-            logger.error("Failed to encode body into JSON string: \(error)")
-            return
-        }
-        
-        URLSession.shared.dataTask(with: request) { _, response, error in
-            if let error = error {
-                logger.error("Failed to start session, error: \(error)")
-                return
-            }
-            
-            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
-                logger.error("Invalid response code")
-                return
-            }
-            
-            logger.info("Keygen started successfully.")
-        }.resume()
     }
-    
+
     private func startKeysignSession() {
         let urlString = "\(self.serverAddr)/\(self.sessionID)"
-        logger.debug("url:\(urlString)")
-        
-        guard let url = URL(string: urlString) else {
-            logger.error("URL can't be constructed from: \(urlString)")
-            return
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        
         let body = [self.localPartyID]
-        
-        do {
-            let jsonEncoder = JSONEncoder()
-            request.httpBody = try jsonEncoder.encode(body)
-        } catch {
-            logger.error("Failed to encode body into JSON string: \(error)")
-            return
-        }
-        
-        let task = URLSession.shared.dataTask(with: request) { _, response, error in
-            if let error = error {
-                logger.error("Failed to start session, error: \(error)")
-                return
+        Utils.sendRequest(urlString: urlString, method: "POST", body: body) { success in
+            if success {
+                logger.info("Started session successfully.")
+            } else {
+                logger.info("Failed to start session.")
             }
-            
-            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
-                logger.error("Invalid response code")
-                return
-            }
-            
-            logger.info("Started keysign session successfully.")
         }
-        
-        task.resume()
     }
 
     private func getParticipants() {
         let urlString = "\(self.serverAddr)/\(self.sessionID)"
+        Utils.getRequest(urlString: urlString, completion: { result in
+            switch result {
+            case .success(let data):
+                if data.isEmpty {
+                    logger.error("No participants available yet")
+                    return
+                }
+                do {
+                    let decoder = JSONDecoder()
+                    let peers = try decoder.decode([String].self, from: data)
 
-        guard let url = URL(string: urlString) else {
-            logger.error("URL can't be constructed from: \(urlString)")
-            return
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
+                    for peer in peers {
+                        if !self.peersFound.contains(peer) {
+                            self.peersFound.append(peer)
+                        }
+                    }
+                } catch {
+                    logger.error("Failed to decode response to JSON: \(error)")
+                }
+            case .failure(let error):
                 logger.error("Failed to start session, error: \(error)")
                 return
             }
-            
-            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
-                logger.error("Invalid response code")
-                return
-            }
-            
-            guard let data = data else {
-                logger.error("No participants available yet")
-                return
-            }
-            
-            do {
-                let decoder = JSONDecoder()
-                let peers = try decoder.decode([String].self, from: data)
-                
-                for peer in peers {
-                    if !self.peersFound.contains(peer) {
-                        self.peersFound.append(peer)
-                    }
-                }
-            } catch {
-                logger.error("Failed to decode response to JSON: \(error)")
-            }
-        }.resume()
+        })
     }
 
     func getQrImage(size: CGFloat) -> UIImage {
@@ -221,8 +149,10 @@ struct KeysignDiscoveryView: View {
         guard let qrFilter = CIFilter(name: "CIQRCodeGenerator") else {
             return UIImage(systemName: "xmark") ?? UIImage()
         }
-        
-        let keysignMsg = KeysignMessage(sessionID: self.sessionID, keysignMessage: self.keysignMessage)
+
+        let keysignMsg = KeysignMessage(sessionID: self.sessionID,
+                                        keysignMessage: self.keysignMessage,
+                                        keysignType: self.chain.signingKeyType)
         do {
             let encoder = JSONEncoder()
             let jsonData = try encoder.encode(keysignMsg)
@@ -230,17 +160,17 @@ struct KeysignDiscoveryView: View {
         } catch {
             logger.error("fail to encode keysign messages to json,error:\(error)")
         }
-        
+
         guard let qrCodeImage = qrFilter.outputImage else {
             return UIImage(systemName: "xmark") ?? UIImage()
         }
-        
+
         let transformedImage = qrCodeImage.transformed(by: CGAffineTransform(scaleX: size, y: size))
-        
+
         guard let cgImage = context.createCGImage(transformedImage, from: transformedImage.extent) else {
             return UIImage(systemName: "xmark") ?? UIImage()
         }
-        
+
         return UIImage(cgImage: cgImage)
     }
 }
@@ -248,10 +178,11 @@ struct KeysignDiscoveryView: View {
 struct KeysignMessage: Codable {
     let sessionID: String
     let keysignMessage: String
+    let keysignType: KeyType
 }
 
 #Preview {
-    KeysignDiscoveryView(presentationStack: .constant([]), 
+    KeysignDiscoveryView(presentationStack: .constant([]),
                          keysignMessage: "whatever",
                          chain: Chain.THORChain)
 }
