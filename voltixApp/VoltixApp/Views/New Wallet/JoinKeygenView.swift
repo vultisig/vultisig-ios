@@ -14,7 +14,9 @@ struct JoinKeygenView: View {
         case JoinKeygen
         case WaitingForKeygenToStart
         case KeygenStarted
+        case FailToStart
     }
+    @EnvironmentObject var appState: ApplicationState
     @Binding var presentationStack: Array<CurrentScreen>
     @State private var isShowingScanner = false
     @State private var qrCodeResult: String? = nil
@@ -23,14 +25,10 @@ struct JoinKeygenView: View {
     private let netService = NetService(domain: "local.", type: "_http._tcp.", name: "VoltixApp")
     @State private var currentStatus = JoinKeygenStatus.DiscoverService
     @State private var keygenCommittee =  [String]()
-    @State var vaultName :String
+    @State var localPartyID: String = ""
     
     var body: some View {
         VStack{
-            VStack(alignment:.center){
-                Text("Enter new vault name")
-                TextField("New vault name",text: $vaultName).textFieldStyle(.roundedBorder)
-            }.padding(.top,20)
             switch currentStatus {
             case .DiscoverSessionID:
                 Text("Scan the barcode on another VoltixApp")
@@ -78,17 +76,31 @@ struct JoinKeygenView: View {
                 HStack{
                     if serviceDelegate.serverUrl != nil && self.qrCodeResult != nil {
                         // at here we already know these two optional has values
-                        KeygenView(presentationStack: $presentationStack, keygenCommittee: keygenCommittee, mediatorURL: serviceDelegate.serverUrl ?? "", sessionID: self.qrCodeResult ?? "",vaultName: vaultName)
+                        KeygenView(presentationStack: $presentationStack, keygenCommittee: keygenCommittee, mediatorURL: serviceDelegate.serverUrl ?? "", sessionID: self.qrCodeResult ?? "",vaultName: appState.creatingVault?.name ?? "New Vault")
                     } else {
                         Text("Mediator server url is empty or session id is empty")
                     }
                 }.navigationBarBackButtonHidden(true)
+            case .FailToStart:
+                // TODO: update this message to be more friendly, it shouldn't happen
+                Text("fail to start")
             }
             
         }.onAppear(){
             logger.info("start to discover service")
             netService.delegate = self.serviceDelegate
             netService.resolve(withTimeout: TimeInterval(10))
+            // by this step , creatingVault should be available already
+            if appState.creatingVault == nil {
+                self.currentStatus = .FailToStart
+            }
+            
+            if let localPartyID = appState.creatingVault?.localPartyID, !localPartyID.isEmpty {
+                self.localPartyID = localPartyID
+            } else {
+                self.localPartyID = UIDevice.current.name
+                appState.creatingVault?.localPartyID = self.localPartyID
+            }
         }
         
     }
@@ -222,5 +234,5 @@ final class ServiceDelegate : NSObject , NetServiceDelegate , ObservableObject {
 }
 
 #Preview {
-    JoinKeygenView(presentationStack: .constant([]),vaultName: "Vault #1")
+    JoinKeygenView(presentationStack: .constant([]))
 }

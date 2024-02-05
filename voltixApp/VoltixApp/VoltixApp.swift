@@ -2,8 +2,6 @@
 //  VoltixApp.swift
 //  VoltixApp
 //
-//  Created by Johnny Luo on 28/1/2024.
-//
 
 import SwiftUI
 import SwiftData

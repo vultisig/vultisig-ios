@@ -2,8 +2,6 @@
 //  VaultSelection.swift
 //  VoltixApp
 //
-//  Created by Johnny Luo on 30/1/2024.
-//
 
 import SwiftUI
 import SwiftData
@@ -44,6 +42,8 @@ struct VaultSelectionView: View {
                     self.presentationStack.append(.peerDiscovery)
                 }
                 Button("Join keygen",systemImage: "circle.hexagonpath"){
+                    let vault = Vault(name:"Vault #\(vaults.count + 1)")
+                    appState.creatingVault = vault
                     self.presentationStack.append(.joinKeygen)
                 }
             }

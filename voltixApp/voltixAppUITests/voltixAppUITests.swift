@@ -2,8 +2,6 @@
 //  voltixAppUITests.swift
 //  voltixAppUITests
 //
-//  Created by Johnny Luo on 28/1/2024.
-//
 
 import XCTest
 
