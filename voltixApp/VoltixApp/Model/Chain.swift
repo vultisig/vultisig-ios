@@ -18,4 +18,5 @@ final class Chain : ObservableObject {
     }
 
     static let THORChain = Chain(name: "THORChain", ticker: "RUNE", signingKeyType: KeyType.ECDSA)
+    static let Solana = Chain(name:"Solana",ticker: "SOL",signingKeyType: KeyType.EdDSA)
 }

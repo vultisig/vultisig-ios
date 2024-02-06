@@ -6,23 +6,25 @@
 import SwiftUI
 
 struct VaultAssetsView: View {
-    @Binding var presentationStack: Array<CurrentScreen>
-    @EnvironmentObject var appState:ApplicationState
-        
+    @Binding var presentationStack: [CurrentScreen]
+    @EnvironmentObject var appState: ApplicationState
+
+    @State private var signingTestView = false
     var body: some View {
-        Text("Vault \(appState.currentVault?.name ?? "") Assets View")
-        List(AssetType.allCases, id: \.self) { asset in
-            Button(asset.chainName) {
-                presentationStack.append(.vaultDetailAsset(asset))
+        VStack {
+            if signingTestView {
+                KeysignTestView(presentationStack: $presentationStack)
+            } else {
+                HStack {
+                    Button("Sign stuff") {
+                        signingTestView = true
+                    }
+
+                    Button("Join keysign stuff") {
+                        presentationStack.append(.JoinKeysign)
+                    }
+                }
             }
-        }
-        
-        Button("Sign stuff"){
-            presentationStack.append(.KeysignDiscovery("stuff we need to keysign", Chain.THORChain))
-        }
-        
-        Button("Join keysign stuff"){
-            presentationStack.append(.JoinKeysign)
         }
     }
 }

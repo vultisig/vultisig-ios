@@ -38,6 +38,7 @@
 		DE1572A02B70F284009BC7C5 /* Keysign.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE15729D2B70F284009BC7C5 /* Keysign.swift */; };
 		DE1572A22B70F873009BC7C5 /* Tss.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE1572A12B70F873009BC7C5 /* Tss.xcframework */; };
 		DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1572AB2B7174D3009BC7C5 /* Utils.swift */; };
+		DE1572AE2B7205F0009BC7C5 /* KeysignTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1572AD2B7205F0009BC7C5 /* KeysignTestView.swift */; };
 		DE491CEF2B708260007C88D5 /* KeygenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE491CEE2B708260007C88D5 /* KeygenView.swift */; };
 		DE49A1672B65F6D9000F3AFB /* VoltixApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE49A1662B65F6D9000F3AFB /* VoltixApp.swift */; };
 		DE49A1692B65F6D9000F3AFB /* MainNavigationStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE49A1682B65F6D9000F3AFB /* MainNavigationStack.swift */; };
@@ -105,6 +106,7 @@
 		DE15729D2B70F284009BC7C5 /* Keysign.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Keysign.swift; sourceTree = "<group>"; };
 		DE1572A12B70F873009BC7C5 /* Tss.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
 		DE1572AB2B7174D3009BC7C5 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		DE1572AD2B7205F0009BC7C5 /* KeysignTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignTestView.swift; sourceTree = "<group>"; };
 		DE491CEE2B708260007C88D5 /* KeygenView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeygenView.swift; sourceTree = "<group>"; };
 		DE49A1632B65F6D9000F3AFB /* VoltixApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VoltixApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DE49A1662B65F6D9000F3AFB /* VoltixApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoltixApp.swift; sourceTree = "<group>"; };
@@ -230,6 +232,7 @@
 				D9AD8F052B675E360009F8D5 /* VaultAssetDetailView.swift */,
 				D9AD8EE92B6730E30009F8D5 /* MenuView.swift */,
 				DE49A1A42B68BB6B000F3AFB /* VaultSelectionView.swift */,
+				DE1572AD2B7205F0009BC7C5 /* KeysignTestView.swift */,
 			);
 			path = Vault;
 			sourceTree = "<group>";
@@ -517,6 +520,7 @@
 				DE49A19C2B67133D000F3AFB /* Vault.swift in Sources */,
 				D9AD8F062B675E360009F8D5 /* VaultAssetDetailView.swift in Sources */,
 				DE49A1A02B67143B000F3AFB /* Chain.swift in Sources */,
+				DE1572AE2B7205F0009BC7C5 /* KeysignTestView.swift in Sources */,
 				D9AD8EE62B6730A40009F8D5 /* PeerDiscoveryView.swift in Sources */,
 				DE49A19E2B671416000F3AFB /* Coin.swift in Sources */,
 				DE49A1672B65F6D9000F3AFB /* VoltixApp.swift in Sources */,
