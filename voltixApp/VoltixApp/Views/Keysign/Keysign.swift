@@ -69,6 +69,7 @@ struct KeysignView: View {
             case .KeysignFinished:
                 VStack {
                     Text("Keysign finished")
+                    Text("Signature: \(self.signature)")
                 }.onAppear {
                     self.pollingInboundMessages = false
                 }
