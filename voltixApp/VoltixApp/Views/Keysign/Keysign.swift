@@ -3,6 +3,7 @@
 //  VoltixApp
 
 import CryptoKit
+import Dispatch
 import Foundation
 import Mediator
 import OSLog
@@ -79,66 +80,76 @@ struct KeysignView: View {
                     }
             }
         }.task {
-            Task(priority: .high) {
-                // Create keygen instance, it takes time to generate the preparams
-                guard let vault = appState.currentVault else {
-                    self.currentStatus = .KeysignFailed
-                    return
+            // Create keygen instance, it takes time to generate the preparams
+            guard let vault = appState.currentVault else {
+                self.currentStatus = .KeysignFailed
+                return
+            }
+            logger.info("vault,ecdSA:\(vault.pubKeyECDSA),eddsa:\(vault.pubKeyEdDSA),localParty key:\(vault.localPartyID)")
+            self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID)
+            self.stateAccess = LocalStateAccessorImpl(vault: vault)
+            var err: NSError?
+            // keysign doesn't need to recreate preparams
+            self.tssService = TssNewService(self.tssMessenger, self.stateAccess, false, &err)
+            if let err {
+                logger.error("Failed to create TSS instance, error: \(err.localizedDescription)")
+                self.keysignError = err.localizedDescription
+                self.currentStatus = .KeysignFailed
+                return
+            }
+
+            // Keep polling for messages
+            Task {
+                repeat {
+                    if Task.isCancelled { return }
+                    self.pollInboundMessages()
+                    try await Task.sleep(nanoseconds: 1_000_000_000) // Back off 1s
+                } while self.tssService != nil && self.pollingInboundMessages
+            }
+            self.keysignInProgress = true
+            let keysignReq = TssKeysignRequest()
+            keysignReq.localPartyKey = vault.localPartyID
+            keysignReq.keysignCommitteeKeys = self.keysignCommittee.joined(separator: ",")
+            if let msgToSign = self.messsageToSign.data(using: .utf8)?.base64EncodedString() {
+                keysignReq.messageToSign = msgToSign
+            }
+
+            do {
+                switch self.keysignType {
+                case .ECDSA:
+                    keysignReq.pubKey = vault.pubKeyECDSA
+                    self.currentStatus = .KeysignECDSA
+                case .EdDSA:
+                    keysignReq.pubKey = vault.pubKeyEdDSA
+                    self.currentStatus = .KeysignEdDSA
                 }
-                logger.info("vault,ecdSA:\(vault.pubKeyECDSA),eddsa:\(vault.pubKeyEdDSA),localParty key:\(vault.localPartyID)")
-                self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID)
-                self.stateAccess = LocalStateAccessorImpl(vault: vault)
-                var err: NSError?
-                // keysign doesn't need to recreate preparams
-                self.tssService = TssNewService(self.tssMessenger, self.stateAccess, false, &err)
-                if let err {
-                    logger.error("Failed to create TSS instance, error: \(err.localizedDescription)")
-                    self.keysignError = err.localizedDescription
-                    self.currentStatus = .KeysignFailed
-                    return
+                if let service = self.tssService {
+                    let resp = try await tssKeysign(service: service, req: keysignReq, keysignType: keysignType)
+                    self.signature = "R:\(resp.r), S:\(resp.s), RecoveryID:\(resp.recoveryID)"
                 }
 
-                // Keep polling for messages
-                Task {
-                    repeat {
-                        if Task.isCancelled { return }
-                        self.pollInboundMessages()
-                        try await Task.sleep(nanoseconds: 1_000_000_000) // Back off 1s
-                    } while self.tssService != nil && self.pollingInboundMessages
-                }
+            } catch {
+                logger.error("fail to do keysign,error:\(error.localizedDescription)")
+                self.keysignError = error.localizedDescription
+                self.currentStatus = .KeysignFailed
+                return
+            }
+            self.currentStatus = .KeysignFinished
 
-                self.keysignInProgress = true
-                let keysignReq = TssKeysignRequest()
-                keysignReq.localPartyKey = vault.localPartyID
-                keysignReq.keysignCommitteeKeys = self.keysignCommittee.joined(separator: ",")
-                if let msgToSign = self.messsageToSign.data(using: .utf8)?.base64EncodedString() {
-                    keysignReq.messageToSign = msgToSign
-                }
-                do {
-                    var resp: TssKeysignResponse?
-                    switch self.keysignType {
-                    case .ECDSA:
-                        keysignReq.pubKey = vault.pubKeyECDSA
-                        self.currentStatus = .KeysignECDSA
-                        resp = try self.tssService?.keysignECDSA(keysignReq)
-                    case .EdDSA:
-                        keysignReq.pubKey = vault.pubKeyEdDSA
-                        self.currentStatus = .KeysignEdDSA
-                        resp = try self.tssService?.keysignEDDSA(keysignReq)
-                    }
-                    if let resp {
-                        self.signature = "R:\(resp.r), S:\(resp.s), RecoveryID:\(resp.recoveryID)"
-                    }
-                } catch {
-                    logger.error("fail to do keysign,error:\(error.localizedDescription)")
-                    self.keysignError = error.localizedDescription
-                    self.currentStatus = .KeysignFailed
-                    return
-                }
+            
+        }
+    }
 
-                self.currentStatus = .KeysignFinished
+    private func tssKeysign(service: TssServiceImpl, req: TssKeysignRequest, keysignType: KeyType) async throws -> TssKeysignResponse {
+        let t = Task.detached(priority: .high) {
+            switch keysignType {
+            case .ECDSA:
+                return try service.keysignECDSA(req)
+            case .EdDSA:
+                return try service.keysignEDDSA(req)
             }
         }
+        return try await t.value
     }
 
     private func pollInboundMessages() {
@@ -170,3 +181,5 @@ struct KeysignView: View {
 #Preview {
     KeysignView(presentationStack: .constant([]), keysignCommittee: [], mediatorURL: "", sessionID: "session", keysignType: .ECDSA, messsageToSign: "message", localPartyKey: "party id")
 }
+
+class MessagePoller: ObservableObject {}
