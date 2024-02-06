@@ -90,6 +90,7 @@ struct KeygenView: View {
                         self.vault.keyshares = stateAccess.keyshares
                     }
                     self.vault.name = self.vaultName
+                    self.vault.localPartyID = self.localPartyKey
                     // add the vault to modelcontext
                     self.context.insert(self.vault)
                     self.pollingInboundMessages = false

@@ -17,7 +17,9 @@ struct VaultSelectionView: View {
         List(selection: $appState.currentVault) {
             ForEach(vaults) { vault in
                 NavigationLink {
-                    VaultAssetsView(presentationStack: $presentationStack)
+                    VaultAssetsView(presentationStack: $presentationStack).onAppear(){
+                        appState.currentVault = vault
+                    }
                 } label: {
                     Text(vault.name)
                         .swipeActions {
