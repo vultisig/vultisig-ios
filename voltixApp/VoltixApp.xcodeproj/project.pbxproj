@@ -7,6 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		049BBB502B71E39B004C231F /* AddressItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB4F2B71E39B004C231F /* AddressItem.swift */; };
+		049BBB522B71E498004C231F /* AssetsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB512B71E498004C231F /* AssetsView.swift */; };
+		049BBB542B71E4F8004C231F /* BottomBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB532B71E4F8004C231F /* BottomBar.swift */; };
+		049BBB562B71E5F5004C231F /* Choose.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB552B71E5F5004C231F /* Choose.swift */; };
+		049BBB582B71E72F004C231F /* DeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB572B71E72F004C231F /* DeviceView.swift */; };
+		049BBB5A2B71E785004C231F /* HeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB592B71E785004C231F /* HeaderView.swift */; };
+		049BBB5C2B71E7F6004C231F /* LargeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB5B2B71E7F6004C231F /* LargeButton.swift */; };
+		049BBB5E2B71E83D004C231F /* Logo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB5D2B71E83D004C231F /* Logo.swift */; };
+		049BBB602B71E8A2004C231F /* MenuItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB5F2B71E8A2004C231F /* MenuItem.swift */; };
+		049BBB622B71E8E7004C231F /* NetItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB612B71E8E7004C231F /* NetItem.swift */; };
+		049BBB642B71E926004C231F /* RadioButtonGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB632B71E926004C231F /* RadioButtonGroup.swift */; };
+		049BBB662B71E987004C231F /* VaultItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB652B71E987004C231F /* VaultItem.swift */; };
+		049BBB682B71E9C5004C231F /* WifiBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB672B71E9C5004C231F /* WifiBar.swift */; };
 		4600167E2B71A12D00CE17C7 /* Tss.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4600167D2B71A12D00CE17C7 /* Tss.xcframework */; };
 		D9A22EB72B667C41007281BF /* Mediator in Frameworks */ = {isa = PBXBuildFile; productRef = D9A22EB62B667C41007281BF /* Mediator */; };
 		D9AD8EDA2B6722CC0009F8D5 /* ApplicationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */; };
@@ -68,6 +81,19 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		049BBB4F2B71E39B004C231F /* AddressItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressItem.swift; sourceTree = "<group>"; };
+		049BBB512B71E498004C231F /* AssetsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetsView.swift; sourceTree = "<group>"; };
+		049BBB532B71E4F8004C231F /* BottomBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomBar.swift; sourceTree = "<group>"; };
+		049BBB552B71E5F5004C231F /* Choose.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Choose.swift; sourceTree = "<group>"; };
+		049BBB572B71E72F004C231F /* DeviceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceView.swift; sourceTree = "<group>"; };
+		049BBB592B71E785004C231F /* HeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderView.swift; sourceTree = "<group>"; };
+		049BBB5B2B71E7F6004C231F /* LargeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeButton.swift; sourceTree = "<group>"; };
+		049BBB5D2B71E83D004C231F /* Logo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logo.swift; sourceTree = "<group>"; };
+		049BBB5F2B71E8A2004C231F /* MenuItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuItem.swift; sourceTree = "<group>"; };
+		049BBB612B71E8E7004C231F /* NetItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetItem.swift; sourceTree = "<group>"; };
+		049BBB632B71E926004C231F /* RadioButtonGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadioButtonGroup.swift; sourceTree = "<group>"; };
+		049BBB652B71E987004C231F /* VaultItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultItem.swift; sourceTree = "<group>"; };
+		049BBB672B71E9C5004C231F /* WifiBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WifiBar.swift; sourceTree = "<group>"; };
 		4600167D2B71A12D00CE17C7 /* Tss.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
 		D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ApplicationState.swift; path = voltixApp/Model/ApplicationState.swift; sourceTree = SOURCE_ROOT; };
 		D9AD8EDB2B6723D10009F8D5 /* AppNavigationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppNavigationState.swift; path = voltixApp/Model/AppNavigationState.swift; sourceTree = SOURCE_ROOT; };
@@ -143,9 +169,30 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		049BBB4E2B71E37B004C231F /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				049BBB4F2B71E39B004C231F /* AddressItem.swift */,
+				049BBB512B71E498004C231F /* AssetsView.swift */,
+				049BBB532B71E4F8004C231F /* BottomBar.swift */,
+				049BBB552B71E5F5004C231F /* Choose.swift */,
+				049BBB572B71E72F004C231F /* DeviceView.swift */,
+				049BBB592B71E785004C231F /* HeaderView.swift */,
+				049BBB5B2B71E7F6004C231F /* LargeButton.swift */,
+				049BBB5D2B71E83D004C231F /* Logo.swift */,
+				049BBB5F2B71E8A2004C231F /* MenuItem.swift */,
+				049BBB612B71E8E7004C231F /* NetItem.swift */,
+				049BBB632B71E926004C231F /* RadioButtonGroup.swift */,
+				049BBB652B71E987004C231F /* VaultItem.swift */,
+				049BBB672B71E9C5004C231F /* WifiBar.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
 		D9AD8ED72B67225F0009F8D5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				049BBB4E2B71E37B004C231F /* Components */,
 				DE49A1682B65F6D9000F3AFB /* MainNavigationStack.swift */,
 				D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */,
 				D9AD8F042B675E230009F8D5 /* Vault */,
@@ -437,20 +484,29 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				049BBB662B71E987004C231F /* VaultItem.swift in Sources */,
 				DE49A1A82B68C213000F3AFB /* ModelContainerPreview.swift in Sources */,
+				049BBB5E2B71E83D004C231F /* Logo.swift in Sources */,
 				D9AD8EF92B6731C50009F8D5 /* SendDoneView.swift in Sources */,
+				049BBB642B71E926004C231F /* RadioButtonGroup.swift in Sources */,
+				049BBB582B71E72F004C231F /* DeviceView.swift in Sources */,
 				D9AD8EF12B6731660009F8D5 /* SendInputDetailsView.swift in Sources */,
 				D9AD8F012B6732360009F8D5 /* SwapVerifyView.swift in Sources */,
+				049BBB682B71E9C5004C231F /* WifiBar.swift in Sources */,
+				049BBB5A2B71E785004C231F /* HeaderView.swift in Sources */,
 				D9AD8EFB2B6731E50009F8D5 /* SwapInputDetailsView.swift in Sources */,
+				049BBB5C2B71E7F6004C231F /* LargeButton.swift in Sources */,
 				D9AD8EE82B6730CA0009F8D5 /* FinishedTSSKeygenView.swift in Sources */,
 				DE49A1A52B68BB6B000F3AFB /* VaultSelectionView.swift in Sources */,
 				D9AD8EE02B6730640009F8D5 /* StartView.swift in Sources */,
+				049BBB542B71E4F8004C231F /* BottomBar.swift in Sources */,
 				D9AD8EE22B67307F0009F8D5 /* ImportWalletView.swift in Sources */,
 				D9AD8F032B6732450009F8D5 /* SwapDoneView.swift in Sources */,
 				D9AD8EF72B6731B30009F8D5 /* SendVerifyView.swift in Sources */,
 				D9AD8EF52B6731A00009F8D5 /* SendWaitingForPeersView.swift in Sources */,
 				D9AD8EDC2B6723D10009F8D5 /* AppNavigationState.swift in Sources */,
 				D9AD8EF32B67317C0009F8D5 /* SendPeerDiscoveryView.swift in Sources */,
+				049BBB562B71E5F5004C231F /* Choose.swift in Sources */,
 				D9AD8EDA2B6722CC0009F8D5 /* ApplicationState.swift in Sources */,
 				D9AD8EFF2B67321D0009F8D5 /* SwapWaitingForPeersView.swift in Sources */,
 				DE491CEF2B708260007C88D5 /* KeygenView.swift in Sources */,
@@ -459,12 +515,16 @@
 				DE49A1B22B6A0F77000F3AFB /* JoinKeygenView.swift in Sources */,
 				D9AD8EEC2B6730ED0009F8D5 /* VaultAssetsView.swift in Sources */,
 				D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */,
+				049BBB622B71E8E7004C231F /* NetItem.swift in Sources */,
 				D9AD8EEA2B6730E30009F8D5 /* MenuView.swift in Sources */,
+				049BBB602B71E8A2004C231F /* MenuItem.swift in Sources */,
+				049BBB522B71E498004C231F /* AssetsView.swift in Sources */,
 				D9AD8EE42B6730940009F8D5 /* NewWalletInstructionsView.swift in Sources */,
 				D9AD8EFD2B6732070009F8D5 /* SwapPeerDiscoveryView.swift in Sources */,
 				DE49A19C2B67133D000F3AFB /* Vault.swift in Sources */,
 				D9AD8F062B675E360009F8D5 /* VaultAssetDetailView.swift in Sources */,
 				DE49A1A02B67143B000F3AFB /* Chain.swift in Sources */,
+				049BBB502B71E39B004C231F /* AddressItem.swift in Sources */,
 				D9AD8EE62B6730A40009F8D5 /* PeerDiscoveryView.swift in Sources */,
 				DE49A19E2B671416000F3AFB /* Coin.swift in Sources */,
 				DE49A1672B65F6D9000F3AFB /* VoltixApp.swift in Sources */,
@@ -644,7 +704,7 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
@@ -686,7 +746,7 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
