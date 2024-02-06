@@ -20,8 +20,8 @@ struct JoinKeysignView: View {
     @EnvironmentObject var appState: ApplicationState
     @Binding var presentationStack: [CurrentScreen]
     @State private var isShowingScanner = false
-    @State private var sessionID: String? = nil
-    @State private var keysignMessage: String? = nil
+    @State private var sessionID: String = ""
+    @State private var keysignMessage: String = ""
     @ObservedObject private var serviceDelegate = ServiceDelegate()
     private let netService = NetService(domain: "local.", type: "_http._tcp.", name: "VoltixApp")
     @State private var currentStatus = JoinKeysignStatus.DiscoverService
@@ -57,7 +57,8 @@ struct JoinKeysignView: View {
                 }
             case .JoinKeysign:
                 Text("Are you sure to sign the following message?")
-                Text("keysign message: \(self.keysignMessage ?? "")")
+                Text("Keysign message:")
+                Text("\(self.keysignMessage)")
                 Button("Join keysign committee", systemImage: "person.2.badge.key") {
                     self.joinKeysignCommittee()
                     self.currentStatus = .WaitingForKeysignToStart
@@ -79,13 +80,13 @@ struct JoinKeysignView: View {
                 }
             case .KeysignStarted:
                 HStack {
-                    if self.serviceDelegate.serverUrl != nil && self.sessionID != nil {
+                    if self.serviceDelegate.serverUrl != nil && !self.sessionID.isEmpty {
                         KeysignView(presentationStack: self.$presentationStack,
                                     keysignCommittee: self.keysignCommittee,
                                     mediatorURL: self.serviceDelegate.serverUrl ?? "",
-                                    sessionID: self.sessionID ?? "",
+                                    sessionID: self.sessionID,
                                     keysignType: .ECDSA,
-                                    messsageToSign: self.keysignMessage ?? "",
+                                    messsageToSign: self.keysignMessage,
                                     localPartyKey: self.localPartyID)
                     } else {
                         Text("Mediator server url is empty or session id is empty")
@@ -119,7 +120,7 @@ struct JoinKeysignView: View {
             logger.error("didn't discover server url")
             return
         }
-        guard let sessionID = self.sessionID else {
+        guard !self.sessionID.isEmpty else {
             logger.error("session id has not acquired")
             return
         }
@@ -153,7 +154,7 @@ struct JoinKeysignView: View {
             logger.error("didn't discover server url")
             return
         }
-        guard let sessionID = self.sessionID else {
+        guard !self.sessionID.isEmpty else {
             logger.error("session id has not acquired")
             return
         }

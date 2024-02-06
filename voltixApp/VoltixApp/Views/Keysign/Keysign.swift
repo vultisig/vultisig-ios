@@ -86,7 +86,7 @@ struct KeysignView: View {
                 self.currentStatus = .KeysignFailed
                 return
             }
-            logger.info("vault,ecdSA:\(vault.pubKeyECDSA),eddsa:\(vault.pubKeyEdDSA),localParty key:\(vault.localPartyID)")
+            logger.debug("vault,ecdSA:\(vault.pubKeyECDSA),eddsa:\(vault.pubKeyEdDSA),localParty key:\(vault.localPartyID)")
             self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID)
             self.stateAccess = LocalStateAccessorImpl(vault: vault)
             var err: NSError?

@@ -103,19 +103,17 @@ struct KeygenView: View {
                     }
             }
         }.task {
-            Task.detached(priority: .high) {
+            do {
                 self.vault.signers.append(contentsOf: self.keygenCommittee)
                 // Create keygen instance, it takes time to generate the preparams
-                self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID)
-                self.stateAccess = LocalStateAccessorImpl(vault: self.vault)
-                var err: NSError?
-                self.tssService = TssNewService(self.tssMessenger, self.stateAccess,true, &err)
-                if let err {
-                    logger.error("Failed to create TSS instance, error: \(err.localizedDescription)")
-                    self.failToCreateTssInstance = true
-                    return
-                }
-                
+                let messengerImp = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID)
+                let stateAccessorImp = LocalStateAccessorImpl(vault: self.vault)
+                self.tssMessenger = messengerImp
+                self.stateAccess = stateAccessorImp
+          
+                self.tssService = try await self.createTssInstance(messenger: messengerImp,
+                                                                   localStateAccessor: stateAccessorImp)
+          
                 // Keep polling for messages
                 Task {
                     repeat {
@@ -130,46 +128,67 @@ struct KeygenView: View {
                 let keygenReq = TssKeygenRequest()
                 keygenReq.localPartyID = self.localPartyKey
                 keygenReq.allParties = self.keygenCommittee.joined(separator: ",")
-                
-                do {
-                    if let tssService = self.tssService {
-                        let ecdsaResp = try tssService.keygenECDSA(keygenReq)
-                        self.pubKeyECDSA = ecdsaResp.pubKey
-                        self.vault.pubKeyECDSA = ecdsaResp.pubKey
-                    }
-                } catch {
-                    logger.error("Failed to create ECDSA key, error: \(error.localizedDescription)")
+                guard let tssService = self.tssService else {
+                    self.keygenError = "TSS instance is nil"
                     self.currentStatus = .KeygenFailed
-                    self.keygenError = error.localizedDescription
                     return
                 }
                 
+                let ecdsaResp = try await tssKeygen(service: tssService, req: keygenReq, keyType: .ECDSA)
+                self.pubKeyECDSA = ecdsaResp.pubKey
+                self.vault.pubKeyECDSA = ecdsaResp.pubKey
+                    
                 self.currentStatus = .KeygenEdDSA
                 self.keygenInProgressEDDSA = true
                 try await Task.sleep(nanoseconds: 1_000_000_000) // Sleep one sec to allow other parties to get in the same step
                 
-                do {
-                    if let tssService = self.tssService {
-                        let eddsaResp = try tssService.keygenEDDSA(keygenReq)
-                        self.pubKeyEdDSA = eddsaResp.pubKey
-                        self.vault.pubKeyEdDSA = eddsaResp.pubKey
-                    }
-                } catch {
-                    logger.error("Failed to create EdDSA key, error: \(error.localizedDescription)")
-                    self.currentStatus = .KeygenFailed
-                    self.keygenError = error.localizedDescription
-                    return
-                }
-                
-                self.currentStatus = .KeygenFinished
+                let eddsaResp = try await tssKeygen(service: tssService, req: keygenReq, keyType: .EdDSA)
+                self.pubKeyEdDSA = eddsaResp.pubKey
+                self.vault.pubKeyEdDSA = eddsaResp.pubKey
+                    
+            } catch {
+                logger.error("Failed to generate key, error: \(error.localizedDescription)")
+                self.currentStatus = .KeygenFailed
+                self.keygenError = error.localizedDescription
+                return
+            }
+            self.currentStatus = .KeygenFinished
+        }
+    }
+    
+    private func createTssInstance(messenger: TssMessengerProtocol,
+                                   localStateAccessor: TssLocalStateAccessorProtocol) async throws -> TssServiceImpl?
+    {
+        let t = Task.detached(priority: .high) {
+            var err: NSError?
+            let service = TssNewService(self.tssMessenger, self.stateAccess, true, &err)
+            if let err {
+                throw err
+            }
+            return service
+        }
+        return try await t.value
+    }
+    
+    private func tssKeygen(service: TssServiceImpl,
+                           req: TssKeygenRequest,
+                           keyType: KeyType) async throws -> TssKeygenResponse
+    {
+        let t = Task.detached(priority: .high) {
+            switch keyType {
+            case .ECDSA:
+                return try service.keygenECDSA(req)
+            case .EdDSA:
+                return try service.keygenEDDSA(req)
             }
         }
+        return try await t.value
     }
     
     private func pollInboundMessages() {
         let urlString = "\(self.mediatorURL)/message/\(self.sessionID)/\(self.localPartyKey)"
-        Utils.getRequest(urlString: urlString, completion: {result in
-            switch result{
+        Utils.getRequest(urlString: urlString, completion: { result in
+            switch result {
             case .success(let data):
                 do {
                     let decoder = JSONDecoder()
@@ -193,5 +212,10 @@ struct KeygenView: View {
 }
 
 #Preview("keygen") {
-    KeygenView(presentationStack: .constant([]), keygenCommittee: [], mediatorURL: "", sessionID: "", localPartyKey: "", vaultName: "Vault #1")
+    KeygenView(presentationStack: .constant([]),
+               keygenCommittee: [],
+               mediatorURL: "",
+               sessionID: "",
+               localPartyKey: "",
+               vaultName: "Vault #1")
 }
