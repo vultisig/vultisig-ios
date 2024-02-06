@@ -88,7 +88,8 @@ struct KeysignView: View {
                 self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID)
                 self.stateAccess = LocalStateAccessorImpl(vault: vault)
                 var err: NSError?
-                self.tssService = TssNewService(self.tssMessenger, self.stateAccess, &err)
+                // keysign doesn't need to recreate preparams
+                self.tssService = TssNewService(self.tssMessenger, self.stateAccess, false, &err)
                 if let err {
                     logger.error("Failed to create TSS instance, error: \(err.localizedDescription)")
                     self.keysignError = err.localizedDescription
@@ -107,7 +108,7 @@ struct KeysignView: View {
 
                 self.keysignInProgress = true
                 let keysignReq = TssKeysignRequest()
-                keysignReq.localPartyKey = self.localPartyKey
+                keysignReq.localPartyKey = vault.localPartyID
                 keysignReq.keysignCommitteeKeys = self.keysignCommittee.joined(separator: ",")
                 if let msgToSign = self.messsageToSign.data(using: .utf8)?.base64EncodedString() {
                     keysignReq.messageToSign = msgToSign
@@ -116,9 +117,11 @@ struct KeysignView: View {
                     var resp: TssKeysignResponse?
                     switch self.keysignType {
                     case .ECDSA:
+                        keysignReq.pubKey = vault.pubKeyECDSA
                         self.currentStatus = .KeysignECDSA
                         resp = try self.tssService?.keysignECDSA(keysignReq)
                     case .EdDSA:
+                        keysignReq.pubKey = vault.pubKeyEdDSA
                         self.currentStatus = .KeysignEdDSA
                         resp = try self.tssService?.keysignEDDSA(keysignReq)
                     }

@@ -169,7 +169,7 @@ FOUNDATION_EXPORT BOOL TssGetThreshold(long value, long* _Nullable ret0_, NSErro
 /**
  * NewService returns a new instance of the TSS service
  */
-FOUNDATION_EXPORT TssServiceImpl* _Nullable TssNewService(id<TssMessenger> _Nullable msg, id<TssLocalStateAccessor> _Nullable stateAccessor, NSError* _Nullable* _Nullable error);
+FOUNDATION_EXPORT TssServiceImpl* _Nullable TssNewService(id<TssMessenger> _Nullable msg, id<TssLocalStateAccessor> _Nullable stateAccessor, BOOL createPreParam, NSError* _Nullable* _Nullable error);
 
 @class TssLocalStateAccessor;
 

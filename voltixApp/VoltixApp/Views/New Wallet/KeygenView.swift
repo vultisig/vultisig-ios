@@ -108,7 +108,7 @@ struct KeygenView: View {
                 self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID)
                 self.stateAccess = LocalStateAccessorImpl(vault: self.vault)
                 var err: NSError?
-                self.tssService = TssNewService(self.tssMessenger, self.stateAccess, &err)
+                self.tssService = TssNewService(self.tssMessenger, self.stateAccess,true, &err)
                 if let err {
                     logger.error("Failed to create TSS instance, error: \(err.localizedDescription)")
                     self.failToCreateTssInstance = true
