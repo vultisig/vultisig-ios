@@ -33,9 +33,15 @@ final class Vault : ObservableObject{
     
     func addKeyshare(pubkey: String, keyshare:String) {
         let share = KeyShare(pubkey: pubkey, keyshare: keyshare)
-        modelContext?.insert(share)
         self.keyshares.append(share)
     }
+    
+    func getThreshold() -> Int {
+        let totalSigners = self.signers.count
+        let threshold = Int(ceil(Double(totalSigners) * 2.0 / 3.0)) - 1
+        return threshold
+    }
+    
     static func predicate(searchName: String) ->Predicate<Vault>{
         return #Predicate<Vault>{ vault in
             searchName.isEmpty || vault.name == searchName
@@ -43,14 +49,9 @@ final class Vault : ObservableObject{
     }
 }
 
-@Model
-final class KeyShare {
-    @Attribute(.unique) let pubkey: String
+struct KeyShare : Codable {
+    let pubkey: String
     let keyshare: String
-    init(pubkey: String, keyshare: String) {
-        self.pubkey = pubkey
-        self.keyshare = keyshare
-    }
 }
 
 // define some functions used for test

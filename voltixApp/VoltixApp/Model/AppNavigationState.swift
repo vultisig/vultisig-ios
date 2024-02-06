@@ -20,6 +20,10 @@ enum CurrentScreen: Hashable {
     case finishedTSSKeygen
     case joinKeygen
     
+    // keysign
+    case KeysignDiscovery(String,Chain)
+    case JoinKeysign
+    
     // Normal use (typically launches here if wallet imported/generated already)
     case vaultAssets  // Main landing page for normal use. Lists ETH, BTC, ... assets.
     case vaultDetailAsset(AssetType) //ETH, BTC etc.

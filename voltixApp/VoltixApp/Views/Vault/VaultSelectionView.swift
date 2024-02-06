@@ -3,31 +3,37 @@
 //  VoltixApp
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct VaultSelectionView: View {
     @Environment(\.modelContext) private var modelContext
-    @EnvironmentObject var appState:ApplicationState
-    @Query var vaults:[Vault]
-    @Binding var presentationStack: Array<CurrentScreen>
+    @EnvironmentObject var appState: ApplicationState
+    @Query var vaults: [Vault]
+    @Binding var presentationStack: [CurrentScreen]
     @State private var showingDeleteAlert = false
     @State private var itemToDelete: Vault? = nil
     var body: some View {
-        List(selection: $appState.currentVault){
-            ForEach(vaults){vault in
-                Text(vault.name)
-                    .swipeActions(){
-                        Button("Delete",role:.destructive){
-                            self.itemToDelete = vault
-                            showingDeleteAlert = true
-                        }
+        List(selection: $appState.currentVault) {
+            ForEach(vaults) { vault in
+                NavigationLink {
+                    VaultAssetsView(presentationStack: $presentationStack).onAppear(){
+                        appState.currentVault = vault
                     }
+                } label: {
+                    Text(vault.name)
+                        .swipeActions {
+                            Button("Delete", role: .destructive) {
+                                self.itemToDelete = vault
+                                showingDeleteAlert = true
+                            }
+                        }
+                }
             }
         }
-        .confirmationDialog(Text("Delete Vault"), isPresented: $showingDeleteAlert,titleVisibility: .automatic){
-            Button("Delete",role:.destructive){
-                withAnimation{
+        .confirmationDialog(Text("Delete Vault"), isPresented: $showingDeleteAlert, titleVisibility: .automatic) {
+            Button("Delete", role: .destructive) {
+                withAnimation {
                     if let itemToDelete {
                         deleteVault(vault: itemToDelete)
                     }
@@ -36,24 +42,25 @@ struct VaultSelectionView: View {
         } message: {
             Text("Are you sure want to delete selected vault? \n Operation is not reversable")
         }
-        .toolbar{
-            ToolbarItemGroup(placement: .topBarLeading){
-                Button("New vault",systemImage: "plus"){
-                    let vault = Vault(name:"Vault #\(vaults.count + 1)")
+        .toolbar {
+            ToolbarItemGroup(placement: .topBarLeading) {
+                Button("New vault", systemImage: "plus") {
+                    let vault = Vault(name: "Vault #\(vaults.count + 1)")
                     appState.creatingVault = vault
                     self.presentationStack.append(.peerDiscovery)
                 }
-                Button("Join keygen",systemImage: "circle.hexagonpath"){
-                    let vault = Vault(name:"Vault #\(vaults.count + 1)")
+                Button("Join keygen", systemImage: "circle.hexagonpath") {
+                    let vault = Vault(name: "Vault #\(vaults.count + 1)")
                     appState.creatingVault = vault
                     self.presentationStack.append(.joinKeygen)
                 }
             }
         }.navigationBarBackButtonHidden()
     }
-    func deleteVault(vault:Vault){
+
+    func deleteVault(vault: Vault) {
         modelContext.delete(vault)
-        do{
+        do {
             try modelContext.save()
         } catch {
             print("Error:\(error)")
@@ -62,8 +69,7 @@ struct VaultSelectionView: View {
 }
 
 #Preview("VaultSelection") {
-    ModelContainerPreview(Vault.sampleVaults){
+    ModelContainerPreview(Vault.sampleVaults) {
         VaultSelectionView(presentationStack: .constant([]))
     }
 }
-
