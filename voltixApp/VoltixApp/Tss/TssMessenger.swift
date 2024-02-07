@@ -3,29 +3,26 @@
 //  VoltixApp
 //
 
-import Foundation
-import Tss
 import CryptoKit
-import OSLog
+import Foundation
 import Mediator
+import OSLog
+import Tss
 
-private let logger = Logger(subsystem: "keygen", category: "tss")
+private let logger = Logger(subsystem: "messenger", category: "tss")
 final class TssMessengerImpl: NSObject, TssMessengerProtocol {
     let mediatorUrl: String
     let sessionID: String
-    
-    init(mediatorUrl: String, sessionID: String) {
+    // messageID will be used during keysign , because for UTXO related chains , it usually need to sign multiple UTXOs
+    // at the same time , add message id here to avoid messages belongs to differet keysign message messed with each other
+    let messageID: String?
+
+    init(mediatorUrl: String, sessionID: String, messageID: String?) {
         self.mediatorUrl = mediatorUrl
         self.sessionID = sessionID
+        self.messageID = messageID
     }
-    
-    func getMessageBodyHash(msg: String) -> String {
-        let digest = Insecure.MD5.hash(data: Data(msg.utf8))
-        return digest.map {
-            String(format: "%02hhx", $0)
-        }.joined()
-    }
-    
+
     func send(_ fromParty: String?, to: String?, body: String?) throws {
         guard let fromParty else {
             logger.error("from is nil")
@@ -49,7 +46,10 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        let msg = Message(session_id: sessionID, from: fromParty, to: [to], body: body, hash: getMessageBodyHash(msg: body))
+        if let messageID = self.messageID {
+            req.addValue("message_id", forHTTPHeaderField: messageID)
+        }
+        let msg = Message(session_id: sessionID, from: fromParty, to: [to], body: body, hash: Utils.getMessageBodyHash(msg: body))
         do {
             let jsonEncode = JSONEncoder()
             let encodedBody = try jsonEncode.encode(msg)
@@ -63,11 +63,11 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
                 logger.error("fail to send message,error:\(err)")
                 return
             }
-            guard let resp = resp as? HTTPURLResponse, (200...299).contains(resp.statusCode) else {
+            guard let resp = resp as? HTTPURLResponse, (200 ... 299).contains(resp.statusCode) else {
                 logger.error("invalid response code")
                 return
             }
             logger.debug("send message to mediator server successfully")
         }.resume()
     }
-    }
+}

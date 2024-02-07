@@ -120,7 +120,7 @@ struct JoinKeygenView: View {
         }
         
         let urlString = "\(serverUrl)/start/\(sessionID)"
-        Utils.getRequest(urlString: urlString, completion: { result in
+        Utils.getRequest(urlString: urlString, headers: [String: String](), completion: { result in
             switch result {
             case .success(let data):
                 do {
