@@ -93,4 +93,11 @@ enum Utils {
             String(format: "%02hhx", $0)
         }.joined()
     }
+    public static func getLocalDeviceIdentity() -> String{
+        #if os(iOS)
+        return UIDevice.current.name
+        #else
+        return ProcessInfo.processInfo.hostName
+        #endif
+    }
 }

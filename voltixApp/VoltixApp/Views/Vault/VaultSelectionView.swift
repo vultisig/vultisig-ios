@@ -43,7 +43,7 @@ struct VaultSelectionView: View {
             Text("Are you sure want to delete selected vault? \n Operation is not reversable")
         }
         .toolbar {
-            ToolbarItemGroup(placement: .topBarLeading) {
+            ToolbarItemGroup(placement: .automatic) {
                 Button("New vault", systemImage: "plus") {
                     let vault = Vault(name: "Vault #\(vaults.count + 1)")
                     appState.creatingVault = vault
