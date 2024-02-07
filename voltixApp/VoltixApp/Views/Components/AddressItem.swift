@@ -30,7 +30,7 @@ struct AddressItem: View {
             .padding(.leading, 10)
             .background(.white)
             Spacer()
-            ZStack() {
+            Button(action: {}) {
                 Image("Copy")
                 .resizable()
                 .frame(width: 32, height: 30)

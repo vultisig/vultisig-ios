@@ -11,9 +11,11 @@ struct Choose: View {
     let content: String;
     var body: some View {
         HStack() {
-            Image("PlusCircle")
-                .resizable()
-                .frame(width: 30, height: 30)
+            Button(action: {}) {
+                Image("PlusCircle")
+                    .resizable()
+                    .frame(width: 30, height: 30)
+            }
             Spacer().frame(width: 20)
             Text("CHOOSE " + content)
                 .font(

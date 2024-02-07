@@ -22,6 +22,7 @@ struct MenuItem: View {
                 Spacer().frame(width: 20)
                 Image(systemName: "chevron.right")
                 .resizable()
+                .foregroundColor(.black)
                 .frame(width: 18, height: 27)
             }
             .padding()

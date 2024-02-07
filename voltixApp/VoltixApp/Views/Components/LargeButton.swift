@@ -9,10 +9,9 @@ import SwiftUI
 
 struct LargeButton: View {
     let content: String;
+    let onClick: () -> Void;
     var body: some View {
-        Button(action: {
-
-        }) {
+        Button(action: onClick) {
           VStack() {
             Text(content)
               .font(Font.custom("Menlo", size: 40).weight(.bold))
@@ -29,5 +28,5 @@ struct LargeButton: View {
 }
 
 #Preview {
-    LargeButton(content: "NEW")
+    LargeButton(content: "NEW", onClick: {})
 }

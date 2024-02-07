@@ -24,17 +24,23 @@ struct VaultAssetDetailView: View {
                     .font(Font.custom("Menlo", size: 20).weight(.bold))
                     .foregroundColor(.black)
                 Spacer().frame(width: 30)
-                Image("Copy")
-                    .resizable()
-                    .frame(width: 20, height: 20)
+                Button(action: {}) {
+                    Image("Copy")
+                        .resizable()
+                        .frame(width: 20, height: 20)
+                }
                 Spacer().frame(width: 40)
-                Image("Link")
-                    .resizable()
-                    .frame(width: 16, height: 20)
+                Button(action: {}) {
+                    Image("Link")
+                        .resizable()
+                        .frame(width: 16, height: 20)
+                }
                 Spacer().frame(width: 40)
-                Image("QR")
-                    .resizable()
-                    .frame(width: 20, height: 20)
+                Button(action: {}) {
+                    Image("QR")
+                        .resizable()
+                        .frame(width: 20, height: 20)
+                }
                 Spacer()
                 Text("$65,899")
                     .font(Font.custom("Menlo", size: 20))
