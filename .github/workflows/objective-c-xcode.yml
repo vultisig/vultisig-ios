@@ -15,7 +15,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: setup swift
-        uses: swift-actions/setup-swift
+        uses: swift-actions/setup-swift@v1
         with:
           swift-version: '5.9'
       - name: Set Default Scheme
