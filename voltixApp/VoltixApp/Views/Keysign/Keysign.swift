@@ -162,7 +162,7 @@ struct KeysignView: View {
     }
 
     private func pollInboundMessages(messageID: String) {
-        let urlString = "\(self.mediatorURL)/message/\(self.sessionID)/\(self.localPartyKey)/\(messageID)"
+        let urlString = "\(self.mediatorURL)/message/\(self.sessionID)/\(self.localPartyKey)"
         Utils.getRequest(urlString: urlString, headers: ["message_id": messageID], completion: { result in
             switch result {
             case .success(let data):
