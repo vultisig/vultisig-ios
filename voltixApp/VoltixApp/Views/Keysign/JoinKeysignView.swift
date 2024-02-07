@@ -21,7 +21,7 @@ struct JoinKeysignView: View {
     @Binding var presentationStack: [CurrentScreen]
     @State private var isShowingScanner = false
     @State private var sessionID: String = ""
-    @State private var keysignMessage: String = ""
+    @State private var keysignMessages = [String]()
     @ObservedObject private var serviceDelegate = ServiceDelegate()
     private let netService = NetService(domain: "local.", type: "_http._tcp.", name: "VoltixApp")
     @State private var currentStatus = JoinKeysignStatus.DiscoverService
@@ -58,7 +58,11 @@ struct JoinKeysignView: View {
             case .JoinKeysign:
                 Text("Are you sure to sign the following message?")
                 Text("Keysign message:")
-                Text("\(self.keysignMessage)")
+                List {
+                    ForEach(self.keysignMessages, id: \.self) { item in
+                        Text("\(item)")
+                    }
+                }
                 Button("Join keysign committee", systemImage: "person.2.badge.key") {
                     self.joinKeysignCommittee()
                     self.currentStatus = .WaitingForKeysignToStart
@@ -85,8 +89,8 @@ struct JoinKeysignView: View {
                                     keysignCommittee: self.keysignCommittee,
                                     mediatorURL: self.serviceDelegate.serverUrl ?? "",
                                     sessionID: self.sessionID,
-                                    keysignType: .ECDSA,
-                                    messsageToSign: self.keysignMessage,
+                                    keysignType: self.keysignType,
+                                    messsageToSign: self.keysignMessages,
                                     localPartyKey: self.localPartyID)
                     } else {
                         Text("Mediator server url is empty or session id is empty")
@@ -126,7 +130,7 @@ struct JoinKeysignView: View {
         }
 
         let urlString = "\(serverUrl)/start/\(sessionID)"
-        Utils.getRequest(urlString: urlString, completion: { result in
+        Utils.getRequest(urlString: urlString, headers: [String: String](), completion: { result in
             switch result {
             case .success(let data):
                 do {
@@ -178,7 +182,7 @@ struct JoinKeysignView: View {
                 do {
                     let keysignMsg = try decoder.decode(KeysignMessage.self, from: data)
                     self.sessionID = keysignMsg.sessionID
-                    self.keysignMessage = keysignMsg.keysignMessage
+                    self.keysignMessages = keysignMsg.keysignMessages
                     self.keysignType = keysignMsg.keysignType
                 } catch {
                     logger.error("fail to decode keysign message,error:\(error.localizedDescription)")

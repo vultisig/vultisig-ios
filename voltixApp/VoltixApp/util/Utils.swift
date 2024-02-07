@@ -3,6 +3,7 @@
 //  VoltixApp
 //
 
+import CryptoKit
 import Foundation
 import OSLog
 
@@ -48,7 +49,7 @@ enum Utils {
         }.resume()
     }
     
-    public static func getRequest(urlString: String, completion: @escaping (Result<Data, Error>) -> Void) {
+    public static func getRequest(urlString: String, headers: [String: String], completion: @escaping (Result<Data, Error>) -> Void) {
         guard let url = URL(string: urlString) else {
             completion(.failure(NSError(domain: "Invalid URL", code: 0, userInfo: nil)))
             return
@@ -56,7 +57,9 @@ enum Utils {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        
+        for item in headers {
+            request.addValue(item.key, forHTTPHeaderField: item.value)
+        }
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
                 completion(.failure(error))
@@ -82,5 +85,12 @@ enum Utils {
             }
                 
         }.resume()
+    }
+    
+    public static func getMessageBodyHash(msg: String) -> String {
+        let digest = Insecure.MD5.hash(data: Data(msg.utf8))
+        return digest.map {
+            String(format: "%02hhx", $0)
+        }.joined()
     }
 }

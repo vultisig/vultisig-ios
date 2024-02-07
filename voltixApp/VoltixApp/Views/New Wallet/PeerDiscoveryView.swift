@@ -59,7 +59,7 @@ struct PeerDiscoveryView: View {
                 }
                 .disabled(self.selections.count < 3)
             case .Keygen:
-                KeygenView(presentationStack: self.$presentationStack, 
+                KeygenView(presentationStack: self.$presentationStack,
                            keygenCommittee: self.selections.map { $0 },
                            mediatorURL: self.serverAddr,
                            sessionID: self.sessionID,
@@ -143,7 +143,7 @@ struct PeerDiscoveryView: View {
     
     private func getParticipants() {
         let urlString = "\(self.serverAddr)/\(self.sessionID)"
-        Utils.getRequest(urlString: urlString) { result in
+        Utils.getRequest(urlString: urlString, headers: [String: String]()) { result in
             switch result {
             case .success(let data):
                 if data.isEmpty {
