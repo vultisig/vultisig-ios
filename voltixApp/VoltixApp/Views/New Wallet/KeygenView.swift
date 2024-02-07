@@ -27,7 +27,7 @@ struct KeygenView: View {
     let keygenCommittee: [String]
     let mediatorURL: String
     let sessionID: String
-    private let localPartyKey = UIDevice.current.name
+    let localPartyKey: String
     @State private var keygenInProgressECDSA = false
     @State private var pubKeyECDSA: String? = nil
     @State private var keygenInProgressEDDSA = false
@@ -90,6 +90,7 @@ struct KeygenView: View {
                         self.vault.keyshares = stateAccess.keyshares
                     }
                     self.vault.name = self.vaultName
+                    self.vault.localPartyID = self.localPartyKey
                     // add the vault to modelcontext
                     self.context.insert(self.vault)
                     self.pollingInboundMessages = false
@@ -102,19 +103,17 @@ struct KeygenView: View {
                     }
             }
         }.task {
-            Task.detached(priority: .high) {
+            do {
                 self.vault.signers.append(contentsOf: self.keygenCommittee)
                 // Create keygen instance, it takes time to generate the preparams
-                self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID)
-                self.stateAccess = LocalStateAccessorImpl(vault: self.vault)
-                var err: NSError?
-                self.tssService = TssNewService(self.tssMessenger, self.stateAccess, &err)
-                if let err {
-                    logger.error("Failed to create TSS instance, error: \(err.localizedDescription)")
-                    self.failToCreateTssInstance = true
-                    return
-                }
-                
+                let messengerImp = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: nil)
+                let stateAccessorImp = LocalStateAccessorImpl(vault: self.vault)
+                self.tssMessenger = messengerImp
+                self.stateAccess = stateAccessorImp
+          
+                self.tssService = try await self.createTssInstance(messenger: messengerImp,
+                                                                   localStateAccessor: stateAccessorImp)
+          
                 // Keep polling for messages
                 Task {
                     repeat {
@@ -129,196 +128,94 @@ struct KeygenView: View {
                 let keygenReq = TssKeygenRequest()
                 keygenReq.localPartyID = self.localPartyKey
                 keygenReq.allParties = self.keygenCommittee.joined(separator: ",")
-                
-                do {
-                    if let tssService = self.tssService {
-                        let ecdsaResp = try tssService.keygenECDSA(keygenReq)
-                        self.pubKeyECDSA = ecdsaResp.pubKey
-                        self.vault.pubKeyECDSA = ecdsaResp.pubKey
-                    }
-                } catch {
-                    logger.error("Failed to create ECDSA key, error: \(error.localizedDescription)")
+                guard let tssService = self.tssService else {
+                    self.keygenError = "TSS instance is nil"
                     self.currentStatus = .KeygenFailed
-                    self.keygenError = error.localizedDescription
                     return
                 }
                 
+                let ecdsaResp = try await tssKeygen(service: tssService, req: keygenReq, keyType: .ECDSA)
+                self.pubKeyECDSA = ecdsaResp.pubKey
+                self.vault.pubKeyECDSA = ecdsaResp.pubKey
+                    
                 self.currentStatus = .KeygenEdDSA
                 self.keygenInProgressEDDSA = true
                 try await Task.sleep(nanoseconds: 1_000_000_000) // Sleep one sec to allow other parties to get in the same step
                 
-                do {
-                    if let tssService = self.tssService {
-                        let eddsaResp = try tssService.keygenEDDSA(keygenReq)
-                        self.pubKeyEdDSA = eddsaResp.pubKey
-                        self.vault.pubKeyEdDSA = eddsaResp.pubKey
-                    }
-                } catch {
-                    logger.error("Failed to create EdDSA key, error: \(error.localizedDescription)")
-                    self.currentStatus = .KeygenFailed
-                    self.keygenError = error.localizedDescription
-                    return
-                }
-                
-                self.currentStatus = .KeygenFinished
+                let eddsaResp = try await tssKeygen(service: tssService, req: keygenReq, keyType: .EdDSA)
+                self.pubKeyEdDSA = eddsaResp.pubKey
+                self.vault.pubKeyEdDSA = eddsaResp.pubKey
+                    
+            } catch {
+                logger.error("Failed to generate key, error: \(error.localizedDescription)")
+                self.currentStatus = .KeygenFailed
+                self.keygenError = error.localizedDescription
+                return
+            }
+            self.currentStatus = .KeygenFinished
+        }
+    }
+    
+    private func createTssInstance(messenger: TssMessengerProtocol,
+                                   localStateAccessor: TssLocalStateAccessorProtocol) async throws -> TssServiceImpl?
+    {
+        let t = Task.detached(priority: .high) {
+            var err: NSError?
+            let service = TssNewService(self.tssMessenger, self.stateAccess, true, &err)
+            if let err {
+                throw err
+            }
+            return service
+        }
+        return try await t.value
+    }
+    
+    private func tssKeygen(service: TssServiceImpl,
+                           req: TssKeygenRequest,
+                           keyType: KeyType) async throws -> TssKeygenResponse
+    {
+        let t = Task.detached(priority: .high) {
+            switch keyType {
+            case .ECDSA:
+                return try service.keygenECDSA(req)
+            case .EdDSA:
+                return try service.keygenEDDSA(req)
             }
         }
+        return try await t.value
     }
     
     private func pollInboundMessages() {
         let urlString = "\(self.mediatorURL)/message/\(self.sessionID)/\(self.localPartyKey)"
-        guard let url = URL(string: urlString) else {
-            logger.error("URL can't be constructed from: \(urlString)")
-            return
-        }
-        
-        let req = URLRequest(url: url)
-        URLSession.shared.dataTask(with: req) { data, response, error in
-            if let error = error {
-                logger.error("Failed to start session, error: \(error)")
-                return
-            }
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                logger.error("Invalid response")
-                return
-            }
-            
-            if httpResponse.statusCode == 404 {
-                // No messages yet
-                return
-            }
-            
-            guard (200...299).contains(httpResponse.statusCode) else {
-                logger.error("Invalid response code")
-                return
-            }
-            
-            guard let data = data else {
-                logger.error("No participants available yet")
-                return
-            }
-            
-            do {
-                let decoder = JSONDecoder()
-                let msgs = try decoder.decode([Message].self, from: data)
-                
-                for msg in msgs {
-                    logger.debug("Got message from: \(msg.from), to: \(msg.to)")
-                    try self.tssService?.applyData(msg.body)
+        Utils.getRequest(urlString: urlString, headers: [String: String](), completion: { result in
+            switch result {
+            case .success(let data):
+                do {
+                    let decoder = JSONDecoder()
+                    let msgs = try decoder.decode([Message].self, from: data)
+                    
+                    for msg in msgs {
+                        logger.debug("Got message from: \(msg.from), to: \(msg.to)")
+                        try self.tssService?.applyData(msg.body)
+                    }
+                } catch {
+                    logger.error("Failed to decode response to JSON, data: \(data), error: \(error)")
                 }
-            } catch {
-                logger.error("Failed to decode response to JSON, data: \(data), error: \(error)")
-            }
-        }.resume()
-    }
-    
-    final class TssMessengerImpl: NSObject, TssMessengerProtocol {
-        let mediatorUrl: String
-        let sessionID: String
-        
-        init(mediatorUrl: String, sessionID: String) {
-            self.mediatorUrl = mediatorUrl
-            self.sessionID = sessionID
-        }
-
-        func getMessageBodyHash(msg: String) -> String {
-            let digest = Insecure.MD5.hash(data: Data(msg.utf8))
-            return digest.map {
-                String(format: "%02hhx", $0)
-            }.joined()
-        }
-
-        func send(_ fromParty: String?, to: String?, body: String?) throws {
-            guard let fromParty else {
-                logger.error("from is nil")
-                return
-            }
-            guard let to else {
-                logger.error("to is nil")
-                return
-            }
-            guard let body else {
-                logger.error("body is nil")
-                return
-            }
-            logger.info("from:\(fromParty),to:\(to)")
-            let urlString = "\(self.mediatorUrl)/message/\(self.sessionID)"
-            let url = URL(string: urlString)
-            guard let url else {
-                logger.error("URL can't be construct from: \(urlString)")
-                return
-            }
-            var req = URLRequest(url: url)
-            req.httpMethod = "POST"
-            req.addValue("application/json", forHTTPHeaderField: "Content-Type")
-            let msg = Message(session_id: sessionID, from: fromParty, to: [to], body: body, hash: getMessageBodyHash(msg: body))
-            do {
-                let jsonEncode = JSONEncoder()
-                let encodedBody = try jsonEncode.encode(msg)
-                req.httpBody = encodedBody
-            } catch {
-                logger.error("fail to encode body into json string,\(error)")
-                return
-            }
-            URLSession.shared.dataTask(with: req) { _, resp, err in
-                if let err {
-                    logger.error("fail to send message,error:\(err)")
-                    return
-                }
-                guard let resp = resp as? HTTPURLResponse, (200...299).contains(resp.statusCode) else {
-                    logger.error("invalid response code")
-                    return
-                }
-                logger.debug("send message to mediator server successfully")
-            }.resume()
-        }
-    }
-    
-    final class LocalStateAccessorImpl: NSObject, TssLocalStateAccessorProtocol, ObservableObject {
-        struct RuntimeError: LocalizedError {
-            let description: String
-            init(_ description: String) {
-                self.description = description
-            }
-
-            var errorDescription: String? {
-                self.description
-            }
-        }
-
-        @Published var keyshares = [KeyShare]()
-        private var vault: Vault
-        init(vault: Vault) {
-            self.vault = vault
-        }
-        
-        func getLocalState(_ pubKey: String?, error: NSErrorPointer) -> String {
-            guard let pubKey else {
-                return ""
-            }
-            for share in self.vault.keyshares {
-                if share.pubkey == pubKey {
-                    return share.keyshare
+            case .failure(let error):
+                let err = error as NSError
+                if err.code != 404 {
+                    logger.error("fail to get inbound message,error:\(error.localizedDescription)")
                 }
             }
-            return ""
-        }
-        
-        func saveLocalState(_ pubkey: String?, localState: String?) throws {
-            guard let pubkey else {
-                throw RuntimeError("pubkey is nil")
-            }
-            guard let localState else {
-                throw RuntimeError("localstate is nil")
-            }
-            DispatchQueue.main.async {
-                self.keyshares.append(KeyShare(pubkey: pubkey, keyshare: localState))
-            }
-        }
+        })
     }
 }
 
 #Preview("keygen") {
-    KeygenView(presentationStack: .constant([]), keygenCommittee: [], mediatorURL: "", sessionID: "", vaultName: "Vault #1")
+    KeygenView(presentationStack: .constant([]),
+               keygenCommittee: [],
+               mediatorURL: "",
+               sessionID: "",
+               localPartyKey: "",
+               vaultName: "Vault #1")
 }
