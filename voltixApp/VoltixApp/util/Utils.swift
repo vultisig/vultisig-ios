@@ -5,6 +5,7 @@
 
 import Foundation
 import OSLog
+import CryptoKit
 
 enum Utils {
     static let logger = Logger(subsystem: "util", category: "network")
@@ -82,5 +83,12 @@ enum Utils {
             }
                 
         }.resume()
+    }
+    
+    public static func getMessageBodyHash(msg: String) -> String {
+        let digest = Insecure.MD5.hash(data: Data(msg.utf8))
+        return digest.map {
+            String(format: "%02hhx", $0)
+        }.joined()
     }
 }

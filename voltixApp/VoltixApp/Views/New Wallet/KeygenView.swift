@@ -106,7 +106,7 @@ struct KeygenView: View {
             do {
                 self.vault.signers.append(contentsOf: self.keygenCommittee)
                 // Create keygen instance, it takes time to generate the preparams
-                let messengerImp = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID)
+                let messengerImp = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID,messageID: nil)
                 let stateAccessorImp = LocalStateAccessorImpl(vault: self.vault)
                 self.tssMessenger = messengerImp
                 self.stateAccess = stateAccessorImp

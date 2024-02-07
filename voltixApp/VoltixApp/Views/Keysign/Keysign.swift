@@ -26,7 +26,7 @@ struct KeysignView: View {
     let mediatorURL: String
     let sessionID: String
     let keysignType: KeyType
-    let messsageToSign: String
+    let messsageToSign: [String]
     @State var localPartyKey: String
     @EnvironmentObject var appState: ApplicationState
     @State private var currentStatus = KeysignStatus.CreatingInstance
@@ -51,7 +51,7 @@ struct KeysignView: View {
                 }
             case .KeysignECDSA:
                 HStack {
-                    Text("Generating ECDSA key")
+                    Text("Signing using ECDSA key")
                     ProgressView()
                         .progressViewStyle(.circular)
                         .tint(.blue)
@@ -60,7 +60,7 @@ struct KeysignView: View {
 
             case .KeysignEdDSA:
                 HStack {
-                    Text("Generating EdDSA key")
+                    Text("Signing using EdDSA key")
                     ProgressView()
                         .progressViewStyle(.circular)
                         .tint(.blue)
@@ -70,7 +70,7 @@ struct KeysignView: View {
                 VStack {
                     Text("Keysign finished")
                     Text("Signature: \(self.signature)")
-                    Button("Done",systemImage:"arrowshape.backward.circle"){
+                    Button("Done", systemImage: "arrowshape.backward.circle") {
                         self.presentationStack = [.vaultAssets]
                     }
                 }.onAppear {
@@ -89,58 +89,64 @@ struct KeysignView: View {
                 self.currentStatus = .KeysignFailed
                 return
             }
-            logger.debug("vault,ecdSA:\(vault.pubKeyECDSA),eddsa:\(vault.pubKeyEdDSA),localParty key:\(vault.localPartyID)")
-            self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID)
-            self.stateAccess = LocalStateAccessorImpl(vault: vault)
-            var err: NSError?
-            // keysign doesn't need to recreate preparams
-            self.tssService = TssNewService(self.tssMessenger, self.stateAccess, false, &err)
-            if let err {
-                logger.error("Failed to create TSS instance, error: \(err.localizedDescription)")
-                self.keysignError = err.localizedDescription
-                self.currentStatus = .KeysignFailed
-                return
-            }
-
-            // Keep polling for messages
-            Task {
-                repeat {
-                    if Task.isCancelled { return }
-                    self.pollInboundMessages()
-                    try await Task.sleep(nanoseconds: 1_000_000_000) // Back off 1s
-                } while self.tssService != nil && self.pollingInboundMessages
-            }
-            self.keysignInProgress = true
-            let keysignReq = TssKeysignRequest()
-            keysignReq.localPartyKey = vault.localPartyID
-            keysignReq.keysignCommitteeKeys = self.keysignCommittee.joined(separator: ",")
-            if let msgToSign = self.messsageToSign.data(using: .utf8)?.base64EncodedString() {
-                keysignReq.messageToSign = msgToSign
-            }
-
-            do {
-                switch self.keysignType {
-                case .ECDSA:
-                    keysignReq.pubKey = vault.pubKeyECDSA
-                    self.currentStatus = .KeysignECDSA
-                case .EdDSA:
-                    keysignReq.pubKey = vault.pubKeyEdDSA
-                    self.currentStatus = .KeysignEdDSA
-                }
-                if let service = self.tssService {
-                    let resp = try await tssKeysign(service: service, req: keysignReq, keysignType: keysignType)
-                    self.signature = "R:\(resp.r), S:\(resp.s), RecoveryID:\(resp.recoveryID)"
+            for msg in self.messsageToSign {
+                let msgHash = Utils.getMessageBodyHash(msg: msg)
+                self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: msgHash)
+                self.stateAccess = LocalStateAccessorImpl(vault: vault)
+                var err: NSError?
+                // keysign doesn't need to recreate preparams
+                self.tssService = TssNewService(self.tssMessenger, self.stateAccess, false, &err)
+                if let err {
+                    logger.error("Failed to create TSS instance, error: \(err.localizedDescription)")
+                    self.keysignError = err.localizedDescription
+                    self.currentStatus = .KeysignFailed
+                    return
                 }
 
-            } catch {
-                logger.error("fail to do keysign,error:\(error.localizedDescription)")
-                self.keysignError = error.localizedDescription
-                self.currentStatus = .KeysignFailed
-                return
+                // Keep polling for messages
+                let t = Task {
+                    repeat {
+                        if Task.isCancelled { return }
+                        self.pollInboundMessages(messageID: msgHash)
+                        try await Task.sleep(nanoseconds: 1_000_000_000) // Back off 1s
+                    } while self.tssService != nil && self.pollingInboundMessages
+                }
+                self.keysignInProgress = true
+                let keysignReq = TssKeysignRequest()
+                keysignReq.localPartyKey = vault.localPartyID
+                keysignReq.keysignCommitteeKeys = self.keysignCommittee.joined(separator: ",")
+                // sign messages one by one
+
+                if let msgToSign = msg.data(using: .utf8)?.base64EncodedString() {
+                    keysignReq.messageToSign = msgToSign
+                }
+
+                do {
+                    switch self.keysignType {
+                    case .ECDSA:
+                        keysignReq.pubKey = vault.pubKeyECDSA
+                        self.currentStatus = .KeysignECDSA
+                    case .EdDSA:
+                        keysignReq.pubKey = vault.pubKeyEdDSA
+                        self.currentStatus = .KeysignEdDSA
+                    }
+                    if let service = self.tssService {
+                        let resp = try await tssKeysign(service: service, req: keysignReq, keysignType: keysignType)
+                        self.signature = "R:\(resp.r), S:\(resp.s), RecoveryID:\(resp.recoveryID)"
+                    }
+                    t.cancel()
+                    // wait for the polling task to exit
+                    try await t.value
+                } catch {
+                    logger.error("fail to do keysign,error:\(error.localizedDescription)")
+                    self.keysignError = error.localizedDescription
+                    self.currentStatus = .KeysignFailed
+                    return
+                }
+               
             }
+
             self.currentStatus = .KeysignFinished
-
-            
         }
     }
 
@@ -156,8 +162,8 @@ struct KeysignView: View {
         return try await t.value
     }
 
-    private func pollInboundMessages() {
-        let urlString = "\(self.mediatorURL)/message/\(self.sessionID)/\(self.localPartyKey)"
+    private func pollInboundMessages(messageID: String) {
+        let urlString = "\(self.mediatorURL)/message/\(self.sessionID)/\(self.localPartyKey)/\(messageID)"
         Utils.getRequest(urlString: urlString, completion: { result in
             switch result {
             case .success(let data):
@@ -183,7 +189,7 @@ struct KeysignView: View {
 }
 
 #Preview {
-    KeysignView(presentationStack: .constant([]), keysignCommittee: [], mediatorURL: "", sessionID: "session", keysignType: .ECDSA, messsageToSign: "message", localPartyKey: "party id")
+    KeysignView(presentationStack: .constant([]), keysignCommittee: [], mediatorURL: "", sessionID: "session", keysignType: .ECDSA, messsageToSign: ["message"], localPartyKey: "party id")
 }
 
 class MessagePoller: ObservableObject {}

@@ -64,7 +64,7 @@ struct KeysignDiscoveryView: View {
                             mediatorURL: self.serverAddr,
                             sessionID: self.sessionID,
                             keysignType: self.chain.signingKeyType,
-                            messsageToSign: self.keysignMessage,
+                            messsageToSign: [self.keysignMessage],
                             localPartyKey: self.localPartyID)
             }
         }
@@ -100,7 +100,7 @@ struct KeysignDiscoveryView: View {
     private func startKeysign(allParticipants: [String]) {
         let urlString = "\(self.serverAddr)/start/\(self.sessionID)"
         Utils.sendRequest(urlString: urlString, method: "POST", body: allParticipants) { _ in
-            logger.info("kicked off keygen successfully")
+            logger.info("kicked off keysign successfully")
         }
     }
 
@@ -151,7 +151,7 @@ struct KeysignDiscoveryView: View {
         }
 
         let keysignMsg = KeysignMessage(sessionID: self.sessionID,
-                                        keysignMessage: self.keysignMessage,
+                                        keysignMessages: [self.keysignMessage],
                                         keysignType: self.chain.signingKeyType)
         do {
             let encoder = JSONEncoder()
@@ -177,7 +177,8 @@ struct KeysignDiscoveryView: View {
 
 struct KeysignMessage: Codable {
     let sessionID: String
-    let keysignMessage: String
+    // for UTXO chains , often it need to sign multiple UTXOs at the same time
+    let keysignMessages: [String]
     let keysignType: KeyType
 }
 

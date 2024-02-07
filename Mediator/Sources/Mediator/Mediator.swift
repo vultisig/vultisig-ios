@@ -89,12 +89,16 @@ public final class Mediator {
         guard let sessionID = req.params[":sessionID"] else {
             return HttpResponse.badRequest(.text("sessionID is empty"))
         }
+        let messageID = req.headers["message_id"]
         let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
         do {
             let decoder = JSONDecoder()
             let message = try decoder.decode(Message.self, from: Data(req.body))
             for recipient in message.to {
-                let key = "\(cleanSessionID)-\(recipient)" as NSString
+                var key = "\(cleanSessionID)-\(recipient)" as NSString
+                if let messageID {
+                    key = "\(cleanSessionID)-\(recipient)-\(messageID)" as NSString
+                }
                 if let cachedMessages = self.cache.object(forKey: key) as? cacheItem {
                     cachedMessages.messages.append(message)
                     self.cache.setObject(cachedMessages, forKey: key)
@@ -119,7 +123,11 @@ public final class Mediator {
         }
         let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
         let cleanParticipantKey = participantID.trimmingCharacters(in: .whitespacesAndNewlines)
-        let key = "\(cleanSessionID)-\(cleanParticipantKey)" as NSString
+        let messageID = req.headers["message_id"]
+        var key = "\(cleanSessionID)-\(cleanParticipantKey)" as NSString
+        if let messageID{
+            key = "\(cleanSessionID)-\(cleanParticipantKey)-\(messageID)" as NSString
+        }
         guard let cachedValue = self.cache.object(forKey: key) as? cacheItem else {
             return HttpResponse.notFound
         }
