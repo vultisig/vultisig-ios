@@ -22,6 +22,7 @@ jobs:
       - name: Set Default Scheme
         working-directory: voltixApp
         run: |
+          mdfind "kMDItemCFBundleIdentifier = 'com.apple.dt.Xcode'"
           xcrun --find xcodebuild
           sudo xcode-select -s /Applications/Xcode_15.0.app
           scheme_list=$(xcodebuild -list -json | tr -d "\n")
