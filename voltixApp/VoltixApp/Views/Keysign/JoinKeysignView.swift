@@ -58,8 +58,8 @@ struct JoinKeysignView: View {
             case .JoinKeysign:
                 Text("Are you sure to sign the following message?")
                 Text("Keysign message:")
-                List{
-                    ForEach(self.keysignMessages,id: \.self){item in
+                List {
+                    ForEach(self.keysignMessages, id: \.self) { item in
                         Text("\(item)")
                     }
                 }
@@ -130,7 +130,7 @@ struct JoinKeysignView: View {
         }
 
         let urlString = "\(serverUrl)/start/\(sessionID)"
-        Utils.getRequest(urlString: urlString, completion: { result in
+        Utils.getRequest(urlString: urlString, headers: [String: String](), completion: { result in
             switch result {
             case .success(let data):
                 do {

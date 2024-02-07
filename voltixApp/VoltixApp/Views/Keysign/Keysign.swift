@@ -143,7 +143,6 @@ struct KeysignView: View {
                     self.currentStatus = .KeysignFailed
                     return
                 }
-               
             }
 
             self.currentStatus = .KeysignFinished
@@ -164,7 +163,7 @@ struct KeysignView: View {
 
     private func pollInboundMessages(messageID: String) {
         let urlString = "\(self.mediatorURL)/message/\(self.sessionID)/\(self.localPartyKey)/\(messageID)"
-        Utils.getRequest(urlString: urlString, completion: { result in
+        Utils.getRequest(urlString: urlString, headers: ["message_id": messageID], completion: { result in
             switch result {
             case .success(let data):
                 do {

@@ -118,7 +118,7 @@ struct KeysignDiscoveryView: View {
 
     private func getParticipants() {
         let urlString = "\(self.serverAddr)/\(self.sessionID)"
-        Utils.getRequest(urlString: urlString, completion: { result in
+        Utils.getRequest(urlString: urlString, headers: [String: String](), completion: { result in
             switch result {
             case .success(let data):
                 if data.isEmpty {
