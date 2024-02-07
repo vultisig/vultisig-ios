@@ -16,14 +16,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Set Default Scheme
-        working-directory: voltix
+        working-directory: voltixApp
         run: |
           scheme_list=$(xcodebuild -list -json | tr -d "\n")
           default=$(echo $scheme_list | ruby -e "require 'json'; puts JSON.parse(STDIN.gets)['project']['targets'][0]")
           echo $default | cat >default
           echo Using default scheme: $default
       - name: Build
-        working-directory: voltix
+        working-directory: voltixApp
         env:
           scheme: ${{ 'default' }}
         run: |
