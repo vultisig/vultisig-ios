@@ -22,6 +22,7 @@ jobs:
       - name: Set Default Scheme
         working-directory: voltixApp
         run: |
+          xcrun --find xcodebuild
           sudo xcode-select -s /Applications/Xcode_15.0.app
           scheme_list=$(xcodebuild -list -json | tr -d "\n")
           default=$(echo $scheme_list | ruby -e "require 'json'; puts JSON.parse(STDIN.gets)['project']['targets'][0]")
