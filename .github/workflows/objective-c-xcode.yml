@@ -18,14 +18,11 @@ jobs:
         uses: swift-actions/setup-swift@v1
         with:
           swift-version: '5.9.2'
-      - name: setup xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
+      
       - name: Set Default Scheme
         working-directory: voltixApp
         run: |
-          export SWIFT_VERSION=5.9.2
+          sudo xcode-select -s /Applications/Xcode_15.0.app
           scheme_list=$(xcodebuild -list -json | tr -d "\n")
           default=$(echo $scheme_list | ruby -e "require 'json'; puts JSON.parse(STDIN.gets)['project']['targets'][0]")
           echo $default | cat >default
@@ -35,7 +32,7 @@ jobs:
         env:
           scheme: ${{ 'default' }}
         run: |
-          export SWIFT_VERSION=5.7.2
+          sudo xcode-select -s /Applications/Xcode_15.0.app
           if [ $scheme = default ]; then scheme=$(cat default); fi
           if [ "`ls -A | grep -i \\.xcworkspace\$`" ]; then filetype_parameter="workspace" && file_to_build="`ls -A | grep -i \\.xcworkspace\$`"; else filetype_parameter="project" && file_to_build="`ls -A | grep -i \\.xcodeproj\$`"; fi
           file_to_build=`echo $file_to_build | awk '{$1=$1;print}'`
