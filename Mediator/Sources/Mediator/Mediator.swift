@@ -163,7 +163,11 @@ public final class Mediator {
         }
         let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
         let cleanParticipantKey = participantID.trimmingCharacters(in: .whitespacesAndNewlines)
-        let key = "\(cleanSessionID)-\(cleanParticipantKey)" as NSString
+        let messageID = req.headers["message_id"]
+        var key = "\(cleanSessionID)-\(cleanParticipantKey)" as NSString
+        if let messageID {
+            key = "\(cleanSessionID)-\(cleanParticipantKey)-\(messageID)" as NSString
+        }
         guard let cachedValue = self.cache.object(forKey: key) as? cacheItem else {
             return HttpResponse.notFound
         }

@@ -91,6 +91,7 @@ struct KeysignView: View {
             }
             for msg in self.messsageToSign {
                 let msgHash = Utils.getMessageBodyHash(msg: msg)
+                logger.info("message_id:\(msgHash)")
                 self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: msgHash)
                 self.stateAccess = LocalStateAccessorImpl(vault: vault)
                 var err: NSError?
@@ -135,8 +136,6 @@ struct KeysignView: View {
                         self.signature = "R:\(resp.r), S:\(resp.s), RecoveryID:\(resp.recoveryID)"
                     }
                     t.cancel()
-                    // wait for the polling task to exit
-                    try await t.value
                 } catch {
                     logger.error("fail to do keysign,error:\(error.localizedDescription)")
                     self.keysignError = error.localizedDescription
@@ -171,7 +170,7 @@ struct KeysignView: View {
                     let msgs = try decoder.decode([Message].self, from: data)
 
                     for msg in msgs {
-                        logger.debug("Got message from: \(msg.from), to: \(msg.to)")
+                        logger.debug("Got message from: \(msg.from), to: \(msg.to),body:\(msg.body)")
                         try self.tssService?.applyData(msg.body)
                     }
                 } catch {

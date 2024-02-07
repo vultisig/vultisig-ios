@@ -89,7 +89,7 @@ struct JoinKeysignView: View {
                                     keysignCommittee: self.keysignCommittee,
                                     mediatorURL: self.serviceDelegate.serverUrl ?? "",
                                     sessionID: self.sessionID,
-                                    keysignType: .ECDSA,
+                                    keysignType: self.keysignType,
                                     messsageToSign: self.keysignMessages,
                                     localPartyKey: self.localPartyID)
                     } else {
