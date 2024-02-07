@@ -34,10 +34,19 @@ struct PeerDiscoveryView: View {
             switch self.currentState {
             case .WaitingForDevices:
                 Text("Scan the following QR code to join keygen session")
-                Image(uiImage: self.getQrImage(size: 100))
-                    .resizable()
-                    .scaledToFit()
-                    .padding()
+                if let img = self.getQrImage(size: 100) {
+#if os(iOS)
+                    Image(uiImage: UIImage(uiImage: img))
+                        .resizable()
+                        .scaledToFit()
+                        .padding()
+#else
+                    Image(nsImage: NSImage(cgImage: img, size: .zero))
+                        .resizable()
+                        .scaledToFit()
+                        .padding()
+#endif
+                }
                 Text("Available devices")
                 List(self.peersFound, id: \.self, selection: self.$selections) { peer in
                     HStack {
@@ -89,7 +98,7 @@ struct PeerDiscoveryView: View {
             if let localPartyID = appState.creatingVault?.localPartyID, !localPartyID.isEmpty {
                 self.localPartyID = localPartyID
             } else {
-                self.localPartyID = UIDevice.current.name
+                self.localPartyID = Utils.getLocalDeviceIdentity()
                 self.appState.creatingVault?.localPartyID = self.localPartyID
             }
         }
@@ -100,26 +109,26 @@ struct PeerDiscoveryView: View {
         }
     }
     
-    private func getQrImage(size: CGFloat) -> UIImage {
+    private func getQrImage(size: CGFloat) -> CGImage? {
         let context = CIContext()
         guard let qrFilter = CIFilter(name: "CIQRCodeGenerator") else {
-            return UIImage(systemName: "xmark") ?? UIImage()
+            return NSImage(named: "xmark")?.cgImage(forProposedRect: nil, context: nil, hints: nil)
         }
         
         let data = Data(sessionID.utf8)
         qrFilter.setValue(data, forKey: "inputMessage")
         
         guard let qrCodeImage = qrFilter.outputImage else {
-            return UIImage(systemName: "xmark") ?? UIImage()
+            return NSImage(named: "xmark")?.cgImage(forProposedRect: nil, context: nil, hints: nil)
         }
         
         let transformedImage = qrCodeImage.transformed(by: CGAffineTransform(scaleX: size, y: size))
         
         guard let cgImage = context.createCGImage(transformedImage, from: transformedImage.extent) else {
-            return UIImage(systemName: "xmark") ?? UIImage()
+            return NSImage(named: "xmark")?.cgImage(forProposedRect: nil, context: nil, hints: nil)
         }
         
-        return UIImage(cgImage: cgImage)
+        return cgImage
     }
     
     private func startSession() {

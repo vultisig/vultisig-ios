@@ -1,8 +1,9 @@
 //
 //  JoinKeysignView.swift
 //  VoltixApp
-
+#if os(iOS)
 import CodeScanner
+#endif
 import OSLog
 import SwiftUI
 
@@ -39,7 +40,9 @@ struct JoinKeysignView: View {
                     self.isShowingScanner = true
                 }
                 .sheet(isPresented: self.$isShowingScanner, content: {
+                    #if os(iOS)
                     CodeScannerView(codeTypes: [.qr], completion: self.handleScan)
+                    #endif
                 })
             case .DiscoverService:
                 HStack {
@@ -114,7 +117,7 @@ struct JoinKeysignView: View {
             if let localPartyID = appState.currentVault?.localPartyID, !localPartyID.isEmpty {
                 self.localPartyID = localPartyID
             } else {
-                self.localPartyID = UIDevice.current.name
+                self.localPartyID = Utils.getLocalDeviceIdentity()
             }
         }
     }
@@ -172,7 +175,7 @@ struct JoinKeysignView: View {
             }
         }
     }
-
+    #if os(iOS)
     private func handleScan(result: Result<ScanResult, ScanError>) {
         switch result {
         case .success(let result):
@@ -196,6 +199,7 @@ struct JoinKeysignView: View {
         }
         self.currentStatus = .JoinKeysign
     }
+    #endif
 }
 
 #Preview {

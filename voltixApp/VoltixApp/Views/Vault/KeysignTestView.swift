@@ -10,12 +10,12 @@ struct KeysignTestView: View {
     @State private var keysignMessage = "Stuff to sign"
     @State private var chains = [Chain.THORChain,Chain.Solana]
     @State private var currentChain: Chain? = nil
-    @State var editMode = EditMode.active
+    
     var body: some View {
         VStack{
             List(chains,id: \.self,selection: $currentChain){c in
                 Text(c.name)
-            }.environment(\.editMode,$editMode)
+            }
             TextField("keysign message",text: $keysignMessage)
             Spacer()
             Button("Sign it",systemImage: "person.2.badge.key.fill"){
