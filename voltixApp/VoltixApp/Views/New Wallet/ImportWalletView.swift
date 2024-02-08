@@ -34,21 +34,34 @@ private struct smallScreen: View {
                     
                 }
             )
-            Spacer()
-            ZStack() {
-                TextEditor(text: $vaultText)
-                .foregroundStyle(.secondary)
-                .padding(.horizontal)
-                .navigationTitle("About you")
+            Spacer().frame(height: 30)
+            VStack(alignment: .leading, spacing: 10) {
+                ZStack(alignment: .bottomTrailing) {
+                    TextEditor(text: $vaultText)
+                        .font(.custom("AmericanTypewriter", fixedSize: 24))
+                        .scrollContentBackground(.hidden)
+                        .foregroundColor(.black)
+                    HStack {
+                        Button(action : {}) {
+                            Image("Camera")
+                        }
+                        .padding(.trailing,  8)
+                        .buttonStyle(PlainButtonStyle())
+                        Button(action : {}) {
+                            Image("Doc")
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
                 .foregroundColor(.clear)
-                .frame(width: 364, height: 286)
+                .frame(width: .infinity, height: 326)
+                .padding()
                 .background(Color(red: 0.96, green: 0.96, blue: 0.96))
                 .cornerRadius(12)
             }
-            .frame(height: 286)
-            .padding(.top, 4)
-            
-
+            .padding(.leading, 16)
+            .padding(.trailing, 16)
+            Spacer()
             BottomBar(
                 content: "CONTINUE",
                 onClick: {}
@@ -68,6 +81,7 @@ private struct smallScreen: View {
 private struct largeScreen: View {
     @Binding var presentationStack: Array<CurrentScreen>
     @State private var vaultText = ""
+    @State private var isloaded: Bool = false
     
     var body: some View {
         VStack {
@@ -115,10 +129,14 @@ private struct largeScreen: View {
             .padding(.leading, 30)
             .padding(.trailing, 30)
             Spacer()
-            BottomBar(
-                content: "CONTINUE",
-                onClick: {}
-            )
+            if isloaded {
+                BottomBar(
+                    content: "CONTINUE",
+                    onClick: {
+                        self.presentationStack.append(.vaultAssets)
+                    }
+                )
+            }
         }
         .frame(
             minWidth: 0,

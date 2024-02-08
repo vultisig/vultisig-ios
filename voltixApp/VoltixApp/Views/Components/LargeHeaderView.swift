@@ -46,7 +46,8 @@ struct LargeHeaderView: View {
                 }
                 .foregroundColor(.black)
                 .buttonStyle(PlainButtonStyle())
-            } .frame(width: .infinity, height: 130)
+            }
+            .frame(width: .infinity, height: 130)
             Text(head)
                 .font(Font.custom("Menlo", size: 40))
                 .foregroundColor(.black)
