@@ -10,12 +10,10 @@ struct WelcomeView: View {
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     
     var body: some View {
-        Group {
-            if horizontalSizeClass == .compact {
-                welcomeSmallScreen(presentationStack: $presentationStack)
-            } else {
-                welcomeLargeScreen(presentationStack: $presentationStack)
-            }
+        if horizontalSizeClass == .compact {
+            welcomeSmallScreen(presentationStack: $presentationStack)
+        } else {
+            welcomeLargeScreen(presentationStack: $presentationStack)
         }
     }
 }
@@ -83,6 +81,7 @@ struct welcomeSmallScreen: View {
 
 struct welcomeLargeScreen: View {
     @Binding var presentationStack: Array<CurrentScreen>
+    @State private var topPadding:CGFloat = 4;
     
     var body: some View {
         VStack(alignment: .center) {
@@ -93,7 +92,7 @@ struct welcomeLargeScreen: View {
               leftAction: {},
               rightAction: {}
             )
-            Logo(width: 250, height: 250)
+            Logo(width: 200, height: 200)
             Text("SECURE CRYPTO VAULT")
               .font(Font.custom("Menlo", size: 40).weight(.bold))
               .padding(.top, 12)
@@ -104,31 +103,34 @@ struct welcomeLargeScreen: View {
               .foregroundColor(.black)
             Text("SECURE, TRUSTED DEVICES")
               .font(Font.custom("Menlo", size: 40))
-              .padding(.top, 12)
+              .padding(.top, topPadding)
               .foregroundColor(.black)
             Text("FULLY SELF-CUSTODIAL")
               .font(Font.custom("Menlo", size: 40))
-              .lineSpacing(60)
+              .padding(.top, topPadding)
               .foregroundColor(.black)
             Text("NO TRACKING, NO REGISTRATION")
               .font(Font.custom("Menlo", size: 40))
-              .lineSpacing(60)
+              .padding(.top, topPadding)
               .foregroundColor(.black)
             Text("FULLY OPEN-SOURCE")
               .font(Font.custom("Menlo", size: 40))
-              .lineSpacing(60)
+              .padding(.top, topPadding)
               .foregroundColor(.black)
             Text("AUDITED")
               .font(Font.custom("Menlo", size: 40))
-              .lineSpacing(60)
+              .padding(.top, topPadding)
               .foregroundColor(.black)
             }
-            .frame(width: .infinity, height: 256)
+            .padding(.top, topPadding)
             Spacer()
-            BottomBar(content: "START", onClick: {})
+            BottomBar(content: "START", onClick: {
+                self.presentationStack.append(.startScreen)
+            })
         }
         .frame(minWidth:0, maxWidth:.infinity, minHeight:0, maxHeight:.infinity, alignment: .top)
-            .background(.white);
+        .background(.white)
+        .navigationBarBackButtonHidden();
     }
 }
 

@@ -10,6 +10,7 @@ import SwiftUI
 struct LargeButton: View {
     let content: String;
     let onClick: () -> Void;
+    @Environment(\.horizontalSizeClass) var horizontalSizeClass
     var body: some View {
         Button(action: onClick) {
           VStack() {
@@ -18,11 +19,14 @@ struct LargeButton: View {
               .lineSpacing(60)
               .foregroundColor(.black);
           }
-          
         }
-        .frame(width: 240, height: 148)
         .cornerRadius(12)
         .foregroundColor(.clear)
+        #if os(iOS)
+        .frame(width: 240, height: 148)
+        #else
+        .frame(width: 307, height: 307)
+        #endif
         .background(Color(red: 0.96, green: 0.96, blue: 0.96))
     }
 }
