@@ -28,6 +28,7 @@ struct LargeButton: View {
         .frame(width: 307, height: 307)
         #endif
         .background(Color(red: 0.96, green: 0.96, blue: 0.96))
+        .buttonStyle(PlainButtonStyle())
     }
 }
 

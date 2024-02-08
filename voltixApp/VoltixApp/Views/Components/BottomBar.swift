@@ -26,6 +26,7 @@ struct BottomBar: View {
                   .frame(width: 20, height: 30)
                 }
             }
+            .buttonStyle(PlainButtonStyle())
         }
         .padding(.trailing, 16)
         .frame(width: .infinity, height: 70)

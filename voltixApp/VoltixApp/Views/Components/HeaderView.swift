@@ -23,6 +23,7 @@ struct HeaderView: View {
                         .frame(width: 30, height: 30)
                 }
                 .foregroundColor(.black)
+                .buttonStyle(PlainButtonStyle())
                 Spacer()
                 Button(action: rightAction) {
                     Image(rightIcon)
@@ -30,6 +31,7 @@ struct HeaderView: View {
                         .frame(width: 30, height: 30)
                 }
                 .foregroundColor(.black)
+                .buttonStyle(PlainButtonStyle())
             } .frame(width: .infinity, height: 130)
             Text(head)
                 .font(Font.custom("Menlo", size: 40))

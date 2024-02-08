@@ -72,7 +72,7 @@ struct MainNavigationStack: View {
                 }
                 .onAppear(perform: {
                     if appState.currentVault == nil {
-                        self.presentationStack = [CurrentScreen.vaultSelection]
+                        self.presentationStack = [CurrentScreen.importWallet]
                         return
                     }
                 })
