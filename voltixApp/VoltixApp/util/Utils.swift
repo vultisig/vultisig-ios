@@ -6,6 +6,9 @@
 import CryptoKit
 import Foundation
 import OSLog
+#if os(iOS)
+import UIKit // Import UIKit to use UIDevice
+#endif
 
 enum Utils {
     static let logger = Logger(subsystem: "util", category: "network")
@@ -93,6 +96,7 @@ enum Utils {
             String(format: "%02hhx", $0)
         }.joined()
     }
+    
     public static func getLocalDeviceIdentity() -> String{
         #if os(iOS)
         return UIDevice.current.name
@@ -100,4 +104,5 @@ enum Utils {
         return ProcessInfo.processInfo.hostName
         #endif
     }
+
 }
