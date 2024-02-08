@@ -22,6 +22,9 @@
 		049BBB682B71E9C5004C231F /* WifiBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB672B71E9C5004C231F /* WifiBar.swift */; };
 		4600167E2B71A12D00CE17C7 /* Tss.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4600167D2B71A12D00CE17C7 /* Tss.xcframework */; };
 		D7347C262B74B82500887E57 /* LargeHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7347C252B74B82500887E57 /* LargeHeaderView.swift */; };
+		D7347C282B758B2E00887E57 /* ImportQRCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7347C272B758B2E00887E57 /* ImportQRCode.swift */; };
+		D7347C2A2B758BE100887E57 /* ImportFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7347C292B758BE100887E57 /* ImportFile.swift */; };
+		D7347C2C2B758C6E00887E57 /* FileItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7347C2B2B758C6E00887E57 /* FileItem.swift */; };
 		D9A22EB72B667C41007281BF /* Mediator in Frameworks */ = {isa = PBXBuildFile; productRef = D9A22EB62B667C41007281BF /* Mediator */; };
 		D9AD8EDA2B6722CC0009F8D5 /* ApplicationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */; };
 		D9AD8EDC2B6723D10009F8D5 /* AppNavigationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8EDB2B6723D10009F8D5 /* AppNavigationState.swift */; };
@@ -106,6 +109,9 @@
 		049BBB672B71E9C5004C231F /* WifiBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WifiBar.swift; sourceTree = "<group>"; };
 		4600167D2B71A12D00CE17C7 /* Tss.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
 		D7347C252B74B82500887E57 /* LargeHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeHeaderView.swift; sourceTree = "<group>"; };
+		D7347C272B758B2E00887E57 /* ImportQRCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportQRCode.swift; sourceTree = "<group>"; };
+		D7347C292B758BE100887E57 /* ImportFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportFile.swift; sourceTree = "<group>"; };
+		D7347C2B2B758C6E00887E57 /* FileItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileItem.swift; sourceTree = "<group>"; };
 		D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ApplicationState.swift; path = voltixApp/Model/ApplicationState.swift; sourceTree = SOURCE_ROOT; };
 		D9AD8EDB2B6723D10009F8D5 /* AppNavigationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppNavigationState.swift; path = voltixApp/Model/AppNavigationState.swift; sourceTree = SOURCE_ROOT; };
 		D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WelcomeView.swift; path = VoltixApp/Views/WelcomeView.swift; sourceTree = SOURCE_ROOT; };
@@ -207,6 +213,7 @@
 				049BBB652B71E987004C231F /* VaultItem.swift */,
 				049BBB672B71E9C5004C231F /* WifiBar.swift */,
 				D7347C252B74B82500887E57 /* LargeHeaderView.swift */,
+				D7347C2B2B758C6E00887E57 /* FileItem.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -258,6 +265,8 @@
 				D9AD8EE52B6730A40009F8D5 /* PeerDiscoveryView.swift */,
 				D9AD8EE72B6730CA0009F8D5 /* FinishedTSSKeygenView.swift */,
 				DE49A1B12B6A0F77000F3AFB /* JoinKeygenView.swift */,
+				D7347C272B758B2E00887E57 /* ImportQRCode.swift */,
+				D7347C292B758BE100887E57 /* ImportFile.swift */,
 			);
 			path = "New Wallet";
 			sourceTree = "<group>";
@@ -551,6 +560,7 @@
 				DE49A1A82B68C213000F3AFB /* ModelContainerPreview.swift in Sources */,
 				049BBB5E2B71E83D004C231F /* Logo.swift in Sources */,
 				DE1572A02B70F284009BC7C5 /* Keysign.swift in Sources */,
+				D7347C2C2B758C6E00887E57 /* FileItem.swift in Sources */,
 				DE49A1A82B68C213000F3AFB /* ModelContainerPreview.swift in Sources */,
 				DE1572992B70F26A009BC7C5 /* KeyType.swift in Sources */,
 				D9AD8EF92B6731C50009F8D5 /* SendDoneView.swift in Sources */,
@@ -561,6 +571,7 @@
 				049BBB682B71E9C5004C231F /* WifiBar.swift in Sources */,
 				049BBB5A2B71E785004C231F /* HeaderView.swift in Sources */,
 				D9AD8EFB2B6731E50009F8D5 /* SwapInputDetailsView.swift in Sources */,
+				D7347C2A2B758BE100887E57 /* ImportFile.swift in Sources */,
 				049BBB5C2B71E7F6004C231F /* LargeButton.swift in Sources */,
 				D9AD8EE82B6730CA0009F8D5 /* FinishedTSSKeygenView.swift in Sources */,
 				DE49A1A52B68BB6B000F3AFB /* VaultSelectionView.swift in Sources */,
@@ -577,6 +588,7 @@
 				D9AD8EF32B67317C0009F8D5 /* SendPeerDiscoveryView.swift in Sources */,
 				049BBB562B71E5F5004C231F /* Choose.swift in Sources */,
 				D9AD8EDA2B6722CC0009F8D5 /* ApplicationState.swift in Sources */,
+				D7347C282B758B2E00887E57 /* ImportQRCode.swift in Sources */,
 				D9AD8EFF2B67321D0009F8D5 /* SwapWaitingForPeersView.swift in Sources */,
 				DE1572962B70F254009BC7C5 /* TssMessenger.swift in Sources */,
 				DE491CEF2B708260007C88D5 /* KeygenView.swift in Sources */,
