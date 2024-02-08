@@ -32,19 +32,11 @@ struct KeysignDiscoveryView: View {
             switch self.currentState {
             case .WaitingForDevices:
                 Text("Scan the following QR code to join keysign session")
-                if let img = self.getQrImage(size: 100) {
-                    #if os(iOS)
-                    Image(uiImage: UIImage(cgImage: img))
-                        .resizable()
-                        .scaledToFit()
-                        .padding()
-                    #else
-                    Image(nsImage: NSImage(cgImage: img, size: .zero))
-                        .resizable()
-                        .scaledToFit()
-                        .padding()
-                    #endif
-                }
+                self.getQrImage(size: 100)
+                    .resizable()
+                    .scaledToFit()
+                    .padding()
+
                 Text("Available devices")
                 List(self.peersFound, id: \.self, selection: self.$selections) { peer in
                     HStack {
@@ -153,15 +145,10 @@ struct KeysignDiscoveryView: View {
         })
     }
 
-    func getQrImage(size: CGFloat) -> CGImage? {
+    func getQrImage(size: CGFloat) -> Image {
         let context = CIContext()
-#if os(iOS)
-        let xmarkImage = UIImage(systemName: "xmark")?.cgImage
-#else
-        let xmarkImage = NSImage(named: "xmark")?.cgImage(forProposedRect: nil, context: nil, hints: nil)
-#endif
         guard let qrFilter = CIFilter(name: "CIQRCodeGenerator") else {
-            return xmarkImage
+            return Image(systemName: "xmark")
         }
 
         let keysignMsg = KeysignMessage(sessionID: self.sessionID,
@@ -176,16 +163,15 @@ struct KeysignDiscoveryView: View {
         }
 
         guard let qrCodeImage = qrFilter.outputImage else {
-            return xmarkImage
+            return Image(systemName: "xmark")
         }
 
         let transformedImage = qrCodeImage.transformed(by: CGAffineTransform(scaleX: size, y: size))
 
         guard let cgImage = context.createCGImage(transformedImage, from: transformedImage.extent) else {
-            return xmarkImage
+            return Image(systemName: "xmark")
         }
-
-        return cgImage
+        return Image(cgImage,scale: 1.0,orientation: .up,label: Text("QRCode"))
     }
 }
 
