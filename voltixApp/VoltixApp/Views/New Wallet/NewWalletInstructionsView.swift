@@ -9,17 +9,121 @@ struct NewWalletInstructions: View {
     @Binding var presentationStack: Array<CurrentScreen>
     @State  var vaultName:String
     var body: some View {
-        VStack{
-            Text("New Vault").font(.largeTitle)
-            VStack(alignment:.leading){
-                Text("Enter new vault name").font(.title3)
-                TextField("New vault name",text: $vaultName).textFieldStyle(.roundedBorder)
-            }.padding(.top,20)
+        #if os(iOS)
+        smallScreen(presentationStack: $presentationStack)
+        #else
+        LargeScreen(presentationStack: $presentationStack)
+        #endif
+    }
+}
+
+private struct smallScreen: View {
+    @Binding var presentationStack: Array<CurrentScreen>
+    var body: some View {
+        VStack() {
+            HeaderView(
+              rightIcon: "questionmark.circle",
+              leftIcon: "chevron.left",
+              head: "SETUP",
+              leftAction: {},
+              rightAction: {}
+            )
+            Text("YOU NEED THREE DEVICES.")
+              .font(Font.custom("Montserrat", size: 24).weight(.medium))
+              .lineSpacing(36)
+              .foregroundColor(.black);
+            DeviceView(
+                number: "1",
+                description: "MAIN",
+                deviceImg: "Device1",
+                deviceDescription: "A MACBOOK"
+            )
             Spacer()
-            Button("create new vault",systemImage: "person.3.fill") {
-                presentationStack.append(.peerDiscovery)
-            }.disabled(!vaultName.isEmpty)
+            DeviceView(
+                number: "2",
+                description: "PAIR",
+                deviceImg: "Device2",
+                deviceDescription: "ANY"
+            )
+            Spacer()
+            DeviceView(
+                number: "3",
+                description: "PAIR",
+                deviceImg: "Device3",
+                deviceDescription: "ANY"
+            )
+            WifiBar()
+            BottomBar(content: "CONTINUE", onClick: {
+                //self.presentationStack.append(.peerDiscovery)
+            })
         }
+        .frame(
+            minWidth: 0,
+            maxWidth: .infinity,
+            minHeight: 0,
+            maxHeight: .infinity,
+            alignment: .top
+        )
+        .background(.white)
+    }
+}
+
+private struct LargeScreen: View {
+    @Binding var presentationStack: Array<CurrentScreen>
+    var body: some View {
+        VStack() {
+            LargeHeaderView(
+              rightIcon: "questionmark.circle",
+              leftIcon: "chevron.left",
+              head: "SETUP",
+              leftAction: {},
+              rightAction: {},
+              back: true
+            )
+            Text("YOU NEED A MACBOOK AND TWO PAIR DEVICES.")
+              .font(Font.custom("Montserrat", size: 24).weight(.medium))
+              .lineSpacing(36)
+              .foregroundColor(.black);
+            Spacer().frame(height: 30)
+            HStack {
+                Spacer()
+                DeviceView(
+                    number: "1",
+                    description: "MAIN",
+                    deviceImg: "Device1",
+                    deviceDescription: "A MACBOOK"
+                )
+                Spacer()
+                DeviceView(
+                    number: "2",
+                    description: "PAIR DEVICE",
+                    deviceImg: "Device2",
+                    deviceDescription: "ANY APPLE DEVICE"
+                )
+                Spacer()
+                DeviceView(
+                    number: "3",
+                    description: "PAIR DEVICE",
+                    deviceImg: "Device3",
+                    deviceDescription: "ANY APPLE DEVICE"
+                )
+                Spacer()
+            }
+            Spacer()
+            ZStack {
+              WifiBar()
+            }
+            BottomBar(content: "CONTINUE", onClick: { })
+        }
+        .frame(
+            minWidth: 0,
+            maxWidth: .infinity,
+            minHeight: 0,
+            maxHeight: .infinity,
+            alignment: .top
+        )
+        .background(.white)
+        .navigationBarBackButtonHidden()
     }
 }
 

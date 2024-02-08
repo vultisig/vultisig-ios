@@ -12,11 +12,11 @@ struct StartView: View {
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     
     var body: some View {
-        if horizontalSizeClass == .compact {
+        #if os(iOS)
             startSmallScreen(presentationStack: $presentationStack)
-        } else {
+        #else
             startLargeScreen(presentationStack: $presentationStack)
-        }
+        #endif
     }
 }
 

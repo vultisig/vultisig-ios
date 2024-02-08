@@ -10,11 +10,11 @@ struct WelcomeView: View {
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
     
     var body: some View {
-        if horizontalSizeClass == .compact {
+        #if os(iOS)
             welcomeSmallScreen(presentationStack: $presentationStack)
-        } else {
+        #else
             welcomeLargeScreen(presentationStack: $presentationStack)
-        }
+        #endif
     }
 }
 
