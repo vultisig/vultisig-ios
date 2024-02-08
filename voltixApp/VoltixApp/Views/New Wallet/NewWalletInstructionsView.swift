@@ -22,8 +22,8 @@ private struct smallScreen: View {
     var body: some View {
         VStack() {
             HeaderView(
-              rightIcon: "questionmark.circle",
-              leftIcon: "chevron.left",
+              rightIcon: "QuestionMark",
+              leftIcon: "BackArrow",
               head: "SETUP",
               leftAction: {},
               rightAction: {}
@@ -73,10 +73,13 @@ private struct LargeScreen: View {
     var body: some View {
         VStack() {
             LargeHeaderView(
-              rightIcon: "questionmark.circle",
-              leftIcon: "chevron.left",
+              rightIcon: "QuestionMark",
+              leftIcon: "BackArrow",
               head: "SETUP",
-              leftAction: {},
+              leftAction: {
+                  self.presentationStack.removeLast();
+              },
+              
               rightAction: {},
               back: true
             )
