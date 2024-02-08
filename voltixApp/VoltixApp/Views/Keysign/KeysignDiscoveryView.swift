@@ -34,7 +34,7 @@ struct KeysignDiscoveryView: View {
                 Text("Scan the following QR code to join keysign session")
                 if let img = self.getQrImage(size: 100) {
                     #if os(iOS)
-                    Image(uiImage: UIImage(uiImage: img))
+                    Image(uiImage: UIImage(cgImage: img))
                         .resizable()
                         .scaledToFit()
                         .padding()
@@ -155,8 +155,13 @@ struct KeysignDiscoveryView: View {
 
     func getQrImage(size: CGFloat) -> CGImage? {
         let context = CIContext()
+#if os(iOS)
+        let xmarkImage = UIImage(systemName: "xmark")?.cgImage
+#else
+        let xmarkImage = NSImage(named: "xmark")?.cgImage(forProposedRect: nil, context: nil, hints: nil)
+#endif
         guard let qrFilter = CIFilter(name: "CIQRCodeGenerator") else {
-            return NSImage(named: "xmark")?.cgImage(forProposedRect: nil, context: nil, hints: nil)
+            return xmarkImage
         }
 
         let keysignMsg = KeysignMessage(sessionID: self.sessionID,
@@ -171,13 +176,13 @@ struct KeysignDiscoveryView: View {
         }
 
         guard let qrCodeImage = qrFilter.outputImage else {
-            return NSImage(named: "xmark")?.cgImage(forProposedRect: nil, context: nil, hints: nil)
+            return xmarkImage
         }
 
         let transformedImage = qrCodeImage.transformed(by: CGAffineTransform(scaleX: size, y: size))
 
         guard let cgImage = context.createCGImage(transformedImage, from: transformedImage.extent) else {
-            return NSImage(named: "xmark")?.cgImage(forProposedRect: nil, context: nil, hints: nil)
+            return xmarkImage
         }
 
         return cgImage
