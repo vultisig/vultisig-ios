@@ -72,6 +72,7 @@ private struct smallScreen: View {
 
 private struct LargeScreen: View {
     @Binding var presentationStack: Array<CurrentScreen>
+    @State private var radioClicked: Bool = false
     var body: some View {
         VStack() {
             LargeHeaderView(
@@ -116,7 +117,20 @@ private struct LargeScreen: View {
             Spacer()
             ZStack {
               WifiBar()
+              VStack {
+                HStack {
+                  Spacer()
+                    radioButton(
+                        1,
+                        callback: self.radioButtonCallback,
+                        isSelected: self.radioClicked,
+                        text: "THIS IS THE MAIN DEVICE"
+                    )
+                }
+              }
+              .frame(width: .infinity, height: 100)
             }
+            .frame(width: .infinity, height: 100)
             ProgressBottomBar(
                 content: "CONTINUE",
                 onClick: { },
@@ -132,6 +146,9 @@ private struct LargeScreen: View {
         )
         .background(.white)
         .navigationBarBackButtonHidden()
+    }
+    func radioButtonCallback(id: Int) {
+        self.radioClicked = !self.radioClicked
     }
 }
 

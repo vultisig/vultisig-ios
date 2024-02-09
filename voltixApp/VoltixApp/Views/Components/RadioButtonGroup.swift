@@ -95,6 +95,59 @@ struct RadioButtonGroup: View {
     }
 }
 
+struct radioButton: View {
+
+    @Environment(\.colorScheme) var colorScheme
+
+    let id: Int
+    let callback: (Int)->()
+    let isSelected : Bool
+    let size: CGFloat
+    let color: Color
+    let textSize: CGFloat
+    let text: String
+
+    init(
+        _ id: Int,
+        callback: @escaping (Int)->(),
+        isSelected: Bool,
+        size: CGFloat = 20,
+        color: Color = Color.black,
+        textSize: CGFloat = 24,
+        text: String
+        ) {
+        self.id = id
+        self.size = size
+        self.color = color
+        self.textSize = textSize
+        self.isSelected = isSelected
+        self.callback = callback
+        self.text = text;
+    }
+
+    var body: some View {
+        Button(action:{
+            self.callback(self.id)
+        }) {
+            HStack(alignment: .center) {
+                Text(self.text)
+                    .font(Font.custom("Montserrat", size: self.textSize).weight(.medium))
+                Spacer().frame(width: 16)
+                Image(systemName: self.isSelected ? "largecircle.fill.circle" : "circle")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: self.size, height: self.size)
+                
+            }
+            .frame(height: 35)
+            .foregroundColor(self.color)
+            .padding(.trailing, 30)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .foregroundColor(self.color)
+    }
+}
+
 #Preview {
     RadioButtonGroup(
         items: [
