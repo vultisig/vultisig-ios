@@ -25,7 +25,9 @@ private struct smallScreen: View {
               rightIcon: "QuestionMark",
               leftIcon: "BackArrow",
               head: "SETUP",
-              leftAction: {},
+              leftAction: {
+                  self.presentationStack.removeLast();
+              },
               rightAction: {}
             )
             Text("YOU NEED THREE DEVICES.")
@@ -79,7 +81,6 @@ private struct LargeScreen: View {
               leftAction: {
                   self.presentationStack.removeLast();
               },
-              
               rightAction: {},
               back: true
             )
@@ -116,7 +117,11 @@ private struct LargeScreen: View {
             ZStack {
               WifiBar()
             }
-            BottomBar(content: "CONTINUE", onClick: { })
+            ProgressBottomBar(
+                content: "CONTINUE",
+                onClick: { },
+                progress: 1
+            )
         }
         .frame(
             minWidth: 0,

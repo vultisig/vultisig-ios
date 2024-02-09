@@ -25,6 +25,7 @@
 		D7347C282B758B2E00887E57 /* ImportQRCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7347C272B758B2E00887E57 /* ImportQRCode.swift */; };
 		D7347C2A2B758BE100887E57 /* ImportFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7347C292B758BE100887E57 /* ImportFile.swift */; };
 		D7347C2C2B758C6E00887E57 /* FileItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7347C2B2B758C6E00887E57 /* FileItem.swift */; };
+		D7347C2E2B759A0F00887E57 /* ProgressBottomBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7347C2D2B759A0F00887E57 /* ProgressBottomBar.swift */; };
 		D9A22EB72B667C41007281BF /* Mediator in Frameworks */ = {isa = PBXBuildFile; productRef = D9A22EB62B667C41007281BF /* Mediator */; };
 		D9AD8EDA2B6722CC0009F8D5 /* ApplicationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */; };
 		D9AD8EDC2B6723D10009F8D5 /* AppNavigationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8EDB2B6723D10009F8D5 /* AppNavigationState.swift */; };
@@ -112,6 +113,7 @@
 		D7347C272B758B2E00887E57 /* ImportQRCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportQRCode.swift; sourceTree = "<group>"; };
 		D7347C292B758BE100887E57 /* ImportFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportFile.swift; sourceTree = "<group>"; };
 		D7347C2B2B758C6E00887E57 /* FileItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileItem.swift; sourceTree = "<group>"; };
+		D7347C2D2B759A0F00887E57 /* ProgressBottomBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressBottomBar.swift; sourceTree = "<group>"; };
 		D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ApplicationState.swift; path = voltixApp/Model/ApplicationState.swift; sourceTree = SOURCE_ROOT; };
 		D9AD8EDB2B6723D10009F8D5 /* AppNavigationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppNavigationState.swift; path = voltixApp/Model/AppNavigationState.swift; sourceTree = SOURCE_ROOT; };
 		D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WelcomeView.swift; path = VoltixApp/Views/WelcomeView.swift; sourceTree = SOURCE_ROOT; };
@@ -214,6 +216,7 @@
 				049BBB672B71E9C5004C231F /* WifiBar.swift */,
 				D7347C252B74B82500887E57 /* LargeHeaderView.swift */,
 				D7347C2B2B758C6E00887E57 /* FileItem.swift */,
+				D7347C2D2B759A0F00887E57 /* ProgressBottomBar.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -587,6 +590,7 @@
 				DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */,
 				D9AD8EF32B67317C0009F8D5 /* SendPeerDiscoveryView.swift in Sources */,
 				049BBB562B71E5F5004C231F /* Choose.swift in Sources */,
+				D7347C2E2B759A0F00887E57 /* ProgressBottomBar.swift in Sources */,
 				D9AD8EDA2B6722CC0009F8D5 /* ApplicationState.swift in Sources */,
 				D7347C282B758B2E00887E57 /* ImportQRCode.swift in Sources */,
 				D9AD8EFF2B67321D0009F8D5 /* SwapWaitingForPeersView.swift in Sources */,
