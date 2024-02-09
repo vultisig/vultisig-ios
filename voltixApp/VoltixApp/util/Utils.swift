@@ -7,7 +7,7 @@ import CryptoKit
 import Foundation
 import OSLog
 #if os(iOS)
-import UIKit // Import UIKit to use UIDevice
+import UIKit
 #endif
 
 enum Utils {

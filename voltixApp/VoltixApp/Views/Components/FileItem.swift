@@ -31,5 +31,5 @@ struct FileItem: View {
 }
 
 #Preview {
-    FileItem()
+    FileItem(icon: "", filename: "")
 }

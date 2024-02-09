@@ -27,89 +27,76 @@ struct KeysignDiscoveryView: View {
   let keysignMessage: String
   let chain: Chain
 
-  var body: some View {
-    VStack {
-      switch self.currentState {
-      case .WaitingForDevices:
-        Text("Scan the following QR code to join keysign session")
-        if let img = self.getQrImage(size: 100) {
-          #if os(iOS)
-            // Convert CGImage to UIImage for iOS
-            let uiImage = UIImage(cgImage: img)
-            Image(uiImage: uiImage)
-              .resizable()
-              .scaledToFit()
-              .padding()
-          #elseif os(macOS)
-            // Convert CGImage to NSImage for macOS
-            let nsImage = NSImage(cgImage: img, size: NSZeroSize)
-            Image(nsImage: nsImage)
-              .resizable()
-              .scaledToFit()
-              .padding()
-          #endif
-        }
-        Text("Available devices")
-        List(self.peersFound, id: \.self, selection: self.$selections) { peer in
-          HStack {
-            Image(systemName: self.selections.contains(peer) ? "checkmark.circle" : "circle")
-            Text(peer)
-          }
-          .onTapGesture {
-            if self.selections.contains(peer) {
-              self.selections.remove(peer)
-            } else {
-              self.selections.insert(peer)
+    var body: some View {
+        VStack {
+            switch self.currentState {
+            case .WaitingForDevices:
+                Text("Scan the following QR code to join keysign session")
+                self.getQrImage(size: 100)
+                    .resizable()
+                    .scaledToFit()
+                    .padding()
+
+                Text("Available devices")
+                List(self.peersFound, id: \.self, selection: self.$selections) { peer in
+                    HStack {
+                        Image(systemName: self.selections.contains(peer) ? "checkmark.circle" : "circle")
+                        Text(peer)
+                    }
+                    .onTapGesture {
+                        if self.selections.contains(peer) {
+                            self.selections.remove(peer)
+                        } else {
+                            self.selections.insert(peer)
+                        }
+                    }
+                }
+                Button("Sign") {
+                    self.startKeysign(allParticipants: self.selections.map { $0 })
+                    self.currentState = .Keysign
+                    self.discoverying = false
+                }
+                .disabled(self.selections.count < self.appState.currentVault?.getThreshold() ?? Int.max)
+            case .FailToStart:
+                Text("fail to start keysign")
+            case .Keysign:
+                KeysignView(presentationStack: self.$presentationStack,
+                            keysignCommittee: self.selections.map { $0 },
+                            mediatorURL: self.serverAddr,
+                            sessionID: self.sessionID,
+                            keysignType: self.chain.signingKeyType,
+                            messsageToSign: [self.keysignMessage],
+                            localPartyKey: self.localPartyID)
             }
-          }
         }
-        Button("Sign") {
-          self.startKeysign(allParticipants: self.selections.map { $0 })
-          self.currentState = .Keysign
-          self.discoverying = false
+        .onAppear {
+            if self.appState.currentVault == nil {
+                self.currentState = .FailToStart
+                return
+            }
+            if let localPartyID = appState.currentVault?.localPartyID, !localPartyID.isEmpty {
+                self.localPartyID = localPartyID
+            } else {
+                self.localPartyID = Utils.getLocalDeviceIdentity()
+            }
         }
-        .disabled(self.selections.count < self.appState.currentVault?.getThreshold() ?? Int.max)
-      case .FailToStart:
-        Text("fail to start keysign")
-      case .Keysign:
-        KeysignView(
-          presentationStack: self.$presentationStack,
-          keysignCommittee: self.selections.map { $0 },
-          mediatorURL: self.serverAddr,
-          sessionID: self.sessionID,
-          keysignType: self.chain.signingKeyType,
-          messsageToSign: [self.keysignMessage],
-          localPartyKey: self.localPartyID)
-      }
+        .task {
+            // start the mediator , so other devices can discover us
+            self.mediator.start()
+            self.startKeysignSession()
+            Task {
+                repeat {
+                    self.getParticipants()
+                    try await Task.sleep(nanoseconds: 1_000_000_000) // wait for a second to continue
+                } while self.discoverying
+            }
+        }
+        .onDisappear {
+            logger.info("mediator server stopped")
+            self.discoverying = false
+            self.mediator.stop()
+        }
     }
-    .onAppear {
-      if self.appState.currentVault == nil {
-        self.currentState = .FailToStart
-        return
-      }
-      if let localPartyID = appState.currentVault?.localPartyID, !localPartyID.isEmpty {
-        self.localPartyID = localPartyID
-      } else {
-        self.localPartyID = Utils.getLocalDeviceIdentity()
-      }
-    }
-    .task {
-      // start the mediator , so other devices can discover us
-      self.mediator.start()
-      self.startKeysignSession()
-      Task {
-        repeat {
-          self.getParticipants()
-          try await Task.sleep(nanoseconds: 1_000_000_000)  // wait for a second to continue
-        } while self.discoverying
-      }
-    }
-    .onDisappear {
-      logger.info("mediator server stopped")
-      self.discoverying = false
-      self.mediator.stop()
-    }
-  }
 
   private func startKeysign(allParticipants: [String]) {
     let urlString = "\(self.serverAddr)/start/\(self.sessionID)"
@@ -160,44 +147,34 @@ struct KeysignDiscoveryView: View {
       })
   }
 
-  func getQrImage(size: CGFloat) -> CGImage? {
-    let context = CIContext()
-    guard let qrFilter = CIFilter(name: "CIQRCodeGenerator") else {
-      logger.error("Failed to create QR code generator filter")
-      return nil
+    func getQrImage(size: CGFloat) -> Image {
+        let context = CIContext()
+        guard let qrFilter = CIFilter(name: "CIQRCodeGenerator") else {
+            return Image(systemName: "xmark")
+        }
+
+        let keysignMsg = KeysignMessage(sessionID: self.sessionID,
+                                        keysignMessages: [self.keysignMessage],
+                                        keysignType: self.chain.signingKeyType)
+        do {
+            let encoder = JSONEncoder()
+            let jsonData = try encoder.encode(keysignMsg)
+            qrFilter.setValue(jsonData, forKey: "inputMessage")
+        } catch {
+            logger.error("fail to encode keysign messages to json,error:\(error)")
+        }
+
+        guard let qrCodeImage = qrFilter.outputImage else {
+            return Image(systemName: "xmark")
+        }
+
+        let transformedImage = qrCodeImage.transformed(by: CGAffineTransform(scaleX: size, y: size))
+
+        guard let cgImage = context.createCGImage(transformedImage, from: transformedImage.extent) else {
+            return Image(systemName: "xmark")
+        }
+        return Image(cgImage,scale: 1.0,orientation: .up,label: Text("QRCode"))
     }
-
-    let keysignMsg = KeysignMessage(
-      sessionID: self.sessionID,
-      keysignMessages: [self.keysignMessage],
-      keysignType: self.chain.signingKeyType
-    )
-    do {
-      let encoder = JSONEncoder()
-      let jsonData = try encoder.encode(keysignMsg)
-      qrFilter.setValue(jsonData, forKey: "inputMessage")
-    } catch {
-      logger.error("Fail to encode keysign messages to json, error: \(error.localizedDescription)")
-      return nil
-    }
-
-    guard let qrCodeImage = qrFilter.outputImage else {
-      logger.error("Failed to generate QR code image")
-      return nil
-    }
-
-    let transform = CGAffineTransform(scaleX: size, y: size)
-    let scaledQRCodeImage = qrCodeImage.transformed(by: transform)
-
-    guard let cgImage = context.createCGImage(scaledQRCodeImage, from: scaledQRCodeImage.extent)
-    else {
-      logger.error("Failed to create CGImage from QR code image")
-      return nil
-    }
-
-    return cgImage
-  }
-
 }
 
 struct KeysignMessage: Codable {
