@@ -3,11 +3,14 @@
 //  VoltixApp
 //
 
+import SwiftData
 import SwiftUI
 
 struct NewWalletInstructions: View {
     @Binding var presentationStack: Array<CurrentScreen>
     @State  var vaultName:String
+    
+    
     var body: some View {
         #if os(iOS)
         smallScreen(presentationStack: $presentationStack)
@@ -19,6 +22,10 @@ struct NewWalletInstructions: View {
 
 private struct smallScreen: View {
     @Binding var presentationStack: Array<CurrentScreen>
+    @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject var appState: ApplicationState
+    @Query var vaults: [Vault]
+    
     var body: some View {
         VStack() {
             HeaderView(
@@ -58,6 +65,8 @@ private struct smallScreen: View {
             )
             WifiBar()
             BottomBar(content: "CONTINUE", onClick: {
+                let vault = Vault(name: "Vault #\(vaults.count + 1)")
+                appState.creatingVault = vault
                 self.presentationStack.append(.peerDiscovery)
             })
         }
@@ -75,6 +84,11 @@ private struct smallScreen: View {
 private struct LargeScreen: View {
     @Binding var presentationStack: Array<CurrentScreen>
     @State private var radioClicked: Bool = false
+    
+    @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject var appState: ApplicationState
+    @Query var vaults: [Vault]
+    
     var body: some View {
         VStack() {
             LargeHeaderView(
@@ -139,6 +153,8 @@ private struct LargeScreen: View {
             ProgressBottomBar(
                 content: "CONTINUE",
                 onClick: { 
+                    let vault = Vault(name: "Vault #\(vaults.count + 1)")
+                    appState.creatingVault = vault
                     self.presentationStack.append(.peerDiscovery)
                 },
                 progress: 1,
