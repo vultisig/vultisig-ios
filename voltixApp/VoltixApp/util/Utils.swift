@@ -97,6 +97,14 @@ enum Utils {
         }.joined()
     }
     
+    public static func isIOS () -> Bool {
+        #if os(iOS)
+        return true
+        #else
+        return false
+        #endif
+    }
+    
     public static func getLocalDeviceIdentity() -> String{
         #if os(iOS)
         return UIDevice.current.name

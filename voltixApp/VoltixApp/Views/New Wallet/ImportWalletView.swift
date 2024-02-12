@@ -146,6 +146,7 @@ private struct largeScreen: View {
             alignment: .top
         )
         .background(.white)
+        .navigationBarBackButtonHidden()
     }
 }
 

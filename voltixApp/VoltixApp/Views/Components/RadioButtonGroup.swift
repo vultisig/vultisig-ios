@@ -111,7 +111,7 @@ struct radioButton: View {
         _ id: Int,
         callback: @escaping (Int)->(),
         isSelected: Bool,
-        size: CGFloat = 20,
+        size: CGFloat = 30,
         color: Color = Color.black,
         textSize: CGFloat = 24,
         text: String

@@ -10,23 +10,37 @@ import SwiftUI
 struct BottomBar: View {
     let content: String;
     let onClick: () -> Void;
+    let buttondisplay: Bool;
+    
+    init(
+        content: String,
+        onClick: @escaping () -> Void,
+        buttondisplay: Bool = true
+    ) {
+        self.content = content;
+        self.onClick = onClick;
+        self.buttondisplay = buttondisplay;
+    }
+    
     var body: some View {
         HStack() {
             Spacer()
-            Button(action: onClick) {
-              HStack() {
-                Text(content)
-                  .lineSpacing(60)
-                  .font(Font.custom("Menlo", size: 40).weight(.black))
-                  .foregroundColor(.black)
-                  .padding(.trailing, 16)
-                Image(systemName: "chevron.right")
-                  .resizable()
-                  .foregroundColor(.black)
-                  .frame(width: 20, height: 30)
+            if buttondisplay {
+                Button(action: onClick) {
+                  HStack() {
+                    Text(content)
+                      .lineSpacing(60)
+                      .font(Font.custom("Menlo", size: 40).weight(.black))
+                      .foregroundColor(.black)
+                      .padding(.trailing, 16)
+                    Image(systemName: "chevron.right")
+                      .resizable()
+                      .foregroundColor(.black)
+                      .frame(width: 20, height: 30)
+                    }
                 }
+                .buttonStyle(PlainButtonStyle())
             }
-            .buttonStyle(PlainButtonStyle())
         }
         .padding(.trailing, 16)
         .frame(width: .infinity, height: 70)

@@ -134,7 +134,8 @@ private struct LargeScreen: View {
             ProgressBottomBar(
                 content: "CONTINUE",
                 onClick: { },
-                progress: 1
+                progress: 1,
+                showProgress: true
             )
         }
         .frame(

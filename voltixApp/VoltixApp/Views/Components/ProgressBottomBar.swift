@@ -11,41 +11,64 @@ struct ProgressBottomBar: View {
     let content: String;
     let onClick: () -> Void;
     let progress: Int;
+    let showProgress: Bool;
+    let showButton: Bool;
+    
+    init(
+        content: String,
+        onClick: @escaping () -> Void,
+        progress: Int,
+        showProgress: Bool = false,
+        showButton: Bool = true
+    ) {
+        self.content = content
+        self.onClick = onClick
+        self.progress = progress
+        self.showProgress = showProgress
+        self.showButton = showButton
+    }
     var body: some View {
         HStack() {
-            GeometryReader { geometry in
-                HStack(alignment: .center, spacing: 10) {
-                    ForEach(0..<5) { index in
-                        HStack {
-                            Rectangle()
-                                .foregroundColor(.clear)
-                                .frame(width: (geometry.size.width - 150) * 0.2, height: 5)
-                                .overlay(Rectangle()
-                                .stroke(self.barColor(index: index), lineWidth: 5))
+            if showProgress {
+                GeometryReader { geometry in
+                    HStack(alignment: .center, spacing: 10) {
+                        ForEach(0..<5) { index in
+                            HStack {
+                                Rectangle()
+                                    .foregroundColor(.clear)
+                                    .frame(width: (geometry.size.width - 150) * 0.2, height: 5)
+                                    .overlay(Rectangle()
+                                        .stroke(self.barColor(index: index), lineWidth: 5))
+                            }
+                            .padding(.leading, 30)
+                            .cornerRadius(12)
                         }
-                        .padding(.leading, 30)
-                        .cornerRadius(12)
                     }
+                    .frame(width: .infinity, height: 70)
                 }
-                .frame(width: .infinity, height: 70)
             }
             Spacer()
-            Button(action: onClick) {
-                HStack() {
-                    Spacer()
-                    Text(content)
-                      .lineSpacing(60)
-                      .font(Font.custom("Menlo", size: 40).weight(.black))
-                      .foregroundColor(.black)
-                      .padding(.trailing, 16)
-                    Image(systemName: "chevron.right")
-                      .resizable()
-                      .foregroundColor(.black)
-                      .frame(width: 20, height: 30)
+            if self.showButton {
+                Button(action: onClick) {
+                    HStack() {
+                        Spacer()
+                        Text(content)
+                            .lineSpacing(60)
+                            .font(Font.custom("Menlo", size: 40).weight(.black))
+                            .foregroundColor(.black)
+                            .padding(.trailing, 16)
+                        Image(systemName: "chevron.right")
+                            .resizable()
+                            .foregroundColor(.black)
+                            .frame(width: 20, height: 30)
+                    }
                 }
+                .frame(width: 350)
+                .buttonStyle(PlainButtonStyle())
             }
-            .frame(width: 350)
-            .buttonStyle(PlainButtonStyle())
+            else {
+                Spacer().frame(width: 350)
+            }
         }
         .padding(.trailing, 16)
         .frame(width: .infinity, height: 70)
