@@ -10,38 +10,58 @@ struct VaultSelectionView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var appState: ApplicationState
     @Query var vaults: [Vault]
+    @State private var items = [
+        Item(coinName: "Bitcoin", address: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w", amount: "1.1", coinAmount: "65,899"),
+        Item(coinName: "Ethereum", address: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w", amount: "1.1", coinAmount: "65,899"),
+    ]
     @Binding var presentationStack: [CurrentScreen]
     @State private var showingDeleteAlert = false
     @State private var itemToDelete: Vault? = nil
     var body: some View {
-        List(selection: $appState.currentVault) {
-            ForEach(vaults) { vault in
-                NavigationLink {
-                    VaultAssetsView(presentationStack: $presentationStack).onAppear(){
-                        appState.currentVault = vault
-                    }
-                } label: {
-                    Text(vault.name)
-                        .swipeActions {
-                            Button("Delete", role: .destructive) {
-                                self.itemToDelete = vault
-                                showingDeleteAlert = true
+        VStack {
+            LargeHeaderView(
+                rightIcon: "Refresh",
+                leftIcon: "Menu",
+                head: "VAULT",
+                leftAction: {    
+                    
+                },
+                rightAction: {
+                    
+                },
+                back: !Utils.isIOS()
+            )
+            VStack {
+                ForEach(items.indices, id: \.self) { index in
+                    VaultItem(
+                        coinName: items[index].coinName,
+                        amount: items[index].amount,
+                        coinAmount: items[index].coinAmount,
+                        address: items[index].address,
+                        isRadio: !Utils.isIOS(),
+                        showButtons: !Utils.isIOS(),
+                        onClick: {
+                            VaultAssetsView(presentationStack: $presentationStack).onAppear {
+                                appState.currentVault = Vault(name: "test", signers:["A","B","C"],  pubKeyECDSA: "ECDSA PubKey", pubKeyEdDSA: "EdDSA PubKey",keyshares: [KeyShare](), localPartyID: "first")
                             }
                         }
+                    )
+                    .buttonStyle(PlainButtonStyle())
                 }
             }
+            .frame(width: .infinity)
         }
-        .confirmationDialog(Text("Delete Vault"), isPresented: $showingDeleteAlert, titleVisibility: .automatic) {
-            Button("Delete", role: .destructive) {
-                withAnimation {
-                    if let itemToDelete {
-                        deleteVault(vault: itemToDelete)
-                    }
-                }
-            }
-        } message: {
-            Text("Are you sure want to delete selected vault? \n Operation is not reversable")
+        .onAppear {
+            self.appState.currentVault = Vault(name: "test", signers:["A","B","C"],  pubKeyECDSA: "ECDSA PubKey", pubKeyEdDSA: "EdDSA PubKey",keyshares: [KeyShare](), localPartyID: "first")
         }
+        .frame(
+            minWidth: 0,
+            maxWidth: .infinity,
+            minHeight: 0,
+            maxHeight: .infinity,
+            alignment: .top
+        )
+        .background(.white)
         .toolbar {
             ToolbarItemGroup(placement: .automatic) {
                 Button("New vault", systemImage: "plus") {
@@ -68,6 +88,12 @@ struct VaultSelectionView: View {
     }
 }
 
+private struct Item {
+    var coinName: String
+    var address: String
+    var amount: String
+    var coinAmount: String
+}
 #Preview("VaultSelection") {
     ModelContainerPreview(Vault.sampleVaults) {
         VaultSelectionView(presentationStack: .constant([]))

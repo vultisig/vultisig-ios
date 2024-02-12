@@ -234,8 +234,8 @@
 			children = (
 				049BBB4E2B71E37B004C231F /* Components */,
 				DE15729A2B70F284009BC7C5 /* Keysign */,
-				DE49A1682B65F6D9000F3AFB /* MainNavigationStack.swift */,
 				D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */,
+				DE49A1682B65F6D9000F3AFB /* MainNavigationStack.swift */,
 				D9AD8F042B675E230009F8D5 /* Vault */,
 				D9AD8EED2B6731290009F8D5 /* New Wallet */,
 				D9AD8EEF2B6731570009F8D5 /* Swap */,
