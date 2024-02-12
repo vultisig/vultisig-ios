@@ -14,7 +14,9 @@ struct ImportQRCode: View {
                 rightIcon: "QuestionMark",
                 leftIcon: "BACTARROW",
                 head: "IMPORT",
-                leftAction: {},
+                leftAction: {
+                    self.presentationStack.removeLast()
+                },
                 rightAction: {}
             )
             VStack {

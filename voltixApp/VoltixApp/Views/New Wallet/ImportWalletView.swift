@@ -28,7 +28,7 @@ private struct smallScreen: View {
                 leftIcon: "BackArrow",
                 head: "IMPORT",
                 leftAction: {
-                    
+                    self.presentationStack.removeLast()
                 },
                 rightAction: {
                     
@@ -42,12 +42,16 @@ private struct smallScreen: View {
                         .scrollContentBackground(.hidden)
                         .foregroundColor(.black)
                     HStack {
-                        Button(action : {}) {
+                        Button(action : {
+
+                        }) {
                             Image("Camera")
                         }
                         .padding(.trailing,  8)
                         .buttonStyle(PlainButtonStyle())
-                        Button(action : {}) {
+                        Button(action : {
+                            
+                        }) {
                             Image("Doc")
                         }
                         .buttonStyle(PlainButtonStyle())
@@ -64,7 +68,9 @@ private struct smallScreen: View {
             Spacer()
             BottomBar(
                 content: "CONTINUE",
-                onClick: {}
+                onClick: {
+                    self.presentationStack.append(.newWalletInstructions)
+                }
             )
         }
         .frame(
@@ -90,7 +96,7 @@ private struct largeScreen: View {
                 leftIcon: "BackArrow",
                 head: "IMPORT",
                 leftAction: {
-                    
+                    self.presentationStack.removeLast()
                 },
                 rightAction: {
                     
@@ -133,7 +139,7 @@ private struct largeScreen: View {
                 BottomBar(
                     content: "CONTINUE",
                     onClick: {
-                        self.presentationStack.append(.vaultAssets)
+                        self.presentationStack.append(.vaultSelection)
                     }
                 )
             }

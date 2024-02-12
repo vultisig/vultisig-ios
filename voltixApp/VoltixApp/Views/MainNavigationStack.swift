@@ -24,6 +24,10 @@ struct MainNavigationStack: View {
                         StartView(presentationStack: $presentationStack)
                     case .importWallet:
                         ImportWalletView(presentationStack: $presentationStack)
+                    case .importFile
+                        ImportFile(presentationStack: $presentationStack)
+                    case .importQRCode
+                        ImportQRCode(presentationStack: $presentationStack)
                     case .newWalletInstructions:
                         NewWalletInstructions(presentationStack: $presentationStack, vaultName: "new vault")
                     case .peerDiscovery:
@@ -72,7 +76,7 @@ struct MainNavigationStack: View {
                 }
                 .onAppear(perform: {
                     if appState.currentVault == nil {
-                        self.presentationStack = [CurrentScreen.importWallet]
+                        self.presentationStack = [CurrentScreen.welcome]
                         return
                     }
                 })

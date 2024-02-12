@@ -8,13 +8,17 @@
 import SwiftUI
 
 struct ImportFile: View {
+    @Binding var presentationStack: Array<CurrentScreen>
+
     var body: some View {
         VStack() {
             HeaderView(
                 rightIcon: "questionmark.circle", 
                 leftIcon: "chevron.left",
                 head: "IMPORT",
-                leftAction: {},
+                leftAction: {
+                    self.presentationStack.removeLast()
+                },
                 rightAction: {}
             )
             FileItem(
@@ -22,7 +26,9 @@ struct ImportFile: View {
                 filename: "voltix-vault-share-jun2024.txt"
             )
             Spacer()
-            BottomBar(content: "CONTINUE", onClick: {})
+            BottomBar(content: "CONTINUE", onClick: {
+                self.presentationStack.append(.vaultSelection)
+            })
         }
         .frame(
             minWidth: 0,

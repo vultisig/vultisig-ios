@@ -24,10 +24,10 @@ struct VaultSelectionView: View {
                 leftIcon: "Menu",
                 head: "VAULT",
                 leftAction: {    
-                    
+                    // menu action
                 },
                 rightAction: {
-                    
+                    // open help modal
                 },
                 back: !Utils.isIOS()
             )

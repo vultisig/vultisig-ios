@@ -56,7 +56,7 @@ private struct smallScreen: View {
             )
             WifiBar()
             BottomBar(content: "CONTINUE", onClick: {
-                //self.presentationStack.append(.peerDiscovery)
+                self.presentationStack.append(.peerDiscovery)
             })
         }
         .frame(
@@ -133,7 +133,9 @@ private struct LargeScreen: View {
             .frame(width: .infinity, height: 100)
             ProgressBottomBar(
                 content: "CONTINUE",
-                onClick: { },
+                onClick: { 
+                    self.presentationStack.append(.peerDiscovery)
+                },
                 progress: 1,
                 showProgress: true
             )
