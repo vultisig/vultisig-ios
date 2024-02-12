@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct LargeHeaderView: View {
+    @Binding var presentationStack: Array<CurrentScreen>
     let rightIcon: String;
     let leftIcon: String;
     let head: String;
@@ -18,7 +19,11 @@ struct LargeHeaderView: View {
     var body: some View {
         ZStack(alignment: .center) {
             HStack() {
-                Button(action: leftAction) {
+                Button(action: {
+                    if !self.presentationStack.isEmpty {
+                        self.presentationStack.removeLast()
+                    }
+                }) {
                     if back {
                         Image(leftIcon)
                             .resizable()
@@ -59,6 +64,7 @@ struct LargeHeaderView: View {
 
 #Preview {
     LargeHeaderView(
+        presentationStack: .constant([]), 
         rightIcon: "QuestionMark",
         leftIcon: "BackArrow",
         head: "START",

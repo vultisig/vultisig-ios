@@ -11,10 +11,14 @@ struct VaultAssetsView: View {
   var body: some View {
     VStack(alignment: .leading) {
         LargeHeaderView(
-            rightIcon: "Refresh",
+            presentationStack: .constant([]), rightIcon: "Refresh",
             leftIcon: "Menu",
             head: "VAULT",
-            leftAction: {},
+            leftAction: {
+                if !self.presentationStack.isEmpty {
+                    self.presentationStack.removeLast()
+                }
+            },
             rightAction: {},
             back: !Utils.isIOS()
         )

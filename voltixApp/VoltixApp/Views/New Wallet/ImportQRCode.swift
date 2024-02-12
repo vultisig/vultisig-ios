@@ -17,7 +17,9 @@ struct ImportQRCode: View {
                 leftIcon: "BACTARROW",
                 head: "IMPORT",
                 leftAction: {
-                    self.presentationStack.removeLast()
+                    if !self.presentationStack.isEmpty {
+                        self.presentationStack.removeLast()
+                    }
                 },
                 rightAction: {}
             )

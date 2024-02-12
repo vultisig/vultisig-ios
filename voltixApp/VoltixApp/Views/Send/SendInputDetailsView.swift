@@ -18,7 +18,11 @@ struct SendInputDetailsView: View {
                 rightIcon: "",
                 leftIcon: "BackArrow",
                 head: "SEND",
-                leftAction: {},
+                leftAction: {
+                    if !self.presentationStack.isEmpty {
+                        self.presentationStack.removeLast()
+                    }
+                },
                 rightAction: {}
             )
             HStack {

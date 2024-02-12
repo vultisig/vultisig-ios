@@ -27,7 +27,11 @@ struct welcomeSmallScreen: View {
               rightIcon: "",
               leftIcon: "",
               head: "VOLTIX",
-              leftAction: {},
+              leftAction: {
+                  if !self.presentationStack.isEmpty {
+                      self.presentationStack.removeLast()
+                  }
+              },
               rightAction: {}
             )
             Logo(width: 100, height: 100)
@@ -89,7 +93,11 @@ struct welcomeLargeScreen: View {
               rightIcon: "",
               leftIcon: "",
               head: "VOLTIX",
-              leftAction: {},
+              leftAction: {
+                  if !self.presentationStack.isEmpty {
+                      self.presentationStack.removeLast()
+                  }
+              },
               rightAction: {}
             )
             Logo(width: 200, height: 200)

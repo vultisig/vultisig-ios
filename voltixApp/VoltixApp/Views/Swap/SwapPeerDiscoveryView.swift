@@ -14,7 +14,11 @@ struct SwapPeerDiscoveryView: View {
             rightIcon: "QuestionMark",
             leftIcon: "BackArrow",
             head: "PAIR",
-            leftAction: {},
+            leftAction: {
+                if !self.presentationStack.isEmpty {
+                    self.presentationStack.removeLast()
+                }
+            },
             rightAction: {}
           )
           Text("VERIFY ALL DETAILS")

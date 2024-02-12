@@ -16,7 +16,11 @@ struct SwapInputDetailsView: View {
                 rightIcon: "Refresh",
                 leftIcon: "BackArrow",
                 head: "SWAP",
-                leftAction: {},
+                leftAction: {
+                    if !self.presentationStack.isEmpty {
+                        self.presentationStack.removeLast()
+                    }
+                },
                 rightAction: {}
             )
             HStack {

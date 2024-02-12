@@ -14,7 +14,11 @@ struct SendDoneView: View {
                 rightIcon: "QuestionMark",
                 leftIcon: "BackArrow",
                 head: "SEND",
-                leftAction: {},
+                leftAction: {
+                    if !self.presentationStack.isEmpty {
+                        self.presentationStack.removeLast()
+                    }
+                },
                 rightAction: {}
             )
             VStack(alignment: .leading) {

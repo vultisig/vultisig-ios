@@ -17,7 +17,9 @@ struct ImportFile: View {
                 leftIcon: "chevron.left",
                 head: "IMPORT",
                 leftAction: {
-                    self.presentationStack.removeLast()
+                    if !self.presentationStack.isEmpty {
+                        self.presentationStack.removeLast()
+                    }
                 },
                 rightAction: {}
             )

@@ -20,11 +20,14 @@ struct VaultSelectionView: View {
     var body: some View {
         VStack {
             LargeHeaderView(
+                presentationStack: $presentationStack, 
                 rightIcon: "Refresh",
                 leftIcon: "Menu",
                 head: "VAULT",
-                leftAction: {    
-                    // menu action
+                leftAction: {
+                    if !self.presentationStack.isEmpty {
+                        self.presentationStack.removeLast()
+                    }
                 },
                 rightAction: {
                     // open help modal

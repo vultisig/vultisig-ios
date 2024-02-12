@@ -14,7 +14,11 @@ struct SendVerifyView: View {
                     rightIcon: "",
                     leftIcon: "",
                     head: "VERIFY",
-                    leftAction: {},
+                    leftAction: {
+                        if !self.presentationStack.isEmpty {
+                            self.presentationStack.removeLast()
+                        }
+                    },
                     rightAction: {}
                 )
                 VStack(alignment: .leading) {

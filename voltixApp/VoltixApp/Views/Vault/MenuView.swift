@@ -14,7 +14,11 @@ struct MenuView: View {
             rightIcon: "questionmark.circle",
             leftIcon: "chevron.left",
             head: "MENU",
-            leftAction: {},
+            leftAction: {
+                if !self.presentationStack.isEmpty {
+                    self.presentationStack.removeLast()
+                }
+            },
             rightAction: {}
           )
           VStack(alignment: .leading) {

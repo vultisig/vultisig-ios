@@ -24,7 +24,11 @@ struct FinishedTSSKeygenView: View {
                 rightIcon: "QuestionMark",
                 leftIcon: "",
                 head: "DONE",
-                leftAction: {},
+                leftAction: {
+                    if !self.presentationStack.isEmpty {
+                        self.presentationStack.removeLast()
+                    }
+                },
                 rightAction: {
                     // open help modal
                 }

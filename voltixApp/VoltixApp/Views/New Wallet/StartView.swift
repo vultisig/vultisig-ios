@@ -28,7 +28,11 @@ struct startSmallScreen: View {
                 rightIcon: "QuestionMark",
                 leftIcon: "BackArrow",
                 head: "START",
-                leftAction: {},
+                leftAction: {
+                    if !self.presentationStack.isEmpty {
+                        self.presentationStack.removeLast()
+                    }
+                },
                 rightAction: {}
             )
             Spacer()
@@ -74,7 +78,11 @@ struct startLargeScreen: View {
                 rightIcon: "QuestionMark",
                 leftIcon: "BackArrow",
                 head: "START",
-                leftAction: {},
+                leftAction: {
+                    if !self.presentationStack.isEmpty {
+                        self.presentationStack.removeLast()
+                    }
+                },
                 rightAction: {}
             )
             Spacer()
