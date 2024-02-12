@@ -41,5 +41,5 @@ struct ImportFile: View {
 }
 
 #Preview {
-    ImportFile()
+    ImportFile(presentationStack: .constant([]))
 }

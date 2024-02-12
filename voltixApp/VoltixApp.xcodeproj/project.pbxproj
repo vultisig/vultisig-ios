@@ -16,7 +16,7 @@
 		049BBB5C2B71E7F6004C231F /* LargeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB5B2B71E7F6004C231F /* LargeButton.swift */; };
 		049BBB5E2B71E83D004C231F /* Logo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB5D2B71E83D004C231F /* Logo.swift */; };
 		049BBB602B71E8A2004C231F /* MenuItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB5F2B71E8A2004C231F /* MenuItem.swift */; };
-		049BBB622B71E8E7004C231F /* NetItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB612B71E8E7004C231F /* NetItem.swift */; };
+		049BBB622B71E8E7004C231F /* AssetItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB612B71E8E7004C231F /* AssetItem.swift */; };
 		049BBB642B71E926004C231F /* RadioButtonGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB632B71E926004C231F /* RadioButtonGroup.swift */; };
 		049BBB662B71E987004C231F /* VaultItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB652B71E987004C231F /* VaultItem.swift */; };
 		049BBB682B71E9C5004C231F /* WifiBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB672B71E9C5004C231F /* WifiBar.swift */; };
@@ -104,7 +104,7 @@
 		049BBB5B2B71E7F6004C231F /* LargeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeButton.swift; sourceTree = "<group>"; };
 		049BBB5D2B71E83D004C231F /* Logo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logo.swift; sourceTree = "<group>"; };
 		049BBB5F2B71E8A2004C231F /* MenuItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuItem.swift; sourceTree = "<group>"; };
-		049BBB612B71E8E7004C231F /* NetItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetItem.swift; sourceTree = "<group>"; };
+		049BBB612B71E8E7004C231F /* AssetItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetItem.swift; sourceTree = "<group>"; };
 		049BBB632B71E926004C231F /* RadioButtonGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadioButtonGroup.swift; sourceTree = "<group>"; };
 		049BBB652B71E987004C231F /* VaultItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultItem.swift; sourceTree = "<group>"; };
 		049BBB672B71E9C5004C231F /* WifiBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WifiBar.swift; sourceTree = "<group>"; };
@@ -210,7 +210,7 @@
 				049BBB5B2B71E7F6004C231F /* LargeButton.swift */,
 				049BBB5D2B71E83D004C231F /* Logo.swift */,
 				049BBB5F2B71E8A2004C231F /* MenuItem.swift */,
-				049BBB612B71E8E7004C231F /* NetItem.swift */,
+				049BBB612B71E8E7004C231F /* AssetItem.swift */,
 				049BBB632B71E926004C231F /* RadioButtonGroup.swift */,
 				049BBB652B71E987004C231F /* VaultItem.swift */,
 				049BBB672B71E9C5004C231F /* WifiBar.swift */,
@@ -602,7 +602,7 @@
 				DE15729E2B70F284009BC7C5 /* JoinKeysignView.swift in Sources */,
 				D9AD8EEC2B6730ED0009F8D5 /* VaultAssetsView.swift in Sources */,
 				D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */,
-				049BBB622B71E8E7004C231F /* NetItem.swift in Sources */,
+				049BBB622B71E8E7004C231F /* AssetItem.swift in Sources */,
 				D9AD8EEA2B6730E30009F8D5 /* MenuView.swift in Sources */,
 				049BBB602B71E8A2004C231F /* MenuItem.swift in Sources */,
 				049BBB522B71E498004C231F /* AssetsView.swift in Sources */,

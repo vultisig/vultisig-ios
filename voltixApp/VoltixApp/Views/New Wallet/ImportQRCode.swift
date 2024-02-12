@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct ImportQRCode: View {
+    @Binding var presentationStack: Array<CurrentScreen>
+    
     var body: some View {
         VStack() {
             HeaderView(
@@ -44,5 +46,5 @@ struct ImportQRCode: View {
 }
 
 #Preview {
-    ImportQRCode()
+    ImportQRCode(presentationStack: .constant([]))
 }

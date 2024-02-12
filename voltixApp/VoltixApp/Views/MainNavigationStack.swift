@@ -24,9 +24,9 @@ struct MainNavigationStack: View {
                         StartView(presentationStack: $presentationStack)
                     case .importWallet:
                         ImportWalletView(presentationStack: $presentationStack)
-                    case .importFile
+                    case .importFile:
                         ImportFile(presentationStack: $presentationStack)
-                    case .importQRCode
+                    case .importQRCode:
                         ImportQRCode(presentationStack: $presentationStack)
                     case .newWalletInstructions:
                         NewWalletInstructions(presentationStack: $presentationStack, vaultName: "new vault")

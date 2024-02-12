@@ -8,58 +8,44 @@ import SwiftUI
 struct VaultAssetsView: View {
   @Binding var presentationStack: [CurrentScreen]
 
-  //var body: some View {
-  //    Text("VaultAssetsView")
-  //    List(AssetType.allCases, id: \.self) { asset in
-  //       Button(asset.chainName) {
-  //           presentationStack.append(.vaultDetailAsset(asset))
-  //        }
-  //   }
-  //}
-
   var body: some View {
     VStack(alignment: .leading) {
-      HeaderView(
-        rightIcon: "Refresh",
-        leftIcon: "Menu",
-        head: "VAULT",
-        leftAction: {},
-        rightAction: {}
-      )
+        LargeHeaderView(
+            rightIcon: "Refresh",
+            leftIcon: "Menu",
+            head: "VAULT",
+            leftAction: {},
+            rightAction: {},
+            back: !Utils.isIOS()
+        )
+        VaultItem(
+            coinName: "Bitcoin",
+            amount: "1.1",
+            showAmount: false,
+            coinAmount: "65,899",
+            address: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
+            isRadio: false,
+            showButtons: true,
+            onClick: {}
+        )
+        AssetItem(
+            coinName: "BTC",
+            amount: "1.1",
+            usdAmount: "65,899",
+            sendClick: {},
+            swapClick: {}
+        )
     }
+    .frame(
+        minWidth: 0,
+        maxWidth: .infinity,
+        minHeight: 0,
+        maxHeight: .infinity,
+        alignment: .top
+    )
   }
 }
 
 #Preview {
   VaultAssetsView(presentationStack: .constant([]))
 }
-
-/*
-@Binding var presentationStack: [CurrentScreen]
-    @EnvironmentObject var appState: ApplicationState
-
-    @State private var signingTestView = false
-    var body: some View {
-        VStack {
-            if signingTestView {
-                KeysignTestView(presentationStack: $presentationStack)
-            } else {
-                HStack {
-                    Button("Sign stuff") {
-                        signingTestView = true
-                    }
-
-                    Button("Join keysign stuff") {
-                        presentationStack.append(.JoinKeysign)
-                    }
-                }
-            }
-            .frame(
-                minWidth: 0,
-                maxWidth: .infinity,
-                minHeight: 0,
-                maxHeight: .infinity,
-                alignment: .topLeading
-            )
-        }
-*/

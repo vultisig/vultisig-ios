@@ -56,21 +56,6 @@ struct VaultAssetDetailView: View {
             }
           }
           .frame(width: .infinity, height: 83)
-          NetItem(
-            coinName: "ETH",
-            amount: "23.2",
-            usdAmount: "60,899"
-          )
-          NetItem(
-            coinName: "USDC",
-            amount: "1,000",
-            usdAmount: "1,000"
-          )
-          NetItem(
-            coinName: "WBTC",
-            amount: "0.1",
-            usdAmount: "4000"
-          )
           Choose(content: "TOKENS")
         }
         .padding()
