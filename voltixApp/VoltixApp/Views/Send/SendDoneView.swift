@@ -39,26 +39,23 @@ struct SendDoneView: View {
                     )
                     .padding(.horizontal, geometry.size.width * 0.03) // Dynamic padding
                 }.navigationTitle("SEND")
-                    .navigationBarTitleDisplayMode(.inline)
+                    .modifier(InlineNavigationBarTitleModifier())
                     .toolbar {
+                        #if os(iOS)
                         ToolbarItem(placement: .navigationBarLeading) {
-                            Button(action: {
-                                if !presentationStack.isEmpty {
-                                    presentationStack.removeLast()
-                                }
-                            }) {
-                                Image(systemName: "chevron.left")
-                                    .foregroundColor(.black) // Ensure this matches your app's design
-                            }
+                            NavigationButtons.backButton(presentationStack: $presentationStack)
                         }
                         ToolbarItem(placement: .navigationBarTrailing) {
-                            Button(action: {
-                                // Define right action
-                            }) {
-                                Image(systemName: "questionmark.circle")
-                                    .foregroundColor(.black) // Match your app's design
-                            }
+                            NavigationButtons.questionMarkButton
                         }
+                        #else
+                        ToolbarItem {
+                            NavigationButtons.backButton(presentationStack: $presentationStack)
+                        }
+                        ToolbarItem {
+                            NavigationButtons.questionMarkButton
+                        }
+                        #endif
                     }
             }
         }

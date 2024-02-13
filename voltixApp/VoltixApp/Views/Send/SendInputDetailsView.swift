@@ -38,26 +38,23 @@ struct SendInputDetailsView: View {
                             .padding(.horizontal)
                     }
                     .navigationTitle("SEND")
-                    .navigationBarTitleDisplayMode(.inline)
+                    .modifier(InlineNavigationBarTitleModifier())
                     .toolbar {
+                        #if os(iOS)
                         ToolbarItem(placement: .navigationBarLeading) {
-                            Button(action: {
-                                if !presentationStack.isEmpty {
-                                    presentationStack.removeLast()
-                                }
-                            }) {
-                                Image(systemName: "chevron.left")
-                                    .foregroundColor(.black) // Ensure this matches your app's design
-                            }
+                            NavigationButtons.backButton(presentationStack: $presentationStack)
                         }
                         ToolbarItem(placement: .navigationBarTrailing) {
-                            Button(action: {
-                                // Define right action
-                            }) {
-                                Image(systemName: "questionmark.circle")
-                                    .foregroundColor(.black) // Match your app's design
-                            }
+                            NavigationButtons.questionMarkButton
                         }
+                        #else
+                        ToolbarItem {
+                            NavigationButtons.backButton(presentationStack: $presentationStack)
+                        }
+                        ToolbarItem {
+                            NavigationButtons.questionMarkButton
+                        }
+                        #endif
                     }
                 }
             }
@@ -77,7 +74,7 @@ struct SendInputDetailsView: View {
                     RoundedRectangle(cornerRadius: 10)
                         .stroke(Color.gray, lineWidth: 1)
                 )
-                .keyboardType(isNumeric ? .decimalPad : .default)
+                //.keyboardType(isNumeric ? .decimalPad : .default)
         }
         .frame(height: geometry.size.height * 0.12)
     }
@@ -113,3 +110,4 @@ struct SendInputDetailsView_Previews: PreviewProvider {
         SendInputDetailsView(presentationStack: .constant([]))
     }
 }
+

@@ -77,27 +77,24 @@ struct SendVerifyView: View {
         }
         .padding(.leading, geometry.size.width * 0.05)  // Dynamic leading padding
         .navigationTitle("SEND")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: {
-                        if !presentationStack.isEmpty {
-                            presentationStack.removeLast()
-                        }
-                    }) {
-                        Image(systemName: "chevron.left")
-                            .foregroundColor(.black) // Ensure this matches your app's design
-                    }
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        // Define right action
-                    }) {
-                        Image(systemName: "questionmark.circle")
-                            .foregroundColor(.black) // Match your app's design
-                    }
-                }
+        .modifier(InlineNavigationBarTitleModifier())
+        .toolbar {
+            #if os(iOS)
+            ToolbarItem(placement: .navigationBarLeading) {
+                NavigationButtons.backButton(presentationStack: $presentationStack)
             }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                NavigationButtons.questionMarkButton
+            }
+            #else
+            ToolbarItem {
+                NavigationButtons.backButton(presentationStack: $presentationStack)
+            }
+            ToolbarItem {
+                NavigationButtons.questionMarkButton
+            }
+            #endif
+        }
 
       }
       //.edgesIgnoringSafeArea(.all) // Extend to the edges of the display

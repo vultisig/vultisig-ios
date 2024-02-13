@@ -40,23 +40,23 @@ struct VaultAssetsView: View {
                 .padding()
             }
             .navigationTitle("VAULT")
+            .modifier(InlineNavigationBarTitleModifier())
             .toolbar {
+                #if os(iOS)
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: {
-                        // Define the action for menu button
-                    }) {
-                        Image(systemName: "line.horizontal.3")
-                            .foregroundColor(.black) // Customize as needed
-                    }
+                    NavigationButtons.backButton(presentationStack: $presentationStack)
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        // Define the action for refresh button
-                    }) {
-                        Image(systemName: "arrow.clockwise")
-                            .foregroundColor(.black) // Customize as needed
-                    }
+                    NavigationButtons.questionMarkButton
                 }
+                #else
+                ToolbarItem {
+                    NavigationButtons.backButton(presentationStack: $presentationStack)
+                }
+                ToolbarItem {
+                    NavigationButtons.questionMarkButton
+                }
+                #endif
             }
         }
         .background(Color.white)

@@ -36,18 +36,23 @@ struct WelcomeView: View {
                         .padding(.bottom, geometry.size.height * 0.02)
                     }
                     .frame(width: geometry.size.width, height: geometry.size.height)
-                    .navigationBarTitleDisplayMode(.inline)
+                    .modifier(InlineNavigationBarTitleModifier())
                     .toolbar {
+                        #if os(iOS)
                         ToolbarItem(placement: .navigationBarLeading) {
-                            Button(action: {
-                                if !presentationStack.isEmpty {
-                                    presentationStack.removeLast()
-                                }
-                            }) {
-                                Image(systemName: "chevron.left")
-                                    .foregroundColor(.black)
-                            }
+                            NavigationButtons.backButton(presentationStack: $presentationStack)
                         }
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            NavigationButtons.questionMarkButton
+                        }
+                        #else
+                        ToolbarItem {
+                            NavigationButtons.backButton(presentationStack: $presentationStack)
+                        }
+                        ToolbarItem {
+                            NavigationButtons.questionMarkButton
+                        }
+                        #endif
                     }
                     .navigationTitle("VOLTIX")
                 }
@@ -56,13 +61,22 @@ struct WelcomeView: View {
         .background(Color.white)
         .navigationBarBackButtonHidden(true)
     }
+    // Use a computed property to determine if the device is an iPad
+        private var isIpad: Bool {
+#if os(iOS)
+            return UIDevice.current.userInterfaceIdiom == .pad
+#else
+            return false
+#endif
+
+        }
     
     private func featureText(_ text: String, geometry: GeometryProxy) -> some View {
-        Text(text)
-            .font(.system(size: geometry.size.width * (UIDevice.current.userInterfaceIdiom == .pad ? 0.03 : 0.045), weight: .medium))
-            .foregroundColor(.black)
-            .padding(.horizontal)
-    }
+            Text(text)
+                .font(.system(size: geometry.size.width * (isIpad ? 0.03 : 0.045), weight: .medium))
+                .foregroundColor(.black)
+                .padding(.horizontal)
+        }
 }
 
 // Preview

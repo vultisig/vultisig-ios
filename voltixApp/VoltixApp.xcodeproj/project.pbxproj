@@ -21,6 +21,7 @@
 		049BBB662B71E987004C231F /* VaultItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB652B71E987004C231F /* VaultItem.swift */; };
 		049BBB682B71E9C5004C231F /* WifiBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB672B71E9C5004C231F /* WifiBar.swift */; };
 		4600167E2B71A12D00CE17C7 /* Tss.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4600167D2B71A12D00CE17C7 /* Tss.xcframework */; };
+		467B2D662B7B51F700AEDF64 /* NavigationStackButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 467B2D652B7B51F700AEDF64 /* NavigationStackButtons.swift */; };
 		D7347C262B74B82500887E57 /* LargeHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7347C252B74B82500887E57 /* LargeHeaderView.swift */; };
 		D7347C282B758B2E00887E57 /* ImportQRCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7347C272B758B2E00887E57 /* ImportQRCode.swift */; };
 		D7347C2A2B758BE100887E57 /* ImportFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7347C292B758BE100887E57 /* ImportFile.swift */; };
@@ -109,6 +110,7 @@
 		049BBB652B71E987004C231F /* VaultItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultItem.swift; sourceTree = "<group>"; };
 		049BBB672B71E9C5004C231F /* WifiBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WifiBar.swift; sourceTree = "<group>"; };
 		4600167D2B71A12D00CE17C7 /* Tss.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
+		467B2D652B7B51F700AEDF64 /* NavigationStackButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationStackButtons.swift; sourceTree = "<group>"; };
 		D7347C252B74B82500887E57 /* LargeHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeHeaderView.swift; sourceTree = "<group>"; };
 		D7347C272B758B2E00887E57 /* ImportQRCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportQRCode.swift; sourceTree = "<group>"; };
 		D7347C292B758BE100887E57 /* ImportFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportFile.swift; sourceTree = "<group>"; };
@@ -217,6 +219,7 @@
 				D7347C252B74B82500887E57 /* LargeHeaderView.swift */,
 				D7347C2B2B758C6E00887E57 /* FileItem.swift */,
 				D7347C2D2B759A0F00887E57 /* ProgressBottomBar.swift */,
+				467B2D652B7B51F700AEDF64 /* NavigationStackButtons.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -608,6 +611,7 @@
 				049BBB522B71E498004C231F /* AssetsView.swift in Sources */,
 				D9AD8EE42B6730940009F8D5 /* NewWalletInstructionsView.swift in Sources */,
 				D9AD8EFD2B6732070009F8D5 /* SwapPeerDiscoveryView.swift in Sources */,
+				467B2D662B7B51F700AEDF64 /* NavigationStackButtons.swift in Sources */,
 				D7347C262B74B82500887E57 /* LargeHeaderView.swift in Sources */,
 				DE49A19C2B67133D000F3AFB /* Vault.swift in Sources */,
 				D9AD8F062B675E360009F8D5 /* VaultAssetDetailView.swift in Sources */,

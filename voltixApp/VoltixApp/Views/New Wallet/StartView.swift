@@ -43,26 +43,23 @@ struct StartView: View {
                     Spacer()
                 }
                 .navigationTitle("START")
-                .navigationBarTitleDisplayMode(.inline)
+                .modifier(InlineNavigationBarTitleModifier())
                 .toolbar {
+                    #if os(iOS)
                     ToolbarItem(placement: .navigationBarLeading) {
-                        Button(action: {
-                            if !presentationStack.isEmpty {
-                                presentationStack.removeLast()
-                            }
-                        }) {
-                            Image(systemName: "chevron.left")
-                                .foregroundColor(.black)
-                        }
+                        NavigationButtons.backButton(presentationStack: $presentationStack)
                     }
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(action: {
-                            // Define right action here
-                        }) {
-                            Image(systemName: "questionmark.circle")
-                                .foregroundColor(.black)
-                        }
+                        NavigationButtons.questionMarkButton
                     }
+                    #else
+                    ToolbarItem {
+                        NavigationButtons.backButton(presentationStack: $presentationStack)
+                    }
+                    ToolbarItem {
+                        NavigationButtons.questionMarkButton
+                    }
+                    #endif
                 }
                 .padding() // Adjust padding to ensure content is centered and spaced out
             }
