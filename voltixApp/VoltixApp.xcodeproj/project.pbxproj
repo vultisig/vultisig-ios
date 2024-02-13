@@ -21,6 +21,8 @@
 		049BBB662B71E987004C231F /* VaultItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB652B71E987004C231F /* VaultItem.swift */; };
 		049BBB682B71E9C5004C231F /* WifiBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB672B71E9C5004C231F /* WifiBar.swift */; };
 		4600167E2B71A12D00CE17C7 /* Tss.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4600167D2B71A12D00CE17C7 /* Tss.xcframework */; };
+		465B09A42B7C01CC00952DD9 /* WalletUnspentOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09A32B7C01CC00952DD9 /* WalletUnspentOutput.swift */; };
+		465B09A72B7C049400952DD9 /* UnspentOutputsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09A62B7C049400952DD9 /* UnspentOutputsViewModel.swift */; };
 		467B2D662B7B51F700AEDF64 /* NavigationStackButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 467B2D652B7B51F700AEDF64 /* NavigationStackButtons.swift */; };
 		D7347C262B74B82500887E57 /* LargeHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7347C252B74B82500887E57 /* LargeHeaderView.swift */; };
 		D7347C282B758B2E00887E57 /* ImportQRCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7347C272B758B2E00887E57 /* ImportQRCode.swift */; };
@@ -113,6 +115,8 @@
 		049BBB652B71E987004C231F /* VaultItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultItem.swift; sourceTree = "<group>"; };
 		049BBB672B71E9C5004C231F /* WifiBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WifiBar.swift; sourceTree = "<group>"; };
 		4600167D2B71A12D00CE17C7 /* Tss.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
+		465B09A32B7C01CC00952DD9 /* WalletUnspentOutput.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WalletUnspentOutput.swift; sourceTree = "<group>"; };
+		465B09A62B7C049400952DD9 /* UnspentOutputsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnspentOutputsViewModel.swift; sourceTree = "<group>"; };
 		467B2D652B7B51F700AEDF64 /* NavigationStackButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationStackButtons.swift; sourceTree = "<group>"; };
 		D7347C252B74B82500887E57 /* LargeHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeHeaderView.swift; sourceTree = "<group>"; };
 		D7347C272B758B2E00887E57 /* ImportQRCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportQRCode.swift; sourceTree = "<group>"; };
@@ -231,6 +235,14 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
+		465B09A52B7C048000952DD9 /* ViewModel */ = {
+			isa = PBXGroup;
+			children = (
+				465B09A62B7C049400952DD9 /* UnspentOutputsViewModel.swift */,
+			);
+			path = ViewModel;
+			sourceTree = "<group>";
+		};
 		D7347C222B74717F00887E57 /* Recovered References */ = {
 			isa = PBXGroup;
 			children = (
@@ -242,6 +254,7 @@
 		D9AD8ED72B67225F0009F8D5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				465B09A52B7C048000952DD9 /* ViewModel */,
 				049BBB4E2B71E37B004C231F /* Components */,
 				DE15729A2B70F284009BC7C5 /* Keysign */,
 				D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */,
@@ -257,6 +270,7 @@
 		D9AD8ED82B6722AC0009F8D5 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				465B09A32B7C01CC00952DD9 /* WalletUnspentOutput.swift */,
 				DE1572982B70F26A009BC7C5 /* KeyType.swift */,
 				DE49A19B2B67133D000F3AFB /* Vault.swift */,
 				DE49A19F2B67143B000F3AFB /* Chain.swift */,
@@ -588,6 +602,7 @@
 				DE1572A02B70F284009BC7C5 /* Keysign.swift in Sources */,
 				D7347C2C2B758C6E00887E57 /* FileItem.swift in Sources */,
 				DE1572992B70F26A009BC7C5 /* KeyType.swift in Sources */,
+				465B09A72B7C049400952DD9 /* UnspentOutputsViewModel.swift in Sources */,
 				D9AD8EF92B6731C50009F8D5 /* SendDoneView.swift in Sources */,
 				049BBB642B71E926004C231F /* RadioButtonGroup.swift in Sources */,
 				049BBB582B71E72F004C231F /* DeviceView.swift in Sources */,
@@ -641,6 +656,7 @@
 				D9AD8EE62B6730A40009F8D5 /* PeerDiscoveryView.swift in Sources */,
 				DE49A19E2B671416000F3AFB /* Coin.swift in Sources */,
 				DE49A1672B65F6D9000F3AFB /* VoltixApp.swift in Sources */,
+				465B09A42B7C01CC00952DD9 /* WalletUnspentOutput.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

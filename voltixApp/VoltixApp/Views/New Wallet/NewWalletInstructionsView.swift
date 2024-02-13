@@ -56,6 +56,9 @@ private struct smallScreen: View {
                 deviceDescription: "ANY"
             )
             WifiBar()
+            BottomBar(content: "SEND Input details", onClick: {
+                self.presentationStack.append(.sendInputDetails)
+            })
             BottomBar(content: "CONTINUE", onClick: {
                 let vault = Vault(name: "Vault #\(vaults.count + 1)")
                 appState.creatingVault = vault

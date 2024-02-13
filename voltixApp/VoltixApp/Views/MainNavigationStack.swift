@@ -8,11 +8,12 @@ import SwiftUI
 
 struct MainNavigationStack: View {
     @Environment(\.modelContext) private var modelContext
-
+    
     @EnvironmentObject var appState: ApplicationState
     // Push/pop onto this array to control presentation overlay globally
     @State private var presentationStack: [CurrentScreen] = []
-
+    @ObservedObject var viewModel = UnspentOutputsViewModel()
+    
     var body: some View {
         NavigationStack(path: $presentationStack) {
             WelcomeView(presentationStack: $presentationStack) // Default top level
@@ -45,7 +46,7 @@ struct MainNavigationStack: View {
                     case .menu:
                         MenuView(presentationStack: $presentationStack)
                     case .sendInputDetails:
-                        SendInputDetailsView(presentationStack: $presentationStack)
+                        SendInputDetailsView(presentationStack: $presentationStack, viewModel: viewModel)
                     case .sendPeerDiscovery:
                         SendPeerDiscoveryView(presentationStack: $presentationStack)
                     case .sendWaitingForPeers:
@@ -78,6 +79,13 @@ struct MainNavigationStack: View {
                     if appState.currentVault == nil {
                         //self.presentationStack = [CurrentScreen.welcome]
                         return
+                    }
+                    
+                    if viewModel.walletData == nil {
+                        Task {
+                            let address = "18cBEMRxXHqzWWCxZNtU91F5sbUNKhL5PX"
+                            await viewModel.fetchUnspentOutputs(for: address)
+                        }
                     }
                 })
         }
