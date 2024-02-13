@@ -63,7 +63,7 @@ struct SendDoneView: View {
             }
         }
         //.edgesIgnoringSafeArea(.all) // Extend to the edges of the display
-    }
+    }   
 }
 
 // Preview

@@ -1,165 +1,85 @@
-//
-//  ImportWallet.swift
-//  VoltixApp
-//
-
 import SwiftUI
 
 struct ImportWalletView: View {
     @Binding var presentationStack: Array<CurrentScreen>
-    @State var vaultShare = ""
-    
-    var body: some View {
-        #if os(iOS)
-            smallScreen(presentationStack: $presentationStack)
-        #else
-            largeScreen(presentationStack: $presentationStack)
-        #endif
-    }
-}
- 
-private struct smallScreen: View {
-    @Binding var presentationStack: Array<CurrentScreen>
-    @State private var vaultText = "";
-    var body: some View {
-        VStack {
-            HeaderView(
-                rightIcon: "QuestionMark",
-                leftIcon: "BackArrow",
-                head: "IMPORT",
-                leftAction: {
-                    if !self.presentationStack.isEmpty {
-                        self.presentationStack.removeLast()
-                    }
-                },
-                rightAction: {
-                    
-                }
-            )
-            Spacer().frame(height: 30)
-            VStack(alignment: .leading, spacing: 10) {
-                ZStack(alignment: .bottomTrailing) {
-                    TextEditor(text: $vaultText)
-                        .font(.custom("AmericanTypewriter", fixedSize: 24))
-                        .scrollContentBackground(.hidden)
-                        .foregroundColor(.black)
-                    HStack {
-                        Button(action : {
-
-                        }) {
-                            Image("Camera")
-                        }
-                        .padding(.trailing,  8)
-                        .buttonStyle(PlainButtonStyle())
-                        Button(action : {
-                            
-                        }) {
-                            Image("Doc")
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                    }
-                }
-                .foregroundColor(.clear)
-                .frame(width: .infinity, height: 326)
-                .padding()
-                .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                .cornerRadius(12)
-            }
-            .padding(.leading, 16)
-            .padding(.trailing, 16)
-            Spacer()
-            BottomBar(
-                content: "CONTINUE",
-                onClick: {
-                    self.presentationStack.append(.newWalletInstructions)
-                }
-            )
-        }
-        .frame(
-            minWidth: 0,
-            maxWidth: .infinity,
-            minHeight: 0,
-            maxHeight: .infinity,
-            alignment: .top
-        )
-        .background(.white)
-    }
-}
-
-private struct largeScreen: View {
-    @Binding var presentationStack: Array<CurrentScreen>
     @State private var vaultText = ""
-    @State private var isloaded: Bool = false
-    
+
     var body: some View {
-        VStack {
-            LargeHeaderView(
-                rightIcon: "QuestionMark",
-                leftIcon: "BackArrow",
-                head: "IMPORT",
-                leftAction: {
-                    if !self.presentationStack.isEmpty {
-                        self.presentationStack.removeLast()
+        GeometryReader { geometry in
+            VStack {
+                NavigationStack {
+                    VStack(alignment: .leading) {
+                        Spacer().frame(height: 30)
+                        
+                        ZStack(alignment: .bottomTrailing) {
+                            TextEditor(text: $vaultText)
+                                .font(.custom("AmericanTypewriter", fixedSize: geometry.size.width * 0.05))
+                                .scrollContentBackground(.hidden)
+                                .foregroundColor(.black)
+                                .frame(height: geometry.size.height * 0.4)
+                                .padding()
+                                .background(Color(red: 0.96, green: 0.96, blue: 0.96))
+                                .cornerRadius(12)
+                            
+                            HStack {
+                                Button(action: {}) {
+                                    Image(systemName: "camera")
+                                }
+                                .padding(.trailing, 8)
+                                .buttonStyle(PlainButtonStyle())
+
+                                Button(action: {}) {
+                                    Image(systemName: "doc.text.viewfinder")
+                                }
+                                .padding(.all, 20)
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                        }
+                        
+                        Text("ENTER YOUR PREVIOUSLY CREATED VAULT SHARE")
+                            .font(.system(size: geometry.size.width * 0.04, weight: .medium))
+                            .padding(.top, 8)
+                            .foregroundColor(.black)
+
+                        Spacer()
+                        
+                        BottomBar(content: "CONTINUE", onClick: {
+                            self.presentationStack.append(.newWalletInstructions)
+                        })
+                        .padding(.bottom)
                     }
-                },
-                rightAction: {
-                    
-                },
-                back: true
-            )
-            Spacer().frame(height: 30);
-            VStack(alignment: .leading, spacing: 10) {
-                ZStack(alignment: .bottomTrailing) {
-                    TextEditor(text: $vaultText)
-                        .font(.custom("AmericanTypewriter", fixedSize: 50))
-                        .scrollContentBackground(.hidden)
-                        .foregroundColor(.black)
-                    HStack {
-                        Button(action : {}) {
-                            Image("Camera")
+                    .padding([.leading, .trailing], geometry.size.width * 0.05)
+                    .navigationTitle("IMPORT")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button(action: {
+                                if !presentationStack.isEmpty {
+                                    presentationStack.removeLast()
+                                }
+                            }) {
+                                Image(systemName: "chevron.left")
+                                    .foregroundColor(.black)
+                            }
                         }
-                        .padding(.trailing,  8)
-                        .buttonStyle(PlainButtonStyle())
-                        Button(action : {}) {
-                            Image("Doc")
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button(action: {}) {
+                                Image(systemName: "questionmark.circle")
+                                    .foregroundColor(.black)
+                            }
                         }
-                        .buttonStyle(PlainButtonStyle())
                     }
                 }
-                .foregroundColor(.clear)
-                .frame(width: .infinity, height: 326)
-                .padding()
-                .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                .cornerRadius(12)
-                Text("ENTER YOUR PREVIOUSLY CREATED VAULT SHARE")
-                  .font(Font.custom("Montserrat", size: 30).weight(.medium))
-                  .lineSpacing(40)
-                  .foregroundColor(.black)
-            }
-            .padding(.leading, 30)
-            .padding(.trailing, 30)
-            Spacer()
-            if isloaded {
-                BottomBar(
-                    content: "CONTINUE",
-                    onClick: {
-                        self.presentationStack.append(.vaultSelection)
-                    }
-                )
             }
         }
-        .frame(
-            minWidth: 0,
-            maxWidth: .infinity,
-            minHeight: 0,
-            maxHeight: .infinity,
-            alignment: .top
-        )
-        .background(.white)
-        .navigationBarBackButtonHidden()
+        .background(Color.white)
+        .navigationBarBackButtonHidden(true)
     }
 }
 
-#Preview {
-    ImportWalletView(presentationStack: .constant([]))
+// Preview
+struct ImportWalletView_Previews: PreviewProvider {
+    static var previews: some View {
+        ImportWalletView(presentationStack: .constant([]))
+    }
 }
