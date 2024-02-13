@@ -75,9 +75,9 @@
 		DE49A19E2B671416000F3AFB /* Coin.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE49A19D2B671416000F3AFB /* Coin.swift */; };
 		DE49A1A02B67143B000F3AFB /* Chain.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE49A19F2B67143B000F3AFB /* Chain.swift */; };
 		DE49A1A52B68BB6B000F3AFB /* VaultSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE49A1A42B68BB6B000F3AFB /* VaultSelectionView.swift */; };
-		DE49A1A82B68C213000F3AFB /* ModelContainerPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE49A1A72B68C213000F3AFB /* ModelContainerPreview.swift */; };
 		DE49A1B22B6A0F77000F3AFB /* JoinKeygenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE49A1B12B6A0F77000F3AFB /* JoinKeygenView.swift */; };
 		DE49A1B52B6A1088000F3AFB /* CodeScanner in Frameworks */ = {isa = PBXBuildFile; platformFilter = ios; productRef = DE49A1B42B6A1088000F3AFB /* CodeScanner */; };
+		DE4DFA7B2B7B1692004F8E73 /* ModelContainerPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE4DFA7A2B7B1692004F8E73 /* ModelContainerPreview.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -168,9 +168,9 @@
 		DE49A19F2B67143B000F3AFB /* Chain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chain.swift; sourceTree = "<group>"; };
 		DE49A1A22B67158A000F3AFB /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS17.2.sdk/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
 		DE49A1A42B68BB6B000F3AFB /* VaultSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultSelectionView.swift; sourceTree = "<group>"; };
-		DE49A1A72B68C213000F3AFB /* ModelContainerPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelContainerPreview.swift; sourceTree = "<group>"; };
 		DE49A1B12B6A0F77000F3AFB /* JoinKeygenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinKeygenView.swift; sourceTree = "<group>"; };
 		DE49A1B62B6A1222000F3AFB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		DE4DFA7A2B7B1692004F8E73 /* ModelContainerPreview.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelContainerPreview.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -431,7 +431,7 @@
 		DE49A1A62B68C1EE000F3AFB /* PreviewHelper */ = {
 			isa = PBXGroup;
 			children = (
-				DE49A1A72B68C213000F3AFB /* ModelContainerPreview.swift */,
+				DE4DFA7A2B7B1692004F8E73 /* ModelContainerPreview.swift */,
 			);
 			path = PreviewHelper;
 			sourceTree = "<group>";
@@ -522,7 +522,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */;
+			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -579,12 +579,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DE4DFA7B2B7B1692004F8E73 /* ModelContainerPreview.swift in Sources */,
 				049BBB662B71E987004C231F /* VaultItem.swift in Sources */,
-				DE49A1A82B68C213000F3AFB /* ModelContainerPreview.swift in Sources */,
 				049BBB5E2B71E83D004C231F /* Logo.swift in Sources */,
 				DE1572A02B70F284009BC7C5 /* Keysign.swift in Sources */,
 				D7347C2C2B758C6E00887E57 /* FileItem.swift in Sources */,
-				DE49A1A82B68C213000F3AFB /* ModelContainerPreview.swift in Sources */,
 				DE1572992B70F26A009BC7C5 /* KeyType.swift in Sources */,
 				D9AD8EF92B6731C50009F8D5 /* SendDoneView.swift in Sources */,
 				049BBB642B71E926004C231F /* RadioButtonGroup.swift in Sources */,
@@ -797,7 +796,6 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = voltixApp/voltixApp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"voltixApp/Preview Content\"";
@@ -973,7 +971,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */ = {
+		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DE49A1882B65F6DB000F3AFB /* Debug */,

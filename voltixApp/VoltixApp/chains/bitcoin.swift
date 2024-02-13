@@ -72,7 +72,6 @@ struct Bitcoin {
 
             for h in preSignOutputs.hashPublicKeys {
                 let preImageHash = h.dataHash
-                let pubkeyHash = h.publicKeyHash
                 let signature = signatureProvider(preImageHash)
                 if !publicKey.verifyAsDER(signature: signature, message: preImageHash) {
                     return .failure(BitcoinTransactionError.invalidSignature)
