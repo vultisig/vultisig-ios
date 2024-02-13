@@ -4,21 +4,10 @@ struct SendDoneView: View {
     @Binding var presentationStack: Array<CurrentScreen>
     
     var body: some View {
-        GeometryReader { geometry in // Use GeometryReader for dynamic sizing
-             // Allows content to scroll if it exceeds window size
+        NavigationStack {
+            GeometryReader { geometry in // Use GeometryReader for dynamic sizing
+                // Allows content to scroll if it exceeds window size
                 VStack(alignment: .leading) {
-                    HeaderView(
-                        rightIcon: "QuestionMark",
-                        leftIcon: "BackArrow",
-                        head: "SEND",
-                        leftAction: {
-                            if !self.presentationStack.isEmpty {
-                                self.presentationStack.removeLast()
-                            }
-                        },
-                        rightAction: {}
-                    )
-                    .padding(.horizontal, geometry.size.width * 0.03) // Dynamic padding based on width
                     
                     VStack(alignment: .leading) {
                         Text("Transaction")
@@ -49,11 +38,32 @@ struct SendDoneView: View {
                         onClick: { }
                     )
                     .padding(.horizontal, geometry.size.width * 0.03) // Dynamic padding
-                }
+                }.navigationTitle("SEND")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button(action: {
+                                if !presentationStack.isEmpty {
+                                    presentationStack.removeLast()
+                                }
+                            }) {
+                                Image(systemName: "chevron.left")
+                                    .foregroundColor(.black) // Ensure this matches your app's design
+                            }
+                        }
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button(action: {
+                                // Define right action
+                            }) {
+                                Image(systemName: "questionmark.circle")
+                                    .foregroundColor(.black) // Match your app's design
+                            }
+                        }
+                    }
             }
         }
         //.edgesIgnoringSafeArea(.all) // Extend to the edges of the display
-    
+    }
 }
 
 // Preview

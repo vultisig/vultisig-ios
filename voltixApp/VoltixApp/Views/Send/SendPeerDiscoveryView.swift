@@ -1,57 +1,67 @@
-//
-//  SendPeerDiscoveryView.swift
-//  VoltixApp
-//
-
 import SwiftUI
 
 struct SendPeerDiscoveryView: View {
     @Binding var presentationStack: Array<CurrentScreen>
     
     var body: some View {
-        VStack() {
-            HeaderView(
-                rightIcon: "QuestionMark",
-                leftIcon: "BackArrow",
-                head: "SEND",
-                leftAction: {
-                    if !self.presentationStack.isEmpty {
-                        self.presentationStack.removeLast()
-                    }
-                },
-                rightAction: {}
-            )
-            Text("VERIFY ALL DETAILS")
-                .font(Font.custom("Montserrat", size: 24).weight(.medium))
-                .lineSpacing(36)
-                .foregroundColor(.black)
-            Spacer().frame(height: 80)
-            RadioButtonGroup(
-                items: [
-                    "iPhone 15 Pro, “Matt’s iPhone”, 42",
-                    "iPhone 13, “Matt’s iPhone 13”, 13",
-                ],
-                selectedId: "iPhone 15 Pro, “Matt’s iPhone”, 42"
-            ) {
-                selected in print("Selected is: \(selected)")
+        NavigationStack {
+            VStack {
+                Text("VERIFY ALL DETAILS")
+                    .font(.title2) // Adjusted for dynamic type
+                    .fontWeight(.medium)
+                    .foregroundColor(.black)
+                    .padding(.top) // Add padding to space out from the navigation bar
+                
+                Spacer().frame(height: 80)
+                
+                RadioButtonGroup(
+                    items: [
+                        "iPhone 15 Pro, “Matt’s iPhone”, 42",
+                        "iPhone 13, “Matt’s iPhone 13”, 13",
+                    ],
+                    selectedId: "iPhone 15 Pro, “Matt’s iPhone”, 42"
+                ) { selected in
+                    print("Selected is: \(selected)")
+                }
+                
+                Spacer()
+                
+                WifiBar() // Assuming WifiBar is a custom view you've defined
+                
+                BottomBar(
+                    content: "CONTINUE",
+                    onClick: { }
+                )
             }
-            Spacer()
-            WifiBar()
-            BottomBar(
-                content: "CONTINUE",
-                onClick: { }
-            )
+            .navigationTitle("SEND")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        if !presentationStack.isEmpty {
+                            presentationStack.removeLast()
+                        }
+                    }) {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.black) // Ensure this matches your app's design
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        // Define right action
+                    }) {
+                        Image(systemName: "questionmark.circle")
+                            .foregroundColor(.black) // Match your app's design
+                    }
+                }
+            }
         }
-        .frame(
-            minWidth: 0,
-            maxWidth: .infinity,
-            minHeight: 0,
-            maxHeight: .infinity,
-            alignment: .top
-        )
     }
 }
 
-#Preview {
-    SendPeerDiscoveryView(presentationStack: .constant([]))
+// Preview
+struct SendPeerDiscoveryView_Previews: PreviewProvider {
+    static var previews: some View {
+        SendPeerDiscoveryView(presentationStack: .constant([]))
+    }
 }
