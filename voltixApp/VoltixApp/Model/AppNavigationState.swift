@@ -32,10 +32,10 @@ enum CurrentScreen: Hashable {
     case menu  // Add/Export/Forget vaults
     
     // Send
-    case sendInputDetails
+    case sendInputDetails(TransactionDetailsViewModel)
     case sendPeerDiscovery
     case sendWaitingForPeers  // Host party waits here
-    case sendVerifyScreen     // 2nd device goes to here automatically on receiving a p2p keysign msg
+    case sendVerifyScreen(TransactionDetailsViewModel)     // 2nd device goes to here automatically on receiving a p2p keysign msg
     case sendDone
     
     // Swap

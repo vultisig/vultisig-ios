@@ -45,14 +45,14 @@ struct MainNavigationStack: View {
                         VaultAssetDetailView(presentationStack: $presentationStack, type: asset)
                     case .menu:
                         MenuView(presentationStack: $presentationStack)
-                    case .sendInputDetails:
-                        SendInputDetailsView(presentationStack: $presentationStack, viewModel: viewModel)
+                    case .sendInputDetails(let tx):
+                        SendInputDetailsView(presentationStack: $presentationStack, unspentOutputsViewModel: viewModel, transactionDetailsViewModel: tx)
                     case .sendPeerDiscovery:
                         SendPeerDiscoveryView(presentationStack: $presentationStack)
                     case .sendWaitingForPeers:
                         SendWaitingForPeersView(presentationStack: $presentationStack)
-                    case .sendVerifyScreen:
-                        SendVerifyView(presentationStack: $presentationStack)
+                    case .sendVerifyScreen(let tx):
+                        SendVerifyView(presentationStack: $presentationStack, viewModel: tx)
                     case .sendDone:
                         SendDoneView(presentationStack: $presentationStack)
                     case .swapInputDetails:

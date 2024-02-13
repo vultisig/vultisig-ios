@@ -57,7 +57,7 @@ private struct smallScreen: View {
             )
             WifiBar()
             BottomBar(content: "SEND Input details", onClick: {
-                self.presentationStack.append(.sendInputDetails)
+                self.presentationStack.append(.sendInputDetails(TransactionDetailsViewModel()))
             })
             BottomBar(content: "CONTINUE", onClick: {
                 let vault = Vault(name: "Vault #\(vaults.count + 1)")
