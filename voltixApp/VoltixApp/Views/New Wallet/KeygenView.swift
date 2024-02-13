@@ -44,6 +44,20 @@ struct KeygenView: View {
     
     var body: some View {
         VStack {
+            LargeHeaderView(
+                rightIcon: "QuestionMark",
+                leftIcon: "BackArrow",
+                head: "KEYGEN",
+                leftAction: {
+                    if !self.presentationStack.isEmpty {
+                        self.presentationStack.removeLast()
+                    }
+                },
+                rightAction: {
+                    // open help modal
+                },
+                back: !Utils.isIOS()
+            )
             switch self.currentStatus {
             case .CreatingInstance:
                 HStack {
@@ -102,7 +116,16 @@ struct KeygenView: View {
                         self.pollingInboundMessages = false
                     }
             }
-        }.task {
+        }
+        .frame(
+            minWidth: 0,
+            maxWidth: .infinity,
+            minHeight: 0,
+            maxHeight: .infinity,
+            alignment: .top
+        )
+        .background(.white)
+        .task {
             do {
                 self.vault.signers.append(contentsOf: self.keygenCommittee)
                 // Create keygen instance, it takes time to generate the preparams

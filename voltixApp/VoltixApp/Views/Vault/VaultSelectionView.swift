@@ -19,8 +19,7 @@ struct VaultSelectionView: View {
     @State private var itemToDelete: Vault? = nil
     var body: some View {
         VStack {
-            LargeHeaderView(
-                presentationStack: $presentationStack, 
+            LargeHeaderView( 
                 rightIcon: "Refresh",
                 leftIcon: "Menu",
                 head: "VAULT",
@@ -32,7 +31,7 @@ struct VaultSelectionView: View {
                 rightAction: {
                     // open help modal
                 },
-                back: !Utils.isIOS()
+                back: false
             )
             VStack {
                 ForEach(items.indices, id: \.self) { index in

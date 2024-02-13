@@ -94,7 +94,7 @@ private struct largeScreen: View {
     var body: some View {
         VStack {
             LargeHeaderView(
-                presentationStack: $presentationStack, rightIcon: "QuestionMark",
+                rightIcon: "QuestionMark",
                 leftIcon: "BackArrow",
                 head: "IMPORT",
                 leftAction: {

@@ -11,7 +11,7 @@ struct VaultAssetsView: View {
   var body: some View {
     VStack(alignment: .leading) {
         LargeHeaderView(
-            presentationStack: .constant([]), rightIcon: "Refresh",
+            rightIcon: "Refresh",
             leftIcon: "Menu",
             head: "VAULT",
             leftAction: {
