@@ -23,6 +23,15 @@ struct NavigationButtons {
                 .foregroundColor(.black)
         }
     }
+    
+    static func qrCodeButton(presentationStack: Binding<[CurrentScreen]>) -> some View {
+        Button(action: {
+            presentationStack.wrappedValue.append(.joinKeygen)
+        }) {
+            Image(systemName: "qrcode.viewfinder")
+                .foregroundColor(.black)
+        }
+    }
 }
 
 // Modifier to conditionally apply .navigationBarTitleDisplayMode for non-macOS targets

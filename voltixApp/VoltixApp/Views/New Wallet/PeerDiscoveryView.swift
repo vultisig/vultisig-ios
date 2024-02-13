@@ -69,6 +69,26 @@ struct PeerDiscoveryView: View {
                 Text("Something is wrong")
             }
         }
+        .navigationBarBackButtonHidden()
+        .navigationTitle("Join keygen session")
+        .modifier(InlineNavigationBarTitleModifier())
+        .toolbar {
+          #if os(iOS)
+            ToolbarItem(placement: .navigationBarLeading) {
+              NavigationButtons.backButton(presentationStack: $presentationStack)
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                NavigationButtons.qrCodeButton(presentationStack: $presentationStack)
+            }
+          #else
+            ToolbarItem {
+              NavigationButtons.backButton(presentationStack: $presentationStack)
+            }
+            ToolbarItem {
+                NavigationButtons.qrCodeButton(presentationStack: $presentationStack)
+            }
+          #endif
+        }
         .task {
             self.mediator.start()
             logger.info("mediator server started")

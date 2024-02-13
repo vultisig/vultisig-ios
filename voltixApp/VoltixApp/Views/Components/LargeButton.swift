@@ -20,7 +20,7 @@ struct LargeButton: View {
               .foregroundColor(.black);
           }
         }
-        .cornerRadius(12)
+        //.cornerRadius(12)
         .foregroundColor(.clear)
         #if os(iOS)
         .frame(width: 240, height: 148)

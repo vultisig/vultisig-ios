@@ -10,12 +10,13 @@ struct NewWalletInstructions: View {
     @Binding var presentationStack: Array<CurrentScreen>
     @State  var vaultName:String
     
+    let navigationTitle: String = "New wallet"
     
     var body: some View {
         #if os(iOS)
-        smallScreen(presentationStack: $presentationStack)
+        smallScreen(presentationStack: $presentationStack, navigationTitle: navigationTitle)
         #else
-        LargeScreen(presentationStack: $presentationStack)
+        LargeScreen(presentationStack: $presentationStack, navigationTitle: navigationTitle)
         #endif
     }
 }
@@ -26,19 +27,10 @@ private struct smallScreen: View {
     @EnvironmentObject var appState: ApplicationState
     @Query var vaults: [Vault]
     
+    var navigationTitle: String
+    
     var body: some View {
         VStack() {
-            HeaderView(
-              rightIcon: "QuestionMark",
-              leftIcon: "BackArrow",
-              head: "SETUP",
-              leftAction: {
-                  if !self.presentationStack.isEmpty {
-                      self.presentationStack.removeLast()
-                  }
-              },
-              rightAction: {}
-            )
             Text("YOU NEED THREE DEVICES.")
               .font(Font.custom("Montserrat", size: 24).weight(.medium))
               .lineSpacing(36)
@@ -70,14 +62,27 @@ private struct smallScreen: View {
                 self.presentationStack.append(.peerDiscovery)
             })
         }
-        .frame(
-            minWidth: 0,
-            maxWidth: .infinity,
-            minHeight: 0,
-            maxHeight: .infinity,
-            alignment: .top
-        )
         .background(.white)
+        .navigationTitle(navigationTitle)
+        .modifier(InlineNavigationBarTitleModifier())
+        .navigationBarBackButtonHidden()
+        .toolbar {
+          #if os(iOS)
+            ToolbarItem(placement: .navigationBarLeading) {
+              NavigationButtons.backButton(presentationStack: $presentationStack)
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+              NavigationButtons.questionMarkButton
+            }
+          #else
+            ToolbarItem {
+              NavigationButtons.backButton(presentationStack: $presentationStack)
+            }
+            ToolbarItem {
+              NavigationButtons.questionMarkButton
+            }
+          #endif
+        }
     }
 }
 
@@ -89,20 +94,10 @@ private struct LargeScreen: View {
     @EnvironmentObject var appState: ApplicationState
     @Query var vaults: [Vault]
     
+    var navigationTitle: String
+    
     var body: some View {
         VStack() {
-            LargeHeaderView(
-              rightIcon: "QuestionMark",
-              leftIcon: "BackArrow",
-              head: "SETUP",
-              leftAction: {
-                  if !self.presentationStack.isEmpty {
-                      self.presentationStack.removeLast()
-                  }
-              },
-              rightAction: {},
-              back: true
-            )
             Text("YOU NEED A MACBOOK AND TWO PAIR DEVICES.")
               .font(Font.custom("Montserrat", size: 24).weight(.medium))
               .lineSpacing(36)
@@ -151,7 +146,7 @@ private struct LargeScreen: View {
             .frame(width: .infinity, height: 100)
             ProgressBottomBar(
                 content: "CONTINUE",
-                onClick: { 
+                onClick: {
                     let vault = Vault(name: "Vault #\(vaults.count + 1)")
                     appState.creatingVault = vault
                     self.presentationStack.append(.peerDiscovery)
@@ -160,13 +155,26 @@ private struct LargeScreen: View {
                 showProgress: true
             )
         }
-        .frame(
-            minWidth: 0,
-            maxWidth: .infinity,
-            minHeight: 0,
-            maxHeight: .infinity,
-            alignment: .top
-        )
+        .navigationTitle(navigationTitle)
+        .navigationBarBackButtonHidden()
+        .modifier(InlineNavigationBarTitleModifier())
+        .toolbar {
+          #if os(iOS)
+            ToolbarItem(placement: .navigationBarLeading) {
+              NavigationButtons.backButton(presentationStack: $presentationStack)
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+              NavigationButtons.questionMarkButton
+            }
+          #else
+            ToolbarItem {
+              NavigationButtons.backButton(presentationStack: $presentationStack)
+            }
+            ToolbarItem {
+              NavigationButtons.questionMarkButton
+            }
+          #endif
+        }
         .background(.white)
         .navigationBarBackButtonHidden()
     }

@@ -11,11 +11,11 @@ struct MainNavigationStack: View {
 
     @EnvironmentObject var appState: ApplicationState
     // Push/pop onto this array to control presentation overlay globally
-    @State private var presentationStack: [CurrentScreen] = [.welcome]
+    @State private var presentationStack: [CurrentScreen] = []
 
     var body: some View {
         NavigationStack(path: $presentationStack) {
-            VaultAssetsView(presentationStack: $presentationStack) // Default top level
+            WelcomeView(presentationStack: $presentationStack) // Default top level
                 .navigationDestination(for: CurrentScreen.self) { screen in
                     switch screen {
                     case .welcome:
@@ -76,7 +76,7 @@ struct MainNavigationStack: View {
                 }
                 .onAppear(perform: {
                     if appState.currentVault == nil {
-                        self.presentationStack = [CurrentScreen.welcome]
+                        //self.presentationStack = [CurrentScreen.welcome]
                         return
                     }
                 })

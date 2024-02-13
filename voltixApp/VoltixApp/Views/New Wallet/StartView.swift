@@ -9,6 +9,7 @@ struct StartView: View {
   var body: some View {
     GeometryReader { geometry in
 
+    
       VStack {
         Spacer()
 
@@ -20,13 +21,14 @@ struct StartView: View {
               self.presentationStack.append(.newWalletInstructions)
             }
           )
-          .frame(width: geometry.size.width * 0.8, height: 50)  // Specify button dimensions
+          .frame(width: geometry.size.width , height: 50)  // Specify button dimensions
 
           Text("CREATE A NEW VAULT")
             .font(.system(size: geometry.size.width * 0.045))  // Adjust font size
             .foregroundColor(.black)
-            .frame(width: geometry.size.width * 0.8)  // Ensure text does not exceed button width
+            .frame(width: geometry.size.width )  // Ensure text does not exceed button width
         }
+          
 
         Spacer()
 
@@ -38,12 +40,12 @@ struct StartView: View {
               self.presentationStack.append(.importWallet)
             }
           )
-          .frame(width: geometry.size.width * 0.8, height: 50)  // Specify button dimensions
+          .frame(width: geometry.size.width, height: 50)  // Specify button dimensions
 
           Text("IMPORT AN EXISTING VAULT")
             .font(.system(size: geometry.size.width * 0.045))  // Adjust font size
             .foregroundColor(.black)
-            .frame(width: geometry.size.width * 0.8)  // Ensure text does not exceed button width
+            .frame(width: geometry.size.width)  // Ensure text does not exceed button width
         }
 
         Spacer()

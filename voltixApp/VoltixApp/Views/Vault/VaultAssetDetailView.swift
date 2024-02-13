@@ -11,17 +11,6 @@ struct VaultAssetDetailView: View {
     
     var body: some View {
         VStack(alignment: .leading) {
-          HeaderView(
-            rightIcon: "Refresh",
-            leftIcon: "BackArrow",
-            head: "ETHEREUM",
-            leftAction: {
-                if !self.presentationStack.isEmpty {
-                    self.presentationStack.removeLast()
-                }
-            },
-            rightAction: {}
-          )
           VStack(alignment: .leading) {
             HStack() {
                 Text("Ethereum")
@@ -61,15 +50,28 @@ struct VaultAssetDetailView: View {
           }
           .frame(width: .infinity, height: 83)
           Choose(content: "TOKENS")
+            Spacer()
         }
         .padding()
-        .frame(
-            minWidth: 0,
-            maxWidth: .infinity,
-            minHeight: 0,
-            maxHeight: .infinity,
-            alignment: .topLeading
-        )
+        .navigationTitle("VAULT")
+        .modifier(InlineNavigationBarTitleModifier())
+        .toolbar {
+          #if os(iOS)
+            ToolbarItem(placement: .navigationBarLeading) {
+              NavigationButtons.backButton(presentationStack: $presentationStack)
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+              NavigationButtons.questionMarkButton
+            }
+          #else
+            ToolbarItem {
+              NavigationButtons.backButton(presentationStack: $presentationStack)
+            }
+            ToolbarItem {
+              NavigationButtons.questionMarkButton
+            }
+          #endif
+        }
     }
 }
 
