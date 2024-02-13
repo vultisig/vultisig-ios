@@ -1,110 +1,102 @@
-//
-//  SendVerifyView.swift
-//  VoltixApp
-//
-
 import SwiftUI
 
 struct SendVerifyView: View {
-    @Binding var presentationStack: Array<CurrentScreen>
-    
-    var body: some View {
-            VStack(alignment: .leading) {
-                HeaderView(
-                    rightIcon: "",
-                    leftIcon: "",
-                    head: "VERIFY",
-                    leftAction: {
-                        if !self.presentationStack.isEmpty {
-                            self.presentationStack.removeLast()
-                        }
-                    },
-                    rightAction: {}
-                )
-                VStack(alignment: .leading) {
-                    Text("FROM")
-                        .font(Font.custom("Menlo", size: 20).weight(.bold))
-                        .lineSpacing(30)
-                        .foregroundColor(.black)
-                    Text("0x0cb1D4a24292bB89862f599Ac5B10F42b6DE07e4")
-                        .font(Font.custom("Montserrat", size: 13).weight(.medium))
-                        .lineSpacing(19.50)
-                        .foregroundColor(.black)
-                }
-                .frame(height: 70)
-                VStack(alignment: .leading) {
-                    Text("TO")
-                        .font(Font.custom("Menlo", size: 20).weight(.bold))
-                        .lineSpacing(30)
-                        .foregroundColor(.black)
-                    Text("0xF42b6DE07e40cb1D4a24292bB89862f599Ac5B10")
-                        .font(Font.custom("Montserrat", size: 13).weight(.medium))
-                        .lineSpacing(19.50)
-                        .foregroundColor(.black)
-                }
-                .frame(height: 70)
-                HStack() {
-                    Text("AMOUNT")
-                        .font(Font.custom("Menlo", size: 20).weight(.bold))
-                        .lineSpacing(30)
-                        .foregroundColor(.black)
-                    Spacer().frame(width: 40)
-                    Text("1.0 ETH")
-                        .font(Font.custom("Montserrat", size: 40).weight(.light))
-                        .lineSpacing(60)
-                        .foregroundColor(.black)
-                }
-                .frame(height: 70)
-                VStack(alignment: .leading) {
-                    Text("MEMO")
-                        .font(Font.custom("Menlo", size: 20).weight(.bold))
-                        .lineSpacing(30)
-                        .foregroundColor(.black)
-                    Text("TEST")
-                        .font(Font.custom("Montserrat", size: 13).weight(.medium))
-                        .lineSpacing(19.50)
-                        .foregroundColor(.black)
-                }
-                .frame(height: 70)
-                HStack() {
-                    Text("GAS")
-                        .font(Font.custom("Menlo", size: 20).weight(.bold))
-                        .lineSpacing(30)
-                        .foregroundColor(.black)
-                    Spacer().frame(width: 40)
-                    Text("$4.00")
-                        .font(Font.custom("Montserrat", size: 40).weight(.light))
-                        .lineSpacing(60)
-                        .foregroundColor(.black)
-                }
-                .frame(height: 70)
-                Spacer()
-                RadioButtonGroup(
-                    items: [
-                        "I am sending to the right address",
-                        "The amount is correct",
-                        "I am not being hacked or phished",
-                    ],
-                    selectedId: "iPhone 15 Pro, “Matt’s iPhone”, 42"
-                ) {
-                    selected in print("Selected is: \(selected)")
-                }
-                BottomBar(
-                    content: "COMPLETE",
-                    onClick: { }
-                )
+  @Binding var presentationStack: [CurrentScreen]
+
+  var body: some View {
+    GeometryReader { geometry in  // Use GeometryReader for dynamic sizing
+      // Allows content to be scrollable
+      VStack(alignment: .leading) {
+        HeaderView(
+          rightIcon: "",
+          leftIcon: "",
+          head: "VERIFY",
+          leftAction: {
+            if !self.presentationStack.isEmpty {
+              self.presentationStack.removeLast()
             }
-            .padding(.leading, 20)
-            .frame(
-                minWidth: 0,
-                maxWidth: .infinity,
-                minHeight: 0,
-                maxHeight: .infinity,
-                alignment: .top
-            )
+          },
+          rightAction: {}
+        )
+        .padding(.horizontal, geometry.size.width * 0.03)  // Dynamic padding
+
+        Group {
+          VStack(alignment: .leading) {
+            Text("FROM")
+              .font(.system(size: geometry.size.width * 0.05, weight: .bold))  // Dynamic font sizing
+              .foregroundColor(.black)
+            Text("0x0cb1D4a24292bB89862f599Ac5B10F42b6DE07e4")
+              .font(.system(size: geometry.size.width * 0.04))  // Dynamic font sizing
+              .foregroundColor(.black)
+          }
+          VStack(alignment: .leading) {
+            Text("TO")
+              .font(.system(size: geometry.size.width * 0.05, weight: .bold))  // Dynamic font sizing
+              .foregroundColor(.black)
+            Text("0xF42b6DE07e40cb1D4a24292bB89862f599Ac5B10")
+              .font(.system(size: geometry.size.width * 0.04))  // Dynamic font sizing
+              .foregroundColor(.black)
+          }
+          HStack {
+            Text("AMOUNT")
+              .font(.system(size: geometry.size.width * 0.05, weight: .bold))  // Dynamic font sizing
+              .foregroundColor(.black)
+            Spacer().frame(width: geometry.size.width * 0.1)  // Dynamic spacing
+            Text("1.0 ETH")
+              .font(.system(size: geometry.size.width * 0.08, weight: .light))  // Dynamic font sizing
+              .foregroundColor(.black)
+          }
+          VStack(alignment: .leading) {
+            Text("MEMO")
+              .font(.system(size: geometry.size.width * 0.05, weight: .bold))  // Dynamic font sizing
+              .foregroundColor(.black)
+            Text("TEST")
+              .font(.system(size: geometry.size.width * 0.04))  // Dynamic font sizing
+              .foregroundColor(.black)
+          }
+          HStack {
+            Text("GAS")
+              .font(.system(size: geometry.size.width * 0.05, weight: .bold))  // Dynamic font sizing
+              .foregroundColor(.black)
+            Spacer().frame(width: geometry.size.width * 0.1)  // Dynamic spacing
+            Text("$4.00")
+              .font(.system(size: geometry.size.width * 0.08, weight: .light))  // Dynamic font sizing
+              .foregroundColor(.black)
+          }
         }
+        .frame(height: geometry.size.height * 0.1)  // Dynamic height for each block
+        Spacer()
+        Group {
+
+          RadioButtonGroup(
+            items: [
+              "I am sending to the right address",
+              "The amount is correct",
+              "I am not being hacked or phished",
+            ],
+            selectedId: "iPhone 15 Pro, “Matt’s iPhone”, 42"
+          ) { selected in
+            print("Selected is: \(selected)")
+          }
+          .padding(.horizontal, geometry.size.width * 0.03)  // Dynamic padding
+          BottomBar(
+            content: "COMPLETE",
+            onClick: {}
+          )
+          .padding(.horizontal, geometry.size.width * 0.03)  // Dynamic padding
+        }
+
+      }
+      .padding(.leading, geometry.size.width * 0.05)  // Dynamic leading padding
+
+    }
+    //.edgesIgnoringSafeArea(.all) // Extend to the edges of the display
+  }
 }
 
-#Preview {
+// Preview
+struct SendVerifyView_Previews: PreviewProvider {
+  static var previews: some View {
     SendVerifyView(presentationStack: .constant([]))
+  }
 }

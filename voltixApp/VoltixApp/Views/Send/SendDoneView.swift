@@ -1,61 +1,64 @@
-//
-//  SendDoneView.swift
-//  VoltixApp
-//
-
 import SwiftUI
 
 struct SendDoneView: View {
     @Binding var presentationStack: Array<CurrentScreen>
     
     var body: some View {
-        VStack(alignment: .leading) {
-            HeaderView(
-                rightIcon: "QuestionMark",
-                leftIcon: "BackArrow",
-                head: "SEND",
-                leftAction: {
-                    if !self.presentationStack.isEmpty {
-                        self.presentationStack.removeLast()
+        GeometryReader { geometry in // Use GeometryReader for dynamic sizing
+             // Allows content to scroll if it exceeds window size
+                VStack(alignment: .leading) {
+                    HeaderView(
+                        rightIcon: "QuestionMark",
+                        leftIcon: "BackArrow",
+                        head: "SEND",
+                        leftAction: {
+                            if !self.presentationStack.isEmpty {
+                                self.presentationStack.removeLast()
+                            }
+                        },
+                        rightAction: {}
+                    )
+                    .padding(.horizontal, geometry.size.width * 0.03) // Dynamic padding based on width
+                    
+                    VStack(alignment: .leading) {
+                        Text("Transaction")
+                            .font(.system(size: geometry.size.width * 0.05)) // Dynamic font sizing
+                            .foregroundColor(.black)
+                        
+                        HStack {
+                            Text("bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w")
+                                .font(.system(size: geometry.size.width * 0.04)) // Dynamic font sizing
+                                .foregroundColor(.black)
+                                .truncationMode(.middle)
+                                .lineLimit(1)
+                            
+                            Spacer()
+                            
+                            Image("Link")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(height: geometry.size.width * 0.06) // Dynamic sizing for the image
+                        }
                     }
-                },
-                rightAction: {}
-            )
-            VStack(alignment: .leading) {
-                Text("Transaction")
-                    .font(Font.custom("Menlo", size: 20).weight(.bold))
-                    .lineSpacing(30)
-                    .foregroundColor(.black)
-                HStack() {
-                    Text("bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w")
-                        .font(Font.custom("Montserrat", size: 13).weight(.medium))
-                        .lineSpacing(19.50)
-                        .foregroundColor(.black)
+                    .padding() // Padding around the VStack
+                    
                     Spacer()
-                    Image("Link")
-                        .resizable()
-                        .frame(width: 23, height: 30)
+                    
+                    BottomBar(
+                        content: "COMPLETE",
+                        onClick: { }
+                    )
+                    .padding(.horizontal, geometry.size.width * 0.03) // Dynamic padding
                 }
-                .padding(.trailing, 16)
             }
-            .padding(.leading, 20)
-            .frame(height: 83)
-            Spacer()
-            BottomBar(
-                content: "COMPLETE",
-                onClick: { }
-            )
         }
-        .frame(
-            minWidth: 0,
-            maxWidth: .infinity,
-            minHeight: 0,
-            maxHeight: .infinity,
-            alignment: .top
-        )
-    }
+        //.edgesIgnoringSafeArea(.all) // Extend to the edges of the display
+    
 }
 
-#Preview {
-    SendDoneView(presentationStack: .constant([]))
+// Preview
+struct SendDoneView_Previews: PreviewProvider {
+    static var previews: some View {
+        SendDoneView(presentationStack: .constant([]))
+    }
 }
