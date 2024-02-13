@@ -45,7 +45,7 @@ struct KeygenView: View {
     var body: some View {
         VStack {
             LargeHeaderView(
-                rightIcon: "QuestionMark",
+                rightIcon: "",
                 leftIcon: "BackArrow",
                 head: "KEYGEN",
                 leftAction: {
@@ -58,64 +58,76 @@ struct KeygenView: View {
                 },
                 back: !Utils.isIOS()
             )
-            switch self.currentStatus {
-            case .CreatingInstance:
-                HStack {
-                    Text("creating tss instance")
-                    ProgressView()
-                        .progressViewStyle(.circular)
-                        .tint(.blue)
-                        .padding(2)
-                }
-            case .KeygenECDSA:
-                HStack {
-                    if self.keygenInProgressECDSA {
-                        Text("Generating ECDSA key")
-                        ProgressView()
-                            .progressViewStyle(.circular)
-                            .tint(.blue)
-                            .padding(2)
-                    }
-                    if self.pubKeyECDSA != nil {
-                        Text("ECDSA pubkey:\(self.pubKeyECDSA ?? "")")
-                        Image(systemName: "checkmark").foregroundColor(/*@START_MENU_TOKEN@*/ .blue/*@END_MENU_TOKEN@*/)
-                    }
-                }
-            case .KeygenEdDSA:
-                HStack {
-                    if self.keygenInProgressEDDSA {
-                        Text("Generating EdDSA key")
-                        ProgressView()
-                            .progressViewStyle(.circular)
-                            .tint(.blue)
-                            .padding(2)
-                    }
-                    if self.pubKeyEdDSA != nil {
-                        Text("EdDSA pubkey:\(self.pubKeyEdDSA ?? "")")
-                        Image(systemName: "checkmark").foregroundColor(/*@START_MENU_TOKEN@*/ .blue/*@END_MENU_TOKEN@*/)
-                    }
-                }
-            case .KeygenFinished:
-                FinishedTSSKeygenView(presentationStack: self.$presentationStack, vault: self.vault).onAppear {
-                    if let stateAccess {
-                        for item in stateAccess.keyshares {
-                            logger.info("keyshare:\(item.pubkey)")
+            Spacer()
+            #if os(iOS)
+            StatusText(status: "GENERATING\n...")
+            #else
+            VStack(alignment: .center) {
+                switch self.currentStatus {
+                case .CreatingInstance:
+                    StatusText(status: "PREPARING VAULT...")
+                case .KeygenECDSA:
+                    StatusText(status: "GENERATING ECDSA KEY")
+//                    HStack {
+//                        if self.keygenInProgressECDSA {
+//                            Text("Generating ECDSA key")
+//                            ProgressView()
+//                                .progressViewStyle(.circular)
+//                                .tint(.blue)
+//                                .padding(2)
+//                        }
+//                        if self.pubKeyECDSA != nil {
+//                            Text("ECDSA pubkey:\(self.pubKeyECDSA ?? "")")
+//                            Image(systemName: "checkmark").foregroundColor(/*@START_MENU_TOKEN@*/ .blue/*@END_MENU_TOKEN@*/)
+//                        }
+//                    }
+                case .KeygenEdDSA:
+                    StatusText(status: "GENERATING EDDSA KEY")
+//                    HStack {
+//                        if self.keygenInProgressEDDSA {
+//                            Text("Generating EdDSA key")
+//                            ProgressView()
+//                                .progressViewStyle(.circular)
+//                                .tint(.blue)
+//                                .padding(2)
+//                        }
+//                        if self.pubKeyEdDSA != nil {
+//                            Text("EdDSA pubkey:\(self.pubKeyEdDSA ?? "")")
+//                            Image(systemName: "checkmark").foregroundColor(/*@START_MENU_TOKEN@*/ .blue/*@END_MENU_TOKEN@*/)
+//                        }
+//                    }
+                case .KeygenFinished:
+                    FinishedTSSKeygenView(presentationStack: self.$presentationStack, vault: self.vault).onAppear {
+                        if let stateAccess {
+                            for item in stateAccess.keyshares {
+                                logger.info("keyshare:\(item.pubkey)")
+                            }
+                            self.vault.keyshares = stateAccess.keyshares
                         }
-                        self.vault.keyshares = stateAccess.keyshares
-                    }
-                    self.vault.name = self.vaultName
-                    self.vault.localPartyID = self.localPartyKey
-                    // add the vault to modelcontext
-                    self.context.insert(self.vault)
-                    self.pollingInboundMessages = false
-                }
-            case .KeygenFailed:
-                Text("Sorry keygen failed, you can retry it,error:\(self.keygenError ?? "")")
-                    .navigationBarBackButtonHidden(false)
-                    .onAppear {
+                        self.vault.name = self.vaultName
+                        self.vault.localPartyID = self.localPartyKey
+                        // add the vault to modelcontext
+                        self.context.insert(self.vault)
                         self.pollingInboundMessages = false
                     }
+                case .KeygenFailed:
+                    StatusText(status: "Failed KeyGen Retry")
+                        .onAppear {
+                            self.pollingInboundMessages = false
+                        }
+                }
             }
+            .frame(width: .infinity, height: .infinity)
+            #endif
+            Spacer()
+            WifiBar()
+            ProgressBottomBar(
+                content: "",
+                onClick: {},
+                progress: self.currentStatus == KeygenStatus.CreatingInstance ? 3 : 4,
+                showProgress: !Utils.isIOS(),
+                showButton: false
+            )
         }
         .frame(
             minWidth: 0,
@@ -125,6 +137,7 @@ struct KeygenView: View {
             alignment: .top
         )
         .background(.white)
+        .navigationBarBackButtonHidden()
         .task {
             do {
                 self.vault.signers.append(contentsOf: self.keygenCommittee)
@@ -231,6 +244,22 @@ struct KeygenView: View {
                 }
             }
         })
+    }
+}
+
+private struct StatusText: View {
+    let status: String;
+    var body: some View {
+        HStack {
+            Text(self.status)
+              .font(Font.custom("Menlo", size: 40).weight(.bold))
+              .foregroundColor(.black)
+              .multilineTextAlignment(.center);
+            ProgressView()
+                .progressViewStyle(.circular)
+                .tint(.black)
+                .padding(2)
+        }
     }
 }
 
