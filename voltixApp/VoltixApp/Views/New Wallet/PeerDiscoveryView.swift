@@ -57,7 +57,7 @@ struct PeerDiscoveryView: View {
                     self.currentState = .Keygen
                     self.discoverying = false
                 }
-                .disabled(self.selections.count < 3)
+                .disabled(self.selections.count < 2) // TODO: Only for testing purpose. 
             case .Keygen:
                 KeygenView(presentationStack: self.$presentationStack,
                            keygenCommittee: self.selections.map { $0 },
