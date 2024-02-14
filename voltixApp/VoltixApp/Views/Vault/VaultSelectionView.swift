@@ -16,51 +16,8 @@ struct VaultSelectionView: View {
     @State private var itemToDelete: Vault? = nil
     var body: some View {
         VStack {
-            LargeHeaderView( 
-                rightIcon: "Refresh",
-                leftIcon: "Menu",
-                head: "VAULT",
-                leftAction: {
-                    if !self.presentationStack.isEmpty {
-                        self.presentationStack.removeLast()
-                    }
-                },
-                rightAction: {
-                    // open help modal
-                },
-                back: false
-            )
-            VStack {
-                ForEach(items.indices, id: \.self) { index in
-                    VaultItem(
-                        coinName: items[index].coinName,
-                        amount: items[index].amount,
-                        coinAmount: items[index].coinAmount,
-                        address: items[index].address,
-                        isRadio: !Utils.isIOS(),
-                        showButtons: !Utils.isIOS(),
-                        onClick: {
-                            VaultAssetsView(presentationStack: $presentationStack, appState: _appState, unspentOutputsViewModel:unspentOutputsViewModel , transactionDetailsViewModel: TransactionDetailsViewModel()).onAppear {
-                                appState.currentVault = Vault(name: "test", signers:["A","B","C"],  pubKeyECDSA: "ECDSA PubKey", pubKeyEdDSA: "EdDSA PubKey",keyshares: [KeyShare](), localPartyID: "first")
-                            }
-                        }
-                    )
-                    .buttonStyle(PlainButtonStyle())
-                }
-            }
-            .frame(width: .infinity)
+            
         }
-        .onAppear {
-            self.appState.currentVault = Vault(name: "test", signers:["A","B","C"],  pubKeyECDSA: "ECDSA PubKey", pubKeyEdDSA: "EdDSA PubKey",keyshares: [KeyShare](), localPartyID: "first")
-        }
-        .frame(
-            minWidth: 0,
-            maxWidth: .infinity,
-            minHeight: 0,
-            maxHeight: .infinity,
-            alignment: .top
-        )
-        .background(.white)
         .toolbar {
             ToolbarItemGroup(placement: .automatic) {
                 Button("New vault", systemImage: "plus") {
