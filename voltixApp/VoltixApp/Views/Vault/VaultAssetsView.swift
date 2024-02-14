@@ -3,6 +3,7 @@ import SwiftUI
 struct VaultAssetsView: View {
     @Binding var presentationStack: [CurrentScreen]
     @EnvironmentObject var appState: ApplicationState
+    @State private var isAddingCoins = false
 
     var body: some View {
         ScrollView {
@@ -36,8 +37,13 @@ struct VaultAssetsView: View {
                 Button("refresh", systemImage: "arrow.clockwise.circle") {
                     // refresh
                 }
+                Button("add coin",systemImage: "plus.circle") {
+                    
+                }
             }
-        }
+        }.sheet(isPresented: $isAddingCoins , content: {
+            
+        })
     }
 }
 
