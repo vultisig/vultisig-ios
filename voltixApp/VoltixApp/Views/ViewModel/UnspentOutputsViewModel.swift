@@ -30,9 +30,7 @@ public class UnspentOutputsViewModel: ObservableObject {
             let decoder = JSONDecoder()
             let decodedData = try decoder.decode(WalletUnspentOutput.self, from: data)
             // Update your published property with the decoded data
-            self.walletData = decodedData
-            print(self.walletData)
-            
+            self.walletData = decodedData            
         } catch {
             // Handle any errors
             print("Fetch failed: \(error.localizedDescription)")

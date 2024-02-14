@@ -2,6 +2,7 @@ import SwiftUI
 
 struct WelcomeView: View {
     @Binding var presentationStack: [CurrentScreen]
+    @EnvironmentObject var appState: ApplicationState
     
     var body: some View {
         GeometryReader { geometry in
@@ -33,10 +34,12 @@ struct WelcomeView: View {
                     BottomBar(
                         content: "START",
                         onClick: {
-                            //IF a NEW WALLET :: TODO
-                            // self.presentationStack.append(.startScreen)
-                            // IF not a new WALLET
-                            self.presentationStack.append(.vaultAssets(TransactionDetailsViewModel()))
+                            let isNewVault:Bool = ((appState.currentVault?.name) == nil)
+                            if isNewVault {
+                                self.presentationStack.append(.startScreen)
+                            } else {
+                                self.presentationStack.append(.vaultAssets(TransactionDetailsViewModel()))
+                            }
                         }
                     )
                     .padding(.bottom, geometry.size.height * 0.02)
