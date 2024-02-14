@@ -12,11 +12,37 @@ struct UtxoInfo {
     let index: UInt32
 }
 
-struct Bitcoin {
+struct BitcoinHelper {
     enum BitcoinTransactionError: String, Error {
         case invalidPubKey = "invalid public key"
         case failToGetKeyHash = "fail to get key hash"
         case invalidSignature = "Signature is invalid"
+    }
+    
+    static func getBitcoin(hexPubKey: String) -> Result<Coin, Error> {
+        guard let pubkeyData = Data(hexString: hexPubKey) else {
+            return .failure(BitcoinTransactionError.invalidPubKey)
+        }
+        guard let publicKey = PublicKey(data: pubkeyData, type: .secp256k1) else {
+            return .failure(BitcoinTransactionError.invalidPubKey)
+        }
+        let result =  getAddressFromPubKey(hexPubKey: hexPubKey)
+        switch result {
+        case .failure(let err):
+            return .failure(err)
+        case .success(let addr):
+            return .success(Coin(chain: Chain.Bitcoin, symbol: "btc", logo: "", address: addr))
+        }
+    }
+
+    static func getAddressFromPubKey(hexPubKey: String) -> Result<String, Error> {
+        guard let pubkeyData = Data(hexString: hexPubKey) else {
+            return .failure(BitcoinTransactionError.invalidPubKey)
+        }
+        guard let publicKey = PublicKey(data: pubkeyData, type: .secp256k1) else {
+            return .failure(BitcoinTransactionError.invalidPubKey)
+        }
+        return .success(CoinType.bitcoin.deriveAddressFromPublicKey(publicKey: publicKey))
     }
 
     private func getSignedBitcoinTransaction(utxos: [UtxoInfo],

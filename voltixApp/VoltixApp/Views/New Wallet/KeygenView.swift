@@ -59,43 +59,43 @@ struct KeygenView: View {
                 back: !Utils.isIOS()
             )
             Spacer()
-            #if os(iOS)
+#if os(iOS)
             StatusText(status: "GENERATING\n...")
-            #else
+#else
             VStack(alignment: .center) {
                 switch self.currentStatus {
                 case .CreatingInstance:
                     StatusText(status: "PREPARING VAULT...")
                 case .KeygenECDSA:
                     StatusText(status: "GENERATING ECDSA KEY")
-//                    HStack {
-//                        if self.keygenInProgressECDSA {
-//                            Text("Generating ECDSA key")
-//                            ProgressView()
-//                                .progressViewStyle(.circular)
-//                                .tint(.blue)
-//                                .padding(2)
-//                        }
-//                        if self.pubKeyECDSA != nil {
-//                            Text("ECDSA pubkey:\(self.pubKeyECDSA ?? "")")
-//                            Image(systemName: "checkmark").foregroundColor(/*@START_MENU_TOKEN@*/ .blue/*@END_MENU_TOKEN@*/)
-//                        }
-//                    }
+                    //                    HStack {
+                    //                        if self.keygenInProgressECDSA {
+                    //                            Text("Generating ECDSA key")
+                    //                            ProgressView()
+                    //                                .progressViewStyle(.circular)
+                    //                                .tint(.blue)
+                    //                                .padding(2)
+                    //                        }
+                    //                        if self.pubKeyECDSA != nil {
+                    //                            Text("ECDSA pubkey:\(self.pubKeyECDSA ?? "")")
+                    //                            Image(systemName: "checkmark").foregroundColor(/*@START_MENU_TOKEN@*/ .blue/*@END_MENU_TOKEN@*/)
+                    //                        }
+                    //                    }
                 case .KeygenEdDSA:
                     StatusText(status: "GENERATING EDDSA KEY")
-//                    HStack {
-//                        if self.keygenInProgressEDDSA {
-//                            Text("Generating EdDSA key")
-//                            ProgressView()
-//                                .progressViewStyle(.circular)
-//                                .tint(.blue)
-//                                .padding(2)
-//                        }
-//                        if self.pubKeyEdDSA != nil {
-//                            Text("EdDSA pubkey:\(self.pubKeyEdDSA ?? "")")
-//                            Image(systemName: "checkmark").foregroundColor(/*@START_MENU_TOKEN@*/ .blue/*@END_MENU_TOKEN@*/)
-//                        }
-//                    }
+                    //                    HStack {
+                    //                        if self.keygenInProgressEDDSA {
+                    //                            Text("Generating EdDSA key")
+                    //                            ProgressView()
+                    //                                .progressViewStyle(.circular)
+                    //                                .tint(.blue)
+                    //                                .padding(2)
+                    //                        }
+                    //                        if self.pubKeyEdDSA != nil {
+                    //                            Text("EdDSA pubkey:\(self.pubKeyEdDSA ?? "")")
+                    //                            Image(systemName: "checkmark").foregroundColor(/*@START_MENU_TOKEN@*/ .blue/*@END_MENU_TOKEN@*/)
+                    //                        }
+                    //                    }
                 case .KeygenFinished:
                     FinishedTSSKeygenView(presentationStack: self.$presentationStack, vault: self.vault).onAppear {
                         if let stateAccess {
@@ -118,7 +118,7 @@ struct KeygenView: View {
                 }
             }
             .frame(width: .infinity, height: .infinity)
-            #endif
+#endif
             Spacer()
             WifiBar()
             ProgressBottomBar(
@@ -146,10 +146,10 @@ struct KeygenView: View {
                 let stateAccessorImp = LocalStateAccessorImpl(vault: self.vault)
                 self.tssMessenger = messengerImp
                 self.stateAccess = stateAccessorImp
-          
+                
                 self.tssService = try await self.createTssInstance(messenger: messengerImp,
                                                                    localStateAccessor: stateAccessorImp)
-          
+                
                 // Keep polling for messages
                 Task {
                     repeat {
@@ -173,7 +173,7 @@ struct KeygenView: View {
                 let ecdsaResp = try await tssKeygen(service: tssService, req: keygenReq, keyType: .ECDSA)
                 self.pubKeyECDSA = ecdsaResp.pubKey
                 self.vault.pubKeyECDSA = ecdsaResp.pubKey
-                    
+                
                 self.currentStatus = .KeygenEdDSA
                 self.keygenInProgressEDDSA = true
                 try await Task.sleep(nanoseconds: 1_000_000_000) // Sleep one sec to allow other parties to get in the same step
@@ -181,7 +181,7 @@ struct KeygenView: View {
                 let eddsaResp = try await tssKeygen(service: tssService, req: keygenReq, keyType: .EdDSA)
                 self.pubKeyEdDSA = eddsaResp.pubKey
                 self.vault.pubKeyEdDSA = eddsaResp.pubKey
-                    
+                
             } catch {
                 logger.error("Failed to generate key, error: \(error.localizedDescription)")
                 self.currentStatus = .KeygenFailed
@@ -252,9 +252,9 @@ private struct StatusText: View {
     var body: some View {
         HStack {
             Text(self.status)
-              .font(Font.custom("Menlo", size: 40).weight(.bold))
-              .foregroundColor(.black)
-              .multilineTextAlignment(.center);
+                .font(Font.custom("Menlo", size: 40).weight(.bold))
+                .foregroundColor(.black)
+                .multilineTextAlignment(.center);
             ProgressView()
                 .progressViewStyle(.circular)
                 .tint(.black)

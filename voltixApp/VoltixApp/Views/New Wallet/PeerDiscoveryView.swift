@@ -38,7 +38,7 @@ struct PeerDiscoveryView: View {
                     .resizable()
                     .scaledToFit()
                     .padding()
-                Text("Available devices")
+                Text("CHOOSE TWO PAIR DEVICES:")
                 List(self.peersFound, id: \.self, selection: self.$selections) { peer in
                     HStack {
                         Image(systemName: self.selections.contains(peer) ? "checkmark.circle" : "circle")
