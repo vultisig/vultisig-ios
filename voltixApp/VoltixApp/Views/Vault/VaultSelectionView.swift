@@ -10,60 +10,27 @@ struct VaultSelectionView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var appState: ApplicationState
     @Query var vaults: [Vault]
-    @State private var items = [
-        Item(coinName: "Bitcoin", address: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w", amount: "1.1", coinAmount: "65,899"),
-        Item(coinName: "Ethereum", address: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w", amount: "1.1", coinAmount: "65,899"),
-    ]
     @Binding var presentationStack: [CurrentScreen]
     @State private var showingDeleteAlert = false
     @State private var itemToDelete: Vault? = nil
     var body: some View {
-        VStack {
-            LargeHeaderView( 
-                rightIcon: "Refresh",
-                leftIcon: "Menu",
-                head: "VAULT",
-                leftAction: {
-                    if !self.presentationStack.isEmpty {
-                        self.presentationStack.removeLast()
-                    }
-                },
-                rightAction: {
-                    // open help modal
-                },
-                back: false
-            )
-            VStack {
-                ForEach(items.indices, id: \.self) { index in
-                    VaultItem(
-                        coinName: items[index].coinName,
-                        amount: items[index].amount,
-                        coinAmount: items[index].coinAmount,
-                        address: items[index].address,
-                        isRadio: !Utils.isIOS(),
-                        showButtons: !Utils.isIOS(),
-                        onClick: {
-                            VaultAssetsView(presentationStack: $presentationStack).onAppear {
-                                appState.currentVault = Vault(name: "test", signers:["A","B","C"],  pubKeyECDSA: "ECDSA PubKey", pubKeyEdDSA: "EdDSA PubKey",keyshares: [KeyShare](), localPartyID: "first")
-                            }
+        ScrollView {
+            ForEach(vaults, id: \.self) { vault in
+                NavigationLink {
+                    VaultAssetsView(presentationStack: $presentationStack)
+                        .onAppear(){
+                            appState.currentVault = vault
                         }
-                    )
-                    .buttonStyle(PlainButtonStyle())
+                } label: {
+                    HStack{
+                        Text("\(vault.name)")
+                        Spacer()
+                    }
                 }
             }
-            .frame(width: .infinity)
         }
-        .onAppear {
-            self.appState.currentVault = Vault(name: "test", signers:["A","B","C"],  pubKeyECDSA: "ECDSA PubKey", pubKeyEdDSA: "EdDSA PubKey",keyshares: [KeyShare](), localPartyID: "first")
-        }
-        .frame(
-            minWidth: 0,
-            maxWidth: .infinity,
-            minHeight: 0,
-            maxHeight: .infinity,
-            alignment: .top
-        )
-        .background(.white)
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationTitle("CHOOSE A VAULT")
         .toolbar {
             ToolbarItemGroup(placement: .automatic) {
                 Button("New vault", systemImage: "plus") {
@@ -96,6 +63,7 @@ private struct Item {
     var amount: String
     var coinAmount: String
 }
+
 #Preview("VaultSelection") {
     ModelContainerPreview(Vault.sampleVaults) {
         VaultSelectionView(presentationStack: .constant([]))

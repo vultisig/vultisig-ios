@@ -16,6 +16,7 @@ final class Vault : ObservableObject{
     // it is important to record the localPartID of the vault, when the vault is created, the local party id has been record as part of it's local keyshare , and keygen committee
     // thus , when user change their device name , or if they lost the original device , and restore the keyshare to a new device , keysign can still work
     var localPartyID: String = ""
+    var coins = [Coin]()
     
     init(name: String){
         self.name = name

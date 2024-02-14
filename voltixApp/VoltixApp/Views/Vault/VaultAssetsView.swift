@@ -1,70 +1,46 @@
 import SwiftUI
 
 struct VaultAssetsView: View {
-  @Binding var presentationStack: [CurrentScreen]
-  @EnvironmentObject var appState: ApplicationState
+    @Binding var presentationStack: [CurrentScreen]
+    @EnvironmentObject var appState: ApplicationState
 
-  @State private var signingTestView = false
-  var body: some View {
-
-    VStack {
-      ScrollView {
-        VStack(alignment: .leading, spacing: 10) {
-          VaultItem(
-            coinName: "Bitcoin",
-            amount: "1.1",
-            showAmount: false,
-            coinAmount: "65,899",
-            address: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
-            isRadio: false,
-            showButtons: true,
-            onClick: {}
-          )
-          .padding()
-
-          AssetItem(
-            coinName: "BTC",
-            amount: "1.1",
-            usdAmount: "65,899",
-            sendClick: {},
-            swapClick: {}
-          )
-          .padding()
+    var body: some View {
+        ScrollView {
+            ForEach(appState.currentVault?.coins ?? []) { coin in
+                HStack {
+                    Text(coin.symbol)
+                    Text(coin.address)
+                    Image(systemName: "doc.on.doc")
+                    Image(systemName: "square.and.arrow.up")
+                    Image(systemName: "qrcode")
+                }
+            }
         }
-      }
-
-      BottomBar(
-        content: "CONTINUE",
-        onClick: {
-          // Define the action for continue button
+        .navigationTitle("")
+        .navigationBarBackButtonHidden(true)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal){
+                HStack{
+                    Text("\(appState.currentVault?.name ?? "")").onTapGesture {
+                        presentationStack.append(CurrentScreen.vaultSelection)
+                    }
+                }
+            }
+            ToolbarItem(placement: .topBarLeading) {
+                Button("setting", systemImage: "gearshape") {
+                    // go back to menu screen
+                }
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("refresh", systemImage: "arrow.clockwise.circle") {
+                    // refresh
+                }
+            }
         }
-      )
-      .padding()
     }
-    .navigationTitle("VAULT")
-    .modifier(InlineNavigationBarTitleModifier())
-    .toolbar {
-      #if os(iOS)
-        ToolbarItem(placement: .navigationBarLeading) {
-          NavigationButtons.backButton(presentationStack: $presentationStack)
-        }
-        ToolbarItem(placement: .navigationBarTrailing) {
-          NavigationButtons.questionMarkButton
-        }
-      #else
-        ToolbarItem {
-          NavigationButtons.backButton(presentationStack: $presentationStack)
-        }
-        ToolbarItem {
-          NavigationButtons.questionMarkButton
-        }
-      #endif
-    }
-
-    .background(Color.white)
-  }
 }
 
 #Preview {
-  VaultAssetsView(presentationStack: .constant([]))
+    VaultAssetsView(presentationStack: .constant([]))
 }

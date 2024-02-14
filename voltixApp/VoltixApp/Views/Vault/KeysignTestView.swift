@@ -16,7 +16,7 @@ struct KeysignTestView: View {
             List(chains,id: \.self,selection: $currentChain){c in
                 Text(c.name)
             }
-            TextField("keysign message",text: $keysignMessage)
+            TextField("keysign message",text: $keysignMessage).dynamicTypeSize(.large)
             Spacer()
             Button("Sign it",systemImage: "person.2.badge.key.fill"){
                 self.presentationStack.append(.KeysignDiscovery(keysignMessage, currentChain ?? Chain.THORChain))
