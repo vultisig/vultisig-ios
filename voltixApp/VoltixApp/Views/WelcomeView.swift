@@ -33,7 +33,10 @@ struct WelcomeView: View {
                     BottomBar(
                         content: "START",
                         onClick: {
-                            self.presentationStack.append(.startScreen)
+                            //IF a NEW WALLET :: TODO
+                            // self.presentationStack.append(.startScreen)
+                            // IF not a new WALLET
+                            self.presentationStack.append(.vaultAssets(TransactionDetailsViewModel()))
                         }
                     )
                     .padding(.bottom, geometry.size.height * 0.02)

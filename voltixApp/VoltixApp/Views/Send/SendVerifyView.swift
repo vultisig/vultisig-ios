@@ -65,6 +65,7 @@ struct SendVerifyView: View {
             }
             .padding(.leading, geometry.size.width * 0.05)
             .navigationTitle("SEND")
+            .navigationBarBackButtonHidden()
             .modifier(InlineNavigationBarTitleModifier())
             .toolbar {
 #if os(iOS)

@@ -11,6 +11,7 @@ import SwiftUI
 @MainActor  // Ensures all updates are on the main thread
 public class UnspentOutputsViewModel: ObservableObject {
     @Published var walletData: WalletUnspentOutput?
+    @Published var errorMessage: String?
     
     // Replace with your actual function to fetch unspent outputs
     func fetchUnspentOutputs(for address: String) async {
@@ -30,9 +31,12 @@ public class UnspentOutputsViewModel: ObservableObject {
             let decodedData = try decoder.decode(WalletUnspentOutput.self, from: data)
             // Update your published property with the decoded data
             self.walletData = decodedData
+            print(self.walletData)
+            
         } catch {
             // Handle any errors
             print("Fetch failed: \(error.localizedDescription)")
+            self.errorMessage = error.localizedDescription
         }
     }
 }

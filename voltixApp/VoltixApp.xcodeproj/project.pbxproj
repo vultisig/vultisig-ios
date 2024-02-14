@@ -24,6 +24,10 @@
 		465B09A42B7C01CC00952DD9 /* WalletUnspentOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09A32B7C01CC00952DD9 /* WalletUnspentOutput.swift */; };
 		465B09A72B7C049400952DD9 /* UnspentOutputsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09A62B7C049400952DD9 /* UnspentOutputsViewModel.swift */; };
 		465B09A92B7C176700952DD9 /* TransactionDetailsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09A82B7C176700952DD9 /* TransactionDetailsViewModel.swift */; };
+		465B09AB2B7C840100952DD9 /* ToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09AA2B7C840100952DD9 /* ToastView.swift */; };
+		465B09AD2B7C841B00952DD9 /* QrCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09AC2B7C841B00952DD9 /* QrCodeView.swift */; };
+		465B09AF2B7C84C600952DD9 /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09AE2B7C84C600952DD9 /* ShareSheet.swift */; };
+		465B09B12B7C85C000952DD9 /* ActivityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09B02B7C85C000952DD9 /* ActivityViewModel.swift */; };
 		467B2D662B7B51F700AEDF64 /* NavigationStackButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 467B2D652B7B51F700AEDF64 /* NavigationStackButtons.swift */; };
 		D7347C262B74B82500887E57 /* LargeHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7347C252B74B82500887E57 /* LargeHeaderView.swift */; };
 		D7347C282B758B2E00887E57 /* ImportQRCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7347C272B758B2E00887E57 /* ImportQRCode.swift */; };
@@ -119,6 +123,10 @@
 		465B09A32B7C01CC00952DD9 /* WalletUnspentOutput.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WalletUnspentOutput.swift; sourceTree = "<group>"; };
 		465B09A62B7C049400952DD9 /* UnspentOutputsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnspentOutputsViewModel.swift; sourceTree = "<group>"; };
 		465B09A82B7C176700952DD9 /* TransactionDetailsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionDetailsViewModel.swift; sourceTree = "<group>"; };
+		465B09AA2B7C840100952DD9 /* ToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastView.swift; sourceTree = "<group>"; };
+		465B09AC2B7C841B00952DD9 /* QrCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QrCodeView.swift; sourceTree = "<group>"; };
+		465B09AE2B7C84C600952DD9 /* ShareSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSheet.swift; sourceTree = "<group>"; };
+		465B09B02B7C85C000952DD9 /* ActivityViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityViewModel.swift; sourceTree = "<group>"; };
 		467B2D652B7B51F700AEDF64 /* NavigationStackButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationStackButtons.swift; sourceTree = "<group>"; };
 		D7347C252B74B82500887E57 /* LargeHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeHeaderView.swift; sourceTree = "<group>"; };
 		D7347C272B758B2E00887E57 /* ImportQRCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportQRCode.swift; sourceTree = "<group>"; };
@@ -233,6 +241,9 @@
 				D7347C2B2B758C6E00887E57 /* FileItem.swift */,
 				D7347C2D2B759A0F00887E57 /* ProgressBottomBar.swift */,
 				467B2D652B7B51F700AEDF64 /* NavigationStackButtons.swift */,
+				465B09AA2B7C840100952DD9 /* ToastView.swift */,
+				465B09AC2B7C841B00952DD9 /* QrCodeView.swift */,
+				465B09AE2B7C84C600952DD9 /* ShareSheet.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -242,6 +253,7 @@
 			children = (
 				465B09A62B7C049400952DD9 /* UnspentOutputsViewModel.swift */,
 				465B09A82B7C176700952DD9 /* TransactionDetailsViewModel.swift */,
+				465B09B02B7C85C000952DD9 /* ActivityViewModel.swift */,
 			);
 			path = ViewModel;
 			sourceTree = "<group>";
@@ -603,6 +615,7 @@
 				049BBB662B71E987004C231F /* VaultItem.swift in Sources */,
 				049BBB5E2B71E83D004C231F /* Logo.swift in Sources */,
 				DE1572A02B70F284009BC7C5 /* Keysign.swift in Sources */,
+				465B09AD2B7C841B00952DD9 /* QrCodeView.swift in Sources */,
 				D7347C2C2B758C6E00887E57 /* FileItem.swift in Sources */,
 				DE1572992B70F26A009BC7C5 /* KeyType.swift in Sources */,
 				465B09A72B7C049400952DD9 /* UnspentOutputsViewModel.swift in Sources */,
@@ -627,8 +640,10 @@
 				DE1572972B70F254009BC7C5 /* LocalStateAccessorImp.swift in Sources */,
 				DE15729F2B70F284009BC7C5 /* KeysignDiscoveryView.swift in Sources */,
 				D9AD8EDC2B6723D10009F8D5 /* AppNavigationState.swift in Sources */,
+				465B09B12B7C85C000952DD9 /* ActivityViewModel.swift in Sources */,
 				DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */,
 				D9AD8EF32B67317C0009F8D5 /* SendPeerDiscoveryView.swift in Sources */,
+				465B09AF2B7C84C600952DD9 /* ShareSheet.swift in Sources */,
 				049BBB562B71E5F5004C231F /* Choose.swift in Sources */,
 				D7347C2E2B759A0F00887E57 /* ProgressBottomBar.swift in Sources */,
 				D9AD8EDA2B6722CC0009F8D5 /* ApplicationState.swift in Sources */,
@@ -642,6 +657,7 @@
 				DE15729E2B70F284009BC7C5 /* JoinKeysignView.swift in Sources */,
 				D9AD8EEC2B6730ED0009F8D5 /* VaultAssetsView.swift in Sources */,
 				D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */,
+				465B09AB2B7C840100952DD9 /* ToastView.swift in Sources */,
 				049BBB622B71E8E7004C231F /* AssetItem.swift in Sources */,
 				D9AD8EEA2B6730E30009F8D5 /* MenuView.swift in Sources */,
 				049BBB602B71E8A2004C231F /* MenuItem.swift in Sources */,

@@ -1,47 +1,52 @@
-//
-//  ImportFile.swift
-//  VoltixApp
-//
-//  Created by dev on 09.02.2024.
-//
-
 import SwiftUI
 
 struct ImportFile: View {
     @Binding var presentationStack: Array<CurrentScreen>
 
     var body: some View {
-        VStack() {
-            HeaderView(
-                rightIcon: "questionmark.circle", 
-                leftIcon: "chevron.left",
-                head: "IMPORT",
-                leftAction: {
-                    if !self.presentationStack.isEmpty {
-                        self.presentationStack.removeLast()
-                    }
-                },
-                rightAction: {}
-            )
-            FileItem(
-                icon: "MinusCircle",
-                filename: "voltix-vault-share-jun2024.txt"
-            )
-            Spacer()
-            BottomBar(content: "CONTINUE", onClick: {
-                self.presentationStack.append(.vaultSelection)
-            })
+        GeometryReader { geometry in // Use GeometryReader for dynamic sizing
+            VStack {
+                FileItem(
+                    icon: "MinusCircle",
+                    filename: "voltix-vault-share-jun2024.txt"
+                )
+                .padding(.horizontal, geometry.size.width * 0.05) // Adjust padding dynamically
+                
+                Spacer()
+                
+                BottomBar(content: "CONTINUE", onClick: {
+                    self.presentationStack.append(.vaultSelection)
+                })
+                .padding(.bottom, geometry.size.height * 0.02) // Optionally adjust padding at the bottom
+            }
+            .navigationTitle("IMPORT FILE")
+            .modifier(InlineNavigationBarTitleModifier())
+            .toolbar {
+              #if os(iOS)
+                ToolbarItem(placement: .navigationBarLeading) {
+                  NavigationButtons.backButton(presentationStack: $presentationStack)
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                  NavigationButtons.questionMarkButton
+                }
+              #else
+                ToolbarItem {
+                  NavigationButtons.backButton(presentationStack: $presentationStack)
+                }
+                ToolbarItem {
+                  NavigationButtons.questionMarkButton
+                }
+              #endif
+            }
+            //.padding([.leading, .trailing], geometry.size.width * 0.05) // Apply horizontal padding
         }
-        .frame(
-            minWidth: 0,
-            maxWidth: .infinity,
-            minHeight: 0,
-            maxHeight: .infinity,
-            alignment: .top
-        )
+        .background(Color.white).navigationBarBackButtonHidden(true)
     }
 }
 
-#Preview {
-    ImportFile(presentationStack: .constant([]))
+// Preview
+struct ImportFile_Previews: PreviewProvider {
+    static var previews: some View {
+        ImportFile(presentationStack: .constant([]))
+    }
 }
