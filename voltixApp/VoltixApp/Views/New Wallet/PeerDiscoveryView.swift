@@ -69,6 +69,7 @@ struct PeerDiscoveryView: View {
                 Text("Something is wrong")
             }
         }
+        .background(.white)
         .navigationBarBackButtonHidden()
         .navigationTitle("Join keygen session")
         .modifier(InlineNavigationBarTitleModifier())
