@@ -27,15 +27,15 @@ enum CurrentScreen: Hashable {
     case JoinKeysign
     
     // Normal use (typically launches here if wallet imported/generated already)
-    case vaultAssets  // Main landing page for normal use. Lists ETH, BTC, ... assets.
+    case vaultAssets(TransactionDetailsViewModel)  // Main landing page for normal use. Lists ETH, BTC, ... assets.
     case vaultDetailAsset(AssetType) //ETH, BTC etc.
     case menu  // Add/Export/Forget vaults
     
     // Send
-    case sendInputDetails
+    case sendInputDetails(TransactionDetailsViewModel)
     case sendPeerDiscovery
     case sendWaitingForPeers  // Host party waits here
-    case sendVerifyScreen     // 2nd device goes to here automatically on receiving a p2p keysign msg
+    case sendVerifyScreen(TransactionDetailsViewModel)     // 2nd device goes to here automatically on receiving a p2p keysign msg
     case sendDone
     
     // Swap

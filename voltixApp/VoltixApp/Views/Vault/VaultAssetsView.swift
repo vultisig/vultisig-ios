@@ -3,50 +3,85 @@ import SwiftUI
 struct VaultAssetsView: View {
     @Binding var presentationStack: [CurrentScreen]
     @EnvironmentObject var appState: ApplicationState
-    @State private var isAddingCoins = false
-
+    @ObservedObject var unspentOutputsViewModel: UnspentOutputsViewModel = UnspentOutputsViewModel()
+    @ObservedObject var transactionDetailsViewModel: TransactionDetailsViewModel
+    
+    @State private var signingTestView = false
     var body: some View {
-        ScrollView {
-            ForEach(appState.currentVault?.coins ?? []) { coin in
-                HStack {
-                    Text(coin.symbol)
-                    Text(coin.address)
-                    Image(systemName: "doc.on.doc")
-                    Image(systemName: "square.and.arrow.up")
-                    Image(systemName: "qrcode")
+        
+        VStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 10) {
+                    
+                    if let walletData = unspentOutputsViewModel.walletData {
+                        
+                        VaultItem(
+                            coinName: "Bitcoin",
+                            amount: walletData.balanceInBTC,
+                            showAmount: false,
+                            coinAmount: walletData.balanceInBTC,
+                            address: walletData.address,
+                            isRadio: false,
+                            showButtons: true,
+                            onClick: {}
+                        )
+                        .padding()
+                        
+                        AssetItem(
+                            coinName: "BTC",
+                            amount: walletData.balanceInBTC,
+                            usdAmount: walletData.balanceInBTC,
+                            sendClick: {
+                                self.presentationStack.append(.sendInputDetails(TransactionDetailsViewModel()))
+                            },
+                            swapClick: {}
+                        )
+                        .padding()
+                    } else {
+                        Text("Error to fetch the data")
+                            .padding()
+                    }
+                    
+                    
                 }
-            }
-        }
-        .navigationTitle("")
-        .navigationBarBackButtonHidden(true)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .principal){
-                HStack{
-                    Text("\(appState.currentVault?.name ?? "")").onTapGesture {
-                        presentationStack.append(CurrentScreen.vaultSelection)
+                .onAppear {
+                    if unspentOutputsViewModel.walletData == nil {
+                        Task {
+                            await unspentOutputsViewModel.fetchUnspentOutputs(for: transactionDetailsViewModel.fromAddress)
+                        }
                     }
                 }
             }
-            ToolbarItem(placement: .topBarLeading) {
-                Button("setting", systemImage: "gearshape") {
-                    // go back to menu screen
-                }
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("refresh", systemImage: "arrow.clockwise.circle") {
-                    // refresh
-                }
-                Button("add coin",systemImage: "plus.circle") {
-                    
-                }
-            }
-        }.sheet(isPresented: $isAddingCoins , content: {
             
-        })
+            BottomBar(
+                content: "CONTINUE",
+                onClick: {
+                    // Define the action for continue button
+                }
+            )
+            .padding()
+        }
+        .navigationBarBackButtonHidden()
+        .navigationTitle("VAULT")
+        .modifier(InlineNavigationBarTitleModifier())
+        .toolbar {
+#if os(iOS)
+            ToolbarItem(placement: .navigationBarLeading) {
+                NavigationButtons.backButton(presentationStack: $presentationStack)
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                NavigationButtons.questionMarkButton
+            }
+#else
+            ToolbarItem {
+                NavigationButtons.backButton(presentationStack: $presentationStack)
+            }
+            ToolbarItem {
+                NavigationButtons.questionMarkButton
+            }
+#endif
+        }
+        
+        .background(Color.white)
     }
-}
-
-#Preview {
-    VaultAssetsView(presentationStack: .constant([]))
 }

@@ -7,7 +7,17 @@
 
 import SwiftUI
 
+#if os(iOS)
+import UIKit
+#else
+import AppKit
+#endif
+
+import CoreImage.CIFilterBuiltins
+
+
 struct VaultItem: View {
+    
     let coinName: String;
     let amount: String;
     let showAmount: Bool;
@@ -40,7 +50,7 @@ struct VaultItem: View {
     }
     
     var body: some View {
-        #if os(iOS)
+#if os(iOS)
         smallItem(
             coinName: self.coinName,
             amount: self.amount,
@@ -51,7 +61,7 @@ struct VaultItem: View {
             radioIcon: self.radioIcon,
             showButtons: self.showButtons
         )
-        #else
+#else
         largeItem(
             coinName: self.coinName,
             amount: self.amount,
@@ -63,12 +73,17 @@ struct VaultItem: View {
             showButtons: self.showButtons,
             onClick: self.onClick
         )
-        #endif
+#endif
     }
 }
 
 
 private struct smallItem: View {
+    @State private var showingQRCode = false
+    @State private var showingShareSheet = false
+    @State private var showingToast = false
+    @State private var toastMessage = "Address copied to clipboard"
+    
     let coinName: String;
     let amount: String;
     let showAmount: Bool;
@@ -78,6 +93,12 @@ private struct smallItem: View {
     let radioIcon: String;
     let showButtons: Bool;
     
+    func showToast() {
+        withAnimation {
+            showingToast = true
+        }
+    }
+    
     var body: some View {
         VStack(alignment: .leading) {
             HStack() {
@@ -86,25 +107,54 @@ private struct smallItem: View {
                     .foregroundColor(.black)
                 if showButtons {
                     Spacer().frame(width: 10)
-                    Button(action: {}) {
+                    Button(action: {
+                        UIPasteboard.general.string = self.address
+                        self.showingToast = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                            self.showingToast = false
+                        }
+                    }) {
                         Image(systemName: "square.on.square")
                             .resizable()
                             .frame(width: 20, height: 20)
                             .foregroundColor(.black)
                     }
+                    .overlay(showingToast ? AnyView(ToastView(message: toastMessage)
+                        .animation(.easeInOut)
+                        .transition(.opacity)) : AnyView(EmptyView()))
+                    
+                    
+                    
+                    
+                    
+                    
                     Spacer().frame(width: 8)
-                    Button(action: {}) {
+                    Button(action: {self.showingShareSheet = true}) {
                         Image(systemName: "square.and.arrow.up")
                             .resizable()
                             .frame(width: 16, height: 20)
                             .foregroundColor(.black)
                     }
-                    Spacer().frame(width: 8)
-                    Button(action: {}) {
+                    Spacer()
+                        .frame(width: 8)
+                        .sheet(isPresented: $showingShareSheet) {
+                            ShareSheet(items: [self.address])
+                        }
+                    Button(action: {
+                        self.showingQRCode = true
+                    }) {
                         Image(systemName: "qrcode")
                             .resizable()
                             .frame(width: 20, height: 20)
                             .foregroundColor(.black)
+                    }
+                    .sheet(isPresented: $showingQRCode) {
+                        if let qrCodeImage = ActivityViewModel.generateHighQualityQRCode(from: address) {
+                            QRCodeView(qrCodeImage: qrCodeImage)
+                                .padding()
+                        } else {
+                            Text("Failed to generate QR Code")
+                        }
                     }
                 }
                 Spacer()
@@ -115,7 +165,7 @@ private struct smallItem: View {
                         .foregroundColor(.black)
                 }
                 Spacer().frame(width: 16)
-                Text("$" + coinAmount)
+                Text(coinAmount)
                     .font(Font.custom("Menlo", size: 20))
                     .multilineTextAlignment(.trailing)
                     .foregroundColor(.black)
@@ -142,6 +192,7 @@ private struct smallItem: View {
 }
 
 private struct largeItem: View {
+    @State private var showingShareSheet = false
     let coinName: String;
     let amount: String;
     let showAmount: Bool;
@@ -157,13 +208,16 @@ private struct largeItem: View {
                 .font(Font.custom("Menlo", size: 32).weight(.bold))
                 .foregroundColor(.black)
                 .frame(width: 300, alignment: .leading)
-                
+            
             Text(address)
                 .font(Font.custom("Montserrat", size: 24).weight(.medium))
                 .foregroundColor(.black);
             if showButtons {
                 Spacer().frame(width: 10)
-                Button(action: {}) {
+                Button(action: {
+                    // TODO: Copy to clipboard the value of the variable address and a toast
+                    UIPasteboard.general.string = self.address
+                }) {
                     Image(systemName: "square.on.square")
                         .resizable()
                         .frame(width: 32, height: 30)
@@ -171,15 +225,10 @@ private struct largeItem: View {
                 }
                 .buttonStyle(PlainButtonStyle())
                 Spacer().frame(width: 8)
-                Button(action: {}) {
-                    Image(systemName: "square.and.arrow.up")
-                        .resizable()
-                        .frame(width: 23.6, height: 30)
-                        .foregroundColor(.black)
-                }
-                .buttonStyle(PlainButtonStyle())
-                Spacer().frame(width: 8)
-                Button(action: {}) {
+                
+                Button(action: {
+                    // TODO: Open the QRCode generate to based on variable address
+                }) {
                     Image(systemName: "qrcode")
                         .resizable()
                         .frame(width: 30, height: 30)
@@ -216,13 +265,13 @@ private struct largeItem: View {
 }
 
 #Preview {
-     VaultItem(
-            coinName: "THORChain",
-            amount: "11.1",
-            coinAmount: "65,899",
-            address: "thor1cfelrennd7pcvqq7v6w7682v6nhx2uwfg",
-            onClick: {
-                
-            }
+    VaultItem(
+        coinName: "THORChain",
+        amount: "11.1",
+        coinAmount: "65,899",
+        address: "thor1cfelrennd7pcvqq7v6w7682v6nhx2uwfg",
+        onClick: {
+            
+        }
     )
 }
