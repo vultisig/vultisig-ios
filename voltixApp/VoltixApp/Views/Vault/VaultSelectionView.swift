@@ -9,6 +9,7 @@ import SwiftUI
 struct VaultSelectionView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var appState: ApplicationState
+    @ObservedObject var unspentOutputsViewModel: UnspentOutputsViewModel
     @Query var vaults: [Vault]
     @State private var items = [
         Item(coinName: "Bitcoin", address: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w", amount: "1.1", coinAmount: "65,899"),
@@ -43,7 +44,7 @@ struct VaultSelectionView: View {
                         isRadio: !Utils.isIOS(),
                         showButtons: !Utils.isIOS(),
                         onClick: {
-                            VaultAssetsView(presentationStack: $presentationStack).onAppear {
+                            VaultAssetsView(presentationStack: $presentationStack, appState: _appState, unspentOutputsViewModel:unspentOutputsViewModel , transactionDetailsViewModel: TransactionDetailsViewModel()).onAppear {
                                 appState.currentVault = Vault(name: "test", signers:["A","B","C"],  pubKeyECDSA: "ECDSA PubKey", pubKeyEdDSA: "EdDSA PubKey",keyshares: [KeyShare](), localPartyID: "first")
                             }
                         }
@@ -95,9 +96,4 @@ private struct Item {
     var address: String
     var amount: String
     var coinAmount: String
-}
-#Preview("VaultSelection") {
-    ModelContainerPreview(Vault.sampleVaults) {
-        VaultSelectionView(presentationStack: .constant([]))
-    }
 }

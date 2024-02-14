@@ -70,7 +70,7 @@ struct KeysignView: View {
                     Text("Keysign finished")
                     Text("Signature: \(self.signature)")
                     Button("Done", systemImage: "arrowshape.backward.circle") {
-                        self.presentationStack = [.vaultAssets]
+                        
                     }
                 }.onAppear {
                     self.pollingInboundMessages = false

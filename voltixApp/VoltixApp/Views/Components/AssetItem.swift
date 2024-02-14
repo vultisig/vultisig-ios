@@ -33,18 +33,18 @@ struct AssetItem: View {
             Spacer()
             #if os(iOS)
             VStack() {
-                Button(action: {}) {
+                Button(action: sendClick) {
                     Text("SEND")
                         .font(Font.custom("Menlo", size: 20).weight(.bold))
                         .lineSpacing(30)
                         .foregroundColor(.black);
                 }
-                Button(action: {}) {
-                    Text("SWAP")
-                        .font(Font.custom("Menlo", size: 20).weight(.bold))
-                        .lineSpacing(30)
-                        .foregroundColor(.black);
-                }
+//                Button(action: {}) {
+//                    Text("SWAP")
+//                        .font(Font.custom("Menlo", size: 20).weight(.bold))
+//                        .lineSpacing(30)
+//                        .foregroundColor(.black);
+//                }
                 
             }
             .frame(width: 105, height: 70)
