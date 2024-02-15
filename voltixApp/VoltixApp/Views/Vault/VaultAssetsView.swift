@@ -3,7 +3,7 @@ import SwiftUI
 struct VaultAssetsView: View {
     @Binding var presentationStack: [CurrentScreen]
     @EnvironmentObject var appState: ApplicationState
-    @ObservedObject var unspentOutputsViewModel: UnspentOutputsViewModel = UnspentOutputsViewModel()
+    @StateObject var unspentOutputsViewModel: UnspentOutputsViewModel = UnspentOutputsViewModel()
     @ObservedObject var transactionDetailsViewModel: TransactionDetailsViewModel
     @StateObject var cryptoPriceViewModel = CryptoPriceViewModel()
     @State private var signingTestView = false
