@@ -4,11 +4,11 @@ import Foundation
 struct WalletUnspentOutput: Codable {
     
     var balanceInBTC: String {
-        return formatAsBitcoin(balance) + " BTC"
+        return formatAsBitcoin(balance)
     }
     
     var finalBalanceInBTC: String {
-        return formatAsBitcoin(finalBalance) + " BTC"
+        return formatAsBitcoin(finalBalance)
     }
     
     // Helper function to format an amount in satoshis as Bitcoin
@@ -24,6 +24,20 @@ struct WalletUnspentOutput: Codable {
         
         let btcValue = Double(satoshis) / 100_000_000.0 // Convert satoshis to BTC
         return formatter.string(from: NSNumber(value: btcValue)) ?? "0.0"
+    }
+    
+    func balanceInUSD(usdPrice: Double?) -> String? {
+        guard let usdPrice = usdPrice else { return nil }
+        let balanceBTC = Double(self.balance) / 100_000_000.0 // Convert satoshis to BTC
+        let balanceUSD = balanceBTC * usdPrice // Convert BTC to USD
+        
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.locale = Locale.current // Adjust this as needed
+        // Optional: Customize the formatter further if needed
+        formatter.currencyCode = "USD" // Uncomment if you want to force USD formatting
+        
+        return formatter.string(from: NSNumber(value: balanceUSD))
     }
     
     

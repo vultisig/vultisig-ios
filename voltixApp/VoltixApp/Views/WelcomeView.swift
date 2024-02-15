@@ -34,12 +34,14 @@ struct WelcomeView: View {
                     BottomBar(
                         content: "START",
                         onClick: {
-                            let isNewVault:Bool = ((appState.currentVault?.name) == nil)
-                            if isNewVault {
-                                self.presentationStack.append(.startScreen)
-                            } else {
-                                self.presentationStack.append(.vaultAssets(TransactionDetailsViewModel()))
-                            }
+                            
+                            self.presentationStack.append(.vaultAssets(TransactionDetailsViewModel()))
+                            //                            let isNewVault:Bool = ((appState.currentVault?.name) == nil)
+                            //                            if isNewVault {
+                            //                                self.presentationStack.append(.startScreen)
+                            //                            } else {
+                            //                                self.presentationStack.append(.vaultAssets(TransactionDetailsViewModel()))
+                            //                            }
                         }
                     )
                     .padding(.bottom, geometry.size.height * 0.02)
