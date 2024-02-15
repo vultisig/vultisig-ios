@@ -43,8 +43,8 @@ struct KeygenView: View {
     @State var pollingInboundMessages = true
     
     var body: some View {
-        GeometryReader{geometry in
-            ScrollView{
+        GeometryReader { geometry in
+            ScrollView {
                 VStack {
                     Spacer()
                     VStack(alignment: .center) {
@@ -56,7 +56,7 @@ struct KeygenView: View {
                         case .KeygenEdDSA:
                             StatusText(status: "GENERATING EdDSA KEY")
                         case .KeygenFinished:
-                            StatusText(status: "DONE").onAppear {
+                            Text("DONE").onAppear {
                                 if let stateAccess {
                                     for item in stateAccess.keyshares {
                                         logger.info("keyshare:\(item.pubkey)")
@@ -68,16 +68,22 @@ struct KeygenView: View {
                                 // add the vault to modelcontext
                                 self.context.insert(self.vault)
                                 self.pollingInboundMessages = false
+                                Task {
+                                    // when user didn't touch it for 5 seconds , automatically goto
+                                    try await Task.sleep(nanoseconds: 5_000_000_000) // Back off 5s
+                                    self.presentationStack = [CurrentScreen.vaultSelection]
+                                }
                             }.onTapGesture {
                                 self.presentationStack = [CurrentScreen.vaultSelection]
                             }
+                            
                         case .KeygenFailed:
                             StatusText(status: "Failed KeyGen Retry")
                                 .onAppear {
                                     self.pollingInboundMessages = false
                                 }.navigationBarBackButtonHidden(false)
                         }
-                    }.frame(width:geometry.size.width,height: geometry.size.height*0.8)
+                    }.frame(width: geometry.size.width, height: geometry.size.height * 0.8)
                     Spacer()
                     WifiBar()
                 }
@@ -193,12 +199,12 @@ struct KeygenView: View {
 }
 
 private struct StatusText: View {
-    let status: String;
+    let status: String
     var body: some View {
         HStack {
             Text(self.status)
-                .fontWeight(/*@START_MENU_TOKEN@*/.bold/*@END_MENU_TOKEN@*/)
-                .multilineTextAlignment(.center);
+                .fontWeight(/*@START_MENU_TOKEN@*/ .bold/*@END_MENU_TOKEN@*/)
+                .multilineTextAlignment(.center)
             ProgressView()
                 .progressViewStyle(.circular)
                 .padding(2)
