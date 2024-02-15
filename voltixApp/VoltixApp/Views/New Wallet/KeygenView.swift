@@ -43,100 +43,52 @@ struct KeygenView: View {
     @State var pollingInboundMessages = true
     
     var body: some View {
-        VStack {
-            LargeHeaderView(
-                rightIcon: "",
-                leftIcon: "BackArrow",
-                head: "KEYGEN",
-                leftAction: {
-                    if !self.presentationStack.isEmpty {
-                        self.presentationStack.removeLast()
-                    }
-                },
-                rightAction: {
-                    // open help modal
-                },
-                back: !Utils.isIOS()
-            )
-            Spacer()
-#if os(iOS)
-            StatusText(status: "GENERATING\n...")
-#else
-            VStack(alignment: .center) {
-                switch self.currentStatus {
-                case .CreatingInstance:
-                    StatusText(status: "PREPARING VAULT...")
-                case .KeygenECDSA:
-                    StatusText(status: "GENERATING ECDSA KEY")
-                    //                    HStack {
-                    //                        if self.keygenInProgressECDSA {
-                    //                            Text("Generating ECDSA key")
-                    //                            ProgressView()
-                    //                                .progressViewStyle(.circular)
-                    //                                .tint(.blue)
-                    //                                .padding(2)
-                    //                        }
-                    //                        if self.pubKeyECDSA != nil {
-                    //                            Text("ECDSA pubkey:\(self.pubKeyECDSA ?? "")")
-                    //                            Image(systemName: "checkmark").foregroundColor(/*@START_MENU_TOKEN@*/ .blue/*@END_MENU_TOKEN@*/)
-                    //                        }
-                    //                    }
-                case .KeygenEdDSA:
-                    StatusText(status: "GENERATING EDDSA KEY")
-                    //                    HStack {
-                    //                        if self.keygenInProgressEDDSA {
-                    //                            Text("Generating EdDSA key")
-                    //                            ProgressView()
-                    //                                .progressViewStyle(.circular)
-                    //                                .tint(.blue)
-                    //                                .padding(2)
-                    //                        }
-                    //                        if self.pubKeyEdDSA != nil {
-                    //                            Text("EdDSA pubkey:\(self.pubKeyEdDSA ?? "")")
-                    //                            Image(systemName: "checkmark").foregroundColor(/*@START_MENU_TOKEN@*/ .blue/*@END_MENU_TOKEN@*/)
-                    //                        }
-                    //                    }
-                case .KeygenFinished:
-                    FinishedTSSKeygenView(presentationStack: self.$presentationStack, vault: self.vault).onAppear {
-                        if let stateAccess {
-                            for item in stateAccess.keyshares {
-                                logger.info("keyshare:\(item.pubkey)")
+        GeometryReader { geometry in
+            ScrollView {
+                VStack {
+                    Spacer()
+                    VStack(alignment: .center) {
+                        switch self.currentStatus {
+                        case .CreatingInstance:
+                            StatusText(status: "PREPARING VAULT...")
+                        case .KeygenECDSA:
+                            StatusText(status: "GENERATING ECDSA KEY")
+                        case .KeygenEdDSA:
+                            StatusText(status: "GENERATING EdDSA KEY")
+                        case .KeygenFinished:
+                            Text("DONE").onAppear {
+                                if let stateAccess {
+                                    for item in stateAccess.keyshares {
+                                        logger.info("keyshare:\(item.pubkey)")
+                                    }
+                                    self.vault.keyshares = stateAccess.keyshares
+                                }
+                                self.vault.name = self.vaultName
+                                self.vault.localPartyID = self.localPartyKey
+                                // add the vault to modelcontext
+                                self.context.insert(self.vault)
+                                self.pollingInboundMessages = false
+                                Task {
+                                    // when user didn't touch it for 5 seconds , automatically goto
+                                    try await Task.sleep(nanoseconds: 5_000_000_000) // Back off 5s
+                                    self.presentationStack = [CurrentScreen.vaultSelection]
+                                }
+                            }.onTapGesture {
+                                self.presentationStack = [CurrentScreen.vaultSelection]
                             }
-                            self.vault.keyshares = stateAccess.keyshares
+                            
+                        case .KeygenFailed:
+                            StatusText(status: "Failed KeyGen Retry")
+                                .onAppear {
+                                    self.pollingInboundMessages = false
+                                }.navigationBarBackButtonHidden(false)
                         }
-                        self.vault.name = self.vaultName
-                        self.vault.localPartyID = self.localPartyKey
-                        // add the vault to modelcontext
-                        self.context.insert(self.vault)
-                        self.pollingInboundMessages = false
-                    }
-                case .KeygenFailed:
-                    StatusText(status: "Failed KeyGen Retry")
-                        .onAppear {
-                            self.pollingInboundMessages = false
-                        }
+                    }.frame(width: geometry.size.width, height: geometry.size.height * 0.8)
+                    Spacer()
+                    WifiBar()
                 }
             }
-            .frame(width: .infinity, height: .infinity)
-#endif
-            Spacer()
-            WifiBar()
-            ProgressBottomBar(
-                content: "",
-                onClick: {},
-                progress: self.currentStatus == KeygenStatus.CreatingInstance ? 3 : 4,
-                showProgress: !Utils.isIOS(),
-                showButton: false
-            )
         }
-        .frame(
-            minWidth: 0,
-            maxWidth: .infinity,
-            minHeight: 0,
-            maxHeight: .infinity,
-            alignment: .top
-        )
-        .background(.white)
         .navigationBarBackButtonHidden()
         .task {
             do {
@@ -146,7 +98,6 @@ struct KeygenView: View {
                 let stateAccessorImp = LocalStateAccessorImpl(vault: self.vault)
                 self.tssMessenger = messengerImp
                 self.stateAccess = stateAccessorImp
-                
                 self.tssService = try await self.createTssInstance(messenger: messengerImp,
                                                                    localStateAccessor: stateAccessorImp)
                 
@@ -248,16 +199,14 @@ struct KeygenView: View {
 }
 
 private struct StatusText: View {
-    let status: String;
+    let status: String
     var body: some View {
         HStack {
             Text(self.status)
-                .font(Font.custom("Menlo", size: 40).weight(.bold))
-                .foregroundColor(.black)
-                .multilineTextAlignment(.center);
+                .fontWeight(/*@START_MENU_TOKEN@*/ .bold/*@END_MENU_TOKEN@*/)
+                .multilineTextAlignment(.center)
             ProgressView()
                 .progressViewStyle(.circular)
-                .tint(.black)
                 .padding(2)
         }
     }

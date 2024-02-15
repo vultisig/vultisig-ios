@@ -8,7 +8,7 @@ import SwiftUI
 
 struct MainNavigationStack: View {
     @Environment(\.modelContext) private var modelContext
-
+    @Query var vaults: [Vault]
     @EnvironmentObject var appState: ApplicationState
     // Push/pop onto this array to control presentation overlay globally
     @State private var presentationStack: [CurrentScreen] = []
@@ -16,7 +16,7 @@ struct MainNavigationStack: View {
 
     var body: some View {
         NavigationStack(path: $presentationStack) {
-            WelcomeView(presentationStack: $presentationStack)
+            VaultSelectionView(presentationStack: $presentationStack)
                 .navigationDestination(for: CurrentScreen.self) { screen in
                     switch screen {
                     case .welcome:
@@ -33,12 +33,6 @@ struct MainNavigationStack: View {
                         NewWalletInstructions(presentationStack: $presentationStack)
                     case .peerDiscovery:
                         PeerDiscoveryView(presentationStack: $presentationStack)
-                    case .finishedTSSKeygen:
-                        if let currentVault = appState.currentVault {
-                            FinishedTSSKeygenView(presentationStack: $presentationStack, vault: currentVault)
-                        } else {
-                            VaultSelectionView(appState: _appState, unspentOutputsViewModel: unspentOutputsViewModel, presentationStack: $presentationStack)
-                        }
                     case .vaultAssets(let tx):
                         VaultAssetsView(presentationStack: $presentationStack, unspentOutputsViewModel: unspentOutputsViewModel, transactionDetailsViewModel: tx)
                     case .vaultDetailAsset(let asset):
@@ -66,7 +60,7 @@ struct MainNavigationStack: View {
                     case .swapDone:
                         SwapDoneView(presentationStack: $presentationStack)
                     case .vaultSelection:
-                        VaultSelectionView(appState: _appState, unspentOutputsViewModel: unspentOutputsViewModel, presentationStack: $presentationStack)
+                        VaultSelectionView(presentationStack: $presentationStack)
                     case .joinKeygen:
                         JoinKeygenView(presentationStack: $presentationStack)
                     case .KeysignDiscovery(let keysignMsg, let chain):
@@ -75,9 +69,13 @@ struct MainNavigationStack: View {
                         JoinKeysignView(presentationStack: $presentationStack)
                     }
                 }
-        }.onAppear(){
-            if appState.currentVault == nil {
-                self.presentationStack.append(CurrentScreen.startScreen)
+        }.onAppear {
+            if vaults.count == 0 {
+                self.presentationStack = [CurrentScreen.welcome]
+            }
+            // when current vault is nil , and there are already vaults, then just go to vault selection view
+            if appState.currentVault == nil && vaults.count > 0 {
+                self.presentationStack.append(CurrentScreen.vaultSelection)
             }
         }
     }
