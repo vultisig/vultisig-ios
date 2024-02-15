@@ -47,12 +47,6 @@ struct MainNavigationStack: View {
                         NewWalletInstructions(presentationStack: $presentationStack)
                     case .peerDiscovery:
                         PeerDiscoveryView(presentationStack: $presentationStack)
-                    case .finishedTSSKeygen:
-                        if let currentVault = appState.currentVault {
-                            FinishedTSSKeygenView(presentationStack: $presentationStack, vault: currentVault)
-                        } else {
-                            VaultSelectionView(appState: _appState, unspentOutputsViewModel: unspentOutputsViewModel, presentationStack: $presentationStack)
-                        }
                     case .vaultAssets(let tx):
                         VaultAssetsView(presentationStack: $presentationStack, unspentOutputsViewModel: unspentOutputsViewModel, transactionDetailsViewModel: tx)
                     case .vaultDetailAsset(let asset):
@@ -80,7 +74,7 @@ struct MainNavigationStack: View {
                     case .swapDone:
                         SwapDoneView(presentationStack: $presentationStack)
                     case .vaultSelection:
-                        VaultSelectionView(appState: _appState, unspentOutputsViewModel: unspentOutputsViewModel, presentationStack: $presentationStack)
+                        VaultSelectionView(presentationStack: $presentationStack)
                     case .joinKeygen:
                         JoinKeygenView(presentationStack: $presentationStack)
                     case .KeysignDiscovery(let keysignMsg, let chain):
@@ -89,12 +83,9 @@ struct MainNavigationStack: View {
                         JoinKeysignView(presentationStack: $presentationStack)
                     }
                 }
-        }.onAppear(){
-            loadVaults()
-            if vaults.isEmpty || vaults.count == 0 {
-                self.presentationStack.append(CurrentScreen.startScreen)
-            } else {
-                self.presentationStack.append(.vaultAssets(TransactionDetailsViewModel()))
+        }.onAppear {
+            if appState.currentVault == nil {
+                self.presentationStack.append(CurrentScreen.vaultSelection)
             }
         }
     }

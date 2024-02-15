@@ -44,7 +44,6 @@
 		D9AD8EE22B67307F0009F8D5 /* ImportWalletView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8EE12B67307F0009F8D5 /* ImportWalletView.swift */; };
 		D9AD8EE42B6730940009F8D5 /* NewWalletInstructionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8EE32B6730940009F8D5 /* NewWalletInstructionsView.swift */; };
 		D9AD8EE62B6730A40009F8D5 /* PeerDiscoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8EE52B6730A40009F8D5 /* PeerDiscoveryView.swift */; };
-		D9AD8EE82B6730CA0009F8D5 /* FinishedTSSKeygenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8EE72B6730CA0009F8D5 /* FinishedTSSKeygenView.swift */; };
 		D9AD8EEA2B6730E30009F8D5 /* MenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8EE92B6730E30009F8D5 /* MenuView.swift */; };
 		D9AD8EEC2B6730ED0009F8D5 /* VaultAssetsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8EEB2B6730ED0009F8D5 /* VaultAssetsView.swift */; };
 		D9AD8EF12B6731660009F8D5 /* SendInputDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8EF02B6731660009F8D5 /* SendInputDetailsView.swift */; };
@@ -144,7 +143,6 @@
 		D9AD8EE12B67307F0009F8D5 /* ImportWalletView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ImportWalletView.swift; path = "VoltixApp/Views/New Wallet/ImportWalletView.swift"; sourceTree = SOURCE_ROOT; };
 		D9AD8EE32B6730940009F8D5 /* NewWalletInstructionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NewWalletInstructionsView.swift; path = "VoltixApp/Views/New Wallet/NewWalletInstructionsView.swift"; sourceTree = SOURCE_ROOT; };
 		D9AD8EE52B6730A40009F8D5 /* PeerDiscoveryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PeerDiscoveryView.swift; path = "VoltixApp/Views/New Wallet/PeerDiscoveryView.swift"; sourceTree = SOURCE_ROOT; };
-		D9AD8EE72B6730CA0009F8D5 /* FinishedTSSKeygenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FinishedTSSKeygenView.swift; path = "VoltixApp/Views/New Wallet/FinishedTSSKeygenView.swift"; sourceTree = SOURCE_ROOT; };
 		D9AD8EE92B6730E30009F8D5 /* MenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MenuView.swift; path = VoltixApp/Views/Vault/MenuView.swift; sourceTree = SOURCE_ROOT; };
 		D9AD8EEB2B6730ED0009F8D5 /* VaultAssetsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VaultAssetsView.swift; path = VoltixApp/Views/Vault/VaultAssetsView.swift; sourceTree = SOURCE_ROOT; };
 		D9AD8EF02B6731660009F8D5 /* SendInputDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SendInputDetailsView.swift; path = voltixApp/Views/Send/SendInputDetailsView.swift; sourceTree = SOURCE_ROOT; };
@@ -313,7 +311,6 @@
 				D9AD8EE12B67307F0009F8D5 /* ImportWalletView.swift */,
 				D9AD8EE32B6730940009F8D5 /* NewWalletInstructionsView.swift */,
 				D9AD8EE52B6730A40009F8D5 /* PeerDiscoveryView.swift */,
-				D9AD8EE72B6730CA0009F8D5 /* FinishedTSSKeygenView.swift */,
 				DE49A1B12B6A0F77000F3AFB /* JoinKeygenView.swift */,
 			);
 			path = "New Wallet";
@@ -560,7 +557,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */;
+			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -637,7 +634,6 @@
 				D9AD8EFB2B6731E50009F8D5 /* SwapInputDetailsView.swift in Sources */,
 				465B09B52B7D8E7B00952DD9 /* CryptoPriceViewModel.swift in Sources */,
 				049BBB5C2B71E7F6004C231F /* LargeButton.swift in Sources */,
-				D9AD8EE82B6730CA0009F8D5 /* FinishedTSSKeygenView.swift in Sources */,
 				DE49A1A52B68BB6B000F3AFB /* VaultSelectionView.swift in Sources */,
 				D9AD8EE02B6730640009F8D5 /* StartView.swift in Sources */,
 				049BBB542B71E4F8004C231F /* BottomBar.swift in Sources */,
@@ -1020,7 +1016,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */ = {
+		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DE49A1882B65F6DB000F3AFB /* Debug */,

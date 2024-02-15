@@ -19,7 +19,6 @@ enum CurrentScreen: Hashable {
     // Create new wallet from TSS
     case newWalletInstructions
     case peerDiscovery
-    case finishedTSSKeygen
     case joinKeygen
     
     // keysign
