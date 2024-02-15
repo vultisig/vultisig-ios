@@ -8,7 +8,7 @@ import SwiftUI
 
 struct MainNavigationStack: View {
     @Environment(\.modelContext) private var modelContext
-
+    @Query var vaults: [Vault]
     @EnvironmentObject var appState: ApplicationState
     // Push/pop onto this array to control presentation overlay globally
     @State private var presentationStack: [CurrentScreen] = []
@@ -70,7 +70,8 @@ struct MainNavigationStack: View {
                     }
                 }
         }.onAppear {
-            if appState.currentVault == nil {
+            // when current vault is nil , and there are already vaults, then just go to vault selection view
+            if appState.currentVault == nil && vaults.count > 0 {
                 self.presentationStack.append(CurrentScreen.vaultSelection)
             }
         }
