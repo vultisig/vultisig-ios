@@ -56,7 +56,7 @@ struct KeygenView: View {
                         case .KeygenEdDSA:
                             StatusText(status: "GENERATING EdDSA KEY")
                         case .KeygenFinished:
-                            FinishedTSSKeygenView(presentationStack: self.$presentationStack, vault: self.vault).onAppear {
+                            StatusText(status: "Vault created").onAppear {
                                 if let stateAccess {
                                     for item in stateAccess.keyshares {
                                         logger.info("keyshare:\(item.pubkey)")
@@ -68,18 +68,19 @@ struct KeygenView: View {
                                 // add the vault to modelcontext
                                 self.context.insert(self.vault)
                                 self.pollingInboundMessages = false
+                                self.presentationStack = [CurrentScreen.vaultSelection]
                             }
                         case .KeygenFailed:
                             StatusText(status: "Failed KeyGen Retry")
                                 .onAppear {
                                     self.pollingInboundMessages = false
-                                }
+                                }.navigationBarBackButtonHidden(false)
                         }
-                    }
+                    }.frame(width:geometry.size.width,height: geometry.size.height*0.8)
                     Spacer()
                     WifiBar()
                 }
-            }.frame(minHeight: geometry.size.height)
+            }
         }
         .navigationBarBackButtonHidden()
         .task {
@@ -90,7 +91,6 @@ struct KeygenView: View {
                 let stateAccessorImp = LocalStateAccessorImpl(vault: self.vault)
                 self.tssMessenger = messengerImp
                 self.stateAccess = stateAccessorImp
-                
                 self.tssService = try await self.createTssInstance(messenger: messengerImp,
                                                                    localStateAccessor: stateAccessorImp)
                 
