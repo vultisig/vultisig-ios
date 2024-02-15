@@ -29,6 +29,9 @@
 		465B09AF2B7C84C600952DD9 /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09AE2B7C84C600952DD9 /* ShareSheet.swift */; };
 		465B09B12B7C85C000952DD9 /* ActivityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09B02B7C85C000952DD9 /* ActivityViewModel.swift */; };
 		465B09B32B7D710A00952DD9 /* DocumentPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09B22B7D710A00952DD9 /* DocumentPicker.swift */; };
+		465B09B52B7D8E7B00952DD9 /* CryptoPriceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09B42B7D8E7B00952DD9 /* CryptoPriceViewModel.swift */; };
+		465B09B72B7D909400952DD9 /* CryptoPriceData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09B62B7D909400952DD9 /* CryptoPriceData.swift */; };
+		465B09B92B7D9D0E00952DD9 /* CryptoPrices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09B82B7D9D0E00952DD9 /* CryptoPrices.swift */; };
 		467B2D662B7B51F700AEDF64 /* NavigationStackButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 467B2D652B7B51F700AEDF64 /* NavigationStackButtons.swift */; };
 		D7347C262B74B82500887E57 /* LargeHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7347C252B74B82500887E57 /* LargeHeaderView.swift */; };
 		D7347C282B758B2E00887E57 /* ImportQRCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7347C272B758B2E00887E57 /* ImportQRCode.swift */; };
@@ -129,6 +132,9 @@
 		465B09AE2B7C84C600952DD9 /* ShareSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSheet.swift; sourceTree = "<group>"; };
 		465B09B02B7C85C000952DD9 /* ActivityViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityViewModel.swift; sourceTree = "<group>"; };
 		465B09B22B7D710A00952DD9 /* DocumentPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentPicker.swift; sourceTree = "<group>"; };
+		465B09B42B7D8E7B00952DD9 /* CryptoPriceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoPriceViewModel.swift; sourceTree = "<group>"; };
+		465B09B62B7D909400952DD9 /* CryptoPriceData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoPriceData.swift; sourceTree = "<group>"; };
+		465B09B82B7D9D0E00952DD9 /* CryptoPrices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoPrices.swift; sourceTree = "<group>"; };
 		467B2D652B7B51F700AEDF64 /* NavigationStackButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationStackButtons.swift; sourceTree = "<group>"; };
 		D7347C252B74B82500887E57 /* LargeHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeHeaderView.swift; sourceTree = "<group>"; };
 		D7347C272B758B2E00887E57 /* ImportQRCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportQRCode.swift; sourceTree = "<group>"; };
@@ -247,6 +253,7 @@
 				465B09AC2B7C841B00952DD9 /* QrCodeView.swift */,
 				465B09AE2B7C84C600952DD9 /* ShareSheet.swift */,
 				465B09B22B7D710A00952DD9 /* DocumentPicker.swift */,
+				465B09B82B7D9D0E00952DD9 /* CryptoPrices.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -257,6 +264,7 @@
 				465B09A62B7C049400952DD9 /* UnspentOutputsViewModel.swift */,
 				465B09A82B7C176700952DD9 /* TransactionDetailsViewModel.swift */,
 				465B09B02B7C85C000952DD9 /* ActivityViewModel.swift */,
+				465B09B42B7D8E7B00952DD9 /* CryptoPriceViewModel.swift */,
 			);
 			path = ViewModel;
 			sourceTree = "<group>";
@@ -296,6 +304,7 @@
 				D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */,
 				D9AD8EDB2B6723D10009F8D5 /* AppNavigationState.swift */,
 				D9AD8F072B675ECD0009F8D5 /* SupportedAssets.swift */,
+				465B09B62B7D909400952DD9 /* CryptoPriceData.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -630,8 +639,10 @@
 				D9AD8F012B6732360009F8D5 /* SwapVerifyView.swift in Sources */,
 				049BBB682B71E9C5004C231F /* WifiBar.swift in Sources */,
 				049BBB5A2B71E785004C231F /* HeaderView.swift in Sources */,
+				465B09B72B7D909400952DD9 /* CryptoPriceData.swift in Sources */,
 				D9AD8EFB2B6731E50009F8D5 /* SwapInputDetailsView.swift in Sources */,
 				D7347C2A2B758BE100887E57 /* ImportFile.swift in Sources */,
+				465B09B52B7D8E7B00952DD9 /* CryptoPriceViewModel.swift in Sources */,
 				049BBB5C2B71E7F6004C231F /* LargeButton.swift in Sources */,
 				D9AD8EE82B6730CA0009F8D5 /* FinishedTSSKeygenView.swift in Sources */,
 				DE49A1A52B68BB6B000F3AFB /* VaultSelectionView.swift in Sources */,
@@ -672,6 +683,7 @@
 				467B2D662B7B51F700AEDF64 /* NavigationStackButtons.swift in Sources */,
 				D7347C262B74B82500887E57 /* LargeHeaderView.swift in Sources */,
 				DE49A19C2B67133D000F3AFB /* Vault.swift in Sources */,
+				465B09B92B7D9D0E00952DD9 /* CryptoPrices.swift in Sources */,
 				D9AD8F062B675E360009F8D5 /* VaultAssetDetailView.swift in Sources */,
 				DE49A1A02B67143B000F3AFB /* Chain.swift in Sources */,
 				049BBB502B71E39B004C231F /* AddressItem.swift in Sources */,
@@ -867,7 +879,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.2;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.voltix.voltixApp.enrique;
+				PRODUCT_BUNDLE_IDENTIFIER = com.voltix.voltixApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = auto;
@@ -914,7 +926,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.2;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.voltix.voltixApp.enrique;
+				PRODUCT_BUNDLE_IDENTIFIER = com.voltix.voltixApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = auto;

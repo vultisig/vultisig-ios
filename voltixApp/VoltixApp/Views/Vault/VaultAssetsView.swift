@@ -5,49 +5,57 @@ struct VaultAssetsView: View {
     @EnvironmentObject var appState: ApplicationState
     @ObservedObject var unspentOutputsViewModel: UnspentOutputsViewModel = UnspentOutputsViewModel()
     @ObservedObject var transactionDetailsViewModel: TransactionDetailsViewModel
-    
+    @StateObject var cryptoPriceViewModel = CryptoPriceViewModel()
     @State private var signingTestView = false
     var body: some View {
         
         VStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading) {
                     
                     if let walletData = unspentOutputsViewModel.walletData {
+                        if let cryptoPrices = cryptoPriceViewModel.cryptoPrices,
+                           let bitcoinPriceUSD = cryptoPrices.prices["bitcoin"]?["usd"] {
+                            if let priceUsd = walletData.balanceInUSD(usdPrice: bitcoinPriceUSD) {
+                                VaultItem(
+                                    coinName: "Bitcoin",
+                                    usdAmount: priceUsd,
+                                    showAmount: false,
+                                    address: walletData.address,
+                                    isRadio: false,
+                                    showButtons: true,
+                                    onClick: {}
+                                ).padding()
+                                AssetItem(
+                                    coinName: "BTC",
+                                    amount: walletData.balanceInBTC,
+                                    usdAmount: priceUsd,
+                                    sendClick: {
+                                        self.presentationStack.append(.sendInputDetails(TransactionDetailsViewModel()))
+                                    },
+                                    swapClick: {}
+                                )
+                                .padding()
+                            }
+                        } else if let errorMessage = cryptoPriceViewModel.errorMessage {
+                            Text(errorMessage)
+                                .foregroundColor(.red)
+                        } else {
+                            Text("Loading...")
+                        }
                         
-                        VaultItem(
-                            coinName: "Bitcoin",
-                            amount: walletData.balanceInBTC,
-                            showAmount: false,
-                            coinAmount: walletData.balanceInBTC,
-                            address: walletData.address,
-                            isRadio: false,
-                            showButtons: true,
-                            onClick: {}
-                        )
-                        .padding()
                         
-                        AssetItem(
-                            coinName: "BTC",
-                            amount: walletData.balanceInBTC,
-                            usdAmount: walletData.balanceInBTC,
-                            sendClick: {
-                                self.presentationStack.append(.sendInputDetails(TransactionDetailsViewModel()))
-                            },
-                            swapClick: {}
-                        )
-                        .padding()
                     } else {
-                        Text("Error to fetch the data")
+                        Text("Loading...")
                             .padding()
                     }
-                    
                     
                 }
                 .onAppear {
                     if unspentOutputsViewModel.walletData == nil {
                         Task {
                             await unspentOutputsViewModel.fetchUnspentOutputs(for: transactionDetailsViewModel.fromAddress)
+                            await cryptoPriceViewModel.fetchCryptoPrices(for: "bitcoin", for: "usd")
                         }
                     }
                 }
@@ -65,23 +73,13 @@ struct VaultAssetsView: View {
         .navigationTitle("VAULT")
         .modifier(InlineNavigationBarTitleModifier())
         .toolbar {
-#if os(iOS)
             ToolbarItem(placement: .navigationBarLeading) {
                 NavigationButtons.backButton(presentationStack: $presentationStack)
             }
             ToolbarItem(placement: .navigationBarTrailing) {
                 NavigationButtons.questionMarkButton
             }
-#else
-            ToolbarItem {
-                NavigationButtons.backButton(presentationStack: $presentationStack)
-            }
-            ToolbarItem {
-                NavigationButtons.questionMarkButton
-            }
-#endif
         }
-        
         .background(Color.white)
     }
 }
