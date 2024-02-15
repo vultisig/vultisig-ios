@@ -2,8 +2,6 @@
 //  BottomBar.swift
 //  VoltixApp
 //
-//  Created by Mac on 05.02.2024.
-//
 
 import SwiftUI
 
@@ -30,20 +28,18 @@ struct BottomBar: View {
                   HStack() {
                     Text(content)
                       .lineSpacing(60)
-                      .font(Font.custom("Menlo", size: 40).weight(.black))
-                      .foregroundColor(.black)
+                      .fontWeight(.black)
                       .padding(.trailing, 16)
                     Image(systemName: "chevron.right")
                       .resizable()
                       .foregroundColor(.black)
-                      .frame(width: 20, height: 30)
+                      .frame(width: 20, height: 15)
                     }
                 }
                 .buttonStyle(PlainButtonStyle())
             }
         }
         .padding(.trailing, 16)
-        .frame(width: .infinity, height: 70)
     }
 }
 

@@ -13,7 +13,7 @@ struct NewWalletInstructions: View {
     @Query var vaults: [Vault]
 
     var body: some View {
-        ScrollView{
+        ScrollView {
             VStack {
                 Text("YOU NEED THREE DEVICES.")
                     .fontWeight(.medium)
@@ -39,12 +39,18 @@ struct NewWalletInstructions: View {
                     deviceDescription: "ANY"
                 )
                 WifiBar()
-                
-                BottomBar(content: "CONTINUE", onClick: {
-                    let vault = Vault(name: "Vault #\(vaults.count + 1)")
-                    appState.creatingVault = vault
-                    self.presentationStack.append(.peerDiscovery)
-                })
+                HStack{
+                    Button("JOIN KEYGEN") {
+                        let vault = Vault(name: "Vault #\(vaults.count + 1)")
+                        appState.creatingVault = vault
+                        self.presentationStack.append(.joinKeygen)
+                    }
+                    Button("START KEYGEN") {
+                        let vault = Vault(name: "Vault #\(vaults.count + 1)")
+                        appState.creatingVault = vault
+                        self.presentationStack.append(.peerDiscovery)
+                    }
+                }
             }
             .navigationTitle("SETUP")
             .toolbar {
