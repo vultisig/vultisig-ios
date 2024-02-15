@@ -2,9 +2,7 @@
 //  JoinKeygen.swift
 //  VoltixApp
 
-#if os(iOS)
 import CodeScanner
-#endif
 import OSLog
 import SwiftUI
 
@@ -38,9 +36,7 @@ struct JoinKeygenView: View {
                     isShowingScanner = true
                 }
                 .sheet(isPresented: $isShowingScanner, content: {
-                    #if os(iOS)
                     CodeScannerView(codeTypes: [.qr], completion: self.handleScan)
-                    #endif
                 })
             case .DiscoverService:
                 HStack {
@@ -168,7 +164,6 @@ struct JoinKeygenView: View {
         }
     }
 
-    #if os(iOS)
     private func handleScan(result: Result<ScanResult, ScanError>) {
         switch result {
         case .success(let result):
@@ -179,7 +174,6 @@ struct JoinKeygenView: View {
         }
         currentStatus = .JoinKeygen
     }
-    #endif
 }
 
 final class ServiceDelegate: NSObject, NetServiceDelegate, ObservableObject {
