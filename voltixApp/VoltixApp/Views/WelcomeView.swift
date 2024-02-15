@@ -45,44 +45,32 @@ struct WelcomeView: View {
                         BottomBar(
                             content: "START",
                             onClick: {
-                                if $vaults.isEmpty || $vaults.count == 0 {
-                                    self.presentationStack.append(.startScreen)
-                                } else {
-                                    self.presentationStack.append(.vaultAssets(TransactionDetailsViewModel()))
-                                }
+                                self.presentationStack.append(.startScreen)
                             }
                         )
                         .padding(.bottom, geometry.size.height * 0.02)
-                    }.onAppear {
-                        loadVaults()
-                    }
-                    .frame(width: geometry.size.width, height: geometry.size.height)
-                    .modifier(InlineNavigationBarTitleModifier())
-                    .toolbar {
-                        
-                        ToolbarItem(placement: .navigationBarLeading) {
-                            NavigationButtons.backButton(presentationStack: $presentationStack)
+                    }.onAppear {}
+                        .frame(width: geometry.size.width, height: geometry.size.height)
+                        .modifier(InlineNavigationBarTitleModifier())
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarLeading) {
+                                NavigationButtons.backButton(presentationStack: $presentationStack)
+                            }
+                            ToolbarItem(placement: .navigationBarTrailing) {
+                                NavigationButtons.questionMarkButton
+                            }
                         }
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            NavigationButtons.questionMarkButton
-                        }
-                    }
-                    .navigationTitle("VOLTIX")
+                        .navigationTitle("VOLTIX")
                 }
             }
         }
         .background(Color.white)
         .navigationBarBackButtonHidden(true)
     }
-    
-    // Use a computed property to determine if the device is an iPad
-    private var isIpad: Bool {
-        return UIDevice.current.userInterfaceIdiom == .pad
-    }
-    
+
     private func featureText(_ text: String, geometry: GeometryProxy) -> some View {
         Text(text)
-            .font(.system(size: geometry.size.width * (isIpad ? 0.03 : 0.045), weight: .medium))
+            .font(.system(size: geometry.size.width * 0.045, weight: .medium))
             .foregroundColor(.black)
             .padding(.horizontal)
     }
