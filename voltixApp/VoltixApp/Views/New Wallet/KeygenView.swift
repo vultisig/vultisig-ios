@@ -56,7 +56,7 @@ struct KeygenView: View {
                         case .KeygenEdDSA:
                             StatusText(status: "GENERATING EdDSA KEY")
                         case .KeygenFinished:
-                            StatusText(status: "Vault created").onAppear {
+                            StatusText(status: "DONE").onAppear {
                                 if let stateAccess {
                                     for item in stateAccess.keyshares {
                                         logger.info("keyshare:\(item.pubkey)")
@@ -68,12 +68,8 @@ struct KeygenView: View {
                                 // add the vault to modelcontext
                                 self.context.insert(self.vault)
                                 self.pollingInboundMessages = false
-                                // delay one second before we switch to vault selection view
-                                // so other parties can finish their keygen appropriately as well
-                                Task{
-                                    try await Task.sleep(nanoseconds: 1_000_000_000) // Back off 1s
-                                    self.presentationStack = [CurrentScreen.vaultSelection]
-                                }
+                            }.onTapGesture {
+                                self.presentationStack = [CurrentScreen.vaultSelection]
                             }
                         case .KeygenFailed:
                             StatusText(status: "Failed KeyGen Retry")

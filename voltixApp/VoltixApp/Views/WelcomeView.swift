@@ -33,12 +33,7 @@ struct WelcomeView: View {
                         BottomBar(
                             content: "START",
                             onClick: {
-                                let isNewVault: Bool = ((appState.currentVault?.name) == nil)
-                                if isNewVault {
-                                    self.presentationStack.append(.startScreen)
-                                } else {
-                                    self.presentationStack.append(.vaultAssets(TransactionDetailsViewModel()))
-                                }
+                                self.presentationStack.append(.startScreen)
                             }
                         )
                         .padding(.bottom, geometry.size.height * 0.02)
@@ -46,7 +41,6 @@ struct WelcomeView: View {
                         .frame(width: geometry.size.width, height: geometry.size.height)
                         .modifier(InlineNavigationBarTitleModifier())
                         .toolbar {
-
                             ToolbarItem(placement: .navigationBarLeading) {
                                 NavigationButtons.backButton(presentationStack: $presentationStack)
                             }
@@ -62,18 +56,9 @@ struct WelcomeView: View {
         .navigationBarBackButtonHidden(true)
     }
 
-    // Use a computed property to determine if the device is an iPad
-    private var isIpad: Bool {
-#if os(iOS)
-        return UIDevice.current.userInterfaceIdiom == .pad
-#else
-        return false
-#endif
-    }
-    
     private func featureText(_ text: String, geometry: GeometryProxy) -> some View {
         Text(text)
-            .font(.system(size: geometry.size.width * (isIpad ? 0.03 : 0.045), weight: .medium))
+            .font(.system(size: geometry.size.width * 0.045, weight: .medium))
             .foregroundColor(.black)
             .padding(.horizontal)
     }

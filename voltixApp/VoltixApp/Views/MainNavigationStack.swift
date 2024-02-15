@@ -16,7 +16,7 @@ struct MainNavigationStack: View {
 
     var body: some View {
         NavigationStack(path: $presentationStack) {
-            WelcomeView(presentationStack: $presentationStack)
+            VaultSelectionView(presentationStack: $presentationStack)
                 .navigationDestination(for: CurrentScreen.self) { screen in
                     switch screen {
                     case .welcome:
@@ -70,6 +70,9 @@ struct MainNavigationStack: View {
                     }
                 }
         }.onAppear {
+            if vaults.count == 0 {
+                self.presentationStack = [CurrentScreen.welcome]
+            }
             // when current vault is nil , and there are already vaults, then just go to vault selection view
             if appState.currentVault == nil && vaults.count > 0 {
                 self.presentationStack.append(CurrentScreen.vaultSelection)
