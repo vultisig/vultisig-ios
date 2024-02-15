@@ -13,8 +13,8 @@ enum CurrentScreen: Hashable {
     case startScreen  // New or Import wallet
     case vaultSelection // a list of vault for selection
     case importWallet
-    case importFile
-    case importQRCode
+    // case importFile
+    // case importQRCode
     
     // Create new wallet from TSS
     case newWalletInstructions

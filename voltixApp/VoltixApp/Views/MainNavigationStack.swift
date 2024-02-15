@@ -8,12 +8,30 @@ import SwiftUI
 
 struct MainNavigationStack: View {
     @Environment(\.modelContext) private var modelContext
-
+    
     @EnvironmentObject var appState: ApplicationState
     // Push/pop onto this array to control presentation overlay globally
     @State private var presentationStack: [CurrentScreen] = []
     @ObservedObject var unspentOutputsViewModel = UnspentOutputsViewModel()
-
+    
+    //@Environment(\.modelContext) private var modelContext
+    @State private var vaults: [Vault] = []
+    
+    private func loadVaults() {
+        do {
+            // Assuming FetchDescriptor allows for an empty initializer to fetch all entities
+            let fetchDescriptor = FetchDescriptor<Vault>()
+            self.vaults = try modelContext.fetch(fetchDescriptor)
+            for vault in vaults {
+                print("id: \(vault.id) \n name:\(vault.name) \n pubKeyECDSA: \(vault.pubKeyECDSA) \n pubKeyEdDSA: \(vault.pubKeyEdDSA) \n\n")
+            }
+            
+        } catch {
+            // Handle errors, perhaps showing an alert to the user
+            print("Error fetching vaults: \(error)")
+        }
+    }
+    
     var body: some View {
         NavigationStack(path: $presentationStack) {
             WelcomeView(presentationStack: $presentationStack)
@@ -25,10 +43,6 @@ struct MainNavigationStack: View {
                         StartView(presentationStack: $presentationStack)
                     case .importWallet:
                         ImportWalletView(presentationStack: $presentationStack)
-                    case .importFile:
-                        ImportFile(presentationStack: $presentationStack)
-                    case .importQRCode:
-                        ImportQRCode(presentationStack: $presentationStack)
                     case .newWalletInstructions:
                         NewWalletInstructions(presentationStack: $presentationStack)
                     case .peerDiscovery:
@@ -76,8 +90,11 @@ struct MainNavigationStack: View {
                     }
                 }
         }.onAppear(){
-            if appState.currentVault == nil {
+            loadVaults()
+            if vaults.isEmpty || vaults.count == 0 {
                 self.presentationStack.append(CurrentScreen.startScreen)
+            } else {
+                self.presentationStack.append(.vaultAssets(TransactionDetailsViewModel()))
             }
         }
     }

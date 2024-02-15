@@ -1,13 +1,16 @@
 import SwiftUI
 import WalletCore
-
+import OSLog
+import CodeScanner
+import UniformTypeIdentifiers
 // Assuming CurrentScreen is an enum that you've defined elsewhere
 
+private let logger = Logger(subsystem: "send-input-details", category: "transaction")
 struct SendInputDetailsView: View {
     @Binding var presentationStack: [CurrentScreen]
     @ObservedObject var unspentOutputsViewModel: UnspentOutputsViewModel
     @ObservedObject var transactionDetailsViewModel: TransactionDetailsViewModel
-    
+    @State private var isShowingScanner = false
     
     var body: some View {
         GeometryReader { geometry in
@@ -33,7 +36,33 @@ struct SendInputDetailsView: View {
                     .frame(height: geometry.size.height * 0.07)
                     
                     Group {
-                        inputField(title: "To", text: $transactionDetailsViewModel.toAddress, geometry: geometry)
+                        
+                        VStack(alignment: .leading) {
+                            HStack{
+                                Text("To")
+                                    .font(.system(size: geometry.size.width * 0.05, weight: .bold))
+                                    .foregroundColor(.black)
+                                Spacer()
+                                Button("", systemImage: "camera") {
+                                    self.isShowingScanner = true
+                                }
+                                .sheet(isPresented: self.$isShowingScanner, content: {
+                                    CodeScannerView(codeTypes: [.qr], completion: self.handleScan)
+                                })
+                                .padding(.trailing, 8)
+                                .buttonStyle(PlainButtonStyle())
+                                
+                            }
+                            TextField("", text: $transactionDetailsViewModel.toAddress)
+                                .padding()
+                                .background(Color(red: 0.92, green: 0.92, blue: 0.93))
+                                .cornerRadius(10)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(Color.gray, lineWidth: 0)
+                                )
+                        }
+                        .frame(height: geometry.size.height * 0.12)
                         
                         VStack(alignment: .leading) {
                             Text("Amount")
@@ -103,6 +132,18 @@ struct SendInputDetailsView: View {
                     }
                 }
             }
+        }
+    }
+    
+    
+    private func handleScan(result: Result<ScanResult, ScanError>) {
+        switch result {
+        case .success(let result):
+            let qrCodeResult = result.string
+            transactionDetailsViewModel.parseCryptoURI(qrCodeResult)
+            self.isShowingScanner = false
+        case .failure(let err):
+            logger.error("fail to scan QR code,error:\(err.localizedDescription)")
         }
     }
     

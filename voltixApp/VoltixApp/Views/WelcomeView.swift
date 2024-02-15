@@ -1,8 +1,20 @@
 import SwiftUI
+import SwiftData
 
 struct WelcomeView: View {
     @Binding var presentationStack: [CurrentScreen]
     @EnvironmentObject var appState: ApplicationState
+    
+    @Environment(\.modelContext) private var modelContext
+    @State private var vaults: [Vault] = []
+    private func loadVaults() {
+        do {
+            let fetchDescriptor = FetchDescriptor<Vault>()
+            self.vaults = try modelContext.fetch(fetchDescriptor)
+        } catch {
+            print("Error fetching vaults: \(error)")
+        }
+    }
     
     var body: some View {
         GeometryReader { geometry in
@@ -33,8 +45,7 @@ struct WelcomeView: View {
                         BottomBar(
                             content: "START",
                             onClick: {
-                                let isNewVault: Bool = ((appState.currentVault?.name) == nil)
-                                if isNewVault {
+                                if $vaults.isEmpty || $vaults.count == 0 {
                                     self.presentationStack.append(.startScreen)
                                 } else {
                                     self.presentationStack.append(.vaultAssets(TransactionDetailsViewModel()))
@@ -42,33 +53,31 @@ struct WelcomeView: View {
                             }
                         )
                         .padding(.bottom, geometry.size.height * 0.02)
-                    }.onAppear {}
-                        .frame(width: geometry.size.width, height: geometry.size.height)
-                        .modifier(InlineNavigationBarTitleModifier())
-                        .toolbar {
-
-                            ToolbarItem(placement: .navigationBarLeading) {
-                                NavigationButtons.backButton(presentationStack: $presentationStack)
-                            }
-                            ToolbarItem(placement: .navigationBarTrailing) {
-                                NavigationButtons.questionMarkButton
-                            }
+                    }.onAppear {
+                        loadVaults()
+                    }
+                    .frame(width: geometry.size.width, height: geometry.size.height)
+                    .modifier(InlineNavigationBarTitleModifier())
+                    .toolbar {
+                        
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            NavigationButtons.backButton(presentationStack: $presentationStack)
                         }
-                        .navigationTitle("VOLTIX")
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            NavigationButtons.questionMarkButton
+                        }
+                    }
+                    .navigationTitle("VOLTIX")
                 }
             }
         }
         .background(Color.white)
         .navigationBarBackButtonHidden(true)
     }
-
+    
     // Use a computed property to determine if the device is an iPad
     private var isIpad: Bool {
-#if os(iOS)
         return UIDevice.current.userInterfaceIdiom == .pad
-#else
-        return false
-#endif
     }
     
     private func featureText(_ text: String, geometry: GeometryProxy) -> some View {
