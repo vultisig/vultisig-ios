@@ -1,12 +1,17 @@
 import SwiftUI
-
+import WalletCore
+import OSLog
+import CodeScanner
+import UniformTypeIdentifiers
 // Assuming CurrentScreen is an enum that you've defined elsewhere
 
+private let logger = Logger(subsystem: "send-input-details", category: "transaction")
 struct SendInputDetailsView: View {
     @Binding var presentationStack: [CurrentScreen]
     @ObservedObject var unspentOutputsViewModel: UnspentOutputsViewModel
     @ObservedObject var transactionDetailsViewModel: TransactionDetailsViewModel
-
+    @State private var isShowingScanner = false
+    
     var body: some View {
         GeometryReader { geometry in
             VStack {
@@ -27,30 +32,84 @@ struct SendInputDetailsView: View {
                                 .padding()
                         }
                     }
-                    .onAppear {
-                        if unspentOutputsViewModel.walletData == nil {
-                            Task {
-                                await unspentOutputsViewModel.fetchUnspentOutputs(for: $transactionDetailsViewModel.fromAddress.wrappedValue)
-                            }
-                        }
-                    }
                     .padding()
                     .frame(height: geometry.size.height * 0.07)
                     
                     Group {
-                        inputField(title: "To", text: $transactionDetailsViewModel.toAddress, geometry: geometry)
-                        inputField(title: "Amount", text: $transactionDetailsViewModel.amount, geometry: geometry, isNumeric: true)
+                        
+                        VStack(alignment: .leading) {
+                            HStack{
+                                Text("To")
+                                    .font(.system(size: geometry.size.width * 0.05, weight: .bold))
+                                    .foregroundColor(.black)
+                                Spacer()
+                                Button("", systemImage: "camera") {
+                                    self.isShowingScanner = true
+                                }
+                                .sheet(isPresented: self.$isShowingScanner, content: {
+                                    CodeScannerView(codeTypes: [.qr], completion: self.handleScan)
+                                })
+                                .padding(.trailing, 8)
+                                .buttonStyle(PlainButtonStyle())
+                                
+                            }
+                            TextField("", text: $transactionDetailsViewModel.toAddress)
+                                .padding()
+                                .background(Color(red: 0.92, green: 0.92, blue: 0.93))
+                                .cornerRadius(10)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(Color.gray, lineWidth: 0)
+                                )
+                        }
+                        .frame(height: geometry.size.height * 0.12)
+                        
+                        VStack(alignment: .leading) {
+                            Text("Amount")
+                                .font(.system(size: geometry.size.width * 0.05, weight: .bold))
+                                .foregroundColor(.black)
+                            
+                            HStack{
+                                TextField("", text: $transactionDetailsViewModel.amount)
+                                    .padding()
+                                    .background(Color(red: 0.92, green: 0.92, blue: 0.93))
+                                    .cornerRadius(10)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .stroke(Color.gray, lineWidth: 0)
+                                    )
+                                Button(action: {
+                                    if let walletData = unspentOutputsViewModel.walletData {
+                                        self.transactionDetailsViewModel.amount = walletData.balanceInBTC
+                                    } else {
+                                        Text("Error to fetch the data")
+                                            .padding()
+                                    }
+                                }) {
+                                    Text("MAX")
+                                        .font(.system(size: geometry.size.width * 0.05, weight: .bold))
+                                        .foregroundColor(.black)
+                                        .padding(10)
+                                }
+                                
+                            }
+                            
+                        }
+                        .frame(height: geometry.size.height * 0.12)
+                        
+                        
+                        
                         inputField(title: "Memo", text: $transactionDetailsViewModel.memo, geometry: geometry)
-                        gasField(geometry: geometry)
+                        
                     }
                     .padding(.horizontal)
                     
                     Spacer()
-                    
+                    gasField(geometry: geometry).padding(.horizontal)
                     BottomBar(content: "CONTINUE", onClick: {
                         // Update this logic as necessary to navigate to the SendVerifyView
                         // self.presentationStack.append(contentsOf: .sendVerifyScreen(transactionDetailsViewModel))
-                    
+                        
                         self.presentationStack.append(.sendVerifyScreen(transactionDetailsViewModel))
                     })
                     .padding(.horizontal)
@@ -66,7 +125,25 @@ struct SendInputDetailsView: View {
                         NavigationButtons.questionMarkButton
                     }
                 }
+            }.onAppear {
+                if unspentOutputsViewModel.walletData == nil {
+                    Task {
+                        await unspentOutputsViewModel.fetchUnspentOutputs(for: $transactionDetailsViewModel.fromAddress.wrappedValue)
+                    }
+                }
             }
+        }
+    }
+    
+    
+    private func handleScan(result: Result<ScanResult, ScanError>) {
+        switch result {
+        case .success(let result):
+            let qrCodeResult = result.string
+            transactionDetailsViewModel.parseCryptoURI(qrCodeResult)
+            self.isShowingScanner = false
+        case .failure(let err):
+            logger.error("fail to scan QR code,error:\(err.localizedDescription)")
         }
     }
     
@@ -79,9 +156,10 @@ struct SendInputDetailsView: View {
                 .padding()
                 .background(Color(red: 0.92, green: 0.92, blue: 0.93))
                 .cornerRadius(10)
+                .frame(width: isNumeric ? 280 : nil)
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.gray, lineWidth: 1)
+                        .stroke(Color.gray, lineWidth: 0)
                 )
         }
         .frame(height: geometry.size.height * 0.12)
@@ -89,7 +167,7 @@ struct SendInputDetailsView: View {
     
     private func gasField(geometry: GeometryProxy) -> some View {
         VStack(alignment: .leading) {
-            Text("Gas")
+            Text("Fee")
                 .font(.system(size: geometry.size.width * 0.05, weight: .bold))
                 .foregroundColor(.black)
             Spacer()
@@ -100,7 +178,7 @@ struct SendInputDetailsView: View {
                     .cornerRadius(10)
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.gray, lineWidth: 1)
+                            .stroke(Color.gray, lineWidth: 0)
                     )
                 Spacer()
                 Text("$4.00")

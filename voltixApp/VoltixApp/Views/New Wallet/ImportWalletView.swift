@@ -36,9 +36,7 @@ struct ImportWalletView: View {
                             self.isShowingScanner = true
                         }
                         .sheet(isPresented: self.$isShowingScanner, content: {
-#if os(iOS)
                             CodeScannerView(codeTypes: [.qr], completion: self.handleScan)
-#endif
                         })
                         .padding(.trailing, 8)
                         .buttonStyle(PlainButtonStyle())
@@ -122,8 +120,7 @@ struct ImportWalletView: View {
         }
     }
     
-    
-#if os(iOS)
+
     private func handleScan(result: Result<ScanResult, ScanError>) {
         switch result {
         case .success(let result):
@@ -145,7 +142,7 @@ struct ImportWalletView: View {
             logger.error("fail to scan QR code,error:\(err.localizedDescription)")
         }
     }
-#endif
+
     
 }
 

@@ -13,7 +13,7 @@ struct MainNavigationStack: View {
     // Push/pop onto this array to control presentation overlay globally
     @State private var presentationStack: [CurrentScreen] = []
     @ObservedObject var unspentOutputsViewModel = UnspentOutputsViewModel()
-
+    
     var body: some View {
         NavigationStack(path: $presentationStack) {
             VaultSelectionView(presentationStack: $presentationStack)
@@ -25,10 +25,6 @@ struct MainNavigationStack: View {
                         StartView(presentationStack: $presentationStack)
                     case .importWallet:
                         ImportWalletView(presentationStack: $presentationStack)
-                    case .importFile:
-                        ImportFile(presentationStack: $presentationStack)
-                    case .importQRCode:
-                        ImportQRCode(presentationStack: $presentationStack)
                     case .newWalletInstructions:
                         NewWalletInstructions(presentationStack: $presentationStack)
                     case .peerDiscovery:

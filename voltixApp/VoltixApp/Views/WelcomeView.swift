@@ -1,8 +1,20 @@
 import SwiftUI
+import SwiftData
 
 struct WelcomeView: View {
     @Binding var presentationStack: [CurrentScreen]
     @EnvironmentObject var appState: ApplicationState
+    
+    @Environment(\.modelContext) private var modelContext
+    @State private var vaults: [Vault] = []
+    private func loadVaults() {
+        do {
+            let fetchDescriptor = FetchDescriptor<Vault>()
+            self.vaults = try modelContext.fetch(fetchDescriptor)
+        } catch {
+            print("Error fetching vaults: \(error)")
+        }
+    }
     
     var body: some View {
         GeometryReader { geometry in
