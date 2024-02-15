@@ -14,24 +14,6 @@ struct MainNavigationStack: View {
     @State private var presentationStack: [CurrentScreen] = []
     @ObservedObject var unspentOutputsViewModel = UnspentOutputsViewModel()
     
-    //@Environment(\.modelContext) private var modelContext
-    @State private var vaults: [Vault] = []
-    
-    private func loadVaults() {
-        do {
-            // Assuming FetchDescriptor allows for an empty initializer to fetch all entities
-            let fetchDescriptor = FetchDescriptor<Vault>()
-            self.vaults = try modelContext.fetch(fetchDescriptor)
-            for vault in vaults {
-                print("id: \(vault.id) \n name:\(vault.name) \n pubKeyECDSA: \(vault.pubKeyECDSA) \n pubKeyEdDSA: \(vault.pubKeyEdDSA) \n\n")
-            }
-            
-        } catch {
-            // Handle errors, perhaps showing an alert to the user
-            print("Error fetching vaults: \(error)")
-        }
-    }
-    
     var body: some View {
         NavigationStack(path: $presentationStack) {
             VaultSelectionView(presentationStack: $presentationStack)
