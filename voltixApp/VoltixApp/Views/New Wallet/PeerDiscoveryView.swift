@@ -57,7 +57,8 @@ struct PeerDiscoveryView: View {
                     self.currentState = .Keygen
                     self.discoverying = false
                 }
-                .disabled(self.selections.count < 2) // TODO: Only for testing purpose. 
+                // TODO: Only for testing purpose.
+                .disabled(self.selections.count < 2)
             case .Keygen:
                 KeygenView(presentationStack: self.$presentationStack,
                            keygenCommittee: self.selections.map { $0 },
@@ -69,26 +70,13 @@ struct PeerDiscoveryView: View {
                 Text("Something is wrong")
             }
         }
-        .background(.white)
-        .navigationBarBackButtonHidden()
-        .navigationTitle("Join keygen session")
-        .modifier(InlineNavigationBarTitleModifier())
+        .navigationTitle("MAIN DEVICE")
         .toolbar {
-          #if os(iOS)
-            ToolbarItem(placement: .navigationBarLeading) {
-              NavigationButtons.backButton(presentationStack: $presentationStack)
-            }
-            ToolbarItem(placement: .navigationBarTrailing) {
-                NavigationButtons.qrCodeButton(presentationStack: $presentationStack)
-            }
-          #else
             ToolbarItem {
-              NavigationButtons.backButton(presentationStack: $presentationStack)
+                Button("help", systemImage: "questionmark.circle") {
+                    // TODO: show help about key gen
+                }
             }
-            ToolbarItem {
-                NavigationButtons.qrCodeButton(presentationStack: $presentationStack)
-            }
-          #endif
         }
         .task {
             self.mediator.start()
