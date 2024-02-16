@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 @MainActor
-public class CryptoPriceViewModel: ObservableObject {
+public class CryptoPriceService: ObservableObject {
     @Published var cryptoPrices: CryptoPriceData?
     @Published var errorMessage: String?
 

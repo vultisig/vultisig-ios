@@ -12,7 +12,7 @@ import WalletCore
 private let logger = Logger(subsystem: "send-input-details", category: "transaction")
 struct SendInputDetailsView: View {
     @Binding var presentationStack: [CurrentScreen]
-    @ObservedObject var unspentOutputsViewModel: UnspentOutputsViewModel
+    @StateObject var unspentOutputsViewModel: UnspentOutputsService = UnspentOutputsService()
     @ObservedObject var transactionDetailsViewModel: TransactionDetailsViewModel
     @State private var isShowingScanner = false
     @State private var isValidAddress = true
@@ -216,6 +216,6 @@ struct SendInputDetailsView: View {
 // Preview
 struct SendInputDetailsView_Previews: PreviewProvider {
     static var previews: some View {
-        SendInputDetailsView(presentationStack: .constant([]), unspentOutputsViewModel: UnspentOutputsViewModel(), transactionDetailsViewModel: TransactionDetailsViewModel())
+        SendInputDetailsView(presentationStack: .constant([]), unspentOutputsViewModel: UnspentOutputsService(), transactionDetailsViewModel: TransactionDetailsViewModel())
     }
 }

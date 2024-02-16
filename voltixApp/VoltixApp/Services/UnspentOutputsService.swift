@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 @MainActor  // Ensures all updates are on the main thread
-public class UnspentOutputsViewModel: ObservableObject {
+public class UnspentOutputsService: ObservableObject {
     @Published var walletData: WalletUnspentOutput?
     @Published var errorMessage: String?
     
