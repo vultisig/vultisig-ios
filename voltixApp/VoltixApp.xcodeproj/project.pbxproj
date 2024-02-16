@@ -21,6 +21,7 @@
 		049BBB662B71E987004C231F /* VaultItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB652B71E987004C231F /* VaultItem.swift */; };
 		049BBB682B71E9C5004C231F /* WifiBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB672B71E9C5004C231F /* WifiBar.swift */; };
 		4600167E2B71A12D00CE17C7 /* Tss.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4600167D2B71A12D00CE17C7 /* Tss.xcframework */; };
+		461BD0982B7F0AED00BFF703 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 461BD0972B7F0AED00BFF703 /* Extensions.swift */; };
 		465B09A42B7C01CC00952DD9 /* WalletUnspentOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09A32B7C01CC00952DD9 /* WalletUnspentOutput.swift */; };
 		465B09A72B7C049400952DD9 /* UnspentOutputsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09A62B7C049400952DD9 /* UnspentOutputsService.swift */; };
 		465B09A92B7C176700952DD9 /* TransactionDetailsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09A82B7C176700952DD9 /* TransactionDetailsViewModel.swift */; };
@@ -121,6 +122,7 @@
 		049BBB652B71E987004C231F /* VaultItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultItem.swift; sourceTree = "<group>"; };
 		049BBB672B71E9C5004C231F /* WifiBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WifiBar.swift; sourceTree = "<group>"; };
 		4600167D2B71A12D00CE17C7 /* Tss.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
+		461BD0972B7F0AED00BFF703 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		465B09A32B7C01CC00952DD9 /* WalletUnspentOutput.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WalletUnspentOutput.swift; sourceTree = "<group>"; };
 		465B09A62B7C049400952DD9 /* UnspentOutputsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnspentOutputsService.swift; sourceTree = "<group>"; };
 		465B09A82B7C176700952DD9 /* TransactionDetailsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionDetailsViewModel.swift; sourceTree = "<group>"; };
@@ -382,6 +384,7 @@
 			isa = PBXGroup;
 			children = (
 				DE1572AB2B7174D3009BC7C5 /* Utils.swift */,
+				461BD0972B7F0AED00BFF703 /* Extensions.swift */,
 			);
 			path = util;
 			sourceTree = "<group>";
@@ -653,6 +656,7 @@
 				DE15729F2B70F284009BC7C5 /* KeysignDiscoveryView.swift in Sources */,
 				D9AD8EDC2B6723D10009F8D5 /* AppNavigationState.swift in Sources */,
 				465B09B12B7C85C000952DD9 /* ActivityViewModel.swift in Sources */,
+				461BD0982B7F0AED00BFF703 /* Extensions.swift in Sources */,
 				DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */,
 				D9AD8EF32B67317C0009F8D5 /* SendPeerDiscoveryView.swift in Sources */,
 				465B09AF2B7C84C600952DD9 /* ShareSheet.swift in Sources */,

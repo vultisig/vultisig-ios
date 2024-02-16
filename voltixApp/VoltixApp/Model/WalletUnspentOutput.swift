@@ -50,7 +50,7 @@ struct WalletUnspentOutput: Codable {
     let nTx: Int
     let unconfirmedNTx: Int
     let finalNTx: Int
-    let txrefs: [TransactionRef]
+    let txrefs: [TransactionRef]?
     let txUrl: String
     
     enum CodingKeys: String, CodingKey {
@@ -68,18 +68,17 @@ struct WalletUnspentOutput: Codable {
     }
 }
 
-// Structure for each transaction reference
 struct TransactionRef: Codable {
-    let txHash: String
-    let blockHeight: Int
-    let txInputN: Int
-    let txOutputN: Int
-    let value: Int
-    let refBalance: Int
-    let spent: Bool
-    let confirmations: Int
-    let confirmed: String
-    let doubleSpend: Bool
+    let txHash: String?
+    let blockHeight: Int?
+    let txInputN: Int?
+    let txOutputN: Int?
+    let value: Int?
+    let refBalance: Int?
+    let spent: Bool?
+    let confirmations: Int?
+    let confirmed: String?
+    let doubleSpend: Bool?
     
     enum CodingKeys: String, CodingKey {
         case txHash = "tx_hash"
