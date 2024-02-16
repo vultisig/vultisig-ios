@@ -4,6 +4,10 @@ import OSLog
 import CodeScanner
 import UniformTypeIdentifiers
 // Assuming CurrentScreen is an enum that you've defined elsewhere
+import WalletCore
+
+
+
 
 private let logger = Logger(subsystem: "send-input-details", category: "transaction")
 struct SendInputDetailsView: View {
@@ -11,6 +15,12 @@ struct SendInputDetailsView: View {
     @ObservedObject var unspentOutputsViewModel: UnspentOutputsViewModel
     @ObservedObject var transactionDetailsViewModel: TransactionDetailsViewModel
     @State private var isShowingScanner = false
+    @State private var isValidAddress = true
+    
+    func isValidHex(_ hex: String) -> Bool {
+        let hexPattern = "^0x?[0-9A-Fa-f]+$"
+        return hex.range(of: hexPattern, options: .regularExpression) != nil
+    }
     
     var body: some View {
         GeometryReader { geometry in
@@ -42,6 +52,9 @@ struct SendInputDetailsView: View {
                                 Text("To")
                                     .font(.system(size: geometry.size.width * 0.05, weight: .bold))
                                     .foregroundColor(.black)
+                                Text(isValidAddress ? "" : "*")
+                                    .font(.system(size: geometry.size.width * 0.05, weight: .bold))
+                                    .foregroundColor(.red)
                                 Spacer()
                                 Button("", systemImage: "camera") {
                                     self.isShowingScanner = true
@@ -61,6 +74,15 @@ struct SendInputDetailsView: View {
                                     RoundedRectangle(cornerRadius: 10)
                                         .stroke(Color.gray, lineWidth: 0)
                                 )
+                                .onChange(of: transactionDetailsViewModel.toAddress) { newValue in
+                                    
+                                    isValidAddress = TWBitcoinAddressIsValidString(newValue) || isValidHex(newValue)
+                                    if !isValidAddress {
+                                        print("Invalid Crypto Address")
+                                    } else {
+                                        print("Valid Crypto Address")
+                                    }
+                                }
                         }
                         .frame(height: geometry.size.height * 0.12)
                         
@@ -71,6 +93,7 @@ struct SendInputDetailsView: View {
                             
                             HStack{
                                 TextField("", text: $transactionDetailsViewModel.amount)
+                                    .keyboardType(.decimalPad)
                                     .padding()
                                     .background(Color(red: 0.92, green: 0.92, blue: 0.93))
                                     .cornerRadius(10)
