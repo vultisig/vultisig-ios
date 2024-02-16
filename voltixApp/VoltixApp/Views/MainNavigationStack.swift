@@ -12,7 +12,6 @@ struct MainNavigationStack: View {
     @EnvironmentObject var appState: ApplicationState
     // Push/pop onto this array to control presentation overlay globally
     @State private var presentationStack: [CurrentScreen] = []
-    @ObservedObject var unspentOutputsViewModel = UnspentOutputsViewModel()
     
     var body: some View {
         NavigationStack(path: $presentationStack) {
@@ -30,13 +29,13 @@ struct MainNavigationStack: View {
                     case .peerDiscovery:
                         PeerDiscoveryView(presentationStack: $presentationStack)
                     case .vaultAssets(let tx):
-                        VaultAssetsView(presentationStack: $presentationStack, unspentOutputsViewModel: unspentOutputsViewModel, transactionDetailsViewModel: tx)
+                        VaultAssetsView(presentationStack: $presentationStack, transactionDetailsViewModel: tx)
                     case .vaultDetailAsset(let asset):
                         VaultAssetDetailView(presentationStack: $presentationStack, type: asset)
                     case .menu:
                         MenuView(presentationStack: $presentationStack)
                     case .sendInputDetails(let tx):
-                        SendInputDetailsView(presentationStack: $presentationStack, unspentOutputsViewModel: unspentOutputsViewModel, transactionDetailsViewModel: tx)
+                        SendInputDetailsView(presentationStack: $presentationStack, transactionDetailsViewModel: tx)
                     case .sendPeerDiscovery:
                         SendPeerDiscoveryView(presentationStack: $presentationStack)
                     case .sendWaitingForPeers:
