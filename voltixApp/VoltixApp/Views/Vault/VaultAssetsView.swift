@@ -15,7 +15,8 @@ struct VaultAssetsView: View {
                     
                     if let walletData = unspentOutputsViewModel.walletData {
                         if let cryptoPrices = cryptoPriceViewModel.cryptoPrices,
-                           let bitcoinPriceUSD = cryptoPrices.prices["bitcoin"]?["usd"] {
+                           let bitcoinPriceUSD = cryptoPrices.prices["bitcoin"]?["usd"]
+                        {
                             if let priceUsd = walletData.balanceInUSD(usdPrice: bitcoinPriceUSD) {
                                 VaultItem(
                                     coinName: "Bitcoin",
@@ -44,7 +45,6 @@ struct VaultAssetsView: View {
                             Text("Loading...")
                         }
                         
-                        
                     } else {
                         Text("Loading...")
                             .padding()
@@ -54,10 +54,14 @@ struct VaultAssetsView: View {
                 .onAppear {
                     if unspentOutputsViewModel.walletData == nil {
                         Task {
-                            await unspentOutputsViewModel.fetchUnspentOutputs(for: transactionDetailsViewModel.fromAddress)
-                            await cryptoPriceViewModel.fetchCryptoPrices(for: "bitcoin", for: "usd")
+                            await loadData()
                         }
                     }
+                }
+            }.refreshable {
+                // This block is called when a pull-to-refresh action is triggered by the user.
+                Task {
+                    await loadData()
                 }
             }
             
@@ -77,9 +81,17 @@ struct VaultAssetsView: View {
                 NavigationButtons.backButton(presentationStack: $presentationStack)
             }
             ToolbarItem(placement: .navigationBarTrailing) {
-                NavigationButtons.questionMarkButton
+                NavigationButtons.refreshButton(action: {
+                    Task {
+                        await loadData()
+                    }
+                })
             }
         }
         .background(Color.white)
+    }
+    private func loadData() async {
+        await unspentOutputsViewModel.fetchUnspentOutputs(for: transactionDetailsViewModel.fromAddress)  // Make sure you define or have access to transactionDetailsViewModel
+        await cryptoPriceViewModel.fetchCryptoPrices(for: "bitcoin", for: "usd")
     }
 }
