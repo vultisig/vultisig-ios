@@ -32,7 +32,7 @@ struct VaultAssetsView: View {
                                     amount: walletData.balanceInBTC,
                                     usdAmount: priceUsd,
                                     sendClick: {
-                                        self.presentationStack.append(.sendInputDetails(TransactionDetailsViewModel()))
+                                        self.presentationStack.append(.sendInputDetails(transactionDetailsViewModel))
                                     },
                                     swapClick: {}
                                 )

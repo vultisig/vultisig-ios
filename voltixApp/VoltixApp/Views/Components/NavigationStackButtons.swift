@@ -8,7 +8,6 @@ struct NavigationButtons {
             print("Question mark button tapped")
         }) {
             Image(systemName: "questionmark.circle")
-                .foregroundColor(.black)
         }
     }
 
@@ -20,14 +19,12 @@ struct NavigationButtons {
             }
         }) {
             Image(systemName: "chevron.left")
-                .foregroundColor(.black)
         }
     }
     
     static func refreshButton(action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: "arrow.clockwise.circle")
-                .foregroundColor(.black)
         }
     }
     
@@ -36,7 +33,6 @@ struct NavigationButtons {
             presentationStack.wrappedValue.append(.joinKeygen)
         }) {
             Image(systemName: "qrcode.viewfinder")
-                .foregroundColor(.black)
         }
     }
 }
@@ -44,10 +40,6 @@ struct NavigationButtons {
 // Modifier to conditionally apply .navigationBarTitleDisplayMode for non-macOS targets
 struct InlineNavigationBarTitleModifier: ViewModifier {
     func body(content: Content) -> some View {
-        #if os(iOS)
         content.navigationBarTitleDisplayMode(.inline)
-        #else
-        content
-        #endif
     }
 }

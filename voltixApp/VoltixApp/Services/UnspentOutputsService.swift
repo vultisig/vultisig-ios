@@ -38,5 +38,3 @@ public class UnspentOutputsService: ObservableObject {
         }
     }
 }
-
-// https://api.blockcypher.com/v1/btc/main/addrs/18cBEMRxXHqzWWCxZNtU91F5sbUNKhL5PX?unspentOnly=true
