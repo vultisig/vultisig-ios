@@ -4,6 +4,7 @@
 
 import Foundation
 import SwiftData
+import WalletCore
 
 @Model
 final class Vault : ObservableObject{
@@ -12,6 +13,25 @@ final class Vault : ObservableObject{
     var createdAt: Date = Date.now
     var pubKeyECDSA: String = ""
     var pubKeyEdDSA: String = ""
+    
+    private func createBitcoinAddress(from publicKeyString: String, prefix: UInt8 = 0x00) -> BitcoinAddress? {
+        guard let publicKeyData = Data(hexString: publicKeyString) else {
+            print("Invalid public key hex string")
+            return nil
+        }
+        // Assuming `PublicKey(data:type:)` initializer exists and works correctly
+        guard let publicKey = PublicKey(data: publicKeyData, type: .secp256k1) else { return nil }
+        
+        // Use your compatibleAddress function or any appropriate method to create a BitcoinAddress
+        // Assuming compatibleAddress is a static method on BitcoinAddress
+        return BitcoinAddress.compatibleAddress(publicKey: publicKey, prefix: prefix)
+    }
+    
+    var legacyBitcoinAddress: String {
+        let btc = createBitcoinAddress(from: pubKeyECDSA)
+        return btc?.description ?? "No BTC address available"
+    }
+    
     var keyshares = [KeyShare]()
     // it is important to record the localPartID of the vault, when the vault is created, the local party id has been record as part of it's local keyshare , and keygen committee
     // thus , when user change their device name , or if they lost the original device , and restore the keyshare to a new device , keysign can still work

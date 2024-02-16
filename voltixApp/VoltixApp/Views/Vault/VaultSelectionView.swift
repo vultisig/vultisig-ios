@@ -28,6 +28,11 @@ struct VaultSelectionView: View {
                                 showingDeleteAlert = true
                             }
                         }
+                }.onAppear(){
+                    
+                    print("pubKeyECDSA: " + vault.pubKeyECDSA)
+                    print("Address: " + vault.legacyBitcoinAddress)
+                    
                 }
             }
         }
