@@ -91,7 +91,10 @@ struct VaultAssetsView: View {
         .background(Color.white)
     }
     private func loadData() async {
-        await unspentOutputsViewModel.fetchUnspentOutputs(for: appState.currentVault?.legacyBitcoinAddress ?? "")  // Make sure you define or have access to transactionDetailsViewModel
-        await cryptoPriceViewModel.fetchCryptoPrices(for: "bitcoin", for: "usd")
+        transactionDetailsViewModel.fromAddress = appState.currentVault?.legacyBitcoinAddress ?? ""
+        if !transactionDetailsViewModel.fromAddress.isEmpty {
+            await unspentOutputsViewModel.fetchUnspentOutputs(for: transactionDetailsViewModel.fromAddress)
+            await cryptoPriceViewModel.fetchCryptoPrices(for: "bitcoin", for: "usd")
+        }
     }
 }

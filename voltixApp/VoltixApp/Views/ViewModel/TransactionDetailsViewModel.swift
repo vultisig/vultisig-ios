@@ -25,7 +25,8 @@ class TransactionDetailsViewModel: ObservableObject, Hashable {
         hasher.combine(gas)
     }
     
-    @Published var fromAddress: String = "18cBEMRxXHqzWWCxZNtU91F5sbUNKhL5PX"
+    //18cBEMRxXHqzWWCxZNtU91F5sbUNKhL5PX
+    @Published var fromAddress: String = ""
     @Published var toAddress: String = ""
     @Published var amount: String = ""
     @Published var memo: String = ""
