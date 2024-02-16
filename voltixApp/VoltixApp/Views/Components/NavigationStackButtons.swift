@@ -24,6 +24,13 @@ struct NavigationButtons {
         }
     }
     
+    static func refreshButton(action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: "arrow.clockwise.circle")
+                .foregroundColor(.black)
+        }
+    }
+    
     static func qrCodeButton(presentationStack: Binding<[CurrentScreen]>) -> some View {
         Button(action: {
             presentationStack.wrappedValue.append(.joinKeygen)
