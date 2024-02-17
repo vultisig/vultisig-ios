@@ -21,6 +21,7 @@ struct JoinKeygenView: View {
     @Binding var presentationStack: [CurrentScreen]
     @State private var isShowingScanner = false
     @State private var qrCodeResult: String? = nil
+    @State private var hexChainCode: String = ""
     @ObservedObject private var serviceDelegate = ServiceDelegate()
     private let netService = NetService(domain: "local.", type: "_http._tcp.", name: "VoltixApp")
     @State private var currentStatus = JoinKeygenStatus.DiscoverService
@@ -81,6 +82,7 @@ struct JoinKeygenView: View {
                                    mediatorURL: serviceDelegate.serverUrl ?? "",
                                    sessionID: self.qrCodeResult ?? "",
                                    localPartyKey: self.localPartyID,
+                                   hexChainCode: self.hexChainCode,
                                    vaultName: appState.creatingVault?.name ?? "New Vault")
                     } else {
                         Text("Mediator server url is empty or session id is empty")
@@ -167,10 +169,25 @@ struct JoinKeygenView: View {
     private func handleScan(result: Result<ScanResult, ScanError>) {
         switch result {
         case .success(let result):
-            qrCodeResult = result.string
-            logger.debug("session id: \(result.string)")
+            guard let scanData = result.string.data(using: .utf8) else {
+                logger.error("fail to process scan data")
+                currentStatus = .FailToStart
+                return
+            }
+            do {
+                let decoder = JSONDecoder()
+                let keysignMsg = try decoder.decode(keygenMessage.self, from: scanData)
+                qrCodeResult = keysignMsg.sessionID
+                hexChainCode = keysignMsg.hexChainCode
+            } catch {
+                logger.error("fail to decode keygen message,error:\(error.localizedDescription)")
+                currentStatus = .FailToStart
+                return
+            }
         case .failure(let err):
             logger.error("fail to scan QR code,error:\(err.localizedDescription)")
+            currentStatus = .FailToStart
+            return
         }
         currentStatus = .JoinKeygen
     }

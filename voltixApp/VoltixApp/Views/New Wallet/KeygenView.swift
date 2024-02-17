@@ -28,6 +28,7 @@ struct KeygenView: View {
     let mediatorURL: String
     let sessionID: String
     let localPartyKey: String
+    let hexChainCode: String
     @State private var keygenInProgressECDSA = false
     @State private var pubKeyECDSA: String? = nil
     @State private var keygenInProgressEDDSA = false
@@ -65,6 +66,7 @@ struct KeygenView: View {
                                 }
                                 self.vault.name = self.vaultName
                                 self.vault.localPartyID = self.localPartyKey
+                                self.vault.hexChainCode = self.hexChainCode
                                 // add the vault to modelcontext
                                 self.context.insert(self.vault)
                                 self.pollingInboundMessages = false
@@ -115,6 +117,7 @@ struct KeygenView: View {
                 let keygenReq = TssKeygenRequest()
                 keygenReq.localPartyID = self.localPartyKey
                 keygenReq.allParties = self.keygenCommittee.joined(separator: ",")
+                keygenReq.chainCodeHex = self.hexChainCode
                 guard let tssService = self.tssService else {
                     self.keygenError = "TSS instance is nil"
                     self.currentStatus = .KeygenFailed
@@ -166,7 +169,7 @@ struct KeygenView: View {
             case .ECDSA:
                 return try service.keygenECDSA(req)
             case .EdDSA:
-                return try service.keygenEDDSA(req)
+                return try service.keygenEdDSA(req)
             }
         }
         return try await t.value
@@ -218,5 +221,6 @@ private struct StatusText: View {
                mediatorURL: "",
                sessionID: "",
                localPartyKey: "",
+               hexChainCode: "",
                vaultName: "Vault #1")
 }

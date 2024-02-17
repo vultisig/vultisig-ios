@@ -7,7 +7,24 @@ import CoreImage
 import CoreImage.CIFilterBuiltins
 import Mediator
 import OSLog
+import Security
 import SwiftUI
+
+func getChainCode() -> String? {
+    var bytes = [UInt8](repeating: 0, count: 32)
+    let status = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
+    
+    guard status == errSecSuccess else {
+        print("Error generating random bytes: \(status)")
+        return nil
+    }
+    
+    return bytesToHexString(bytes)
+}
+
+func bytesToHexString(_ bytes: [UInt8]) -> String {
+    return bytes.map { String(format: "%02x", $0) }.joined()
+}
 
 private let logger = Logger(subsystem: "peers-discory", category: "communication")
 struct PeerDiscoveryView: View {
@@ -25,6 +42,7 @@ struct PeerDiscoveryView: View {
     // it should be ok to hardcode here , as this view start the mediator server itself
     private let serverAddr = "http://127.0.0.1:8080"
     private let sessionID = UUID().uuidString
+    private let chainCode = getChainCode()
     @State private var discoverying = true
     @State private var currentState = PeerDiscoveryStatus.WaitingForDevices
     @State private var localPartyID = ""
@@ -65,11 +83,13 @@ struct PeerDiscoveryView: View {
                            mediatorURL: self.serverAddr,
                            sessionID: self.sessionID,
                            localPartyKey: self.localPartyID,
+                           hexChainCode: chainCode ?? "",
                            vaultName: self.appState.creatingVault?.name ?? "New Vault")
             case .Failure:
                 Text("Something is wrong")
             }
         }
+        .navigationBarTitleDisplayMode(.inline)
         .navigationTitle("MAIN DEVICE")
         .toolbar {
             ToolbarItem {
@@ -114,9 +134,18 @@ struct PeerDiscoveryView: View {
         guard let qrFilter = CIFilter(name: "CIQRCodeGenerator") else {
             return Image(systemName: "xmark")
         }
-        
-        let data = Data(sessionID.utf8)
-        qrFilter.setValue(data, forKey: "inputMessage")
+        guard let chainCode = self.chainCode else {
+            return Image(systemName: "xmark")
+        }
+        let km = keygenMessage(sessionID: sessionID, hexChainCode: chainCode)
+        let jsonEncoder = JSONEncoder()
+        do {
+            let data = try jsonEncoder.encode(km)
+            qrFilter.setValue(data, forKey: "inputMessage")
+        } catch {
+            logger.error("fail to encode keygen message to json,error:\(error.localizedDescription)")
+            return Image(systemName: "xmark")
+        }
         
         guard let qrCodeImage = qrFilter.outputImage else {
             return Image(systemName: "xmark")
@@ -176,6 +205,11 @@ struct PeerDiscoveryView: View {
             }
         }
     }
+}
+
+struct keygenMessage: Codable {
+    let sessionID: String
+    let hexChainCode: String
 }
 
 #Preview {

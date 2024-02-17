@@ -153,7 +153,7 @@ struct KeysignView: View {
             case .ECDSA:
                 return try service.keysignECDSA(req)
             case .EdDSA:
-                return try service.keysignEDDSA(req)
+                return try service.keysignEdDSA(req)
             }
         }
         return try await t.value
