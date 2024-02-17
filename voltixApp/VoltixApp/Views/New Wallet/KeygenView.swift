@@ -80,7 +80,7 @@ struct KeygenView: View {
                             }
                             
                         case .KeygenFailed:
-                            StatusText(status: "Failed KeyGen Retry")
+                            StatusText(status: "Keygen failed, you can retry it")
                                 .onAppear {
                                     self.pollingInboundMessages = false
                                 }.navigationBarBackButtonHidden(false)
@@ -118,6 +118,7 @@ struct KeygenView: View {
                 keygenReq.localPartyID = self.localPartyKey
                 keygenReq.allParties = self.keygenCommittee.joined(separator: ",")
                 keygenReq.chainCodeHex = self.hexChainCode
+                logger.info("chaincode:\(hexChainCode)")
                 guard let tssService = self.tssService else {
                     self.keygenError = "TSS instance is nil"
                     self.currentStatus = .KeygenFailed

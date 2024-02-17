@@ -58,6 +58,7 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
             logger.error("fail to encode body into json string,\(error)")
             return
         }
+        // TODO: add retry here, in case network issue
         URLSession.shared.dataTask(with: req) { _, resp, err in
             if let err {
                 logger.error("fail to send message,error:\(err)")

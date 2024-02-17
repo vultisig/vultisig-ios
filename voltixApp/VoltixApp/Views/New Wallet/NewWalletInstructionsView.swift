@@ -53,6 +53,7 @@ struct NewWalletInstructions: View {
                 }
             }
             .navigationTitle("SETUP")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     NavigationButtons.questionMarkButton
