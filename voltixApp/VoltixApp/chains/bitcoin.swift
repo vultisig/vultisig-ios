@@ -20,12 +20,7 @@ struct BitcoinHelper {
     }
     
     static func getBitcoin(hexPubKey: String) -> Result<Coin, Error> {
-        guard let pubkeyData = Data(hexString: hexPubKey) else {
-            return .failure(BitcoinTransactionError.invalidPubKey)
-        }
-        guard let publicKey = PublicKey(data: pubkeyData, type: .secp256k1) else {
-            return .failure(BitcoinTransactionError.invalidPubKey)
-        }
+        
         let result =  getAddressFromPubKey(hexPubKey: hexPubKey)
         switch result {
         case .failure(let err):
@@ -42,6 +37,7 @@ struct BitcoinHelper {
         guard let publicKey = PublicKey(data: pubkeyData, type: .secp256k1) else {
             return .failure(BitcoinTransactionError.invalidPubKey)
         }
+        
         return .success(CoinType.bitcoin.deriveAddressFromPublicKey(publicKey: publicKey))
     }
 

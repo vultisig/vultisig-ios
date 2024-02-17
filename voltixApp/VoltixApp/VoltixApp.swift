@@ -6,7 +6,7 @@
 import SwiftUI
 import SwiftData
 import Mediator
-
+import WalletCore
 @main
 struct VoltixApp: App {
     @Environment(\.scenePhase) private var scenePhase    
@@ -19,6 +19,8 @@ struct VoltixApp: App {
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
         do {
+            print(CoinType.bitcoin.derivationPath())
+            print(CoinType.ethereum.derivationPath())
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
