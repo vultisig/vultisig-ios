@@ -43,4 +43,7 @@ enum CurrentScreen: Hashable {
     case swapWaitingForPeers
     case swapVerifyScreen
     case swapDone
+    
+    // transactions
+    case bitcoinTransactionsListView
 }
