@@ -127,9 +127,10 @@ public final class Mediator {
         let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
         let cleanParticipantKey = participantID.trimmingCharacters(in: .whitespacesAndNewlines)
         let messageID = req.headers["message_id"]
-        var keyPrefix = "\(cleanSessionID)-\(cleanParticipantKey)"
+        // make sure the keyprefix endwith `-` so it doesn't clash with the participant key
+        var keyPrefix = "\(cleanSessionID)-\(cleanParticipantKey)-"
         if let messageID {
-            keyPrefix = "\(cleanSessionID)-\(cleanParticipantKey)-\(messageID)"
+            keyPrefix = "\(cleanSessionID)-\(cleanParticipantKey)-\(messageID)-"
         }
         let encoder = JSONEncoder()
         do {
