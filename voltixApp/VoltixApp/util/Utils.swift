@@ -51,7 +51,31 @@ enum Utils {
             completion(true)
         }.resume()
     }
-    
+
+    public static func deleteFromServer(urlString: String) {
+        logger.debug("url:\(urlString)")
+        guard let url = URL(string: urlString) else {
+            logger.error("URL can't be constructed from: \(urlString)")
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        
+        URLSession.shared.dataTask(with: request) { _, response, error in
+            if let error = error {
+                self.logger.error("Failed to send request, error: \(error)")
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse, (200 ... 299).contains(httpResponse.statusCode) else {
+                self.logger.error("Invalid response code")
+                return
+            }
+            
+        }.resume()
+    }
+
     public static func getRequest(urlString: String, headers: [String: String], completion: @escaping (Result<Data, Error>) -> Void) {
         guard let url = URL(string: urlString) else {
             completion(.failure(NSError(domain: "Invalid URL", code: 0, userInfo: nil)))
@@ -97,7 +121,7 @@ enum Utils {
         }.joined()
     }
     
-    public static func isIOS () -> Bool {
+    public static func isIOS() -> Bool {
         #if os(iOS)
         return true
         #else
@@ -105,12 +129,11 @@ enum Utils {
         #endif
     }
     
-    public static func getLocalDeviceIdentity() -> String{
+    public static func getLocalDeviceIdentity() -> String {
         #if os(iOS)
         return UIDevice.current.name
         #else
         return ProcessInfo.processInfo.hostName
         #endif
     }
-
 }

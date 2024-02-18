@@ -189,14 +189,15 @@ struct KeygenView: View {
                     let msgs = try decoder.decode([Message].self, from: data)
                     for msg in msgs {
                         let key = "\(self.sessionID)-\(self.localPartyKey)-\(msg.hash)" as NSString
-                        if let obj = self.cache.object(forKey: key) {
+                        if self.cache.object(forKey: key) != nil {
+                            logger.info("message with key:\(key) has been applied before")
                             // message has been applied before
                             continue
                         }
                         logger.debug("Got message from: \(msg.from), to: \(msg.to)")
                         try self.tssService?.applyData(msg.body)
                         self.cache.setObject(NSObject(), forKey: key)
-                        deleteMessageFromServer(hash: msg.hash)
+                        self.deleteMessageFromServer(hash: msg.hash)
                     }
                 } catch {
                     logger.error("Failed to decode response to JSON, data: \(data), error: \(error)")
@@ -209,11 +210,10 @@ struct KeygenView: View {
             }
         })
     }
+
     private func deleteMessageFromServer(hash: String) {
         let urlString = "\(self.mediatorURL)/message/\(self.sessionID)/\(self.localPartyKey)/\(hash)"
-        Utils.getRequest(urlString: urlString, headers: [String:String](), completion: { result in
-            // it is fire and forget , so don't really care about the result
-        })
+        Utils.deleteFromServer(urlString: urlString)
     }
 }
 

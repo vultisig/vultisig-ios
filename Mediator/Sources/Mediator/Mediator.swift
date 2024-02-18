@@ -77,7 +77,7 @@ public final class Mediator {
                 return HttpResponse.ok(.text(""))
             case "GET":
                 if !self.cache.objectExists(forKey: key) {
-                    self.logger.debug("session didn't start, can't find key:\(key)")
+                    // self.logger.debug("session didn't start, can't find key:\(key)")
                     return HttpResponse.notFound
                 }
                 let cachedSession = try self.cache.object(forKey: key) as? Session
@@ -230,6 +230,7 @@ public final class Mediator {
         if let messageID {
             key = "\(cleanSessionID)-\(cleanParticipantKey)-\(messageID)-\(msgHash)"
         }
+        logger.info("message with key:\(key) has been deleted")
         self.cache.removeObject(forKey: key)
         return HttpResponse.ok(.text(""))
     }
