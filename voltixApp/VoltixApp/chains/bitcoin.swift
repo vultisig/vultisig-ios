@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import Tss
 import WalletCore
 
 struct UtxoInfo {
@@ -18,15 +19,9 @@ struct BitcoinHelper {
         case failToGetKeyHash = "fail to get key hash"
         case invalidSignature = "Signature is invalid"
     }
-    
-    static func getBitcoin(hexPubKey: String) -> Result<Coin, Error> {
-        guard let pubkeyData = Data(hexString: hexPubKey) else {
-            return .failure(BitcoinTransactionError.invalidPubKey)
-        }
-        guard let publicKey = PublicKey(data: pubkeyData, type: .secp256k1) else {
-            return .failure(BitcoinTransactionError.invalidPubKey)
-        }
-        let result =  getAddressFromPubKey(hexPubKey: hexPubKey)
+
+    static func getBitcoin(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
+        let result = getAddressFromPubKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode)
         switch result {
         case .failure(let err):
             return .failure(err)
@@ -35,10 +30,13 @@ struct BitcoinHelper {
         }
     }
 
-    static func getAddressFromPubKey(hexPubKey: String) -> Result<String, Error> {
-        guard let pubkeyData = Data(hexString: hexPubKey) else {
+    static func getAddressFromPubKey(hexPubKey: String, hexChainCode: String) -> Result<String, Error> {
+        var nsErr: NSError?
+        let derivedPubKey = TssGetDerivedPubKey(hexPubKey, hexChainCode, CoinType.bitcoin.derivationPath(), false, &nsErr)
+        guard let pubkeyData = Data(hexString: derivedPubKey) else {
             return .failure(BitcoinTransactionError.invalidPubKey)
         }
+
         guard let publicKey = PublicKey(data: pubkeyData, type: .secp256k1) else {
             return .failure(BitcoinTransactionError.invalidPubKey)
         }
