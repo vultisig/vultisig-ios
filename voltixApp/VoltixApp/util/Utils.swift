@@ -53,7 +53,6 @@ enum Utils {
     }
 
     public static func deleteFromServer(urlString: String) {
-        logger.debug("url:\(urlString)")
         guard let url = URL(string: urlString) else {
             logger.error("URL can't be constructed from: \(urlString)")
             return

@@ -68,7 +68,7 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
                 logger.error("invalid response code")
                 return
             }
-            logger.debug("send message to mediator server successfully")
+            logger.debug("send message (\(msg.hash) to (\(msg.to)) successfully")
         }.resume()
     }
 }

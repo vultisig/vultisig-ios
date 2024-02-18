@@ -9,7 +9,7 @@ public final class Mediator {
     private let logger = Logger(subsystem: "Mediator", category: "communication")
     let port: UInt16 = 8080
     let server = HttpServer()
-    let cache = MemoryStorage<String, Any>(config: MemoryConfig(expiry: .seconds(3600), countLimit: 1024, totalCostLimit: 2048))
+    let cache = MemoryStorage<String, Any>(config: MemoryConfig())
     private let service: NetService
     
     // Singleton
@@ -108,6 +108,7 @@ public final class Mediator {
                 if let messageID {
                     key = "\(cleanSessionID)-\(recipient)-\(messageID)-\(message.hash)"
                 }
+                logger.info("received message \(message.hash) from \(message.from)")
                 self.cache.setObject(message, forKey: key)
             }
         } catch {
@@ -231,7 +232,6 @@ public final class Mediator {
         if let messageID {
             key = "\(cleanSessionID)-\(cleanParticipantKey)-\(messageID)-\(msgHash)"
         }
-        logger.info("message with key:\(key) has been deleted")
         self.cache.removeObject(forKey: key)
         return HttpResponse.ok(.text(""))
     }
