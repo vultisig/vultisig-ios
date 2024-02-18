@@ -42,6 +42,7 @@ struct KeygenView: View {
     @State private var vault = Vault(name: "new vault")
     @State var vaultName: String
     @State var pollingInboundMessages = true
+    @State var cache = NSCache<NSString, AnyObject>()
     
     var body: some View {
         GeometryReader { geometry in
@@ -70,6 +71,7 @@ struct KeygenView: View {
                                 // add the vault to modelcontext
                                 self.context.insert(self.vault)
                                 self.pollingInboundMessages = false
+                                self.cache.removeAllObjects()
                                 Task {
                                     // when user didn't touch it for 5 seconds , automatically goto
                                     try await Task.sleep(nanoseconds: 5_000_000_000) // Back off 5s
@@ -83,6 +85,7 @@ struct KeygenView: View {
                             StatusText(status: "Keygen failed, you can retry it")
                                 .onAppear {
                                     self.pollingInboundMessages = false
+                                    self.cache.removeAllObjects()
                                 }.navigationBarBackButtonHidden(false)
                         }
                     }.frame(width: geometry.size.width, height: geometry.size.height * 0.8)
@@ -118,7 +121,7 @@ struct KeygenView: View {
                 keygenReq.localPartyID = self.localPartyKey
                 keygenReq.allParties = self.keygenCommittee.joined(separator: ",")
                 keygenReq.chainCodeHex = self.hexChainCode
-                logger.info("chaincode:\(hexChainCode)")
+                logger.info("chaincode:\(self.hexChainCode)")
                 guard let tssService = self.tssService else {
                     self.keygenError = "TSS instance is nil"
                     self.currentStatus = .KeygenFailed
@@ -184,10 +187,16 @@ struct KeygenView: View {
                 do {
                     let decoder = JSONDecoder()
                     let msgs = try decoder.decode([Message].self, from: data)
-                    
                     for msg in msgs {
+                        let key = "\(self.sessionID)-\(self.localPartyKey)-\(msg.hash)" as NSString
+                        if let obj = self.cache.object(forKey: key) {
+                            // message has been applied before
+                            continue
+                        }
                         logger.debug("Got message from: \(msg.from), to: \(msg.to)")
                         try self.tssService?.applyData(msg.body)
+                        self.cache.setObject(NSObject(), forKey: key)
+                        deleteMessageFromServer(hash: msg.hash)
                     }
                 } catch {
                     logger.error("Failed to decode response to JSON, data: \(data), error: \(error)")
@@ -198,6 +207,12 @@ struct KeygenView: View {
                     logger.error("fail to get inbound message,error:\(error.localizedDescription)")
                 }
             }
+        })
+    }
+    private func deleteMessageFromServer(hash: String) {
+        let urlString = "\(self.mediatorURL)/message/\(self.sessionID)/\(self.localPartyKey)/\(hash)"
+        Utils.getRequest(urlString: urlString, headers: [String:String](), completion: { result in
+            // it is fire and forget , so don't really care about the result
         })
     }
 }

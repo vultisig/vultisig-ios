@@ -1,6 +1,15 @@
 {
   "pins" : [
     {
+      "identity" : "cache",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/hyperoslo/Cache",
+      "state" : {
+        "revision" : "d048bf404a5c8362c6cf840c2096d5777975cd27",
+        "version" : "6.1.0"
+      }
+    },
+    {
       "identity" : "codescanner",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/twostraws/CodeScanner",

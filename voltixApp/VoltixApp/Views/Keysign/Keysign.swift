@@ -90,7 +90,6 @@ struct KeysignView: View {
             }
             for msg in self.messsageToSign {
                 let msgHash = Utils.getMessageBodyHash(msg: msg)
-                logger.info("message_id:\(msgHash)")
                 self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: msgHash)
                 self.stateAccess = LocalStateAccessorImpl(vault: vault)
                 var err: NSError?
