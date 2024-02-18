@@ -187,7 +187,7 @@ struct KeygenView: View {
                 do {
                     let decoder = JSONDecoder()
                     let msgs = try decoder.decode([Message].self, from: data)
-                    for msg in msgs {
+                    for msg in msgs.sorted(by: {$0.sequenceNo < $1.sequenceNo}) {
                         let key = "\(self.sessionID)-\(self.localPartyKey)-\(msg.hash)" as NSString
                         if self.cache.object(forKey: key) != nil {
                             logger.info("message with key:\(key) has been applied before")

@@ -16,7 +16,8 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
     // messageID will be used during keysign , because for UTXO related chains , it usually need to sign multiple UTXOs
     // at the same time , add message id here to avoid messages belongs to differet keysign message messed with each other
     let messageID: String?
-
+    
+    var counter: Int64 = 1
     init(mediatorUrl: String, sessionID: String, messageID: String?) {
         self.mediatorUrl = mediatorUrl
         self.sessionID = sessionID
@@ -36,7 +37,6 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
             logger.error("body is nil")
             return
         }
-        logger.info("from:\(fromParty),to:\(to)")
         let urlString = "\(self.mediatorUrl)/message/\(self.sessionID)"
         let url = URL(string: urlString)
         guard let url else {
@@ -49,7 +49,8 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
         if let messageID = self.messageID {
             req.addValue("message_id", forHTTPHeaderField: messageID)
         }
-        let msg = Message(session_id: sessionID, from: fromParty, to: [to], body: body, hash: Utils.getMessageBodyHash(msg: body))
+        let msg = Message(session_id: sessionID, from: fromParty, to: [to], body: body, hash: Utils.getMessageBodyHash(msg: body),sequenceNo: counter)
+        self.counter += 1
         do {
             let jsonEncode = JSONEncoder()
             let encodedBody = try jsonEncode.encode(msg)
