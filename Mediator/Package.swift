@@ -18,13 +18,15 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/httpswift/swifter", from: "1.5.0"),
+        .package(url: "https://github.com/hyperoslo/Cache", from: "6.1.0"),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
             name: "Mediator",
-            dependencies: [.product(name: "Swifter", package: "swifter")]),
+            dependencies: [.product(name: "Swifter", package: "swifter"),
+                           .product(name: "Cache", package: "Cache")]),
         .testTarget(
             name: "MediatorTests",
             dependencies: ["Mediator"]),

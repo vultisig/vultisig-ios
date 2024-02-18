@@ -28,6 +28,7 @@ struct KeygenView: View {
     let mediatorURL: String
     let sessionID: String
     let localPartyKey: String
+    let hexChainCode: String
     @State private var keygenInProgressECDSA = false
     @State private var pubKeyECDSA: String? = nil
     @State private var keygenInProgressEDDSA = false
@@ -41,6 +42,7 @@ struct KeygenView: View {
     @State private var vault = Vault(name: "new vault")
     @State var vaultName: String
     @State var pollingInboundMessages = true
+    @State var cache = NSCache<NSString, AnyObject>()
     
     var body: some View {
         GeometryReader { geometry in
@@ -65,9 +67,11 @@ struct KeygenView: View {
                                 }
                                 self.vault.name = self.vaultName
                                 self.vault.localPartyID = self.localPartyKey
+                                self.vault.hexChainCode = self.hexChainCode
                                 // add the vault to modelcontext
                                 self.context.insert(self.vault)
                                 self.pollingInboundMessages = false
+                                self.cache.removeAllObjects()
                                 Task {
                                     // when user didn't touch it for 5 seconds , automatically goto
                                     try await Task.sleep(nanoseconds: 5_000_000_000) // Back off 5s
@@ -78,9 +82,10 @@ struct KeygenView: View {
                             }
                             
                         case .KeygenFailed:
-                            StatusText(status: "Failed KeyGen Retry")
+                            StatusText(status: "Keygen failed, you can retry it")
                                 .onAppear {
                                     self.pollingInboundMessages = false
+                                    self.cache.removeAllObjects()
                                 }.navigationBarBackButtonHidden(false)
                         }
                     }.frame(width: geometry.size.width, height: geometry.size.height * 0.8)
@@ -115,6 +120,8 @@ struct KeygenView: View {
                 let keygenReq = TssKeygenRequest()
                 keygenReq.localPartyID = self.localPartyKey
                 keygenReq.allParties = self.keygenCommittee.joined(separator: ",")
+                keygenReq.chainCodeHex = self.hexChainCode
+                logger.info("chaincode:\(self.hexChainCode)")
                 guard let tssService = self.tssService else {
                     self.keygenError = "TSS instance is nil"
                     self.currentStatus = .KeygenFailed
@@ -166,7 +173,7 @@ struct KeygenView: View {
             case .ECDSA:
                 return try service.keygenECDSA(req)
             case .EdDSA:
-                return try service.keygenEDDSA(req)
+                return try service.keygenEdDSA(req)
             }
         }
         return try await t.value
@@ -180,10 +187,20 @@ struct KeygenView: View {
                 do {
                     let decoder = JSONDecoder()
                     let msgs = try decoder.decode([Message].self, from: data)
-                    
-                    for msg in msgs {
+                    for msg in msgs.sorted(by: {$0.sequenceNo < $1.sequenceNo}) {
+                        let key = "\(self.sessionID)-\(self.localPartyKey)-\(msg.hash)" as NSString
+                        if self.cache.object(forKey: key) != nil {
+                            logger.info("message with key:\(key) has been applied before")
+                            // message has been applied before
+                            continue
+                        }
                         logger.debug("Got message from: \(msg.from), to: \(msg.to)")
                         try self.tssService?.applyData(msg.body)
+                        self.cache.setObject(NSObject(), forKey: key)
+                        Task{
+                            // delete it from a task, since we don't really care about the result
+                            self.deleteMessageFromServer(hash: msg.hash)
+                        }
                     }
                 } catch {
                     logger.error("Failed to decode response to JSON, data: \(data), error: \(error)")
@@ -195,6 +212,11 @@ struct KeygenView: View {
                 }
             }
         })
+    }
+
+    private func deleteMessageFromServer(hash: String) {
+        let urlString = "\(self.mediatorURL)/message/\(self.sessionID)/\(self.localPartyKey)/\(hash)"
+        Utils.deleteFromServer(urlString: urlString)
     }
 }
 
@@ -218,5 +240,6 @@ private struct StatusText: View {
                mediatorURL: "",
                sessionID: "",
                localPartyKey: "",
+               hexChainCode: "",
                vaultName: "Vault #1")
 }

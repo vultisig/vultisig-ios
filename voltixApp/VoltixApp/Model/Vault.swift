@@ -13,7 +13,9 @@ final class Vault : ObservableObject{
     var createdAt: Date = Date.now
     var pubKeyECDSA: String = ""
     var pubKeyEdDSA: String = ""
+    var hexChainCode: String = ""
     
+    // TODO: shouldn't be here , use those in bitcoin.swift
     private func createBitcoinAddress(from publicKeyString: String, prefix: UInt8 = 0x00) -> BitcoinAddress? {
         guard let publicKeyData = Data(hexString: publicKeyString) else {
             print("Invalid public key hex string")
@@ -42,7 +44,7 @@ final class Vault : ObservableObject{
         self.name = name
     }
     
-    init(name: String, signers: [String], pubKeyECDSA: String, pubKeyEdDSA: String, keyshares: [KeyShare], localPartyID: String) {
+    init(name: String, signers: [String], pubKeyECDSA: String, pubKeyEdDSA: String, keyshares: [KeyShare], localPartyID: String,hexChainCode: String) {
         self.name = name
         self.signers = signers
         self.createdAt = Date.now
@@ -50,6 +52,7 @@ final class Vault : ObservableObject{
         self.pubKeyEdDSA = pubKeyEdDSA
         self.keyshares = keyshares
         self.localPartyID = localPartyID
+        self.hexChainCode = hexChainCode
     }
     
     func addKeyshare(pubkey: String, keyshare:String) {
@@ -78,8 +81,8 @@ struct KeyShare : Codable {
 // define some functions used for test
 extension Vault{
     static func loadTestData(modelContext: ModelContext) {
-        modelContext.insert(Vault(name: "test", signers:["A","B","C"],  pubKeyECDSA: "ECDSA PubKey", pubKeyEdDSA: "EdDSA PubKey",keyshares: [KeyShare](), localPartyID: "first"))
-        modelContext.insert(Vault(name: "test 1", signers:["C","D","E"], pubKeyECDSA: "ECDSA PubKey", pubKeyEdDSA: "EdDSA PubKey",keyshares: [KeyShare](), localPartyID: "second"))
+        modelContext.insert(Vault(name: "test", signers:["A","B","C"],  pubKeyECDSA: "ECDSA PubKey", pubKeyEdDSA: "EdDSA PubKey",keyshares: [KeyShare](), localPartyID: "first",hexChainCode: ""))
+        modelContext.insert(Vault(name: "test 1", signers:["C","D","E"], pubKeyECDSA: "ECDSA PubKey", pubKeyEdDSA: "EdDSA PubKey",keyshares: [KeyShare](), localPartyID: "second",hexChainCode: ""))
     }
     
     static var sampleVaults: () throws -> ModelContainer =  {

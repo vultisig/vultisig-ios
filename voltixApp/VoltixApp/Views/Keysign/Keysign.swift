@@ -90,7 +90,6 @@ struct KeysignView: View {
             }
             for msg in self.messsageToSign {
                 let msgHash = Utils.getMessageBodyHash(msg: msg)
-                logger.info("message_id:\(msgHash)")
                 self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: msgHash)
                 self.stateAccess = LocalStateAccessorImpl(vault: vault)
                 var err: NSError?
@@ -153,7 +152,7 @@ struct KeysignView: View {
             case .ECDSA:
                 return try service.keysignECDSA(req)
             case .EdDSA:
-                return try service.keysignEDDSA(req)
+                return try service.keysignEdDSA(req)
             }
         }
         return try await t.value

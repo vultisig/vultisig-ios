@@ -3,13 +3,14 @@
 //  VoltixApp
 //
 
-import SwiftUI
-import SwiftData
 import Mediator
+import SwiftData
+import SwiftUI
+import WalletCore
 
 @main
 struct VoltixApp: App {
-    @Environment(\.scenePhase) private var scenePhase    
+    @Environment(\.scenePhase) private var scenePhase
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Vault.self,
@@ -28,7 +29,7 @@ struct VoltixApp: App {
     var body: some Scene {
         WindowGroup {
             MainNavigationStack()
-                .environmentObject(ApplicationState.shared)  // Shared monolithic mutable state
+                .environmentObject(ApplicationState.shared) // Shared monolithic mutable state
         }
         .modelContainer(sharedModelContainer)
 //        .onChange(of: scenePhase) { phase in
