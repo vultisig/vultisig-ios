@@ -197,7 +197,10 @@ struct KeygenView: View {
                         logger.debug("Got message from: \(msg.from), to: \(msg.to)")
                         try self.tssService?.applyData(msg.body)
                         self.cache.setObject(NSObject(), forKey: key)
-                        self.deleteMessageFromServer(hash: msg.hash)
+                        Task{
+                            // delete it from a task, since we don't really care about the result
+                            self.deleteMessageFromServer(hash: msg.hash)
+                        }
                     }
                 } catch {
                     logger.error("Failed to decode response to JSON, data: \(data), error: \(error)")
