@@ -76,14 +76,17 @@ public final class Mediator {
                 
                 return HttpResponse.ok(.text(""))
             case "GET":
-                guard let cachedSession = try self.cache.object(forKey: key) as? Session else {
+                if !self.cache.objectExists(forKey: key) {
                     self.logger.debug("session didn't start, can't find key:\(key)")
                     return HttpResponse.notFound
                 }
-                return HttpResponse.ok(.json(cachedSession.Participants))
-                
-            default:
+                let cachedSession = try self.cache.object(forKey: key) as? Session
+                if let cachedSession {
+                    return HttpResponse.ok(.json(cachedSession.Participants))
+                }
                 return HttpResponse.notAcceptable
+            default:
+                return HttpResponse.notFound
             }
         }catch{
             logger.error("fail to process request to start keygen/keysign,error:\(error.localizedDescription)")
@@ -155,17 +158,21 @@ public final class Mediator {
         do {
             let decoder = JSONDecoder()
             let p = try decoder.decode([String].self, from: Data(req.body))
-            if let cachedValue = try self.cache.object(forKey: key) as? Session {
-                for newParticipant in p {
-                    if !cachedValue.Participants.contains(where: { $0 == newParticipant }) {
-                        cachedValue.Participants.append(newParticipant)
+            if self.cache.objectExists(forKey: key) {
+                if let cachedValue = try self.cache.object(forKey: key) as? Session {
+                    for newParticipant in p {
+                        if !cachedValue.Participants.contains(where: { $0 == newParticipant }) {
+                            cachedValue.Participants.append(newParticipant)
+                        }
                     }
+                    self.cache.setObject(cachedValue, forKey: key)
                 }
-                self.cache.setObject(cachedValue, forKey: key)
-            } else {
+            }
+            else {
                 let session = Session(SessionID: cleanSessionID, Participants: p)
                 self.cache.setObject(session, forKey: key)
             }
+            
         } catch {
             self.logger.error("fail to decode json body,error:\(error)")
             return HttpResponse.badRequest(.text("invalid json payload"))
@@ -196,11 +203,12 @@ public final class Mediator {
             if let cachedValue = try self.cache.object(forKey: key) as? Session {
                 self.logger.debug("session obj : \(cachedValue.SessionID), participants: \(cachedValue.Participants)")
                 return HttpResponse.ok(.json(cachedValue.Participants))
-            } else {
-                self.logger.error("cached object not found")
-                return HttpResponse.notFound
             }
-        }catch{
+        }
+        catch Cache.StorageError.notFound {
+            return HttpResponse.notFound
+        }
+        catch{
             logger.error("fail to get session,error:\(error.localizedDescription)")
         }
         return HttpResponse.notFound

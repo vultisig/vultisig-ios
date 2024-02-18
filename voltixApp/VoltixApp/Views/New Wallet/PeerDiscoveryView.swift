@@ -201,7 +201,6 @@ struct PeerDiscoveryView: View {
                 }
             case .failure(let error):
                 logger.error("Failed to start session, error: \(error)")
-                return
             }
         }
     }
