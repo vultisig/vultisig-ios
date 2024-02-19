@@ -27,12 +27,12 @@ struct SwapInputDetailsView: View {
                 Text("Ethereum")
                     .font(Font.custom("Menlo", size: 20).weight(.bold))
                     .lineSpacing(30)
-                    .foregroundColor(.black)
+                    
                 VStack() {
                     Text("23.2")
                         .font(Font.custom("Menlo", size: 20))
                         .lineSpacing(30)
-                        .foregroundColor(.black)
+                        
                 }
                 .frame(width: 200)
             }
@@ -43,7 +43,7 @@ struct SwapInputDetailsView: View {
                 Text("Amount")
                     .font(Font.custom("Menlo", size: 20))
                     .lineSpacing(30)
-                    .foregroundColor(.black)
+                    
                 HStack() {
                     TextField("1.0", text: $amount)
                         .multilineTextAlignment(.center)
@@ -56,7 +56,7 @@ struct SwapInputDetailsView: View {
                     Text("MAX")
                         .font(Font.custom("Menlo", size: 20).weight(.bold))
                         .lineSpacing(30)
-                        .foregroundColor(.black)
+                        
                 }
                 .frame(height: 50)
             }
@@ -66,7 +66,7 @@ struct SwapInputDetailsView: View {
                 Text("Gas")
                     .font(Font.custom("Menlo", size: 20))
                     .lineSpacing(30)
-                    .foregroundColor(.black)
+                    
                 Spacer()
                 HStack() {
                     TextField("auto", text: $gas)
@@ -79,7 +79,7 @@ struct SwapInputDetailsView: View {
                     Text("$4.00")
                         .font(Font.custom("Menlo", size: 20).weight(.bold))
                         .lineSpacing(30)
-                        .foregroundColor(.black)
+                        
                 }
                 .frame(height: 50)
             }
@@ -90,17 +90,17 @@ struct SwapInputDetailsView: View {
                     Text("Amount")
                         .font(Font.custom("Menlo", size: 20))
                         .lineSpacing(30)
-                        .foregroundColor(.black)
+                        
                     HStack() {
                         Text("0.1")
                             .font(Font.custom("Montserrat", size: 40).weight(.light))
                             .lineSpacing(60)
-                            .foregroundColor(.black)
+                            
                         Spacer().frame(width: 30)
                         Text("BTC")
                             .font(Font.custom("Menlo", size: 20))
                             .lineSpacing(30)
-                            .foregroundColor(.black)
+                            
                     }
                 }
                 Spacer().frame(width: 40)
@@ -108,17 +108,17 @@ struct SwapInputDetailsView: View {
                     Text("Fees")
                         .font(Font.custom("Menlo", size: 20))
                         .lineSpacing(30)
-                        .foregroundColor(.black)
+                        
                     HStack() {
                         Text("0.001")
                             .font(Font.custom("Montserrat", size: 40).weight(.light))
                             .lineSpacing(60)
-                            .foregroundColor(.black)
+                            
                         Spacer().frame(width: 30)
                         Text("BTC")
                             .font(Font.custom("Menlo", size: 20))
                             .lineSpacing(30)
-                            .foregroundColor(.black)
+                            
                     }
                 }
             }
@@ -127,17 +127,17 @@ struct SwapInputDetailsView: View {
                 Text("Time")
                     .font(Font.custom("Menlo", size: 20))
                     .lineSpacing(30)
-                    .foregroundColor(.black)
+                    
                 HStack() {
                     Text("4")
                         .font(Font.custom("Montserrat", size: 40).weight(.light))
                         .lineSpacing(60)
-                        .foregroundColor(.black)
+                        
                         .frame(width: 80, alignment: .leading)
                     Text("minutes")
                         .font(Font.custom("Menlo", size: 20))
                         .lineSpacing(30)
-                        .foregroundColor(.black)
+                        
                 }
             }
             .padding()

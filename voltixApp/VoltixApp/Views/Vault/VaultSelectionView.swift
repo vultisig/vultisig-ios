@@ -17,7 +17,7 @@ struct VaultSelectionView: View {
         List(selection: $appState.currentVault) {
             ForEach(vaults) { vault in
                 NavigationLink {
-                    VaultAssetsView(presentationStack: $presentationStack, transactionDetailsViewModel: TransactionDetailsViewModel()).onAppear(){
+                    VaultAssetsView(presentationStack: $presentationStack, transactionDetailsViewModel: SendTransaction()).onAppear(){
                         appState.currentVault = vault
                     }
                 } label: {
@@ -28,11 +28,6 @@ struct VaultSelectionView: View {
                                 showingDeleteAlert = true
                             }
                         }
-                }.onAppear(){
-                    
-                    print("pubKeyECDSA: " + vault.pubKeyECDSA)
-                    print("Address: " + vault.legacyBitcoinAddress)
-                    
                 }
             }
         }
@@ -57,7 +52,7 @@ struct VaultSelectionView: View {
             }
         }.navigationBarBackButtonHidden()
     }
-
+    
     func deleteVault(vault: Vault) {
         modelContext.delete(vault)
         do {

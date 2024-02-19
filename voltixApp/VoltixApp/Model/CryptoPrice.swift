@@ -1,7 +1,7 @@
 import Foundation
 
 // Define a generic struct for decoding any cryptocurrency data with any fiat currencies
-struct CryptoPriceData: Codable {
+struct CryptoPrice: Codable {
     var prices: [String: [String: Double]]
     
     init(from decoder: Decoder) throws {

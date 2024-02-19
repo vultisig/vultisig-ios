@@ -32,11 +32,11 @@ struct LargeHeaderView: View {
                             Text("BACK")
                                 .font(Font.custom("Menlo", size: 40).weight(.bold))
                                 .lineSpacing(60)
-                                .foregroundColor(.black)
+                                
                         }
                     }
                 }
-                .foregroundColor(.black)
+                
                 .buttonStyle(PlainButtonStyle())
                 Spacer()
                 Button(action: rightAction) {
@@ -44,13 +44,13 @@ struct LargeHeaderView: View {
                         .resizable()
                         .frame(width: 30, height: 30)
                 }
-                .foregroundColor(.black)
+                
                 .buttonStyle(PlainButtonStyle())
             }
             .frame(width: .infinity, height: 130)
             Text(head)
                 .font(Font.custom("Menlo", size: 40))
-                .foregroundColor(.black)
+                
         }
         .padding()
         .frame(width: .infinity, height: 119);

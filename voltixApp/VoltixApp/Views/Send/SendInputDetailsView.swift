@@ -1,21 +1,19 @@
-import SwiftUI
-import WalletCore
-import OSLog
 import CodeScanner
+import OSLog
+import SwiftUI
 import UniformTypeIdentifiers
 // Assuming CurrentScreen is an enum that you've defined elsewhere
 import WalletCore
 
-
-
-
 private let logger = Logger(subsystem: "send-input-details", category: "transaction")
 struct SendInputDetailsView: View {
+    @EnvironmentObject var appState: ApplicationState
     @Binding var presentationStack: [CurrentScreen]
     @StateObject var unspentOutputsViewModel: UnspentOutputsService = UnspentOutputsService()
-    @ObservedObject var transactionDetailsViewModel: TransactionDetailsViewModel
+    @ObservedObject var transactionDetailsViewModel: SendTransaction
     @State private var isShowingScanner = false
     @State private var isValidAddress = true
+    @State private var keyboardOffset: CGFloat = 0
     
     func isValidHex(_ hex: String) -> Bool {
         let hexPattern = "^0x?[0-9A-Fa-f]+$"
@@ -23,20 +21,24 @@ struct SendInputDetailsView: View {
     }
     
     var body: some View {
+        
         GeometryReader { geometry in
             VStack {
                 VStack(alignment: .leading) {
+                    
+                    Text("From").padding(.all).font(
+                        Font.custom("Menlo", size: geometry.size.width * 0.05).weight(.bold))
+                    
+                    Text($transactionDetailsViewModel.fromAddress.wrappedValue).padding(.horizontal)
                     HStack {
                         Text("BTC")
-                            .font(.system(size: geometry.size.width * 0.05, weight: .bold))
-                            .foregroundColor(.black)
+                            .font(Font.custom("Menlo", size: geometry.size.width * 0.05).weight(.bold))
                         
                         Spacer()
                         
                         if let walletData = unspentOutputsViewModel.walletData {
                             Text(String(walletData.balanceInBTC))
                                 .padding().font(.system(size: geometry.size.width * 0.05))
-                                .foregroundColor(.black)
                         } else {
                             Text("Error to fetch the data")
                                 .padding()
@@ -48,27 +50,29 @@ struct SendInputDetailsView: View {
                     Group {
                         
                         VStack(alignment: .leading) {
-                            HStack{
+                            HStack {
                                 Text("To")
-                                    .font(.system(size: geometry.size.width * 0.05, weight: .bold))
-                                    .foregroundColor(.black)
+                                    .font(Font.custom("Menlo", size: geometry.size.width * 0.05).weight(.bold))
                                 Text(isValidAddress ? "" : "*")
-                                    .font(.system(size: geometry.size.width * 0.05, weight: .bold))
+                                    .font(Font.custom("Menlo", size: geometry.size.width * 0.05).weight(.bold))
                                     .foregroundColor(.red)
                                 Spacer()
                                 Button("", systemImage: "camera") {
                                     self.isShowingScanner = true
                                 }
-                                .sheet(isPresented: self.$isShowingScanner, content: {
-                                    CodeScannerView(codeTypes: [.qr], completion: self.handleScan)
-                                })
+                                .sheet(
+                                    isPresented: self.$isShowingScanner,
+                                    content: {
+                                        CodeScannerView(codeTypes: [.qr], completion: self.handleScan)
+                                    }
+                                )
                                 .padding(.trailing, 8)
                                 .buttonStyle(PlainButtonStyle())
                                 
                             }
                             TextField("", text: $transactionDetailsViewModel.toAddress)
                                 .padding()
-                                .background(Color(red: 0.92, green: 0.92, blue: 0.93))
+                                .background(Color.gray.opacity(0.5))  // 50% transparent gray
                                 .cornerRadius(10)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 10)
@@ -88,14 +92,13 @@ struct SendInputDetailsView: View {
                         
                         VStack(alignment: .leading) {
                             Text("Amount")
-                                .font(.system(size: geometry.size.width * 0.05, weight: .bold))
-                                .foregroundColor(.black)
+                                .font(Font.custom("Menlo", size: geometry.size.width * 0.05).weight(.bold))
                             
-                            HStack{
+                            HStack {
                                 TextField("", text: $transactionDetailsViewModel.amount)
                                     .keyboardType(.decimalPad)
                                     .padding()
-                                    .background(Color(red: 0.92, green: 0.92, blue: 0.93))
+                                    .background(Color.gray.opacity(0.5))  // 50% transparent gray
                                     .cornerRadius(10)
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 10)
@@ -110,8 +113,8 @@ struct SendInputDetailsView: View {
                                     }
                                 }) {
                                     Text("MAX")
-                                        .font(.system(size: geometry.size.width * 0.05, weight: .bold))
-                                        .foregroundColor(.black)
+                                        .font(Font.custom("Menlo", size: geometry.size.width * 0.05).weight(.bold))
+                                        .foregroundColor(Color(UIColor.systemFill))
                                         .padding(10)
                                 }
                                 
@@ -120,21 +123,22 @@ struct SendInputDetailsView: View {
                         }
                         .frame(height: geometry.size.height * 0.12)
                         
-                        
-                        
                         inputField(title: "Memo", text: $transactionDetailsViewModel.memo, geometry: geometry)
-                        
+                        gasField(geometry: geometry)
                     }
                     .padding(.horizontal)
                     
                     Spacer()
-                    gasField(geometry: geometry).padding(.horizontal)
-                    BottomBar(content: "CONTINUE", onClick: {
-                        // Update this logic as necessary to navigate to the SendVerifyView
-                        // self.presentationStack.append(contentsOf: .sendVerifyScreen(transactionDetailsViewModel))
-                        
-                        self.presentationStack.append(.sendVerifyScreen(transactionDetailsViewModel))
-                    })
+                    
+                    BottomBar(
+                        content: "CONTINUE",
+                        onClick: {
+                            // Update this logic as necessary to navigate to the SendVerifyView
+                            // self.presentationStack.append(contentsOf: .sendVerifyScreen(transactionDetailsViewModel))
+                            
+                            self.presentationStack.append(.sendVerifyScreen(transactionDetailsViewModel))
+                        }
+                    )
                     .padding(.horizontal)
                 }
                 .navigationBarBackButtonHidden()
@@ -150,14 +154,24 @@ struct SendInputDetailsView: View {
                 }
             }.onAppear {
                 if unspentOutputsViewModel.walletData == nil {
+                    
                     Task {
-                        await unspentOutputsViewModel.fetchUnspentOutputs(for: $transactionDetailsViewModel.fromAddress.wrappedValue)
+                        
+                        transactionDetailsViewModel.fromAddress =
+                        appState.currentVault?.legacyBitcoinAddress ?? ""
+                        if !transactionDetailsViewModel.fromAddress.isEmpty {
+                            await unspentOutputsViewModel.fetchUnspentOutputs(
+                                for: transactionDetailsViewModel.fromAddress)
+                            //await cryptoPriceViewModel.fetchCryptoPrices(for: "bitcoin", for: "usd")
+                        }
+                        
+                        //await unspentOutputsViewModel.fetchUnspentOutputs(for: transactionDetailsViewModel.fromAddress)
                     }
                 }
             }
         }
+        
     }
-    
     
     private func handleScan(result: Result<ScanResult, ScanError>) {
         switch result {
@@ -170,14 +184,15 @@ struct SendInputDetailsView: View {
         }
     }
     
-    private func inputField(title: String, text: Binding<String>, geometry: GeometryProxy, isNumeric: Bool = false) -> some View {
+    private func inputField(
+        title: String, text: Binding<String>, geometry: GeometryProxy, isNumeric: Bool = false
+    ) -> some View {
         VStack(alignment: .leading) {
             Text(title)
-                .font(.system(size: geometry.size.width * 0.05, weight: .bold))
-                .foregroundColor(.black)
+                .font(Font.custom("Menlo", size: geometry.size.width * 0.05).weight(.bold))
             TextField("", text: text)
                 .padding()
-                .background(Color(red: 0.92, green: 0.92, blue: 0.93))
+                .background(Color.gray.opacity(0.5))  // 50% transparent gray
                 .cornerRadius(10)
                 .frame(width: isNumeric ? 280 : nil)
                 .overlay(
@@ -191,22 +206,20 @@ struct SendInputDetailsView: View {
     private func gasField(geometry: GeometryProxy) -> some View {
         VStack(alignment: .leading) {
             Text("Fee")
-                .font(.system(size: geometry.size.width * 0.05, weight: .bold))
-                .foregroundColor(.black)
+                .font(Font.custom("Menlo", size: geometry.size.width * 0.05).weight(.bold))
             Spacer()
             HStack {
                 TextField("", text: $transactionDetailsViewModel.gas)
                     .padding()
-                    .background(Color(red: 0.92, green: 0.92, blue: 0.93))
+                    .background(Color.gray.opacity(0.5))  // 50% transparent gray
                     .cornerRadius(10)
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
                             .stroke(Color.gray, lineWidth: 0)
                     )
                 Spacer()
-                Text("$4.00")
-                    .font(.system(size: geometry.size.width * 0.05, weight: .bold))
-                    .foregroundColor(.black)
+                Text($transactionDetailsViewModel.gas.wrappedValue)
+                    .font(Font.custom("Menlo", size: geometry.size.width * 0.05).weight(.bold))
             }
         }
         .frame(height: geometry.size.height * 0.12)
@@ -216,6 +229,8 @@ struct SendInputDetailsView: View {
 // Preview
 struct SendInputDetailsView_Previews: PreviewProvider {
     static var previews: some View {
-        SendInputDetailsView(presentationStack: .constant([]), unspentOutputsViewModel: UnspentOutputsService(), transactionDetailsViewModel: TransactionDetailsViewModel())
+        SendInputDetailsView(
+            presentationStack: .constant([]), unspentOutputsViewModel: UnspentOutputsService(),
+            transactionDetailsViewModel: SendTransaction())
     }
 }

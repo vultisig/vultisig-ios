@@ -18,11 +18,11 @@ struct MenuItem: View {
                 Text(content)
                 .font(Font.custom("Menlo", size: 35).weight(.bold))
                 .lineSpacing(60)
-                .foregroundColor(.black);
+                ;
                 Spacer().frame(width: 20)
                 Image(systemName: "chevron.right")
                 .resizable()
-                .foregroundColor(.black)
+                
                 .frame(width: 18, height: 27)
             }
             .padding()

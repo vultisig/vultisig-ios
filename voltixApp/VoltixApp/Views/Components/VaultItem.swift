@@ -11,6 +11,7 @@ import UIKit
 
 struct VaultItem: View {
 
+  @Binding var presentationStack: [CurrentScreen]
   let coinName: String
   let usdAmount: String
   let showAmount: Bool
@@ -18,54 +19,11 @@ struct VaultItem: View {
   let isRadio: Bool
   let radioIcon: String
   let showButtons: Bool
-  let onClick: () -> Void
-  init(
-    coinName: String,
-    usdAmount: String,
-    showAmount: Bool = true,
-    address: String,
-    isRadio: Bool = false,
-    radioIcon: String = "largecircle.fill.circle",
-    showButtons: Bool = false,
-    onClick: @escaping () -> Void
-  ) {
-    self.coinName = coinName
-    self.usdAmount = usdAmount
-    self.showAmount = showAmount
-    self.address = address
-    self.isRadio = isRadio
-    self.radioIcon = radioIcon
-    self.showButtons = showButtons
-    self.onClick = onClick
-  }
 
-  var body: some View {
-    smallItem(
-      coinName: self.coinName,
-      usdAmount: self.usdAmount,
-      showAmount: self.showAmount,
-      address: self.address,
-      isRadio: self.isRadio,
-      radioIcon: self.radioIcon,
-      showButtons: self.showButtons
-    )
-
-  }
-}
-
-private struct smallItem: View {
   @State private var showingQRCode = false
   @State private var showingShareSheet = false
   @State private var showingToast = false
   @State private var toastMessage = "Address copied to clipboard"
-
-  let coinName: String
-  let usdAmount: String
-  let showAmount: Bool
-  let address: String
-  let isRadio: Bool
-  let radioIcon: String
-  let showButtons: Bool
 
   func showToast() {
     withAnimation {
@@ -78,7 +36,7 @@ private struct smallItem: View {
       HStack {
         Text(coinName)
           .font(Font.custom("Menlo", size: 20).weight(.bold))
-          .foregroundColor(.black)
+
         if showButtons {
           Spacer().frame(width: 10)
           Button(action: {
@@ -91,7 +49,7 @@ private struct smallItem: View {
             Image(systemName: "square.on.square")
               .resizable()
               .frame(width: 20, height: 20)
-              .foregroundColor(.black)
+
           }
           .overlay(
             showingToast
@@ -105,7 +63,7 @@ private struct smallItem: View {
             Image(systemName: "square.and.arrow.up")
               .resizable()
               .frame(width: 16, height: 20)
-              .foregroundColor(.black)
+
           }
           Spacer()
             .frame(width: 8)
@@ -118,7 +76,7 @@ private struct smallItem: View {
             Image(systemName: "qrcode")
               .resizable()
               .frame(width: 20, height: 20)
-              .foregroundColor(.black)
+
           }
           .sheet(isPresented: $showingQRCode) {
             if let qrCodeImage = ActivityViewModel.generateHighQualityQRCode(from: address) {
@@ -128,20 +86,28 @@ private struct smallItem: View {
               Text("Failed to generate QR Code")
             }
           }
+          Spacer().frame(width: 8)
+          Button(action: {
+              presentationStack.append(.bitcoinTransactionsListView)
+          }) {
+            Image(systemName: "cube.transparent")
+              .resizable()
+              .frame(width: 16, height: 20)
+          }
+
         }
         Spacer()
 
         Text(usdAmount)
           .font(Font.custom("Menlo", size: 20))
           .multilineTextAlignment(.trailing)
-          .foregroundColor(.black)
 
       }
       HStack {
         Text(address)
           .font(Font.custom("Montserrat", size: 13).weight(.medium))
           .lineSpacing(19.50)
-          .foregroundColor(.black)
+
         Spacer()
         if isRadio {
           Image(systemName: radioIcon)
@@ -154,15 +120,5 @@ private struct smallItem: View {
       }
     }
   }
-}
 
-#Preview {
-  VaultItem(
-    coinName: "THORChain",
-    usdAmount: "11.1",
-    address: "thor1cfelrennd7pcvqq7v6w7682v6nhx2uwfg",
-    onClick: {
-
-    }
-  )
 }

@@ -62,6 +62,8 @@ struct MainNavigationStack: View {
                         KeysignDiscoveryView(presentationStack: $presentationStack, keysignMessage: keysignMsg, chain: chain)
                     case .JoinKeysign:
                         JoinKeysignView(presentationStack: $presentationStack)
+                    case .bitcoinTransactionsListView:
+                        BitcoinTransactionListView(presentationStack: $presentationStack)
                     }
                 }
         }.onAppear {

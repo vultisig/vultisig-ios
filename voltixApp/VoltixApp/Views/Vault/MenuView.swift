@@ -25,16 +25,16 @@ struct MenuView: View {
             Text("Choose Vault")
                 .font(Font.custom("Menlo", size: 20))
                 .lineSpacing(30)
-                .foregroundColor(.black);
+                ;
             HStack() {
                 Text("Main Vault")
                     .font(Font.custom("Menlo", size: 20).weight(.bold))
                     .lineSpacing(30)
-                    .foregroundColor(.black);
+                    ;
                 Spacer()
                 Image(systemName: "chevron.right")
                     .resizable()
-                    .foregroundColor(.black)
+                    
                     .frame(width: 9, height: 15)
                     .rotationEffect(.degrees(90));
             }
@@ -67,7 +67,7 @@ struct MenuView: View {
             Text("VOLTIX APP V1.23")
             .font(Font.custom("Menlo", size: 20).weight(.bold))
             .lineSpacing(30)
-            .foregroundColor(.black);
+            ;
           }
           .frame(width: .infinity, height: 110)
         }

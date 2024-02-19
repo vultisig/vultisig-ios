@@ -15,7 +15,7 @@ struct VaultAssetDetailView: View {
             HStack() {
                 Text("Ethereum")
                     .font(Font.custom("Menlo", size: 20).weight(.bold))
-                    .foregroundColor(.black)
+                    
                 Spacer().frame(width: 30)
                 Button(action: {}) {
                     Image("Copy")
@@ -38,14 +38,14 @@ struct VaultAssetDetailView: View {
                 Text("$65,899")
                     .font(Font.custom("Menlo", size: 20))
                     .multilineTextAlignment(.trailing)
-                    .foregroundColor(.black)
+                    
             }
             Spacer()
             HStack() {
                 Text("0x0cb1D4a24292bB89862f599Ac5B10F42b6DE07e4")
                     .font(Font.custom("Montserrat", size: 13).weight(.medium))
                     .lineSpacing(19.50)
-                    .foregroundColor(.black);
+                    ;
             }
           }
           .frame(width: .infinity, height: 83)

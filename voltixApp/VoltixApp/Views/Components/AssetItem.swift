@@ -18,25 +18,25 @@ struct AssetItem: View {
         HStack() {
             Text(coinName)
                 .font(Font.custom("Menlo", size: fontsize))
-                .foregroundColor(.black);
+                ;
             Spacer()
             Text(amount)
                 .font(Font.custom("Menlo", size: fontsize))
             Spacer()
             Text(usdAmount)
                 .font(Font.custom("Menlo", size: fontsize))
-                .foregroundColor(.black);
+                ;
             Spacer()
             VStack{
                 Button(action: sendClick) {
                     Text("SEND")
                         .font(Font.custom("Menlo", size: 20).weight(.bold))
-                        .foregroundColor(.black);
+                        ;
                 }
                 Button(action: {}) {
                     Text("SWAP")
                         .font(Font.custom("Menlo", size: 20).weight(.bold))
-                        .foregroundColor(.black);
+                        ;
                 }
             }
         }

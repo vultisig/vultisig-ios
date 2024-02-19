@@ -25,12 +25,12 @@ struct SwapDoneView: View {
                 Text("Transaction")
                     .font(Font.custom("Menlo", size: 20).weight(.bold))
                     .lineSpacing(30)
-                    .foregroundColor(.black)
+                    
                 HStack() {
                     Text("bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w")
                         .font(Font.custom("Montserrat", size: 13).weight(.medium))
                         .lineSpacing(19.50)
-                        .foregroundColor(.black)
+                        
                     Spacer()
                     Image("Link")
                         .resizable()

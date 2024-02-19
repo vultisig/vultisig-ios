@@ -9,7 +9,7 @@ struct SendPeerDiscoveryView: View {
       Text("VERIFY ALL DETAILS")
         .font(.title2)  // Adjusted for dynamic type
         .fontWeight(.medium)
-        .foregroundColor(.black)
+        
         .padding(.top)  // Add padding to space out from the navigation bar
 
       Spacer().frame(height: 80)

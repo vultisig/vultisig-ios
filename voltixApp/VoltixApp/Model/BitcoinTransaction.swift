@@ -1,7 +1,7 @@
 import Foundation
 
 // Root structure for the JSON response
-struct WalletUnspentOutput: Codable {
+struct BitcoinTransaction: Codable {
     
     var balanceInBTC: String {
         return formatAsBitcoin(balance)
@@ -68,7 +68,10 @@ struct WalletUnspentOutput: Codable {
     }
 }
 
-struct TransactionRef: Codable {
+struct TransactionRef: Codable, Identifiable {
+    var id: String {
+        txHash ?? "N/A" // Use txHash as the identifier, or a fallback if missing
+    }
     let txHash: String?
     let blockHeight: Int?
     let txInputN: Int?
