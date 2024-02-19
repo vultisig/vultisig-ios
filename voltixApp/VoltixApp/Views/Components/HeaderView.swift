@@ -13,32 +13,30 @@ struct HeaderView: View {
     let head: String;
     let leftAction: () -> Void;
     let rightAction: () -> Void;
-
+    
     var body: some View {
-        ZStack(alignment: .center) {
-            HStack() {
-                Button(action: leftAction) {
-                    Image(leftIcon)
-                        .resizable()
-                        .frame(width: 30, height: 30)
-                }
-                
-                .buttonStyle(PlainButtonStyle())
-                Spacer()
-                Button(action: rightAction) {
-                    Image(rightIcon)
-                        .resizable()
-                        .frame(width: 30, height: 30)
-                }
-                
-                .buttonStyle(PlainButtonStyle())
-            } .frame(width: .infinity, height: 130)
+        HStack() {
+            Button(action: leftAction) {
+                Image(systemName: "chevron.left")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .foregroundColor(Color.blue) // Adapts well in both light and dark mode
+                    .frame(width: 32, height: 30)
+            }
+            .frame(width: 30, height: 30)
+            Spacer()
             Text(head)
                 .font(Font.custom("Menlo", size: 40))
-                
-        }
-        .padding()
-        .frame(width: .infinity, height: 119);
+            Spacer()
+            Button(action: rightAction) {
+                Image(systemName: "chevron.right")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .foregroundColor(Color.blue) // Adapts well in both light and dark mode
+                    .frame(width: 32, height: 30)
+            }
+            .frame(width: 30, height: 30)
+        }.padding()
     }
 }
 
