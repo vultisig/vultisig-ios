@@ -28,6 +28,15 @@ struct TestVaultAssetView: View {
                 NavigationButtons.refreshButton(action: {})
             }
         }
+        .onAppear {
+            if let vault = appState.currentVault {
+                for keyshare in vault.keyshares {
+                    if keyshare.pubkey == vault.pubKeyECDSA {
+                        print("keyshare for \(vault.pubKeyECDSA): \(Utils.stringToHex(keyshare.keyshare))")
+                    }
+                }
+            }
+        }
     }
 }
 

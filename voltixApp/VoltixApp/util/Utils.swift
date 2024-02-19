@@ -119,6 +119,10 @@ enum Utils {
             String(format: "%02hhx", $0)
         }.joined()
     }
+
+    public static func stringToHex(_ input: String) -> String {
+        input.utf8.map { String(format: "%02x", $0) }.joined()
+    }
     
     public static func isIOS() -> Bool {
         #if os(iOS)
