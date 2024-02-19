@@ -5,10 +5,9 @@
 import Foundation
 import SwiftData
 
-@Model
-final class Chain : ObservableObject {
-    @Attribute(.unique) var name: String
-    @Attribute(.unique) var ticker: String
+struct Chain : Codable,Hashable {
+    var name: String
+    var ticker: String
     var signingKeyType: KeyType
 
     init(name: String, ticker: String, signingKeyType: KeyType) {
