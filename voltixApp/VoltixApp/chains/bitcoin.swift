@@ -13,49 +13,63 @@ struct UtxoInfo {
     let index: UInt32
 }
 
-struct BitcoinHelper {
-    enum BitcoinTransactionError: String, Error {
-        case invalidPubKey = "invalid public key"
-        case failToGetKeyHash = "fail to get key hash"
-        case invalidSignature = "Signature is invalid"
+enum BitcoinHelper {
+    enum BitcoinTransactionError: Error {
+        case tssError(String)
+        case runtimeError(String)
     }
 
     static func getBitcoin(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
-        let result = getAddressFromPubKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode)
-        switch result {
-        case .failure(let err):
-            return .failure(err)
-        case .success(let addr):
-            return .success(Coin(chain: Chain.Bitcoin, symbol: "btc", logo: "", address: addr))
-        }
+        return getAddressFromPubKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode)
+            .map { addr in
+                Coin(chain: Chain.Bitcoin, symbol: "btc", logo: "", address: addr)
+            }
     }
 
     static func getAddressFromPubKey(hexPubKey: String, hexChainCode: String) -> Result<String, Error> {
         var nsErr: NSError?
         let derivedPubKey = TssGetDerivedPubKey(hexPubKey, hexChainCode, CoinType.bitcoin.derivationPath(), false, &nsErr)
-        guard let pubkeyData = Data(hexString: derivedPubKey) else {
-            return .failure(BitcoinTransactionError.invalidPubKey)
+        if let nsErr {
+            return .failure(BitcoinTransactionError.tssError("fail to derive pubkey,error:\(nsErr.localizedDescription)"))
+        }
+        guard let pubkeyData = Data(hexString: derivedPubKey),
+              let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
+        else {
+            return .failure(BitcoinTransactionError.runtimeError("public key \(derivedPubKey) is invalid"))
         }
 
-        guard let publicKey = PublicKey(data: pubkeyData, type: .secp256k1) else {
-            return .failure(BitcoinTransactionError.invalidPubKey)
-        }
         return .success(CoinType.bitcoin.deriveAddressFromPublicKey(publicKey: publicKey))
     }
 
-    private func getSignedBitcoinTransaction(utxos: [UtxoInfo],
-                                             hexPubKey: String,
-                                             fromAddress: String,
-                                             toAddress: String,
-                                             toAmount: Int64,
-                                             signatureProvider: (Data) -> Data) -> Result<String, Error>
+    // before keysign , we need to get the preSignedImageHash , so it can be signed with TSS
+    static func getPreSignedImageHash(using utxos: [UtxoInfo], hexPubKey: String, fromAddress: String, toAddress: String, toAmount: Int64) -> Result<[String], Error> {
+        guard let pubkeyData = Data(hexString: hexPubKey),
+              let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
+        else {
+            return .failure(BitcoinTransactionError.runtimeError("public key \(hexPubKey) is invalid"))
+        }
+
+        let result = getBitcoinPreSigningInputData(utxos: utxos, pubKey: publicKey, fromAddress: fromAddress, toAddress: toAddress, toAmount: toAmount)
+        switch result {
+        case .success(let inputData):
+            do {
+                let preHashes = TransactionCompiler.preImageHashes(coinType: .bitcoin, txInputData: inputData)
+                let preSignOutputs = try BitcoinPreSigningOutput(serializedData: preHashes)
+                return .success(preSignOutputs.hashPublicKeys.map { $0.dataHash.hexString })
+            } catch {
+                return .failure(BitcoinTransactionError.runtimeError("fail to get presigned image hashes,error:\(error.localizedDescription)"))
+            }
+        case .failure(let err):
+            return .failure(err)
+        }
+    }
+
+    static func getBitcoinPreSigningInputData(utxos: [UtxoInfo],
+                                              pubKey: PublicKey,
+                                              fromAddress: String,
+                                              toAddress: String,
+                                              toAmount: Int64) -> Result<Data, Error>
     {
-        guard let pubkeyData = Data(hexString: hexPubKey) else {
-            return .failure(BitcoinTransactionError.invalidPubKey)
-        }
-        guard let publicKey = PublicKey(data: pubkeyData, type: .secp256k1) else {
-            return .failure(BitcoinTransactionError.invalidPubKey)
-        }
         do {
             let coin = CoinType.bitcoin
             var input = BitcoinSigningInput.with {
@@ -71,7 +85,7 @@ struct BitcoinHelper {
                 print("lock script: \(lockScript.scriptHash.hexString)")
                 let keyHash = lockScript.matchPayToWitnessPublicKeyHash()
                 guard let keyHash else {
-                    return .failure(BitcoinTransactionError.failToGetKeyHash)
+                    return .failure(BitcoinTransactionError.runtimeError("fail to get key hash from lock script"))
                 }
                 let redeemScript = BitcoinScript.buildPayToPublicKeyHash(hash: keyHash)
                 input.scripts[keyHash.hexString] = redeemScript.data
@@ -88,26 +102,54 @@ struct BitcoinHelper {
             }
 
             let inputData = try input.serializedData()
-            let preHashes = TransactionCompiler.preImageHashes(coinType: .bitcoin, txInputData: inputData)
-            let preSignOutputs = try BitcoinPreSigningOutput(serializedData: preHashes)
+            return .success(inputData)
 
-            let allSignatures = DataVector()
-            let publicKeys = DataVector()
-
-            for h in preSignOutputs.hashPublicKeys {
-                let preImageHash = h.dataHash
-                let signature = signatureProvider(preImageHash)
-                if !publicKey.verifyAsDER(signature: signature, message: preImageHash) {
-                    return .failure(BitcoinTransactionError.invalidSignature)
-                }
-                allSignatures.add(data: signature)
-                publicKeys.add(data: pubkeyData)
-            }
-            let compileWithSignatures = TransactionCompiler.compileWithSignatures(coinType: .bitcoin, txInputData: inputData, signatures: allSignatures, publicKeys: publicKeys)
-            let output = try BitcoinSigningOutput(serializedData: compileWithSignatures)
-            return .success(output.encoded.hexString)
         } catch {
-            print("fail to construct transaction,err:\(error)")
+            print("fail to construct bitcoin presigning output,err:\(error)")
+            return .failure(error)
+        }
+    }
+
+    static func getSignedBitcoinTransaction(utxos: [UtxoInfo],
+                                            hexPubKey: String,
+                                            fromAddress: String,
+                                            toAddress: String,
+                                            toAmount: Int64,
+                                            signatureProvider: (Data) -> Data) -> Result<String, Error>
+    {
+        guard let pubkeyData = Data(hexString: hexPubKey),
+              let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
+        else {
+            return .failure(BitcoinTransactionError.runtimeError("public key \(hexPubKey) is invalid"))
+        }
+
+        let result = getBitcoinPreSigningInputData(utxos: utxos, pubKey: publicKey, fromAddress: fromAddress, toAddress: toAddress, toAmount: toAmount)
+        switch result {
+        case .success(let preSignInputData):
+            do {
+                let preHashes = TransactionCompiler.preImageHashes(coinType: .bitcoin, txInputData: preSignInputData)
+                let preSignOutputs = try BitcoinPreSigningOutput(serializedData: preHashes)
+
+                let allSignatures = DataVector()
+                let publicKeys = DataVector()
+                for h in preSignOutputs.hashPublicKeys {
+                    let preImageHash = h.dataHash
+                    let signature = signatureProvider(preImageHash)
+                    guard publicKey.verifyAsDER(signature: signature, message: preImageHash) else {
+                        return .failure(BitcoinTransactionError.runtimeError("fail to verify signature"))
+                    }
+                    allSignatures.add(data: signature)
+                    publicKeys.add(data: pubkeyData)
+                }
+
+                let compileWithSignatures = TransactionCompiler.compileWithSignatures(coinType: .bitcoin, txInputData: preSignInputData, signatures: allSignatures, publicKeys: publicKeys)
+                let output = try BitcoinSigningOutput(serializedData: compileWithSignatures)
+                return .success(output.encoded.hexString)
+            } catch {
+                return .failure(BitcoinTransactionError.runtimeError("fail to construct raw transaction,error: \(error.localizedDescription)"))
+            }
+
+        case .failure(let error):
             return .failure(error)
         }
     }
