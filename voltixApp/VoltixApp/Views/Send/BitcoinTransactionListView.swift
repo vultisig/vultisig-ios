@@ -6,7 +6,7 @@ struct BitcoinTransactionListView: View {
     @Binding var presentationStack: [CurrentScreen]
     
     var body: some View {
-        NavigationView {
+        VStack {
             List {
                 if let transactions = bitcoinTransactionsService.walletData?.txrefs {
                     ForEach(transactions) { transaction in
@@ -19,6 +19,16 @@ struct BitcoinTransactionListView: View {
                 }
             }
             .navigationTitle("Transactions")
+            .navigationBarBackButtonHidden()
+            .modifier(InlineNavigationBarTitleModifier())
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    NavigationButtons.backButton(presentationStack: $presentationStack)
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    NavigationButtons.questionMarkButton
+                }
+            }
             .task {
                 // await bitcoinTransactionsService.fetchTransactions(for: appState.currentVault?.legacyBitcoinAddress ?? "")
                 // 18cBEMRxXHqzWWCxZNtU91F5sbUNKhL5PX
