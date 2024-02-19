@@ -10,11 +10,11 @@ import SwiftUI
 
 @MainActor
 public class CryptoPriceService: ObservableObject {
-    @Published var cryptoPrices: CryptoPriceData?
+    @Published var cryptoPrices: CryptoPrice?
     @Published var errorMessage: String?
 
     // Dictionary to hold cached data and their timestamps
-    private var cache: [String: (data: CryptoPriceData, timestamp: Date)] = [:]
+    private var cache: [String: (data: CryptoPrice, timestamp: Date)] = [:]
 
     private func isCacheValid(for key: String) -> Bool {
         guard let cacheEntry = cache[key] else { return false }
@@ -40,7 +40,7 @@ public class CryptoPriceService: ObservableObject {
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let decodedData = try JSONDecoder().decode(CryptoPriceData.self, from: data)
+            let decodedData = try JSONDecoder().decode(CryptoPrice.self, from: data)
             DispatchQueue.main.async {
                 self.cryptoPrices = decodedData
                 // Update cache with new data and current timestamp

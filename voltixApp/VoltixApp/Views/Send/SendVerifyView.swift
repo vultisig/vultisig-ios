@@ -2,7 +2,7 @@ import SwiftUI
 
 struct SendVerifyView: View {
     @Binding var presentationStack: [CurrentScreen]
-    @ObservedObject var viewModel: TransactionDetailsViewModel
+    @ObservedObject var viewModel: SendTransaction
     
     var body: some View {
         GeometryReader { geometry in

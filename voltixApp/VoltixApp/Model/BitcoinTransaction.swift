@@ -1,7 +1,7 @@
 import Foundation
 
 // Root structure for the JSON response
-struct WalletUnspentOutput: Codable {
+struct BitcoinTransaction: Codable {
     
     var balanceInBTC: String {
         return formatAsBitcoin(balance)

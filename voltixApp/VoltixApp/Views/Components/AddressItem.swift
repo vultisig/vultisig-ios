@@ -30,25 +30,24 @@ private struct samllItem: View {
                 Text(coinName)
                 .font(Font.custom("Menlo", size: 20).weight(.bold))
                 .lineSpacing(30)
-                .foregroundColor(.black)
+                
                 .padding(.bottom, 5)
                 Text(address)
                 .font(Font.custom("Montserrat", size: 13).weight(.medium))
                 .lineLimit(1)
                 .lineSpacing(19.50)
-                .foregroundColor(.black)
+                
             }
             .foregroundColor(.clear)
             .frame(width: .infinity, height: 70)
             .padding(.leading, 10)
-            .background(.white)
             Spacer()
             Button(action: {}) {
                 Image("Copy")
                 .resizable()
                 .frame(width: 32, height: 30)
             }
-            .foregroundColor(.black)
+            
             .frame(width: 50, height: 30)
             .buttonStyle(PlainButtonStyle())
             .offset(x: 0, y: 10)
@@ -67,20 +66,20 @@ private struct largeItem: View {
             Text(coinName)
             .font(Font.custom("Menlo", size: 40).weight(.bold))
             .lineSpacing(60)
-            .foregroundColor(.black)
+            
             .padding(.bottom, 5)
             Text(address)
             .font(Font.custom("Montserrat", size: 24).weight(.medium))
             .lineLimit(1)
             .lineSpacing(36)
-            .foregroundColor(.black)
+            
             .frame(width: 700)
             Button(action: {}) {
                 Image("Copy")
                 .resizable()
                 .frame(width: 32, height: 30)
             }
-            .foregroundColor(.black)
+            
             .frame(width: 50, height: 30)
             .buttonStyle(PlainButtonStyle())
         }

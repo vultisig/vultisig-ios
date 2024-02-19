@@ -17,12 +17,12 @@ struct FileItem: View {
                Image(self.icon)
              .resizable()
              .frame(width: 30, height: 30)
-             .foregroundColor(.black)
+             
              Spacer().frame(width: 8)
                Text(self.filename)
                 .font(Font.custom("Montserrat", size: 24).weight(.medium))
                 .lineSpacing(36)
-                .foregroundColor(.black);
+                ;
            }
            .padding()
         }

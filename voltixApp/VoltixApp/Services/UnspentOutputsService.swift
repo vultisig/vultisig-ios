@@ -10,7 +10,7 @@ import SwiftUI
 
 @MainActor  // Ensures all updates are on the main thread
 public class UnspentOutputsService: ObservableObject {
-    @Published var walletData: WalletUnspentOutput?
+    @Published var walletData: BitcoinTransaction?
     @Published var errorMessage: String?
     
     // Replace with your actual function to fetch unspent outputs
@@ -28,7 +28,7 @@ public class UnspentOutputsService: ObservableObject {
             let (data, _) = try await URLSession.shared.data(from: url)
             // Decode the JSON data into WalletUnspentOutput
             let decoder = JSONDecoder()
-            let decodedData = try decoder.decode(WalletUnspentOutput.self, from: data)
+            let decodedData = try decoder.decode(BitcoinTransaction.self, from: data)
             // Update your published property with the decoded data
             self.walletData = decodedData            
         } catch {

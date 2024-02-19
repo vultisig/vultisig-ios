@@ -12,12 +12,12 @@ struct SendDoneView: View {
         VStack(alignment: .leading) {
           Text("Transaction")
             .font(.system(size: geometry.size.width * 0.05))  // Dynamic font sizing
-            .foregroundColor(.black)
+            
 
           HStack {
             Text("bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w")
               .font(.system(size: geometry.size.width * 0.04))  // Dynamic font sizing
-              .foregroundColor(.black)
+              
               .truncationMode(.middle)
               .lineLimit(1)
 

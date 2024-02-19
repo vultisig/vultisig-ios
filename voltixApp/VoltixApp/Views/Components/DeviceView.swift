@@ -53,18 +53,18 @@ private struct smallScreen: View {
           Text(deviceDescription)
             .font(Font.custom("Montserrat", size: 13).weight(.medium))
             .lineSpacing(19.50)
-            .foregroundColor(.black)
+            
             .offset(x: 14.50, y: 28.50)
           Text(description)
             .font(Font.custom("Montserrat", size: 13).weight(.medium))
             .lineSpacing(19.50)
-            .foregroundColor(.black)
+            
             .offset(x: -119, y: -5.50)
           ZStack() {
             Text(number)
               .font(Font.custom("Montserrat", size: 40).weight(.light))
               .lineSpacing(60)
-              .foregroundColor(.black)
+              
               .offset(x: 0, y: 0)
             Ellipse()
               .foregroundColor(.clear)
@@ -92,7 +92,7 @@ private struct largeScreen: View {
               Text(number)
                 .font(Font.custom("Montserrat", size: 80).weight(.light))
                 .lineSpacing(120)
-                .foregroundColor(.black)
+                
               Ellipse()
                 .foregroundColor(.clear)
                 .frame(width: 100, height: 100)
@@ -104,7 +104,7 @@ private struct largeScreen: View {
             Text(description)
                 .font(Font.custom("Montserrat", size: 24).weight(.medium))
                 .lineSpacing(30)
-                .foregroundColor(.black)
+                
                 .padding(.top, 8)
             Image(deviceImg)
                 .resizable()
@@ -112,7 +112,7 @@ private struct largeScreen: View {
             Text(deviceDescription)
                 .font(Font.custom("Montserrat", size: 24).weight(.medium))
                 .lineSpacing(30)
-                .foregroundColor(.black)
+                
         }
     }
 }

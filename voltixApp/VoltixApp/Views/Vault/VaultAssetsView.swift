@@ -4,7 +4,7 @@ struct VaultAssetsView: View {
     @Binding var presentationStack: [CurrentScreen]
     @EnvironmentObject var appState: ApplicationState
     @StateObject var unspentOutputsViewModel: UnspentOutputsService = UnspentOutputsService()
-    @ObservedObject var transactionDetailsViewModel: TransactionDetailsViewModel
+    @ObservedObject var transactionDetailsViewModel: SendTransaction
     @StateObject var cryptoPriceViewModel = CryptoPriceService()
     @State private var signingTestView = false
     var body: some View {
@@ -19,13 +19,14 @@ struct VaultAssetsView: View {
                         {
                             if let priceUsd = walletData.balanceInUSD(usdPrice: bitcoinPriceUSD) {
                                 VaultItem(
+                                    presentationStack: $presentationStack,
                                     coinName: "Bitcoin",
                                     usdAmount: priceUsd,
                                     showAmount: false,
                                     address: walletData.address,
-                                    isRadio: false,
-                                    showButtons: true,
-                                    onClick: {}
+                                    isRadio: false, 
+                                    radioIcon: "",
+                                    showButtons: true
                                 ).padding()
                                 AssetItem(
                                     coinName: "BTC",
@@ -88,7 +89,6 @@ struct VaultAssetsView: View {
                 })
             }
         }
-        .background(Color.white)
     }
     private func loadData() async {
         transactionDetailsViewModel.fromAddress = appState.currentVault?.legacyBitcoinAddress ?? ""

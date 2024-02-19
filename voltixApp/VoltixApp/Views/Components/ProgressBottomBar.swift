@@ -55,11 +55,11 @@ struct ProgressBottomBar: View {
                         Text(content)
                             .lineSpacing(60)
                             .font(Font.custom("Menlo", size: 40).weight(.black))
-                            .foregroundColor(.black)
+                            
                             .padding(.trailing, 16)
                         Image(systemName: "chevron.right")
                             .resizable()
-                            .foregroundColor(.black)
+                            
                             .frame(width: 20, height: 30)
                     }
                 }

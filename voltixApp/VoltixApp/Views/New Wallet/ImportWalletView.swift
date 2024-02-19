@@ -25,7 +25,7 @@ struct ImportWalletView: View {
                     TextEditor(text: $vaultText)
                         .font(.custom("AmericanTypewriter", size: geometry.size.width * 0.05))
                         .scrollContentBackground(.hidden)
-                        .foregroundColor(.black)
+                        
                         .frame(height: geometry.size.height * 0.4)
                         .padding()
                         .background(Color(red: 0.96, green: 0.96, blue: 0.96))
@@ -70,7 +70,7 @@ struct ImportWalletView: View {
                 Text("ENTER YOUR PREVIOUSLY CREATED VAULT SHARE")
                     .font(.system(size: geometry.size.width * 0.04, weight: .medium))
                     .padding(.top, 8)
-                    .foregroundColor(.black)
+                    
                 
                 Spacer()
                 
@@ -95,7 +95,6 @@ struct ImportWalletView: View {
                 }
             }
         }
-        .background(Color.white)
         .navigationBarBackButtonHidden(true)
     }
     private func readContent(of url: URL) {

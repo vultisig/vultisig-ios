@@ -7,9 +7,9 @@
 
 import Foundation
 
-class TransactionDetailsViewModel: ObservableObject, Hashable {
+class SendTransaction: ObservableObject, Hashable {
     
-    static func == (lhs: TransactionDetailsViewModel, rhs: TransactionDetailsViewModel) -> Bool {
+    static func == (lhs: SendTransaction, rhs: SendTransaction) -> Bool {
         return lhs.fromAddress == rhs.fromAddress &&
         lhs.toAddress == rhs.toAddress &&
         lhs.amount == rhs.amount &&

@@ -17,7 +17,7 @@ struct VaultSelectionView: View {
         List(selection: $appState.currentVault) {
             ForEach(vaults) { vault in
                 NavigationLink {
-                    VaultAssetsView(presentationStack: $presentationStack, transactionDetailsViewModel: TransactionDetailsViewModel()).onAppear(){
+                    VaultAssetsView(presentationStack: $presentationStack, transactionDetailsViewModel: SendTransaction()).onAppear(){
                         appState.currentVault = vault
                     }
                 } label: {

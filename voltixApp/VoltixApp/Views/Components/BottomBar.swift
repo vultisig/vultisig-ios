@@ -32,7 +32,7 @@ struct BottomBar: View {
                       .padding(.trailing, 16)
                     Image(systemName: "chevron.right")
                       .resizable()
-                      .foregroundColor(.black)
+                      
                       .frame(width: 20, height: 15)
                     }
                 }
