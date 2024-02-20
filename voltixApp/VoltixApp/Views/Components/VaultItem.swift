@@ -53,10 +53,11 @@ struct VaultItem: View {
           }
           .overlay(
             showingToast
-              ? AnyView(
-                ToastView(message: toastMessage)
-                  .animation(.easeInOut)
-                  .transition(.opacity)) : AnyView(EmptyView()))
+              ? ToastView(message: toastMessage)
+                  .transition(.opacity)
+                  .animation(.easeInOut, value: showingToast)
+              : nil
+          )
 
           Spacer().frame(width: 8)
           Button(action: { self.showingShareSheet = true }) {
@@ -121,4 +122,8 @@ struct VaultItem: View {
     }
   }
 
+}
+
+#Preview {
+    VaultItem(presentationStack: .constant([]), coinName: "Bitcoin", usdAmount: "US$10,000,000.98", showAmount: true, address: "3JK2dFmWA58A3kukgw1yybotStGAFaV6Sg", isRadio: true, radioIcon: "String", showButtons: true)
 }

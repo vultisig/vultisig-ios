@@ -10,17 +10,7 @@ struct SwapVerifyView: View {
     
     var body: some View {
             VStack(alignment: .leading) {
-                HeaderView(
-                    rightIcon: "",
-                    leftIcon: "",
-                    head: "VERIFY",
-                    leftAction: {
-                        if !self.presentationStack.isEmpty {
-                            self.presentationStack.removeLast()
-                        }
-                    },
-                    rightAction: {}
-                )
+
                 VStack(alignment: .leading) {
                     Text("FROM")
                         .font(Font.custom("Menlo", size: 20).weight(.bold))
