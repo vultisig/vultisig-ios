@@ -51,6 +51,7 @@ struct VaultItem: View {
               .frame(width: 20, height: 20)
 
           }
+          .buttonStyle(PlainButtonStyle())
           .overlay(
             showingToast
               ? ToastView(message: toastMessage)
@@ -65,7 +66,7 @@ struct VaultItem: View {
               .resizable()
               .frame(width: 16, height: 20)
 
-          }
+          }.buttonStyle(PlainButtonStyle())
           Spacer()
             .frame(width: 8)
             .sheet(isPresented: $showingShareSheet) {
@@ -78,7 +79,7 @@ struct VaultItem: View {
               .resizable()
               .frame(width: 20, height: 20)
 
-          }
+          }.buttonStyle(PlainButtonStyle())
           .sheet(isPresented: $showingQRCode) {
             if let qrCodeImage = ActivityViewModel.generateHighQualityQRCode(from: address) {
               QRCodeView(qrCodeImage: qrCodeImage)
@@ -95,6 +96,7 @@ struct VaultItem: View {
               .resizable()
               .frame(width: 16, height: 20)
           }
+          .buttonStyle(PlainButtonStyle())
 
         }
         Spacer()

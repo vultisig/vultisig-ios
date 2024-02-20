@@ -56,6 +56,7 @@ struct SendInputDetailsView: View {
                         Button("", systemImage: "camera") {
                             self.isShowingScanner = true
                         }
+                        .buttonStyle(PlainButtonStyle())
                         .sheet(
                             isPresented: self.$isShowingScanner,
                             content: {
@@ -88,10 +89,6 @@ struct SendInputDetailsView: View {
                             .padding()
                             .background(Color.gray.opacity(0.5))  // 50% transparent gray
                             .cornerRadius(10)
-                        //                    .overlay(
-                        //                        RoundedRectangle(cornerRadius: 10)
-                        //                            .stroke(Color.gray, lineWidth: 0)
-                        //                    )
                         Button(action: {
                             if let walletData = unspentOutputsViewModel.walletData {
                                 self.transactionDetailsViewModel.amount = walletData.balanceInBTC
@@ -102,7 +99,7 @@ struct SendInputDetailsView: View {
                         }) {
                             Text("MAX")
                                 .font(Font.custom("Menlo", size: 18).weight(.bold))
-                                .foregroundColor(Color(UIColor.systemFill))
+                                .foregroundColor(Color.primary)
                         }
                         
                     }
@@ -153,21 +150,21 @@ struct SendInputDetailsView: View {
                     )
                 }
             }
-            .onAppear {
-                if unspentOutputsViewModel.walletData == nil {
-                    
+.onAppear {
+if unspentOutputsViewModel.walletData == nil {
+
                     Task {
-                        
+
                         transactionDetailsViewModel.fromAddress =
-                        appState.currentVault?.legacyBitcoinAddress ?? ""
-                        if !transactionDetailsViewModel.fromAddress.isEmpty {
-                            await unspentOutputsViewModel.fetchUnspentOutputs(
-                                for: transactionDetailsViewModel.fromAddress)
-                            //await cryptoPriceViewModel.fetchCryptoPrices(for: "bitcoin", for: "usd")
-                        }
+appState.currentVault?.legacyBitcoinAddress ?? ""
+if !transactionDetailsViewModel.fromAddress.isEmpty {
+await unspentOutputsViewModel.fetchUnspentOutputs(
+for: transactionDetailsViewModel.fromAddress)
+//await cryptoPriceViewModel.fetchCryptoPrices(for: "bitcoin", for: "usd")
+}
                         
                         //await unspentOutputsViewModel.fetchUnspentOutputs(for: transactionDetailsViewModel.fromAddress)
-                    }
+}
                 }
             }
             .navigationBarBackButtonHidden()
