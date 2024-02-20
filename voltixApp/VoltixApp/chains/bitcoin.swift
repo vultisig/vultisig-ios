@@ -7,7 +7,7 @@ import Foundation
 import Tss
 import WalletCore
 
-struct UtxoInfo {
+struct UtxoInfo: Codable, Hashable {
     let hash: String
     let amount: Int64
     let index: UInt32
@@ -27,8 +27,10 @@ enum BitcoinHelper {
     }
 
     static func getAddressFromPubKey(hexPubKey: String, hexChainCode: String) -> Result<String, Error> {
+        print(hexPubKey)
         var nsErr: NSError?
         let derivedPubKey = TssGetDerivedPubKey(hexPubKey, hexChainCode, CoinType.bitcoin.derivationPath(), false, &nsErr)
+        print(derivedPubKey)
         if let nsErr {
             return .failure(BitcoinTransactionError.tssError("fail to derive pubkey,error:\(nsErr.localizedDescription)"))
         }
@@ -42,14 +44,20 @@ enum BitcoinHelper {
     }
 
     // before keysign , we need to get the preSignedImageHash , so it can be signed with TSS
-    static func getPreSignedImageHash(using utxos: [UtxoInfo], hexPubKey: String, fromAddress: String, toAddress: String, toAmount: Int64) -> Result<[String], Error> {
+    static func getPreSignedImageHash(utxos: [UtxoInfo],
+                                      hexPubKey: String,
+                                      fromAddress: String,
+                                      toAddress: String,
+                                      toAmount: Int64,
+                                      byteFee: Int64) -> Result<[String], Error>
+    {
         guard let pubkeyData = Data(hexString: hexPubKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
         else {
             return .failure(BitcoinTransactionError.runtimeError("public key \(hexPubKey) is invalid"))
         }
 
-        let result = getBitcoinPreSigningInputData(utxos: utxos, pubKey: publicKey, fromAddress: fromAddress, toAddress: toAddress, toAmount: toAmount)
+        let result = getBitcoinPreSigningInputData(utxos: utxos, pubKey: publicKey, fromAddress: fromAddress, toAddress: toAddress, toAmount: toAmount, byteFee: byteFee)
         switch result {
         case .success(let inputData):
             do {
@@ -68,7 +76,8 @@ enum BitcoinHelper {
                                               pubKey: PublicKey,
                                               fromAddress: String,
                                               toAddress: String,
-                                              toAmount: Int64) -> Result<Data, Error>
+                                              toAmount: Int64,
+                                              byteFee: Int64) -> Result<Data, Error>
     {
         do {
             let coin = CoinType.bitcoin
@@ -77,6 +86,7 @@ enum BitcoinHelper {
                 $0.amount = toAmount
                 $0.toAddress = toAddress
                 $0.changeAddress = fromAddress
+                $0.byteFee = byteFee
                 $0.coinType = coin.rawValue
                 $0.scripts = [String: Data]()
             }
@@ -115,6 +125,7 @@ enum BitcoinHelper {
                                             fromAddress: String,
                                             toAddress: String,
                                             toAmount: Int64,
+                                            byteFee: Int64,
                                             signatureProvider: (Data) -> Data) -> Result<String, Error>
     {
         guard let pubkeyData = Data(hexString: hexPubKey),
@@ -123,7 +134,12 @@ enum BitcoinHelper {
             return .failure(BitcoinTransactionError.runtimeError("public key \(hexPubKey) is invalid"))
         }
 
-        let result = getBitcoinPreSigningInputData(utxos: utxos, pubKey: publicKey, fromAddress: fromAddress, toAddress: toAddress, toAmount: toAmount)
+        let result = getBitcoinPreSigningInputData(utxos: utxos,
+                                                   pubKey: publicKey,
+                                                   fromAddress: fromAddress,
+                                                   toAddress: toAddress,
+                                                   toAmount: toAmount,
+                                                   byteFee: byteFee)
         switch result {
         case .success(let preSignInputData):
             do {

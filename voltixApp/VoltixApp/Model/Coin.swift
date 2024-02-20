@@ -4,10 +4,8 @@
 
 import Foundation
 import SwiftData
-import WalletCore
 
-
-struct Coin : Codable,Hashable {
+struct Coin: Codable, Hashable {
     let chain: Chain
     let ticker: String
     let logo: String

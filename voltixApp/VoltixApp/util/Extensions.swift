@@ -6,6 +6,7 @@
 //
 
 import Foundation
+// TODO: this is not required , the same message is already available in WalletCore
 extension Data {
     init?(hexString: String) {
         let len = hexString.count / 2
