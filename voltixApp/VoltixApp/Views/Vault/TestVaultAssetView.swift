@@ -42,6 +42,7 @@ struct TestVaultAssetView: View {
                     case .failure(let error):
                         print("error: \(error)")
                 }
+                // TODO: remove the following few lines , just for development
                 for keyshare in vault.keyshares {
                     if keyshare.pubkey == vault.pubKeyECDSA {
                         print("keyshare for \(vault.pubKeyECDSA): \(Utils.stringToHex(keyshare.keyshare))")

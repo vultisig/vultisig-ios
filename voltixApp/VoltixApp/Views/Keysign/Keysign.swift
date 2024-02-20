@@ -2,13 +2,13 @@
 //  Keysign.swift
 //  VoltixApp
 
-import CryptoKit
 import Dispatch
 import Foundation
 import Mediator
 import OSLog
 import SwiftUI
 import Tss
+import WalletCore
 
 private let logger = Logger(subsystem: "keysign", category: "tss")
 struct KeysignView: View {
@@ -115,6 +115,12 @@ struct KeysignView: View {
                 let keysignReq = TssKeysignRequest()
                 keysignReq.localPartyKey = vault.localPartyID
                 keysignReq.keysignCommitteeKeys = self.keysignCommittee.joined(separator: ",")
+                logger.info("keysign committee keys:\(keysignReq.keysignCommitteeKeys)")
+                if let keysignPayload {
+                    if keysignPayload.coin.ticker == "BTC" {
+                        keysignReq.derivePath = CoinType.bitcoin.derivationPath()
+                    }
+                }
                 // sign messages one by one
 
                 if let msgToSign = msg.data(using: .utf8)?.base64EncodedString() {
