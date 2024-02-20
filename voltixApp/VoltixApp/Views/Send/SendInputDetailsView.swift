@@ -188,7 +188,7 @@ struct SendInputDetailsView: View {
             let totalTransactionCost = amount + gasFee
             
             // Verify if the wallet balance can cover the total transaction cost
-            if let walletBalance = unspentOutputsService.walletData?.balance, totalTransactionCost <= walletBalance {
+            if let walletBalance = unspentOutputsService.walletData?.balance, totalTransactionCost <= Double(walletBalance) {
                 // Transaction cost is within balance
             } else {
                 formErrorMessages += "The combined amount and fee exceed your wallet's balance. Please adjust to proceed. \n"
