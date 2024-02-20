@@ -2,17 +2,18 @@ import CodeScanner
 import OSLog
 import SwiftUI
 import UniformTypeIdentifiers
-// Assuming CurrentScreen is an enum that you've defined elsewhere
 import WalletCore
 
 private let logger = Logger(subsystem: "send-input-details", category: "transaction")
 struct SendInputDetailsView: View {
     @EnvironmentObject var appState: ApplicationState
     @Binding var presentationStack: [CurrentScreen]
-    @StateObject var unspentOutputsViewModel: UnspentOutputsService = UnspentOutputsService()
-    @ObservedObject var transactionDetailsViewModel: SendTransaction
+    @StateObject var unspentOutputsService: UnspentOutputsService = UnspentOutputsService()
+    @ObservedObject var sendTransactionModel: SendTransaction = SendTransaction()
     @State private var isShowingScanner = false
     @State private var isValidAddress = true
+    @State private var formErrorMessages = ""
+    @State private var isValidForm = true
     @State private var keyboardOffset: CGFloat = 0
     
     func isValidHex(_ hex: String) -> Bool {
@@ -21,31 +22,29 @@ struct SendInputDetailsView: View {
     }
     
     var body: some View {
-        ScrollView{
+        ScrollView {
             VStack(alignment: .leading) {
-                Group{
+                Group {
                     HStack {
                         Text("BTC")
                             .font(Font.custom("Menlo", size: 18).weight(.bold))
                         
                         Spacer()
                         
-                        if let walletData = unspentOutputsViewModel.walletData {
-                            Text(String(walletData.balanceInBTC)).font(.system(size: 18))
-                        } else {
-                            Text("Error to fetch the data")
-                        }
+                        Text(String(unspentOutputsService.walletData?.balanceInBTC ?? "-1")).font(
+                            .system(size: 18))
                     }
                 }.padding(.vertical)
-                Group{
+                Group {
                     VStack(alignment: .leading) {
                         Text("From").font(
-                            Font.custom("Menlo", size: 18).weight(.bold)).padding(.bottom)
-                        Text($transactionDetailsViewModel.fromAddress.wrappedValue)
+                            Font.custom("Menlo", size: 18).weight(.bold)
+                        ).padding(.bottom)
+                        Text($sendTransactionModel.fromAddress.wrappedValue)
                     }
                     
                 }.padding(.vertical)
-                Group{
+                Group {
                     HStack {
                         Text("To:")
                             .font(Font.custom("Menlo", size: 18).weight(.bold))
@@ -64,11 +63,11 @@ struct SendInputDetailsView: View {
                             }
                         )
                     }
-                    TextField("", text: $transactionDetailsViewModel.toAddress)
+                    TextField("", text: $sendTransactionModel.toAddress)
                         .padding()
                         .background(Color.gray.opacity(0.5))  // 50% transparent gray
                         .cornerRadius(10)
-                        .onChange(of: transactionDetailsViewModel.toAddress) { newValue in
+                        .onChange(of: sendTransactionModel.toAddress) { newValue in
                             
                             isValidAddress = TWBitcoinAddressIsValidString(newValue) || isValidHex(newValue)
                             if !isValidAddress {
@@ -79,19 +78,19 @@ struct SendInputDetailsView: View {
                         }
                     
                 }.padding(.bottom)
-                Group{
+                Group {
                     Text("Amount:")
                         .font(Font.custom("Menlo", size: 18).weight(.bold))
                     
                     HStack {
-                        TextField("", text: $transactionDetailsViewModel.amount)
+                        TextField("", text: $sendTransactionModel.amount)
                             .keyboardType(.decimalPad)
                             .padding()
                             .background(Color.gray.opacity(0.5))  // 50% transparent gray
                             .cornerRadius(10)
                         Button(action: {
-                            if let walletData = unspentOutputsViewModel.walletData {
-                                self.transactionDetailsViewModel.amount = walletData.balanceInBTC
+                            if let walletData = unspentOutputsService.walletData {
+                                self.sendTransactionModel.amount = walletData.balanceInBTC
                             } else {
                                 Text("Error to fetch the data")
                                     .padding()
@@ -105,26 +104,25 @@ struct SendInputDetailsView: View {
                     }
                 }.padding(.bottom)
                 
-                Group{
+                Group {
                     Text("Memo:")
                         .font(Font.custom("Menlo", size: 18).weight(.bold))
-                    TextField("", text: $transactionDetailsViewModel.memo)
+                    TextField("", text: $sendTransactionModel.memo)
                         .padding()
                         .background(Color.gray.opacity(0.5))  // 50% transparent gray
                         .cornerRadius(10)
-                    //.frame(width: isNumeric ? 280 : nil)
                         .overlay(
                             RoundedRectangle(cornerRadius: 10)
                                 .stroke(Color.gray, lineWidth: 0)
                         )
                 }.padding(.bottom)
                 
-                Group{
+                Group {
                     Text("Fee:")
                     
                         .font(Font.custom("Menlo", size: 18).weight(.bold))
                     HStack {
-                        TextField("", text: $transactionDetailsViewModel.gas)
+                        TextField("", text: $sendTransactionModel.gas)
                             .keyboardType(.decimalPad)
                             .padding()
                             .background(Color.gray.opacity(0.5))  // 50% transparent gray
@@ -134,38 +132,26 @@ struct SendInputDetailsView: View {
                                     .stroke(Color.gray, lineWidth: 0)
                             )
                         Spacer()
-                        Text($transactionDetailsViewModel.gas.wrappedValue)
+                        Text($sendTransactionModel.gas.wrappedValue)
                             .font(Font.custom("Menlo", size: 18).weight(.bold))
                     }
                 }.padding(.bottom)
-                Group{
+                Text(isValidForm ? "" : formErrorMessages)
+                    .font(Font.custom("Menlo", size: 18).weight(.bold))
+                    .foregroundColor(.red)
+                Group {
                     BottomBar(
                         content: "CONTINUE",
                         onClick: {
-                            // Update this logic as necessary to navigate to the SendVerifyView
-                            // self.presentationStack.append(contentsOf: .sendVerifyScreen(transactionDetailsViewModel))
-                            
-                            self.presentationStack.append(.sendVerifyScreen(transactionDetailsViewModel))
+                            if validateForm() {
+                                self.presentationStack.append(.sendVerifyScreen(sendTransactionModel))
+                            }
                         }
                     )
                 }
             }
-.onAppear {
-if unspentOutputsViewModel.walletData == nil {
-
-                    Task {
-
-                        transactionDetailsViewModel.fromAddress =
-appState.currentVault?.legacyBitcoinAddress ?? ""
-if !transactionDetailsViewModel.fromAddress.isEmpty {
-await unspentOutputsViewModel.fetchUnspentOutputs(
-for: transactionDetailsViewModel.fromAddress)
-//await cryptoPriceViewModel.fetchCryptoPrices(for: "bitcoin", for: "usd")
-}
-                        
-                        //await unspentOutputsViewModel.fetchUnspentOutputs(for: transactionDetailsViewModel.fromAddress)
-}
-                }
+            .onAppear {
+                reloadTransactions()
             }
             .navigationBarBackButtonHidden()
             .navigationTitle("SEND")
@@ -175,18 +161,67 @@ for: transactionDetailsViewModel.fromAddress)
                     NavigationButtons.backButton(presentationStack: $presentationStack)
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    NavigationButtons.questionMarkButton
+                    NavigationButtons.refreshButton(action: {
+                        reloadTransactions()
+                    })
                 }
             }
         }.padding()
         
     }
     
+    private func validateForm() -> Bool {
+        // Reset validation state at the beginning
+        formErrorMessages = ""
+        isValidForm = true
+        
+        // Validate the "To" address
+        if !isValidAddress {
+            formErrorMessages += "Please enter a valid address. \n"
+            logger.log("Invalid address.")
+            isValidForm = false
+        }
+        
+        // Attempt to convert both the amount and gas fee to Double for validation
+        if let amount = Double(sendTransactionModel.amount), let gasFee = Double(sendTransactionModel.gas), amount > 0, gasFee > 0 {
+            // Calculate the total transaction cost
+            let totalTransactionCost = amount + gasFee
+            
+            // Verify if the wallet balance can cover the total transaction cost
+            if let walletBalance = unspentOutputsService.walletData?.balance, totalTransactionCost <= Double(walletBalance) {
+                // Transaction cost is within balance
+            } else {
+                formErrorMessages += "The combined amount and fee exceed your wallet's balance. Please adjust to proceed. \n"
+                logger.log("Total transaction cost exceeds wallet balance.")
+                isValidForm = false
+            }
+        } else {
+            formErrorMessages += "Amount and fee must be positive numbers. Please correct your entries. \n"
+            logger.log("Non-positive amount or fee.")
+            isValidForm = false
+        }
+        
+        return isValidForm
+    }
+    
+    private func reloadTransactions() {
+        if unspentOutputsService.walletData == nil {
+            Task {
+                sendTransactionModel.fromAddress =
+                appState.currentVault?.legacyBitcoinAddress ?? ""
+                if !sendTransactionModel.fromAddress.isEmpty {
+                    await unspentOutputsService.fetchUnspentOutputs(
+                        for: sendTransactionModel.fromAddress)
+                }
+            }
+        }
+    }
+    
     private func handleScan(result: Result<ScanResult, ScanError>) {
         switch result {
         case .success(let result):
             let qrCodeResult = result.string
-            transactionDetailsViewModel.parseCryptoURI(qrCodeResult)
+            sendTransactionModel.parseCryptoURI(qrCodeResult)
             self.isShowingScanner = false
         case .failure(let err):
             logger.error("fail to scan QR code,error:\(err.localizedDescription)")
@@ -199,7 +234,6 @@ for: transactionDetailsViewModel.fromAddress)
 struct SendInputDetailsView_Previews: PreviewProvider {
     static var previews: some View {
         SendInputDetailsView(
-            presentationStack: .constant([]), unspentOutputsViewModel: UnspentOutputsService(),
-            transactionDetailsViewModel: SendTransaction())
+            presentationStack: .constant([]))
     }
 }
