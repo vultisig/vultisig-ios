@@ -31,13 +31,13 @@ struct AssetItem: View {
                 Button(action: sendClick) {
                     Text("SEND")
                         .font(Font.custom("Menlo", size: 20).weight(.bold))
-                        ;
-                }
+                        
+                }.buttonStyle(PlainButtonStyle())
                 Button(action: {}) {
                     Text("SWAP")
                         .font(Font.custom("Menlo", size: 20).weight(.bold))
-                        ;
-                }
+                        
+                }.buttonStyle(PlainButtonStyle())
             }
         }
     }
@@ -47,7 +47,7 @@ struct AssetItem: View {
     AssetItem(
         coinName: "Ethereum",
         amount: "23.20980880",
-        usdAmount: "60,899,099",
+        usdAmount: "US$ 6,660,899,099",
         sendClick: {},
         swapClick: {}
     )

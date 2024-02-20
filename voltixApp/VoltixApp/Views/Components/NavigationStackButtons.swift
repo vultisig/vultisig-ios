@@ -8,7 +8,7 @@ struct NavigationButtons {
             print("Question mark button tapped")
         }) {
             Image(systemName: "questionmark.circle")
-        }
+        }.buttonStyle(PlainButtonStyle())
     }
 
     // Adjust the backButton to accept the presentationStack as a parameter
@@ -19,13 +19,13 @@ struct NavigationButtons {
             }
         }) {
             Image(systemName: "chevron.left")
-        }
+        }.buttonStyle(PlainButtonStyle())
     }
     
     static func refreshButton(action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: "arrow.clockwise.circle")
-        }
+        }.buttonStyle(PlainButtonStyle())
     }
     
     static func qrCodeButton(presentationStack: Binding<[CurrentScreen]>) -> some View {
@@ -33,7 +33,7 @@ struct NavigationButtons {
             presentationStack.wrappedValue.append(.joinKeygen)
         }) {
             Image(systemName: "qrcode.viewfinder")
-        }
+        }.buttonStyle(PlainButtonStyle())
     }
 }
 

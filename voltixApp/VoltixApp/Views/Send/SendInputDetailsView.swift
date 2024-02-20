@@ -21,115 +21,124 @@ struct SendInputDetailsView: View {
     }
     
     var body: some View {
-        
-        GeometryReader { geometry in
-            VStack {
-                VStack(alignment: .leading) {
-                    
-                    Text("From").padding(.all).font(
-                        Font.custom("Menlo", size: geometry.size.width * 0.05).weight(.bold))
-                    
-                    Text($transactionDetailsViewModel.fromAddress.wrappedValue).padding(.horizontal)
+        ScrollView{
+            VStack(alignment: .leading) {
+                Group{
                     HStack {
                         Text("BTC")
-                            .font(Font.custom("Menlo", size: geometry.size.width * 0.05).weight(.bold))
+                            .font(Font.custom("Menlo", size: 18).weight(.bold))
                         
                         Spacer()
                         
                         if let walletData = unspentOutputsViewModel.walletData {
-                            Text(String(walletData.balanceInBTC))
-                                .padding().font(.system(size: geometry.size.width * 0.05))
+                            Text(String(walletData.balanceInBTC)).font(.system(size: 18))
                         } else {
                             Text("Error to fetch the data")
-                                .padding()
                         }
                     }
-                    .padding()
-                    .frame(height: geometry.size.height * 0.07)
+                }.padding(.vertical)
+                Group{
+                    VStack(alignment: .leading) {
+                        Text("From").font(
+                            Font.custom("Menlo", size: 18).weight(.bold)).padding(.bottom)
+                        Text($transactionDetailsViewModel.fromAddress.wrappedValue)
+                    }
                     
-                    Group {
-                        
-                        VStack(alignment: .leading) {
-                            HStack {
-                                Text("To")
-                                    .font(Font.custom("Menlo", size: geometry.size.width * 0.05).weight(.bold))
-                                Text(isValidAddress ? "" : "*")
-                                    .font(Font.custom("Menlo", size: geometry.size.width * 0.05).weight(.bold))
-                                    .foregroundColor(.red)
-                                Spacer()
-                                Button("", systemImage: "camera") {
-                                    self.isShowingScanner = true
-                                }
-                                .sheet(
-                                    isPresented: self.$isShowingScanner,
-                                    content: {
-                                        CodeScannerView(codeTypes: [.qr], completion: self.handleScan)
-                                    }
-                                )
-                                .padding(.trailing, 8)
-                                .buttonStyle(PlainButtonStyle())
-                                
-                            }
-                            TextField("", text: $transactionDetailsViewModel.toAddress)
-                                .padding()
-                                .background(Color.gray.opacity(0.5))  // 50% transparent gray
-                                .cornerRadius(10)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .stroke(Color.gray, lineWidth: 0)
-                                )
-                                .onChange(of: transactionDetailsViewModel.toAddress) { newValue in
-                                    
-                                    isValidAddress = TWBitcoinAddressIsValidString(newValue) || isValidHex(newValue)
-                                    if !isValidAddress {
-                                        print("Invalid Crypto Address")
-                                    } else {
-                                        print("Valid Crypto Address")
-                                    }
-                                }
+                }.padding(.vertical)
+                Group{
+                    HStack {
+                        Text("To:")
+                            .font(Font.custom("Menlo", size: 18).weight(.bold))
+                        Text(isValidAddress ? "" : "*")
+                            .font(Font.custom("Menlo", size: 18).weight(.bold))
+                            .foregroundColor(.red)
+                        Spacer()
+                        Button("", systemImage: "camera") {
+                            self.isShowingScanner = true
                         }
-                        .frame(height: geometry.size.height * 0.12)
-                        
-                        VStack(alignment: .leading) {
-                            Text("Amount")
-                                .font(Font.custom("Menlo", size: geometry.size.width * 0.05).weight(.bold))
+                        .buttonStyle(PlainButtonStyle())
+                        .sheet(
+                            isPresented: self.$isShowingScanner,
+                            content: {
+                                CodeScannerView(codeTypes: [.qr], completion: self.handleScan)
+                            }
+                        )
+                    }
+                    TextField("", text: $transactionDetailsViewModel.toAddress)
+                        .padding()
+                        .background(Color.gray.opacity(0.5))  // 50% transparent gray
+                        .cornerRadius(10)
+                        .onChange(of: transactionDetailsViewModel.toAddress) { newValue in
                             
-                            HStack {
-                                TextField("", text: $transactionDetailsViewModel.amount)
-                                    .keyboardType(.decimalPad)
+                            isValidAddress = TWBitcoinAddressIsValidString(newValue) || isValidHex(newValue)
+                            if !isValidAddress {
+                                print("Invalid Crypto Address")
+                            } else {
+                                print("Valid Crypto Address")
+                            }
+                        }
+                    
+                }.padding(.bottom)
+                Group{
+                    Text("Amount:")
+                        .font(Font.custom("Menlo", size: 18).weight(.bold))
+                    
+                    HStack {
+                        TextField("", text: $transactionDetailsViewModel.amount)
+                            .keyboardType(.decimalPad)
+                            .padding()
+                            .background(Color.gray.opacity(0.5))  // 50% transparent gray
+                            .cornerRadius(10)
+                        Button(action: {
+                            if let walletData = unspentOutputsViewModel.walletData {
+                                self.transactionDetailsViewModel.amount = walletData.balanceInBTC
+                            } else {
+                                Text("Error to fetch the data")
                                     .padding()
-                                    .background(Color.gray.opacity(0.5))  // 50% transparent gray
-                                    .cornerRadius(10)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 10)
-                                            .stroke(Color.gray, lineWidth: 0)
-                                    )
-                                Button(action: {
-                                    if let walletData = unspentOutputsViewModel.walletData {
-                                        self.transactionDetailsViewModel.amount = walletData.balanceInBTC
-                                    } else {
-                                        Text("Error to fetch the data")
-                                            .padding()
-                                    }
-                                }) {
-                                    Text("MAX")
-                                        .font(Font.custom("Menlo", size: geometry.size.width * 0.05).weight(.bold))
-                                        .foregroundColor(Color(UIColor.systemFill))
-                                        .padding(10)
-                                }
-                                
                             }
-                            
+                        }) {
+                            Text("MAX")
+                                .font(Font.custom("Menlo", size: 18).weight(.bold))
+                                .foregroundColor(Color.primary)
                         }
-                        .frame(height: geometry.size.height * 0.12)
                         
-                        inputField(title: "Memo", text: $transactionDetailsViewModel.memo, geometry: geometry)
-                        gasField(geometry: geometry)
                     }
-                    .padding(.horizontal)
+                }.padding(.bottom)
+                
+                Group{
+                    Text("Memo:")
+                        .font(Font.custom("Menlo", size: 18).weight(.bold))
+                    TextField("", text: $transactionDetailsViewModel.memo)
+                        .padding()
+                        .background(Color.gray.opacity(0.5))  // 50% transparent gray
+                        .cornerRadius(10)
+                    //.frame(width: isNumeric ? 280 : nil)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray, lineWidth: 0)
+                        )
+                }.padding(.bottom)
+                
+                Group{
+                    Text("Fee:")
                     
-                    Spacer()
-                    
+                        .font(Font.custom("Menlo", size: 18).weight(.bold))
+                    HStack {
+                        TextField("", text: $transactionDetailsViewModel.gas)
+                            .keyboardType(.decimalPad)
+                            .padding()
+                            .background(Color.gray.opacity(0.5))  // 50% transparent gray
+                            .cornerRadius(10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color.gray, lineWidth: 0)
+                            )
+                        Spacer()
+                        Text($transactionDetailsViewModel.gas.wrappedValue)
+                            .font(Font.custom("Menlo", size: 18).weight(.bold))
+                    }
+                }.padding(.bottom)
+                Group{
                     BottomBar(
                         content: "CONTINUE",
                         onClick: {
@@ -139,37 +148,37 @@ struct SendInputDetailsView: View {
                             self.presentationStack.append(.sendVerifyScreen(transactionDetailsViewModel))
                         }
                     )
-                    .padding(.horizontal)
-                }
-                .navigationBarBackButtonHidden()
-                .navigationTitle("SEND")
-                .modifier(InlineNavigationBarTitleModifier())
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        NavigationButtons.backButton(presentationStack: $presentationStack)
-                    }
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        NavigationButtons.questionMarkButton
-                    }
-                }
-            }.onAppear {
-                if unspentOutputsViewModel.walletData == nil {
-                    
-                    Task {
-                        
-                        transactionDetailsViewModel.fromAddress =
-                        appState.currentVault?.legacyBitcoinAddress ?? ""
-                        if !transactionDetailsViewModel.fromAddress.isEmpty {
-                            await unspentOutputsViewModel.fetchUnspentOutputs(
-                                for: transactionDetailsViewModel.fromAddress)
-                            //await cryptoPriceViewModel.fetchCryptoPrices(for: "bitcoin", for: "usd")
-                        }
-                        
-                        //await unspentOutputsViewModel.fetchUnspentOutputs(for: transactionDetailsViewModel.fromAddress)
-                    }
                 }
             }
-        }
+.onAppear {
+if unspentOutputsViewModel.walletData == nil {
+
+                    Task {
+
+                        transactionDetailsViewModel.fromAddress =
+appState.currentVault?.legacyBitcoinAddress ?? ""
+if !transactionDetailsViewModel.fromAddress.isEmpty {
+await unspentOutputsViewModel.fetchUnspentOutputs(
+for: transactionDetailsViewModel.fromAddress)
+//await cryptoPriceViewModel.fetchCryptoPrices(for: "bitcoin", for: "usd")
+}
+                        
+                        //await unspentOutputsViewModel.fetchUnspentOutputs(for: transactionDetailsViewModel.fromAddress)
+}
+                }
+            }
+            .navigationBarBackButtonHidden()
+            .navigationTitle("SEND")
+            .modifier(InlineNavigationBarTitleModifier())
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    NavigationButtons.backButton(presentationStack: $presentationStack)
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    NavigationButtons.questionMarkButton
+                }
+            }
+        }.padding()
         
     }
     
@@ -184,46 +193,6 @@ struct SendInputDetailsView: View {
         }
     }
     
-    private func inputField(
-        title: String, text: Binding<String>, geometry: GeometryProxy, isNumeric: Bool = false
-    ) -> some View {
-        VStack(alignment: .leading) {
-            Text(title)
-                .font(Font.custom("Menlo", size: geometry.size.width * 0.05).weight(.bold))
-            TextField("", text: text)
-                .padding()
-                .background(Color.gray.opacity(0.5))  // 50% transparent gray
-                .cornerRadius(10)
-                .frame(width: isNumeric ? 280 : nil)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.gray, lineWidth: 0)
-                )
-        }
-        .frame(height: geometry.size.height * 0.12)
-    }
-    
-    private func gasField(geometry: GeometryProxy) -> some View {
-        VStack(alignment: .leading) {
-            Text("Fee")
-                .font(Font.custom("Menlo", size: geometry.size.width * 0.05).weight(.bold))
-            Spacer()
-            HStack {
-                TextField("", text: $transactionDetailsViewModel.gas)
-                    .padding()
-                    .background(Color.gray.opacity(0.5))  // 50% transparent gray
-                    .cornerRadius(10)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.gray, lineWidth: 0)
-                    )
-                Spacer()
-                Text($transactionDetailsViewModel.gas.wrappedValue)
-                    .font(Font.custom("Menlo", size: geometry.size.width * 0.05).weight(.bold))
-            }
-        }
-        .frame(height: geometry.size.height * 0.12)
-    }
 }
 
 // Preview

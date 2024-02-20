@@ -28,7 +28,8 @@ struct ImportWalletView: View {
                         
                         .frame(height: geometry.size.height * 0.4)
                         .padding()
-                        .background(Color(red: 0.96, green: 0.96, blue: 0.96))
+                        //.background(Color(red: 0.96, green: 0.96, blue: 0.96))
+                        .background(Color.primary.opacity(0.5))
                         .cornerRadius(12)
                     
                     HStack {

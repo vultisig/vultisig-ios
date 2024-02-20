@@ -5,28 +5,47 @@ struct SendVerifyView: View {
     @ObservedObject var viewModel: SendTransaction
     
     var body: some View {
-        GeometryReader { geometry in
-            VStack {
-                VStack(alignment: .leading, spacing: 8) { // Define spacing if needed
-                    LabelText(title: "FROM", value: viewModel.fromAddress).padding(.vertical, 10)
-                    LabelText(title: "TO", value: viewModel.toAddress).padding(.vertical, 10)
-                    LabelText(title: "AMOUNT", value: viewModel.amount + " BTC").padding(.vertical, 10)
-                    LabelText(title: "MEMO", value: viewModel.memo).padding(.vertical, 10)
-                    LabelText(title: "FEE", value: "$" + viewModel.gas).padding(.vertical, 10)
-                    // Your RadioButtonGroup and BottomBar here
+        VStack{
+            Form { // Define spacing if needed
+                LabelText(title: "FROM", value: viewModel.fromAddress).padding(.vertical, 10)
+                LabelText(title: "TO", value: viewModel.toAddress).padding(.vertical, 10)
+                LabelText(title: "AMOUNT", value: viewModel.amount + " BTC").padding(.vertical, 10)
+                LabelText(title: "MEMO", value: viewModel.memo).padding(.vertical, 10)
+                LabelText(title: "FEE", value: "$" + viewModel.gas).padding(.vertical, 10)
+            }
+            
+            Group{
+                RadioButtonGroup(
+                    items: [
+                        "I'M SENDING TO THE RIGHT ADDRESS",
+                        "THE AMOUNT IS CORRECT",
+                        "I'M NOT BEING HACKED OR PHISHED",
+                    ],
+                    selectedId: "I'M SENDING TO THE RIGHT ADDRESS"
+                ) {
+                    selected in print("Selected is: \(selected)")
                 }
-                .padding(.all) // Ensure padding is applied to the VStack directly
-                
-                .navigationTitle("VERIFY")
-                .navigationBarBackButtonHidden(true)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        NavigationButtons.backButton(presentationStack: $presentationStack)
+            }.padding(.vertical)
+            
+            Spacer()
+            
+            Group{
+                BottomBar(
+                    content: "SIGN",
+                    onClick: {
+                        
                     }
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        NavigationButtons.questionMarkButton
-                    }
-                }
+                )
+            }
+        }
+        .navigationTitle("VERIFY")
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                NavigationButtons.backButton(presentationStack: $presentationStack)
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                NavigationButtons.questionMarkButton
             }
         }
     }
@@ -45,3 +64,6 @@ struct SendVerifyView: View {
 }
 
 // Ensure NavigationButtons are correctly implemented
+#Preview{
+    SendVerifyView(presentationStack: .constant([]), viewModel: SendTransaction())
+}
