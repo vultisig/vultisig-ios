@@ -27,6 +27,7 @@ struct KeysignView: View {
     let keysignType: KeyType
     let messsageToSign: [String]
     @State var localPartyKey: String
+    let keysignPayload: KeysignPayload? // need to pass it along to the next view
     @EnvironmentObject var appState: ApplicationState
     @State private var currentStatus = KeysignStatus.CreatingInstance
     @State private var keysignInProgress = false
@@ -36,6 +37,8 @@ struct KeysignView: View {
     @State private var keysignError: String? = nil
     @State private var pollingInboundMessages = true
     @State private var signature: String = ""
+    @State var cache = NSCache<NSString, AnyObject>()
+    @State var signatures = [String: TssKeysignResponse]()
 
     var body: some View {
         VStack {
@@ -69,9 +72,7 @@ struct KeysignView: View {
                 VStack {
                     Text("Keysign finished")
                     Text("Signature: \(self.signature)")
-                    Button("Done", systemImage: "arrowshape.backward.circle") {
-                        
-                    }
+                    Button("Done", systemImage: "arrowshape.backward.circle") {}
                 }.onAppear {
                     self.pollingInboundMessages = false
                 }.navigationBarBackButtonHidden(false)
@@ -131,6 +132,7 @@ struct KeysignView: View {
                     }
                     if let service = self.tssService {
                         let resp = try await tssKeysign(service: service, req: keysignReq, keysignType: keysignType)
+                        // TODO: save the signature with the message it signed
                         self.signature = "R:\(resp.r), S:\(resp.s), RecoveryID:\(resp.recoveryID)"
                     }
                     t.cancel()
@@ -167,9 +169,18 @@ struct KeysignView: View {
                     let decoder = JSONDecoder()
                     let msgs = try decoder.decode([Message].self, from: data)
 
-                    for msg in msgs {
+                    for msg in msgs.sorted(by: { $0.sequenceNo < $1.sequenceNo }) {
+                        let key = "\(messageID)-\(self.sessionID)-\(self.localPartyKey)-\(msg.hash)" as NSString
+                        if self.cache.object(forKey: key) != nil {
+                            logger.info("message with key:\(key) has been applied before")
+                            // message has been applied before
+                            continue
+                        }
                         logger.debug("Got message from: \(msg.from), to: \(msg.to),body:\(msg.body)")
                         try self.tssService?.applyData(msg.body)
+                        Task {
+                            self.deleteMessageFromServer(hash: msg.hash, messageID: messageID)
+                        }
                     }
                 } catch {
                     logger.error("Failed to decode response to JSON, data: \(data), error: \(error)")
@@ -182,10 +193,20 @@ struct KeysignView: View {
             }
         })
     }
+
+    private func deleteMessageFromServer(hash: String, messageID: String) {
+        let urlString = "\(self.mediatorURL)/message/\(self.sessionID)/\(self.localPartyKey)/\(hash)"
+        Utils.deleteFromServer(urlString: urlString, messageID: messageID)
+    }
 }
 
 #Preview {
-    KeysignView(presentationStack: .constant([]), keysignCommittee: [], mediatorURL: "", sessionID: "session", keysignType: .ECDSA, messsageToSign: ["message"], localPartyKey: "party id")
+    KeysignView(presentationStack: .constant([]),
+                keysignCommittee: [],
+                mediatorURL: "",
+                sessionID: "session",
+                keysignType: .ECDSA,
+                messsageToSign: ["message"],
+                localPartyKey: "party id",
+                keysignPayload: nil)
 }
-
-class MessagePoller: ObservableObject {}

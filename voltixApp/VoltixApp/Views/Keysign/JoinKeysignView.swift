@@ -91,7 +91,8 @@ struct JoinKeysignView: View {
                                     sessionID: self.sessionID,
                                     keysignType: self.keysignPayload?.coin.chain.signingKeyType ?? .ECDSA,
                                     messsageToSign: self.keysignMessages,
-                                    localPartyKey: self.localPartyID)
+                                    localPartyKey: self.localPartyID,
+                                    keysignPayload: self.keysignPayload)
                     } else {
                         Text("Mediator server url is empty or session id is empty")
                     }
@@ -183,7 +184,7 @@ struct JoinKeysignView: View {
                     let keysignMsg = try decoder.decode(KeysignMessage.self, from: data)
                     self.sessionID = keysignMsg.sessionID
                     self.keysignPayload = keysignMsg.payload
-                    
+
                 } catch {
                     logger.error("fail to decode keysign message,error:\(error.localizedDescription)")
                     self.errorMsg = error.localizedDescription
@@ -196,7 +197,6 @@ struct JoinKeysignView: View {
         }
         self.currentStatus = .JoinKeysign
     }
-
 }
 
 #Preview {

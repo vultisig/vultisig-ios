@@ -36,10 +36,13 @@ struct KeysignTestView: View {
                 let keysignPayload = KeysignPayload(coin: self.coin,
                                                     toAddress: toAddress,
                                                     toAmount: intAmt, byteFee: feeByte,
-                                                    utxos: [UtxoInfo(hash: "30fe4b2ad74acb2887c224eae006ef6ad29c0908045d9155ac03f59bf382ae73",
-                                                                     amount: Int64(38918291),
-                                                                     index: UInt32(1))])
+                                                    utxos: [UtxoInfo(hash: "e87538424ad5efc100cdd3385f32e9e97c1fc8c9158c4bb288c09e7799660335",
+                                                                     amount: Int64(500000),
+                                                                     index: UInt32(0))])
                 self.presentationStack.append(.KeysignDiscovery(keysignPayload))
+            }
+            Button("join keysign",systemImage: "camera.viewfinder") {
+                self.presentationStack.append(.JoinKeysign)
             }
         }
     }

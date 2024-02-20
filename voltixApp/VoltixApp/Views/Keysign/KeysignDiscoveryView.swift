@@ -65,8 +65,9 @@ struct KeysignDiscoveryView: View {
                             mediatorURL: self.serverAddr,
                             sessionID: self.sessionID,
                             keysignType: self.keysignPayload.coin.chain.signingKeyType,
-                            messsageToSign: [], // need to figure out all the prekeysign hashes
-                            localPartyKey: self.localPartyID)
+                            messsageToSign: self.keysignMessages, // need to figure out all the prekeysign hashes
+                            localPartyKey: self.localPartyID,
+                            keysignPayload: self.keysignPayload)
             }
         }
         .onAppear {
@@ -90,6 +91,7 @@ struct KeysignDiscoveryView: View {
                                                                  byteFee: self.keysignPayload.byteFee)
                 switch result {
                 case .success(let preSignedImageHash):
+                    print(preSignedImageHash)
                     self.keysignMessages = preSignedImageHash
                 case .failure(let err):
                     logger.error("Failed to get preSignedImageHash: \(err)")
