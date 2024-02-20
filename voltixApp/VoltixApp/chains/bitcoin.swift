@@ -19,9 +19,21 @@ enum BitcoinHelper {
         case runtimeError(String)
     }
 
+    static func fixupStandardBase64(input: String) -> String {
+        var base64Standard = input.replacingOccurrences(of: "-", with: "+").replacingOccurrences(of: "_", with: "/")
+
+        // Add padding if necessary
+        let remainder = base64Standard.count % 4
+        if remainder > 0 {
+            let padding = String(repeating: "=", count: 4 - remainder)
+            base64Standard += padding
+        }
+        return base64Standard
+    }
+
     static func getSignatureFromTssResponse(tssResponse: TssKeysignResponse) -> Result<Data, Error> {
-        let rData = Data(base64Encoded: tssResponse.r)
-        let sData = Data(base64Encoded: tssResponse.s)
+        let rData = Data(base64Encoded: fixupStandardBase64(input: tssResponse.r))
+        let sData = Data(base64Encoded: fixupStandardBase64(input: tssResponse.s))
         guard let rData else {
             return .failure(BitcoinTransactionError.runtimeError("invalid r signature"))
         }

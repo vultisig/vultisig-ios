@@ -90,14 +90,23 @@ struct KeysignView: View {
                                                                                byteFee: keysignPayload.byteFee,
                                                                                signatureProvider: { (preHash: Data) in
                                                                                    let hex = preHash.hexString
+                                                                                   logger.info("hex prehash:\(hex)")
+
                                                                                    if let sig = self.signatures[hex] {
+                                                                                       logger.info("resp:\(sig.r)")
                                                                                        let sigResult = BitcoinHelper.getSignatureFromTssResponse(tssResponse: sig)
                                                                                        switch sigResult {
                                                                                        case .success(let sigData):
                                                                                            logger.info("successfully get sigdata")
                                                                                            return sigData
                                                                                        case .failure(let err):
-                                                                                           logger.error("fail to get signature from TssResponse,error:\(err.localizedDescription)")
+                                                                                           switch err {
+                                                                                           case BitcoinHelper.BitcoinTransactionError.runtimeError(let errDetail):
+                                                                                               logger.error("fail to get signature from TssResponse,error:\(errDetail)")
+                                                                                           default:
+                                                                                               logger.error("fail to get signature from TssResponse,error:\(err.localizedDescription)")
+                                                                                           }
+                                                                                           
                                                                                        }
                                                                                    }
                                                                                    return Data()
@@ -176,6 +185,7 @@ struct KeysignView: View {
                     }
                     if let service = self.tssService {
                         let resp = try await tssKeysign(service: service, req: keysignReq, keysignType: keysignType)
+                        self.signatures[msg] = resp
                         // TODO: save the signature with the message it signed
                         self.signature = "R:\(resp.r), S:\(resp.s), RecoveryID:\(resp.recoveryID)"
                     }
