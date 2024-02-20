@@ -13,12 +13,25 @@ struct UtxoInfo: Codable, Hashable {
     let index: UInt32
 }
 
-enum BitcoinHelper {
+struct BitcoinHelper {
     enum BitcoinTransactionError: Error {
         case tssError(String)
         case runtimeError(String)
     }
-
+    
+    static func getSignatureFromTssResponse(tssResponse: TssKeysignResponse) -> Result<Data,Error> {
+        let rData = Data(hexString: tssResponse.r)
+        let sData = Data(hexString: tssResponse.s)
+        guard let rData else {
+            return .failure(BitcoinTransactionError.runtimeError("invalid r signature"))
+        }
+        guard let sData else {
+            return .failure(BitcoinTransactionError.runtimeError("invalid s signature"))
+        }
+        var signature = rData
+        signature.append(sData)
+        return .success(signature)
+    }
     static func getBitcoin(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
         return getAddressFromPubKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode)
             .map { addr in

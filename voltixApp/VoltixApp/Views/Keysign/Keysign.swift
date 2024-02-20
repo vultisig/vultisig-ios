@@ -75,6 +75,32 @@ struct KeysignView: View {
                     Button("Done", systemImage: "arrowshape.backward.circle") {}
                 }.onAppear {
                     self.pollingInboundMessages = false
+                    guard let vault = appState.currentVault else {
+                        return
+                    }
+
+                    // get bitcoin transaction
+                    if let keysignPayload {
+                        let result = BitcoinHelper.getSignedBitcoinTransaction(utxos: keysignPayload.utxos, hexPubKey: vault.pubKeyECDSA, fromAddress: keysignPayload.coin.address, toAddress: keysignPayload.toAddress, toAmount: keysignPayload.toAmount, byteFee: keysignPayload.byteFee, signatureProvider: { (preHash: Data) in
+                            let hex = preHash.hexString
+                            if let sig = self.signatures[hex] {
+                                let sigResult =  BitcoinHelper.getSignatureFromTssResponse(tssResponse: sig)
+                                switch sigResult {
+                                case .success(let sigData):
+                                    return sigData
+                                case .failure(let err):
+                                    logger.error("fail to get signature from TssResponse,error:\(err.localizedDescription)")
+                                }
+                            }
+                            return Data()
+                        })
+                        switch result {
+                        case .success(let tx):
+                            print(tx)
+                        case .failure(let err):
+                            logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
+                        }
+                    }
                 }.navigationBarBackButtonHidden(false)
             case .KeysignFailed:
                 Text("Sorry keysign failed, you can retry it,error:\(self.keysignError ?? "")")
@@ -120,9 +146,9 @@ struct KeysignView: View {
                         keysignReq.derivePath = CoinType.bitcoin.derivationPath()
                     }
                 }
-                // sign messages one by one
-
-                if let msgToSign = msg.data(using: .utf8)?.base64EncodedString() {
+                // sign messages one by one , since the msg is in hex format , so we need convert it to base64
+                // and then pass it to TSS for keysign
+                if let msgToSign = Data(hexString: msg)?.base64EncodedString() {
                     keysignReq.messageToSign = msgToSign
                 }
 
