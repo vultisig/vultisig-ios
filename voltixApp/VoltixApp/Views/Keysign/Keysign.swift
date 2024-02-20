@@ -87,6 +87,7 @@ struct KeysignView: View {
                                 let sigResult =  BitcoinHelper.getSignatureFromTssResponse(tssResponse: sig)
                                 switch sigResult {
                                 case .success(let sigData):
+                                    logger.info("successfully get sigdata")
                                     return sigData
                                 case .failure(let err):
                                     logger.error("fail to get signature from TssResponse,error:\(err.localizedDescription)")
@@ -98,7 +99,12 @@ struct KeysignView: View {
                         case .success(let tx):
                             print(tx)
                         case .failure(let err):
-                            logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
+                            switch err{
+                            case BitcoinHelper.BitcoinTransactionError.runtimeError(let errDetail):
+                                logger.error("Failed to get signed transaction,error:\(errDetail)")
+                            default:
+                                logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
+                            }
                         }
                     }
                 }.navigationBarBackButtonHidden(false)
@@ -209,6 +215,7 @@ struct KeysignView: View {
                         }
                         logger.debug("Got message from: \(msg.from), to: \(msg.to),body:\(msg.body)")
                         try self.tssService?.applyData(msg.body)
+                        self.cache.setObject(NSObject(), forKey: key)
                         Task {
                             self.deleteMessageFromServer(hash: msg.hash, messageID: messageID)
                         }
