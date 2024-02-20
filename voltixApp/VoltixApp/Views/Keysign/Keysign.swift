@@ -115,7 +115,6 @@ struct KeysignView: View {
                 let keysignReq = TssKeysignRequest()
                 keysignReq.localPartyKey = vault.localPartyID
                 keysignReq.keysignCommitteeKeys = self.keysignCommittee.joined(separator: ",")
-                logger.info("keysign committee keys:\(keysignReq.keysignCommitteeKeys)")
                 if let keysignPayload {
                     if keysignPayload.coin.ticker == "BTC" {
                         keysignReq.derivePath = CoinType.bitcoin.derivationPath()
