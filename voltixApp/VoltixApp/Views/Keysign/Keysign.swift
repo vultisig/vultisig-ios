@@ -81,25 +81,32 @@ struct KeysignView: View {
 
                     // get bitcoin transaction
                     if let keysignPayload {
-                        let result = BitcoinHelper.getSignedBitcoinTransaction(utxos: keysignPayload.utxos, hexPubKey: vault.pubKeyECDSA, fromAddress: keysignPayload.coin.address, toAddress: keysignPayload.toAddress, toAmount: keysignPayload.toAmount, byteFee: keysignPayload.byteFee, signatureProvider: { (preHash: Data) in
-                            let hex = preHash.hexString
-                            if let sig = self.signatures[hex] {
-                                let sigResult =  BitcoinHelper.getSignatureFromTssResponse(tssResponse: sig)
-                                switch sigResult {
-                                case .success(let sigData):
-                                    logger.info("successfully get sigdata")
-                                    return sigData
-                                case .failure(let err):
-                                    logger.error("fail to get signature from TssResponse,error:\(err.localizedDescription)")
-                                }
-                            }
-                            return Data()
-                        })
+                        let bitcoinPubKey = BitcoinHelper.getBitcoinPubKey(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
+                        let result = BitcoinHelper.getSignedBitcoinTransaction(utxos: keysignPayload.utxos,
+                                                                               hexPubKey: bitcoinPubKey,
+                                                                               fromAddress: keysignPayload.coin.address,
+                                                                               toAddress: keysignPayload.toAddress,
+                                                                               toAmount: keysignPayload.toAmount,
+                                                                               byteFee: keysignPayload.byteFee,
+                                                                               signatureProvider: { (preHash: Data) in
+                                                                                   let hex = preHash.hexString
+                                                                                   if let sig = self.signatures[hex] {
+                                                                                       let sigResult = BitcoinHelper.getSignatureFromTssResponse(tssResponse: sig)
+                                                                                       switch sigResult {
+                                                                                       case .success(let sigData):
+                                                                                           logger.info("successfully get sigdata")
+                                                                                           return sigData
+                                                                                       case .failure(let err):
+                                                                                           logger.error("fail to get signature from TssResponse,error:\(err.localizedDescription)")
+                                                                                       }
+                                                                                   }
+                                                                                   return Data()
+                                                                               })
                         switch result {
                         case .success(let tx):
                             print(tx)
                         case .failure(let err):
-                            switch err{
+                            switch err {
                             case BitcoinHelper.BitcoinTransactionError.runtimeError(let errDetail):
                                 logger.error("Failed to get signed transaction,error:\(errDetail)")
                             default:
@@ -205,9 +212,8 @@ struct KeysignView: View {
                 do {
                     let decoder = JSONDecoder()
                     let msgs = try decoder.decode([Message].self, from: data)
-
                     for msg in msgs.sorted(by: { $0.sequenceNo < $1.sequenceNo }) {
-                        let key = "\(messageID)-\(self.sessionID)-\(self.localPartyKey)-\(msg.hash)" as NSString
+                        let key = "\(self.sessionID)-\(self.localPartyKey)-\(messageID)-\(msg.hash)" as NSString
                         if self.cache.object(forKey: key) != nil {
                             logger.info("message with key:\(key) has been applied before")
                             // message has been applied before

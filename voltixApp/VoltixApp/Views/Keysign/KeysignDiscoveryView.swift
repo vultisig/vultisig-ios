@@ -82,9 +82,9 @@ struct KeysignDiscoveryView: View {
             }
             switch self.keysignPayload.coin.ticker {
             case "BTC":
-
+                let bitcoinPubKey = BitcoinHelper.getBitcoinPubKey(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
                 let result = BitcoinHelper.getPreSignedImageHash(utxos: self.keysignPayload.utxos,
-                                                                 hexPubKey: vault.pubKeyECDSA,
+                                                                 hexPubKey: bitcoinPubKey,
                                                                  fromAddress: self.keysignPayload.coin.address,
                                                                  toAddress: self.keysignPayload.toAddress,
                                                                  toAmount: self.keysignPayload.toAmount,
@@ -141,32 +141,32 @@ struct KeysignDiscoveryView: View {
 
     private func getParticipants() {
         let urlString = "\(self.serverAddr)/\(self.sessionID)"
-        Utils.getRequest(
-            urlString: urlString, headers: [String: String](),
-            completion: { result in
-                switch result {
-                case .success(let data):
-                    if data.isEmpty {
-                        logger.error("No participants available yet")
-                        return
-                    }
-                    do {
-                        let decoder = JSONDecoder()
-                        let peers = try decoder.decode([String].self, from: data)
+        Utils.getRequest(urlString: urlString,
+                         headers: [String: String](),
+                         completion: { result in
+                             switch result {
+                             case .success(let data):
+                                 if data.isEmpty {
+                                     logger.error("No participants available yet")
+                                     return
+                                 }
+                                 do {
+                                     let decoder = JSONDecoder()
+                                     let peers = try decoder.decode([String].self, from: data)
 
-                        for peer in peers {
-                            if !self.peersFound.contains(peer) {
-                                self.peersFound.append(peer)
-                            }
-                        }
-                    } catch {
-                        logger.error("Failed to decode response to JSON: \(error)")
-                    }
-                case .failure(let error):
-                    logger.error("Failed to start session, error: \(error)")
-                    return
-                }
-            })
+                                     for peer in peers {
+                                         if !self.peersFound.contains(peer) {
+                                             self.peersFound.append(peer)
+                                         }
+                                     }
+                                 } catch {
+                                     logger.error("Failed to decode response to JSON: \(error)")
+                                 }
+                             case .failure(let error):
+                                 logger.error("Failed to start session, error: \(error)")
+                                 return
+                             }
+                         })
     }
 
     func getQrImage(size: CGFloat) -> Image {

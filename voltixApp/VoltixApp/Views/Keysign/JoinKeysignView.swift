@@ -206,9 +206,9 @@ struct JoinKeysignView: View {
             self.currentStatus = .FailedToStart
             return
         }
-
+        let bitcoinPubKey = BitcoinHelper.getBitcoinPubKey(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
         let result = BitcoinHelper.getPreSignedImageHash(utxos: keysignPayload.utxos,
-                                                         hexPubKey: vault.pubKeyECDSA,
+                                                         hexPubKey: bitcoinPubKey,
                                                          fromAddress: keysignPayload.coin.address,
                                                          toAddress: keysignPayload.toAddress,
                                                          toAmount: keysignPayload.toAmount,

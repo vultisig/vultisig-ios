@@ -40,11 +40,19 @@ enum BitcoinHelper {
             }
     }
 
-    static func getAddressFromPubKey(hexPubKey: String, hexChainCode: String) -> Result<String, Error> {
-        print(hexPubKey)
+    static func getBitcoinPubKey(hexPubKey: String, hexChainCode: String) -> String {
         var nsErr: NSError?
         let derivedPubKey = TssGetDerivedPubKey(hexPubKey, hexChainCode, CoinType.bitcoin.derivationPath(), false, &nsErr)
-        print(derivedPubKey)
+        if let nsErr {
+            print("fail to get derived pubkey:\(nsErr.localizedDescription)")
+            return ""
+        }
+        return derivedPubKey
+    }
+
+    static func getAddressFromPubKey(hexPubKey: String, hexChainCode: String) -> Result<String, Error> {
+        var nsErr: NSError?
+        let derivedPubKey = TssGetDerivedPubKey(hexPubKey, hexChainCode, CoinType.bitcoin.derivationPath(), false, &nsErr)
         if let nsErr {
             return .failure(BitcoinTransactionError.tssError("fail to derive pubkey,error:\(nsErr.localizedDescription)"))
         }
