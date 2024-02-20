@@ -45,7 +45,7 @@ struct KeysignView: View {
                     Text("creating tss instance")
                     ProgressView()
                         .progressViewStyle(.circular)
-                        .tint(.blue)
+                        //.tint(.blue)
                         .padding(2)
                 }
             case .KeysignECDSA:
@@ -53,7 +53,7 @@ struct KeysignView: View {
                     Text("Signing using ECDSA key")
                     ProgressView()
                         .progressViewStyle(.circular)
-                        .tint(.blue)
+                        //.tint(.blue)
                         .padding(2)
                 }
 
@@ -62,7 +62,7 @@ struct KeysignView: View {
                     Text("Signing using EdDSA key")
                     ProgressView()
                         .progressViewStyle(.circular)
-                        .tint(.blue)
+                        //.tint(.blue)
                         .padding(2)
                 }
             case .KeysignFinished:

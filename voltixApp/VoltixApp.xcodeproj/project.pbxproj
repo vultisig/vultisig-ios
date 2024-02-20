@@ -7,12 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		049BBB502B71E39B004C231F /* AddressItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB4F2B71E39B004C231F /* AddressItem.swift */; };
 		049BBB522B71E498004C231F /* AssetsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB512B71E498004C231F /* AssetsView.swift */; };
 		049BBB542B71E4F8004C231F /* BottomBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB532B71E4F8004C231F /* BottomBar.swift */; };
 		049BBB562B71E5F5004C231F /* Choose.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB552B71E5F5004C231F /* Choose.swift */; };
 		049BBB582B71E72F004C231F /* DeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB572B71E72F004C231F /* DeviceView.swift */; };
-		049BBB5A2B71E785004C231F /* HeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB592B71E785004C231F /* HeaderView.swift */; };
 		049BBB5C2B71E7F6004C231F /* LargeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB5B2B71E7F6004C231F /* LargeButton.swift */; };
 		049BBB5E2B71E83D004C231F /* Logo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB5D2B71E83D004C231F /* Logo.swift */; };
 		049BBB602B71E8A2004C231F /* MenuItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB5F2B71E8A2004C231F /* MenuItem.swift */; };
@@ -34,10 +32,7 @@
 		465B09B32B7D710A00952DD9 /* DocumentPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09B22B7D710A00952DD9 /* DocumentPicker.swift */; };
 		465B09B52B7D8E7B00952DD9 /* CryptoPriceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */; };
 		465B09B72B7D909400952DD9 /* CryptoPrice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09B62B7D909400952DD9 /* CryptoPrice.swift */; };
-		465B09B92B7D9D0E00952DD9 /* CryptoPrices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09B82B7D9D0E00952DD9 /* CryptoPrices.swift */; };
 		467B2D662B7B51F700AEDF64 /* NavigationStackButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 467B2D652B7B51F700AEDF64 /* NavigationStackButtons.swift */; };
-		D7347C262B74B82500887E57 /* LargeHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7347C252B74B82500887E57 /* LargeHeaderView.swift */; };
-		D7347C2C2B758C6E00887E57 /* FileItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7347C2B2B758C6E00887E57 /* FileItem.swift */; };
 		D7347C2E2B759A0F00887E57 /* ProgressBottomBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7347C2D2B759A0F00887E57 /* ProgressBottomBar.swift */; };
 		D9A22EB72B667C41007281BF /* Mediator in Frameworks */ = {isa = PBXBuildFile; productRef = D9A22EB62B667C41007281BF /* Mediator */; };
 		D9AD8EDA2B6722CC0009F8D5 /* ApplicationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */; };
@@ -111,12 +106,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		049BBB4F2B71E39B004C231F /* AddressItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressItem.swift; sourceTree = "<group>"; };
 		049BBB512B71E498004C231F /* AssetsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetsView.swift; sourceTree = "<group>"; };
 		049BBB532B71E4F8004C231F /* BottomBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomBar.swift; sourceTree = "<group>"; };
 		049BBB552B71E5F5004C231F /* Choose.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Choose.swift; sourceTree = "<group>"; };
 		049BBB572B71E72F004C231F /* DeviceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceView.swift; sourceTree = "<group>"; };
-		049BBB592B71E785004C231F /* HeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderView.swift; sourceTree = "<group>"; };
 		049BBB5B2B71E7F6004C231F /* LargeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeButton.swift; sourceTree = "<group>"; };
 		049BBB5D2B71E83D004C231F /* Logo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logo.swift; sourceTree = "<group>"; };
 		049BBB5F2B71E8A2004C231F /* MenuItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuItem.swift; sourceTree = "<group>"; };
@@ -138,10 +131,7 @@
 		465B09B22B7D710A00952DD9 /* DocumentPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentPicker.swift; sourceTree = "<group>"; };
 		465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoPriceService.swift; sourceTree = "<group>"; };
 		465B09B62B7D909400952DD9 /* CryptoPrice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoPrice.swift; sourceTree = "<group>"; };
-		465B09B82B7D9D0E00952DD9 /* CryptoPrices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoPrices.swift; sourceTree = "<group>"; };
 		467B2D652B7B51F700AEDF64 /* NavigationStackButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationStackButtons.swift; sourceTree = "<group>"; };
-		D7347C252B74B82500887E57 /* LargeHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeHeaderView.swift; sourceTree = "<group>"; };
-		D7347C2B2B758C6E00887E57 /* FileItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileItem.swift; sourceTree = "<group>"; };
 		D7347C2D2B759A0F00887E57 /* ProgressBottomBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressBottomBar.swift; sourceTree = "<group>"; };
 		D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ApplicationState.swift; path = voltixApp/Model/ApplicationState.swift; sourceTree = SOURCE_ROOT; };
 		D9AD8EDB2B6723D10009F8D5 /* AppNavigationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppNavigationState.swift; path = voltixApp/Model/AppNavigationState.swift; sourceTree = SOURCE_ROOT; };
@@ -234,12 +224,10 @@
 		049BBB4E2B71E37B004C231F /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				049BBB4F2B71E39B004C231F /* AddressItem.swift */,
 				049BBB512B71E498004C231F /* AssetsView.swift */,
 				049BBB532B71E4F8004C231F /* BottomBar.swift */,
 				049BBB552B71E5F5004C231F /* Choose.swift */,
 				049BBB572B71E72F004C231F /* DeviceView.swift */,
-				049BBB592B71E785004C231F /* HeaderView.swift */,
 				049BBB5B2B71E7F6004C231F /* LargeButton.swift */,
 				049BBB5D2B71E83D004C231F /* Logo.swift */,
 				049BBB5F2B71E8A2004C231F /* MenuItem.swift */,
@@ -247,15 +235,12 @@
 				049BBB632B71E926004C231F /* RadioButtonGroup.swift */,
 				049BBB652B71E987004C231F /* VaultItem.swift */,
 				049BBB672B71E9C5004C231F /* WifiBar.swift */,
-				D7347C252B74B82500887E57 /* LargeHeaderView.swift */,
-				D7347C2B2B758C6E00887E57 /* FileItem.swift */,
 				D7347C2D2B759A0F00887E57 /* ProgressBottomBar.swift */,
 				467B2D652B7B51F700AEDF64 /* NavigationStackButtons.swift */,
 				465B09AA2B7C840100952DD9 /* ToastView.swift */,
 				465B09AC2B7C841B00952DD9 /* QrCodeView.swift */,
 				465B09AE2B7C84C600952DD9 /* ShareSheet.swift */,
 				465B09B22B7D710A00952DD9 /* DocumentPicker.swift */,
-				465B09B82B7D9D0E00952DD9 /* CryptoPrices.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -639,7 +624,6 @@
 				049BBB5E2B71E83D004C231F /* Logo.swift in Sources */,
 				DE1572A02B70F284009BC7C5 /* Keysign.swift in Sources */,
 				465B09AD2B7C841B00952DD9 /* QrCodeView.swift in Sources */,
-				D7347C2C2B758C6E00887E57 /* FileItem.swift in Sources */,
 				465B09B32B7D710A00952DD9 /* DocumentPicker.swift in Sources */,
 				DE1572992B70F26A009BC7C5 /* KeyType.swift in Sources */,
 				4606B3AE2B8045F60045094D /* BitcoinTransactionListView.swift in Sources */,
@@ -651,7 +635,6 @@
 				D9AD8F012B6732360009F8D5 /* SwapVerifyView.swift in Sources */,
 				DE9158EA2B80C4D80032259B /* CoinsList.swift in Sources */,
 				049BBB682B71E9C5004C231F /* WifiBar.swift in Sources */,
-				049BBB5A2B71E785004C231F /* HeaderView.swift in Sources */,
 				465B09B72B7D909400952DD9 /* CryptoPrice.swift in Sources */,
 				D9AD8EFB2B6731E50009F8D5 /* SwapInputDetailsView.swift in Sources */,
 				465B09B52B7D8E7B00952DD9 /* CryptoPriceService.swift in Sources */,
@@ -694,12 +677,9 @@
 				DE28F52E2B7B0E7400E33058 /* bitcoin.swift in Sources */,
 				D9AD8EFD2B6732070009F8D5 /* SwapPeerDiscoveryView.swift in Sources */,
 				467B2D662B7B51F700AEDF64 /* NavigationStackButtons.swift in Sources */,
-				D7347C262B74B82500887E57 /* LargeHeaderView.swift in Sources */,
 				DE49A19C2B67133D000F3AFB /* Vault.swift in Sources */,
-				465B09B92B7D9D0E00952DD9 /* CryptoPrices.swift in Sources */,
 				D9AD8F062B675E360009F8D5 /* VaultAssetDetailView.swift in Sources */,
 				DE49A1A02B67143B000F3AFB /* Chain.swift in Sources */,
-				049BBB502B71E39B004C231F /* AddressItem.swift in Sources */,
 				465B09A92B7C176700952DD9 /* SendTransaction.swift in Sources */,
 				D9AD8EE62B6730A40009F8D5 /* PeerDiscoveryView.swift in Sources */,
 				DE49A19E2B671416000F3AFB /* Coin.swift in Sources */,

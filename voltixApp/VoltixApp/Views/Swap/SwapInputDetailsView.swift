@@ -12,17 +12,7 @@ struct SwapInputDetailsView: View {
     
     var body: some View {
         VStack(alignment: .leading) {
-            HeaderView(
-                rightIcon: "Refresh",
-                leftIcon: "BackArrow",
-                head: "SWAP",
-                leftAction: {
-                    if !self.presentationStack.isEmpty {
-                        self.presentationStack.removeLast()
-                    }
-                },
-                rightAction: {}
-            )
+
             HStack {
                 Text("Ethereum")
                     .font(Font.custom("Menlo", size: 20).weight(.bold))

@@ -63,8 +63,6 @@ struct RadioButton: View {
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: self.size, height: self.size)
-                    .modifier(ColorInvert())
-                
             }
             .foregroundColor(self.color)
             .padding(.trailing, 30)
@@ -140,11 +138,8 @@ struct radioButton: View {
                 
             }
             .frame(height: 35)
-            .foregroundColor(self.color)
             .padding(.trailing, 30)
         }
-        .buttonStyle(PlainButtonStyle())
-        .foregroundColor(self.color)
     }
 }
 

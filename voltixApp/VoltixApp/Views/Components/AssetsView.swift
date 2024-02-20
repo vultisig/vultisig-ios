@@ -14,11 +14,8 @@ struct AssetsView: View {
             Text(numberOfAssets + " Assets")
             .font(Font.custom("Montserrat", size: 18).weight(.medium))
             .lineSpacing(27)
-            ;
         }
-        .foregroundColor(.clear)
         .frame(width: 122.71, height: 25)
-        .background(Color(red: 0.92, green: 0.92, blue: 0.93))
         .cornerRadius(20)
     }
 }

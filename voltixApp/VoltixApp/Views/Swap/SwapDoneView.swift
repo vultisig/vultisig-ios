@@ -10,17 +10,6 @@ struct SwapDoneView: View {
     
     var body: some View {
         VStack(alignment: .leading) {
-            HeaderView(
-                rightIcon: "QuestionMark",
-                leftIcon: "",
-                head: "DONE",
-                leftAction: {
-                    if !self.presentationStack.isEmpty {
-                        self.presentationStack.removeLast()
-                    }
-                },
-                rightAction: {}
-            )
             VStack(alignment: .leading) {
                 Text("Transaction")
                     .font(Font.custom("Menlo", size: 20).weight(.bold))
