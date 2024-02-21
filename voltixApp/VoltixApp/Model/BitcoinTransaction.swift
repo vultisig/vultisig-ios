@@ -45,6 +45,9 @@ struct BitcoinTransaction: Codable {
     let totalReceived: Int
     let totalSent: Int
     let balance: Int
+    var balanceDecimal: Double {
+        return Double(self.balance) / 100_000_000.0
+    }
     let unconfirmedBalance: Int
     let finalBalance: Int
     let nTx: Int

@@ -9,6 +9,22 @@ import Foundation
 
 class SendTransaction: ObservableObject, Hashable {
     
+    init() {
+        self.fromAddress = ""
+        self.toAddress = ""
+        self.amount = ""
+        self.memo = ""
+        self.gas = ""
+    }
+    
+    init(fromAddress: String, toAddress: String, amount: String, memo: String, gas: String) {
+        self.fromAddress = fromAddress
+        self.toAddress = toAddress
+        self.amount = amount
+        self.memo = memo
+        self.gas = gas
+    }
+    
     static func == (lhs: SendTransaction, rhs: SendTransaction) -> Bool {
         return lhs.fromAddress == rhs.fromAddress &&
         lhs.toAddress == rhs.toAddress &&
@@ -31,6 +47,16 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var amount: String = ""
     @Published var memo: String = ""
     @Published var gas: String = ""
+    
+    var amountDecimal: Double {
+        let amountString = amount.replacingOccurrences(of: ",", with: ".")
+        return Double(amountString) ?? 0
+    }
+    
+    var gasDecimal: Double {
+        let gasString = gas.replacingOccurrences(of: ",", with: ".")
+        return Double(gasString) ?? 0
+    }
     
     func parseCryptoURI(_ uri: String) {
         guard let url = URLComponents(string: uri) else {
