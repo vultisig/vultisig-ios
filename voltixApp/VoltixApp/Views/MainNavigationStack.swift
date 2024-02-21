@@ -12,7 +12,7 @@ struct MainNavigationStack: View {
     @EnvironmentObject var appState: ApplicationState
     // Push/pop onto this array to control presentation overlay globally
     @State private var presentationStack: [CurrentScreen] = []
-    
+
     var body: some View {
         NavigationStack(path: $presentationStack) {
             VaultSelectionView(presentationStack: $presentationStack)
@@ -58,12 +58,14 @@ struct MainNavigationStack: View {
                         VaultSelectionView(presentationStack: $presentationStack)
                     case .joinKeygen:
                         JoinKeygenView(presentationStack: $presentationStack)
-                    case .KeysignDiscovery(let keysignMsg, let chain):
-                        KeysignDiscoveryView(presentationStack: $presentationStack, keysignMessage: keysignMsg, chain: chain)
+                    case .KeysignDiscovery(let keysignPayload):
+                        KeysignDiscoveryView(presentationStack: $presentationStack, keysignPayload: keysignPayload)
                     case .JoinKeysign:
                         JoinKeysignView(presentationStack: $presentationStack)
                     case .bitcoinTransactionsListView:
                         BitcoinTransactionListView(presentationStack: $presentationStack)
+                    case .keysignTest(let coin):
+                        KeysignTestView(presentationStack: $presentationStack, coin: coin)
                     }
                 }
         }.onAppear {

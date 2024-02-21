@@ -4,18 +4,15 @@
 
 import Foundation
 import SwiftData
-import WalletCore
 
-@Model
-final class Coin {
+struct Coin: Codable, Hashable {
     let chain: Chain
-    @Attribute(.unique) let symbol: String
+    let ticker: String
     let logo: String
     let address: String
-
-    init(chain: Chain, symbol: String, logo: String, address: String) {
+    init(chain: Chain, ticker: String, logo: String, address: String) {
         self.chain = chain
-        self.symbol = symbol
+        self.ticker = ticker
         self.logo = logo
         self.address = address
     }

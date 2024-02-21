@@ -1,9 +1,8 @@
 //
 //  JoinKeysignView.swift
 //  VoltixApp
-#if os(iOS)
+
 import CodeScanner
-#endif
 import OSLog
 import SwiftUI
 
@@ -29,7 +28,7 @@ struct JoinKeysignView: View {
     @State private var keysignCommittee = [String]()
     @State var localPartyID: String = ""
     @State private var errorMsg: String = ""
-    @State private var keysignType: KeyType = .ECDSA
+    @State private var keysignPayload: KeysignPayload? = nil
 
     var body: some View {
         VStack {
@@ -90,9 +89,10 @@ struct JoinKeysignView: View {
                                     keysignCommittee: self.keysignCommittee,
                                     mediatorURL: self.serviceDelegate.serverUrl ?? "",
                                     sessionID: self.sessionID,
-                                    keysignType: self.keysignType,
+                                    keysignType: self.keysignPayload?.coin.chain.signingKeyType ?? .ECDSA,
                                     messsageToSign: self.keysignMessages,
-                                    localPartyKey: self.localPartyID)
+                                    localPartyKey: self.localPartyID,
+                                    keysignPayload: self.keysignPayload)
                     } else {
                         Text("Mediator server url is empty or session id is empty")
                     }
@@ -173,7 +173,7 @@ struct JoinKeysignView: View {
             }
         }
     }
-    #if os(iOS)
+
     private func handleScan(result: Result<ScanResult, ScanError>) {
         switch result {
         case .success(let result):
@@ -183,8 +183,11 @@ struct JoinKeysignView: View {
                 do {
                     let keysignMsg = try decoder.decode(KeysignMessage.self, from: data)
                     self.sessionID = keysignMsg.sessionID
-                    self.keysignMessages = keysignMsg.keysignMessages
-                    self.keysignType = keysignMsg.keysignType
+                    self.keysignPayload = keysignMsg.payload
+                    // TODO: consolidate these logic to somewhere else , something like getKeysignMessageFromPayload
+                    if keysignMsg.payload.coin.ticker == "BTC" {
+                        self.prepareKeysignMessages(keysignPayload: keysignMsg.payload)
+                    }
                 } catch {
                     logger.error("fail to decode keysign message,error:\(error.localizedDescription)")
                     self.errorMsg = error.localizedDescription
@@ -197,7 +200,24 @@ struct JoinKeysignView: View {
         }
         self.currentStatus = .JoinKeysign
     }
-    #endif
+
+    private func prepareKeysignMessages(keysignPayload: KeysignPayload) {
+       
+        let result = BitcoinHelper.getPreSignedImageHash(utxos: keysignPayload.utxos,
+                                                         fromAddress: keysignPayload.coin.address,
+                                                         toAddress: keysignPayload.toAddress,
+                                                         toAmount: keysignPayload.toAmount,
+                                                         byteFee: keysignPayload.byteFee)
+        switch result {
+        case .success(let preSignedImageHash):
+            print(preSignedImageHash)
+            // sort those preSignedImageHash , so when signing multiple UTXOs
+            self.keysignMessages = preSignedImageHash.sorted()
+        case .failure(let err):
+            logger.error("Failed to get preSignedImageHash: \(err)")
+            self.currentStatus = .FailedToStart
+        }
+    }
 }
 
 #Preview {

@@ -14,8 +14,6 @@ struct VoltixApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Vault.self,
-            Coin.self,
-            Chain.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

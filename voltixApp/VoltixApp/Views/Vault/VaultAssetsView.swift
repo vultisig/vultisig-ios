@@ -53,6 +53,16 @@ struct VaultAssetsView: View {
                     
                 }
                 .onAppear {
+                    if let  vault = appState.currentVault {
+                        let result = BitcoinHelper.getAddressFromPubKey(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
+                        switch result {
+                        case .success(let addr):
+                            print("bitcoin address is : \(addr)")
+                        case .failure(let err):
+                            print("fail to generate bitcoin address,error: \(err)")
+                        }
+                    }
+                    
                     if unspentOutputsViewModel.walletData == nil {
                         Task {
                             await loadData()
@@ -74,13 +84,10 @@ struct VaultAssetsView: View {
             )
             .padding()
         }
-        .navigationBarBackButtonHidden()
-        .navigationTitle("VAULT")
+        .navigationTitle(appState.currentVault?.name ?? "Vault")
         .modifier(InlineNavigationBarTitleModifier())
         .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                NavigationButtons.backButton(presentationStack: $presentationStack)
-            }
+            
             ToolbarItem(placement: .navigationBarTrailing) {
                 NavigationButtons.refreshButton(action: {
                     Task {

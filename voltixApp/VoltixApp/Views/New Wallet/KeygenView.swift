@@ -187,7 +187,7 @@ struct KeygenView: View {
                 do {
                     let decoder = JSONDecoder()
                     let msgs = try decoder.decode([Message].self, from: data)
-                    for msg in msgs.sorted(by: {$0.sequenceNo < $1.sequenceNo}) {
+                    for msg in msgs.sorted(by: { $0.sequenceNo < $1.sequenceNo }) {
                         let key = "\(self.sessionID)-\(self.localPartyKey)-\(msg.hash)" as NSString
                         if self.cache.object(forKey: key) != nil {
                             logger.info("message with key:\(key) has been applied before")
@@ -197,7 +197,7 @@ struct KeygenView: View {
                         logger.debug("Got message from: \(msg.from), to: \(msg.to)")
                         try self.tssService?.applyData(msg.body)
                         self.cache.setObject(NSObject(), forKey: key)
-                        Task{
+                        Task {
                             // delete it from a task, since we don't really care about the result
                             self.deleteMessageFromServer(hash: msg.hash)
                         }
@@ -216,7 +216,7 @@ struct KeygenView: View {
 
     private func deleteMessageFromServer(hash: String) {
         let urlString = "\(self.mediatorURL)/message/\(self.sessionID)/\(self.localPartyKey)/\(hash)"
-        Utils.deleteFromServer(urlString: urlString)
+        Utils.deleteFromServer(urlString: urlString, messageID: nil)
     }
 }
 

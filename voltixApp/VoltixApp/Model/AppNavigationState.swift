@@ -22,7 +22,7 @@ enum CurrentScreen: Hashable {
     case joinKeygen
     
     // keysign
-    case KeysignDiscovery(String,Chain)
+    case KeysignDiscovery(KeysignPayload)
     case JoinKeysign
     
     // Normal use (typically launches here if wallet imported/generated already)
@@ -43,6 +43,8 @@ enum CurrentScreen: Hashable {
     case swapWaitingForPeers
     case swapVerifyScreen
     case swapDone
+    
+    case keysignTest(Coin)
     
     // transactions
     case bitcoinTransactionsListView
