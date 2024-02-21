@@ -52,7 +52,7 @@ enum Utils {
         }.resume()
     }
 
-    public static func deleteFromServer(urlString: String) {
+    public static func deleteFromServer(urlString: String, messageID: String?) {
         guard let url = URL(string: urlString) else {
             logger.error("URL can't be constructed from: \(urlString)")
             return
@@ -60,7 +60,9 @@ enum Utils {
         
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
-        
+        if let messageID {
+            request.addValue(messageID, forHTTPHeaderField: "message_id")
+        }
         URLSession.shared.dataTask(with: request) { _, response, error in
             if let error = error {
                 self.logger.error("Failed to send request, error: \(error)")
@@ -118,6 +120,10 @@ enum Utils {
         return digest.map {
             String(format: "%02hhx", $0)
         }.joined()
+    }
+
+    public static func stringToHex(_ input: String) -> String {
+        input.utf8.map { String(format: "%02x", $0) }.joined()
     }
     
     public static func isIOS() -> Bool {

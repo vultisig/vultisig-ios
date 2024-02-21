@@ -232,6 +232,7 @@ public final class Mediator {
         if let messageID {
             key = "\(cleanSessionID)-\(cleanParticipantKey)-\(messageID)-\(msgHash)"
         }
+        logger.info("message with key:\(key) deleted")
         self.cache.removeObject(forKey: key)
         return HttpResponse.ok(.text(""))
     }

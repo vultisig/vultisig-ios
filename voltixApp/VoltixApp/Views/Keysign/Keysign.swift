@@ -2,13 +2,13 @@
 //  Keysign.swift
 //  VoltixApp
 
-import CryptoKit
 import Dispatch
 import Foundation
 import Mediator
 import OSLog
 import SwiftUI
 import Tss
+import WalletCore
 
 private let logger = Logger(subsystem: "keysign", category: "tss")
 struct KeysignView: View {
@@ -27,6 +27,7 @@ struct KeysignView: View {
     let keysignType: KeyType
     let messsageToSign: [String]
     @State var localPartyKey: String
+    let keysignPayload: KeysignPayload? // need to pass it along to the next view
     @EnvironmentObject var appState: ApplicationState
     @State private var currentStatus = KeysignStatus.CreatingInstance
     @State private var keysignInProgress = false
@@ -36,6 +37,8 @@ struct KeysignView: View {
     @State private var keysignError: String? = nil
     @State private var pollingInboundMessages = true
     @State private var signature: String = ""
+    @State var cache = NSCache<NSString, AnyObject>()
+    @State var signatures = [String: TssKeysignResponse]()
 
     var body: some View {
         VStack {
@@ -69,11 +72,57 @@ struct KeysignView: View {
                 VStack {
                     Text("Keysign finished")
                     Text("Signature: \(self.signature)")
-                    Button("Done", systemImage: "arrowshape.backward.circle") {
-                        
-                    }
+                    Button("Done", systemImage: "arrowshape.backward.circle") {}
                 }.onAppear {
                     self.pollingInboundMessages = false
+                    guard let vault = appState.currentVault else {
+                        return
+                    }
+
+                    // get bitcoin transaction
+                    if let keysignPayload {
+                        let bitcoinPubKey = BitcoinHelper.getBitcoinPubKey(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
+                        let result = BitcoinHelper.getSignedBitcoinTransaction(utxos: keysignPayload.utxos,
+                                                                               hexPubKey: bitcoinPubKey,
+                                                                               fromAddress: keysignPayload.coin.address,
+                                                                               toAddress: keysignPayload.toAddress,
+                                                                               toAmount: keysignPayload.toAmount,
+                                                                               byteFee: keysignPayload.byteFee,
+                                                                               signatureProvider: { (preHash: Data) in
+                                                                                   let hex = preHash.hexString
+                                                                                   logger.info("hex prehash:\(hex)")
+
+                                                                                   if let sig = self.signatures[hex] {
+                                                                                       logger.info("resp:\(sig.r)")
+                                                                                       let sigResult = BitcoinHelper.getSignatureFromTssResponse(tssResponse: sig)
+                                                                                       switch sigResult {
+                                                                                       case .success(let sigData):
+                                                                                           logger.info("successfully get sigdata")
+                                                                                           return sigData
+                                                                                       case .failure(let err):
+                                                                                           switch err {
+                                                                                           case BitcoinHelper.BitcoinTransactionError.runtimeError(let errDetail):
+                                                                                               logger.error("fail to get signature from TssResponse,error:\(errDetail)")
+                                                                                           default:
+                                                                                               logger.error("fail to get signature from TssResponse,error:\(err.localizedDescription)")
+                                                                                           }
+                                                                                           
+                                                                                       }
+                                                                                   }
+                                                                                   return Data()
+                                                                               })
+                        switch result {
+                        case .success(let tx):
+                            print(tx)
+                        case .failure(let err):
+                            switch err {
+                            case BitcoinHelper.BitcoinTransactionError.runtimeError(let errDetail):
+                                logger.error("Failed to get signed transaction,error:\(errDetail)")
+                            default:
+                                logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
+                            }
+                        }
+                    }
                 }.navigationBarBackButtonHidden(false)
             case .KeysignFailed:
                 Text("Sorry keysign failed, you can retry it,error:\(self.keysignError ?? "")")
@@ -114,9 +163,14 @@ struct KeysignView: View {
                 let keysignReq = TssKeysignRequest()
                 keysignReq.localPartyKey = vault.localPartyID
                 keysignReq.keysignCommitteeKeys = self.keysignCommittee.joined(separator: ",")
-                // sign messages one by one
-
-                if let msgToSign = msg.data(using: .utf8)?.base64EncodedString() {
+                if let keysignPayload {
+                    if keysignPayload.coin.ticker == "BTC" {
+                        keysignReq.derivePath = CoinType.bitcoin.derivationPath()
+                    }
+                }
+                // sign messages one by one , since the msg is in hex format , so we need convert it to base64
+                // and then pass it to TSS for keysign
+                if let msgToSign = Data(hexString: msg)?.base64EncodedString() {
                     keysignReq.messageToSign = msgToSign
                 }
 
@@ -131,6 +185,8 @@ struct KeysignView: View {
                     }
                     if let service = self.tssService {
                         let resp = try await tssKeysign(service: service, req: keysignReq, keysignType: keysignType)
+                        self.signatures[msg] = resp
+                        // TODO: save the signature with the message it signed
                         self.signature = "R:\(resp.r), S:\(resp.s), RecoveryID:\(resp.recoveryID)"
                     }
                     t.cancel()
@@ -166,10 +222,19 @@ struct KeysignView: View {
                 do {
                     let decoder = JSONDecoder()
                     let msgs = try decoder.decode([Message].self, from: data)
-
-                    for msg in msgs {
+                    for msg in msgs.sorted(by: { $0.sequenceNo < $1.sequenceNo }) {
+                        let key = "\(self.sessionID)-\(self.localPartyKey)-\(messageID)-\(msg.hash)" as NSString
+                        if self.cache.object(forKey: key) != nil {
+                            logger.info("message with key:\(key) has been applied before")
+                            // message has been applied before
+                            continue
+                        }
                         logger.debug("Got message from: \(msg.from), to: \(msg.to),body:\(msg.body)")
                         try self.tssService?.applyData(msg.body)
+                        self.cache.setObject(NSObject(), forKey: key)
+                        Task {
+                            self.deleteMessageFromServer(hash: msg.hash, messageID: messageID)
+                        }
                     }
                 } catch {
                     logger.error("Failed to decode response to JSON, data: \(data), error: \(error)")
@@ -182,10 +247,20 @@ struct KeysignView: View {
             }
         })
     }
+
+    private func deleteMessageFromServer(hash: String, messageID: String) {
+        let urlString = "\(self.mediatorURL)/message/\(self.sessionID)/\(self.localPartyKey)/\(hash)"
+        Utils.deleteFromServer(urlString: urlString, messageID: messageID)
+    }
 }
 
 #Preview {
-    KeysignView(presentationStack: .constant([]), keysignCommittee: [], mediatorURL: "", sessionID: "session", keysignType: .ECDSA, messsageToSign: ["message"], localPartyKey: "party id")
+    KeysignView(presentationStack: .constant([]),
+                keysignCommittee: [],
+                mediatorURL: "",
+                sessionID: "session",
+                keysignType: .ECDSA,
+                messsageToSign: ["message"],
+                localPartyKey: "party id",
+                keysignPayload: nil)
 }
-
-class MessagePoller: ObservableObject {}

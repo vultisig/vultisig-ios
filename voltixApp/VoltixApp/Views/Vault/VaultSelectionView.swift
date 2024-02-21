@@ -14,22 +14,17 @@ struct VaultSelectionView: View {
     @State private var showingDeleteAlert = false
     @State private var itemToDelete: Vault? = nil
     var body: some View {
-        List(selection: $appState.currentVault) {
-            ForEach(vaults) { vault in
-                NavigationLink {
-                    VaultAssetsView(presentationStack: $presentationStack, transactionDetailsViewModel: SendTransaction()).onAppear(){
-                        appState.currentVault = vault
-                    }
-                } label: {
-                    Text(vault.name)
-                        .swipeActions {
-                            Button("Delete", role: .destructive) {
-                                self.itemToDelete = vault
-                                showingDeleteAlert = true
-                            }
-                        }
-                }
-            }
+        List(vaults, id: \.self, selection: $appState.currentVault) { vault in
+            NavigationLink(destination: TestVaultAssetView(presentationStack: $presentationStack),
+                           label: {
+                               Text(vault.name)
+                                   .swipeActions {
+                                       Button("Delete", role: .destructive) {
+                                           self.itemToDelete = vault
+                                           showingDeleteAlert = true
+                                       }
+                                   }
+                           })
         }
         .confirmationDialog(Text("Delete Vault"), isPresented: $showingDeleteAlert, titleVisibility: .automatic) {
             Button("Delete", role: .destructive) {
@@ -52,7 +47,7 @@ struct VaultSelectionView: View {
             }
         }.navigationBarBackButtonHidden()
     }
-    
+
     func deleteVault(vault: Vault) {
         modelContext.delete(vault)
         do {

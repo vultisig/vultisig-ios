@@ -103,6 +103,7 @@
 @property (nonatomic) NSString* _Nonnull msg;
 @property (nonatomic) NSString* _Nonnull r;
 @property (nonatomic) NSString* _Nonnull s;
+@property (nonatomic) NSString* _Nonnull derSignature;
 @property (nonatomic) NSString* _Nonnull recoveryID;
 @end
 
@@ -154,6 +155,9 @@
 @end
 
 // skipped function Contains with unsupported parameter or return types
+
+
+// skipped function GetDERSignature with unsupported parameter or return types
 
 
 // skipped function GetDerivePathBytes with unsupported parameter or return types
