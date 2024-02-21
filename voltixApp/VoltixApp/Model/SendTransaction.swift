@@ -9,6 +9,22 @@ import Foundation
 
 class SendTransaction: ObservableObject, Hashable {
     
+    init() {
+        self.fromAddress = ""
+        self.toAddress = ""
+        self.amount = ""
+        self.memo = ""
+        self.gas = ""
+    }
+    
+    init(fromAddress: String, toAddress: String, amount: String, memo: String, gas: String) {
+        self.fromAddress = fromAddress
+        self.toAddress = toAddress
+        self.amount = amount
+        self.memo = memo
+        self.gas = gas
+    }
+    
     static func == (lhs: SendTransaction, rhs: SendTransaction) -> Bool {
         return lhs.fromAddress == rhs.fromAddress &&
         lhs.toAddress == rhs.toAddress &&
