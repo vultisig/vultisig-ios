@@ -110,7 +110,8 @@ enum BitcoinHelper {
                 input.scripts[keyHash.hexString] = redeemScript.data
                 let utxo = BitcoinUnspentTransaction.with {
                     $0.outPoint = BitcoinOutPoint.with {
-                        $0.hash = Data(hexString: inputUtxo.hash)!
+                        // the network byte order need to be reversed
+                        $0.hash = Data.reverse(hexString: inputUtxo.hash)
                         $0.index = inputUtxo.index
                         $0.sequence = UInt32.max
                     }
