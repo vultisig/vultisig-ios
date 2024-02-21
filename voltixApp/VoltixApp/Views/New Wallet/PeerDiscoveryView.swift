@@ -26,6 +26,14 @@ func bytesToHexString(_ bytes: [UInt8]) -> String {
     return bytes.map { String(format: "%02x", $0) }.joined()
 }
 
+func test() {
+    let webSocketUrl = "ws://127.0.0.1/websocket"
+    let url = URL(string: webSocketUrl)!
+    let connection = URLSession.shared.webSocketTask(with: url)
+
+    // connection.receive(completionHandler: )
+}
+
 private let logger = Logger(subsystem: "peers-discory", category: "communication")
 struct PeerDiscoveryView: View {
     enum PeerDiscoveryStatus {
@@ -83,7 +91,7 @@ struct PeerDiscoveryView: View {
                            mediatorURL: self.serverAddr,
                            sessionID: self.sessionID,
                            localPartyKey: self.localPartyID,
-                           hexChainCode: chainCode ?? "",
+                           hexChainCode: self.chainCode ?? "",
                            vaultName: self.appState.creatingVault?.name ?? "New Vault")
             case .Failure:
                 Text("Something is wrong")
@@ -105,7 +113,7 @@ struct PeerDiscoveryView: View {
             Task {
                 repeat {
                     self.getParticipants()
-                    try await Task.sleep(nanoseconds: 1_000_000_000) // wait for a second to continue
+                    try await Task.sleep(for: .seconds(1)) // wait for a second to continue
                 } while self.discoverying
             }
         }.onAppear {

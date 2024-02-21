@@ -48,7 +48,7 @@ struct KeysignView: View {
                     Text("creating tss instance")
                     ProgressView()
                         .progressViewStyle(.circular)
-                        //.tint(.blue)
+                        // .tint(.blue)
                         .padding(2)
                 }
             case .KeysignECDSA:
@@ -56,7 +56,7 @@ struct KeysignView: View {
                     Text("Signing using ECDSA key")
                     ProgressView()
                         .progressViewStyle(.circular)
-                        //.tint(.blue)
+                        // .tint(.blue)
                         .padding(2)
                 }
 
@@ -65,7 +65,7 @@ struct KeysignView: View {
                     Text("Signing using EdDSA key")
                     ProgressView()
                         .progressViewStyle(.circular)
-                        //.tint(.blue)
+                        // .tint(.blue)
                         .padding(2)
                 }
             case .KeysignFinished:
@@ -106,7 +106,6 @@ struct KeysignView: View {
                                                                                            default:
                                                                                                logger.error("fail to get signature from TssResponse,error:\(err.localizedDescription)")
                                                                                            }
-                                                                                           
                                                                                        }
                                                                                    }
                                                                                    return Data()
@@ -156,7 +155,7 @@ struct KeysignView: View {
                     repeat {
                         if Task.isCancelled { return }
                         self.pollInboundMessages(messageID: msgHash)
-                        try await Task.sleep(nanoseconds: 1_000_000_000) // Back off 1s
+                        try await Task.sleep(for: .seconds(1)) // Back off 1s
                     } while self.tssService != nil && self.pollingInboundMessages
                 }
                 self.keysignInProgress = true

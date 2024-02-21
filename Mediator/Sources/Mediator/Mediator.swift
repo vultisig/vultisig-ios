@@ -34,7 +34,36 @@ public final class Mediator {
         self.server.DELETE["/message/:sessionID/:participantKey/:hash"] = self.deleteMessage
         // POST/GET , to notifiy all parties to start keygen/keysign
         self.server["/start/:sessionID"] = self.startKeygenOrKeysign
+        self.server["/websocket"] = websocket(text: self.OnWebSocketText, 
+                                              connected: self.OnClientConnected,
+                                              disconnected: self.OnClientDisconnected)
     }
+
+    private func OnWebSocketText(session: WebSocketSession, content: String) {
+        var decoder = JSONDecoder()
+        guard let contentData = content.data(using: .utf8) else {
+            return
+        }
+        do{
+            let socketMsg = try decoder.decode(WebsocketMessage.self, from: contentData)
+            switch socketMsg.header{
+            case .HelloMessage:
+            case .DropSession:
+            case .EndSession:
+            case .JoinSession:
+            case .StartSession:
+            case .StartTSS:
+            }
+        } catch {
+            logger.error("fail to process message,error:\(error.localizedDescription)")
+        }
+    }
+
+    private func OnClientConnected(session: WebSocketSession)    {
+        
+    }
+    
+    private func OnClientDisconnected(session: WebSocketSession){}
     
     // start the server
     public func start() {
@@ -62,7 +91,7 @@ public final class Mediator {
         let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
         let key = "session-\(cleanSessionID)-start"
         self.logger.debug("request session id is: \(cleanSessionID)")
-        do{
+        do {
             switch req.method {
             case "POST":
                 do {
@@ -88,8 +117,8 @@ public final class Mediator {
             default:
                 return HttpResponse.notFound
             }
-        }catch{
-            logger.error("fail to process request to start keygen/keysign,error:\(error.localizedDescription)")
+        } catch {
+            self.logger.error("fail to process request to start keygen/keysign,error:\(error.localizedDescription)")
             return HttpResponse.internalServerError
         }
     }
@@ -108,7 +137,7 @@ public final class Mediator {
                 if let messageID {
                     key = "\(cleanSessionID)-\(recipient)-\(messageID)-\(message.hash)"
                 }
-                logger.info("received message \(message.hash) from \(message.from) to \(recipient)")
+                self.logger.info("received message \(message.hash) from \(message.from) to \(recipient)")
                 self.cache.setObject(message, forKey: key)
             }
         } catch {
@@ -136,7 +165,7 @@ public final class Mediator {
         let encoder = JSONEncoder()
         do {
             // get all the messages
-            let messages = try self.cache.allKeys.filter{
+            let messages = try self.cache.allKeys.filter {
                 $0.hasPrefix(keyPrefix)
             }.compactMap { cacheKey in
                 try self.cache.object(forKey: cacheKey) as? Message
@@ -169,8 +198,7 @@ public final class Mediator {
                     }
                     self.cache.setObject(cachedValue, forKey: key)
                 }
-            }
-            else {
+            } else {
                 let session = Session(SessionID: cleanSessionID, Participants: p)
                 self.cache.setObject(session, forKey: key)
             }
@@ -201,20 +229,19 @@ public final class Mediator {
         
         let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
         let key = "session-\(cleanSessionID)"
-        do  {
+        do {
             if let cachedValue = try self.cache.object(forKey: key) as? Session {
                 self.logger.debug("session obj : \(cachedValue.SessionID), participants: \(cachedValue.Participants)")
                 return HttpResponse.ok(.json(cachedValue.Participants))
             }
-        }
-        catch Cache.StorageError.notFound {
+        } catch Cache.StorageError.notFound {
             return HttpResponse.notFound
-        }
-        catch{
-            logger.error("fail to get session,error:\(error.localizedDescription)")
+        } catch {
+            self.logger.error("fail to get session,error:\(error.localizedDescription)")
         }
         return HttpResponse.notFound
     }
+
     private func deleteMessage(req: HttpRequest) -> HttpResponse {
         guard let sessionID = req.params[":sessionID"] else {
             return HttpResponse.badRequest(.text("sessionID is empty"))
@@ -232,7 +259,7 @@ public final class Mediator {
         if let messageID {
             key = "\(cleanSessionID)-\(cleanParticipantKey)-\(messageID)-\(msgHash)"
         }
-        logger.info("message with key:\(key) deleted")
+        self.logger.info("message with key:\(key) deleted")
         self.cache.removeObject(forKey: key)
         return HttpResponse.ok(.text(""))
     }
