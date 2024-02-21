@@ -10,17 +10,7 @@ struct SwapPeerDiscoveryView: View {
     
     var body: some View {
         VStack {
-          HeaderView(
-            rightIcon: "QuestionMark",
-            leftIcon: "BackArrow",
-            head: "PAIR",
-            leftAction: {
-                if !self.presentationStack.isEmpty {
-                    self.presentationStack.removeLast()
-                }
-            },
-            rightAction: {}
-          )
+
           Text("VERIFY ALL DETAILS")
             .font(Font.custom("Montserrat", size: 24).weight(.medium))
             .lineSpacing(36)

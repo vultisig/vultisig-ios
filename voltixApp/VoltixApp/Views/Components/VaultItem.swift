@@ -51,12 +51,14 @@ struct VaultItem: View {
               .frame(width: 20, height: 20)
 
           }
+          .buttonStyle(PlainButtonStyle())
           .overlay(
             showingToast
-              ? AnyView(
-                ToastView(message: toastMessage)
-                  .animation(.easeInOut)
-                  .transition(.opacity)) : AnyView(EmptyView()))
+              ? ToastView(message: toastMessage)
+                  .transition(.opacity)
+                  .animation(.easeInOut, value: showingToast)
+              : nil
+          )
 
           Spacer().frame(width: 8)
           Button(action: { self.showingShareSheet = true }) {
@@ -64,7 +66,7 @@ struct VaultItem: View {
               .resizable()
               .frame(width: 16, height: 20)
 
-          }
+          }.buttonStyle(PlainButtonStyle())
           Spacer()
             .frame(width: 8)
             .sheet(isPresented: $showingShareSheet) {
@@ -77,7 +79,7 @@ struct VaultItem: View {
               .resizable()
               .frame(width: 20, height: 20)
 
-          }
+          }.buttonStyle(PlainButtonStyle())
           .sheet(isPresented: $showingQRCode) {
             if let qrCodeImage = ActivityViewModel.generateHighQualityQRCode(from: address) {
               QRCodeView(qrCodeImage: qrCodeImage)
@@ -94,6 +96,7 @@ struct VaultItem: View {
               .resizable()
               .frame(width: 16, height: 20)
           }
+          .buttonStyle(PlainButtonStyle())
 
         }
         Spacer()
@@ -121,4 +124,8 @@ struct VaultItem: View {
     }
   }
 
+}
+
+#Preview {
+    VaultItem(presentationStack: .constant([]), coinName: "Bitcoin", usdAmount: "US$10,000,000.98", showAmount: true, address: "3JK2dFmWA58A3kukgw1yybotStGAFaV6Sg", isRadio: true, radioIcon: "String", showButtons: true)
 }

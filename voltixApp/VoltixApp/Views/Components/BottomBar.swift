@@ -25,14 +25,13 @@ struct BottomBar: View {
             Spacer()
             if buttondisplay {
                 Button(action: onClick) {
-                  HStack() {
+                    HStack() {
                     Text(content)
                       .lineSpacing(60)
                       .fontWeight(.black)
                       .padding(.trailing, 16)
                     Image(systemName: "chevron.right")
                       .resizable()
-                      
                       .frame(width: 20, height: 15)
                     }
                 }

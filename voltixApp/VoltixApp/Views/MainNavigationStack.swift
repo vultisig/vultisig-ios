@@ -35,7 +35,7 @@ struct MainNavigationStack: View {
                     case .menu:
                         MenuView(presentationStack: $presentationStack)
                     case .sendInputDetails(let tx):
-                        SendInputDetailsView(presentationStack: $presentationStack, transactionDetailsViewModel: tx)
+                        SendInputDetailsView(presentationStack: $presentationStack)
                     case .sendPeerDiscovery:
                         SendPeerDiscoveryView(presentationStack: $presentationStack)
                     case .sendWaitingForPeers:

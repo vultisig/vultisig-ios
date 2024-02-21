@@ -13,7 +13,7 @@ struct NewWalletInstructions: View {
     @Query var vaults: [Vault]
 
     var body: some View {
-        ScrollView {
+        VStack {
             VStack {
                 Text("YOU NEED THREE DEVICES.")
                     .fontWeight(.medium)

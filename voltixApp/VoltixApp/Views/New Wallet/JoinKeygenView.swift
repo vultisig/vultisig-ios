@@ -45,10 +45,10 @@ struct JoinKeygenView: View {
                     if serviceDelegate.serverUrl == nil {
                         ProgressView()
                             .progressViewStyle(.circular)
-                            .tint(.blue)
+                            //.tint(.blue)
                             .padding(2)
                     } else {
-                        Image(systemName: "checkmark").foregroundColor(/*@START_MENU_TOKEN@*/ .blue/*@END_MENU_TOKEN@*/).onAppear {
+                        Image(systemName: "checkmark").onAppear {
                             currentStatus = .DiscoverSessionID
                         }
                     }
@@ -63,7 +63,7 @@ struct JoinKeygenView: View {
                     Text("Waiting for keygen to start")
                     ProgressView()
                         .progressViewStyle(.circular)
-                        .tint(.blue)
+                        //.tint(.blue)
                         .padding(2)
                 }.task {
                     Task {

@@ -10,17 +10,7 @@ struct MenuView: View {
     
     var body: some View {
         VStack() {
-          HeaderView(
-            rightIcon: "questionmark.circle",
-            leftIcon: "chevron.left",
-            head: "MENU",
-            leftAction: {
-                if !self.presentationStack.isEmpty {
-                    self.presentationStack.removeLast()
-                }
-            },
-            rightAction: {}
-          )
+
           VStack(alignment: .leading) {
             Text("Choose Vault")
                 .font(Font.custom("Menlo", size: 20))
