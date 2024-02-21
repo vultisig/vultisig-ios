@@ -11,7 +11,7 @@ struct SendInputDetailsView: View {
     @StateObject var unspentOutputsService: UnspentOutputsService = UnspentOutputsService()
     @ObservedObject var sendTransactionModel: SendTransaction = SendTransaction()
     @State private var isShowingScanner = false
-    @State private var isValidAddress = true
+    @State private var isValidAddress = false
     @State private var formErrorMessages = ""
     @State private var isValidForm = true
     @State private var keyboardOffset: CGFloat = 0
@@ -181,38 +181,54 @@ struct SendInputDetailsView: View {
             logger.log("Invalid address.")
             isValidForm = false
         }
+
+        let amount = sendTransactionModel.amountDecimal ?? Double(0)
+        let gasFee = sendTransactionModel.gasDecimal ?? Double(0)
         
-        // Attempt to convert both the amount and gas fee to Double for validation
-        if let amount = Double(sendTransactionModel.amount), let gasFee = Double(sendTransactionModel.gas), amount > 0, gasFee > 0 {
-            // Calculate the total transaction cost
-            let totalTransactionCost = amount + gasFee
-            
-            // Verify if the wallet balance can cover the total transaction cost
-            if let walletBalance = unspentOutputsService.walletData?.balance, totalTransactionCost <= Double(walletBalance) {
-                // Transaction cost is within balance
-            } else {
-                formErrorMessages += "The combined amount and fee exceed your wallet's balance. Please adjust to proceed. \n"
-                logger.log("Total transaction cost exceeds wallet balance.")
-                isValidForm = false
-            }
+        if amount <= 0 {
+            formErrorMessages += "Amount must be a positive number. Please correct your entry. \n"
+            logger.log("Invalid or non-positive amount.")
+            isValidForm = false
+            return isValidForm
+        }
+        
+        if gasFee <= 0 {
+            formErrorMessages += "Fee must be a non-negative number. Please correct your entry. \n"
+            logger.log("Invalid or negative fee.")
+            isValidForm = false
+            return isValidForm
+        }
+        
+        // Calculate the total transaction cost
+        let totalTransactionCost = amount + gasFee
+        
+        print("Total transaction cost: \(totalTransactionCost)")
+        
+        // Verify if the wallet balance can cover the total transaction cost
+        if let walletBalance = unspentOutputsService.walletData?.balanceDecimal, totalTransactionCost <= Double(walletBalance) {
+            // Transaction cost is within balance
         } else {
-            formErrorMessages += "Amount and fee must be positive numbers. Please correct your entries. \n"
-            logger.log("Non-positive amount or fee.")
+            formErrorMessages += "The combined amount and fee exceed your wallet's balance. Please adjust to proceed. \n"
+            logger.log("Total transaction cost exceeds wallet balance.")
             isValidForm = false
         }
         
         return isValidForm
     }
+
+
+    
     
     private func reloadTransactions() {
         if unspentOutputsService.walletData == nil {
             Task {
-                sendTransactionModel.fromAddress =
-                appState.currentVault?.legacyBitcoinAddress ?? ""
-                if !sendTransactionModel.fromAddress.isEmpty {
-                    await unspentOutputsService.fetchUnspentOutputs(
-                        for: sendTransactionModel.fromAddress)
-                }
+#if DEBUG
+                sendTransactionModel.fromAddress = "18cBEMRxXHqzWWCxZNtU91F5sbUNKhL5PX"
+#else
+                sendTransactionModel.fromAddress = appState.currentVault?.legacyBitcoinAddress ?? ""
+#endif
+                await unspentOutputsService.fetchUnspentOutputs(for: sendTransactionModel.fromAddress)
+                
             }
         }
     }

@@ -30,9 +30,11 @@ struct BitcoinTransactionListView: View {
                 }
             }
             .task {
-                // await bitcoinTransactionsService.fetchTransactions(for: appState.currentVault?.legacyBitcoinAddress ?? "")
-                // 18cBEMRxXHqzWWCxZNtU91F5sbUNKhL5PX
+                #if DEBUG
                 await bitcoinTransactionsService.fetchTransactions(for: "18cBEMRxXHqzWWCxZNtU91F5sbUNKhL5PX")
+                #else
+                await bitcoinTransactionsService.fetchTransactions(for: appState.currentVault?.legacyBitcoinAddress ?? "")
+                #endif
             }
         }
     }

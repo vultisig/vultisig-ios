@@ -32,6 +32,16 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var memo: String = ""
     @Published var gas: String = ""
     
+    var amountDecimal: Double {
+        let amountString = amount.replacingOccurrences(of: ",", with: ".")
+        return Double(amountString) ?? 0
+    }
+    
+    var gasDecimal: Double {
+        let gasString = gas.replacingOccurrences(of: ",", with: ".")
+        return Double(gasString) ?? 0
+    }
+    
     func parseCryptoURI(_ uri: String) {
         guard let url = URLComponents(string: uri) else {
             print("Invalid URI")

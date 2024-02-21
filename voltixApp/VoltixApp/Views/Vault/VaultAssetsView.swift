@@ -24,7 +24,7 @@ struct VaultAssetsView: View {
                                     usdAmount: priceUsd,
                                     showAmount: false,
                                     address: walletData.address,
-                                    isRadio: false, 
+                                    isRadio: false,
                                     radioIcon: "",
                                     showButtons: true
                                 ).padding()
@@ -91,10 +91,13 @@ struct VaultAssetsView: View {
         }
     }
     private func loadData() async {
+#if DEBUG
+        transactionDetailsViewModel.fromAddress = "18cBEMRxXHqzWWCxZNtU91F5sbUNKhL5PX"
+#else
         transactionDetailsViewModel.fromAddress = appState.currentVault?.legacyBitcoinAddress ?? ""
-        if !transactionDetailsViewModel.fromAddress.isEmpty {
-            await unspentOutputsViewModel.fetchUnspentOutputs(for: transactionDetailsViewModel.fromAddress)
-            await cryptoPriceViewModel.fetchCryptoPrices(for: "bitcoin", for: "usd")
-        }
+#endif
+        await unspentOutputsViewModel.fetchUnspentOutputs(for: transactionDetailsViewModel.fromAddress)
+        await cryptoPriceViewModel.fetchCryptoPrices(for: "bitcoin", for: "usd")
+        
     }
 }
