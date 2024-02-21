@@ -144,7 +144,8 @@ enum BitcoinHelper {
                 }
                 input.utxo.append(utxo)
             }
-
+            let plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: .bitcoin)
+            input.plan = plan
             let inputData = try input.serializedData()
             return .success(inputData)
 
@@ -185,7 +186,7 @@ enum BitcoinHelper {
                 for h in preSignOutputs.hashPublicKeys {
                     let preImageHash = h.dataHash
                     let signature = signatureProvider(preImageHash)
-                    guard publicKey.verifyAsDER(signature: signature, message: preImageHash) else {
+                    guard publicKey.verify(signature: signature, message: preImageHash) else {
                         return .failure(BitcoinTransactionError.runtimeError("fail to verify signature"))
                     }
                     allSignatures.add(data: signature)
@@ -194,6 +195,10 @@ enum BitcoinHelper {
 
                 let compileWithSignatures = TransactionCompiler.compileWithSignatures(coinType: .bitcoin, txInputData: preSignInputData, signatures: allSignatures, publicKeys: publicKeys)
                 let output = try BitcoinSigningOutput(serializedData: compileWithSignatures)
+                
+                print(output.transactionID)
+                print(compileWithSignatures.count)
+                print(output.encoded.count)
                 return .success(output.encoded.hexString)
             } catch {
                 return .failure(BitcoinTransactionError.runtimeError("fail to construct raw transaction,error: \(error.localizedDescription)"))
