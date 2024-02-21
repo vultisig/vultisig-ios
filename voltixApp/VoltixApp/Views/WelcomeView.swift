@@ -23,12 +23,18 @@ struct WelcomeView: View {
                     VStack {
                         Spacer()
                         Logo(width: geometry.size.width * 0.25, height: geometry.size.width * 0.25)
-                            .padding(.top, geometry.size.height * 0.02)
+                            .background(.white).cornerRadius(10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color.gray, lineWidth: 0)
+                            )
+                            .padding(.bottom, 40)
+                        
                         
                         Text("SECURE CRYPTO VAULT")
                             .font(.system(size: geometry.size.width * 0.05, weight: .bold))
                             .padding(.top, geometry.size.height * 0.01)
-                            
+                        
                         
                         VStack(spacing: geometry.size.height * 0.01) {
                             featureText("TWO FACTOR AUTHENTICATION", geometry: geometry)
@@ -66,11 +72,11 @@ struct WelcomeView: View {
         }
         .navigationBarBackButtonHidden(true)
     }
-
+    
     private func featureText(_ text: String, geometry: GeometryProxy) -> some View {
         Text(text)
             .font(.system(size: geometry.size.width * 0.045, weight: .medium))
-            
+        
             .padding(.horizontal)
     }
 }

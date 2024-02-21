@@ -5,41 +5,55 @@ struct DeviceView: View {
     let description: String
     let deviceImg: String
     let deviceDescription: String
-
+    
     var body: some View {
-        GeometryReader { geometry in
-            VStack(alignment: .center, spacing: 16) {
-                Text(number)
-                    .font(.system(size: geometry.size.width < 600 ? 40 : 80, weight: .light))
-                    .lineSpacing(geometry.size.width < 600 ? 60 : 120)
-                
-                Text(description)
-                    .font(.system(size: geometry.size.width < 600 ? 13 : 24, weight: .medium))
-                    .lineSpacing(geometry.size.width < 600 ? 19.5 : 36)
-                
-                Image(deviceImg)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: geometry.size.width < 600 ? 148.29 : 304, height: geometry.size.width < 600 ? 148.29 : 304)
-                
-                Text(deviceDescription)
-                    .font(.system(size: geometry.size.width < 600 ? 13 : 24, weight: .medium))
-                    .lineSpacing(geometry.size.width < 600 ? 19.5 : 36)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding(geometry.size.width < 600 ? 16 : 32)
+        
+        VStack(alignment: .center) {
+            HStack{
+                VStack{
+                    // Replace Button with Image and increase its size
+                    Image(systemName: number)
+                        .resizable() // Makes the image resizable
+                        .scaledToFit() // Scales the image to fit its container
+                        .frame(width: 50, height: 50) // Specify your desired size
+                    Text(description).font(.system(size: 15, weight: .light))
+                }
+                VStack{
+                    // Replace Button with Image and increase its size
+                    Image(systemName: deviceImg)
+                        .symbolRenderingMode(.monochrome)
+                        .resizable() // Makes the image resizable
+                        .scaledToFit() // Scales the image to fit its container
+                        .frame(width: 200, height: 100) // Specify your desired size
+                    Text(deviceDescription)
+                }
+            }.padding()
         }
-        .background(Color.clear) // Explicitly clear to ensure it adapts to system background color
     }
 }
+
 
 // Preview
 struct DeviceView_Previews: PreviewProvider {
     static var previews: some View {
         DeviceView(
-            number: "1",
+            number: "1.circle",
             description: "MAIN",
-            deviceImg: "Device3", // Ensure this image is added to your Xcode project's asset catalog
+            deviceImg: "macbook", // Ensure this image is added to your Xcode project's asset catalog
+            deviceDescription: "A MACBOOK"
+        )
+        .previewLayout(.sizeThatFits)
+        DeviceView(
+            number: "2.circle",
+            description: "MAIN",
+            deviceImg: "macbook.and.iphone", // Ensure this image is added to your Xcode project's asset catalog
+            deviceDescription: "A MACBOOK"
+        )
+        .previewLayout(.sizeThatFits)
+        DeviceView(
+            number: "3.circle",
+            description: "MAIN",
+            deviceImg: "macbook.and.ipad", // Ensure this image is added to your Xcode project's asset catalog
             deviceDescription: "A MACBOOK"
         )
         .previewLayout(.sizeThatFits)
