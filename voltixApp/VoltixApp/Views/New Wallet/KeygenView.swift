@@ -41,8 +41,7 @@ struct KeygenView: View {
     @State private var keygenError: String? = nil
     @State private var vault = Vault(name: "new vault")
     @State var vaultName: String
-    @State var pollingInboundMessages = true
-    @State var cache = NSCache<NSString, AnyObject>()
+    @State private var messagePuller = MessagePuller()
     
     var body: some View {
         GeometryReader { geometry in
@@ -70,11 +69,10 @@ struct KeygenView: View {
                                 self.vault.hexChainCode = self.hexChainCode
                                 // add the vault to modelcontext
                                 self.context.insert(self.vault)
-                                self.pollingInboundMessages = false
-                                self.cache.removeAllObjects()
+                                
                                 Task {
                                     // when user didn't touch it for 5 seconds , automatically goto
-                                    try await Task.sleep(nanoseconds: 5_000_000_000) // Back off 5s
+                                    try await Task.sleep(for: .seconds(5)) // Back off 5s
                                     self.presentationStack = [CurrentScreen.vaultSelection]
                                 }
                             }.onTapGesture {
@@ -84,8 +82,8 @@ struct KeygenView: View {
                         case .KeygenFailed:
                             StatusText(status: "Keygen failed, you can retry it")
                                 .onAppear {
-                                    self.pollingInboundMessages = false
-                                    self.cache.removeAllObjects()
+                                    self.messagePuller.stop()
+                                    
                                 }.navigationBarBackButtonHidden(false)
                         }
                     }.frame(width: geometry.size.width, height: geometry.size.height * 0.8)
@@ -105,15 +103,12 @@ struct KeygenView: View {
                 self.stateAccess = stateAccessorImp
                 self.tssService = try await self.createTssInstance(messenger: messengerImp,
                                                                    localStateAccessor: stateAccessorImp)
-                
-                // Keep polling for messages
-                Task {
-                    repeat {
-                        if Task.isCancelled { return }
-                        self.pollInboundMessages()
-                        try await Task.sleep(nanoseconds: 1_000_000_000) // Back off 1s
-                    } while self.tssService != nil && self.pollingInboundMessages
+                guard let tssService = self.tssService else {
+                    self.keygenError = "TSS instance is nil"
+                    self.currentStatus = .KeygenFailed
+                    return
                 }
+                self.messagePuller.pollMessages(mediatorURL: self.mediatorURL, sessionID: self.sessionID, localPartyKey: self.localPartyKey, tssService: tssService)
                 
                 self.currentStatus = .KeygenECDSA
                 self.keygenInProgressECDSA = true
@@ -122,11 +117,6 @@ struct KeygenView: View {
                 keygenReq.allParties = self.keygenCommittee.joined(separator: ",")
                 keygenReq.chainCodeHex = self.hexChainCode
                 logger.info("chaincode:\(self.hexChainCode)")
-                guard let tssService = self.tssService else {
-                    self.keygenError = "TSS instance is nil"
-                    self.currentStatus = .KeygenFailed
-                    return
-                }
                 
                 let ecdsaResp = try await tssKeygen(service: tssService, req: keygenReq, keyType: .ECDSA)
                 self.pubKeyECDSA = ecdsaResp.pubKey
@@ -134,7 +124,7 @@ struct KeygenView: View {
                 
                 self.currentStatus = .KeygenEdDSA
                 self.keygenInProgressEDDSA = true
-                try await Task.sleep(nanoseconds: 1_000_000_000) // Sleep one sec to allow other parties to get in the same step
+                try await Task.sleep(for: .seconds(1)) // Sleep one sec to allow other parties to get in the same step
                 
                 let eddsaResp = try await tssKeygen(service: tssService, req: keygenReq, keyType: .EdDSA)
                 self.pubKeyEdDSA = eddsaResp.pubKey
@@ -178,28 +168,60 @@ struct KeygenView: View {
         }
         return try await t.value
     }
+}
+
+class MessagePuller: ObservableObject {
+    var cache = NSCache<NSString, AnyObject>()
+    private var pollingInboundMessages = true
     
-    private func pollInboundMessages() {
-        let urlString = "\(self.mediatorURL)/message/\(self.sessionID)/\(self.localPartyKey)"
-        Utils.getRequest(urlString: urlString, headers: [String: String](), completion: { result in
+    func stop() {
+        pollingInboundMessages = false
+        cache.removeAllObjects()
+    }
+
+    func pollMessages(mediatorURL: String,
+                      sessionID: String,
+                      localPartyKey: String,
+                      tssService: TssServiceImpl,
+                      messageID: String?)
+    {
+        Task.detached {
+            repeat {
+                if Task.isCancelled { return }
+                self.pollInboundMessages(mediatorURL: mediatorURL, sessionID: sessionID, localPartyKey: localPartyKey, tssService: tssService, messageID: messageID)
+                try await Task.sleep(for: .seconds(1)) // Back off 1s
+            } while self.pollingInboundMessages
+        }
+    }
+
+    private func pollInboundMessages(mediatorURL: String, sessionID: String, localPartyKey: String, tssService: TssServiceImpl, messageID: String?) {
+        let urlString = "\(mediatorURL)/message/\(sessionID)/\(localPartyKey)"
+        var header = [String: String]()
+        if let messageID {
+            header["message_id"] = messageID
+        }
+        Utils.getRequest(urlString: urlString, headers: header, completion: { result in
             switch result {
             case .success(let data):
                 do {
                     let decoder = JSONDecoder()
                     let msgs = try decoder.decode([Message].self, from: data)
                     for msg in msgs.sorted(by: { $0.sequenceNo < $1.sequenceNo }) {
-                        let key = "\(self.sessionID)-\(self.localPartyKey)-\(msg.hash)" as NSString
+                        var key = "\(sessionID)-\(localPartyKey)-\(msg.hash)" as NSString
+                        if let messageID {
+                            key = "\(sessionID)-\(localPartyKey)-\(messageID)-\(msg.hash)" as NSString
+                        }
                         if self.cache.object(forKey: key) != nil {
                             logger.info("message with key:\(key) has been applied before")
                             // message has been applied before
                             continue
                         }
                         logger.debug("Got message from: \(msg.from), to: \(msg.to)")
-                        try self.tssService?.applyData(msg.body)
+                        try tssService.applyData(msg.body)
                         self.cache.setObject(NSObject(), forKey: key)
                         Task {
                             // delete it from a task, since we don't really care about the result
-                            self.deleteMessageFromServer(hash: msg.hash)
+                            self.deleteMessageFromServer(mediatorURL: mediatorURL, sessionID: sessionID, localPartyKey: localPartyKey, hash: msg.hash, messageID: messageID)
                         }
                     }
                 } catch {
@@ -214,8 +236,8 @@ struct KeygenView: View {
         })
     }
 
-    private func deleteMessageFromServer(hash: String) {
-        let urlString = "\(self.mediatorURL)/message/\(self.sessionID)/\(self.localPartyKey)/\(hash)"
+    private func deleteMessageFromServer(mediatorURL: String, sessionID: String, localPartyKey: String, hash: String, messageID: String?) {
+        let urlString = "\(mediatorURL)/message/\(sessionID)/\(localPartyKey)/\(hash)"
         Utils.deleteFromServer(urlString: urlString, messageID: nil)
     }
 }
