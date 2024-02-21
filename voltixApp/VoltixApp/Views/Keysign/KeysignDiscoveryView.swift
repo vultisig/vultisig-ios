@@ -82,16 +82,14 @@ struct KeysignDiscoveryView: View {
             }
             switch self.keysignPayload.coin.ticker {
             case "BTC":
-                let bitcoinPubKey = BitcoinHelper.getBitcoinPubKey(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
+                
                 let result = BitcoinHelper.getPreSignedImageHash(utxos: self.keysignPayload.utxos,
-                                                                 hexPubKey: bitcoinPubKey,
                                                                  fromAddress: self.keysignPayload.coin.address,
                                                                  toAddress: self.keysignPayload.toAddress,
                                                                  toAmount: self.keysignPayload.toAmount,
                                                                  byteFee: self.keysignPayload.byteFee)
                 switch result {
                 case .success(let preSignedImageHash):
-                    print(preSignedImageHash)
                     self.keysignMessages = preSignedImageHash
                 case .failure(let err):
                     logger.error("Failed to get preSignedImageHash: \(err)")
@@ -104,8 +102,10 @@ struct KeysignDiscoveryView: View {
         }
         .task {
             // start the mediator , so other devices can discover us
-            self.mediator.start()
-            self.startKeysignSession()
+            Task{
+                self.mediator.start()
+                self.startKeysignSession()
+            }
             Task {
                 repeat {
                     self.getParticipants()

@@ -19,30 +19,13 @@ enum BitcoinHelper {
         case runtimeError(String)
     }
 
-    static func fixupStandardBase64(input: String) -> String {
-        var base64Standard = input.replacingOccurrences(of: "-", with: "+").replacingOccurrences(of: "_", with: "/")
-
-        // Add padding if necessary
-        let remainder = base64Standard.count % 4
-        if remainder > 0 {
-            let padding = String(repeating: "=", count: 4 - remainder)
-            base64Standard += padding
-        }
-        return base64Standard
-    }
+    
 
     static func getSignatureFromTssResponse(tssResponse: TssKeysignResponse) -> Result<Data, Error> {
-        let rData = Data(base64Encoded: fixupStandardBase64(input: tssResponse.r))
-        let sData = Data(base64Encoded: fixupStandardBase64(input: tssResponse.s))
-        guard let rData else {
-            return .failure(BitcoinTransactionError.runtimeError("invalid r signature"))
+        guard let derSig = Data(hexString: tssResponse.derSignature) else{
+            return .failure(BitcoinTransactionError.runtimeError("fail to get der signature"))
         }
-        guard let sData else {
-            return .failure(BitcoinTransactionError.runtimeError("invalid s signature"))
-        }
-        var signature = rData
-        signature.append(sData)
-        return .success(signature)
+        return .success(derSig)
     }
 
     static func getBitcoin(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
@@ -79,19 +62,12 @@ enum BitcoinHelper {
 
     // before keysign , we need to get the preSignedImageHash , so it can be signed with TSS
     static func getPreSignedImageHash(utxos: [UtxoInfo],
-                                      hexPubKey: String,
                                       fromAddress: String,
                                       toAddress: String,
                                       toAmount: Int64,
                                       byteFee: Int64) -> Result<[String], Error>
     {
-        guard let pubkeyData = Data(hexString: hexPubKey),
-              let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
-        else {
-            return .failure(BitcoinTransactionError.runtimeError("public key \(hexPubKey) is invalid"))
-        }
-
-        let result = getBitcoinPreSigningInputData(utxos: utxos, pubKey: publicKey, fromAddress: fromAddress, toAddress: toAddress, toAmount: toAmount, byteFee: byteFee)
+        let result = getBitcoinPreSigningInputData(utxos: utxos, fromAddress: fromAddress, toAddress: toAddress, toAmount: toAmount, byteFee: byteFee)
         switch result {
         case .success(let inputData):
             do {
@@ -107,7 +83,6 @@ enum BitcoinHelper {
     }
 
     static func getBitcoinPreSigningInputData(utxos: [UtxoInfo],
-                                              pubKey: PublicKey,
                                               fromAddress: String,
                                               toAddress: String,
                                               toAmount: Int64,
@@ -118,11 +93,11 @@ enum BitcoinHelper {
             var input = BitcoinSigningInput.with {
                 $0.hashType = BitcoinSigHashType.all.rawValue
                 $0.amount = toAmount
+                $0.useMaxAmount = false
                 $0.toAddress = toAddress
                 $0.changeAddress = fromAddress
                 $0.byteFee = byteFee
                 $0.coinType = coin.rawValue
-                $0.scripts = [String: Data]()
             }
             for inputUtxo in utxos {
                 let lockScript = BitcoinScript.lockScriptForAddress(address: fromAddress, coin: .bitcoin)
@@ -146,6 +121,10 @@ enum BitcoinHelper {
             }
             let plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: .bitcoin)
             input.plan = plan
+            print("plan amount:\(plan.amount)")
+            print("plan fee:\(plan.fee)")
+            print("plan change:\(plan.change)")
+            print("plan utxo count:\(plan.utxos.count)")
             let inputData = try input.serializedData()
             return .success(inputData)
 
@@ -170,7 +149,6 @@ enum BitcoinHelper {
         }
 
         let result = getBitcoinPreSigningInputData(utxos: utxos,
-                                                   pubKey: publicKey,
                                                    fromAddress: fromAddress,
                                                    toAddress: toAddress,
                                                    toAmount: toAmount,
@@ -180,22 +158,25 @@ enum BitcoinHelper {
             do {
                 let preHashes = TransactionCompiler.preImageHashes(coinType: .bitcoin, txInputData: preSignInputData)
                 let preSignOutputs = try BitcoinPreSigningOutput(serializedData: preHashes)
-
+                
+                print("presign output err:\(preSignOutputs.errorMessage)")
+                
                 let allSignatures = DataVector()
                 let publicKeys = DataVector()
                 for h in preSignOutputs.hashPublicKeys {
                     let preImageHash = h.dataHash
+                    print("bitcoin pubkey hash:\(h.publicKeyHash.hexString)")
                     let signature = signatureProvider(preImageHash)
-                    guard publicKey.verify(signature: signature, message: preImageHash) else {
+                    guard publicKey.verifyAsDER(signature: signature, message: preImageHash) else {
                         return .failure(BitcoinTransactionError.runtimeError("fail to verify signature"))
                     }
                     allSignatures.add(data: signature)
                     publicKeys.add(data: pubkeyData)
                 }
-
+                print("preSignInputData length:\(preSignInputData.count),signature:\(allSignatures.size),pubkeys:\(publicKeys.size)")
                 let compileWithSignatures = TransactionCompiler.compileWithSignatures(coinType: .bitcoin, txInputData: preSignInputData, signatures: allSignatures, publicKeys: publicKeys)
                 let output = try BitcoinSigningOutput(serializedData: compileWithSignatures)
-                
+                print("output:\(output.errorMessage)")
                 print(output.transactionID)
                 print(compileWithSignatures.count)
                 print(output.encoded.count)
