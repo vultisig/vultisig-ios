@@ -106,7 +106,7 @@ enum BitcoinHelper {
                 guard let keyHash else {
                     return .failure(BitcoinTransactionError.runtimeError("fail to get key hash from lock script"))
                 }
-                let redeemScript = BitcoinScript.buildPayToPublicKeyHash(hash: keyHash)
+                let redeemScript = BitcoinScript.buildPayToWitnessPubkeyHash(hash: keyHash)
                 input.scripts[keyHash.hexString] = redeemScript.data
                 let utxo = BitcoinUnspentTransaction.with {
                     $0.outPoint = BitcoinOutPoint.with {
@@ -121,10 +121,6 @@ enum BitcoinHelper {
             }
             let plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: .bitcoin)
             input.plan = plan
-            print("plan amount:\(plan.amount)")
-            print("plan fee:\(plan.fee)")
-            print("plan change:\(plan.change)")
-            print("plan utxo count:\(plan.utxos.count)")
             let inputData = try input.serializedData()
             return .success(inputData)
 
@@ -158,14 +154,10 @@ enum BitcoinHelper {
             do {
                 let preHashes = TransactionCompiler.preImageHashes(coinType: .bitcoin, txInputData: preSignInputData)
                 let preSignOutputs = try BitcoinPreSigningOutput(serializedData: preHashes)
-                
-                print("presign output err:\(preSignOutputs.errorMessage)")
-                
                 let allSignatures = DataVector()
                 let publicKeys = DataVector()
                 for h in preSignOutputs.hashPublicKeys {
                     let preImageHash = h.dataHash
-                    print("bitcoin pubkey hash:\(h.publicKeyHash.hexString)")
                     let signature = signatureProvider(preImageHash)
                     guard publicKey.verifyAsDER(signature: signature, message: preImageHash) else {
                         return .failure(BitcoinTransactionError.runtimeError("fail to verify signature"))
@@ -173,13 +165,8 @@ enum BitcoinHelper {
                     allSignatures.add(data: signature)
                     publicKeys.add(data: pubkeyData)
                 }
-                print("preSignInputData length:\(preSignInputData.count),signature:\(allSignatures.size),pubkeys:\(publicKeys.size)")
                 let compileWithSignatures = TransactionCompiler.compileWithSignatures(coinType: .bitcoin, txInputData: preSignInputData, signatures: allSignatures, publicKeys: publicKeys)
                 let output = try BitcoinSigningOutput(serializedData: compileWithSignatures)
-                print("output:\(output.errorMessage)")
-                print(output.transactionID)
-                print(compileWithSignatures.count)
-                print(output.encoded.count)
                 return .success(output.encoded.hexString)
             } catch {
                 return .failure(BitcoinTransactionError.runtimeError("fail to construct raw transaction,error: \(error.localizedDescription)"))
