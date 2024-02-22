@@ -4,37 +4,47 @@
 //
 //  Created by Enrique Souza Soares on 13/02/2024.
 //
-
-import Foundation
 import SwiftUI
 
-@MainActor  // Ensures all updates are on the main thread
+@MainActor
 public class BitcoinTransactionsService: ObservableObject {
-    @Published var walletData: BitcoinTransaction?
+    @Published var walletData: [BitcoinTransactionMempool]?
     @Published var errorMessage: String?
     
-    // Replace with your actual function to fetch unspent outputs
-    func fetchTransactions(for address: String) async {
-        guard
-            let url = URL(
-                string: "https://api.blockcypher.com/v1/btc/main/addrs/\(address)")
-        else {
-            // Handle the case for an invalid URL
-            print("Invalid URL")
+    func fetchTransactions(_ userAddress: String) async {
+        
+        print("https://mempool.space/api/address/\(userAddress)/txs")
+        
+        guard let url = URL(string: "https://mempool.space/api/address/\(userAddress)/txs") else {
+            errorMessage = "Invalid URL"
             return
         }
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            // Decode the JSON data into WalletUnspentOutput
             let decoder = JSONDecoder()
-            let decodedData = try decoder.decode(BitcoinTransaction.self, from: data)
-            // Update your published property with the decoded data
-            self.walletData = decodedData
+            let decodedData = try decoder.decode([BitcoinTransactionMempool].self, from: data)
+            
+            self.walletData = decodedData.map { transaction in
+                BitcoinTransactionMempool(txid: transaction.txid, version: transaction.version, locktime: transaction.locktime, vin: transaction.vin, vout: transaction.vout, fee: transaction.fee, status: transaction.status, userAddress: userAddress)
+            }
+        } catch let DecodingError.dataCorrupted(context) {
+            print(context)
+        } catch let DecodingError.keyNotFound(key, context) {
+            print("Key '\(key)' not found:", context.debugDescription)
+            print("codingPath:", context.codingPath)
+        } catch let DecodingError.valueNotFound(value, context) {
+            print("Value '\(value)' not found:", context.debugDescription)
+            print("codingPath:", context.codingPath)
+        } catch let DecodingError.typeMismatch(type, context)  {
+            print("Type '\(type)' mismatch:", context.debugDescription)
+            print("codingPath:", context.codingPath)
         } catch {
-            // Handle any errors
+            print("error: ", error)
+        }
+        catch {
+            errorMessage = "Fetch failed: \(error.localizedDescription)"
             print("Fetch failed: \(error.localizedDescription)")
-            self.errorMessage = error.localizedDescription
         }
     }
 }

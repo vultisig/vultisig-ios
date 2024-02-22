@@ -33,6 +33,7 @@
 		465B09B52B7D8E7B00952DD9 /* CryptoPriceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */; };
 		465B09B72B7D909400952DD9 /* CryptoPrice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09B62B7D909400952DD9 /* CryptoPrice.swift */; };
 		467B2D662B7B51F700AEDF64 /* NavigationStackButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 467B2D652B7B51F700AEDF64 /* NavigationStackButtons.swift */; };
+		46F47CBB2B870EE900D964EA /* BitcoinTransactionMempool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F47CBA2B870EE900D964EA /* BitcoinTransactionMempool.swift */; };
 		D7347C2E2B759A0F00887E57 /* ProgressBottomBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7347C2D2B759A0F00887E57 /* ProgressBottomBar.swift */; };
 		D9A22EB72B667C41007281BF /* Mediator in Frameworks */ = {isa = PBXBuildFile; productRef = D9A22EB62B667C41007281BF /* Mediator */; };
 		D9AD8EDA2B6722CC0009F8D5 /* ApplicationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */; };
@@ -129,6 +130,7 @@
 		465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoPriceService.swift; sourceTree = "<group>"; };
 		465B09B62B7D909400952DD9 /* CryptoPrice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoPrice.swift; sourceTree = "<group>"; };
 		467B2D652B7B51F700AEDF64 /* NavigationStackButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationStackButtons.swift; sourceTree = "<group>"; };
+		46F47CBA2B870EE900D964EA /* BitcoinTransactionMempool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BitcoinTransactionMempool.swift; sourceTree = "<group>"; };
 		D7347C2D2B759A0F00887E57 /* ProgressBottomBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressBottomBar.swift; sourceTree = "<group>"; };
 		D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ApplicationState.swift; path = voltixApp/Model/ApplicationState.swift; sourceTree = SOURCE_ROOT; };
 		D9AD8EDB2B6723D10009F8D5 /* AppNavigationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppNavigationState.swift; path = voltixApp/Model/AppNavigationState.swift; sourceTree = SOURCE_ROOT; };
@@ -294,6 +296,7 @@
 				D9AD8EDB2B6723D10009F8D5 /* AppNavigationState.swift */,
 				D9AD8F072B675ECD0009F8D5 /* SupportedAssets.swift */,
 				465B09B62B7D909400952DD9 /* CryptoPrice.swift */,
+				46F47CBA2B870EE900D964EA /* BitcoinTransactionMempool.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -643,6 +646,7 @@
 				465B09AF2B7C84C600952DD9 /* ShareSheet.swift in Sources */,
 				049BBB562B71E5F5004C231F /* Choose.swift in Sources */,
 				D7347C2E2B759A0F00887E57 /* ProgressBottomBar.swift in Sources */,
+				46F47CBB2B870EE900D964EA /* BitcoinTransactionMempool.swift in Sources */,
 				D9AD8EDA2B6722CC0009F8D5 /* ApplicationState.swift in Sources */,
 				D9AD8EFF2B67321D0009F8D5 /* SwapWaitingForPeersView.swift in Sources */,
 				DE1572962B70F254009BC7C5 /* TssMessenger.swift in Sources */,
