@@ -15,7 +15,7 @@ struct VaultSelectionView: View {
     @State private var itemToDelete: Vault? = nil
     var body: some View {
         List(vaults, id: \.self, selection: $appState.currentVault) { vault in
-            NavigationLink(destination: TestVaultAssetView(presentationStack: $presentationStack),
+            NavigationLink(destination: ListVaultAssetView(presentationStack: $presentationStack),
                            label: {
                                Text(vault.name)
                                    .swipeActions {

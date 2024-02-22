@@ -19,7 +19,7 @@ struct KeysignView: View {
         case KeysignFinished
         case KeysignFailed
     }
-
+    
     @Binding var presentationStack: [CurrentScreen]
     let keysignCommittee: [String]
     let mediatorURL: String
@@ -39,7 +39,7 @@ struct KeysignView: View {
     @State private var signature: String = ""
     @State var cache = NSCache<NSString, AnyObject>()
     @State var signatures = [String: TssKeysignResponse]()
-
+    
     var body: some View {
         VStack {
             switch self.currentStatus {
@@ -48,7 +48,7 @@ struct KeysignView: View {
                     Text("creating tss instance")
                     ProgressView()
                         .progressViewStyle(.circular)
-                        //.tint(.blue)
+                    //.tint(.blue)
                         .padding(2)
                 }
             case .KeysignECDSA:
@@ -56,16 +56,16 @@ struct KeysignView: View {
                     Text("Signing using ECDSA key")
                     ProgressView()
                         .progressViewStyle(.circular)
-                        //.tint(.blue)
+                    //.tint(.blue)
                         .padding(2)
                 }
-
+                
             case .KeysignEdDSA:
                 HStack {
                     Text("Signing using EdDSA key")
                     ProgressView()
                         .progressViewStyle(.circular)
-                        //.tint(.blue)
+                    //.tint(.blue)
                         .padding(2)
                 }
             case .KeysignFinished:
@@ -78,7 +78,7 @@ struct KeysignView: View {
                     guard let vault = appState.currentVault else {
                         return
                     }
-
+                    
                     // get bitcoin transaction
                     if let keysignPayload {
                         let bitcoinPubKey = BitcoinHelper.getBitcoinPubKey(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
@@ -89,28 +89,28 @@ struct KeysignView: View {
                                                                                toAmount: keysignPayload.toAmount,
                                                                                byteFee: keysignPayload.byteFee,
                                                                                signatureProvider: { (preHash: Data) in
-                                                                                   let hex = preHash.hexString
-                                                                                   logger.info("hex prehash:\(hex)")
-
-                                                                                   if let sig = self.signatures[hex] {
-                                                                                       logger.info("resp:\(sig.r)")
-                                                                                       let sigResult = BitcoinHelper.getSignatureFromTssResponse(tssResponse: sig)
-                                                                                       switch sigResult {
-                                                                                       case .success(let sigData):
-                                                                                           logger.info("successfully get sigdata")
-                                                                                           return sigData
-                                                                                       case .failure(let err):
-                                                                                           switch err {
-                                                                                           case BitcoinHelper.BitcoinTransactionError.runtimeError(let errDetail):
-                                                                                               logger.error("fail to get signature from TssResponse,error:\(errDetail)")
-                                                                                           default:
-                                                                                               logger.error("fail to get signature from TssResponse,error:\(err.localizedDescription)")
-                                                                                           }
-                                                                                           
-                                                                                       }
-                                                                                   }
-                                                                                   return Data()
-                                                                               })
+                            let hex = preHash.hexString
+                            logger.info("hex prehash:\(hex)")
+                            
+                            if let sig = self.signatures[hex] {
+                                logger.info("resp:\(sig.r)")
+                                let sigResult = BitcoinHelper.getSignatureFromTssResponse(tssResponse: sig)
+                                switch sigResult {
+                                case .success(let sigData):
+                                    logger.info("successfully get sigdata")
+                                    return sigData
+                                case .failure(let err):
+                                    switch err {
+                                    case BitcoinHelper.BitcoinTransactionError.runtimeError(let errDetail):
+                                        logger.error("fail to get signature from TssResponse,error:\(errDetail)")
+                                    default:
+                                        logger.error("fail to get signature from TssResponse,error:\(err.localizedDescription)")
+                                    }
+                                    
+                                }
+                            }
+                            return Data()
+                        })
                         switch result {
                         case .success(let tx):
                             print(tx)
@@ -150,7 +150,7 @@ struct KeysignView: View {
                     self.currentStatus = .KeysignFailed
                     return
                 }
-
+                
                 // Keep polling for messages
                 let t = Task {
                     repeat {
@@ -173,7 +173,7 @@ struct KeysignView: View {
                 if let msgToSign = Data(hexString: msg)?.base64EncodedString() {
                     keysignReq.messageToSign = msgToSign
                 }
-
+                
                 do {
                     switch self.keysignType {
                     case .ECDSA:
@@ -197,11 +197,11 @@ struct KeysignView: View {
                     return
                 }
             }
-
+            
             self.currentStatus = .KeysignFinished
         }
     }
-
+    
     private func tssKeysign(service: TssServiceImpl, req: TssKeysignRequest, keysignType: KeyType) async throws -> TssKeysignResponse {
         let t = Task.detached(priority: .high) {
             switch keysignType {
@@ -213,7 +213,7 @@ struct KeysignView: View {
         }
         return try await t.value
     }
-
+    
     private func pollInboundMessages(messageID: String) {
         let urlString = "\(self.mediatorURL)/message/\(self.sessionID)/\(self.localPartyKey)"
         Utils.getRequest(urlString: urlString, headers: ["message_id": messageID], completion: { result in
@@ -247,7 +247,7 @@ struct KeysignView: View {
             }
         })
     }
-
+    
     private func deleteMessageFromServer(hash: String, messageID: String) {
         let urlString = "\(self.mediatorURL)/message/\(self.sessionID)/\(self.localPartyKey)/\(hash)"
         Utils.deleteFromServer(urlString: urlString, messageID: messageID)

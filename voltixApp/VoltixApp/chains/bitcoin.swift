@@ -18,23 +18,23 @@ enum BitcoinHelper {
         case tssError(String)
         case runtimeError(String)
     }
-
     
-
+    
+    
     static func getSignatureFromTssResponse(tssResponse: TssKeysignResponse) -> Result<Data, Error> {
         guard let derSig = Data(hexString: tssResponse.derSignature) else{
             return .failure(BitcoinTransactionError.runtimeError("fail to get der signature"))
         }
         return .success(derSig)
     }
-
+    
     static func getBitcoin(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
         return getAddressFromPubKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode)
             .map { addr in
                 Coin(chain: Chain.Bitcoin, ticker: "BTC", logo: "", address: addr)
             }
     }
-
+    
     static func getBitcoinPubKey(hexPubKey: String, hexChainCode: String) -> String {
         var nsErr: NSError?
         let derivedPubKey = TssGetDerivedPubKey(hexPubKey, hexChainCode, CoinType.bitcoin.derivationPath(), false, &nsErr)
@@ -44,7 +44,7 @@ enum BitcoinHelper {
         }
         return derivedPubKey
     }
-
+    
     static func getAddressFromPubKey(hexPubKey: String, hexChainCode: String) -> Result<String, Error> {
         var nsErr: NSError?
         let derivedPubKey = TssGetDerivedPubKey(hexPubKey, hexChainCode, CoinType.bitcoin.derivationPath(), false, &nsErr)
@@ -56,10 +56,10 @@ enum BitcoinHelper {
         else {
             return .failure(BitcoinTransactionError.runtimeError("public key \(derivedPubKey) is invalid"))
         }
-
+        
         return .success(CoinType.bitcoin.deriveAddressFromPublicKey(publicKey: publicKey))
     }
-
+    
     // before keysign , we need to get the preSignedImageHash , so it can be signed with TSS
     static func getPreSignedImageHash(utxos: [UtxoInfo],
                                       fromAddress: String,
@@ -81,7 +81,7 @@ enum BitcoinHelper {
             return .failure(err)
         }
     }
-
+    
     static func getBitcoinPreSigningInputData(utxos: [UtxoInfo],
                                               fromAddress: String,
                                               toAddress: String,
@@ -124,13 +124,13 @@ enum BitcoinHelper {
             input.plan = plan
             let inputData = try input.serializedData()
             return .success(inputData)
-
+            
         } catch {
             print("fail to construct bitcoin presigning output,err:\(error)")
             return .failure(error)
         }
     }
-
+    
     static func getSignedBitcoinTransaction(utxos: [UtxoInfo],
                                             hexPubKey: String,
                                             fromAddress: String,
@@ -144,7 +144,7 @@ enum BitcoinHelper {
         else {
             return .failure(BitcoinTransactionError.runtimeError("public key \(hexPubKey) is invalid"))
         }
-
+        
         let result = getBitcoinPreSigningInputData(utxos: utxos,
                                                    fromAddress: fromAddress,
                                                    toAddress: toAddress,
@@ -172,7 +172,7 @@ enum BitcoinHelper {
             } catch {
                 return .failure(BitcoinTransactionError.runtimeError("fail to construct raw transaction,error: \(error.localizedDescription)"))
             }
-
+            
         case .failure(let error):
             return .failure(error)
         }

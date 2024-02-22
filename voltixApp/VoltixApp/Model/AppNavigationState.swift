@@ -32,10 +32,7 @@ enum CurrentScreen: Hashable {
     
     // Send
     case sendInputDetails(SendTransaction)
-    case sendPeerDiscovery
-    case sendWaitingForPeers  // Host party waits here
     case sendVerifyScreen(SendTransaction)     // 2nd device goes to here automatically on receiving a p2p keysign msg
-    case sendDone
     
     // Swap
     case swapInputDetails
@@ -44,8 +41,7 @@ enum CurrentScreen: Hashable {
     case swapVerifyScreen
     case swapDone
     
-    case keysignTest(Coin)
-    
+
     // transactions
     case bitcoinTransactionsListView
 }

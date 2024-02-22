@@ -17,7 +17,7 @@ struct SendVerifyView: View {
             Form { // Define spacing if needed
                 LabelText(title: "FROM", value: viewModel.fromAddress).padding(.vertical, 10)
                 LabelText(title: "TO", value: viewModel.toAddress).padding(.vertical, 10)
-                LabelTextNumeric(title: "AMOUNT", value: viewModel.amount + " BTC").padding(.vertical, 10)
+                LabelTextNumeric(title: "AMOUNT", value: viewModel.amount + " " + viewModel.coin.ticker).padding(.vertical, 10)
                 LabelText(title: "MEMO", value: viewModel.memo).padding(.vertical, 10)
                 LabelTextNumeric(title: "FEE", value: viewModel.gas).padding(.vertical, 10)
             }
@@ -50,6 +50,22 @@ struct SendVerifyView: View {
                     BottomBar(
                         content: "SIGN",
                         onClick: {
+                            
+                            let keysignPayload = KeysignPayload(
+                                coin: viewModel.coin,
+                                toAddress: viewModel.toAddress,
+                                toAmount: viewModel.amountInSats,
+                                byteFee: viewModel.feeInSats,
+                                utxos:
+                                    [
+                                        UtxoInfo(
+                                            hash: "e87538424ad5efc100cdd3385f32e9e97c1fc8c9158c4bb288c09e7799660335",
+                                            amount: Int64(500000),
+                                            index: UInt32(0)
+                                        )
+                                    ]
+                            )
+                            self.presentationStack.append(.KeysignDiscovery(keysignPayload))
                             
                         }
                     )
@@ -114,6 +130,6 @@ struct CheckboxToggleStyle: ToggleStyle {
 
 struct SendVerifyView_Previews: PreviewProvider {
     static var previews: some View {
-        SendVerifyView(presentationStack: .constant([]), viewModel: SendTransaction(fromAddress: "3JK2dFmWA58A3kukgw1yybotStGAFaV6Sg", toAddress: "3JK2dFmWA58A3kukgw1yybotStGAFaV6Sg", amount: "100", memo: "Test Memo", gas: "0.01"))
+        SendVerifyView(presentationStack: .constant([]), viewModel: SendTransaction(toAddress: "3JK2dFmWA58A3kukgw1yybotStGAFaV6Sg", amount: "100", memo: "Test Memo", gas: "0.01"))
     }
 }
