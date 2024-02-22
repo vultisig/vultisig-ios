@@ -26,14 +26,6 @@ func bytesToHexString(_ bytes: [UInt8]) -> String {
     return bytes.map { String(format: "%02x", $0) }.joined()
 }
 
-func test() {
-    let webSocketUrl = "ws://127.0.0.1/websocket"
-    let url = URL(string: webSocketUrl)!
-    let connection = URLSession.shared.webSocketTask(with: url)
-
-    // connection.receive(completionHandler: )
-}
-
 private let logger = Logger(subsystem: "peers-discory", category: "communication")
 struct PeerDiscoveryView: View {
     enum PeerDiscoveryStatus {
@@ -53,6 +45,7 @@ struct PeerDiscoveryView: View {
     @State private var currentState = PeerDiscoveryStatus.WaitingForDevices
     @State private var localPartyID = ""
     @ObservedObject var participantDiscovery = ParticipantDiscovery()
+    @State private var viewmodel = CommunicationViewModel()
     
     var body: some View {
         VStack {
@@ -107,6 +100,9 @@ struct PeerDiscoveryView: View {
         }
         .task {
             self.mediator.start()
+            
+            self.viewmodel.StartEventLoop(localKey: self.localPartyID)
+            
             logger.info("mediator server started")
             self.startSession()
             self.participantDiscovery.getParticipants(serverAddr: self.serverAddr, sessionID: self.sessionID)

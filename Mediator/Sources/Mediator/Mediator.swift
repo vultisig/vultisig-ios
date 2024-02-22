@@ -36,13 +36,13 @@ public final class Mediator {
         self.server.DELETE["/message/:sessionID/:participantKey/:hash"] = self.deleteMessage
         // POST/GET , to notifiy all parties to start keygen/keysign
         self.server["/start/:sessionID"] = self.startKeygenOrKeysign
-        self.server["/websocket"] = websocket(text: self.OnWebSocketText,
+        self.server["/websocket/ws"] = websocket(text: self.OnWebSocketText,
                                               connected: self.OnClientConnected,
                                               disconnected: self.OnClientDisconnected)
     }
 
     private func OnWebSocketText(session: WebSocketSession, content: String) {
-        var decoder = JSONDecoder()
+        let decoder = JSONDecoder()
         guard let contentData = content.data(using: .utf8) else {
             self.logger.error("content: \(content) can't be decoded correctly")
             return
@@ -70,7 +70,9 @@ public final class Mediator {
         }
     }
 
-    private func OnClientConnected(session: WebSocketSession) {}
+    private func OnClientConnected(session: WebSocketSession) {
+        
+    }
     
     private func OnClientDisconnected(session: WebSocketSession) {
         var keysToDelete = [String]()
@@ -90,7 +92,7 @@ public final class Mediator {
             return
         }
         do {
-            var decoder = JSONDecoder()
+            let decoder = JSONDecoder()
             let tssRoutingMsg = try decoder.decode(TSSRoutingMessage.self, from: payloadData)
             
             guard let clientSession = clients[tssRoutingMsg.to] else {
@@ -177,6 +179,7 @@ public final class Mediator {
     }
 
     private func processHelloMessage(session: WebSocketSession, payload: String) {
+        logger.info("process hello message")
         guard let payloadData = payload.data(using: .utf8) else {
             self.logger.error("hello message payload can't be decoded,\(payload)")
             return
@@ -185,6 +188,7 @@ public final class Mediator {
             let decoder = JSONDecoder()
             let helloMsg = try decoder.decode(HelloMessage.self, from: payloadData)
             self.clients[helloMsg.clientKey] = session
+            logger.info("successfully process hello message")
         } catch {
             self.logger.error("fail to process hello message,error:\(error)")
         }

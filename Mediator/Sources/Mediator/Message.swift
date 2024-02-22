@@ -43,26 +43,47 @@ public enum MessageHeader: Codable {
 }
 
 public struct WebsocketMessage: Codable {
-    let header: MessageHeader
-    let body: String
+    public let header: MessageHeader
+    public let body: String
+    public init(header: MessageHeader, body: String) {
+        self.header = header
+        self.body = body
+    }
 }
 
 public struct HelloMessage: Codable {
-    let clientKey: String
+    public let clientKey: String
+    public init(clientKey: String) {
+        self.clientKey = clientKey
+    }
 }
 
 public struct SessionMessage: Codable {
-    let clientKey: String
-    let sessionID: String
+    public let clientKey: String
+    public let sessionID: String
+    
+    public init(clientKey: String, sessionID: String) {
+        self.clientKey = clientKey
+        self.sessionID = sessionID
+    }
 }
 
 public struct StartTSSMessage: Codable {
-    let sessionID: String
-    let committee: [String]
+    public let sessionID: String
+    public let committee: [String]
+    public init(sessionID: String, committee: [String]) {
+        self.sessionID = sessionID
+        self.committee = committee
+    }
 }
 
 public struct TSSRoutingMessage: Codable {
-    let sessionID: String
-    let to: String
-    let message: Message
+    public let sessionID: String
+    public let to: String
+    public let message: Message
+    public init(sessionID: String, to: String, message: Message) {
+        self.sessionID = sessionID
+        self.to = to
+        self.message = message
+    }
 }
