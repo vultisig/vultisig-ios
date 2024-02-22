@@ -19,10 +19,8 @@ enum BitcoinHelper {
         case runtimeError(String)
     }
     
-    
-    
     static func getSignatureFromTssResponse(tssResponse: TssKeysignResponse) -> Result<Data, Error> {
-        guard let derSig = Data(hexString: tssResponse.derSignature) else{
+        guard let derSig = Data(hexString: tssResponse.derSignature) else {
             return .failure(BitcoinTransactionError.runtimeError("fail to get der signature"))
         }
         return .success(derSig)
@@ -65,9 +63,10 @@ enum BitcoinHelper {
                                       fromAddress: String,
                                       toAddress: String,
                                       toAmount: Int64,
-                                      byteFee: Int64) -> Result<[String], Error>
+                                      byteFee: Int64,
+                                      memo: String?) -> Result<[String], Error>
     {
-        let result = getBitcoinPreSigningInputData(utxos: utxos, fromAddress: fromAddress, toAddress: toAddress, toAmount: toAmount, byteFee: byteFee)
+        let result = getBitcoinPreSigningInputData(utxos: utxos, fromAddress: fromAddress, toAddress: toAddress, toAmount: toAmount, byteFee: byteFee, memo: memo)
         switch result {
         case .success(let inputData):
             do {
@@ -82,61 +81,97 @@ enum BitcoinHelper {
         }
     }
     
+    static func getBitcoinSigningInput(utxos: [UtxoInfo],
+                                       fromAddress: String,
+                                       toAddress: String,
+                                       toAmount: Int64,
+                                       byteFee: Int64,
+                                       memo: String?) -> Result<BitcoinSigningInput, Error>
+    {
+        let coin = CoinType.bitcoin
+        var input = BitcoinSigningInput.with {
+            $0.hashType = BitcoinSigHashType.all.rawValue
+            $0.amount = toAmount
+            $0.useMaxAmount = false
+            $0.toAddress = toAddress
+            $0.changeAddress = fromAddress
+            $0.byteFee = byteFee
+            $0.coinType = coin.rawValue
+            if let memoData = memo?.data(using: .utf8) {
+                $0.outputOpReturn = memoData
+            }
+        }
+        for inputUtxo in utxos {
+            let lockScript = BitcoinScript.lockScriptForAddress(address: fromAddress, coin: .bitcoin)
+            let keyHash = lockScript.matchPayToWitnessPublicKeyHash()
+            guard let keyHash else {
+                return .failure(BitcoinTransactionError.runtimeError("fail to get key hash from lock script"))
+            }
+            let redeemScript = BitcoinScript.buildPayToWitnessPubkeyHash(hash: keyHash)
+            input.scripts[keyHash.hexString] = redeemScript.data
+            let utxo = BitcoinUnspentTransaction.with {
+                $0.outPoint = BitcoinOutPoint.with {
+                    // the network byte order need to be reversed
+                    $0.hash = Data.reverse(hexString: inputUtxo.hash)
+                    $0.index = inputUtxo.index
+                    $0.sequence = UInt32.max
+                }
+                $0.amount = inputUtxo.amount
+                $0.script = lockScript.data
+            }
+            input.utxo.append(utxo)
+        }
+        return .success(input)
+    }
+
     static func getBitcoinPreSigningInputData(utxos: [UtxoInfo],
                                               fromAddress: String,
                                               toAddress: String,
                                               toAmount: Int64,
-                                              byteFee: Int64) -> Result<Data, Error>
+                                              byteFee: Int64,
+                                              memo: String?) -> Result<Data, Error>
     {
-        do {
-            let coin = CoinType.bitcoin
-            var input = BitcoinSigningInput.with {
-                $0.hashType = BitcoinSigHashType.all.rawValue
-                $0.amount = toAmount
-                $0.useMaxAmount = false
-                $0.toAddress = toAddress
-                $0.changeAddress = fromAddress
-                $0.byteFee = byteFee
-                $0.coinType = coin.rawValue
-            }
-            for inputUtxo in utxos {
-                let lockScript = BitcoinScript.lockScriptForAddress(address: fromAddress, coin: .bitcoin)
-                print("lock script: \(lockScript.scriptHash.hexString)")
-                let keyHash = lockScript.matchPayToWitnessPublicKeyHash()
-                guard let keyHash else {
-                    return .failure(BitcoinTransactionError.runtimeError("fail to get key hash from lock script"))
-                }
-                let redeemScript = BitcoinScript.buildPayToWitnessPubkeyHash(hash: keyHash)
-                input.scripts[keyHash.hexString] = redeemScript.data
-                let utxo = BitcoinUnspentTransaction.with {
-                    $0.outPoint = BitcoinOutPoint.with {
-                        // the network byte order need to be reversed
-                        $0.hash = Data.reverse(hexString: inputUtxo.hash)
-                        $0.index = inputUtxo.index
-                        $0.sequence = UInt32.max
-                    }
-                    $0.amount = inputUtxo.amount
-                    $0.script = lockScript.data
-                }
-                input.utxo.append(utxo)
-            }
+        let result = getBitcoinSigningInput(utxos: utxos, fromAddress: fromAddress, toAddress: toAddress, toAmount: toAmount, byteFee: byteFee, memo: memo)
+        switch result {
+        case .success(var input):
             let plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: .bitcoin)
             input.plan = plan
-            let inputData = try input.serializedData()
-            return .success(inputData)
-            
-        } catch {
-            print("fail to construct bitcoin presigning output,err:\(error)")
-            return .failure(error)
+            do {
+                let inputData = try input.serializedData()
+                return .success(inputData)
+            } catch {
+                print("fail to serialize input data,err:\(error.localizedDescription)")
+                return .failure(error)
+            }
+        case .failure(let err):
+            return .failure(err)
         }
     }
-    
+
+    static func getBitcoinTransactionPlan(utxos: [UtxoInfo],
+                                          fromAddress: String,
+                                          toAddress: String,
+                                          toAmount: Int64,
+                                          byteFee: Int64,
+                                          memo: String?) -> Result<BitcoinTransactionPlan, Error>
+    {
+        let result = getBitcoinSigningInput(utxos: utxos, fromAddress: fromAddress, toAddress: toAddress, toAmount: toAmount, byteFee: byteFee, memo: memo)
+        switch result {
+        case .success(var input):
+            let plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: .bitcoin)
+            return .success(plan)
+        case .failure(let err):
+            return .failure(err)
+        }
+    }
+
     static func getSignedBitcoinTransaction(utxos: [UtxoInfo],
                                             hexPubKey: String,
                                             fromAddress: String,
                                             toAddress: String,
                                             toAmount: Int64,
                                             byteFee: Int64,
+                                            memo: String?,
                                             signatureProvider: (Data) -> Data) -> Result<String, Error>
     {
         guard let pubkeyData = Data(hexString: hexPubKey),
@@ -149,7 +184,7 @@ enum BitcoinHelper {
                                                    fromAddress: fromAddress,
                                                    toAddress: toAddress,
                                                    toAmount: toAmount,
-                                                   byteFee: byteFee)
+                                                   byteFee: byteFee, memo: memo)
         switch result {
         case .success(let preSignInputData):
             do {
