@@ -100,8 +100,7 @@ struct SendInputDetailsView: View {
                             if let walletData = unspentOutputsService.walletData {
                                 self.sendTransactionModel.amount = walletData.balanceInBTC
                             } else {
-                                Text("Error to fetch the data")
-                                    .padding()
+                                Text("Error to fetch the data").padding()
                             }
                         }) {
                             Text("MAX")
