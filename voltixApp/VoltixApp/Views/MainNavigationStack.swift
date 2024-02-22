@@ -35,15 +35,9 @@ struct MainNavigationStack: View {
                     case .menu:
                         MenuView(presentationStack: $presentationStack)
                     case .sendInputDetails(let tx):
-                        SendInputDetailsView(presentationStack: $presentationStack)
-                    case .sendPeerDiscovery:
-                        SendPeerDiscoveryView(presentationStack: $presentationStack)
-                    case .sendWaitingForPeers:
-                        SendWaitingForPeersView(presentationStack: $presentationStack)
+                        SendInputDetailsView(presentationStack: $presentationStack, sendTransactionModel: tx)
                     case .sendVerifyScreen(let tx):
                         SendVerifyView(presentationStack: $presentationStack, viewModel: tx)
-                    case .sendDone:
-                        SendDoneView(presentationStack: $presentationStack)
                     case .swapInputDetails:
                         SwapInputDetailsView(presentationStack: $presentationStack)
                     case .swapPeerDiscovery:
@@ -64,8 +58,6 @@ struct MainNavigationStack: View {
                         JoinKeysignView(presentationStack: $presentationStack)
                     case .bitcoinTransactionsListView:
                         BitcoinTransactionListView(presentationStack: $presentationStack)
-                    case .keysignTest(let coin):
-                        KeysignTestView(presentationStack: $presentationStack, coin: coin)
                     }
                 }
         }.onAppear {

@@ -5,14 +5,16 @@
 
 import SwiftUI
 
-struct TestVaultAssetView: View {
+struct ListVaultAssetView: View {
     @Binding var presentationStack: [CurrentScreen]
     @EnvironmentObject var appState: ApplicationState
     @State private var showingCoinList = false
+    @StateObject var sendTransaction = SendTransaction()
+    
     var body: some View {
         List {
             ForEach(appState.currentVault?.coins ?? [Coin](), id: \.self) {
-                VaultItem(presentationStack: $presentationStack, coinName: $0.chain.name, usdAmount: "0", showAmount: true, address: $0.address, isRadio: true, radioIcon: "circle", showButtons: true)
+                VaultAssetsView(presentationStack: $presentationStack, transactionDetailsViewModel: SendTransaction(toAddress: "", amount: "", memo: "", gas: "20", coin: $0))
             }
         }
         .navigationTitle(appState.currentVault?.name ?? "Vault")
@@ -27,26 +29,22 @@ struct TestVaultAssetView: View {
                 }
                 NavigationButtons.refreshButton(action: {})
                 Button("send", systemImage: "paperplane") {
-                    if let coin = appState.currentVault?.coins[0] {
-                        self.presentationStack.append(CurrentScreen.keysignTest(coin))
-                    }
+                    self.presentationStack.append(.sendInputDetails(sendTransaction))
+                }
+                Button("join keysign",systemImage: "camera.viewfinder") {
+                    self.presentationStack.append(.JoinKeysign)
                 }
             }
         }
         .onAppear {
             if let vault = appState.currentVault {
+                print("hexPubKey: \(vault.pubKeyECDSA) - hexChainCode: \(vault.hexChainCode)")
                 let result = BitcoinHelper.getBitcoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
                 switch result {
-                    case .success(let btc):
-                        print("btc: \(btc)")
-                    case .failure(let error):
-                        print("error: \(error)")
-                }
-                // TODO: remove the following few lines , just for development
-                for keyshare in vault.keyshares {
-                    if keyshare.pubkey == vault.pubKeyECDSA {
-                        print("keyshare for \(vault.pubKeyECDSA): \(Utils.stringToHex(keyshare.keyshare))")
-                    }
+                case .success(let btc):
+                    self.sendTransaction.coin = btc
+                case .failure(let error):
+                    print("error: \(error)")
                 }
             }
         }
@@ -54,5 +52,5 @@ struct TestVaultAssetView: View {
 }
 
 #Preview {
-    TestVaultAssetView(presentationStack: .constant([]))
+    ListVaultAssetView(presentationStack: .constant([]))
 }

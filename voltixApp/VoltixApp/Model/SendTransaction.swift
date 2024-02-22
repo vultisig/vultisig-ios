@@ -7,22 +7,35 @@
 
 import Foundation
 
+import CodeScanner
+import OSLog
+import SwiftUI
+import UniformTypeIdentifiers
+import WalletCore
+
 class SendTransaction: ObservableObject, Hashable {
     
+
     init() {
-        self.fromAddress = ""
         self.toAddress = ""
         self.amount = ""
         self.memo = ""
         self.gas = ""
     }
     
-    init(fromAddress: String, toAddress: String, amount: String, memo: String, gas: String) {
-        self.fromAddress = fromAddress
+    init(toAddress: String, amount: String, memo: String, gas: String) {
         self.toAddress = toAddress
         self.amount = amount
         self.memo = memo
         self.gas = gas
+    }
+    
+    init(toAddress: String, amount: String, memo: String, gas: String, coin: Coin) {
+        self.toAddress = toAddress
+        self.amount = amount
+        self.memo = memo
+        self.gas = gas
+        self.coin = coin
     }
     
     static func == (lhs: SendTransaction, rhs: SendTransaction) -> Bool {
@@ -41,12 +54,27 @@ class SendTransaction: ObservableObject, Hashable {
         hasher.combine(gas)
     }
     
-    //18cBEMRxXHqzWWCxZNtU91F5sbUNKhL5PX
-    @Published var fromAddress: String = ""
+    var fromAddress: String {
+        return coin.address
+    }
     @Published var toAddress: String = ""
     @Published var amount: String = ""
     @Published var memo: String = ""
     @Published var gas: String = ""
+    @Published var coin: Coin = Coin(chain: Chain.Bitcoin, ticker: "BTC", logo: "", address: "")
+    
+    var amountInSats: Int64 {
+        return Int64(amountDecimal * 100000000)
+    }
+    
+    var feeInSats: Int64 {
+        
+        if gasDecimal == 0  {
+            return Int64(20) // 20 sats is the default
+        }
+        
+        return  Int64(gasDecimal * 100000000) // Normaly it comes int BTC
+    }
     
     var amountDecimal: Double {
         let amountString = amount.replacingOccurrences(of: ",", with: ".")
@@ -81,4 +109,15 @@ class SendTransaction: ObservableObject, Hashable {
             }
         }
     }
+    
+    func toString() -> String {
+        let fromAddressStr = "\(fromAddress)"
+        let toAddressStr = "\(toAddress)"
+        let amountStr = "\(amount)"
+        let memoStr = "\(memo)"
+        let gasStr = "\(gas)"
+
+        return "fromAddress: \(fromAddressStr), toAddress: \(toAddressStr), amount: \(amountStr), memo: \(memoStr), gas: \(gasStr)"
+    }
+    
 }

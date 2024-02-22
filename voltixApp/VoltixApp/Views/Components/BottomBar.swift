@@ -27,18 +27,16 @@ struct BottomBar: View {
                 Button(action: onClick) {
                     HStack() {
                     Text(content)
-                      .lineSpacing(60)
                       .fontWeight(.black)
-                      .padding(.trailing, 16)
                     Image(systemName: "chevron.right")
                       .resizable()
-                      .frame(width: 20, height: 15)
+                      .frame(width: 10, height: 15)
                     }
                 }
                 .buttonStyle(PlainButtonStyle())
             }
         }
-        .padding(.trailing, 16)
+        .padding()
     }
 }
 

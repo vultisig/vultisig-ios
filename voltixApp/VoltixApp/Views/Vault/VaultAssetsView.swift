@@ -20,7 +20,7 @@ struct VaultAssetsView: View {
                             if let priceUsd = walletData.balanceInUSD(usdPrice: bitcoinPriceUSD) {
                                 VaultItem(
                                     presentationStack: $presentationStack,
-                                    coinName: "Bitcoin",
+                                    coinName: transactionDetailsViewModel.coin.chain.name,
                                     usdAmount: priceUsd,
                                     showAmount: false,
                                     address: walletData.address,
@@ -29,7 +29,7 @@ struct VaultAssetsView: View {
                                     showButtons: true
                                 ).padding()
                                 AssetItem(
-                                    coinName: "BTC",
+                                    coinName: transactionDetailsViewModel.coin.ticker,
                                     amount: walletData.balanceInBTC,
                                     usdAmount: priceUsd,
                                     sendClick: {
@@ -76,13 +76,13 @@ struct VaultAssetsView: View {
                 }
             }
             
-            BottomBar(
-                content: "CONTINUE",
-                onClick: {
-                    // Define the action for continue button
-                }
-            )
-            .padding()
+//            BottomBar(
+//                content: "CONTINUE",
+//                onClick: {
+//                    // Define the action for continue button
+//                }
+//            )
+//            .padding()
         }
         .navigationTitle(appState.currentVault?.name ?? "Vault")
         .modifier(InlineNavigationBarTitleModifier())
@@ -98,13 +98,7 @@ struct VaultAssetsView: View {
         }
     }
     private func loadData() async {
-#if DEBUG
-        transactionDetailsViewModel.fromAddress = "18cBEMRxXHqzWWCxZNtU91F5sbUNKhL5PX"
-#else
-        transactionDetailsViewModel.fromAddress = appState.currentVault?.legacyBitcoinAddress ?? ""
-#endif
         await unspentOutputsViewModel.fetchUnspentOutputs(for: transactionDetailsViewModel.fromAddress)
         await cryptoPriceViewModel.fetchCryptoPrices(for: "bitcoin", for: "usd")
-        
     }
 }
