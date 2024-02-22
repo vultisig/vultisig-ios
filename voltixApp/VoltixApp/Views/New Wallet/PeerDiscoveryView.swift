@@ -36,16 +36,15 @@ struct PeerDiscoveryView: View {
     
     @Binding var presentationStack: [CurrentScreen]
     @EnvironmentObject var appState: ApplicationState
-    @State private var peersFound = [String]()
     @State private var selections = Set<String>()
     private let mediator = Mediator.shared
     // it should be ok to hardcode here , as this view start the mediator server itself
     private let serverAddr = "http://127.0.0.1:8080"
     private let sessionID = UUID().uuidString
     private let chainCode = getChainCode()
-    @State private var discoverying = true
     @State private var currentState = PeerDiscoveryStatus.WaitingForDevices
     @State private var localPartyID = ""
+    @ObservedObject var participantDiscovery = ParticipantDiscovery()
     
     var body: some View {
         VStack {
@@ -57,7 +56,7 @@ struct PeerDiscoveryView: View {
                     .scaledToFit()
                     .padding()
                 Text("CHOOSE TWO PAIR DEVICES:")
-                List(self.peersFound, id: \.self, selection: self.$selections) { peer in
+                List(self.participantDiscovery.peersFound, id: \.self, selection: self.$selections) { peer in
                     HStack {
                         Image(systemName: self.selections.contains(peer) ? "checkmark.circle" : "circle")
                         Text(peer)
@@ -73,7 +72,7 @@ struct PeerDiscoveryView: View {
                 Button("Create Wallet >") {
                     self.startKeygen(allParticipants: self.selections.map { $0 })
                     self.currentState = .Keygen
-                    self.discoverying = false
+                    self.participantDiscovery.stop()
                 }
                 // TODO: Only for testing purpose.
                 .disabled(self.selections.count < 2)
@@ -83,7 +82,7 @@ struct PeerDiscoveryView: View {
                            mediatorURL: self.serverAddr,
                            sessionID: self.sessionID,
                            localPartyKey: self.localPartyID,
-                           hexChainCode: chainCode ?? "",
+                           hexChainCode: self.chainCode ?? "",
                            vaultName: self.appState.creatingVault?.name ?? "New Vault")
             case .Failure:
                 Text("Something is wrong")
@@ -102,12 +101,7 @@ struct PeerDiscoveryView: View {
             self.mediator.start()
             logger.info("mediator server started")
             self.startSession()
-            Task {
-                repeat {
-                    self.getParticipants()
-                    try await Task.sleep(nanoseconds: 1_000_000_000) // wait for a second to continue
-                } while self.discoverying
-            }
+            self.participantDiscovery.getParticipants(serverAddr: self.serverAddr, sessionID: self.sessionID)
         }.onAppear {
             // by this step , creatingVault should be available already
             if self.appState.creatingVault == nil {
@@ -124,7 +118,7 @@ struct PeerDiscoveryView: View {
         }
         .onDisappear {
             logger.info("mediator server stopped")
-            self.discoverying = false
+            self.participantDiscovery.stop()
             self.mediator.stop()
         }
     }
@@ -175,33 +169,6 @@ struct PeerDiscoveryView: View {
         let urlString = "\(self.serverAddr)/start/\(self.sessionID)"
         Utils.sendRequest(urlString: urlString, method: "POST", body: allParticipants) { _ in
             logger.info("kicked off keygen successfully")
-        }
-    }
-    
-    private func getParticipants() {
-        let urlString = "\(self.serverAddr)/\(self.sessionID)"
-        Utils.getRequest(urlString: urlString, headers: [String: String]()) { result in
-            switch result {
-            case .success(let data):
-                if data.isEmpty {
-                    logger.error("No participants available yet")
-                    return
-                }
-                do {
-                    let decoder = JSONDecoder()
-                    let peers = try decoder.decode([String].self, from: data)
-                    
-                    for peer in peers {
-                        if !self.peersFound.contains(peer) {
-                            self.peersFound.append(peer)
-                        }
-                    }
-                } catch {
-                    logger.error("Failed to decode response to JSON: \(error)")
-                }
-            case .failure(let error):
-                logger.error("Failed to start session, error: \(error)")
-            }
         }
     }
 }
