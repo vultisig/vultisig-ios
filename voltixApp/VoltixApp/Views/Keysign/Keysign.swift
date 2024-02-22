@@ -19,7 +19,7 @@ struct KeysignView: View {
         case KeysignFinished
         case KeysignFailed
     }
-    
+
     @Binding var presentationStack: [CurrentScreen]
     let keysignCommittee: [String]
     let mediatorURL: String
@@ -57,7 +57,7 @@ struct KeysignView: View {
                         .progressViewStyle(.circular)
                         .padding(2)
                 }
-                
+
             case .KeysignEdDSA:
                 HStack {
                     Text("Signing using EdDSA key")
@@ -75,11 +75,11 @@ struct KeysignView: View {
                     guard let vault = appState.currentVault else {
                         return
                     }
-                    
+
                     // get bitcoin transaction
                     if let keysignPayload {
                         let bitcoinPubKey = BitcoinHelper.getBitcoinPubKey(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
-                        let result = BitcoinHelper.getSignedBitcoinTransaction(utxos: keysignPayload.utxos, hexPubKey: bitcoinPubKey, fromAddress: keysignPayload.coin.address, toAddress: keysignPayload.toAddress, toAmount: keysignPayload.toAmount, byteFee: keysignPayload.byteFee, signatureProvider: { (preHash: Data) in
+                        let result = BitcoinHelper.getSignedBitcoinTransaction(utxos: keysignPayload.utxos, hexPubKey: bitcoinPubKey, fromAddress: keysignPayload.coin.address, toAddress: keysignPayload.toAddress, toAmount: keysignPayload.toAmount, byteFee: keysignPayload.byteFee, memo: nil, signatureProvider: { (preHash: Data) in
                             let hex = preHash.hexString
 
                             if let sig = self.signatures[hex] {
@@ -157,7 +157,7 @@ struct KeysignView: View {
                 if let msgToSign = Data(hexString: msg)?.base64EncodedString() {
                     keysignReq.messageToSign = msgToSign
                 }
-                
+
                 do {
                     switch self.keysignType {
                     case .ECDSA:
@@ -181,11 +181,11 @@ struct KeysignView: View {
                     return
                 }
             }
-            
+
             self.currentStatus = .KeysignFinished
         }
     }
-    
+
     private func tssKeysign(service: TssServiceImpl, req: TssKeysignRequest, keysignType: KeyType) async throws -> TssKeysignResponse {
         let t = Task.detached(priority: .high) {
             switch keysignType {

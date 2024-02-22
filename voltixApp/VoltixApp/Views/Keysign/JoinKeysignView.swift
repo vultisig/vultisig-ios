@@ -47,7 +47,7 @@ struct JoinKeysignView: View {
                     if self.serviceDelegate.serverUrl == nil {
                         ProgressView()
                             .progressViewStyle(.circular)
-                            //.tint(.blue)
+                            // .tint(.blue)
                             .padding(2)
                     } else {
                         Image(systemName: "checkmark").onAppear {
@@ -72,7 +72,7 @@ struct JoinKeysignView: View {
                     Text("Waiting for keysign to start")
                     ProgressView()
                         .progressViewStyle(.circular)
-                        //.tint(.blue)
+                        // .tint(.blue)
                         .padding(2)
                 }.task {
                     Task {
@@ -202,12 +202,11 @@ struct JoinKeysignView: View {
     }
 
     private func prepareKeysignMessages(keysignPayload: KeysignPayload) {
-       
         let result = BitcoinHelper.getPreSignedImageHash(utxos: keysignPayload.utxos,
                                                          fromAddress: keysignPayload.coin.address,
                                                          toAddress: keysignPayload.toAddress,
                                                          toAmount: keysignPayload.toAmount,
-                                                         byteFee: keysignPayload.byteFee)
+                                                         byteFee: keysignPayload.byteFee, memo: nil)
         switch result {
         case .success(let preSignedImageHash):
             print(preSignedImageHash)
