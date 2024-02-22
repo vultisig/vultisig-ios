@@ -115,7 +115,7 @@ struct KeysignView: View {
                 Text("Sorry keysign failed, you can retry it,error:\(self.keysignError ?? "")")
                     .navigationBarBackButtonHidden(false)
                     .onAppear {
-                        
+                        self.messagePuller.stop()
                     }
             }
         }.task {
