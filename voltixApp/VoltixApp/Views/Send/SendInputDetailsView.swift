@@ -1,3 +1,8 @@
+//
+//  VoltixApp
+//
+//  Created by Enrique Souza Soares
+//
 import CodeScanner
 import OSLog
 import SwiftUI

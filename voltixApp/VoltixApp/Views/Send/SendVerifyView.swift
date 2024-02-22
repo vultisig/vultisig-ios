@@ -1,3 +1,8 @@
+//
+//  VoltixApp
+//
+//  Created by Enrique Souza Soares
+//
 import SwiftUI
 
 struct SendVerifyView: View {
