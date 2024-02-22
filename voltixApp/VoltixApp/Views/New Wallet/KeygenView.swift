@@ -108,7 +108,7 @@ struct KeygenView: View {
                     self.currentStatus = .KeygenFailed
                     return
                 }
-                self.messagePuller.pollMessages(mediatorURL: self.mediatorURL, sessionID: self.sessionID, localPartyKey: self.localPartyKey, tssService: tssService)
+                self.messagePuller.pollMessages(mediatorURL: self.mediatorURL, sessionID: self.sessionID, localPartyKey: self.localPartyKey, tssService: tssService, messageID: nil)
                 
                 self.currentStatus = .KeygenECDSA
                 self.keygenInProgressECDSA = true
