@@ -137,6 +137,8 @@ struct KeygenView: View {
                 return
             }
             self.currentStatus = .KeygenFinished
+        }.onDisappear {
+            self.messagePuller.stop()
         }
     }
     
@@ -185,6 +187,7 @@ class MessagePuller: ObservableObject {
                       tssService: TssServiceImpl,
                       messageID: String?)
     {
+        self.pollingInboundMessages = true
         Task.detached {
             repeat {
                 if Task.isCancelled { return }

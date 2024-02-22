@@ -35,7 +35,6 @@ struct KeysignView: View {
     @State private var tssMessenger: TssMessengerImpl? = nil
     @State private var stateAccess: LocalStateAccessorImpl? = nil
     @State private var keysignError: String? = nil
-    @State private var pollingInboundMessages = true
     @State private var signature: String = ""
     @State var cache = NSCache<NSString, AnyObject>()
     @State var signatures = [String: TssKeysignResponse]()
@@ -116,7 +115,7 @@ struct KeysignView: View {
                 Text("Sorry keysign failed, you can retry it,error:\(self.keysignError ?? "")")
                     .navigationBarBackButtonHidden(false)
                     .onAppear {
-                        self.pollingInboundMessages = false
+                        
                     }
             }
         }.task {
