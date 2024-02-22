@@ -42,9 +42,5 @@ public class BitcoinTransactionsService: ObservableObject {
         } catch {
             print("error: ", error)
         }
-        catch {
-            errorMessage = "Fetch failed: \(error.localizedDescription)"
-            print("Fetch failed: \(error.localizedDescription)")
-        }
     }
 }

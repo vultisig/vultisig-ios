@@ -40,6 +40,29 @@ struct BitcoinTransaction: Codable {
         return formatter.string(from: NSNumber(value: balanceUSD))
     }
     
+    func selectUTXOsForPayment(amountNeeded: Int64) -> [TransactionRef] {
+
+        let txrefs = self.txrefs ?? []
+        
+        // Sort the UTXOs by their value in ascending order
+        let sortedTxrefs = txrefs.sorted { $0.value ?? 0 < $1.value  ?? 0 }
+        
+        var selectedTxrefs: [TransactionRef] = []
+        var total = 0
+        
+        // Iterate through the sorted UTXOs and select enough to cover the amountNeeded
+        for txref in sortedTxrefs {
+            selectedTxrefs.append(txref)
+            total += Int(txref.value  ?? 0)
+            if total >= amountNeeded {
+                break
+            }
+        }
+        
+        return selectedTxrefs
+    }
+    
+    
     
     let address: String
     let totalReceived: Int
@@ -79,7 +102,7 @@ struct TransactionRef: Codable, Identifiable {
     let blockHeight: Int?
     let txInputN: Int?
     let txOutputN: Int?
-    let value: Int?
+    let value: Int64?
     let refBalance: Int?
     let spent: Bool?
     let confirmations: Int?

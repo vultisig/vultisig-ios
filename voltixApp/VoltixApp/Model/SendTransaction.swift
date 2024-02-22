@@ -15,7 +15,7 @@ import WalletCore
 
 class SendTransaction: ObservableObject, Hashable {
     
-
+    
     init() {
         self.toAddress = ""
         self.amount = ""
@@ -68,12 +68,7 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     var feeInSats: Int64 {
-        
-        if gasDecimal == 0  {
-            return Int64(20) // 20 sats is the default
-        }
-        
-        return  Int64(gasDecimal * 100000000) // Normaly it comes int BTC
+        return  Int64(gas) ?? Int64(20) // Assuming that the gas is in sats
     }
     
     var amountDecimal: Double {
@@ -116,7 +111,7 @@ class SendTransaction: ObservableObject, Hashable {
         let amountStr = "\(amount)"
         let memoStr = "\(memo)"
         let gasStr = "\(gas)"
-
+        
         return "fromAddress: \(fromAddressStr), toAddress: \(toAddressStr), amount: \(amountStr), memo: \(memoStr), gas: \(gasStr)"
     }
     

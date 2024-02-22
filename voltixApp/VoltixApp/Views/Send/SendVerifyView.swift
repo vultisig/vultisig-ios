@@ -8,6 +8,7 @@ import SwiftUI
 struct SendVerifyView: View {
     @Binding var presentationStack: [CurrentScreen]
     @ObservedObject var viewModel: SendTransaction
+    @StateObject var unspentOutputsService: UnspentOutputsService = UnspentOutputsService()
     
     @State private var isChecked1 = false
     @State private var isChecked2 = false
@@ -15,6 +16,15 @@ struct SendVerifyView: View {
     
     private var isValidForm : Bool {
         return isChecked1 && isChecked2 && isChecked3
+    }
+    
+    private func reloadTransactions() {
+        if unspentOutputsService.walletData == nil {
+            Task {
+                await unspentOutputsService.fetchUnspentOutputs(for: viewModel.fromAddress)
+                // await unspentOutputsService.fetchUnspentOutputs(for: "bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu")
+            }
+        }
     }
     
     var body: some View {
@@ -55,25 +65,51 @@ struct SendVerifyView: View {
                     BottomBar(
                         content: "SIGN",
                         onClick: {
-                            
-                            let keysignPayload = KeysignPayload(
-                                coin: viewModel.coin,
-                                toAddress: viewModel.toAddress,
-                                toAmount: viewModel.amountInSats,
-                                byteFee: viewModel.feeInSats,
-                                utxos:
-                                    [
-                                        UtxoInfo(
-                                            hash: "e87538424ad5efc100cdd3385f32e9e97c1fc8c9158c4bb288c09e7799660335",
-                                            amount: Int64(500000),
-                                            index: UInt32(0)
-                                        )
-                                    ]
-                            )
-                            self.presentationStack.append(.KeysignDiscovery(keysignPayload))
-                            
+                            if let walletData = unspentOutputsService.walletData {
+                                
+                                // Calculate total amount needed by summing the amount and the fee
+                                let totalAmountNeeded = viewModel.amountInSats + viewModel.feeInSats
+                                
+                                // Select UTXOs sufficient to cover the total amount needed and map to UtxoInfo
+                                let utxoInfo = walletData.selectUTXOsForPayment(amountNeeded: Int64(totalAmountNeeded)).map {
+                                    UtxoInfo(
+                                        hash: $0.txHash ?? "",
+                                        amount: Int64($0.value ?? 0),
+                                        index: UInt32($0.txOutputN ?? -1)
+                                    )
+                                }
+                                
+                                if utxoInfo.count == 0 {
+                                    print ("You don't have enough balance to send this transaction")
+                                    return
+                                }
+                                
+                                let totalSelectedAmount = utxoInfo.reduce(0) { $0 + $1.amount }
+                                
+                                // Check if the total selected amount is greater than or equal to the needed balance
+                                if totalSelectedAmount < Int64(totalAmountNeeded) {
+                                    print("You don't have enough balance to send this transaction")
+                                    return
+                                }
+                                
+                                let keysignPayload = KeysignPayload(
+                                    coin: viewModel.coin,
+                                    toAddress: viewModel.toAddress,
+                                    toAmount: viewModel.amountInSats,
+                                    byteFee: viewModel.feeInSats,
+                                    utxos: utxoInfo
+                                )
+                                
+                                self.presentationStack.append(.KeysignDiscovery(keysignPayload))
+                                
+                            } else {
+                                Text("Error fetching the data")
+                                    .padding()
+                            }
                         }
                     )
+                }.onAppear {
+                    reloadTransactions()
                 }
             }
         }
