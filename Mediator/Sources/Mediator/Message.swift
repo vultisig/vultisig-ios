@@ -58,5 +58,11 @@ public struct SessionMessage: Codable {
 
 public struct StartTSSMessage: Codable {
     let sessionID: String
+    let committee: [String]
+}
+
+public struct TSSRoutingMessage: Codable {
+    let sessionID: String
+    let to: String
     let message: Message
 }

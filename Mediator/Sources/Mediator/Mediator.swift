@@ -10,6 +10,8 @@ public final class Mediator {
     let port: UInt16 = 8080
     let server = HttpServer()
     let cache = MemoryStorage<String, Any>(config: MemoryConfig())
+    var clients = [String: WebSocketSession]()
+    var sessions = [String: String]()
     private let service: NetService
     
     // Singleton
@@ -34,7 +36,7 @@ public final class Mediator {
         self.server.DELETE["/message/:sessionID/:participantKey/:hash"] = self.deleteMessage
         // POST/GET , to notifiy all parties to start keygen/keysign
         self.server["/start/:sessionID"] = self.startKeygenOrKeysign
-        self.server["/websocket"] = websocket(text: self.OnWebSocketText, 
+        self.server["/websocket"] = websocket(text: self.OnWebSocketText,
                                               connected: self.OnClientConnected,
                                               disconnected: self.OnClientDisconnected)
     }
@@ -42,28 +44,151 @@ public final class Mediator {
     private func OnWebSocketText(session: WebSocketSession, content: String) {
         var decoder = JSONDecoder()
         guard let contentData = content.data(using: .utf8) else {
+            self.logger.error("content: \(content) can't be decoded correctly")
             return
         }
-        do{
+        do {
             let socketMsg = try decoder.decode(WebsocketMessage.self, from: contentData)
-            switch socketMsg.header{
+            switch socketMsg.header {
             case .HelloMessage:
+                self.processHelloMessage(session: session, payload: socketMsg.body)
             case .DropSession:
+                self.processJoinAndDropSession(session: session, payload: socketMsg.body, content: content)
             case .EndSession:
+                self.processEndSession(session: session, payload: socketMsg.body)
             case .JoinSession:
+                self.processJoinAndDropSession(session: session, payload: socketMsg.body, content: content)
             case .StartSession:
+                self.processStartSession(session: session, payload: socketMsg.body)
             case .StartTSS:
+                self.processStartTSS(session: session, payload: socketMsg.body, content: content)
+            case .TSSRouting:
+                self.processTSSRouting(session: session, payload: socketMsg.body, content: content)
             }
         } catch {
-            logger.error("fail to process message,error:\(error.localizedDescription)")
+            self.logger.error("fail to process message,error:\(error.localizedDescription)")
         }
     }
 
-    private func OnClientConnected(session: WebSocketSession)    {
-        
+    private func OnClientConnected(session: WebSocketSession) {}
+    
+    private func OnClientDisconnected(session: WebSocketSession) {
+        var keysToDelete = [String]()
+        for item in self.clients {
+            if item.value == session {
+                keysToDelete.append(item.key)
+            }
+        }
+        for item in keysToDelete {
+            self.clients.removeValue(forKey: item)
+        }
     }
     
-    private func OnClientDisconnected(session: WebSocketSession){}
+    private func processTSSRouting(session: WebSocketSession, payload: String, content: String) {
+        guard let payloadData = payload.data(using: .utf8) else {
+            self.logger.error("TSS Routing message payload can't be decoded,\(payload)")
+            return
+        }
+        do {
+            var decoder = JSONDecoder()
+            let tssRoutingMsg = try decoder.decode(TSSRoutingMessage.self, from: payloadData)
+            
+            guard let clientSession = clients[tssRoutingMsg.to] else {
+                self.logger.error("client:\(tssRoutingMsg.to) is offline")
+                return
+            }
+            // foward the message to client
+            clientSession.writeText(content)
+            
+        } catch {
+            self.logger.error("fail to decode start tss message,error:\(error)")
+        }
+    }
+
+    private func processStartTSS(session: WebSocketSession, payload: String, content: String) {
+        guard let payloadData = payload.data(using: .utf8) else {
+            self.logger.error("start tss message payload can't be decoded,\(payload)")
+            return
+        }
+        do {
+            let decoder = JSONDecoder()
+            let startTssMsg = try decoder.decode(StartTSSMessage.self, from: payloadData)
+            for item in startTssMsg.committee {
+                guard let clientSession = clients[item] else {
+                    continue
+                }
+                // foward the message to client
+                clientSession.writeText(content)
+            }
+        } catch {
+            self.logger.error("fail to decode start tss message,error:\(error)")
+        }
+    }
+
+    private func processEndSession(session: WebSocketSession, payload: String) {
+        let sessionMsg = self.getSessionMsg(payload: payload)
+        guard let sessionMsg else {
+            self.logger.error("fail to get session msg")
+            return
+        }
+        self.sessions.removeValue(forKey: sessionMsg.sessionID)
+    }
+
+    // for both joining a session and drop a session , just forward the message to session owner
+    private func processJoinAndDropSession(session: WebSocketSession, payload: String, content: String) {
+        let sessionMsg = self.getSessionMsg(payload: payload)
+        guard let sessionMsg else {
+            self.logger.error("fail to get session msg")
+            return
+        }
+        guard let owner = sessions[sessionMsg.sessionID] else {
+            self.logger.debug("session:\(sessionMsg.sessionID) is not started")
+            return
+        }
+        guard let socketSession = clients[owner] else {
+            self.logger.debug("session owner: \(owner) is not online")
+            return
+        }
+            
+        // foward the payload the owner
+        socketSession.writeText(content)
+    }
+
+    private func getSessionMsg(payload: String) -> SessionMessage? {
+        guard let payloadData = payload.data(using: .utf8) else {
+            self.logger.error("session message payload can't be decoded,\(payload)")
+            return nil
+        }
+        do {
+            let decoder = JSONDecoder()
+            return try decoder.decode(SessionMessage.self, from: payloadData)
+        } catch {
+            self.logger.error("fail to decode session message,error:\(error)")
+        }
+        return nil
+    }
+
+    // start a session, so other client can join
+    private func processStartSession(session: WebSocketSession, payload: String) {
+        let sessionMsg = self.getSessionMsg(payload: payload)
+        if let sessionMsg {
+            self.sessions[sessionMsg.sessionID] = sessionMsg.clientKey
+        }
+    }
+
+    private func processHelloMessage(session: WebSocketSession, payload: String) {
+        guard let payloadData = payload.data(using: .utf8) else {
+            self.logger.error("hello message payload can't be decoded,\(payload)")
+            return
+        }
+        do {
+            let decoder = JSONDecoder()
+            let helloMsg = try decoder.decode(HelloMessage.self, from: payloadData)
+            self.clients[helloMsg.clientKey] = session
+        } catch {
+            self.logger.error("fail to process hello message,error:\(error)")
+        }
+    }
     
     // start the server
     public func start() {
