@@ -9,12 +9,15 @@ struct SendInputDetailsView: View {
     @EnvironmentObject var appState: ApplicationState
     @Binding var presentationStack: [CurrentScreen]
     @StateObject var unspentOutputsService: UnspentOutputsService = UnspentOutputsService()
-    @ObservedObject var sendTransactionModel: SendTransaction = SendTransaction()
+    @ObservedObject var sendTransactionModel: SendTransaction
     @State private var isShowingScanner = false
     @State private var isValidAddress = false
     @State private var formErrorMessages = ""
     @State private var isValidForm = true
     @State private var keyboardOffset: CGFloat = 0
+    
+    // @State private var keysignMessage = "Stuff to sign"
+    // @State private var currentChain: Chain? = nil
     
     func isValidHex(_ hex: String) -> Bool {
         let hexPattern = "^0x?[0-9A-Fa-f]+$"
@@ -40,7 +43,7 @@ struct SendInputDetailsView: View {
                         Text("From").font(
                             Font.custom("Menlo", size: 18).weight(.bold)
                         ).padding(.bottom)
-                        Text($sendTransactionModel.fromAddress.wrappedValue)
+                        Text(sendTransactionModel.fromAddress)
                     }
                     
                 }.padding(.vertical)
@@ -137,8 +140,9 @@ struct SendInputDetailsView: View {
                     }
                 }.padding(.bottom)
                 Text(isValidForm ? "" : formErrorMessages)
-                    .font(Font.custom("Menlo", size: 18).weight(.bold))
+                    .font(Font.custom("Menlo", size: 13).weight(.bold))
                     .foregroundColor(.red)
+                    .padding()
                 Group {
                     BottomBar(
                         content: "CONTINUE",
@@ -151,6 +155,7 @@ struct SendInputDetailsView: View {
                 }
             }
             .onAppear {
+                print(sendTransactionModel.toString())
                 reloadTransactions()
             }
             .navigationBarBackButtonHidden()
@@ -171,6 +176,7 @@ struct SendInputDetailsView: View {
     }
     
     private func validateForm() -> Bool {
+        return true
         // Reset validation state at the beginning
         formErrorMessages = ""
         isValidForm = true
@@ -181,7 +187,7 @@ struct SendInputDetailsView: View {
             logger.log("Invalid address.")
             isValidForm = false
         }
-
+        
         let amount = sendTransactionModel.amountDecimal ?? Double(0)
         let gasFee = sendTransactionModel.gasDecimal ?? Double(0)
         
@@ -215,20 +221,14 @@ struct SendInputDetailsView: View {
         
         return isValidForm
     }
-
-
+    
+    
     
     
     private func reloadTransactions() {
         if unspentOutputsService.walletData == nil {
             Task {
-#if DEBUG
-                sendTransactionModel.fromAddress = "18cBEMRxXHqzWWCxZNtU91F5sbUNKhL5PX"
-#else
-                sendTransactionModel.fromAddress = appState.currentVault?.legacyBitcoinAddress ?? ""
-#endif
                 await unspentOutputsService.fetchUnspentOutputs(for: sendTransactionModel.fromAddress)
-                
             }
         }
     }
@@ -250,6 +250,6 @@ struct SendInputDetailsView: View {
 struct SendInputDetailsView_Previews: PreviewProvider {
     static var previews: some View {
         SendInputDetailsView(
-            presentationStack: .constant([]))
+            presentationStack: .constant([]), sendTransactionModel: SendTransaction())
     }
 }

@@ -14,6 +14,14 @@ struct BitcoinTransactionListView: View {
                     }
                 } else if let errorMessage = bitcoinTransactionsService.errorMessage {
                     Text("Error fetching transactions: \(errorMessage)")
+                } else if bitcoinTransactionsService.walletData?.address != nil {
+                    VStack(alignment: .leading) {
+                        Text("No transactions found yet for the address: ")
+                            .font(Font.custom("Menlo", size: 13).weight(.bold))
+                        Text(bitcoinTransactionsService.walletData?.address ?? "")
+                            .font(Font.custom("Montserrat", size: 13).weight(.medium))
+                            .padding(.vertical, 5)
+                    }
                 } else {
                     ProgressView()
                 }
@@ -30,11 +38,9 @@ struct BitcoinTransactionListView: View {
                 }
             }
             .task {
-                #if DEBUG
-                await bitcoinTransactionsService.fetchTransactions(for: "18cBEMRxXHqzWWCxZNtU91F5sbUNKhL5PX")
-                #else
-                await bitcoinTransactionsService.fetchTransactions(for: appState.currentVault?.legacyBitcoinAddress ?? "")
-                #endif
+                if appState.currentVault?.segwitBitcoinAddress != nil {
+                    await bitcoinTransactionsService.fetchTransactions(for: appState.currentVault?.segwitBitcoinAddress ?? "")
+                }
             }
         }
     }

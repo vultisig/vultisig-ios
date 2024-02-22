@@ -29,6 +29,10 @@ final class Vault : ObservableObject{
         return BitcoinAddress.compatibleAddress(publicKey: publicKey, prefix: prefix)
     }
     
+    var segwitBitcoinAddress: String {
+        (try? BitcoinHelper.getBitcoin(hexPubKey: pubKeyECDSA, hexChainCode: hexChainCode).get().address) ?? ""
+    }
+    
     var legacyBitcoinAddress: String {
         let btc = createBitcoinAddress(from: pubKeyECDSA)
         return btc?.description ?? "No BTC address available"
