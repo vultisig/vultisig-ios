@@ -2,6 +2,7 @@
 //  KeysignDiscovery.swift
 //  VoltixApp
 
+import Dispatch
 import Mediator
 import OSLog
 import SwiftUI
@@ -13,7 +14,7 @@ struct KeysignDiscoveryView: View {
         case FailToStart
         case Keysign
     }
-
+    
     @Binding var presentationStack: [CurrentScreen]
     @EnvironmentObject var appState: ApplicationState
     @State private var peersFound = [String]()
@@ -21,11 +22,11 @@ struct KeysignDiscoveryView: View {
     private let mediator = Mediator.shared
     private let serverAddr = "http://127.0.0.1:8080"
     private let sessionID = UUID().uuidString
-    @State private var discoverying = true
     @State private var currentState = KeysignDiscoveryStatus.WaitingForDevices
     @State private var localPartyID = ""
     let keysignPayload: KeysignPayload
     @State private var keysignMessages = [String]()
+    @ObservedObject var participantDiscovery = ParticipantDiscovery()
 
     var body: some View {
         VStack {
@@ -36,9 +37,9 @@ struct KeysignDiscoveryView: View {
                     .resizable()
                     .scaledToFit()
                     .padding()
-
+                
                 Text("Available devices")
-                List(self.peersFound, id: \.self, selection: self.$selections) { peer in
+                List(self.participantDiscovery.peersFound, id: \.self, selection: self.$selections) { peer in
                     HStack {
                         Image(systemName: self.selections.contains(peer) ? "checkmark.circle" : "circle")
                         Text(peer)
@@ -54,7 +55,7 @@ struct KeysignDiscoveryView: View {
                 Button("Sign") {
                     self.startKeysign(allParticipants: self.selections.map { $0 })
                     self.currentState = .Keysign
-                    self.discoverying = false
+                    self.participantDiscovery.stop()
                 }
                 .disabled(self.selections.count < self.appState.currentVault?.getThreshold() ?? Int.max)
             case .FailToStart:
@@ -71,10 +72,6 @@ struct KeysignDiscoveryView: View {
             }
         }
         .onAppear {
-            guard let vault = self.appState.currentVault else {
-                self.currentState = .FailToStart
-                return
-            }
             if let localPartyID = appState.currentVault?.localPartyID, !localPartyID.isEmpty {
                 self.localPartyID = localPartyID
             } else {
@@ -82,7 +79,7 @@ struct KeysignDiscoveryView: View {
             }
             switch self.keysignPayload.coin.ticker {
             case "BTC":
-                
+
                 let result = BitcoinHelper.getPreSignedImageHash(utxos: self.keysignPayload.utxos,
                                                                  fromAddress: self.keysignPayload.coin.address,
                                                                  toAddress: self.keysignPayload.toAddress,
@@ -102,31 +99,26 @@ struct KeysignDiscoveryView: View {
         }
         .task {
             // start the mediator , so other devices can discover us
-            Task{
+            Task {
                 self.mediator.start()
                 self.startKeysignSession()
             }
-            Task {
-                repeat {
-                    self.getParticipants()
-                    try await Task.sleep(nanoseconds: 1_000_000_000) // wait for a second to continue
-                } while self.discoverying
-            }
+            self.participantDiscovery.getParticipants(serverAddr: self.serverAddr, sessionID: self.sessionID)
         }
         .onDisappear {
             logger.info("mediator server stopped")
-            self.discoverying = false
+            self.participantDiscovery.stop()
             self.mediator.stop()
         }
     }
-
+    
     private func startKeysign(allParticipants: [String]) {
         let urlString = "\(self.serverAddr)/start/\(self.sessionID)"
         Utils.sendRequest(urlString: urlString, method: "POST", body: allParticipants) { _ in
             logger.info("kicked off keysign successfully")
         }
     }
-
+    
     private func startKeysignSession() {
         let urlString = "\(self.serverAddr)/\(self.sessionID)"
         let body = [self.localPartyID]
@@ -139,42 +131,12 @@ struct KeysignDiscoveryView: View {
         }
     }
 
-    private func getParticipants() {
-        let urlString = "\(self.serverAddr)/\(self.sessionID)"
-        Utils.getRequest(urlString: urlString,
-                         headers: [String: String](),
-                         completion: { result in
-                             switch result {
-                             case .success(let data):
-                                 if data.isEmpty {
-                                     logger.error("No participants available yet")
-                                     return
-                                 }
-                                 do {
-                                     let decoder = JSONDecoder()
-                                     let peers = try decoder.decode([String].self, from: data)
-
-                                     for peer in peers {
-                                         if !self.peersFound.contains(peer) {
-                                             self.peersFound.append(peer)
-                                         }
-                                     }
-                                 } catch {
-                                     logger.error("Failed to decode response to JSON: \(error)")
-                                 }
-                             case .failure(let error):
-                                 logger.error("Failed to start session, error: \(error)")
-                                 return
-                             }
-                         })
-    }
-
     func getQrImage(size: CGFloat) -> Image {
         let context = CIContext()
         guard let qrFilter = CIFilter(name: "CIQRCodeGenerator") else {
             return Image(systemName: "xmark")
         }
-
+        
         let keysignMsg = KeysignMessage(sessionID: self.sessionID,
                                         payload: self.keysignPayload)
         do {
@@ -184,17 +146,60 @@ struct KeysignDiscoveryView: View {
         } catch {
             logger.error("fail to encode keysign messages to json,error:\(error)")
         }
-
+        
         guard let qrCodeImage = qrFilter.outputImage else {
             return Image(systemName: "xmark")
         }
-
+        
         let transformedImage = qrCodeImage.transformed(by: CGAffineTransform(scaleX: size, y: size))
-
+        
         guard let cgImage = context.createCGImage(transformedImage, from: transformedImage.extent) else {
             return Image(systemName: "xmark")
         }
         return Image(cgImage, scale: 1.0, orientation: .up, label: Text("QRCode"))
+    }
+}
+
+class ParticipantDiscovery: ObservableObject {
+    @Published var peersFound = [String]()
+    var discoverying = true
+
+    func stop() {
+        self.discoverying = false
+    }
+
+    func getParticipants(serverAddr: String, sessionID: String) {
+        let urlString = "\(serverAddr)/\(sessionID)"
+        Task.detached {
+            repeat {
+                Utils.getRequest(urlString: urlString, headers: [String: String](), completion: { result in
+                    switch result {
+                    case .success(let data):
+                        if data.isEmpty {
+                            logger.error("No participants available yet")
+                            return
+                        }
+                        do {
+                            let decoder = JSONDecoder()
+                            let peers = try decoder.decode([String].self, from: data)
+                            DispatchQueue.main.async {
+                                for peer in peers {
+                                    if !self.peersFound.contains(peer) {
+                                        self.peersFound.append(peer)
+                                    }
+                                }
+                            }
+                        } catch {
+                            logger.error("Failed to decode response to JSON: \(error)")
+                        }
+                    case .failure(let error):
+                        logger.error("Failed to start session, error: \(error)")
+                        return
+                    }
+                })
+                try await Task.sleep(for: .seconds(1)) // wait for a second to continue
+            } while self.discoverying
+        }
     }
 }
 
