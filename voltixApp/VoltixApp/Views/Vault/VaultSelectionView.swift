@@ -7,7 +7,6 @@ import SwiftData
 import SwiftUI
 import UniformTypeIdentifiers
 
-
 struct VaultSelectionView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var appState: ApplicationState
@@ -17,7 +16,9 @@ struct VaultSelectionView: View {
     @State private var itemToDelete: Vault? = nil
     @State private var showingExporter = false
     @State private var vaultToExport: Vault? = nil
-    
+    @State private var showEditVaultName = false
+    @State private var vaultToEdit: Vault? = nil
+    @State private var vaultEditName: String = ""
     var body: some View {
         List(selection: $appState.currentVault) {
             ForEach(vaults, id: \.self) { vault in
@@ -34,20 +35,43 @@ struct VaultSelectionView: View {
                                 }
                         })
                         Image(systemName: "pencil").onTapGesture {
-                            print("pencil clicked")
+                            self.vaultToEdit = vault
+                            vaultEditName = vault.name
+                            showEditVaultName = true
                         }
                     }
                     HStack {
                         Image(systemName: "square.and.arrow.up")
                         Text("backup")
                         Spacer()
-                    }.onTapGesture {
+                    }
+                    .padding()
+                    .onTapGesture {
                         vaultToExport = vault
                         self.showingExporter = true
                     }
                 }
             }
         }
+        .sheet(isPresented: $showEditVaultName, content: {
+            VStack{
+                Form{
+                    TextField("vault name", text: $vaultEditName)
+                        .textFieldStyle(.roundedBorder)
+                }.padding()
+                
+                HStack{
+                    Button("Save"){
+                        self.vaultToEdit?.name = vaultEditName
+                        showEditVaultName.toggle()
+                    }
+                    Button("cancel"){
+                        showEditVaultName.toggle()
+                    }
+                }
+                Spacer()
+            }
+        })
         .fileExporter(isPresented: $showingExporter,
                       document: VoltixDocument(vault: vaultToExport),
                       contentType: .data,
