@@ -34,7 +34,7 @@ struct SendVerifyView: View {
                 LabelText(title: "TO", value: viewModel.toAddress).padding(.vertical, 10)
                 LabelTextNumeric(title: "AMOUNT", value: viewModel.amount + " " + viewModel.coin.ticker).padding(.vertical, 10)
                 LabelText(title: "MEMO", value: viewModel.memo).padding(.vertical, 10)
-                LabelTextNumeric(title: "FEE", value: viewModel.gas).padding(.vertical, 10)
+                LabelTextNumeric(title: "FEE", value: "\(viewModel.gas) SATS").padding(.vertical, 10)
             }
             
             Group{
@@ -79,18 +79,19 @@ struct SendVerifyView: View {
                                     )
                                 }
                                 
-                                if utxoInfo.count == 0 {
-                                    print ("You don't have enough balance to send this transaction")
-                                    return
-                                }
+//                                if utxoInfo.count == 0 {
+//                                    isValidForm = false
+//                                    print ("You don't have enough balance to send this transaction")
+//                                    return
+//                                }
                                 
                                 let totalSelectedAmount = utxoInfo.reduce(0) { $0 + $1.amount }
                                 
-                                // Check if the total selected amount is greater than or equal to the needed balance
-                                if totalSelectedAmount < Int64(totalAmountNeeded) {
-                                    print("You don't have enough balance to send this transaction")
-                                    return
-                                }
+//                                // Check if the total selected amount is greater than or equal to the needed balance
+//                                if totalSelectedAmount < Int64(totalAmountNeeded) {
+//                                    print("You don't have enough balance to send this transaction")
+//                                    return
+//                                }
                                 
                                 let keysignPayload = KeysignPayload(
                                     coin: viewModel.coin,
