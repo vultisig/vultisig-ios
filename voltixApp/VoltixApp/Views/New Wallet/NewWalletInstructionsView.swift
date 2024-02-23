@@ -1,7 +1,7 @@
-//
-//  NewWalletInstructions.swift
-//  VoltixApp
-//
+    //
+    //  NewWalletInstructions.swift
+    //  VoltixApp
+    //
 
 import SwiftData
 import SwiftUI
@@ -42,22 +42,41 @@ struct NewWalletInstructions: View {
                 WifiBar()
                 Spacer()
                 HStack{
-                    Button("JOIN KEYGEN") {
+                    Button("PAIR") {
                         let vault = Vault(name: "Vault #\(vaults.count + 1)")
                         appState.creatingVault = vault
                         self.presentationStack.append(.joinKeygen)
-                    }.buttonStyle(PlainButtonStyle())
+                    }
+                    .fontWeight(.black)
+                    .font(Font.custom("Menlo", size: 30).weight(.bold))
+                    .buttonStyle(PlainButtonStyle())
                     Spacer()
-                    Button("START KEYGEN") {
+                    
+                    Button(action: {
                         let vault = Vault(name: "Vault #\(vaults.count + 1)")
                         appState.creatingVault = vault
                         self.presentationStack.append(.peerDiscovery)
-                    }.buttonStyle(PlainButtonStyle())
+                    }) {
+                            HStack() {
+                                Text("START")
+                                    .font(Font.custom("Menlo", size: 30).weight(.bold))
+                                    .fontWeight(.black)
+                                Image(systemName: "chevron.right")
+                                    .resizable()
+                                    .frame(width: 10, height: 15)
+                            }
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    
                 }.padding()
             }
             .navigationTitle("SETUP")
             .navigationBarTitleDisplayMode(.inline)
+            .navigationBarBackButtonHidden(true)
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    NavigationButtons.backButton(presentationStack: $presentationStack)
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     NavigationButtons.questionMarkButton
                 }

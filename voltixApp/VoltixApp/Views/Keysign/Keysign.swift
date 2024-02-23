@@ -1,6 +1,6 @@
-//
-//  Keysign.swift
-//  VoltixApp
+    //
+    //  Keysign.swift
+    //  VoltixApp
 
 import Dispatch
 import Foundation
@@ -39,87 +39,91 @@ struct KeysignView: View {
     @State var cache = NSCache<NSString, AnyObject>()
     @State var signatures = [String: TssKeysignResponse]()
     @State private var messagePuller = MessagePuller()
-
+    
     var body: some View {
         VStack {
+            Spacer()
             switch self.currentStatus {
-            case .CreatingInstance:
-                HStack {
-                    Text("creating tss instance")
-                    ProgressView()
-                        .progressViewStyle(.circular)
-                        .padding(2)
-                }
-            case .KeysignECDSA:
-                HStack {
-                    Text("Signing using ECDSA key")
-                    ProgressView()
-                        .progressViewStyle(.circular)
-                        .padding(2)
-                }
-
-            case .KeysignEdDSA:
-                HStack {
-                    Text("Signing using EdDSA key")
-                    ProgressView()
-                        .progressViewStyle(.circular)
-                        .padding(2)
-                }
-            case .KeysignFinished:
-                VStack {
-                    Text("Keysign finished")
-                    Text("Signature: \(self.signature)")
-                    Button("Done", systemImage: "arrowshape.backward.circle") {}
-                }.onAppear {
-                    self.messagePuller.stop()
-                    guard let vault = appState.currentVault else {
-                        return
-                    }
-
-                    // get bitcoin transaction
-                    if let keysignPayload {
-                        let bitcoinPubKey = BitcoinHelper.getBitcoinPubKey(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
-                        let result = BitcoinHelper.getSignedBitcoinTransaction(utxos: keysignPayload.utxos, hexPubKey: bitcoinPubKey, fromAddress: keysignPayload.coin.address, toAddress: keysignPayload.toAddress, toAmount: keysignPayload.toAmount, byteFee: keysignPayload.byteFee, memo: nil, signatureProvider: { (preHash: Data) in
-                            let hex = preHash.hexString
-
-                            if let sig = self.signatures[hex] {
-                                let sigResult = BitcoinHelper.getSignatureFromTssResponse(tssResponse: sig)
-                                switch sigResult {
-                                case .success(let sigData):
-                                    return sigData
-                                case .failure(let err):
-                                    switch err {
-                                    case BitcoinHelper.BitcoinTransactionError.runtimeError(let errDetail):
-                                        logger.error("fail to get signature from TssResponse,error:\(errDetail)")
-                                    default:
-                                        logger.error("fail to get signature from TssResponse,error:\(err.localizedDescription)")
-                                    }
-                                }
-                            }
-                            return Data()
-                        })
-                        switch result {
-                        case .success(let tx):
-                            print(tx)
-                        case .failure(let err):
-                            switch err {
-                            case BitcoinHelper.BitcoinTransactionError.runtimeError(let errDetail):
-                                logger.error("Failed to get signed transaction,error:\(errDetail)")
-                            default:
-                                logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
+                case .CreatingInstance:
+                    KeyGenStatusText(status: "CREATING TSS INSTANCE... ")
+                case .KeysignECDSA:
+                    KeyGenStatusText(status: "SIGNING USING ECDSA KEY... ")
+                case .KeysignEdDSA:
+                    KeyGenStatusText(status: "SIGNING USING EdDSA KEY... ")
+                case .KeysignFinished:
+                    KeyGenStatusText(status: "KEYSIGN FINISHED... ")
+                    VStack {
+                        Text("SIGNATURE: \(self.signature)")
+                            .font(Font.custom("Menlo", size: 15)
+                                .weight(.bold))
+                            .multilineTextAlignment(.center)
+                        
+                        Button(action: {
+                            self.presentationStack.append(.bitcoinTransactionsListView)
+                        }) {
+                            HStack() {
+                                Text("DONE".uppercased())
+                                    .font(Font.custom("Menlo", size: 30).weight(.bold))
+                                    .fontWeight(.black)
+                                Image(systemName: "chevron.right")
+                                    .resizable()
+                                    .frame(width: 10, height: 15)
                             }
                         }
-                    }
-                }.navigationBarBackButtonHidden(false)
-            case .KeysignFailed:
-                Text("Sorry keysign failed, you can retry it,error:\(self.keysignError ?? "")")
-                    .navigationBarBackButtonHidden(false)
-                    .onAppear {
+                        .buttonStyle(PlainButtonStyle())
+                        
+                        
+                    }.onAppear {
                         self.messagePuller.stop()
-                    }
+                        guard let vault = appState.currentVault else {
+                            return
+                        }
+                        
+                            // get bitcoin transaction
+                        if let keysignPayload {
+                            let bitcoinPubKey = BitcoinHelper.getBitcoinPubKey(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
+                            let result = BitcoinHelper.getSignedBitcoinTransaction(utxos: keysignPayload.utxos, hexPubKey: bitcoinPubKey, fromAddress: keysignPayload.coin.address, toAddress: keysignPayload.toAddress, toAmount: keysignPayload.toAmount, byteFee: keysignPayload.byteFee, memo: nil, signatureProvider: { (preHash: Data) in
+                                let hex = preHash.hexString
+                                
+                                if let sig = self.signatures[hex] {
+                                    let sigResult = BitcoinHelper.getSignatureFromTssResponse(tssResponse: sig)
+                                    switch sigResult {
+                                        case .success(let sigData):
+                                            return sigData
+                                        case .failure(let err):
+                                            switch err {
+                                                case BitcoinHelper.BitcoinTransactionError.runtimeError(let errDetail):
+                                                    logger.error("fail to get signature from TssResponse,error:\(errDetail)")
+                                                default:
+                                                    logger.error("fail to get signature from TssResponse,error:\(err.localizedDescription)")
+                                            }
+                                    }
+                                }
+                                return Data()
+                            })
+                            switch result {
+                                case .success(let tx):
+                                    print(tx)
+                                case .failure(let err):
+                                    switch err {
+                                        case BitcoinHelper.BitcoinTransactionError.runtimeError(let errDetail):
+                                            logger.error("Failed to get signed transaction,error:\(errDetail)")
+                                        default:
+                                            logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
+                                    }
+                            }
+                        }
+                    }.navigationBarBackButtonHidden(false)
+                case .KeysignFailed:
+                    Text("Sorry keysign failed, you can retry it,error:\(self.keysignError ?? "")")
+                        .onAppear {
+                            self.messagePuller.stop()
+                        }
             }
-        }.task {
-            // Create keygen instance, it takes time to generate the preparams
+            Spacer()
+        }
+        .task {
+                // Create keygen instance, it takes time to generate the preparams
             guard let vault = appState.currentVault else {
                 self.currentStatus = .KeysignFailed
                 return
@@ -129,7 +133,7 @@ struct KeysignView: View {
                 self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: msgHash)
                 self.stateAccess = LocalStateAccessorImpl(vault: vault)
                 var err: NSError?
-                // keysign doesn't need to recreate preparams
+                    // keysign doesn't need to recreate preparams
                 self.tssService = TssNewService(self.tssMessenger, self.stateAccess, false, &err)
                 if let err {
                     logger.error("Failed to create TSS instance, error: \(err.localizedDescription)")
@@ -152,25 +156,25 @@ struct KeysignView: View {
                         keysignReq.derivePath = CoinType.bitcoin.derivationPath()
                     }
                 }
-                // sign messages one by one , since the msg is in hex format , so we need convert it to base64
-                // and then pass it to TSS for keysign
+                    // sign messages one by one , since the msg is in hex format , so we need convert it to base64
+                    // and then pass it to TSS for keysign
                 if let msgToSign = Data(hexString: msg)?.base64EncodedString() {
                     keysignReq.messageToSign = msgToSign
                 }
 
                 do {
                     switch self.keysignType {
-                    case .ECDSA:
-                        keysignReq.pubKey = vault.pubKeyECDSA
-                        self.currentStatus = .KeysignECDSA
-                    case .EdDSA:
-                        keysignReq.pubKey = vault.pubKeyEdDSA
-                        self.currentStatus = .KeysignEdDSA
+                        case .ECDSA:
+                            keysignReq.pubKey = vault.pubKeyECDSA
+                            self.currentStatus = .KeysignECDSA
+                        case .EdDSA:
+                            keysignReq.pubKey = vault.pubKeyEdDSA
+                            self.currentStatus = .KeysignEdDSA
                     }
                     if let service = self.tssService {
                         let resp = try await tssKeysign(service: service, req: keysignReq, keysignType: keysignType)
                         self.signatures[msg] = resp
-                        // TODO: save the signature with the message it signed
+                            // TODO: save the signature with the message it signed
                         self.signature = "R:\(resp.r), S:\(resp.s), RecoveryID:\(resp.recoveryID)"
                     }
                     self.messagePuller.stop()
@@ -189,10 +193,10 @@ struct KeysignView: View {
     private func tssKeysign(service: TssServiceImpl, req: TssKeysignRequest, keysignType: KeyType) async throws -> TssKeysignResponse {
         let t = Task.detached(priority: .high) {
             switch keysignType {
-            case .ECDSA:
-                return try service.keysignECDSA(req)
-            case .EdDSA:
-                return try service.keysignEdDSA(req)
+                case .ECDSA:
+                    return try service.keysignECDSA(req)
+                case .EdDSA:
+                    return try service.keysignEdDSA(req)
             }
         }
         return try await t.value
