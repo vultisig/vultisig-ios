@@ -13,21 +13,37 @@ struct VaultSelectionView: View {
     @Binding var presentationStack: [CurrentScreen]
     @State private var showingDeleteAlert = false
     @State private var itemToDelete: Vault? = nil
+
     var body: some View {
         List(vaults, id: \.self, selection: $appState.currentVault) { vault in
-            NavigationLink(destination: ListVaultAssetView(presentationStack: $presentationStack),
-                           label: {
-                               Text(vault.name)
-                                   .swipeActions {
-                                       Button("Delete", role: .destructive) {
-                                           self.itemToDelete = vault
-                                           showingDeleteAlert = true
-                                       }
-                                   }
-                           })
+            VStack {
+                HStack {
+                    NavigationLink(destination: ListVaultAssetView(presentationStack: $presentationStack),
+                                   label: {
+                                       Text(vault.name)
+                                           .swipeActions {
+                                               Button("Delete", role: .destructive) {
+                                                   self.itemToDelete = vault
+                                                   showingDeleteAlert = true
+                                               }
+                                           }
+                                   })
+                    Image(systemName: "pencil").onTapGesture {
+                        print("pencil clicked")
+                    }
+                }
+                HStack{
+                    Image(systemName: "display.and.arrow.down")
+                    Text("backup")
+                    Spacer()
+                }.onTapGesture {
+                    print("backup")
+                }
+            }
         }
+
         .confirmationDialog(Text("Delete Vault"), isPresented: $showingDeleteAlert, titleVisibility: .automatic) {
-            Button("Delete", role: .destructive) {
+            Button("Confirm Delete \(itemToDelete?.name ?? "Vault")", role: .destructive) {
                 withAnimation {
                     if let itemToDelete {
                         deleteVault(vault: itemToDelete)
@@ -56,11 +72,4 @@ struct VaultSelectionView: View {
             print("Error:\(error)")
         }
     }
-}
-
-private struct Item {
-    var coinName: String
-    var address: String
-    var amount: String
-    var coinAmount: String
 }

@@ -9,6 +9,7 @@ import OSLog
 #if os(iOS)
 import UIKit
 #endif
+import SwiftUI
 
 enum Utils {
     static let logger = Logger(subsystem: "util", category: "network")
@@ -126,6 +127,23 @@ enum Utils {
         input.utf8.map { String(format: "%02x", $0) }.joined()
     }
     
+    public static func getQrImage(data:Any?,size: CGFloat) -> Image {
+        let context = CIContext()
+        guard let qrFilter = CIFilter(name: "CIQRCodeGenerator") else {
+            return Image(systemName: "xmark")
+        }
+        qrFilter.setValue(data, forKey: "inputMessage")
+        guard let qrCodeImage = qrFilter.outputImage else {
+            return Image(systemName: "xmark")
+        }
+        
+        let transformedImage = qrCodeImage.transformed(by: CGAffineTransform(scaleX: size, y: size))
+        guard let cgImage = context.createCGImage(transformedImage, from: transformedImage.extent) else {
+            return Image(systemName: "xmark")
+        }
+        
+        return Image(cgImage, scale: 1.0, orientation: .up, label: Text("QRCode"))
+    }
     public static func isIOS() -> Bool {
         #if os(iOS)
         return true

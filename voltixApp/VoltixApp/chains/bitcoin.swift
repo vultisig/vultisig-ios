@@ -157,7 +157,7 @@ enum BitcoinHelper {
     {
         let result = getBitcoinSigningInput(utxos: utxos, fromAddress: fromAddress, toAddress: toAddress, toAmount: toAmount, byteFee: byteFee, memo: memo)
         switch result {
-        case .success(var input):
+        case .success(let input):
             let plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: .bitcoin)
             return .success(plan)
         case .failure(let err):
