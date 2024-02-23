@@ -25,19 +25,19 @@ class BitcoinTransactionMempool: Codable {
         self.status = status
         self.userAddress = userAddress
     }
-
+    
     var isSent: Bool {
         return vin.contains { input in
             input.prevout?.scriptpubkey_address == userAddress
         }
     }
-
+    
     var isReceived: Bool {
         return vout.contains { output in
             output.scriptpubkey_address == userAddress
         }
     }
-
+    
     var sentTo: [String] {
         guard isSent else { return [] }
         return vout.filter { $0.scriptpubkey_address != userAddress }.map { $0.scriptpubkey_address }
@@ -93,3 +93,26 @@ class BitcoinTransactionMempool: Codable {
         let block_time: Int?
     }
 }
+
+    // Trying to get the MEMO
+extension BitcoinTransactionMempool {
+    var opReturnData: String? {
+        for output in vout {
+                // Assuming scriptpubkey_asm is a non-optional String
+            let asm = output.scriptpubkey_asm
+            if asm.hasPrefix("OP_RETURN") {
+                    // Extract the data part after "OP_RETURN"
+                let components = asm.components(separatedBy: " ")
+                if components.count > 1 {
+                        // The actual data starts after "OP_RETURN" and is usually hex-encoded
+                    let dataHex = components.dropFirst().joined(separator: " ")
+                        // Since dataHex is derived from a non-optional String, no need for optional binding here
+                    return dataHex
+                }
+            }
+        }
+        return nil
+    }
+}
+
+

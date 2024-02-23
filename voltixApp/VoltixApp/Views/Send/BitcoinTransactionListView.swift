@@ -36,12 +36,13 @@ struct BitcoinTransactionListView: View {
             }
             .task {
                 if let vault = appState.currentVault {
-                    print("hexPubKey: \(vault.pubKeyECDSA) - hexChainCode: \(vault.hexChainCode)")
                     let result = BitcoinHelper.getBitcoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
                     switch result {
                         case .success(let btc):
-                            await bitcoinTransactionsService.fetchTransactions(btc.address)
-                            print("address: \(btc.address)")
+                                // "bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu"
+                                print(btc.address)
+                                await bitcoinTransactionsService.fetchTransactions(btc.address)
+                                //await bitcoinTransactionsService.fetchTransactions("bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu")
                         case .failure(let error):
                             print("error: \(error)")
                     }
@@ -55,31 +56,60 @@ struct TransactionRow: View {
     let transaction: BitcoinTransactionMempool
     
     var body: some View {
-        VStack(alignment: .leading) {
-            LabelTxHash(title: "Transaction Hash:", value: transaction.txid).padding(.vertical, 5)
-            if transaction.isSent {
-                ForEach(transaction.sentTo, id: \.self) { address in
-                    LabelText(title: "Sent To:", value: address).padding(.vertical, 1)
-                }
-                LabelText(title: "Amount Sent:", value: String(Double(transaction.amountSent) / Double(100000000))).padding(.vertical, 1)
+        Section{
+            VStack(alignment: .leading) {
+                LabelTxHash(title: "TX ID:".uppercased(), value: transaction.txid, isSent: transaction.isSent)
+                    .padding(.vertical, 5)
+                Divider() // Adds a horizontal line
                 
-            } else if transaction.isReceived {
-                ForEach(transaction.receivedFrom, id: \.self) { address in
-                    LabelText(title: "Received From:", value: address).padding(.vertical, 1)
+                if transaction.isSent {
+                    ForEach(transaction.sentTo, id: \.self) { address in
+                        LabelText(title: "To:".uppercased(), value: address)
+                            .padding(.vertical, 1)
+                    }
+                    Divider() // Adds a horizontal line
+                    LabelTextNumeric(title: "Amount:".uppercased(), value: String(Double(transaction.amountSent) / Double(100000000)))
+                        .padding(.vertical, 1)
+                } else if transaction.isReceived {
+                    ForEach(transaction.receivedFrom, id: \.self) { address in
+                        LabelText(title: "From:".uppercased(), value: address)
+                            .padding(.vertical, 1)
+                    }
+                    Divider() // Adds a horizontal line
+                    LabelTextNumeric(title: "Amount:".uppercased(), value: String(Double(transaction.amountReceived) / Double(100000000)))
+                        .padding(.vertical, 1)
                 }
-                LabelText(title: "Amount Received:", value: String(Double(transaction.amountReceived) / Double(100000000))).padding(.vertical, 1)
+                
+                if transaction.opReturnData != nil {
+                    Divider() // Adds a horizontal line
+                    LabelText(title: "MEMO:".uppercased(), value: transaction.opReturnData ?? "")
+                        .padding(.vertical, 1)
+                }
+                
+                Divider() // Adds a horizontal line
+                LabelTextNumeric(title: "Fee:", value: String(transaction.fee))
+                    .padding(.vertical, 5)
+//                Divider() // Adds a horizontal line
+//                LabelTextNumeric(title: "Direction:", value: transaction.isSent ? "Sent" : "Received")
+//                    .padding(.vertical, 5)
             }
-            LabelTextNumeric(title: "Fee:", value: String(transaction.fee)).padding(.vertical, 5)
-            LabelTextNumeric(title: "Direction:", value: transaction.isSent ? "Sent" : "Received").padding(.vertical, 5)
         }
     }
     
+    
     @ViewBuilder
-    private func LabelTxHash(title: String, value: String) -> some View {
+    private func LabelTxHash(title: String, value: String, isSent: Bool) -> some View {
         let url = "https://mempool.space/address/\(value)"
         VStack(alignment: .leading) {
-            Text(title)
-                .font(Font.custom("Menlo", size: 13).weight(.bold))
+            HStack{
+                Image(systemName: isSent ? "arrowtriangle.up.square" : "arrowtriangle.down.square")
+                    .resizable()
+                    .frame(width: 20, height: 20)
+                
+                Text(title)
+                    .font(Font.custom("Menlo", size: 20).weight(.bold))
+                
+            }
             Link(destination: URL(string: url)!) {
                 Text(value)
                     .font(Font.custom("Montserrat", size: 13).weight(.medium))
@@ -94,7 +124,7 @@ struct TransactionRow: View {
     private func LabelText(title: String, value: String) -> some View {
         VStack(alignment: .leading) {
             Text(title)
-                .font(Font.custom("Menlo", size: 13).weight(.bold))
+                .font(Font.custom("Menlo", size: 20).weight(.bold))
             Text(value)
                 .font(Font.custom("Montserrat", size: 13).weight(.medium))
                 .padding(.vertical, 5)
@@ -105,12 +135,11 @@ struct TransactionRow: View {
     private func LabelTextNumeric(title: String, value: String) -> some View {
         HStack {
             Text(title)
-                .font(Font.custom("Menlo", size: 13).weight(.bold))
+                .font(Font.custom("Menlo", size: 20).weight(.bold))
             Spacer()
             Text(value)
-                .font(Font.custom("Menlo", size: 15).weight(.ultraLight))
+                .font(Font.custom("Menlo", size: 30).weight(.ultraLight))
                 .padding(.vertical, 5)
-            Spacer()
         }
     }
 }
