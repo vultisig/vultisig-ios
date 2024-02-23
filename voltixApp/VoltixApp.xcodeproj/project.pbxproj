@@ -86,7 +86,7 @@
 		DE49A1B22B6A0F77000F3AFB /* JoinKeygenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE49A1B12B6A0F77000F3AFB /* JoinKeygenView.swift */; };
 		DE49A1B52B6A1088000F3AFB /* CodeScanner in Frameworks */ = {isa = PBXBuildFile; platformFilter = ios; productRef = DE49A1B42B6A1088000F3AFB /* CodeScanner */; };
 		DE4DFA7B2B7B1692004F8E73 /* ModelContainerPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE4DFA7A2B7B1692004F8E73 /* ModelContainerPreview.swift */; };
-		DE66CD212B884649006B01CD /* BackupVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE66CD202B884649006B01CD /* BackupVault.swift */; };
+		DE66CD232B88621D006B01CD /* VoltixVaultDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE66CD222B88621D006B01CD /* VoltixVaultDocument.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -188,7 +188,7 @@
 		DE49A1B12B6A0F77000F3AFB /* JoinKeygenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinKeygenView.swift; sourceTree = "<group>"; };
 		DE49A1B62B6A1222000F3AFB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		DE4DFA7A2B7B1692004F8E73 /* ModelContainerPreview.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelContainerPreview.swift; sourceTree = "<group>"; };
-		DE66CD202B884649006B01CD /* BackupVault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupVault.swift; sourceTree = "<group>"; };
+		DE66CD222B88621D006B01CD /* VoltixVaultDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoltixVaultDocument.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -352,7 +352,7 @@
 				D9AD8F052B675E360009F8D5 /* VaultAssetDetailView.swift */,
 				D9AD8EE92B6730E30009F8D5 /* MenuView.swift */,
 				DE49A1A42B68BB6B000F3AFB /* VaultSelectionView.swift */,
-				DE66CD202B884649006B01CD /* BackupVault.swift */,
+				DE66CD222B88621D006B01CD /* VoltixVaultDocument.swift */,
 			);
 			path = Vault;
 			sourceTree = "<group>";
@@ -635,6 +635,7 @@
 				049BBB642B71E926004C231F /* RadioButtonGroup.swift in Sources */,
 				049BBB582B71E72F004C231F /* DeviceView.swift in Sources */,
 				D9AD8EF12B6731660009F8D5 /* SendInputDetailsView.swift in Sources */,
+				DE66CD232B88621D006B01CD /* VoltixVaultDocument.swift in Sources */,
 				D9AD8F012B6732360009F8D5 /* SwapVerifyView.swift in Sources */,
 				049BBB682B71E9C5004C231F /* WifiBar.swift in Sources */,
 				465B09B72B7D909400952DD9 /* CryptoPrice.swift in Sources */,
@@ -668,7 +669,6 @@
 				DE15729E2B70F284009BC7C5 /* JoinKeysignView.swift in Sources */,
 				D9AD8EEC2B6730ED0009F8D5 /* VaultAssetsView.swift in Sources */,
 				D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */,
-				DE66CD212B884649006B01CD /* BackupVault.swift in Sources */,
 				465B09AB2B7C840100952DD9 /* ToastView.swift in Sources */,
 				049BBB622B71E8E7004C231F /* AssetItem.swift in Sources */,
 				D9AD8EEA2B6730E30009F8D5 /* MenuView.swift in Sources */,

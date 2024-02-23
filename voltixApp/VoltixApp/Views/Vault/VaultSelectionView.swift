@@ -5,6 +5,8 @@
 
 import SwiftData
 import SwiftUI
+import UniformTypeIdentifiers
+
 
 struct VaultSelectionView: View {
     @Environment(\.modelContext) private var modelContext
@@ -13,35 +15,51 @@ struct VaultSelectionView: View {
     @Binding var presentationStack: [CurrentScreen]
     @State private var showingDeleteAlert = false
     @State private var itemToDelete: Vault? = nil
-
+    @State private var showingExporter = false
+    @State private var vaultToExport: Vault? = nil
+    
     var body: some View {
-        List(vaults, id: \.self, selection: $appState.currentVault) { vault in
-            VStack {
-                HStack {
-                    NavigationLink(destination: ListVaultAssetView(presentationStack: $presentationStack),
-                                   label: {
-                                       Text(vault.name)
-                                           .swipeActions {
-                                               Button("Delete", role: .destructive) {
-                                                   self.itemToDelete = vault
-                                                   showingDeleteAlert = true
-                                               }
-                                           }
-                                   })
-                    Image(systemName: "pencil").onTapGesture {
-                        print("pencil clicked")
+        List(selection: $appState.currentVault) {
+            ForEach(vaults, id: \.self) { vault in
+                VStack {
+                    HStack {
+                        NavigationLink(destination: ListVaultAssetView(presentationStack: $presentationStack),
+                                       label: {
+                            Text(vault.name)
+                                .swipeActions {
+                                    Button("Delete", role: .destructive) {
+                                        self.itemToDelete = vault
+                                        showingDeleteAlert = true
+                                    }
+                                }
+                        })
+                        Image(systemName: "pencil").onTapGesture {
+                            print("pencil clicked")
+                        }
                     }
-                }
-                HStack{
-                    Image(systemName: "display.and.arrow.down")
-                    Text("backup")
-                    Spacer()
-                }.onTapGesture {
-                    print("backup")
+                    HStack {
+                        Image(systemName: "square.and.arrow.up")
+                        Text("backup")
+                        Spacer()
+                    }.onTapGesture {
+                        vaultToExport = vault
+                        self.showingExporter = true
+                    }
                 }
             }
         }
-
+        .fileExporter(isPresented: $showingExporter,
+                      document: VoltixDocument(vault: vaultToExport),
+                      contentType: .data,
+                      defaultFilename: "\(vaultToExport?.name ?? "vault").dat",
+                      onCompletion: { result in
+            switch result {
+            case .failure(let err):
+                print("fail to export,error:\(err.localizedDescription)")
+            case .success(let url):
+                print("exported to \(url)")
+            }
+        })
         .confirmationDialog(Text("Delete Vault"), isPresented: $showingDeleteAlert, titleVisibility: .automatic) {
             Button("Confirm Delete \(itemToDelete?.name ?? "Vault")", role: .destructive) {
                 withAnimation {
@@ -63,7 +81,7 @@ struct VaultSelectionView: View {
             }
         }.navigationBarBackButtonHidden()
     }
-
+    
     func deleteVault(vault: Vault) {
         modelContext.delete(vault)
         do {
