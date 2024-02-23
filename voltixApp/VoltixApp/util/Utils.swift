@@ -1,15 +1,14 @@
-//
-//  Utils.swift
-//  VoltixApp
-//
+    //
+    //  Utils.swift
+    //  VoltixApp
+    //
 
 import CryptoKit
 import Foundation
 import OSLog
-#if os(iOS)
 import UIKit
-#endif
 import SwiftUI
+import CoreImage.CIFilterBuiltins
 
 enum Utils {
     static let logger = Logger(subsystem: "util", category: "network")
@@ -52,7 +51,7 @@ enum Utils {
             completion(true)
         }.resume()
     }
-
+    
     public static func deleteFromServer(urlString: String, messageID: String?) {
         guard let url = URL(string: urlString) else {
             logger.error("URL can't be constructed from: \(urlString)")
@@ -77,7 +76,7 @@ enum Utils {
             
         }.resume()
     }
-
+    
     public static func getRequest(urlString: String, headers: [String: String], completion: @escaping (Result<Data, Error>) -> Void) {
         guard let url = URL(string: urlString) else {
             completion(.failure(NSError(domain: "Invalid URL", code: 0, userInfo: nil)))
@@ -99,20 +98,20 @@ enum Utils {
                 return
             }
             switch httpResponse.statusCode {
-            case 200 ... 299:
-                guard let data = data else {
-                    completion(.failure(NSError(domain: "No data available", code: 0, userInfo: nil)))
+                case 200 ... 299:
+                    guard let data = data else {
+                        completion(.failure(NSError(domain: "No data available", code: 0, userInfo: nil)))
+                        return
+                    }
+                    completion(.success(data))
+                case 404: // success
+                    completion(.failure(NSError(domain: "Invalid response code", code: httpResponse.statusCode, userInfo: nil)))
                     return
-                }
-                completion(.success(data))
-            case 404: // success
-                completion(.failure(NSError(domain: "Invalid response code", code: httpResponse.statusCode, userInfo: nil)))
-                return
-            default:
-                completion(.failure(NSError(domain: "Invalid response code", code: httpResponse.statusCode, userInfo: nil)))
-                return
+                default:
+                    completion(.failure(NSError(domain: "Invalid response code", code: httpResponse.statusCode, userInfo: nil)))
+                    return
             }
-                
+            
         }.resume()
     }
     
@@ -122,7 +121,7 @@ enum Utils {
             String(format: "%02hhx", $0)
         }.joined()
     }
-
+    
     public static func stringToHex(_ input: String) -> String {
         input.utf8.map { String(format: "%02x", $0) }.joined()
     }
@@ -145,18 +144,23 @@ enum Utils {
         return Image(cgImage, scale: 1.0, orientation: .up, label: Text("QRCode"))
     }
     public static func isIOS() -> Bool {
-        #if os(iOS)
         return true
-        #else
-        return false
-        #endif
     }
     
     public static func getLocalDeviceIdentity() -> String {
-        #if os(iOS)
         return UIDevice.current.name
-        #else
-        return ProcessInfo.processInfo.hostName
-        #endif
+    }
+    public static func generateHighQualityQRCode(from string: String, withScale scale: CGFloat = 3.0) -> UIImage? {
+        let filter = CIFilter.qrCodeGenerator()
+        filter.message = Data(string.utf8)
+        
+        guard let qrImage = filter.outputImage else { return nil }
+        let transform = CGAffineTransform(scaleX: scale, y: scale) // Scale the QR code
+        let scaledQRImage = qrImage.transformed(by: transform)
+        
+        let context = CIContext()
+        guard let cgImage = context.createCGImage(scaledQRImage, from: scaledQRImage.extent) else { return nil }
+        
+        return UIImage(cgImage: cgImage)
     }
 }

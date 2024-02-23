@@ -69,16 +69,7 @@ struct SwapVerifyView: View {
                 }
                 .frame(height: 70)
                 Spacer()
-                RadioButtonGroup(
-                    items: [
-                        "I am sending to the right address",
-                        "The amount is correct",
-                        "I am not being hacked or phished",
-                    ],
-                    selectedId: "I am sending to the right address"
-                ) {
-                    selected in print("Selected is: \(selected)")
-                }
+                
                 BottomBar(
                     content: "COMPLETE",
                     onClick: { }

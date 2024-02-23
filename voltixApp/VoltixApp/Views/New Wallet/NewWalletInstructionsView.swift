@@ -57,16 +57,16 @@ struct NewWalletInstructions: View {
                         appState.creatingVault = vault
                         self.presentationStack.append(.peerDiscovery)
                     }) {
-                            HStack() {
-                                Text("START")
-                                    .font(Font.custom("Menlo", size: 30).weight(.bold))
-                                    .fontWeight(.black)
-                                Image(systemName: "chevron.right")
-                                    .resizable()
-                                    .frame(width: 10, height: 15)
-                            }
+                        HStack() {
+                            Text("START")
+                                .font(Font.custom("Menlo", size: 30).weight(.bold))
+                                .fontWeight(.black)
+                            Image(systemName: "chevron.right")
+                                .resizable()
+                                .frame(width: 10, height: 15)
                         }
-                        .buttonStyle(PlainButtonStyle())
+                    }
+                    .buttonStyle(PlainButtonStyle())
                     
                 }.padding()
             }

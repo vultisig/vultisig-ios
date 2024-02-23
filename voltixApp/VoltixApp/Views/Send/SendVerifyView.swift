@@ -1,13 +1,13 @@
-//
-//  VoltixApp
-//
-//  Created by Enrique Souza Soares
-//
+    //
+    //  VoltixApp
+    //
+    //  Created by Enrique Souza Soares
+    //
 import SwiftUI
 
 struct SendVerifyView: View {
     @Binding var presentationStack: [CurrentScreen]
-    @ObservedObject var viewModel: SendTransaction
+    @ObservedObject var tx: SendTransaction
     @StateObject var unspentOutputsService: UnspentOutputsService = UnspentOutputsService()
     
     @State private var isChecked1 = false
@@ -21,8 +21,8 @@ struct SendVerifyView: View {
     private func reloadTransactions() {
         if unspentOutputsService.walletData == nil {
             Task {
-                await unspentOutputsService.fetchUnspentOutputs(for: viewModel.fromAddress)
-                // await unspentOutputsService.fetchUnspentOutputs(for: "bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu")
+                await unspentOutputsService.fetchUnspentOutputs(for: tx.fromAddress)
+                    // await unspentOutputsService.fetchUnspentOutputs(for: "bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu")
             }
         }
     }
@@ -30,11 +30,11 @@ struct SendVerifyView: View {
     var body: some View {
         VStack{
             Form { // Define spacing if needed
-                LabelText(title: "FROM", value: viewModel.fromAddress).padding(.vertical, 10)
-                LabelText(title: "TO", value: viewModel.toAddress).padding(.vertical, 10)
-                LabelTextNumeric(title: "AMOUNT", value: viewModel.amount + " " + viewModel.coin.ticker).padding(.vertical, 10)
-                LabelText(title: "MEMO", value: viewModel.memo).padding(.vertical, 10)
-                LabelTextNumeric(title: "FEE", value: "\(viewModel.gas) SATS").padding(.vertical, 10)
+                LabelText(title: "FROM", value: tx.fromAddress).padding(.vertical, 10)
+                LabelText(title: "TO", value: tx.toAddress).padding(.vertical, 10)
+                LabelTextNumeric(title: "AMOUNT", value: tx.amount + " " + tx.coin.ticker).padding(.vertical, 10)
+                LabelText(title: "MEMO", value: tx.memo).padding(.vertical, 10)
+                LabelTextNumeric(title: "FEE", value: "\(tx.gas) SATS").padding(.vertical, 10)
             }
             
             Group{
@@ -67,10 +67,10 @@ struct SendVerifyView: View {
                         onClick: {
                             if let walletData = unspentOutputsService.walletData {
                                 
-                                // Calculate total amount needed by summing the amount and the fee
-                                let totalAmountNeeded = viewModel.amountInSats + viewModel.feeInSats
+                                    // Calculate total amount needed by summing the amount and the fee
+                                let totalAmountNeeded = tx.amountInSats + tx.feeInSats
                                 
-                                // Select UTXOs sufficient to cover the total amount needed and map to UtxoInfo
+                                    // Select UTXOs sufficient to cover the total amount needed and map to UtxoInfo
                                 let utxoInfo = walletData.selectUTXOsForPayment(amountNeeded: Int64(totalAmountNeeded)).map {
                                     UtxoInfo(
                                         hash: $0.txHash ?? "",
@@ -79,25 +79,25 @@ struct SendVerifyView: View {
                                     )
                                 }
                                 
-//                                if utxoInfo.count == 0 {
-//                                    isValidForm = false
-//                                    print ("You don't have enough balance to send this transaction")
-//                                    return
-//                                }
+                                    //                                if utxoInfo.count == 0 {
+                                    //                                    isValidForm = false
+                                    //                                    print ("You don't have enough balance to send this transaction")
+                                    //                                    return
+                                    //                                }
                                 
                                 let totalSelectedAmount = utxoInfo.reduce(0) { $0 + $1.amount }
                                 
-//                                // Check if the total selected amount is greater than or equal to the needed balance
-//                                if totalSelectedAmount < Int64(totalAmountNeeded) {
-//                                    print("You don't have enough balance to send this transaction")
-//                                    return
-//                                }
+                                    //                                // Check if the total selected amount is greater than or equal to the needed balance
+                                    //                                if totalSelectedAmount < Int64(totalAmountNeeded) {
+                                    //                                    print("You don't have enough balance to send this transaction")
+                                    //                                    return
+                                    //                                }
                                 
                                 let keysignPayload = KeysignPayload(
-                                    coin: viewModel.coin,
-                                    toAddress: viewModel.toAddress,
-                                    toAmount: viewModel.amountInSats,
-                                    byteFee: viewModel.feeInSats,
+                                    coin: tx.coin,
+                                    toAddress: tx.toAddress,
+                                    toAmount: tx.amountInSats,
+                                    byteFee: tx.feeInSats,
                                     utxos: utxoInfo
                                 )
                                 
@@ -126,7 +126,7 @@ struct SendVerifyView: View {
         }
     }
     
-    // Helper view for label and value text
+        // Helper view for label and value text
     @ViewBuilder
     private func LabelText(title: String, value: String) -> some View {
         VStack(alignment: .leading) {
@@ -138,7 +138,7 @@ struct SendVerifyView: View {
         }
     }
     
-    // Helper view for label and value text
+        // Helper view for label and value text
     @ViewBuilder
     private func LabelTextNumeric(title: String, value: String) -> some View {
         HStack {
@@ -153,7 +153,7 @@ struct SendVerifyView: View {
     }
 }
 
-// Custom ToggleStyle for Checkbox appearance
+    // Custom ToggleStyle for Checkbox appearance
 struct CheckboxToggleStyle: ToggleStyle {
     func makeBody(configuration: Configuration) -> some View {
         return HStack {
@@ -172,6 +172,6 @@ struct CheckboxToggleStyle: ToggleStyle {
 
 struct SendVerifyView_Previews: PreviewProvider {
     static var previews: some View {
-        SendVerifyView(presentationStack: .constant([]), viewModel: SendTransaction(toAddress: "3JK2dFmWA58A3kukgw1yybotStGAFaV6Sg", amount: "100", memo: "Test Memo", gas: "0.01"))
+        SendVerifyView(presentationStack: .constant([]), tx: SendTransaction(toAddress: "3JK2dFmWA58A3kukgw1yybotStGAFaV6Sg", amount: "100", memo: "Test Memo", gas: "0.01"))
     }
 }

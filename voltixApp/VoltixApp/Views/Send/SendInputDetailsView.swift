@@ -1,8 +1,8 @@
-//
-//  VoltixApp
-//
-//  Created by Enrique Souza Soares
-//
+    //
+    //  VoltixApp
+    //
+    //  Created by Enrique Souza Soares
+    //
 import CodeScanner
 import OSLog
 import SwiftUI
@@ -14,15 +14,12 @@ struct SendInputDetailsView: View {
     @EnvironmentObject var appState: ApplicationState
     @Binding var presentationStack: [CurrentScreen]
     @StateObject var unspentOutputsService: UnspentOutputsService = UnspentOutputsService()
-    @ObservedObject var sendTransactionModel: SendTransaction
+    @ObservedObject var tx: SendTransaction
     @State private var isShowingScanner = false
     @State private var isValidAddress = false
     @State private var formErrorMessages = ""
     @State private var isValidForm = true
     @State private var keyboardOffset: CGFloat = 0
-    
-    // @State private var keysignMessage = "Stuff to sign"
-    // @State private var currentChain: Chain? = nil
     
     func isValidHex(_ hex: String) -> Bool {
         let hexPattern = "^0x?[0-9A-Fa-f]+$"
@@ -48,7 +45,7 @@ struct SendInputDetailsView: View {
                         Text("From").font(
                             Font.custom("Menlo", size: 18).weight(.bold)
                         ).padding(.bottom)
-                        Text(sendTransactionModel.fromAddress)
+                        Text(tx.fromAddress)
                     }
                     
                 }.padding(.vertical)
@@ -71,11 +68,11 @@ struct SendInputDetailsView: View {
                             }
                         )
                     }
-                    TextField("", text: $sendTransactionModel.toAddress)
+                    TextField("", text: $tx.toAddress)
                         .padding()
                         .background(Color.gray.opacity(0.5))  // 50% transparent gray
                         .cornerRadius(10)
-                        .onChange(of: sendTransactionModel.toAddress) { newValue in
+                        .onChange(of: tx.toAddress) { newValue in
                             
                             isValidAddress = TWBitcoinAddressIsValidString(newValue) || isValidHex(newValue)
                             if !isValidAddress {
@@ -91,14 +88,14 @@ struct SendInputDetailsView: View {
                         .font(Font.custom("Menlo", size: 18).weight(.bold))
                     
                     HStack {
-                        TextField("", text: $sendTransactionModel.amount)
+                        TextField("", text: $tx.amount)
                             .keyboardType(.decimalPad)
                             .padding()
                             .background(Color.gray.opacity(0.5))  // 50% transparent gray
                             .cornerRadius(10)
                         Button(action: {
                             if let walletData = unspentOutputsService.walletData {
-                                self.sendTransactionModel.amount = walletData.balanceInBTC
+                                self.tx.amount = walletData.balanceInBTC
                             } else {
                                 Text("Error to fetch the data").padding()
                             }
@@ -114,7 +111,7 @@ struct SendInputDetailsView: View {
                 Group {
                     Text("Memo:")
                         .font(Font.custom("Menlo", size: 18).weight(.bold))
-                    TextField("", text: $sendTransactionModel.memo)
+                    TextField("", text: $tx.memo)
                         .padding()
                         .background(Color.gray.opacity(0.5))  // 50% transparent gray
                         .cornerRadius(10)
@@ -129,7 +126,7 @@ struct SendInputDetailsView: View {
                     
                         .font(Font.custom("Menlo", size: 18).weight(.bold))
                     HStack {
-                        TextField("", text: $sendTransactionModel.gas)
+                        TextField("", text: $tx.gas)
                             .keyboardType(.decimalPad)
                             .padding()
                             .background(Color.gray.opacity(0.5))  // 50% transparent gray
@@ -139,7 +136,7 @@ struct SendInputDetailsView: View {
                                     .stroke(Color.gray, lineWidth: 0)
                             )
                         Spacer()
-                        Text("\($sendTransactionModel.gas.wrappedValue) SATS")
+                        Text("\($tx.gas.wrappedValue) SATS")
                             .font(Font.custom("Menlo", size: 18).weight(.bold))
                     }
                 }.padding(.bottom)
@@ -152,14 +149,14 @@ struct SendInputDetailsView: View {
                         content: "CONTINUE",
                         onClick: {
                             if validateForm() {
-                                self.presentationStack.append(.sendVerifyScreen(sendTransactionModel))
+                                self.presentationStack.append(.sendVerifyScreen(tx))
                             }
                         }
                     )
                 }
             }
             .onAppear {
-                print(sendTransactionModel.toString())
+                print(tx.toString())
                 reloadTransactions()
             }
             .navigationBarBackButtonHidden()
@@ -181,19 +178,19 @@ struct SendInputDetailsView: View {
     
     private func validateForm() -> Bool {
         return true
-        // Reset validation state at the beginning
+            // Reset validation state at the beginning
         formErrorMessages = ""
         isValidForm = true
         
-        // Validate the "To" address
+            // Validate the "To" address
         if !isValidAddress {
             formErrorMessages += "Please enter a valid address. \n"
             logger.log("Invalid address.")
             isValidForm = false
         }
         
-        let amount = sendTransactionModel.amountDecimal ?? Double(0)
-        let gasFee = sendTransactionModel.gasDecimal ?? Double(0)
+        let amount = tx.amountDecimal ?? Double(0)
+        let gasFee = tx.gasDecimal ?? Double(0)
         
         if amount <= 0 {
             formErrorMessages += "Amount must be a positive number. Please correct your entry. \n"
@@ -209,14 +206,14 @@ struct SendInputDetailsView: View {
             return isValidForm
         }
         
-        // Calculate the total transaction cost
+            // Calculate the total transaction cost
         let totalTransactionCost = amount + gasFee
         
         print("Total transaction cost: \(totalTransactionCost)")
         
-        // Verify if the wallet balance can cover the total transaction cost
+            // Verify if the wallet balance can cover the total transaction cost
         if let walletBalance = unspentOutputsService.walletData?.balanceDecimal, totalTransactionCost <= Double(walletBalance) {
-            // Transaction cost is within balance
+                // Transaction cost is within balance
         } else {
             formErrorMessages += "The combined amount and fee exceed your wallet's balance. Please adjust to proceed. \n"
             logger.log("Total transaction cost exceeds wallet balance.")
@@ -232,28 +229,28 @@ struct SendInputDetailsView: View {
     private func reloadTransactions() {
         if unspentOutputsService.walletData == nil {
             Task {
-                await unspentOutputsService.fetchUnspentOutputs(for: sendTransactionModel.fromAddress)
+                await unspentOutputsService.fetchUnspentOutputs(for: tx.fromAddress)
             }
         }
     }
     
     private func handleScan(result: Result<ScanResult, ScanError>) {
         switch result {
-        case .success(let result):
-            let qrCodeResult = result.string
-            sendTransactionModel.parseCryptoURI(qrCodeResult)
-            self.isShowingScanner = false
-        case .failure(let err):
-            logger.error("fail to scan QR code,error:\(err.localizedDescription)")
+            case .success(let result):
+                let qrCodeResult = result.string
+                tx.parseCryptoURI(qrCodeResult)
+                self.isShowingScanner = false
+            case .failure(let err):
+                logger.error("fail to scan QR code,error:\(err.localizedDescription)")
         }
     }
     
 }
 
-// Preview
+    // Preview
 struct SendInputDetailsView_Previews: PreviewProvider {
     static var previews: some View {
         SendInputDetailsView(
-            presentationStack: .constant([]), sendTransactionModel: SendTransaction())
+            presentationStack: .constant([]), tx: SendTransaction())
     }
 }

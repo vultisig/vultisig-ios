@@ -1,7 +1,7 @@
-//
-//  CoinsList.swift
-//  VoltixApp
-//
+    //
+    //  CoinsList.swift
+    //  VoltixApp
+    //
 
 import SwiftData
 import SwiftUI
@@ -38,7 +38,7 @@ struct AssetsList: View {
             }
         }
         .onDisappear {
-            // sync selection
+                // sync selection
             guard let vault = appState.currentVault else {
                 print("current vault is nil")
                 return
@@ -49,20 +49,20 @@ struct AssetsList: View {
                 } else {
                     
                     switch item.chainName {
-                    case Chain.THORChain.name:
-                        print("do it later")
-                    case Chain.Solana.name:
-                        print("do it later")
-                    case Chain.Bitcoin.name:
-                        let coinResult = BitcoinHelper.getBitcoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
-                        switch coinResult {
-                        case .success(let btc):
-                            vault.coins.append(btc)
-                        case .failure(let err):
-                            logger.info("fail to get bitcoin address,error:\(err.localizedDescription)")
-                        }
-                    default:
-                        print("do it later")
+                        case Chain.THORChain.name:
+                            print("do it later")
+                        case Chain.Solana.name:
+                            print("do it later")
+                        case Chain.Bitcoin.name:
+                            let coinResult = BitcoinHelper.getBitcoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
+                            switch coinResult {
+                                case .success(let btc):
+                                    vault.coins.append(btc)
+                                case .failure(let err):
+                                    logger.info("fail to get bitcoin address,error:\(err.localizedDescription)")
+                            }
+                        default:
+                            print("do it later")
                     }
                 }
             }
