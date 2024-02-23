@@ -1,8 +1,8 @@
-//
-//  VoltixApp
-//
-//  Created by Enrique Souza Soares
-//
+    //
+    //  VoltixApp
+    //
+    //  Created by Enrique Souza Soares
+    //
 import SwiftUI
 
 struct BitcoinTransactionListView: View {
@@ -39,11 +39,11 @@ struct BitcoinTransactionListView: View {
                     print("hexPubKey: \(vault.pubKeyECDSA) - hexChainCode: \(vault.hexChainCode)")
                     let result = BitcoinHelper.getBitcoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
                     switch result {
-                    case .success(let btc):
-                        await bitcoinTransactionsService.fetchTransactions(btc.address)
-                        print("address: \(btc.address)")
-                    case .failure(let error):
-                        print("error: \(error)")
+                        case .success(let btc):
+                            await bitcoinTransactionsService.fetchTransactions(btc.address)
+                            print("address: \(btc.address)")
+                        case .failure(let error):
+                            print("error: \(error)")
                     }
                 }
             }

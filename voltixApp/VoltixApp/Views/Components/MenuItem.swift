@@ -23,7 +23,7 @@ struct MenuItem: View {
     }
 }
 
-// Correct PreviewProvider Implementation
+    // Correct PreviewProvider Implementation
 struct MenuItem_Previews: PreviewProvider {
     static var previews: some View {
         MenuItem(

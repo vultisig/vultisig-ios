@@ -1,7 +1,7 @@
-//
-//  Keygen.swift
-//  VoltixApp
-//
+    //
+    //  Keygen.swift
+    //  VoltixApp
+    //
 
 import CryptoKit
 import Foundation
@@ -50,41 +50,41 @@ struct KeygenView: View {
                     Spacer()
                     VStack(alignment: .center) {
                         switch self.currentStatus {
-                        case .CreatingInstance:
-                            StatusText(status: "PREPARING VAULT...")
-                        case .KeygenECDSA:
-                            StatusText(status: "GENERATING ECDSA KEY")
-                        case .KeygenEdDSA:
-                            StatusText(status: "GENERATING EdDSA KEY")
-                        case .KeygenFinished:
-                            Text("DONE").onAppear {
-                                if let stateAccess {
-                                    for item in stateAccess.keyshares {
-                                        logger.info("keyshare:\(item.pubkey)")
+                            case .CreatingInstance:
+                                StatusText(status: "PREPARING VAULT...")
+                            case .KeygenECDSA:
+                                StatusText(status: "GENERATING ECDSA KEY")
+                            case .KeygenEdDSA:
+                                StatusText(status: "GENERATING EdDSA KEY")
+                            case .KeygenFinished:
+                                Text("DONE").onAppear {
+                                    if let stateAccess {
+                                        for item in stateAccess.keyshares {
+                                            logger.info("keyshare:\(item.pubkey)")
+                                        }
+                                        self.vault.keyshares = stateAccess.keyshares
                                     }
-                                    self.vault.keyshares = stateAccess.keyshares
-                                }
-                                self.vault.name = self.vaultName
-                                self.vault.localPartyID = self.localPartyKey
-                                self.vault.hexChainCode = self.hexChainCode
-                                // add the vault to modelcontext
-                                self.context.insert(self.vault)
-                                
-                                Task {
-                                    // when user didn't touch it for 5 seconds , automatically goto
-                                    try await Task.sleep(for: .seconds(5)) // Back off 5s
+                                    self.vault.name = self.vaultName
+                                    self.vault.localPartyID = self.localPartyKey
+                                    self.vault.hexChainCode = self.hexChainCode
+                                        // add the vault to modelcontext
+                                    self.context.insert(self.vault)
+                                    
+                                    Task {
+                                            // when user didn't touch it for 5 seconds , automatically goto
+                                        try await Task.sleep(for: .seconds(5)) // Back off 5s
+                                        self.presentationStack = [CurrentScreen.vaultSelection]
+                                    }
+                                }.onTapGesture {
                                     self.presentationStack = [CurrentScreen.vaultSelection]
                                 }
-                            }.onTapGesture {
-                                self.presentationStack = [CurrentScreen.vaultSelection]
-                            }
-                            
-                        case .KeygenFailed:
-                            StatusText(status: "Keygen failed, you can retry it")
-                                .onAppear {
-                                    self.messagePuller.stop()
-                                    
-                                }.navigationBarBackButtonHidden(false)
+                                
+                            case .KeygenFailed:
+                                StatusText(status: "Keygen failed, you can retry it")
+                                    .onAppear {
+                                        self.messagePuller.stop()
+                                        
+                                    }.navigationBarBackButtonHidden(false)
                         }
                     }.frame(width: geometry.size.width, height: geometry.size.height * 0.8)
                     Spacer()
@@ -96,7 +96,7 @@ struct KeygenView: View {
         .task {
             do {
                 self.vault.signers.append(contentsOf: self.keygenCommittee)
-                // Create keygen instance, it takes time to generate the preparams
+                    // Create keygen instance, it takes time to generate the preparams
                 let messengerImp = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: nil)
                 let stateAccessorImp = LocalStateAccessorImpl(vault: self.vault)
                 self.tssMessenger = messengerImp
@@ -162,10 +162,10 @@ struct KeygenView: View {
     {
         let t = Task.detached(priority: .high) {
             switch keyType {
-            case .ECDSA:
-                return try service.keygenECDSA(req)
-            case .EdDSA:
-                return try service.keygenEdDSA(req)
+                case .ECDSA:
+                    return try service.keygenECDSA(req)
+                case .EdDSA:
+                    return try service.keygenEdDSA(req)
             }
         }
         return try await t.value
@@ -180,7 +180,7 @@ class MessagePuller: ObservableObject {
         pollingInboundMessages = false
         cache.removeAllObjects()
     }
-
+    
     func pollMessages(mediatorURL: String,
                       sessionID: String,
                       localPartyKey: String,
@@ -196,7 +196,7 @@ class MessagePuller: ObservableObject {
             } while self.pollingInboundMessages
         }
     }
-
+    
     private func pollInboundMessages(mediatorURL: String, sessionID: String, localPartyKey: String, tssService: TssServiceImpl, messageID: String?) {
         let urlString = "\(mediatorURL)/message/\(sessionID)/\(localPartyKey)"
         var header = [String: String]()
@@ -205,40 +205,40 @@ class MessagePuller: ObservableObject {
         }
         Utils.getRequest(urlString: urlString, headers: header, completion: { result in
             switch result {
-            case .success(let data):
-                do {
-                    let decoder = JSONDecoder()
-                    let msgs = try decoder.decode([Message].self, from: data)
-                    for msg in msgs.sorted(by: { $0.sequenceNo < $1.sequenceNo }) {
-                        var key = "\(sessionID)-\(localPartyKey)-\(msg.hash)" as NSString
-                        if let messageID {
-                            key = "\(sessionID)-\(localPartyKey)-\(messageID)-\(msg.hash)" as NSString
+                case .success(let data):
+                    do {
+                        let decoder = JSONDecoder()
+                        let msgs = try decoder.decode([Message].self, from: data)
+                        for msg in msgs.sorted(by: { $0.sequenceNo < $1.sequenceNo }) {
+                            var key = "\(sessionID)-\(localPartyKey)-\(msg.hash)" as NSString
+                            if let messageID {
+                                key = "\(sessionID)-\(localPartyKey)-\(messageID)-\(msg.hash)" as NSString
+                            }
+                            if self.cache.object(forKey: key) != nil {
+                                logger.info("message with key:\(key) has been applied before")
+                                    // message has been applied before
+                                continue
+                            }
+                            logger.debug("Got message from: \(msg.from), to: \(msg.to)")
+                            try tssService.applyData(msg.body)
+                            self.cache.setObject(NSObject(), forKey: key)
+                            Task {
+                                    // delete it from a task, since we don't really care about the result
+                                self.deleteMessageFromServer(mediatorURL: mediatorURL, sessionID: sessionID, localPartyKey: localPartyKey, hash: msg.hash, messageID: messageID)
+                            }
                         }
-                        if self.cache.object(forKey: key) != nil {
-                            logger.info("message with key:\(key) has been applied before")
-                            // message has been applied before
-                            continue
-                        }
-                        logger.debug("Got message from: \(msg.from), to: \(msg.to)")
-                        try tssService.applyData(msg.body)
-                        self.cache.setObject(NSObject(), forKey: key)
-                        Task {
-                            // delete it from a task, since we don't really care about the result
-                            self.deleteMessageFromServer(mediatorURL: mediatorURL, sessionID: sessionID, localPartyKey: localPartyKey, hash: msg.hash, messageID: messageID)
-                        }
+                    } catch {
+                        logger.error("Failed to decode response to JSON, data: \(data), error: \(error)")
                     }
-                } catch {
-                    logger.error("Failed to decode response to JSON, data: \(data), error: \(error)")
-                }
-            case .failure(let error):
-                let err = error as NSError
-                if err.code != 404 {
-                    logger.error("fail to get inbound message,error:\(error.localizedDescription)")
-                }
+                case .failure(let error):
+                    let err = error as NSError
+                    if err.code != 404 {
+                        logger.error("fail to get inbound message,error:\(error.localizedDescription)")
+                    }
             }
         })
     }
-
+    
     private func deleteMessageFromServer(mediatorURL: String, sessionID: String, localPartyKey: String, hash: String, messageID: String?) {
         let urlString = "\(mediatorURL)/message/\(sessionID)/\(localPartyKey)/\(hash)"
         Utils.deleteFromServer(urlString: urlString, messageID: nil)

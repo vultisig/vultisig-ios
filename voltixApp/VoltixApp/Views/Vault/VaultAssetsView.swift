@@ -4,7 +4,7 @@ struct VaultAssetsView: View {
     @Binding var presentationStack: [CurrentScreen]
     @EnvironmentObject var appState: ApplicationState
     @StateObject var unspentOutputsViewModel: UnspentOutputsService = UnspentOutputsService()
-    @ObservedObject var transactionDetailsViewModel: SendTransaction
+    @ObservedObject var tx: SendTransaction
     @StateObject var cryptoPriceViewModel = CryptoPriceService()
     @State private var signingTestView = false
     var body: some View {
@@ -20,7 +20,7 @@ struct VaultAssetsView: View {
                             if let priceUsd = walletData.balanceInUSD(usdPrice: bitcoinPriceUSD) {
                                 VaultItem(
                                     presentationStack: $presentationStack,
-                                    coinName: transactionDetailsViewModel.coin.chain.name,
+                                    coinName: tx.coin.chain.name,
                                     usdAmount: priceUsd,
                                     showAmount: false,
                                     address: walletData.address,
@@ -29,11 +29,11 @@ struct VaultAssetsView: View {
                                     showButtons: true
                                 ).padding()
                                 AssetItem(
-                                    coinName: transactionDetailsViewModel.coin.ticker,
+                                    coinName: tx.coin.ticker,
                                     amount: walletData.balanceInBTC,
                                     usdAmount: priceUsd,
                                     sendClick: {
-                                        self.presentationStack.append(.sendInputDetails(transactionDetailsViewModel))
+                                        self.presentationStack.append(.sendInputDetails(tx))
                                     },
                                     swapClick: {}
                                 )
@@ -56,10 +56,10 @@ struct VaultAssetsView: View {
                     if let  vault = appState.currentVault {
                         let result = BitcoinHelper.getAddressFromPubKey(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
                         switch result {
-                        case .success(let addr):
-                            print("bitcoin address is : \(addr)")
-                        case .failure(let err):
-                            print("fail to generate bitcoin address,error: \(err)")
+                            case .success(let addr):
+                                print("bitcoin address is : \(addr)")
+                            case .failure(let err):
+                                print("fail to generate bitcoin address,error: \(err)")
                         }
                     }
                     
@@ -70,19 +70,19 @@ struct VaultAssetsView: View {
                     }
                 }
             }.refreshable {
-                // This block is called when a pull-to-refresh action is triggered by the user.
+                    // This block is called when a pull-to-refresh action is triggered by the user.
                 Task {
                     await loadData()
                 }
             }
             
-//            BottomBar(
-//                content: "CONTINUE",
-//                onClick: {
-//                    // Define the action for continue button
-//                }
-//            )
-//            .padding()
+                //            BottomBar(
+                //                content: "CONTINUE",
+                //                onClick: {
+                //                    // Define the action for continue button
+                //                }
+                //            )
+                //            .padding()
         }
         .navigationTitle(appState.currentVault?.name ?? "Vault")
         .modifier(InlineNavigationBarTitleModifier())
@@ -98,7 +98,7 @@ struct VaultAssetsView: View {
         }
     }
     private func loadData() async {
-        await unspentOutputsViewModel.fetchUnspentOutputs(for: transactionDetailsViewModel.fromAddress)
+        await unspentOutputsViewModel.fetchUnspentOutputs(for: tx.fromAddress)
         await cryptoPriceViewModel.fetchCryptoPrices(for: "bitcoin", for: "usd")
     }
 }

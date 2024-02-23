@@ -1,7 +1,7 @@
-//
-//  BottomBar.swift
-//  VoltixApp
-//
+    //
+    //  BottomBar.swift
+    //  VoltixApp
+    //
 
 import SwiftUI
 
@@ -26,11 +26,11 @@ struct BottomBar: View {
             if buttondisplay {
                 Button(action: onClick) {
                     HStack() {
-                    Text(content)
-                      .fontWeight(.black)
-                    Image(systemName: "chevron.right")
-                      .resizable()
-                      .frame(width: 10, height: 15)
+                        Text(content)
+                            .fontWeight(.black)
+                        Image(systemName: "chevron.right")
+                            .resizable()
+                            .frame(width: 10, height: 15)
                     }
                 }
                 .buttonStyle(PlainButtonStyle())

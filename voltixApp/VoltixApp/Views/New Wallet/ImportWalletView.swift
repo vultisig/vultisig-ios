@@ -17,18 +17,14 @@ struct ImportWalletView: View {
     
     var body: some View {
         GeometryReader { geometry in
-            
             VStack(alignment: .leading) {
                 Spacer().frame(height: 30)
-                
                 ZStack(alignment: .bottomTrailing) {
                     TextEditor(text: $vaultText)
                         .font(.custom("AmericanTypewriter", size: geometry.size.width * 0.05))
                         .scrollContentBackground(.hidden)
-                        
                         .frame(height: geometry.size.height * 0.4)
                         .padding()
-                        //.background(Color(red: 0.96, green: 0.96, blue: 0.96))
                         .background(Color.primary.opacity(0.5))
                         .cornerRadius(12)
                     
@@ -55,15 +51,15 @@ struct ImportWalletView: View {
                             allowsMultipleSelection: false
                         ) { result in
                             switch result {
-                            case .success(let urls):
-                                guard let selectedFileURL = urls.first else { return }
-                                
-                                print(selectedFileURL)
-                                // Read the content of the file
-                                readContent(of: selectedFileURL)
-                            case .failure(let error):
-                                // Handle the error
-                                print("Error selecting file: \(error.localizedDescription)")
+                                case .success(let urls):
+                                    guard let selectedFileURL = urls.first else { return }
+                                    
+                                    print(selectedFileURL)
+                                        // Read the content of the file
+                                    readContent(of: selectedFileURL)
+                                case .failure(let error):
+                                        // Handle the error
+                                    print("Error selecting file: \(error.localizedDescription)")
                             }
                         }                    }
                 }
@@ -71,7 +67,7 @@ struct ImportWalletView: View {
                 Text("ENTER YOUR PREVIOUSLY CREATED VAULT SHARE")
                     .font(.system(size: geometry.size.width * 0.04, weight: .medium))
                     .padding(.top, 8)
-                    
+                
                 
                 Spacer()
                 
@@ -84,7 +80,7 @@ struct ImportWalletView: View {
                 .padding(.bottom)
             }
             .padding([.leading, .trailing], geometry.size.width * 0.05)
-            // Conditionally apply navigationBarTitleDisplayMode for non-macOS targets
+                // Conditionally apply navigationBarTitleDisplayMode for non-macOS targets
             .navigationTitle("IMPORT")
             .modifier(InlineNavigationBarTitleModifier())
             .toolbar {
@@ -120,29 +116,29 @@ struct ImportWalletView: View {
         }
     }
     
-
+    
     private func handleScan(result: Result<ScanResult, ScanError>) {
         switch result {
-        case .success(let result):
-            let qrCodeResult = result.string
-            self.vaultText = qrCodeResult
-            self.isShowingScanner = false
-//
-//            let decoder = JSONDecoder()
-//            if let data = qrCodeResult.data(using: .utf8) {
-//                do {
-//                    self.vaultText = String(contentsOf: qrCodeResult, encoding: .utf8)
-//                    print(data)
-//                } catch {
-//                    logger.error("fail to decode keysign message,error:\(error.localizedDescription)")
-//                    self.errorMsg = error.localizedDescription
-//                }
-//            }
-        case .failure(let err):
-            logger.error("fail to scan QR code,error:\(err.localizedDescription)")
+            case .success(let result):
+                let qrCodeResult = result.string
+                self.vaultText = qrCodeResult
+                self.isShowingScanner = false
+                    //
+                    //            let decoder = JSONDecoder()
+                    //            if let data = qrCodeResult.data(using: .utf8) {
+                    //                do {
+                    //                    self.vaultText = String(contentsOf: qrCodeResult, encoding: .utf8)
+                    //                    print(data)
+                    //                } catch {
+                    //                    logger.error("fail to decode keysign message,error:\(error.localizedDescription)")
+                    //                    self.errorMsg = error.localizedDescription
+                    //                }
+                    //            }
+            case .failure(let err):
+                logger.error("fail to scan QR code,error:\(err.localizedDescription)")
         }
     }
-
+    
     
 }
 

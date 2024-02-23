@@ -1,9 +1,3 @@
-//
-//  UnspentOutputsViewModel.swift
-//  VoltixApp
-//
-//  Created by Enrique Souza Soares on 13/02/2024.
-//
 import SwiftUI
 
 @MainActor

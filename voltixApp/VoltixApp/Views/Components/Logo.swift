@@ -1,9 +1,9 @@
-//
-//  Logo.swift
-//  VoltixApp
-//
-//  Created by Mac on 05.02.2024.
-//
+    //
+    //  Logo.swift
+    //  VoltixApp
+    //
+    //  Created by Mac on 05.02.2024.
+    //
 
 import SwiftUI
 

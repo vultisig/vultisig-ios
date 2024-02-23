@@ -69,7 +69,7 @@ struct PeerDiscoveryView: View {
                     .shadow(radius: 5)
                     .padding()
                     
-                    // TODO: Validate if it is <= 3 devices
+                        // TODO: Validate if it is <= 3 devices
                     if self.participantDiscovery.peersFound.count == 0 {
                         VStack{
                             HStack {

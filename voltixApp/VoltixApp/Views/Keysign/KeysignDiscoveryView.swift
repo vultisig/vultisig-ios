@@ -14,7 +14,7 @@ struct KeysignDiscoveryView: View {
         case FailToStart
         case Keysign
     }
-
+    
     @Binding var presentationStack: [CurrentScreen]
     @EnvironmentObject var appState: ApplicationState
     @State private var peersFound = [String]()
@@ -50,7 +50,7 @@ struct KeysignDiscoveryView: View {
                     .shadow(radius: 5)
                     .padding()
                     
-                    // TODO: Validate if it is <= 3 devices
+                        // TODO: Validate if it is <= 3 devices
                     if self.participantDiscovery.peersFound.count == 0 {
                         VStack{
                             HStack {
@@ -167,14 +167,14 @@ struct KeysignDiscoveryView: View {
             self.mediator.stop()
         }
     }
-
+    
     private func startKeysign(allParticipants: [String]) {
         let urlString = "\(self.serverAddr)/start/\(self.sessionID)"
         Utils.sendRequest(urlString: urlString, method: "POST", body: allParticipants) { _ in
             logger.info("kicked off keysign successfully")
         }
     }
-
+    
     private func startKeysignSession() {
         let urlString = "\(self.serverAddr)/\(self.sessionID)"
         let body = [self.localPartyID]
@@ -192,7 +192,7 @@ struct KeysignDiscoveryView: View {
         guard let qrFilter = CIFilter(name: "CIQRCodeGenerator") else {
             return Image(systemName: "xmark")
         }
-
+        
         let keysignMsg = KeysignMessage(sessionID: self.sessionID,
                                         payload: self.keysignPayload)
         do {
@@ -202,13 +202,13 @@ struct KeysignDiscoveryView: View {
         } catch {
             logger.error("fail to encode keysign messages to json,error:\(error)")
         }
-
+        
         guard let qrCodeImage = qrFilter.outputImage else {
             return Image(systemName: "xmark")
         }
-
+        
         let transformedImage = qrCodeImage.transformed(by: CGAffineTransform(scaleX: size, y: size))
-
+        
         guard let cgImage = context.createCGImage(transformedImage, from: transformedImage.extent) else {
             return Image(systemName: "xmark")
         }

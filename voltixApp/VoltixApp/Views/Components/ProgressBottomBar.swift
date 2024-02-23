@@ -1,9 +1,9 @@
-//
-//  ProgressBottomBar.swift
-//  VoltixApp
-//
-//  Created by dev on 09.02.2024.
-//
+    //
+    //  ProgressBottomBar.swift
+    //  VoltixApp
+    //
+    //  Created by dev on 09.02.2024.
+    //
 
 import SwiftUI
 
@@ -55,11 +55,11 @@ struct ProgressBottomBar: View {
                         Text(content)
                             .lineSpacing(60)
                             .font(Font.custom("Menlo", size: 40).weight(.black))
-                            
+                        
                             .padding(.trailing, 16)
                         Image(systemName: "chevron.right")
                             .resizable()
-                            
+                        
                             .frame(width: 20, height: 30)
                     }
                 }

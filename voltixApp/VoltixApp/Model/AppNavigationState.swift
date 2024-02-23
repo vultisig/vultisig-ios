@@ -27,7 +27,6 @@ enum CurrentScreen: Hashable {
     
     // Normal use (typically launches here if wallet imported/generated already)
     case vaultAssets(SendTransaction)  // Main landing page for normal use. Lists ETH, BTC, ... assets.
-    case vaultDetailAsset(AssetType) //ETH, BTC etc.
     case menu  // Add/Export/Forget vaults
     
     // Send
