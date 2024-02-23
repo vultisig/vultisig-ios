@@ -139,7 +139,7 @@ struct SendInputDetailsView: View {
                                     .stroke(Color.gray, lineWidth: 0)
                             )
                         Spacer()
-                        Text($sendTransactionModel.gas.wrappedValue)
+                        Text("\($sendTransactionModel.gas.wrappedValue) SATS")
                             .font(Font.custom("Menlo", size: 18).weight(.bold))
                     }
                 }.padding(.bottom)

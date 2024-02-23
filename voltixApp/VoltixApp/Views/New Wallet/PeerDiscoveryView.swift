@@ -1,7 +1,7 @@
-//
-//  PeerDiscoveryView.swift
-//  VoltixApp
-//
+    //
+    //  PeerDiscoveryView.swift
+    //  VoltixApp
+    //
 
 import CoreImage
 import CoreImage.CIFilterBuiltins
@@ -38,7 +38,7 @@ struct PeerDiscoveryView: View {
     @EnvironmentObject var appState: ApplicationState
     @State private var selections = Set<String>()
     private let mediator = Mediator.shared
-    // it should be ok to hardcode here , as this view start the mediator server itself
+        // it should be ok to hardcode here , as this view start the mediator server itself
     private let serverAddr = "http://127.0.0.1:8080"
     private let sessionID = UUID().uuidString
     private let chainCode = getChainCode()
@@ -49,52 +49,100 @@ struct PeerDiscoveryView: View {
     var body: some View {
         VStack {
             switch self.currentState {
-            case .WaitingForDevices:
-                Text("Scan the following QR code to join keygen session")
-                self.getQrImage(size: 100)
-                    .resizable()
-                    .scaledToFit()
-                    .padding()
-                Text("CHOOSE TWO PAIR DEVICES:")
-                List(self.participantDiscovery.peersFound, id: \.self, selection: self.$selections) { peer in
-                    HStack {
-                        Image(systemName: self.selections.contains(peer) ? "checkmark.circle" : "circle")
-                        Text(peer)
+                case .WaitingForDevices:
+                    
+                    VStack{
+                        Text("Pair with two other devices:".uppercased())
+                            .font(.custom("Menlo", size: 18).bold())
+                            .multilineTextAlignment(.center)
+                        self.getQrImage(size: 100)
+                            .resizable()
+                            .scaledToFit()
+                            .padding()
+                        Text("Scan the above QR CODE.".uppercased())
+                            .font(.custom("Menlo", size: 13))
+                            .multilineTextAlignment(.center)
                     }
-                    .onTapGesture {
-                        if self.selections.contains(peer) {
-                            self.selections.remove(peer)
-                        } else {
-                            self.selections.insert(peer)
+                    .padding()
+                    .background(Color(UIColor.systemFill))
+                    .cornerRadius(10)
+                    .shadow(radius: 5)
+                    .padding()
+                    
+                    // TODO: Validate if it is <= 3 devices
+                    if self.participantDiscovery.peersFound.count == 0 {
+                        VStack{
+                            HStack {
+                                Text("Looking for devices... ")
+                                    .font(Font.custom("Menlo", size: 15)
+                                        .weight(.bold))
+                                    .multilineTextAlignment(.center)
+                                
+                                ProgressView()
+                                    .progressViewStyle(.circular)
+                                    .padding(2)
+                                
+                            }
+                        }
+                        .padding()
+                        .background(Color(UIColor.systemFill))
+                        .cornerRadius(10)
+                        .shadow(radius: 5)
+                        .padding()
+                    }
+                    
+                    List(self.participantDiscovery.peersFound, id: \.self, selection: self.$selections) { peer in
+                        HStack {
+                            Image(systemName: self.selections.contains(peer) ? "checkmark.circle" : "circle")
+                            Text(peer)
+                        }
+                        .onTapGesture {
+                            if self.selections.contains(peer) {
+                                self.selections.remove(peer)
+                            } else {
+                                self.selections.insert(peer)
+                            }
                         }
                     }
-                }
-                Button("Create Wallet >") {
-                    self.startKeygen(allParticipants: self.selections.map { $0 })
-                    self.currentState = .Keygen
-                    self.participantDiscovery.stop()
-                }
-                // TODO: Only for testing purpose.
-                .disabled(self.selections.count < 2)
-            case .Keygen:
-                KeygenView(presentationStack: self.$presentationStack,
-                           keygenCommittee: self.selections.map { $0 },
-                           mediatorURL: self.serverAddr,
-                           sessionID: self.sessionID,
-                           localPartyKey: self.localPartyID,
-                           hexChainCode: self.chainCode ?? "",
-                           vaultName: self.appState.creatingVault?.name ?? "New Vault")
-            case .Failure:
-                Text("Something is wrong")
+                    
+                    Button(action: {
+                        self.startKeygen(allParticipants: self.selections.map { $0 })
+                        self.currentState = .Keygen
+                        self.participantDiscovery.stop()
+                    }) {
+                        HStack() {
+                            Text("CREATE WALLET".uppercased())
+                                .font(Font.custom("Menlo", size: 30).weight(.bold))
+                                .fontWeight(.black)
+                            Image(systemName: "chevron.right")
+                                .resizable()
+                                .frame(width: 10, height: 15)
+                        }
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                        // TODO: Only for testing purpose.
+                    .disabled(self.selections.count < 2)
+                case .Keygen:
+                    KeygenView(presentationStack: self.$presentationStack,
+                               keygenCommittee: self.selections.map { $0 },
+                               mediatorURL: self.serverAddr,
+                               sessionID: self.sessionID,
+                               localPartyKey: self.localPartyID,
+                               hexChainCode: self.chainCode ?? "",
+                               vaultName: self.appState.creatingVault?.name ?? "New Vault")
+                case .Failure:
+                    Text("Something is wrong")
             }
         }
-        .navigationBarTitleDisplayMode(.inline)
         .navigationTitle("MAIN DEVICE")
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
         .toolbar {
-            ToolbarItem {
-                Button("help", systemImage: "questionmark.circle") {
-                    // TODO: show help about key gen
-                }
+            ToolbarItem(placement: .navigationBarLeading) {
+                NavigationButtons.backButton(presentationStack: $presentationStack)
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                NavigationButtons.questionMarkButton
             }
         }
         .task {
@@ -103,7 +151,7 @@ struct PeerDiscoveryView: View {
             self.startSession()
             self.participantDiscovery.getParticipants(serverAddr: self.serverAddr, sessionID: self.sessionID)
         }.onAppear {
-            // by this step , creatingVault should be available already
+                // by this step , creatingVault should be available already
             if self.appState.creatingVault == nil {
                 self.currentState = .Failure
                 return
@@ -164,7 +212,7 @@ struct PeerDiscoveryView: View {
             }
         }
     }
-
+    
     private func startKeygen(allParticipants: [String]) {
         let urlString = "\(self.serverAddr)/start/\(self.sessionID)"
         Utils.sendRequest(urlString: urlString, method: "POST", body: allParticipants) { _ in
