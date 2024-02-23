@@ -1,16 +1,15 @@
-    //
-    //  VaultItem.swift
-    //  VoltixApp
-    //
-    //  Created by Mac on 05.02.2024.
-    //
+//
+//  VaultItem.swift
+//  VoltixApp
+//
+//  Created by Mac on 05.02.2024.
+//
 
 import CoreImage.CIFilterBuiltins
 import SwiftUI
 import UIKit
 
 struct VaultItem: View {
-    
     @Binding var presentationStack: [CurrentScreen]
     let coinName: String
     let usdAmount: String
@@ -49,15 +48,14 @@ struct VaultItem: View {
                         Image(systemName: "square.on.square")
                             .resizable()
                             .frame(width: 20, height: 20)
-                        
                     }
                     .buttonStyle(PlainButtonStyle())
                     .overlay(
                         showingToast
-                        ? ToastView(message: toastMessage)
+                            ? ToastView(message: toastMessage)
                             .transition(.opacity)
                             .animation(.easeInOut, value: showingToast)
-                        : nil
+                            : nil
                     )
                     
                     Spacer().frame(width: 8)
@@ -81,12 +79,8 @@ struct VaultItem: View {
                         
                     }.buttonStyle(PlainButtonStyle())
                         .sheet(isPresented: $showingQRCode) {
-                            if let qrCodeImage = Utils.generateHighQualityQRCode(from: address) {
-                                QRCodeView(qrCodeImage: qrCodeImage)
-                                    .padding()
-                            } else {
-                                Text("Failed to generate QR Code")
-                            }
+                            QRCodeView(qrCodeImage: Utils.getQrImage(data: address.data(using: .utf8), size: 100))
+                                .padding()
                         }
                     Spacer().frame(width: 8)
                     Button(action: {
@@ -97,14 +91,12 @@ struct VaultItem: View {
                             .frame(width: 16, height: 20)
                     }
                     .buttonStyle(PlainButtonStyle())
-                    
                 }
                 Spacer()
                 
                 Text(usdAmount)
                     .font(Font.custom("Menlo", size: 20))
                     .multilineTextAlignment(.trailing)
-                
             }
             HStack {
                 Text(address)
@@ -113,7 +105,6 @@ struct VaultItem: View {
             }
         }
     }
-    
 }
 
 #Preview {

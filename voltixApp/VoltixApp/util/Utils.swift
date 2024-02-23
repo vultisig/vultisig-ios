@@ -126,24 +126,28 @@ enum Utils {
         input.utf8.map { String(format: "%02x", $0) }.joined()
     }
     
+    public static func getQrImage(data:Any?,size: CGFloat) -> Image {
+        let context = CIContext()
+        guard let qrFilter = CIFilter(name: "CIQRCodeGenerator") else {
+            return Image(systemName: "xmark")
+        }
+        qrFilter.setValue(data, forKey: "inputMessage")
+        guard let qrCodeImage = qrFilter.outputImage else {
+            return Image(systemName: "xmark")
+        }
+        
+        let transformedImage = qrCodeImage.transformed(by: CGAffineTransform(scaleX: size, y: size))
+        guard let cgImage = context.createCGImage(transformedImage, from: transformedImage.extent) else {
+            return Image(systemName: "xmark")
+        }
+        
+        return Image(cgImage, scale: 1.0, orientation: .up, label: Text("QRCode"))
+    }
     public static func isIOS() -> Bool {
         return true
     }
     
     public static func getLocalDeviceIdentity() -> String {
         return UIDevice.current.name
-    }
-    public static func generateHighQualityQRCode(from string: String, withScale scale: CGFloat = 3.0) -> UIImage? {
-        let filter = CIFilter.qrCodeGenerator()
-        filter.message = Data(string.utf8)
-        
-        guard let qrImage = filter.outputImage else { return nil }
-        let transform = CGAffineTransform(scaleX: scale, y: scale) // Scale the QR code
-        let scaledQRImage = qrImage.transformed(by: transform)
-        
-        let context = CIContext()
-        guard let cgImage = context.createCGImage(scaledQRImage, from: scaledQRImage.extent) else { return nil }
-        
-        return UIImage(cgImage: cgImage)
     }
 }

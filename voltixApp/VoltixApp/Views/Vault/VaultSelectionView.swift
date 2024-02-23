@@ -5,6 +5,7 @@
 
 import SwiftData
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct VaultSelectionView: View {
     @Environment(\.modelContext) private var modelContext
@@ -13,21 +14,78 @@ struct VaultSelectionView: View {
     @Binding var presentationStack: [CurrentScreen]
     @State private var showingDeleteAlert = false
     @State private var itemToDelete: Vault? = nil
+    @State private var showingExporter = false
+    @State private var vaultToExport: Vault? = nil
+    @State private var showEditVaultName = false
+    @State private var vaultToEdit: Vault? = nil
+    @State private var vaultEditName: String = ""
     var body: some View {
-        List(vaults, id: \.self, selection: $appState.currentVault) { vault in
-            NavigationLink(destination: ListVaultAssetView(presentationStack: $presentationStack),
-                           label: {
-                Text(vault.name)
-                    .swipeActions {
-                        Button("Delete", role: .destructive) {
-                            self.itemToDelete = vault
-                            showingDeleteAlert = true
+        List(selection: $appState.currentVault) {
+            ForEach(vaults, id: \.self) { vault in
+                VStack {
+                    HStack {
+                        NavigationLink(destination: ListVaultAssetView(presentationStack: $presentationStack),
+                                       label: {
+                            Text(vault.name)
+                                .swipeActions {
+                                    Button("Delete", role: .destructive) {
+                                        self.itemToDelete = vault
+                                        showingDeleteAlert = true
+                                    }
+                                }
+                        })
+                        Image(systemName: "pencil").onTapGesture {
+                            self.vaultToEdit = vault
+                            vaultEditName = vault.name
+                            showEditVaultName = true
                         }
                     }
-            })
+                    HStack {
+                        Image(systemName: "square.and.arrow.up")
+                        Text("backup")
+                        Spacer()
+                    }
+                    .padding()
+                    .onTapGesture {
+                        vaultToExport = vault
+                        self.showingExporter = true
+                    }
+                }
+            }
         }
+        .sheet(isPresented: $showEditVaultName, content: {
+            VStack{
+                Form{
+                    TextField("vault name", text: $vaultEditName)
+                        .textFieldStyle(.roundedBorder)
+                }.padding()
+                
+                HStack{
+                    Button("Save"){
+                        self.vaultToEdit?.name = vaultEditName
+                        showEditVaultName.toggle()
+                    }
+                    Button("cancel"){
+                        showEditVaultName.toggle()
+                    }
+                }
+                Spacer()
+            }
+        })
+        .fileExporter(isPresented: $showingExporter,
+                      document: VoltixDocument(vault: vaultToExport),
+                      contentType: .data,
+                      defaultFilename: "\(vaultToExport?.name ?? "vault").dat",
+                      onCompletion: { result in
+            switch result {
+            case .failure(let err):
+                print("fail to export,error:\(err.localizedDescription)")
+            case .success(let url):
+                print("exported to \(url)")
+            }
+        })
         .confirmationDialog(Text("Delete Vault"), isPresented: $showingDeleteAlert, titleVisibility: .automatic) {
-            Button("Delete", role: .destructive) {
+            Button("Confirm Delete \(itemToDelete?.name ?? "Vault")", role: .destructive) {
                 withAnimation {
                     if let itemToDelete {
                         deleteVault(vault: itemToDelete)
@@ -56,11 +114,4 @@ struct VaultSelectionView: View {
             print("Error:\(error)")
         }
     }
-}
-
-private struct Item {
-    var coinName: String
-    var address: String
-    var amount: String
-    var coinAmount: String
 }
