@@ -1,7 +1,7 @@
-//
-//  TestVaultAssetView.swift
-//  VoltixApp
-//
+    //
+    //  TestVaultAssetView.swift
+    //  VoltixApp
+    //
 
 import SwiftUI
 
@@ -14,7 +14,7 @@ struct ListVaultAssetView: View {
     var body: some View {
         List {
             ForEach(appState.currentVault?.coins ?? [Coin](), id: \.self) {
-                VaultAssetsView(presentationStack: $presentationStack, transactionDetailsViewModel: SendTransaction(toAddress: "", amount: "", memo: "", gas: "20", coin: $0))
+                VaultAssetsView(presentationStack: $presentationStack, tx: SendTransaction(toAddress: "", amount: "", memo: "", gas: "20", coin: $0))
             }
         }
         .navigationTitle(appState.currentVault?.name ?? "Vault")
@@ -41,10 +41,10 @@ struct ListVaultAssetView: View {
                 print("hexPubKey: \(vault.pubKeyECDSA) - hexChainCode: \(vault.hexChainCode)")
                 let result = BitcoinHelper.getBitcoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
                 switch result {
-                case .success(let btc):
-                    self.sendTransaction.coin = btc
-                case .failure(let error):
-                    print("error: \(error)")
+                    case .success(let btc):
+                        self.sendTransaction.coin = btc
+                    case .failure(let error):
+                        print("error: \(error)")
                 }
             }
         }

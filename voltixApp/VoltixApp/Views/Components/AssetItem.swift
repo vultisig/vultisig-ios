@@ -1,9 +1,9 @@
-//
-//  NetItem.swift
-//  VoltixApp
-//
-//  Created by Mac on 05.02.2024.
-//
+    //
+    //  NetItem.swift
+    //  VoltixApp
+    //
+    //  Created by Mac on 05.02.2024.
+    //
 
 import SwiftUI
 
@@ -18,25 +18,25 @@ struct AssetItem: View {
         HStack() {
             Text(coinName)
                 .font(Font.custom("Menlo", size: fontsize))
-                ;
+            ;
             Spacer()
             Text(amount)
                 .font(Font.custom("Menlo", size: fontsize))
             Spacer()
             Text(usdAmount)
                 .font(Font.custom("Menlo", size: fontsize))
-                ;
+            ;
             Spacer()
             VStack{
                 Button(action: sendClick) {
                     Text("SEND")
                         .font(Font.custom("Menlo", size: 20).weight(.bold))
-                        
+                    
                 }.buttonStyle(PlainButtonStyle())
                 Button(action: {}) {
                     Text("SWAP")
                         .font(Font.custom("Menlo", size: 20).weight(.bold))
-                        
+                    
                 }.buttonStyle(PlainButtonStyle())
             }
         }

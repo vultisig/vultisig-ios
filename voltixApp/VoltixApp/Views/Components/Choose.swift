@@ -1,9 +1,9 @@
-//
-//  Choose.swift
-//  VoltixApp
-//
-//  Created by Mac on 05.02.2024.
-//
+    //
+    //  Choose.swift
+    //  VoltixApp
+    //
+    //  Created by Mac on 05.02.2024.
+    //
 
 import SwiftUI
 
@@ -20,7 +20,7 @@ struct Choose: View {
             Text("CHOOSE " + content)
                 .font(
                     Font.custom("Montserrat", size: 18)
-                    .weight(.medium)
+                        .weight(.medium)
                 )
                 .frame(width: 191, height: 38, alignment: .leading)
         }

@@ -5,7 +5,7 @@ struct DocumentPicker: UIViewControllerRepresentable {
     var onPick: ([URL]) -> Void
     
     func makeUIViewController(context: Context) -> UIDocumentPickerViewController {
-        // Updated to use UTType for iOS 14 and later
+            // Updated to use UTType for iOS 14 and later
         let types: [UTType] = [UTType.content, UTType.pdf, UTType.image] // Customize based on your needs
         let picker = UIDocumentPickerViewController(forOpeningContentTypes: types, asCopy: true)
         picker.delegate = context.coordinator
@@ -31,7 +31,7 @@ struct DocumentPicker: UIViewControllerRepresentable {
         }
         
         func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
-            // Handle cancellation
+                // Handle cancellation
         }
     }
 }

@@ -11,7 +11,7 @@ struct DeviceView: View {
         VStack(alignment: .center) {
             HStack{
                 VStack{
-                    // Replace Button with Image and increase its size
+                        // Replace Button with Image and increase its size
                     Image(systemName: number)
                         .resizable() // Makes the image resizable
                         .scaledToFit() // Scales the image to fit its container
@@ -19,7 +19,7 @@ struct DeviceView: View {
                     Text(description).font(.system(size: 15, weight: .light))
                 }
                 VStack{
-                    // Replace Button with Image and increase its size
+                        // Replace Button with Image and increase its size
                     Image(systemName: deviceImg)
                         .symbolRenderingMode(.monochrome)
                         .resizable() // Makes the image resizable
@@ -33,7 +33,7 @@ struct DeviceView: View {
 }
 
 
-// Preview
+    // Preview
 struct DeviceView_Previews: PreviewProvider {
     static var previews: some View {
         DeviceView(

@@ -1,9 +1,9 @@
-//
-//  KeygenStatusText.swift
-//  VoltixApp
-//
-//  Created by Enrique Souza Soares on 22/02/2024.
-//
+    //
+    //  KeygenStatusText.swift
+    //  VoltixApp
+    //
+    //  Created by Enrique Souza Soares on 22/02/2024.
+    //
 
 import Foundation
 import SwiftUI

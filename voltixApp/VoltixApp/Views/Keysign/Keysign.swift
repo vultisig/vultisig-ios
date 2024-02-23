@@ -19,7 +19,7 @@ struct KeysignView: View {
         case KeysignFinished
         case KeysignFailed
     }
-
+    
     @Binding var presentationStack: [CurrentScreen]
     let keysignCommittee: [String]
     let mediatorURL: String
@@ -161,7 +161,7 @@ struct KeysignView: View {
                 if let msgToSign = Data(hexString: msg)?.base64EncodedString() {
                     keysignReq.messageToSign = msgToSign
                 }
-
+                
                 do {
                     switch self.keysignType {
                         case .ECDSA:
@@ -185,11 +185,11 @@ struct KeysignView: View {
                     return
                 }
             }
-
+            
             self.currentStatus = .KeysignFinished
         }
     }
-
+    
     private func tssKeysign(service: TssServiceImpl, req: TssKeysignRequest, keysignType: KeyType) async throws -> TssKeysignResponse {
         let t = Task.detached(priority: .high) {
             switch keysignType {

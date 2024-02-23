@@ -1,7 +1,7 @@
-//
-//  VaultSelection.swift
-//  VoltixApp
-//
+    //
+    //  VaultSelection.swift
+    //  VoltixApp
+    //
 
 import SwiftData
 import SwiftUI
@@ -17,14 +17,14 @@ struct VaultSelectionView: View {
         List(vaults, id: \.self, selection: $appState.currentVault) { vault in
             NavigationLink(destination: ListVaultAssetView(presentationStack: $presentationStack),
                            label: {
-                               Text(vault.name)
-                                   .swipeActions {
-                                       Button("Delete", role: .destructive) {
-                                           self.itemToDelete = vault
-                                           showingDeleteAlert = true
-                                       }
-                                   }
-                           })
+                Text(vault.name)
+                    .swipeActions {
+                        Button("Delete", role: .destructive) {
+                            self.itemToDelete = vault
+                            showingDeleteAlert = true
+                        }
+                    }
+            })
         }
         .confirmationDialog(Text("Delete Vault"), isPresented: $showingDeleteAlert, titleVisibility: .automatic) {
             Button("Delete", role: .destructive) {
@@ -47,7 +47,7 @@ struct VaultSelectionView: View {
             }
         }.navigationBarBackButtonHidden()
     }
-
+    
     func deleteVault(vault: Vault) {
         modelContext.delete(vault)
         do {

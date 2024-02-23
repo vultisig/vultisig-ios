@@ -1,7 +1,7 @@
-//
-//  MenuView.swift
-//  VoltixApp
-//
+    //
+    //  MenuView.swift
+    //  VoltixApp
+    //
 
 import SwiftUI
 
@@ -10,56 +10,56 @@ struct MenuView: View {
     
     var body: some View {
         VStack() {
-
-          VStack(alignment: .leading) {
-            Text("Choose Vault")
-                .font(Font.custom("Menlo", size: 20))
-                .lineSpacing(30)
+            
+            VStack(alignment: .leading) {
+                Text("Choose Vault")
+                    .font(Font.custom("Menlo", size: 20))
+                    .lineSpacing(30)
                 ;
-            HStack() {
-                Text("Main Vault")
+                HStack() {
+                    Text("Main Vault")
+                        .font(Font.custom("Menlo", size: 20).weight(.bold))
+                        .lineSpacing(30)
+                    ;
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .resizable()
+                    
+                        .frame(width: 9, height: 15)
+                        .rotationEffect(.degrees(90));
+                }
+                .padding(.leading, 16)
+                .padding(.trailing, 16)
+                .foregroundColor(.clear)
+                .frame(width: .infinity, height: 55)
+                .background(Color(red: 0.92, green: 0.92, blue: 0.93))
+                .cornerRadius(10);
+            }
+            Spacer().frame(height: 30)
+            MenuItem(
+                content: "ADD VAULT",
+                onClick: {}
+            )
+            MenuItem(
+                content: "EXPORT VAULT",
+                onClick: {}
+            )
+            MenuItem(
+                content: "FORGET VAULT",
+                onClick: {}
+            )
+            MenuItem(
+                content: "VAULT RECOVERY",
+                onClick: {}
+            )
+            Spacer()
+            VStack {
+                Text("VOLTIX APP V1.23")
                     .font(Font.custom("Menlo", size: 20).weight(.bold))
                     .lineSpacing(30)
-                    ;
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .resizable()
-                    
-                    .frame(width: 9, height: 15)
-                    .rotationEffect(.degrees(90));
+                ;
             }
-            .padding(.leading, 16)
-            .padding(.trailing, 16)
-            .foregroundColor(.clear)
-            .frame(width: .infinity, height: 55)
-            .background(Color(red: 0.92, green: 0.92, blue: 0.93))
-            .cornerRadius(10);
-          }
-        Spacer().frame(height: 30)
-          MenuItem(
-            content: "ADD VAULT",
-            onClick: {}
-          )
-          MenuItem(
-            content: "EXPORT VAULT",
-            onClick: {}
-          )
-          MenuItem(
-            content: "FORGET VAULT",
-            onClick: {}
-          )
-          MenuItem(
-            content: "VAULT RECOVERY",
-            onClick: {}
-          )
-          Spacer()
-          VStack {
-            Text("VOLTIX APP V1.23")
-            .font(Font.custom("Menlo", size: 20).weight(.bold))
-            .lineSpacing(30)
-            ;
-          }
-          .frame(width: .infinity, height: 110)
+            .frame(width: .infinity, height: 110)
         }
         .padding(.trailing, 20)
         .padding(.leading, 20)

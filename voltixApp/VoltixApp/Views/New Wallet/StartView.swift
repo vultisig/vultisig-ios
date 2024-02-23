@@ -14,7 +14,6 @@ struct StartView: View {
     
     private func loadVaults() {
         do {
-            // Assuming FetchDescriptor allows for an empty initializer to fetch all entities
             let fetchDescriptor = FetchDescriptor<Vault>()
             self.vaults = try modelContext.fetch(fetchDescriptor)
             for vault in vaults {
@@ -22,33 +21,16 @@ struct StartView: View {
             }
             
         } catch {
-            // Handle errors, perhaps showing an alert to the user
             print("Error fetching vaults: \(error)")
         }
     }
     
     var body: some View {
         GeometryReader { geometry in
-            ScrollView { // To meke the list appear we need to remove the ScrollView
+            ScrollView {
                 VStack {
-                    
-                    //                    List {
-                    //                        ForEach(vaults, id: \.name) { vault in
-                    //                            VStack(alignment: .leading) {
-                    //                                //Text("ID: \(vault.id)")
-                    //                                Text("Name: \(vault.name)")
-                    //                                Text("Public Key ECDSA: \(vault.pubKeyECDSA)")
-                    //                                Text("Public Key EdDSA: \(vault.pubKeyEdDSA)")
-                    //                                Divider()
-                    //                            }
-                    //                        }
-                    //                    }
-                    
-                    
-                    
                     Spacer()
-                    // New Vault Button and Text
-                    VStack { // Increase spacing to ensure separation
+                    VStack {
                         LargeButton(
                             content: "NEW",
                             onClick: {
@@ -57,9 +39,7 @@ struct StartView: View {
                         )
                         Text("CREATE A NEW VAULT")
                     }
-                    
                     Spacer()
-                    // Import Vault Button and Text
                     VStack { // Increase spacing to ensure separation
                         LargeButton(
                             content: "IMPORT",
@@ -67,10 +47,8 @@ struct StartView: View {
                                 self.presentationStack.append(.importWallet)
                             }
                         )
-                        
                         Text("IMPORT AN EXISTING VAULT")
                     }
-                    
                 }.onAppear {
                     loadVaults()
                 }
@@ -86,7 +64,7 @@ struct StartView: View {
     }
 }
 
-// Preview
+    // Preview
 struct StartView_Previews: PreviewProvider {
     static var previews: some View {
         StartView(presentationStack: .constant([]))

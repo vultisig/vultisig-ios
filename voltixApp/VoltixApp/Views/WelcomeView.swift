@@ -81,7 +81,7 @@ struct WelcomeView: View {
     }
 }
 
-// Preview
+    // Preview
 struct WelcomeView_Previews: PreviewProvider {
     static var previews: some View {
         WelcomeView(presentationStack: .constant([]))
