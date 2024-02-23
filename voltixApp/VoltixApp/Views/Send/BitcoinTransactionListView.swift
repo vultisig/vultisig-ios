@@ -40,8 +40,9 @@ struct BitcoinTransactionListView: View {
                     switch result {
                         case .success(let btc):
                                 // "bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu"
-                                // await bitcoinTransactionsService.fetchTransactions(btc.address)
-                            await bitcoinTransactionsService.fetchTransactions("bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu")
+                                print(btc.address)
+                                await bitcoinTransactionsService.fetchTransactions(btc.address)
+                                //await bitcoinTransactionsService.fetchTransactions("bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu")
                         case .failure(let error):
                             print("error: \(error)")
                     }
