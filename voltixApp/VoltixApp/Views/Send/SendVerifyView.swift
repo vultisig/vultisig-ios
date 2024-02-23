@@ -109,9 +109,10 @@ struct SendVerifyView: View {
                             }
                         }
                     )
-                }.onAppear {
-                    reloadTransactions()
                 }
+//                .onAppear {
+//                    reloadTransactions()
+//                }
             }
         }
         .navigationTitle("VERIFY")
