@@ -19,21 +19,22 @@ struct ListVaultAssetView: View {
         }
         .navigationTitle(appState.currentVault?.name ?? "Vault")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden()
         .sheet(isPresented: $showingCoinList) {
             AssetsList()
         }
         .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                NavigationButtons.backButton(presentationStack: $presentationStack)
+            }
             ToolbarItemGroup(placement: .topBarTrailing) {
-                Button("add coins", systemImage: "plus") {
-                    showingCoinList = true
-                }
-                NavigationButtons.refreshButton(action: {})
-                Button("send", systemImage: "paperplane") {
-                    self.presentationStack.append(.sendInputDetails(sendTransaction))
-                }
-                Button("join keysign",systemImage: "camera.viewfinder") {
+                
+                Button("join keysign",systemImage: "signature") {
                     self.presentationStack.append(.JoinKeysign)
-                }
+                }.buttonStyle(PlainButtonStyle())
+                Button("add coins", systemImage: "plus.square.on.square") {
+                    showingCoinList = true
+                }.buttonStyle(PlainButtonStyle())
             }
         }
         .onAppear {

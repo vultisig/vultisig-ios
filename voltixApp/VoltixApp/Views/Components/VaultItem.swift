@@ -37,7 +37,7 @@ struct VaultItem: View {
                     .font(Font.custom("Menlo", size: 20).weight(.bold))
                 
                 if showButtons {
-                    Spacer().frame(width: 10)
+                    Spacer()
                     Button(action: {
                         UIPasteboard.general.string = self.address
                         self.showingToast = true
@@ -58,7 +58,7 @@ struct VaultItem: View {
                             : nil
                     )
                     
-                    Spacer().frame(width: 8)
+                    Spacer().frame(width: 20)
                     Button(action: { self.showingShareSheet = true }) {
                         Image(systemName: "square.and.arrow.up")
                             .resizable()
@@ -66,7 +66,7 @@ struct VaultItem: View {
                         
                     }.buttonStyle(PlainButtonStyle())
                     Spacer()
-                        .frame(width: 8)
+                        .frame(width: 20)
                         .sheet(isPresented: $showingShareSheet) {
                             ShareSheet(items: [self.address])
                         }
@@ -82,7 +82,7 @@ struct VaultItem: View {
                             QRCodeView(qrCodeImage: Utils.getQrImage(data: address.data(using: .utf8), size: 100))
                                 .padding()
                         }
-                    Spacer().frame(width: 8)
+                    Spacer().frame(width: 20)
                     Button(action: {
                         presentationStack.append(.bitcoinTransactionsListView)
                     }) {
@@ -92,17 +92,21 @@ struct VaultItem: View {
                     }
                     .buttonStyle(PlainButtonStyle())
                 }
-                Spacer()
                 
-                Text(usdAmount)
-                    .font(Font.custom("Menlo", size: 20))
-                    .multilineTextAlignment(.trailing)
+                if showAmount {
+                    Spacer()
+                    
+                    Text(usdAmount)
+                        .font(Font.custom("Menlo", size: 20))
+                        .multilineTextAlignment(.trailing)
+                }
             }
             HStack {
                 Text(address)
                     .font(Font.custom("Montserrat", size: 13).weight(.medium))
                     .lineSpacing(19.50)
             }
+            .padding(.vertical)
         }
     }
 }
