@@ -42,6 +42,8 @@ enum CurrentScreen: Hashable {
     case swapDone
     
 
+    case listVaultAssetView
+    
     // transactions
     case bitcoinTransactionsListView
 }
