@@ -25,19 +25,19 @@ struct VaultSelectionView: View {
                         Button(action: {
                             self.appState.currentVault = vault
                             self.presentationStack.append(.listVaultAssetView)
-                            
                         }) {
-                            HStack() {
+                            HStack {
                                 Text(vault.name.uppercased())
                                     .font(Font.custom("Menlo", size: 20).weight(.bold))
                                     .fontWeight(.black)
                                 Spacer()
-                                Image(systemName: "chevron.right")
-                                    .resizable()
-                                    .frame(width: 10, height: 15)
                             }
+                            .padding() // Ensure there's some padding around the text for a larger clickable area
+                            .frame(maxWidth: .infinity) // Ensure the HStack fills the button horizontally
+                            .contentShape(Rectangle()) // Makes the entire area within the frame tappable
                         }
-                        .buttonStyle(PlainButtonStyle())
+                        .buttonStyle(PlainButtonStyle()) // Maintains the button's style without additional effects
+                        
                         Spacer()
                         Image(systemName: expandedVaults.contains(index) ? "chevron.up" : "chevron.down")
                             .onTapGesture {
@@ -51,10 +51,12 @@ struct VaultSelectionView: View {
                     if expandedVaults.contains(index) {
                         Divider()
                         HStack {
-                            Image(systemName: "icloud.and.arrow.up")
+                            Image(systemName: "arrow.down.circle")
                             Text("Backup your vault").font(Font.custom("Menlo", size: 15))
                             Spacer()
                         }
+                        .frame(maxWidth: .infinity)
+                        .contentShape(Rectangle()) // Makes the entire area within the frame tappable
                         .padding()
                         .onTapGesture {
                             vaultToExport = vault
@@ -66,6 +68,8 @@ struct VaultSelectionView: View {
                             Text("Edit your vault's name").font(Font.custom("Menlo", size: 15))
                             Spacer()
                         }
+                        .frame(maxWidth: .infinity)
+                        .contentShape(Rectangle()) // Makes the entire area within the frame tappable
                         .padding()
                         .onTapGesture {
                             self.vaultToEdit = vault
@@ -82,6 +86,8 @@ struct VaultSelectionView: View {
                             .font(Font.custom("Menlo", size: 15))
                             Spacer()
                         }
+                        .frame(maxWidth: .infinity)
+                        .contentShape(Rectangle()) // Makes the entire area within the frame tappable
                         .padding()
                     }
                 }
@@ -131,6 +137,7 @@ struct VaultSelectionView: View {
         .modifier(InlineNavigationBarTitleModifier())
         .toolbar {
             ToolbarItemGroup(placement: .automatic) {
+                
                 Button("New vault", systemImage: "plus.square.on.square") {
                     let vault = Vault(name: "Vault #\(vaults.count + 1)")
                     appState.creatingVault = vault
