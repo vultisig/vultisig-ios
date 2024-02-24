@@ -1,6 +1,6 @@
-    //
-    //  KeysignDiscovery.swift
-    //  VoltixApp
+//
+//  KeysignDiscovery.swift
+//  VoltixApp
 
 import Dispatch
 import Mediator
@@ -32,7 +32,7 @@ struct KeysignDiscoveryView: View {
         VStack {
             switch self.currentState {
                 case .WaitingForDevices:
-                    VStack{
+                    VStack {
                         Text("Pair with two other devices:".uppercased())
                             .font(.custom("Menlo", size: 18).bold())
                             .multilineTextAlignment(.center)
@@ -50,9 +50,9 @@ struct KeysignDiscoveryView: View {
                     .shadow(radius: 5)
                     .padding()
                     
-                        // TODO: Validate if it is <= 3 devices
+                    // TODO: Validate if it is <= 3 devices
                     if self.participantDiscovery.peersFound.count == 0 {
-                        VStack{
+                        VStack {
                             HStack {
                                 Text("Looking for devices... ")
                                     .font(Font.custom("Menlo", size: 15)
@@ -62,7 +62,6 @@ struct KeysignDiscoveryView: View {
                                 ProgressView()
                                     .progressViewStyle(.circular)
                                     .padding(2)
-                                
                             }
                         }
                         .padding()
@@ -91,7 +90,7 @@ struct KeysignDiscoveryView: View {
                         self.currentState = .Keysign
                         self.participantDiscovery.stop()
                     }) {
-                        HStack() {
+                        HStack {
                             Text("Sign".uppercased())
                                 .font(Font.custom("Menlo", size: 30).weight(.bold))
                                 .fontWeight(.black)
@@ -120,7 +119,7 @@ struct KeysignDiscoveryView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                NavigationButtons.backButton(presentationStack: $presentationStack)
+                NavigationButtons.backButton(presentationStack: self.$presentationStack)
             }
             ToolbarItem(placement: .navigationBarTrailing) {
                 NavigationButtons.questionMarkButton
@@ -140,10 +139,14 @@ struct KeysignDiscoveryView: View {
                                                                      toAddress: self.keysignPayload.toAddress,
                                                                      toAmount: self.keysignPayload.toAmount,
                                                                      byteFee: self.keysignPayload.byteFee,
-                                                                     memo: nil)
+                                                                     memo: self.keysignPayload.memo)
                     switch result {
                         case .success(let preSignedImageHash):
                             self.keysignMessages = preSignedImageHash
+                            if self.keysignMessages.isEmpty {
+                                logger.error("no meessage need to be signed")
+                                self.currentState = .FailToStart
+                            }
                         case .failure(let err):
                             logger.error("Failed to get preSignedImageHash: \(err)")
                             self.currentState = .FailToStart
@@ -154,7 +157,7 @@ struct KeysignDiscoveryView: View {
             }
         }
         .task {
-                // start the mediator , so other devices can discover us
+            // start the mediator , so other devices can discover us
             Task {
                 self.mediator.start()
                 self.startKeysignSession()
@@ -266,15 +269,16 @@ struct KeysignMessage: Codable, Hashable {
 
 struct KeysignPayload: Codable, Hashable {
     let coin: Coin
-        // only toAddress is required , from Address is our own address
+    // only toAddress is required , from Address is our own address
     let toAddress: String
     let toAmount: Int64
-        // sats per vbyte , applicable for UTXO chains
+    // sats per vbyte , applicable for UTXO chains
     let byteFee: Int64
-        // for UTXO chains , often it need to sign multiple UTXOs at the same time
-        // here when keysign , the main device will only pass the utxo info to the keysign device
-        // it is up to the signing device to get the presign keyhash , and sign it with the main device
+    // for UTXO chains , often it need to sign multiple UTXOs at the same time
+    // here when keysign , the main device will only pass the utxo info to the keysign device
+    // it is up to the signing device to get the presign keyhash , and sign it with the main device
     let utxos: [UtxoInfo]
+    let memo: String? // optional memo
 }
 
 #Preview {
@@ -286,5 +290,5 @@ struct KeysignPayload: Codable, Hashable {
                                        toAddress: "bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu",
                                        toAmount: 1000,
                                        byteFee: 20,
-                                       utxos: []))
+                                       utxos: [], memo: nil))
 }

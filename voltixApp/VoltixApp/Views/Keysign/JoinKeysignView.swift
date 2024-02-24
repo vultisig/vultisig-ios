@@ -1,6 +1,6 @@
-    //
-    //  JoinKeysignView.swift
-    //  VoltixApp
+//
+//  JoinKeysignView.swift
+//  VoltixApp
 
 import CodeScanner
 import OSLog
@@ -32,7 +32,6 @@ struct JoinKeysignView: View {
     
     var body: some View {
         VStack {
-            
             VStack {
                 switch self.currentStatus {
                     case .DiscoverSigningMsg:
@@ -68,14 +67,15 @@ struct JoinKeysignView: View {
                             .font(Font.custom("Menlo", size: 15)
                                 .weight(.bold))
                             .multilineTextAlignment(.center)
-                        Text("Message to sign:")
+                        Text("To: \(self.keysignPayload?.toAddress ?? "")")
                             .font(Font.custom("Menlo", size: 15).weight(.bold))
                             .multilineTextAlignment(.center)
-                        List {
-                            ForEach(self.keysignMessages, id: \.self) { item in
-                                Text("\(item)")
-                            }
-                        }
+                        Text("Amount: \(String(self.keysignPayload?.toAmount ?? 0))")
+                            .font(Font.custom("Menlo", size: 15).weight(.bold))
+                            .multilineTextAlignment(.center)
+                        Text("fee: \(String(self.keysignPayload?.byteFee ?? 0))")
+                            .font(Font.custom("Menlo", size: 15).weight(.bold))
+                            .multilineTextAlignment(.center)
                         Button("Join signing", systemImage: "person.2.badge.key") {
                             self.joinKeysignCommittee()
                             self.currentStatus = .WaitingForKeysignToStart
@@ -132,7 +132,7 @@ struct JoinKeysignView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                NavigationButtons.backButton(presentationStack: $presentationStack)
+                NavigationButtons.backButton(presentationStack: self.$presentationStack)
             }
             ToolbarItem(placement: .navigationBarTrailing) {
                 NavigationButtons.questionMarkButton
@@ -154,6 +154,7 @@ struct JoinKeysignView: View {
             }
         }
     }
+
     private func checkKeysignStarted() {
         guard let serverUrl = serviceDelegate.serverUrl else {
             logger.error("Server URL could not be found. Please ensure you're connected to the correct network.")
@@ -250,12 +251,15 @@ struct JoinKeysignView: View {
             case .success(let preSignedImageHash):
                 logger.info("Successfully prepared messages for keysigning.")
                 self.keysignMessages = preSignedImageHash.sorted()
+                if self.keysignMessages.isEmpty {
+                    logger.error("There is nothing to be signed")
+                    self.currentStatus = .FailedToStart
+                }
             case .failure(let err):
                 logger.error("Failed to prepare messages for keysigning. Error: \(err)")
                 self.currentStatus = .FailedToStart
         }
     }
-    
 }
 
 #Preview {
