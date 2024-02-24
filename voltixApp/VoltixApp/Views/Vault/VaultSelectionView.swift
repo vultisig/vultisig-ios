@@ -19,9 +19,13 @@ struct VaultSelectionView: View {
     @State private var showEditVaultName = false
     @State private var vaultToEdit: Vault? = nil
     @State private var vaultEditName: String = ""
+        // New state to manage expanded/collapsed state, using the vault index in the array
+    @State private var expandedVaults: Set<Int> = []
+    
     var body: some View {
         List(selection: $appState.currentVault) {
-            ForEach(vaults, id: \.self) { vault in
+            ForEach(vaults.indices, id: \.self) { index in
+                let vault = vaults[index]
                 VStack {
                     HStack {
                         NavigationLink(destination: ListVaultAssetView(presentationStack: $presentationStack),
@@ -34,21 +38,53 @@ struct VaultSelectionView: View {
                                     }
                                 }
                         })
-                        Image(systemName: "pencil").onTapGesture {
+                        Spacer()
+                        Image(systemName: expandedVaults.contains(index) ? "chevron.up" : "chevron.down")
+                            .onTapGesture {
+                                if expandedVaults.contains(index) {
+                                    expandedVaults.remove(index)
+                                } else {
+                                    expandedVaults.insert(index)
+                                }
+                            }
+                    }
+                        // Conditionally show details
+                    if expandedVaults.contains(index) {
+                        Divider()
+                        HStack {
+                            Image(systemName: "icloud.and.arrow.up")
+                            Text("Backup your vault")
+                            Spacer()
+                        }
+                        .padding()
+                        .onTapGesture {
+                            vaultToExport = vault
+                            self.showingExporter = true
+                        }
+                        
+                        HStack {
+                            Image(systemName: "pencil")
+                            Text("Edit your vault's name")
+                            Spacer()
+                        }
+                        .padding()
+                        .onTapGesture {
                             self.vaultToEdit = vault
                             vaultEditName = vault.name
                             showEditVaultName = true
                         }
-                    }
-                    HStack {
-                        Image(systemName: "square.and.arrow.up")
-                        Text("backup")
-                        Spacer()
-                    }
-                    .padding()
-                    .onTapGesture {
-                        vaultToExport = vault
-                        self.showingExporter = true
+                        
+                        HStack {
+                            
+                            Image(systemName: "trash")
+                            Button("Delete your vault permanently", role: .destructive) {
+                                self.itemToDelete = vault
+                                showingDeleteAlert = true
+                            }
+                            Spacer()
+                        }
+                        .padding()
+                        
                     }
                 }
             }
@@ -78,10 +114,10 @@ struct VaultSelectionView: View {
                       defaultFilename: "\(vaultToExport?.name ?? "vault").dat",
                       onCompletion: { result in
             switch result {
-            case .failure(let err):
-                print("fail to export,error:\(err.localizedDescription)")
-            case .success(let url):
-                print("exported to \(url)")
+                case .failure(let err):
+                    print("fail to export,error:\(err.localizedDescription)")
+                case .success(let url):
+                    print("exported to \(url)")
             }
         })
         .confirmationDialog(Text("Delete Vault"), isPresented: $showingDeleteAlert, titleVisibility: .automatic) {
@@ -95,15 +131,19 @@ struct VaultSelectionView: View {
         } message: {
             Text("Are you sure want to delete selected vault? \n Operation is not reversable")
         }
+        .navigationTitle("MY VAULTS".uppercased())
+        .navigationBarBackButtonHidden()
+        .modifier(InlineNavigationBarTitleModifier())
         .toolbar {
             ToolbarItemGroup(placement: .automatic) {
-                Button("New vault", systemImage: "plus") {
+                Button("New vault", systemImage: "plus.square.on.square") {
                     let vault = Vault(name: "Vault #\(vaults.count + 1)")
                     appState.creatingVault = vault
                     self.presentationStack.append(.newWalletInstructions)
                 }
+                .buttonStyle(PlainButtonStyle())
             }
-        }.navigationBarBackButtonHidden()
+        }
     }
     
     func deleteVault(vault: Vault) {
