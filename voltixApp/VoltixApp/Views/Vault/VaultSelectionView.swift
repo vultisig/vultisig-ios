@@ -51,7 +51,7 @@ struct VaultSelectionView: View {
                     if expandedVaults.contains(index) {
                         Divider()
                         HStack {
-                            Image(systemName: "icloud.and.arrow.up")
+                            Image(systemName: "arrow.down.circle")
                             Text("Backup your vault").font(Font.custom("Menlo", size: 15))
                             Spacer()
                         }
