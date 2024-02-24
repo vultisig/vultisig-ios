@@ -44,6 +44,12 @@ struct ListVaultAssetView: View {
                 switch result {
                     case .success(let btc):
                         self.sendTransaction.coin = btc
+                        
+                            // SET BTC as default if none
+                        if vault.coins.count == 0 {
+                            vault.coins.append(btc)
+                        }
+                        
                     case .failure(let error):
                         print("error: \(error)")
                 }
