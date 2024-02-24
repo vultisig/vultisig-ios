@@ -134,7 +134,7 @@ struct VaultSelectionView: View {
                 Button("New vault", systemImage: "plus.square.on.square") {
                     let vault = Vault(name: "Vault #\(vaults.count + 1)")
                     appState.creatingVault = vault
-                    self.presentationStack.append(.newWalletInstructions)
+                    self.presentationStack.append(.startScreen)
                 }
                 .buttonStyle(PlainButtonStyle())
             }
