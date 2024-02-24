@@ -1,8 +1,3 @@
-    //
-    //  VaultSelection.swift
-    //  VoltixApp
-    //
-
 import SwiftData
 import SwiftUI
 import UniformTypeIdentifiers
@@ -19,7 +14,6 @@ struct VaultSelectionView: View {
     @State private var showEditVaultName = false
     @State private var vaultToEdit: Vault? = nil
     @State private var vaultEditName: String = ""
-        // New state to manage expanded/collapsed state, using the vault index in the array
     @State private var expandedVaults: Set<Int> = []
     
     var body: some View {
@@ -28,16 +22,22 @@ struct VaultSelectionView: View {
                 let vault = vaults[index]
                 VStack {
                     HStack {
-                        NavigationLink(destination: ListVaultAssetView(presentationStack: $presentationStack),
-                                       label: {
-                            Text(vault.name)
-                                .swipeActions {
-                                    Button("Delete", role: .destructive) {
-                                        self.itemToDelete = vault
-                                        showingDeleteAlert = true
-                                    }
-                                }
-                        })
+                        Button(action: {
+                            self.appState.currentVault = vault
+                            self.presentationStack.append(.listVaultAssetView)
+                            
+                        }) {
+                            HStack() {
+                                Text(vault.name.uppercased())
+                                    .font(Font.custom("Menlo", size: 20).weight(.bold))
+                                    .fontWeight(.black)
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .resizable()
+                                    .frame(width: 10, height: 15)
+                            }
+                        }
+                        .buttonStyle(PlainButtonStyle())
                         Spacer()
                         Image(systemName: expandedVaults.contains(index) ? "chevron.up" : "chevron.down")
                             .onTapGesture {
@@ -48,12 +48,11 @@ struct VaultSelectionView: View {
                                 }
                             }
                     }
-                        // Conditionally show details
                     if expandedVaults.contains(index) {
                         Divider()
                         HStack {
                             Image(systemName: "icloud.and.arrow.up")
-                            Text("Backup your vault")
+                            Text("Backup your vault").font(Font.custom("Menlo", size: 15))
                             Spacer()
                         }
                         .padding()
@@ -64,7 +63,7 @@ struct VaultSelectionView: View {
                         
                         HStack {
                             Image(systemName: "pencil")
-                            Text("Edit your vault's name")
+                            Text("Edit your vault's name").font(Font.custom("Menlo", size: 15))
                             Spacer()
                         }
                         .padding()
@@ -75,61 +74,57 @@ struct VaultSelectionView: View {
                         }
                         
                         HStack {
-                            
                             Image(systemName: "trash")
                             Button("Delete your vault permanently", role: .destructive) {
                                 self.itemToDelete = vault
                                 showingDeleteAlert = true
                             }
+                            .font(Font.custom("Menlo", size: 15))
                             Spacer()
                         }
                         .padding()
-                        
                     }
                 }
             }
         }
-        .sheet(isPresented: $showEditVaultName, content: {
-            VStack{
-                Form{
+        .sheet(isPresented: $showEditVaultName) {
+            VStack {
+                Form {
                     TextField("vault name", text: $vaultEditName)
                         .textFieldStyle(.roundedBorder)
                 }.padding()
                 
-                HStack{
-                    Button("Save"){
-                        self.vaultToEdit?.name = vaultEditName
+                HStack {
+                    Button("Save") {
+                        if let vaultToEdit = self.vaultToEdit {
+                            vaultToEdit.name = vaultEditName
+                                // Implement save functionality here
+                        }
                         showEditVaultName.toggle()
                     }
-                    Button("cancel"){
+                    Button("Cancel") {
                         showEditVaultName.toggle()
                     }
                 }
                 Spacer()
             }
-        })
-        .fileExporter(isPresented: $showingExporter,
-                      document: VoltixDocument(vault: vaultToExport),
-                      contentType: .data,
-                      defaultFilename: "\(vaultToExport?.name ?? "vault").dat",
-                      onCompletion: { result in
+        }
+        .fileExporter(isPresented: $showingExporter, document: VoltixDocument(vault: vaultToExport), contentType: .data, defaultFilename: "\(vaultToExport?.name ?? "vault").dat") { result in
             switch result {
                 case .failure(let err):
-                    print("fail to export,error:\(err.localizedDescription)")
+                    print("Fail to export, error: \(err.localizedDescription)")
                 case .success(let url):
-                    print("exported to \(url)")
+                    print("Exported to \(url)")
             }
-        })
-        .confirmationDialog(Text("Delete Vault"), isPresented: $showingDeleteAlert, titleVisibility: .automatic) {
+        }
+        .confirmationDialog("Delete Vault?", isPresented: $showingDeleteAlert, titleVisibility: .automatic) {
             Button("Confirm Delete \(itemToDelete?.name ?? "Vault")", role: .destructive) {
-                withAnimation {
-                    if let itemToDelete {
-                        deleteVault(vault: itemToDelete)
-                    }
+                if let itemToDelete = self.itemToDelete {
+                    deleteVault(vault: itemToDelete)
                 }
             }
         } message: {
-            Text("Are you sure want to delete selected vault? \n Operation is not reversable")
+            Text("Are you sure you want to delete this vault? This operation is not reversible.")
         }
         .navigationTitle("MY VAULTS".uppercased())
         .navigationBarBackButtonHidden()
@@ -151,7 +146,7 @@ struct VaultSelectionView: View {
         do {
             try modelContext.save()
         } catch {
-            print("Error:\(error)")
+            print("Error: \(error)")
         }
     }
 }
