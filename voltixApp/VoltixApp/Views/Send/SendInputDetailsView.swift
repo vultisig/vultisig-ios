@@ -73,8 +73,7 @@ struct SendInputDetailsView: View {
                         .background(Color.gray.opacity(0.5))  // 50% transparent gray
                         .cornerRadius(10)
                         .onChange(of: tx.toAddress) { newValue in
-                            
-                            isValidAddress = TWBitcoinAddressIsValidString(newValue) || isValidHex(newValue)
+                            isValidAddress = BitcoinHelper.validateAddress(newValue)
                             if !isValidAddress {
                                 print("Invalid Crypto Address")
                             } else {

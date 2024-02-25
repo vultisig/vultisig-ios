@@ -1,8 +1,8 @@
-//
-//  VoltixApp
-//
-//  Created by Enrique Souza Soares
-//
+    //
+    //  VoltixApp
+    //
+    //  Created by Enrique Souza Soares
+    //
 import SwiftUI
 
 struct SendVerifyView: View {
@@ -22,7 +22,7 @@ struct SendVerifyView: View {
         if unspentOutputsService.walletData == nil {
             Task {
                 await unspentOutputsService.fetchUnspentOutputs(for: tx.fromAddress)
-                // await unspentOutputsService.fetchUnspentOutputs(for: "bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu")
+                    // await unspentOutputsService.fetchUnspentOutputs(for: "bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu")
             }
         }
     }
@@ -66,10 +66,10 @@ struct SendVerifyView: View {
                         content: "SIGN",
                         onClick: {
                             if let walletData = unspentOutputsService.walletData {
-                                // Calculate total amount needed by summing the amount and the fee
+                                    // Calculate total amount needed by summing the amount and the fee
                                 let totalAmountNeeded = tx.amountInSats + tx.feeInSats
                                 
-                                // Select UTXOs sufficient to cover the total amount needed and map to UtxoInfo
+                                    // Select UTXOs sufficient to cover the total amount needed and map to UtxoInfo
                                 let utxoInfo = walletData.selectUTXOsForPayment(amountNeeded: Int64(totalAmountNeeded)).map {
                                     UtxoInfo(
                                         hash: $0.txHash ?? "",
@@ -78,19 +78,18 @@ struct SendVerifyView: View {
                                     )
                                 }
                                 
-                                //                                if utxoInfo.count == 0 {
-                                //                                    isValidForm = false
-                                //                                    print ("You don't have enough balance to send this transaction")
-                                //                                    return
-                                //                                }
+                                if utxoInfo.count == 0 {
+                                    print ("You don't have enough balance to send this transaction")
+                                    return
+                                }
                                 
                                 let totalSelectedAmount = utxoInfo.reduce(0) { $0 + $1.amount }
                                 
-                                //                                // Check if the total selected amount is greater than or equal to the needed balance
-                                //                                if totalSelectedAmount < Int64(totalAmountNeeded) {
-                                //                                    print("You don't have enough balance to send this transaction")
-                                //                                    return
-                                //                                }
+                                    // Check if the total selected amount is greater than or equal to the needed balance
+                                if totalSelectedAmount < Int64(totalAmountNeeded) {
+                                    print("You don't have enough balance to send this transaction")
+                                    return
+                                }
                                 
                                 let keysignPayload = KeysignPayload(
                                     coin: tx.coin,
@@ -110,9 +109,9 @@ struct SendVerifyView: View {
                         }
                     )
                 }
-//                .onAppear {
-//                    reloadTransactions()
-//                }
+                .onAppear {
+                    reloadTransactions()
+                }
             }
         }
         .navigationTitle("VERIFY")
@@ -127,7 +126,7 @@ struct SendVerifyView: View {
         }
     }
     
-    // Helper view for label and value text
+        // Helper view for label and value text
     @ViewBuilder
     private func LabelText(title: String, value: String) -> some View {
         VStack(alignment: .leading) {
@@ -139,7 +138,7 @@ struct SendVerifyView: View {
         }
     }
     
-    // Helper view for label and value text
+        // Helper view for label and value text
     @ViewBuilder
     private func LabelTextNumeric(title: String, value: String) -> some View {
         HStack {
@@ -154,7 +153,7 @@ struct SendVerifyView: View {
     }
 }
 
-// Custom ToggleStyle for Checkbox appearance
+    // Custom ToggleStyle for Checkbox appearance
 struct CheckboxToggleStyle: ToggleStyle {
     func makeBody(configuration: Configuration) -> some View {
         return HStack {
