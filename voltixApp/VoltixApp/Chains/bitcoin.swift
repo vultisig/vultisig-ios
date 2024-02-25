@@ -1,7 +1,7 @@
-    //
-    //  bitcoin.swift
-    //  VoltixApp
-    //
+//
+//  bitcoin.swift
+//  VoltixApp
+//
 
 import Foundation
 import Tss
@@ -14,18 +14,13 @@ struct UtxoInfo: Codable, Hashable {
 }
 
 enum BitcoinHelper {
-    enum BitcoinTransactionError: Error {
-        case tssError(String)
-        case runtimeError(String)
-    }
-    
     static func validateAddress(_ address: String) -> Bool {
         return CoinType.bitcoin.validate(address: address)
     }
     
     static func getSignatureFromTssResponse(tssResponse: TssKeysignResponse) -> Result<Data, Error> {
         guard let derSig = Data(hexString: tssResponse.derSignature) else {
-            return .failure(BitcoinTransactionError.runtimeError("fail to get der signature"))
+            return .failure(HelperError.runtimeError("fail to get der signature"))
         }
         return .success(derSig)
     }
@@ -38,32 +33,21 @@ enum BitcoinHelper {
     }
     
     static func getBitcoinPubKey(hexPubKey: String, hexChainCode: String) -> String {
-        var nsErr: NSError?
-        let derivedPubKey = TssGetDerivedPubKey(hexPubKey, hexChainCode, CoinType.bitcoin.derivationPath(), false, &nsErr)
-        if let nsErr {
-            print("fail to get derived pubkey:\(nsErr.localizedDescription)")
-            return ""
-        }
-        return derivedPubKey
+        return PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode, derivePath: CoinType.bitcoin.derivationPath())
     }
     
     static func getAddressFromPubKey(hexPubKey: String, hexChainCode: String) -> Result<String, Error> {
-        var nsErr: NSError?
-        let derivedPubKey = TssGetDerivedPubKey(hexPubKey, hexChainCode, CoinType.bitcoin.derivationPath(), false, &nsErr)
-        if let nsErr {
-            return .failure(BitcoinTransactionError.tssError("fail to derive pubkey,error:\(nsErr.localizedDescription)"))
-        }
+        let derivedPubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode, derivePath: CoinType.bitcoin.derivationPath())
         guard let pubkeyData = Data(hexString: derivedPubKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
         else {
-            return .failure(BitcoinTransactionError.runtimeError("public key \(derivedPubKey) is invalid"))
+            return .failure(HelperError.runtimeError("public key \(derivedPubKey) is invalid"))
         }
-        
         
         return .success(CoinType.bitcoin.deriveAddressFromPublicKey(publicKey: publicKey))
     }
     
-        // before keysign , we need to get the preSignedImageHash , so it can be signed with TSS
+    // before keysign , we need to get the preSignedImageHash , so it can be signed with TSS
     static func getPreSignedImageHash(utxos: [UtxoInfo],
                                       fromAddress: String,
                                       toAddress: String,
@@ -79,7 +63,7 @@ enum BitcoinHelper {
                     let preSignOutputs = try BitcoinPreSigningOutput(serializedData: preHashes)
                     return .success(preSignOutputs.hashPublicKeys.map { $0.dataHash.hexString })
                 } catch {
-                    return .failure(BitcoinTransactionError.runtimeError("fail to get presigned image hashes,error:\(error.localizedDescription)"))
+                    return .failure(HelperError.runtimeError("fail to get presigned image hashes,error:\(error.localizedDescription)"))
                 }
             case .failure(let err):
                 return .failure(err)
@@ -110,13 +94,13 @@ enum BitcoinHelper {
             let lockScript = BitcoinScript.lockScriptForAddress(address: fromAddress, coin: .bitcoin)
             let keyHash = lockScript.matchPayToWitnessPublicKeyHash()
             guard let keyHash else {
-                return .failure(BitcoinTransactionError.runtimeError("fail to get key hash from lock script"))
+                return .failure(HelperError.runtimeError("fail to get key hash from lock script"))
             }
             let redeemScript = BitcoinScript.buildPayToWitnessPubkeyHash(hash: keyHash)
             input.scripts[keyHash.hexString] = redeemScript.data
             let utxo = BitcoinUnspentTransaction.with {
                 $0.outPoint = BitcoinOutPoint.with {
-                        // the network byte order need to be reversed
+                    // the network byte order need to be reversed
                     $0.hash = Data.reverse(hexString: inputUtxo.hash)
                     $0.index = inputUtxo.index
                     $0.sequence = UInt32.max
@@ -182,7 +166,7 @@ enum BitcoinHelper {
         guard let pubkeyData = Data(hexString: hexPubKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
         else {
-            return .failure(BitcoinTransactionError.runtimeError("public key \(hexPubKey) is invalid"))
+            return .failure(HelperError.runtimeError("public key \(hexPubKey) is invalid"))
         }
         
         let result = getBitcoinPreSigningInputData(utxos: utxos,
@@ -201,7 +185,7 @@ enum BitcoinHelper {
                         let preImageHash = h.dataHash
                         let signature = signatureProvider(preImageHash)
                         guard publicKey.verifyAsDER(signature: signature, message: preImageHash) else {
-                            return .failure(BitcoinTransactionError.runtimeError("fail to verify signature"))
+                            return .failure(HelperError.runtimeError("fail to verify signature"))
                         }
                         allSignatures.add(data: signature)
                         publicKeys.add(data: pubkeyData)
@@ -210,7 +194,7 @@ enum BitcoinHelper {
                     let output = try BitcoinSigningOutput(serializedData: compileWithSignatures)
                     return .success(output.encoded.hexString)
                 } catch {
-                    return .failure(BitcoinTransactionError.runtimeError("fail to construct raw transaction,error: \(error.localizedDescription)"))
+                    return .failure(HelperError.runtimeError("fail to construct raw transaction,error: \(error.localizedDescription)"))
                 }
                 
             case .failure(let error):

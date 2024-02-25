@@ -91,7 +91,7 @@ struct KeysignView: View {
                                             return sigData
                                         case .failure(let err):
                                             switch err {
-                                                case BitcoinHelper.BitcoinTransactionError.runtimeError(let errDetail):
+                                                case HelperError.runtimeError(let errDetail):
                                                     logger.error("fail to get signature from TssResponse,error:\(errDetail)")
                                                 default:
                                                     logger.error("fail to get signature from TssResponse,error:\(err.localizedDescription)")
@@ -105,7 +105,7 @@ struct KeysignView: View {
                                     print(tx)
                                 case .failure(let err):
                                     switch err {
-                                        case BitcoinHelper.BitcoinTransactionError.runtimeError(let errDetail):
+                                        case HelperError.runtimeError(let errDetail):
                                             logger.error("Failed to get signed transaction,error:\(errDetail)")
                                         default:
                                             logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
