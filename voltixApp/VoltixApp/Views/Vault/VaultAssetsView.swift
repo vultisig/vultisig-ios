@@ -3,7 +3,7 @@ import SwiftUI
 struct VaultAssetsView: View {
     @Binding var presentationStack: [CurrentScreen]
     @EnvironmentObject var appState: ApplicationState
-    @StateObject var unspentOutputsViewModel: UnspentOutputsService = UnspentOutputsService()
+    @StateObject var unspentOutputsViewModel: UnspentOutputsService = .init()
     @ObservedObject var tx: SendTransaction
     @StateObject var cryptoPriceViewModel = CryptoPriceService()
     @State private var isCollapsed = true
@@ -13,8 +13,7 @@ struct VaultAssetsView: View {
             ScrollView {
                 VStack(alignment: .leading) {
                     if let walletData = unspentOutputsViewModel.walletData, let cryptoPrices = cryptoPriceViewModel.cryptoPrices, let bitcoinPriceUSD = cryptoPrices.prices["bitcoin"]?["usd"], let priceUsd = walletData.balanceInUSD(usdPrice: bitcoinPriceUSD) {
-                        
-                        HStack{
+                        HStack {
                             VaultItem(
                                 presentationStack: $presentationStack,
                                 coinName: tx.coin.chain.name,
@@ -59,12 +58,8 @@ struct VaultAssetsView: View {
                 }
                 .onAppear {
                     if let vault = appState.currentVault {
-                        let result = BitcoinHelper.getAddressFromPubKey(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
-                        switch result {
-                            case .success(let addr):
-                                print("bitcoin address is : \(addr)")
-                            case .failure(let err):
-                                print("fail to generate bitcoin address,error: \(err)")
+                        for coin in vault.coins {
+                            print(coin.address)
                         }
                     }
                     

@@ -5,9 +5,27 @@
 
 import BigInt
 import Foundation
+import Tss
 import WalletCore
 
 enum EthereumHelper {
+    static func getSignatureFromTssResponse(tssResponse: TssKeysignResponse) -> Result<Data, Error> {
+        guard let rData = Data(hexString: tssResponse.r) else {
+            return .failure(HelperError.runtimeError("fail to get r data"))
+        }
+        guard let sData = Data(hexString: tssResponse.s) else {
+            return .failure(HelperError.runtimeError("fail to get s data"))
+        }
+        guard let recoveryData = Data(hexString: tssResponse.recoveryID) else {
+            return .failure(HelperError.runtimeError("fail to get recovery data"))
+        }
+        var signature = Data()
+        signature.append(rData)
+        signature.append(sData)
+        signature.append(recoveryData)
+        return .success(signature)
+    }
+
     static let weiPerGWei: Int64 = 1_000_000_000
     static func getEthereum(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
         return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).map { addr in
@@ -116,7 +134,7 @@ enum EthereumHelper {
                 guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash) else {
                     return .failure(HelperError.runtimeError("fail to verify signature"))
                 }
-                
+
                 allSignatures.add(data: signature)
                 publicKeys.add(data: pubkeyData)
                 let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .ethereum, txInputData: inputData, signatures: allSignatures, publicKeys: publicKeys)

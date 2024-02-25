@@ -1,6 +1,6 @@
-    //
-    //  Keysign.swift
-    //  VoltixApp
+//
+//  Keysign.swift
+//  VoltixApp
 
 import Dispatch
 import Foundation
@@ -78,10 +78,14 @@ struct KeysignView: View {
                             return
                         }
                         
-                            // get bitcoin transaction
+                        // get bitcoin transaction
                         if let keysignPayload {
                             let bitcoinPubKey = BitcoinHelper.getBitcoinPubKey(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
-                            let result = BitcoinHelper.getSignedBitcoinTransaction(utxos: keysignPayload.utxos, hexPubKey: bitcoinPubKey, fromAddress: keysignPayload.coin.address, toAddress: keysignPayload.toAddress, toAmount: keysignPayload.toAmount, byteFee: keysignPayload.byteFee, memo: keysignPayload.memo, signatureProvider: { (preHash: Data) in
+                            guard case .Bitcoin(let feeByte) = keysignPayload.chainSpecific else {
+                                logger.error("fail to get feebyte for bitcoin")
+                                return
+                            }
+                            let result = BitcoinHelper.getSignedBitcoinTransaction(utxos: keysignPayload.utxos, hexPubKey: bitcoinPubKey, fromAddress: keysignPayload.coin.address, toAddress: keysignPayload.toAddress, toAmount: keysignPayload.toAmount, byteFee: feeByte, memo: keysignPayload.memo, signatureProvider: { (preHash: Data) in
                                 let hex = preHash.hexString
                                 
                                 if let sig = self.signatures[hex] {
@@ -145,7 +149,7 @@ struct KeysignView: View {
             Spacer()
         }
         .task {
-                // Create keygen instance, it takes time to generate the preparams
+            // Create keygen instance, it takes time to generate the preparams
             guard let vault = appState.currentVault else {
                 self.currentStatus = .KeysignFailed
                 return
@@ -155,7 +159,7 @@ struct KeysignView: View {
                 self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: msgHash)
                 self.stateAccess = LocalStateAccessorImpl(vault: vault)
                 var err: NSError?
-                    // keysign doesn't need to recreate preparams
+                // keysign doesn't need to recreate preparams
                 self.tssService = TssNewService(self.tssMessenger, self.stateAccess, false, &err)
                 if let err {
                     logger.error("Failed to create TSS instance, error: \(err.localizedDescription)")
@@ -178,8 +182,8 @@ struct KeysignView: View {
                         keysignReq.derivePath = CoinType.bitcoin.derivationPath()
                     }
                 }
-                    // sign messages one by one , since the msg is in hex format , so we need convert it to base64
-                    // and then pass it to TSS for keysign
+                // sign messages one by one , since the msg is in hex format , so we need convert it to base64
+                // and then pass it to TSS for keysign
                 if let msgToSign = Data(hexString: msg)?.base64EncodedString() {
                     keysignReq.messageToSign = msgToSign
                 }
@@ -196,7 +200,7 @@ struct KeysignView: View {
                     if let service = self.tssService {
                         let resp = try await tssKeysign(service: service, req: keysignReq, keysignType: keysignType)
                         self.signatures[msg] = resp
-                            // TODO: save the signature with the message it signed
+                        // TODO: save the signature with the message it signed
                         self.signature = "R:\(resp.r), S:\(resp.s), RecoveryID:\(resp.recoveryID)"
                     }
                     self.messagePuller.stop()

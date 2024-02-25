@@ -95,7 +95,7 @@ struct SendVerifyView: View {
                                     coin: tx.coin,
                                     toAddress: tx.toAddress,
                                     toAmount: tx.amountInSats,
-                                    byteFee: tx.feeInSats,
+                                    chainSpecific: BlockChainSpecific.Bitcoin(tx.feeInSats),
                                     utxos: utxoInfo,
                                     memo: tx.memo
                                 )

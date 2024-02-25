@@ -133,12 +133,14 @@ struct KeysignDiscoveryView: View {
             }
             switch self.keysignPayload.coin.ticker {
                 case "BTC":
-                    
+                    guard case .Bitcoin(let feeByte) = self.keysignPayload.chainSpecific else {
+                        return
+                    }
                     let result = BitcoinHelper.getPreSignedImageHash(utxos: self.keysignPayload.utxos,
                                                                      fromAddress: self.keysignPayload.coin.address,
                                                                      toAddress: self.keysignPayload.toAddress,
                                                                      toAmount: self.keysignPayload.toAmount,
-                                                                     byteFee: self.keysignPayload.byteFee,
+                                                                     byteFee: feeByte,
                                                                      memo: self.keysignPayload.memo)
                     switch result {
                         case .success(let preSignedImageHash):
@@ -267,13 +269,18 @@ struct KeysignMessage: Codable, Hashable {
     let payload: KeysignPayload
 }
 
+enum BlockChainSpecific: Codable, Hashable {
+    case Bitcoin(Int64) // byteFee
+    case Ethereum(Int64, Int64, Int64) // maxFeePerGasGwei, priorityFeeGwei, nonce
+}
+
 struct KeysignPayload: Codable, Hashable {
     let coin: Coin
     // only toAddress is required , from Address is our own address
     let toAddress: String
     let toAmount: Int64
-    // sats per vbyte , applicable for UTXO chains
-    let byteFee: Int64
+    let chainSpecific: BlockChainSpecific
+    
     // for UTXO chains , often it need to sign multiple UTXOs at the same time
     // here when keysign , the main device will only pass the utxo info to the keysign device
     // it is up to the signing device to get the presign keyhash , and sign it with the main device
@@ -289,6 +296,6 @@ struct KeysignPayload: Codable, Hashable {
                                                   address: "bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu"),
                                        toAddress: "bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu",
                                        toAmount: 1000,
-                                       byteFee: 20,
+                                       chainSpecific: .Bitcoin(25),
                                        utxos: [], memo: nil))
 }
