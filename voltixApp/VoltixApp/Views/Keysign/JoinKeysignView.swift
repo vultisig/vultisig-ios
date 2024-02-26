@@ -222,7 +222,7 @@ struct JoinKeysignView: View {
                     self.sessionID = keysignMsg.sessionID
                     self.keysignPayload = keysignMsg.payload
                     logger.info("QR code scanned successfully. Session ID: \(self.sessionID)")
-                    if keysignMsg.payload.coin.ticker == "BTC" {
+                    if keysignMsg.payload.coin.ticker == "BTC" || keysignMsg.payload.coin.ticker == "ETH"{
                         self.prepareKeysignMessages(keysignPayload: keysignMsg.payload)
                     }
                 } catch {
