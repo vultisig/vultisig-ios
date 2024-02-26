@@ -73,7 +73,7 @@ enum EthereumHelper {
             return .failure(HelperError.runtimeError("fail to get chainID"))
         }
         let input = EthereumSigningInput.with {
-            $0.chainID = chainID
+            $0.chainID = Data(hexString: "01")!
             $0.nonce = Data(hexString: String(format: "%02X", nonce))!
             $0.gasLimit = Data(hexString: String(format: "%02X", 21_000))!
             $0.gasPrice = convertEthereumNumber(input: maxFeePerGasGwei)
@@ -150,7 +150,10 @@ enum EthereumHelper {
 
                 allSignatures.add(data: signature)
                 publicKeys.add(data: pubkeyData)
-                let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .ethereum, txInputData: inputData, signatures: allSignatures, publicKeys: publicKeys)
+                let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .ethereum, 
+                                                                                     txInputData: inputData,
+                                                                                     signatures: allSignatures,
+                                                                                     publicKeys: publicKeys)
                 let output = try EthereumSigningOutput(serializedData: compileWithSignature)
                 return .success(output.encoded.hexString)
             } catch {
