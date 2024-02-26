@@ -20,7 +20,7 @@ enum EthereumHelper {
         guard let v = UInt8(tssResponse.recoveryID, radix: 16) else {
             return .failure(HelperError.runtimeError("fail to get recovery data"))
         }
-
+        
         var signature = Data()
         signature.append(rData)
         signature.append(sData)
@@ -72,8 +72,8 @@ enum EthereumHelper {
             $0.nonce = Data(hexString: String(format: "%02X", nonce))!
             $0.gasLimit = Data(hexString: String(format: "%02X", 21_000))!
             $0.gasPrice = convertEthereumNumber(input: maxFeePerGasGwei)
-            $0.maxFeePerGas = convertEthereumNumber(input: maxFeePerGasGwei)
-            $0.maxInclusionFeePerGas = convertEthereumNumber(input: priorityFeeGwei)
+//            $0.maxFeePerGas = convertEthereumNumber(input: maxFeePerGasGwei)
+//            $0.maxInclusionFeePerGas = convertEthereumNumber(input: priorityFeeGwei)
             $0.toAddress = toAddress
             $0.txMode = .legacy
             $0.transaction = EthereumTransaction.with {
@@ -86,6 +86,7 @@ enum EthereumHelper {
             }
         }
         do {
+            try print(input.jsonString())
             let inputData = try input.serializedData()
             return .success(inputData)
         } catch {
@@ -103,10 +104,13 @@ enum EthereumHelper {
         let result = getPreSignedInputData(toAddress: toAddress, toAmountGWei: toAmountGWei, nonce: nonce, maxFeePerGasGwei: maxFeePerGasGwei, priorityFeeGwei: priorityFeeGwei, memo: memo)
         switch result {
         case .success(let inputData):
-
-            let hashes = TransactionCompiler.preImageHashes(coinType: .ethereum, txInputData: inputData)
-            return .success(hashes.hexString)
-
+            do {
+                let hashes = TransactionCompiler.preImageHashes(coinType: .ethereum, txInputData: inputData)
+                let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+                return .success(preSigningOutput.dataHash.hexString)
+            } catch {
+                return .failure(HelperError.runtimeError("fail to get preSignedImageHash,error:\(error.localizedDescription)"))
+            }
         case .failure(let err):
             return .failure(err)
         }
@@ -131,12 +135,12 @@ enum EthereumHelper {
         case .success(let inputData):
             do {
                 let hashes = TransactionCompiler.preImageHashes(coinType: .ethereum, txInputData: inputData)
-
+                let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
                 let allSignatures = DataVector()
                 let publicKeys = DataVector()
-                let signature = signatureProvider(hashes)
+                let signature = signatureProvider(preSigningOutput.dataHash)
 
-                guard publicKey.verify(signature: signature, message: hashes) else {
+                guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash) else {
                     return .failure(HelperError.runtimeError("fail to verify signature"))
                 }
 
