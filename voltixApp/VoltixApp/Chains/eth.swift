@@ -56,7 +56,7 @@ enum EthereumHelper {
 
     // this method convert GWei to Wei, and in little endian encoded Data
     static func convertEthereumNumber(input: Int64) -> Data {
-        let inputInt = BigInt(input * weiPerGWei).serialize()
+        let inputInt = BigInt(input * weiPerGWei).magnitude.serialize()
         return inputInt
     }
 
@@ -69,11 +69,11 @@ enum EthereumHelper {
     {
         let coin = CoinType.ethereum
 
-        guard let chainID = coin.chainId.data(using: .utf8) else {
+        guard let intChainID = Int(coin.chainId) else {
             return .failure(HelperError.runtimeError("fail to get chainID"))
         }
         let input = EthereumSigningInput.with {
-            $0.chainID = Data(hexString: "01")!
+            $0.chainID = Data(hexString: String(format: "%02X", intChainID))!
             $0.nonce = Data(hexString: String(format: "%02X", nonce))!
             $0.gasLimit = Data(hexString: String(format: "%02X", 21_000))!
             $0.gasPrice = convertEthereumNumber(input: maxFeePerGasGwei)
@@ -150,7 +150,7 @@ enum EthereumHelper {
 
                 allSignatures.add(data: signature)
                 publicKeys.add(data: pubkeyData)
-                let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .ethereum, 
+                let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .ethereum,
                                                                                      txInputData: inputData,
                                                                                      signatures: allSignatures,
                                                                                      publicKeys: publicKeys)
