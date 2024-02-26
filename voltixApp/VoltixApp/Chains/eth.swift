@@ -20,7 +20,7 @@ enum EthereumHelper {
         guard let v = UInt8(tssResponse.recoveryID, radix: 16) else {
             return .failure(HelperError.runtimeError("fail to get recovery data"))
         }
-        
+
         var signature = Data()
         signature.append(rData)
         signature.append(sData)
@@ -71,11 +71,10 @@ enum EthereumHelper {
             $0.chainID = Data(hexString: String(format: "%02X", intChainID))!
             $0.nonce = Data(hexString: String(format: "%02X", nonce))!
             $0.gasLimit = Data(hexString: String(format: "%02X", 21_000))!
-            $0.gasPrice = convertEthereumNumber(input: maxFeePerGasGwei)
-//            $0.maxFeePerGas = convertEthereumNumber(input: maxFeePerGasGwei)
-//            $0.maxInclusionFeePerGas = convertEthereumNumber(input: priorityFeeGwei)
+            $0.maxFeePerGas = convertEthereumNumber(input: maxFeePerGasGwei)
+            $0.maxInclusionFeePerGas = convertEthereumNumber(input: priorityFeeGwei)
             $0.toAddress = toAddress
-            $0.txMode = .legacy
+            $0.txMode = .enveloped
             $0.transaction = EthereumTransaction.with {
                 $0.transfer = EthereumTransaction.Transfer.with {
                     $0.amount = convertEthereumNumber(input: toAmountGWei)
@@ -107,6 +106,7 @@ enum EthereumHelper {
             do {
                 let hashes = TransactionCompiler.preImageHashes(coinType: .ethereum, txInputData: inputData)
                 let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+                print("presigning hash:\(preSigningOutput.dataHash.hexString)")
                 return .success(preSigningOutput.dataHash.hexString)
             } catch {
                 return .failure(HelperError.runtimeError("fail to get preSignedImageHash,error:\(error.localizedDescription)"))
@@ -139,13 +139,17 @@ enum EthereumHelper {
                 let allSignatures = DataVector()
                 let publicKeys = DataVector()
                 let signature = signatureProvider(preSigningOutput.dataHash)
-
-                guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash) else {
+                print("presigning hash:\(preSigningOutput.dataHash.hexString) signature:\(signature.hexString) pubkey:\(pubkeyData.hexString)")
+                if publicKey.verify(signature: signature, message: preSigningOutput.dataHash) {
+                    print("signature is valid")
+                } else {
                     return .failure(HelperError.runtimeError("fail to verify signature"))
                 }
 
                 allSignatures.add(data: signature)
-                publicKeys.add(data: pubkeyData)
+
+                // it looks like the pubkey compileWithSignature accept is extended public key
+                // also , it can be empty as well , since we don't have extended public key , so just leave it empty
                 let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .ethereum,
                                                                                      txInputData: inputData,
                                                                                      signatures: allSignatures,
