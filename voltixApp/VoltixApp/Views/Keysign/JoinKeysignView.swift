@@ -1,6 +1,6 @@
-//
-//  JoinKeysignView.swift
-//  VoltixApp
+    //
+    //  JoinKeysignView.swift
+    //  VoltixApp
 
 import CodeScanner
 import OSLog
@@ -154,7 +154,7 @@ struct JoinKeysignView: View {
             }
         }
     }
-
+    
     private func checkKeysignStarted() {
         guard let serverUrl = serviceDelegate.serverUrl else {
             logger.error("Server URL could not be found. Please ensure you're connected to the correct network.")
@@ -242,11 +242,17 @@ struct JoinKeysignView: View {
     }
     
     private func prepareKeysignMessages(keysignPayload: KeysignPayload) {
-        let result = BitcoinHelper.getPreSignedImageHash(utxos: keysignPayload.utxos,
-                                                         fromAddress: keysignPayload.coin.address,
-                                                         toAddress: keysignPayload.toAddress,
-                                                         toAmount: keysignPayload.toAmount,
-                                                         byteFee: keysignPayload.byteFee, memo: nil)
+        
+        let helper = try? CoinFactory.createCoinHelper(for: keysignPayload.coin.ticker)
+        
+        
+        
+        
+        let result = helper?.getPreSigningImageHash(utxos: keysignPayload.utxos,
+                                                  fromAddress: keysignPayload.coin.address,
+                                                  toAddress: keysignPayload.toAddress,
+                                                  toAmount: keysignPayload.toAmount,
+                                                  byteFee: keysignPayload.byteFee, memo: nil)
         switch result {
             case .success(let preSignedImageHash):
                 logger.info("Successfully prepared messages for keysigning.")
@@ -257,6 +263,10 @@ struct JoinKeysignView: View {
                 }
             case .failure(let err):
                 logger.error("Failed to prepare messages for keysigning. Error: \(err)")
+                self.currentStatus = .FailedToStart
+                
+            default:
+                logger.error("Failed to prepare messages for keysigning. Error")
                 self.currentStatus = .FailedToStart
         }
     }

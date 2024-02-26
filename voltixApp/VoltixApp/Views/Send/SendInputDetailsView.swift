@@ -73,13 +73,24 @@ struct SendInputDetailsView: View {
                         .background(Color.gray.opacity(0.5))  // 50% transparent gray
                         .cornerRadius(10)
                         .onChange(of: tx.toAddress) { newValue in
-                            isValidAddress = BitcoinHelper.validateAddress(newValue)
-                            if !isValidAddress {
-                                print("Invalid Crypto Address")
-                            } else {
-                                print("Valid Crypto Address")
+                            do {
+                                    // Directly att?empt to create a coin helper for the transaction's coin ticker.
+                                let helper = try CoinFactory.createCoinHelper(for: tx.coin.ticker)
+                                
+                                    // Use the helper to validate the new address.
+                                isValidAddress = helper.validateAddress(newValue)
+                                if !isValidAddress {
+                                    print("Invalid Crypto Address")
+                                } else {
+                                    print("Valid Crypto Address")
+                                }
+                            } catch {
+                                    // Handle any errors that might occur while creating the coin helper.
+                                print("An error occurred while creating the coin helper: \(error)")
+                                isValidAddress = false
                             }
                         }
+                    
                     
                 }.padding(.bottom)
                 Group {
