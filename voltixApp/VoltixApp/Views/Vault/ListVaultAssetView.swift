@@ -40,7 +40,7 @@ struct ListVaultAssetView: View {
                     let coin = vault.coins.first { $0.ticker == "ETH" }
                     if let coin {
                         self.presentationStack.append(.KeysignDiscovery(KeysignPayload(
-                            coin: coin, toAddress: "0x6f2E21B6E20F3Ce7A1a8Ec132FD69CB6Fc603c3C", toAmount: 1000, chainSpecific: BlockChainSpecific.Ethereum(24, 1, 0), utxos: [], memo: nil
+                            coin: coin, toAddress: "0x6f2E21B6E20F3Ce7A1a8Ec132FD69CB6Fc603c3C", toAmount: 100000000, chainSpecific: BlockChainSpecific.Ethereum(24, 1, 0), utxos: [], memo: nil
                         )))
                     }
                 }.buttonStyle(PlainButtonStyle())

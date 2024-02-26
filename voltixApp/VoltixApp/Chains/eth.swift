@@ -13,7 +13,7 @@ enum EthereumHelper {
         guard let rData = Data(hexString: tssResponse.r) else {
             return .failure(HelperError.runtimeError("fail to get r data"))
         }
-        
+
         guard let v = UInt8(tssResponse.recoveryID, radix: 16) else {
             return .failure(HelperError.runtimeError("fail to get recovery data"))
         }
@@ -28,7 +28,7 @@ enum EthereumHelper {
         var signature = Data()
         signature.append(rData)
         signature.append(lowSData)
-        
+
         signature.append(Data([v+35+2]))
         return .success(signature)
     }
@@ -56,11 +56,9 @@ enum EthereumHelper {
 
     // this method convert GWei to Wei, and in little endian encoded Data
     static func convertEthereumNumber(input: Int64) -> Data {
-        let inputInt = BigInt(input * weiPerGWei).serialize()
-        if let result = Data(hexString: inputInt.hexString) {
-            return result
-        }
-        return Data()
+        var inputInt = BigInt(input * weiPerGWei).serialize()
+        inputInt.reverse()
+        return inputInt
     }
 
     static func getPreSignedInputData(toAddress: String,
@@ -71,9 +69,14 @@ enum EthereumHelper {
                                       memo: String?) -> Result<Data, Error>
     {
         let coin = CoinType.ethereum
+        let intChainID = Int64(coin.chainId)
+        guard let chainID = intChainID else {
+            return .failure(HelperError.runtimeError("fail to get chainID"))
+        }
         let input = EthereumSigningInput.with {
-            $0.chainID = coin.chainId.data(using: .utf8)!
-            $0.nonce = Data([0])
+            $0.chainID = withUnsafeBytes(of: chainID) { Data($0) }
+            $0.nonce = withUnsafeBytes(of: nonce.littleEndian) { Data($0) }
+            $0.gasLimit = withUnsafeBytes(of: 21_000) { Data($0) }
             $0.maxFeePerGas = convertEthereumNumber(input: maxFeePerGasGwei)
             $0.maxInclusionFeePerGas = convertEthereumNumber(input: priorityFeeGwei)
             $0.toAddress = toAddress
@@ -140,7 +143,7 @@ enum EthereumHelper {
                 let allSignatures = DataVector()
                 let publicKeys = DataVector()
                 let signature = signatureProvider(preSigningOutput.dataHash)
-                // keep in mind , this signature should be
+
                 guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash) else {
                     return .failure(HelperError.runtimeError("fail to verify signature"))
                 }
