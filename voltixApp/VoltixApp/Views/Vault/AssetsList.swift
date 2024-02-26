@@ -54,15 +54,12 @@ struct AssetsList: View {
                         case Chain.Solana.name:
                             print("do it later")
                         case Chain.Bitcoin.name:
-                            let bitcoinHelper = try? CoinFactory.createCoinHelper(for: Chain.Bitcoin.ticker)
-                            let coinResult = bitcoinHelper?.getCoinDetails(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
+                            let coinResult = BitcoinHelper.getBitcoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
                             switch coinResult {
                                 case .success(let btc):
                                     vault.coins.append(btc)
                                 case .failure(let err):
                                     logger.info("fail to get bitcoin address,error:\(err.localizedDescription)")
-                                default:
-                                    logger.info("Unsupported coin")
                             }
                         default:
                             print("do it later")

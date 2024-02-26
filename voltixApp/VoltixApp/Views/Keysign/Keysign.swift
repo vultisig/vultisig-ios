@@ -80,77 +80,59 @@ struct KeysignView: View {
                         
                             // get bitcoin transaction
                         if let keysignPayload {
-                            
-                                // TODO: the the current selected COIN
-                            let bitcoinHelper = try? CoinFactory.createCoinHelper(for: Chain.Bitcoin.ticker)
-                            
-                            let bitcoinPubKey = bitcoinHelper?.getPublicKey(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
-                            
-                            if bitcoinPubKey != nil {
+                            let bitcoinPubKey = BitcoinHelper.getBitcoinPubKey(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
+                            let result = BitcoinHelper.getSignedBitcoinTransaction(utxos: keysignPayload.utxos, hexPubKey: bitcoinPubKey, fromAddress: keysignPayload.coin.address, toAddress: keysignPayload.toAddress, toAmount: keysignPayload.toAmount, byteFee: keysignPayload.byteFee, memo: keysignPayload.memo, signatureProvider: { (preHash: Data) in
+                                let hex = preHash.hexString
                                 
-                                let result = bitcoinHelper?.getSignedTransaction(utxos: keysignPayload.utxos, hexPubKey: bitcoinPubKey!, fromAddress: keysignPayload.coin.address, toAddress: keysignPayload.toAddress, toAmount: keysignPayload.toAmount, byteFee: keysignPayload.byteFee, memo: keysignPayload.memo, signatureProvider: { (preHash: Data) in
-                                    let hex = preHash.hexString
+                                if let sig = self.signatures[hex] {
+                                    let sigResult = BitcoinHelper.getSignatureFromTssResponse(tssResponse: sig)
+                                    switch sigResult {
+                                        case .success(let sigData):
+                                            return sigData
+                                        case .failure(let err):
+                                            switch err {
+                                                case BitcoinHelper.BitcoinTransactionError.runtimeError(let errDetail):
+                                                    logger.error("fail to get signature from TssResponse,error:\(errDetail)")
+                                                default:
+                                                    logger.error("fail to get signature from TssResponse,error:\(err.localizedDescription)")
+                                            }
+                                    }
+                                }
+                                return Data()
+                            })
+                            switch result {
+                                case .success(let tx):
                                     
-                                    if let sig = self.signatures[hex] {
-                                        let sigResult = bitcoinHelper?.getSignatureFromTssResponse(tssResponse: sig)
-                                        switch sigResult {
-                                            case .success(let sigData):
-                                                return sigData
-                                            case .failure(let err):
-                                                switch err {
-                                                    case BitcoinHelper.BitcoinTransactionError.runtimeError(let errDetail):
-                                                        logger.error("fail to get signature from TssResponse,error:\(errDetail)")
-                                                    default:
-                                                        logger.error("fail to get signature from TssResponse,error:\(err.localizedDescription)")
-                                                }
-                                                
-                                            default:
-                                                logger.error("Error")
+                                    print(tx)
+                                    Task {
+                                        do {
+                                            let txid = try await BitcoinTransactionsService.broadcastTransaction(tx)
+                                            print("Transaction Broadcasted Successfully, txid: \(txid)")
+                                        } catch let error as BitcoinTransactionsService.BitcoinTransactionError {
+                                            switch error {
+                                                case .invalidURL:
+                                                    print("Invalid URL.")
+                                                case .httpError(let statusCode):
+                                                    print("HTTP Error with status code: \(statusCode).")
+                                                case .apiError(let message):
+                                                    print("API Error: \(message)")
+                                                case .unexpectedResponse:
+                                                    print("Unexpected response from the server.")
+                                                case .unknown(let unknownError):
+                                                    print("An unknown error occurred: \(unknownError.localizedDescription)")
+                                            }
+                                        } catch {
+                                            print("An unexpected error occurred: \(error.localizedDescription)")
                                         }
                                     }
-                                    return Data()
-                                })
-                                
-                                
-                                
-                                
-                                switch result {
-                                    case .success(let tx):
-                                        
-                                        print(tx)
-                                        Task {
-                                            do {
-                                                let txid = try await BitcoinTransactionsService.broadcastTransaction(tx)
-                                                print("Transaction Broadcasted Successfully, txid: \(txid)")
-                                            } catch let error as BitcoinTransactionsService.BitcoinTransactionError {
-                                                switch error {
-                                                    case .invalidURL:
-                                                        print("Invalid URL.")
-                                                    case .httpError(let statusCode):
-                                                        print("HTTP Error with status code: \(statusCode).")
-                                                    case .apiError(let message):
-                                                        print("API Error: \(message)")
-                                                    case .unexpectedResponse:
-                                                        print("Unexpected response from the server.")
-                                                    case .unknown(let unknownError):
-                                                        print("An unknown error occurred: \(unknownError.localizedDescription)")
-                                                }
-                                            } catch {
-                                                print("An unexpected error occurred: \(error.localizedDescription)")
-                                            }
-                                        }
-                                        
-                                    case .failure(let err):
-                                        switch err {
-                                            case BitcoinHelper.BitcoinTransactionError.runtimeError(let errDetail):
-                                                logger.error("Failed to get signed transaction,error:\(errDetail)")
-                                            default:
-                                                logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
-                                        }
-                                    default:
-                                        logger.error("Error")
-                                }
-                                
+                                    
+                                case .failure(let err):
+                                    switch err {
+                                        case BitcoinHelper.BitcoinTransactionError.runtimeError(let errDetail):
+                                            logger.error("Failed to get signed transaction,error:\(errDetail)")
+                                        default:
+                                            logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
+                                    }
                             }
                         }
                     }.navigationBarBackButtonHidden(false)

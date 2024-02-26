@@ -30,11 +30,6 @@
 		465B09B52B7D8E7B00952DD9 /* CryptoPriceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */; };
 		465B09B72B7D909400952DD9 /* CryptoPrice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09B62B7D909400952DD9 /* CryptoPrice.swift */; };
 		467B2D662B7B51F700AEDF64 /* NavigationStackButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 467B2D652B7B51F700AEDF64 /* NavigationStackButtons.swift */; };
-		468A9CEC2B8C046700E8710E /* WalletService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 468A9CEB2B8C046700E8710E /* WalletService.swift */; };
-		468A9CEE2B8C053800E8710E /* CoinHelperProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 468A9CED2B8C053800E8710E /* CoinHelperProtocol.swift */; };
-		468A9CF02B8C056400E8710E /* BitcoinHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 468A9CEF2B8C056400E8710E /* BitcoinHelper.swift */; };
-		468A9CF32B8C079000E8710E /* CoinFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 468A9CF22B8C079000E8710E /* CoinFactory.swift */; };
-		468A9CF52B8C0B1400E8710E /* EthereumHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 468A9CF42B8C0B1400E8710E /* EthereumHelper.swift */; };
 		46A616EA2B8807B700372994 /* KeygenStatusText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46A616E92B8807B700372994 /* KeygenStatusText.swift */; };
 		46F47CBB2B870EE900D964EA /* BitcoinTransactionMempool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F47CBA2B870EE900D964EA /* BitcoinTransactionMempool.swift */; };
 		D7347C2E2B759A0F00887E57 /* ProgressBottomBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7347C2D2B759A0F00887E57 /* ProgressBottomBar.swift */; };
@@ -64,6 +59,7 @@
 		DE1572A02B70F284009BC7C5 /* Keysign.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE15729D2B70F284009BC7C5 /* Keysign.swift */; };
 		DE1572A22B70F873009BC7C5 /* Tss.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE1572A12B70F873009BC7C5 /* Tss.xcframework */; };
 		DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1572AB2B7174D3009BC7C5 /* Utils.swift */; };
+		DE28F52E2B7B0E7400E33058 /* bitcoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE28F52D2B7B0E7400E33058 /* bitcoin.swift */; };
 		DE28F5312B7B0FE900E33058 /* WalletCore in Frameworks */ = {isa = PBXBuildFile; productRef = DE28F5302B7B0FE900E33058 /* WalletCore */; };
 		DE28F5332B7B0FED00E33058 /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = DE28F5322B7B0FED00E33058 /* SwiftProtobuf */; };
 		DE32F0062B8460670035D81E /* ListVaultAssetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE32F0042B8460670035D81E /* ListVaultAssetView.swift */; };
@@ -129,11 +125,6 @@
 		465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoPriceService.swift; sourceTree = "<group>"; };
 		465B09B62B7D909400952DD9 /* CryptoPrice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoPrice.swift; sourceTree = "<group>"; };
 		467B2D652B7B51F700AEDF64 /* NavigationStackButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationStackButtons.swift; sourceTree = "<group>"; };
-		468A9CEB2B8C046700E8710E /* WalletService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletService.swift; sourceTree = "<group>"; };
-		468A9CED2B8C053800E8710E /* CoinHelperProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinHelperProtocol.swift; sourceTree = "<group>"; };
-		468A9CEF2B8C056400E8710E /* BitcoinHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BitcoinHelper.swift; sourceTree = "<group>"; };
-		468A9CF22B8C079000E8710E /* CoinFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinFactory.swift; sourceTree = "<group>"; };
-		468A9CF42B8C0B1400E8710E /* EthereumHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EthereumHelper.swift; sourceTree = "<group>"; };
 		46A616E92B8807B700372994 /* KeygenStatusText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenStatusText.swift; sourceTree = "<group>"; };
 		46F47CBA2B870EE900D964EA /* BitcoinTransactionMempool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BitcoinTransactionMempool.swift; sourceTree = "<group>"; };
 		D7347C2D2B759A0F00887E57 /* ProgressBottomBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressBottomBar.swift; sourceTree = "<group>"; };
@@ -163,6 +154,7 @@
 		DE1572A12B70F873009BC7C5 /* Tss.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
 		DE1572AB2B7174D3009BC7C5 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		DE28F52B2B7B0D6500E33058 /* WalletCore */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = WalletCore; path = ../WalletCore; sourceTree = "<group>"; };
+		DE28F52D2B7B0E7400E33058 /* bitcoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = bitcoin.swift; sourceTree = "<group>"; };
 		DE32F0042B8460670035D81E /* ListVaultAssetView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ListVaultAssetView.swift; sourceTree = "<group>"; };
 		DE32F0052B8460670035D81E /* AssetsList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AssetsList.swift; sourceTree = "<group>"; };
 		DE491CEE2B708260007C88D5 /* KeygenView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeygenView.swift; sourceTree = "<group>"; };
@@ -251,25 +243,8 @@
 				465B09A62B7C049400952DD9 /* UnspentOutputsService.swift */,
 				465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */,
 				4606B3AF2B80465E0045094D /* BitcoinTransactionsService.swift */,
-				468A9CEB2B8C046700E8710E /* WalletService.swift */,
 			);
 			path = Services;
-			sourceTree = "<group>";
-		};
-		468A9CE82B8C041100E8710E /* Protocols */ = {
-			isa = PBXGroup;
-			children = (
-				468A9CED2B8C053800E8710E /* CoinHelperProtocol.swift */,
-			);
-			path = Protocols;
-			sourceTree = "<group>";
-		};
-		468A9CF12B8C078200E8710E /* Factories */ = {
-			isa = PBXGroup;
-			children = (
-				468A9CF22B8C079000E8710E /* CoinFactory.swift */,
-			);
-			path = Factories;
 			sourceTree = "<group>";
 		};
 		46D067E42B8852B70052F535 /* Keygen */ = {
@@ -399,8 +374,7 @@
 		DE28F52C2B7B0E6200E33058 /* Chains */ = {
 			isa = PBXGroup;
 			children = (
-				468A9CEF2B8C056400E8710E /* BitcoinHelper.swift */,
-				468A9CF42B8C0B1400E8710E /* EthereumHelper.swift */,
+				DE28F52D2B7B0E7400E33058 /* bitcoin.swift */,
 			);
 			path = Chains;
 			sourceTree = "<group>";
@@ -433,8 +407,6 @@
 		DE49A1652B65F6D9000F3AFB /* VoltixApp */ = {
 			isa = PBXGroup;
 			children = (
-				468A9CF12B8C078200E8710E /* Factories */,
-				468A9CE82B8C041100E8710E /* Protocols */,
 				461BD0962B7EFA8000BFF703 /* Services */,
 				DE28F52C2B7B0E6200E33058 /* Chains */,
 				DE1572AA2B7174C5009BC7C5 /* Util */,
@@ -647,7 +619,6 @@
 				049BBB582B71E72F004C231F /* DeviceView.swift in Sources */,
 				D9AD8EF12B6731660009F8D5 /* SendInputDetailsView.swift in Sources */,
 				D9AD8F012B6732360009F8D5 /* SwapVerifyView.swift in Sources */,
-				468A9CF52B8C0B1400E8710E /* EthereumHelper.swift in Sources */,
 				049BBB682B71E9C5004C231F /* WifiBar.swift in Sources */,
 				465B09B72B7D909400952DD9 /* CryptoPrice.swift in Sources */,
 				D9AD8EFB2B6731E50009F8D5 /* SwapInputDetailsView.swift in Sources */,
@@ -676,7 +647,6 @@
 				DE49A1692B65F6D9000F3AFB /* MainNavigationStack.swift in Sources */,
 				D9AD8F082B675ECD0009F8D5 /* SupportedAssets.swift in Sources */,
 				DE49A1B22B6A0F77000F3AFB /* JoinKeygenView.swift in Sources */,
-				468A9CEC2B8C046700E8710E /* WalletService.swift in Sources */,
 				DE15729E2B70F284009BC7C5 /* JoinKeysignView.swift in Sources */,
 				D9AD8EEC2B6730ED0009F8D5 /* VaultAssetsView.swift in Sources */,
 				D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */,
@@ -686,11 +656,10 @@
 				049BBB602B71E8A2004C231F /* MenuItem.swift in Sources */,
 				4606B3B02B80465E0045094D /* BitcoinTransactionsService.swift in Sources */,
 				049BBB522B71E498004C231F /* AssetsView.swift in Sources */,
-				468A9CF32B8C079000E8710E /* CoinFactory.swift in Sources */,
 				D9AD8EE42B6730940009F8D5 /* NewWalletInstructionsView.swift in Sources */,
+				DE28F52E2B7B0E7400E33058 /* bitcoin.swift in Sources */,
 				DE32F0062B8460670035D81E /* ListVaultAssetView.swift in Sources */,
 				D9AD8EFD2B6732070009F8D5 /* SwapPeerDiscoveryView.swift in Sources */,
-				468A9CF02B8C056400E8710E /* BitcoinHelper.swift in Sources */,
 				467B2D662B7B51F700AEDF64 /* NavigationStackButtons.swift in Sources */,
 				DE49A19C2B67133D000F3AFB /* Vault.swift in Sources */,
 				DE49A1A02B67143B000F3AFB /* Chain.swift in Sources */,
@@ -699,7 +668,6 @@
 				DE49A19E2B671416000F3AFB /* Coin.swift in Sources */,
 				DE49A1672B65F6D9000F3AFB /* VoltixApp.swift in Sources */,
 				465B09A42B7C01CC00952DD9 /* BitcoinTransaction.swift in Sources */,
-				468A9CEE2B8C053800E8710E /* CoinHelperProtocol.swift in Sources */,
 				DE32F0072B8460670035D81E /* AssetsList.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
