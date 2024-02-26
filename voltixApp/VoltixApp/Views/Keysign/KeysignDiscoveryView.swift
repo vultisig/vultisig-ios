@@ -134,12 +134,14 @@ struct KeysignDiscoveryView: View {
             switch self.keysignPayload.coin.ticker {
                 case "BTC":
                     
-                    let result = BitcoinHelper.getPreSignedImageHash(utxos: self.keysignPayload.utxos,
+                    let bitcoinHelper = try? CoinFactory.createCoinHelper(for: keysignPayload.coin.ticker)
+                    
+                    let result = bitcoinHelper?.getPreSigningImageHash(utxos: self.keysignPayload.utxos,
                                                                      fromAddress: self.keysignPayload.coin.address,
                                                                      toAddress: self.keysignPayload.toAddress,
                                                                      toAmount: self.keysignPayload.toAmount,
                                                                      byteFee: self.keysignPayload.byteFee,
-                                                                     memo: self.keysignPayload.memo)
+                                                                       memo: ((self.keysignPayload.memo?.isEmpty) != nil) ? nil : self.keysignPayload.memo)
                     switch result {
                         case .success(let preSignedImageHash):
                             self.keysignMessages = preSignedImageHash
@@ -149,6 +151,9 @@ struct KeysignDiscoveryView: View {
                             }
                         case .failure(let err):
                             logger.error("Failed to get preSignedImageHash: \(err)")
+                            self.currentState = .FailToStart
+                        default:
+                            logger.error("Failed to get preSignedImageHash")
                             self.currentState = .FailToStart
                     }
                 default:

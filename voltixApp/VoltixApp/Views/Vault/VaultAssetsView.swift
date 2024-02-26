@@ -59,12 +59,15 @@ struct VaultAssetsView: View {
                 }
                 .onAppear {
                     if let vault = appState.currentVault {
-                        let result = BitcoinHelper.getAddressFromPubKey(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
+                        let helper = try? CoinFactory.createCoinHelper(for: tx.coin.ticker)
+                        let result = helper?.getAddressFromPublicKey(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
                         switch result {
                             case .success(let addr):
-                                print("bitcoin address is : \(addr)")
+                                print("the \(tx.coin.ticker) address is : \(addr)")
                             case .failure(let err):
-                                print("fail to generate bitcoin address,error: \(err)")
+                                print("fail to generate \(tx.coin.ticker) address,error: \(err)")
+                            default:
+                                print("Error")
                         }
                     }
                     
