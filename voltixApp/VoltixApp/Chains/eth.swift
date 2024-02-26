@@ -68,14 +68,14 @@ enum EthereumHelper {
                                       memo: String?) -> Result<Data, Error>
     {
         let coin = CoinType.ethereum
-        
-        guard let chainID = coin.chainId.data(using:.utf8) else {
+
+        guard let chainID = coin.chainId.data(using: .utf8) else {
             return .failure(HelperError.runtimeError("fail to get chainID"))
         }
         let input = EthereumSigningInput.with {
             $0.chainID = chainID
-            $0.nonce = Data(hexString: String(nonce, radix: 16))!
-            $0.gasLimit = Data(hexString: String(21_000,radix: 16))!
+            $0.nonce = Data(hexString: String(format: "%02X", nonce))!
+            $0.gasLimit = Data(hexString: String(format: "%02X", 21_000))!
             $0.maxFeePerGas = convertEthereumNumber(input: maxFeePerGasGwei)
             $0.maxInclusionFeePerGas = convertEthereumNumber(input: priorityFeeGwei)
             $0.toAddress = toAddress
