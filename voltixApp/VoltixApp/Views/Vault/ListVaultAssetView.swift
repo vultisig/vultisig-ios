@@ -39,23 +39,22 @@ struct ListVaultAssetView: View {
         }
         .onAppear {
             if let vault = appState.currentVault {
-                if vault.coins.isEmpty {
-                    let bitcoinHelper = try? CoinFactory.createCoinHelper(for: Chain.Bitcoin.ticker)
-                    
-                    let result = bitcoinHelper?.getCoinDetails(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
-                    switch result {
-                        case .success(let btc):
-                            self.sendTransaction.coin = btc
+                print("hexPubKey: \(vault.pubKeyECDSA) - hexChainCode: \(vault.hexChainCode)")
+                let result = BitcoinHelper.getBitcoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
+                switch result {
+                    case .success(let btc):
+                        self.sendTransaction.coin = btc
+                        
+                            // SET BTC as default if none
+                        if vault.coins.count == 0 {
                             vault.coins.append(btc)
-                        case .failure(let error):
-                            print("error: \(error)")
-                        default:
-                            print("ERROR")
-                    }
+                        }
+                        
+                    case .failure(let error):
+                        print("error: \(error)")
                 }
             }
         }
-        
     }
 }
 

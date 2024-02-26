@@ -36,8 +36,7 @@ struct BitcoinTransactionListView: View {
             }
             .task {
                 if let vault = appState.currentVault {
-                    let helper = try? CoinFactory.createCoinHelper(for: "BTC")
-                    let result = helper?.getCoinDetails(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
+                    let result = BitcoinHelper.getBitcoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
                     switch result {
                         case .success(let btc):
                                 // "bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu"
@@ -46,8 +45,6 @@ struct BitcoinTransactionListView: View {
                                 //await bitcoinTransactionsService.fetchTransactions("bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu")
                         case .failure(let error):
                             print("error: \(error)")
-                        default:
-                            print("ERROR")
                     }
                 }
             }
