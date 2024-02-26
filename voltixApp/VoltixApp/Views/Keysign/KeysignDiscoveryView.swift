@@ -153,6 +153,22 @@ struct KeysignDiscoveryView: View {
                             logger.error("Failed to get preSignedImageHash: \(err)")
                             self.currentState = .FailToStart
                     }
+                case "ETH":
+                    guard case .Ethereum(let maxFeePerGasGWei, let priorityFeeGwei, let nonce) = self.keysignPayload.chainSpecific else {
+                        return
+                    }
+                    let result = EthereumHelper.getPreSignedImageHash(toAddress: self.keysignPayload.toAddress, toAmountGWei: self.keysignPayload.toAmount, nonce: nonce, maxFeePerGasGwei: maxFeePerGasGWei, priorityFeeGwei: priorityFeeGwei, memo: self.keysignPayload.memo)
+                    switch result {
+                        case .success(let preSignedImageHash):
+                            self.keysignMessages = [preSignedImageHash]
+                            if self.keysignMessages.isEmpty {
+                                logger.error("no messages need to be signed")
+                                self.currentState = .FailToStart
+                            }
+                        case .failure(let err):
+                            logger.error("fail to get ETH pre signed image hash,error:\(err.localizedDescription)")
+                            self.currentState = .FailToStart
+                    }
                 default:
                     print("don't know how to deal with \(self.keysignPayload.coin.ticker) yet")
                     self.currentState = .FailToStart
