@@ -178,8 +178,14 @@ struct KeysignView: View {
                 keysignReq.localPartyKey = vault.localPartyID
                 keysignReq.keysignCommitteeKeys = self.keysignCommittee.joined(separator: ",")
                 if let keysignPayload {
-                    if keysignPayload.coin.ticker == "BTC" {
+                    switch keysignPayload.coin.ticker {
+                    case "BTC":
                         keysignReq.derivePath = CoinType.bitcoin.derivationPath()
+                    case "ETH":
+                        keysignReq.derivePath = CoinType.ethereum.derivationPath()
+                    default:
+                        logger.error("don't support this coin type")
+                        self.currentStatus = .KeysignFailed
                     }
                 }
                 // sign messages one by one , since the msg is in hex format , so we need convert it to base64
