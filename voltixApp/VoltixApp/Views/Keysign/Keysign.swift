@@ -150,6 +150,7 @@ struct KeysignView: View {
                                         let sigResult = EthereumHelper.getSignatureFromTssResponse(tssResponse: sig)
                                         switch sigResult {
                                         case .success(let sigData):
+                                            logger.info("successfully get signature")
                                             return sigData
                                         case .failure(let err):
                                             switch err {

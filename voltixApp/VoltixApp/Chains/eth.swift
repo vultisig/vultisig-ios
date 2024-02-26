@@ -13,16 +13,23 @@ enum EthereumHelper {
         guard let rData = Data(hexString: tssResponse.r) else {
             return .failure(HelperError.runtimeError("fail to get r data"))
         }
-        guard let sData = Data(hexString: tssResponse.s) else {
-            return .failure(HelperError.runtimeError("fail to get s data"))
-        }
-        guard let recoveryData = Data(hexString: tssResponse.recoveryID) else {
+        
+        guard let v = UInt8(tssResponse.recoveryID, radix: 16) else {
             return .failure(HelperError.runtimeError("fail to get recovery data"))
+        }
+        let n = BigInt("fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141", radix: 16)!
+        let sValue = BigInt(tssResponse.s, radix: 16)!
+        let lowS = min(sValue, n - sValue)
+
+        let lowSHex = String(lowS, radix: 16)
+        guard let lowSData = Data(hexString: lowSHex) else {
+            return .failure(HelperError.runtimeError("fail to get s data"))
         }
         var signature = Data()
         signature.append(rData)
-        signature.append(sData)
-        signature.append(recoveryData)
+        signature.append(lowSData)
+        
+        signature.append(Data([v+35+2]))
         return .success(signature)
     }
 
@@ -50,7 +57,10 @@ enum EthereumHelper {
     // this method convert GWei to Wei, and in little endian encoded Data
     static func convertEthereumNumber(input: Int64) -> Data {
         let inputInt = BigInt(input * weiPerGWei).serialize()
-        return Data(inputInt.reversed())
+        if let result = Data(hexString: inputInt.hexString) {
+            return result
+        }
+        return Data()
     }
 
     static func getPreSignedInputData(toAddress: String,
@@ -63,7 +73,7 @@ enum EthereumHelper {
         let coin = CoinType.ethereum
         let input = EthereumSigningInput.with {
             $0.chainID = coin.chainId.data(using: .utf8)!
-            $0.nonce = withUnsafeBytes(of: nonce.littleEndian) { Data($0) }
+            $0.nonce = Data([0])
             $0.maxFeePerGas = convertEthereumNumber(input: maxFeePerGasGwei)
             $0.maxInclusionFeePerGas = convertEthereumNumber(input: priorityFeeGwei)
             $0.toAddress = toAddress
