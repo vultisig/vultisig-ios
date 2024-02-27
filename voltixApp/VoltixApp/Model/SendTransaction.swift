@@ -52,6 +52,7 @@ class SendTransaction: ObservableObject, Hashable {
     }
     @Published var toAddress: String = ""
     @Published var amount: String = ""
+    @Published var amountInUSD: String = ""
     @Published var memo: String = ""
     @Published var gas: String = ""
     @Published var coin: Coin = Coin(chain: Chain.Bitcoin, ticker: "BTC", logo: "", address: "")
