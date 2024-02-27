@@ -1,7 +1,7 @@
-    //
-    //  PeerDiscoveryView.swift
-    //  VoltixApp
-    //
+//
+//  PeerDiscoveryView.swift
+//  VoltixApp
+//
 
 import CoreImage
 import CoreImage.CIFilterBuiltins
@@ -38,7 +38,7 @@ struct PeerDiscoveryView: View {
     @EnvironmentObject var appState: ApplicationState
     @State private var selections = Set<String>()
     private let mediator = Mediator.shared
-        // it should be ok to hardcode here , as this view start the mediator server itself
+    // it should be ok to hardcode here , as this view start the mediator server itself
     private let serverAddr = "http://127.0.0.1:8080"
     private let sessionID = UUID().uuidString
     private let chainCode = getChainCode()
@@ -51,7 +51,7 @@ struct PeerDiscoveryView: View {
             switch self.currentState {
                 case .WaitingForDevices:
                     
-                    VStack{
+                    VStack {
                         Text("Pair with two other devices:".uppercased())
                             .font(.custom("Menlo", size: 18).bold())
                             .multilineTextAlignment(.center)
@@ -69,9 +69,9 @@ struct PeerDiscoveryView: View {
                     .shadow(radius: 5)
                     .padding()
                     
-                        // TODO: Validate if it is <= 3 devices
+                    // TODO: Validate if it is <= 3 devices
                     if self.participantDiscovery.peersFound.count == 0 {
-                        VStack{
+                        VStack {
                             HStack {
                                 Text("Looking for devices... ")
                                     .font(Font.custom("Menlo", size: 15)
@@ -81,7 +81,6 @@ struct PeerDiscoveryView: View {
                                 ProgressView()
                                     .progressViewStyle(.circular)
                                     .padding(2)
-                                
                             }
                         }
                         .padding()
@@ -110,7 +109,7 @@ struct PeerDiscoveryView: View {
                         self.currentState = .Keygen
                         self.participantDiscovery.stop()
                     }) {
-                        HStack() {
+                        HStack {
                             Text("CREATE WALLET".uppercased())
                                 .font(Font.custom("Menlo", size: 30).weight(.bold))
                                 .fontWeight(.black)
@@ -120,7 +119,7 @@ struct PeerDiscoveryView: View {
                         }
                     }
                     .buttonStyle(PlainButtonStyle())
-                        // TODO: Only for testing purpose.
+                    // TODO: Only for testing purpose.
                     .disabled(self.selections.count < 2)
                 case .Keygen:
                     KeygenView(presentationStack: self.$presentationStack,
@@ -139,7 +138,7 @@ struct PeerDiscoveryView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                NavigationButtons.backButton(presentationStack: $presentationStack)
+                NavigationButtons.backButton(presentationStack: self.$presentationStack)
             }
             ToolbarItem(placement: .navigationBarTrailing) {
                 NavigationButtons.questionMarkButton
@@ -151,7 +150,7 @@ struct PeerDiscoveryView: View {
             self.startSession()
             self.participantDiscovery.getParticipants(serverAddr: self.serverAddr, sessionID: self.sessionID)
         }.onAppear {
-                // by this step , creatingVault should be available already
+            // by this step , creatingVault should be available already
             if self.appState.creatingVault == nil {
                 self.currentState = .Failure
                 return
@@ -172,10 +171,6 @@ struct PeerDiscoveryView: View {
     }
     
     private func getQrImage(size: CGFloat) -> Image {
-        let context = CIContext()
-        guard let qrFilter = CIFilter(name: "CIQRCodeGenerator") else {
-            return Image(systemName: "xmark")
-        }
         guard let chainCode = self.chainCode else {
             return Image(systemName: "xmark")
         }
@@ -183,22 +178,11 @@ struct PeerDiscoveryView: View {
         let jsonEncoder = JSONEncoder()
         do {
             let data = try jsonEncoder.encode(km)
-            qrFilter.setValue(data, forKey: "inputMessage")
+            return Utils.getQrImage(data: data, size: size)
         } catch {
             logger.error("fail to encode keygen message to json,error:\(error.localizedDescription)")
             return Image(systemName: "xmark")
         }
-        
-        guard let qrCodeImage = qrFilter.outputImage else {
-            return Image(systemName: "xmark")
-        }
-        
-        let transformedImage = qrCodeImage.transformed(by: CGAffineTransform(scaleX: size, y: size))
-        guard let cgImage = context.createCGImage(transformedImage, from: transformedImage.extent) else {
-            return Image(systemName: "xmark")
-        }
-        
-        return Image(cgImage, scale: 1.0, orientation: .up, label: Text("QRCode"))
     }
     
     private func startSession() {

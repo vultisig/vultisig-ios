@@ -1,11 +1,11 @@
-    //
-    //  CoinsList.swift
-    //  VoltixApp
-    //
+//
+//  CoinsList.swift
+//  VoltixApp
+//
 
+import OSLog
 import SwiftData
 import SwiftUI
-import OSLog
 
 private let logger = Logger(subsystem: "assets-list", category: "view")
 struct AssetsList: View {
@@ -25,7 +25,7 @@ struct AssetsList: View {
         }
         .environment(\.editMode, $editMode)
         .navigationTitle("select assets")
-        .onAppear(){
+        .onAppear {
             guard let vault = appState.currentVault else {
                 print("current vault is nil")
                 return
@@ -38,7 +38,7 @@ struct AssetsList: View {
             }
         }
         .onDisappear {
-                // sync selection
+            // sync selection
             guard let vault = appState.currentVault else {
                 print("current vault is nil")
                 return
@@ -47,12 +47,17 @@ struct AssetsList: View {
                 if vault.coins.contains(where: { $0.ticker == item.ticker }) {
                     print("coin already exists")
                 } else {
-                    
                     switch item.chainName {
                         case Chain.THORChain.name:
                             print("do it later")
-                        case Chain.Solana.name:
-                            print("do it later")
+                        case Chain.Ethereum.name:
+                            let coinResult = EthereumHelper.getEthereum(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
+                            switch coinResult {
+                                case .success(let coin):
+                                    vault.coins.append(coin)
+                                case .failure(let error):
+                                    logger.info("fail to get ethereum address,error:\(error.localizedDescription)")
+                            }
                         case Chain.Bitcoin.name:
                             let coinResult = BitcoinHelper.getBitcoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
                             switch coinResult {

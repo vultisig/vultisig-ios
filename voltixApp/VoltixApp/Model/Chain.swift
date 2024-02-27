@@ -19,6 +19,5 @@ struct Chain : Codable,Hashable {
     static let THORChain = Chain(name: "THORChain", ticker: "RUNE", signingKeyType: KeyType.ECDSA)
     static let Solana = Chain(name:"Solana",ticker: "SOL",signingKeyType: KeyType.EdDSA)
     static let Bitcoin = Chain(name:"Bitcoin",ticker: "BTC",signingKeyType: .ECDSA)
-    //TODO: this is a mock
-    static let Ethereum = Chain(name:"Ethereum",ticker: "ETH",signingKeyType: .ECDSA)
+    static let Ethereum = Chain(name:"Ethereum", ticker:"ETH",signingKeyType: .ECDSA)
 }

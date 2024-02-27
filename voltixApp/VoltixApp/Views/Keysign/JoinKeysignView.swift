@@ -34,92 +34,90 @@ struct JoinKeysignView: View {
         VStack {
             VStack {
                 switch self.currentStatus {
-                    case .DiscoverSigningMsg:
-                        Text("Please scan the QR code displayed on another VoltixApp device.")
-                            .font(Font.custom("Menlo", size: 15)
-                                .weight(.bold))
-                            .multilineTextAlignment(.center)
+                case .DiscoverSigningMsg:
+                    Text("Please scan the QR code displayed on another VoltixApp device.")
+                        .font(Font.custom("Menlo", size: 15)
+                            .weight(.bold))
+                        .multilineTextAlignment(.center)
                         
-                        Button("Scan", systemImage: "qrcode.viewfinder") {
-                            self.isShowingScanner = true
-                        }
-                        .sheet(isPresented: self.$isShowingScanner, content: {
-                            CodeScannerView(codeTypes: [.qr], completion: self.handleScan)
-                        })
-                    case .DiscoverService:
-                        HStack {
-                            Text("Looking for the mediator service...")
-                                .font(Font.custom("Menlo", size: 15)
-                                    .weight(.bold))
-                                .multilineTextAlignment(.center)
-                            if self.serviceDelegate.serverUrl == nil {
-                                ProgressView()
-                                    .progressViewStyle(.circular)
-                                    .padding(2)
-                            } else {
-                                Image(systemName: "checkmark").onAppear {
-                                    self.currentStatus = .DiscoverSigningMsg
-                                }
-                            }
-                        }
-                    case .JoinKeysign:
-                        Text("Confirm to sign the message?")
+                    Button("Scan", systemImage: "qrcode.viewfinder") {
+                        self.isShowingScanner = true
+                    }
+                    .sheet(isPresented: self.$isShowingScanner, content: {
+                        CodeScannerView(codeTypes: [.qr], completion: self.handleScan)
+                    })
+                case .DiscoverService:
+                    HStack {
+                        Text("Looking for the mediator service...")
                             .font(Font.custom("Menlo", size: 15)
                                 .weight(.bold))
                             .multilineTextAlignment(.center)
-                        Text("To: \(self.keysignPayload?.toAddress ?? "")")
-                            .font(Font.custom("Menlo", size: 15).weight(.bold))
-                            .multilineTextAlignment(.center)
-                        Text("Amount: \(String(self.keysignPayload?.toAmount ?? 0))")
-                            .font(Font.custom("Menlo", size: 15).weight(.bold))
-                            .multilineTextAlignment(.center)
-                        Text("fee: \(String(self.keysignPayload?.byteFee ?? 0))")
-                            .font(Font.custom("Menlo", size: 15).weight(.bold))
-                            .multilineTextAlignment(.center)
-                        Button("Join signing", systemImage: "person.2.badge.key") {
-                            self.joinKeysignCommittee()
-                            self.currentStatus = .WaitingForKeysignToStart
-                        }
-                    case .WaitingForKeysignToStart:
-                        HStack {
-                            Text("Waiting for the signing process to begin...")
-                                .font(Font.custom("Menlo", size: 15)
-                                    .weight(.bold))
-                                .multilineTextAlignment(.center)
+                        if self.serviceDelegate.serverUrl == nil {
                             ProgressView()
                                 .progressViewStyle(.circular)
                                 .padding(2)
-                        }.task {
-                            Task {
-                                repeat {
-                                    self.checkKeysignStarted()
-                                    try await Task.sleep(nanoseconds: 1_000_000_000)
-                                } while self.currentStatus == .WaitingForKeysignToStart
+                        } else {
+                            Image(systemName: "checkmark").onAppear {
+                                self.currentStatus = .DiscoverSigningMsg
                             }
                         }
-                    case .KeysignStarted:
-                        HStack {
-                            if self.serviceDelegate.serverUrl != nil && !self.sessionID.isEmpty {
-                                KeysignView(presentationStack: self.$presentationStack,
-                                            keysignCommittee: self.keysignCommittee,
-                                            mediatorURL: self.serviceDelegate.serverUrl ?? "",
-                                            sessionID: self.sessionID,
-                                            keysignType: self.keysignPayload?.coin.chain.signingKeyType ?? .ECDSA,
-                                            messsageToSign: self.keysignMessages,
-                                            localPartyKey: self.localPartyID,
-                                            keysignPayload: self.keysignPayload)
-                            } else {
-                                Text("Unable to start the keysign process due to missing information.")
-                                    .font(Font.custom("Menlo", size: 15)
-                                        .weight(.bold))
-                                    .multilineTextAlignment(.center)
-                            }
-                        }.navigationBarBackButtonHidden(true)
-                    case .FailedToStart:
-                        Text("The keysign process could not be started. Please check your settings and try again.")
+                    }
+                case .JoinKeysign:
+                    Text("Confirm to sign the message?")
+                        .font(Font.custom("Menlo", size: 15)
+                            .weight(.bold))
+                        .multilineTextAlignment(.center)
+                    Text("To: \(self.keysignPayload?.toAddress ?? "")")
+                        .font(Font.custom("Menlo", size: 15).weight(.bold))
+                        .multilineTextAlignment(.center)
+                    Text("Amount: \(String(self.keysignPayload?.toAmount ?? 0))")
+                        .font(Font.custom("Menlo", size: 15).weight(.bold))
+                        .multilineTextAlignment(.center)
+                        
+                    Button("Join signing", systemImage: "person.2.badge.key") {
+                        self.joinKeysignCommittee()
+                        self.currentStatus = .WaitingForKeysignToStart
+                    }
+                case .WaitingForKeysignToStart:
+                    HStack {
+                        Text("Waiting for the signing process to begin...")
                             .font(Font.custom("Menlo", size: 15)
                                 .weight(.bold))
                             .multilineTextAlignment(.center)
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                            .padding(2)
+                    }.task {
+                        Task {
+                            repeat {
+                                self.checkKeysignStarted()
+                                try await Task.sleep(nanoseconds: 1_000_000_000)
+                            } while self.currentStatus == .WaitingForKeysignToStart
+                        }
+                    }
+                case .KeysignStarted:
+                    HStack {
+                        if self.serviceDelegate.serverUrl != nil && !self.sessionID.isEmpty {
+                            KeysignView(presentationStack: self.$presentationStack,
+                                        keysignCommittee: self.keysignCommittee,
+                                        mediatorURL: self.serviceDelegate.serverUrl ?? "",
+                                        sessionID: self.sessionID,
+                                        keysignType: self.keysignPayload?.coin.chain.signingKeyType ?? .ECDSA,
+                                        messsageToSign: self.keysignMessages,
+                                        localPartyKey: self.localPartyID,
+                                        keysignPayload: self.keysignPayload)
+                        } else {
+                            Text("Unable to start the keysign process due to missing information.")
+                                .font(Font.custom("Menlo", size: 15)
+                                    .weight(.bold))
+                                .multilineTextAlignment(.center)
+                        }
+                    }.navigationBarBackButtonHidden(true)
+                case .FailedToStart:
+                    Text("The keysign process could not be started. Please check your settings and try again.")
+                        .font(Font.custom("Menlo", size: 15)
+                            .weight(.bold))
+                        .multilineTextAlignment(.center)
                 }
             }
             .padding()
@@ -168,25 +166,25 @@ struct JoinKeysignView: View {
         let urlString = "\(serverUrl)/start/\(sessionID)"
         Utils.getRequest(urlString: urlString, headers: [String: String](), completion: { result in
             switch result {
-                case .success(let data):
-                    do {
-                        let decoder = JSONDecoder()
-                        let peers = try decoder.decode([String].self, from: data)
-                        if peers.contains(self.localPartyID) {
-                            self.keysignCommittee.append(contentsOf: peers)
-                            self.currentStatus = .KeysignStarted
-                            logger.info("Keysign process has started successfully.")
-                        }
-                    } catch {
-                        logger.error("There was an issue processing the keysign start response. Please try again.")
+            case .success(let data):
+                do {
+                    let decoder = JSONDecoder()
+                    let peers = try decoder.decode([String].self, from: data)
+                    if peers.contains(self.localPartyID) {
+                        self.keysignCommittee.append(contentsOf: peers)
+                        self.currentStatus = .KeysignStarted
+                        logger.info("Keysign process has started successfully.")
                     }
-                case .failure(let error):
-                    let err = error as NSError
-                    if err.code == 404 {
-                        logger.info("Waiting for keysign to start. Please stand by.")
-                    } else {
-                        logger.error("Failed to verify keysign start. Error: \(error.localizedDescription)")
-                    }
+                } catch {
+                    logger.error("There was an issue processing the keysign start response. Please try again.")
+                }
+            case .failure(let error):
+                let err = error as NSError
+                if err.code == 404 {
+                    logger.info("Waiting for keysign to start. Please stand by.")
+                } else {
+                    logger.error("Failed to verify keysign start. Error: \(error.localizedDescription)")
+                }
             }
         })
     }
@@ -215,49 +213,45 @@ struct JoinKeysignView: View {
     
     private func handleScan(result: Result<ScanResult, ScanError>) {
         switch result {
-            case .success(let result):
-                let qrCodeResult = result.string
-                let decoder = JSONDecoder()
-                if let data = qrCodeResult.data(using: .utf8) {
-                    do {
-                        let keysignMsg = try decoder.decode(KeysignMessage.self, from: data)
-                        self.sessionID = keysignMsg.sessionID
-                        self.keysignPayload = keysignMsg.payload
-                        logger.info("QR code scanned successfully. Session ID: \(self.sessionID)")
-                        if keysignMsg.payload.coin.ticker == "BTC" {
-                            self.prepareKeysignMessages(keysignPayload: keysignMsg.payload)
-                        }
-                    } catch {
-                        logger.error("Failed to decode keysign message. Error: \(error.localizedDescription)")
-                        self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"
-                        self.currentStatus = .FailedToStart
+        case .success(let result):
+            let qrCodeResult = result.string
+            let decoder = JSONDecoder()
+            if let data = qrCodeResult.data(using: .utf8) {
+                do {
+                    let keysignMsg = try decoder.decode(KeysignMessage.self, from: data)
+                    self.sessionID = keysignMsg.sessionID
+                    self.keysignPayload = keysignMsg.payload
+                    logger.info("QR code scanned successfully. Session ID: \(self.sessionID)")
+                    if keysignMsg.payload.coin.ticker == "BTC" || keysignMsg.payload.coin.ticker == "ETH" {
+                        self.prepareKeysignMessages(keysignPayload: keysignMsg.payload)
                     }
+                } catch {
+                    logger.error("Failed to decode keysign message. Error: \(error.localizedDescription)")
+                    self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"
+                    self.currentStatus = .FailedToStart
                 }
-            case .failure(let err):
-                logger.error("Failed to scan QR code. Error: \(err.localizedDescription)")
-                self.errorMsg = "QR code scanning failed: \(err.localizedDescription)"
-                self.currentStatus = .FailedToStart
+            }
+        case .failure(let err):
+            logger.error("Failed to scan QR code. Error: \(err.localizedDescription)")
+            self.errorMsg = "QR code scanning failed: \(err.localizedDescription)"
+            self.currentStatus = .FailedToStart
         }
         self.currentStatus = .JoinKeysign
     }
     
     private func prepareKeysignMessages(keysignPayload: KeysignPayload) {
-        let result = BitcoinHelper.getPreSignedImageHash(utxos: keysignPayload.utxos,
-                                                         fromAddress: keysignPayload.coin.address,
-                                                         toAddress: keysignPayload.toAddress,
-                                                         toAmount: keysignPayload.toAmount,
-                                                         byteFee: keysignPayload.byteFee, memo: nil)
+        let result = keysignPayload.getKeysignMessages()
         switch result {
-            case .success(let preSignedImageHash):
-                logger.info("Successfully prepared messages for keysigning.")
-                self.keysignMessages = preSignedImageHash.sorted()
-                if self.keysignMessages.isEmpty {
-                    logger.error("There is nothing to be signed")
-                    self.currentStatus = .FailedToStart
-                }
-            case .failure(let err):
-                logger.error("Failed to prepare messages for keysigning. Error: \(err)")
+        case .success(let preSignedImageHash):
+            logger.info("Successfully prepared messages for keysigning.")
+            self.keysignMessages = preSignedImageHash.sorted()
+            if self.keysignMessages.isEmpty {
+                logger.error("There is nothing to be signed")
                 self.currentStatus = .FailedToStart
+            }
+        case .failure(let err):
+            logger.error("Failed to prepare messages for keysigning. Error: \(err)")
+            self.currentStatus = .FailedToStart
         }
     }
 }
