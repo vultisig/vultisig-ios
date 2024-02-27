@@ -187,7 +187,7 @@ struct KeysignView: View {
                 keysignReq.localPartyKey = vault.localPartyID
                 keysignReq.keysignCommitteeKeys = self.keysignCommittee.joined(separator: ",")
                 if let keysignPayload {
-                    switch keysignPayload.coin.ticker {
+                    switch keysignPayload.coin.chain.ticker {
                     case "BTC":
                         keysignReq.derivePath = CoinType.bitcoin.derivationPath()
                     case "ETH":
