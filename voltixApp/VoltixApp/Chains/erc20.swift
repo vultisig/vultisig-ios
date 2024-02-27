@@ -9,11 +9,11 @@ import WalletCore
 
 enum ERC20Helper {
     static func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
-        guard keysignPayload.coin.chain.name == "ETH" else {
+        guard keysignPayload.coin.chain.ticker == "ETH" else {
             return .failure(HelperError.runtimeError("coin is not ETH"))
         }
         let coin = CoinType.ethereum
-        guard let intChainID = Int(coin.chainId) else {
+        guard let intChainID = Int64(coin.chainId) else {
             return .failure(HelperError.runtimeError("fail to get chainID"))
         }
         guard case .ERC20(let maxFeePerGasGWei,
@@ -26,9 +26,9 @@ enum ERC20Helper {
         }
 
         let input = EthereumSigningInput.with {
-            $0.chainID = Data(hexString: String(format: "%02X", intChainID))!
-            $0.nonce = Data(hexString: String(format: "%02X", nonce))!
-            $0.gasLimit = Data(hexString: String(format: "%02X", gasLimit))!
+            $0.chainID = Data(hexString:  intChainID.hexString())!
+            $0.nonce = Data(hexString: nonce.hexString())!
+            $0.gasLimit = Data(hexString: gasLimit.hexString())!
             $0.maxFeePerGas = EthereumHelper.convertEthereumNumber(input: maxFeePerGasGWei)
             $0.maxInclusionFeePerGas = EthereumHelper.convertEthereumNumber(input: priorityFeeGWei)
             $0.toAddress = contractAddr

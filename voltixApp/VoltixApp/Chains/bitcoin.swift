@@ -58,7 +58,7 @@ enum BitcoinHelper {
     }
     
     static func getBitcoinSigningInput(keysignPayload: KeysignPayload) -> Result<BitcoinSigningInput, Error> {
-        guard keysignPayload.coin.chain.name == "BTC" else {
+        guard keysignPayload.coin.chain.ticker == "BTC" else {
             return .failure(HelperError.runtimeError("coin is not BTC"))
         }
         guard case .Bitcoin(let byteFee) = keysignPayload.chainSpecific else {

@@ -33,11 +33,7 @@ struct KeysignPayload: Codable, Hashable {
         var result: Result<[String], Error>
         switch coin.ticker {
         case "BTC":
-            guard case .Bitcoin(let feeByte) = chainSpecific else {
-                return .failure(HelperError.runtimeError("fail to get feeByte"))
-            }
             result = BitcoinHelper.getPreSignedImageHash(keysignPayload: self)
-
         case "ETH":
             result = EthereumHelper.getPreSignedImageHash(keysignPayload: self)
         case "USDC":
