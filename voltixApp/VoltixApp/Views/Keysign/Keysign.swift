@@ -44,147 +44,148 @@ struct KeysignView: View {
         VStack {
             Spacer()
             switch self.currentStatus {
-                case .CreatingInstance:
-                    KeyGenStatusText(status: "CREATING TSS INSTANCE... ")
-                case .KeysignECDSA:
-                    KeyGenStatusText(status: "SIGNING USING ECDSA KEY... ")
-                case .KeysignEdDSA:
-                    KeyGenStatusText(status: "SIGNING USING EdDSA KEY... ")
-                case .KeysignFinished:
-                    KeyGenStatusText(status: "KEYSIGN FINISHED... ")
-                    VStack {
-                        Text("SIGNATURE: \(self.signature)")
-                            .font(Font.custom("Menlo", size: 15)
-                                .weight(.bold))
-                            .multilineTextAlignment(.center)
+            case .CreatingInstance:
+                KeyGenStatusText(status: "CREATING TSS INSTANCE... ")
+            case .KeysignECDSA:
+                KeyGenStatusText(status: "SIGNING USING ECDSA KEY... ")
+            case .KeysignEdDSA:
+                KeyGenStatusText(status: "SIGNING USING EdDSA KEY... ")
+            case .KeysignFinished:
+                KeyGenStatusText(status: "KEYSIGN FINISHED... ")
+                VStack {
+                    Text("SIGNATURE: \(self.signature)")
+                        .font(Font.custom("Menlo", size: 15)
+                            .weight(.bold))
+                        .multilineTextAlignment(.center)
                         
-                        Button(action: {
-                            self.presentationStack.append(.bitcoinTransactionsListView)
-                        }) {
-                            HStack {
-                                Text("DONE".uppercased())
-                                    .font(Font.custom("Menlo", size: 30).weight(.bold))
-                                    .fontWeight(.black)
-                                Image(systemName: "chevron.right")
-                                    .resizable()
-                                    .frame(width: 10, height: 15)
+                    Button(action: {
+                        self.presentationStack.append(.bitcoinTransactionsListView)
+                    }) {
+                        HStack {
+                            Text("DONE".uppercased())
+                                .font(Font.custom("Menlo", size: 30).weight(.bold))
+                                .fontWeight(.black)
+                            Image(systemName: "chevron.right")
+                                .resizable()
+                                .frame(width: 10, height: 15)
+                        }
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                        
+                }.onAppear {
+                    self.messagePuller.stop()
+                    guard let vault = appState.currentVault else {
+                        return
+                    }
+                    
+                    // TODO: the following logic can be moved to keysignPayload.swift , or some viewmodel
+                    // get bitcoin transaction
+                    if let keysignPayload {
+                        switch keysignPayload.coin.ticker {
+                        case "BTC":
+                            let bitcoinPubKey = BitcoinHelper.getBitcoinPubKey(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
+                            guard case .Bitcoin(let feeByte) = keysignPayload.chainSpecific else {
+                                logger.error("fail to get feebyte for bitcoin")
+                                return
                             }
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                        
-                    }.onAppear {
-                        self.messagePuller.stop()
-                        guard let vault = appState.currentVault else {
-                            return
-                        }
-                        
-                        // get bitcoin transaction
-                        if let keysignPayload {
-                            switch keysignPayload.coin.ticker{
-                            case "BTC":
-                                let bitcoinPubKey = BitcoinHelper.getBitcoinPubKey(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
-                                guard case .Bitcoin(let feeByte) = keysignPayload.chainSpecific else {
-                                    logger.error("fail to get feebyte for bitcoin")
-                                    return
-                                }
-                                let result = BitcoinHelper.getSignedBitcoinTransaction(utxos: keysignPayload.utxos, hexPubKey: bitcoinPubKey, fromAddress: keysignPayload.coin.address, toAddress: keysignPayload.toAddress, toAmount: keysignPayload.toAmount, byteFee: feeByte, memo: keysignPayload.memo, signatureProvider: { (preHash: Data) in
-                                    let hex = preHash.hexString
+                            let result = BitcoinHelper.getSignedBitcoinTransaction(utxos: keysignPayload.utxos, hexPubKey: bitcoinPubKey, fromAddress: keysignPayload.coin.address, toAddress: keysignPayload.toAddress, toAmount: keysignPayload.toAmount, byteFee: feeByte, memo: keysignPayload.memo, signatureProvider: { (preHash: Data) in
+                                let hex = preHash.hexString
                                     
-                                    if let sig = self.signatures[hex] {
-                                        let sigResult = BitcoinHelper.getSignatureFromTssResponse(tssResponse: sig)
-                                        switch sigResult {
-                                        case .success(let sigData):
-                                            return sigData
-                                        case .failure(let err):
-                                            switch err {
-                                            case HelperError.runtimeError(let errDetail):
-                                                logger.error("fail to get signature from TssResponse,error:\(errDetail)")
-                                            default:
-                                                logger.error("fail to get signature from TssResponse,error:\(err.localizedDescription)")
-                                            }
+                                if let sig = self.signatures[hex] {
+                                    let sigResult = sig.getDERSignature()
+                                    switch sigResult {
+                                    case .success(let sigData):
+                                        return sigData
+                                    case .failure(let err):
+                                        switch err {
+                                        case HelperError.runtimeError(let errDetail):
+                                            logger.error("fail to get signature from TssResponse,error:\(errDetail)")
+                                        default:
+                                            logger.error("fail to get signature from TssResponse,error:\(err.localizedDescription)")
                                         }
                                     }
-                                    return Data()
-                                })
-                                switch result {
-                                case .success(let tx):
-                                    print(tx)
-                                    Task {
-                                        do {
-                                            let txid = try await BitcoinTransactionsService.broadcastTransaction(tx)
-                                            print("Transaction Broadcasted Successfully, txid: \(txid)")
-                                        } catch let error as BitcoinTransactionsService.BitcoinTransactionError {
-                                            switch error {
-                                            case .invalidURL:
-                                                print("Invalid URL.")
-                                            case .httpError(let statusCode):
-                                                print("HTTP Error with status code: \(statusCode).")
-                                            case .apiError(let message):
-                                                print("API Error: \(message)")
-                                            case .unexpectedResponse:
-                                                print("Unexpected response from the server.")
-                                            case .unknown(let unknownError):
-                                                print("An unknown error occurred: \(unknownError.localizedDescription)")
-                                            }
-                                        } catch {
-                                            print("An unexpected error occurred: \(error.localizedDescription)")
+                                }
+                                return Data()
+                            })
+                            switch result {
+                            case .success(let tx):
+                                print(tx)
+                                Task {
+                                    do {
+                                        let txid = try await BitcoinTransactionsService.broadcastTransaction(tx)
+                                        print("Transaction Broadcasted Successfully, txid: \(txid)")
+                                    } catch let error as BitcoinTransactionsService.BitcoinTransactionError {
+                                        switch error {
+                                        case .invalidURL:
+                                            print("Invalid URL.")
+                                        case .httpError(let statusCode):
+                                            print("HTTP Error with status code: \(statusCode).")
+                                        case .apiError(let message):
+                                            print("API Error: \(message)")
+                                        case .unexpectedResponse:
+                                            print("Unexpected response from the server.")
+                                        case .unknown(let unknownError):
+                                            print("An unknown error occurred: \(unknownError.localizedDescription)")
                                         }
+                                    } catch {
+                                        print("An unexpected error occurred: \(error.localizedDescription)")
                                     }
+                                }
                                     
-                                case .failure(let err):
-                                    switch err {
-                                    case HelperError.runtimeError(let errDetail):
-                                        logger.error("Failed to get signed transaction,error:\(errDetail)")
-                                    default:
-                                        logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
-                                    }
+                            case .failure(let err):
+                                switch err {
+                                case HelperError.runtimeError(let errDetail):
+                                    logger.error("Failed to get signed transaction,error:\(errDetail)")
+                                default:
+                                    logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
                                 }
-                            case "ETH":
-                                let ethPublicKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode, derivePath: CoinType.ethereum.derivationPath())
-                                guard case .Ethereum(let maxFeePerGasGWei, let priorityFeeGwei, let nonce) = keysignPayload.chainSpecific else {
-                                    return
-                                }
-                                let result = EthereumHelper.getSignedEthereumTransaction(hexPubKey: ethPublicKey, toAddress: keysignPayload.toAddress, toAmountGWei: keysignPayload.toAmount, nonce: nonce, maxFeePerGasGwei: maxFeePerGasGWei, priorityFeeGwei: priorityFeeGwei, memo: keysignPayload.memo) { (preHash: Data) in
-                                    let hex = preHash.hexString
-                                    if let sig = self.signatures[hex] {
-                                        let sigResult = EthereumHelper.getSignatureFromTssResponse(tssResponse: sig)
-                                        switch sigResult {
-                                        case .success(let sigData):
-                                            logger.info("successfully get signature")
-                                            return sigData
-                                        case .failure(let err):
-                                            switch err {
-                                            case HelperError.runtimeError(let errDetail):
-                                                logger.error("fail to get signature from TssResponse,error:\(errDetail)")
-                                            default:
-                                                logger.error("fail to get signature from TssResponse,error:\(err.localizedDescription)")
-                                            }
+                            }
+                        case "ETH":
+                            let ethPublicKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode, derivePath: CoinType.ethereum.derivationPath())
+                            guard case .Ethereum(let maxFeePerGasGWei, let priorityFeeGwei, let nonce, let gasLimit) = keysignPayload.chainSpecific else {
+                                return
+                            }
+                            let result = EthereumHelper.getSignedEthereumTransaction(hexPubKey: ethPublicKey, toAddress: keysignPayload.toAddress, toAmountGWei: keysignPayload.toAmount, nonce: nonce, gasLimit: gasLimit, maxFeePerGasGwei: maxFeePerGasGWei, priorityFeeGwei: priorityFeeGwei, memo: keysignPayload.memo) { (preHash: Data) in
+                                let hex = preHash.hexString
+                                if let sig = self.signatures[hex] {
+                                    let sigResult = sig.getSignatureWithRecoveryID()
+                                    switch sigResult {
+                                    case .success(let sigData):
+                                        logger.info("successfully get signature")
+                                        return sigData
+                                    case .failure(let err):
+                                        switch err {
+                                        case HelperError.runtimeError(let errDetail):
+                                            logger.error("fail to get signature from TssResponse,error:\(errDetail)")
+                                        default:
+                                            logger.error("fail to get signature from TssResponse,error:\(err.localizedDescription)")
                                         }
                                     }
-                                    return Data()
                                 }
-                                switch result {
-                                case .success(let tx):
-                                    print(tx)
-                                case .failure(let err):
-                                    switch err {
-                                    case HelperError.runtimeError(let errDetail):
-                                        logger.error("Failed to get signed transaction,error:\(errDetail)")
-                                    default:
-                                        logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
-                                    }
+                                return Data()
+                            }
+                            switch result {
+                            case .success(let tx):
+                                print(tx)
+                            case .failure(let err):
+                                switch err {
+                                case HelperError.runtimeError(let errDetail):
+                                    logger.error("Failed to get signed transaction,error:\(errDetail)")
+                                default:
+                                    logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
                                 }
+                            }
                                 
-                            default:
-                                logger.error("unsupported coin:\(keysignPayload.coin.ticker)")
-                            }
+                        default:
+                            logger.error("unsupported coin:\(keysignPayload.coin.ticker)")
                         }
-                    }.navigationBarBackButtonHidden(false)
-                case .KeysignFailed:
-                    Text("Sorry keysign failed, you can retry it,error:\(self.keysignError ?? "")")
-                        .onAppear {
-                            self.messagePuller.stop()
-                        }
+                    }
+                }.navigationBarBackButtonHidden(false)
+            case .KeysignFailed:
+                Text("Sorry keysign failed, you can retry it,error:\(self.keysignError ?? "")")
+                    .onAppear {
+                        self.messagePuller.stop()
+                    }
             }
             Spacer()
         }
@@ -236,12 +237,12 @@ struct KeysignView: View {
                 
                 do {
                     switch self.keysignType {
-                        case .ECDSA:
-                            keysignReq.pubKey = vault.pubKeyECDSA
-                            self.currentStatus = .KeysignECDSA
-                        case .EdDSA:
-                            keysignReq.pubKey = vault.pubKeyEdDSA
-                            self.currentStatus = .KeysignEdDSA
+                    case .ECDSA:
+                        keysignReq.pubKey = vault.pubKeyECDSA
+                        self.currentStatus = .KeysignECDSA
+                    case .EdDSA:
+                        keysignReq.pubKey = vault.pubKeyEdDSA
+                        self.currentStatus = .KeysignEdDSA
                     }
                     if let service = self.tssService {
                         let resp = try await tssKeysign(service: service, req: keysignReq, keysignType: keysignType)
@@ -265,10 +266,10 @@ struct KeysignView: View {
     private func tssKeysign(service: TssServiceImpl, req: TssKeysignRequest, keysignType: KeyType) async throws -> TssKeysignResponse {
         let t = Task.detached(priority: .high) {
             switch keysignType {
-                case .ECDSA:
-                    return try service.keysignECDSA(req)
-                case .EdDSA:
-                    return try service.keysignEdDSA(req)
+            case .ECDSA:
+                return try service.keysignECDSA(req)
+            case .EdDSA:
+                return try service.keysignEdDSA(req)
             }
         }
         return try await t.value

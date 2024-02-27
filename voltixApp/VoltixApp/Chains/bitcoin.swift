@@ -18,13 +18,6 @@ enum BitcoinHelper {
         return CoinType.bitcoin.validate(address: address)
     }
     
-    static func getSignatureFromTssResponse(tssResponse: TssKeysignResponse) -> Result<Data, Error> {
-        guard let derSig = Data(hexString: tssResponse.derSignature) else {
-            return .failure(HelperError.runtimeError("fail to get der signature"))
-        }
-        return .success(derSig)
-    }
-    
     static func getBitcoin(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
         return getAddressFromPubKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode)
             .map { addr in

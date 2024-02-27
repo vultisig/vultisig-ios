@@ -9,25 +9,6 @@ import Tss
 import WalletCore
 
 enum EthereumHelper {
-    static func getSignatureFromTssResponse(tssResponse: TssKeysignResponse) -> Result<Data, Error> {
-        guard let rData = Data(hexString: tssResponse.r) else {
-            return .failure(HelperError.runtimeError("fail to get r data"))
-        }
-        guard let sData = Data(hexString: tssResponse.s) else {
-            return .failure(HelperError.runtimeError("fail to get s data"))
-        }
-
-        guard let v = UInt8(tssResponse.recoveryID, radix: 16) else {
-            return .failure(HelperError.runtimeError("fail to get recovery data"))
-        }
-
-        var signature = Data()
-        signature.append(rData)
-        signature.append(sData)
-        signature.append(Data([v]))
-        return .success(signature)
-    }
-
     static let weiPerGWei: Int64 = 1_000_000_000
     static func getEthereum(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
         return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).map { addr in
@@ -39,7 +20,9 @@ enum EthereumHelper {
     }
 
     static func getAddressFromPublicKey(hexPubKey: String, hexChainCode: String) -> Result<String, Error> {
-        let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode, derivePath: CoinType.ethereum.derivationPath())
+        let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey, 
+                                                            hexChainCode: hexChainCode,
+                                                            derivePath: CoinType.ethereum.derivationPath())
         if derivePubKey.isEmpty {
             return .failure(HelperError.runtimeError("derived public key is empty"))
         }
@@ -58,6 +41,7 @@ enum EthereumHelper {
     static func getPreSignedInputData(toAddress: String,
                                       toAmountGWei: Int64,
                                       nonce: Int64,
+                                      gasLimit: Int64,
                                       maxFeePerGasGwei: Int64,
                                       priorityFeeGwei: Int64,
                                       memo: String?) -> Result<Data, Error>
@@ -70,7 +54,7 @@ enum EthereumHelper {
         let input = EthereumSigningInput.with {
             $0.chainID = Data(hexString: String(format: "%02X", intChainID))!
             $0.nonce = Data(hexString: String(format: "%02X", nonce))!
-            $0.gasLimit = Data(hexString: String(format: "%02X", 21_000))!
+            $0.gasLimit = Data(hexString: String(format: "%02X", gasLimit))!
             $0.maxFeePerGas = convertEthereumNumber(input: maxFeePerGasGwei)
             $0.maxInclusionFeePerGas = convertEthereumNumber(input: priorityFeeGwei)
             $0.toAddress = toAddress
@@ -85,7 +69,6 @@ enum EthereumHelper {
             }
         }
         do {
-            try print(input.jsonString())
             let inputData = try input.serializedData()
             return .success(inputData)
         } catch {
@@ -96,17 +79,22 @@ enum EthereumHelper {
     static func getPreSignedImageHash(toAddress: String,
                                       toAmountGWei: Int64,
                                       nonce: Int64,
+                                      gasLimit: Int64,
                                       maxFeePerGasGwei: Int64,
                                       priorityFeeGwei: Int64,
                                       memo: String?) -> Result<String, Error>
     {
-        let result = getPreSignedInputData(toAddress: toAddress, toAmountGWei: toAmountGWei, nonce: nonce, maxFeePerGasGwei: maxFeePerGasGwei, priorityFeeGwei: priorityFeeGwei, memo: memo)
+        let result = getPreSignedInputData(toAddress: toAddress,
+                                           toAmountGWei: toAmountGWei,
+                                           nonce: nonce,
+                                           gasLimit: gasLimit,
+                                           maxFeePerGasGwei: maxFeePerGasGwei,
+                                           priorityFeeGwei: priorityFeeGwei, memo: memo)
         switch result {
         case .success(let inputData):
             do {
                 let hashes = TransactionCompiler.preImageHashes(coinType: .ethereum, txInputData: inputData)
                 let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
-                print("presigning hash:\(preSigningOutput.dataHash.hexString)")
                 return .success(preSigningOutput.dataHash.hexString)
             } catch {
                 return .failure(HelperError.runtimeError("fail to get preSignedImageHash,error:\(error.localizedDescription)"))
@@ -120,6 +108,7 @@ enum EthereumHelper {
                                              toAddress: String,
                                              toAmountGWei: Int64,
                                              nonce: Int64,
+                                             gasLimit: Int64,
                                              maxFeePerGasGwei: Int64,
                                              priorityFeeGwei: Int64,
                                              memo: String?,
@@ -130,7 +119,13 @@ enum EthereumHelper {
         else {
             return .failure(HelperError.runtimeError("public key \(hexPubKey) is invalid"))
         }
-        let result = getPreSignedInputData(toAddress: toAddress, toAmountGWei: toAmountGWei, nonce: nonce, maxFeePerGasGwei: maxFeePerGasGwei, priorityFeeGwei: priorityFeeGwei, memo: memo)
+        let result = getPreSignedInputData(toAddress: toAddress,
+                                           toAmountGWei: toAmountGWei,
+                                           nonce: nonce,
+                                           gasLimit: gasLimit,
+                                           maxFeePerGasGwei: maxFeePerGasGwei,
+                                           priorityFeeGwei: priorityFeeGwei,
+                                           memo: memo)
         switch result {
         case .success(let inputData):
             do {
@@ -139,10 +134,8 @@ enum EthereumHelper {
                 let allSignatures = DataVector()
                 let publicKeys = DataVector()
                 let signature = signatureProvider(preSigningOutput.dataHash)
-                print("presigning hash:\(preSigningOutput.dataHash.hexString) signature:\(signature.hexString) pubkey:\(pubkeyData.hexString)")
-                if publicKey.verify(signature: signature, message: preSigningOutput.dataHash) {
-                    print("signature is valid")
-                } else {
+
+                guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash) else {
                     return .failure(HelperError.runtimeError("fail to verify signature"))
                 }
 

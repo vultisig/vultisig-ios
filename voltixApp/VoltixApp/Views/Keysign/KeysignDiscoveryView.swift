@@ -36,6 +36,7 @@ struct KeysignDiscoveryView: View {
                         Text("Pair with two other devices:".uppercased())
                             .font(.custom("Menlo", size: 18).bold())
                             .multilineTextAlignment(.center)
+                        
                         self.getQrImage(size: 100)
                             .resizable()
                             .scaledToFit()
@@ -131,46 +132,16 @@ struct KeysignDiscoveryView: View {
             } else {
                 self.localPartyID = Utils.getLocalDeviceIdentity()
             }
-            switch self.keysignPayload.coin.ticker {
-                case "BTC":
-                    guard case .Bitcoin(let feeByte) = self.keysignPayload.chainSpecific else {
-                        return
+            let keysignMessageResult = self.keysignPayload.getKeysignMessages()
+            switch keysignMessageResult {
+                case .success(let preSignedImageHash):
+                    self.keysignMessages = preSignedImageHash
+                    if self.keysignMessages.isEmpty {
+                        logger.error("no meessage need to be signed")
+                        self.currentState = .FailToStart
                     }
-                    let result = BitcoinHelper.getPreSignedImageHash(utxos: self.keysignPayload.utxos,
-                                                                     fromAddress: self.keysignPayload.coin.address,
-                                                                     toAddress: self.keysignPayload.toAddress,
-                                                                     toAmount: self.keysignPayload.toAmount,
-                                                                     byteFee: feeByte,
-                                                                     memo: self.keysignPayload.memo)
-                    switch result {
-                        case .success(let preSignedImageHash):
-                            self.keysignMessages = preSignedImageHash
-                            if self.keysignMessages.isEmpty {
-                                logger.error("no meessage need to be signed")
-                                self.currentState = .FailToStart
-                            }
-                        case .failure(let err):
-                            logger.error("Failed to get preSignedImageHash: \(err)")
-                            self.currentState = .FailToStart
-                    }
-                case "ETH":
-                    guard case .Ethereum(let maxFeePerGasGWei, let priorityFeeGwei, let nonce) = self.keysignPayload.chainSpecific else {
-                        return
-                    }
-                    let result = EthereumHelper.getPreSignedImageHash(toAddress: self.keysignPayload.toAddress, toAmountGWei: self.keysignPayload.toAmount, nonce: nonce, maxFeePerGasGwei: maxFeePerGasGWei, priorityFeeGwei: priorityFeeGwei, memo: self.keysignPayload.memo)
-                    switch result {
-                        case .success(let preSignedImageHash):
-                            self.keysignMessages = [preSignedImageHash]
-                            if self.keysignMessages.isEmpty {
-                                logger.error("no messages need to be signed")
-                                self.currentState = .FailToStart
-                            }
-                        case .failure(let err):
-                            logger.error("fail to get ETH pre signed image hash,error:\(err.localizedDescription)")
-                            self.currentState = .FailToStart
-                    }
-                default:
-                    print("don't know how to deal with \(self.keysignPayload.coin.ticker) yet")
+                case .failure(let err):
+                    logger.error("Failed to get preSignedImageHash: \(err)")
                     self.currentState = .FailToStart
             }
         }
@@ -209,31 +180,17 @@ struct KeysignDiscoveryView: View {
     }
     
     func getQrImage(size: CGFloat) -> Image {
-        let context = CIContext()
-        guard let qrFilter = CIFilter(name: "CIQRCodeGenerator") else {
-            return Image(systemName: "xmark")
-        }
-        
         let keysignMsg = KeysignMessage(sessionID: self.sessionID,
                                         payload: self.keysignPayload)
         do {
             let encoder = JSONEncoder()
             let jsonData = try encoder.encode(keysignMsg)
-            qrFilter.setValue(jsonData, forKey: "inputMessage")
+            return Utils.getQrImage(data: jsonData, size: size)
         } catch {
             logger.error("fail to encode keysign messages to json,error:\(error)")
         }
         
-        guard let qrCodeImage = qrFilter.outputImage else {
-            return Image(systemName: "xmark")
-        }
-        
-        let transformedImage = qrCodeImage.transformed(by: CGAffineTransform(scaleX: size, y: size))
-        
-        guard let cgImage = context.createCGImage(transformedImage, from: transformedImage.extent) else {
-            return Image(systemName: "xmark")
-        }
-        return Image(cgImage, scale: 1.0, orientation: .up, label: Text("QRCode"))
+        return Image(systemName: "xmark")
     }
 }
 
@@ -280,30 +237,6 @@ class ParticipantDiscovery: ObservableObject {
     }
 }
 
-struct KeysignMessage: Codable, Hashable {
-    let sessionID: String
-    let payload: KeysignPayload
-}
-
-enum BlockChainSpecific: Codable, Hashable {
-    case Bitcoin(Int64) // byteFee
-    case Ethereum(Int64, Int64, Int64) // maxFeePerGasGwei, priorityFeeGwei, nonce
-}
-
-struct KeysignPayload: Codable, Hashable {
-    let coin: Coin
-    // only toAddress is required , from Address is our own address
-    let toAddress: String
-    let toAmount: Int64
-    let chainSpecific: BlockChainSpecific
-    
-    // for UTXO chains , often it need to sign multiple UTXOs at the same time
-    // here when keysign , the main device will only pass the utxo info to the keysign device
-    // it is up to the signing device to get the presign keyhash , and sign it with the main device
-    let utxos: [UtxoInfo]
-    let memo: String? // optional memo
-}
-
 #Preview {
     KeysignDiscoveryView(
         presentationStack: .constant([]),
@@ -312,6 +245,6 @@ struct KeysignPayload: Codable, Hashable {
                                                   address: "bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu"),
                                        toAddress: "bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu",
                                        toAmount: 1000,
-                                       chainSpecific: .Bitcoin(25),
+                                       chainSpecific: .Bitcoin(byteFee: 25),
                                        utxos: [], memo: nil))
 }

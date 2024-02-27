@@ -222,7 +222,7 @@ struct JoinKeysignView: View {
                     self.sessionID = keysignMsg.sessionID
                     self.keysignPayload = keysignMsg.payload
                     logger.info("QR code scanned successfully. Session ID: \(self.sessionID)")
-                    if keysignMsg.payload.coin.ticker == "BTC" || keysignMsg.payload.coin.ticker == "ETH"{
+                    if keysignMsg.payload.coin.ticker == "BTC" || keysignMsg.payload.coin.ticker == "ETH" {
                         self.prepareKeysignMessages(keysignPayload: keysignMsg.payload)
                     }
                 } catch {
@@ -240,48 +240,18 @@ struct JoinKeysignView: View {
     }
     
     private func prepareKeysignMessages(keysignPayload: KeysignPayload) {
-        switch keysignPayload.coin.ticker {
-        case "BTC":
-            guard case BlockChainSpecific.Bitcoin(let byteFee) = keysignPayload.chainSpecific else {
-                logger.error("fail to get bitcoin bytefee")
-                return
-            }
-            let result = BitcoinHelper.getPreSignedImageHash(utxos: keysignPayload.utxos,
-                                                             fromAddress: keysignPayload.coin.address,
-                                                             toAddress: keysignPayload.toAddress,
-                                                             toAmount: keysignPayload.toAmount,
-                                                             byteFee: byteFee,
-                                                             memo: nil)
-            switch result {
-            case .success(let preSignedImageHash):
-                logger.info("Successfully prepared messages for keysigning.")
-                self.keysignMessages = preSignedImageHash.sorted()
-                if self.keysignMessages.isEmpty {
-                    logger.error("There is nothing to be signed")
-                    self.currentStatus = .FailedToStart
-                }
-            case .failure(let err):
-                logger.error("Failed to prepare messages for keysigning. Error: \(err)")
+        let result = keysignPayload.getKeysignMessages()
+        switch result {
+        case .success(let preSignedImageHash):
+            logger.info("Successfully prepared messages for keysigning.")
+            self.keysignMessages = preSignedImageHash.sorted()
+            if self.keysignMessages.isEmpty {
+                logger.error("There is nothing to be signed")
                 self.currentStatus = .FailedToStart
             }
-        case "ETH":
-            guard case .Ethereum(let maxFeePerGasGWei, let priorityFeeGwei, let nonce) = keysignPayload.chainSpecific else {
-                return
-            }
-            let result = EthereumHelper.getPreSignedImageHash(toAddress: keysignPayload.toAddress, toAmountGWei: keysignPayload.toAmount, nonce: nonce, maxFeePerGasGwei: maxFeePerGasGWei, priorityFeeGwei: priorityFeeGwei, memo: keysignPayload.memo)
-            switch result {
-            case .success(let preSignedImageHash):
-                self.keysignMessages = [preSignedImageHash]
-                if self.keysignMessages.isEmpty {
-                    logger.error("no messages need to be signed")
-                    self.currentStatus = .FailedToStart
-                }
-            case .failure(let err):
-                logger.error("fail to get ETH pre signed image hash,error:\(err.localizedDescription)")
-                self.currentStatus = .FailedToStart
-            }
-        default:
-            logger.error("Unsupported coin type: \(keysignPayload.coin.ticker)")
+        case .failure(let err):
+            logger.error("Failed to prepare messages for keysigning. Error: \(err)")
+            self.currentStatus = .FailedToStart
         }
     }
 }
