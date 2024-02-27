@@ -13,6 +13,7 @@ struct KeysignMessage: Codable, Hashable {
 enum BlockChainSpecific: Codable, Hashable {
     case Bitcoin(byteFee: Int64) // byteFee
     case Ethereum(maxFeePerGasGwei: Int64, priorityFeeGwei: Int64, nonce: Int64, gasLimit: Int64) // maxFeePerGasGwei, priorityFeeGwei, nonce , gasLimit
+    case ERC20(maxFeePerGasGwei: Int64, priorityFeeGwei: Int64, nonce: Int64, gasLimit: Int64, contractAddr: String)
 }
 
 struct KeysignPayload: Codable, Hashable {
@@ -29,44 +30,17 @@ struct KeysignPayload: Codable, Hashable {
     let memo: String? // optional memo
 
     func getKeysignMessages() -> Result<[String], Error> {
-        switch self.coin.ticker {
+        var result: Result<[String], Error>
+        switch coin.ticker {
         case "BTC":
-            guard case .Bitcoin(let feeByte) = chainSpecific else {
-                return .failure(HelperError.runtimeError("fail to get feeByte"))
-            }
-            let result = BitcoinHelper.getPreSignedImageHash(utxos: self.utxos,
-                                                             fromAddress: self.coin.address,
-                                                             toAddress: self.toAddress,
-                                                             toAmount: self.toAmount,
-                                                             byteFee: feeByte,
-                                                             memo: self.memo)
-            switch result {
-            case .success(let preSignedImageHash):
-                return.success(preSignedImageHash)
-                
-            case .failure(let err):
-                return .failure(err)
-            }
+            result = BitcoinHelper.getPreSignedImageHash(keysignPayload: self)
         case "ETH":
-            guard case .Ethereum(let maxFeePerGasGWei, let priorityFeeGwei, let nonce, let gasLimit) = self.chainSpecific else {
-                return .failure(HelperError.runtimeError("fail to get Ethereum chain specific"))
-            }
-            let result = EthereumHelper.getPreSignedImageHash(toAddress: self.toAddress,
-                                                              toAmountGWei: self.toAmount,
-                                                              nonce: nonce,
-                                                              gasLimit: gasLimit,
-                                                              maxFeePerGasGwei: maxFeePerGasGWei,
-                                                              priorityFeeGwei: priorityFeeGwei,
-                                                              memo: self.memo)
-            switch result {
-            case .success(let preSignedImageHash):
-                return .success([preSignedImageHash])
-               
-            case .failure(let err):
-                return .failure(err)
-            }
+            result = EthereumHelper.getPreSignedImageHash(keysignPayload: self)
+        case "USDC":
+            result = ERC20Helper.getPreSignedImageHash(keysignPayload: self)
         default:
             return .failure(HelperError.runtimeError("unsupported coin"))
         }
+        return result
     }
 }

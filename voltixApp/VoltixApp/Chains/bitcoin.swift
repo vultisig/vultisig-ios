@@ -41,14 +41,8 @@ enum BitcoinHelper {
     }
     
     // before keysign , we need to get the preSignedImageHash , so it can be signed with TSS
-    static func getPreSignedImageHash(utxos: [UtxoInfo],
-                                      fromAddress: String,
-                                      toAddress: String,
-                                      toAmount: Int64,
-                                      byteFee: Int64,
-                                      memo: String?) -> Result<[String], Error>
-    {
-        let result = getBitcoinPreSigningInputData(utxos: utxos, fromAddress: fromAddress, toAddress: toAddress, toAmount: toAmount, byteFee: byteFee, memo: memo)
+    static func getPreSignedImageHash(keysignPayload: KeysignPayload) -> Result<[String], Error> {
+        let result = getBitcoinPreSigningInputData(keysignPayload: keysignPayload)
         switch result {
             case .success(let inputData):
                 do {
@@ -63,28 +57,29 @@ enum BitcoinHelper {
         }
     }
     
-    static func getBitcoinSigningInput(utxos: [UtxoInfo],
-                                       fromAddress: String,
-                                       toAddress: String,
-                                       toAmount: Int64,
-                                       byteFee: Int64,
-                                       memo: String?) -> Result<BitcoinSigningInput, Error>
-    {
+    static func getBitcoinSigningInput(keysignPayload: KeysignPayload) -> Result<BitcoinSigningInput, Error> {
+        guard keysignPayload.coin.chain.ticker == "BTC" else {
+            return .failure(HelperError.runtimeError("coin is not BTC"))
+        }
+        guard case .Bitcoin(let byteFee) = keysignPayload.chainSpecific else {
+            return .failure(HelperError.runtimeError("fail to get Bitcoin chain specific"))
+        }
+        
         let coin = CoinType.bitcoin
         var input = BitcoinSigningInput.with {
             $0.hashType = BitcoinSigHashType.all.rawValue
-            $0.amount = toAmount
+            $0.amount = keysignPayload.toAmount
             $0.useMaxAmount = false
-            $0.toAddress = toAddress
-            $0.changeAddress = fromAddress
+            $0.toAddress = keysignPayload.toAddress
+            $0.changeAddress = keysignPayload.coin.address
             $0.byteFee = byteFee
             $0.coinType = coin.rawValue
-            if let memoData = memo?.data(using: .utf8) {
+            if let memoData = keysignPayload.memo?.data(using: .utf8) {
                 $0.outputOpReturn = memoData
             }
         }
-        for inputUtxo in utxos {
-            let lockScript = BitcoinScript.lockScriptForAddress(address: fromAddress, coin: .bitcoin)
+        for inputUtxo in keysignPayload.utxos {
+            let lockScript = BitcoinScript.lockScriptForAddress(address: keysignPayload.coin.address, coin: .bitcoin)
             let keyHash = lockScript.matchPayToWitnessPublicKeyHash()
             guard let keyHash else {
                 return .failure(HelperError.runtimeError("fail to get key hash from lock script"))
@@ -107,14 +102,8 @@ enum BitcoinHelper {
         return .success(input)
     }
     
-    static func getBitcoinPreSigningInputData(utxos: [UtxoInfo],
-                                              fromAddress: String,
-                                              toAddress: String,
-                                              toAmount: Int64,
-                                              byteFee: Int64,
-                                              memo: String?) -> Result<Data, Error>
-    {
-        let result = getBitcoinSigningInput(utxos: utxos, fromAddress: fromAddress, toAddress: toAddress, toAmount: toAmount, byteFee: byteFee, memo: memo)
+    static func getBitcoinPreSigningInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
+        let result = getBitcoinSigningInput(keysignPayload: keysignPayload)
         switch result {
             case .success(var input):
                 let plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: .bitcoin)
@@ -131,14 +120,8 @@ enum BitcoinHelper {
         }
     }
     
-    static func getBitcoinTransactionPlan(utxos: [UtxoInfo],
-                                          fromAddress: String,
-                                          toAddress: String,
-                                          toAmount: Int64,
-                                          byteFee: Int64,
-                                          memo: String?) -> Result<BitcoinTransactionPlan, Error>
-    {
-        let result = getBitcoinSigningInput(utxos: utxos, fromAddress: fromAddress, toAddress: toAddress, toAmount: toAmount, byteFee: byteFee, memo: memo)
+    static func getBitcoinTransactionPlan(keysignPayload: KeysignPayload) -> Result<BitcoinTransactionPlan, Error> {
+        let result = getBitcoinSigningInput(keysignPayload: keysignPayload)
         switch result {
             case .success(let input):
                 let plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: .bitcoin)
@@ -148,26 +131,20 @@ enum BitcoinHelper {
         }
     }
     
-    static func getSignedBitcoinTransaction(utxos: [UtxoInfo],
-                                            hexPubKey: String,
-                                            fromAddress: String,
-                                            toAddress: String,
-                                            toAmount: Int64,
-                                            byteFee: Int64,
-                                            memo: String?,
-                                            signatureProvider: (Data) -> Data) -> Result<String, Error>
+    static func getSignedTransaction(
+        vaultHexPubKey: String,
+        vaultHexChainCode: String,
+        keysignPayload: KeysignPayload,
+        signatures: [String: TssKeysignResponse]) -> Result<String, Error>
     {
-        guard let pubkeyData = Data(hexString: hexPubKey),
+        let bitcoinPubKey = BitcoinHelper.getBitcoinPubKey(hexPubKey: vaultHexPubKey, hexChainCode: vaultHexChainCode)
+        guard let pubkeyData = Data(hexString: bitcoinPubKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
         else {
-            return .failure(HelperError.runtimeError("public key \(hexPubKey) is invalid"))
+            return .failure(HelperError.runtimeError("public key \(bitcoinPubKey) is invalid"))
         }
         
-        let result = getBitcoinPreSigningInputData(utxos: utxos,
-                                                   fromAddress: fromAddress,
-                                                   toAddress: toAddress,
-                                                   toAmount: toAmount,
-                                                   byteFee: byteFee, memo: memo)
+        let result = getBitcoinPreSigningInputData(keysignPayload: keysignPayload)
         switch result {
             case .success(let preSignInputData):
                 do {
@@ -175,9 +152,10 @@ enum BitcoinHelper {
                     let preSignOutputs = try BitcoinPreSigningOutput(serializedData: preHashes)
                     let allSignatures = DataVector()
                     let publicKeys = DataVector()
+                    let signatureProvider = SignatureProvider(signatures: signatures)
                     for h in preSignOutputs.hashPublicKeys {
                         let preImageHash = h.dataHash
-                        let signature = signatureProvider(preImageHash)
+                        let signature = signatureProvider.getDerSignature(preHash: preImageHash)
                         guard publicKey.verifyAsDER(signature: signature, message: preImageHash) else {
                             return .failure(HelperError.runtimeError("fail to verify signature"))
                         }

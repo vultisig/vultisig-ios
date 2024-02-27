@@ -1,72 +1,42 @@
 //
-//  eth.swift
+//  erc20.swift
 //  VoltixApp
 //
 
-import BigInt
 import Foundation
 import Tss
 import WalletCore
 
-enum EthereumHelper {
-    static let weiPerGWei: Int64 = 1_000_000_000
-    static func getEthereum(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
-        return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).map { addr in
-            Coin(chain: Chain.Ethereum,
-                 ticker: "ETH",
-                 logo: "",
-                 address: addr)
-        }
-    }
-
-    static func getAddressFromPublicKey(hexPubKey: String, hexChainCode: String) -> Result<String, Error> {
-        let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
-                                                            hexChainCode: hexChainCode,
-                                                            derivePath: CoinType.ethereum.derivationPath())
-        if derivePubKey.isEmpty {
-            return .failure(HelperError.runtimeError("derived public key is empty"))
-        }
-        guard let pubKeyData = Data(hexString: derivePubKey), let publicKey = PublicKey(data: pubKeyData, type: .secp256k1) else {
-            return .failure(HelperError.runtimeError("public key: \(derivePubKey) is invalid"))
-        }
-        return .success(CoinType.ethereum.deriveAddressFromPublicKey(publicKey: publicKey))
-    }
-
-    // this method convert GWei to Wei, and in little endian encoded Data
-    static func convertEthereumNumber(input: Int64) -> Data {
-        let inputInt = BigInt(input * weiPerGWei).magnitude.serialize()
-        return inputInt
-    }
-
+enum ERC20Helper {
     static func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
         guard keysignPayload.coin.chain.ticker == "ETH" else {
             return .failure(HelperError.runtimeError("coin is not ETH"))
         }
         let coin = CoinType.ethereum
-        guard let intChainID = Int(coin.chainId) else {
+        guard let intChainID = Int64(coin.chainId) else {
             return .failure(HelperError.runtimeError("fail to get chainID"))
         }
-        guard case .Ethereum(let maxFeePerGasGWei,
-                             let priorityFeeGWei,
-                             let nonce,
-                             let gasLimit) = keysignPayload.chainSpecific
+        guard case .ERC20(let maxFeePerGasGWei,
+                          let priorityFeeGWei,
+                          let nonce,
+                          let gasLimit,
+                          let contractAddr) = keysignPayload.chainSpecific
         else {
             return .failure(HelperError.runtimeError("fail to get Ethereum chain specific"))
         }
+
         let input = EthereumSigningInput.with {
-            $0.chainID = Data(hexString: Int64(intChainID).hexString())!
+            $0.chainID = Data(hexString:  intChainID.hexString())!
             $0.nonce = Data(hexString: nonce.hexString())!
             $0.gasLimit = Data(hexString: gasLimit.hexString())!
-            $0.maxFeePerGas = convertEthereumNumber(input: maxFeePerGasGWei)
-            $0.maxInclusionFeePerGas = convertEthereumNumber(input: priorityFeeGWei)
-            $0.toAddress = keysignPayload.toAddress
+            $0.maxFeePerGas = EthereumHelper.convertEthereumNumber(input: maxFeePerGasGWei)
+            $0.maxInclusionFeePerGas = EthereumHelper.convertEthereumNumber(input: priorityFeeGWei)
+            $0.toAddress = contractAddr
             $0.txMode = .enveloped
             $0.transaction = EthereumTransaction.with {
-                $0.transfer = EthereumTransaction.Transfer.with {
-                    $0.amount = convertEthereumNumber(input: keysignPayload.toAmount)
-                    if let memo = keysignPayload.memo {
-                        $0.data = Data(memo.utf8)
-                    }
+                $0.erc20Transfer = EthereumTransaction.ERC20Transfer.with {
+                    $0.to = keysignPayload.toAddress
+                    $0.amount = EthereumHelper.convertEthereumNumber(input: keysignPayload.toAmount)
                 }
             }
         }
@@ -115,6 +85,7 @@ enum EthereumHelper {
                 let publicKeys = DataVector()
                 let signatureProvider = SignatureProvider(signatures: signatures)
                 let signature = signatureProvider.getSignatureWithRecoveryID(preHash: preSigningOutput.dataHash)
+
                 guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash) else {
                     return .failure(HelperError.runtimeError("fail to verify signature"))
                 }
