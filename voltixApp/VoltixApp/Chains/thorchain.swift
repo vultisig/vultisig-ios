@@ -53,9 +53,10 @@ enum THORChainHelper {
             return .failure(HelperError.runtimeError("invalid hex public key"))
         }
         let coin = CoinType.thorchain
+        
         let input = CosmosSigningInput.with {
             $0.publicKey = pubKeyData
-            $0.signingMode = .json
+            $0.signingMode = .protobuf
             $0.chainID = coin.chainId
             $0.accountNumber = accountNumber
             $0.sequence = sequence
@@ -75,10 +76,6 @@ enum THORChainHelper {
             }]
             // THORChain fee is 0.02 RUNE
             $0.fee = CosmosFee.with {
-                $0.amounts = [CosmosAmount.with {
-                    $0.denom = "rune"
-                    $0.amount = "200000"
-                }]
                 $0.gas = 20000000
             }
         }
@@ -140,7 +137,7 @@ enum THORChainHelper {
                                                                                      signatures: allSignatures,
                                                                                      publicKeys: publicKeys)
                 let output = try CosmosSigningOutput(serializedData: compileWithSignature)
-                let serializedData = output.json
+                let serializedData = output.serialized
                 print(serializedData)
                 return .success(serializedData)
             } catch {
