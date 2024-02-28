@@ -75,6 +75,10 @@ enum THORChainHelper {
             }]
             // THORChain fee is 0.02 RUNE
             $0.fee = CosmosFee.with {
+                $0.amounts = [CosmosAmount.with {
+                    $0.denom = "rune"
+                    $0.amount = "200000"
+                }]
                 $0.gas = 20000000
             }
         }
@@ -136,7 +140,7 @@ enum THORChainHelper {
                                                                                      signatures: allSignatures,
                                                                                      publicKeys: publicKeys)
                 let output = try CosmosSigningOutput(serializedData: compileWithSignature)
-                let serializedData = output.serialized
+                let serializedData = output.json
                 print(serializedData)
                 return .success(serializedData)
             } catch {
