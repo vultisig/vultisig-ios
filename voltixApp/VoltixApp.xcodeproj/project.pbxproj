@@ -20,6 +20,7 @@
 		4600167E2B71A12D00CE17C7 /* Tss.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4600167D2B71A12D00CE17C7 /* Tss.xcframework */; };
 		4606B3AE2B8045F60045094D /* BitcoinTransactionListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4606B3AD2B8045F60045094D /* BitcoinTransactionListView.swift */; };
 		4606B3B02B80465E0045094D /* BitcoinTransactionsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4606B3AF2B80465E0045094D /* BitcoinTransactionsService.swift */; };
+		464854712B8E052B008D37A7 /* EthplorerAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 464854702B8E052B008D37A7 /* EthplorerAPIService.swift */; };
 		465B09A42B7C01CC00952DD9 /* BitcoinTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09A32B7C01CC00952DD9 /* BitcoinTransaction.swift */; };
 		465B09A72B7C049400952DD9 /* UnspentOutputsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09A62B7C049400952DD9 /* UnspentOutputsService.swift */; };
 		465B09A92B7C176700952DD9 /* SendTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09A82B7C176700952DD9 /* SendTransaction.swift */; };
@@ -122,6 +123,7 @@
 		4600167D2B71A12D00CE17C7 /* Tss.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
 		4606B3AD2B8045F60045094D /* BitcoinTransactionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BitcoinTransactionListView.swift; sourceTree = "<group>"; };
 		4606B3AF2B80465E0045094D /* BitcoinTransactionsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BitcoinTransactionsService.swift; sourceTree = "<group>"; };
+		464854702B8E052B008D37A7 /* EthplorerAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EthplorerAPIService.swift; sourceTree = "<group>"; };
 		465B09A32B7C01CC00952DD9 /* BitcoinTransaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BitcoinTransaction.swift; sourceTree = "<group>"; };
 		465B09A62B7C049400952DD9 /* UnspentOutputsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnspentOutputsService.swift; sourceTree = "<group>"; };
 		465B09A82B7C176700952DD9 /* SendTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendTransaction.swift; sourceTree = "<group>"; };
@@ -257,6 +259,7 @@
 				465B09A62B7C049400952DD9 /* UnspentOutputsService.swift */,
 				465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */,
 				4606B3AF2B80465E0045094D /* BitcoinTransactionsService.swift */,
+				464854702B8E052B008D37A7 /* EthplorerAPIService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -571,7 +574,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */;
+			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -658,6 +661,7 @@
 				DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */,
 				DE7CE6462B886B6300ED0BFB /* VoltixVaultDocument.swift in Sources */,
 				46A616EA2B8807B700372994 /* KeygenStatusText.swift in Sources */,
+				464854712B8E052B008D37A7 /* EthplorerAPIService.swift in Sources */,
 				465B09AF2B7C84C600952DD9 /* ShareSheet.swift in Sources */,
 				DEBF93952B8D5AAC002868CD /* TssExtensions.swift in Sources */,
 				049BBB562B71E5F5004C231F /* Choose.swift in Sources */,
@@ -1032,7 +1036,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */ = {
+		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DE49A1882B65F6DB000F3AFB /* Debug */,

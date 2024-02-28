@@ -74,8 +74,6 @@ struct AssetsList: View {
                                     logger.info("fail to get bitcoin address,error:\(err.localizedDescription)")
                             }
 
-                        case Chain.Ethereum.name:
-                            vault.coins.append(Coin(chain: Chain.Ethereum, ticker: "ETH", logo: "", address: "TO BE IMPLEMENTED"))
                         default:
                             print("do it later")
                     }
