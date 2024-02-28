@@ -107,15 +107,18 @@ struct VaultAssetsView: View {
                 self.walletAddress = uxto.walletData?.address ?? ""
             } else if tx.coin.chain.name.lowercased() == "ethereum" {
                 
+                // We need to pass it to the next view
+                tx.eth = eth.addressInfo
+                
                 self.walletAddress = eth.addressInfo?.address ?? ""
                 
                 if tx.coin.ticker.uppercased() == "ETH" {
-                    self.coinBalance = "\(eth.addressInfo?.ETH.balance ?? 0.0)"
+                    self.coinBalance = eth.addressInfo?.ETH.balanceString ?? "0.0" // "\(eth.addressInfo?.ETH.balance ?? 0.0)"
                     self.balanceUSD = eth.addressInfo?.ETH.balanceInUsd ?? ""
                 } else {
                     if let tokenInfo = eth.addressInfo?.tokens.first(where: {$0.tokenInfo.symbol == "USDC"}) {
                         self.balanceUSD = tokenInfo.balanceInUsd
-                        self.coinBalance = "\(tokenInfo.balance)"
+                        self.coinBalance = tokenInfo.balanceString
                     }
                 }
             }
