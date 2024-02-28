@@ -43,7 +43,7 @@ enum THORChainHelper {
         guard let fromAddr = AnyAddress(string: keysignPayload.coin.address, coin: .thorchain) else {
             return .failure(HelperError.runtimeError("\(keysignPayload.coin.address) is invalid"))
         }
-        
+
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .thorchain) else {
             return .failure(HelperError.runtimeError("\(keysignPayload.toAddress) is invalid"))
         }
@@ -54,7 +54,7 @@ enum THORChainHelper {
             return .failure(HelperError.runtimeError("invalid hex public key"))
         }
         let coin = CoinType.thorchain
-        
+
         let input = CosmosSigningInput.with {
             $0.publicKey = pubKeyData
             $0.signingMode = .protobuf
@@ -80,7 +80,7 @@ enum THORChainHelper {
                 $0.gas = 20000000
                 $0.amounts = [CosmosAmount.with {
                     $0.denom = "rune"
-                    $0.amount = "20000000"
+                    $0.amount = "2000000"
                 }]
             }
         }
@@ -100,8 +100,8 @@ enum THORChainHelper {
             do {
                 let hashes = TransactionCompiler.preImageHashes(coinType: .thorchain, txInputData: inputData)
                 let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
-                print(try preSigningOutput.jsonString())
-                return .success([preSigningOutput.dataHash.sha256().hexString])
+                print(String(data: preSigningOutput.data, encoding: .utf8))
+                return .success([preSigningOutput.dataHash.hexString])
             } catch {
                 return .failure(HelperError.runtimeError("fail to get preSignedImageHash,error:\(error.localizedDescription)"))
             }
@@ -130,8 +130,8 @@ enum THORChainHelper {
                 let allSignatures = DataVector()
                 let publicKeys = DataVector()
                 let signatureProvider = SignatureProvider(signatures: signatures)
-                let signature = signatureProvider.getSignatureWithRecoveryID(preHash: preSigningOutput.dataHash.sha256())
-                guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash.sha256()) else {
+                let signature = signatureProvider.getSignatureWithRecoveryID(preHash: preSigningOutput.dataHash)
+                guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash) else {
                     return .failure(HelperError.runtimeError("fail to verify signature"))
                 }
 
