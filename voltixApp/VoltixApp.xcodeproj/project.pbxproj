@@ -90,6 +90,7 @@
 		DEEDAEE52B8AFB5D005170E8 /* common.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEDAEE42B8AFB5D005170E8 /* common.swift */; };
 		DEEDAEE82B8B50A4005170E8 /* BigInt in Frameworks */ = {isa = PBXBuildFile; productRef = DEEDAEE72B8B50A4005170E8 /* BigInt */; };
 		DEFC7BFB2B8D87370090B07A /* erc20.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC7BFA2B8D87370090B07A /* erc20.swift */; };
+		DEFC7BFF2B8EC95E0090B07A /* thorchain.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC7BFE2B8EC95E0090B07A /* thorchain.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -194,6 +195,7 @@
 		DEEDAEE22B8AF8B1005170E8 /* publickey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = publickey.swift; sourceTree = "<group>"; };
 		DEEDAEE42B8AFB5D005170E8 /* common.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = common.swift; sourceTree = "<group>"; };
 		DEFC7BFA2B8D87370090B07A /* erc20.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = erc20.swift; sourceTree = "<group>"; };
+		DEFC7BFE2B8EC95E0090B07A /* thorchain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = thorchain.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -393,6 +395,7 @@
 		DE28F52C2B7B0E6200E33058 /* Chains */ = {
 			isa = PBXGroup;
 			children = (
+				DEFC7BFE2B8EC95E0090B07A /* thorchain.swift */,
 				DE28F52D2B7B0E7400E33058 /* bitcoin.swift */,
 				DEEDAEE02B8AF7EF005170E8 /* eth.swift */,
 				DEEDAEE22B8AF8B1005170E8 /* publickey.swift */,
@@ -574,7 +577,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */;
+			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -674,6 +677,7 @@
 				DE49A1692B65F6D9000F3AFB /* MainNavigationStack.swift in Sources */,
 				D9AD8F082B675ECD0009F8D5 /* SupportedAssets.swift in Sources */,
 				DE49A1B22B6A0F77000F3AFB /* JoinKeygenView.swift in Sources */,
+				DEFC7BFF2B8EC95E0090B07A /* thorchain.swift in Sources */,
 				DE15729E2B70F284009BC7C5 /* JoinKeysignView.swift in Sources */,
 				DEEDAEE12B8AF7EF005170E8 /* eth.swift in Sources */,
 				D9AD8EEC2B6730ED0009F8D5 /* VaultAssetsView.swift in Sources */,
@@ -1036,7 +1040,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */ = {
+		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DE49A1882B65F6DB000F3AFB /* Debug */,

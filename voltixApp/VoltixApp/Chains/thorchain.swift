@@ -4,10 +4,11 @@
 //
 
 import Foundation
+import Tss
 import WalletCore
 
 enum THORChainHelper {
-    static func getRUNECoin(hexPubKey: String, hexChainCode: String)-> Result<Coin,Error>{
+    static func getRUNECoin(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
         let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
                                                             hexChainCode: hexChainCode,
                                                             derivePath: CoinType.thorchain.derivationPath())
@@ -21,6 +22,7 @@ enum THORChainHelper {
                  address: addr, hexPublicKey: derivePubKey)
         }
     }
+
     static func getAddressFromPublicKey(hexPubKey: String, hexChainCode: String) -> Result<String, Error> {
         let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
                                                             hexChainCode: hexChainCode,
@@ -31,7 +33,7 @@ enum THORChainHelper {
         guard let pubKeyData = Data(hexString: derivePubKey), let publicKey = PublicKey(data: pubKeyData, type: .secp256k1) else {
             return .failure(HelperError.runtimeError("public key: \(derivePubKey) is invalid"))
         }
-        return .success(CoinType.ethereum.deriveAddressFromPublicKey(publicKey: publicKey))
+        return .success(CoinType.thorchain.deriveAddressFromPublicKey(publicKey: publicKey))
     }
 
     static func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
@@ -86,6 +88,65 @@ enum THORChainHelper {
             return .success(inputData)
         } catch {
             return .failure(HelperError.runtimeError("fail to get plan"))
+        }
+    }
+
+    static func getPreSignedImageHash(keysignPayload: KeysignPayload) -> Result<[String], Error> {
+        let result = getPreSignedInputData(keysignPayload: keysignPayload)
+        switch result {
+        case .success(let inputData):
+            do {
+                let hashes = TransactionCompiler.preImageHashes(coinType: .thorchain, txInputData: inputData)
+                let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+
+                return .success([preSigningOutput.dataHash.sha256().hexString])
+            } catch {
+                return .failure(HelperError.runtimeError("fail to get preSignedImageHash,error:\(error.localizedDescription)"))
+            }
+        case .failure(let err):
+            return .failure(err)
+        }
+    }
+
+    static func getSignedTransaction(vaultHexPubKey: String,
+                                     vaultHexChainCode: String,
+                                     keysignPayload: KeysignPayload,
+                                     signatures: [String: TssKeysignResponse]) -> Result<String, Error>
+    {
+        let ethPublicKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: vaultHexPubKey, hexChainCode: vaultHexChainCode, derivePath: CoinType.ethereum.derivationPath())
+        guard let pubkeyData = Data(hexString: ethPublicKey),
+              let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
+        else {
+            return .failure(HelperError.runtimeError("public key \(ethPublicKey) is invalid"))
+        }
+        let result = getPreSignedInputData(keysignPayload: keysignPayload)
+        switch result {
+        case .success(let inputData):
+            do {
+                let hashes = TransactionCompiler.preImageHashes(coinType: .ethereum, txInputData: inputData)
+                let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+                let allSignatures = DataVector()
+                let publicKeys = DataVector()
+                let signatureProvider = SignatureProvider(signatures: signatures)
+                let signature = signatureProvider.getSignatureWithRecoveryID(preHash: preSigningOutput.dataHash)
+                guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash.sha256()) else {
+                    return .failure(HelperError.runtimeError("fail to verify signature"))
+                }
+
+                allSignatures.add(data: signature)
+                publicKeys.add(data: pubkeyData)
+                let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .thorchain,
+                                                                                     txInputData: inputData,
+                                                                                     signatures: allSignatures,
+                                                                                     publicKeys: publicKeys)
+                let output = try CosmosSigningOutput(serializedData: compileWithSignature)
+                try print(output.jsonString())
+                return try .success(output.serializedData().hexString)
+            } catch {
+                return .failure(HelperError.runtimeError("fail to get signed ethereum transaction,error:\(error.localizedDescription)"))
+            }
+        case .failure(let err):
+            return .failure(err)
         }
     }
 }

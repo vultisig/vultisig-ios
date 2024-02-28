@@ -85,6 +85,11 @@ struct AssetsList: View {
                     }
                 }
             }
+            for coin in vault.coins {
+                if !selection.contains(where: { $0.ticker == coin.ticker }) {
+                    vault.coins = vault.coins.filter { $0 != coin }
+                }
+            }
         }
     }
 }

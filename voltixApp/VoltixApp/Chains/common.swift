@@ -6,6 +6,7 @@
 import Foundation
 import OSLog
 import Tss
+import CommonCrypto
 
 enum HelperError: Error {
     case runtimeError(String)
@@ -62,5 +63,15 @@ extension Int64 {
             hexStr = "0" + hexStr
         }
         return hexStr
+    }
+}
+
+extension Data{
+    func sha256() -> Data {
+        var hash = [UInt8](repeating: 0,  count: Int(CC_SHA256_DIGEST_LENGTH))
+        self.withUnsafeBytes {
+            _ = CC_SHA256($0.baseAddress, CC_LONG(self.count), &hash)
+        }
+        return Data(hash)
     }
 }

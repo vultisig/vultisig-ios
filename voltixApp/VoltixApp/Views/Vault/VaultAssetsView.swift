@@ -27,6 +27,7 @@ struct VaultAssetsView: View {
                 }
                 .onAppear {
                     loadData()
+                    self.walletAddress = tx.coin.address
                 }
             }
             .refreshable {

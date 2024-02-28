@@ -39,6 +39,8 @@ struct KeysignPayload: Codable, Hashable {
             result = EthereumHelper.getPreSignedImageHash(keysignPayload: self)
         case "USDC":
             result = ERC20Helper.getPreSignedImageHash(keysignPayload: self)
+        case "RUNE":
+            result = THORChainHelper.getPreSignedImageHash(keysignPayload: self)
         default:
             return .failure(HelperError.runtimeError("unsupported coin"))
         }
