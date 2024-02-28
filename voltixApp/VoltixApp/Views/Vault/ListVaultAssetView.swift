@@ -10,6 +10,21 @@ struct ListVaultAssetView: View {
     @EnvironmentObject var appState: ApplicationState
     @State private var showingCoinList = false
     @StateObject var sendTransaction = SendTransaction()
+    @Environment(\.colorScheme) var colorScheme
+    
+    private var backgroundColor: Color {
+        switch colorScheme {
+            case .light:
+                    // Apply a light mode-specific color
+                return Color(UIColor.systemGroupedBackground)
+            case .dark:
+                    // Apply the dark mode color
+                return Color(UIColor.secondarySystemGroupedBackground)
+            @unknown default:
+                    // Fallback color
+                return Color(UIColor.systemBackground)
+        }
+    }
     
     var body: some View {
         ScrollView {
@@ -17,7 +32,10 @@ struct ListVaultAssetView: View {
                 ForEach(appState.currentVault?.coins ?? [Coin](), id: \.self) { coin in
                     
                     VaultAssetsView(presentationStack: $presentationStack, tx: SendTransaction(toAddress: "", amount: "", memo: "", gas: "20", coin: coin))
-                        .background(Color(UIColor.secondarySystemGroupedBackground))
+                        //.background(Color(UIColor.secondarySystemGroupedBackground))
+                        .background(self.backgroundColor)
+                        
+                    
                         .cornerRadius(10)
                         .padding(.horizontal)
                         .padding(.top, 5)
