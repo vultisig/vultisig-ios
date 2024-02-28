@@ -53,7 +53,7 @@ enum THORChainHelper {
         guard case .THORChain(let accountNumber, let sequence) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get account number and sequence"))
         }
-        guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey!) else {
+        guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
             return .failure(HelperError.runtimeError("invalid hex public key"))
         }
         let coin = CoinType.thorchain
