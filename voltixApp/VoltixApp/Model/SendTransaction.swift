@@ -5,6 +5,7 @@ import OSLog
 import SwiftUI
 import UniformTypeIdentifiers
 import WalletCore
+import BigInt
 
 class SendTransaction: ObservableObject, Hashable {
     
@@ -58,8 +59,42 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var coin: Coin = Coin(chain: Chain.Bitcoin, ticker: "BTC", logo: "", address: "",hexPublicKey: "", feeUnit: "")
     @Published var eth: EthAddressInfo?
     
+    var amountInWei: BigInt {
+        return BigInt(amountDecimal * pow(10, 18))
+    }
+    
+    var token:EthAddressInfo.Token?{
+        return eth?.tokens.first(where: { $0.tokenInfo.symbol == coin.ticker})
+    }
+    
+    var totalEthTransactionCostWei: BigInt {
+        return amountInWei + feeInWei
+    }
+    
+    var amountInTokenWei: Int64 {
+        
+        let decimals = Double(token?.tokenInfo.decimals ?? "18") ?? 18.0 // The default is always in WEI unless the token has a different one like UDSC
+        
+        return Int64(amountDecimal * pow(10, decimals))
+    }
+    
     var amountInSats: Int64 {
         return Int64(amountDecimal * 100000000)
+    }
+    
+    // It comes in GWEI
+    var feeInWei: BigInt {
+        let gasString: String = gas
+        
+        if let gasGwei = BigInt(gasString) {
+            let gasWei: BigInt = gasGwei * 1000000000 // Equivalent to 10^9
+            print(gasWei) // This will print the value in Wei
+            return gasWei
+        } else {
+            print("Invalid gas value")
+        }
+        return 0
+        
     }
     
     var feeInSats: Int64 {

@@ -33,7 +33,7 @@ struct SendVerifyView: View {
                 LabelText(title: "TO", value: tx.toAddress).padding(.vertical, 10)
                 LabelTextNumeric(title: "AMOUNT", value: tx.amount + " " + tx.coin.ticker).padding(.vertical, 10)
                 LabelText(title: "MEMO", value: tx.memo).padding(.vertical, 10)
-                LabelTextNumeric(title: "FEE", value: "\(tx.gas) SATS").padding(.vertical, 10)
+                LabelTextNumeric(title: "FEE", value: "\(tx.gas) \(tx.coin.feeUnit)").padding(.vertical, 10)
             }
             
             Group {
@@ -64,52 +64,63 @@ struct SendVerifyView: View {
                     BottomBar(
                         content: "SIGN",
                         onClick: {
-                            if let walletData = unspentOutputsService.walletData {
+                            
+                            if !isValidForm {
+                                self.errorMessage = "* You must agree with the terms."
+                                return
+                            }
+                            
+                            if tx.coin.chain.name.lowercased() == "bitcoin" {
                                 
-                                if !isValidForm {
-                                    self.errorMessage = "* You must agree with the terms."
-                                    return
-                                }
-                                
+                                if let walletData = unspentOutputsService.walletData {
                                     // Calculate total amount needed by summing the amount and the fee
-                                let totalAmountNeeded = tx.amountInSats + tx.feeInSats
-                                
+                                    let totalAmountNeeded = tx.amountInSats + tx.feeInSats
+                                    
                                     // Select UTXOs sufficient to cover the total amount needed and map to UtxoInfo
-                                let utxoInfo = walletData.selectUTXOsForPayment(amountNeeded: Int64(totalAmountNeeded)).map {
-                                    UtxoInfo(
-                                        hash: $0.txHash ?? "",
-                                        amount: Int64($0.value ?? 0),
-                                        index: UInt32($0.txOutputN ?? -1)
+                                    let utxoInfo = walletData.selectUTXOsForPayment(amountNeeded: Int64(totalAmountNeeded)).map {
+                                        UtxoInfo(
+                                            hash: $0.txHash ?? "",
+                                            amount: Int64($0.value ?? 0),
+                                            index: UInt32($0.txOutputN ?? -1)
+                                        )
+                                    }
+                                    
+                                    if utxoInfo.count == 0 {
+                                        self.errorMessage = "You don't have enough balance to send this transaction"
+                                        return
+                                    }
+                                    
+                                    let totalSelectedAmount = utxoInfo.reduce(0) { $0 + $1.amount }
+                                    
+                                        // Check if the total selected amount is greater than or equal to the needed balance
+                                    if totalSelectedAmount < Int64(totalAmountNeeded) {
+                                        self.errorMessage = "You don't have enough balance to send this transaction"
+                                        return
+                                    }
+                                    
+                                    let keysignPayload = KeysignPayload(
+                                        coin: tx.coin,
+                                        toAddress: tx.toAddress,
+                                        toAmount: tx.amountInSats,
+                                        chainSpecific: BlockChainSpecific.Bitcoin(byteFee: tx.feeInSats),
+                                        utxos: utxoInfo,
+                                        memo: tx.memo
                                     )
+                                    
+                                    self.errorMessage = ""
+                                    self.presentationStack.append(.KeysignDiscovery(keysignPayload))
+                                    
+                                } else {
+                                    self.errorMessage = "Error fetching the data"
                                 }
                                 
-                                if utxoInfo.count == 0 {
-                                    self.errorMessage = "You don't have enough balance to send this transaction"
-                                    return
+                            } else if tx.coin.chain.name.lowercased() == "ethereum" {
+                                if tx.coin.ticker.uppercased() == "ETH" {
+                                    
+                                    print("coin: \(tx.coin.ticker.uppercased()) \n toAddress: \(tx.toAddress) \n toAmount: \(tx.amountInWei) \n fee: \(tx.feeInWei)")
+                                } else {
+                                    print("coin: \(tx.coin.ticker.uppercased()) \n toAddress: \(tx.toAddress) \n toAmount: \(tx.amountInTokenWei) \n fee: \(tx.feeInWei)")
                                 }
-                                
-                                let totalSelectedAmount = utxoInfo.reduce(0) { $0 + $1.amount }
-                                
-                                    // Check if the total selected amount is greater than or equal to the needed balance
-                                if totalSelectedAmount < Int64(totalAmountNeeded) {
-                                    self.errorMessage = "You don't have enough balance to send this transaction"
-                                    return
-                                }
-                                
-                                let keysignPayload = KeysignPayload(
-                                    coin: tx.coin,
-                                    toAddress: tx.toAddress,
-                                    toAmount: tx.amountInSats,
-                                    chainSpecific: BlockChainSpecific.Bitcoin(byteFee: tx.feeInSats),
-                                    utxos: utxoInfo,
-                                    memo: tx.memo
-                                )
-                                
-                                self.errorMessage = ""
-                                self.presentationStack.append(.KeysignDiscovery(keysignPayload))
-                                
-                            } else {
-                                self.errorMessage = "Error fetching the data"
                             }
                         }
                     )

@@ -102,7 +102,7 @@ struct SendInputDetailsView: View {
                                 DebounceHelper.shared.debounce {
                                     if tx.coin.ticker.uppercased() == "BTC" {
                                         isValidAddress = BitcoinHelper.validateAddress(newValue)
-                                    } else if tx.coin.ticker.uppercased() == "ETH" {
+                                    } else if tx.coin.chain.name.lowercased() == "ethereum" {
                                         isValidAddress = CoinType.ethereum.validate(address: newValue)
                                     }
                                     
@@ -336,12 +336,6 @@ struct SendInputDetailsView: View {
             return isValidForm
         }
         
-            // Calculate the total transaction cost
-        let totalTransactionCost = amount + gasFee
-        
-        print("Total transaction cost: \(totalTransactionCost)")
-        
-        
         var walletBalance: Int = 0;
         
             // TODO: Move this to an abstraction
@@ -349,6 +343,8 @@ struct SendInputDetailsView: View {
         if tx.coin.chain.name.lowercased() == "bitcoin" {
             walletBalance = uxto.walletData?.balance ?? 0
             
+            let totalTransactionCost = amount + gasFee
+            print("Total transaction cost: \(totalTransactionCost)")
             
             if totalTransactionCost > Double(walletBalance) {
                 formErrorMessages += "The combined amount and fee exceed your wallet's balance. Please adjust to proceed. \n"
@@ -357,17 +353,47 @@ struct SendInputDetailsView: View {
             }
             
         } else if tx.coin.chain.name.lowercased() == "ethereum" {
+            
+            let ethBalanceInWei = Int(eth.addressInfo?.ETH.rawBalance ?? "0") ?? 0 // it is in WEI
+            
             if tx.coin.ticker.uppercased() == "ETH" {
-                walletBalance = Int(eth.addressInfo?.ETH.rawBalance ?? "0") ?? 0 // it is in WEI
+                
+                if tx.totalEthTransactionCostWei > ethBalanceInWei {
+                    formErrorMessages += "The combined amount and fee exceed your wallet's balance. Please adjust to proceed. \n"
+                    logger.log("Total transaction cost exceeds wallet balance.")
+                    isValidForm = false
+                }
+                
             } else {
-                    //TODO: We must make this tokens all dynamic
-                if let tokenInfo = eth.addressInfo?.tokens.first(where: {$0.tokenInfo.symbol == "USDC"}) {
-                    walletBalance = Int(tokenInfo.rawBalance ?? "0") ?? 0 // Check the decimals because USDC only has 6
+                
+                if let tokenInfo = eth.addressInfo?.tokens.first(where: {$0.tokenInfo.symbol == tx.coin.ticker.uppercased()}) {
+                
+                    print ("tx.feeInWei \(tx.feeInWei)")
+                    print ("ethBalanceInWei \(ethBalanceInWei)")
+                    
+                    print ("has eth to pay the fee?  \(tx.feeInWei > ethBalanceInWei)")
+                    
+                    
+                    if tx.feeInWei > ethBalanceInWei {
+                        formErrorMessages += "You must have ETH in to send any TOKEN, so you can pay the fees. \n"
+                        logger.log("You must have ETH in to send any TOKEN, so you can pay the fees. \n")
+                        isValidForm = false
+                    }
+                
+                    let tokenBalance = Int(tokenInfo.rawBalance) ?? 0
+                    
+                    if tx.amountInTokenWei > tokenBalance {
+                        formErrorMessages += "Total transaction cost exceeds wallet balance. \n"
+                        logger.log("Total transaction cost exceeds wallet balance.")
+                        isValidForm = false
+                    }
+                    
                 }
             }
+            
+            
+            
         }
-        
-        // WE will need to convert the balances correctly to/from WEI and GWEI
         
         
         
