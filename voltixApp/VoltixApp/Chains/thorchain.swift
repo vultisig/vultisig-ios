@@ -113,11 +113,11 @@ enum THORChainHelper {
                                      keysignPayload: KeysignPayload,
                                      signatures: [String: TssKeysignResponse]) -> Result<String, Error>
     {
-        let ethPublicKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: vaultHexPubKey, hexChainCode: vaultHexChainCode, derivePath: CoinType.ethereum.derivationPath())
-        guard let pubkeyData = Data(hexString: ethPublicKey),
+        let thorPublicKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: vaultHexPubKey, hexChainCode: vaultHexChainCode, derivePath: CoinType.thorchain.derivationPath())
+        guard let pubkeyData = Data(hexString: thorPublicKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
         else {
-            return .failure(HelperError.runtimeError("public key \(ethPublicKey) is invalid"))
+            return .failure(HelperError.runtimeError("public key \(thorPublicKey) is invalid"))
         }
         let result = getPreSignedInputData(keysignPayload: keysignPayload)
         switch result {
