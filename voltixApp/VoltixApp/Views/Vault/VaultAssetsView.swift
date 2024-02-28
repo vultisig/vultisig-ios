@@ -4,6 +4,7 @@ struct VaultAssetsView: View {
     @Binding var presentationStack: [CurrentScreen]
     @EnvironmentObject var appState: ApplicationState
     @StateObject var uxto: UnspentOutputsService = UnspentOutputsService()
+    @StateObject var eth: EthplorerAPIService = EthplorerAPIService()
     @ObservedObject var tx: SendTransaction
     @StateObject var cryptoPrice = CryptoPriceService()
     @State private var coinBalance: String = "0"
@@ -32,6 +33,7 @@ struct VaultAssetsView: View {
                 loadData()
             }
         }
+        .padding()
         .navigationTitle(appState.currentVault?.name ?? "Vault")
         .modifier(InlineNavigationBarTitleModifier())
     }
@@ -41,7 +43,7 @@ struct VaultAssetsView: View {
         HStack {
             VaultItem(
                 presentationStack: $presentationStack,
-                coinName: tx.coin.chain.name,
+                coinName: tx.coin.ticker,
                 usdAmount: balanceUSD,
                 showAmount: isCollapsed,
                 address: walletAddress,
@@ -68,6 +70,7 @@ struct VaultAssetsView: View {
                 amount: coinBalance,
                 usdAmount: balanceUSD,
                 sendClick: {
+                    print("Vault Assets View: \(tx.fromAddress)")
                     presentationStack.append(.sendInputDetails(tx))
                 },
                 swapClick: {}
@@ -84,7 +87,7 @@ struct VaultAssetsView: View {
             if tx.coin.chain.name.lowercased() == "bitcoin" {
                 await uxto.fetchUnspentOutputs(for: tx.fromAddress)
             } else if tx.coin.chain.name.lowercased() == "ethereum" {
-                await fetchBalanceAndAddress(for: tx.coin)
+                await eth.getEthInfo(for: tx.fromAddress)
             }
             
             DispatchQueue.main.async {
@@ -102,14 +105,21 @@ struct VaultAssetsView: View {
                 self.balanceUSD = uxto.walletData?.balanceInUSD(usdPrice: priceRateUsd) ?? "0"
                 self.walletAddress = uxto.walletData?.address ?? ""
             } else if tx.coin.chain.name.lowercased() == "ethereum" {
-                self.coinBalance = "0"
-                self.balanceUSD = "US$ 0,00"
-                self.walletAddress = "TO BE IMPLEMENTED"
+                
+                self.walletAddress = eth.addressInfo?.address ?? ""
+                
+                if tx.coin.ticker.uppercased() == "ETH" {
+                    self.coinBalance = "\(eth.addressInfo?.ETH.balance ?? 0.0)"
+                    self.balanceUSD = eth.addressInfo?.ETH.balanceInUsd ?? ""
+                } else {
+                    if let tokenInfo = eth.addressInfo?.tokens.first(where: {$0.tokenInfo.symbol == "USDC"}) {
+                        self.balanceUSD = tokenInfo.balanceInUsd
+                        self.coinBalance = "\(tokenInfo.balance)"
+                    }
+                }
             }
         }
     }
     
-    private func fetchBalanceAndAddress(for coin: Coin) async {
-            // Implement fetching balance and address for the given coin
-    }
+    
 }

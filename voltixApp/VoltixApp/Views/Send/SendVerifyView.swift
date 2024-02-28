@@ -1,15 +1,15 @@
-//
-//  VoltixApp
-//
-//  Created by Enrique Souza Soares
-//
+    //
+    //  VoltixApp
+    //
+    //  Created by Enrique Souza Soares
+    //
 import SwiftUI
 
 struct SendVerifyView: View {
     @Binding var presentationStack: [CurrentScreen]
     @ObservedObject var tx: SendTransaction
     @StateObject var unspentOutputsService: UnspentOutputsService = .init()
-    
+    @State private var errorMessage: String = ""
     @State private var isChecked1 = false
     @State private var isChecked2 = false
     @State private var isChecked3 = false
@@ -22,14 +22,13 @@ struct SendVerifyView: View {
         if unspentOutputsService.walletData == nil {
             Task {
                 await unspentOutputsService.fetchUnspentOutputs(for: tx.fromAddress)
-                // await unspentOutputsService.fetchUnspentOutputs(for: "bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu")
             }
         }
     }
     
     var body: some View {
         VStack {
-            Form { // Define spacing if needed
+            Form {
                 LabelText(title: "FROM", value: tx.fromAddress).padding(.vertical, 10)
                 LabelText(title: "TO", value: tx.toAddress).padding(.vertical, 10)
                 LabelTextNumeric(title: "AMOUNT", value: tx.amount + " " + tx.coin.ticker).padding(.vertical, 10)
@@ -57,7 +56,7 @@ struct SendVerifyView: View {
                 HStack {
                     Spacer()
                     
-                    Text(isValidForm ? "" : "* You must agree with the terms.")
+                    Text(errorMessage)
                         .font(Font.custom("Montserrat", size: 13)
                             .weight(.medium))
                         .padding(.vertical, 5)
@@ -66,10 +65,16 @@ struct SendVerifyView: View {
                         content: "SIGN",
                         onClick: {
                             if let walletData = unspentOutputsService.walletData {
-                                // Calculate total amount needed by summing the amount and the fee
+                                
+                                if !isValidForm {
+                                    self.errorMessage = "* You must agree with the terms."
+                                    return
+                                }
+                                
+                                    // Calculate total amount needed by summing the amount and the fee
                                 let totalAmountNeeded = tx.amountInSats + tx.feeInSats
                                 
-                                // Select UTXOs sufficient to cover the total amount needed and map to UtxoInfo
+                                    // Select UTXOs sufficient to cover the total amount needed and map to UtxoInfo
                                 let utxoInfo = walletData.selectUTXOsForPayment(amountNeeded: Int64(totalAmountNeeded)).map {
                                     UtxoInfo(
                                         hash: $0.txHash ?? "",
@@ -79,15 +84,15 @@ struct SendVerifyView: View {
                                 }
                                 
                                 if utxoInfo.count == 0 {
-                                    print("You don't have enough balance to send this transaction")
+                                    self.errorMessage = "You don't have enough balance to send this transaction"
                                     return
                                 }
                                 
                                 let totalSelectedAmount = utxoInfo.reduce(0) { $0 + $1.amount }
                                 
-                                // Check if the total selected amount is greater than or equal to the needed balance
+                                    // Check if the total selected amount is greater than or equal to the needed balance
                                 if totalSelectedAmount < Int64(totalAmountNeeded) {
-                                    print("You don't have enough balance to send this transaction")
+                                    self.errorMessage = "You don't have enough balance to send this transaction"
                                     return
                                 }
                                 
@@ -100,11 +105,11 @@ struct SendVerifyView: View {
                                     memo: tx.memo
                                 )
                                 
+                                self.errorMessage = ""
                                 self.presentationStack.append(.KeysignDiscovery(keysignPayload))
                                 
                             } else {
-                                Text("Error fetching the data")
-                                    .padding()
+                                self.errorMessage = "Error fetching the data"
                             }
                         }
                     )
@@ -126,7 +131,7 @@ struct SendVerifyView: View {
         }
     }
     
-    // Helper view for label and value text
+        // Helper view for label and value text
     @ViewBuilder
     private func LabelText(title: String, value: String) -> some View {
         VStack(alignment: .leading) {
@@ -138,7 +143,7 @@ struct SendVerifyView: View {
         }
     }
     
-    // Helper view for label and value text
+        // Helper view for label and value text
     @ViewBuilder
     private func LabelTextNumeric(title: String, value: String) -> some View {
         HStack {
@@ -153,7 +158,7 @@ struct SendVerifyView: View {
     }
 }
 
-// Custom ToggleStyle for Checkbox appearance
+    // Custom ToggleStyle for Checkbox appearance
 struct CheckboxToggleStyle: ToggleStyle {
     func makeBody(configuration: Configuration) -> some View {
         return HStack {
