@@ -67,8 +67,8 @@ struct ListVaultAssetView: View {
                         self.presentationStack.append(.KeysignDiscovery(KeysignPayload(
                             coin: coin,
                             toAddress: "thor1kerhp6n4hywg7jjphedds5qgyzrhg8murqtnnf",
-                            toAmount: 100_000_000,
-                            chainSpecific: BlockChainSpecific.THORChain(accountNumber: 0, sequence: 0),
+                            toAmount: 100_000_0, // 0.01 RUNE
+                            chainSpecific: BlockChainSpecific.THORChain(accountNumber: 96761, sequence: 0),
                             utxos: [],
                             memo: "voltix")))
                     }

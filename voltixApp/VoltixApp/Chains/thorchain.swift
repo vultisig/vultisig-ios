@@ -75,11 +75,7 @@ enum THORChainHelper {
             }]
             // THORChain fee is 0.02 RUNE
             $0.fee = CosmosFee.with {
-                $0.amounts = [CosmosAmount.with {
-                    $0.denom = "rune"
-                    $0.amount = "200000"
-                }]
-                $0.gas = 200000
+                $0.gas = 20000000
             }
         }
 
@@ -98,7 +94,7 @@ enum THORChainHelper {
             do {
                 let hashes = TransactionCompiler.preImageHashes(coinType: .thorchain, txInputData: inputData)
                 let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
-
+                print(try preSigningOutput.jsonString())
                 return .success([preSigningOutput.dataHash.sha256().hexString])
             } catch {
                 return .failure(HelperError.runtimeError("fail to get preSignedImageHash,error:\(error.localizedDescription)"))
@@ -123,12 +119,12 @@ enum THORChainHelper {
         switch result {
         case .success(let inputData):
             do {
-                let hashes = TransactionCompiler.preImageHashes(coinType: .ethereum, txInputData: inputData)
+                let hashes = TransactionCompiler.preImageHashes(coinType: .thorchain, txInputData: inputData)
                 let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
                 let allSignatures = DataVector()
                 let publicKeys = DataVector()
                 let signatureProvider = SignatureProvider(signatures: signatures)
-                let signature = signatureProvider.getSignatureWithRecoveryID(preHash: preSigningOutput.dataHash)
+                let signature = signatureProvider.getSignatureWithRecoveryID(preHash: preSigningOutput.dataHash.sha256())
                 guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash.sha256()) else {
                     return .failure(HelperError.runtimeError("fail to verify signature"))
                 }
@@ -140,8 +136,9 @@ enum THORChainHelper {
                                                                                      signatures: allSignatures,
                                                                                      publicKeys: publicKeys)
                 let output = try CosmosSigningOutput(serializedData: compileWithSignature)
-                try print(output.jsonString())
-                return try .success(output.serializedData().hexString)
+                let serializedData = output.serialized
+                print(serializedData)
+                return .success(serializedData)
             } catch {
                 return .failure(HelperError.runtimeError("fail to get signed ethereum transaction,error:\(error.localizedDescription)"))
             }
