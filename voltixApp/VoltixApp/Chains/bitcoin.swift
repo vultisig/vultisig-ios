@@ -25,7 +25,9 @@ enum BitcoinHelper {
                      ticker: "BTC",
                      logo: "",
                      address: addr,
-                     hexPublicKey: getBitcoinPubKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode))
+                     hexPublicKey: getBitcoinPubKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode),
+                     feeUnit: "SATS"
+                )
             }
     }
     

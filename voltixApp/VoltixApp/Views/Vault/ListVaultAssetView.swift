@@ -12,7 +12,7 @@ struct ListVaultAssetView: View {
     @StateObject var sendTransaction = SendTransaction()
     @Environment(\.colorScheme) var colorScheme
     
-    private var backgroundColor: Color {
+    private var listItemBackgroundColor: Color {
         switch colorScheme {
             case .light:
                     // Apply a light mode-specific color
@@ -33,15 +33,15 @@ struct ListVaultAssetView: View {
                     
                     VaultAssetsView(presentationStack: $presentationStack, tx: SendTransaction(toAddress: "", amount: "", memo: "", gas: "20", coin: coin))
                         //.background(Color(UIColor.secondarySystemGroupedBackground))
-                        .background(self.backgroundColor)
-                        
-                    
+                        .background(self.listItemBackgroundColor)
                         .cornerRadius(10)
+                        .shadow(radius: 5)
                         .padding(.horizontal)
-                        .padding(.top, 5)
+                        .padding(.top, 10)
                 }
             }
         }
+        .padding(.vertical)
         .navigationTitle(appState.currentVault?.name ?? "Vault")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden()

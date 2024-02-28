@@ -19,7 +19,10 @@ enum THORChainHelper {
             Coin(chain: Chain.THORChain,
                  ticker: "RUNE",
                  logo: "",
-                 address: addr, hexPublicKey: derivePubKey)
+                 address: addr, 
+                 hexPublicKey: derivePubKey,
+                 feeUnit: "RUNE" //TODO: double check the thor unit
+            )
         }
     }
 

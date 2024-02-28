@@ -3,10 +3,10 @@ import SwiftUI
 
 @MainActor
 public class EthplorerAPIService: ObservableObject {
-    @Published var addressInfo: AddressInfo?
+    @Published var addressInfo: EthAddressInfo?
     @Published var errorMessage: String?
     
-    private var cache: [String: (data: AddressInfo, timestamp: Date)] = [:]
+    private var cache: [String: (data: EthAddressInfo, timestamp: Date)] = [:]
     
     private func isCacheValid(for key: String) -> Bool {
         guard let cacheEntry = cache[key] else { return false }
@@ -42,7 +42,7 @@ public class EthplorerAPIService: ObservableObject {
                 print("Raw JSON string: \(jsonStr)")
             }
             
-            let decodedData = try JSONDecoder().decode(AddressInfo.self, from: data)
+            let decodedData = try JSONDecoder().decode(EthAddressInfo.self, from: data)
             DispatchQueue.main.async {
                 self.addressInfo = decodedData
                 print(self.addressInfo?.toString() ?? "ERROR")
@@ -72,7 +72,7 @@ public class EthplorerAPIService: ObservableObject {
         
     }
 }
-struct AddressInfo: Codable {
+struct EthAddressInfo: Codable {
     let address: String
     let ETH: ETHInfo
     let tokens: [Token]
@@ -81,10 +81,27 @@ struct AddressInfo: Codable {
         let price: Price
         let balance: Double
         let rawBalance: String
+        
+        var balanceString: String {
+            return "\(String(format: "%.8f", balance))" // Wei is too long
+        }
+        
         var balanceInUsd: String {
             let ethBalanceInUsd = balance * price.rate
             return "US$ \(String(format: "%.2f", ethBalanceInUsd))"
         }
+        
+        func getAmountInUsd(_ amount: Double) -> String {
+            let ethAmountInUsd = amount * price.rate
+            return "\(String(format: "%.2f", ethAmountInUsd))"
+        }
+        
+        func getAmountInEth(_ usdAmount: Double) -> String {
+            let ethRate = price.rate
+            let amountInEth = usdAmount / ethRate
+            return "\(String(format: "%.4f", amountInEth))"
+        }
+
     }
     
     struct Token: Codable {
@@ -92,6 +109,35 @@ struct AddressInfo: Codable {
         let balance: Int // If always integer in JSON
         let rawBalance: String
         
+        var balanceDecimal: Double {
+            let tokenBalance = Double(rawBalance) ?? 0.0
+            let tokenDecimals = Double(tokenInfo.decimals) ?? 0.0
+            let balanceInDecimal = (tokenBalance / pow(10, tokenDecimals))
+            return balanceInDecimal
+        }
+        
+        var balanceString: String {
+            let tokenBalance = Double(rawBalance) ?? 0.0
+            let tokenDecimals = Double(tokenInfo.decimals) ?? 0.0
+            let balanceInDecimal = (tokenBalance / pow(10, tokenDecimals))
+            return String(format: "%.\(tokenInfo.decimals)f", balanceInDecimal)
+        }
+        
+        func getAmountInUsd(_ amount: Double) -> String {
+            let tokenRate = tokenInfo.price.rate
+            // let tokenDecimals = Double(tokenInfo.decimals) ?? 0.0
+            // let balanceInUsd = (amount / pow(10, tokenDecimals)) * tokenRate
+            let balanceInUsd = amount * tokenRate
+            return "\(String(format: "%.2f", balanceInUsd))"
+        }
+        
+        func getAmountInTokens(_ usdAmount: Double) -> String {
+            let tokenRate = tokenInfo.price.rate
+            // let tokenDecimals = Double(tokenInfo.decimals) ?? 0.0
+            let tokenAmount = (usdAmount / tokenRate) // * pow(10, tokenDecimals)
+            return "\(String(format: "%.\(tokenInfo.decimals)f", tokenAmount))"
+        }
+
         var balanceInUsd: String {
             let tokenBalance = Double(rawBalance) ?? 0.0
             let tokenRate = tokenInfo.price.rate

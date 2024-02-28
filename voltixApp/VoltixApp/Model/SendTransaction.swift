@@ -5,9 +5,9 @@ import OSLog
 import SwiftUI
 import UniformTypeIdentifiers
 import WalletCore
+import BigInt
 
 class SendTransaction: ObservableObject, Hashable {
-    
     
     init() {
         self.toAddress = ""
@@ -55,7 +55,40 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var amountInUSD: String = ""
     @Published var memo: String = ""
     @Published var gas: String = ""
-    @Published var coin: Coin = Coin(chain: Chain.Bitcoin, ticker: "BTC", logo: "", address: "",hexPublicKey: "")
+    @Published var coin: Coin = Coin(chain: Chain.Bitcoin, ticker: "BTC", logo: "", address: "",hexPublicKey: "", feeUnit: "")
+    @Published var eth: EthAddressInfo?
+    
+    var amountInWei: BigInt {
+        return BigInt(amountDecimal * pow(10, 18))
+    }
+    
+    var token: EthAddressInfo.Token? {
+        return eth?.tokens.first(where: { $0.tokenInfo.symbol == coin.ticker})
+    }
+    
+    var totalEthTransactionCostWei: BigInt {
+        return amountInWei + feeInWei
+    }
+    
+    var amountInTokenWei: BigInt {
+        
+        let decimals = Double(token?.tokenInfo.decimals ?? "18") ?? 18.0 // The default is always in WEI unless the token has a different one like UDSC
+        
+        return BigInt(amountDecimal * pow(10, decimals))
+    }
+    
+    // The fee comes in GWEI
+    var feeInWei: BigInt {
+        let gasString: String = gas
+        if let gasGwei = BigInt(gasString) {
+            let gasWei: BigInt = gasGwei * 1000000000 // Equivalent to 10^9
+            return gasWei
+        } else {
+            print("Invalid gas value")
+        }
+        return 0
+        
+    }
     
     var amountInSats: Int64 {
         return Int64(amountDecimal * 100000000)
@@ -81,20 +114,20 @@ class SendTransaction: ObservableObject, Hashable {
             return
         }
         
-        // Use the path for the address if the host is nil, which can be the case for some URIs.
+            // Use the path for the address if the host is nil, which can be the case for some URIs.
         toAddress = url.host ?? url.path
         
         url.queryItems?.forEach { item in
             switch item.name {
-            case "amount":
-                amount = item.value ?? ""
-            case "label", "message":
-                // For simplicity, appending label and message to memo, separated by spaces
-                if let value = item.value, !value.isEmpty {
-                    memo += (memo.isEmpty ? "" : " ") + value
-                }
-            default:
-                print("Unknown query item: \(item.name)")
+                case "amount":
+                    amount = item.value ?? ""
+                case "label", "message":
+                        // For simplicity, appending label and message to memo, separated by spaces
+                    if let value = item.value, !value.isEmpty {
+                        memo += (memo.isEmpty ? "" : " ") + value
+                    }
+                default:
+                    print("Unknown query item: \(item.name)")
             }
         }
     }
