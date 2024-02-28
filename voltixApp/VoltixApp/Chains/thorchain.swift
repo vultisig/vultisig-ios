@@ -100,7 +100,6 @@ enum THORChainHelper {
             do {
                 let hashes = TransactionCompiler.preImageHashes(coinType: .thorchain, txInputData: inputData)
                 let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
-                print(String(data: preSigningOutput.data, encoding: .utf8))
                 return .success([preSigningOutput.dataHash.hexString])
             } catch {
                 return .failure(HelperError.runtimeError("fail to get preSignedImageHash,error:\(error.localizedDescription)"))
