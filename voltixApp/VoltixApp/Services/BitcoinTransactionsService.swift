@@ -5,9 +5,30 @@ public class BitcoinTransactionsService: ObservableObject {
     @Published var walletData: [BitcoinTransactionMempool]?
     @Published var errorMessage: String?
     
+        // Cache structure to hold data and timestamp
+    private struct CacheEntry {
+        let data: [BitcoinTransactionMempool]
+        let timestamp: Date
+    }
+    
+        // Dictionary to store cache entries with userAddress as the key
+    private var cache: [String: CacheEntry] = [:]
+    
+        // Function to check if cache for a given userAddress is valid (not older than 5 minutes)
+    private func isCacheValid(for userAddress: String) -> Bool {
+        if let entry = cache[userAddress], -entry.timestamp.timeIntervalSinceNow < 300 {
+            return true // Cache is valid if less than 5 minutes old
+        }
+        return false
+    }
+    
+    
     func fetchTransactions(_ userAddress: String) async {
-        
-        print("https://mempool.space/api/address/\(userAddress)/txs")
+            // Use cache if it's valid for the requested userAddress
+        if isCacheValid(for: userAddress), let cachedData = cache[userAddress]?.data {
+            self.walletData = cachedData
+            return
+        }
         
         guard let url = URL(string: "https://mempool.space/api/address/\(userAddress)/txs") else {
             errorMessage = "Invalid URL"
@@ -19,22 +40,23 @@ public class BitcoinTransactionsService: ObservableObject {
             let decoder = JSONDecoder()
             let decodedData = try decoder.decode([BitcoinTransactionMempool].self, from: data)
             
-            self.walletData = decodedData.map { transaction in
+            let updatedData = decodedData.map { transaction in
                 BitcoinTransactionMempool(txid: transaction.txid, version: transaction.version, locktime: transaction.locktime, vin: transaction.vin, vout: transaction.vout, fee: transaction.fee, status: transaction.status, userAddress: userAddress)
             }
+            
+            cache[userAddress] = CacheEntry(data: updatedData, timestamp: Date())
+            
+            self.walletData = updatedData
         } catch let DecodingError.dataCorrupted(context) {
-            print(context)
+            errorMessage = "Data corrupted: \(context)"
         } catch let DecodingError.keyNotFound(key, context) {
-            print("Key '\(key)' not found:", context.debugDescription)
-            print("codingPath:", context.codingPath)
+            errorMessage = "Key '\(key)' not found: \(context.debugDescription)"
         } catch let DecodingError.valueNotFound(value, context) {
-            print("Value '\(value)' not found:", context.debugDescription)
-            print("codingPath:", context.codingPath)
-        } catch let DecodingError.typeMismatch(type, context)  {
-            print("Type '\(type)' mismatch:", context.debugDescription)
-            print("codingPath:", context.codingPath)
+            errorMessage = "Value '\(value)' not found: \(context.debugDescription)"
+        } catch let DecodingError.typeMismatch(type, context) {
+            errorMessage = "Type '\(type)' mismatch: \(context.debugDescription)"
         } catch {
-            print("error: ", error)
+            errorMessage = "Error: \(error.localizedDescription)"
         }
     }
     
@@ -45,7 +67,6 @@ public class BitcoinTransactionsService: ObservableObject {
         case unexpectedResponse
         case unknown(Error) // Wraps an unknown error
     }
-    
     
     public static func broadcastTransaction(_ rawTransaction: String) async throws -> String {
         let urlString = "https://mempool.space/api/tx"

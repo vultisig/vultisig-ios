@@ -72,12 +72,9 @@ struct SendInputDetailsView: View {
                     }.padding(.vertical)
                     Group {
                         VStack(alignment: .leading) {
-                            Text("From").font(
-                                Font.custom("Menlo", size: 18).weight(.bold)
-                            ).padding(.bottom)
+                            Text("From").font(Font.custom("Menlo", size: 18).weight(.bold)).padding(.bottom)
                             Text(tx.fromAddress)
                         }
-                        
                     }.padding(.vertical)
                     Group {
                         HStack {
@@ -196,8 +193,6 @@ struct SendInputDetailsView: View {
                                     Button(action: {
                                         if let walletData = uxto.walletData {
                                             self.tx.amount = walletData.balanceInBTC
-                                        } else {
-                                            Text("Error to fetch the data")
                                         }
                                     }) {
                                         Text("MAX")
@@ -301,8 +296,8 @@ struct SendInputDetailsView: View {
             isValidForm = false
         }
         
-        let amount = tx.amountDecimal ?? Double(0)
-        let gasFee = tx.gasDecimal ?? Double(0)
+        let amount = tx.amountDecimal
+        let gasFee = tx.gasDecimal 
         
         if amount <= 0 {
             formErrorMessages += "Amount must be a positive number. Please correct your entry. \n"
@@ -349,7 +344,7 @@ struct SendInputDetailsView: View {
             } else if tx.coin.chain.name.lowercased() == "ethereum" {
                 self.coinBalance = "0"
                 self.balanceUSD = "US$ 0,00"
-                self.walletAddress = "TO BE IMPLEMENTED"
+                self.walletAddress = tx.fromAddress
             }
         }
         isLoading = false
