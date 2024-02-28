@@ -65,7 +65,7 @@ struct AssetsList: View {
                                     if coin.ticker == "Ethereum" {
                                         vault.coins.append(coin)
                                     } else {
-                                        let newCoin = Coin(chain: coin.chain, ticker: item.ticker, logo: item.image, address: coin.address, hexPublicKey: coin.hexPublicKey)
+                                        let newCoin = Coin(chain: coin.chain, ticker: item.ticker, logo: item.image, address: coin.address, hexPublicKey: coin.hexPublicKey, feeUnit: "GWEI")
                                         vault.coins.append(newCoin)
                                     }
                                 case .failure(let error):

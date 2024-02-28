@@ -45,13 +45,11 @@ struct SendInputDetailsView: View {
     @State private var isValidForm = true
     @State private var keyboardOffset: CGFloat = 0
     @State private var amountInUsd: Double = 0.0
-    
     @State private var coinBalance: String = "0"
     @State private var balanceUSD: String = "0"
     @State private var walletAddress: String = ""
     @State private var isCollapsed = true
     @State private var isLoading = false
-    @State private var feeUnit: String = "SATS"
     @State private var priceRate = 0.0
     
     @FocusState private var focusedField: Field?
@@ -258,7 +256,7 @@ struct SendInputDetailsView: View {
                                 .background(Color.gray.opacity(0.5))
                                 .cornerRadius(10)
                             Spacer()
-                            Text("\($tx.gas.wrappedValue) \(feeUnit)")
+                            Text("\($tx.gas.wrappedValue) \(tx.coin.feeUnit ?? "NO UNIT")")
                                 .font(Font.custom("Menlo", size: 18).weight(.bold))
                         }
                     }.padding(.bottom)
@@ -344,28 +342,34 @@ struct SendInputDetailsView: View {
         print("Total transaction cost: \(totalTransactionCost)")
         
         
-        var walletBalance: Double = 0.0;
+        var walletBalance: Int = 0;
         
             // TODO: Move this to an abstraction
             // This is only for MVP
         if tx.coin.chain.name.lowercased() == "bitcoin" {
-            walletBalance = uxto.walletData?.balanceDecimal ?? 0.0
+            walletBalance = uxto.walletData?.balance ?? 0
+            
+            
+            if totalTransactionCost > Double(walletBalance) {
+                formErrorMessages += "The combined amount and fee exceed your wallet's balance. Please adjust to proceed. \n"
+                logger.log("Total transaction cost exceeds wallet balance.")
+                isValidForm = false
+            }
+            
         } else if tx.coin.chain.name.lowercased() == "ethereum" {
             if tx.coin.ticker.uppercased() == "ETH" {
-                walletBalance = eth.addressInfo?.ETH.balance ?? 0.0
+                walletBalance = Int(eth.addressInfo?.ETH.rawBalance ?? "0") ?? 0 // it is in WEI
             } else {
                     //TODO: We must make this tokens all dynamic
                 if let tokenInfo = eth.addressInfo?.tokens.first(where: {$0.tokenInfo.symbol == "USDC"}) {
-                    walletBalance = tokenInfo.balanceDecimal
+                    walletBalance = Int(tokenInfo.rawBalance ?? "0") ?? 0 // Check the decimals because USDC only has 6
                 }
             }
         }
         
-        if totalTransactionCost > Double(walletBalance) {
-            formErrorMessages += "The combined amount and fee exceed your wallet's balance. Please adjust to proceed. \n"
-            logger.log("Total transaction cost exceeds wallet balance.")
-            isValidForm = false
-        }
+        // WE will need to convert the balances correctly to/from WEI and GWEI
+        
+        
         
         return isValidForm
     }
@@ -379,20 +383,18 @@ struct SendInputDetailsView: View {
                 self.coinBalance = uxto.walletData?.balanceInBTC ?? "0"
                 self.balanceUSD = uxto.walletData?.balanceInUSD(usdPrice: priceRateUsd) ?? "0"
                 self.walletAddress = uxto.walletData?.address ?? ""
-                self.feeUnit = "SATS"
             }
         } else if tx.coin.chain.name.lowercased() == "ethereum" {
                 // We need to pass it to the next view
             tx.eth = eth.addressInfo
-            self.feeUnit = "GWEI"
             self.walletAddress = eth.addressInfo?.address ?? ""
             if tx.coin.ticker.uppercased() == "ETH" {
-                self.coinBalance = "\(eth.addressInfo?.ETH.balance ?? 0.0)"
+                self.coinBalance = eth.addressInfo?.ETH.balanceString ?? "0.0"
                 self.balanceUSD = eth.addressInfo?.ETH.balanceInUsd ?? ""
             } else {
                 if let tokenInfo = eth.addressInfo?.tokens.first(where: {$0.tokenInfo.symbol == "USDC"}) {
+                    self.coinBalance = tokenInfo.balanceString
                     self.balanceUSD = tokenInfo.balanceInUsd
-                    self.coinBalance = "\(tokenInfo.balance)"
                 }
             }
         }

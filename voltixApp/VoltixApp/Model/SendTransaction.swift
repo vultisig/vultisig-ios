@@ -55,7 +55,7 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var amountInUSD: String = ""
     @Published var memo: String = ""
     @Published var gas: String = ""
-    @Published var coin: Coin = Coin(chain: Chain.Bitcoin, ticker: "BTC", logo: "", address: "",hexPublicKey: "")
+    @Published var coin: Coin = Coin(chain: Chain.Bitcoin, ticker: "BTC", logo: "", address: "",hexPublicKey: "", feeUnit: "")
     @Published var eth: EthAddressInfo?
     
     var amountInSats: Int64 {
@@ -82,20 +82,20 @@ class SendTransaction: ObservableObject, Hashable {
             return
         }
         
-        // Use the path for the address if the host is nil, which can be the case for some URIs.
+            // Use the path for the address if the host is nil, which can be the case for some URIs.
         toAddress = url.host ?? url.path
         
         url.queryItems?.forEach { item in
             switch item.name {
-            case "amount":
-                amount = item.value ?? ""
-            case "label", "message":
-                // For simplicity, appending label and message to memo, separated by spaces
-                if let value = item.value, !value.isEmpty {
-                    memo += (memo.isEmpty ? "" : " ") + value
-                }
-            default:
-                print("Unknown query item: \(item.name)")
+                case "amount":
+                    amount = item.value ?? ""
+                case "label", "message":
+                        // For simplicity, appending label and message to memo, separated by spaces
+                    if let value = item.value, !value.isEmpty {
+                        memo += (memo.isEmpty ? "" : " ") + value
+                    }
+                default:
+                    print("Unknown query item: \(item.name)")
             }
         }
     }

@@ -23,7 +23,9 @@ enum EthereumHelper {
                  ticker: "ETH",
                  logo: "",
                  address: addr,
-                 hexPublicKey: derivePubKey)
+                 hexPublicKey: derivePubKey,
+                 feeUnit: "GWEI"
+            )
         }
     }
 
