@@ -50,16 +50,22 @@ struct AssetsList: View {
                 } else {
                     switch item.chainName {
                         case Chain.THORChain.name:
-                            print("do it later")
+                            let runeCoinResult = THORChainHelper.getRUNECoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
+                            switch runeCoinResult {
+                                case .success(let coin):
+                                    vault.coins.append(coin)
+                                case .failure(let error):
+                                    logger.info("fail to get thorchain address,error:\(error.localizedDescription)")
+                            }
                         case Chain.Ethereum.name:
-                            var coinResult = EthereumHelper.getEthereum(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
+                            let coinResult = EthereumHelper.getEthereum(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
                             switch coinResult {
-                                case .success(var coin):
+                                case .success(let coin):
                                     // all coins on Ethereum share the same address
                                     if coin.ticker == "Ethereum" {
                                         vault.coins.append(coin)
                                     } else {
-                                        let newCoin = Coin(chain: coin.chain, ticker: item.ticker, logo: item.image, address: coin.address)
+                                        let newCoin = Coin(chain: coin.chain, ticker: item.ticker, logo: item.image, address: coin.address, hexPublicKey: coin.hexPublicKey)
                                         vault.coins.append(newCoin)
                                     }
                                 case .failure(let error):
@@ -74,8 +80,6 @@ struct AssetsList: View {
                                     logger.info("fail to get bitcoin address,error:\(err.localizedDescription)")
                             }
 
-                        case Chain.Ethereum.name:
-                            vault.coins.append(Coin(chain: Chain.Ethereum, ticker: "ETH", logo: "", address: "TO BE IMPLEMENTED"))
                         default:
                             print("do it later")
                     }

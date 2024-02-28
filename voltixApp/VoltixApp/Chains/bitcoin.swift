@@ -21,7 +21,11 @@ enum BitcoinHelper {
     static func getBitcoin(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
         return getAddressFromPubKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode)
             .map { addr in
-                Coin(chain: Chain.Bitcoin, ticker: "BTC", logo: "", address: addr)
+                Coin(chain: Chain.Bitcoin,
+                     ticker: "BTC",
+                     logo: "",
+                     address: addr,
+                     hexPublicKey: getBitcoinPubKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode))
             }
     }
     

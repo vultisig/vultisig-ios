@@ -11,11 +11,19 @@ import WalletCore
 enum EthereumHelper {
     static let weiPerGWei: Int64 = 1_000_000_000
     static func getEthereum(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
+        let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
+                                                            hexChainCode: hexChainCode,
+                                                            derivePath: CoinType.ethereum.derivationPath())
+        if derivePubKey.isEmpty {
+            return .failure(HelperError.runtimeError("derived public key is empty"))
+        }
+
         return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).map { addr in
             Coin(chain: Chain.Ethereum,
                  ticker: "ETH",
                  logo: "",
-                 address: addr)
+                 address: addr,
+                 hexPublicKey: derivePubKey)
         }
     }
 

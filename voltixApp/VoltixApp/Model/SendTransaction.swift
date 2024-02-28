@@ -55,7 +55,7 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var amountInUSD: String = ""
     @Published var memo: String = ""
     @Published var gas: String = ""
-    @Published var coin: Coin = Coin(chain: Chain.Bitcoin, ticker: "BTC", logo: "", address: "")
+    @Published var coin: Coin = Coin(chain: Chain.Bitcoin, ticker: "BTC", logo: "", address: "",hexPublicKey: "")
     
     var amountInSats: Int64 {
         return Int64(amountDecimal * 100000000)

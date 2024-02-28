@@ -89,7 +89,6 @@
 		DEEDAEE52B8AFB5D005170E8 /* common.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEDAEE42B8AFB5D005170E8 /* common.swift */; };
 		DEEDAEE82B8B50A4005170E8 /* BigInt in Frameworks */ = {isa = PBXBuildFile; productRef = DEEDAEE72B8B50A4005170E8 /* BigInt */; };
 		DEFC7BFB2B8D87370090B07A /* erc20.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC7BFA2B8D87370090B07A /* erc20.swift */; };
-		DEFC7BFD2B8DED680090B07A /* thorchain.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC7BFC2B8DED680090B07A /* thorchain.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -193,7 +192,6 @@
 		DEEDAEE22B8AF8B1005170E8 /* publickey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = publickey.swift; sourceTree = "<group>"; };
 		DEEDAEE42B8AFB5D005170E8 /* common.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = common.swift; sourceTree = "<group>"; };
 		DEFC7BFA2B8D87370090B07A /* erc20.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = erc20.swift; sourceTree = "<group>"; };
-		DEFC7BFC2B8DED680090B07A /* thorchain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = thorchain.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -397,7 +395,6 @@
 				DEEDAEE22B8AF8B1005170E8 /* publickey.swift */,
 				DEEDAEE42B8AFB5D005170E8 /* common.swift */,
 				DEFC7BFA2B8D87370090B07A /* erc20.swift */,
-				DEFC7BFC2B8DED680090B07A /* thorchain.swift */,
 			);
 			path = Chains;
 			sourceTree = "<group>";
@@ -675,7 +672,6 @@
 				DE49A1B22B6A0F77000F3AFB /* JoinKeygenView.swift in Sources */,
 				DE15729E2B70F284009BC7C5 /* JoinKeysignView.swift in Sources */,
 				DEEDAEE12B8AF7EF005170E8 /* eth.swift in Sources */,
-				DEFC7BFD2B8DED680090B07A /* thorchain.swift in Sources */,
 				D9AD8EEC2B6730ED0009F8D5 /* VaultAssetsView.swift in Sources */,
 				DEBF93972B8D5FEF002868CD /* KeysignPayload.swift in Sources */,
 				D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */,

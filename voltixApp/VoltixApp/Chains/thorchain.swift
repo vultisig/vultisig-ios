@@ -7,6 +7,20 @@ import Foundation
 import WalletCore
 
 enum THORChainHelper {
+    static func getRUNECoin(hexPubKey: String, hexChainCode: String)-> Result<Coin,Error>{
+        let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
+                                                            hexChainCode: hexChainCode,
+                                                            derivePath: CoinType.thorchain.derivationPath())
+        if derivePubKey.isEmpty {
+            return .failure(HelperError.runtimeError("derived public key is empty"))
+        }
+        return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).map { addr in
+            Coin(chain: Chain.THORChain,
+                 ticker: "RUNE",
+                 logo: "",
+                 address: addr, hexPublicKey: derivePubKey)
+        }
+    }
     static func getAddressFromPublicKey(hexPubKey: String, hexChainCode: String) -> Result<String, Error> {
         let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
                                                             hexChainCode: hexChainCode,
@@ -33,8 +47,12 @@ enum THORChainHelper {
         guard case .THORChain(let accountNumber, let sequence) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get account number and sequence"))
         }
+        guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey!) else {
+            return .failure(HelperError.runtimeError("invalid hex public key"))
+        }
         let coin = CoinType.thorchain
         let input = CosmosSigningInput.with {
+            $0.publicKey = pubKeyData
             $0.signingMode = .protobuf
             $0.chainID = coin.chainId
             $0.accountNumber = accountNumber
