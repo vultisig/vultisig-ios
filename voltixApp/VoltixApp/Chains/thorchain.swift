@@ -40,10 +40,11 @@ enum THORChainHelper {
         guard keysignPayload.coin.chain.ticker == "RUNE" else {
             return .failure(HelperError.runtimeError("coin is not RUNE"))
         }
-        guard let fromAddr = keysignPayload.coin.address.data(using: .utf8) else {
+        guard let fromAddr = AnyAddress(string: keysignPayload.coin.address, coin: .thorchain) else {
             return .failure(HelperError.runtimeError("\(keysignPayload.coin.address) is invalid"))
         }
-        guard let toAddress = keysignPayload.toAddress.data(using: .utf8) else {
+        
+        guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .thorchain) else {
             return .failure(HelperError.runtimeError("\(keysignPayload.toAddress) is invalid"))
         }
         guard case .THORChain(let accountNumber, let sequence) = keysignPayload.chainSpecific else {
@@ -60,23 +61,27 @@ enum THORChainHelper {
             $0.chainID = coin.chainId
             $0.accountNumber = accountNumber
             $0.sequence = sequence
-            $0.mode = .sync
+            $0.mode = .block
             if let memo = keysignPayload.memo {
                 $0.memo = memo
             }
             $0.messages = [CosmosMessage.with {
                 $0.thorchainSendMessage = CosmosMessage.THORChainSend.with {
-                    $0.fromAddress = fromAddr
+                    $0.fromAddress = fromAddr.data
                     $0.amounts = [CosmosAmount.with {
                         $0.denom = "rune"
                         $0.amount = String(keysignPayload.toAmount)
                     }]
-                    $0.toAddress = toAddress
+                    $0.toAddress = toAddress.data
                 }
             }]
             // THORChain fee is 0.02 RUNE
             $0.fee = CosmosFee.with {
                 $0.gas = 20000000
+                $0.amounts = [CosmosAmount.with {
+                    $0.denom = "rune"
+                    $0.amount = "20000000"
+                }]
             }
         }
 
