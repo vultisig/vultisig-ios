@@ -55,7 +55,7 @@ enum THORChainHelper {
         let coin = CoinType.thorchain
         let input = CosmosSigningInput.with {
             $0.publicKey = pubKeyData
-            $0.signingMode = .protobuf
+            $0.signingMode = .json
             $0.chainID = coin.chainId
             $0.accountNumber = accountNumber
             $0.sequence = sequence
