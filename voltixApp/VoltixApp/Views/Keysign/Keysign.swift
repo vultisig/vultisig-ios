@@ -132,19 +132,32 @@ struct KeysignView: View {
                                 }
                             }
                         case "USDC":
-                             let result = ERC20Helper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
-                             switch result {
-                             case .success(let tx):
-                                 print(tx)
-                             case .failure(let err):
-                                 switch err {
-                                 case HelperError.runtimeError(let errDetail):
-                                     logger.error("Failed to get signed transaction,error:\(errDetail)")
-                                 default:
-                                     logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
-                                 }
-                             }
-                             default:
+                            let result = ERC20Helper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                            switch result {
+                            case .success(let tx):
+                                print(tx)
+                            case .failure(let err):
+                                switch err {
+                                case HelperError.runtimeError(let errDetail):
+                                    logger.error("Failed to get signed transaction,error:\(errDetail)")
+                                default:
+                                    logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
+                                }
+                            }
+                        case "RUNE":
+                            let result = THORChainHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                            switch result {
+                            case .success(let tx):
+                                print(tx)
+                            case .failure(let err):
+                                switch err {
+                                case HelperError.runtimeError(let errDetail):
+                                    logger.error("Failed to get signed transaction,error:\(errDetail)")
+                                default:
+                                    logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
+                                }
+                            }
+                        default:
                             logger.error("unsupported coin:\(keysignPayload.coin.ticker)")
                         }
                     }
@@ -192,6 +205,8 @@ struct KeysignView: View {
                         keysignReq.derivePath = CoinType.bitcoin.derivationPath()
                     case "ETH":
                         keysignReq.derivePath = CoinType.ethereum.derivationPath()
+                    case "RUNE":
+                        keysignReq.derivePath = CoinType.thorchain.derivationPath()
                     default:
                         logger.error("don't support this coin type")
                         self.currentStatus = .KeysignFailed

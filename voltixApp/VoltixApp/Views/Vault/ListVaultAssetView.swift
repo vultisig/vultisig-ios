@@ -62,15 +62,15 @@ struct ListVaultAssetView: View {
                 
                 Button("test", systemImage: "doc.questionmark") {
                     guard let vault = appState.currentVault else { return }
-                    let coin = vault.coins.first { $0.ticker == "USDC" }
+                    let coin = vault.coins.first { $0.ticker == "RUNE" }
                     if let coin {
                         self.presentationStack.append(.KeysignDiscovery(KeysignPayload(
                             coin: coin,
-                            toAddress: "0x6f2E21B6E20F3Ce7A1a8Ec132FD69CB6Fc603c3C",
-                            toAmount: 100_000_000,
-                            chainSpecific: BlockChainSpecific.ERC20(maxFeePerGasGwei: 42, priorityFeeGwei: 1, nonce: 1, gasLimit: 95000, contractAddr: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"),
+                            toAddress: "thor1kerhp6n4hywg7jjphedds5qgyzrhg8murqtnnf",
+                            toAmount: 100_000_0, // 0.01 RUNE
+                            chainSpecific: BlockChainSpecific.THORChain(accountNumber: 96761, sequence: 0),
                             utxos: [],
-                            memo: nil)))
+                            memo: "voltix")))
                     }
                 }.buttonStyle(PlainButtonStyle())
             }
