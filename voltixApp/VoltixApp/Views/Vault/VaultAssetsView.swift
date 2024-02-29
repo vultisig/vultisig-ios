@@ -6,7 +6,6 @@ struct VaultAssetsView: View {
     @StateObject var uxto: UnspentOutputsService = UnspentOutputsService()
     @StateObject var eth: EthplorerAPIService = EthplorerAPIService()
     @ObservedObject var tx: SendTransaction
-    @StateObject var cryptoPrice = CryptoPriceService()
     @State private var coinBalance: String = "0"
     @State private var balanceUSD: String = "0"
     @State private var walletAddress: String = ""
@@ -19,7 +18,7 @@ struct VaultAssetsView: View {
                 VStack(alignment: .leading) {
                     if isLoading {
                         ProgressView().progressViewStyle(.circular).padding(2)
-                    } else if let errorMessage = cryptoPrice.errorMessage {
+                    } else if let errorMessage = CryptoPriceService.shared.errorMessage {
                         Text(errorMessage).foregroundColor(.red)
                     } else {
                         content
@@ -83,9 +82,10 @@ struct VaultAssetsView: View {
     private func loadData() {
         Task {
             isLoading = true
-            await cryptoPrice.fetchCryptoPrices(for: tx.coin.chain.name.lowercased(), for: "usd")
             
             if tx.coin.chain.name.lowercased() == "bitcoin" {
+                // had to use the singleton to get from the cache
+                await CryptoPriceService.shared.fetchCryptoPrices(for: tx.coin.chain.name.lowercased(), for: "usd")
                 await uxto.fetchUnspentOutputs(for: tx.fromAddress)
             } else if tx.coin.chain.name.lowercased() == "ethereum" {
                 await eth.getEthInfo(for: tx.fromAddress)
@@ -99,31 +99,33 @@ struct VaultAssetsView: View {
     }
     
     private func updateState() {
-        if let priceRateUsd = cryptoPrice.cryptoPrices?.prices[tx.coin.chain.name.lowercased()]?["usd"] {
+        
+        self.balanceUSD = "US$ 0,00"
+        self.coinBalance = "0.0"
+        
+        if tx.coin.chain.name.lowercased() == "bitcoin" {
+            if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[tx.coin.chain.name.lowercased()]?["usd"] {
+                // It should come from the cache
+                print("BTC price RATE \(priceRateUsd)")
+                self.balanceUSD = uxto.walletData?.balanceInUSD(usdPrice: priceRateUsd) ?? "US$ 0,00"
+            }
+            self.coinBalance = uxto.walletData?.balanceInBTC ?? "0.0"
+            self.walletAddress = uxto.walletData?.address ?? ""
             
-            if tx.coin.chain.name.lowercased() == "bitcoin" {
-                self.coinBalance = uxto.walletData?.balanceInBTC ?? "0"
-                self.balanceUSD = uxto.walletData?.balanceInUSD(usdPrice: priceRateUsd) ?? "0"
-                self.walletAddress = uxto.walletData?.address ?? ""
-            } else if tx.coin.chain.name.lowercased() == "ethereum" {
-                
+        } else if tx.coin.chain.name.lowercased() == "ethereum" {
                 // We need to pass it to the next view
-                tx.eth = eth.addressInfo
-                
-                self.walletAddress = eth.addressInfo?.address ?? ""
-                
-                if tx.coin.ticker.uppercased() == "ETH" {
-                    self.coinBalance = eth.addressInfo?.ETH.balanceString ?? "0.0" // "\(eth.addressInfo?.ETH.balance ?? 0.0)"
-                    self.balanceUSD = eth.addressInfo?.ETH.balanceInUsd ?? ""
-                } else {
-                    if let tokenInfo = eth.addressInfo?.tokens.first(where: {$0.tokenInfo.symbol == "USDC"}) {
-                        self.balanceUSD = tokenInfo.balanceInUsd
-                        self.coinBalance = tokenInfo.balanceString
-                    }
+            tx.eth = eth.addressInfo
+            self.walletAddress = eth.addressInfo?.address ?? ""
+            if tx.coin.ticker.uppercased() == "ETH" {
+                self.coinBalance = eth.addressInfo?.ETH.balanceString ?? "0.0" // "\(eth.addressInfo?.ETH.balance ?? 0.0)"
+                self.balanceUSD = eth.addressInfo?.ETH.balanceInUsd ?? "US$ 0,00"
+            } else {
+                if let tokenInfo = eth.addressInfo?.tokens?.first(where: {$0.tokenInfo.symbol == "USDC"}) {
+                    self.balanceUSD = tokenInfo.balanceInUsd
+                    self.coinBalance = tokenInfo.balanceString
                 }
             }
         }
+        
     }
-    
-    
 }
