@@ -39,13 +39,13 @@ public class EthplorerAPIService: ObservableObject {
             
                 // Print raw JSON string for debugging
             if let jsonStr = String(data: data, encoding: .utf8) {
-                print("Raw JSON string: \(jsonStr)")
+                 // print("Raw JSON string: \(jsonStr)")
             }
             
             let decodedData = try JSONDecoder().decode(EthAddressInfo.self, from: data)
             DispatchQueue.main.async {
                 self.addressInfo = decodedData
-                print(self.addressInfo?.toString() ?? "ERROR")
+                // print(self.addressInfo?.toString() ?? "ERROR")
                 self.cache[cacheKey] = (data: decodedData, timestamp: Date())
             }
         } catch {
@@ -65,7 +65,7 @@ public class EthplorerAPIService: ObservableObject {
                         errorDescription = "Error: \(error.localizedDescription)"
                 }
                 self.errorMessage = errorDescription
-                print(self.errorMessage ?? "Unknown error")
+                // print(self.errorMessage ?? "Unknown error")
             }
         }
         
@@ -75,7 +75,7 @@ public class EthplorerAPIService: ObservableObject {
 struct EthAddressInfo: Codable {
     let address: String
     let ETH: ETHInfo
-    let tokens: [Token]
+    let tokens: [Token]?
     
     struct ETHInfo: Codable {
         let price: Price

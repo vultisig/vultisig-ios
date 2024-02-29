@@ -16,7 +16,8 @@ struct ListVaultAssetView: View {
         switch colorScheme {
             case .light:
                     // Apply a light mode-specific color
-                return Color(UIColor.systemGroupedBackground)
+                // return Color(UIColor.systemGroupedBackground)
+                return Color(UIColor.systemFill)
             case .dark:
                     // Apply the dark mode color
                 return Color(UIColor.secondarySystemGroupedBackground)
