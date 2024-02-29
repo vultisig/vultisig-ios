@@ -63,13 +63,13 @@ struct ListVaultAssetView: View {
                 
                 Button("test", systemImage: "doc.questionmark") {
                     guard let vault = appState.currentVault else { return }
-                    let coin = vault.coins.first { $0.ticker == "RUNE" }
+                    let coin = vault.coins.first { $0.ticker == "SOL" }
                     if let coin {
                         self.presentationStack.append(.KeysignDiscovery(KeysignPayload(
                             coin: coin,
                             toAddress: "thor1kerhp6n4hywg7jjphedds5qgyzrhg8murqtnnf",
                             toAmount: 100_000_0, // 0.01 RUNE
-                            chainSpecific: BlockChainSpecific.THORChain(accountNumber: 96761, sequence: 0),
+                            chainSpecific: BlockChainSpecific.Solana(recentBlockHash: "D9xgxNtjPfZMNDnQbywr4h3XNy67pN8KNJfKmHPwoqu9"),
                             utxos: [],
                             memo: "voltix")))
                     }
