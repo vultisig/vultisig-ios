@@ -37,7 +37,7 @@ struct SendInputDetailsView: View {
     @Binding var presentationStack: [CurrentScreen]
     @StateObject var uxto: UnspentOutputsService = UnspentOutputsService()
     @StateObject var eth: EthplorerAPIService = EthplorerAPIService()
-    @StateObject var cryptoPrice = CryptoPriceService()
+    @StateObject var cryptoPrice = CryptoPriceService.shared
     @ObservedObject var tx: SendTransaction
     @State private var isShowingScanner = false
     @State private var isValidAddress = false
@@ -146,7 +146,7 @@ struct SendInputDetailsView: View {
                                                         if tx.coin.ticker.uppercased() == "ETH" {
                                                             tx.amountInUSD = eth.addressInfo?.ETH.getAmountInUsd(newValueDouble) ?? ""
                                                         } else {
-                                                            if let tokenInfo = eth.addressInfo?.tokens.first(where: {$0.tokenInfo.symbol == "USDC"}) {
+                                                            if let tokenInfo = eth.addressInfo?.tokens?.first(where: {$0.tokenInfo.symbol == "USDC"}) {
                                                                 tx.amountInUSD = tokenInfo.getAmountInUsd(newValueDouble)
                                                             }
                                                         }
@@ -195,7 +195,7 @@ struct SendInputDetailsView: View {
                                                         if tx.coin.ticker.uppercased() == "ETH" {
                                                             tx.amount = eth.addressInfo?.ETH.getAmountInEth(newValueDouble) ?? ""
                                                         } else {
-                                                            if let tokenInfo = eth.addressInfo?.tokens.first(where: {$0.tokenInfo.symbol == "USDC"}) {
+                                                            if let tokenInfo = eth.addressInfo?.tokens?.first(where: {$0.tokenInfo.symbol == "USDC"}) {
                                                                 tx.amount = tokenInfo.getAmountInTokens(newValueDouble)
                                                             }
                                                         }
@@ -366,7 +366,7 @@ struct SendInputDetailsView: View {
                 
             } else {
                 
-                if let tokenInfo = eth.addressInfo?.tokens.first(where: {$0.tokenInfo.symbol == tx.coin.ticker.uppercased()}) {
+                if let tokenInfo = eth.addressInfo?.tokens?.first(where: {$0.tokenInfo.symbol == tx.coin.ticker.uppercased()}) {
                 
                     print ("tx.feeInWei \(tx.feeInWei)")
                     print ("ethBalanceInWei \(ethBalanceInWei)")
@@ -418,7 +418,7 @@ struct SendInputDetailsView: View {
                 self.coinBalance = eth.addressInfo?.ETH.balanceString ?? "0.0"
                 self.balanceUSD = eth.addressInfo?.ETH.balanceInUsd ?? ""
             } else {
-                if let tokenInfo = eth.addressInfo?.tokens.first(where: {$0.tokenInfo.symbol == "USDC"}) {
+                if let tokenInfo = eth.addressInfo?.tokens?.first(where: {$0.tokenInfo.symbol == "USDC"}) {
                     self.coinBalance = tokenInfo.balanceString
                     self.balanceUSD = tokenInfo.balanceInUsd
                 }

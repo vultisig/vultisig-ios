@@ -63,7 +63,7 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     var token: EthAddressInfo.Token? {
-        return eth?.tokens.first(where: { $0.tokenInfo.symbol == coin.ticker})
+        return eth?.tokens?.first(where: { $0.tokenInfo.symbol == coin.ticker})
     }
     
     var totalEthTransactionCostWei: BigInt {
