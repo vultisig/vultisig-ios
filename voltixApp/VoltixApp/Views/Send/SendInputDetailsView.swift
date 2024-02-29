@@ -12,6 +12,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 import WalletCore
 import Combine
+import UIKit
 
 private class DebounceHelper {
     static let shared = DebounceHelper()
@@ -49,8 +50,6 @@ struct SendInputDetailsView: View {
     @State private var keyboardOffset: CGFloat = 0
     @State private var amountInUsd: Double = 0.0
     @State private var coinBalance: String = "0"
-    @State private var balanceUSD: String = "0"
-    @State private var walletAddress: String = ""
     @State private var isCollapsed = true
     @State private var isLoading = false
     @State private var priceRate = 0.0
@@ -86,6 +85,19 @@ struct SendInputDetailsView: View {
                                 .font(Font.custom("Menlo", size: 18).weight(.bold))
                                 .foregroundColor(.red)
                             Spacer()
+                            Button("", systemImage: "doc.on.clipboard") {
+                                if let clipboardContent = UIPasteboard.general.string {
+                                    tx.toAddress = clipboardContent
+                                        // Trigger the validation logic after pasting
+                                    if tx.coin.ticker.uppercased() == "BTC" {
+                                        isValidAddress = BitcoinHelper.validateAddress(clipboardContent)
+                                    } else if tx.coin.chain.name.lowercased() == "ethereum" {
+                                        isValidAddress = CoinType.ethereum.validate(address: clipboardContent)
+                                    }
+                                }
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            
                             Button("", systemImage: "camera") {
                                 self.isShowingScanner = true
                             }
@@ -101,19 +113,12 @@ struct SendInputDetailsView: View {
                             get: { self.tx.toAddress },
                             set: { newValue in
                                 self.tx.toAddress = newValue
-                                
                                 DebounceHelper.shared.debounce {
                                         //TODO: move this logic into an abstraction
                                     if tx.coin.ticker.uppercased() == "BTC" {
                                         isValidAddress = BitcoinHelper.validateAddress(newValue)
                                     } else if tx.coin.chain.name.lowercased() == "ethereum" {
                                         isValidAddress = CoinType.ethereum.validate(address: newValue)
-                                    }
-                                    
-                                    if !isValidAddress {
-                                        print("Invalid Crypto Address")
-                                    } else {
-                                        print("Valid Crypto Address")
                                     }
                                 }
                             }
@@ -180,7 +185,6 @@ struct SendInputDetailsView: View {
                                     TextField("USD", text: Binding<String>(
                                         get: { self.tx.amountInUSD },
                                         set: { newValue in
-                                                //TODO: move this to a private method
                                             self.tx.amountInUSD = newValue
                                                 //TODO: move this logic into an abstraction
                                             DebounceHelper.shared.debounce {
@@ -221,7 +225,7 @@ struct SendInputDetailsView: View {
                                     .cornerRadius(10)
                                     
                                     Button(action: {
-                                        //TODO: move this logic into an abstraction
+                                            //TODO: move this logic into an abstraction
                                         setMaxValues()
                                         
                                     }) {
@@ -342,17 +346,14 @@ struct SendInputDetailsView: View {
             return isValidForm
         }
         
-        var walletBalance: Int = 0;
-        
             // TODO: Move this to an abstraction
             // This is only for MVP
         if tx.coin.chain.name.lowercased() == "bitcoin" {
-            walletBalance = uxto.walletData?.balance ?? 0
+            let walletBalanceInSats = uxto.walletData?.balance ?? 0
+            let totalTransactionCostInSats = tx.amountInSats + tx.feeInSats
+            print("Total transaction cost: \(totalTransactionCostInSats)")
             
-            let totalTransactionCost = amount + gasFee
-            print("Total transaction cost: \(totalTransactionCost)")
-            
-            if totalTransactionCost > Double(walletBalance) {
+            if totalTransactionCostInSats > walletBalanceInSats {
                 formErrorMessages += "The combined amount and fee exceed your wallet's balance. Please adjust to proceed. \n"
                 logger.log("Total transaction cost exceeds wallet balance.")
                 isValidForm = false
@@ -433,21 +434,15 @@ struct SendInputDetailsView: View {
             if let priceRateUsd = cryptoPrice.cryptoPrices?.prices[tx.coin.chain.name.lowercased()]?["usd"] {
                 self.priceRate = priceRateUsd
                 self.coinBalance = uxto.walletData?.balanceInBTC ?? "0"
-                self.balanceUSD = uxto.walletData?.balanceInUSD(usdPrice: priceRateUsd) ?? "0"
-                self.walletAddress = uxto.walletData?.address ?? ""
             }
         } else if tx.coin.chain.name.lowercased() == "ethereum" {
                 // We need to pass it to the next view
             tx.eth = eth.addressInfo
-            self.walletAddress = eth.addressInfo?.address ?? ""
-            if tx.coin.ticker.uppercased() == "ETH" {
-                self.coinBalance = eth.addressInfo?.ETH.balanceString ?? "0.0"
-                self.balanceUSD = eth.addressInfo?.ETH.balanceInUsd ?? ""
+            
+            if tx.token != nil {
+                self.coinBalance = tx.token?.balanceString ?? ""
             } else {
-                if let tokenInfo = eth.addressInfo?.tokens?.first(where: {$0.tokenInfo.symbol == "USDC"}) {
-                    self.coinBalance = tokenInfo.balanceString
-                    self.balanceUSD = tokenInfo.balanceInUsd
-                }
+                self.coinBalance = eth.addressInfo?.ETH.balanceString ?? "0.0"
             }
         }
         isLoading = false
@@ -457,9 +452,8 @@ struct SendInputDetailsView: View {
             //TODO: move this logic into an abstraction
         Task {
             isLoading = true
-            await cryptoPrice.fetchCryptoPrices(for: tx.coin.chain.name.lowercased(), for: "usd")
-            
             if tx.coin.chain.name.lowercased() == "bitcoin" {
+                await cryptoPrice.fetchCryptoPrices(for: tx.coin.chain.name.lowercased(), for: "usd")
                 await uxto.fetchUnspentOutputs(for: tx.fromAddress)
             } else if tx.coin.chain.name.lowercased() == "ethereum" {
                 await eth.getEthInfo(for: tx.fromAddress)
