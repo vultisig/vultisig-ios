@@ -68,6 +68,7 @@ enum SolanaHelper {
             do {
                 let hashes = TransactionCompiler.preImageHashes(coinType: .solana, txInputData: inputData)
                 let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+                print("hash:\(preSigningOutput.dataHash.hexString)")
                 return .success([preSigningOutput.dataHash.hexString])
             } catch {
                 return .failure(HelperError.runtimeError("fail to get preSignedImageHash,error:\(error.localizedDescription)"))
@@ -97,12 +98,12 @@ enum SolanaHelper {
                 let publicKeys = DataVector()
                 let signatureProvider = SignatureProvider(signatures: signatures)
                 let signature = signatureProvider.getSignature(preHash: preSigningOutput.dataHash)
+                print("signature: \(signature.hexString) , dataHash: \(preSigningOutput.dataHash.hexString) , public key: \(publicKey.data.hexString)")
                 guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash) else {
                     return .failure(HelperError.runtimeError("fail to verify signature"))
                 }
 
                 allSignatures.add(data: signature)
-
                 let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .solana,
                                                                                      txInputData: inputData,
                                                                                      signatures: allSignatures,

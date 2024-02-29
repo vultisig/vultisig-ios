@@ -59,7 +59,7 @@ struct KeysignView: View {
                         .multilineTextAlignment(.center)
                         
                     Button(action: {
-                        self.presentationStack.append(.bitcoinTransactionsListView)
+                        self.presentationStack = [.listVaultAssetView]
                     }) {
                         HStack {
                             Text("DONE".uppercased())
@@ -146,6 +146,19 @@ struct KeysignView: View {
                             }
                         case "RUNE":
                             let result = THORChainHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                            switch result {
+                            case .success(let tx):
+                                print(tx)
+                            case .failure(let err):
+                                switch err {
+                                case HelperError.runtimeError(let errDetail):
+                                    logger.error("Failed to get signed transaction,error:\(errDetail)")
+                                default:
+                                    logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
+                                }
+                            }
+                        case "SOL":
+                            let result = SolanaHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyEdDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
                             switch result {
                             case .success(let tx):
                                 print(tx)
