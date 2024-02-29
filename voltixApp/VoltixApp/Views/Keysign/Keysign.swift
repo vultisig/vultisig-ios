@@ -207,6 +207,8 @@ struct KeysignView: View {
                         keysignReq.derivePath = CoinType.ethereum.derivationPath()
                     case "RUNE":
                         keysignReq.derivePath = CoinType.thorchain.derivationPath()
+                    case "SOL":
+                        keysignReq.derivePath = CoinType.solana.derivationPath()
                     default:
                         logger.error("don't support this coin type")
                         self.currentStatus = .KeysignFailed
