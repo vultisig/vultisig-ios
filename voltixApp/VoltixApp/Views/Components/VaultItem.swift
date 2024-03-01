@@ -84,7 +84,13 @@ struct VaultItem: View {
                         }
                     Spacer().frame(width: 20)
                     Button(action: {
-                        presentationStack.append(.bitcoinTransactionsListView)
+                        
+                        if coinName == "BTC" {
+                            presentationStack.append(.bitcoinTransactionsListView)
+                        } else if coinName == "ETH" {
+                            presentationStack.append(.ethereumTransactionsListView)
+                        }
+                        
                     }) {
                         Image(systemName: "cube.transparent")
                             .resizable()

@@ -4,7 +4,8 @@ import SwiftUI
 public class EtherScanService: ObservableObject {
     @Published var transactionHash: String?
     @Published var errorMessage: String?
-    @Published var transactions: [TransactionDetail] = []
+    @Published var transactions: [TransactionDetail]? = []
+    @Published var addressFor: String?
     
     struct BroadcastResponse: Decodable, CustomStringConvertible {
         let id: Int
@@ -125,6 +126,7 @@ public class EtherScanService: ObservableObject {
             
             DispatchQueue.main.async {
                 self.transactions = decodedResponse.result ?? []
+                self.addressFor = address
             }
         } catch {
             DispatchQueue.main.async {

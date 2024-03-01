@@ -46,4 +46,5 @@ enum CurrentScreen: Hashable {
     
     // transactions
     case bitcoinTransactionsListView
+    case ethereumTransactionsListView
 }
