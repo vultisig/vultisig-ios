@@ -92,7 +92,6 @@
 		DEFC7BFB2B8D87370090B07A /* erc20.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC7BFA2B8D87370090B07A /* erc20.swift */; };
 		DEFC7BFF2B8EC95E0090B07A /* thorchain.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC7BFE2B8EC95E0090B07A /* thorchain.swift */; };
 		DEFC7C012B8FF0A40090B07A /* DecodableDefault.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC7C002B8FF0A40090B07A /* DecodableDefault.swift */; };
-		DEFC7C032B9023770090B07A /* Solana.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC7C022B9023770090B07A /* Solana.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -199,7 +198,6 @@
 		DEFC7BFA2B8D87370090B07A /* erc20.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = erc20.swift; sourceTree = "<group>"; };
 		DEFC7BFE2B8EC95E0090B07A /* thorchain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = thorchain.swift; sourceTree = "<group>"; };
 		DEFC7C002B8FF0A40090B07A /* DecodableDefault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodableDefault.swift; sourceTree = "<group>"; };
-		DEFC7C022B9023770090B07A /* Solana.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Solana.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -406,7 +404,6 @@
 				DEEDAEE22B8AF8B1005170E8 /* publickey.swift */,
 				DEEDAEE42B8AFB5D005170E8 /* common.swift */,
 				DEFC7BFA2B8D87370090B07A /* erc20.swift */,
-				DEFC7C022B9023770090B07A /* Solana.swift */,
 			);
 			path = Chains;
 			sourceTree = "<group>";
@@ -686,7 +683,6 @@
 				DE49A1B22B6A0F77000F3AFB /* JoinKeygenView.swift in Sources */,
 				DEFC7BFF2B8EC95E0090B07A /* thorchain.swift in Sources */,
 				DE15729E2B70F284009BC7C5 /* JoinKeysignView.swift in Sources */,
-				DEFC7C032B9023770090B07A /* Solana.swift in Sources */,
 				DEEDAEE12B8AF7EF005170E8 /* eth.swift in Sources */,
 				D9AD8EEC2B6730ED0009F8D5 /* VaultAssetsView.swift in Sources */,
 				DEBF93972B8D5FEF002868CD /* KeysignPayload.swift in Sources */,
