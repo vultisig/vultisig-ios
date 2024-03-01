@@ -54,6 +54,25 @@ struct SignatureProvider {
         }
         return Data()
     }
+    func getSignature(preHash: Data) -> Data {
+        let hex = preHash.hexString
+        if let sig = signatures[hex] {
+            let sigResult = sig.getSignature()
+            switch sigResult {
+            case .success(let sigData):
+                logger.info("successfully get signature")
+                return sigData
+            case .failure(let err):
+                switch err {
+                case HelperError.runtimeError(let errDetail):
+                    logger.error("fail to get signature from TssResponse,error:\(errDetail)")
+                default:
+                    logger.error("fail to get signature from TssResponse,error:\(err.localizedDescription)")
+                }
+            }
+        }
+        return Data()
+    }
 }
 
 extension Int64 {
