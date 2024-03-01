@@ -66,9 +66,9 @@ enum SolanaHelper {
         case .success(let inputData):
             do {
                 let hashes = TransactionCompiler.preImageHashes(coinType: .solana, txInputData: inputData)
-                let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
-                print("hash:\(preSigningOutput.dataHash.hexString)")
-                return .success([preSigningOutput.dataHash.hexString])
+                let preSigningOutput = try SolanaPreSigningOutput(serializedData: hashes)
+                print("hash:\(preSigningOutput.data.hexString)")
+                return .success([preSigningOutput.data.hexString])
             } catch {
                 return .failure(HelperError.runtimeError("fail to get preSignedImageHash,error:\(error.localizedDescription)"))
             }
@@ -94,13 +94,13 @@ enum SolanaHelper {
         case .success(let inputData):
             do {
                 let hashes = TransactionCompiler.preImageHashes(coinType: .solana, txInputData: inputData)
-                let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+                let preSigningOutput = try SolanaPreSigningOutput(serializedData: hashes)
                 let allSignatures = DataVector()
                 let publicKeys = DataVector()
                 let signatureProvider = SignatureProvider(signatures: signatures)
-                let signature = signatureProvider.getSignature(preHash: preSigningOutput.dataHash)
-                print("signature: \(signature.hexString) , dataHash: \(preSigningOutput.dataHash.hexString) , public key: \(publicKey.data.hexString)")
-                guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash) else {
+                let signature = signatureProvider.getSignature(preHash: preSigningOutput.data)
+                print("signature: \(signature.hexString) , dataHash: \(preSigningOutput.data.hexString) , public key: \(publicKey.data.hexString)")
+                guard publicKey.verify(signature: signature, message: preSigningOutput.data) else {
                     return .failure(HelperError.runtimeError("fail to verify signature"))
                 }
 
