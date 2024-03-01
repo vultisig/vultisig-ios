@@ -105,12 +105,13 @@ enum SolanaHelper {
                 }
 
                 allSignatures.add(data: signature)
+                publicKeys.add(data: pubkeyData)
                 let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .solana,
                                                                                      txInputData: inputData,
                                                                                      signatures: allSignatures,
                                                                                      publicKeys: publicKeys)
-                let output = try EthereumSigningOutput(serializedData: compileWithSignature)
-                return .success(output.encoded.hexString)
+                let output = try SolanaSigningOutput(serializedData: compileWithSignature)
+                return .success(output.encoded)
             } catch {
                 return .failure(HelperError.runtimeError("fail to get signed solana transaction,error:\(error.localizedDescription)"))
             }
