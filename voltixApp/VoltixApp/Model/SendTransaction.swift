@@ -55,11 +55,16 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var amountInUSD: String = ""
     @Published var memo: String = ""
     @Published var gas: String = ""
+    @Published var nonce: Int64 = 0
     @Published var coin: Coin = Coin(chain: Chain.Bitcoin, ticker: "BTC", logo: "", address: "",hexPublicKey: "", feeUnit: "")
     @Published var eth: EthAddressInfo?
     
     var amountInWei: BigInt {
         return BigInt(amountDecimal * pow(10, 18))
+    }
+    
+    var amountInGwei: Int64 {
+        return Int64(amountDecimal * pow(10, 9))
     }
     
     var token: EthAddressInfo.Token? {

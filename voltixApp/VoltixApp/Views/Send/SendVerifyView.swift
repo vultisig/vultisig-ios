@@ -4,6 +4,8 @@
     //  Created by Enrique Souza Soares
     //
 import SwiftUI
+import web3
+import BigInt
 
 struct SendVerifyView: View {
     @Binding var presentationStack: [CurrentScreen]
@@ -73,10 +75,10 @@ struct SendVerifyView: View {
                             if tx.coin.chain.name.lowercased() == "bitcoin" {
                                 
                                 if let walletData = unspentOutputsService.walletData {
-                                    // Calculate total amount needed by summing the amount and the fee
+                                        // Calculate total amount needed by summing the amount and the fee
                                     let totalAmountNeeded = tx.amountInSats + tx.feeInSats
                                     
-                                    // Select UTXOs sufficient to cover the total amount needed and map to UtxoInfo
+                                        // Select UTXOs sufficient to cover the total amount needed and map to UtxoInfo
                                     let utxoInfo = walletData.selectUTXOsForPayment(amountNeeded: Int64(totalAmountNeeded)).map {
                                         UtxoInfo(
                                             hash: $0.txHash ?? "",
@@ -117,8 +119,56 @@ struct SendVerifyView: View {
                             } else if tx.coin.chain.name.lowercased() == "ethereum" {
                                 if tx.coin.ticker.uppercased() == "ETH" {
                                     
+                                    let gasBig = BigUInt(tx.gas)
+                                    let gasLimit = BigUInt("0")
+                                    let memoData = tx.memo.data(using: .utf8) ?? Data() // Convert the memo to Data
+                                    
+                                    let transaction = EthereumTransaction(
+                                        from: EthereumAddress(tx.fromAddress),
+                                        to: EthereumAddress(tx.toAddress),
+                                        data: memoData,
+                                        gasPrice: gasBig ?? BigUInt("0"),
+                                        gasLimit: gasLimit
+                                    )
+                                    
+                                    let client = Web3Service().client
+                                    
+                                    client.eth_estimateGas(transaction) { result in
+                                        switch result {
+                                            case .success(let estimatedGas):
+                                                print("Estimated gas limit: \(estimatedGas)")
+                                                
+                                                
+                                                self.presentationStack.append(.KeysignDiscovery(KeysignPayload(
+                                                    coin: tx.coin,
+                                                    toAddress: tx.toAddress,
+                                                    toAmount: tx.amountInGwei, // in Gwei
+                                                    chainSpecific: BlockChainSpecific.Ethereum(maxFeePerGasGwei: Int64(tx.gas) ?? 24, priorityFeeGwei: 1, nonce: tx.nonce, gasLimit: Int64(estimatedGas)),
+                                                    utxos: [],
+                                                    memo: nil)))
+                                                
+                                                
+                                            case .failure(let error):
+                                                print("Error to estimate gas \(error)")
+                                        }
+                                    }
+                                    
+                                    
+                                    
                                     print("coin: \(tx.coin.ticker.uppercased()) \n toAddress: \(tx.toAddress) \n toAmount: \(tx.amountInWei) \n fee: \(tx.feeInWei)")
                                 } else {
+                                    
+                                    // let client = Web3Service().client
+                                    // web3.ERC20(client: client)
+                                    
+                                    self.presentationStack.append(.KeysignDiscovery(KeysignPayload(
+                                        coin: tx.coin,
+                                        toAddress: tx.toAddress,
+                                        toAmount: tx.amountInGwei, // in Gwei
+                                        chainSpecific: BlockChainSpecific.ERC20(maxFeePerGasGwei: Int64(tx.gas) ?? 42, priorityFeeGwei: 1, nonce: tx.nonce, gasLimit: 95000, contractAddr: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"),
+                                        utxos: [],
+                                        memo: nil)))
+                                    
                                     print("coin: \(tx.coin.ticker.uppercased()) \n toAddress: \(tx.toAddress) \n toAmount: \(tx.amountInTokenWei) \n fee: \(tx.feeInWei)")
                                 }
                             }
