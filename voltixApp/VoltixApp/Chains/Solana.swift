@@ -21,10 +21,9 @@ enum SolanaHelper {
 
     static func getAddressFromPublicKey(hexPubKey: String, hexChainCode: String) -> Result<String, Error> {
         // Solana is using EdDSA , so it doesn't need to use HD derive
-        guard var pubKeyData = Data(hexString: hexPubKey) else {
+        guard let pubKeyData = Data(hexString: hexPubKey) else {
             return .failure(HelperError.runtimeError("public key: \(hexPubKey) is invalid"))
         }
-        pubKeyData.reverse()
         guard let publicKey = PublicKey(data: pubKeyData, type: .ed25519) else {
             return .failure(HelperError.runtimeError("public key: \(hexPubKey) is invalid"))
         }
@@ -86,7 +85,6 @@ enum SolanaHelper {
         guard var pubkeyData = Data(hexString: vaultHexPubKey) else {
             return .failure(HelperError.runtimeError("public key \(vaultHexPubKey) is invalid"))
         }
-        pubkeyData.reverse()
         guard let publicKey = PublicKey(data: pubkeyData, type: .ed25519) else {
             return .failure(HelperError.runtimeError("public key \(vaultHexPubKey) is invalid"))
         }
