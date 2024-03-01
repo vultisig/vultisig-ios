@@ -14,7 +14,8 @@ struct AssetsList: View {
         Asset(ticker: "BTC", chainName: "Bitcoin", image: "btc"),
         Asset(ticker: "ETH", chainName: "Ethereum", image: "eth"),
         Asset(ticker: "RUNE", chainName: "THORChain", image: "rune"),
-        Asset(ticker: "USDC", chainName: "Ethereum", image: "usdc")
+        Asset(ticker: "USDC", chainName: "Ethereum", image: "usdc"),
+        Asset(ticker: "SOL", chainName: "Solana", image: "solana")
     ]
     @State private var selection = Set<Asset>()
     @State var editMode = EditMode.active
@@ -79,7 +80,14 @@ struct AssetsList: View {
                                 case .failure(let err):
                                     logger.info("fail to get bitcoin address,error:\(err.localizedDescription)")
                             }
-
+                    case Chain.Solana.name:
+                        let coinResult = SolanaHelper.getSolana(hexPubKey: vault.pubKeyEdDSA, hexChainCode: vault.hexChainCode)
+                        switch coinResult {
+                            case .success(let sol):
+                                vault.coins.append(sol)
+                            case .failure(let err):
+                                logger.info("fail to get solana address,error:\(err.localizedDescription)")
+                        }
                         default:
                             print("do it later")
                     }
