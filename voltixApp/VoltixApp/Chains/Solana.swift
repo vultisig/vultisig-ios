@@ -99,7 +99,6 @@ enum SolanaHelper {
                 let publicKeys = DataVector()
                 let signatureProvider = SignatureProvider(signatures: signatures)
                 let signature = signatureProvider.getSignature(preHash: preSigningOutput.data)
-                print("signature: \(signature.hexString) , dataHash: \(preSigningOutput.data.hexString) , public key: \(publicKey.data.hexString)")
                 guard publicKey.verify(signature: signature, message: preSigningOutput.data) else {
                     return .failure(HelperError.runtimeError("fail to verify signature"))
                 }
