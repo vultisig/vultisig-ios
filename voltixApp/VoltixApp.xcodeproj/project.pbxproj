@@ -36,6 +36,7 @@
 		46AC409F2B90ECAF001704E6 /* web3.swift in Frameworks */ = {isa = PBXBuildFile; productRef = 46AC409E2B90ECAF001704E6 /* web3.swift */; };
 		46AC40A12B91C024001704E6 /* Web3Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AC40A02B91C024001704E6 /* Web3Service.swift */; };
 		46AC40A42B91F50A001704E6 /* AppConfiguration.example.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AC40A32B91F50A001704E6 /* AppConfiguration.example.swift */; };
+		46AC40A82B920061001704E6 /* EtherscanService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AC40A72B920061001704E6 /* EtherscanService.swift */; };
 		46F47CBB2B870EE900D964EA /* BitcoinTransactionMempool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F47CBA2B870EE900D964EA /* BitcoinTransactionMempool.swift */; };
 		D7347C2E2B759A0F00887E57 /* ProgressBottomBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7347C2D2B759A0F00887E57 /* ProgressBottomBar.swift */; };
 		D9A22EB72B667C41007281BF /* Mediator in Frameworks */ = {isa = PBXBuildFile; productRef = D9A22EB62B667C41007281BF /* Mediator */; };
@@ -144,6 +145,7 @@
 		46A616E92B8807B700372994 /* KeygenStatusText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenStatusText.swift; sourceTree = "<group>"; };
 		46AC40A02B91C024001704E6 /* Web3Service.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Web3Service.swift; sourceTree = "<group>"; };
 		46AC40A32B91F50A001704E6 /* AppConfiguration.example.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.example.swift; sourceTree = "<group>"; };
+		46AC40A72B920061001704E6 /* EtherscanService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EtherscanService.swift; sourceTree = "<group>"; };
 		46F47CBA2B870EE900D964EA /* BitcoinTransactionMempool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BitcoinTransactionMempool.swift; sourceTree = "<group>"; };
 		D7347C2D2B759A0F00887E57 /* ProgressBottomBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressBottomBar.swift; sourceTree = "<group>"; };
 		D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ApplicationState.swift; path = voltixApp/Model/ApplicationState.swift; sourceTree = SOURCE_ROOT; };
@@ -275,6 +277,7 @@
 				4606B3AF2B80465E0045094D /* BitcoinTransactionsService.swift */,
 				464854702B8E052B008D37A7 /* EthplorerAPIService.swift */,
 				46AC40A02B91C024001704E6 /* Web3Service.swift */,
+				46AC40A72B920061001704E6 /* EtherscanService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -696,6 +699,7 @@
 				46AC40A12B91C024001704E6 /* Web3Service.swift in Sources */,
 				464854712B8E052B008D37A7 /* EthplorerAPIService.swift in Sources */,
 				465B09AF2B7C84C600952DD9 /* ShareSheet.swift in Sources */,
+				46AC40A82B920061001704E6 /* EtherscanService.swift in Sources */,
 				DEBF93952B8D5AAC002868CD /* TssExtensions.swift in Sources */,
 				049BBB562B71E5F5004C231F /* Choose.swift in Sources */,
 				D7347C2E2B759A0F00887E57 /* ProgressBottomBar.swift in Sources */,
