@@ -8,7 +8,6 @@ struct VaultAssetsView: View {
     @ObservedObject var tx: SendTransaction
     @State private var coinBalance: String = "0"
     @State private var balanceUSD: String = "0"
-    @State private var walletAddress: String = ""
     @State private var isCollapsed = true
     @State private var isLoading = false
     
@@ -26,7 +25,6 @@ struct VaultAssetsView: View {
                 }
                 .onAppear {
                     loadData()
-                    self.walletAddress = tx.coin.address
                 }
             }
             .refreshable {
@@ -46,7 +44,7 @@ struct VaultAssetsView: View {
                 coinName: tx.coin.ticker,
                 usdAmount: balanceUSD,
                 showAmount: isCollapsed,
-                address: walletAddress,
+                address: tx.coin.address,
                 isRadio: false,
                 radioIcon: "",
                 showButtons: !isCollapsed
@@ -110,12 +108,10 @@ struct VaultAssetsView: View {
                 self.balanceUSD = uxto.walletData?.balanceInUSD(usdPrice: priceRateUsd) ?? "US$ 0,00"
             }
             self.coinBalance = uxto.walletData?.balanceInBTC ?? "0.0"
-            self.walletAddress = uxto.walletData?.address ?? ""
             
         } else if tx.coin.chain.name.lowercased() == "ethereum" {
                 // We need to pass it to the next view
             tx.eth = eth.addressInfo
-            self.walletAddress = eth.addressInfo?.address ?? ""
             if tx.coin.ticker.uppercased() == "ETH" {
                 self.coinBalance = eth.addressInfo?.ETH.balanceString ?? "0.0" // "\(eth.addressInfo?.ETH.balance ?? 0.0)"
                 self.balanceUSD = eth.addressInfo?.ETH.balanceInUsd ?? "US$ 0,00"
