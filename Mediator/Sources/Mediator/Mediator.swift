@@ -61,7 +61,7 @@ public final class Mediator {
         }
         let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
         let key = "session-\(cleanSessionID)-start"
-        self.logger.debug("request session id is: \(cleanSessionID)")
+        // self.logger.debug("request session id is: \(cleanSessionID)")
         do{
             switch req.method {
             case "POST":
@@ -156,7 +156,7 @@ public final class Mediator {
         }
         let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
         let key = "session-\(cleanSessionID)"
-        self.logger.debug("request session id is: \(cleanSessionID)")
+        // self.logger.debug("request session id is: \(cleanSessionID)")
         do {
             let decoder = JSONDecoder()
             let p = try decoder.decode([String].self, from: Data(req.body))
@@ -203,7 +203,7 @@ public final class Mediator {
         let key = "session-\(cleanSessionID)"
         do  {
             if let cachedValue = try self.cache.object(forKey: key) as? Session {
-                self.logger.debug("session obj : \(cachedValue.SessionID), participants: \(cachedValue.Participants)")
+                // self.logger.debug("session obj : \(cachedValue.SessionID), participants: \(cachedValue.Participants)")
                 return HttpResponse.ok(.json(cachedValue.Participants))
             }
         }

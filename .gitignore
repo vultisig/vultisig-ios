@@ -90,3 +90,5 @@ fastlane/test_output
 # https://github.com/johnno1962/injectionforxcode
 
 iOSInjectionProject/
+voltixApp/VoltixApp/Configs/AppConfiguration.swift
+voltixApp/VoltixApp/Configs/AppConfiguration.example.swift

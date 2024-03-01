@@ -13,6 +13,7 @@ import UniformTypeIdentifiers
 import WalletCore
 import Combine
 import UIKit
+import BigInt
 
 private class DebounceHelper {
     static let shared = DebounceHelper()
@@ -41,6 +42,7 @@ struct SendInputDetailsView: View {
     @Binding var presentationStack: [CurrentScreen]
     @StateObject var uxto: UnspentOutputsService = UnspentOutputsService()
     @StateObject var eth: EthplorerAPIService = EthplorerAPIService()
+    @StateObject var web3Service = Web3Service()
     @StateObject var cryptoPrice = CryptoPriceService.shared
     @ObservedObject var tx: SendTransaction
     @State private var isShowingScanner = false
@@ -439,6 +441,13 @@ struct SendInputDetailsView: View {
                 // We need to pass it to the next view
             tx.eth = eth.addressInfo
             
+            let gasPriceInGwei = BigInt(web3Service.gasPrice ?? 0) / BigInt(10).power(9)
+            
+            print("Gas price in Gwei: \(gasPriceInGwei)")
+            
+            tx.gas = String(gasPriceInGwei)
+            tx.nonce = Int64(web3Service.nonce ?? 0)
+            
             if tx.token != nil {
                 self.coinBalance = tx.token?.balanceString ?? ""
             } else {
@@ -457,6 +466,7 @@ struct SendInputDetailsView: View {
                 await uxto.fetchUnspentOutputs(for: tx.fromAddress)
             } else if tx.coin.chain.name.lowercased() == "ethereum" {
                 await eth.getEthInfo(for: tx.fromAddress)
+                await web3Service.fetchData(tx.fromAddress)
             }
             
             DispatchQueue.main.async {
