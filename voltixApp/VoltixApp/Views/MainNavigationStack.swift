@@ -58,6 +58,8 @@ struct MainNavigationStack: View {
                             BitcoinTransactionListView(presentationStack: $presentationStack)
                         case .ethereumTransactionsListView:
                             EthereumTransactionListView(presentationStack: $presentationStack)
+                        case .erc20TransactionsListView(let contractAddress):
+                            EthereumTransactionListView(presentationStack: $presentationStack, contractAddress: contractAddress)
                         case .listVaultAssetView:
                             ListVaultAssetView(presentationStack: $presentationStack)
                     }

@@ -47,7 +47,8 @@ struct VaultAssetsView: View {
                 address: tx.coin.address,
                 isRadio: false,
                 radioIcon: "",
-                showButtons: !isCollapsed
+                showButtons: !isCollapsed,
+                coin: tx.coin
             )
             Spacer()
             Image(systemName: isCollapsed ? "chevron.down" : "chevron.up")

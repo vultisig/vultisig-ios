@@ -26,7 +26,8 @@ enum BitcoinHelper {
                      logo: "",
                      address: addr,
                      hexPublicKey: getBitcoinPubKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode),
-                     feeUnit: "SATS"
+                     feeUnit: "SATS",
+                     contractAddress: nil
                 )
             }
     }

@@ -11,11 +11,11 @@ private let logger = Logger(subsystem: "assets-list", category: "view")
 struct AssetsList: View {
     @EnvironmentObject var appState: ApplicationState
     @State private var assets = [
-        Asset(ticker: "BTC", chainName: "Bitcoin", image: "btc"),
-        Asset(ticker: "ETH", chainName: "Ethereum", image: "eth"),
-        Asset(ticker: "RUNE", chainName: "THORChain", image: "rune"),
-        Asset(ticker: "USDC", chainName: "Ethereum", image: "usdc"),
-        Asset(ticker: "SOL", chainName: "Solana", image: "solana")
+        Asset(ticker: "BTC", chainName: "Bitcoin", image: "btc", contractAddress: ""),
+        Asset(ticker: "ETH", chainName: "Ethereum", image: "eth", contractAddress: ""),
+        Asset(ticker: "RUNE", chainName: "THORChain", image: "rune", contractAddress: ""),
+        Asset(ticker: "USDC", chainName: "Ethereum", image: "usdc", contractAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"),
+        Asset(ticker: "SOL", chainName: "Solana", image: "solana", contractAddress: "")
     ]
     @State private var selection = Set<Asset>()
     @State var editMode = EditMode.active
@@ -66,7 +66,7 @@ struct AssetsList: View {
                                     if coin.ticker == "Ethereum" {
                                         vault.coins.append(coin)
                                     } else {
-                                        let newCoin = Coin(chain: coin.chain, ticker: item.ticker, logo: item.image, address: coin.address, hexPublicKey: coin.hexPublicKey, feeUnit: "GWEI")
+                                        let newCoin = Coin(chain: coin.chain, ticker: item.ticker, logo: item.image, address: coin.address, hexPublicKey: coin.hexPublicKey, feeUnit: "GWEI", contractAddress: item.contractAddress)
                                         vault.coins.append(newCoin)
                                     }
                                 case .failure(let error):

@@ -236,16 +236,16 @@ class ParticipantDiscovery: ObservableObject {
         }
     }
 }
-
-#Preview {
-    KeysignDiscoveryView(
-        presentationStack: .constant([]),
-        keysignPayload: KeysignPayload(coin: Coin(chain: Chain.Bitcoin,
-                                                  ticker: "BTC", logo: "",
-                                                  address: "bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu",
-                                                  hexPublicKey: "", feeUnit: "SATS"),
-                                       toAddress: "bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu",
-                                       toAmount: 1000,
-                                       chainSpecific: .Bitcoin(byteFee: 25),
-                                       utxos: [], memo: nil))
-}
+//
+//#Preview {
+//    KeysignDiscoveryView(
+//        presentationStack: .constant([]),
+//        keysignPayload: KeysignPayload(coin: Coin(chain: Chain.Bitcoin,
+//                                                  ticker: "BTC", logo: "",
+//                                                  address: "bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu",
+//                                                  hexPublicKey: "", feeUnit: "SATS"),
+//                                       toAddress: "bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu",
+//                                       toAmount: 1000,
+//                                       chainSpecific: .Bitcoin(byteFee: 25),
+//                                       utxos: [], memo: nil))
+//}

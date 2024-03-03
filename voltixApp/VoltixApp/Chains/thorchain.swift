@@ -21,7 +21,8 @@ enum THORChainHelper {
                  logo: "",
                  address: addr, 
                  hexPublicKey: derivePubKey,
-                 feeUnit: "RUNE" //TODO: double check the thor unit
+                 feeUnit: "RUNE", //TODO: double check the thor unit,
+                 contractAddress: nil
             )
         }
     }
