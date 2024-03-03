@@ -114,6 +114,16 @@ struct VaultSelectionView: View {
                                 .background(cardBackgroundColor)
                                 .foregroundColor(.red)
                                 .cornerRadius(10)
+                                .confirmationDialog("Delete Vault?", isPresented: $showingDeleteAlert, titleVisibility: .automatic) {
+                                    Button("Confirm Delete \(itemToDelete?.name ?? "Vault")", role: .destructive) {
+                                        if let itemToDelete = self.itemToDelete {
+                                            deleteVault(vault: itemToDelete)
+                                        }
+                                    }
+                                } message: {
+                                    Text("Are you sure you want to delete this vault? This operation is not reversible.")
+                                }
+
                             }
                             .padding(.top, 10)
                         }
@@ -172,24 +182,7 @@ struct VaultSelectionView: View {
                     print("Exported to \(url)")
             }
         }
-        .confirmationDialog("Delete Vault?", isPresented: $showingDeleteAlert, titleVisibility: .automatic) {
-            Button("Confirm Delete \(itemToDelete?.name ?? "Vault")", role: .destructive) {
-                if let itemToDelete = self.itemToDelete {
-                    deleteVault(vault: itemToDelete)
-                }
-            }
-        } message: {
-            Text("Are you sure you want to delete this vault? This operation is not reversible.")
-        }
-//        .toolbar {
-//            ToolbarItemGroup(placement: .navigationBarTrailing) {
-//                Button("New vault", action: {
-//                    let vault = Vault(name: "Vault #\(vaults.count + 1)")
-//                    appState.creatingVault = vault
-//                    presentationStack.append(.startScreen)
-//                })
-//            }
-//        }
+       
     }
     
     func deleteVault(vault: Vault) {
