@@ -466,7 +466,12 @@ struct SendInputDetailsView: View {
                 await uxto.fetchUnspentOutputs(for: tx.fromAddress)
             } else if tx.coin.chain.name.lowercased() == "ethereum" {
                 await eth.getEthInfo(for: tx.fromAddress)
-                await web3Service.fetchData(tx.fromAddress)
+                do {
+                    try await web3Service.updateNonceAndGasPrice(forAddress: tx.fromAddress)
+                } catch  {
+                    print(error)
+                }
+                
             }
             
             DispatchQueue.main.async {

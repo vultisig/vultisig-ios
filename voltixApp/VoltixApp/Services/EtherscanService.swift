@@ -42,8 +42,11 @@ public class EtherScanService: ObservableObject {
             guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
                 let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
                 let responseString = String(data: data, encoding: .utf8) ?? "No response body"
+                print("HTTP Error: \(statusCode) - \(responseString)")
                 throw EtherScanError.httpError(statusCode, "HTTP Error: \(statusCode) - \(responseString)")
             }
+            
+            print(String(data: data, encoding: .utf8) ?? "No response body")
             
             let decoder = JSONDecoder()
             let broadcastResponse = try decoder.decode(BroadcastResponse.self, from: data)
@@ -70,6 +73,7 @@ public class EtherScanService: ObservableObject {
                 } else {
                     self.errorMessage = "Unknown error: \(error.localizedDescription)"
                 }
+                print(self.errorMessage)
             }
         }
     }

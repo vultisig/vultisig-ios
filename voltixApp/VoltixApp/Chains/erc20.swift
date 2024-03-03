@@ -6,6 +6,7 @@
 import Foundation
 import Tss
 import WalletCore
+import BigInt
 
 enum ERC20Helper {
     static func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
@@ -36,7 +37,7 @@ enum ERC20Helper {
             $0.transaction = EthereumTransaction.with {
                 $0.erc20Transfer = EthereumTransaction.ERC20Transfer.with {
                     $0.to = keysignPayload.toAddress
-                    $0.amount = EthereumHelper.convertEthereumNumber(input: keysignPayload.toAmount)
+                    $0.amount = Data(hexString: keysignPayload.toAmount.hexString())!
                 }
             }
         }
