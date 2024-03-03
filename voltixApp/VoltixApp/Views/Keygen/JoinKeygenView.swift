@@ -1,6 +1,6 @@
-    //
-    //  JoinKeygen.swift
-    //  VoltixApp
+//
+//  JoinKeygen.swift
+//  VoltixApp
 
 import CodeScanner
 import OSLog
@@ -31,10 +31,7 @@ struct JoinKeygenView: View {
     
     var body: some View {
         VStack {
-            
             VStack {
-                
-                
                 switch currentStatus {
                     case .DiscoverSessionID:
                         Text("Scan the barcode on another VoltixApp device to start.".uppercased())
@@ -44,7 +41,7 @@ struct JoinKeygenView: View {
                         Button(action: {
                             self.isShowingScanner = true
                         }) {
-                            HStack{
+                            HStack {
                                 Text("Scan ".uppercased())
                                     .font(.custom("Menlo", size: 15).bold())
                                     .multilineTextAlignment(.center)
@@ -52,19 +49,15 @@ struct JoinKeygenView: View {
                                     .resizable()
                                     .frame(width: 20, height: 20)
                             }
-                            
                         }
                         .sheet(isPresented: $isShowingScanner, content: {
                             CodeScannerView(codeTypes: [.qr], completion: self.handleScan)
                         })
                         .buttonStyle(PlainButtonStyle())
                         
-                        
-                        
                     case .DiscoverService:
                         
                         HStack {
-                            
                             Text("Discovering mediator service, please wait...".uppercased())
                                 .font(.custom("Menlo", size: 15).bold())
                                 .multilineTextAlignment(.center)
@@ -132,7 +125,6 @@ struct JoinKeygenView: View {
                         }
                         .padding(.vertical, 30)
                 }
-                
             }
             .padding()
             .background(Color(UIColor.systemFill))

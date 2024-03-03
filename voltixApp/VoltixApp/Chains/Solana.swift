@@ -84,7 +84,7 @@ enum SolanaHelper {
                                      keysignPayload: KeysignPayload,
                                      signatures: [String: TssKeysignResponse]) -> Result<String, Error>
     {
-        guard var pubkeyData = Data(hexString: vaultHexPubKey) else {
+        guard let pubkeyData = Data(hexString: vaultHexPubKey) else {
             return .failure(HelperError.runtimeError("public key \(vaultHexPubKey) is invalid"))
         }
         guard let publicKey = PublicKey(data: pubkeyData, type: .ed25519) else {

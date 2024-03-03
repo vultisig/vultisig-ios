@@ -27,7 +27,7 @@ enum ERC20Helper {
         }
 
         let input = EthereumSigningInput.with {
-            $0.chainID = Data(hexString:  intChainID.hexString())!
+            $0.chainID = Data(hexString: intChainID.hexString())!
             $0.nonce = Data(hexString: nonce.hexString())!
             $0.gasLimit = Data(hexString: gasLimit.hexString())!
             $0.maxFeePerGas = EthereumHelper.convertEthereumNumber(input: maxFeePerGasGWei)
