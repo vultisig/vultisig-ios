@@ -78,10 +78,6 @@ struct ListVaultAssetView: View {
         }
         .onAppear {
             if let vault = appState.currentVault {
-                print("hexPubKey: \(vault.pubKeyECDSA) - hexChainCode: \(vault.hexChainCode)")
-                for item in vault.keyshares {
-                    print("\(item.pubkey) - \(item.keyshare)")
-                }
                 let result = BitcoinHelper.getBitcoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
                 switch result {
                     case .success(let btc):
