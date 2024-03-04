@@ -25,7 +25,7 @@ struct JoinKeygenView: View {
     @State private var qrCodeResult: String? = nil
     @State private var hexChainCode: String = ""
     @ObservedObject private var serviceDelegate = ServiceDelegate()
-//    private let netService = NetService(domain: "local.", type: "_http._tcp.", name: "VoltixApp")
+    @State private var netService = NetService(domain: "local.", type: "_http._tcp.", name: "VoltixApp")
     @State private var currentStatus = JoinKeygenStatus.DiscoverSessionID
     @State private var keygenCommittee = [String]()
     @State var localPartyID: String = ""
@@ -63,7 +63,7 @@ struct JoinKeygenView: View {
                                 .font(.custom("Menlo", size: 15).bold())
                                 .multilineTextAlignment(.center)
                             
-                            if serviceDelegate.serverUrl == nil {
+                            if serviceDelegate.serverURL == nil {
                                 ProgressView().progressViewStyle(.circular).padding(2)
                             } else {
                                 Image(systemName: "checkmark").onAppear {
@@ -72,12 +72,12 @@ struct JoinKeygenView: View {
                             }
                             
                         }.padding(.vertical, 30)
-                        .onAppear(){
-                            logger.info("Start to discover service")
-                            let netService = NetService(domain: "local.", type: "_http._tcp.", name: self.serviceName)
-                            netService.delegate = self.serviceDelegate
-                            netService.resolve(withTimeout: 10)
-                        }
+                            .onAppear {
+                                logger.info("Start to discover service")
+                                self.netService = NetService(domain: "local.", type: "_http._tcp.", name: self.serviceName)
+                                netService.delegate = self.serviceDelegate
+                                netService.resolve(withTimeout: 10)
+                            }
                         
                     case .JoinKeygen:
                         
@@ -109,10 +109,10 @@ struct JoinKeygenView: View {
                         }
                     case .KeygenStarted:
                         HStack {
-                            if serviceDelegate.serverUrl != nil && self.qrCodeResult != nil {
+                            if serviceDelegate.serverURL != nil && self.qrCodeResult != nil {
                                 KeygenView(presentationStack: $presentationStack,
                                            keygenCommittee: keygenCommittee,
-                                           mediatorURL: serviceDelegate.serverUrl!,
+                                           mediatorURL: serviceDelegate.serverURL!,
                                            sessionID: self.qrCodeResult!,
                                            localPartyKey: self.localPartyID,
                                            hexChainCode: self.hexChainCode,
@@ -150,8 +150,6 @@ struct JoinKeygenView: View {
             }
         }
         .onAppear {
-            
-           
             if appState.creatingVault == nil {
                 self.currentStatus = .FailToStart
             }
@@ -165,12 +163,12 @@ struct JoinKeygenView: View {
     }
     
     private func checkKeygenStarted() {
-        guard let serverUrl = serviceDelegate.serverUrl, let sessionID = qrCodeResult else {
+        guard let serverURL = serviceDelegate.serverURL, let sessionID = qrCodeResult else {
             logger.error("Required information for checking key generation start is missing.")
             return
         }
         
-        let urlString = "\(serverUrl)/start/\(sessionID)"
+        let urlString = "\(serverURL)/start/\(sessionID)"
         Utils.getRequest(urlString: urlString, headers: [String: String](), completion: { result in
             switch result {
                 case .success(let data):
@@ -191,12 +189,12 @@ struct JoinKeygenView: View {
     }
     
     private func joinKeygenCommittee() {
-        guard let serverUrl = serviceDelegate.serverUrl, let sessionID = qrCodeResult else {
+        guard let serverURL = serviceDelegate.serverURL, let sessionID = qrCodeResult else {
             logger.error("Required information for joining key generation committee is missing.")
             return
         }
         
-        let urlString = "\(serverUrl)/\(sessionID)"
+        let urlString = "\(serverURL)/\(sessionID)"
         let body = [localPartyID]
         Utils.sendRequest(urlString: urlString, method: "POST", body: body) { success in
             if success {
@@ -234,11 +232,11 @@ struct JoinKeygenView: View {
 }
 
 final class ServiceDelegate: NSObject, NetServiceDelegate, ObservableObject {
-    @Published var serverUrl: String?
+    @Published var serverURL: String?
     
     public func netServiceDidResolveAddress(_ sender: NetService) {
         logger.info("Service found: \(sender.name), \(sender.hostName ?? ""), port \(sender.port) in domain \(sender.domain)")
-        serverUrl = "http://\(sender.hostName ?? ""):\(sender.port)"
+        serverURL = "http://\(sender.hostName ?? ""):\(sender.port)"
     }
 }
 

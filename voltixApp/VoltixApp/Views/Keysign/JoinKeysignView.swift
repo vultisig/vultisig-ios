@@ -23,7 +23,7 @@ struct JoinKeysignView: View {
     @State private var sessionID: String = ""
     @State private var keysignMessages = [String]()
     @ObservedObject private var serviceDelegate = ServiceDelegate()
-    // private let netService = NetService(domain: "local.", type: "_http._tcp.", name: "VoltixApp")
+    @State private var netService = NetService(domain: "local.", type: "_http._tcp.", name: "VoltixApp")
     @State private var currentStatus = JoinKeysignStatus.DiscoverSigningMsg
     @State private var keysignCommittee = [String]()
     @State var localPartyID: String = ""
@@ -53,7 +53,7 @@ struct JoinKeysignView: View {
                                 .font(Font.custom("Menlo", size: 15)
                                     .weight(.bold))
                                 .multilineTextAlignment(.center)
-                            if self.serviceDelegate.serverUrl == nil {
+                            if self.serviceDelegate.serverURL == nil {
                                 ProgressView()
                                     .progressViewStyle(.circular)
                                     .padding(2)
@@ -64,7 +64,7 @@ struct JoinKeysignView: View {
                             }
                         }.onAppear {
                             logger.info("Start to discover service")
-                            let netService = NetService(domain: "local.", type: "_http._tcp.", name: self.serviceName)
+                            self.netService = NetService(domain: "local.", type: "_http._tcp.", name: self.serviceName)
                             netService.delegate = self.serviceDelegate
                             netService.resolve(withTimeout: TimeInterval(10))
                         }
@@ -130,10 +130,10 @@ struct JoinKeysignView: View {
                         }
                     case .KeysignStarted:
                         HStack {
-                            if self.serviceDelegate.serverUrl != nil && !self.sessionID.isEmpty {
+                            if self.serviceDelegate.serverURL != nil && !self.sessionID.isEmpty {
                                 KeysignView(presentationStack: self.$presentationStack,
                                             keysignCommittee: self.keysignCommittee,
-                                            mediatorURL: self.serviceDelegate.serverUrl ?? "",
+                                            mediatorURL: self.serviceDelegate.serverURL ?? "",
                                             sessionID: self.sessionID,
                                             keysignType: self.keysignPayload?.coin.chain.signingKeyType ?? .ECDSA,
                                             messsageToSign: self.keysignMessages,
@@ -184,7 +184,7 @@ struct JoinKeysignView: View {
     }
     
     private func checkKeysignStarted() {
-        guard let serverUrl = serviceDelegate.serverUrl else {
+        guard let serverUrl = serviceDelegate.serverURL else {
             logger.error("Server URL could not be found. Please ensure you're connected to the correct network.")
             return
         }
@@ -220,7 +220,7 @@ struct JoinKeysignView: View {
     }
     
     private func joinKeysignCommittee() {
-        guard let serverUrl = serviceDelegate.serverUrl else {
+        guard let serverUrl = serviceDelegate.serverURL else {
             logger.error("Server URL could not be found. Please ensure you're connected to the correct network.")
             return
         }
