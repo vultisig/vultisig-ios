@@ -15,15 +15,15 @@ struct CryptoPrice: Codable {
         
         self.prices = prices
     }
+}
+
+fileprivate struct DynamicCodingKey: CodingKey {
+    var stringValue: String
+    var intValue: Int? { nil }
     
-    // Nested struct to handle dynamic keys
-    private struct DynamicCodingKey: CodingKey {
-        var stringValue: String
-        init?(stringValue: String) {
-            self.stringValue = stringValue
-        }
-        
-        var intValue: Int? { nil }
-        init?(intValue: Int) { nil }
+    init?(intValue: Int) { nil }
+    
+    init?(stringValue: String) {
+        self.stringValue = stringValue
     }
 }

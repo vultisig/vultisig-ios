@@ -1,14 +1,44 @@
 import Foundation
 
 // Root structure for the JSON response
-struct BitcoinTransaction: Codable {
+class BitcoinTransaction: Codable {
+    let address: String
+    let totalReceived: Int
+    let totalSent: Int
+    let balance: Int
+    
+    let unconfirmedBalance: Int
+    let finalBalance: Int
+    let nTx: Int
+    let unconfirmedNTx: Int
+    let finalNTx: Int
+    let txrefs: [TransactionRef]?
+    let txUrl: String
+    
+    var balanceDecimal: Double {
+        Double(self.balance) / 100_000_000.0
+    }
     
     var balanceInBTC: String {
-        return formatAsBitcoin(balance)
+        formatAsBitcoin(balance)
     }
     
     var finalBalanceInBTC: String {
-        return formatAsBitcoin(finalBalance)
+        formatAsBitcoin(finalBalance)
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case address
+        case totalReceived = "total_received"
+        case totalSent = "total_sent"
+        case balance
+        case unconfirmedBalance = "unconfirmed_balance"
+        case finalBalance = "final_balance"
+        case nTx = "n_tx"
+        case unconfirmedNTx = "unconfirmed_n_tx"
+        case finalNTx = "final_n_tx"
+        case txrefs
+        case txUrl = "tx_url"
     }
     
     // Helper function to format an amount in satoshis as Bitcoin
@@ -41,7 +71,6 @@ struct BitcoinTransaction: Codable {
     }
     
     func selectUTXOsForPayment(amountNeeded: Int64) -> [TransactionRef] {
-
         let txrefs = self.txrefs ?? []
         
         // Sort the UTXOs by their value in ascending order
@@ -60,65 +89,5 @@ struct BitcoinTransaction: Codable {
         }
         
         return selectedTxrefs
-    }
-    
-    
-    
-    let address: String
-    let totalReceived: Int
-    let totalSent: Int
-    let balance: Int
-    var balanceDecimal: Double {
-        return Double(self.balance) / 100_000_000.0
-    }
-    let unconfirmedBalance: Int
-    let finalBalance: Int
-    let nTx: Int
-    let unconfirmedNTx: Int
-    let finalNTx: Int
-    let txrefs: [TransactionRef]?
-    let txUrl: String
-    
-    enum CodingKeys: String, CodingKey {
-        case address
-        case totalReceived = "total_received"
-        case totalSent = "total_sent"
-        case balance
-        case unconfirmedBalance = "unconfirmed_balance"
-        case finalBalance = "final_balance"
-        case nTx = "n_tx"
-        case unconfirmedNTx = "unconfirmed_n_tx"
-        case finalNTx = "final_n_tx"
-        case txrefs
-        case txUrl = "tx_url"
-    }
-}
-
-struct TransactionRef: Codable, Identifiable {
-    var id: String {
-        txHash ?? "N/A" // Use txHash as the identifier, or a fallback if missing
-    }
-    let txHash: String?
-    let blockHeight: Int?
-    let txInputN: Int?
-    let txOutputN: Int?
-    let value: Int64?
-    let refBalance: Int?
-    let spent: Bool?
-    let confirmations: Int?
-    let confirmed: String?
-    let doubleSpend: Bool?
-    
-    enum CodingKeys: String, CodingKey {
-        case txHash = "tx_hash"
-        case blockHeight = "block_height"
-        case txInputN = "tx_input_n"
-        case txOutputN = "tx_output_n"
-        case value
-        case refBalance = "ref_balance"
-        case spent
-        case confirmations
-        case confirmed
-        case doubleSpend = "double_spend"
     }
 }

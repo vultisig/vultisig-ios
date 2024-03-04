@@ -45,18 +45,6 @@ final class Vault: ObservableObject, Codable {
         localPartyID = try container.decode(String.self, forKey: .localPartyID)
     }
     
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(name, forKey: .name)
-        try container.encode(signers, forKey: .signers)
-        try container.encode(createdAt, forKey: .createdAt)
-        try container.encode(pubKeyECDSA, forKey: .pubKeyECDSA)
-        try container.encode(pubKeyEdDSA, forKey: .pubKeyEdDSA)
-        try container.encode(hexChainCode, forKey: .hexChainCode)
-        try container.encode(keyshares, forKey: .keyshares)
-        try container.encode(localPartyID, forKey: .localPartyID)
-    }
-    
     init(name: String) {
         self.name = name
     }
@@ -72,6 +60,18 @@ final class Vault: ObservableObject, Codable {
         self.hexChainCode = hexChainCode
     }
     
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(name, forKey: .name)
+        try container.encode(signers, forKey: .signers)
+        try container.encode(createdAt, forKey: .createdAt)
+        try container.encode(pubKeyECDSA, forKey: .pubKeyECDSA)
+        try container.encode(pubKeyEdDSA, forKey: .pubKeyEdDSA)
+        try container.encode(hexChainCode, forKey: .hexChainCode)
+        try container.encode(keyshares, forKey: .keyshares)
+        try container.encode(localPartyID, forKey: .localPartyID)
+    }
+    
     func addKeyshare(pubkey: String, keyshare: String) {
         let share = KeyShare(pubkey: pubkey, keyshare: keyshare)
         keyshares.append(share)
@@ -84,13 +84,8 @@ final class Vault: ObservableObject, Codable {
     }
     
     static func predicate(searchName: String) -> Predicate<Vault> {
-        return #Predicate<Vault> { vault in
+        #Predicate<Vault> { vault in
             searchName.isEmpty || vault.name == searchName
         }
     }
-}
-
-struct KeyShare: Codable {
-    let pubkey: String
-    let keyshare: String
 }
