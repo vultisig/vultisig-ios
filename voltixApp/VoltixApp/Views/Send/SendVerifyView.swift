@@ -124,11 +124,19 @@ struct SendVerifyView: View {
                                 } else if tx.coin.chain.name.lowercased() == "ethereum" {
                                     
                                     if tx.coin.contractAddress.isEmpty {
+                                        
+                                        let estimatedGas = Int64(await estimateGasForEthTransfer())
+                                        
+                                        guard estimatedGas > 0 else {
+                                            errorMessage = "Error to estimate gas for ETH"
+                                            return
+                                        }
+                                        
                                         self.presentationStack.append(.KeysignDiscovery(KeysignPayload(
                                             coin: tx.coin,
                                             toAddress: tx.toAddress,
                                             toAmount: tx.amountInGwei, // in Gwei
-                                            chainSpecific: BlockChainSpecific.Ethereum(maxFeePerGasGwei: Int64(tx.gas) ?? 24, priorityFeeGwei: 1, nonce: tx.nonce, gasLimit: 21_000),
+                                            chainSpecific: BlockChainSpecific.Ethereum(maxFeePerGasGwei: Int64(tx.gas) ?? 24, priorityFeeGwei: 1, nonce: tx.nonce, gasLimit: estimatedGas),
                                             utxos: [],
                                             memo: nil)))
                                     } else {
@@ -136,12 +144,9 @@ struct SendVerifyView: View {
                                         let estimatedGas = Int64(await estimateGasForERC20Transfer())
                                         
                                         guard estimatedGas > 0 else {
-                                            errorMessage = "Error to estimate gas"
+                                            errorMessage = "Error to estimate gas for the TOKEN"
                                             return
                                         }
-                                        
-                                        print("coin: \(tx.coin.ticker.uppercased()) \n toAddress: \(tx.toAddress) \n toAmount: \(tx.amountInTokenWei) \n fee: \(Int64(tx.gas) ?? 42)")
-                                        
                                         
                                         let decimals: Double = Double(tx.token?.tokenInfo.decimals ?? "18") ?? 18
                                         
@@ -182,8 +187,7 @@ struct SendVerifyView: View {
             }
         }
     }
-    
-        // Helper view for label and value text
+
     @ViewBuilder
     private func LabelText(title: String, value: String) -> some View {
         VStack(alignment: .leading) {
@@ -194,8 +198,7 @@ struct SendVerifyView: View {
                 .padding(.vertical, 5)
         }
     }
-    
-        // Helper view for label and value text
+
     @ViewBuilder
     private func LabelTextNumeric(title: String, value: String) -> some View {
         HStack {
@@ -209,6 +212,20 @@ struct SendVerifyView: View {
         }
     }
     
+    private func estimateGasForEthTransfer() async -> BigInt {
+        
+        do {
+            let estimatedGas = try await web3Service.estimateGasForEthTransaction(senderAddress: tx.fromAddress, recipientAddress: tx.toAddress, value: tx.amountInWei, memo: tx.memo)
+            
+                // Proceed with transaction signing logic using estimatedGas.
+            print("Estimated gas: \(estimatedGas)")
+            
+            return estimatedGas
+        } catch {
+            errorMessage = "Error estimating gas: \(error.localizedDescription)"
+        }
+        return 0
+    }
     
     private func estimateGasForERC20Transfer() async -> BigInt {
         
@@ -230,7 +247,6 @@ struct SendVerifyView: View {
         }
         return 0
     }
-    
 }
 
     // Custom ToggleStyle for Checkbox appearance

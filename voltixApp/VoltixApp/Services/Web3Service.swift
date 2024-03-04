@@ -30,6 +30,27 @@ class Web3Service: ObservableObject {
         }
     }
     
+    func estimateGasForEthTransaction(senderAddress: String, recipientAddress: String, value: BigInt, memo: String?) async throws -> BigInt {
+            // Convert the memo to hex (if present). Assume memo is a String.
+        let memoDataHex = memo?.data(using: .utf8)?.map { byte in String(format: "%02x", byte) }.joined() ?? ""
+        
+        let transactionObject: [String: Any] = [
+            "from": senderAddress,
+            "to": recipientAddress,
+            "value": "0x" + String(value, radix: 16), // Convert value to hex string
+            "data": "0x" + memoDataHex // Include the memo in the data field, if present
+        ]
+        
+        let payload: [String: Any] = [
+            "jsonrpc": "2.0",
+            "method": "eth_estimateGas",
+            "params": [transactionObject],
+            "id": 1
+        ]
+        
+        return try await sendRPCRequest(payload: payload, method: "eth_estimateGas")
+    }
+    
     func estimateGasForERC20Transfer(senderAddress: String, contractAddress: String, recipientAddress: String, value: BigInt) async throws -> BigInt {
         let data = constructERC20TransferData(recipientAddress: recipientAddress, value: value)
         
@@ -99,7 +120,7 @@ class Web3Service: ObservableObject {
         print("Value Hex: \(paddedValue)")
         print("Value: \(value)")
         print("Constructed Data: \(data)")
-
+        
         
         
         return data
