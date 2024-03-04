@@ -45,6 +45,7 @@ struct PeerDiscoveryView: View {
     @State private var currentState = PeerDiscoveryStatus.WaitingForDevices
     @State private var localPartyID = ""
     @ObservedObject var participantDiscovery = ParticipantDiscovery()
+    private let serviceName = "VoltixApp-" + Int.random(in: 1 ... 1000).description
     
     var body: some View {
         VStack {
@@ -145,7 +146,7 @@ struct PeerDiscoveryView: View {
             }
         }
         .task {
-            self.mediator.start()
+            self.mediator.start(name: self.serviceName)
             logger.info("mediator server started")
             self.startSession()
             self.participantDiscovery.getParticipants(serverAddr: self.serverAddr, sessionID: self.sessionID)
@@ -174,7 +175,7 @@ struct PeerDiscoveryView: View {
         guard let chainCode = self.chainCode else {
             return Image(systemName: "xmark")
         }
-        let km = keygenMessage(sessionID: sessionID, hexChainCode: chainCode)
+        let km = keygenMessage(sessionID: sessionID, hexChainCode: chainCode, serviceName: self.serviceName)
         let jsonEncoder = JSONEncoder()
         do {
             let data = try jsonEncoder.encode(km)
@@ -208,6 +209,7 @@ struct PeerDiscoveryView: View {
 struct keygenMessage: Codable {
     let sessionID: String
     let hexChainCode: String
+    let serviceName: String
 }
 
 #Preview {

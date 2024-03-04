@@ -27,6 +27,7 @@ struct KeysignDiscoveryView: View {
     let keysignPayload: KeysignPayload
     @State private var keysignMessages = [String]()
     @ObservedObject var participantDiscovery = ParticipantDiscovery()
+    private let serviceName = "VoltixApp-" + Int.random(in: 1 ... 1000).description
     
     var body: some View {
         VStack {
@@ -148,7 +149,7 @@ struct KeysignDiscoveryView: View {
         .task {
             // start the mediator , so other devices can discover us
             Task {
-                self.mediator.start()
+                self.mediator.start(name: serviceName)
                 self.startKeysignSession()
             }
             self.participantDiscovery.getParticipants(serverAddr: self.serverAddr, sessionID: self.sessionID)
@@ -181,6 +182,7 @@ struct KeysignDiscoveryView: View {
     
     func getQrImage(size: CGFloat) -> Image {
         let keysignMsg = KeysignMessage(sessionID: self.sessionID,
+                                        serviceName: self.serviceName,
                                         payload: self.keysignPayload)
         do {
             let encoder = JSONEncoder()

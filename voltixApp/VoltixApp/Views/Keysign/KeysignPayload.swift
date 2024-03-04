@@ -7,6 +7,7 @@ import Foundation
 
 struct KeysignMessage: Codable, Hashable {
     let sessionID: String
+    let serviceName: String
     let payload: KeysignPayload
 }
 

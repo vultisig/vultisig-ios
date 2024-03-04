@@ -3,6 +3,7 @@
 //  VoltixApp
 
 import CodeScanner
+import Network
 import OSLog
 import SwiftUI
 
@@ -24,10 +25,11 @@ struct JoinKeygenView: View {
     @State private var qrCodeResult: String? = nil
     @State private var hexChainCode: String = ""
     @ObservedObject private var serviceDelegate = ServiceDelegate()
-    private let netService = NetService(domain: "local.", type: "_http._tcp.", name: "VoltixApp")
-    @State private var currentStatus = JoinKeygenStatus.DiscoverService
+//    private let netService = NetService(domain: "local.", type: "_http._tcp.", name: "VoltixApp")
+    @State private var currentStatus = JoinKeygenStatus.DiscoverSessionID
     @State private var keygenCommittee = [String]()
     @State var localPartyID: String = ""
+    @State private var serviceName = ""
     
     var body: some View {
         VStack {
@@ -56,7 +58,6 @@ struct JoinKeygenView: View {
                         .buttonStyle(PlainButtonStyle())
                         
                     case .DiscoverService:
-                        
                         HStack {
                             Text("Discovering mediator service, please wait...".uppercased())
                                 .font(.custom("Menlo", size: 15).bold())
@@ -66,11 +67,17 @@ struct JoinKeygenView: View {
                                 ProgressView().progressViewStyle(.circular).padding(2)
                             } else {
                                 Image(systemName: "checkmark").onAppear {
-                                    currentStatus = .DiscoverSessionID
+                                    currentStatus = .JoinKeygen
                                 }
                             }
                             
                         }.padding(.vertical, 30)
+                        .onAppear(){
+                            logger.info("Start to discover service")
+                            let netService = NetService(domain: "local.", type: "_http._tcp.", name: self.serviceName)
+                            netService.delegate = self.serviceDelegate
+                            netService.resolve(withTimeout: 10)
+                        }
                         
                     case .JoinKeygen:
                         
@@ -143,9 +150,8 @@ struct JoinKeygenView: View {
             }
         }
         .onAppear {
-            logger.info("Start to discover service")
-            netService.delegate = self.serviceDelegate
-            netService.resolve(withTimeout: 10)
+            
+           
             if appState.creatingVault == nil {
                 self.currentStatus = .FailToStart
             }
@@ -212,12 +218,13 @@ struct JoinKeygenView: View {
                     let keysignMsg = try decoder.decode(keygenMessage.self, from: scanData)
                     qrCodeResult = keysignMsg.sessionID
                     hexChainCode = keysignMsg.hexChainCode
+                    serviceName = keysignMsg.serviceName
                 } catch {
                     logger.error("Failed to decode key generation message: \(error.localizedDescription)")
                     currentStatus = .FailToStart
                     return
                 }
-                currentStatus = .JoinKeygen
+                currentStatus = .DiscoverService
             case .failure(let error):
                 logger.error("Failed to scan QR code: \(error.localizedDescription)")
                 currentStatus = .FailToStart

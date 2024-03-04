@@ -10,7 +10,7 @@ public final class Mediator {
     let port: UInt16 = 8080
     let server = HttpServer()
     let cache = MemoryStorage<String, Any>(config: MemoryConfig())
-    private let service: NetService
+    private var service: NetService
     
     // Singleton
     public static let shared = Mediator()
@@ -37,8 +37,9 @@ public final class Mediator {
     }
     
     // start the server
-    public func start() {
+    public func start(name: String) {
         do {
+            self.service = NetService(domain: "local.", type: "_http._tcp", name: name, port: Int32(self.port))
             try self.server.start(self.port)
             self.service.publish()
         } catch {

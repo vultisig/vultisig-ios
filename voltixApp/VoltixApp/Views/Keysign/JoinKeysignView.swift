@@ -1,6 +1,6 @@
-    //
-    //  JoinKeysignView.swift
-    //  VoltixApp
+//
+//  JoinKeysignView.swift
+//  VoltixApp
 
 import CodeScanner
 import OSLog
@@ -23,12 +23,13 @@ struct JoinKeysignView: View {
     @State private var sessionID: String = ""
     @State private var keysignMessages = [String]()
     @ObservedObject private var serviceDelegate = ServiceDelegate()
-    private let netService = NetService(domain: "local.", type: "_http._tcp.", name: "VoltixApp")
-    @State private var currentStatus = JoinKeysignStatus.DiscoverService
+    // private let netService = NetService(domain: "local.", type: "_http._tcp.", name: "VoltixApp")
+    @State private var currentStatus = JoinKeysignStatus.DiscoverSigningMsg
     @State private var keysignCommittee = [String]()
     @State var localPartyID: String = ""
     @State private var errorMsg: String = ""
     @State private var keysignPayload: KeysignPayload? = nil
+    @State private var serviceName = ""
     
     var body: some View {
         VStack {
@@ -58,13 +59,17 @@ struct JoinKeysignView: View {
                                     .padding(2)
                             } else {
                                 Image(systemName: "checkmark").onAppear {
-                                    self.currentStatus = .DiscoverSigningMsg
+                                    self.currentStatus = .JoinKeysign
                                 }
                             }
+                        }.onAppear {
+                            logger.info("Start to discover service")
+                            let netService = NetService(domain: "local.", type: "_http._tcp.", name: self.serviceName)
+                            netService.delegate = self.serviceDelegate
+                            netService.resolve(withTimeout: TimeInterval(10))
                         }
                     case .JoinKeysign:
                         VStack(alignment: .leading) {
-                            
                             VStack {
                                 VStack(alignment: .center) {
                                     Text("Confirm to sign the message?")
@@ -86,12 +91,10 @@ struct JoinKeysignView: View {
                             }
                             .padding(.vertical)
                             
-                            
                             Text("Amount: \(String(self.keysignPayload?.toAmount ?? 0))")
                                 .font(Font.custom("Menlo", size: 15).weight(.bold))
                                 .padding(.vertical)
                             
-
                             VStack {
                                 VStack(alignment: .center) {
                                     Button(action: {
@@ -167,9 +170,6 @@ struct JoinKeysignView: View {
             }
         }
         .onAppear {
-            logger.info("Starting to discover the mediator service.")
-            self.netService.delegate = self.serviceDelegate
-            self.netService.resolve(withTimeout: TimeInterval(10))
             if self.appState.currentVault == nil {
                 self.errorMsg = "Vault is unavailable."
                 self.currentStatus = .FailedToStart
@@ -251,6 +251,7 @@ struct JoinKeysignView: View {
                         let keysignMsg = try decoder.decode(KeysignMessage.self, from: data)
                         self.sessionID = keysignMsg.sessionID
                         self.keysignPayload = keysignMsg.payload
+                        self.serviceName = keysignMsg.serviceName
                         logger.info("QR code scanned successfully. Session ID: \(self.sessionID)")
                         self.prepareKeysignMessages(keysignPayload: keysignMsg.payload)
                     } catch {
@@ -264,7 +265,7 @@ struct JoinKeysignView: View {
                 self.errorMsg = "QR code scanning failed: \(err.localizedDescription)"
                 self.currentStatus = .FailedToStart
         }
-        self.currentStatus = .JoinKeysign
+        self.currentStatus = .DiscoverService
     }
     
     private func prepareKeysignMessages(keysignPayload: KeysignPayload) {
