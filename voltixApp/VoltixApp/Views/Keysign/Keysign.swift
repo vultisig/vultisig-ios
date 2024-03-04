@@ -139,7 +139,6 @@ struct KeysignView: View {
                                     let result = EthereumHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
                                     switch result {
                                         case .success(let tx):
-                                            
                                             Task {
                                                 await etherScanService.broadcastTransaction(hex: tx, apiKey: AppConfiguration.etherScanApiKey)
                                             }
@@ -152,11 +151,14 @@ struct KeysignView: View {
                                                     logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
                                             }
                                     }
+                                //TODO: We should not use the ticker but the type, like if it is a token or not.
                                 case "USDC":
                                     let result = ERC20Helper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
                                     switch result {
                                         case .success(let tx):
-                                            print(tx)
+                                            Task {
+                                                await etherScanService.broadcastTransaction(hex: tx, apiKey: AppConfiguration.etherScanApiKey)
+                                            }
                                         case .failure(let err):
                                             switch err {
                                                 case HelperError.runtimeError(let errDetail):

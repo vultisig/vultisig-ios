@@ -18,6 +18,7 @@ struct VaultItem: View {
     let isRadio: Bool
     let radioIcon: String
     let showButtons: Bool
+    let coin: Coin
     
     @State private var showingQRCode = false
     @State private var showingShareSheet = false
@@ -85,12 +86,15 @@ struct VaultItem: View {
                     Spacer().frame(width: 20)
                     Button(action: {
                         
-                        if coinName == "BTC" {
+                        if coin.chain.name.lowercased() == "bitcoin" {
                             presentationStack.append(.bitcoinTransactionsListView)
-                        } else if coinName == "ETH" {
-                            presentationStack.append(.ethereumTransactionsListView)
+                        } else if coin.chain.name.lowercased() == "ethereum" {
+                            if !coin.contractAddress.isEmpty {
+                                presentationStack.append(.erc20TransactionsListView(coin.contractAddress))
+                            } else {
+                                presentationStack.append(.ethereumTransactionsListView)
+                            }
                         }
-                        
                     }) {
                         Image(systemName: "cube.transparent")
                             .resizable()
@@ -115,8 +119,4 @@ struct VaultItem: View {
             .padding(.vertical)
         }
     }
-}
-
-#Preview {
-    VaultItem(presentationStack: .constant([]), coinName: "Bitcoin", usdAmount: "US$10,000,000.98", showAmount: true, address: "3JK2dFmWA58A3kukgw1yybotStGAFaV6Sg", isRadio: true, radioIcon: "String", showButtons: true)
 }

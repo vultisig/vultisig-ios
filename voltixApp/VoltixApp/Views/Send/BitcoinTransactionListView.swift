@@ -40,8 +40,8 @@ struct BitcoinTransactionListView: View {
                     switch result {
                         case .success(let btc):
                                 // "bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu"
-                                print(btc.address)
-                                await bitcoinTransactionsService.fetchTransactions(btc.address)
+                            print(btc.address)
+                            await bitcoinTransactionsService.fetchTransactions(btc.address)
                                 //await bitcoinTransactionsService.fetchTransactions("bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu")
                         case .failure(let error):
                             print("error: \(error)")
@@ -68,7 +68,7 @@ struct TransactionRow: View {
                             .padding(.vertical, 1)
                     }
                     Divider() // Adds a horizontal line
-                    LabelTextNumeric(title: "Amount:".uppercased(), value: String(Double(transaction.amountSent) / Double(100000000)))
+                    LabelTextNumeric(title: "Amount:".uppercased(), value: formatAmount(transaction.amountSent))
                         .padding(.vertical, 1)
                 } else if transaction.isReceived {
                     ForEach(transaction.receivedFrom, id: \.self) { address in
@@ -76,7 +76,7 @@ struct TransactionRow: View {
                             .padding(.vertical, 1)
                     }
                     Divider() // Adds a horizontal line
-                    LabelTextNumeric(title: "Amount:".uppercased(), value: String(Double(transaction.amountReceived) / Double(100000000)))
+                    LabelTextNumeric(title: "Amount:".uppercased(), value: formatAmount(transaction.amountReceived))
                         .padding(.vertical, 1)
                 }
                 
@@ -87,11 +87,11 @@ struct TransactionRow: View {
                 }
                 
                 Divider() // Adds a horizontal line
-                LabelTextNumeric(title: "Fee:", value: String(transaction.fee))
+                LabelTextNumeric(title: "Fee:", value: String(transaction.fee) + " SATS")
                     .padding(.vertical, 5)
-//                Divider() // Adds a horizontal line
-//                LabelTextNumeric(title: "Direction:", value: transaction.isSent ? "Sent" : "Received")
-//                    .padding(.vertical, 5)
+                    //                Divider() // Adds a horizontal line
+                    //                LabelTextNumeric(title: "Direction:", value: transaction.isSent ? "Sent" : "Received")
+                    //                    .padding(.vertical, 5)
             }
         }
     }
@@ -142,4 +142,17 @@ struct TransactionRow: View {
                 .padding(.vertical, 5)
         }
     }
+    
+    private func formatAmount(_ amountSatoshis: Int) -> String {
+        let amountBTC = Double(amountSatoshis) / 100_000_000 // Convert satoshis to BTC
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 0 // Minimum number of digits after the decimal point
+        formatter.maximumFractionDigits = 8 // Maximum number of digits after the decimal point, adjust if needed
+        formatter.decimalSeparator = "." // Use dot for decimal separation
+        formatter.groupingSeparator = "," // Use comma for thousands separation, adjust if needed
+        
+        return (formatter.string(from: NSNumber(value: amountBTC)) ?? "\(amountBTC)") + " BTC"
+    }
+
 }

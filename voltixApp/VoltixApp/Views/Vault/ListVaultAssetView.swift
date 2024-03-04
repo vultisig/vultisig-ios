@@ -61,19 +61,19 @@ struct ListVaultAssetView: View {
                     showingCoinList = true
                 }.buttonStyle(PlainButtonStyle())
                 
-                Button("test", systemImage: "doc.questionmark") {
-                    guard let vault = appState.currentVault else { return }
-                    let coin = vault.coins.first { $0.ticker == "SOL" }
-                    if let coin {
-                        self.presentationStack.append(.KeysignDiscovery(KeysignPayload(
-                            coin: coin,
-                            toAddress: "HWC9MFd7nYy421xMYx4mwMxw3HNC6hcwiUMnPTEQc4zG",
-                            toAmount: 100_000_0, // 0.01 RUNE
-                            chainSpecific: BlockChainSpecific.Solana(recentBlockHash: "D9xgxNtjPfZMNDnQbywr4h3XNy67pN8KNJfKmHPwoqu9"),
-                            utxos: [],
-                            memo: "voltix")))
-                    }
-                }.buttonStyle(PlainButtonStyle())
+//                Button("test", systemImage: "doc.questionmark") {
+//                    guard let vault = appState.currentVault else { return }
+//                    let coin = vault.coins.first { $0.ticker == "SOL" }
+//                    if let coin {
+//                        self.presentationStack.append(.KeysignDiscovery(KeysignPayload(
+//                            coin: coin,
+//                            toAddress: "HWC9MFd7nYy421xMYx4mwMxw3HNC6hcwiUMnPTEQc4zG",
+//                            toAmount: 100_000_0, // 0.01 RUNE
+//                            chainSpecific: BlockChainSpecific.Solana(recentBlockHash: "D9xgxNtjPfZMNDnQbywr4h3XNy67pN8KNJfKmHPwoqu9"),
+//                            utxos: [],
+//                            memo: "voltix")))
+//                    }
+//                }.buttonStyle(PlainButtonStyle())
             }
         }
         .onAppear {
@@ -94,8 +94,4 @@ struct ListVaultAssetView: View {
             }
         }
     }
-}
-
-#Preview {
-    ListVaultAssetView(presentationStack: .constant([]))
 }

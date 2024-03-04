@@ -6,6 +6,7 @@
 import Foundation
 import Tss
 import WalletCore
+import BigInt
 
 enum ERC20Helper {
     static func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {

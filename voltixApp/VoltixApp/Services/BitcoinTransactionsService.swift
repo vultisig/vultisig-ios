@@ -37,9 +37,9 @@ public class BitcoinTransactionsService: ObservableObject {
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
+            print(String(data: data, encoding: .utf8) ?? "No response body")
             let decoder = JSONDecoder()
             let decodedData = try decoder.decode([BitcoinTransactionMempool].self, from: data)
-            
             let updatedData = decodedData.map { transaction in
                 BitcoinTransactionMempool(txid: transaction.txid, version: transaction.version, locktime: transaction.locktime, vin: transaction.vin, vout: transaction.vout, fee: transaction.fee, status: transaction.status, userAddress: userAddress)
             }
@@ -58,6 +58,7 @@ public class BitcoinTransactionsService: ObservableObject {
         } catch {
             errorMessage = "Error: \(error.localizedDescription)"
         }
+        print(errorMessage)
     }
     
     enum BitcoinTransactionError: Error {

@@ -40,9 +40,12 @@ class BitcoinTransactionMempool: Codable {
     
     var sentTo: [String] {
         guard isSent else { return [] }
-        return vout.filter { $0.scriptpubkey_address != userAddress }.map { $0.scriptpubkey_address }
+        return vout.compactMap { output in
+            guard let address = output.scriptpubkey_address, address != userAddress else { return nil }
+            return address
+        }
     }
-    
+
     var receivedFrom: [String] {
         guard isReceived else { return [] }
         return vin.compactMap { $0.prevout?.scriptpubkey_address }
@@ -73,7 +76,7 @@ class BitcoinTransactionMempool: Codable {
             let scriptpubkey: String
             let scriptpubkey_asm: String
             let scriptpubkey_type: String
-            let scriptpubkey_address: String
+            let scriptpubkey_address: String?
             let value: Int
         }
     }
@@ -82,7 +85,7 @@ class BitcoinTransactionMempool: Codable {
         let scriptpubkey: String
         let scriptpubkey_asm: String
         let scriptpubkey_type: String
-        let scriptpubkey_address: String
+        let scriptpubkey_address: String?
         let value: Int
     }
     
@@ -94,25 +97,36 @@ class BitcoinTransactionMempool: Codable {
     }
 }
 
-    // Trying to get the MEMO
 extension BitcoinTransactionMempool {
     var opReturnData: String? {
         for output in vout {
-                // Assuming scriptpubkey_asm is a non-optional String
             let asm = output.scriptpubkey_asm
             if asm.hasPrefix("OP_RETURN") {
-                    // Extract the data part after "OP_RETURN"
                 let components = asm.components(separatedBy: " ")
                 if components.count > 1 {
-                        // The actual data starts after "OP_RETURN" and is usually hex-encoded
-                    let dataHex = components.dropFirst().joined(separator: " ")
-                        // Since dataHex is derived from a non-optional String, no need for optional binding here
-                    return dataHex
+                    let dataHex = components.dropFirst().joined()
+                    return hexStringToString(dataHex)
                 }
             }
         }
         return nil
     }
+    
+    private func hexStringToString(_ hex: String) -> String? {
+        var data = Data()
+        var hexIndex = hex.startIndex
+        
+        while hexIndex < hex.endIndex {
+            let nextIndex = hex.index(hexIndex, offsetBy: 2)
+            if nextIndex <= hex.endIndex {
+                let byteString = hex[hexIndex..<nextIndex]
+                if let byte = UInt8(byteString, radix: 16) {
+                    data.append(byte)
+                }
+            }
+            hexIndex = nextIndex
+        }
+        
+        return String(data: data, encoding: .utf8)
+    }
 }
-
-

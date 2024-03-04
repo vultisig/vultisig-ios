@@ -42,8 +42,11 @@ public class EtherScanService: ObservableObject {
             guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
                 let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
                 let responseString = String(data: data, encoding: .utf8) ?? "No response body"
+                print("HTTP Error: \(statusCode) - \(responseString)")
                 throw EtherScanError.httpError(statusCode, "HTTP Error: \(statusCode) - \(responseString)")
             }
+            
+            print(String(data: data, encoding: .utf8) ?? "No response body")
             
             let decoder = JSONDecoder()
             let broadcastResponse = try decoder.decode(BroadcastResponse.self, from: data)
@@ -70,6 +73,7 @@ public class EtherScanService: ObservableObject {
                 } else {
                     self.errorMessage = "Unknown error: \(error.localizedDescription)"
                 }
+                print(self.errorMessage)
             }
         }
     }
@@ -81,26 +85,33 @@ public class EtherScanService: ObservableObject {
     }
     
     struct TransactionDetail: Codable {
-        let blockNumber: String
-        let timeStamp: String
-        let hash: String
-        let nonce: String
-        let blockHash: String
-        let transactionIndex: String
+        let blockNumber: String?
+        let timeStamp: String?
+        let hash: String?
+        let nonce: String?
+        let blockHash: String?
+        let transactionIndex: String?
         let from: String
         let to: String
         let value: String
         let gas: String
         let gasPrice: String
-        let isError: String
-        let txreceipt_status: String
-        let input: String
-        let contractAddress: String
-        let cumulativeGasUsed: String
-        let gasUsed: String
-        let confirmations: String
-        let methodId: String
-        let functionName: String
+        let isError: String?
+        let txreceipt_status: String?
+        let input: String?
+        let contractAddress: String?
+        let cumulativeGasUsed: String?
+        let gasUsed: String?
+        let confirmations: String?
+        
+        // Fields that might not exist in all responses, now optional
+        let methodId: String?
+        let functionName: String?
+        
+        // Added properties for ERC20, already optional
+        let tokenName: String?
+        let tokenSymbol: String?
+        let tokenDecimal: String?
     }
     
     func fetchTransactions(forAddress address: String, apiKey: String) async {
@@ -131,6 +142,42 @@ public class EtherScanService: ObservableObject {
         } catch {
             DispatchQueue.main.async {
                 self.handleError(error: error)
+            }
+        }
+    }
+    
+    func fetchERC20Transactions(forAddress address: String, apiKey: String, contractAddress: String) async {
+        
+        let urlString = "https://api.etherscan.io/api?module=account&action=tokentx&contractaddress=\(contractAddress)&address=\(address)&startblock=0&endblock=99999999&sort=asc&apikey=\(apiKey)"
+
+        guard let url = URL(string: urlString) else {
+            self.errorMessage = "Invalid URL"
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        
+        print(urlString)
+        
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
+                let responseString = String(data: data, encoding: .utf8) ?? "No response body"
+                throw EtherScanError.httpError(statusCode, "HTTP Error: \(statusCode) - \(responseString)")
+            }
+            
+            let decodedResponse = try JSONDecoder().decode(EtherscanAPIResponse.self, from: data)
+            
+            DispatchQueue.main.async {
+                self.transactions = decodedResponse.result ?? []
+                self.addressFor = address
+            }
+        } catch {
+            DispatchQueue.main.async {
+                self.handleError(error: error)
+                print(error)
             }
         }
     }

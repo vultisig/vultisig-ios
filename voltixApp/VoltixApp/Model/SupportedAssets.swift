@@ -38,10 +38,12 @@ struct Asset : Codable,Hashable {
     let ticker: String
     let chainName: String
     let image: String
+    let contractAddress: String?
     
-    init(ticker: String, chainName: String, image: String) {
+    init(ticker: String, chainName: String, image: String, contractAddress: String?) {
         self.ticker = ticker
         self.chainName = chainName
         self.image = image
+        self.contractAddress = contractAddress
     }
 }

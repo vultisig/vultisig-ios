@@ -9,7 +9,8 @@ struct EthereumTransactionListView: View {
     @StateObject var etherScanService: EtherScanService = EtherScanService()
     @EnvironmentObject var appState: ApplicationState
     @Binding var presentationStack: [CurrentScreen]
-
+    @State var contractAddress: String?
+    
     var body: some View {
         VStack {
             List {
@@ -38,13 +39,25 @@ struct EthereumTransactionListView: View {
             }
             .task {
                 if let vault = appState.currentVault {
+                    
                     let result = EthereumHelper.getEthereum(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
+                    
                     switch result {
                         case .success(let eth):
-                            await etherScanService.fetchTransactions(forAddress: eth.address, apiKey: AppConfiguration.etherScanApiKey)
+                            if let contract = contractAddress {
+                                await etherScanService.fetchERC20Transactions(
+                                    forAddress: eth.address,
+                                    apiKey: AppConfiguration.etherScanApiKey,
+                                    contractAddress: contract
+                                )
+                                
+                            } else {
+                                await etherScanService.fetchTransactions(forAddress: eth.address, apiKey: AppConfiguration.etherScanApiKey)
+                            }
                         case .failure(let error):
                             print("error: \(error)")
                     }
+                    
                 }
             }
         }
@@ -59,7 +72,7 @@ struct EthTransactionRow: View {
         Section {
             VStack(alignment: .leading) {
                 
-                LabelTxHash(title: "TX ID:".uppercased(), value: transaction.hash, isSent: self.myAddress.lowercased() != transaction.to.lowercased())
+                LabelTxHash(title: "TX ID:".uppercased(), value: transaction.hash ?? "", isSent: self.myAddress.lowercased() != transaction.to.lowercased())
                     .padding(.vertical, 5)
                 Divider()
                 
@@ -71,17 +84,18 @@ struct EthTransactionRow: View {
                     .padding(.vertical, 1)
                 Divider()
                 
-                let etherValue = convertToEther(fromWei: transaction.value)
-                LabelTextNumeric(title: "Amount (ETH):".uppercased(), value: etherValue)
+                let decimals: Int = Int(transaction.tokenDecimal ?? "18") ?? 18
+                let etherValue = convertToEther(fromWei: transaction.value, decimals)
+                LabelTextNumeric(title: "Amount \(transaction.tokenSymbol ?? "ETH"):".uppercased(), value: etherValue)
                     .padding(.vertical, 1)
-//                Divider()
-//                
-//                LabelTextNumeric(title: "Gas Used:".uppercased(), value: transaction.gasUsed)
-//                    .padding(.vertical, 5)
+                    //                Divider()
+                    //
+                    //                LabelTextNumeric(title: "Gas Used:".uppercased(), value: transaction.gasUsed)
+                    //                    .padding(.vertical, 5)
                 
                 Divider()
                 
-                let feeDisplay = calculateTransactionFee(gasUsed: transaction.gasUsed, gasPrice: transaction.gasPrice)
+                let feeDisplay = calculateTransactionFee(gasUsed: transaction.gasUsed ?? "", gasPrice: transaction.gasPrice)
                 LabelTextNumeric(title: "Fee Paid:".uppercased(), value: feeDisplay)
                     .padding(.vertical, 5)
             }
@@ -133,9 +147,9 @@ struct EthTransactionRow: View {
         }
     }
     
-    private func convertToEther(fromWei value: String) -> String {
+    private func convertToEther(fromWei value: String, _ decimals: Int = 18) -> String {
         if let wei = Double(value) {
-            let ether = wei / 1_000_000_000_000_000_000 // 1 Ether = 1e18 Wei
+            let ether = wei / pow(10.0, Double(decimals)) // Correctly perform exponentiation
             return String(format: "%.4f", ether)
         } else {
             return "Invalid Value"

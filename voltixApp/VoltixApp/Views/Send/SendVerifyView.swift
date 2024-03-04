@@ -4,12 +4,12 @@
     //  Created by Enrique Souza Soares
     //
 import SwiftUI
-import web3
 import BigInt
 
 struct SendVerifyView: View {
     @Binding var presentationStack: [CurrentScreen]
     @ObservedObject var tx: SendTransaction
+    @StateObject private var web3Service = Web3Service()
     @StateObject var unspentOutputsService: UnspentOutputsService = .init()
     @State private var errorMessage: String = ""
     @State private var isChecked1 = false
@@ -21,9 +21,11 @@ struct SendVerifyView: View {
     }
     
     private func reloadTransactions() {
-        if unspentOutputsService.walletData == nil {
-            Task {
-                await unspentOutputsService.fetchUnspentOutputs(for: tx.fromAddress)
+        if tx.coin.chain.name.lowercased() == "bitcoin" {
+            if unspentOutputsService.walletData == nil {
+                Task {
+                    await unspentOutputsService.fetchUnspentOutputs(for: tx.fromAddress)
+                }
             }
         }
     }
@@ -67,112 +69,106 @@ struct SendVerifyView: View {
                         content: "SIGN",
                         onClick: {
                             
-                            if !isValidForm {
-                                self.errorMessage = "* You must agree with the terms."
-                                return
-                            }
-                            
-                            if tx.coin.chain.name.lowercased() == "bitcoin" {
+                            Task{
                                 
-                                if let walletData = unspentOutputsService.walletData {
-                                        // Calculate total amount needed by summing the amount and the fee
-                                    let totalAmountNeeded = tx.amountInSats + tx.feeInSats
-                                    
-                                        // Select UTXOs sufficient to cover the total amount needed and map to UtxoInfo
-                                    let utxoInfo = walletData.selectUTXOsForPayment(amountNeeded: Int64(totalAmountNeeded)).map {
-                                        UtxoInfo(
-                                            hash: $0.txHash ?? "",
-                                            amount: Int64($0.value ?? 0),
-                                            index: UInt32($0.txOutputN ?? -1)
-                                        )
-                                    }
-                                    
-                                    if utxoInfo.count == 0 {
-                                        self.errorMessage = "You don't have enough balance to send this transaction"
-                                        return
-                                    }
-                                    
-                                    let totalSelectedAmount = utxoInfo.reduce(0) { $0 + $1.amount }
-                                    
-                                        // Check if the total selected amount is greater than or equal to the needed balance
-                                    if totalSelectedAmount < Int64(totalAmountNeeded) {
-                                        self.errorMessage = "You don't have enough balance to send this transaction"
-                                        return
-                                    }
-                                    
-                                    let keysignPayload = KeysignPayload(
-                                        coin: tx.coin,
-                                        toAddress: tx.toAddress,
-                                        toAmount: tx.amountInSats,
-                                        chainSpecific: BlockChainSpecific.Bitcoin(byteFee: tx.feeInSats),
-                                        utxos: utxoInfo,
-                                        memo: tx.memo
-                                    )
-                                    
-                                    self.errorMessage = ""
-                                    self.presentationStack.append(.KeysignDiscovery(keysignPayload))
-                                    
-                                } else {
-                                    self.errorMessage = "Error fetching the data"
+                                
+                                if !isValidForm {
+                                    self.errorMessage = "* You must agree with the terms."
+                                    return
                                 }
                                 
-                            } else if tx.coin.chain.name.lowercased() == "ethereum" {
-                                if tx.coin.ticker.uppercased() == "ETH" {
+                                if tx.coin.chain.name.lowercased() == "bitcoin" {
                                     
-                                    let gasBig = BigUInt(tx.gas)
-                                    let gasLimit = BigUInt("0")
-                                    let memoData = tx.memo.data(using: .utf8) ?? Data() // Convert the memo to Data
-                                    
-                                    let transaction = EthereumTransaction(
-                                        from: EthereumAddress(tx.fromAddress),
-                                        to: EthereumAddress(tx.toAddress),
-                                        data: memoData,
-                                        gasPrice: gasBig ?? BigUInt("0"),
-                                        gasLimit: gasLimit
-                                    )
-                                    
-                                    let client = Web3Service().client
-                                    
-                                    client.eth_estimateGas(transaction) { result in
-                                        switch result {
-                                            case .success(let estimatedGas):
-                                                print("Estimated gas limit: \(estimatedGas)")
-                                                
-                                                
-                                                self.presentationStack.append(.KeysignDiscovery(KeysignPayload(
-                                                    coin: tx.coin,
-                                                    toAddress: tx.toAddress,
-                                                    toAmount: tx.amountInGwei, // in Gwei
-                                                    chainSpecific: BlockChainSpecific.Ethereum(maxFeePerGasGwei: Int64(tx.gas) ?? 24, priorityFeeGwei: 1, nonce: tx.nonce, gasLimit: Int64(estimatedGas)),
-                                                    utxos: [],
-                                                    memo: nil)))
-                                                
-                                                
-                                            case .failure(let error):
-                                                print("Error to estimate gas \(error)")
+                                    if let walletData = unspentOutputsService.walletData {
+                                            // Calculate total amount needed by summing the amount and the fee
+                                        let totalAmountNeeded = tx.amountInSats + tx.feeInSats
+                                        
+                                            // Select UTXOs sufficient to cover the total amount needed and map to UtxoInfo
+                                        let utxoInfo = walletData.selectUTXOsForPayment(amountNeeded: Int64(totalAmountNeeded)).map {
+                                            UtxoInfo(
+                                                hash: $0.txHash ?? "",
+                                                amount: Int64($0.value ?? 0),
+                                                index: UInt32($0.txOutputN ?? -1)
+                                            )
                                         }
+                                        
+                                        if utxoInfo.count == 0 {
+                                            self.errorMessage = "You don't have enough balance to send this transaction"
+                                            return
+                                        }
+                                        
+                                        let totalSelectedAmount = utxoInfo.reduce(0) { $0 + $1.amount }
+                                        
+                                            // Check if the total selected amount is greater than or equal to the needed balance
+                                        if totalSelectedAmount < Int64(totalAmountNeeded) {
+                                            self.errorMessage = "You don't have enough balance to send this transaction"
+                                            return
+                                        }
+                                        
+                                        let keysignPayload = KeysignPayload(
+                                            coin: tx.coin,
+                                            toAddress: tx.toAddress,
+                                            toAmount: tx.amountInSats,
+                                            chainSpecific: BlockChainSpecific.Bitcoin(byteFee: tx.feeInSats),
+                                            utxos: utxoInfo,
+                                            memo: tx.memo
+                                        )
+                                        
+                                        self.errorMessage = ""
+                                        self.presentationStack.append(.KeysignDiscovery(keysignPayload))
+                                        
+                                    } else {
+                                        self.errorMessage = "Error fetching the data"
                                     }
                                     
+                                } else if tx.coin.chain.name.lowercased() == "ethereum" {
                                     
+                                    if tx.coin.contractAddress.isEmpty {
+                                        
+                                        let estimatedGas = Int64(await estimateGasForEthTransfer())
+                                        
+                                        guard estimatedGas > 0 else {
+                                            errorMessage = "Error to estimate gas for ETH"
+                                            return
+                                        }
+                                        
+                                        self.presentationStack.append(.KeysignDiscovery(KeysignPayload(
+                                            coin: tx.coin,
+                                            toAddress: tx.toAddress,
+                                            toAmount: tx.amountInGwei, // in Gwei
+                                            chainSpecific: BlockChainSpecific.Ethereum(maxFeePerGasGwei: Int64(tx.gas) ?? 24, priorityFeeGwei: 1, nonce: tx.nonce, gasLimit: estimatedGas),
+                                            utxos: [],
+                                            memo: nil)))
+                                    } else {
+                                        
+                                        let estimatedGas = Int64(await estimateGasForERC20Transfer())
+                                        
+                                        guard estimatedGas > 0 else {
+                                            errorMessage = "Error to estimate gas for the TOKEN"
+                                            return
+                                        }
+                                        
+                                        let decimals: Double = Double(tx.token?.tokenInfo.decimals ?? "18") ?? 18
+                                        
+                                        let amountInSmallestUnit: Double = tx.amountDecimal * pow(10.0, decimals)
+                                        
+                                        let amountToSend = Int64(amountInSmallestUnit)
+                                        
+                                        self.presentationStack.append(.KeysignDiscovery(KeysignPayload(
+                                            coin: tx.coin,
+                                            toAddress: tx.toAddress,
+                                            toAmount: amountToSend, // The amount must be in the token decimals
+                                            chainSpecific: BlockChainSpecific.ERC20(maxFeePerGasGwei: Int64(tx.gas) ?? 42, priorityFeeGwei: 1, nonce: tx.nonce, gasLimit: Int64(estimatedGas), contractAddr: tx.coin.contractAddress),
+                                            utxos: [],
+                                            memo: nil)))
+                                    }
                                     
-                                    print("coin: \(tx.coin.ticker.uppercased()) \n toAddress: \(tx.toAddress) \n toAmount: \(tx.amountInWei) \n fee: \(tx.feeInWei)")
-                                } else {
-                                    
-                                    // let client = Web3Service().client
-                                    // web3.ERC20(client: client)
-                                    
-                                    self.presentationStack.append(.KeysignDiscovery(KeysignPayload(
-                                        coin: tx.coin,
-                                        toAddress: tx.toAddress,
-                                        toAmount: tx.amountInGwei, // in Gwei
-                                        chainSpecific: BlockChainSpecific.ERC20(maxFeePerGasGwei: Int64(tx.gas) ?? 42, priorityFeeGwei: 1, nonce: tx.nonce, gasLimit: 95000, contractAddr: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"),
-                                        utxos: [],
-                                        memo: nil)))
-                                    
-                                    print("coin: \(tx.coin.ticker.uppercased()) \n toAddress: \(tx.toAddress) \n toAmount: \(tx.amountInTokenWei) \n fee: \(tx.feeInWei)")
                                 }
+                                
+                                
                             }
                         }
+                        
                     )
                 }
                 .onAppear {
@@ -191,8 +187,7 @@ struct SendVerifyView: View {
             }
         }
     }
-    
-        // Helper view for label and value text
+
     @ViewBuilder
     private func LabelText(title: String, value: String) -> some View {
         VStack(alignment: .leading) {
@@ -203,8 +198,7 @@ struct SendVerifyView: View {
                 .padding(.vertical, 5)
         }
     }
-    
-        // Helper view for label and value text
+
     @ViewBuilder
     private func LabelTextNumeric(title: String, value: String) -> some View {
         HStack {
@@ -216,6 +210,42 @@ struct SendVerifyView: View {
                 .padding(.vertical, 5)
             Spacer()
         }
+    }
+    
+    private func estimateGasForEthTransfer() async -> BigInt {
+        
+        do {
+            let estimatedGas = try await web3Service.estimateGasForEthTransaction(senderAddress: tx.fromAddress, recipientAddress: tx.toAddress, value: tx.amountInWei, memo: tx.memo)
+            
+                // Proceed with transaction signing logic using estimatedGas.
+            print("Estimated gas: \(estimatedGas)")
+            
+            return estimatedGas
+        } catch {
+            errorMessage = "Error estimating gas: \(error.localizedDescription)"
+        }
+        return 0
+    }
+    
+    private func estimateGasForERC20Transfer() async -> BigInt {
+        
+        let decimals: Double = Double(tx.token?.tokenInfo.decimals ?? "18") ?? 18
+        
+        let amountInSmallestUnit: Double = tx.amountDecimal * pow(10.0, decimals)
+        
+        let value = BigInt(amountInSmallestUnit)
+        
+        do {
+            let estimatedGas = try await web3Service.estimateGasForERC20Transfer(senderAddress: tx.fromAddress, contractAddress: tx.coin.contractAddress, recipientAddress: tx.toAddress, value: value)
+            
+                // Proceed with transaction signing logic using estimatedGas.
+            print("Estimated gas: \(estimatedGas)")
+            
+            return estimatedGas
+        } catch {
+            errorMessage = "Error estimating gas: \(error.localizedDescription)"
+        }
+        return 0
     }
 }
 
@@ -236,8 +266,3 @@ struct CheckboxToggleStyle: ToggleStyle {
     }
 }
 
-struct SendVerifyView_Previews: PreviewProvider {
-    static var previews: some View {
-        SendVerifyView(presentationStack: .constant([]), tx: SendTransaction(toAddress: "3JK2dFmWA58A3kukgw1yybotStGAFaV6Sg", amount: "100", memo: "Test Memo", gas: "0.01"))
-    }
-}
