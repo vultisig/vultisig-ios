@@ -102,6 +102,6 @@ struct AssetsList: View {
     }
 }
 
-#Preview {
-    AssetsList()
-}
+//#Preview {
+//    AssetsList()
+//}

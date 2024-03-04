@@ -80,10 +80,11 @@ struct VaultAssetsView: View {
     
     private func loadData() {
         Task {
+            print("realoading data...")
             isLoading = true
             
             if tx.coin.chain.name.lowercased() == "bitcoin" {
-                // had to use the singleton to get from the cache
+                    // had to use the singleton to get from the cache
                 await CryptoPriceService.shared.fetchCryptoPrices(for: tx.coin.chain.name.lowercased(), for: "usd")
                 await uxto.fetchUnspentOutputs(for: tx.fromAddress)
             } else if tx.coin.chain.name.lowercased() == "ethereum" {
@@ -104,7 +105,7 @@ struct VaultAssetsView: View {
         
         if tx.coin.chain.name.lowercased() == "bitcoin" {
             if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[tx.coin.chain.name.lowercased()]?["usd"] {
-                // It should come from the cache
+                    // It should come from the cache
                 print("BTC price RATE \(priceRateUsd)")
                 self.balanceUSD = uxto.walletData?.balanceInUSD(usdPrice: priceRateUsd) ?? "US$ 0,00"
             }

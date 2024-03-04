@@ -76,8 +76,8 @@ struct MainNavigationStack: View {
     }
 }
 
-#Preview {
-    MainNavigationStack()
-        .modelContainer(for: Vault.self, inMemory: true)
-        .environmentObject(ApplicationState.shared)
-}
+//#Preview {
+//    MainNavigationStack()
+//        .modelContainer(for: Vault.self, inMemory: true)
+//        .environmentObject(ApplicationState.shared)
+//}
