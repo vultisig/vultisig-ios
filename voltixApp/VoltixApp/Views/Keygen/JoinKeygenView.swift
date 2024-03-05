@@ -63,7 +63,7 @@ struct JoinKeygenView: View {
                                 Text("thisDevice")
                                     .font(.custom("Menlo", size: 15).bold())
                                     .multilineTextAlignment(.center)
-                                Text(":" + self.localPartyID)
+                                Text(self.localPartyID)
                                     .font(.custom("Menlo", size: 15).bold())
                                     .multilineTextAlignment(.center)
                             }
@@ -93,7 +93,7 @@ struct JoinKeygenView: View {
                         VStack {
                             HStack {
                                 Text("thisDevice")
-                                Text(":" + self.localPartyID)
+                                Text(self.localPartyID)
                             }
                             HStack {
                                 Text("Joining key generation process, please wait...".uppercased())
@@ -110,7 +110,7 @@ struct JoinKeygenView: View {
                         VStack {
                             HStack {
                                 Text("thisDevice")
-                                Text(":" + self.localPartyID)
+                                Text(self.localPartyID)
                             }
                             HStack {
                                 Text("Waiting for key generation to start, please be patient...".uppercased())
