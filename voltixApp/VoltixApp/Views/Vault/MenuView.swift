@@ -32,7 +32,7 @@ struct MenuView: View {
                 .padding(.trailing, 16)
                 .foregroundColor(.clear)
                 .frame(width: .infinity, height: 55)
-                .background(Color(red: 0.92, green: 0.92, blue: 0.93))
+                .background(Color.gray400)
                 .cornerRadius(10);
             }
             Spacer().frame(height: 30)

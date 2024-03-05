@@ -20,11 +20,11 @@ struct VaultSelectionView: View {
     private var cardBackgroundColor: Color {
         switch colorScheme {
             case .light:
-                return Color(UIColor.systemFill)
+            return Color.systemFill
             case .dark:
-                return Color(UIColor.secondarySystemGroupedBackground)
+                return Color.secondarySystemGroupedBackground
             @unknown default:
-                return Color(UIColor.systemBackground)
+                return Color.systemBackground
         }
     }
     

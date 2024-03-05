@@ -65,7 +65,7 @@ struct PeerDiscoveryView: View {
                             .multilineTextAlignment(.center)
                     }
                     .padding()
-                    .background(Color(UIColor.systemFill))
+                    .background(Color.systemFill)
                     .cornerRadius(10)
                     .shadow(radius: 5)
                     .padding()
@@ -84,7 +84,7 @@ struct PeerDiscoveryView: View {
                             }
                         }
                         .padding()
-                        .background(Color(UIColor.systemFill))
+                        .background(Color.systemFill)
                         .cornerRadius(10)
                         .shadow(radius: 5)
                         .padding()

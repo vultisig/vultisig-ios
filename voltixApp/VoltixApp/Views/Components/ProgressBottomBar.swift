@@ -77,7 +77,7 @@ struct ProgressBottomBar: View {
         if index < progress {
             return .black
         } else {
-            return Color(red: 0.96, green: 0.96, blue: 0.96)
+            return Color.gray500
         }
     }
 }

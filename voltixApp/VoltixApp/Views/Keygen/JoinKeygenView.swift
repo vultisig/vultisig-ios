@@ -155,7 +155,7 @@ struct JoinKeygenView: View {
                 }
             }
             .padding()
-            .background(Color(UIColor.systemFill))
+            .background(Color.systemFill)
             .cornerRadius(10)
             .shadow(radius: 5)
             .padding()
