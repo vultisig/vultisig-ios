@@ -49,6 +49,7 @@ struct JoinKeysignView: View {
                         })
                     case .DiscoverService:
                         HStack {
+                            Text("thisDevice" + ":" + self.localPartyID)
                             Text("Looking for the mediator service...")
                                 .font(Font.custom("Menlo", size: 15)
                                     .weight(.bold))
@@ -113,6 +114,7 @@ struct JoinKeysignView: View {
                         }
                     case .WaitingForKeysignToStart:
                         HStack {
+                            Text("thisDevice" + ":" + self.localPartyID)
                             Text("Waiting for the signing process to begin...")
                                 .font(Font.custom("Menlo", size: 15)
                                     .weight(.bold))

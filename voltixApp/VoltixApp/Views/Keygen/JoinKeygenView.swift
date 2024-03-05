@@ -59,6 +59,7 @@ struct JoinKeygenView: View {
                         
                     case .DiscoverService:
                         HStack {
+                            Text("thisDevice" + ":" + self.localPartyID)
                             Text("Discovering mediator service, please wait...".uppercased())
                                 .font(.custom("Menlo", size: 15).bold())
                                 .multilineTextAlignment(.center)
@@ -82,6 +83,7 @@ struct JoinKeygenView: View {
                     case .JoinKeygen:
                         
                         HStack {
+                            Text("thisDevice" + ":" + self.localPartyID)
                             Text("Joining key generation process, please wait...".uppercased())
                                 .font(.custom("Menlo", size: 15).bold())
                                 .multilineTextAlignment(.center)
@@ -93,6 +95,7 @@ struct JoinKeygenView: View {
                         
                     case .WaitingForKeygenToStart:
                         HStack {
+                            Text("thisDevice" + ":" + self.localPartyID)
                             Text("Waiting for key generation to start, please be patient...".uppercased())
                                 .font(.custom("Menlo", size: 15).bold())
                                 .multilineTextAlignment(.center)
@@ -103,7 +106,7 @@ struct JoinKeygenView: View {
                             Task {
                                 repeat {
                                     checkKeygenStarted()
-                                    try await Task.sleep(nanoseconds: 1_000_000_000)
+                                    try await Task.sleep(for: .seconds(1))
                                 } while self.currentStatus == .WaitingForKeygenToStart
                             }
                         }
