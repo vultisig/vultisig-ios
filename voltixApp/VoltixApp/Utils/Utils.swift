@@ -1,15 +1,15 @@
-    //
-    //  Utils.swift
-    //  VoltixApp
-    //
+//
+//  Utils.swift
+//  VoltixApp
+//
 
+import BigInt
+import CoreImage.CIFilterBuiltins
 import CryptoKit
 import Foundation
 import OSLog
-import UIKit
 import SwiftUI
-import CoreImage.CIFilterBuiltins
-import BigInt
+import UIKit
 
 enum Utils {
     static let logger = Logger(subsystem: "util", category: "network")
@@ -127,7 +127,7 @@ enum Utils {
         input.utf8.map { String(format: "%02x", $0) }.joined()
     }
     
-    public static func getQrImage(data:Any?,size: CGFloat) -> Image {
+    public static func getQrImage(data: Any?, size: CGFloat) -> Image {
         let context = CIContext()
         guard let qrFilter = CIFilter(name: "CIQRCodeGenerator") else {
             return Image(systemName: "xmark")
@@ -144,11 +144,14 @@ enum Utils {
         
         return Image(cgImage, scale: 1.0, orientation: .up, label: Text("QRCode"))
     }
+
     public static func isIOS() -> Bool {
         return true
     }
     
     public static func getLocalDeviceIdentity() -> String {
-        return UIDevice.current.name
+        let identifierForVendor = UIDevice.current.identifierForVendor?.uuidString
+        let parts = identifierForVendor?.components(separatedBy: "-")
+        return "\(UIDevice.current.name)-\(parts?.last ?? "N/A")"
     }
 }
