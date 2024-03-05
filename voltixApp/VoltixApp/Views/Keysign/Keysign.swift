@@ -109,7 +109,7 @@ struct KeysignView: View {
                                                 do {
                                                     self.txid = try await BitcoinTransactionsService.broadcastTransaction(tx)
                                                     print("Transaction Broadcasted Successfully, txid: \(self.txid)")
-                                                } catch let error as BitcoinTransactionsService.BitcoinTransactionError {
+                                                } catch let error as BitcoinTransactionError {
                                                     switch error {
                                                         case .invalidURL:
                                                             print("Invalid URL.")

@@ -1,20 +1,28 @@
 import SwiftUI
 
+enum BitcoinTransactionError: Error {
+    case invalidURL
+    case httpError(Int) // Includes the HTTP status code
+    case apiError(String) // Error message from the API
+    case unexpectedResponse
+    case unknown(Error) // Wraps an unknown error
+}
+
 @MainActor
 public class BitcoinTransactionsService: ObservableObject {
     @Published var walletData: [BitcoinTransactionMempool]?
     @Published var errorMessage: String?
     
-        // Cache structure to hold data and timestamp
+    // Cache structure to hold data and timestamp
     private struct CacheEntry {
         let data: [BitcoinTransactionMempool]
         let timestamp: Date
     }
     
-        // Dictionary to store cache entries with userAddress as the key
+    // Dictionary to store cache entries with userAddress as the key
     private var cache: [String: CacheEntry] = [:]
     
-        // Function to check if cache for a given userAddress is valid (not older than 5 minutes)
+    // Function to check if cache for a given userAddress is valid (not older than 5 minutes)
     private func isCacheValid(for userAddress: String) -> Bool {
         if let entry = cache[userAddress], -entry.timestamp.timeIntervalSinceNow < 300 {
             return true // Cache is valid if less than 5 minutes old
@@ -22,9 +30,8 @@ public class BitcoinTransactionsService: ObservableObject {
         return false
     }
     
-    
     func fetchTransactions(_ userAddress: String) async {
-            // Use cache if it's valid for the requested userAddress
+        // Use cache if it's valid for the requested userAddress
         if isCacheValid(for: userAddress), let cachedData = cache[userAddress]?.data {
             self.walletData = cachedData
             return
@@ -45,7 +52,6 @@ public class BitcoinTransactionsService: ObservableObject {
             }
             
             cache[userAddress] = CacheEntry(data: updatedData, timestamp: Date())
-            
             self.walletData = updatedData
         } catch let DecodingError.dataCorrupted(context) {
             errorMessage = "Data corrupted: \(context)"
@@ -58,19 +64,12 @@ public class BitcoinTransactionsService: ObservableObject {
         } catch {
             errorMessage = "Error: \(error.localizedDescription)"
         }
-        print(errorMessage)
-    }
-    
-    enum BitcoinTransactionError: Error {
-        case invalidURL
-        case httpError(Int) // Includes the HTTP status code
-        case apiError(String) // Error message from the API
-        case unexpectedResponse
-        case unknown(Error) // Wraps an unknown error
+        print(String(describing: errorMessage))
     }
     
     public static func broadcastTransaction(_ rawTransaction: String) async throws -> String {
         let urlString = "https://mempool.space/api/tx"
+        
         guard let url = URL(string: urlString) else {
             throw BitcoinTransactionError.invalidURL
         }
@@ -89,13 +88,13 @@ public class BitcoinTransactionsService: ObservableObject {
             let responseString = String(data: data, encoding: .utf8) ?? ""
             
             if httpResponse.statusCode == 200 {
-                    // Success, return txid
+                // Success, return txid
                 return responseString
             } else {
-                    // Attempt to handle as plain-text error message
+                // Attempt to handle as plain-text error message
                 if httpResponse.statusCode == 400, // Or other relevant status codes
                    !responseString.isEmpty {
-                        // Here you could also attempt to parse the responseString if it's JSON formatted
+                    // Here you could also attempt to parse the responseString if it's JSON formatted
                     throw BitcoinTransactionError.apiError(responseString)
                 } else {
                     throw BitcoinTransactionError.httpError(httpResponse.statusCode)

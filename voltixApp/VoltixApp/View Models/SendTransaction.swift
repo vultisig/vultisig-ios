@@ -28,7 +28,7 @@ class SendTransaction: ObservableObject, Hashable {
         Int64(amountDecimal * pow(10, 9))
     }
     
-    var token: EthAddressInfo.Token? {
+    var token: Token? {
         eth?.tokens?.first(where: { $0.tokenInfo.symbol == coin.ticker})
     }
     

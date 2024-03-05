@@ -1,6 +1,26 @@
 import Foundation
 import BigInt
 
+enum Web3ServiceError: Error {
+    case badURL
+    case rpcError(code: Int, message: String)
+    case invalidResponse
+    case unknown(Error)
+    
+    var localizedDescription: String {
+        switch self {
+        case .badURL:
+            return "Invalid URL."
+        case let .rpcError(code, message):
+            return "RPC Error \(code): \(message)"
+        case .invalidResponse:
+            return "Invalid response from the server."
+        case let .unknown(error):
+            return "Unknown error: \(error.localizedDescription)"
+        }
+    }
+}
+
 class Web3Service: ObservableObject {
     @Published var nonce: BigInt?
     @Published var gasPrice: BigInt?
@@ -14,7 +34,7 @@ class Web3Service: ObservableObject {
         }
     }
     
-        // Call this method to update nonce and gas price
+    // Call this method to update nonce and gas price
     func updateNonceAndGasPrice(forAddress address: String) async throws {
         do {
             let fetchedNonce = try await fetchNonce(address: address)
@@ -25,13 +45,13 @@ class Web3Service: ObservableObject {
                 self.gasPrice = fetchedGasPrice
             }
         } catch {
-                // Handle errors appropriately
+            // Handle errors appropriately
             throw error
         }
     }
     
     func estimateGasForEthTransaction(senderAddress: String, recipientAddress: String, value: BigInt, memo: String?) async throws -> BigInt {
-            // Convert the memo to hex (if present). Assume memo is a String.
+        // Convert the memo to hex (if present). Assume memo is a String.
         let memoDataHex = memo?.data(using: .utf8)?.map { byte in String(format: "%02x", byte) }.joined() ?? ""
         
         let transactionObject: [String: Any] = [
@@ -76,8 +96,7 @@ class Web3Service: ObservableObject {
         return try await sendRPCRequest(payload: payload, method: "eth_estimateGas")
     }
     
-        // MARK: - Helper Methods
-    
+    // MARK: - Helper Methods
     private func fetchNonce(address: String) async throws -> BigInt {
         let payload: [String: Any] = [
             "jsonrpc": "2.0",
@@ -103,26 +122,22 @@ class Web3Service: ObservableObject {
     private func constructERC20TransferData(recipientAddress: String, value: BigInt) -> String {
         let methodId = "a9059cbb"
         
-            // Ensure the recipient address is correctly stripped of the '0x' prefix and then padded
+        // Ensure the recipient address is correctly stripped of the '0x' prefix and then padded
         let strippedRecipientAddress = recipientAddress.stripHexPrefix()
         let paddedAddress = strippedRecipientAddress.paddingLeft(toLength: 64, withPad: "0")
         
-            // Convert the BigInt value to a hexadecimal string without leading '0x', then pad
+        // Convert the BigInt value to a hexadecimal string without leading '0x', then pad
         let valueHex = String(value, radix: 16)
         let paddedValue = valueHex.paddingLeft(toLength: 64, withPad: "0")
         
-            // Construct the data string with '0x' prefix
+        // Construct the data string with '0x' prefix
         let data = "0x" + methodId + paddedAddress + paddedValue
-        
         
         print("Method ID: \(methodId)")
         print("Recipient Address: \(paddedAddress)")
         print("Value Hex: \(paddedValue)")
         print("Value: \(value)")
         print("Constructed Data: \(data)")
-        
-        
-        
         return data
     }
     
@@ -139,16 +154,16 @@ class Web3Service: ObservableObject {
         
         do {
             let (data, _) = try await session.data(for: request)
-                // Attempt to deserialize the JSON response
+            // Attempt to deserialize the JSON response
             guard let response = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
                 throw Web3ServiceError.invalidResponse
             }
             
-                // Log the whole response
+            // Log the whole response
             print("RPC Response for method \(method): \(response)")
             
             if let errorDetails = response["error"] as? [String: Any] {
-                    // If there's an error in the response, log and throw an error
+                // If there's an error in the response, log and throw an error
                 if let code = errorDetails["code"] as? Int, let message = errorDetails["message"] as? String {
                     print("RPC Error - Code: \(code), Message: \(message)")
                     throw Web3ServiceError.rpcError(code: code, message: message)
@@ -156,36 +171,16 @@ class Web3Service: ObservableObject {
                     throw Web3ServiceError.invalidResponse
                 }
             } else if let result = response["result"] as? String, let bigIntResult = BigInt(result.stripHexPrefix(), radix: 16) {
-                    // Successful response
+                // Successful response
                 return bigIntResult
             } else {
-                    // The response is not in the expected format
+                // The response is not in the expected format
                 throw Web3ServiceError.invalidResponse
             }
         } catch {
-                // Log the error before rethrowing
+            // Log the error before rethrowing
             print("Error sending RPC request: \(error)")
             throw Web3ServiceError.unknown(error)
         }
     }
-    enum Web3ServiceError: Error {
-        case badURL
-        case rpcError(code: Int, message: String)
-        case invalidResponse
-        case unknown(Error)
-        
-        var localizedDescription: String {
-            switch self {
-                case .badURL:
-                    return "Invalid URL."
-                case let .rpcError(code, message):
-                    return "RPC Error \(code): \(message)"
-                case .invalidResponse:
-                    return "Invalid response from the server."
-                case let .unknown(error):
-                    return "Unknown error: \(error.localizedDescription)"
-            }
-        }
-    }
-    
 }

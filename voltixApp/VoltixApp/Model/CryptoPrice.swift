@@ -1,10 +1,10 @@
 import Foundation
 
 // Define a generic struct for decoding any cryptocurrency data with any fiat currencies
-struct CryptoPrice: Codable {
+class CryptoPrice: Codable {
     var prices: [String: [String: Double]]
     
-    init(from decoder: Decoder) throws {
+    required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: DynamicCodingKey.self)
         var prices = [String: [String: Double]]()
         
@@ -17,13 +17,13 @@ struct CryptoPrice: Codable {
     }
 }
 
-fileprivate struct DynamicCodingKey: CodingKey {
+fileprivate class DynamicCodingKey: CodingKey {
     var stringValue: String
     var intValue: Int? { nil }
     
-    init?(intValue: Int) { nil }
+    required init?(intValue: Int) { nil }
     
-    init?(stringValue: String) {
+    required init?(stringValue: String) {
         self.stringValue = stringValue
     }
 }
