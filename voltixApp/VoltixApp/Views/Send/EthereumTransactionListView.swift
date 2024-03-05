@@ -104,7 +104,8 @@ struct EthTransactionRow: View {
     
     @ViewBuilder
     private func LabelTxHash(title: String, value: String, isSent: Bool) -> some View {
-        let url = "https://etherscan.io/tx/\(value)"
+        let url = Endpoint.ethereumLabelTxHash(value)
+        
         VStack(alignment: .leading) {
             HStack {
                 Image(systemName: isSent ? "arrowtriangle.up.square" : "arrowtriangle.down.square")

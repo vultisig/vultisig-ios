@@ -99,7 +99,8 @@ struct TransactionRow: View {
     
     @ViewBuilder
     private func LabelTxHash(title: String, value: String, isSent: Bool) -> some View {
-        let url = "https://mempool.space/tx/\(value)"
+        let url = Endpoint.bitcoinLabelTxHash(value)
+        
         VStack(alignment: .leading) {
             HStack{
                 Image(systemName: isSent ? "arrowtriangle.up.square" : "arrowtriangle.down.square")

@@ -22,7 +22,7 @@ public class EthplorerAPIService: ObservableObject {
             return
         }
         
-        let urlString = "https://api.ethplorer.io/getAddressInfo/\(address)?apiKey=freekey"
+        let urlString = Endpoint.getEthInfo(address)
         
         print(urlString)
         

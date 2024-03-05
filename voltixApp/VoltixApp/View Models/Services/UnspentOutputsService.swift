@@ -28,7 +28,7 @@ public class UnspentOutputsService: ObservableObject {
         }
         
         // Construct the URL
-        guard let url = URL(string: "https://api.blockcypher.com/v1/btc/main/addrs/\(address)?unspentOnly=true") else {
+        guard let url = URL(string: Endpoint.fetchUnspentOutputs(address)) else {
             print("Invalid URL")
             return
         }

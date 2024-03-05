@@ -26,7 +26,7 @@ class Web3Service: ObservableObject {
     @Published var gasPrice: BigInt?
     
     private let session = URLSession.shared
-    private let infuraEndpoint = "https://mainnet.infura.io/v3/\(AppConfiguration.infuraApiKey)"
+    private let infuraEndpoint = Endpoint.web3ServiceInfura
     
     init() {
         guard URL(string: infuraEndpoint) != nil else {
