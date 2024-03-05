@@ -31,7 +31,7 @@ struct WelcomeView: View {
                             .padding(.bottom, 40)
                         
                         
-                        Text("SECURE CRYPTO VAULT")
+                        Text("secureCryptoVault")
                             .font(.system(size: geometry.size.width * 0.05, weight: .bold))
                             .padding(.top, geometry.size.height * 0.01)
                         

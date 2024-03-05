@@ -11,9 +11,8 @@ final class ApplicationState : ObservableObject {
     // field used during keygen process
     @Published var creatingVault: Vault?
     
-    
     // Singleton
     static let shared = ApplicationState()
-    private init() {
-    }
+    
+    private init() {}
 }
