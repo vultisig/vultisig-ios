@@ -51,7 +51,13 @@ struct JoinKeysignView: View {
                         VStack {
                             HStack {
                                 Text("thisDevice")
-                                Text(":" + self.localPartyID)
+                                    .font(Font.custom("Menlo", size: 15)
+                                        .weight(.bold))
+                                    .multilineTextAlignment(.center)
+                                Text(self.localPartyID)
+                                    .font(Font.custom("Menlo", size: 15)
+                                        .weight(.bold))
+                                    .multilineTextAlignment(.center)
                             }
                             HStack {
                                 Text("Looking for the mediator service...")
@@ -121,7 +127,13 @@ struct JoinKeysignView: View {
                         VStack {
                             HStack {
                                 Text("thisDevice")
-                                Text(":" + self.localPartyID)
+                                    .font(Font.custom("Menlo", size: 15)
+                                        .weight(.bold))
+                                    .multilineTextAlignment(.center)
+                                Text(self.localPartyID)
+                                    .font(Font.custom("Menlo", size: 15)
+                                        .weight(.bold))
+                                    .multilineTextAlignment(.center)
                             }
                             HStack {
                                 Text("Waiting for the signing process to begin...")
@@ -172,11 +184,8 @@ struct JoinKeysignView: View {
             .padding()
         }
         .navigationTitle("Join Key Signing")
-        .navigationBarBackButtonHidden(true)
+        .navigationBarBackButtonHidden(false)
         .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                NavigationButtons.backButton(presentationStack: self.$presentationStack)
-            }
             ToolbarItem(placement: .navigationBarTrailing) {
                 NavigationButtons.questionMarkButton
             }
