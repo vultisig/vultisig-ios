@@ -31,6 +31,7 @@ public class EthplorerAPIService: ObservableObject {
                 self.errorMessage = "Invalid URL"
                 print(String(describing: self.errorMessage))
             }
+            
             return
         }
         
@@ -52,6 +53,7 @@ public class EthplorerAPIService: ObservableObject {
         } catch {
             DispatchQueue.main.async {
                 let errorDescription: String
+                
                 switch error {
                 case let DecodingError.dataCorrupted(context):
                     errorDescription = "Data corrupted: \(context)"
@@ -65,6 +67,7 @@ public class EthplorerAPIService: ObservableObject {
                 default:
                     errorDescription = "Error: \(error.localizedDescription)"
                 }
+                
                 self.errorMessage = errorDescription
                 // print(self.errorMessage ?? "Unknown error")
             }

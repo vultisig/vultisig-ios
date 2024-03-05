@@ -11,9 +11,11 @@ public class UnspentOutputsService: ObservableObject {
     
     // Function to check if cache for a given address is valid (not older than 1 minutes)
     private func isCacheValid(for address: String) -> Bool {
+        
         if let entry = cache[address], -entry.timestamp.timeIntervalSinceNow < 60 {
             return true // Cache is valid if less than 5 minutes old
         }
+        
         return false
     }
     

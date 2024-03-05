@@ -64,6 +64,7 @@ public class BitcoinTransactionsService: ObservableObject {
         } catch {
             errorMessage = "Error: \(error.localizedDescription)"
         }
+        
         print(String(describing: errorMessage))
     }
     
@@ -81,6 +82,7 @@ public class BitcoinTransactionsService: ObservableObject {
         
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
+            
             guard let httpResponse = response as? HTTPURLResponse else {
                 throw BitcoinTransactionError.unexpectedResponse
             }
