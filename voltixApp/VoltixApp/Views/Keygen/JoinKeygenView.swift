@@ -58,20 +58,28 @@ struct JoinKeygenView: View {
                         .buttonStyle(PlainButtonStyle())
                         
                     case .DiscoverService:
-                        HStack {
-                            Text("thisDevice" + ":" + self.localPartyID)
-                            Text("Discovering mediator service, please wait...".uppercased())
-                                .font(.custom("Menlo", size: 15).bold())
-                                .multilineTextAlignment(.center)
+                        VStack {
+                            HStack {
+                                Text("thisDevice")
+                                    .font(.custom("Menlo", size: 15).bold())
+                                    .multilineTextAlignment(.center)
+                                Text(":" + self.localPartyID)
+                                    .font(.custom("Menlo", size: 15).bold())
+                                    .multilineTextAlignment(.center)
+                            }
+                            HStack {
+                                Text("Discovering mediator service, please wait...".uppercased())
+                                    .font(.custom("Menlo", size: 15).bold())
+                                    .multilineTextAlignment(.center)
                             
-                            if serviceDelegate.serverURL == nil {
-                                ProgressView().progressViewStyle(.circular).padding(2)
-                            } else {
-                                Image(systemName: "checkmark").onAppear {
-                                    currentStatus = .JoinKeygen
+                                if serviceDelegate.serverURL == nil {
+                                    ProgressView().progressViewStyle(.circular).padding(2)
+                                } else {
+                                    Image(systemName: "checkmark").onAppear {
+                                        currentStatus = .JoinKeygen
+                                    }
                                 }
                             }
-                            
                         }.padding(.vertical, 30)
                             .onAppear {
                                 logger.info("Start to discover service")
@@ -82,24 +90,34 @@ struct JoinKeygenView: View {
                         
                     case .JoinKeygen:
                         
-                        HStack {
-                            Text("thisDevice" + ":" + self.localPartyID)
-                            Text("Joining key generation process, please wait...".uppercased())
-                                .font(.custom("Menlo", size: 15).bold())
-                                .multilineTextAlignment(.center)
-                                .onAppear {
-                                    joinKeygenCommittee()
-                                    currentStatus = .WaitingForKeygenToStart
-                                }
+                        VStack {
+                            HStack {
+                                Text("thisDevice")
+                                Text(":" + self.localPartyID)
+                            }
+                            HStack {
+                                Text("Joining key generation process, please wait...".uppercased())
+                                    .font(.custom("Menlo", size: 15).bold())
+                                    .multilineTextAlignment(.center)
+                                    .onAppear {
+                                        joinKeygenCommittee()
+                                        currentStatus = .WaitingForKeygenToStart
+                                    }
+                            }
                         }.padding(.vertical, 30)
                         
                     case .WaitingForKeygenToStart:
-                        HStack {
-                            Text("thisDevice" + ":" + self.localPartyID)
-                            Text("Waiting for key generation to start, please be patient...".uppercased())
-                                .font(.custom("Menlo", size: 15).bold())
-                                .multilineTextAlignment(.center)
-                            ProgressView().progressViewStyle(.circular).padding(2)
+                        VStack {
+                            HStack {
+                                Text("thisDevice")
+                                Text(":" + self.localPartyID)
+                            }
+                            HStack {
+                                Text("Waiting for key generation to start, please be patient...".uppercased())
+                                    .font(.custom("Menlo", size: 15).bold())
+                                    .multilineTextAlignment(.center)
+                                ProgressView().progressViewStyle(.circular).padding(2)
+                            }
                         }
                         .padding(.vertical, 30)
                         .task {

@@ -48,26 +48,31 @@ struct JoinKeysignView: View {
                             CodeScannerView(codeTypes: [.qr], completion: self.handleScan)
                         })
                     case .DiscoverService:
-                        HStack {
-                            Text("thisDevice" + ":" + self.localPartyID)
-                            Text("Looking for the mediator service...")
-                                .font(Font.custom("Menlo", size: 15)
-                                    .weight(.bold))
-                                .multilineTextAlignment(.center)
-                            if self.serviceDelegate.serverURL == nil {
-                                ProgressView()
-                                    .progressViewStyle(.circular)
-                                    .padding(2)
-                            } else {
-                                Image(systemName: "checkmark").onAppear {
-                                    self.currentStatus = .JoinKeysign
+                        VStack {
+                            HStack {
+                                Text("thisDevice")
+                                Text(":" + self.localPartyID)
+                            }
+                            HStack {
+                                Text("Looking for the mediator service...")
+                                    .font(Font.custom("Menlo", size: 15)
+                                        .weight(.bold))
+                                    .multilineTextAlignment(.center)
+                                if self.serviceDelegate.serverURL == nil {
+                                    ProgressView()
+                                        .progressViewStyle(.circular)
+                                        .padding(2)
+                                } else {
+                                    Image(systemName: "checkmark").onAppear {
+                                        self.currentStatus = .JoinKeysign
+                                    }
                                 }
                             }
                         }.onAppear {
                             logger.info("Start to discover service")
                             self.netService = NetService(domain: "local.", type: "_http._tcp.", name: self.serviceName)
-                            netService.delegate = self.serviceDelegate
-                            netService.resolve(withTimeout: TimeInterval(10))
+                            self.netService.delegate = self.serviceDelegate
+                            self.netService.resolve(withTimeout: TimeInterval(10))
                         }
                     case .JoinKeysign:
                         VStack(alignment: .leading) {
@@ -113,20 +118,25 @@ struct JoinKeysignView: View {
                             .padding(.vertical, 15)
                         }
                     case .WaitingForKeysignToStart:
-                        HStack {
-                            Text("thisDevice" + ":" + self.localPartyID)
-                            Text("Waiting for the signing process to begin...")
-                                .font(Font.custom("Menlo", size: 15)
-                                    .weight(.bold))
-                                .multilineTextAlignment(.center)
-                            ProgressView()
-                                .progressViewStyle(.circular)
-                                .padding(2)
+                        VStack {
+                            HStack {
+                                Text("thisDevice")
+                                Text(":" + self.localPartyID)
+                            }
+                            HStack {
+                                Text("Waiting for the signing process to begin...")
+                                    .font(Font.custom("Menlo", size: 15)
+                                        .weight(.bold))
+                                    .multilineTextAlignment(.center)
+                                ProgressView()
+                                    .progressViewStyle(.circular)
+                                    .padding(2)
+                            }
                         }.task {
                             Task {
                                 repeat {
                                     self.checkKeysignStarted()
-                                    try await Task.sleep(nanoseconds: 1_000_000_000)
+                                    try await Task.sleep(for: .seconds(1))
                                 } while self.currentStatus == .WaitingForKeysignToStart
                             }
                         }
