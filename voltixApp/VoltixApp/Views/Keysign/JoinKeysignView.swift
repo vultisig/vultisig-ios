@@ -202,6 +202,9 @@ struct JoinKeysignView: View {
                 self.localPartyID = Utils.getLocalDeviceIdentity()
             }
         }
+        .onDisappear {
+            self.currentStatus = .FailedToStart
+        }
     }
     
     private func checkKeysignStarted() {

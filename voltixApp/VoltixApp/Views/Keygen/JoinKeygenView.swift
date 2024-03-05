@@ -163,9 +163,6 @@ struct JoinKeygenView: View {
         .navigationTitle("JOIN KEYGEN")
         .navigationBarBackButtonHidden(true)
         .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                NavigationButtons.backButton(presentationStack: $presentationStack)
-            }
             ToolbarItem(placement: .navigationBarTrailing) {
                 NavigationButtons.questionMarkButton
             }
@@ -180,6 +177,8 @@ struct JoinKeygenView: View {
                 self.localPartyID = Utils.getLocalDeviceIdentity()
                 appState.creatingVault?.localPartyID = self.localPartyID
             }
+        }.onDisappear {
+            self.currentStatus = .FailToStart
         }
     }
     
