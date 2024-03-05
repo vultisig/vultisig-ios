@@ -41,7 +41,7 @@ struct VaultSelectionView: View {
                             }) {
                                 HStack {
                                     Text(vault.name.uppercased())
-                                        .font(Font.custom("Menlo", size: 20).weight(.bold))
+                                        .font(.body20MenloBold)
                                     Spacer()
                                 }
                                 .padding() // Ensure there's some padding around the text for a larger clickable area
@@ -72,7 +72,7 @@ struct VaultSelectionView: View {
                                     HStack {
                                         Image(systemName: "arrow.down.circle")
                                         Text("Backup your vault")
-                                            .font(Font.custom("Menlo", size: 15))
+                                            .font(.body15Menlo)
                                         Spacer()
                                     }
                                 }
@@ -89,7 +89,7 @@ struct VaultSelectionView: View {
                                     HStack {
                                         Image(systemName: "pencil")
                                         Text("Edit your vault's name")
-                                            .font(Font.custom("Menlo", size: 15))
+                                            .font(.body15Menlo)
                                         Spacer()
                                     }
                                 }
@@ -105,7 +105,7 @@ struct VaultSelectionView: View {
                                     HStack {
                                         Image(systemName: "trash")
                                         Text("Delete your vault permanently")
-                                            .font(Font.custom("Menlo", size: 15))
+                                            .font(.body15Menlo)
                                         Spacer()
                                     }
                                 }

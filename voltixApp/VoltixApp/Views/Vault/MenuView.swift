@@ -13,12 +13,12 @@ struct MenuView: View {
             
             VStack(alignment: .leading) {
                 Text("Choose Vault")
-                    .font(Font.custom("Menlo", size: 20))
+                    .font(.body20Menlo)
                     .lineSpacing(30)
                 ;
                 HStack() {
                     Text("Main Vault")
-                        .font(Font.custom("Menlo", size: 20).weight(.bold))
+                        .font(.body20MenloBold)
                         .lineSpacing(30)
                     ;
                     Spacer()
@@ -55,7 +55,7 @@ struct MenuView: View {
             Spacer()
             VStack {
                 Text("VOLTIX APP V1.23")
-                    .font(Font.custom("Menlo", size: 20).weight(.bold))
+                    .font(.body20MenloBold)
                     .lineSpacing(30)
                 ;
             }

@@ -35,7 +35,7 @@ struct VaultItem: View {
         VStack(alignment: .leading) {
             HStack {
                 Text(coinName)
-                    .font(Font.custom("Menlo", size: 20).weight(.bold))
+                    .font(.body20MenloBold)
                 
                 if showButtons {
                     Spacer()
@@ -107,13 +107,13 @@ struct VaultItem: View {
                     Spacer()
                     
                     Text(usdAmount)
-                        .font(Font.custom("Menlo", size: 20))
+                        .font(.body20MenloBold)
                         .multilineTextAlignment(.trailing)
                 }
             }
             HStack {
                 Text(address)
-                    .font(Font.custom("Montserrat", size: 13).weight(.medium))
+                    .font(.body13MontserratMedium)
                     .lineSpacing(19.50)
             }
             .padding(.vertical)

@@ -17,25 +17,25 @@ struct AssetItem: View {
     var body: some View {
         HStack() {
             Text(coinName)
-                .font(Font.custom("Menlo", size: fontsize))
+                .font(.dynamicMenlo(fontsize))
             ;
             Spacer()
             Text(amount)
-                .font(Font.custom("Menlo", size: fontsize))
+                .font(.dynamicMenlo(fontsize))
             Spacer()
             Text(usdAmount)
-                .font(Font.custom("Menlo", size: fontsize))
+                .font(.dynamicMenlo(fontsize))
             ;
             Spacer()
             VStack{
                 Button(action: sendClick) {
                     Text("SEND")
-                        .font(Font.custom("Menlo", size: 20).weight(.bold))
+                        .font(.body20MenloBold)
                     
                 }.buttonStyle(PlainButtonStyle())
                 Button(action: {}) {
                     Text("SWAP")
-                        .font(Font.custom("Menlo", size: 20).weight(.bold))
+                        .font(.body20MenloBold)
                     
                 }.buttonStyle(PlainButtonStyle())
             }

@@ -38,6 +38,7 @@
 		46AC40AA2B922931001704E6 /* EthereumTransactionListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AC40A92B922931001704E6 /* EthereumTransactionListView.swift */; };
 		46F47CBB2B870EE900D964EA /* BitcoinTransactionMempool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F47CBA2B870EE900D964EA /* BitcoinTransactionMempool.swift */; };
 		A62758F22B97B10600ADE3A6 /* Endpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62758F12B97B10600ADE3A6 /* Endpoint.swift */; };
+		A62758F52B97CE9E00ADE3A6 /* FontStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62758F42B97CE9E00ADE3A6 /* FontStyle.swift */; };
 		A65649DF2B96602700E4B329 /* DecodableDefaultExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */; };
 		A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D82B96602700E4B329 /* BigUIntExtension.swift */; };
 		A65649E12B96602700E4B329 /* Int64Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D92B96602700E4B329 /* Int64Extension.swift */; };
@@ -172,6 +173,7 @@
 		46AC40A92B922931001704E6 /* EthereumTransactionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EthereumTransactionListView.swift; sourceTree = "<group>"; };
 		46F47CBA2B870EE900D964EA /* BitcoinTransactionMempool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BitcoinTransactionMempool.swift; sourceTree = "<group>"; };
 		A62758F12B97B10600ADE3A6 /* Endpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endpoint.swift; sourceTree = "<group>"; };
+		A62758F42B97CE9E00ADE3A6 /* FontStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontStyle.swift; sourceTree = "<group>"; };
 		A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DecodableDefaultExtension.swift; sourceTree = "<group>"; };
 		A65649D82B96602700E4B329 /* BigUIntExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BigUIntExtension.swift; sourceTree = "<group>"; };
 		A65649D92B96602700E4B329 /* Int64Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Int64Extension.swift; sourceTree = "<group>"; };
@@ -346,6 +348,14 @@
 			path = Keygen;
 			sourceTree = "<group>";
 		};
+		A62758F32B97CE7E00ADE3A6 /* Styles */ = {
+			isa = PBXGroup;
+			children = (
+				A62758F42B97CE9E00ADE3A6 /* FontStyle.swift */,
+			);
+			path = Styles;
+			sourceTree = "<group>";
+		};
 		A65649D52B965FC400E4B329 /* View Models */ = {
 			isa = PBXGroup;
 			children = (
@@ -505,6 +515,7 @@
 			children = (
 				DE1572AB2B7174D3009BC7C5 /* Utils.swift */,
 				A62758F12B97B10600ADE3A6 /* Endpoint.swift */,
+				A62758F32B97CE7E00ADE3A6 /* Styles */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -852,6 +863,7 @@
 				465B09A92B7C176700952DD9 /* SendTransaction.swift in Sources */,
 				A6564A022B969A1200E4B329 /* Price.swift in Sources */,
 				D9AD8EE62B6730A40009F8D5 /* PeerDiscoveryView.swift in Sources */,
+				A62758F52B97CE9E00ADE3A6 /* FontStyle.swift in Sources */,
 				DE49A19E2B671416000F3AFB /* Coin.swift in Sources */,
 				A65649E42B96602700E4B329 /* StringExtension.swift in Sources */,
 				DE49A1672B65F6D9000F3AFB /* VoltixApp.swift in Sources */,

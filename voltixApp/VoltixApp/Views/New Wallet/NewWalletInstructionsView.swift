@@ -48,7 +48,7 @@ struct NewWalletInstructions: View {
                         self.presentationStack.append(.joinKeygen)
                     }
                     .fontWeight(.black)
-                    .font(Font.custom("Menlo", size: 30).weight(.bold))
+                    .font(.title30MenloBold)
                     .buttonStyle(PlainButtonStyle())
                     Spacer()
                     
@@ -59,8 +59,7 @@ struct NewWalletInstructions: View {
                     }) {
                         HStack() {
                             Text("START")
-                                .font(Font.custom("Menlo", size: 30).weight(.bold))
-                                .fontWeight(.black)
+                                .font(.title30MenloBlack)
                             Image(systemName: "chevron.right")
                                 .resizable()
                                 .frame(width: 10, height: 15)

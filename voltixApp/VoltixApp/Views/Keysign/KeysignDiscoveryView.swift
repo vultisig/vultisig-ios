@@ -35,7 +35,7 @@ struct KeysignDiscoveryView: View {
                 case .WaitingForDevices:
                     VStack {
                         Text("Pair with two other devices:".uppercased())
-                            .font(.custom("Menlo", size: 18).bold())
+                            .font(.body18MenloBold)
                             .multilineTextAlignment(.center)
                         
                         self.getQrImage(size: 100)
@@ -43,7 +43,7 @@ struct KeysignDiscoveryView: View {
                             .scaledToFit()
                             .padding()
                         Text("Scan the above QR CODE.".uppercased())
-                            .font(.custom("Menlo", size: 13))
+                            .font(.body13Menlo)
                             .multilineTextAlignment(.center)
                     }
                     .padding()
@@ -57,8 +57,7 @@ struct KeysignDiscoveryView: View {
                         VStack {
                             HStack {
                                 Text("Looking for devices... ")
-                                    .font(Font.custom("Menlo", size: 15)
-                                        .weight(.bold))
+                                    .font(.body15MenloBold)
                                     .multilineTextAlignment(.center)
                                 
                                 ProgressView()
@@ -94,8 +93,7 @@ struct KeysignDiscoveryView: View {
                     }) {
                         HStack {
                             Text("Sign".uppercased())
-                                .font(Font.custom("Menlo", size: 30).weight(.bold))
-                                .fontWeight(.black)
+                                .font(.title30MenloBlack)
                             Image(systemName: "chevron.right")
                                 .resizable()
                                 .frame(width: 10, height: 15)

@@ -80,8 +80,7 @@ struct KeysignView: View {
                         }) {
                             HStack {
                                 Text("DONE".uppercased())
-                                    .font(Font.custom("Menlo", size: 30).weight(.bold))
-                                    .fontWeight(.black)
+                                    .font(.title30MenloBlack)
                                 Image(systemName: "chevron.right")
                                     .resizable()
                                     .frame(width: 10, height: 15)

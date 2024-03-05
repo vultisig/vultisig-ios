@@ -15,7 +15,7 @@ struct KeyGenStatusText: View {
             HStack {
                 Spacer()
                 Text(self.status)
-                    .font(Font.custom("Menlo", size: 15).weight(.bold))
+                    .font(.body15MenloBold)
                     .multilineTextAlignment(.center)
                 ProgressView()
                     .progressViewStyle(.circular)

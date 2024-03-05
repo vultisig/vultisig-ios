@@ -12,7 +12,7 @@ struct AssetsView: View {
     var body: some View {
         VStack() {
             Text(numberOfAssets + " Assets")
-                .font(Font.custom("Montserrat", size: 18).weight(.medium))
+                .font(.body18MontserratMedium)
                 .lineSpacing(27)
         }
         .frame(width: 122.71, height: 25)
