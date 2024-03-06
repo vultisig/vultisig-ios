@@ -65,7 +65,7 @@ struct SendInputDetailsView: View {
                     Group {
                         HStack {
                             Text(tx.coin.ticker.uppercased())
-                                .font(Font.custom("Menlo", size: 18).weight(.bold))
+                                .font(.body18MenloBold)
                             
                             Spacer()
                             
@@ -75,16 +75,18 @@ struct SendInputDetailsView: View {
                     }.padding(.vertical)
                     Group {
                         VStack(alignment: .leading) {
-                            Text("From").font(Font.custom("Menlo", size: 18).weight(.bold)).padding(.bottom)
+                            Text("From")
+                                .font(.body18MenloBold)
+                                .padding(.bottom)
                             Text(tx.fromAddress)
                         }
                     }.padding(.vertical)
                     Group {
                         HStack {
                             Text("To:")
-                                .font(Font.custom("Menlo", size: 18).weight(.bold))
+                                .font(.body18MenloBold)
                             Text(isValidAddress ? "" : "*")
-                                .font(Font.custom("Menlo", size: 18).weight(.bold))
+                                .font(.body18MenloBold)
                                 .foregroundColor(.red)
                             Spacer()
                             Button("", systemImage: "doc.on.clipboard") {
@@ -140,7 +142,7 @@ struct SendInputDetailsView: View {
                         HStack{
                             VStack(alignment: .leading){
                                 Text("\(tx.coin.ticker.uppercased()):")
-                                    .font(Font.custom("Menlo", size: 18).weight(.bold))
+                                    .font(.body18MenloBold)
                                 
                                 HStack {
                                     TextField("Amount", text: Binding<String>(
@@ -181,7 +183,7 @@ struct SendInputDetailsView: View {
                             }
                             VStack(alignment: .leading){
                                 Text("USD:")
-                                    .font(Font.custom("Menlo", size: 18).weight(.bold))
+                                    .font(.body18MenloBold)
                                 
                                 HStack {
                                     TextField("USD", text: Binding<String>(
@@ -232,7 +234,7 @@ struct SendInputDetailsView: View {
                                         
                                     }) {
                                         Text("MAX")
-                                            .font(Font.custom("Menlo", size: 18).weight(.bold))
+                                            .font(.body18MenloBold)
                                             .foregroundColor(Color.primary)
                                     }
                                 }
@@ -243,7 +245,7 @@ struct SendInputDetailsView: View {
                     
                     Group {
                         Text("Memo:")
-                            .font(Font.custom("Menlo", size: 18).weight(.bold))
+                            .font(.body18MenloBold)
                         TextField("Memo", text: $tx.memo)
                             .textInputAutocapitalization(.never)
                             .disableAutocorrection(true)
@@ -257,7 +259,7 @@ struct SendInputDetailsView: View {
                     
                     Group {
                         Text("Fee:")
-                            .font(Font.custom("Menlo", size: 18).weight(.bold))
+                            .font(.body18MenloBold)
                         HStack {
                             TextField("Fee", text: $tx.gas)
                                 .keyboardType(.decimalPad)
@@ -269,11 +271,11 @@ struct SendInputDetailsView: View {
                                 .cornerRadius(10)
                             Spacer()
                             Text("\($tx.gas.wrappedValue) \(tx.coin.feeUnit ?? "NO UNIT")")
-                                .font(Font.custom("Menlo", size: 18).weight(.bold))
+                                .font(.body18MenloBold)
                         }
                     }.padding(.bottom)
                     Text(isValidForm ? "" : formErrorMessages)
-                        .font(Font.custom("Menlo", size: 13).weight(.bold))
+                        .font(.body13MenloBold)
                         .foregroundColor(.red)
                         .padding()
                     Group {

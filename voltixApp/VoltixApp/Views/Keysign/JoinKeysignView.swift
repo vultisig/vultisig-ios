@@ -37,8 +37,7 @@ struct JoinKeysignView: View {
                 switch self.currentStatus {
                     case .DiscoverSigningMsg:
                         Text("Please scan the QR code displayed on another VoltixApp device.")
-                            .font(Font.custom("Menlo", size: 15)
-                                .weight(.bold))
+                            .font(.body15MenloBold)
                             .multilineTextAlignment(.center)
                         
                         Button("Scan", systemImage: "qrcode.viewfinder") {
@@ -51,18 +50,15 @@ struct JoinKeysignView: View {
                         VStack {
                             HStack {
                                 Text("thisDevice")
-                                    .font(Font.custom("Menlo", size: 15)
-                                        .weight(.bold))
+                                    .font(.body15MenloBold)
                                     .multilineTextAlignment(.center)
                                 Text(self.localPartyID)
-                                    .font(Font.custom("Menlo", size: 15)
-                                        .weight(.bold))
+                                    .font(.body15MenloBold)
                                     .multilineTextAlignment(.center)
                             }
                             HStack {
                                 Text("Looking for the mediator service...")
-                                    .font(Font.custom("Menlo", size: 15)
-                                        .weight(.bold))
+                                    .font(.body15MenloBold)
                                     .multilineTextAlignment(.center)
                                 if self.serviceDelegate.serverURL == nil {
                                     ProgressView()
@@ -85,8 +81,7 @@ struct JoinKeysignView: View {
                             VStack {
                                 VStack(alignment: .center) {
                                     Text("Confirm to sign the message?")
-                                        .font(Font.custom("Menlo", size: 15)
-                                            .weight(.bold))
+                                        .font(.body15MenloBold)
                                 }
                                 .frame(maxWidth: .infinity)
                             }
@@ -96,15 +91,15 @@ struct JoinKeysignView: View {
                             
                             HStack {
                                 Text("To: ")
-                                    .font(Font.custom("Menlo", size: 15).weight(.bold))
+                                    .font(.body15MenloBold)
                                 
                                 Text("\(self.keysignPayload?.toAddress ?? "")")
-                                    .font(Font.custom("Menlo", size: 12))
+                                    .font(.body12Menlo)
                             }
                             .padding(.vertical)
                             
                             Text("Amount: \(String(self.keysignPayload?.toAmount ?? 0))")
-                                .font(Font.custom("Menlo", size: 15).weight(.bold))
+                                .font(.body15MenloBold)
                                 .padding(.vertical)
                             
                             VStack {
@@ -127,18 +122,15 @@ struct JoinKeysignView: View {
                         VStack {
                             HStack {
                                 Text("thisDevice")
-                                    .font(Font.custom("Menlo", size: 15)
-                                        .weight(.bold))
+                                    .font(.body15MenloBold)
                                     .multilineTextAlignment(.center)
                                 Text(self.localPartyID)
-                                    .font(Font.custom("Menlo", size: 15)
-                                        .weight(.bold))
+                                    .font(.body15MenloBold)
                                     .multilineTextAlignment(.center)
                             }
                             HStack {
                                 Text("Waiting for the signing process to begin...")
-                                    .font(Font.custom("Menlo", size: 15)
-                                        .weight(.bold))
+                                    .font(.body15MenloBold)
                                     .multilineTextAlignment(.center)
                                 ProgressView()
                                     .progressViewStyle(.circular)
@@ -165,20 +157,18 @@ struct JoinKeysignView: View {
                                             keysignPayload: self.keysignPayload)
                             } else {
                                 Text("Unable to start the keysign process due to missing information.")
-                                    .font(Font.custom("Menlo", size: 15)
-                                        .weight(.bold))
+                                    .font(.body15MenloBold)
                                     .multilineTextAlignment(.center)
                             }
                         }.navigationBarBackButtonHidden(true)
                     case .FailedToStart:
                         Text("The keysign process could not be started. Please check your settings and try again.")
-                            .font(Font.custom("Menlo", size: 15)
-                                .weight(.bold))
+                            .font(.body15MenloBold)
                             .multilineTextAlignment(.center)
                 }
             }
             .padding()
-            .background(Color(UIColor.systemFill))
+            .background(Color.systemFill)
             .cornerRadius(10)
             .shadow(radius: 5)
             .padding()

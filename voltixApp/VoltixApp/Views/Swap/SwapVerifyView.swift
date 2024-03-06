@@ -13,57 +13,57 @@ struct SwapVerifyView: View {
 
                 VStack(alignment: .leading) {
                     Text("FROM")
-                        .font(Font.custom("Menlo", size: 20).weight(.bold))
+                        .font(.body20MenloBold)
                         .lineSpacing(30)
                         
                     Text("0x0cb1D4a24292bB89862f599Ac5B10F42b6DE07e4")
-                        .font(Font.custom("Montserrat", size: 13).weight(.medium))
+                        .font(.body13MontserratMedium)
                         .lineSpacing(19.50)
                         
                 }
                 .frame(height: 70)
                 VStack(alignment: .leading) {
                     Text("TO")
-                        .font(Font.custom("Menlo", size: 20).weight(.bold))
+                        .font(.body20MenloBold)
                         .lineSpacing(30)
                         
                     Text("0xF42b6DE07e40cb1D4a24292bB89862f599Ac5B10")
-                        .font(Font.custom("Montserrat", size: 13).weight(.medium))
+                        .font(.body13MontserratMedium)
                         .lineSpacing(19.50)
                         
                 }
                 .frame(height: 70)
                 HStack() {
                     Text("AMOUNT")
-                        .font(Font.custom("Menlo", size: 20).weight(.bold))
+                        .font(.body20MenloBold)
                         .lineSpacing(30)
                         
                     Spacer().frame(width: 40)
                     Text("1.0 ETH")
-                        .font(Font.custom("Montserrat", size: 40).weight(.light))
+                        .font(.title40MontserratLight)
                         .lineSpacing(60)
                         
                 }
                 .frame(height: 70)
                 VStack(alignment: .leading) {
                     Text("MEMO")
-                        .font(Font.custom("Menlo", size: 20).weight(.bold))
+                        .font(.body20MenloBold)
                         .lineSpacing(30)
                         
                     Text("TEST")
-                        .font(Font.custom("Montserrat", size: 13).weight(.medium))
+                        .font(.body13MontserratMedium)
                         .lineSpacing(19.50)
                         
                 }
                 .frame(height: 70)
                 HStack() {
                     Text("GAS")
-                        .font(Font.custom("Menlo", size: 20).weight(.bold))
+                        .font(.body20MenloBold)
                         .lineSpacing(30)
                         
                     Spacer().frame(width: 40)
                     Text("$4.00")
-                        .font(Font.custom("Montserrat", size: 40).weight(.light))
+                        .font(.title40MontserratLight)
                         .lineSpacing(60)
                         
                 }

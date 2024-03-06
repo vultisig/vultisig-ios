@@ -37,7 +37,7 @@ struct JoinKeygenView: View {
                 switch currentStatus {
                     case .DiscoverSessionID:
                         Text("Scan the barcode on another VoltixApp device to start.".uppercased())
-                            .font(.custom("Menlo", size: 15).bold())
+                        .font(.body15MenloBold)
                             .multilineTextAlignment(.center)
                         
                         Button(action: {
@@ -45,7 +45,7 @@ struct JoinKeygenView: View {
                         }) {
                             HStack {
                                 Text("Scan ".uppercased())
-                                    .font(.custom("Menlo", size: 15).bold())
+                                    .font(.body15MenloBold)
                                     .multilineTextAlignment(.center)
                                 Image(systemName: "qrcode")
                                     .resizable()
@@ -61,15 +61,15 @@ struct JoinKeygenView: View {
                         VStack {
                             HStack {
                                 Text("thisDevice")
-                                    .font(.custom("Menlo", size: 15).bold())
+                                    .font(.body15MenloBold)
                                     .multilineTextAlignment(.center)
                                 Text(self.localPartyID)
-                                    .font(.custom("Menlo", size: 15).bold())
+                                    .font(.body15MenloBold)
                                     .multilineTextAlignment(.center)
                             }
                             HStack {
                                 Text("Discovering mediator service, please wait...".uppercased())
-                                    .font(.custom("Menlo", size: 15).bold())
+                                    .font(.body15MenloBold)
                                     .multilineTextAlignment(.center)
                             
                                 if serviceDelegate.serverURL == nil {
@@ -97,7 +97,7 @@ struct JoinKeygenView: View {
                             }
                             HStack {
                                 Text("Joining key generation process, please wait...".uppercased())
-                                    .font(.custom("Menlo", size: 15).bold())
+                                    .font(.body15MenloBold)
                                     .multilineTextAlignment(.center)
                                     .onAppear {
                                         joinKeygenCommittee()
@@ -114,7 +114,7 @@ struct JoinKeygenView: View {
                             }
                             HStack {
                                 Text("Waiting for key generation to start, please be patient...".uppercased())
-                                    .font(.custom("Menlo", size: 15).bold())
+                                    .font(.body15MenloBold)
                                     .multilineTextAlignment(.center)
                                 ProgressView().progressViewStyle(.circular).padding(2)
                             }
@@ -140,7 +140,7 @@ struct JoinKeygenView: View {
                                            vaultName: appState.creatingVault?.name ?? "New Vault")
                             } else {
                                 Text("Unable to start key generation due to missing information.".uppercased())
-                                    .font(.custom("Menlo", size: 15).bold())
+                                    .font(.body15MenloBold)
                                     .multilineTextAlignment(.center)
                             }
                         }
@@ -148,14 +148,14 @@ struct JoinKeygenView: View {
                     case .FailToStart:
                         HStack {
                             Text("Failed to start. Please ensure all prerequisites are met and try again.".uppercased())
-                                .font(.custom("Menlo", size: 15).bold())
+                                .font(.body15MenloBold)
                                 .multilineTextAlignment(.center)
                         }
                         .padding(.vertical, 30)
                 }
             }
             .padding()
-            .background(Color(UIColor.systemFill))
+            .background(Color.systemFill)
             .cornerRadius(10)
             .shadow(radius: 5)
             .padding()

@@ -61,8 +61,7 @@ struct SendVerifyView: View {
                     Spacer()
                     
                     Text(errorMessage)
-                        .font(Font.custom("Montserrat", size: 13)
-                            .weight(.medium))
+                        .font(.body13MontserratMedium)
                         .padding(.vertical, 5)
                         .foregroundColor(.red)
                     BottomBar(
@@ -192,9 +191,9 @@ struct SendVerifyView: View {
     private func LabelText(title: String, value: String) -> some View {
         VStack(alignment: .leading) {
             Text(title)
-                .font(Font.custom("Menlo", size: 20).weight(.bold))
+                .font(.body20MenloBold)
             Text(value)
-                .font(Font.custom("Montserrat", size: 13).weight(.medium))
+                .font(.body13MontserratMedium)
                 .padding(.vertical, 5)
         }
     }
@@ -203,10 +202,10 @@ struct SendVerifyView: View {
     private func LabelTextNumeric(title: String, value: String) -> some View {
         HStack {
             Text(title)
-                .font(Font.custom("Menlo", size: 20).weight(.bold))
+                .font(.body20MenloBold)
             Spacer()
             Text(value)
-                .font(Font.custom("Menlo", size: 30).weight(.ultraLight))
+                .font(.title30MenloUltraLight)
                 .padding(.vertical, 5)
             Spacer()
         }

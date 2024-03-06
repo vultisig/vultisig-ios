@@ -9,7 +9,7 @@ struct MenuItem: View {
             HStack {
                 Spacer()
                 Text(content)
-                    .font(Font.custom("Menlo", size: 35).weight(.bold))
+                    .font(.title35MenloBold)
                     .lineSpacing(60)
                 
                 Spacer().frame(width: 20)

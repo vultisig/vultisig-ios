@@ -12,18 +12,18 @@ struct SwapPeerDiscoveryView: View {
         VStack {
 
           Text("VERIFY ALL DETAILS")
-            .font(Font.custom("Montserrat", size: 24).weight(.medium))
-            .lineSpacing(36)
+                .font(.body24MontserratMedium)
+                .lineSpacing(36)
             
           Spacer().frame(height: 80)
           Text("iPhone 15 Pro\nMatt’s iPhone")
-            .font(Font.custom("Montserrat", size: 24).weight(.medium))
-            .lineSpacing(12)
+                .font(.body24MontserratMedium)
+                .lineSpacing(12)
             
           Spacer().frame(height: 20)
           Text("42")
-            .font(Font.custom("Montserrat", size: 80).weight(.light))
-            .lineSpacing(120)
+                .font(.title80MontserratLight)
+                .lineSpacing(120)
             
           Spacer()
           WifiBar()

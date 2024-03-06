@@ -29,7 +29,7 @@ public class CryptoPriceService: ObservableObject {
             return
         }
         
-        let urlString = "https://api.coingecko.com/api/v3/simple/price?ids=\(coin)&vs_currencies=\(fiat)"
+        let urlString = Endpoint.fetchCryptoPrices(coin: coin, fiat: fiat)
         
         guard let url = URL(string: urlString) else {
             self.errorMessage = "Invalid URL"

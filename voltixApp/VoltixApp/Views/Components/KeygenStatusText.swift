@@ -15,7 +15,7 @@ struct KeyGenStatusText: View {
             HStack {
                 Spacer()
                 Text(self.status)
-                    .font(Font.custom("Menlo", size: 15).weight(.bold))
+                    .font(.body15MenloBold)
                     .multilineTextAlignment(.center)
                 ProgressView()
                     .progressViewStyle(.circular)
@@ -24,7 +24,7 @@ struct KeyGenStatusText: View {
             }.padding(.vertical, 30)
         }
         .padding()
-        .background(Color(UIColor.systemFill))
+        .background(Color.systemFill)
         .cornerRadius(10)
         .shadow(radius: 5)
         .padding()

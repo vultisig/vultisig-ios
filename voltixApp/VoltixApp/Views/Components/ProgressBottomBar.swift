@@ -54,12 +54,11 @@ struct ProgressBottomBar: View {
                         Spacer()
                         Text(content)
                             .lineSpacing(60)
-                            .font(Font.custom("Menlo", size: 40).weight(.black))
+                            .font(.title40MenloBlack)
                         
                             .padding(.trailing, 16)
                         Image(systemName: "chevron.right")
                             .resizable()
-                        
                             .frame(width: 20, height: 30)
                     }
                 }
@@ -78,7 +77,7 @@ struct ProgressBottomBar: View {
         if index < progress {
             return .black
         } else {
-            return Color(red: 0.96, green: 0.96, blue: 0.96)
+            return Color.gray500
         }
     }
 }

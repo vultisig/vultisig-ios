@@ -99,7 +99,8 @@ struct TransactionRow: View {
     
     @ViewBuilder
     private func LabelTxHash(title: String, value: String, isSent: Bool) -> some View {
-        let url = "https://mempool.space/tx/\(value)"
+        let url = Endpoint.bitcoinLabelTxHash(value)
+        
         VStack(alignment: .leading) {
             HStack{
                 Image(systemName: isSent ? "arrowtriangle.up.square" : "arrowtriangle.down.square")
@@ -107,12 +108,12 @@ struct TransactionRow: View {
                     .frame(width: 20, height: 20)
                 
                 Text(title)
-                    .font(Font.custom("Menlo", size: 20).weight(.bold))
+                    .font(.body20MenloBold)
                 
             }
             Link(destination: URL(string: url)!) {
                 Text(value)
-                    .font(Font.custom("Montserrat", size: 13).weight(.medium))
+                    .font(.body13MontserratMedium)
                     .padding(.vertical, 5)
                     .foregroundColor(Color.blue)
             }
@@ -124,9 +125,9 @@ struct TransactionRow: View {
     private func LabelText(title: String, value: String) -> some View {
         VStack(alignment: .leading) {
             Text(title)
-                .font(Font.custom("Menlo", size: 20).weight(.bold))
+                .font(.body20MenloBold)
             Text(value)
-                .font(Font.custom("Montserrat", size: 13).weight(.medium))
+                .font(.body13MontserratMedium)
                 .padding(.vertical, 5)
         }
     }
@@ -135,10 +136,10 @@ struct TransactionRow: View {
     private func LabelTextNumeric(title: String, value: String) -> some View {
         HStack {
             Text(title)
-                .font(Font.custom("Menlo", size: 20).weight(.bold))
+                .font(.body20MenloBold)
             Spacer()
             Text(value)
-                .font(Font.custom("Menlo", size: 30).weight(.ultraLight))
+                .font(.title30MenloUltraLight)
                 .padding(.vertical, 5)
         }
     }

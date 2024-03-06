@@ -12,12 +12,12 @@ struct SwapDoneView: View {
         VStack(alignment: .leading) {
             VStack(alignment: .leading) {
                 Text("Transaction")
-                    .font(Font.custom("Menlo", size: 20).weight(.bold))
+                    .font(.body20MenloBold)
                     .lineSpacing(30)
                     
                 HStack() {
                     Text("bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w")
-                        .font(Font.custom("Montserrat", size: 13).weight(.medium))
+                        .font(.body13MontserratMedium)
                         .lineSpacing(19.50)
                         
                     Spacer()

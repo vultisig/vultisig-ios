@@ -16,7 +16,8 @@ struct DeviceView: View {
                         .resizable() // Makes the image resizable
                         .scaledToFit() // Scales the image to fit its container
                         .frame(width: 50, height: 50) // Specify your desired size
-                    Text(description).font(.system(size: 15, weight: .light))
+                    Text(description)
+                        .font(.body15SystemLight)
                 }
                 VStack{
                         // Replace Button with Image and increase its size

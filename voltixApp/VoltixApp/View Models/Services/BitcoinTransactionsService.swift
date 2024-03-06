@@ -37,7 +37,7 @@ public class BitcoinTransactionsService: ObservableObject {
             return
         }
         
-        guard let url = URL(string: "https://mempool.space/api/address/\(userAddress)/txs") else {
+        guard let url = URL(string: Endpoint.fetchBitcoinTransactions(userAddress)) else {
             errorMessage = "Invalid URL"
             return
         }
@@ -69,7 +69,7 @@ public class BitcoinTransactionsService: ObservableObject {
     }
     
     public static func broadcastTransaction(_ rawTransaction: String) async throws -> String {
-        let urlString = "https://mempool.space/api/tx"
+        let urlString = Endpoint.broadcastTransaction
         
         guard let url = URL(string: urlString) else {
             throw BitcoinTransactionError.invalidURL

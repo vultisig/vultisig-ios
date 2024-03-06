@@ -22,7 +22,7 @@ struct ImportWalletView: View {
                 Spacer().frame(height: 30)
                 ZStack(alignment: .bottomTrailing) {
                     TextEditor(text: self.$vaultText)
-                        .font(.custom("AmericanTypewriter", size: geometry.size.width * 0.05))
+                        .font(.dynamicAmericanTypewriter(geometry.size.width * 0.05))
                         .scrollContentBackground(.hidden)
                         .frame(height: geometry.size.height * 0.4)
                         .padding()

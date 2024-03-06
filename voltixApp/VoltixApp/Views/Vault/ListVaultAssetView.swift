@@ -17,13 +17,13 @@ struct ListVaultAssetView: View {
             case .light:
                     // Apply a light mode-specific color
                 // return Color(UIColor.systemGroupedBackground)
-                return Color(UIColor.systemFill)
+                return Color.systemFill
             case .dark:
                     // Apply the dark mode color
-                return Color(UIColor.secondarySystemGroupedBackground)
+                return Color.secondarySystemGroupedBackground
             @unknown default:
                     // Fallback color
-                return Color(UIColor.systemBackground)
+            return Color.systemBackground
         }
     }
     
