@@ -31,6 +31,7 @@ struct KeysignPayload: Codable, Hashable {
     // it is up to the signing device to get the presign keyhash , and sign it with the main device
     let utxos: [UtxoInfo]
     let memo: String? // optional memo
+    let swapPayload: THORChainSwapPayload?
 
     func getKeysignMessages() -> Result<[String], Error> {
         var result: Result<[String], Error>
