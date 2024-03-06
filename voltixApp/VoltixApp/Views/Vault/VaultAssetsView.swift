@@ -117,14 +117,9 @@ struct VaultAssetsView: View {
             if tx.coin.ticker.uppercased() == "ETH" {
                 self.coinBalance = eth.addressInfo?.ETH.balanceString ?? "0.0" // "\(eth.addressInfo?.ETH.balance ?? 0.0)"
                 self.balanceUSD = eth.addressInfo?.ETH.balanceInUsd ?? "US$ 0,00"
-            } else {
-                
-                // tx.token
-                // if let tokenInfo = eth.addressInfo?.tokens?.first(where: {$0.tokenInfo.symbol == "USDC"}) {
-                if let tokenInfo = tx.token {
-                    self.balanceUSD = tokenInfo.balanceInUsd
-                    self.coinBalance = tokenInfo.balanceString
-                }
+            } else if let tokenInfo = tx.token {
+                self.balanceUSD = tokenInfo.balanceInUsd
+                self.coinBalance = tokenInfo.balanceString
             }
         }
         
