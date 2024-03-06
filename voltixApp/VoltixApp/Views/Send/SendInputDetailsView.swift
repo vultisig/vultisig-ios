@@ -160,7 +160,8 @@ struct SendInputDetailsView: View {
                                                         if tx.coin.ticker.uppercased() == "ETH" {
                                                             tx.amountInUSD = eth.addressInfo?.ETH.getAmountInUsd(newValueDouble) ?? ""
                                                         } else {
-                                                            if let tokenInfo = eth.addressInfo?.tokens?.first(where: {$0.tokenInfo.symbol == "USDC"}) {
+                                                            if let tokenInfo = tx.token {
+                                                            //if let tokenInfo = eth.addressInfo?.tokens?.first(where: {$0.tokenInfo.symbol == "USDC"}) {
                                                                 tx.amountInUSD = tokenInfo.getAmountInUsd(newValueDouble)
                                                             }
                                                         }
@@ -209,7 +210,8 @@ struct SendInputDetailsView: View {
                                                         if tx.coin.ticker.uppercased() == "ETH" {
                                                             tx.amount = eth.addressInfo?.ETH.getAmountInEth(newValueDouble) ?? ""
                                                         } else {
-                                                            if let tokenInfo = eth.addressInfo?.tokens?.first(where: {$0.tokenInfo.symbol == "USDC"}) {
+                                                            if let tokenInfo = tx.token {
+                                                            //if let tokenInfo = eth.addressInfo?.tokens?.first(where: {$0.tokenInfo.symbol == "USDC"}) {
                                                                 tx.amount = tokenInfo.getAmountInTokens(newValueDouble)
                                                             }
                                                         }
@@ -423,7 +425,8 @@ struct SendInputDetailsView: View {
                 self.tx.amount = eth.addressInfo?.ETH.balanceString ?? "0.0"
                 self.tx.amountInUSD = eth.addressInfo?.ETH.balanceInUsd.replacingOccurrences(of: "US$ ", with: "") ?? ""
             } else {
-                if let tokenInfo = eth.addressInfo?.tokens?.first(where: { $0.tokenInfo.symbol == "USDC" }) {
+                if let tokenInfo = tx.token {
+                //if let tokenInfo = eth.addressInfo?.tokens?.first(where: { $0.tokenInfo.symbol == "USDC" }) {
                     self.tx.amount = tokenInfo.balanceString
                     self.tx.amountInUSD = tokenInfo.balanceInUsd.replacingOccurrences(of: "US$ ", with: "")
                 }
