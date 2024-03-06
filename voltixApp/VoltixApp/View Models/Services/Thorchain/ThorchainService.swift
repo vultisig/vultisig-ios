@@ -24,6 +24,52 @@ class ThorchainService: ObservableObject {
     @Published var errorMessage: String?
     @Published var accountNumber: String?
     
+    func runeBalanceInUSD(usdPrice: Double?) -> String? {
+        guard let usdPrice = usdPrice,
+              let runeBalanceString = runeBalance,
+              let runeAmount = Double(runeBalanceString) else { return nil }
+        
+        
+        let balanceRune = runeAmount / 100_000_000.0
+        let balanceUSD = balanceRune * usdPrice
+        
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.locale = Locale.current
+        formatter.currencyCode = "USD"
+        
+        return formatter.string(from: NSNumber(value: balanceUSD))
+    }
+    
+    var formattedRuneBalance: String? {
+        guard let balances = balances else { return nil }
+        for balance in balances {
+            if balance.denom == "rune" {
+                guard let runeAmount = Double(balance.amount) else { return "Invalid balance" }
+                let balanceRune = runeAmount / 100_000_000.0
+                
+                let formatter = NumberFormatter()
+                formatter.numberStyle = .decimal
+                formatter.maximumFractionDigits = 8
+                formatter.minimumFractionDigits = 0
+                formatter.groupingSeparator = ""
+                formatter.decimalSeparator = "."
+                return formatter.string(from: NSNumber(value: balanceRune))
+            }
+        }
+        return "Balance not available"
+    }
+    
+    var runeBalance: String? {
+        guard let balances = balances else { return nil }
+        for balance in balances {
+            if balance.denom == "rune" {
+                return balance.amount
+            }
+        }
+        return nil // Or "Balance not available" or similar message if preferred
+    }
+    
     private init() {}
     
     func fetchBalances(_ address: String) async {
