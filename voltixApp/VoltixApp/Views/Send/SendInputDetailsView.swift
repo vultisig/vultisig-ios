@@ -159,10 +159,8 @@ struct SendInputDetailsView: View {
                                                     }else if tx.coin.chain.name.lowercased() == "ethereum" {
                                                         if tx.coin.ticker.uppercased() == "ETH" {
                                                             tx.amountInUSD = eth.addressInfo?.ETH.getAmountInUsd(newValueDouble) ?? ""
-                                                        } else {
-                                                            if let tokenInfo = eth.addressInfo?.tokens?.first(where: {$0.tokenInfo.symbol == "USDC"}) {
-                                                                tx.amountInUSD = tokenInfo.getAmountInUsd(newValueDouble)
-                                                            }
+                                                        } else if let tokenInfo = tx.token {
+                                                            tx.amountInUSD = tokenInfo.getAmountInUsd(newValueDouble)
                                                         }
                                                     }
                                                 } else {
@@ -208,10 +206,8 @@ struct SendInputDetailsView: View {
                                                     } else if tx.coin.chain.name.lowercased() == "ethereum" {
                                                         if tx.coin.ticker.uppercased() == "ETH" {
                                                             tx.amount = eth.addressInfo?.ETH.getAmountInEth(newValueDouble) ?? ""
-                                                        } else {
-                                                            if let tokenInfo = eth.addressInfo?.tokens?.first(where: {$0.tokenInfo.symbol == "USDC"}) {
-                                                                tx.amount = tokenInfo.getAmountInTokens(newValueDouble)
-                                                            }
+                                                        } else if let tokenInfo = tx.token {
+                                                            tx.amount = tokenInfo.getAmountInTokens(newValueDouble)
                                                         }
                                                     }
                                                 } else {
@@ -422,11 +418,9 @@ struct SendInputDetailsView: View {
             if tx.coin.ticker.uppercased() == "ETH" {
                 self.tx.amount = eth.addressInfo?.ETH.balanceString ?? "0.0"
                 self.tx.amountInUSD = eth.addressInfo?.ETH.balanceInUsd.replacingOccurrences(of: "US$ ", with: "") ?? ""
-            } else {
-                if let tokenInfo = eth.addressInfo?.tokens?.first(where: { $0.tokenInfo.symbol == "USDC" }) {
-                    self.tx.amount = tokenInfo.balanceString
-                    self.tx.amountInUSD = tokenInfo.balanceInUsd.replacingOccurrences(of: "US$ ", with: "")
-                }
+            } else if let tokenInfo = tx.token {
+                self.tx.amount = tokenInfo.balanceString
+                self.tx.amountInUSD = tokenInfo.balanceInUsd.replacingOccurrences(of: "US$ ", with: "")
             }
         }
     }
