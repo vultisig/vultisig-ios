@@ -406,8 +406,8 @@
 		D9AD8ED72B67225F0009F8D5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */,
 				DE49A1682B65F6D9000F3AFB /* MainNavigationStack.swift */,
+				D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */,
 				46D067E42B8852B70052F535 /* Keygen */,
 				049BBB4E2B71E37B004C231F /* Components */,
 				DE15729A2B70F284009BC7C5 /* Keysign */,

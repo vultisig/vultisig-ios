@@ -11,6 +11,7 @@ import WalletCore
 @main
 struct VoltixApp: App {
     @Environment(\.scenePhase) private var scenePhase
+    
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Vault.self,

@@ -6,19 +6,9 @@
 import SwiftUI
 
 struct BottomBar: View {
-    let content: String;
-    let onClick: () -> Void;
-    let buttondisplay: Bool;
-    
-    init(
-        content: String,
-        onClick: @escaping () -> Void,
-        buttondisplay: Bool = true
-    ) {
-        self.content = content;
-        self.onClick = onClick;
-        self.buttondisplay = buttondisplay;
-    }
+    let content: String
+    let onClick: () -> Void
+    var buttondisplay: Bool = true
     
     var body: some View {
         HStack() {
