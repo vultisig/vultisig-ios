@@ -5,6 +5,7 @@ struct VaultAssetsView: View {
     @EnvironmentObject var appState: ApplicationState
     @StateObject var uxto: UnspentOutputsService = UnspentOutputsService()
     @StateObject var eth: EthplorerAPIService = EthplorerAPIService()
+    @StateObject var thor: ThorchainService = ThorchainService.shared
     @ObservedObject var tx: SendTransaction
     @State private var coinBalance: String = "0"
     @State private var balanceUSD: String = "0"
@@ -83,13 +84,16 @@ struct VaultAssetsView: View {
             print("realoading data...")
             isLoading = true
             
-            if tx.coin.chain.name.lowercased() == "bitcoin" {
-                    // had to use the singleton to get from the cache
-                await CryptoPriceService.shared.fetchCryptoPrices(for: tx.coin.chain.name.lowercased(), for: "usd")
+            if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
                 await uxto.fetchUnspentOutputs(for: tx.fromAddress)
-            } else if tx.coin.chain.name.lowercased() == "ethereum" {
+            } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
                 await eth.getEthInfo(for: tx.fromAddress)
+            } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
+                await thor.fetchBalances(tx.fromAddress)
+                await thor.fetchAccountNumber(tx.fromAddress)
             }
+            
+            await CryptoPriceService.shared.fetchCryptoPrices(for: "bitcoin,thorchain", for: "usd")
             
             DispatchQueue.main.async {
                 updateState()
@@ -103,25 +107,26 @@ struct VaultAssetsView: View {
         self.balanceUSD = "US$ 0,00"
         self.coinBalance = "0.0"
         
-        if tx.coin.chain.name.lowercased() == "bitcoin" {
+        if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
             if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[tx.coin.chain.name.lowercased()]?["usd"] {
-                    // It should come from the cache
-                print("BTC price RATE \(priceRateUsd)")
                 self.balanceUSD = uxto.walletData?.balanceInUSD(usdPrice: priceRateUsd) ?? "US$ 0,00"
             }
             self.coinBalance = uxto.walletData?.balanceInBTC ?? "0.0"
             
-        } else if tx.coin.chain.name.lowercased() == "ethereum" {
-                // We need to pass it to the next view
+        } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
             tx.eth = eth.addressInfo
             if tx.coin.ticker.uppercased() == "ETH" {
-                self.coinBalance = eth.addressInfo?.ETH.balanceString ?? "0.0" // "\(eth.addressInfo?.ETH.balance ?? 0.0)"
+                self.coinBalance = eth.addressInfo?.ETH.balanceString ?? "0.0"
                 self.balanceUSD = eth.addressInfo?.ETH.balanceInUsd ?? "US$ 0,00"
             } else if let tokenInfo = tx.token {
                 self.balanceUSD = tokenInfo.balanceInUsd
                 self.coinBalance = tokenInfo.balanceString
             }
+        } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
+            if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.THORChain.name.lowercased()]?["usd"] {
+                self.balanceUSD = thor.runeBalanceInUSD(usdPrice: priceRateUsd) ?? "US$ 0,00"
+            }
+            self.coinBalance = thor.formattedRuneBalance ?? "0.0"
         }
-        
     }
 }

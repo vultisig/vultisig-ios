@@ -31,6 +31,13 @@
 		465B09B52B7D8E7B00952DD9 /* CryptoPriceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */; };
 		465B09B72B7D909400952DD9 /* CryptoPrice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09B62B7D909400952DD9 /* CryptoPrice.swift */; };
 		467B2D662B7B51F700AEDF64 /* NavigationStackButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = 467B2D652B7B51F700AEDF64 /* NavigationStackButtons.swift */; };
+		469ED3942B98E776008D4951 /* ThorchainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED3932B98E776008D4951 /* ThorchainService.swift */; };
+		469ED3992B98E896008D4951 /* ThorchainBalanceResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED3982B98E896008D4951 /* ThorchainBalanceResponse.swift */; };
+		469ED39B2B98E8B5008D4951 /* ThorchainBalance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED39A2B98E8B5008D4951 /* ThorchainBalance.swift */; };
+		469ED39D2B98E8C0008D4951 /* ThorchainBalancePagination.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED39C2B98E8C0008D4951 /* ThorchainBalancePagination.swift */; };
+		469ED3A02B98F5B4008D4951 /* ThorchainAccountNumberResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED39F2B98F5B4008D4951 /* ThorchainAccountNumberResponse.swift */; };
+		469ED3A22B98F5CB008D4951 /* ThorchainAccountResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED3A12B98F5CB008D4951 /* ThorchainAccountResult.swift */; };
+		469ED3A42B98F5DE008D4951 /* ThorchainAccountValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED3A32B98F5DE008D4951 /* ThorchainAccountValue.swift */; };
 		46A616EA2B8807B700372994 /* KeygenStatusText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46A616E92B8807B700372994 /* KeygenStatusText.swift */; };
 		46AC40A12B91C024001704E6 /* Web3Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AC40A02B91C024001704E6 /* Web3Service.swift */; };
 		46AC40A42B91F50A001704E6 /* AppConfiguration.example.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AC40A32B91F50A001704E6 /* AppConfiguration.example.swift */; };
@@ -167,6 +174,13 @@
 		465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoPriceService.swift; sourceTree = "<group>"; };
 		465B09B62B7D909400952DD9 /* CryptoPrice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoPrice.swift; sourceTree = "<group>"; };
 		467B2D652B7B51F700AEDF64 /* NavigationStackButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationStackButtons.swift; sourceTree = "<group>"; };
+		469ED3932B98E776008D4951 /* ThorchainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainService.swift; sourceTree = "<group>"; };
+		469ED3982B98E896008D4951 /* ThorchainBalanceResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainBalanceResponse.swift; sourceTree = "<group>"; };
+		469ED39A2B98E8B5008D4951 /* ThorchainBalance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainBalance.swift; sourceTree = "<group>"; };
+		469ED39C2B98E8C0008D4951 /* ThorchainBalancePagination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainBalancePagination.swift; sourceTree = "<group>"; };
+		469ED39F2B98F5B4008D4951 /* ThorchainAccountNumberResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainAccountNumberResponse.swift; sourceTree = "<group>"; };
+		469ED3A12B98F5CB008D4951 /* ThorchainAccountResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainAccountResult.swift; sourceTree = "<group>"; };
+		469ED3A32B98F5DE008D4951 /* ThorchainAccountValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainAccountValue.swift; sourceTree = "<group>"; };
 		46A616E92B8807B700372994 /* KeygenStatusText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenStatusText.swift; sourceTree = "<group>"; };
 		46AC40A02B91C024001704E6 /* Web3Service.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Web3Service.swift; sourceTree = "<group>"; };
 		46AC40A32B91F50A001704E6 /* AppConfiguration.example.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.example.swift; sourceTree = "<group>"; };
@@ -322,6 +336,7 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				469ED3952B98E782008D4951 /* Thorchain */,
 				465B09A62B7C049400952DD9 /* UnspentOutputsService.swift */,
 				465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */,
 				4606B3AF2B80465E0045094D /* BitcoinTransactionsService.swift */,
@@ -330,6 +345,43 @@
 				46AC40A72B920061001704E6 /* EtherscanService.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		469ED3952B98E782008D4951 /* Thorchain */ = {
+			isa = PBXGroup;
+			children = (
+				469ED3932B98E776008D4951 /* ThorchainService.swift */,
+			);
+			path = Thorchain;
+			sourceTree = "<group>";
+		};
+		469ED3962B98E7B7008D4951 /* Thorchain */ = {
+			isa = PBXGroup;
+			children = (
+				469ED39E2B98F5A9008D4951 /* AccountManager */,
+				469ED3972B98E885008D4951 /* BalanceManager */,
+			);
+			path = Thorchain;
+			sourceTree = "<group>";
+		};
+		469ED3972B98E885008D4951 /* BalanceManager */ = {
+			isa = PBXGroup;
+			children = (
+				469ED3982B98E896008D4951 /* ThorchainBalanceResponse.swift */,
+				469ED39A2B98E8B5008D4951 /* ThorchainBalance.swift */,
+				469ED39C2B98E8C0008D4951 /* ThorchainBalancePagination.swift */,
+			);
+			path = BalanceManager;
+			sourceTree = "<group>";
+		};
+		469ED39E2B98F5A9008D4951 /* AccountManager */ = {
+			isa = PBXGroup;
+			children = (
+				469ED39F2B98F5B4008D4951 /* ThorchainAccountNumberResponse.swift */,
+				469ED3A12B98F5CB008D4951 /* ThorchainAccountResult.swift */,
+				469ED3A32B98F5DE008D4951 /* ThorchainAccountValue.swift */,
+			);
+			path = AccountManager;
 			sourceTree = "<group>";
 		};
 		46AC40A22B91F4F8001704E6 /* Configs */ = {
@@ -422,6 +474,7 @@
 		D9AD8ED82B6722AC0009F8D5 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				469ED3962B98E7B7008D4951 /* Thorchain */,
 				465B09A32B7C01CC00952DD9 /* BitcoinTransaction.swift */,
 				A65649E72B9668BF00E4B329 /* TransactionRef.swift */,
 				A65649E92B96690400E4B329 /* KeyShare.swift */,
@@ -778,6 +831,7 @@
 				DE1572A02B70F284009BC7C5 /* Keysign.swift in Sources */,
 				46AC40AA2B922931001704E6 /* EthereumTransactionListView.swift in Sources */,
 				465B09AD2B7C841B00952DD9 /* QrCodeView.swift in Sources */,
+				469ED3A02B98F5B4008D4951 /* ThorchainAccountNumberResponse.swift in Sources */,
 				465B09B32B7D710A00952DD9 /* DocumentPicker.swift in Sources */,
 				DE1572992B70F26A009BC7C5 /* KeyType.swift in Sources */,
 				4606B3AE2B8045F60045094D /* BitcoinTransactionListView.swift in Sources */,
@@ -794,6 +848,7 @@
 				049BBB5C2B71E7F6004C231F /* LargeButton.swift in Sources */,
 				DE49A1A52B68BB6B000F3AFB /* VaultSelectionView.swift in Sources */,
 				A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */,
+				469ED3942B98E776008D4951 /* ThorchainService.swift in Sources */,
 				D9AD8EE02B6730640009F8D5 /* StartView.swift in Sources */,
 				46AC40A42B91F50A001704E6 /* AppConfiguration.example.swift in Sources */,
 				049BBB542B71E4F8004C231F /* BottomBar.swift in Sources */,
@@ -806,6 +861,7 @@
 				DE15729F2B70F284009BC7C5 /* KeysignDiscoveryView.swift in Sources */,
 				A6564A042B969AA500E4B329 /* BroadcastResponse.swift in Sources */,
 				D9AD8EDC2B6723D10009F8D5 /* AppNavigationState.swift in Sources */,
+				469ED3992B98E896008D4951 /* ThorchainBalanceResponse.swift in Sources */,
 				DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */,
 				A6564A062B969ADF00E4B329 /* EtherscanAPIResponse.swift in Sources */,
 				A65649F82B96701300E4B329 /* PreviousOutput.swift in Sources */,
@@ -814,6 +870,7 @@
 				46AC40A12B91C024001704E6 /* Web3Service.swift in Sources */,
 				464854712B8E052B008D37A7 /* EthplorerAPIService.swift in Sources */,
 				A65649E62B96602700E4B329 /* TssExtension.swift in Sources */,
+				469ED39D2B98E8C0008D4951 /* ThorchainBalancePagination.swift in Sources */,
 				465B09AF2B7C84C600952DD9 /* ShareSheet.swift in Sources */,
 				46AC40A82B920061001704E6 /* EtherscanService.swift in Sources */,
 				A62758F22B97B10600ADE3A6 /* Endpoint.swift in Sources */,
@@ -826,6 +883,7 @@
 				A65649F52B966F3E00E4B329 /* DecodableDefault.swift in Sources */,
 				DE491CEF2B708260007C88D5 /* KeygenView.swift in Sources */,
 				A65649E82B9668BF00E4B329 /* TransactionRef.swift in Sources */,
+				469ED3A22B98F5CB008D4951 /* ThorchainAccountResult.swift in Sources */,
 				DE49A1692B65F6D9000F3AFB /* MainNavigationStack.swift in Sources */,
 				D9AD8F082B675ECD0009F8D5 /* SupportedAssets.swift in Sources */,
 				A65649EA2B96690400E4B329 /* KeyShare.swift in Sources */,
@@ -849,6 +907,7 @@
 				4606B3B02B80465E0045094D /* BitcoinTransactionsService.swift in Sources */,
 				049BBB522B71E498004C231F /* AssetsView.swift in Sources */,
 				A65649DF2B96602700E4B329 /* DecodableDefaultExtension.swift in Sources */,
+				469ED39B2B98E8B5008D4951 /* ThorchainBalance.swift in Sources */,
 				DEEDAEE32B8AF8B1005170E8 /* publickey.swift in Sources */,
 				D9AD8EE42B6730940009F8D5 /* NewWalletInstructionsView.swift in Sources */,
 				DE28F52E2B7B0E7400E33058 /* bitcoin.swift in Sources */,
@@ -870,6 +929,7 @@
 				A62758F52B97CE9E00ADE3A6 /* FontStyle.swift in Sources */,
 				DE49A19E2B671416000F3AFB /* Coin.swift in Sources */,
 				A65649E42B96602700E4B329 /* StringExtension.swift in Sources */,
+				469ED3A42B98F5DE008D4951 /* ThorchainAccountValue.swift in Sources */,
 				DE49A1672B65F6D9000F3AFB /* VoltixApp.swift in Sources */,
 				465B09A42B7C01CC00952DD9 /* BitcoinTransaction.swift in Sources */,
 				DE32F0072B8460670035D81E /* AssetsList.swift in Sources */,

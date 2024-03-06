@@ -17,7 +17,7 @@
                BlueprintIdentifier = "DE49A1622B65F6D9000F3AFB"
                BuildableName = "VoltixApp.app"
                BlueprintName = "VoltixApp"
-               ReferencedContainer = "container:voltixApp.xcodeproj">
+               ReferencedContainer = "container:VoltixApp.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
