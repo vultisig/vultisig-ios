@@ -44,7 +44,7 @@ class ThorchainService: ObservableObject {
     var formattedRuneBalance: String? {
         guard let balances = balances else { return nil }
         for balance in balances {
-            if balance.denom == "rune" {
+            if balance.denom.lowercased() == Chain.THORChain.ticker.lowercased() {
                 guard let runeAmount = Double(balance.amount) else { return "Invalid balance" }
                 let balanceRune = runeAmount / 100_000_000.0
                 
@@ -63,7 +63,7 @@ class ThorchainService: ObservableObject {
     var runeBalance: String? {
         guard let balances = balances else { return nil }
         for balance in balances {
-            if balance.denom == "rune" {
+            if balance.denom.lowercased() == Chain.THORChain.ticker.lowercased() {
                 return balance.amount
             }
         }
