@@ -25,7 +25,9 @@ struct WelcomeView: View {
     var logo: some View {
         Image("Logo")
             .resizable()
-            .frame(width: 120, height: 120)
+            .aspectRatio(contentMode: .fit)
+            .frame(height: 120)
+            .foregroundColor(.primary)
             .padding(.bottom, 20)
     }
     
