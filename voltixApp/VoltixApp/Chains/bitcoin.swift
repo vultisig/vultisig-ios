@@ -185,6 +185,22 @@ enum BitcoinHelper {
         keysignPayload: KeysignPayload,
         signatures: [String: TssKeysignResponse]) -> Result<String, Error>
     {
+        let result = getBitcoinPreSigningInputData(keysignPayload: keysignPayload)
+        switch result {
+            case .success(let inputData):
+                return getSignedTransaction(vaultHexPubKey: vaultHexPubKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
+                
+            case .failure(let err):
+                return .failure(err)
+        }
+    }
+
+    static func getSignedTransaction(
+        vaultHexPubKey: String,
+        vaultHexChainCode: String,
+        inputData: Data,
+        signatures: [String: TssKeysignResponse]) -> Result<String, Error>
+    {
         let bitcoinPubKey = BitcoinHelper.getBitcoinPubKey(hexPubKey: vaultHexPubKey, hexChainCode: vaultHexChainCode)
         guard let pubkeyData = Data(hexString: bitcoinPubKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
@@ -192,33 +208,26 @@ enum BitcoinHelper {
             return .failure(HelperError.runtimeError("public key \(bitcoinPubKey) is invalid"))
         }
         
-        let result = getBitcoinPreSigningInputData(keysignPayload: keysignPayload)
-        switch result {
-            case .success(let preSignInputData):
-                do {
-                    let preHashes = TransactionCompiler.preImageHashes(coinType: .bitcoin, txInputData: preSignInputData)
-                    let preSignOutputs = try BitcoinPreSigningOutput(serializedData: preHashes)
-                    let allSignatures = DataVector()
-                    let publicKeys = DataVector()
-                    let signatureProvider = SignatureProvider(signatures: signatures)
-                    for h in preSignOutputs.hashPublicKeys {
-                        let preImageHash = h.dataHash
-                        let signature = signatureProvider.getDerSignature(preHash: preImageHash)
-                        guard publicKey.verifyAsDER(signature: signature, message: preImageHash) else {
-                            return .failure(HelperError.runtimeError("fail to verify signature"))
-                        }
-                        allSignatures.add(data: signature)
-                        publicKeys.add(data: pubkeyData)
-                    }
-                    let compileWithSignatures = TransactionCompiler.compileWithSignatures(coinType: .bitcoin, txInputData: preSignInputData, signatures: allSignatures, publicKeys: publicKeys)
-                    let output = try BitcoinSigningOutput(serializedData: compileWithSignatures)
-                    return .success(output.encoded.hexString)
-                } catch {
-                    return .failure(HelperError.runtimeError("fail to construct raw transaction,error: \(error.localizedDescription)"))
+        do {
+            let preHashes = TransactionCompiler.preImageHashes(coinType: .bitcoin, txInputData: inputData)
+            let preSignOutputs = try BitcoinPreSigningOutput(serializedData: preHashes)
+            let allSignatures = DataVector()
+            let publicKeys = DataVector()
+            let signatureProvider = SignatureProvider(signatures: signatures)
+            for h in preSignOutputs.hashPublicKeys {
+                let preImageHash = h.dataHash
+                let signature = signatureProvider.getDerSignature(preHash: preImageHash)
+                guard publicKey.verifyAsDER(signature: signature, message: preImageHash) else {
+                    return .failure(HelperError.runtimeError("fail to verify signature"))
                 }
-                
-            case .failure(let error):
-                return .failure(error)
+                allSignatures.add(data: signature)
+                publicKeys.add(data: pubkeyData)
+            }
+            let compileWithSignatures = TransactionCompiler.compileWithSignatures(coinType: .bitcoin, txInputData: inputData, signatures: allSignatures, publicKeys: publicKeys)
+            let output = try BitcoinSigningOutput(serializedData: compileWithSignatures)
+            return .success(output.encoded.hexString)
+        } catch {
+            return .failure(HelperError.runtimeError("fail to construct raw transaction,error: \(error.localizedDescription)"))
         }
     }
 }
