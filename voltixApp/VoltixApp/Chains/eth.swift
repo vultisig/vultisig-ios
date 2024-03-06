@@ -48,7 +48,36 @@ enum EthereumHelper {
         let inputInt = BigInt(input * weiPerGWei).magnitude.serialize()
         return inputInt
     }
-
+    
+    static func getPreSignedInputData(signingInput: EthereumSigningInput,keysignPayload:KeysignPayload) -> Result<Data,Error>{
+        guard keysignPayload.coin.chain.ticker == "ETH" else {
+            return .failure(HelperError.runtimeError("coin is not ETH"))
+        }
+        let coin = CoinType.ethereum
+        guard let intChainID = Int(coin.chainId) else {
+            return .failure(HelperError.runtimeError("fail to get chainID"))
+        }
+        guard case .Ethereum(let maxFeePerGasGWei,
+                             let priorityFeeGWei,
+                             let nonce,
+                             let gasLimit) = keysignPayload.chainSpecific
+        else {
+            return .failure(HelperError.runtimeError("fail to get Ethereum chain specific"))
+        }
+        var input = signingInput
+        input.chainID = Data(hexString: Int64(intChainID).hexString())!
+        input.nonce = Data(hexString: nonce.hexString())!
+        input.gasLimit = Data(hexString: gasLimit.hexString())!
+        input.maxFeePerGas = convertEthereumNumber(input: maxFeePerGasGWei)
+        input.maxInclusionFeePerGas = convertEthereumNumber(input: priorityFeeGWei)
+        do {
+            let inputData = try input.serializedData()
+            return .success(inputData)
+        } catch {
+            return .failure(HelperError.runtimeError("fail to get plan"))
+        }
+    }
+    
     static func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
         guard keysignPayload.coin.chain.ticker == "ETH" else {
             return .failure(HelperError.runtimeError("coin is not ETH"))

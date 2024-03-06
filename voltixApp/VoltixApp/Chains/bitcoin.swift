@@ -27,8 +27,7 @@ enum BitcoinHelper {
                      address: addr,
                      hexPublicKey: getBitcoinPubKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode),
                      feeUnit: "SATS",
-                     contractAddress: nil
-                )
+                     contractAddress: nil)
             }
     }
     
@@ -61,6 +60,48 @@ enum BitcoinHelper {
                 }
             case .failure(let err):
                 return .failure(err)
+        }
+    }
+
+    static func getSigningInputData(keysignPayload: KeysignPayload, signingInput: BitcoinSigningInput) -> Result<Data, Error> {
+        guard keysignPayload.coin.chain.ticker == "BTC" else {
+            return .failure(HelperError.runtimeError("coin is not BTC"))
+        }
+        guard case .Bitcoin(let byteFee) = keysignPayload.chainSpecific else {
+            return .failure(HelperError.runtimeError("fail to get Bitcoin chain specific"))
+        }
+        var input = signingInput
+        input.byteFee = byteFee
+        input.hashType = BitcoinSigHashType.all.rawValue
+        input.useMaxAmount = false
+        
+        for inputUtxo in keysignPayload.utxos {
+            let lockScript = BitcoinScript.lockScriptForAddress(address: keysignPayload.coin.address, coin: .bitcoin)
+            let keyHash = lockScript.matchPayToWitnessPublicKeyHash()
+            guard let keyHash else {
+                return .failure(HelperError.runtimeError("fail to get key hash from lock script"))
+            }
+            let redeemScript = BitcoinScript.buildPayToWitnessPubkeyHash(hash: keyHash)
+            input.scripts[keyHash.hexString] = redeemScript.data
+            let utxo = BitcoinUnspentTransaction.with {
+                $0.outPoint = BitcoinOutPoint.with {
+                    // the network byte order need to be reversed
+                    $0.hash = Data.reverse(hexString: inputUtxo.hash)
+                    $0.index = inputUtxo.index
+                    $0.sequence = UInt32.max
+                }
+                $0.amount = inputUtxo.amount
+                $0.script = lockScript.data
+            }
+            input.utxo.append(utxo)
+        }
+        do {
+            let plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: .bitcoin)
+            input.plan = plan
+            let inputData = try input.serializedData()
+            return .success(inputData)
+        } catch {
+            return .failure(HelperError.runtimeError("fail to get preSignedImageHash,error:\(error.localizedDescription)"))
         }
     }
     

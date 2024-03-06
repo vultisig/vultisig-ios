@@ -19,11 +19,10 @@ enum THORChainHelper {
             Coin(chain: Chain.THORChain,
                  ticker: "RUNE",
                  logo: "",
-                 address: addr, 
+                 address: addr,
                  hexPublicKey: derivePubKey,
-                 feeUnit: "RUNE", //TODO: double check the thor unit,
-                 contractAddress: nil
-            )
+                 feeUnit: "RUNE", // TODO: double check the thor unit,
+                 contractAddress: nil)
         }
     }
 
@@ -38,6 +37,36 @@ enum THORChainHelper {
             return .failure(HelperError.runtimeError("public key: \(derivePubKey) is invalid"))
         }
         return .success(CoinType.thorchain.deriveAddressFromPublicKey(publicKey: publicKey))
+    }
+
+    static func getSwapPreSignedInputData(keysignPayload: KeysignPayload, signingInput: CosmosSigningInput) -> Result<Data, Error> {
+        guard let fromAddr = AnyAddress(string: keysignPayload.coin.address, coin: .thorchain) else {
+            return .failure(HelperError.runtimeError("\(keysignPayload.coin.address) is invalid"))
+        }
+
+        guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .thorchain) else {
+            return .failure(HelperError.runtimeError("\(keysignPayload.toAddress) is invalid"))
+        }
+        guard case .THORChain(let accountNumber, let sequence) = keysignPayload.chainSpecific else {
+            return .failure(HelperError.runtimeError("fail to get account number and sequence"))
+        }
+        guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
+            return .failure(HelperError.runtimeError("invalid hex public key"))
+        }
+        var input = signingInput
+        let coin = CoinType.thorchain
+        input.publicKey = pubKeyData
+        input.accountNumber = accountNumber
+        input.sequence = sequence
+        input.mode = .block
+        // memo has been set
+        // deposit message has been set
+        do {
+            let inputData = try input.serializedData()
+            return .success(inputData)
+        } catch {
+            return .failure(HelperError.runtimeError("fail to get plan"))
+        }
     }
 
     static func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
