@@ -4,12 +4,17 @@ import SwiftData
 struct WelcomeView: View {
     @Binding var presentationStack: [CurrentScreen]
     
+    @State var didAppear = false
+    
     var body: some View {
         ZStack {
             background
             view
         }
         .toolbar(.hidden, for: .navigationBar)
+        .onAppear {
+            setData()
+        }
     }
     
     var background: some View {
@@ -27,10 +32,9 @@ struct WelcomeView: View {
     }
     
     var content: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 60) {
             logo
-            title
-            description
+            text
         }
     }
     
@@ -38,24 +42,39 @@ struct WelcomeView: View {
         Logo()
     }
     
+    var text: some View {
+        VStack(spacing: 18) {
+            title
+            description
+        }
+    }
+    
     var title: some View {
         Text("secureCryptoVault")
-            .font(.body20MenloBold)
+            .font(.body20MontserratSemiBold)
+            .foregroundColor(.neutral0)
+            .opacity(didAppear ? 1 : 0)
     }
     
     var description: some View {
         Text("homeViewDescription")
-            .font(.body18Menlo)
+            .font(.body12MontserratSemiBold)
+            .foregroundColor(.neutral0)
             .multilineTextAlignment(.center)
+            .lineSpacing(10)
+            .opacity(didAppear ? 0.8 : 0)
     }
     
     var button: some View {
-        BottomBar(
-            content: "START",
-            onClick: {
-                self.presentationStack.append(.startScreen)
-            }
-        )
+        FilledButton(title: "start")
+            .padding(40)
+            .opacity(didAppear ? 1 : 0)
+    }
+    
+    private func setData() {
+        withAnimation {
+            didAppear = true
+        }
     }
 }
 

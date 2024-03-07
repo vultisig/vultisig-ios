@@ -50,6 +50,7 @@
 		A633B11C2B99273A003D1738 /* ColorExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B11B2B99273A003D1738 /* ColorExtensions.swift */; };
 		A633B1212B993BF5003D1738 /* Montserrat-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A633B11F2B993BF5003D1738 /* Montserrat-Italic.ttf */; };
 		A633B1222B993BF5003D1738 /* Montserrat.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A633B1202B993BF5003D1738 /* Montserrat.ttf */; };
+		A633B1252B993FE7003D1738 /* FilledButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B1242B993FE7003D1738 /* FilledButton.swift */; };
 		A65649DF2B96602700E4B329 /* DecodableDefaultExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */; };
 		A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D82B96602700E4B329 /* BigUIntExtension.swift */; };
 		A65649E12B96602700E4B329 /* Int64Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D92B96602700E4B329 /* Int64Extension.swift */; };
@@ -196,6 +197,7 @@
 		A633B11B2B99273A003D1738 /* ColorExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorExtensions.swift; sourceTree = "<group>"; };
 		A633B11F2B993BF5003D1738 /* Montserrat-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Montserrat-Italic.ttf"; sourceTree = "<group>"; };
 		A633B1202B993BF5003D1738 /* Montserrat.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Montserrat.ttf; sourceTree = "<group>"; };
+		A633B1242B993FE7003D1738 /* FilledButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilledButton.swift; sourceTree = "<group>"; };
 		A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DecodableDefaultExtension.swift; sourceTree = "<group>"; };
 		A65649D82B96602700E4B329 /* BigUIntExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BigUIntExtension.swift; sourceTree = "<group>"; };
 		A65649D92B96602700E4B329 /* Int64Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Int64Extension.swift; sourceTree = "<group>"; };
@@ -318,18 +320,17 @@
 		049BBB4E2B71E37B004C231F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				A633B1232B993FCC003D1738 /* Buttons */,
 				049BBB512B71E498004C231F /* AssetsView.swift */,
 				049BBB532B71E4F8004C231F /* BottomBar.swift */,
 				049BBB552B71E5F5004C231F /* Choose.swift */,
 				049BBB572B71E72F004C231F /* DeviceView.swift */,
-				049BBB5B2B71E7F6004C231F /* LargeButton.swift */,
 				049BBB5D2B71E83D004C231F /* Logo.swift */,
 				049BBB5F2B71E8A2004C231F /* MenuItem.swift */,
 				049BBB612B71E8E7004C231F /* AssetItem.swift */,
 				049BBB652B71E987004C231F /* VaultItem.swift */,
 				049BBB672B71E9C5004C231F /* WifiBar.swift */,
 				D7347C2D2B759A0F00887E57 /* ProgressBottomBar.swift */,
-				467B2D652B7B51F700AEDF64 /* NavigationStackButtons.swift */,
 				465B09AA2B7C840100952DD9 /* ToastView.swift */,
 				465B09AC2B7C841B00952DD9 /* QrCodeView.swift */,
 				465B09AE2B7C84C600952DD9 /* ShareSheet.swift */,
@@ -432,6 +433,16 @@
 				A633B1202B993BF5003D1738 /* Montserrat.ttf */,
 			);
 			path = Fonts;
+			sourceTree = "<group>";
+		};
+		A633B1232B993FCC003D1738 /* Buttons */ = {
+			isa = PBXGroup;
+			children = (
+				467B2D652B7B51F700AEDF64 /* NavigationStackButtons.swift */,
+				049BBB5B2B71E7F6004C231F /* LargeButton.swift */,
+				A633B1242B993FE7003D1738 /* FilledButton.swift */,
+			);
+			path = Buttons;
 			sourceTree = "<group>";
 		};
 		A65649D52B965FC400E4B329 /* View Models */ = {
@@ -903,6 +914,7 @@
 				A62758F22B97B10600ADE3A6 /* Endpoint.swift in Sources */,
 				049BBB562B71E5F5004C231F /* Choose.swift in Sources */,
 				D7347C2E2B759A0F00887E57 /* ProgressBottomBar.swift in Sources */,
+				A633B1252B993FE7003D1738 /* FilledButton.swift in Sources */,
 				46F47CBB2B870EE900D964EA /* BitcoinTransactionMempool.swift in Sources */,
 				D9AD8EDA2B6722CC0009F8D5 /* ApplicationState.swift in Sources */,
 				D9AD8EFF2B67321D0009F8D5 /* SwapWaitingForPeersView.swift in Sources */,

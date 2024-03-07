@@ -18,6 +18,10 @@ extension Color {
     
     static let neutral0 = Color(hex: "FFFFFF")
     
+    static let blue600 = Color(hex: "061B3A")
+    
+    static let turquoise600 = Color(hex: "33E6BF")
+    
     // Background
     static let backgroundBlue = Color(hex: "02122B")
 }
