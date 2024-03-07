@@ -1,17 +1,24 @@
-//
-//  Endpoint.swift
-//  VoltixApp
-//
-//  Created by Amol Kumar on 2024-03-05.
-//
+    //
+    //  Endpoint.swift
+    //  VoltixApp
+    //
+    //  Created by Amol Kumar on 2024-03-05.
+    //
 
 import Foundation
 
 class Endpoint {
     static let broadcastTransaction = "https://mempool.space/api/tx"
+    
+    static let broadcastTransactionThorchainNineRealms = "https://thornode.ninerealms.com/cosmos/tx/v1beta1/txs"
+    
+    static func fetchAccountNumberThorchainNineRealms(_ address: String) -> String {
+        "https://thornode.ninerealms.com/auth/accounts/\(address)"
+    }
+    
     static let web3ServiceInfura = "https://mainnet.infura.io/v3/\(AppConfiguration.infuraApiKey)"
     
-    // With parameters
+        // With parameters
     static func bitcoinLabelTxHash(_ value: String) -> String {
         "https://mempool.space/tx/\(value)"
     }

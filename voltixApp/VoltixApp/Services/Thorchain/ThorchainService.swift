@@ -12,31 +12,33 @@ fileprivate struct BalanceCacheEntry: Codable {
     let timestamp: Date
 }
 
-fileprivate struct AccountCacheEntry: Codable {
-    let accountNumber: String
-    let timestamp: Date
-}
-
 class ThorchainService: ObservableObject {
     static let shared = ThorchainService()
     
     @Published var balances: [ThorchainBalance]?
     @Published var errorMessage: String?
-    @Published var accountNumber: String?
+    @Published var account: ThorchainAccountValue?
     
-    func runeBalanceInUSD(usdPrice: Double?) -> String? {
+    func runeBalanceInUSD(usdPrice: Double?, includeCurrencySymbol: Bool = true) -> String? {
         guard let usdPrice = usdPrice,
               let runeBalanceString = runeBalance,
               let runeAmount = Double(runeBalanceString) else { return nil }
-        
         
         let balanceRune = runeAmount / 100_000_000.0
         let balanceUSD = balanceRune * usdPrice
         
         let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.locale = Locale.current
-        formatter.currencyCode = "USD"
+        
+        if includeCurrencySymbol {
+            formatter.numberStyle = .currency
+            formatter.currencyCode = "USD"
+        } else {
+            formatter.numberStyle = .decimal
+            formatter.maximumFractionDigits = 2
+            formatter.minimumFractionDigits = 2
+            formatter.decimalSeparator = "."
+            formatter.groupingSeparator = ""
+        }
         
         return formatter.string(from: NSNumber(value: balanceUSD))
     }
@@ -67,13 +69,12 @@ class ThorchainService: ObservableObject {
                 return balance.amount
             }
         }
-        return nil // Or "Balance not available" or similar message if preferred
+        return nil
     }
     
     private init() {}
     
     func fetchBalances(_ address: String) async {
-            // Attempt to load cached balances if they are still valid
         if let cachedBalances = loadBalancesFromCache(forAddress: address) {
             DispatchQueue.main.async {
                 self.balances = cachedBalances
@@ -99,24 +100,20 @@ class ThorchainService: ObservableObject {
     }
     
     func fetchAccountNumber(_ address: String) async {
-        if let cachedAccountNumber = loadAccountNumberFromCache(forAddress: address) {
-            DispatchQueue.main.async {
-                self.accountNumber = cachedAccountNumber
-            }
-            return
-        }
         
-        guard let url = URL(string: "https://thornode.ninerealms.com/cosmos/auth/v1beta1/accounts/\(address)") else { return }
+        guard let url = URL(string: Endpoint.fetchAccountNumberThorchainNineRealms(address)) else { return }
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             let accountResponse = try JSONDecoder().decode(ThorchainAccountNumberResponse.self, from: data)
             DispatchQueue.main.async {
-                self.accountNumber = accountResponse.result.value.accountNumber
-                self.cacheAccountNumber(accountResponse.result.value.accountNumber, forAddress: address)
+                if let accountValue = accountResponse.result.value {
+                    self.account = accountValue
+                }
             }
         } catch {
             DispatchQueue.main.async {
+                print(error)
                 self.handleDecodingError(error)
             }
         }
@@ -161,26 +158,5 @@ class ThorchainService: ObservableObject {
         }
         
         return cacheEntry.balances
-    }
-    
-    private func cacheAccountNumber(_ accountNumber: String, forAddress address: String) {
-        let addressKey = "ThorchainAccountNumberCache_\(address)"
-        let cacheEntry = AccountCacheEntry(accountNumber: accountNumber, timestamp: Date())
-        
-        if let encodedData = try? JSONEncoder().encode(cacheEntry) {
-            UserDefaults.standard.set(encodedData, forKey: addressKey)
-        }
-    }
-    
-    private func loadAccountNumberFromCache(forAddress address: String) -> String? {
-        let addressKey = "ThorchainAccountNumberCache_\(address)"
-        
-        guard let savedData = UserDefaults.standard.object(forKey: addressKey) as? Data,
-              let cacheEntry = try? JSONDecoder().decode(AccountCacheEntry.self, from: savedData),
-              -cacheEntry.timestamp.timeIntervalSinceNow < 86400 else { // 24 hours in seconds
-            return nil
-        }
-        
-        return cacheEntry.accountNumber
     }
 }
