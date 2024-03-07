@@ -44,6 +44,7 @@ struct SendInputDetailsView: View {
     @StateObject var eth: EthplorerAPIService = EthplorerAPIService()
     @StateObject var web3Service = Web3Service()
     @StateObject var cryptoPrice = CryptoPriceService.shared
+    @StateObject var thor: ThorchainService = ThorchainService.shared
     @ObservedObject var tx: SendTransaction
     @State private var isShowingScanner = false
     @State private var isValidAddress = false
@@ -92,12 +93,7 @@ struct SendInputDetailsView: View {
                             Button("", systemImage: "doc.on.clipboard") {
                                 if let clipboardContent = UIPasteboard.general.string {
                                     tx.toAddress = clipboardContent
-                                        // Trigger the validation logic after pasting
-                                    if tx.coin.ticker.uppercased() == "BTC" {
-                                        isValidAddress = BitcoinHelper.validateAddress(clipboardContent)
-                                    } else if tx.coin.chain.name.lowercased() == "ethereum" {
-                                        isValidAddress = CoinType.ethereum.validate(address: clipboardContent)
-                                    }
+                                    validateAddress(clipboardContent)
                                 }
                             }
                             .buttonStyle(PlainButtonStyle())
@@ -118,12 +114,7 @@ struct SendInputDetailsView: View {
                             set: { newValue in
                                 self.tx.toAddress = newValue
                                 DebounceHelper.shared.debounce {
-                                        //TODO: move this logic into an abstraction
-                                    if tx.coin.ticker.uppercased() == "BTC" {
-                                        isValidAddress = BitcoinHelper.validateAddress(newValue)
-                                    } else if tx.coin.chain.name.lowercased() == "ethereum" {
-                                        isValidAddress = CoinType.ethereum.validate(address: newValue)
-                                    }
+                                    validateAddress(newValue)
                                 }
                             }
                         ))
@@ -150,22 +141,7 @@ struct SendInputDetailsView: View {
                                         set: { newValue in
                                             self.tx.amount = newValue
                                             DebounceHelper.shared.debounce {
-                                                    //TODO: move this logic into an abstraction
-                                                if let newValueDouble = Double(newValue) {
-                                                    if tx.coin.chain.name.lowercased() == "bitcoin" {
-                                                        let rate = self.priceRate
-                                                        let newValueUSD = newValueDouble * rate
-                                                        tx.amountInUSD = String(format: "%.2f", newValueUSD == 0 ? "" : newValueUSD)
-                                                    }else if tx.coin.chain.name.lowercased() == "ethereum" {
-                                                        if tx.coin.ticker.uppercased() == "ETH" {
-                                                            tx.amountInUSD = eth.addressInfo?.ETH.getAmountInUsd(newValueDouble) ?? ""
-                                                        } else if let tokenInfo = tx.token {
-                                                            tx.amountInUSD = tokenInfo.getAmountInUsd(newValueDouble)
-                                                        }
-                                                    }
-                                                } else {
-                                                    tx.amountInUSD = ""
-                                                }
+                                                self.convertToUSD(newValue: newValue)
                                             }
                                         }
                                     ))
@@ -188,31 +164,8 @@ struct SendInputDetailsView: View {
                                         get: { self.tx.amountInUSD },
                                         set: { newValue in
                                             self.tx.amountInUSD = newValue
-                                                //TODO: move this logic into an abstraction
                                             DebounceHelper.shared.debounce {
-                                                if let newValueDouble = Double(newValue) {
-                                                    if tx.coin.chain.name.lowercased() == "bitcoin" {
-                                                        let rate = self.priceRate
-                                                        if rate > 0 {
-                                                            let newValueBTC = newValueDouble / rate
-                                                            if newValueBTC != 0 {
-                                                                tx.amount = String(format: "%.8f", newValueBTC)
-                                                            } else {
-                                                                tx.amount = ""
-                                                            }
-                                                        } else {
-                                                            tx.amount = ""
-                                                        }
-                                                    } else if tx.coin.chain.name.lowercased() == "ethereum" {
-                                                        if tx.coin.ticker.uppercased() == "ETH" {
-                                                            tx.amount = eth.addressInfo?.ETH.getAmountInEth(newValueDouble) ?? ""
-                                                        } else if let tokenInfo = tx.token {
-                                                            tx.amount = tokenInfo.getAmountInTokens(newValueDouble)
-                                                        }
-                                                    }
-                                                } else {
-                                                    tx.amount = ""
-                                                }
+                                                self.convertUSDToCoin(newValue: newValue)
                                             }
                                         }
                                     ))
@@ -225,9 +178,7 @@ struct SendInputDetailsView: View {
                                     .cornerRadius(10)
                                     
                                     Button(action: {
-                                            //TODO: move this logic into an abstraction
                                         setMaxValues()
-                                        
                                     }) {
                                         Text("MAX")
                                             .font(.body18MenloBold)
@@ -317,6 +268,73 @@ struct SendInputDetailsView: View {
         
     }
     
+    private func convertUSDToCoin(newValue: String) {
+        if let newValueDouble = Double(newValue) {
+            var newCoinAmount = ""
+            
+            if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
+                let rate = self.priceRate
+                if rate > 0 {
+                    let newValueCoin = newValueDouble / rate
+                    newCoinAmount = newValueCoin != 0 ? String(format: "%.8f", newValueCoin) : ""
+                }
+            } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
+                if tx.coin.ticker.uppercased() == Chain.Ethereum.ticker.uppercased() {
+                    newCoinAmount = eth.addressInfo?.ETH.getAmountInEth(newValueDouble) ?? ""
+                } else if let tokenInfo = tx.token {
+                    newCoinAmount = tokenInfo.getAmountInTokens(newValueDouble)
+                }
+            } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
+                if let rate = CryptoPriceService.shared.cryptoPrices?.prices[Chain.THORChain.name.lowercased()]?["usd"], rate > 0 {
+                    let newValueCoin = newValueDouble / rate
+                    newCoinAmount = newValueCoin != 0 ? String(format: "%.8f", newValueCoin) : ""
+                }
+            }
+            
+            tx.amount = newCoinAmount
+        } else {
+            tx.amount = ""
+        }
+    }
+    
+    
+    private func convertToUSD(newValue: String) {
+        if let newValueDouble = Double(newValue) {
+            var newValueUSD = ""
+            
+            if tx.coin.chain.name.lowercased() == "bitcoin" {
+                let rate = self.priceRate
+                newValueUSD = String(format: "%.2f", newValueDouble * rate)
+            } else if tx.coin.chain.name.lowercased() == "ethereum" {
+                if tx.coin.ticker.uppercased() == "ETH" {
+                    newValueUSD = eth.addressInfo?.ETH.getAmountInUsd(newValueDouble) ?? ""
+                } else if let tokenInfo = tx.token {
+                    newValueUSD = tokenInfo.getAmountInUsd(newValueDouble)
+                }
+            } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
+                if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.THORChain.name.lowercased()]?["usd"] {
+                    newValueUSD = String(format: "%.2f", newValueDouble * priceRateUsd)
+                }
+            }
+            
+            tx.amountInUSD = newValueUSD.isEmpty ? "" : newValueUSD
+        } else {
+            tx.amountInUSD = ""
+        }
+    }
+    
+    private func validateAddress(_ address: String) -> Void {
+        
+        if tx.coin.ticker.uppercased() == Chain.Bitcoin.ticker.uppercased() {
+            isValidAddress = BitcoinHelper.validateAddress(address)
+        } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
+            isValidAddress = CoinType.ethereum.validate(address: address)
+        } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
+            isValidAddress = CoinType.thorchain.validate(address: address)
+        }
+        
+    }
+    
     private func validateForm() -> Bool {
             // Reset validation state at the beginning
         formErrorMessages = ""
@@ -348,7 +366,7 @@ struct SendInputDetailsView: View {
         
             // TODO: Move this to an abstraction
             // This is only for MVP
-        if tx.coin.chain.name.lowercased() == "bitcoin" {
+        if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
             let walletBalanceInSats = uxto.walletData?.balance ?? 0
             let totalTransactionCostInSats = tx.amountInSats + tx.feeInSats
             print("Total transaction cost: \(totalTransactionCostInSats)")
@@ -359,7 +377,7 @@ struct SendInputDetailsView: View {
                 isValidForm = false
             }
             
-        } else if tx.coin.chain.name.lowercased() == "ethereum" {
+        } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased(){
             
             let ethBalanceInWei = Int(eth.addressInfo?.ETH.rawBalance ?? "0") ?? 0 // it is in WEI
             
@@ -422,18 +440,25 @@ struct SendInputDetailsView: View {
                 self.tx.amount = tokenInfo.balanceString
                 self.tx.amountInUSD = tokenInfo.balanceInUsd.replacingOccurrences(of: "US$ ", with: "")
             }
+        } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
+            if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.THORChain.name.lowercased()]?["usd"] {
+                self.tx.amountInUSD  = thor.runeBalanceInUSD(usdPrice: priceRateUsd, includeCurrencySymbol: false) ?? "US$ 0,00"
+            }
+            self.tx.amount = thor.formattedRuneBalance ?? "0.00"
         }
     }
     
     private func updateState() {
         isLoading = true
             //TODO: move this logic into an abstraction
-        if tx.coin.chain.name.lowercased() == "bitcoin" {
-            if let priceRateUsd = cryptoPrice.cryptoPrices?.prices[tx.coin.chain.name.lowercased()]?["usd"] {
-                self.priceRate = priceRateUsd
-                self.coinBalance = uxto.walletData?.balanceInBTC ?? "0"
-            }
-        } else if tx.coin.chain.name.lowercased() == "ethereum" {
+        
+        if let priceRateUsd = cryptoPrice.cryptoPrices?.prices[tx.coin.chain.name.lowercased()]?["usd"] {
+            self.priceRate = priceRateUsd
+        }
+        
+        if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
+            self.coinBalance = uxto.walletData?.balanceInBTC ?? "0"
+        } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
                 // We need to pass it to the next view
             tx.eth = eth.addressInfo
             
@@ -450,17 +475,26 @@ struct SendInputDetailsView: View {
                 self.coinBalance = eth.addressInfo?.ETH.balanceString ?? "0.0"
             }
         }
+        else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
+            self.coinBalance = thor.formattedRuneBalance ?? "0.0"
+            self.tx.gas = String("0.02")
+        }
+        
+        
         isLoading = false
     }
     
     private func reloadTransactions() {
-            //TODO: move this logic into an abstraction
+            // TODO: move this logic into an abstraction
+            // ETH gets the price from other sourcers.
         Task {
             isLoading = true
-            if tx.coin.chain.name.lowercased() == "bitcoin" {
-                await cryptoPrice.fetchCryptoPrices(for: tx.coin.chain.name.lowercased(), for: "usd")
+            
+            await cryptoPrice.fetchCryptoPrices(for: "bitcoin,thorchain", for: "usd")
+            
+            if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
                 await uxto.fetchUnspentOutputs(for: tx.fromAddress)
-            } else if tx.coin.chain.name.lowercased() == "ethereum" {
+            } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
                 await eth.getEthInfo(for: tx.fromAddress)
                 do {
                     try await web3Service.updateNonceAndGasPrice(forAddress: tx.fromAddress)

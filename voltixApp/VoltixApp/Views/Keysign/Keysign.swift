@@ -69,6 +69,10 @@ struct KeysignView: View {
                                 .foregroundColor(.red)
                         }
                         
+                        if !txid.isEmpty {
+                            Text("Transaction Hash: \(txid)")
+                        }
+                        
                         
                             //                        Text("SIGNATURE: \(self.signature)")
                             //                            .font(Font.custom("Menlo", size: 15)
@@ -100,10 +104,10 @@ struct KeysignView: View {
                             if keysignPayload.swapPayload != nil {
                                 let result = THORChainSwaps.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
                                 switch result{
-                                case .success(let tx):
-                                    print(tx)
-                                case .failure(let err):
-                                    print(err.localizedDescription)
+                                    case .success(let tx):
+                                        print(tx)
+                                    case .failure(let err):
+                                        print(err.localizedDescription)
                                 }
                                 return
                             }
@@ -160,7 +164,7 @@ struct KeysignView: View {
                                                     logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
                                             }
                                     }
-                                //TODO: We should not use the ticker but the type, like if it is a token or not.
+                                        //TODO: We should not use the ticker but the type, like if it is a token or not.
                                 case "USDC":
                                     let result = ERC20Helper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
                                     switch result {
@@ -180,7 +184,18 @@ struct KeysignView: View {
                                     let result = THORChainHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
                                     switch result {
                                         case .success(let tx):
-                                            print(tx)
+                                            ThorchainService.shared.broadcastTransaction(jsonString: tx) { result in
+                                                DispatchQueue.main.async {
+                                                    switch result {
+                                                        case .success(let txHash):
+                                                            self.txid = txHash
+                                                            print("Transaction successful, hash: \(txHash)")
+                                                        case .failure(let error):
+                                                            print(error)
+                                                            print("Transaction failed, error: \(error.localizedDescription)")
+                                                    }
+                                                }
+                                            }
                                         case .failure(let err):
                                             switch err {
                                                 case HelperError.runtimeError(let errDetail):

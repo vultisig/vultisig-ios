@@ -11,6 +11,7 @@ struct SendVerifyView: View {
     @ObservedObject var tx: SendTransaction
     @StateObject private var web3Service = Web3Service()
     @StateObject var unspentOutputsService: UnspentOutputsService = .init()
+    @StateObject var thor: ThorchainService = ThorchainService.shared
     @State private var errorMessage: String = ""
     @State private var isChecked1 = false
     @State private var isChecked2 = false
@@ -21,11 +22,15 @@ struct SendVerifyView: View {
     }
     
     private func reloadTransactions() {
-        if tx.coin.chain.name.lowercased() == "bitcoin" {
+        if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
             if unspentOutputsService.walletData == nil {
                 Task {
                     await unspentOutputsService.fetchUnspentOutputs(for: tx.fromAddress)
                 }
+            }
+        } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
+            Task {
+                await thor.fetchAccountNumber(tx.fromAddress)
             }
         }
     }
@@ -165,9 +170,27 @@ struct SendVerifyView: View {
                                             swapPayload: nil)))
                                     }
                                     
+                                } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
+                                    
+                                    guard let accountNumberString = thor.account?.accountNumber, let intAccountNumber = UInt64(accountNumberString) else {
+                                        print("We need the ACCOUNT NUMBER to broadcast a transaction")
+                                        return
+                                    }
+                                    
+                                    guard let sequenceString = thor.account?.sequence, let intSequence = UInt64(sequenceString) else {
+                                        print("We need the SEQUENCE to broadcast a transaction")
+                                        return
+                                    }
+                                    
+                                    self.presentationStack.append(.KeysignDiscovery(KeysignPayload(
+                                        coin: tx.coin,
+                                        toAddress: tx.toAddress,
+                                        toAmount: tx.amountInSats,
+                                        chainSpecific: BlockChainSpecific.THORChain(accountNumber: intAccountNumber, sequence: intSequence),
+                                        utxos: [],
+                                        memo: tx.memo, swapPayload: nil)))
+                                    
                                 }
-                                
-                                
                             }
                         }
                         
@@ -189,7 +212,7 @@ struct SendVerifyView: View {
             }
         }
     }
-
+    
     @ViewBuilder
     private func LabelText(title: String, value: String) -> some View {
         VStack(alignment: .leading) {
@@ -200,7 +223,7 @@ struct SendVerifyView: View {
                 .padding(.vertical, 5)
         }
     }
-
+    
     @ViewBuilder
     private func LabelTextNumeric(title: String, value: String) -> some View {
         HStack {
@@ -219,7 +242,6 @@ struct SendVerifyView: View {
         do {
             let estimatedGas = try await web3Service.estimateGasForEthTransaction(senderAddress: tx.fromAddress, recipientAddress: tx.toAddress, value: tx.amountInWei, memo: tx.memo)
             
-                // Proceed with transaction signing logic using estimatedGas.
             print("Estimated gas: \(estimatedGas)")
             
             return estimatedGas
@@ -240,7 +262,6 @@ struct SendVerifyView: View {
         do {
             let estimatedGas = try await web3Service.estimateGasForERC20Transfer(senderAddress: tx.fromAddress, contractAddress: tx.coin.contractAddress, recipientAddress: tx.toAddress, value: value)
             
-                // Proceed with transaction signing logic using estimatedGas.
             print("Estimated gas: \(estimatedGas)")
             
             return estimatedGas
@@ -251,7 +272,6 @@ struct SendVerifyView: View {
     }
 }
 
-    // Custom ToggleStyle for Checkbox appearance
 struct CheckboxToggleStyle: ToggleStyle {
     func makeBody(configuration: Configuration) -> some View {
         return HStack {

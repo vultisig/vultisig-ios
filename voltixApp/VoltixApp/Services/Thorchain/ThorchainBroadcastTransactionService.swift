@@ -7,23 +7,13 @@
 
 import Foundation
 
-
-
 extension ThorchainService {
     
-    enum BroadcastMode: String {
-        case block = "BROADCAST_MODE_BLOCK"
-        case sync = "BROADCAST_MODE_SYNC"
-        case async = "BROADCAST_MODE_ASYNC"
-    }
-    
-    func broadcastTransaction(signedTx: String, mode: BroadcastMode, completion: @escaping (Result<String, Error>) -> Void) {
+    func broadcastTransaction(jsonString: String, completion: @escaping (Result<String, Error>) -> Void) {
         let url = URL(string: "https://thornode.ninerealms.com/cosmos/tx/v1beta1/txs")!
         
-            // Use the BroadcastMode enum for setting the mode in the requestBody
-        let requestBody = ["tx_bytes": signedTx, "mode": mode.rawValue]
-        guard let jsonData = try? JSONEncoder().encode(requestBody) else {
-            completion(.failure(NSError(domain: "ThorchainService", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to encode request body"])))
+        guard let jsonData = jsonString.data(using: .utf8) else {
+            completion(.failure(NSError(domain: "ThorchainService", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to convert JSON string to Data"])))
             return
         }
         
@@ -43,10 +33,26 @@ extension ThorchainService {
                 return
             }
             
+            // print(String(data: data, encoding: String.Encoding.utf8))
+            
             if (200...299).contains(httpResponse.statusCode) {
                 do {
-                    let response = try JSONDecoder().decode(TransactionBroadcastResponse.self, from: data)
-                    completion(.success(response.txHash))
+                    let response = try JSONDecoder().decode(ThorchainTransactionBroadcastResponse.self, from: data)
+                    
+                        // Check if the transaction was successful based on the `code` field
+                    if let code = response.txResponse?.code, code == 0 {
+                            // Transaction successful
+                        if let txHash = response.txResponse?.txhash {
+                            completion(.success(txHash))
+                        } else {
+                            completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Transaction hash not available."])))
+                        }
+                    } else {
+                            // Transaction failed - use the rawLog as the error message if available
+                        let rawLog = response.txResponse?.rawLog ?? "Unknown error"
+                        completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: rawLog])))
+                    }
+                    
                 } catch {
                     completion(.failure(error))
                 }
@@ -59,8 +65,9 @@ extension ThorchainService {
                     completion(.failure(NSError(domain: "ThorchainService", code: 3, userInfo: [NSLocalizedDescriptionKey: "Failed to decode error response"])))
                 }
             }
+            
         }
         task.resume()
     }
+    
 }
-
