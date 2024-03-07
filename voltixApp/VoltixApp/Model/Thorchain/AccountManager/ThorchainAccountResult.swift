@@ -9,10 +9,5 @@ import Foundation
 
 class ThorchainAccountResult: Codable {
     var type: String
-    var value: ThorchainAccountValue
-    
-    init(type: String, value: ThorchainAccountValue) {
-        self.type = type
-        self.value = value
-    }
+    var value: ThorchainAccountValue?
 }

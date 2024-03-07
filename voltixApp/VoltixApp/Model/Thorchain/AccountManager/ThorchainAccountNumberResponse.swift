@@ -10,9 +10,4 @@ import Foundation
 class ThorchainAccountNumberResponse: Codable {
     var height: String
     var result: ThorchainAccountResult
-    
-    init(height: String, result: ThorchainAccountResult) {
-        self.height = height
-        self.result = result
-    }
 }

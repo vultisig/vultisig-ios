@@ -8,11 +8,17 @@
 import Foundation
 
 class ThorchainAccountValue: Codable {
-    var address: String
-    var accountNumber: String
+    var address: String?
+    var publicKey: ThorchainAccountValuePublicKey?
+    var accountNumber: String?
+    var sequence: String?
     
-    init(address: String, accountNumber: String) {
-        self.address = address
-        self.accountNumber = accountNumber
+    enum CodingKeys: String, CodingKey {
+        case address, publicKey = "public_key", accountNumber = "account_number", sequence
     }
+}
+
+class ThorchainAccountValuePublicKey: Codable {
+    var type: String
+    var value: String
 }
