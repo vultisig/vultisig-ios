@@ -53,6 +53,8 @@
 		A633B1252B993FE7003D1738 /* FilledButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B1242B993FE7003D1738 /* FilledButton.swift */; };
 		A633B12D2B994E92003D1738 /* CreateVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B12C2B994E92003D1738 /* CreateVaultView.swift */; };
 		A633B12F2B9952D8003D1738 /* OutlineButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B12E2B9952D8003D1738 /* OutlineButton.swift */; };
+		A633B1362B997D57003D1738 /* NavigationBackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B1352B997D57003D1738 /* NavigationBackButton.swift */; };
+		A633B1382B997F39003D1738 /* NavigationHelpButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B1372B997F39003D1738 /* NavigationHelpButton.swift */; };
 		A65649DF2B96602700E4B329 /* DecodableDefaultExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */; };
 		A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D82B96602700E4B329 /* BigUIntExtension.swift */; };
 		A65649E12B96602700E4B329 /* Int64Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D92B96602700E4B329 /* Int64Extension.swift */; };
@@ -202,6 +204,8 @@
 		A633B1242B993FE7003D1738 /* FilledButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilledButton.swift; sourceTree = "<group>"; };
 		A633B12C2B994E92003D1738 /* CreateVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateVaultView.swift; sourceTree = "<group>"; };
 		A633B12E2B9952D8003D1738 /* OutlineButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutlineButton.swift; sourceTree = "<group>"; };
+		A633B1352B997D57003D1738 /* NavigationBackButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBackButton.swift; sourceTree = "<group>"; };
+		A633B1372B997F39003D1738 /* NavigationHelpButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationHelpButton.swift; sourceTree = "<group>"; };
 		A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DecodableDefaultExtension.swift; sourceTree = "<group>"; };
 		A65649D82B96602700E4B329 /* BigUIntExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BigUIntExtension.swift; sourceTree = "<group>"; };
 		A65649D92B96602700E4B329 /* Int64Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Int64Extension.swift; sourceTree = "<group>"; };
@@ -340,6 +344,7 @@
 				465B09B22B7D710A00952DD9 /* DocumentPicker.swift */,
 				46A616E92B8807B700372994 /* KeygenStatusText.swift */,
 				A633B1232B993FCC003D1738 /* Buttons */,
+				A633B1342B997D35003D1738 /* Navigation Items */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -455,6 +460,15 @@
 			children = (
 			);
 			path = "New Group";
+			sourceTree = "<group>";
+		};
+		A633B1342B997D35003D1738 /* Navigation Items */ = {
+			isa = PBXGroup;
+			children = (
+				A633B1352B997D57003D1738 /* NavigationBackButton.swift */,
+				A633B1372B997F39003D1738 /* NavigationHelpButton.swift */,
+			);
+			path = "Navigation Items";
 			sourceTree = "<group>";
 		};
 		A65649D52B965FC400E4B329 /* View Models */ = {
@@ -981,8 +995,10 @@
 				465B09A92B7C176700952DD9 /* SendTransaction.swift in Sources */,
 				A6564A022B969A1200E4B329 /* Price.swift in Sources */,
 				A633B12D2B994E92003D1738 /* CreateVaultView.swift in Sources */,
+				A633B1382B997F39003D1738 /* NavigationHelpButton.swift in Sources */,
 				D9AD8EE62B6730A40009F8D5 /* PeerDiscoveryView.swift in Sources */,
 				A62758F52B97CE9E00ADE3A6 /* FontStyle.swift in Sources */,
+				A633B1362B997D57003D1738 /* NavigationBackButton.swift in Sources */,
 				DE49A19E2B671416000F3AFB /* Coin.swift in Sources */,
 				A65649E42B96602700E4B329 /* StringExtension.swift in Sources */,
 				469ED3A42B98F5DE008D4951 /* ThorchainAccountValue.swift in Sources */,

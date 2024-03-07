@@ -13,6 +13,15 @@ struct CreateVaultView: View {
             background
             view
         }
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                NavigationBackButton()
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationHelpButton()
+            }
+        }
     }
     
     var background: some View {
@@ -22,6 +31,7 @@ struct CreateVaultView: View {
     
     var view: some View {
         VStack {
+//            NavigationBar()
             Spacer()
             VoltixLogo(isAnimated: false)
             Spacer()
