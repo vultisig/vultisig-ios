@@ -9,6 +9,9 @@ import Foundation
 
 class Endpoint {
     static let broadcastTransaction = "https://mempool.space/api/tx"
+    
+    static let broadcastTransactionThorchainNineRealms = "https://thornode.ninerealms.com/cosmos/tx/v1beta1/txs"
+    
     static let web3ServiceInfura = "https://mainnet.infura.io/v3/\(AppConfiguration.infuraApiKey)"
     
     // With parameters
@@ -19,7 +22,7 @@ class Endpoint {
     static func ethereumLabelTxHash(_ value: String) -> String {
         "https://etherscan.io/tx/\(value)"
     }
-    
+        
     static func fetchUnspentOutputs(_ value: String) -> String {
         "https://api.blockcypher.com/v1/btc/main/addrs/\(value)?unspentOnly=true"
     }
