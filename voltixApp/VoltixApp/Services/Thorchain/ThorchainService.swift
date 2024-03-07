@@ -100,7 +100,8 @@ class ThorchainService: ObservableObject {
     }
     
     func fetchAccountNumber(_ address: String) async {
-        guard let url = URL(string: "https://thornode.ninerealms.com/auth/accounts/\(address)") else { return }
+        
+        guard let url = URL(string: Endpoint.fetchAccountNumberThorchainNineRealms(address)) else { return }
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
