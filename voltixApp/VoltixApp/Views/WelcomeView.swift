@@ -2,6 +2,8 @@ import SwiftUI
 import SwiftData
 
 struct WelcomeView: View {
+    @Binding var presentationStack: [CurrentScreen]
+    
     @State var didAppear = false
     
     var body: some View {
@@ -61,7 +63,7 @@ struct WelcomeView: View {
     
     var button: some View {
         NavigationLink {
-            CreateVaultView()
+            CreateVaultView(presentationStack: $presentationStack)
         } label: {
             FilledButton(title: "start")
                 .padding(40)
@@ -79,6 +81,6 @@ struct WelcomeView: View {
 // Preview
 struct WelcomeView_Previews: PreviewProvider {
     static var previews: some View {
-        WelcomeView()
+        WelcomeView(presentationStack: .constant([]))
     }
 }

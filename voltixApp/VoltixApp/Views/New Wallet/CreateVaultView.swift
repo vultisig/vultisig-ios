@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct CreateVaultView: View {
+    @Binding var presentationStack: [CurrentScreen]
+    
     var body: some View {
         ZStack {
             background
@@ -31,7 +33,6 @@ struct CreateVaultView: View {
     
     var view: some View {
         VStack {
-//            NavigationBar()
             Spacer()
             VoltixLogo(isAnimated: false)
             Spacer()
@@ -56,18 +57,24 @@ struct CreateVaultView: View {
     }
     
     var importVaultButton: some View {
-        Button {
-            createNewVault()
+//        Button {
+//            createNewVault()
+//        } label: {
+//            OutlineButton(title: "importExistingVault")
+//        }
+        
+        NavigationLink {
+            ImportWalletView2()
         } label: {
             OutlineButton(title: "importExistingVault")
         }
     }
     
     private func createNewVault() {
-        
+        self.presentationStack.append(.importWallet)
     }
 }
 
 #Preview {
-    CreateVaultView()
+    CreateVaultView(presentationStack: .constant([]))
 }
