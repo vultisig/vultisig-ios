@@ -10,6 +10,8 @@ import SwiftUI
 struct OutlineButton: View {
     let title: String
     
+    @State var animateGradient = false
+    
     var body: some View {
         Text(NSLocalizedString(title, comment: "Button Text"))
             .font(.body16MontserratBold)

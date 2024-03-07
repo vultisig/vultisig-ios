@@ -60,9 +60,13 @@ struct WelcomeView: View {
     }
     
     var button: some View {
-        FilledButton(title: "start")
-            .padding(40)
-            .opacity(didAppear ? 1 : 0)
+        NavigationLink {
+            CreateVaultView()
+        } label: {
+            FilledButton(title: "start")
+                .padding(40)
+                .opacity(didAppear ? 1 : 0)
+        }
     }
     
     private func setData() {

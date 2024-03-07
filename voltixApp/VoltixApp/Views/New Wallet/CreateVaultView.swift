@@ -49,7 +49,7 @@ struct CreateVaultView: View {
         Button {
             createNewVault()
         } label: {
-            FilledButton(title: "importExistingVault")
+            OutlineButton(title: "importExistingVault")
         }
     }
     
