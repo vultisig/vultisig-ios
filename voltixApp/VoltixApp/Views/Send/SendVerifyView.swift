@@ -110,7 +110,8 @@ struct SendVerifyView: View {
                                             toAmount: tx.amountInSats,
                                             chainSpecific: BlockChainSpecific.Bitcoin(byteFee: tx.feeInSats),
                                             utxos: utxoInfo,
-                                            memo: tx.memo
+                                            memo: tx.memo,
+                                            swapPayload: nil
                                         )
                                         
                                         self.errorMessage = ""
@@ -137,7 +138,8 @@ struct SendVerifyView: View {
                                             toAmount: tx.amountInGwei, // in Gwei
                                             chainSpecific: BlockChainSpecific.Ethereum(maxFeePerGasGwei: Int64(tx.gas) ?? 24, priorityFeeGwei: 1, nonce: tx.nonce, gasLimit: estimatedGas),
                                             utxos: [],
-                                            memo: nil)))
+                                            memo: nil,
+                                            swapPayload: nil)))
                                     } else {
                                         
                                         let estimatedGas = Int64(await estimateGasForERC20Transfer())
@@ -159,7 +161,8 @@ struct SendVerifyView: View {
                                             toAmount: amountToSend, // The amount must be in the token decimals
                                             chainSpecific: BlockChainSpecific.ERC20(maxFeePerGasGwei: Int64(tx.gas) ?? 42, priorityFeeGwei: 1, nonce: tx.nonce, gasLimit: Int64(estimatedGas), contractAddr: tx.coin.contractAddress),
                                             utxos: [],
-                                            memo: nil)))
+                                            memo: nil,
+                                            swapPayload: nil)))
                                     }
                                     
                                 }
