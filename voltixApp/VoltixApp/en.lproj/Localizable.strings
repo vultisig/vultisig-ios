@@ -9,3 +9,5 @@
 "thisDevice" = "THIS DEVICE:";
 "homeViewDescription" = "TWO FACTOR AUTHENTICATION\nSECURE, TRUSTED DEVICES\nFULLY SELF-CUSTODIAL\nNO TRACKING, NO REGISTRATION\nFULLY OPEN-SOURCE\nAUDITED";
 "start" = "Start";
+"createNewVault" = "Create a New Vault";
+"importExistingVault" = "Import an Existing Vault";

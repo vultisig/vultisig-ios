@@ -1,13 +1,15 @@
-    //
-    //  Logo.swift
-    //  VoltixApp
-    //
-    //  Created by Mac on 05.02.2024.
-    //
+//
+//  Logo.swift
+//  VoltixApp
+//
+//  Created by Mac on 05.02.2024.
+//
 
 import SwiftUI
 
-struct Logo: View {
+struct VoltixLogo: View {
+    var isAnimated: Bool = true
+    
     @State var didAppear = false
     
     var body: some View {
@@ -44,7 +46,10 @@ struct Logo: View {
             .offset(y: 2)
             .scaleEffect(didAppear ? 1 : 0)
             .opacity(didAppear ? 1 : 0)
-            .animation(.spring.delay(0.2), value: didAppear)
+            .animation(
+                isAnimated ? .spring(duration: 0.5).delay(0.2) : .none,
+                value: didAppear
+            )
     }
     
     var stroke2: some View {
@@ -54,7 +59,10 @@ struct Logo: View {
             .offset(y: 4)
             .scaleEffect(didAppear ? 1 : 0)
             .opacity(didAppear ? 1 : 0)
-            .animation(.spring.delay(0.3), value: didAppear)
+            .animation(
+                isAnimated ? .spring(duration: 0.5).delay(0.3) : .none,
+                value: didAppear
+            )
     }
     
     var stroke3: some View {
@@ -64,7 +72,10 @@ struct Logo: View {
             .offset(y: 5)
             .scaleEffect(didAppear ? 1 : 0)
             .opacity(didAppear ? 1 : 0)
-            .animation(.spring.delay(0.4), value: didAppear)
+            .animation(
+                isAnimated ? .spring(duration: 0.5).delay(0.4) : .none,
+                value: didAppear
+            )
     }
     
     var title: some View {
@@ -72,11 +83,13 @@ struct Logo: View {
             .font(.title40MontserratSemiBold)
             .foregroundColor(.neutral0)
             .opacity(didAppear ? 1 : 0)
-            .animation(.easeIn(duration: 1), value: didAppear)
+            .animation(
+                isAnimated ? .easeIn(duration: 1) : .none,
+                value: didAppear)
     }
     
     private func setData() {
-        withAnimation(.spring) {
+        withAnimation(isAnimated ? .spring : .none) {
             didAppear = true
         }
     }
@@ -86,6 +99,6 @@ struct Logo: View {
     ZStack {
         Color.backgroundBlue
             .ignoresSafeArea()
-        Logo()
+        VoltixLogo()
     }
 }

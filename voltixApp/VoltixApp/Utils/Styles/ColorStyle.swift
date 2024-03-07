@@ -25,3 +25,7 @@ extension Color {
     // Background
     static let backgroundBlue = Color(hex: "02122B")
 }
+
+extension LinearGradient {
+    static let primaryGradient = LinearGradient(colors: [Color(hex: "33E6BF"), Color(hex: "0439C7")], startPoint: .topLeading, endPoint: .bottomTrailing)
+}

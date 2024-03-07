@@ -12,7 +12,7 @@
 		049BBB562B71E5F5004C231F /* Choose.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB552B71E5F5004C231F /* Choose.swift */; };
 		049BBB582B71E72F004C231F /* DeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB572B71E72F004C231F /* DeviceView.swift */; };
 		049BBB5C2B71E7F6004C231F /* LargeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB5B2B71E7F6004C231F /* LargeButton.swift */; };
-		049BBB5E2B71E83D004C231F /* Logo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB5D2B71E83D004C231F /* Logo.swift */; };
+		049BBB5E2B71E83D004C231F /* VoltixLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB5D2B71E83D004C231F /* VoltixLogo.swift */; };
 		049BBB602B71E8A2004C231F /* MenuItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB5F2B71E8A2004C231F /* MenuItem.swift */; };
 		049BBB622B71E8E7004C231F /* AssetItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB612B71E8E7004C231F /* AssetItem.swift */; };
 		049BBB662B71E987004C231F /* VaultItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB652B71E987004C231F /* VaultItem.swift */; };
@@ -51,6 +51,8 @@
 		A633B1212B993BF5003D1738 /* Montserrat-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A633B11F2B993BF5003D1738 /* Montserrat-Italic.ttf */; };
 		A633B1222B993BF5003D1738 /* Montserrat.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A633B1202B993BF5003D1738 /* Montserrat.ttf */; };
 		A633B1252B993FE7003D1738 /* FilledButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B1242B993FE7003D1738 /* FilledButton.swift */; };
+		A633B12D2B994E92003D1738 /* CreateVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B12C2B994E92003D1738 /* CreateVaultView.swift */; };
+		A633B12F2B9952D8003D1738 /* OutlineButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B12E2B9952D8003D1738 /* OutlineButton.swift */; };
 		A65649DF2B96602700E4B329 /* DecodableDefaultExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */; };
 		A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D82B96602700E4B329 /* BigUIntExtension.swift */; };
 		A65649E12B96602700E4B329 /* Int64Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D92B96602700E4B329 /* Int64Extension.swift */; };
@@ -159,7 +161,7 @@
 		049BBB552B71E5F5004C231F /* Choose.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Choose.swift; sourceTree = "<group>"; };
 		049BBB572B71E72F004C231F /* DeviceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceView.swift; sourceTree = "<group>"; };
 		049BBB5B2B71E7F6004C231F /* LargeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeButton.swift; sourceTree = "<group>"; };
-		049BBB5D2B71E83D004C231F /* Logo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logo.swift; sourceTree = "<group>"; };
+		049BBB5D2B71E83D004C231F /* VoltixLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoltixLogo.swift; sourceTree = "<group>"; };
 		049BBB5F2B71E8A2004C231F /* MenuItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuItem.swift; sourceTree = "<group>"; };
 		049BBB612B71E8E7004C231F /* AssetItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetItem.swift; sourceTree = "<group>"; };
 		049BBB652B71E987004C231F /* VaultItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultItem.swift; sourceTree = "<group>"; };
@@ -198,6 +200,8 @@
 		A633B11F2B993BF5003D1738 /* Montserrat-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Montserrat-Italic.ttf"; sourceTree = "<group>"; };
 		A633B1202B993BF5003D1738 /* Montserrat.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Montserrat.ttf; sourceTree = "<group>"; };
 		A633B1242B993FE7003D1738 /* FilledButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilledButton.swift; sourceTree = "<group>"; };
+		A633B12C2B994E92003D1738 /* CreateVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateVaultView.swift; sourceTree = "<group>"; };
+		A633B12E2B9952D8003D1738 /* OutlineButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutlineButton.swift; sourceTree = "<group>"; };
 		A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DecodableDefaultExtension.swift; sourceTree = "<group>"; };
 		A65649D82B96602700E4B329 /* BigUIntExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BigUIntExtension.swift; sourceTree = "<group>"; };
 		A65649D92B96602700E4B329 /* Int64Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Int64Extension.swift; sourceTree = "<group>"; };
@@ -324,7 +328,7 @@
 				049BBB532B71E4F8004C231F /* BottomBar.swift */,
 				049BBB552B71E5F5004C231F /* Choose.swift */,
 				049BBB572B71E72F004C231F /* DeviceView.swift */,
-				049BBB5D2B71E83D004C231F /* Logo.swift */,
+				049BBB5D2B71E83D004C231F /* VoltixLogo.swift */,
 				049BBB5F2B71E8A2004C231F /* MenuItem.swift */,
 				049BBB612B71E8E7004C231F /* AssetItem.swift */,
 				049BBB652B71E987004C231F /* VaultItem.swift */,
@@ -441,8 +445,16 @@
 				467B2D652B7B51F700AEDF64 /* NavigationStackButtons.swift */,
 				049BBB5B2B71E7F6004C231F /* LargeButton.swift */,
 				A633B1242B993FE7003D1738 /* FilledButton.swift */,
+				A633B12E2B9952D8003D1738 /* OutlineButton.swift */,
 			);
 			path = Buttons;
+			sourceTree = "<group>";
+		};
+		A633B12B2B994D76003D1738 /* New Group */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = "New Group";
 			sourceTree = "<group>";
 		};
 		A65649D52B965FC400E4B329 /* View Models */ = {
@@ -493,6 +505,7 @@
 		D9AD8ED72B67225F0009F8D5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				A633B12B2B994D76003D1738 /* New Group */,
 				DE49A1682B65F6D9000F3AFB /* MainNavigationStack.swift */,
 				D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */,
 				46D067E42B8852B70052F535 /* Keygen */,
@@ -539,6 +552,7 @@
 			isa = PBXGroup;
 			children = (
 				D9AD8EDF2B6730640009F8D5 /* StartView.swift */,
+				A633B12C2B994E92003D1738 /* CreateVaultView.swift */,
 				D9AD8EE12B67307F0009F8D5 /* ImportWalletView.swift */,
 				D9AD8EE32B6730940009F8D5 /* NewWalletInstructionsView.swift */,
 			);
@@ -865,7 +879,7 @@
 			files = (
 				DE4DFA7B2B7B1692004F8E73 /* ModelContainerPreview.swift in Sources */,
 				049BBB662B71E987004C231F /* VaultItem.swift in Sources */,
-				049BBB5E2B71E83D004C231F /* Logo.swift in Sources */,
+				049BBB5E2B71E83D004C231F /* VoltixLogo.swift in Sources */,
 				DE1572A02B70F284009BC7C5 /* Keysign.swift in Sources */,
 				46AC40AA2B922931001704E6 /* EthereumTransactionListView.swift in Sources */,
 				465B09AD2B7C841B00952DD9 /* QrCodeView.swift in Sources */,
@@ -873,6 +887,7 @@
 				465B09B32B7D710A00952DD9 /* DocumentPicker.swift in Sources */,
 				DE1572992B70F26A009BC7C5 /* KeyType.swift in Sources */,
 				4606B3AE2B8045F60045094D /* BitcoinTransactionListView.swift in Sources */,
+				A633B12F2B9952D8003D1738 /* OutlineButton.swift in Sources */,
 				465B09A72B7C049400952DD9 /* UnspentOutputsService.swift in Sources */,
 				049BBB582B71E72F004C231F /* DeviceView.swift in Sources */,
 				D9AD8EF12B6731660009F8D5 /* SendInputDetailsView.swift in Sources */,
@@ -965,6 +980,7 @@
 				A65649F02B966A1200E4B329 /* Output.swift in Sources */,
 				465B09A92B7C176700952DD9 /* SendTransaction.swift in Sources */,
 				A6564A022B969A1200E4B329 /* Price.swift in Sources */,
+				A633B12D2B994E92003D1738 /* CreateVaultView.swift in Sources */,
 				D9AD8EE62B6730A40009F8D5 /* PeerDiscoveryView.swift in Sources */,
 				A62758F52B97CE9E00ADE3A6 /* FontStyle.swift in Sources */,
 				DE49A19E2B671416000F3AFB /* Coin.swift in Sources */,

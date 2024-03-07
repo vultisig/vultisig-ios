@@ -2,8 +2,6 @@ import SwiftUI
 import SwiftData
 
 struct WelcomeView: View {
-    @Binding var presentationStack: [CurrentScreen]
-    
     @State var didAppear = false
     
     var body: some View {
@@ -33,7 +31,7 @@ struct WelcomeView: View {
     
     var content: some View {
         VStack(spacing: 50) {
-            Logo()
+            VoltixLogo()
             text
         }
     }
@@ -77,6 +75,6 @@ struct WelcomeView: View {
 // Preview
 struct WelcomeView_Previews: PreviewProvider {
     static var previews: some View {
-        WelcomeView(presentationStack: .constant([]))
+        WelcomeView()
     }
 }
