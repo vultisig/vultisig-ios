@@ -97,6 +97,16 @@ struct KeysignView: View {
                             // TODO: the following logic can be moved to keysignPayload.swift , or some viewmodel
                             // get bitcoin transaction
                         if let keysignPayload {
+                            if keysignPayload.swapPayload != nil {
+                                let result = THORChainSwaps.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                                switch result{
+                                case .success(let tx):
+                                    print(tx)
+                                case .failure(let err):
+                                    print(err.localizedDescription)
+                                }
+                                return
+                            }
                             switch keysignPayload.coin.ticker {
                                 case "BTC":
                                     

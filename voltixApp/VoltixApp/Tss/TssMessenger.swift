@@ -59,7 +59,7 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
             logger.error("fail to encode body into json string,\(error)")
             return
         }
-        var retry = 3
+        let retry = 3
         self.sendWithRetry(req: req, msg: msg, retry: retry)
     }
 
