@@ -40,13 +40,6 @@ enum THORChainHelper {
     }
 
     static func getSwapPreSignedInputData(keysignPayload: KeysignPayload, signingInput: CosmosSigningInput) -> Result<Data, Error> {
-        guard let fromAddr = AnyAddress(string: keysignPayload.coin.address, coin: .thorchain) else {
-            return .failure(HelperError.runtimeError("\(keysignPayload.coin.address) is invalid"))
-        }
-
-        guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .thorchain) else {
-            return .failure(HelperError.runtimeError("\(keysignPayload.toAddress) is invalid"))
-        }
         guard case .THORChain(let accountNumber, let sequence) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get account number and sequence"))
         }
@@ -54,7 +47,6 @@ enum THORChainHelper {
             return .failure(HelperError.runtimeError("invalid hex public key"))
         }
         var input = signingInput
-        let coin = CoinType.thorchain
         input.publicKey = pubKeyData
         input.accountNumber = accountNumber
         input.sequence = sequence

@@ -8,7 +8,7 @@ import Tss
 import WalletCore
 
 enum THORChainSwaps {
-    static let affiliateFeeAddress = ""
+    static let affiliateFeeAddress = "thor1tgxm5jw6hrlvslrd6lqpk4jwuu4g29dxytrean"
     static func getPreSignedInputData(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload) -> Result<Data, Error> {
         let input = THORChainSwapSwapInput.with {
             $0.fromAsset = swapPayload.fromAsset
@@ -18,7 +18,6 @@ enum THORChainSwaps {
             $0.vaultAddress = swapPayload.vaultAddress
             $0.fromAmount = swapPayload.fromAmount
             $0.toAmountLimit = swapPayload.toAmountLimit
-            $0.affiliateFeeAddress = THORChainSwaps.affiliateFeeAddress
         }
         do {
             let inputData = try input.serializedData()
@@ -39,7 +38,10 @@ enum THORChainSwaps {
         }
     }
 
-    static func getPreSignedImageHash(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload) -> Result<[String], Error> {
+    static func getPreSignedImageHash(keysignPayload: KeysignPayload) -> Result<[String], Error> {
+        guard let swapPayload = keysignPayload.swapPayload else{
+            return .failure(HelperError.runtimeError("no swap payload"))
+        }
         let result = getPreSignedInputData(swapPayload: swapPayload, keysignPayload: keysignPayload)
         do {
             switch result {
@@ -72,22 +74,14 @@ enum THORChainSwaps {
 
     static func getSignedTransaction(vaultHexPubKey: String,
                                      vaultHexChainCode: String,
-                                     swapPayload: THORChainSwapPayload,
                                      keysignPayload: KeysignPayload,
                                      signatures: [String: TssKeysignResponse]) -> Result<String, Error>
     {
+        guard let swapPayload = keysignPayload.swapPayload else{
+            return .failure(HelperError.runtimeError("no swap payload"))
+        }
+        
         let result = getPreSignedInputData(swapPayload: swapPayload, keysignPayload: keysignPayload)
-
-        var coin = swapPayload.fromAsset.chain.getCoinType()
-        guard let coin else {
-            return .failure(HelperError.runtimeError("coin type is invalid"))
-        }
-        let publicKeyData = PublicKeyHelper.getDerivedPubKey(hexPubKey: vaultHexPubKey, hexChainCode: vaultHexChainCode, derivePath: coin.derivationPath())
-        guard let pubkeyData = Data(hexString: publicKeyData),
-              let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
-        else {
-            return .failure(HelperError.runtimeError("public key \(publicKeyData) is invalid"))
-        }
         switch result {
         case .success(let inputData):
             switch swapPayload.fromAsset.chain {
