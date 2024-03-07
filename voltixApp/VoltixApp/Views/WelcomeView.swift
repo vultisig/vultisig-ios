@@ -32,14 +32,10 @@ struct WelcomeView: View {
     }
     
     var content: some View {
-        VStack(spacing: 60) {
-            logo
+        VStack(spacing: 50) {
+            Logo()
             text
         }
-    }
-    
-    var logo: some View {
-        Logo()
     }
     
     var text: some View {
