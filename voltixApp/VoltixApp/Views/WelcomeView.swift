@@ -5,13 +5,25 @@ struct WelcomeView: View {
     @Binding var presentationStack: [CurrentScreen]
     
     var body: some View {
+        ZStack {
+            background
+            view
+        }
+        .toolbar(.hidden, for: .navigationBar)
+    }
+    
+    var background: some View {
+        Color.backgroundBlue
+            .ignoresSafeArea()
+    }
+    
+    var view: some View {
         VStack {
             Spacer()
             content
             Spacer()
             button
         }
-        .toolbar(.hidden, for: .navigationBar)
     }
     
     var content: some View {
@@ -23,12 +35,7 @@ struct WelcomeView: View {
     }
     
     var logo: some View {
-        Image("Logo")
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .frame(height: 120)
-            .foregroundColor(.primary)
-            .padding(.bottom, 20)
+        Logo()
     }
     
     var title: some View {
