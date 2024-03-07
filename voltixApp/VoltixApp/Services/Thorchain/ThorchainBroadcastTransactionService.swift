@@ -10,7 +10,7 @@ import Foundation
 extension ThorchainService {
     
     func broadcastTransaction(jsonString: String, completion: @escaping (Result<String, Error>) -> Void) {
-        let url = URL(string: Endpoint.broadcastTransactionNineRealms)!
+        let url = URL(string: Endpoint.broadcastTransactionThorchainNineRealms)!
         
         guard let jsonData = jsonString.data(using: .utf8) else {
             completion(.failure(NSError(domain: "ThorchainService", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to convert JSON string to Data"])))
