@@ -13,5 +13,9 @@
 "importExistingVault" = "Import an Existing Vault";
 "import" = "Import";
 "continue" = "Continue";
+"setup" = "Setup";
+"pair" = "Pair";
 "enterPreviousVault" = "Enter your previously created vault share";
 "uploadFile" = "Upload file, text or image";
+"devicesOnSameWifi" = "Keep devices on the same WiFi Network with VOLTIX open";
+"need3Devices" = "You need 3 devices";

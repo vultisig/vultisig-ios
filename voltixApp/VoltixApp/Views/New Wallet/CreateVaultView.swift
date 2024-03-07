@@ -41,7 +41,7 @@ struct CreateVaultView: View {
     }
     
     var buttons: some View {
-        VStack(spacing: 30) {
+        VStack(spacing: 20) {
             newVaultButton
             importVaultButton
         }
@@ -49,29 +49,30 @@ struct CreateVaultView: View {
     }
     
     var newVaultButton: some View {
-        Button {
-            createNewVault()
+//        Button {
+//            self.presentationStack.append(.newWalletInstructions)
+//        } label: {
+//            FilledButton(title: "createNewVault")
+//        }
+        
+        NavigationLink {
+            SetupVaultView()
         } label: {
             FilledButton(title: "createNewVault")
         }
     }
     
     var importVaultButton: some View {
-//        Button {
-//            createNewVault()
-//        } label: {
-//            OutlineButton(title: "importExistingVault")
-//        }
-        
-        NavigationLink {
-            ImportWalletView2()
+        Button {
+            self.presentationStack.append(.importWallet)
         } label: {
             OutlineButton(title: "importExistingVault")
         }
-    }
-    
-    private func createNewVault() {
-        self.presentationStack.append(.importWallet)
+//        NavigationLink {
+//            ImportWalletView2()
+//        } label: {
+//            OutlineButton(title: "importExistingVault")
+//        }
     }
 }
 
