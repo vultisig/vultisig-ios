@@ -1,9 +1,10 @@
-    //
-    //  TestVaultAssetView.swift
-    //  VoltixApp
-    //
+//
+//  TestVaultAssetView.swift
+//  VoltixApp
+//
 
 import SwiftUI
+import WalletCore
 
 struct ListVaultAssetView: View {
     @Binding var presentationStack: [CurrentScreen]
@@ -15,15 +16,15 @@ struct ListVaultAssetView: View {
     private var listItemBackgroundColor: Color {
         switch colorScheme {
             case .light:
-                    // Apply a light mode-specific color
+                // Apply a light mode-specific color
                 // return Color(UIColor.systemGroupedBackground)
                 return Color.systemFill
             case .dark:
-                    // Apply the dark mode color
+                // Apply the dark mode color
                 return Color.secondarySystemGroupedBackground
             @unknown default:
-                    // Fallback color
-            return Color.systemBackground
+                // Fallback color
+                return Color.systemBackground
         }
     }
     
@@ -33,7 +34,7 @@ struct ListVaultAssetView: View {
                 ForEach(appState.currentVault?.coins ?? [Coin](), id: \.self) { coin in
                     
                     VaultAssetsView(presentationStack: $presentationStack, tx: SendTransaction(toAddress: "", amount: "", memo: "", gas: "20", coin: coin))
-                        //.background(Color(UIColor.secondarySystemGroupedBackground))
+                        // .background(Color(UIColor.secondarySystemGroupedBackground))
                         .background(self.listItemBackgroundColor)
                         .cornerRadius(10)
                         .shadow(radius: 5)
@@ -45,14 +46,11 @@ struct ListVaultAssetView: View {
         .padding(.vertical)
         .navigationTitle(appState.currentVault?.name ?? "Vault")
         .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden()
+        .navigationBarBackButtonHidden(false)
         .sheet(isPresented: $showingCoinList) {
             AssetsList()
         }
         .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                NavigationButtons.backButton(presentationStack: $presentationStack)
-            }
             ToolbarItemGroup(placement: .topBarTrailing) {
                 Button("join keysign", systemImage: "signature") {
                     self.presentationStack.append(.JoinKeysign)
@@ -63,15 +61,32 @@ struct ListVaultAssetView: View {
                 
 //                Button("test", systemImage: "doc.questionmark") {
 //                    guard let vault = appState.currentVault else { return }
-//                    let coin = vault.coins.first { $0.ticker == "SOL" }
+//                    // swap RUNE to USDT
+//                    let coin = vault.coins.first { $0.ticker == "RUNE" }
 //                    if let coin {
 //                        self.presentationStack.append(.KeysignDiscovery(KeysignPayload(
 //                            coin: coin,
-//                            toAddress: "HWC9MFd7nYy421xMYx4mwMxw3HNC6hcwiUMnPTEQc4zG",
-//                            toAmount: 100_000_0, // 0.01 RUNE
-//                            chainSpecific: BlockChainSpecific.Solana(recentBlockHash: "D9xgxNtjPfZMNDnQbywr4h3XNy67pN8KNJfKmHPwoqu9"),
+//                            toAddress: "",
+//                            toAmount: 1000000, // 0.01 RUNE
+//                            chainSpecific: BlockChainSpecific.THORChain(accountNumber: 96761, sequence: 1),
 //                            utxos: [],
-//                            memo: "voltix")))
+//                            memo: "voltix",
+//                            swapPayload: THORChainSwapPayload(fromAddress: coin.address,
+//                                                              fromAsset: THORChainSwapAsset.with{
+//                                                                  $0.chain = .thor
+//                                                                  $0.symbol = "RUNE"
+//                                                                  $0.tokenID = ""
+//                                                              },
+//                                                              toAsset: THORChainSwapAsset.with{
+//                                                                  $0.chain = .eth
+//                                                                  $0.symbol = "ETH"
+//                                                                  $0.tokenID = ""
+//                                                              },
+//                                                              toAddress: "0xe5F238C95142be312852e864B830daADB9B7D290",
+//                                                              vaultAddress: "0x4f2f271e58e94a8e888573c811e626e86b113167", // THIS one is very important , you need to get the latest from THORChain
+//                                                              routerAddress: "0xD37BbE5744D730a1d98d8DC97c42F0Ca46aD7146",
+//                                                              fromAmount: "1000000",
+//                                                              toAmountLimit: "100"))))
 //                    }
 //                }.buttonStyle(PlainButtonStyle())
             }
@@ -83,7 +98,7 @@ struct ListVaultAssetView: View {
                     case .success(let btc):
                         self.sendTransaction.coin = btc
                         
-                            // SET BTC as default if none
+                        // SET BTC as default if none
                         if vault.coins.count == 0 {
                             vault.coins.append(btc)
                         }
