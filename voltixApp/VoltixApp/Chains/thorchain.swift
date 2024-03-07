@@ -51,6 +51,14 @@ enum THORChainHelper {
         input.accountNumber = accountNumber
         input.sequence = sequence
         input.mode = .block
+        // THORChain fee is 0.02 RUNE
+        input.fee = CosmosFee.with {
+            $0.gas = 20000000
+            $0.amounts = [CosmosAmount.with {
+                $0.denom = "rune"
+                $0.amount = "2000000"
+            }]
+        }
         // memo has been set
         // deposit message has been set
         do {
