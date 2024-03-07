@@ -6,8 +6,14 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct SetupVaultView: View {
+    @Binding var presentationStack: [CurrentScreen]
+    @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject var appState: ApplicationState
+    @Query var vaults: [Vault]
+    
     var body: some View {
         ZStack {
             background
@@ -72,20 +78,41 @@ struct SetupVaultView: View {
     var buttons: some View {
         VStack(spacing: 20) {
             startButton
-            pairButton
+            joinButton
         }
         .padding(40)
     }
     
     var startButton: some View {
-        FilledButton(title: "start")
+        Button {
+            startNetwork()
+        } label: {
+            FilledButton(title: "start")
+        }
     }
     
-    var pairButton: some View {
-        OutlineButton(title: "pair")
+    var joinButton: some View {
+        Button {
+            joinNetwork()
+        } label: {
+            OutlineButton(title: "join")
+        }
+    }
+    
+    private func startNetwork() {
+        let vault = Vault(name: "Vault #\(vaults.count + 1)")
+        appState.creatingVault = vault
+        self.presentationStack.append(.peerDiscovery)
+    }
+    
+    private func joinNetwork() {
+        let vault = Vault(name: "Vault #\(vaults.count + 1)")
+        appState.creatingVault = vault
+        self.presentationStack.append(.joinKeygen)
     }
 }
 
 #Preview {
-    SetupVaultView()
+    SetupVaultView(presentationStack: .constant([]))
+        .environmentObject(ApplicationState.shared)
 }

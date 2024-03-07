@@ -161,7 +161,7 @@ struct JoinKeygenView: View {
             .padding()
         }
         .navigationTitle("JOIN KEYGEN")
-        .navigationBarBackButtonHidden(true)
+//        .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 NavigationButtons.questionMarkButton

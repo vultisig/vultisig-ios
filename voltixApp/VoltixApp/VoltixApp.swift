@@ -12,6 +12,21 @@ import WalletCore
 struct VoltixApp: App {
     @Environment(\.scenePhase) private var scenePhase
     
+    @StateObject var applicationState = ApplicationState.shared
+
+    var body: some Scene {
+        WindowGroup {
+            MainNavigationStack()
+                .environmentObject(applicationState) // Shared monolithic mutable state
+        }
+        .modelContainer(sharedModelContainer)
+//        .onChange(of: scenePhase) { phase in
+//            if phase == .inactive {
+//                // TODO: Anything that needs doing on app backgrounded.
+//            }
+//        }
+    }
+    
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Vault.self,
@@ -23,17 +38,4 @@ struct VoltixApp: App {
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()
-
-    var body: some Scene {
-        WindowGroup {
-            MainNavigationStack()
-                .environmentObject(ApplicationState.shared) // Shared monolithic mutable state
-        }
-        .modelContainer(sharedModelContainer)
-//        .onChange(of: scenePhase) { phase in
-//            if phase == .inactive {
-//                // TODO: Anything that needs doing on app backgrounded.
-//            }
-//        }
-    }
 }

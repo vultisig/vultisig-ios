@@ -56,7 +56,7 @@ struct CreateVaultView: View {
 //        }
         
         NavigationLink {
-            SetupVaultView()
+            SetupVaultView(presentationStack: $presentationStack)
         } label: {
             FilledButton(title: "createNewVault")
         }
