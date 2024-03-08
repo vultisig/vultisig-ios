@@ -90,6 +90,9 @@
 		A6F9F7DD2B9BA5F000790258 /* TokenAssetCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9F7DC2B9BA5F000790258 /* TokenAssetCell.swift */; };
 		A6F9F7DF2B9BAA9F00790258 /* Separator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9F7DE2B9BAA9F00790258 /* Separator.swift */; };
 		A6F9F7E12B9BAFA700790258 /* NavigationRefreshButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9F7E02B9BAFA700790258 /* NavigationRefreshButton.swift */; };
+		A6F9F7E32B9BB48700790258 /* VaultsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9F7E22B9BB48700790258 /* VaultsView.swift */; };
+		A6F9F7E52B9BB4D100790258 /* NavigationMenuButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9F7E42B9BB4D100790258 /* NavigationMenuButton.swift */; };
+		A6F9F7E72B9BB63700790258 /* VaultCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9F7E62B9BB63700790258 /* VaultCell.swift */; };
 		D7347C2E2B759A0F00887E57 /* ProgressBottomBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7347C2D2B759A0F00887E57 /* ProgressBottomBar.swift */; };
 		D9A22EB72B667C41007281BF /* Mediator in Frameworks */ = {isa = PBXBuildFile; productRef = D9A22EB62B667C41007281BF /* Mediator */; };
 		D9AD8EDA2B6722CC0009F8D5 /* ApplicationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */; };
@@ -254,6 +257,9 @@
 		A6F9F7DC2B9BA5F000790258 /* TokenAssetCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenAssetCell.swift; sourceTree = "<group>"; };
 		A6F9F7DE2B9BAA9F00790258 /* Separator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Separator.swift; sourceTree = "<group>"; };
 		A6F9F7E02B9BAFA700790258 /* NavigationRefreshButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationRefreshButton.swift; sourceTree = "<group>"; };
+		A6F9F7E22B9BB48700790258 /* VaultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultsView.swift; sourceTree = "<group>"; };
+		A6F9F7E42B9BB4D100790258 /* NavigationMenuButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationMenuButton.swift; sourceTree = "<group>"; };
+		A6F9F7E62B9BB63700790258 /* VaultCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultCell.swift; sourceTree = "<group>"; };
 		D7347C2D2B759A0F00887E57 /* ProgressBottomBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressBottomBar.swift; sourceTree = "<group>"; };
 		D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ApplicationState.swift; path = "VoltixApp/View Models/ApplicationState.swift"; sourceTree = SOURCE_ROOT; };
 		D9AD8EDB2B6723D10009F8D5 /* AppNavigationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppNavigationState.swift; path = VoltixApp/States/AppNavigationState.swift; sourceTree = SOURCE_ROOT; };
@@ -507,6 +513,7 @@
 				A633B1352B997D57003D1738 /* NavigationBackButton.swift */,
 				A633B1372B997F39003D1738 /* NavigationHelpButton.swift */,
 				A6F9F7E02B9BAFA700790258 /* NavigationRefreshButton.swift */,
+				A6F9F7E42B9BB4D100790258 /* NavigationMenuButton.swift */,
 			);
 			path = "Navigation Items";
 			sourceTree = "<group>";
@@ -553,6 +560,7 @@
 			children = (
 				A6F9F7DA2B9BA2DD00790258 /* TokenCell.swift */,
 				A6F9F7DC2B9BA5F000790258 /* TokenAssetCell.swift */,
+				A6F9F7E62B9BB63700790258 /* VaultCell.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -658,6 +666,7 @@
 				D9AD8EE92B6730E30009F8D5 /* MenuView.swift */,
 				DE49A1A42B68BB6B000F3AFB /* VaultSelectionView.swift */,
 				A633B13D2B9A9E30003D1738 /* VaultDetailView.swift */,
+				A6F9F7E22B9BB48700790258 /* VaultsView.swift */,
 			);
 			path = Vault;
 			sourceTree = "<group>";
@@ -947,10 +956,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				DE4DFA7B2B7B1692004F8E73 /* ModelContainerPreview.swift in Sources */,
+				A6F9F7E52B9BB4D100790258 /* NavigationMenuButton.swift in Sources */,
 				049BBB662B71E987004C231F /* VaultItem.swift in Sources */,
 				049BBB5E2B71E83D004C231F /* VoltixLogo.swift in Sources */,
 				DE1572A02B70F284009BC7C5 /* Keysign.swift in Sources */,
 				46AC40AA2B922931001704E6 /* EthereumTransactionListView.swift in Sources */,
+				A6F9F7E32B9BB48700790258 /* VaultsView.swift in Sources */,
 				465B09AD2B7C841B00952DD9 /* QrCodeView.swift in Sources */,
 				469ED3A02B98F5B4008D4951 /* ThorchainAccountNumberResponse.swift in Sources */,
 				465B09B32B7D710A00952DD9 /* DocumentPicker.swift in Sources */,
@@ -1014,6 +1025,7 @@
 				A6F9F7E12B9BAFA700790258 /* NavigationRefreshButton.swift in Sources */,
 				469ED3A22B98F5CB008D4951 /* ThorchainAccountResult.swift in Sources */,
 				DE49A1692B65F6D9000F3AFB /* MainNavigationStack.swift in Sources */,
+				A6F9F7E72B9BB63700790258 /* VaultCell.swift in Sources */,
 				D9AD8F082B675ECD0009F8D5 /* SupportedAssets.swift in Sources */,
 				46F8F7262B99FEEC0099454E /* ThorchainErrorResponse.swift in Sources */,
 				A65649EA2B96690400E4B329 /* KeyShare.swift in Sources */,
