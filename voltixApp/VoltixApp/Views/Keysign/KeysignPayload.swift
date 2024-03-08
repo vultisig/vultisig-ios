@@ -33,19 +33,26 @@ struct KeysignPayload: Codable, Hashable {
     let memo: String? // optional memo
     let swapPayload: THORChainSwapPayload?
 
-    func getKeysignMessages() -> Result<[String], Error> {
+    func getKeysignMessages(vault:Vault) -> Result<[String], Error> {
         var result: Result<[String], Error>
         // this is a swap
         if swapPayload != nil {
-            return THORChainSwaps.getPreSignedImageHash(keysignPayload: self)
+            let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+            return swaps.getPreSignedImageHash(keysignPayload: self)
         }
         switch coin.ticker {
         case "BTC":
-            result = BitcoinHelper.getPreSignedImageHash(keysignPayload: self)
+            let utxoHelper = UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+            return utxoHelper.getPreSignedImageHash(keysignPayload: self)
         case "BCH":
-            result = BitcoinCashHelper.getPreSignedImageHash(keysignPayload: self)
+            let utxoHelper = UTXOChainsHelper(coin: .bitcoinCash, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+            return utxoHelper.getPreSignedImageHash(keysignPayload: self)
         case "LTC":
-            result = LitecoinHelper.getPreSignedImageHash(keysignPayload: self)
+            let utxoHelper = UTXOChainsHelper(coin: .litecoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+            return utxoHelper.getPreSignedImageHash(keysignPayload: self)
+        case "DOGE":
+            let utxoHelper = UTXOChainsHelper(coin: .dogecoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+            return utxoHelper.getPreSignedImageHash(keysignPayload: self)
         case "ETH":
             result = EthereumHelper.getPreSignedImageHash(keysignPayload: self)
         case "USDC":

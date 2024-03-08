@@ -70,7 +70,7 @@ struct ListVaultAssetView: View {
                             toAmount: 1000000, //
                             chainSpecific: BlockChainSpecific.Bitcoin(byteFee: 10),
                             utxos: [
-                                UtxoInfo(hash: "71787a90556de944fcea8d8ff7478e535092638a68491b60b5661dfd871c40e4", amount: 10000000 , index: 0)
+                                UtxoInfo(hash: "71787a90556de944fcea8d8ff7478e535092638a68491b60b5661dfd871c40e4", amount: 10000000, index: 0)
                             ],
                             memo: "",
                             swapPayload: nil)))
@@ -80,7 +80,7 @@ struct ListVaultAssetView: View {
         }
         .onAppear {
             if let vault = appState.currentVault {
-                let result = BitcoinHelper.getBitcoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
+                let result = UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode).getCoin()
                 switch result {
                     case .success(let btc):
                         self.sendTransaction.coin = btc

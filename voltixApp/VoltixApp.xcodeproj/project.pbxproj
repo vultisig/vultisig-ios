@@ -104,8 +104,6 @@
 		D9AD8F012B6732360009F8D5 /* SwapVerifyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8F002B6732360009F8D5 /* SwapVerifyView.swift */; };
 		D9AD8F032B6732450009F8D5 /* SwapDoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8F022B6732450009F8D5 /* SwapDoneView.swift */; };
 		D9AD8F082B675ECD0009F8D5 /* SupportedAssets.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8F072B675ECD0009F8D5 /* SupportedAssets.swift */; };
-		DE001E012B9A9BDB00CDC227 /* bitcoincash.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE001E002B9A9BDB00CDC227 /* bitcoincash.swift */; };
-		DE001E032B9A9EC700CDC227 /* LitecoinHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE001E022B9A9EC700CDC227 /* LitecoinHelper.swift */; };
 		DE1572962B70F254009BC7C5 /* TssMessenger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1572942B70F254009BC7C5 /* TssMessenger.swift */; };
 		DE1572972B70F254009BC7C5 /* LocalStateAccessorImp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1572952B70F254009BC7C5 /* LocalStateAccessorImp.swift */; };
 		DE1572992B70F26A009BC7C5 /* KeyType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1572982B70F26A009BC7C5 /* KeyType.swift */; };
@@ -114,7 +112,6 @@
 		DE1572A02B70F284009BC7C5 /* Keysign.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE15729D2B70F284009BC7C5 /* Keysign.swift */; };
 		DE1572A22B70F873009BC7C5 /* Tss.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE1572A12B70F873009BC7C5 /* Tss.xcframework */; };
 		DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1572AB2B7174D3009BC7C5 /* Utils.swift */; };
-		DE28F52E2B7B0E7400E33058 /* bitcoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE28F52D2B7B0E7400E33058 /* bitcoin.swift */; };
 		DE28F5312B7B0FE900E33058 /* WalletCore in Frameworks */ = {isa = PBXBuildFile; productRef = DE28F5302B7B0FE900E33058 /* WalletCore */; };
 		DE28F5332B7B0FED00E33058 /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = DE28F5322B7B0FED00E33058 /* SwiftProtobuf */; };
 		DE32F0062B8460670035D81E /* ListVaultAssetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE32F0042B8460670035D81E /* ListVaultAssetView.swift */; };
@@ -146,6 +143,7 @@
 		DEEDAEE52B8AFB5D005170E8 /* common.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEDAEE42B8AFB5D005170E8 /* common.swift */; };
 		DEEDAEE82B8B50A4005170E8 /* BigInt in Frameworks */ = {isa = PBXBuildFile; productRef = DEEDAEE72B8B50A4005170E8 /* BigInt */; };
 		DEEFF4FD2B9835DE0015692E /* THORChainSwapChainExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEFF4FC2B9835DE0015692E /* THORChainSwapChainExtension.swift */; };
+		DEF2E2CB2B9AD5EA000737B8 /* UTXOChainsHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF2E2CA2B9AD5EA000737B8 /* UTXOChainsHelper.swift */; };
 		DEFC7BFB2B8D87370090B07A /* erc20.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC7BFA2B8D87370090B07A /* erc20.swift */; };
 		DEFC7BFF2B8EC95E0090B07A /* thorchain.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC7BFE2B8EC95E0090B07A /* thorchain.swift */; };
 /* End PBXBuildFile section */
@@ -264,8 +262,6 @@
 		D9AD8F002B6732360009F8D5 /* SwapVerifyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SwapVerifyView.swift; path = voltixApp/Views/Swap/SwapVerifyView.swift; sourceTree = SOURCE_ROOT; };
 		D9AD8F022B6732450009F8D5 /* SwapDoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SwapDoneView.swift; path = voltixApp/Views/Swap/SwapDoneView.swift; sourceTree = SOURCE_ROOT; };
 		D9AD8F072B675ECD0009F8D5 /* SupportedAssets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SupportedAssets.swift; path = VoltixApp/States/SupportedAssets.swift; sourceTree = SOURCE_ROOT; };
-		DE001E002B9A9BDB00CDC227 /* bitcoincash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = bitcoincash.swift; sourceTree = "<group>"; };
-		DE001E022B9A9EC700CDC227 /* LitecoinHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LitecoinHelper.swift; sourceTree = "<group>"; };
 		DE1572942B70F254009BC7C5 /* TssMessenger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TssMessenger.swift; sourceTree = "<group>"; };
 		DE1572952B70F254009BC7C5 /* LocalStateAccessorImp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalStateAccessorImp.swift; sourceTree = "<group>"; };
 		DE1572982B70F26A009BC7C5 /* KeyType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeyType.swift; sourceTree = "<group>"; };
@@ -275,7 +271,6 @@
 		DE1572A12B70F873009BC7C5 /* Tss.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
 		DE1572AB2B7174D3009BC7C5 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		DE28F52B2B7B0D6500E33058 /* WalletCore */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = WalletCore; path = ../WalletCore; sourceTree = "<group>"; };
-		DE28F52D2B7B0E7400E33058 /* bitcoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = bitcoin.swift; sourceTree = "<group>"; };
 		DE32F0042B8460670035D81E /* ListVaultAssetView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ListVaultAssetView.swift; sourceTree = "<group>"; };
 		DE32F0052B8460670035D81E /* AssetsList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AssetsList.swift; sourceTree = "<group>"; };
 		DE491CEE2B708260007C88D5 /* KeygenView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeygenView.swift; sourceTree = "<group>"; };
@@ -308,6 +303,7 @@
 		DEEDAEE22B8AF8B1005170E8 /* publickey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = publickey.swift; sourceTree = "<group>"; };
 		DEEDAEE42B8AFB5D005170E8 /* common.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = common.swift; sourceTree = "<group>"; };
 		DEEFF4FC2B9835DE0015692E /* THORChainSwapChainExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainSwapChainExtension.swift; sourceTree = "<group>"; };
+		DEF2E2CA2B9AD5EA000737B8 /* UTXOChainsHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOChainsHelper.swift; sourceTree = "<group>"; };
 		DEFC7BFA2B8D87370090B07A /* erc20.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = erc20.swift; sourceTree = "<group>"; };
 		DEFC7BFE2B8EC95E0090B07A /* thorchain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = thorchain.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -678,14 +674,12 @@
 			children = (
 				DEEADCF62B916676007978DE /* Solana.swift */,
 				DEFC7BFE2B8EC95E0090B07A /* thorchain.swift */,
-				DE28F52D2B7B0E7400E33058 /* bitcoin.swift */,
 				DEEDAEE02B8AF7EF005170E8 /* eth.swift */,
 				DEEDAEE22B8AF8B1005170E8 /* publickey.swift */,
 				DEEDAEE42B8AFB5D005170E8 /* common.swift */,
 				DEFC7BFA2B8D87370090B07A /* erc20.swift */,
 				DE6DCB922B97D81C009A39D5 /* THORChainSwaps.swift */,
-				DE001E002B9A9BDB00CDC227 /* bitcoincash.swift */,
-				DE001E022B9A9EC700CDC227 /* LitecoinHelper.swift */,
+				DEF2E2CA2B9AD5EA000737B8 /* UTXOChainsHelper.swift */,
 			);
 			path = Chains;
 			sourceTree = "<group>";
@@ -1011,11 +1005,11 @@
 				D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */,
 				465B09AB2B7C840100952DD9 /* ToastView.swift in Sources */,
 				A65649FA2B96998500E4B329 /* EthAddressInfo.swift in Sources */,
-				DE001E032B9A9EC700CDC227 /* LitecoinHelper.swift in Sources */,
 				A65649E52B96602700E4B329 /* VaultExtension.swift in Sources */,
 				049BBB622B71E8E7004C231F /* AssetItem.swift in Sources */,
 				D9AD8EEA2B6730E30009F8D5 /* MenuView.swift in Sources */,
 				049BBB602B71E8A2004C231F /* MenuItem.swift in Sources */,
+				DEF2E2CB2B9AD5EA000737B8 /* UTXOChainsHelper.swift in Sources */,
 				DEFC7BFB2B8D87370090B07A /* erc20.swift in Sources */,
 				A65649FE2B9699BE00E4B329 /* Token.swift in Sources */,
 				4606B3B02B80465E0045094D /* BitcoinTransactionsService.swift in Sources */,
@@ -1025,7 +1019,6 @@
 				469ED39B2B98E8B5008D4951 /* ThorchainBalance.swift in Sources */,
 				DEEDAEE32B8AF8B1005170E8 /* publickey.swift in Sources */,
 				D9AD8EE42B6730940009F8D5 /* NewWalletInstructionsView.swift in Sources */,
-				DE28F52E2B7B0E7400E33058 /* bitcoin.swift in Sources */,
 				A633B11C2B99273A003D1738 /* ColorExtensions.swift in Sources */,
 				DE32F0062B8460670035D81E /* ListVaultAssetView.swift in Sources */,
 				DEEDAEE52B8AFB5D005170E8 /* common.swift in Sources */,
@@ -1040,7 +1033,6 @@
 				DE49A1A02B67143B000F3AFB /* Chain.swift in Sources */,
 				A65649F02B966A1200E4B329 /* Output.swift in Sources */,
 				465B09A92B7C176700952DD9 /* SendTransaction.swift in Sources */,
-				DE001E012B9A9BDB00CDC227 /* bitcoincash.swift in Sources */,
 				A6564A022B969A1200E4B329 /* Price.swift in Sources */,
 				A633B12D2B994E92003D1738 /* CreateVaultView.swift in Sources */,
 				A633B1382B997F39003D1738 /* NavigationHelpButton.swift in Sources */,

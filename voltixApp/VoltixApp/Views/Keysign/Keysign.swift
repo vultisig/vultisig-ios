@@ -97,7 +97,8 @@ struct KeysignView: View {
                         // get bitcoin transaction
                         if let keysignPayload {
                             if keysignPayload.swapPayload != nil {
-                                let result = THORChainSwaps.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                                let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                                let result = swaps.getSignedTransaction(keysignPayload: keysignPayload, signatures: self.signatures)
                                 switch result {
                                     case .success(let tx):
                                         print(tx)
@@ -108,8 +109,8 @@ struct KeysignView: View {
                             }
                             switch keysignPayload.coin.ticker {
                                 case "BTC":
-                                    
-                                    let result = BitcoinHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                                    let utxoHelper = UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                                    let result = utxoHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: self.signatures)
                                     switch result {
                                         case .success(let tx):
                                             print(tx)
@@ -144,7 +145,8 @@ struct KeysignView: View {
                                             }
                                     }
                                 case "BCH":
-                                    let result = BitcoinCashHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                                    let utxoHelper = UTXOChainsHelper(coin: .bitcoinCash, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                                    let result = utxoHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: self.signatures)
                                     switch result {
                                         case .success(let tx):
                                             print(tx)
@@ -157,7 +159,8 @@ struct KeysignView: View {
                                             }
                                     }
                                 case "LTC":
-                                    let result = LitecoinHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                                    let utxoHelper = UTXOChainsHelper(coin: .litecoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                                    let result = utxoHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: self.signatures)
                                     switch result {
                                         case .success(let tx):
                                             print(tx)

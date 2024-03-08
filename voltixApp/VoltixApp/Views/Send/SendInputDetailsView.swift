@@ -1,19 +1,19 @@
-    //
-    //  VoltixApp
-    //
-    //  Created by Enrique Souza Soares
-    //
-    // TODO: Create an abstraction, so we dont keep using if coin...
-    // I will do it after the MVP
-    //
+//
+//  VoltixApp
+//
+//  Created by Enrique Souza Soares
+//
+// TODO: Create an abstraction, so we dont keep using if coin...
+// I will do it after the MVP
+//
+import BigInt
 import CodeScanner
+import Combine
 import OSLog
 import SwiftUI
+import UIKit
 import UniformTypeIdentifiers
 import WalletCore
-import Combine
-import UIKit
-import BigInt
 
 private class DebounceHelper {
     static let shared = DebounceHelper()
@@ -22,14 +22,13 @@ private class DebounceHelper {
     func debounce(delay: TimeInterval = 0.5, action: @escaping () -> Void) {
         workItem?.cancel()
         let task = DispatchWorkItem { action() }
-        self.workItem = task
+        workItem = task
         DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: task)
     }
 }
 
 private let logger = Logger(subsystem: "send-input-details", category: "transaction")
 struct SendInputDetailsView: View {
-    
     enum Field: Hashable {
         case toAddress
         case amount
@@ -40,11 +39,11 @@ struct SendInputDetailsView: View {
     
     @EnvironmentObject var appState: ApplicationState
     @Binding var presentationStack: [CurrentScreen]
-    @StateObject var uxto: UnspentOutputsService = UnspentOutputsService()
-    @StateObject var eth: EthplorerAPIService = EthplorerAPIService()
+    @StateObject var uxto: UnspentOutputsService = .init()
+    @StateObject var eth: EthplorerAPIService = .init()
     @StateObject var web3Service = Web3Service()
     @StateObject var cryptoPrice = CryptoPriceService.shared
-    @StateObject var thor: ThorchainService = ThorchainService.shared
+    @StateObject var thor: ThorchainService = .shared
     @ObservedObject var tx: SendTransaction
     @State private var isShowingScanner = false
     @State private var isValidAddress = false
@@ -127,11 +126,10 @@ struct SendInputDetailsView: View {
                         .background(Color.gray.opacity(0.5))
                         .cornerRadius(10)
                         
-                        
                     }.padding(.bottom)
                     Group {
-                        HStack{
-                            VStack(alignment: .leading){
+                        HStack {
+                            VStack(alignment: .leading) {
                                 Text("\(tx.coin.ticker.uppercased()):")
                                     .font(.body18MenloBold)
                                 
@@ -155,7 +153,7 @@ struct SendInputDetailsView: View {
                                     .cornerRadius(10)
                                 }
                             }
-                            VStack(alignment: .leading){
+                            VStack(alignment: .leading) {
                                 Text("USD:")
                                     .font(.body18MenloBold)
                                 
@@ -265,7 +263,6 @@ struct SendInputDetailsView: View {
                 }
             }
         }.padding()
-        
     }
     
     private func convertUSDToCoin(newValue: String) {
@@ -273,7 +270,7 @@ struct SendInputDetailsView: View {
             var newCoinAmount = ""
             
             if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
-                let rate = self.priceRate
+                let rate = priceRate
                 if rate > 0 {
                     let newValueCoin = newValueDouble / rate
                     newCoinAmount = newValueCoin != 0 ? String(format: "%.8f", newValueCoin) : ""
@@ -297,13 +294,12 @@ struct SendInputDetailsView: View {
         }
     }
     
-    
     private func convertToUSD(newValue: String) {
         if let newValueDouble = Double(newValue) {
             var newValueUSD = ""
             
             if tx.coin.chain.name.lowercased() == "bitcoin" {
-                let rate = self.priceRate
+                let rate = priceRate
                 newValueUSD = String(format: "%.2f", newValueDouble * rate)
             } else if tx.coin.chain.name.lowercased() == "ethereum" {
                 if tx.coin.ticker.uppercased() == "ETH" {
@@ -323,24 +319,22 @@ struct SendInputDetailsView: View {
         }
     }
     
-    private func validateAddress(_ address: String) -> Void {
-        
+    private func validateAddress(_ address: String) {
         if tx.coin.ticker.uppercased() == Chain.Bitcoin.ticker.uppercased() {
-            isValidAddress = BitcoinHelper.validateAddress(address)
+            isValidAddress = CoinType.bitcoin.validate(address: address)
         } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
             isValidAddress = CoinType.ethereum.validate(address: address)
         } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
             isValidAddress = CoinType.thorchain.validate(address: address)
         }
-        
     }
     
     private func validateForm() -> Bool {
-            // Reset validation state at the beginning
+        // Reset validation state at the beginning
         formErrorMessages = ""
         isValidForm = true
         
-            // Validate the "To" address
+        // Validate the "To" address
         if !isValidAddress {
             formErrorMessages += "Please enter a valid address. \n"
             logger.log("Invalid address.")
@@ -364,8 +358,8 @@ struct SendInputDetailsView: View {
             return isValidForm
         }
         
-            // TODO: Move this to an abstraction
-            // This is only for MVP
+        // TODO: Move this to an abstraction
+        // This is only for MVP
         if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
             let walletBalanceInSats = uxto.walletData?.balance ?? 0
             let totalTransactionCostInSats = tx.amountInSats + tx.feeInSats
@@ -377,12 +371,10 @@ struct SendInputDetailsView: View {
                 isValidForm = false
             }
             
-        } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased(){
-            
+        } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
             let ethBalanceInWei = Int(eth.addressInfo?.ETH.rawBalance ?? "0") ?? 0 // it is in WEI
             
             if tx.coin.ticker.uppercased() == "ETH" {
-                
                 if tx.totalEthTransactionCostWei > ethBalanceInWei {
                     formErrorMessages += "The combined amount and fee exceed your wallet's balance. Please adjust to proceed. \n"
                     logger.log("Total transaction cost exceeds wallet balance.")
@@ -390,14 +382,11 @@ struct SendInputDetailsView: View {
                 }
                 
             } else {
-                
-                if let tokenInfo = eth.addressInfo?.tokens?.first(where: {$0.tokenInfo.symbol == tx.coin.ticker.uppercased()}) {
+                if let tokenInfo = eth.addressInfo?.tokens?.first(where: { $0.tokenInfo.symbol == tx.coin.ticker.uppercased() }) {
+                    print("tx.feeInWei \(tx.feeInWei)")
+                    print("ethBalanceInWei \(ethBalanceInWei)")
                     
-                    print ("tx.feeInWei \(tx.feeInWei)")
-                    print ("ethBalanceInWei \(ethBalanceInWei)")
-                    
-                    print ("has eth to pay the fee?  \(tx.feeInWei > ethBalanceInWei)")
-                    
+                    print("has eth to pay the fee?  \(tx.feeInWei > ethBalanceInWei)")
                     
                     if tx.feeInWei > ethBalanceInWei {
                         formErrorMessages += "You must have ETH in to send any TOKEN, so you can pay the fees. \n"
@@ -412,54 +401,48 @@ struct SendInputDetailsView: View {
                         logger.log("Total transaction cost exceeds wallet balance.")
                         isValidForm = false
                     }
-                    
                 }
             }
-            
-            
-            
         }
-        
-        
         
         return isValidForm
     }
     
     private func setMaxValues() {
         if tx.coin.chain.name.lowercased() == "bitcoin" {
-            let rate = self.priceRate
+            let rate = priceRate
             if let walletData = uxto.walletData {
-                self.tx.amount = walletData.balanceInBTC
-                self.tx.amountInUSD = String(format: "%.2f", walletData.balanceDecimal * rate)
+                tx.amount = walletData.balanceInBTC
+                tx.amountInUSD = String(format: "%.2f", walletData.balanceDecimal * rate)
             }
         } else if tx.coin.chain.name.lowercased() == "ethereum" {
             if tx.coin.ticker.uppercased() == "ETH" {
-                self.tx.amount = eth.addressInfo?.ETH.balanceString ?? "0.0"
-                self.tx.amountInUSD = eth.addressInfo?.ETH.balanceInUsd.replacingOccurrences(of: "US$ ", with: "") ?? ""
+                tx.amount = eth.addressInfo?.ETH.balanceString ?? "0.0"
+                tx.amountInUSD = eth.addressInfo?.ETH.balanceInUsd.replacingOccurrences(of: "US$ ", with: "") ?? ""
             } else if let tokenInfo = tx.token {
-                self.tx.amount = tokenInfo.balanceString
-                self.tx.amountInUSD = tokenInfo.balanceInUsd.replacingOccurrences(of: "US$ ", with: "")
+                tx.amount = tokenInfo.balanceString
+                tx.amountInUSD = tokenInfo.balanceInUsd.replacingOccurrences(of: "US$ ", with: "")
             }
         } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
             if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.THORChain.name.lowercased()]?["usd"] {
-                self.tx.amountInUSD  = thor.runeBalanceInUSD(usdPrice: priceRateUsd, includeCurrencySymbol: false) ?? "US$ 0,00"
+                tx.amountInUSD = thor.runeBalanceInUSD(usdPrice: priceRateUsd, includeCurrencySymbol: false) ?? "US$ 0,00"
             }
-            self.tx.amount = thor.formattedRuneBalance ?? "0.00"
+            tx.amount = thor.formattedRuneBalance ?? "0.00"
         }
     }
     
     private func updateState() {
         isLoading = true
-            //TODO: move this logic into an abstraction
+        // TODO: move this logic into an abstraction
         
         if let priceRateUsd = cryptoPrice.cryptoPrices?.prices[tx.coin.chain.name.lowercased()]?["usd"] {
-            self.priceRate = priceRateUsd
+            priceRate = priceRateUsd
         }
         
         if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
-            self.coinBalance = uxto.walletData?.balanceInBTC ?? "0"
+            coinBalance = uxto.walletData?.balanceInBTC ?? "0"
         } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
-                // We need to pass it to the next view
+            // We need to pass it to the next view
             tx.eth = eth.addressInfo
             
             let gasPriceInGwei = BigInt(web3Service.gasPrice ?? 0) / BigInt(10).power(9)
@@ -470,23 +453,21 @@ struct SendInputDetailsView: View {
             tx.nonce = Int64(web3Service.nonce ?? 0)
             
             if tx.token != nil {
-                self.coinBalance = tx.token?.balanceString ?? ""
+                coinBalance = tx.token?.balanceString ?? ""
             } else {
-                self.coinBalance = eth.addressInfo?.ETH.balanceString ?? "0.0"
+                coinBalance = eth.addressInfo?.ETH.balanceString ?? "0.0"
             }
+        } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
+            coinBalance = thor.formattedRuneBalance ?? "0.0"
+            tx.gas = String("0.02")
         }
-        else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
-            self.coinBalance = thor.formattedRuneBalance ?? "0.0"
-            self.tx.gas = String("0.02")
-        }
-        
         
         isLoading = false
     }
     
     private func reloadTransactions() {
-            // TODO: move this logic into an abstraction
-            // ETH gets the price from other sourcers.
+        // TODO: move this logic into an abstraction
+        // ETH gets the price from other sourcers.
         Task {
             isLoading = true
             
@@ -498,10 +479,9 @@ struct SendInputDetailsView: View {
                 await eth.getEthInfo(for: tx.fromAddress)
                 do {
                     try await web3Service.updateNonceAndGasPrice(forAddress: tx.fromAddress)
-                } catch  {
+                } catch {
                     print(error)
                 }
-                
             }
             
             DispatchQueue.main.async {
@@ -516,7 +496,7 @@ struct SendInputDetailsView: View {
             case .success(let result):
                 let qrCodeResult = result.string
                 tx.parseCryptoURI(qrCodeResult)
-                self.isShowingScanner = false
+                isShowingScanner = false
             case .failure(let err):
                 logger.error("fail to scan QR code,error:\(err.localizedDescription)")
         }
