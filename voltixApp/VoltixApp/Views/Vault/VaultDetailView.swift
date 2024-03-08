@@ -14,14 +14,14 @@ struct VaultDetailView: View {
             view
         }
         .navigationBarBackButtonHidden(true)
-        .navigationTitle(NSLocalizedString("setup", comment: "Setup title"))
+        .navigationTitle("Ethereum")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 NavigationBackButton()
             }
             ToolbarItem(placement: .topBarTrailing) {
-                NavigationHelpButton()
+                NavigationRefreshButton()
             }
         }
     }
@@ -32,10 +32,26 @@ struct VaultDetailView: View {
     }
     
     var view: some View {
-        VStack {
-            
+        ScrollView {
+            list
+            addButton
         }
         .padding(.top, 30)
+    }
+    
+    var list: some View {
+        VStack(spacing: 0) {
+            TokenCell()
+            TokenCell()
+            TokenCell()
+            TokenCell()
+            TokenCell()
+        }
+    }
+    
+    var addButton: some View {
+        FilledButton(title: "chooseTokens", icon: "plus")
+            .padding(16)
     }
 }
 
