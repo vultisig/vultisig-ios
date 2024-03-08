@@ -18,6 +18,7 @@
 "join" = "Join";
 "swap" = "Swap";
 "send" = "Send";
+"address" = "Address";
 "enterPreviousVault" = "Enter your previously created vault share";
 "uploadFile" = "Upload file, text or image";
 "devicesOnSameWifi" = "Keep devices on the same WiFi Network with VOLTIX open";

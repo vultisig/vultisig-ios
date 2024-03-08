@@ -8,20 +8,36 @@
 import SwiftUI
 
 struct TokenCell: View {
-    @State var isExpanded = true
+    @State var isExpanded = false
+    @State var showQRcode = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             main
-            cells
+            
+            if isExpanded {
+                cells
+            }
         }
         .padding(.vertical, 4)
         .background(Color.blue600)
         .cornerRadius(10)
         .padding(16)
+        .clipped()
+        .sheet(isPresented: $showQRcode) {
+            AddressQRCodeView()
+        }
     }
     
     var main: some View {
+        Button(action: {
+            expandCell()
+        }, label: {
+            card
+        })
+    }
+    
+    var card: some View {
         VStack(alignment: .leading, spacing: 16) {
             header
             address
@@ -59,9 +75,13 @@ struct TokenCell: View {
     }
     
     var showQRButton: some View {
-        Image(systemName: "qrcode")
-            .foregroundColor(.neutral0)
-            .font(.body18MenloMedium)
+        Button(action: {
+            showQRcode.toggle()
+        }, label: {
+            Image(systemName: "qrcode")
+                .foregroundColor(.neutral0)
+                .font(.body18MenloMedium)
+        })
     }
     
     var amount: some View {
@@ -85,8 +105,17 @@ struct TokenCell: View {
             TokenAssetCell()
         }
     }
+    
+    private func expandCell() {
+        withAnimation {
+            isExpanded.toggle()
+        }
+    }
 }
 
 #Preview {
-    TokenCell()
+    ScrollView {
+        TokenCell()
+        TokenCell()
+    }
 }
