@@ -66,16 +66,16 @@ enum BitcoinCashHelper {
         }
         var input = signingInput
         input.byteFee = byteFee
-        input.hashType = BitcoinSigHashType.all.rawValue
+        input.hashType = BitcoinSigHashType.all.rawValue | BitcoinSigHashType.fork.rawValue
         input.useMaxAmount = false
         
         for inputUtxo in keysignPayload.utxos {
             let lockScript = BitcoinScript.lockScriptForAddress(address: keysignPayload.coin.address, coin: .bitcoinCash)
-            let keyHash = lockScript.matchPayToWitnessPublicKeyHash()
+            let keyHash = lockScript.matchPayToPubkeyHash()
             guard let keyHash else {
                 return .failure(HelperError.runtimeError("fail to get key hash from lock script"))
             }
-            let redeemScript = BitcoinScript.buildPayToWitnessPubkeyHash(hash: keyHash)
+            let redeemScript = BitcoinScript.buildPayToPublicKeyHash(hash: keyHash)
             input.scripts[keyHash.hexString] = redeemScript.data
             let utxo = BitcoinUnspentTransaction.with {
                 $0.outPoint = BitcoinOutPoint.with {
@@ -109,7 +109,7 @@ enum BitcoinCashHelper {
         
         let coin = CoinType.bitcoinCash
         var input = BitcoinSigningInput.with {
-            $0.hashType = BitcoinSigHashType.all.rawValue
+            $0.hashType = BitcoinSigHashType.all.rawValue | BitcoinSigHashType.fork.rawValue
             $0.amount = keysignPayload.toAmount
             $0.useMaxAmount = false
             $0.toAddress = keysignPayload.toAddress
@@ -122,11 +122,11 @@ enum BitcoinCashHelper {
         }
         for inputUtxo in keysignPayload.utxos {
             let lockScript = BitcoinScript.lockScriptForAddress(address: keysignPayload.coin.address, coin: .bitcoinCash)
-            let keyHash = lockScript.matchPayToWitnessPublicKeyHash()
+            let keyHash = lockScript.matchPayToPubkeyHash()
             guard let keyHash else {
                 return .failure(HelperError.runtimeError("fail to get key hash from lock script"))
             }
-            let redeemScript = BitcoinScript.buildPayToWitnessPubkeyHash(hash: keyHash)
+            let redeemScript = BitcoinScript.buildPayToPublicKeyHash(hash: keyHash)
             input.scripts[keyHash.hexString] = redeemScript.data
             let utxo = BitcoinUnspentTransaction.with {
                 $0.outPoint = BitcoinOutPoint.with {
