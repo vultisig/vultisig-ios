@@ -31,5 +31,6 @@ class Chain: Codable, Hashable {
     static let Bitcoin = Chain(name: "Bitcoin", ticker: "BTC", signingKeyType: .ECDSA)
     static let BitcoinCash = Chain(name: "BitcoinCash", ticker: "BCH", signingKeyType: .ECDSA)
     static let Litecoin = Chain(name: "Litecoin", ticker: "LTC", signingKeyType: .ECDSA)
+    static let Dogecoin = Chain(name: "Dogecoin", ticker: "DOGE", signingKeyType: .ECDSA)
     static let Ethereum = Chain(name: "Ethereum", ticker: "ETH", signingKeyType: .ECDSA)
 }

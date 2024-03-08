@@ -29,21 +29,26 @@ class UTXOChainsHelper {
     
     func getCoin() -> Result<Coin, Error> {
         var ticker = "BTC"
+        var chain: Chain
         switch coin {
         case CoinType.bitcoin:
             ticker = "BTC"
+            chain = Chain.Bitcoin
         case CoinType.bitcoinCash:
             ticker = "BCH"
+            chain = Chain.BitcoinCash
         case CoinType.litecoin:
             ticker = "LTC"
+            chain = Chain.Litecoin
         case CoinType.dogecoin:
             ticker = "DOGE"
+            chain = Chain.Dogecoin
         default:
             return .failure(HelperError.runtimeError("doesn't support coin \(coin)"))
         }
         return getAddressFromPubKey()
             .map { addr in
-                Coin(chain: Chain.Bitcoin,
+                Coin(chain: chain,
                      ticker: ticker,
                      logo: "",
                      address: addr,
