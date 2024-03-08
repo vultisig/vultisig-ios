@@ -13,13 +13,18 @@ struct MainNavigationStack: View {
         // Push/pop onto this array to control presentation overlay globally
     @State private var presentationStack: [CurrentScreen] = []
     
+    // TODO: Remove this after implementing support for both light and dark mode.
+    init() {
+        UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: UIColor.white]
+    }
+    
     var body: some View {
         NavigationStack(path: $presentationStack) {
             VaultSelectionView(presentationStack: $presentationStack)
                 .navigationDestination(for: CurrentScreen.self) { screen in
                     switch screen {
                         case .welcome:
-                            WelcomeView(presentationStack: $presentationStack)
+                        WelcomeView(presentationStack: $presentationStack)
                         case .startScreen:
                             StartView(presentationStack: $presentationStack)
                         case .importWallet:

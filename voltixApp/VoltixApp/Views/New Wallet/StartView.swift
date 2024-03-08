@@ -50,7 +50,7 @@ struct StartView: View {
                         Text("IMPORT AN EXISTING VAULT")
                     }
                 }.onAppear {
-                    loadVaults()
+//                    loadVaults()
                 }
             }
             .frame(width: geometry.size.width)
@@ -68,5 +68,6 @@ struct StartView: View {
 struct StartView_Previews: PreviewProvider {
     static var previews: some View {
         StartView(presentationStack: .constant([]))
+            .environmentObject(ApplicationState())
     }
 }
