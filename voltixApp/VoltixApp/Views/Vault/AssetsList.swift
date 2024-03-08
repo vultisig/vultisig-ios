@@ -12,6 +12,8 @@ struct AssetsList: View {
     @EnvironmentObject var appState: ApplicationState
     @State private var assets = [
         Asset(ticker: "BTC", chainName: "Bitcoin", image: "btc", contractAddress: ""),
+        Asset(ticker: "BCH", chainName: "BitcoinCash", image: "bch", contractAddress: ""),
+        Asset(ticker: "LTC", chainName: "Litecoin", image: "ltc", contractAddress: ""),
         Asset(ticker: "ETH", chainName: "Ethereum", image: "eth", contractAddress: ""),
         Asset(ticker: "RUNE", chainName: "THORChain", image: "rune", contractAddress: ""),
         Asset(ticker: "USDC", chainName: "Ethereum", image: "usdc", contractAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"),
@@ -80,14 +82,30 @@ struct AssetsList: View {
                                 case .failure(let err):
                                     logger.info("fail to get bitcoin address,error:\(err.localizedDescription)")
                             }
-                    case Chain.Solana.name:
-                        let coinResult = SolanaHelper.getSolana(hexPubKey: vault.pubKeyEdDSA, hexChainCode: vault.hexChainCode)
+                        case Chain.BitcoinCash.name:
+                            let coinResult = BitcoinCashHelper.getBitcoinCash(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
+                            switch coinResult {
+                                case .success(let bch):
+                                    vault.coins.append(bch)
+                                case .failure(let err):
+                                    logger.info("fail to get bitcoin address,error:\(err.localizedDescription)")
+                            }
+                    case Chain.Litecoin.name:
+                        let coinResult = LitecoinHelper.getLitecoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
                         switch coinResult {
-                            case .success(let sol):
-                                vault.coins.append(sol)
-                            case .failure(let err):
-                                logger.info("fail to get solana address,error:\(err.localizedDescription)")
+                        case .success(let ltc):
+                            vault.coins.append(ltc)
+                        case .failure(let err):
+                            logger.info("fail to get bitcoin address,error:\(err.localizedDescription)")
                         }
+                        case Chain.Solana.name:
+                            let coinResult = SolanaHelper.getSolana(hexPubKey: vault.pubKeyEdDSA, hexChainCode: vault.hexChainCode)
+                            switch coinResult {
+                                case .success(let sol):
+                                    vault.coins.append(sol)
+                                case .failure(let err):
+                                    logger.info("fail to get solana address,error:\(err.localizedDescription)")
+                            }
                         default:
                             print("do it later")
                     }
@@ -102,6 +120,6 @@ struct AssetsList: View {
     }
 }
 
-//#Preview {
+// #Preview {
 //    AssetsList()
-//}
+// }

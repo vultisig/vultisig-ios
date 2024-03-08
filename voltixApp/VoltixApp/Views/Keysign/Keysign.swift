@@ -1,6 +1,6 @@
-    //
-    //  Keysign.swift
-    //  VoltixApp
+//
+//  Keysign.swift
+//  VoltixApp
 
 import Dispatch
 import Foundation
@@ -44,7 +44,6 @@ struct KeysignView: View {
     
     @StateObject private var etherScanService = EtherScanService()
     
-    
     var body: some View {
         VStack {
             Spacer()
@@ -58,9 +57,6 @@ struct KeysignView: View {
                 case .KeysignFinished:
                     KeyGenStatusText(status: "KEYSIGN FINISHED...")
                     
-                    
-                    
-                    
                     VStack {
                         if let transactionHash = etherScanService.transactionHash {
                             Text("Transaction Hash: \(transactionHash)")
@@ -73,12 +69,11 @@ struct KeysignView: View {
                             Text("Transaction Hash: \(txid)")
                         }
                         
-                        
-                            //                        Text("SIGNATURE: \(self.signature)")
-                            //                            .font(Font.custom("Menlo", size: 15)
-                            //                                .weight(.bold))
-                            //                            .multilineTextAlignment(.center)
-                            //
+                        //                        Text("SIGNATURE: \(self.signature)")
+                        //                            .font(Font.custom("Menlo", size: 15)
+                        //                                .weight(.bold))
+                        //                            .multilineTextAlignment(.center)
+                        //
                         Button(action: {
                             self.presentationStack = [.listVaultAssetView]
                         }) {
@@ -98,12 +93,12 @@ struct KeysignView: View {
                             return
                         }
                         
-                            // TODO: the following logic can be moved to keysignPayload.swift , or some viewmodel
-                            // get bitcoin transaction
+                        // TODO: the following logic can be moved to keysignPayload.swift , or some viewmodel
+                        // get bitcoin transaction
                         if let keysignPayload {
                             if keysignPayload.swapPayload != nil {
                                 let result = THORChainSwaps.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
-                                switch result{
+                                switch result {
                                     case .success(let tx):
                                         print(tx)
                                     case .failure(let err):
@@ -148,6 +143,32 @@ struct KeysignView: View {
                                                     logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
                                             }
                                     }
+                                case "BCH":
+                                    let result = BitcoinCashHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                                    switch result {
+                                        case .success(let tx):
+                                            print(tx)
+                                        case .failure(let err):
+                                            switch err {
+                                                case HelperError.runtimeError(let errDetail):
+                                                    logger.error("Failed to get signed transaction,error:\(errDetail)")
+                                                default:
+                                                    logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
+                                            }
+                                    }
+                                case "LTC":
+                                    let result = LitecoinHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                                    switch result {
+                                        case .success(let tx):
+                                            print(tx)
+                                        case .failure(let err):
+                                            switch err {
+                                                case HelperError.runtimeError(let errDetail):
+                                                    logger.error("Failed to get signed transaction,error:\(errDetail)")
+                                                default:
+                                                    logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
+                                            }
+                                    }
                                 case "ETH":
                                     let result = EthereumHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
                                     switch result {
@@ -164,7 +185,7 @@ struct KeysignView: View {
                                                     logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
                                             }
                                     }
-                                        //TODO: We should not use the ticker but the type, like if it is a token or not.
+                                // TODO: We should not use the ticker but the type, like if it is a token or not.
                                 case "USDC":
                                     let result = ERC20Helper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
                                     switch result {
@@ -231,7 +252,7 @@ struct KeysignView: View {
             Spacer()
         }
         .task {
-                // Create keygen instance, it takes time to generate the preparams
+            // Create keygen instance, it takes time to generate the preparams
             guard let vault = appState.currentVault else {
                 self.currentStatus = .KeysignFailed
                 return
@@ -241,7 +262,7 @@ struct KeysignView: View {
                 self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: msgHash)
                 self.stateAccess = LocalStateAccessorImpl(vault: vault)
                 var err: NSError?
-                    // keysign doesn't need to recreate preparams
+                // keysign doesn't need to recreate preparams
                 self.tssService = TssNewService(self.tssMessenger, self.stateAccess, false, &err)
                 if let err {
                     logger.error("Failed to create TSS instance, error: \(err.localizedDescription)")
@@ -263,6 +284,10 @@ struct KeysignView: View {
                     switch keysignPayload.coin.chain.ticker {
                         case "BTC":
                             keysignReq.derivePath = CoinType.bitcoin.derivationPath()
+                        case "BCH":
+                            keysignReq.derivePath = CoinType.bitcoinCash.derivationPath()
+                        case "LTC":
+                            keysignReq.derivePath = CoinType.litecoin.derivationPath()
                         case "ETH":
                             keysignReq.derivePath = CoinType.ethereum.derivationPath()
                         case "RUNE":
@@ -274,8 +299,8 @@ struct KeysignView: View {
                             self.currentStatus = .KeysignFailed
                     }
                 }
-                    // sign messages one by one , since the msg is in hex format , so we need convert it to base64
-                    // and then pass it to TSS for keysign
+                // sign messages one by one , since the msg is in hex format , so we need convert it to base64
+                // and then pass it to TSS for keysign
                 if let msgToSign = Data(hexString: msg)?.base64EncodedString() {
                     keysignReq.messageToSign = msgToSign
                 }
@@ -292,7 +317,7 @@ struct KeysignView: View {
                     if let service = self.tssService {
                         let resp = try await tssKeysign(service: service, req: keysignReq, keysignType: keysignType)
                         self.signatures[msg] = resp
-                            // TODO: save the signature with the message it signed
+                        // TODO: save the signature with the message it signed
                         self.signature = "R:\(resp.r), S:\(resp.s), RecoveryID:\(resp.recoveryID)"
                     }
                     self.messagePuller.stop()

@@ -59,36 +59,23 @@ struct ListVaultAssetView: View {
                     showingCoinList = true
                 }.buttonStyle(PlainButtonStyle())
                 
-//                Button("test", systemImage: "doc.questionmark") {
-//                    guard let vault = appState.currentVault else { return }
-//                    // swap RUNE to USDT
-//                    let coin = vault.coins.first { $0.ticker == "RUNE" }
-//                    if let coin {
-//                        self.presentationStack.append(.KeysignDiscovery(KeysignPayload(
-//                            coin: coin,
-//                            toAddress: "",
-//                            toAmount: 1000000, // 0.01 RUNE
-//                            chainSpecific: BlockChainSpecific.THORChain(accountNumber: 96761, sequence: 1),
-//                            utxos: [],
-//                            memo: "voltix",
-//                            swapPayload: THORChainSwapPayload(fromAddress: coin.address,
-//                                                              fromAsset: THORChainSwapAsset.with{
-//                                                                  $0.chain = .thor
-//                                                                  $0.symbol = "RUNE"
-//                                                                  $0.tokenID = ""
-//                                                              },
-//                                                              toAsset: THORChainSwapAsset.with{
-//                                                                  $0.chain = .eth
-//                                                                  $0.symbol = "ETH"
-//                                                                  $0.tokenID = ""
-//                                                              },
-//                                                              toAddress: "0xe5F238C95142be312852e864B830daADB9B7D290",
-//                                                              vaultAddress: "0x4f2f271e58e94a8e888573c811e626e86b113167", // THIS one is very important , you need to get the latest from THORChain
-//                                                              routerAddress: "0xD37BbE5744D730a1d98d8DC97c42F0Ca46aD7146",
-//                                                              fromAmount: "1000000",
-//                                                              toAmountLimit: "100"))))
-//                    }
-//                }.buttonStyle(PlainButtonStyle())
+                Button("test", systemImage: "doc.questionmark") {
+                    guard let vault = appState.currentVault else { return }
+                    // swap RUNE to USDT
+                    let coin = vault.coins.first { $0.ticker == "BCH" }
+                    if let coin {
+                        self.presentationStack.append(.KeysignDiscovery(KeysignPayload(
+                            coin: coin,
+                            toAddress: "qqgy8ndpz7uqw3lphgn3h23czhdlkquuwg7r568mvd",
+                            toAmount: 1000000, //
+                            chainSpecific: BlockChainSpecific.Bitcoin(byteFee: 10),
+                            utxos: [
+                                UtxoInfo(hash: "", amount: 10000000 , index: 0)
+                            ],
+                            memo: "",
+                            swapPayload: nil)))
+                    }
+                }.buttonStyle(PlainButtonStyle())
             }
         }
         .onAppear {

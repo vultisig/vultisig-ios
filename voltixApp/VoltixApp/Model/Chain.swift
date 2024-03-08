@@ -5,7 +5,7 @@
 import Foundation
 import SwiftData
 
-class Chain : Codable, Hashable {
+class Chain: Codable, Hashable {
     var name: String
     var ticker: String
     var signingKeyType: KeyType
@@ -27,7 +27,9 @@ class Chain : Codable, Hashable {
     }
     
     static let THORChain = Chain(name: "THORChain", ticker: "RUNE", signingKeyType: KeyType.ECDSA)
-    static let Solana = Chain(name:"Solana",ticker: "SOL",signingKeyType: KeyType.EdDSA)
-    static let Bitcoin = Chain(name:"Bitcoin",ticker: "BTC",signingKeyType: .ECDSA)
-    static let Ethereum = Chain(name:"Ethereum", ticker:"ETH",signingKeyType: .ECDSA)
+    static let Solana = Chain(name: "Solana", ticker: "SOL", signingKeyType: KeyType.EdDSA)
+    static let Bitcoin = Chain(name: "Bitcoin", ticker: "BTC", signingKeyType: .ECDSA)
+    static let BitcoinCash = Chain(name: "BitcoinCash", ticker: "BCH", signingKeyType: .ECDSA)
+    static let Litecoin = Chain(name: "Litecoin", ticker: "LTC", signingKeyType: .ECDSA)
+    static let Ethereum = Chain(name: "Ethereum", ticker: "ETH", signingKeyType: .ECDSA)
 }
