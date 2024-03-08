@@ -91,7 +91,7 @@ class UTXOChainsHelper {
     }
     
     func getSigningInputData(keysignPayload: KeysignPayload, signingInput: BitcoinSigningInput) -> Result<Data, Error> {
-        guard case .Bitcoin(let byteFee) = keysignPayload.chainSpecific else {
+        guard case .UTXO(let byteFee) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get UTXO chain specific byte fee"))
         }
         var input = signingInput
@@ -143,7 +143,7 @@ class UTXOChainsHelper {
     }
     
     func getBitcoinSigningInput(keysignPayload: KeysignPayload) -> Result<BitcoinSigningInput, Error> {
-        guard case .Bitcoin(let byteFee) = keysignPayload.chainSpecific else {
+        guard case .UTXO(let byteFee) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get UTXO chain specific byte fee"))
         }
         
