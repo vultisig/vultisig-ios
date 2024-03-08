@@ -194,3 +194,8 @@ struct VaultSelectionView: View {
         }
     }
 }
+
+#Preview {
+    VaultSelectionView(presentationStack: .constant([]))
+        .environmentObject(ApplicationState.shared)
+}

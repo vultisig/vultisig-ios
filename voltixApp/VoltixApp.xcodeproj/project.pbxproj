@@ -60,6 +60,7 @@
 		A633B1382B997F39003D1738 /* NavigationHelpButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B1372B997F39003D1738 /* NavigationHelpButton.swift */; };
 		A633B13A2B9A5A22003D1738 /* ImportWalletView2.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B1392B9A5A22003D1738 /* ImportWalletView2.swift */; };
 		A633B13C2B9A6564003D1738 /* SetupVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B13B2B9A6564003D1738 /* SetupVaultView.swift */; };
+		A633B13E2B9A9E30003D1738 /* VaultDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B13D2B9A9E30003D1738 /* VaultDetailView.swift */; };
 		A65649DF2B96602700E4B329 /* DecodableDefaultExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */; };
 		A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D82B96602700E4B329 /* BigUIntExtension.swift */; };
 		A65649E12B96602700E4B329 /* Int64Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D92B96602700E4B329 /* Int64Extension.swift */; };
@@ -219,6 +220,7 @@
 		A633B1372B997F39003D1738 /* NavigationHelpButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationHelpButton.swift; sourceTree = "<group>"; };
 		A633B1392B9A5A22003D1738 /* ImportWalletView2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportWalletView2.swift; sourceTree = "<group>"; };
 		A633B13B2B9A6564003D1738 /* SetupVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultView.swift; sourceTree = "<group>"; };
+		A633B13D2B9A9E30003D1738 /* VaultDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailView.swift; sourceTree = "<group>"; };
 		A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DecodableDefaultExtension.swift; sourceTree = "<group>"; };
 		A65649D82B96602700E4B329 /* BigUIntExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BigUIntExtension.swift; sourceTree = "<group>"; };
 		A65649D92B96602700E4B329 /* Int64Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Int64Extension.swift; sourceTree = "<group>"; };
@@ -635,6 +637,7 @@
 				D9AD8EEB2B6730ED0009F8D5 /* VaultAssetsView.swift */,
 				D9AD8EE92B6730E30009F8D5 /* MenuView.swift */,
 				DE49A1A42B68BB6B000F3AFB /* VaultSelectionView.swift */,
+				A633B13D2B9A9E30003D1738 /* VaultDetailView.swift */,
 			);
 			path = Vault;
 			sourceTree = "<group>";
@@ -1015,6 +1018,7 @@
 				DEEFF4FD2B9835DE0015692E /* THORChainSwapChainExtension.swift in Sources */,
 				049BBB522B71E498004C231F /* AssetsView.swift in Sources */,
 				A65649DF2B96602700E4B329 /* DecodableDefaultExtension.swift in Sources */,
+				A633B13E2B9A9E30003D1738 /* VaultDetailView.swift in Sources */,
 				469ED39B2B98E8B5008D4951 /* ThorchainBalance.swift in Sources */,
 				DEEDAEE32B8AF8B1005170E8 /* publickey.swift in Sources */,
 				D9AD8EE42B6730940009F8D5 /* NewWalletInstructionsView.swift in Sources */,
