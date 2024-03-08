@@ -4,51 +4,77 @@ import SwiftData
 struct WelcomeView: View {
     @Binding var presentationStack: [CurrentScreen]
     
+    @State var didAppear = false
+    
     var body: some View {
+        ZStack {
+            background
+            view
+        }
+        .toolbar(.hidden, for: .navigationBar)
+        .onAppear {
+            setData()
+        }
+    }
+    
+    var background: some View {
+        Color.backgroundBlue
+            .ignoresSafeArea()
+    }
+    
+    var view: some View {
         VStack {
             Spacer()
             content
             Spacer()
             button
         }
-        .toolbar(.hidden, for: .navigationBar)
     }
     
     var content: some View {
-        VStack(spacing: 12) {
-            logo
+        VStack(spacing: 50) {
+            VoltixLogo()
+            text
+        }
+    }
+    
+    var text: some View {
+        VStack(spacing: 18) {
             title
             description
         }
     }
     
-    var logo: some View {
-        Image("Logo")
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .frame(height: 120)
-            .foregroundColor(.primary)
-            .padding(.bottom, 20)
-    }
-    
     var title: some View {
         Text("secureCryptoVault")
-            .font(.body20MenloBold)
+            .font(.body20MontserratSemiBold)
+            .foregroundColor(.neutral0)
+            .opacity(didAppear ? 1 : 0)
     }
     
     var description: some View {
         Text("homeViewDescription")
-            .font(.body18Menlo)
+            .font(.body12MontserratSemiBold)
+            .foregroundColor(.neutral0)
             .multilineTextAlignment(.center)
+            .lineSpacing(10)
+            .opacity(didAppear ? 0.8 : 0)
     }
     
     var button: some View {
-        BottomBar(
-            content: "START",
-            onClick: {
-                self.presentationStack.append(.startScreen)
-            }
-        )
+        NavigationLink {
+            CreateVaultView(presentationStack: $presentationStack)
+        } label: {
+            FilledButton(title: "start")
+                .padding(40)
+                .opacity(didAppear ? 1 : 0)
+        }
+    }
+    
+    private func setData() {
+        withAnimation {
+            didAppear = true
+        }
     }
 }
 

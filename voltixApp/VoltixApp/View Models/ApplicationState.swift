@@ -14,5 +14,5 @@ final class ApplicationState : ObservableObject {
     // Singleton
     static let shared = ApplicationState()
     
-    private init() {}
+    init() {}
 }

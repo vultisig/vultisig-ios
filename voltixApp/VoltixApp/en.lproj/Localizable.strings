@@ -8,3 +8,15 @@
 "secureCryptoVault" = "SECURE CRYPTO VAULT";
 "thisDevice" = "THIS DEVICE:";
 "homeViewDescription" = "TWO FACTOR AUTHENTICATION\nSECURE, TRUSTED DEVICES\nFULLY SELF-CUSTODIAL\nNO TRACKING, NO REGISTRATION\nFULLY OPEN-SOURCE\nAUDITED";
+"start" = "Start";
+"createNewVault" = "Create a New Vault";
+"importExistingVault" = "Import an Existing Vault";
+"import" = "Import";
+"continue" = "Continue";
+"setup" = "Setup";
+"pair" = "Pair";
+"join" = "Join";
+"enterPreviousVault" = "Enter your previously created vault share";
+"uploadFile" = "Upload file, text or image";
+"devicesOnSameWifi" = "Keep devices on the same WiFi Network with VOLTIX open";
+"need3Devices" = "You need 3 devices";

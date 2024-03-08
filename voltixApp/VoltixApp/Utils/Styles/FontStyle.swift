@@ -16,19 +16,28 @@ extension Font {
     static let body12Menlo = Font.custom("Menlo", size: 12)
     static let body13Menlo = Font.custom("Menlo", size: 13)
     static let body15Menlo = Font.custom("Menlo", size: 15)
+    static let body16Menlo = Font.custom("Menlo", size: 16)
     static let body18Menlo = Font.custom("Menlo", size: 18)
     static let body20Menlo = Font.custom("Menlo", size: 20)
+    
+    static let body12Montserrat = Font.custom("Montserrat", size: 12)
     
     // Medium
     static let body13MontserratMedium = Font.custom("Montserrat", size: 13).weight(.medium)
     static let body18MontserratMedium = Font.custom("Montserrat", size: 18).weight(.medium)
     static let body24MontserratMedium = Font.custom("Montserrat", size: 24).weight(.medium)
     
+    // Semi-bold
+    static let body12MontserratSemiBold = Font.custom("Montserrat", size: 12).weight(.semibold)
+    static let body20MontserratSemiBold = Font.custom("Montserrat", size: 20).weight(.semibold)
+    
     // Bold
     static let body13MenloBold = Font.custom("Menlo", size: 13).bold()
     static let body15MenloBold = Font.custom("Menlo", size: 15).bold()
     static let body18MenloBold = Font.custom("Menlo", size: 18).bold()
     static let body20MenloBold = Font.custom("Menlo", size: 20).bold()
+    
+    static let body16MontserratBold = Font.custom("Montserrat", size: 16).bold()
     
     /// TITLE
     // Ultra-Light
@@ -37,6 +46,9 @@ extension Font {
     // Light
     static let title40MontserratLight = Font.custom("Montserrat", size: 40).weight(.light)
     static let title80MontserratLight = Font.custom("Montserrat", size: 80).weight(.light)
+    
+    // Semi-bold
+    static let title40MontserratSemiBold = Font.custom("Montserrat", size: 40).weight(.semibold)
     
     // Bold
     static let title30MenloBold = Font.custom("Menlo", size: 30).bold()

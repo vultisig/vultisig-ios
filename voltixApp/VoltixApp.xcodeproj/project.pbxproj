@@ -12,7 +12,7 @@
 		049BBB562B71E5F5004C231F /* Choose.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB552B71E5F5004C231F /* Choose.swift */; };
 		049BBB582B71E72F004C231F /* DeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB572B71E72F004C231F /* DeviceView.swift */; };
 		049BBB5C2B71E7F6004C231F /* LargeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB5B2B71E7F6004C231F /* LargeButton.swift */; };
-		049BBB5E2B71E83D004C231F /* Logo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB5D2B71E83D004C231F /* Logo.swift */; };
+		049BBB5E2B71E83D004C231F /* VoltixLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB5D2B71E83D004C231F /* VoltixLogo.swift */; };
 		049BBB602B71E8A2004C231F /* MenuItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB5F2B71E8A2004C231F /* MenuItem.swift */; };
 		049BBB622B71E8E7004C231F /* AssetItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB612B71E8E7004C231F /* AssetItem.swift */; };
 		049BBB662B71E987004C231F /* VaultItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB652B71E987004C231F /* VaultItem.swift */; };
@@ -50,6 +50,16 @@
 		A62758F22B97B10600ADE3A6 /* Endpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62758F12B97B10600ADE3A6 /* Endpoint.swift */; };
 		A62758F52B97CE9E00ADE3A6 /* FontStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62758F42B97CE9E00ADE3A6 /* FontStyle.swift */; };
 		A62758F72B97DF4A00ADE3A6 /* ColorStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62758F62B97DF4A00ADE3A6 /* ColorStyle.swift */; };
+		A633B11C2B99273A003D1738 /* ColorExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B11B2B99273A003D1738 /* ColorExtensions.swift */; };
+		A633B1212B993BF5003D1738 /* Montserrat-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A633B11F2B993BF5003D1738 /* Montserrat-Italic.ttf */; };
+		A633B1222B993BF5003D1738 /* Montserrat.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A633B1202B993BF5003D1738 /* Montserrat.ttf */; };
+		A633B1252B993FE7003D1738 /* FilledButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B1242B993FE7003D1738 /* FilledButton.swift */; };
+		A633B12D2B994E92003D1738 /* CreateVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B12C2B994E92003D1738 /* CreateVaultView.swift */; };
+		A633B12F2B9952D8003D1738 /* OutlineButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B12E2B9952D8003D1738 /* OutlineButton.swift */; };
+		A633B1362B997D57003D1738 /* NavigationBackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B1352B997D57003D1738 /* NavigationBackButton.swift */; };
+		A633B1382B997F39003D1738 /* NavigationHelpButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B1372B997F39003D1738 /* NavigationHelpButton.swift */; };
+		A633B13A2B9A5A22003D1738 /* ImportWalletView2.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B1392B9A5A22003D1738 /* ImportWalletView2.swift */; };
+		A633B13C2B9A6564003D1738 /* SetupVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B13B2B9A6564003D1738 /* SetupVaultView.swift */; };
 		A65649DF2B96602700E4B329 /* DecodableDefaultExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */; };
 		A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D82B96602700E4B329 /* BigUIntExtension.swift */; };
 		A65649E12B96602700E4B329 /* Int64Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D92B96602700E4B329 /* Int64Extension.swift */; };
@@ -161,7 +171,7 @@
 		049BBB552B71E5F5004C231F /* Choose.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Choose.swift; sourceTree = "<group>"; };
 		049BBB572B71E72F004C231F /* DeviceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceView.swift; sourceTree = "<group>"; };
 		049BBB5B2B71E7F6004C231F /* LargeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeButton.swift; sourceTree = "<group>"; };
-		049BBB5D2B71E83D004C231F /* Logo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logo.swift; sourceTree = "<group>"; };
+		049BBB5D2B71E83D004C231F /* VoltixLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoltixLogo.swift; sourceTree = "<group>"; };
 		049BBB5F2B71E8A2004C231F /* MenuItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuItem.swift; sourceTree = "<group>"; };
 		049BBB612B71E8E7004C231F /* AssetItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetItem.swift; sourceTree = "<group>"; };
 		049BBB652B71E987004C231F /* VaultItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultItem.swift; sourceTree = "<group>"; };
@@ -199,6 +209,16 @@
 		A62758F12B97B10600ADE3A6 /* Endpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endpoint.swift; sourceTree = "<group>"; };
 		A62758F42B97CE9E00ADE3A6 /* FontStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontStyle.swift; sourceTree = "<group>"; };
 		A62758F62B97DF4A00ADE3A6 /* ColorStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorStyle.swift; sourceTree = "<group>"; };
+		A633B11B2B99273A003D1738 /* ColorExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorExtensions.swift; sourceTree = "<group>"; };
+		A633B11F2B993BF5003D1738 /* Montserrat-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Montserrat-Italic.ttf"; sourceTree = "<group>"; };
+		A633B1202B993BF5003D1738 /* Montserrat.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Montserrat.ttf; sourceTree = "<group>"; };
+		A633B1242B993FE7003D1738 /* FilledButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilledButton.swift; sourceTree = "<group>"; };
+		A633B12C2B994E92003D1738 /* CreateVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateVaultView.swift; sourceTree = "<group>"; };
+		A633B12E2B9952D8003D1738 /* OutlineButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutlineButton.swift; sourceTree = "<group>"; };
+		A633B1352B997D57003D1738 /* NavigationBackButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBackButton.swift; sourceTree = "<group>"; };
+		A633B1372B997F39003D1738 /* NavigationHelpButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationHelpButton.swift; sourceTree = "<group>"; };
+		A633B1392B9A5A22003D1738 /* ImportWalletView2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportWalletView2.swift; sourceTree = "<group>"; };
+		A633B13B2B9A6564003D1738 /* SetupVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultView.swift; sourceTree = "<group>"; };
 		A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DecodableDefaultExtension.swift; sourceTree = "<group>"; };
 		A65649D82B96602700E4B329 /* BigUIntExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BigUIntExtension.swift; sourceTree = "<group>"; };
 		A65649D92B96602700E4B329 /* Int64Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Int64Extension.swift; sourceTree = "<group>"; };
@@ -328,19 +348,19 @@
 				049BBB532B71E4F8004C231F /* BottomBar.swift */,
 				049BBB552B71E5F5004C231F /* Choose.swift */,
 				049BBB572B71E72F004C231F /* DeviceView.swift */,
-				049BBB5B2B71E7F6004C231F /* LargeButton.swift */,
-				049BBB5D2B71E83D004C231F /* Logo.swift */,
+				049BBB5D2B71E83D004C231F /* VoltixLogo.swift */,
 				049BBB5F2B71E8A2004C231F /* MenuItem.swift */,
 				049BBB612B71E8E7004C231F /* AssetItem.swift */,
 				049BBB652B71E987004C231F /* VaultItem.swift */,
 				049BBB672B71E9C5004C231F /* WifiBar.swift */,
 				D7347C2D2B759A0F00887E57 /* ProgressBottomBar.swift */,
-				467B2D652B7B51F700AEDF64 /* NavigationStackButtons.swift */,
 				465B09AA2B7C840100952DD9 /* ToastView.swift */,
 				465B09AC2B7C841B00952DD9 /* QrCodeView.swift */,
 				465B09AE2B7C84C600952DD9 /* ShareSheet.swift */,
 				465B09B22B7D710A00952DD9 /* DocumentPicker.swift */,
 				46A616E92B8807B700372994 /* KeygenStatusText.swift */,
+				A633B1232B993FCC003D1738 /* Buttons */,
+				A633B1342B997D35003D1738 /* Navigation Items */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -434,6 +454,50 @@
 			path = Styles;
 			sourceTree = "<group>";
 		};
+		A633B11D2B993BCD003D1738 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				A633B11E2B993BDC003D1738 /* Fonts */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		A633B11E2B993BDC003D1738 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				A633B11F2B993BF5003D1738 /* Montserrat-Italic.ttf */,
+				A633B1202B993BF5003D1738 /* Montserrat.ttf */,
+			);
+			path = Fonts;
+			sourceTree = "<group>";
+		};
+		A633B1232B993FCC003D1738 /* Buttons */ = {
+			isa = PBXGroup;
+			children = (
+				467B2D652B7B51F700AEDF64 /* NavigationStackButtons.swift */,
+				049BBB5B2B71E7F6004C231F /* LargeButton.swift */,
+				A633B1242B993FE7003D1738 /* FilledButton.swift */,
+				A633B12E2B9952D8003D1738 /* OutlineButton.swift */,
+			);
+			path = Buttons;
+			sourceTree = "<group>";
+		};
+		A633B12B2B994D76003D1738 /* New Group */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = "New Group";
+			sourceTree = "<group>";
+		};
+		A633B1342B997D35003D1738 /* Navigation Items */ = {
+			isa = PBXGroup;
+			children = (
+				A633B1352B997D57003D1738 /* NavigationBackButton.swift */,
+				A633B1372B997F39003D1738 /* NavigationHelpButton.swift */,
+			);
+			path = "Navigation Items";
+			sourceTree = "<group>";
+		};
 		A65649D52B965FC400E4B329 /* View Models */ = {
 			isa = PBXGroup;
 			children = (
@@ -454,6 +518,7 @@
 				A65649DC2B96602700E4B329 /* StringExtension.swift */,
 				A65649DD2B96602700E4B329 /* VaultExtension.swift */,
 				A65649DE2B96602700E4B329 /* TssExtension.swift */,
+				A633B11B2B99273A003D1738 /* ColorExtensions.swift */,
 				DEEFF4FC2B9835DE0015692E /* THORChainSwapChainExtension.swift */,
 			);
 			path = Extensions;
@@ -481,6 +546,7 @@
 		D9AD8ED72B67225F0009F8D5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				A633B12B2B994D76003D1738 /* New Group */,
 				DE49A1682B65F6D9000F3AFB /* MainNavigationStack.swift */,
 				D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */,
 				46D067E42B8852B70052F535 /* Keygen */,
@@ -528,8 +594,11 @@
 			isa = PBXGroup;
 			children = (
 				D9AD8EDF2B6730640009F8D5 /* StartView.swift */,
+				A633B12C2B994E92003D1738 /* CreateVaultView.swift */,
 				D9AD8EE12B67307F0009F8D5 /* ImportWalletView.swift */,
 				D9AD8EE32B6730940009F8D5 /* NewWalletInstructionsView.swift */,
+				A633B1392B9A5A22003D1738 /* ImportWalletView2.swift */,
+				A633B13B2B9A6564003D1738 /* SetupVaultView.swift */,
 			);
 			path = "New Wallet";
 			sourceTree = "<group>";
@@ -653,6 +722,7 @@
 				DE28F52C2B7B0E6200E33058 /* Chains */,
 				A65649D62B96602700E4B329 /* Extensions */,
 				DE1572AA2B7174C5009BC7C5 /* Utils */,
+				A633B11D2B993BCD003D1738 /* Resources */,
 				DE1572932B70F254009BC7C5 /* Tss */,
 				DE49A1A62B68C1EE000F3AFB /* PreviewHelper */,
 				DE49A16F2B65F6DB000F3AFB /* Preview Content */,
@@ -823,9 +893,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A633B1212B993BF5003D1738 /* Montserrat-Italic.ttf in Resources */,
 				DE49A1712B65F6DB000F3AFB /* Preview Assets.xcassets in Resources */,
 				A6564A0B2B96A04D00E4B329 /* Localizable.strings in Resources */,
 				DE49A1942B65F7B6000F3AFB /* Mediator in Resources */,
+				A633B1222B993BF5003D1738 /* Montserrat.ttf in Resources */,
 				DE49A16D2B65F6DB000F3AFB /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -853,7 +925,7 @@
 			files = (
 				DE4DFA7B2B7B1692004F8E73 /* ModelContainerPreview.swift in Sources */,
 				049BBB662B71E987004C231F /* VaultItem.swift in Sources */,
-				049BBB5E2B71E83D004C231F /* Logo.swift in Sources */,
+				049BBB5E2B71E83D004C231F /* VoltixLogo.swift in Sources */,
 				DE1572A02B70F284009BC7C5 /* Keysign.swift in Sources */,
 				46AC40AA2B922931001704E6 /* EthereumTransactionListView.swift in Sources */,
 				465B09AD2B7C841B00952DD9 /* QrCodeView.swift in Sources */,
@@ -861,6 +933,8 @@
 				465B09B32B7D710A00952DD9 /* DocumentPicker.swift in Sources */,
 				DE1572992B70F26A009BC7C5 /* KeyType.swift in Sources */,
 				4606B3AE2B8045F60045094D /* BitcoinTransactionListView.swift in Sources */,
+				A633B13A2B9A5A22003D1738 /* ImportWalletView2.swift in Sources */,
+				A633B12F2B9952D8003D1738 /* OutlineButton.swift in Sources */,
 				465B09A72B7C049400952DD9 /* UnspentOutputsService.swift in Sources */,
 				049BBB582B71E72F004C231F /* DeviceView.swift in Sources */,
 				D9AD8EF12B6731660009F8D5 /* SendInputDetailsView.swift in Sources */,
@@ -904,6 +978,7 @@
 				A62758F22B97B10600ADE3A6 /* Endpoint.swift in Sources */,
 				049BBB562B71E5F5004C231F /* Choose.swift in Sources */,
 				D7347C2E2B759A0F00887E57 /* ProgressBottomBar.swift in Sources */,
+				A633B1252B993FE7003D1738 /* FilledButton.swift in Sources */,
 				46F47CBB2B870EE900D964EA /* BitcoinTransactionMempool.swift in Sources */,
 				D9AD8EDA2B6722CC0009F8D5 /* ApplicationState.swift in Sources */,
 				D9AD8EFF2B67321D0009F8D5 /* SwapWaitingForPeersView.swift in Sources */,
@@ -916,6 +991,7 @@
 				D9AD8F082B675ECD0009F8D5 /* SupportedAssets.swift in Sources */,
 				46F8F7262B99FEEC0099454E /* ThorchainErrorResponse.swift in Sources */,
 				A65649EA2B96690400E4B329 /* KeyShare.swift in Sources */,
+				A633B13C2B9A6564003D1738 /* SetupVaultView.swift in Sources */,
 				DE49A1B22B6A0F77000F3AFB /* JoinKeygenView.swift in Sources */,
 				DEFC7BFF2B8EC95E0090B07A /* thorchain.swift in Sources */,
 				DE15729E2B70F284009BC7C5 /* JoinKeysignView.swift in Sources */,
@@ -943,6 +1019,7 @@
 				DEEDAEE32B8AF8B1005170E8 /* publickey.swift in Sources */,
 				D9AD8EE42B6730940009F8D5 /* NewWalletInstructionsView.swift in Sources */,
 				DE28F52E2B7B0E7400E33058 /* bitcoin.swift in Sources */,
+				A633B11C2B99273A003D1738 /* ColorExtensions.swift in Sources */,
 				DE32F0062B8460670035D81E /* ListVaultAssetView.swift in Sources */,
 				DEEDAEE52B8AFB5D005170E8 /* common.swift in Sources */,
 				A65649E22B96602700E4B329 /* DataExtension.swift in Sources */,
@@ -957,8 +1034,11 @@
 				A65649F02B966A1200E4B329 /* Output.swift in Sources */,
 				465B09A92B7C176700952DD9 /* SendTransaction.swift in Sources */,
 				A6564A022B969A1200E4B329 /* Price.swift in Sources */,
+				A633B12D2B994E92003D1738 /* CreateVaultView.swift in Sources */,
+				A633B1382B997F39003D1738 /* NavigationHelpButton.swift in Sources */,
 				D9AD8EE62B6730A40009F8D5 /* PeerDiscoveryView.swift in Sources */,
 				A62758F52B97CE9E00ADE3A6 /* FontStyle.swift in Sources */,
+				A633B1362B997D57003D1738 /* NavigationBackButton.swift in Sources */,
 				DE49A19E2B671416000F3AFB /* Coin.swift in Sources */,
 				A65649E42B96602700E4B329 /* StringExtension.swift in Sources */,
 				469ED3A42B98F5DE008D4951 /* ThorchainAccountValue.swift in Sources */,
@@ -1155,8 +1235,8 @@
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
@@ -1202,8 +1282,8 @@
 				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
