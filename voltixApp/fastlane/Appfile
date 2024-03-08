@@ -1,5 +1,4 @@
-app_identifier("com.voltix.voltixApp.enrique") # The bundle identifier of your app
-apple_id("johnnyluo1980@gmail.com") # Your Apple Developer Portal username
+app_identifier("com.voltix.voltixApp") # The bundle identifier of your app
 
 itc_team_id("695788") # App Store Connect Team ID
 team_id("KEUQSEUKAQ") # Developer Portal Team ID
