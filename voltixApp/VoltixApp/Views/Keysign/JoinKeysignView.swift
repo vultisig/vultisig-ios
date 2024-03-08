@@ -283,7 +283,12 @@ struct JoinKeysignView: View {
     }
     
     private func prepareKeysignMessages(keysignPayload: KeysignPayload) {
-        let result = keysignPayload.getKeysignMessages()
+        guard let vault = appState.currentVault else {
+            logger.error("current vault is nil")
+            self.currentStatus = .FailedToStart
+            return
+        }
+        let result = keysignPayload.getKeysignMessages(vault: vault)
         switch result {
             case .success(let preSignedImageHash):
                 logger.info("Successfully prepared messages for keysigning.")

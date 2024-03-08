@@ -1,12 +1,12 @@
-    //
-    //  VoltixApp
-    //
-    //  Created by Enrique Souza Soares
-    //
+//
+//  VoltixApp
+//
+//  Created by Enrique Souza Soares
+//
 import SwiftUI
 
 struct BitcoinTransactionListView: View {
-    @StateObject var bitcoinTransactionsService: BitcoinTransactionsService = BitcoinTransactionsService()
+    @StateObject var bitcoinTransactionsService: BitcoinTransactionsService = .init()
     @EnvironmentObject var appState: ApplicationState
     @Binding var presentationStack: [CurrentScreen]
     
@@ -36,13 +36,14 @@ struct BitcoinTransactionListView: View {
             }
             .task {
                 if let vault = appState.currentVault {
-                    let result = BitcoinHelper.getBitcoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
+                    let utxoHelper = UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                    let result = utxoHelper.getCoin()
                     switch result {
                         case .success(let btc):
-                                // "bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu"
+                            // "bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu"
                             print(btc.address)
                             await bitcoinTransactionsService.fetchTransactions(btc.address)
-                                //await bitcoinTransactionsService.fetchTransactions("bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu")
+                        // await bitcoinTransactionsService.fetchTransactions("bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu")
                         case .failure(let error):
                             print("error: \(error)")
                     }
@@ -56,7 +57,7 @@ struct TransactionRow: View {
     let transaction: BitcoinTransactionMempool
     
     var body: some View {
-        Section{
+        Section {
             VStack(alignment: .leading) {
                 LabelTxHash(title: "TX ID:".uppercased(), value: transaction.txid, isSent: transaction.isSent)
                     .padding(.vertical, 5)
@@ -89,27 +90,25 @@ struct TransactionRow: View {
                 Divider() // Adds a horizontal line
                 LabelTextNumeric(title: "Fee:", value: String(transaction.fee) + " SATS")
                     .padding(.vertical, 5)
-                    //                Divider() // Adds a horizontal line
-                    //                LabelTextNumeric(title: "Direction:", value: transaction.isSent ? "Sent" : "Received")
-                    //                    .padding(.vertical, 5)
+                //                Divider() // Adds a horizontal line
+                //                LabelTextNumeric(title: "Direction:", value: transaction.isSent ? "Sent" : "Received")
+                //                    .padding(.vertical, 5)
             }
         }
     }
-    
     
     @ViewBuilder
     private func LabelTxHash(title: String, value: String, isSent: Bool) -> some View {
         let url = Endpoint.bitcoinLabelTxHash(value)
         
         VStack(alignment: .leading) {
-            HStack{
+            HStack {
                 Image(systemName: isSent ? "arrowtriangle.up.square" : "arrowtriangle.down.square")
                     .resizable()
                     .frame(width: 20, height: 20)
                 
                 Text(title)
                     .font(.body20MenloBold)
-                
             }
             Link(destination: URL(string: url)!) {
                 Text(value)
@@ -155,5 +154,4 @@ struct TransactionRow: View {
         
         return (formatter.string(from: NSNumber(value: amountBTC)) ?? "\(amountBTC)") + " BTC"
     }
-
 }

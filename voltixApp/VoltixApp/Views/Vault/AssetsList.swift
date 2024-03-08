@@ -11,11 +11,14 @@ private let logger = Logger(subsystem: "assets-list", category: "view")
 struct AssetsList: View {
     @EnvironmentObject var appState: ApplicationState
     @State private var assets = [
-        Asset(ticker: "BTC", chainName: "Bitcoin", image: "btc", contractAddress: ""),
-        Asset(ticker: "ETH", chainName: "Ethereum", image: "eth", contractAddress: ""),
-        Asset(ticker: "RUNE", chainName: "THORChain", image: "rune", contractAddress: ""),
+        Asset(ticker: "BTC", chainName: "Bitcoin", image: "btc", contractAddress: nil),
+        Asset(ticker: "BCH", chainName: "BitcoinCash", image: "bch", contractAddress: nil),
+        Asset(ticker: "LTC", chainName: "Litecoin", image: "ltc", contractAddress: nil),
+        Asset(ticker: "DOGE", chainName: "Dogecoin", image: "doge", contractAddress: nil),
+        Asset(ticker: "ETH", chainName: "Ethereum", image: "eth", contractAddress: nil),
+        Asset(ticker: "RUNE", chainName: "THORChain", image: "rune", contractAddress: nil),
         Asset(ticker: "USDC", chainName: "Ethereum", image: "usdc", contractAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"),
-        Asset(ticker: "SOL", chainName: "Solana", image: "solana", contractAddress: "")
+        Asset(ticker: "SOL", chainName: "Solana", image: "solana", contractAddress: nil)
     ]
     @State private var selection = Set<Asset>()
     @State var editMode = EditMode.active
@@ -73,21 +76,45 @@ struct AssetsList: View {
                                     logger.info("fail to get ethereum address,error:\(error.localizedDescription)")
                             }
                         case Chain.Bitcoin.name:
-                            let coinResult = BitcoinHelper.getBitcoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
+                            let coinResult = UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode).getCoin()
                             switch coinResult {
                                 case .success(let btc):
                                     vault.coins.append(btc)
                                 case .failure(let err):
                                     logger.info("fail to get bitcoin address,error:\(err.localizedDescription)")
                             }
-                    case Chain.Solana.name:
-                        let coinResult = SolanaHelper.getSolana(hexPubKey: vault.pubKeyEdDSA, hexChainCode: vault.hexChainCode)
-                        switch coinResult {
-                            case .success(let sol):
-                                vault.coins.append(sol)
-                            case .failure(let err):
-                                logger.info("fail to get solana address,error:\(err.localizedDescription)")
-                        }
+                        case Chain.BitcoinCash.name:
+                            let coinResult = UTXOChainsHelper(coin: .bitcoinCash, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode).getCoin()
+                            switch coinResult {
+                                case .success(let bch):
+                                    vault.coins.append(bch)
+                                case .failure(let err):
+                                    logger.info("fail to get bitcoin bash address,error:\(err.localizedDescription)")
+                            }
+                        case Chain.Litecoin.name:
+                            let coinResult = UTXOChainsHelper(coin: .litecoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode).getCoin()
+                            switch coinResult {
+                                case .success(let ltc):
+                                    vault.coins.append(ltc)
+                                case .failure(let err):
+                                    logger.info("fail to get litecoin address,error:\(err.localizedDescription)")
+                            }
+                        case Chain.Dogecoin.name:
+                            let coinResult = UTXOChainsHelper(coin: .dogecoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode).getCoin()
+                            switch coinResult {
+                                case .success(let doge):
+                                    vault.coins.append(doge)
+                                case .failure(let err):
+                                    logger.info("fail to get dogecoin address,error:\(err.localizedDescription)")
+                            }
+                        case Chain.Solana.name:
+                            let coinResult = SolanaHelper.getSolana(hexPubKey: vault.pubKeyEdDSA, hexChainCode: vault.hexChainCode)
+                            switch coinResult {
+                                case .success(let sol):
+                                    vault.coins.append(sol)
+                                case .failure(let err):
+                                    logger.info("fail to get solana address,error:\(err.localizedDescription)")
+                            }
                         default:
                             print("do it later")
                     }
