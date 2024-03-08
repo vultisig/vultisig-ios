@@ -36,12 +36,16 @@ struct KeysignPayload: Codable, Hashable {
     func getKeysignMessages() -> Result<[String], Error> {
         var result: Result<[String], Error>
         // this is a swap
-        if self.swapPayload != nil {
+        if swapPayload != nil {
             return THORChainSwaps.getPreSignedImageHash(keysignPayload: self)
         }
         switch coin.ticker {
         case "BTC":
             result = BitcoinHelper.getPreSignedImageHash(keysignPayload: self)
+        case "BCH":
+            result = BitcoinCashHelper.getPreSignedImageHash(keysignPayload: self)
+        case "LTC":
+            result = LitecoinHelper.getPreSignedImageHash(keysignPayload: self)
         case "ETH":
             result = EthereumHelper.getPreSignedImageHash(keysignPayload: self)
         case "USDC":
