@@ -44,7 +44,6 @@ struct KeysignView: View {
     
     @StateObject private var etherScanService = EtherScanService()
     
-    
     var body: some View {
         VStack {
             Spacer()
@@ -58,9 +57,6 @@ struct KeysignView: View {
                 case .KeysignFinished:
                     KeyGenStatusText(status: "KEYSIGN FINISHED...")
                     
-                    
-                    
-                    
                     VStack {
                         if let transactionHash = etherScanService.transactionHash {
                             Text("Transaction Hash: \(transactionHash)")
@@ -72,7 +68,6 @@ struct KeysignView: View {
                         if !txid.isEmpty {
                             Text("Transaction Hash: \(txid)")
                         }
-                        
                         
                             //                        Text("SIGNATURE: \(self.signature)")
                             //                            .font(Font.custom("Menlo", size: 15)
@@ -102,8 +97,9 @@ struct KeysignView: View {
                             // get bitcoin transaction
                         if let keysignPayload {
                             if keysignPayload.swapPayload != nil {
-                                let result = THORChainSwaps.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
-                                switch result{
+                                let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                                let result = swaps.getSignedTransaction(keysignPayload: keysignPayload, signatures: self.signatures)
+                                switch result {
                                     case .success(let tx):
                                         print(tx)
                                     case .failure(let err):
@@ -111,10 +107,10 @@ struct KeysignView: View {
                                 }
                                 return
                             }
-                            switch keysignPayload.coin.ticker {
-                                case "BTC":
-                                    
-                                    let result = BitcoinHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                            switch keysignPayload.coin.chain.name.lowercased() {
+                                case Chain.Bitcoin.name.lowercased():
+                                    let utxoHelper = UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                                    let result = utxoHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: self.signatures)
                                     switch result {
                                         case .success(let tx):
                                             print(tx)
@@ -148,14 +144,12 @@ struct KeysignView: View {
                                                     logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
                                             }
                                     }
-                                case "ETH":
-                                    let result = EthereumHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                                case Chain.BitcoinCash.name.lowercased():
+                                    let utxoHelper = UTXOChainsHelper(coin: .bitcoinCash, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                                    let result = utxoHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: self.signatures)
                                     switch result {
                                         case .success(let tx):
-                                            Task {
-                                                await etherScanService.broadcastTransaction(hex: tx, apiKey: AppConfiguration.etherScanApiKey)
-                                            }
-                                            
+                                            print(tx)
                                         case .failure(let err):
                                             switch err {
                                                 case HelperError.runtimeError(let errDetail):
@@ -164,14 +158,12 @@ struct KeysignView: View {
                                                     logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
                                             }
                                     }
-                                        //TODO: We should not use the ticker but the type, like if it is a token or not.
-                                case "USDC":
-                                    let result = ERC20Helper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                                case Chain.Litecoin.name.lowercased():
+                                    let utxoHelper = UTXOChainsHelper(coin: .litecoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                                    let result = utxoHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: self.signatures)
                                     switch result {
                                         case .success(let tx):
-                                            Task {
-                                                await etherScanService.broadcastTransaction(hex: tx, apiKey: AppConfiguration.etherScanApiKey)
-                                            }
+                                            print(tx)
                                         case .failure(let err):
                                             switch err {
                                                 case HelperError.runtimeError(let errDetail):
@@ -180,7 +172,46 @@ struct KeysignView: View {
                                                     logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
                                             }
                                     }
-                                case "RUNE":
+                                case Chain.Ethereum.name.lowercased():
+                                        // ETH
+                                    if keysignPayload.coin.contractAddress.isEmpty {
+                                        
+                                        
+                                        
+                                        let result = EthereumHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                                        switch result {
+                                            case .success(let tx):
+                                                Task {
+                                                    await etherScanService.broadcastTransaction(hex: tx, apiKey: AppConfiguration.etherScanApiKey)
+                                                }
+                                                
+                                            case .failure(let err):
+                                                switch err {
+                                                    case HelperError.runtimeError(let errDetail):
+                                                        logger.error("Failed to get signed transaction,error:\(errDetail)")
+                                                    default:
+                                                        logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
+                                                }
+                                        }
+                                        
+                                    } else {
+                                        //It should work for all ERC20
+                                        let result = ERC20Helper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                                        switch result {
+                                            case .success(let tx):
+                                                Task {
+                                                    await etherScanService.broadcastTransaction(hex: tx, apiKey: AppConfiguration.etherScanApiKey)
+                                                }
+                                            case .failure(let err):
+                                                switch err {
+                                                    case HelperError.runtimeError(let errDetail):
+                                                        logger.error("Failed to get signed transaction,error:\(errDetail)")
+                                                    default:
+                                                        logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
+                                                }
+                                        }
+                                    }
+                                case Chain.THORChain.name.lowercased():
                                     let result = THORChainHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
                                     switch result {
                                         case .success(let tx):
@@ -204,7 +235,7 @@ struct KeysignView: View {
                                                     logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
                                             }
                                     }
-                                case "SOL":
+                                case Chain.Solana.name.lowercased():
                                     let result = SolanaHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyEdDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
                                     switch result {
                                         case .success(let tx):
@@ -263,6 +294,10 @@ struct KeysignView: View {
                     switch keysignPayload.coin.chain.ticker {
                         case "BTC":
                             keysignReq.derivePath = CoinType.bitcoin.derivationPath()
+                        case "BCH":
+                            keysignReq.derivePath = CoinType.bitcoinCash.derivationPath()
+                        case "LTC":
+                            keysignReq.derivePath = CoinType.litecoin.derivationPath()
                         case "ETH":
                             keysignReq.derivePath = CoinType.ethereum.derivationPath()
                         case "RUNE":

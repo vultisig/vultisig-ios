@@ -8,6 +8,11 @@
 		<string>_bonjour._tcp</string>
 		<string>_lnp._tcp.</string>
 	</array>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Montserrat-Italic.ttf</string>
+		<string>Montserrat.ttf</string>
+	</array>
 	<key>UIRequiresPersistentWiFi</key>
 	<true/>
 </dict>

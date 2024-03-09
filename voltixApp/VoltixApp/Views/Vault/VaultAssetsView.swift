@@ -14,7 +14,6 @@ struct VaultAssetsView: View {
     
     var body: some View {
         VStack {
-            ScrollView {
                 VStack(alignment: .leading) {
                     if isLoading {
                         ProgressView().progressViewStyle(.circular).padding(2)
@@ -27,10 +26,6 @@ struct VaultAssetsView: View {
                 .onAppear {
                     loadData()
                 }
-            }
-            .refreshable {
-                loadData()
-            }
         }
         .padding()
         .navigationTitle(appState.currentVault?.name ?? "Vault")

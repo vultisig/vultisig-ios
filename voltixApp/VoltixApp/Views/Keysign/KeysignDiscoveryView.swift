@@ -131,7 +131,12 @@ struct KeysignDiscoveryView: View {
             } else {
                 self.localPartyID = Utils.getLocalDeviceIdentity()
             }
-            let keysignMessageResult = self.keysignPayload.getKeysignMessages()
+            guard let vault = appState.currentVault else {
+                self.currentState = .FailToStart
+                logger.error("no vault found")
+                return
+            }
+            let keysignMessageResult = self.keysignPayload.getKeysignMessages(vault: vault)
             switch keysignMessageResult {
                 case .success(let preSignedImageHash):
                     self.keysignMessages = preSignedImageHash
@@ -147,7 +152,7 @@ struct KeysignDiscoveryView: View {
         .task {
             // start the mediator , so other devices can discover us
             Task {
-                self.mediator.start(name: serviceName)
+                self.mediator.start(name: self.serviceName)
                 self.startKeysignSession()
             }
             self.participantDiscovery.getParticipants(serverAddr: self.serverAddr, sessionID: self.sessionID)
@@ -236,8 +241,9 @@ class ParticipantDiscovery: ObservableObject {
         }
     }
 }
+
 //
-//#Preview {
+// #Preview {
 //    KeysignDiscoveryView(
 //        presentationStack: .constant([]),
 //        keysignPayload: KeysignPayload(coin: Coin(chain: Chain.Bitcoin,
@@ -248,4 +254,4 @@ class ParticipantDiscovery: ObservableObject {
 //                                       toAmount: 1000,
 //                                       chainSpecific: .Bitcoin(byteFee: 25),
 //                                       utxos: [], memo: nil))
-//}
+// }
