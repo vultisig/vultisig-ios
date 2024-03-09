@@ -8,7 +8,17 @@
 import SwiftUI
 
 struct VaultCell: View {
+    let vault: Vault
+    
     var body: some View {
+        NavigationLink {
+            VaultDetailView(vault: vault)
+        } label: {
+            cell
+        }
+    }
+    
+    var cell: some View {
         HStack(spacing: 12) {
             logo
             text
@@ -42,13 +52,13 @@ struct VaultCell: View {
     }
     
     var title: some View {
-        Text("Bitcoin")
+        Text(vault.name.capitalized)
             .font(.body16MontserratBold)
             .foregroundColor(.neutral100)
     }
     
     var quantity: some View {
-        Text("3 assets")
+        Text("\(vault.coins.count) assets")
             .font(.body12Menlo)
             .foregroundColor(.neutral100)
             .padding(.vertical, 2)
@@ -72,5 +82,5 @@ struct VaultCell: View {
 }
 
 #Preview {
-    VaultCell()
+    VaultCell(vault: Vault.example)
 }

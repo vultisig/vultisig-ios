@@ -8,13 +8,15 @@
 import SwiftUI
 
 struct VaultDetailView: View {
+    let vault: Vault
+    
     var body: some View {
         ZStack {
             background
             view
         }
         .navigationBarBackButtonHidden(true)
-        .navigationTitle("Ethereum")
+        .navigationTitle(vault.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -56,5 +58,5 @@ struct VaultDetailView: View {
 }
 
 #Preview {
-    VaultDetailView()
+    VaultDetailView(vault: Vault.example)
 }

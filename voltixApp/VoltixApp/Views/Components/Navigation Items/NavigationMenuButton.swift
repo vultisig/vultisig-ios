@@ -14,7 +14,7 @@ struct NavigationMenuButton: View {
         Button(action: {
             
         }) {
-            Image(systemName: "text.justify")
+            Image("menuIcon")
                 .font(.body18MenloBold)
                 .foregroundColor(tint)
         }

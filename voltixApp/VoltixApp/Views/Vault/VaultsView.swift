@@ -6,8 +6,13 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct VaultsView: View {
+    @Binding var presentationStack: [CurrentScreen]
+    
+    @Query var vaults: [Vault]
+    
     var body: some View {
         ZStack {
             background
@@ -41,12 +46,11 @@ struct VaultsView: View {
     
     var list: some View {
         ScrollView {
-            VStack(spacing: 16) {
-                VaultCell()
-                VaultCell()
-                VaultCell()
-                VaultCell()
-                VaultCell()
+            LazyVStack {
+                ForEach(vaults, id: \.self) { vault in
+                    VaultCell(vault: vault)
+                }
+                
                 chooseChainsButton
             }
             .padding(.top, 30)
@@ -72,5 +76,5 @@ struct VaultsView: View {
 }
 
 #Preview {
-    VaultsView()
+    VaultsView(presentationStack: .constant([]))
 }
