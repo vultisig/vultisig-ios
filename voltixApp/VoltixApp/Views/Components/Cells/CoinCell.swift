@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct CoinCell: View {
+    @Binding var presentationStack: [CurrentScreen]
     let coin: Coin
     
     @StateObject var tx = SendTransaction()
@@ -114,6 +115,7 @@ struct CoinCell: View {
         VStack(spacing: 0) {
             Separator()
             AssetCell(
+                presentationStack: $presentationStack, 
                 tx: tx,
                 viewModel: coinViewModel
             )
@@ -139,6 +141,6 @@ struct CoinCell: View {
 
 #Preview {
     ScrollView {
-        CoinCell(coin: Coin.example)
+        CoinCell(presentationStack: .constant([]), coin: Coin.example)
     }
 }

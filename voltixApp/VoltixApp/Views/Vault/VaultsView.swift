@@ -48,7 +48,7 @@ struct VaultsView: View {
         ScrollView {
             LazyVStack {
                 ForEach(vaults, id: \.self) { vault in
-                    VaultCell(vault: vault)
+                    VaultCell(presentationStack: $presentationStack, vault: vault)
                 }
                 
                 chooseChainsButton

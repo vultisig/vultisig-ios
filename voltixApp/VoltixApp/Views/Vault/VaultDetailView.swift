@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct VaultDetailView: View {
+    @Binding var presentationStack: [CurrentScreen]
     let vault: Vault
     
     @EnvironmentObject var viewModel: VaultDetailViewModel
@@ -49,7 +50,7 @@ struct VaultDetailView: View {
     var list: some View {
         LazyVStack(spacing: 16) {
             ForEach(viewModel.coins, id: \.self) { coin in
-                CoinCell(coin: coin)
+                CoinCell(presentationStack: $presentationStack, coin: coin)
             }
         }
     }
@@ -65,6 +66,6 @@ struct VaultDetailView: View {
 }
 
 #Preview {
-    VaultDetailView(vault: Vault.example)
+    VaultDetailView(presentationStack: .constant([]), vault: Vault.example)
         .environmentObject(VaultDetailViewModel())
 }

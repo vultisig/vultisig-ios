@@ -8,11 +8,12 @@
 import SwiftUI
 
 struct VaultCell: View {
+    @Binding var presentationStack: [CurrentScreen]
     let vault: Vault
     
     var body: some View {
         NavigationLink {
-            VaultDetailView(vault: vault)
+            VaultDetailView(presentationStack: $presentationStack,vault: vault)
         } label: {
             cell
         }
@@ -82,5 +83,5 @@ struct VaultCell: View {
 }
 
 #Preview {
-    VaultCell(vault: Vault.example)
+    VaultCell(presentationStack: .constant([]), vault: Vault.example)
 }

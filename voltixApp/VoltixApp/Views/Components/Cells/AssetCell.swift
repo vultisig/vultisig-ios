@@ -8,10 +8,19 @@
 import SwiftUI
 
 struct AssetCell: View {
+    @Binding var presentationStack: [CurrentScreen]
     let tx: SendTransaction
     @ObservedObject var viewModel: CoinViewModel
     
     var body: some View {
+        NavigationLink {
+            SendInputDetailsView(presentationStack: $presentationStack, tx: tx)
+        } label: {
+            cell
+        }
+    }
+    
+    var cell: some View {
         VStack(alignment: .leading, spacing: 15) {
             header
             amount
@@ -76,5 +85,5 @@ struct AssetCell: View {
 }
 
 #Preview {
-    AssetCell(tx: SendTransaction(), viewModel: CoinViewModel())
+    AssetCell(presentationStack: .constant([]), tx: SendTransaction(), viewModel: CoinViewModel())
 }
