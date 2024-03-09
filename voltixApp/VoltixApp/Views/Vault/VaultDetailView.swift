@@ -10,6 +10,8 @@ import SwiftUI
 struct VaultDetailView: View {
     let vault: Vault
     
+    @EnvironmentObject var viewModel: VaultDetailViewModel
+    
     var body: some View {
         ZStack {
             background
@@ -25,6 +27,9 @@ struct VaultDetailView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationRefreshButton()
             }
+        }
+        .onAppear {
+            setData()
         }
     }
     
@@ -42,12 +47,10 @@ struct VaultDetailView: View {
     }
     
     var list: some View {
-        VStack(spacing: 0) {
-            TokenCell()
-            TokenCell()
-            TokenCell()
-            TokenCell()
-            TokenCell()
+        LazyVStack(spacing: 16) {
+            ForEach(viewModel.coins, id: \.self) { coin in
+                CoinCell(coin: coin)
+            }
         }
     }
     
@@ -55,8 +58,13 @@ struct VaultDetailView: View {
         FilledButton(title: "chooseTokens", icon: "plus")
             .padding(16)
     }
+    
+    private func setData() {
+        viewModel.fetchCoins(for: vault)
+    }
 }
 
 #Preview {
     VaultDetailView(vault: Vault.example)
+        .environmentObject(VaultDetailViewModel())
 }

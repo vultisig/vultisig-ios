@@ -12,12 +12,16 @@ import WalletCore
 struct VoltixApp: App {
     @Environment(\.scenePhase) private var scenePhase
     
+    @StateObject var coinViewModel = CoinViewModel()
     @StateObject var applicationState = ApplicationState.shared
+    @StateObject var vaultDetailViewModel = VaultDetailViewModel()
 
     var body: some Scene {
         WindowGroup {
             MainNavigationStack()
+                .environmentObject(coinViewModel)
                 .environmentObject(applicationState) // Shared monolithic mutable state
+                .environmentObject(vaultDetailViewModel)
         }
         .modelContainer(sharedModelContainer)
 //        .onChange(of: scenePhase) { phase in

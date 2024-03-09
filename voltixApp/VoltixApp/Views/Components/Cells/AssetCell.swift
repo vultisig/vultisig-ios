@@ -1,5 +1,5 @@
 //
-//  TokenAssetCell.swift
+//  AssetCell.swift
 //  VoltixApp
 //
 //  Created by Amol Kumar on 2024-03-08.
@@ -7,7 +7,10 @@
 
 import SwiftUI
 
-struct TokenAssetCell: View {
+struct AssetCell: View {
+    let tx: SendTransaction
+    @ObservedObject var viewModel: CoinViewModel
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 15) {
             header
@@ -27,19 +30,19 @@ struct TokenAssetCell: View {
     }
     
     var title: some View {
-        Text("ETH")
+        Text(tx.coin.ticker)
             .font(.body20Menlo)
             .foregroundColor(.neutral0)
     }
     
     var quantity: some View {
-        Text("1.1")
+        Text(viewModel.coinBalance)
             .font(.body16Menlo)
             .foregroundColor(.neutral0)
     }
     
     var amount: some View {
-        Text("$60,899")
+        Text(viewModel.balanceUSD)
             .font(.body16MenloBold)
             .foregroundColor(.neutral0)
     }
@@ -73,5 +76,5 @@ struct TokenAssetCell: View {
 }
 
 #Preview {
-    TokenAssetCell()
+    AssetCell(tx: SendTransaction(), viewModel: CoinViewModel())
 }

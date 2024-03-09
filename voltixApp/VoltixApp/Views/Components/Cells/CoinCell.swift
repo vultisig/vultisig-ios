@@ -1,5 +1,5 @@
 //
-//  TokenCard.swift
+//  CoinCell.swift
 //  VoltixApp
 //
 //  Created by Amol Kumar on 2024-03-08.
@@ -7,7 +7,15 @@
 
 import SwiftUI
 
-struct TokenCell: View {
+struct CoinCell: View {
+    let coin: Coin
+    
+    @StateObject var tx = SendTransaction()
+    @StateObject var coinViewModel = CoinViewModel()
+    @StateObject var uxto = UnspentOutputsService()
+    @StateObject var eth = EthplorerAPIService()
+    @StateObject var thor = ThorchainService.shared
+    
     @State var isExpanded = false
     @State var showQRcode = false
     
@@ -22,8 +30,13 @@ struct TokenCell: View {
         .padding(.vertical, 4)
         .background(Color.blue600)
         .cornerRadius(10)
-        .padding(16)
+        .padding(.horizontal, 16)
         .clipped()
+        .onAppear {
+            Task {
+                await setData()
+            }
+        }
         .sheet(isPresented: $showQRcode) {
             AddressQRCodeView()
         }
@@ -56,7 +69,7 @@ struct TokenCell: View {
     }
     
     var title: some View {
-        Text("BTC")
+        Text(coin.chain.name.capitalized)
             .font(.body20MontserratSemiBold)
             .foregroundColor(.neutral0)
     }
@@ -85,13 +98,13 @@ struct TokenCell: View {
     }
     
     var amount: some View {
-        Text("$0.0")
+        Text(coinViewModel.balanceUSD)
             .font(.body20MontserratSemiBold)
             .foregroundColor(.neutral0)
     }
     
     var address: some View {
-        Text("tx.fromAddress")
+        Text(coin.address)
             .font(.body12Menlo)
             .foregroundColor(.turquoise600)
             .lineLimit(1)
@@ -100,10 +113,21 @@ struct TokenCell: View {
     var cells: some View {
         VStack(spacing: 0) {
             Separator()
-            TokenAssetCell()
-            Separator()
-            TokenAssetCell()
+            AssetCell(
+                tx: tx,
+                viewModel: coinViewModel
+            )
         }
+    }
+    
+    private func setData() async {
+        tx.coin = coin
+        await coinViewModel.loadData(
+            uxto: uxto,
+            eth: eth,
+            thor: thor,
+            tx: tx
+        )
     }
     
     private func expandCell() {
@@ -115,7 +139,6 @@ struct TokenCell: View {
 
 #Preview {
     ScrollView {
-        TokenCell()
-        TokenCell()
+        CoinCell(coin: Coin.example)
     }
 }

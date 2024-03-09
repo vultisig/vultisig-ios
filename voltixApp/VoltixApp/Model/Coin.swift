@@ -35,4 +35,6 @@ class Coin: Codable, Hashable {
         hasher.combine(logo)
         hasher.combine(address)
     }
+    
+    static let example = Coin(chain: Chain.Bitcoin, ticker: "btc", logo: "BitcoinLogo", address: "bc1psrjtwm7682v6nhx2...uwfgcfelrennd7pcvq", hexPublicKey: "HexUnit", feeUnit: "fee", contractAddress: "address")
 }
