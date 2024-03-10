@@ -155,6 +155,8 @@
 		DEEDAEE82B8B50A4005170E8 /* BigInt in Frameworks */ = {isa = PBXBuildFile; productRef = DEEDAEE72B8B50A4005170E8 /* BigInt */; };
 		DEEFF4FD2B9835DE0015692E /* THORChainSwapChainExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEFF4FC2B9835DE0015692E /* THORChainSwapChainExtension.swift */; };
 		DEF2E2CB2B9AD5EA000737B8 /* UTXOChainsHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF2E2CA2B9AD5EA000737B8 /* UTXOChainsHelper.swift */; };
+		DEF2E2D02B9DA459000737B8 /* PublicKeyTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF2E2CF2B9DA459000737B8 /* PublicKeyTest.swift */; };
+		DEF2E2D32B9DC685000737B8 /* UTXOChainsHelperTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF2E2D22B9DC685000737B8 /* UTXOChainsHelperTest.swift */; };
 		DEFC7BFB2B8D87370090B07A /* erc20.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC7BFA2B8D87370090B07A /* erc20.swift */; };
 		DEFC7BFF2B8EC95E0090B07A /* thorchain.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC7BFE2B8EC95E0090B07A /* thorchain.swift */; };
 /* End PBXBuildFile section */
@@ -326,6 +328,9 @@
 		DEEDAEE42B8AFB5D005170E8 /* common.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = common.swift; sourceTree = "<group>"; };
 		DEEFF4FC2B9835DE0015692E /* THORChainSwapChainExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainSwapChainExtension.swift; sourceTree = "<group>"; };
 		DEF2E2CA2B9AD5EA000737B8 /* UTXOChainsHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOChainsHelper.swift; sourceTree = "<group>"; };
+		DEF2E2CF2B9DA459000737B8 /* PublicKeyTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublicKeyTest.swift; sourceTree = "<group>"; };
+		DEF2E2D12B9DC331000737B8 /* VoltixApp.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = VoltixApp.xctestplan; sourceTree = "<group>"; };
+		DEF2E2D22B9DC685000737B8 /* UTXOChainsHelperTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOChainsHelperTest.swift; sourceTree = "<group>"; };
 		DEFC7BFA2B8D87370090B07A /* erc20.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = erc20.swift; sourceTree = "<group>"; };
 		DEFC7BFE2B8EC95E0090B07A /* thorchain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = thorchain.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -728,6 +733,7 @@
 		DE49A15A2B65F6D9000F3AFB = {
 			isa = PBXGroup;
 			children = (
+				DEF2E2D12B9DC331000737B8 /* VoltixApp.xctestplan */,
 				DE28F52B2B7B0D6500E33058 /* WalletCore */,
 				DE1572A12B70F873009BC7C5 /* Tss.xcframework */,
 				DE49A1932B65F7B6000F3AFB /* Mediator */,
@@ -786,6 +792,7 @@
 		DE49A1792B65F6DB000F3AFB /* voltixAppTests */ = {
 			isa = PBXGroup;
 			children = (
+				DEF2E2CE2B9DA41A000737B8 /* Chains */,
 				DE49A17A2B65F6DB000F3AFB /* voltixAppTests.swift */,
 			);
 			path = voltixAppTests;
@@ -814,6 +821,15 @@
 				DE4DFA7A2B7B1692004F8E73 /* ModelContainerPreview.swift */,
 			);
 			path = PreviewHelper;
+			sourceTree = "<group>";
+		};
+		DEF2E2CE2B9DA41A000737B8 /* Chains */ = {
+			isa = PBXGroup;
+			children = (
+				DEF2E2CF2B9DA459000737B8 /* PublicKeyTest.swift */,
+				DEF2E2D22B9DC685000737B8 /* UTXOChainsHelperTest.swift */,
+			);
+			path = Chains;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -903,7 +919,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */;
+			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -1104,6 +1120,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DEF2E2D32B9DC685000737B8 /* UTXOChainsHelperTest.swift in Sources */,
+				DEF2E2D02B9DA459000737B8 /* PublicKeyTest.swift in Sources */,
 				DE49A17B2B65F6DB000F3AFB /* voltixAppTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1361,6 +1379,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 11;
+				DEVELOPMENT_TEAM = KEUQSEUKAQ;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
 				MACOSX_DEPLOYMENT_TARGET = 14.2;
@@ -1368,7 +1387,9 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.voltix.voltixAppTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1390,7 +1411,9 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.voltix.voltixAppTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1443,7 +1466,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */ = {
+		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DE49A1882B65F6DB000F3AFB /* Debug */,
