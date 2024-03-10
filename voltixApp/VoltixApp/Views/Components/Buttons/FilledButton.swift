@@ -9,18 +9,38 @@ import SwiftUI
 
 struct FilledButton: View {
     let title: String
+    var icon: String = ""
     
     var body: some View {
+        HStack(spacing: 10) {
+            if !icon.isEmpty {
+                image
+            }
+            
+            text
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity)
+        .background(Color.turquoise600)
+        .cornerRadius(100)
+    }
+    
+    var text: some View {
         Text(NSLocalizedString(title, comment: "Button Text"))
             .font(.body16MontserratBold)
             .foregroundColor(.blue600)
-            .padding(12)
-            .frame(maxWidth: .infinity)
-            .background(Color.turquoise600)
-            .cornerRadius(100)
+    }
+    
+    var image: some View {
+        Image(systemName: icon)
+            .font(.body16Menlo)
+            .foregroundColor(.blue600)
     }
 }
 
 #Preview {
-    FilledButton(title: "start")
+    VStack {
+        FilledButton(title: "start")
+        FilledButton(title: "start", icon: "plus")
+    }
 }

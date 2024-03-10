@@ -27,6 +27,9 @@ extension Font {
     static let body18MontserratMedium = Font.custom("Montserrat", size: 18).weight(.medium)
     static let body24MontserratMedium = Font.custom("Montserrat", size: 24).weight(.medium)
     
+    static let body18MenloMedium = Font.custom("Menlo", size: 18).weight(.medium)
+    static let body20MenloMedium = Font.custom("Menlo", size: 20).weight(.medium)
+    
     // Semi-bold
     static let body12MontserratSemiBold = Font.custom("Montserrat", size: 12).weight(.semibold)
     static let body20MontserratSemiBold = Font.custom("Montserrat", size: 20).weight(.semibold)
@@ -34,6 +37,7 @@ extension Font {
     // Bold
     static let body13MenloBold = Font.custom("Menlo", size: 13).bold()
     static let body15MenloBold = Font.custom("Menlo", size: 15).bold()
+    static let body16MenloBold = Font.custom("Menlo", size: 16).bold()
     static let body18MenloBold = Font.custom("Menlo", size: 18).bold()
     static let body20MenloBold = Font.custom("Menlo", size: 20).bold()
     

@@ -48,7 +48,7 @@ struct ImportWalletView2: View {
     
     var uploadSection: some View {
         VStack(spacing: 26) {
-            Image("FileIcon")
+            Image("fileIcon")
             uploadText
         }
         .frame(height: 200)

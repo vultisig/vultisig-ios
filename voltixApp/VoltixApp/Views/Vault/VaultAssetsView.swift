@@ -159,3 +159,7 @@ public struct VaultAssetsView: View {
     }
 }
 
+#Preview {
+    VaultAssetsView(presentationStack: .constant([]), tx: SendTransaction())
+        .environmentObject(ApplicationState.shared)
+}

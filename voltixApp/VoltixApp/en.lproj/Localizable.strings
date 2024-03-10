@@ -16,7 +16,12 @@
 "setup" = "Setup";
 "pair" = "Pair";
 "join" = "Join";
+"swap" = "Swap";
+"send" = "Send";
+"address" = "Address";
 "enterPreviousVault" = "Enter your previously created vault share";
 "uploadFile" = "Upload file, text or image";
 "devicesOnSameWifi" = "Keep devices on the same WiFi Network with VOLTIX open";
 "need3Devices" = "You need 3 devices";
+"chooseTokens" = "Choose Tokens";
+"chooseChains" = "Choose Chains";

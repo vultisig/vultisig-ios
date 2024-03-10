@@ -97,3 +97,8 @@ struct ListVaultAssetView: View {
         }
     }
 }
+
+#Preview {
+    ListVaultAssetView(presentationStack: .constant([]))
+        .environmentObject(ApplicationState.shared)
+}
