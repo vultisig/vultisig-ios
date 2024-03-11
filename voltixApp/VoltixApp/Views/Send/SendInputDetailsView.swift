@@ -287,6 +287,11 @@ struct SendInputDetailsView: View {
 					let newValueCoin = newValueDouble / rate
 					newCoinAmount = newValueCoin != 0 ? String(format: "%.8f", newValueCoin) : ""
 				}
+			}else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
+				if let rate = CryptoPriceService.shared.cryptoPrices?.prices[Chain.Solana.name.lowercased()]?["usd"], rate > 0 {
+					let newValueCoin = newValueDouble / rate
+					newCoinAmount = newValueCoin != 0 ? String(format: "%.9f", newValueCoin) : ""
+				}
 			}
 			
 			tx.amount = newCoinAmount
@@ -310,6 +315,10 @@ struct SendInputDetailsView: View {
 				}
 			} else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
 				if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.THORChain.name.lowercased()]?["usd"] {
+					newValueUSD = String(format: "%.2f", newValueDouble * priceRateUsd)
+				}
+			}else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
+				if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.Solana.name.lowercased()]?["usd"] {
 					newValueUSD = String(format: "%.2f", newValueDouble * priceRateUsd)
 				}
 			}
@@ -431,6 +440,11 @@ struct SendInputDetailsView: View {
 				tx.amountInUSD = thor.runeBalanceInUSD(usdPrice: priceRateUsd, includeCurrencySymbol: false) ?? "US$ 0,00"
 			}
 			tx.amount = thor.formattedRuneBalance ?? "0.00"
+		} else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
+			if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.Solana.name.lowercased()]?["usd"] {
+				tx.amountInUSD = sol.solBalanceInUSD(usdPrice: priceRateUsd, includeCurrencySymbol: false) ?? "US$ 0,00"
+			}
+			tx.amount = sol.formattedSolBalance ?? "0.00"
 		}
 	}
 	
@@ -481,7 +495,7 @@ struct SendInputDetailsView: View {
 		Task {
 			isLoading = true
 			
-			await cryptoPrice.fetchCryptoPrices(for: "bitcoin,thorchain", for: "usd")
+			await cryptoPrice.fetchCryptoPrices(for: "bitcoin,thorchain,solana", for: "usd")
 			
 			if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
 				await uxto.fetchUnspentOutputs(for: tx.fromAddress)
