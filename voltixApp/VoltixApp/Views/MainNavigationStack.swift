@@ -52,11 +52,11 @@ struct MainNavigationStack: View {
                         case .swapDone:
                             SwapDoneView(presentationStack: $presentationStack)
                         // NEW UI
-                        case .vaultSelection:
-                            VaultsView(presentationStack: $presentationStack)
-                        // OLD UI
 //                        case .vaultSelection:
-//                            VaultSelectionView(presentationStack: $presentationStack)
+//                            VaultsView(presentationStack: $presentationStack)
+                        // OLD UI
+                        case .vaultSelection:
+                            VaultSelectionView(presentationStack: $presentationStack)
                         case .joinKeygen:
                             JoinKeygenView(presentationStack: $presentationStack)
                         case .KeysignDiscovery(let keysignPayload):
