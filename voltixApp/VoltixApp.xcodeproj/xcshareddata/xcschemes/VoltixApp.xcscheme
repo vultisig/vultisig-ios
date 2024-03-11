@@ -17,7 +17,7 @@
                BlueprintIdentifier = "DE49A1622B65F6D9000F3AFB"
                BuildableName = "VoltixApp.app"
                BlueprintName = "VoltixApp"
-               ReferencedContainer = "container:VoltixApp.xcodeproj">
+               ReferencedContainer = "container:voltixApp.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -26,8 +26,13 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "YES"
-      shouldAutocreateTestPlan = "YES">
+      shouldUseLaunchSchemeArgsEnv = "YES">
+      <TestPlans>
+         <TestPlanReference
+            reference = "container:VoltixApp.xctestplan"
+            default = "YES">
+         </TestPlanReference>
+      </TestPlans>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
@@ -46,7 +51,7 @@
             BlueprintIdentifier = "DE49A1622B65F6D9000F3AFB"
             BuildableName = "VoltixApp.app"
             BlueprintName = "VoltixApp"
-            ReferencedContainer = "container:VoltixApp.xcodeproj">
+            ReferencedContainer = "container:voltixApp.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <EnvironmentVariables>
@@ -70,7 +75,7 @@
             BlueprintIdentifier = "DE49A1622B65F6D9000F3AFB"
             BuildableName = "VoltixApp.app"
             BlueprintName = "VoltixApp"
-            ReferencedContainer = "container:VoltixApp.xcodeproj">
+            ReferencedContainer = "container:voltixApp.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
