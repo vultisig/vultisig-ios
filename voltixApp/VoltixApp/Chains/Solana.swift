@@ -9,7 +9,16 @@ import WalletCore
 
 enum SolanaHelper {
     static func getSolana(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
-        return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).map { addr in
+//		return .success(Coin(chain: Chain.Solana,
+//							 ticker: "SOL",
+//							 logo: "",
+//							 address: "G6AhgwTL7gRoSTTPqUyx4koJVJZNfnNp4zZ43kWdmRr6",
+//							 hexPublicKey: hexPubKey,
+//							 feeUnit: "",
+//							 contractAddress: nil
+//							))
+		
+		return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).map { addr in
             Coin(chain: Chain.Solana,
                  ticker: "SOL",
                  logo: "",
