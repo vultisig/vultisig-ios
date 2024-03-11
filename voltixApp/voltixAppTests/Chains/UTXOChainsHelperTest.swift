@@ -3,6 +3,7 @@
 //  VoltixAppTests
 //
 
+import Tss
 @testable import VoltixApp
 import WalletCore
 import XCTest
@@ -78,8 +79,41 @@ final class UTXOChainsHelperTest: XCTestCase {
         case .failure(let err):
             XCTFail("Expected success, but got error: \(err)")
         }
-        
-        
-        
+    }
+
+    func testGetBitcoinCashPreSignedImageHash() throws {
+        let utxoHelper = UTXOChainsHelper(coin: .bitcoinCash, vaultHexPublicKey: hexPublicKey, vaultHexChainCode: hexChainCode)
+        let c = try utxoHelper.getCoin().get()
+        let result = utxoHelper.getPreSignedImageHash(keysignPayload: KeysignPayload(coin: c,
+                                                                                     toAddress: "bitcoincash:qqxjcn4u4fgxvclqyaprkem3hptm3nf5yq3ryq70ry",
+                                                                                     toAmount: 1000000,
+                                                                                     chainSpecific: BlockChainSpecific.UTXO(byteFee: 20),
+                                                                                     utxos: [UtxoInfo(hash: "71787a90556de944fcea8d8ff7478e535092638a68491b60b5661dfd871c40e4", amount: 10000000, index: 0)],
+                                                                                     memo: "voltix", swapPayload: nil))
+        switch result {
+        case .success(let preSignImage):
+            XCTAssertNotNil(preSignImage)
+            XCTAssertTrue(preSignImage.count == 1)
+            XCTAssertEqual(preSignImage[0], "195b256774ca393f2e9812478abf6958076d0ff7d427dc958d35a9f7ffe7439b")
+        case .failure(let err):
+            XCTFail("Expected success, but got error: \(err)")
+        }
+        let resp = TssKeysignResponse()
+        resp.derSignature = "3044022058355128efd16e9d71dfb351203d65268ea479ee3c214c2f1bc99b749c938b38022036c25424f83265ef93eb1f179444c528368b8efc62280297c4cc6d24407c2a91"
+        let signature: [String: TssKeysignResponse] = ["195b256774ca393f2e9812478abf6958076d0ff7d427dc958d35a9f7ffe7439b": resp]
+        let signedTxResult = utxoHelper.getSignedTransaction(keysignPayload: KeysignPayload(coin: c,
+                                                                                            toAddress: "bitcoincash:qqxjcn4u4fgxvclqyaprkem3hptm3nf5yq3ryq70ry",
+                                                                                            toAmount: 1000000,
+                                                                                            chainSpecific: BlockChainSpecific.UTXO(byteFee: 20),
+                                                                                            utxos: [UtxoInfo(hash: "71787a90556de944fcea8d8ff7478e535092638a68491b60b5661dfd871c40e4", amount: 10000000, index: 0)],
+                                                                                            memo: "voltix",
+                                                                                            swapPayload: nil),
+                                                             signatures: signature)
+        switch signedTxResult {
+        case .success(let tx):
+            XCTAssertEqual(tx, "0100000001e4401c87fd1d66b5601b49688a639250538e47f78f8deafc44e96d55907a7871000000006a473044022058355128efd16e9d71dfb351203d65268ea479ee3c214c2f1bc99b749c938b38022036c25424f83265ef93eb1f179444c528368b8efc62280297c4cc6d24407c2a9141210333bda0119776bd3f22b5dc6b1083bd3f5993b4d4b10b26db2dc55b919a5bb587ffffffff0340420f00000000001976a9140d2c4ebcaa506663e027423b6771b857b8cd342088acf03f8900000000001976a914d382a4abeebdfd1a3c4e1874b4478a9471a98bc088ac0000000000000000086a06766f6c74697800000000")
+        case .failure(let err):
+            XCTFail("Expected success, but got error: \(err)")
+        }
     }
 }
