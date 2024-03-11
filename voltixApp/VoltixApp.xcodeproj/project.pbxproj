@@ -45,6 +45,7 @@
 		46AC40A42B91F50A001704E6 /* AppConfiguration.example.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AC40A32B91F50A001704E6 /* AppConfiguration.example.swift */; };
 		46AC40A82B920061001704E6 /* EtherscanService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AC40A72B920061001704E6 /* EtherscanService.swift */; };
 		46AC40AA2B922931001704E6 /* EthereumTransactionListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AC40A92B922931001704E6 /* EthereumTransactionListView.swift */; };
+		46ED3A482B9F696000FFCB8A /* SolanaServiceExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46ED3A472B9F696000FFCB8A /* SolanaServiceExtension.swift */; };
 		46F47CBB2B870EE900D964EA /* BitcoinTransactionMempool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F47CBA2B870EE900D964EA /* BitcoinTransactionMempool.swift */; };
 		46F8F7212B99FDB70099454E /* TransactionBroadcastResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F8F7202B99FDB70099454E /* TransactionBroadcastResponse.swift */; };
 		46F8F7262B99FEEC0099454E /* ThorchainErrorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F8F7252B99FEEC0099454E /* ThorchainErrorResponse.swift */; };
@@ -219,6 +220,7 @@
 		46AC40A32B91F50A001704E6 /* AppConfiguration.example.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.example.swift; sourceTree = "<group>"; };
 		46AC40A72B920061001704E6 /* EtherscanService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EtherscanService.swift; sourceTree = "<group>"; };
 		46AC40A92B922931001704E6 /* EthereumTransactionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EthereumTransactionListView.swift; sourceTree = "<group>"; };
+		46ED3A472B9F696000FFCB8A /* SolanaServiceExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolanaServiceExtension.swift; sourceTree = "<group>"; };
 		46F47CBA2B870EE900D964EA /* BitcoinTransactionMempool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BitcoinTransactionMempool.swift; sourceTree = "<group>"; };
 		46F8F7202B99FDB70099454E /* TransactionBroadcastResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionBroadcastResponse.swift; sourceTree = "<group>"; };
 		46F8F7252B99FEEC0099454E /* ThorchainErrorResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainErrorResponse.swift; sourceTree = "<group>"; };
@@ -417,6 +419,7 @@
 			isa = PBXGroup;
 			children = (
 				465A8D522B9E689B006E7457 /* SolanaService.swift */,
+				46ED3A472B9F696000FFCB8A /* SolanaServiceExtension.swift */,
 			);
 			path = Solana;
 			sourceTree = "<group>";
@@ -933,7 +936,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */;
+			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -1109,6 +1112,7 @@
 				A65649F22B966A2300E4B329 /* TransactionStatus.swift in Sources */,
 				A6564A082B969AFC00E4B329 /* TransactionDetail.swift in Sources */,
 				A65649EC2B96697B00E4B329 /* Asset.swift in Sources */,
+				46ED3A482B9F696000FFCB8A /* SolanaServiceExtension.swift in Sources */,
 				D9AD8EFD2B6732070009F8D5 /* SwapPeerDiscoveryView.swift in Sources */,
 				467B2D662B7B51F700AEDF64 /* NavigationStackButtons.swift in Sources */,
 				DE49A19C2B67133D000F3AFB /* Vault.swift in Sources */,
@@ -1482,7 +1486,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */ = {
+		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DE49A1882B65F6DB000F3AFB /* Debug */,

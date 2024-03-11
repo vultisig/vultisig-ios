@@ -9,6 +9,8 @@ class SolanaService: ObservableObject {
 	
 	@Published var transactionResult: String?
 	@Published var balance: Int?
+	@Published var recentBlockHash: String?
+	@Published var feeInLamports: String?
 	
 	func solBalanceInUSD(usdPrice: Double?, includeCurrencySymbol: Bool = true) -> String? {
 		guard let usdPrice = usdPrice,
@@ -87,6 +89,26 @@ class SolanaService: ObservableObject {
 			}
 		} catch {
 			print("Error fetching balance: \(error.localizedDescription)")
+		}
+	}
+	
+	func fetchRecentBlockhash() async {
+		do {
+			let requestBody: [String: Any] = [
+				"jsonrpc": "2.0",
+				"id": 1,
+				"method": "getRecentBlockhash"
+			]
+			let data = try await postRequest(with: requestBody)
+			let response = try jsonDecoder.decode(SolanaRPCResponse<SolanaRecentBlockhashResponse>.self, from: data)
+			
+			DispatchQueue.main.async { [weak self] in
+				self?.recentBlockHash = response.result.value.blockhash
+				self?.feeInLamports = String(response.result.value.feeCalculator.lamportsPerSignature)
+				print("feeInLamports > \(self?.feeInLamports)")
+			}
+		} catch {
+			print("Error fetching recent blockhash: \(error.localizedDescription)")
 		}
 	}
 	
