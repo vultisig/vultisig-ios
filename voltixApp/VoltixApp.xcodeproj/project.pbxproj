@@ -89,6 +89,11 @@
 		A6564A062B969ADF00E4B329 /* EtherscanAPIResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6564A052B969ADF00E4B329 /* EtherscanAPIResponse.swift */; };
 		A6564A082B969AFC00E4B329 /* TransactionDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6564A072B969AFC00E4B329 /* TransactionDetail.swift */; };
 		A6564A0B2B96A04D00E4B329 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = A6564A0D2B96A04D00E4B329 /* Localizable.strings */; };
+		A6F2C5452B9FE3A00095C8E3 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */; };
+		A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5462B9FFC560095C8E3 /* NavigationBackSheetButton.swift */; };
+		A6F2C5492BA001460095C8E3 /* TokenSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5482BA001460095C8E3 /* TokenSelectionView.swift */; };
+		A6F2C54B2BA003E10095C8E3 /* TokenCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C54A2BA003E10095C8E3 /* TokenCell.swift */; };
+		A6F2C54F2BA009420095C8E3 /* TokenSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C54E2BA009420095C8E3 /* TokenSelectionViewModel.swift */; };
 		A6F9F7DB2B9BA2DE00790258 /* CoinCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9F7DA2B9BA2DD00790258 /* CoinCell.swift */; };
 		A6F9F7DD2B9BA5F000790258 /* AssetCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9F7DC2B9BA5F000790258 /* AssetCell.swift */; };
 		A6F9F7DF2B9BAA9F00790258 /* Separator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9F7DE2B9BAA9F00790258 /* Separator.swift */; };
@@ -264,6 +269,11 @@
 		A6564A052B969ADF00E4B329 /* EtherscanAPIResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EtherscanAPIResponse.swift; sourceTree = "<group>"; };
 		A6564A072B969AFC00E4B329 /* TransactionDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionDetail.swift; sourceTree = "<group>"; };
 		A6564A0C2B96A04D00E4B329 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		A6F2C5462B9FFC560095C8E3 /* NavigationBackSheetButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBackSheetButton.swift; sourceTree = "<group>"; };
+		A6F2C5482BA001460095C8E3 /* TokenSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionView.swift; sourceTree = "<group>"; };
+		A6F2C54A2BA003E10095C8E3 /* TokenCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenCell.swift; sourceTree = "<group>"; };
+		A6F2C54E2BA009420095C8E3 /* TokenSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionViewModel.swift; sourceTree = "<group>"; };
 		A6F9F7DA2B9BA2DD00790258 /* CoinCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinCell.swift; sourceTree = "<group>"; };
 		A6F9F7DC2B9BA5F000790258 /* AssetCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetCell.swift; sourceTree = "<group>"; };
 		A6F9F7DE2B9BAA9F00790258 /* Separator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Separator.swift; sourceTree = "<group>"; };
@@ -542,6 +552,7 @@
 				A633B1372B997F39003D1738 /* NavigationHelpButton.swift */,
 				A6F9F7E02B9BAFA700790258 /* NavigationRefreshButton.swift */,
 				A6F9F7E42B9BB4D100790258 /* NavigationMenuButton.swift */,
+				A6F2C5462B9FFC560095C8E3 /* NavigationBackSheetButton.swift */,
 			);
 			path = "Navigation Items";
 			sourceTree = "<group>";
@@ -553,6 +564,7 @@
 				465B09A82B7C176700952DD9 /* SendTransaction.swift */,
 				A6F9F7EA2B9D1B3700790258 /* VaultDetailViewModel.swift */,
 				A6F9F7EC2B9D1F5700790258 /* CoinViewModel.swift */,
+				A6F2C54E2BA009420095C8E3 /* TokenSelectionViewModel.swift */,
 			);
 			path = "View Models";
 			sourceTree = "<group>";
@@ -591,6 +603,7 @@
 				A6F9F7DA2B9BA2DD00790258 /* CoinCell.swift */,
 				A6F9F7DC2B9BA5F000790258 /* AssetCell.swift */,
 				A6F9F7E62B9BB63700790258 /* VaultCell.swift */,
+				A6F2C54A2BA003E10095C8E3 /* TokenCell.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -698,6 +711,8 @@
 				A633B13D2B9A9E30003D1738 /* VaultDetailView.swift */,
 				A6F9F7E22B9BB48700790258 /* VaultsView.swift */,
 				A6F9F7E82B9BBFD500790258 /* AddressQRCodeView.swift */,
+				A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */,
+				A6F2C5482BA001460095C8E3 /* TokenSelectionView.swift */,
 			);
 			path = Vault;
 			sourceTree = "<group>";
@@ -936,7 +951,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */;
+			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -1010,6 +1025,7 @@
 				DE1572992B70F26A009BC7C5 /* KeyType.swift in Sources */,
 				4606B3AE2B8045F60045094D /* BitcoinTransactionListView.swift in Sources */,
 				A633B13A2B9A5A22003D1738 /* ImportWalletView2.swift in Sources */,
+				A6F2C54B2BA003E10095C8E3 /* TokenCell.swift in Sources */,
 				A633B12F2B9952D8003D1738 /* OutlineButton.swift in Sources */,
 				465B09A72B7C049400952DD9 /* UnspentOutputsService.swift in Sources */,
 				049BBB582B71E72F004C231F /* DeviceView.swift in Sources */,
@@ -1033,6 +1049,7 @@
 				D9AD8EE22B67307F0009F8D5 /* ImportWalletView.swift in Sources */,
 				D9AD8F032B6732450009F8D5 /* SwapDoneView.swift in Sources */,
 				A62758F72B97DF4A00ADE3A6 /* ColorStyle.swift in Sources */,
+				A6F2C54F2BA009420095C8E3 /* TokenSelectionViewModel.swift in Sources */,
 				D9AD8EF72B6731B30009F8D5 /* SendVerifyView.swift in Sources */,
 				A65649E32B96602700E4B329 /* BitcoinTransactionExtension.swift in Sources */,
 				DE1572972B70F254009BC7C5 /* LocalStateAccessorImp.swift in Sources */,
@@ -1111,18 +1128,21 @@
 				A6F9F7EB2B9D1B3700790258 /* VaultDetailViewModel.swift in Sources */,
 				A65649F22B966A2300E4B329 /* TransactionStatus.swift in Sources */,
 				A6564A082B969AFC00E4B329 /* TransactionDetail.swift in Sources */,
+				A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */,
 				A65649EC2B96697B00E4B329 /* Asset.swift in Sources */,
 				46ED3A482B9F696000FFCB8A /* SolanaRecentBlockhash.swift in Sources */,
 				D9AD8EFD2B6732070009F8D5 /* SwapPeerDiscoveryView.swift in Sources */,
 				467B2D662B7B51F700AEDF64 /* NavigationStackButtons.swift in Sources */,
 				DE49A19C2B67133D000F3AFB /* Vault.swift in Sources */,
 				A65649EE2B9669DD00E4B329 /* Input.swift in Sources */,
+				A6F2C5452B9FE3A00095C8E3 /* HomeView.swift in Sources */,
 				DE49A1A02B67143B000F3AFB /* Chain.swift in Sources */,
 				A65649F02B966A1200E4B329 /* Output.swift in Sources */,
 				465B09A92B7C176700952DD9 /* SendTransaction.swift in Sources */,
 				A6564A022B969A1200E4B329 /* Price.swift in Sources */,
 				A633B12D2B994E92003D1738 /* CreateVaultView.swift in Sources */,
 				A633B1382B997F39003D1738 /* NavigationHelpButton.swift in Sources */,
+				A6F2C5492BA001460095C8E3 /* TokenSelectionView.swift in Sources */,
 				D9AD8EE62B6730A40009F8D5 /* PeerDiscoveryView.swift in Sources */,
 				A62758F52B97CE9E00ADE3A6 /* FontStyle.swift in Sources */,
 				A633B1362B997D57003D1738 /* NavigationBackButton.swift in Sources */,
@@ -1486,7 +1506,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */ = {
+		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DE49A1882B65F6DB000F3AFB /* Debug */,

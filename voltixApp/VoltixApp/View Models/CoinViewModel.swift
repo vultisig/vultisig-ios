@@ -27,10 +27,8 @@ import Foundation
             
             await CryptoPriceService.shared.fetchCryptoPrices(for: "bitcoin,thorchain", for: "usd")
             
-            DispatchQueue.main.async {
-                self.updateState(uxto: uxto, eth: eth, thor: thor, tx: tx)
-                self.isLoading = false
-            }
+            updateState(uxto: uxto, eth: eth, thor: thor, tx: tx)
+            isLoading = false
     }
     
     private func updateState(uxto: UnspentOutputsService, eth: EthplorerAPIService, thor: ThorchainService, tx: SendTransaction) {

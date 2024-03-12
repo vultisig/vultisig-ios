@@ -12,26 +12,22 @@ struct VaultDetailView: View {
     let vault: Vault
     
     @EnvironmentObject var viewModel: VaultDetailViewModel
+    @State var showSheet = false
     
     var body: some View {
-        ZStack {
+        ZStack(alignment: .bottom) {
             background
             view
-        }
-        .navigationBarBackButtonHidden(true)
-        .navigationTitle(vault.name)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                NavigationBackButton()
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                NavigationRefreshButton()
-            }
+            scanButton
         }
         .onAppear {
             setData()
         }
+        .sheet(isPresented: $showSheet, content: {
+            NavigationView {
+                TokenSelectionView(showTokenSelectionSheet: $showSheet)
+            }
+        })
     }
     
     var background: some View {
@@ -44,7 +40,6 @@ struct VaultDetailView: View {
             list
             addButton
         }
-        .padding(.top, 30)
     }
     
     var list: some View {
@@ -53,11 +48,34 @@ struct VaultDetailView: View {
                 CoinCell(presentationStack: $presentationStack, coin: coin)
             }
         }
+        .padding(.top, 30)
     }
     
     var addButton: some View {
-        FilledButton(title: "chooseTokens", icon: "plus")
-            .padding(16)
+        Button {
+            showSheet.toggle()
+        } label: {
+            FilledButton(title: "chooseTokens", icon: "plus")
+        }
+        .padding(16)
+        .padding(.bottom, 150)
+    }
+    
+    var scanButton: some View {
+        ZStack {
+            Circle()
+                .foregroundColor(.blue800)
+                .frame(width: 80, height: 80)
+                .opacity(0.8)
+            
+            Circle()
+                .foregroundColor(.turquoise600)
+                .frame(width: 60, height: 60)
+            
+            Image(systemName: "camera")
+                .font(.title30MenloUltraLight)
+                .foregroundColor(.blue600)
+        }
     }
     
     private func setData() {

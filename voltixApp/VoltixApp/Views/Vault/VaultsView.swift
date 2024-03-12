@@ -9,26 +9,23 @@ import SwiftUI
 import SwiftData
 
 struct VaultsView: View {
-    @Binding var presentationStack: [CurrentScreen]
+    @Binding var selectedVault: Vault?
+    @Binding var showVaultsList: Bool
     
     @Query var vaults: [Vault]
     
     var body: some View {
-        ZStack {
-            background
-            view
-        }
-        .navigationBarBackButtonHidden(true)
-        .navigationTitle("Main")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                NavigationMenuButton()
+        VStack {
+            ZStack {
+                background
+                view
             }
-            ToolbarItem(placement: .topBarTrailing) {
-                NavigationRefreshButton()
-            }
+            .frame(maxHeight: showVaultsList ? .none : 0)
+            .clipped()
+            
+            Spacer()
         }
+        .allowsHitTesting(showVaultsList)
     }
     
     var background: some View {
@@ -40,7 +37,7 @@ struct VaultsView: View {
         VStack {
             list
             Spacer()
-            cameraButton
+            addVaultButton
         }
     }
     
@@ -48,33 +45,29 @@ struct VaultsView: View {
         ScrollView {
             LazyVStack {
                 ForEach(vaults, id: \.self) { vault in
-                    VaultCell(presentationStack: $presentationStack, vault: vault)
+                    VaultCell(presentationStack: .constant([]), vault: vault)
+                        .onTapGesture {
+                            selectedVault = vault
+                            showVaultsList = false
+                        }
                 }
-                
-                chooseChainsButton
             }
             .padding(.top, 30)
         }
     }
     
-    var chooseChainsButton: some View {
-        FilledButton(title: "chooseChains", icon: "plus")
-            .padding(16)
-    }
-    
-    var cameraButton: some View {
-        ZStack {
-            Circle()
-                .foregroundColor(.turquoise600)
-                .frame(width: 60, height: 60)
-            
-            Image(systemName: "camera")
-                .font(.title30MenloUltraLight)
-                .foregroundColor(.blue600)
+    var addVaultButton: some View {
+        NavigationLink {
+            CreateVaultView(presentationStack: .constant([]))
+        } label: {
+            FilledButton(title: "addNewVault", icon: "plus")
+                .padding(16)
         }
+        .scaleEffect(showVaultsList ? 1 : 0)
+        .opacity(showVaultsList ? 1 : 0)
     }
 }
 
 #Preview {
-    VaultsView(presentationStack: .constant([]))
+    VaultsView(selectedVault: .constant(Vault.example), showVaultsList: .constant(false))
 }

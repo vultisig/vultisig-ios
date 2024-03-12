@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct AddressQRCodeView: View {
+    let addressData: String
+    @Binding var showSheet: Bool
     
     let padding: CGFloat = 30
     
@@ -21,7 +23,7 @@ struct AddressQRCodeView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                NavigationBackButton()
+                NavigationBackSheetButton(showSheet: $showSheet)
             }
         }
     }
@@ -41,17 +43,20 @@ struct AddressQRCodeView: View {
     }
     
     var address: some View {
-        Text("bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w")
+        Text(addressData)
             .font(.body12Menlo)
             .foregroundColor(.neutral0)
-            .lineLimit(1)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, padding)
     }
     
     var qrCode: some View {
         GeometryReader { geometry in
-            ZStack {
-                // Add QR Code here...
-            }
+            Utils.getQrImage(
+                data: addressData.data(using: .utf8), size: 100)
+            .resizable()
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .padding(24)
             .frame(maxWidth: .infinity)
             .frame(height: geometry.size.width-(2*padding))
             .background(Color.turquoise600.opacity(0.15))
@@ -66,5 +71,5 @@ struct AddressQRCodeView: View {
 }
 
 #Preview {
-    AddressQRCodeView()
+    AddressQRCodeView(addressData: "", showSheet: .constant(true))
 }

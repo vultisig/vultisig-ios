@@ -19,6 +19,7 @@ struct CoinCell: View {
     
     @State var isExpanded = false
     @State var showQRcode = false
+    @State var showAlert = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -38,8 +39,17 @@ struct CoinCell: View {
                 await setData()
             }
         }
+        .alert(isPresented: $showAlert) {
+            Alert(
+                title: Text(NSLocalizedString("addressCopied", comment: "")),
+                message: Text(coin.address),
+                dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+            )
+        }
         .sheet(isPresented: $showQRcode) {
-            AddressQRCodeView()
+            NavigationView {
+                AddressQRCodeView(addressData: coin.address, showSheet: $showQRcode)
+            }
         }
     }
     
@@ -51,21 +61,34 @@ struct CoinCell: View {
         })
     }
     
+    var image: some View {
+        HStack {
+            
+        }
+    }
+    
     var card: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            header
-            address
+        HStack {
+            image
+            content
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 24)
     }
     
-    var header: some View {
-        HStack(spacing: 12) {
-            title
-            actions
-            Spacer()
+    var content: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            header
             amount
+            address
+        }
+    }
+    
+    var header: some View {
+        HStack {
+            title
+            Spacer()
+            actions
         }
     }
     
@@ -77,15 +100,19 @@ struct CoinCell: View {
     
     var actions: some View {
         HStack(spacing: 12) {
-            copyButton
             showQRButton
+            copyButton
         }
     }
     
     var copyButton: some View {
-        Image(systemName: "square.on.square")
-            .foregroundColor(.neutral0)
-            .font(.body18MenloMedium)
+        Button {
+            copyAddress()
+        } label: {
+            Image(systemName: "square.on.square")
+                .foregroundColor(.neutral0)
+                .font(.body18MenloMedium)
+        }
     }
     
     var showQRButton: some View {
@@ -124,6 +151,7 @@ struct CoinCell: View {
     
     private func setData() async {
         tx.coin = coin
+        
         await coinViewModel.loadData(
             uxto: uxto,
             eth: eth,
@@ -136,6 +164,12 @@ struct CoinCell: View {
         withAnimation {
             isExpanded.toggle()
         }
+    }
+    
+    private func copyAddress() {
+        showAlert = true
+        let pasteboard = UIPasteboard.general
+        pasteboard.string = coin.address
     }
 }
 
