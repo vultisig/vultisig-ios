@@ -87,6 +87,7 @@
 		A6564A082B969AFC00E4B329 /* TransactionDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6564A072B969AFC00E4B329 /* TransactionDetail.swift */; };
 		A6564A0B2B96A04D00E4B329 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = A6564A0D2B96A04D00E4B329 /* Localizable.strings */; };
 		A6F2C5452B9FE3A00095C8E3 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5442B9FE3A00095C8E3 /* MainView.swift */; };
+		A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5462B9FFC560095C8E3 /* NavigationBackSheetButton.swift */; };
 		A6F9F7DB2B9BA2DE00790258 /* CoinCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9F7DA2B9BA2DD00790258 /* CoinCell.swift */; };
 		A6F9F7DD2B9BA5F000790258 /* AssetCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9F7DC2B9BA5F000790258 /* AssetCell.swift */; };
 		A6F9F7DF2B9BAA9F00790258 /* Separator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9F7DE2B9BAA9F00790258 /* Separator.swift */; };
@@ -260,6 +261,7 @@
 		A6564A072B969AFC00E4B329 /* TransactionDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionDetail.swift; sourceTree = "<group>"; };
 		A6564A0C2B96A04D00E4B329 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		A6F2C5442B9FE3A00095C8E3 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
+		A6F2C5462B9FFC560095C8E3 /* NavigationBackSheetButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBackSheetButton.swift; sourceTree = "<group>"; };
 		A6F9F7DA2B9BA2DD00790258 /* CoinCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinCell.swift; sourceTree = "<group>"; };
 		A6F9F7DC2B9BA5F000790258 /* AssetCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetCell.swift; sourceTree = "<group>"; };
 		A6F9F7DE2B9BAA9F00790258 /* Separator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Separator.swift; sourceTree = "<group>"; };
@@ -527,6 +529,7 @@
 				A633B1372B997F39003D1738 /* NavigationHelpButton.swift */,
 				A6F9F7E02B9BAFA700790258 /* NavigationRefreshButton.swift */,
 				A6F9F7E42B9BB4D100790258 /* NavigationMenuButton.swift */,
+				A6F2C5462B9FFC560095C8E3 /* NavigationBackSheetButton.swift */,
 			);
 			path = "Navigation Items";
 			sourceTree = "<group>";
@@ -1095,6 +1098,7 @@
 				A6F9F7EB2B9D1B3700790258 /* VaultDetailViewModel.swift in Sources */,
 				A65649F22B966A2300E4B329 /* TransactionStatus.swift in Sources */,
 				A6564A082B969AFC00E4B329 /* TransactionDetail.swift in Sources */,
+				A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */,
 				A65649EC2B96697B00E4B329 /* Asset.swift in Sources */,
 				D9AD8EFD2B6732070009F8D5 /* SwapPeerDiscoveryView.swift in Sources */,
 				467B2D662B7B51F700AEDF64 /* NavigationStackButtons.swift in Sources */,

@@ -47,7 +47,9 @@ struct CoinCell: View {
             )
         }
         .sheet(isPresented: $showQRcode) {
-            AddressQRCodeView()
+            NavigationView {
+                AddressQRCodeView(addressData: coin.address, showSheet: $showQRcode)
+            }
         }
     }
     
