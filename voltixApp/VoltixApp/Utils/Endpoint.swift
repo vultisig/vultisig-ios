@@ -15,8 +15,10 @@ class Endpoint {
     static func fetchAccountNumberThorchainNineRealms(_ address: String) -> String {
         "https://thornode.ninerealms.com/auth/accounts/\(address)"
     }
-    
-    static let web3ServiceInfura = "https://mainnet.infura.io/v3/\(AppConfiguration.infuraApiKey)"
+	
+	static let solanaServiceAlchemyRpc = "https://solana-mainnet.g.alchemy.com/v2/\(AppConfiguration.alchemyApiKey)"
+
+	static let web3ServiceInfura = "https://mainnet.infura.io/v3/\(AppConfiguration.infuraApiKey)"
     
         // With parameters
     static func bitcoinLabelTxHash(_ value: String) -> String {
