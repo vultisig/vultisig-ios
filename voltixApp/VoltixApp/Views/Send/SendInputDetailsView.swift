@@ -287,7 +287,7 @@ struct SendInputDetailsView: View {
 					let newValueCoin = newValueDouble / rate
 					newCoinAmount = newValueCoin != 0 ? String(format: "%.8f", newValueCoin) : ""
 				}
-			}else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
+			} else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
 				if let rate = CryptoPriceService.shared.cryptoPrices?.prices[Chain.Solana.name.lowercased()]?["usd"], rate > 0 {
 					let newValueCoin = newValueDouble / rate
 					newCoinAmount = newValueCoin != 0 ? String(format: "%.9f", newValueCoin) : ""

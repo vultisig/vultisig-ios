@@ -212,7 +212,7 @@ struct SendVerifyView: View {
 									self.presentationStack.append(.KeysignDiscovery(KeysignPayload(
 										coin: tx.coin,
 										toAddress: tx.toAddress,
-										toAmount: tx.amountInSats,
+										toAmount: tx.amountInLamports,
 										chainSpecific: BlockChainSpecific.Solana(recentBlockHash: recentBlockHash),
 										utxos: [],
 										memo: tx.memo, swapPayload: nil)))

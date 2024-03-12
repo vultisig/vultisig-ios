@@ -56,6 +56,10 @@ class SendTransaction: ObservableObject, Hashable {
         return 0
     }
     
+	var amountInLamports: Int64 {
+		Int64(amountDecimal * 1_000_000_000)
+	}
+	
     var amountInSats: Int64 {
         Int64(amountDecimal * 100_000_000)
     }

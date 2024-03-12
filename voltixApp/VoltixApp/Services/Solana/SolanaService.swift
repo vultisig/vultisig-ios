@@ -53,7 +53,7 @@ class SolanaService: ObservableObject {
 		return formatter.string(from: NSNumber(value: balanceSOL))
 	}
 	
-	private let rpcURL = URL(string: "https://solana-mainnet.g.alchemy.com/v2/BalW_7KR8Mq-lb4zXxyKFdMsNWq1UsZ-")!
+	private let rpcURL = URL(string: Endpoint.solanaServiceAlchemyRpc)!
 	private let jsonDecoder = JSONDecoder()
 	
 	func sendSolanaTransaction(encodedTransaction: String) async {
@@ -65,6 +65,9 @@ class SolanaService: ObservableObject {
 				"params": [encodedTransaction]
 			]
 			let data = try await postRequest(with: requestBody)
+			
+			print(String(data: data, encoding: String.Encoding.utf8))
+			
 			let response = try jsonDecoder.decode(SolanaRPCResponse<String>.self, from: data)
 			DispatchQueue.main.async { [weak self] in
 				self?.transactionResult = response.result
@@ -86,6 +89,7 @@ class SolanaService: ObservableObject {
 			let response = try jsonDecoder.decode(SolanaRPCResponse<SolanaBalanceResponse>.self, from: data)
 			DispatchQueue.main.async { [weak self] in
 				self?.balance = response.result.value
+				print("SOLANA balance \(response.result.value)")
 			}
 		} catch {
 			print("Error fetching balance: \(error.localizedDescription)")
