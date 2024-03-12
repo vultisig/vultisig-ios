@@ -415,6 +415,40 @@ struct SendInputDetailsView: View {
 					}
 				}
 			}
+		} else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
+			
+		} else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
+			
+			guard let walletBalanceInLamports = sol.balance else {
+				formErrorMessages += "Wallet balance is not available. \n"
+				logger.log("Wallet balance is not available for Solana.")
+				isValidForm = false
+				return isValidForm
+			}
+			
+			let optionalGas: String? = tx.gas
+			guard let feeStr = optionalGas, let feeInLamports = Decimal(string: feeStr) else {
+				formErrorMessages += "Invalid gas fee provided. \n"
+				logger.log("Invalid gas fee for Solana.")
+				isValidForm = false
+				return isValidForm
+			}
+			
+			guard let amountInSOL = Decimal(string: tx.amount) else {
+				formErrorMessages += "Invalid transaction amount provided. \n"
+				logger.log("Invalid transaction amount for Solana.")
+				isValidForm = false
+				return isValidForm
+			}
+			
+			let amountInLamports = amountInSOL * Decimal(1_000_000_000)
+			
+			let totalCostInLamports = amountInLamports + feeInLamports
+			if totalCostInLamports > Decimal(walletBalanceInLamports) {
+				formErrorMessages += "The combined amount and fee exceed your wallet's balance for Solana. Please adjust to proceed. \n"
+				logger.log("Total transaction cost exceeds wallet balance for Solana.")
+				isValidForm = false
+			}
 		}
 		
 		return isValidForm
@@ -463,8 +497,6 @@ struct SendInputDetailsView: View {
 			tx.eth = eth.addressInfo
 			
 			let gasPriceInGwei = BigInt(web3Service.gasPrice ?? 0) / BigInt(10).power(9)
-			
-			print("Gas price in Gwei: \(gasPriceInGwei)")
 			
 			tx.gas = String(gasPriceInGwei)
 			tx.nonce = Int64(web3Service.nonce ?? 0)
