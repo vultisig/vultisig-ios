@@ -169,6 +169,7 @@ struct AssetsList: View {
                                     logger.info("fail to get dogecoin address,error:\(err.localizedDescription)")
                             }
                         case Chain.Solana.name:
+							print("\(Chain.Solana.name) > \(vault.pubKeyEdDSA) > \(vault.hexChainCode)")
                             let coinResult = SolanaHelper.getSolana(hexPubKey: vault.pubKeyEdDSA, hexChainCode: vault.hexChainCode)
                             switch coinResult {
                                 case .success(let sol):

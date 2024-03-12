@@ -8,14 +8,14 @@ import Tss
 import WalletCore
 
 enum SolanaHelper {
-    static func getSolana(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
-        return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).map { addr in
+    static func getSolana(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {		
+		return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).map { addr in
             Coin(chain: Chain.Solana,
                  ticker: "SOL",
                  logo: "",
                  address: addr,
                  hexPublicKey: hexPubKey,
-                 feeUnit: "",
+                 feeUnit: "Lamports",
                  contractAddress: nil
             )
         }
