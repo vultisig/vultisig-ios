@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SDWebImageSwiftUI
 
 struct CoinCell: View {
     @Binding var presentationStack: [CurrentScreen]
@@ -62,14 +63,26 @@ struct CoinCell: View {
     }
     
     var image: some View {
-        HStack {
-            
+        WebImage(url: URL(string: coin.logo)) { image in
+            image
+                .resizable()
+                .frame(width: 32, height: 32)
+        } placeholder: {
+            progressView
         }
+    }
+    
+    var progressView: some View {
+        ProgressView()
+            .tint(.black)
+            .frame(width: 32, height: 32)
+            .background(Color.neutral200)
+            .cornerRadius(100)
     }
     
     var card: some View {
         HStack {
-            image
+//            image
             content
         }
         .padding(.horizontal, 16)

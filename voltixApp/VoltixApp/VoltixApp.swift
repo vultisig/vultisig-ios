@@ -7,6 +7,7 @@ import Mediator
 import SwiftData
 import SwiftUI
 import WalletCore
+import SDWebImageSVGCoder
 
 @main
 struct VoltixApp: App {
@@ -15,6 +16,10 @@ struct VoltixApp: App {
     @StateObject var coinViewModel = CoinViewModel()
     @StateObject var applicationState = ApplicationState.shared
     @StateObject var vaultDetailViewModel = VaultDetailViewModel()
+    
+    init() {
+        SDImageCodersManager.shared.addCoder(SDImageSVGCoder.shared)
+    }
 
     var body: some Scene {
         WindowGroup {
