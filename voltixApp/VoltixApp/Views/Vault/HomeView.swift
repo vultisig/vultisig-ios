@@ -55,10 +55,7 @@ struct HomeView: View {
     var navigationTitle: some View {
         ZStack {
             HStack {
-                Text(getTitle())
-                    .font(.body)
-                    .bold()
-                    .foregroundColor(.neutral0)
+                title
                 
                 if selectedVault != nil {
                     Image(systemName: "chevron.up")
@@ -74,15 +71,21 @@ struct HomeView: View {
         }
     }
     
-    private func getTitle() -> String {
-        let title: String
-        
-        if showVaultsList {
-            title = NSLocalizedString("main", comment: "Home view title")
-        } else {
-            title = selectedVault?.name ?? NSLocalizedString("vault", comment: "Home view title")
+    var title: some View {
+        VStack(spacing: 0) {
+            Text(NSLocalizedString("main", comment: "Home view title"))
+                .font(.body)
+                .bold()
+                .foregroundColor(.neutral0)
+            
+            Text(selectedVault?.name ?? NSLocalizedString("vault", comment: "Home view title"))
+                .font(.body)
+                .bold()
+                .foregroundColor(.neutral0)
         }
-        return title
+        .offset(y: showVaultsList ? 9 : -10)
+        .frame(height: 20)
+        .clipped()
     }
     
     private func switchView() {
