@@ -12,14 +12,6 @@ struct VaultCell: View {
     let vault: Vault
     
     var body: some View {
-        NavigationLink {
-            VaultDetailView(presentationStack: $presentationStack,vault: vault)
-        } label: {
-            cell
-        }
-    }
-    
-    var cell: some View {
         HStack(spacing: 12) {
             title
             Spacer()

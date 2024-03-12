@@ -18,17 +18,6 @@ struct VaultDetailView: View {
             background
             view
         }
-        .navigationBarBackButtonHidden(true)
-        .navigationTitle(vault.name)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                NavigationBackButton()
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                NavigationRefreshButton()
-            }
-        }
         .onAppear {
             setData()
         }
@@ -40,11 +29,13 @@ struct VaultDetailView: View {
     }
     
     var view: some View {
-        ScrollView {
-            list
-            addButton
+        VStack {
+            ScrollView {
+                list
+                addButton
+            }
+            scanButton
         }
-        .padding(.top, 30)
     }
     
     var list: some View {
@@ -53,11 +44,24 @@ struct VaultDetailView: View {
                 CoinCell(presentationStack: $presentationStack, coin: coin)
             }
         }
+        .padding(.top, 30)
     }
     
     var addButton: some View {
         FilledButton(title: "chooseTokens", icon: "plus")
             .padding(16)
+    }
+    
+    var scanButton: some View {
+        ZStack {
+            Circle()
+                .foregroundColor(.turquoise600)
+                .frame(width: 60, height: 60)
+            
+            Image(systemName: "camera")
+                .font(.title30MenloUltraLight)
+                .foregroundColor(.blue600)
+        }
     }
     
     private func setData() {

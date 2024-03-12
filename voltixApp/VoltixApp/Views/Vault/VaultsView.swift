@@ -9,7 +9,8 @@ import SwiftUI
 import SwiftData
 
 struct VaultsView: View {
-    @Binding var presentationStack: [CurrentScreen]
+    @Binding var selectedVault: Vault?
+    @Binding var showVaultsList: Bool
     
     @Query var vaults: [Vault]
     
@@ -17,18 +18,6 @@ struct VaultsView: View {
         ZStack {
             background
             view
-        }
-        .navigationBarBackButtonHidden(true)
-        .navigationTitle(NSLocalizedString("main", comment: "Home view title"))
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                NavigationMenuButton()
-            }
-
-            ToolbarItem(placement: .topBarTrailing) {
-                NavigationRefreshButton()
-            }
         }
     }
     
@@ -49,7 +38,11 @@ struct VaultsView: View {
         ScrollView {
             LazyVStack {
                 ForEach(vaults, id: \.self) { vault in
-                    VaultCell(presentationStack: $presentationStack, vault: vault)
+                    VaultCell(presentationStack: .constant([]), vault: vault)
+                        .onTapGesture {
+                            selectedVault = vault
+                            showVaultsList = false
+                        }
                 }
             }
             .padding(.top, 30)
@@ -67,5 +60,5 @@ struct VaultsView: View {
 }
 
 #Preview {
-    VaultsView(presentationStack: .constant([]))
+    VaultsView(selectedVault: .constant(Vault.example), showVaultsList: .constant(false))
 }
