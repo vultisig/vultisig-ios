@@ -12,15 +12,22 @@ struct VaultDetailView: View {
     let vault: Vault
     
     @EnvironmentObject var viewModel: VaultDetailViewModel
+    @State var showSheet = false
     
     var body: some View {
-        ZStack {
+        ZStack(alignment: .bottom) {
             background
             view
+            scanButton
         }
         .onAppear {
             setData()
         }
+        .sheet(isPresented: $showSheet, content: {
+            NavigationView {
+                TokenSelectionView(showTokenSelectionSheet: $showSheet)
+            }
+        })
     }
     
     var background: some View {
@@ -29,12 +36,9 @@ struct VaultDetailView: View {
     }
     
     var view: some View {
-        VStack {
-            ScrollView {
-                list
-                addButton
-            }
-            scanButton
+        ScrollView {
+            list
+            addButton
         }
     }
     
@@ -48,12 +52,22 @@ struct VaultDetailView: View {
     }
     
     var addButton: some View {
-        FilledButton(title: "chooseTokens", icon: "plus")
-            .padding(16)
+        Button {
+            showSheet.toggle()
+        } label: {
+            FilledButton(title: "chooseTokens", icon: "plus")
+        }
+        .padding(16)
+        .padding(.bottom, 150)
     }
     
     var scanButton: some View {
         ZStack {
+            Circle()
+                .foregroundColor(.blue800)
+                .frame(width: 80, height: 80)
+                .opacity(0.8)
+            
             Circle()
                 .foregroundColor(.turquoise600)
                 .frame(width: 60, height: 60)

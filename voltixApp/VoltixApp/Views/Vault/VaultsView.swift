@@ -15,10 +15,17 @@ struct VaultsView: View {
     @Query var vaults: [Vault]
     
     var body: some View {
-        ZStack {
-            background
-            view
+        VStack {
+            ZStack {
+                background
+                view
+            }
+            .frame(maxHeight: showVaultsList ? .none : 0)
+            .clipped()
+            
+            Spacer()
         }
+        .allowsHitTesting(showVaultsList)
     }
     
     var background: some View {
@@ -56,6 +63,8 @@ struct VaultsView: View {
             FilledButton(title: "addNewVault", icon: "plus")
                 .padding(16)
         }
+        .scaleEffect(showVaultsList ? 1 : 0)
+        .opacity(showVaultsList ? 1 : 0)
     }
 }
 

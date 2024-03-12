@@ -47,6 +47,7 @@ struct AddressQRCodeView: View {
             .font(.body12Menlo)
             .foregroundColor(.neutral0)
             .multilineTextAlignment(.center)
+            .padding(.horizontal, padding)
     }
     
     var qrCode: some View {

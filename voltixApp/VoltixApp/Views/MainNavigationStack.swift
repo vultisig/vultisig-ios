@@ -53,7 +53,7 @@ struct MainNavigationStack: View {
                             SwapDoneView(presentationStack: $presentationStack)
                         // NEW UI
                         case .vaultSelection:
-                            MainView()
+                            HomeView()
                         // OLD UI
 //                        case .vaultSelection:
 //                            VaultSelectionView(presentationStack: $presentationStack)

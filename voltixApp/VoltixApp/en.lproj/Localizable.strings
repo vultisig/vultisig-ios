@@ -18,6 +18,7 @@
 "join" = "Join";
 "swap" = "Swap";
 "send" = "Send";
+"tokens" = "Tokens";
 "vaults" = "Vaults";
 "main" = "Main";
 "address" = "Address";
