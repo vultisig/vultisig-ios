@@ -101,8 +101,12 @@ class SolanaService: ObservableObject {
 			let requestBody: [String: Any] = [
 				"jsonrpc": "2.0",
 				"id": 1,
-				"method": "getRecentBlockhash"
+				"method": "getRecentBlockhash",
+				"params": [["commitment": "finalized"]]
 			]
+			
+			
+			
 			let data = try await postRequest(with: requestBody)
 			let response = try jsonDecoder.decode(SolanaRPCResponse<SolanaRecentBlockhashResponse>.self, from: data)
 			

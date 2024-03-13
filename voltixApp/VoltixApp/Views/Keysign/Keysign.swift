@@ -239,15 +239,17 @@ struct KeysignView: View {
 									let result = SolanaHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyEdDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
 									switch result {
 										case .success(let tx):
-											print(tx)
 											
-											Task {
-												await SolanaService.shared.sendSolanaTransaction(encodedTransaction: tx)
-												
-												await MainActor.run {
-													self.txid = SolanaService.shared.transactionResult ?? ""
-												}
-											}
+											
+											print("SOLANA TX: \(tx)")
+											
+//											Task {
+//												await SolanaService.shared.sendSolanaTransaction(encodedTransaction: tx)
+//												
+//												await MainActor.run {
+//													self.txid = SolanaService.shared.transactionResult ?? ""
+//												}
+//											}
 											
 											
 											
