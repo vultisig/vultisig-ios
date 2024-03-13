@@ -19,7 +19,7 @@ struct AddressQRCodeView: View {
             view
         }
         .navigationBarBackButtonHidden(true)
-        .navigationTitle(NSLocalizedString("address", comment: "Swap button text"))
+        .navigationTitle(NSLocalizedString("address", comment: "AddressQRCodeView title"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {

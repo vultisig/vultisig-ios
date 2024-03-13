@@ -79,13 +79,17 @@ struct CoinCell: View {
     }
     
     var sendButton: some View {
-        Text(NSLocalizedString("send", comment: "Send button text").uppercased())
-            .font(.body16MenloBold)
-            .foregroundColor(.turquoise600)
-            .padding(.vertical, 5)
-            .frame(maxWidth: .infinity)
-            .background(Color.blue800)
-            .cornerRadius(50)
+        NavigationLink {
+            SendInputDetailsView(presentationStack: .constant([]), tx: tx)
+        } label: {
+            Text(NSLocalizedString("send", comment: "Send button text").uppercased())
+                .font(.body16MenloBold)
+                .foregroundColor(.turquoise600)
+                .padding(.vertical, 5)
+                .frame(maxWidth: .infinity)
+                .background(Color.blue800)
+                .cornerRadius(50)
+        }
     }
     
     private func setData() async {
