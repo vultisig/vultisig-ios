@@ -8,6 +8,7 @@ public struct VaultAssetsView: View {
 	@Binding var presentationStack: [CurrentScreen]
 	@EnvironmentObject var appState: ApplicationState
 	@StateObject var uxto: UnspentOutputsService = UnspentOutputsService()
+	@StateObject var uxtoLtc: LitecoinUnspentOutputsService = LitecoinUnspentOutputsService()
 	@StateObject var eth: EthplorerAPIService = EthplorerAPIService()
 	@StateObject var thor: ThorchainService = ThorchainService.shared
 	@StateObject var sol: SolanaService = SolanaService.shared
@@ -126,7 +127,7 @@ public struct VaultAssetsView: View {
 	}
 	
 	private func fetchCryptoPrices() async {
-		await CryptoPriceService.shared.fetchCryptoPrices(for: "bitcoin,thorchain,solana", for: "usd")
+		await CryptoPriceService.shared.fetchCryptoPrices(for: "bitcoin,litecoin,thorchain,solana", for: "usd")
 	}
 	
 	private func updateState() {
@@ -136,11 +137,21 @@ public struct VaultAssetsView: View {
 			
 			if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
 				if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[tx.coin.chain.name.lowercased()]?["usd"] {
+					self.balanceUSD = uxtoLtc.walletData?.balanceInUSD(usdPrice: priceRateUsd) ?? "US$ 0,00"
+				}
+				self.coinBalance = uxtoLtc.walletData?.balanceInLTC ?? "0.0"
+				
+			} 
+			else if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
+				if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[tx.coin.chain.name.lowercased()]?["usd"] {
 					self.balanceUSD = uxto.walletData?.balanceInUSD(usdPrice: priceRateUsd) ?? "US$ 0,00"
 				}
 				self.coinBalance = uxto.walletData?.balanceInBTC ?? "0.0"
 				
-			} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
+			}
+			
+			
+			else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
 				tx.eth = eth.addressInfo
 				if tx.coin.ticker.uppercased() == "ETH" {
 					self.coinBalance = eth.addressInfo?.ETH.balanceString ?? "0.0"
