@@ -16,9 +16,16 @@ extension LitecoinUnspentOutputsService {
 		
 		class Status: Codable {
 			let confirmed: Bool
-			let block_height: Int
-			let block_hash: String
-			let block_time: Int
+			let blockHeight: Int
+			let blockHash: String
+			let blockTime: Int
+			
+			enum CodingKeys: String, CodingKey {
+				case confirmed
+				case blockHeight = "block_height"
+				case blockHash = "block_hash"
+				case blockTime = "block_time"
+			}
 		}
 	}
 	
@@ -30,7 +37,7 @@ extension LitecoinUnspentOutputsService {
 		}
 		
 		enum CodingKeys: String, CodingKey {
-			case utxos = "unspent_outputs"
+			case utxos
 		}
 		
 		var balance: Int {

@@ -14,12 +14,27 @@ public class LitecoinUnspentOutputsService: ObservableObject {
 		
 		do {
 			let (data, _) = try await URLSession.shared.data(from: url)
-			let decoder = JSONDecoder()
-			let decodedData = try decoder.decode(LitecoinTransaction.self, from: data)
 			
-			self.walletData = decodedData // Update to reflect the new data type
+			print(String(data: data, encoding: String.Encoding.utf8))
+			
+			let decoder = JSONDecoder()
+			let decodedData = try decoder.decode([LitecoinTransactionRef].self, from: data)
+			let utxos = decodedData
+			self.walletData = LitecoinTransaction(utxos: utxos)
+			
+		} catch let DecodingError.dataCorrupted(context) {
+			self.errorMessage = "Data corrupted: \(context)"
+		} catch let DecodingError.keyNotFound(key, context) {
+			self.errorMessage = "Key '\(key)' not found: \(context.debugDescription)"
+		} catch let DecodingError.valueNotFound(value, context) {
+			self.errorMessage = "Value '\(value)' not found: \(context.debugDescription)"
+		} catch let DecodingError.typeMismatch(type, context) {
+			self.errorMessage = "Type '\(type)' mismatch: \(context.debugDescription)"
 		} catch {
-			self.errorMessage = "Fetch failed: \(error.localizedDescription)"
+			self.errorMessage = "Error: \(error.localizedDescription)"
 		}
+		
+		print(String(describing: self.errorMessage))
+		
 	}
 }
