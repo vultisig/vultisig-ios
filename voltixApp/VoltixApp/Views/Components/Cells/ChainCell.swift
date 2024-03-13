@@ -59,12 +59,9 @@ struct ChainCell: View {
     }
     
     var card: some View {
-        HStack {
-//            image
-            content
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 24)
+        content
+            .padding(.horizontal, 16)
+            .padding(.vertical, 24)
     }
     
     var content: some View {
@@ -117,9 +114,13 @@ struct ChainCell: View {
     }
     
     var quantity: some View {
-        Text("assets")
-            .font(.body20MontserratSemiBold)
-            .foregroundColor(.neutral0)
+        Text(getQuantity())
+            .font(.body12Menlo)
+            .foregroundColor(.neutral100)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 2)
+            .background(Color.blue400)
+            .cornerRadius(50)
     }
     
     var address: some View {
@@ -127,12 +128,15 @@ struct ChainCell: View {
             .font(.body12Menlo)
             .foregroundColor(.turquoise600)
             .lineLimit(1)
+            .padding(.top, 12)
     }
     
     var cells: some View {
-        VStack(spacing: 0) {
-            Separator()
-            CoinCell()
+        ForEach(group.coins, id: \.self) { coin in
+            VStack(spacing: 0) {
+                Separator()
+                CoinCell(coin: coin)
+            }
         }
     }
     
@@ -146,6 +150,14 @@ struct ChainCell: View {
         showAlert = true
         let pasteboard = UIPasteboard.general
         pasteboard.string = group.address
+    }
+    
+    private func getQuantity() -> String {
+        guard group.coins.count>1 else {
+            return "1 " + NSLocalizedString("asset", comment: "")
+        }
+        
+        return "\(group.coins.count) \(NSLocalizedString("assets", comment: ""))"
     }
 }
 

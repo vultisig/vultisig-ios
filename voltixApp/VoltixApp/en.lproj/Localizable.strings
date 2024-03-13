@@ -29,6 +29,8 @@
 "delete" = "Delete";
 "cancel" = "Cancel";
 "save" = "Save";
+"asset" = "Asset";
+"assets" = "Assets";
 "vaultName" = "Vault Name";
 "deleteVault" = "Delete your vault permanently";
 "deleteVaultTitle" = "Delete Vault";

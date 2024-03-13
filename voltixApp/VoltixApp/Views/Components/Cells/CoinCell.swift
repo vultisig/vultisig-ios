@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct CoinCell: View {
-    
+    let coin: Coin
     
     @StateObject var tx = SendTransaction()
     @StateObject var coinViewModel = CoinViewModel()
@@ -17,11 +17,12 @@ struct CoinCell: View {
     @StateObject var thor = ThorchainService.shared
     
     var body: some View {
-        NavigationLink {
-            
-        } label: {
-            cell
-        }
+        cell
+            .onAppear {
+                Task {
+                    await setData()
+                }
+            }
     }
     
     var cell: some View {
@@ -87,14 +88,8 @@ struct CoinCell: View {
             .cornerRadius(50)
     }
     
-    var amountNew: some View {
-        Text(coinViewModel.balanceUSD)
-            .font(.body20MontserratSemiBold)
-            .foregroundColor(.neutral0)
-    }
-    
     private func setData() async {
-//        tx.coin = coin
+        tx.coin = coin
         
         await coinViewModel.loadData(
             uxto: uxto,
@@ -106,5 +101,5 @@ struct CoinCell: View {
 }
 
 #Preview {
-    CoinCell()
+    CoinCell(coin: Coin.example)
 }
