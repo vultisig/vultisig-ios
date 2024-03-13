@@ -8,7 +8,9 @@
 import Foundation
 
 class Endpoint {
-    static let broadcastTransaction = "https://mempool.space/api/tx"
+    static let btcBroadcastTransaction = "https://mempool.space/api/tx"
+	
+	static let ltcBroadcastTransaction = "https://litecoinspace.org/api/tx"
     
     static let broadcastTransactionThorchainNineRealms = "https://thornode.ninerealms.com/cosmos/tx/v1beta1/txs"
     

@@ -14,14 +14,10 @@ public class LitecoinUnspentOutputsService: ObservableObject {
 		
 		do {
 			let (data, _) = try await URLSession.shared.data(from: url)
-			
-			print(String(data: data, encoding: String.Encoding.utf8))
-			
 			let decoder = JSONDecoder()
 			let decodedData = try decoder.decode([LitecoinTransactionRef].self, from: data)
 			let utxos = decodedData
 			self.walletData = LitecoinTransaction(utxos: utxos)
-			
 		} catch let DecodingError.dataCorrupted(context) {
 			self.errorMessage = "Data corrupted: \(context)"
 		} catch let DecodingError.keyNotFound(key, context) {

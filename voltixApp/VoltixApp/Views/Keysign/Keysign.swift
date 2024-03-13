@@ -116,7 +116,7 @@ struct KeysignView: View {
 											print(tx)
 											Task {
 												do {
-													self.txid = try await BitcoinTransactionsService.broadcastTransaction(tx)
+													self.txid = try await BitcoinTransactionsService.broadcastTransaction(tx, endpointUrl: Endpoint.btcBroadcastTransaction)
 													print("Transaction Broadcasted Successfully, txid: \(self.txid)")
 												} catch let error as BitcoinTransactionError {
 													switch error {
@@ -164,6 +164,28 @@ struct KeysignView: View {
 									switch result {
 										case .success(let tx):
 											print(tx)
+											Task {
+												do {
+													self.txid = try await BitcoinTransactionsService.broadcastTransaction(tx, endpointUrl: Endpoint.ltcBroadcastTransaction)
+													print("Transaction Broadcasted Successfully, txid: \(self.txid)")
+												} catch let error as BitcoinTransactionError {
+													switch error {
+														case .invalidURL:
+															print("Invalid URL.")
+														case .httpError(let statusCode):
+															print("HTTP Error with status code: \(statusCode).")
+														case .apiError(let message):
+															print("API Error: \(message)")
+														case .unexpectedResponse:
+															print("Unexpected response from the server.")
+														case .unknown(let unknownError):
+															print("An unknown error occurred: \(unknownError.localizedDescription)")
+													}
+												} catch {
+													print("An unexpected error occurred: \(error.localizedDescription)")
+												}
+											}
+											
 										case .failure(let err):
 											switch err {
 												case HelperError.runtimeError(let errDetail):
