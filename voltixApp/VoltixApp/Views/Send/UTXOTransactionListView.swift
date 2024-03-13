@@ -5,8 +5,8 @@
 	//
 import SwiftUI
 
-struct BitcoinTransactionListView: View {
-	@StateObject var bitcoinTransactionsService: UTXOTransactionsService = .init()
+struct UTXOTransactionListView: View {
+	@StateObject var utxoTransactionsService: UTXOTransactionsService = .init()
 	@EnvironmentObject var appState: ApplicationState
 
 	@Binding var presentationStack: [CurrentScreen]
@@ -15,11 +15,11 @@ struct BitcoinTransactionListView: View {
 	var body: some View {
 		VStack {
 			List {
-				if let transactions = bitcoinTransactionsService.walletData {
+				if let transactions = utxoTransactionsService.walletData {
 					ForEach(transactions, id: \.txid) { transaction in
-						TransactionRow(transaction: transaction)
+						TransactionRow(transaction: transaction, tx: tx)
 					}
-				} else if let errorMessage = bitcoinTransactionsService.errorMessage {
+				} else if let errorMessage = utxoTransactionsService.errorMessage {
 					Text("Error fetching transactions: \(errorMessage)")
 				} else {
 					ProgressView()
@@ -39,9 +39,9 @@ struct BitcoinTransactionListView: View {
 			.task {
 				
 				if tx.coin.chain.name == Chain.Bitcoin.name {
-					await bitcoinTransactionsService.fetchTransactions(tx.coin.address, endpointUrl: Endpoint.fetchBitcoinTransactions(tx.coin.address))
+					await utxoTransactionsService.fetchTransactions(tx.coin.address, endpointUrl: Endpoint.fetchBitcoinTransactions(tx.coin.address))
 				} else if tx.coin.chain.name == Chain.Litecoin.name {
-					await bitcoinTransactionsService.fetchTransactions(tx.coin.address, endpointUrl: Endpoint.fetchLitecoinTransactions(tx.coin.address))
+					await utxoTransactionsService.fetchTransactions(tx.coin.address, endpointUrl: Endpoint.fetchLitecoinTransactions(tx.coin.address))
 				}
 				
 			}
@@ -50,7 +50,8 @@ struct BitcoinTransactionListView: View {
 }
 
 struct TransactionRow: View {
-	let transaction: BitcoinTransactionMempool
+	let transaction: UTXOTransactionMempool
+	let tx: SendTransaction
 	
 	var body: some View {
 		Section {
@@ -84,7 +85,7 @@ struct TransactionRow: View {
 				}
 				
 				Divider() // Adds a horizontal line
-				LabelTextNumeric(title: "Fee:", value: String(transaction.fee) + " SATS")
+				LabelTextNumeric(title: "Fee:", value: String(transaction.fee) + " " + tx.coin.feeUnit)
 					.padding(.vertical, 5)
 			}
 		}
@@ -145,6 +146,6 @@ struct TransactionRow: View {
 		formatter.decimalSeparator = "." // Use dot for decimal separation
 		formatter.groupingSeparator = "," // Use comma for thousands separation, adjust if needed
 		
-		return (formatter.string(from: NSNumber(value: amountBTC)) ?? "\(amountBTC)") + " BTC"
+		return (formatter.string(from: NSNumber(value: amountBTC)) ?? "\(amountBTC) \(tx.coin.ticker.uppercased())")
 	}
 }

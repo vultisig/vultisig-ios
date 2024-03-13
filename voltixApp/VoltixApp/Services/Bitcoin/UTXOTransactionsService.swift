@@ -10,12 +10,12 @@ enum BitcoinTransactionError: Error {
 
 @MainActor
 public class UTXOTransactionsService: ObservableObject {
-    @Published var walletData: [BitcoinTransactionMempool]?
+    @Published var walletData: [UTXOTransactionMempool]?
     @Published var errorMessage: String?
     
     // Cache structure to hold data and timestamp
     private struct CacheEntry {
-        let data: [BitcoinTransactionMempool]
+        let data: [UTXOTransactionMempool]
         let timestamp: Date
     }
     
@@ -46,9 +46,9 @@ public class UTXOTransactionsService: ObservableObject {
             let (data, _) = try await URLSession.shared.data(from: url)
             print(String(data: data, encoding: .utf8) ?? "No response body")
             let decoder = JSONDecoder()
-            let decodedData = try decoder.decode([BitcoinTransactionMempool].self, from: data)
+            let decodedData = try decoder.decode([UTXOTransactionMempool].self, from: data)
             let updatedData = decodedData.map { transaction in
-                BitcoinTransactionMempool(txid: transaction.txid, version: transaction.version, locktime: transaction.locktime, vin: transaction.vin, vout: transaction.vout, fee: transaction.fee, status: transaction.status, userAddress: userAddress)
+                UTXOTransactionMempool(txid: transaction.txid, version: transaction.version, locktime: transaction.locktime, vin: transaction.vin, vout: transaction.vout, fee: transaction.fee, status: transaction.status, userAddress: userAddress)
             }
             
             cache[userAddress] = CacheEntry(data: updatedData, timestamp: Date())

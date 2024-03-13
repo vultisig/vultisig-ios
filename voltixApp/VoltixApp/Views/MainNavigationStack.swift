@@ -64,7 +64,7 @@ struct MainNavigationStack: View {
                         case .JoinKeysign:
                             JoinKeysignView(presentationStack: $presentationStack)
                         case .bitcoinTransactionsListView(let tx):
-							BitcoinTransactionListView(presentationStack: $presentationStack, tx: tx)
+							UTXOTransactionListView(presentationStack: $presentationStack, tx: tx)
                         case .ethereumTransactionsListView:
                             EthereumTransactionListView(presentationStack: $presentationStack)
                         case .erc20TransactionsListView(let contractAddress):
