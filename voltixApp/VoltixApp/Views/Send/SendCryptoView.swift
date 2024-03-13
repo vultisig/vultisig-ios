@@ -29,8 +29,10 @@ struct SendCryptoView: View {
     }
     
     var view: some View {
-        ScrollView {
-            
+        VStack(spacing: 30) {
+            ProgressBar(progress: 0.25)
+                .padding(.top, 30)
+            SendCryptoDetailsView()
         }
     }
 }
