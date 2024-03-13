@@ -9,7 +9,7 @@ enum BitcoinTransactionError: Error {
 }
 
 @MainActor
-public class BitcoinTransactionsService: ObservableObject {
+public class UTXOTransactionsService: ObservableObject {
     @Published var walletData: [BitcoinTransactionMempool]?
     @Published var errorMessage: String?
     
@@ -30,14 +30,14 @@ public class BitcoinTransactionsService: ObservableObject {
         return false
     }
     
-    func fetchTransactions(_ userAddress: String) async {
+    func fetchTransactions(_ userAddress: String, endpointUrl: String) async {
         // Use cache if it's valid for the requested userAddress
         if isCacheValid(for: userAddress), let cachedData = cache[userAddress]?.data {
             self.walletData = cachedData
             return
         }
         
-        guard let url = URL(string: Endpoint.fetchBitcoinTransactions(userAddress)) else {
+		guard let url = URL(string: endpointUrl) else {
             errorMessage = "Invalid URL"
             return
         }

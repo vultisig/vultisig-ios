@@ -116,7 +116,7 @@ struct KeysignView: View {
 											print(tx)
 											Task {
 												do {
-													self.txid = try await BitcoinTransactionsService.broadcastTransaction(tx, endpointUrl: Endpoint.btcBroadcastTransaction)
+													self.txid = try await UTXOTransactionsService.broadcastTransaction(tx, endpointUrl: Endpoint.btcBroadcastTransaction)
 													print("Transaction Broadcasted Successfully, txid: \(self.txid)")
 												} catch let error as BitcoinTransactionError {
 													switch error {
@@ -166,7 +166,7 @@ struct KeysignView: View {
 											print(tx)
 											Task {
 												do {
-													self.txid = try await BitcoinTransactionsService.broadcastTransaction(tx, endpointUrl: Endpoint.ltcBroadcastTransaction)
+													self.txid = try await UTXOTransactionsService.broadcastTransaction(tx, endpointUrl: Endpoint.ltcBroadcastTransaction)
 													print("Transaction Broadcasted Successfully, txid: \(self.txid)")
 												} catch let error as BitcoinTransactionError {
 													switch error {

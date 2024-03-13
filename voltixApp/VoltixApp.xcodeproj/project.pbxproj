@@ -21,7 +21,7 @@
 		460347852BA14C22007ED3AC /* LitecoinUnspentOutputsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 460347842BA14C22007ED3AC /* LitecoinUnspentOutputsService.swift */; };
 		460347882BA15118007ED3AC /* Litecoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 460347872BA15118007ED3AC /* Litecoin.swift */; };
 		4606B3AE2B8045F60045094D /* BitcoinTransactionListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4606B3AD2B8045F60045094D /* BitcoinTransactionListView.swift */; };
-		4606B3B02B80465E0045094D /* BitcoinTransactionsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4606B3AF2B80465E0045094D /* BitcoinTransactionsService.swift */; };
+		4606B3B02B80465E0045094D /* UTXOTransactionsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4606B3AF2B80465E0045094D /* UTXOTransactionsService.swift */; };
 		464854712B8E052B008D37A7 /* EthplorerAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 464854702B8E052B008D37A7 /* EthplorerAPIService.swift */; };
 		465A8D532B9E689B006E7457 /* SolanaService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465A8D522B9E689B006E7457 /* SolanaService.swift */; };
 		465A8D562B9E6E0B006E7457 /* SolanaRpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465A8D542B9E6E0A006E7457 /* SolanaRpc.swift */; };
@@ -210,7 +210,7 @@
 		460347842BA14C22007ED3AC /* LitecoinUnspentOutputsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LitecoinUnspentOutputsService.swift; sourceTree = "<group>"; };
 		460347872BA15118007ED3AC /* Litecoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Litecoin.swift; sourceTree = "<group>"; };
 		4606B3AD2B8045F60045094D /* BitcoinTransactionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BitcoinTransactionListView.swift; sourceTree = "<group>"; };
-		4606B3AF2B80465E0045094D /* BitcoinTransactionsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BitcoinTransactionsService.swift; sourceTree = "<group>"; };
+		4606B3AF2B80465E0045094D /* UTXOTransactionsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionsService.swift; sourceTree = "<group>"; };
 		464854702B8E052B008D37A7 /* EthplorerAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EthplorerAPIService.swift; sourceTree = "<group>"; };
 		465A8D522B9E689B006E7457 /* SolanaService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolanaService.swift; sourceTree = "<group>"; };
 		465A8D542B9E6E0A006E7457 /* SolanaRpc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SolanaRpc.swift; sourceTree = "<group>"; };
@@ -432,7 +432,7 @@
 		460347812BA14887007ED3AC /* Bitcoin */ = {
 			isa = PBXGroup;
 			children = (
-				4606B3AF2B80465E0045094D /* BitcoinTransactionsService.swift */,
+				4606B3AF2B80465E0045094D /* UTXOTransactionsService.swift */,
 				465B09A62B7C049400952DD9 /* UnspentOutputsService.swift */,
 			);
 			path = Bitcoin;
@@ -1178,7 +1178,7 @@
 				DEFC7BFB2B8D87370090B07A /* erc20.swift in Sources */,
 				460347882BA15118007ED3AC /* Litecoin.swift in Sources */,
 				A65649FE2B9699BE00E4B329 /* Token.swift in Sources */,
-				4606B3B02B80465E0045094D /* BitcoinTransactionsService.swift in Sources */,
+				4606B3B02B80465E0045094D /* UTXOTransactionsService.swift in Sources */,
 				DEEFF4FD2B9835DE0015692E /* THORChainSwapChainExtension.swift in Sources */,
 				049BBB522B71E498004C231F /* AssetsView.swift in Sources */,
 				A65649DF2B96602700E4B329 /* DecodableDefaultExtension.swift in Sources */,

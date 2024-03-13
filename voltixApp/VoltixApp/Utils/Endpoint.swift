@@ -42,7 +42,11 @@ class Endpoint {
     static func fetchBitcoinTransactions(_ userAddress: String) -> String {
         "https://mempool.space/api/address/\(userAddress)/txs"
     }
-    
+
+	static func fetchLitecoinTransactions(_ userAddress: String) -> String {
+		"https://litecoinspace.org/api/address/\(userAddress)/txs"
+	}
+
     static func getEthInfo(_ address: String) -> String {
         "https://api.ethplorer.io/getAddressInfo/\(address)?apiKey=freekey"
     }
