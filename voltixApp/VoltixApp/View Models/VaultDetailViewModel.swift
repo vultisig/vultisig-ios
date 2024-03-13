@@ -9,6 +9,7 @@ import Foundation
 
 class VaultDetailViewModel: ObservableObject {
     @Published var coins = [Coin]()
+    @Published var coinsGroupedByChains = [GroupedChain]()
     
     func fetchCoins(for vault: Vault) {
         let result = UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode).getCoin()
@@ -24,5 +25,43 @@ class VaultDetailViewModel: ObservableObject {
             case .failure(let error):
                 print("error: \(error)")
         }
+        categorizeCoins()
+    }
+    
+    private func categorizeCoins() {
+        for coin in coins {
+            guard coinsGroupedByChains.count>0 else {
+                if let element = coins.first {
+                    let chain = GroupedChain(
+                        name: element.chain.name,
+                        address: element.address,
+                        count: 1,
+                        coins: [coin]
+                    )
+                    coinsGroupedByChains.append(chain)
+                }
+                continue
+            }
+            
+            addCoin(coin)
+        }
+    }
+    
+    private func addCoin(_ coin: Coin) {
+        for group in coinsGroupedByChains {
+            if group.address == coin.address {
+                group.coins.append(coin)
+                group.count+=1
+                return
+            }
+        }
+        
+        let chain = GroupedChain(
+            name: coin.chain.name,
+            address: coin.address,
+            count: 1,
+            coins: [coin]
+        )
+        coinsGroupedByChains.append(chain)
     }
 }

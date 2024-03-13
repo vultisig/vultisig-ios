@@ -25,6 +25,7 @@ extension Font {
     
     // Medium
     static let body13MontserratMedium = Font.custom("Montserrat", size: 13).weight(.medium)
+    static let body14MontserratMedium = Font.custom("Montserrat", size: 14).weight(.medium)
     static let body18MontserratMedium = Font.custom("Montserrat", size: 18).weight(.medium)
     static let body24MontserratMedium = Font.custom("Montserrat", size: 24).weight(.medium)
     

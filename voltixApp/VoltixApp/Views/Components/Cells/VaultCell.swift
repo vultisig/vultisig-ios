@@ -39,7 +39,7 @@ struct VaultCell: View {
     
     var editOption: some View {
         NavigationLink {
-            
+            EditVaultView(vault: vault)
         } label: {
             editImage
         }

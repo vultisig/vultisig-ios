@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct CoinCell: View {
-    @Binding var presentationStack: [CurrentScreen]
     let coin: Coin
     
     @StateObject var tx = SendTransaction()
@@ -17,135 +16,79 @@ struct CoinCell: View {
     @StateObject var eth = EthplorerAPIService()
     @StateObject var thor = ThorchainService.shared
     
-    @State var isExpanded = false
-    @State var showQRcode = false
-    @State var showAlert = false
-    
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            main
-            
-            if isExpanded {
-                cells
+        cell
+            .onAppear {
+                Task {
+                    await setData()
+                }
             }
-        }
-        .padding(.vertical, 4)
-        .background(Color.blue600)
-        .cornerRadius(10)
-        .padding(.horizontal, 16)
-        .clipped()
-        .onAppear {
-            Task {
-                await setData()
-            }
-        }
-        .alert(isPresented: $showAlert) {
-            Alert(
-                title: Text(NSLocalizedString("addressCopied", comment: "")),
-                message: Text(coin.address),
-                dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
-            )
-        }
-        .sheet(isPresented: $showQRcode) {
-            NavigationView {
-                AddressQRCodeView(addressData: coin.address, showSheet: $showQRcode)
-            }
-        }
     }
     
-    var main: some View {
-        Button(action: {
-            expandCell()
-        }, label: {
-            card
-        })
-    }
-    
-    var image: some View {
-        HStack {
-            
-        }
-    }
-    
-    var card: some View {
-        HStack {
-            image
-            content
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 24)
-    }
-    
-    var content: some View {
-        VStack(alignment: .leading, spacing: 6) {
+    var cell: some View {
+        VStack(alignment: .leading, spacing: 15) {
             header
             amount
-            address
+            buttons
         }
+        .padding(16)
+        .background(Color.blue600)
     }
     
     var header: some View {
         HStack {
             title
             Spacer()
-            actions
+            quantity
         }
     }
     
     var title: some View {
-        Text(coin.chain.name.capitalized)
-            .font(.body20MontserratSemiBold)
+        Text(tx.coin.ticker)
+            .font(.body20Menlo)
             .foregroundColor(.neutral0)
     }
     
-    var actions: some View {
-        HStack(spacing: 12) {
-            showQRButton
-            copyButton
-        }
-    }
-    
-    var copyButton: some View {
-        Button {
-            copyAddress()
-        } label: {
-            Image(systemName: "square.on.square")
-                .foregroundColor(.neutral0)
-                .font(.body18MenloMedium)
-        }
-    }
-    
-    var showQRButton: some View {
-        Button(action: {
-            showQRcode.toggle()
-        }, label: {
-            Image(systemName: "qrcode")
-                .foregroundColor(.neutral0)
-                .font(.body18MenloMedium)
-        })
+    var quantity: some View {
+        Text(coinViewModel.coinBalance)
+            .font(.body16Menlo)
+            .foregroundColor(.neutral0)
     }
     
     var amount: some View {
         Text(coinViewModel.balanceUSD)
-            .font(.body20MontserratSemiBold)
+            .font(.body16MenloBold)
             .foregroundColor(.neutral0)
     }
     
-    var address: some View {
-        Text(coin.address)
-            .font(.body12Menlo)
-            .foregroundColor(.turquoise600)
-            .lineLimit(1)
+    var buttons: some View {
+        HStack(spacing: 20) {
+            swapButton
+            sendButton
+        }
     }
     
-    var cells: some View {
-        VStack(spacing: 0) {
-            Separator()
-            AssetCell(
-                presentationStack: $presentationStack, 
-                tx: tx,
-                viewModel: coinViewModel
-            )
+    var swapButton: some View {
+        Text(NSLocalizedString("swap", comment: "Swap button text").uppercased())
+            .font(.body16MenloBold)
+            .foregroundColor(.blue200)
+            .padding(.vertical, 5)
+            .frame(maxWidth: .infinity)
+            .background(Color.blue800)
+            .cornerRadius(50)
+    }
+    
+    var sendButton: some View {
+        NavigationLink {
+            SendInputDetailsView(presentationStack: .constant([]), tx: tx)
+        } label: {
+            Text(NSLocalizedString("send", comment: "Send button text").uppercased())
+                .font(.body16MenloBold)
+                .foregroundColor(.turquoise600)
+                .padding(.vertical, 5)
+                .frame(maxWidth: .infinity)
+                .background(Color.blue800)
+                .cornerRadius(50)
         }
     }
     
@@ -159,22 +102,8 @@ struct CoinCell: View {
             tx: tx
         )
     }
-    
-    private func expandCell() {
-        withAnimation {
-            isExpanded.toggle()
-        }
-    }
-    
-    private func copyAddress() {
-        showAlert = true
-        let pasteboard = UIPasteboard.general
-        pasteboard.string = coin.address
-    }
 }
 
 #Preview {
-    ScrollView {
-        CoinCell(presentationStack: .constant([]), coin: Coin.example)
-    }
+    CoinCell(coin: Coin.example)
 }
