@@ -11,6 +11,7 @@ struct RenameVaultView: View {
     let vault: Vault
     
     @State var name = ""
+    @Environment(\.dismiss) var dismiss
     
     var body: some View {
         ZStack {
@@ -66,12 +67,21 @@ struct RenameVaultView: View {
     }
     
     var button: some View {
-        FilledButton(title: "save")
-            .padding(40)
+        Button {
+            rename()
+        } label: {
+            FilledButton(title: "save")
+        }
+        .padding(40)
     }
     
     private func setData() {
         name = vault.name
+    }
+    
+    private func rename() {
+        vault.name = name
+        dismiss()
     }
 }
 

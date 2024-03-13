@@ -53,7 +53,7 @@ struct EditVaultView: View {
             .fileExporter(isPresented: $showVaultExporter, document: VoltixDocument(vault: vault), contentType: .data, defaultFilename: "\(vault.name).dat") { result in
                 switch result {
                     case .failure(let error):
-                        print("Fail to export, error: \(error.localizedDescription)")
+                        print("Failed to export, error: \(error.localizedDescription)")
                     case .success(let url):
                         print("Exported to \(url)")
                 }
@@ -85,7 +85,11 @@ struct EditVaultView: View {
     }
     
     var editVault: some View {
-        EditVaultCell(title: "rename", description: "renameVault", icon: "square.and.pencil")
+        NavigationLink {
+            RenameVaultView(vault: vault)
+        } label: {
+            EditVaultCell(title: "rename", description: "renameVault", icon: "square.and.pencil")
+        }
     }
     
     var deleteVault: some View {
