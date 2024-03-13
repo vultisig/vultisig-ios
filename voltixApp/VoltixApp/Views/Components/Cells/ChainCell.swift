@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import SDWebImageSwiftUI
 
 struct ChainCell: View {
     let group: GroupedChain
@@ -48,14 +47,6 @@ struct ChainCell: View {
         }, label: {
             card
         })
-    }
-    
-    var progressView: some View {
-        ProgressView()
-            .tint(.black)
-            .frame(width: 32, height: 32)
-            .background(Color.neutral200)
-            .cornerRadius(100)
     }
     
     var card: some View {
