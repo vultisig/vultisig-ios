@@ -7,7 +7,7 @@ public class LitecoinUnspentOutputsService: ObservableObject {
 	@Published var errorMessage: String?
 	
 	func fetchLitecoinUnspentOutputs(for address: String) async {
-		guard let url = URL(string: "https://litecoinspace.org/api/address/\(address)/utxo") else {
+		guard let url = URL(string: Endpoint.fetchLitecoinUnspentOutputs(address)) else {
 			self.errorMessage = "Invalid URL"
 			return
 		}

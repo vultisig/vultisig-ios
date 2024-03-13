@@ -8,10 +8,10 @@ import SwiftUI
 struct UTXOTransactionListView: View {
 	@StateObject var utxoTransactionsService: UTXOTransactionsService = .init()
 	@EnvironmentObject var appState: ApplicationState
-
+	
 	@Binding var presentationStack: [CurrentScreen]
 	@ObservedObject var tx: SendTransaction
-
+	
 	var body: some View {
 		VStack {
 			List {
@@ -56,7 +56,7 @@ struct TransactionRow: View {
 	var body: some View {
 		Section {
 			VStack(alignment: .leading) {
-				LabelTxHash(title: "TX ID:".uppercased(), value: transaction.txid, isSent: transaction.isSent)
+				LabelTxHash(title: "TX ID:".uppercased(), value: transaction.txid, isSent: transaction.isSent, coinChainName: tx.coin.chain.name)
 					.padding(.vertical, 5)
 				Divider() // Adds a horizontal line
 				
@@ -85,16 +85,14 @@ struct TransactionRow: View {
 				}
 				
 				Divider() // Adds a horizontal line
-				LabelTextNumeric(title: "Fee:", value: String(transaction.fee) + " " + tx.coin.feeUnit)
+				LabelTextNumeric(title: "Fee:", value: String(transaction.fee) + " \(tx.coin.feeUnit)")
 					.padding(.vertical, 5)
 			}
 		}
 	}
 	
 	@ViewBuilder
-	private func LabelTxHash(title: String, value: String, isSent: Bool) -> some View {
-		let url = Endpoint.bitcoinLabelTxHash(value)
-		
+	private func LabelTxHash(title: String, value: String, isSent: Bool, coinChainName: String) -> some View {
 		VStack(alignment: .leading) {
 			HStack {
 				Image(systemName: isSent ? "arrowtriangle.up.square" : "arrowtriangle.down.square")
@@ -102,17 +100,27 @@ struct TransactionRow: View {
 					.frame(width: 20, height: 20)
 				
 				Text(title)
-					.font(.body20MenloBold)
+					.font(.body20MenloBold) // Ensure you have this font applied correctly
 			}
-			Link(destination: URL(string: url)!) {
+			
+			Link(destination: URL(string: determineURL(value, coinChainName: coinChainName))!) {
 				Text(value)
-					.font(.body13MontserratMedium)
+					.font(.body13MontserratMedium) // Ensure you have this font applied correctly
 					.padding(.vertical, 5)
 					.foregroundColor(Color.blue)
 			}
-			.buttonStyle(PlainButtonStyle()) // Use this to remove any default styling applied to the Link
+			.buttonStyle(PlainButtonStyle())
 		}
 	}
+	
+	private func determineURL(_ value: String, coinChainName: String) -> String {
+		if coinChainName == Chain.Litecoin.name {
+			return Endpoint.litecoinLabelTxHash(value)
+		} else {
+			return Endpoint.bitcoinLabelTxHash(value)
+		}
+	}
+
 	
 	@ViewBuilder
 	private func LabelText(title: String, value: String) -> some View {
