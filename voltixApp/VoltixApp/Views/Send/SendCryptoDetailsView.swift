@@ -9,7 +9,21 @@ import SwiftUI
 
 struct SendCryptoDetailsView: View {
     var body: some View {
-        Text("Hello, World!")
+        ZStack {
+            background
+            view
+        }
+    }
+    
+    var background: some View {
+        Color.backgroundBlue
+            .ignoresSafeArea()
+    }
+    
+    var view: some View {
+        VStack(spacing: 30) {
+            
+        }
     }
 }
 
