@@ -9,6 +9,7 @@ import SwiftUI
 
 struct VaultDetailView: View {
     @Binding var presentationStack: [CurrentScreen]
+    @Binding var showVaultsList: Bool
     let vault: Vault
     
     @EnvironmentObject var viewModel: VaultDetailViewModel
@@ -40,6 +41,7 @@ struct VaultDetailView: View {
             list
             addButton
         }
+        .opacity(showVaultsList ? 0 : 1)
     }
     
     var list: some View {
@@ -76,6 +78,7 @@ struct VaultDetailView: View {
                 .font(.title30MenloUltraLight)
                 .foregroundColor(.blue600)
         }
+        .opacity(showVaultsList ? 0 : 1)
     }
     
     private func setData() {
@@ -84,6 +87,6 @@ struct VaultDetailView: View {
 }
 
 #Preview {
-    VaultDetailView(presentationStack: .constant([]), vault: Vault.example)
+    VaultDetailView(presentationStack: .constant([]), showVaultsList: .constant(false), vault: Vault.example)
         .environmentObject(VaultDetailViewModel())
 }

@@ -29,6 +29,8 @@ class VaultDetailViewModel: ObservableObject {
     }
     
     private func categorizeCoins() {
+        coinsGroupedByChains = [GroupedChain]()
+        
         for coin in coins {
             guard coinsGroupedByChains.count>0 else {
                 if let element = coins.first {
