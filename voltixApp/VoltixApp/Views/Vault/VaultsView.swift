@@ -31,6 +31,7 @@ struct VaultsView: View {
     var background: some View {
         Color.backgroundBlue
             .ignoresSafeArea()
+            .frame(maxHeight: 10000)
     }
     
     var view: some View {
