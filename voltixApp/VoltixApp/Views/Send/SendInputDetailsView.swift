@@ -312,8 +312,7 @@ struct SendInputDetailsView: View {
 			{
 				let rate = priceRate
 				newValueUSD = String(format: "%.2f", newValueDouble * rate)
-			}
-			else if tx.coin.chain.name.lowercased() == "ethereum" {
+			} else if tx.coin.chain.name.lowercased() == "ethereum" {
 				if tx.coin.ticker.uppercased() == "ETH" {
 					newValueUSD = eth.addressInfo?.ETH.getAmountInUsd(newValueDouble) ?? ""
 				} else if let tokenInfo = tx.token {
@@ -338,11 +337,9 @@ struct SendInputDetailsView: View {
 	private func validateAddress(_ address: String) {
 		if tx.coin.ticker.uppercased() == Chain.Bitcoin.ticker.uppercased() {
 			isValidAddress = CoinType.bitcoin.validate(address: address)
-		}
-		else if tx.coin.ticker.uppercased() == Chain.Litecoin.ticker.uppercased() {
+		} else if tx.coin.ticker.uppercased() == Chain.Litecoin.ticker.uppercased() {
 			isValidAddress = CoinType.litecoin.validate(address: address)
-		}
-		else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
+		} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
 			isValidAddress = CoinType.ethereum.validate(address: address)
 		} else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
 			isValidAddress = CoinType.thorchain.validate(address: address)
@@ -392,9 +389,7 @@ struct SendInputDetailsView: View {
 				isValidForm = false
 			}
 			
-		}
-		
-		else if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
+		} else if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
 			let walletBalanceInSats = uxtoLtc.walletData?.balance ?? 0
 			let totalTransactionCostInSats = tx.amountInSats + tx.feeInSats
 			print("Total transaction cost: \(totalTransactionCostInSats)")
@@ -405,10 +400,7 @@ struct SendInputDetailsView: View {
 				isValidForm = false
 			}
 			
-		}
-		
-		
-		else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
+		} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
 			let ethBalanceInWei = Int(eth.addressInfo?.ETH.rawBalance ?? "0") ?? 0 // it is in WEI
 			
 			if tx.coin.ticker.uppercased() == "ETH" {
@@ -493,8 +485,7 @@ struct SendInputDetailsView: View {
 				tx.amount = walletData.balanceInLTC
 				tx.amountInUSD = String(format: "%.2f", walletData.balanceDecimal * rate)
 			}
-		}
-		else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
+		} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
 			if tx.coin.ticker.uppercased() == "ETH" {
 				tx.amount = eth.addressInfo?.ETH.balanceString ?? "0.0"
 				tx.amountInUSD = eth.addressInfo?.ETH.balanceInUsd.replacingOccurrences(of: "US$ ", with: "") ?? ""
@@ -525,12 +516,9 @@ struct SendInputDetailsView: View {
 		
 		if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
 			coinBalance = uxto.walletData?.balanceInBTC ?? "0"
-		}
-		else if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
+		} else if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
 			coinBalance = uxtoLtc.walletData?.balanceInLTC ?? "0"
-		}
-		
-		else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
+		} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
 				// We need to pass it to the next view
 			tx.eth = eth.addressInfo
 			
@@ -569,13 +557,9 @@ struct SendInputDetailsView: View {
 			
 			if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
 				await uxto.fetchUnspentOutputs(for: tx.fromAddress)
-			}
-			
-			else if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
+			} else if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
 				await uxtoLtc.fetchLitecoinUnspentOutputs(for: tx.fromAddress)
-			}
-			
-			else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
+			} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
 				await eth.getEthInfo(for: tx.fromAddress)
 				do {
 					try await web3Service.updateNonceAndGasPrice(forAddress: tx.fromAddress)

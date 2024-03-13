@@ -18,12 +18,9 @@ import Foundation
 		
 		if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
 			await utxoBtc.fetchUnspentOutputs(for: tx.fromAddress)
-		}
-		else if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
+		} else if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
 			await utxoLtc.fetchLitecoinUnspentOutputs(for: tx.fromAddress)
-		}
-		
-		else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
+		} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
 			await eth.getEthInfo(for: tx.fromAddress)
 		} else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
 			await thor.fetchBalances(tx.fromAddress)
@@ -46,16 +43,13 @@ import Foundation
 			}
 			self.coinBalance = utxoBtc.walletData?.balanceInBTC ?? "0.0"
 			
-		}
-		else if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
+		} else if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
 			if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[tx.coin.chain.name.lowercased()]?["usd"] {
 				self.balanceUSD = utxoLtc.walletData?.balanceInUSD(usdPrice: priceRateUsd) ?? "US$ 0,00"
 			}
 			self.coinBalance = utxoLtc.walletData?.balanceInLTC ?? "0.0"
 			
-		}
-		
-		else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
+		} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
 			tx.eth = eth.addressInfo
 			if tx.coin.ticker.uppercased() == "ETH" {
 				self.coinBalance = eth.addressInfo?.ETH.balanceString ?? "0.0"

@@ -30,15 +30,13 @@ struct SendVerifyView: View {
 					await utxoBtc.fetchUnspentOutputs(for: tx.fromAddress)
 				}
 			}
-		}
-		else if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
+		} else if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
 			if utxoLtc.walletData == nil {
 				Task {
 					await utxoLtc.fetchLitecoinUnspentOutputs(for: tx.fromAddress)
 				}
 			}
-		}
-		else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
+		} else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
 			Task {
 				await thor.fetchAccountNumber(tx.fromAddress)
 			}
@@ -147,8 +145,7 @@ struct SendVerifyView: View {
 										self.errorMessage = "Error fetching the data"
 									}
 									
-								}
-								else if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
+								} else if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
 									
 									if let walletData = utxoLtc.walletData {
 										let totalAmountNeeded = tx.amountInSats + tx.feeInSats
@@ -187,8 +184,7 @@ struct SendVerifyView: View {
 										self.errorMessage = "Error fetching the data"
 									}
 									
-								}
-								else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
+								} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
 									
 									if tx.coin.contractAddress.isEmpty {
 										
