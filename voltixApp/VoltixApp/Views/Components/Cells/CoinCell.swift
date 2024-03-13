@@ -81,7 +81,7 @@ struct CoinCell: View {
     
     var sendButton: some View {
         NavigationLink {
-            SendInputDetailsView(presentationStack: .constant([]), tx: tx)
+            SendCryptoView()
         } label: {
             Text(NSLocalizedString("send", comment: "Send button text").uppercased())
                 .font(.body16MenloBold)
