@@ -22,7 +22,7 @@ class TokensStore {
         Asset(ticker: "MATIC", chainName: "Ethereum", image: "matic", contractAddress: "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0"),
         Asset(ticker: "WBTC", chainName: "Ethereum", image: "wbtc", contractAddress: "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"),
         Asset(ticker: "LINK", chainName: "Ethereum", image: "link", contractAddress: "0x514910771af9ca656af840dff83e8264ecf986ca"),
-        Asset(ticker: "FLIP", chainName: "Ethereum", image: "flip", contractAddress: "0x826180541412d574cf1336d22c0c0a287822678a"),
+        Asset(ticker: "FLIP", chainName: "Ethereum", image: "flip", contractAddress: "0x826180541412d574cf1336d22c0c0a287822678a"),//
         // Solana chain
         Asset(ticker: "SOL", chainName: "Solana", image: "solana", contractAddress: nil)
     ]
