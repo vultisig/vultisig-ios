@@ -14,7 +14,7 @@ struct TokenCell: View {
     @EnvironmentObject var tokenSelectionViewModel: TokenSelectionViewModel
     
     var body: some View {
-        HStack {
+        HStack(spacing: 16) {
             image
             text
             Spacer()
@@ -33,9 +33,10 @@ struct TokenCell: View {
     }
     
     var image: some View {
-        ZStack {
-            
-        }
+        Image(asset.image)
+            .resizable()
+            .frame(width: 32, height: 32)
+            .cornerRadius(100)
     }
     
     var text: some View {
