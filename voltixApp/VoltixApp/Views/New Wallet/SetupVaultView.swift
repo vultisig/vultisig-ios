@@ -85,8 +85,7 @@ struct SetupVaultView: View {
     
     var startButton: some View {
         NavigationLink {
-            let vault = Vault(name: "Vault #\(vaults.count + 1)")
-            PeerDiscoveryView(tssType: .Keygen, vault: vault, presentationStack: $presentationStack)
+            PeerDiscoveryView(tssType: .Keygen, vault: Vault(name: "Vault #\(vaults.count + 1)"), presentationStack: $presentationStack)
         } label: {
             FilledButton(title: "start")
         }
@@ -94,8 +93,7 @@ struct SetupVaultView: View {
     
     var joinButton: some View {
         NavigationLink {
-            let vault = Vault(name: "Vault #\(vaults.count + 1)")
-            JoinKeygenView(vault: vault, presentationStack: $presentationStack)
+            JoinKeygenView(vault: Vault(name: "Vault #\(vaults.count + 1)"), presentationStack: $presentationStack)
         } label: {
             OutlineButton(title: "join")
         }

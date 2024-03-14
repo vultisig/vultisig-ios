@@ -62,8 +62,10 @@ struct JoinKeygenView: View {
             .padding()
             .cornerRadius(10)
             .shadow(radius: 5)
-            .padding()
         }
+        .sheet(isPresented: $isShowingScanner, content: {
+            CodeScannerView(codeTypes: [.qr], completion: self.handleScan)
+        })
         .navigationTitle(NSLocalizedString("joinKeygen", comment: "Join keygen / reshare"))
         .navigationBarBackButtonHidden(true)
         .toolbar {
@@ -116,6 +118,7 @@ struct JoinKeygenView: View {
             } else {
                 Text(NSLocalizedString("failToStartKeygen", comment: "Unable to start key generation due to missing information"))
                     .font(.body15MenloBold)
+                    .foregroundColor(.neutral0)
                     .multilineTextAlignment(.center)
             }
         }
@@ -135,6 +138,7 @@ struct JoinKeygenView: View {
         VStack {
             Text(NSLocalizedString("scanQRCodeJoinKeygen", comment: "Scan the barcode on another VoltixApp device to start"))
                 .font(.body15MenloBold)
+                .foregroundColor(.neutral0)
                 .multilineTextAlignment(.center)
             
             Button(action: {
@@ -142,10 +146,7 @@ struct JoinKeygenView: View {
             }) {
                 scanButton
             }
-            .sheet(isPresented: $isShowingScanner, content: {
-                CodeScannerView(codeTypes: [.qr], completion: self.handleScan)
-            })
-            .buttonStyle(PlainButtonStyle())
+            
         }
     }
     
@@ -154,13 +155,16 @@ struct JoinKeygenView: View {
             HStack {
                 Text("thisDevice")
                     .font(.body15MenloBold)
+                    .foregroundColor(.neutral0)
                     .multilineTextAlignment(.center)
                 Text(self.localPartyID)
                     .font(.body15MenloBold)
+                    .foregroundColor(.neutral0)
                     .multilineTextAlignment(.center)
             }
             HStack {
                 Text(NSLocalizedString("discoverinyMediator", comment: "Discovering mediator service, please wait..."))
+                    .foregroundColor(.neutral0)
                     .font(.body15MenloBold)
                     .multilineTextAlignment(.center)
                 
