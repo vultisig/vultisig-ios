@@ -3,30 +3,28 @@
 //  VoltixApp
 //
 
-
 import Foundation
-import Tss
 import Mediator
 import OSLog
-
+import Tss
 
 class MessagePuller: ObservableObject {
     var cache = NSCache<NSString, AnyObject>()
     private var pollingInboundMessages = true
-    private var logger = Logger(subsystem: "message-puller", category: "communication")
-    
+    private let logger = Logger(subsystem: "message-puller", category: "communication")
+
     func stop() {
         pollingInboundMessages = false
         cache.removeAllObjects()
     }
-    
+
     func pollMessages(mediatorURL: String,
                       sessionID: String,
                       localPartyKey: String,
                       tssService: TssServiceImpl,
                       messageID: String?)
     {
-        self.pollingInboundMessages = true
+        pollingInboundMessages = true
         Task.detached {
             repeat {
                 if Task.isCancelled { return }
@@ -35,7 +33,7 @@ class MessagePuller: ObservableObject {
             } while self.pollingInboundMessages
         }
     }
-    
+
     private func pollInboundMessages(mediatorURL: String, sessionID: String, localPartyKey: String, tssService: TssServiceImpl, messageID: String?) {
         let urlString = "\(mediatorURL)/message/\(sessionID)/\(localPartyKey)"
         var header = [String: String]()
@@ -54,11 +52,11 @@ class MessagePuller: ObservableObject {
                             key = "\(sessionID)-\(localPartyKey)-\(messageID)-\(msg.hash)" as NSString
                         }
                         if self.cache.object(forKey: key) != nil {
-                            logger.info("message with key:\(key) has been applied before")
+                            self.logger.info("message with key:\(key) has been applied before")
                             // message has been applied before
                             continue
                         }
-                        logger.debug("Got message from: \(msg.from), to: \(msg.to)")
+                        self.logger.debug("Got message from: \(msg.from), to: \(msg.to)")
                         try tssService.applyData(msg.body)
                         self.cache.setObject(NSObject(), forKey: key)
                         Task {
@@ -67,17 +65,17 @@ class MessagePuller: ObservableObject {
                         }
                     }
                 } catch {
-                    logger.error("Failed to decode response to JSON, data: \(data), error: \(error)")
+                    self.logger.error("Failed to decode response to JSON, data: \(data), error: \(error)")
                 }
             case .failure(let error):
                 let err = error as NSError
                 if err.code != 404 {
-                    logger.error("fail to get inbound message,error:\(error.localizedDescription)")
+                    self.logger.error("fail to get inbound message,error:\(error.localizedDescription)")
                 }
             }
         })
     }
-    
+
     private func deleteMessageFromServer(mediatorURL: String, sessionID: String, localPartyKey: String, hash: String, messageID: String?) {
         let urlString = "\(mediatorURL)/message/\(sessionID)/\(localPartyKey)/\(hash)"
         Utils.deleteFromServer(urlString: urlString, messageID: nil)

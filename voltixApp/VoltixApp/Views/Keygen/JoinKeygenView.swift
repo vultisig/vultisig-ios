@@ -135,12 +135,12 @@ struct JoinKeygenView: View {
                     HStack {
                         if serviceDelegate.serverURL != nil && self.sessionID != nil {
                             KeygenView(presentationStack: $presentationStack,
+                                       vault: vault,
+                                       tssType: tssType,
                                        keygenCommittee: keygenCommittee,
+                                       oldParties: oldCommittee,
                                        mediatorURL: serviceDelegate.serverURL!,
-                                       sessionID: self.sessionID!,
-                                       localPartyKey: self.localPartyID,
-                                       hexChainCode: self.hexChainCode,
-                                       vaultName: vault.name)
+                                       sessionID: self.sessionID!)
                         } else {
                             Text("Unable to start key generation due to missing information.".uppercased())
                                 .font(.body15MenloBold)
@@ -164,9 +164,13 @@ struct JoinKeygenView: View {
             .padding()
         }
         .navigationTitle("JOIN KEYGEN")
+        .navigationBarBackButtonHidden(true)
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                NavigationButtons.questionMarkButton
+            ToolbarItem(placement: .topBarLeading) {
+                NavigationBackButton()
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationHelpButton()
             }
         }
         .onAppear {

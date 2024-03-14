@@ -34,87 +34,87 @@ struct PeerDiscoveryView: View {
     var body: some View {
         VStack {
             switch self.currentState {
-                case .WaitingForDevices:
+            case .WaitingForDevices:
                     
+                VStack {
+                    Text(NSLocalizedString("pairWithOtherDevices", comment: "Pair with two other devices"))
+                        .font(.body18MenloBold)
+                        .multilineTextAlignment(.center)
+                    self.getQrImage(size: 100)
+                        .resizable()
+                        .scaledToFit()
+                        .padding()
+                    Text(NSLocalizedString("scanQrCode", comment: "Scan QR Code"))
+                        .font(.body13Menlo)
+                        .multilineTextAlignment(.center)
+                }
+                .padding()
+                .background(Color.systemFill)
+                .cornerRadius(10)
+                .shadow(radius: 5)
+                .padding()
+                    
+                // TODO: Validate if it is <= 3 devices
+                if self.participantDiscovery.peersFound.count == 0 {
                     VStack {
-                        Text(NSLocalizedString("pairWithOtherDevices", comment: "Pair with two other devices"))
-                            .font(.body18MenloBold)
-                            .multilineTextAlignment(.center)
-                        self.getQrImage(size: 100)
-                            .resizable()
-                            .scaledToFit()
-                            .padding()
-                        Text(NSLocalizedString("scanQrCode", comment: "Scan QR Code"))
-                            .font(.body13Menlo)
-                            .multilineTextAlignment(.center)
+                        HStack {
+                            Text("Looking for devices... ")
+                                .font(.body15MenloBold)
+                                .multilineTextAlignment(.center)
+                                
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                                .padding(2)
+                        }
                     }
                     .padding()
                     .background(Color.systemFill)
                     .cornerRadius(10)
                     .shadow(radius: 5)
                     .padding()
+                }
                     
-                    // TODO: Validate if it is <= 3 devices
-                    if self.participantDiscovery.peersFound.count == 0 {
-                        VStack {
-                            HStack {
-                                Text("Looking for devices... ")
-                                    .font(.body15MenloBold)
-                                    .multilineTextAlignment(.center)
-                                
-                                ProgressView()
-                                    .progressViewStyle(.circular)
-                                    .padding(2)
-                            }
-                        }
-                        .padding()
-                        .background(Color.systemFill)
-                        .cornerRadius(10)
-                        .shadow(radius: 5)
-                        .padding()
+                List(self.participantDiscovery.peersFound, id: \.self, selection: self.$selections) { peer in
+                    HStack {
+                        Image(systemName: self.selections.contains(peer) ? "checkmark.circle" : "circle")
+                        Text(peer)
                     }
-                    
-                    List(self.participantDiscovery.peersFound, id: \.self, selection: self.$selections) { peer in
-                        HStack {
-                            Image(systemName: self.selections.contains(peer) ? "checkmark.circle" : "circle")
-                            Text(peer)
-                        }
-                        .onTapGesture {
-                            if self.selections.contains(peer) {
-                                self.selections.remove(peer)
-                            } else {
-                                self.selections.insert(peer)
-                            }
+                    .onTapGesture {
+                        if self.selections.contains(peer) {
+                            self.selections.remove(peer)
+                        } else {
+                            self.selections.insert(peer)
                         }
                     }
+                }
                     
-                    Button(action: {
-                        self.startKeygen(allParticipants: self.selections.map { $0 })
-                        self.currentState = .Keygen
-                        self.participantDiscovery.stop()
-                    }) {
-                        HStack {
-                            Text(NSLocalizedString("continue", comment: "Continue"))
-                                .font(.title30MenloBold)
-                                .fontWeight(.black)
-                            Image(systemName: "chevron.right")
-                                .resizable()
-                                .frame(width: 10, height: 15)
-                        }
+                Button(action: {
+                    self.startKeygen(allParticipants: self.selections.map { $0 })
+                    self.currentState = .Keygen
+                    self.participantDiscovery.stop()
+                }) {
+                    HStack {
+                        Text(NSLocalizedString("continue", comment: "Continue"))
+                            .font(.title30MenloBold)
+                            .fontWeight(.black)
+                        Image(systemName: "chevron.right")
+                            .resizable()
+                            .frame(width: 10, height: 15)
                     }
-                    .buttonStyle(PlainButtonStyle())
-                    // TODO: Only for testing purpose.
-                    .disabled(self.selections.count < 2)
-                case .Keygen:
-                    KeygenView(presentationStack: self.$presentationStack,
-                               keygenCommittee: self.selections.map { $0 },
-                               mediatorURL: self.serverAddr,
-                               sessionID: self.sessionID,
-                               localPartyKey: self.localPartyID,
-                               hexChainCode: vault.hexChainCode,
-                               vaultName: self.vault.name)
-                case .Failure:
-                    Text("Something is wrong")
+                }
+                .buttonStyle(PlainButtonStyle())
+                // TODO: Only for testing purpose.
+                .disabled(self.selections.count < 2)
+            case .Keygen:
+                KeygenView(presentationStack: self.$presentationStack,
+                           vault: self.vault,
+                           tssType: self.tssType,
+                           keygenCommittee: self.selections.map { $0 },
+                           oldParties: self.vault.signers, // for new vault , this should be empty
+                           mediatorURL: self.serverAddr,
+                           sessionID: self.sessionID)
+            case .Failure:
+                Text("Something is wrong")
             }
         }
         .navigationTitle(NSLocalizedString("mainDevice", comment: "Main Device"))
@@ -134,13 +134,13 @@ struct PeerDiscoveryView: View {
             self.startSession()
             self.participantDiscovery.getParticipants(serverAddr: self.serverAddr, sessionID: self.sessionID)
         }.onAppear {
-            if vault.hexChainCode.isEmpty {
+            if self.vault.hexChainCode.isEmpty {
                 guard let chainCode = Utils.getChainCode() else {
                     logger.error("fail to get chain code")
                     self.currentState = .Failure
                     return
                 }
-                vault.hexChainCode = chainCode
+                self.vault.hexChainCode = chainCode
             }
             if !self.vault.localPartyID.isEmpty {
                 self.localPartyID = self.localPartyID
@@ -157,15 +157,15 @@ struct PeerDiscoveryView: View {
     }
     
     private func getQrImage(size: CGFloat) -> Image {
-        do{
+        do {
             let jsonEncoder = JSONEncoder()
             var data: Data
-            switch tssType {
+            switch self.tssType {
             case .Keygen:
                 let km = keygenMessage(sessionID: sessionID, hexChainCode: vault.hexChainCode, serviceName: self.serviceName)
                 data = try jsonEncoder.encode(PeerDiscoveryPayload.Keygen(km))
             case .Reshare:
-                let reshareMsg = ReshareMessage(sessionID: sessionID, hexChainCode: vault.hexChainCode, serviceName: self.serviceName, pubKeyECDSA: vault.pubKeyECDSA, oldParties: vault.signers)
+                let reshareMsg = ReshareMessage(sessionID: sessionID, hexChainCode: vault.hexChainCode, serviceName: self.serviceName, pubKeyECDSA: self.vault.pubKeyECDSA, oldParties: self.vault.signers)
                 data = try jsonEncoder.encode(PeerDiscoveryPayload.Reshare(reshareMsg))
             default:
                 logger.error("invalid tss type")
@@ -173,7 +173,7 @@ struct PeerDiscoveryView: View {
                 return Image(systemName: "xmark")
             }
             return Utils.getQrImage(data: data, size: size)
-        }catch {
+        } catch {
             logger.error("fail to encode keygen message to json,error:\(error.localizedDescription)")
             return Image(systemName: "xmark")
         }
