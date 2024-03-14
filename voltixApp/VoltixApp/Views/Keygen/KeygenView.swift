@@ -11,8 +11,8 @@ import SwiftData
 import SwiftUI
 import Tss
 
-private let logger = Logger(subsystem: "keygen", category: "tss")
 struct KeygenView: View {
+    private let logger = Logger(subsystem: "keygen", category: "tss")
     @Environment(\.modelContext) private var context
     enum KeygenStatus {
         case CreatingInstance
@@ -24,23 +24,19 @@ struct KeygenView: View {
     
     @State private var currentStatus = KeygenStatus.CreatingInstance
     @Binding var presentationStack: [CurrentScreen]
+    let vault: Vault
+    let tssType: TssType  // keygen or reshare
     let keygenCommittee: [String]
+    let oldParties: [String]
     let mediatorURL: String
     let sessionID: String
-    let localPartyKey: String
-    let hexChainCode: String
-    @State private var keygenInProgressECDSA = false
-    @State private var pubKeyECDSA: String? = nil
-    @State private var keygenInProgressEDDSA = false
-    @State private var pubKeyEdDSA: String? = nil
+    
+    
     @State private var keygenDone = false
     @State private var tssService: TssServiceImpl? = nil
-    @State private var failToCreateTssInstance = false
     @State private var tssMessenger: TssMessengerImpl? = nil
     @State private var stateAccess: LocalStateAccessorImpl? = nil
     @State private var keygenError: String? = nil
-    @State private var vault = Vault(name: "new vault")
-    @State var vaultName: String
     @State private var messagePuller = MessagePuller()
     
     var body: some View {
@@ -64,9 +60,7 @@ struct KeygenView: View {
                                         }
                                         self.vault.keyshares = stateAccess.keyshares
                                     }
-                                    self.vault.name = self.vaultName
-                                    self.vault.localPartyID = self.localPartyKey
-                                    self.vault.hexChainCode = self.hexChainCode
+
                                         // add the vault to modelcontext
                                     self.context.insert(self.vault)
                                     
@@ -80,7 +74,7 @@ struct KeygenView: View {
                                 }
                                 
                             case .KeygenFailed:
-                                StatusText(status: "Keygen failed, you can retry it")
+                                StatusText(status: "Keygen failed, " + (keygenError ?? ""))
                                     .onAppear {
                                         self.messagePuller.stop()
                                         
@@ -108,26 +102,23 @@ struct KeygenView: View {
                     self.currentStatus = .KeygenFailed
                     return
                 }
-                self.messagePuller.pollMessages(mediatorURL: self.mediatorURL, sessionID: self.sessionID, localPartyKey: self.localPartyKey, tssService: tssService, messageID: nil)
+                self.messagePuller.pollMessages(mediatorURL: self.mediatorURL, sessionID: self.sessionID, localPartyKey: vault.localPartyID, tssService: tssService, messageID: nil)
                 
                 self.currentStatus = .KeygenECDSA
-                self.keygenInProgressECDSA = true
                 let keygenReq = TssKeygenRequest()
-                keygenReq.localPartyID = self.localPartyKey
+                keygenReq.localPartyID = vault.localPartyID
                 keygenReq.allParties = self.keygenCommittee.joined(separator: ",")
-                keygenReq.chainCodeHex = self.hexChainCode
-                logger.info("chaincode:\(self.hexChainCode)")
+                keygenReq.chainCodeHex = vault.hexChainCode
+                logger.info("chaincode:\(vault.hexChainCode)")
                 
                 let ecdsaResp = try await tssKeygen(service: tssService, req: keygenReq, keyType: .ECDSA)
-                self.pubKeyECDSA = ecdsaResp.pubKey
                 self.vault.pubKeyECDSA = ecdsaResp.pubKey
                 
+                // continue to generate EdDSA Keys
                 self.currentStatus = .KeygenEdDSA
-                self.keygenInProgressEDDSA = true
                 try await Task.sleep(for: .seconds(1)) // Sleep one sec to allow other parties to get in the same step
                 
                 let eddsaResp = try await tssKeygen(service: tssService, req: keygenReq, keyType: .EdDSA)
-                self.pubKeyEdDSA = eddsaResp.pubKey
                 self.vault.pubKeyEdDSA = eddsaResp.pubKey
                 
             } catch {
@@ -172,78 +163,7 @@ struct KeygenView: View {
     }
 }
 
-class MessagePuller: ObservableObject {
-    var cache = NSCache<NSString, AnyObject>()
-    private var pollingInboundMessages = true
-    
-    func stop() {
-        pollingInboundMessages = false
-        cache.removeAllObjects()
-    }
-    
-    func pollMessages(mediatorURL: String,
-                      sessionID: String,
-                      localPartyKey: String,
-                      tssService: TssServiceImpl,
-                      messageID: String?)
-    {
-        self.pollingInboundMessages = true
-        Task.detached {
-            repeat {
-                if Task.isCancelled { return }
-                self.pollInboundMessages(mediatorURL: mediatorURL, sessionID: sessionID, localPartyKey: localPartyKey, tssService: tssService, messageID: messageID)
-                try await Task.sleep(for: .seconds(1)) // Back off 1s
-            } while self.pollingInboundMessages
-        }
-    }
-    
-    private func pollInboundMessages(mediatorURL: String, sessionID: String, localPartyKey: String, tssService: TssServiceImpl, messageID: String?) {
-        let urlString = "\(mediatorURL)/message/\(sessionID)/\(localPartyKey)"
-        var header = [String: String]()
-        if let messageID {
-            header["message_id"] = messageID
-        }
-        Utils.getRequest(urlString: urlString, headers: header, completion: { result in
-            switch result {
-                case .success(let data):
-                    do {
-                        let decoder = JSONDecoder()
-                        let msgs = try decoder.decode([Message].self, from: data)
-                        for msg in msgs.sorted(by: { $0.sequenceNo < $1.sequenceNo }) {
-                            var key = "\(sessionID)-\(localPartyKey)-\(msg.hash)" as NSString
-                            if let messageID {
-                                key = "\(sessionID)-\(localPartyKey)-\(messageID)-\(msg.hash)" as NSString
-                            }
-                            if self.cache.object(forKey: key) != nil {
-                                logger.info("message with key:\(key) has been applied before")
-                                    // message has been applied before
-                                continue
-                            }
-                            logger.debug("Got message from: \(msg.from), to: \(msg.to)")
-                            try tssService.applyData(msg.body)
-                            self.cache.setObject(NSObject(), forKey: key)
-                            Task {
-                                    // delete it from a task, since we don't really care about the result
-                                self.deleteMessageFromServer(mediatorURL: mediatorURL, sessionID: sessionID, localPartyKey: localPartyKey, hash: msg.hash, messageID: messageID)
-                            }
-                        }
-                    } catch {
-                        logger.error("Failed to decode response to JSON, data: \(data), error: \(error)")
-                    }
-                case .failure(let error):
-                    let err = error as NSError
-                    if err.code != 404 {
-                        logger.error("fail to get inbound message,error:\(error.localizedDescription)")
-                    }
-            }
-        })
-    }
-    
-    private func deleteMessageFromServer(mediatorURL: String, sessionID: String, localPartyKey: String, hash: String, messageID: String?) {
-        let urlString = "\(mediatorURL)/message/\(sessionID)/\(localPartyKey)/\(hash)"
-        Utils.deleteFromServer(urlString: urlString, messageID: nil)
-    }
-}
+
 
 private struct StatusText: View {
     let status: String
@@ -261,10 +181,10 @@ private struct StatusText: View {
 
 #Preview("keygen") {
     KeygenView(presentationStack: .constant([]),
+               vault: Vault.example,
+               tssType: .Keygen,
                keygenCommittee: [],
+               oldParties: [],
                mediatorURL: "",
-               sessionID: "",
-               localPartyKey: "",
-               hexChainCode: "",
-               vaultName: "Vault #1")
+               sessionID: "")
 }
