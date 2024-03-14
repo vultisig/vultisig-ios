@@ -30,130 +30,148 @@ struct PeerDiscoveryView: View {
     @State private var localPartyID = ""
     @StateObject var participantDiscovery = ParticipantDiscovery()
     private let serviceName = "VoltixApp-" + Int.random(in: 1 ... 1000).description
+    @State private var errorMessage = ""
     
     var body: some View {
+        ZStack {
+            self.background
+            VStack {
+                switch self.currentState {
+                case .WaitingForDevices:
+                    self.waitingForDevices
+                case .Keygen:
+                    KeygenView(presentationStack: self.$presentationStack,
+                               vault: self.vault,
+                               tssType: self.tssType,
+                               keygenCommittee: self.selections.map { $0 },
+                               oldParties: self.vault.signers, // for new vault , this should be empty
+                               mediatorURL: self.serverAddr,
+                               sessionID: self.sessionID)
+                case .Failure:
+                    Text(errorMessage)
+                        .font(.body15MenloBold)
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(.red)
+                }
+            }
+            .navigationTitle(NSLocalizedString("mainDevice", comment: "Main Device"))
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarBackButtonHidden(true)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    NavigationBackButton()
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationHelpButton()
+                }
+            }
+            .task {
+                self.mediator.start(name: self.serviceName)
+                logger.info("mediator server started")
+                self.startSession()
+                self.participantDiscovery.getParticipants(serverAddr: self.serverAddr, sessionID: self.sessionID)
+            }.onAppear {
+                if self.vault.hexChainCode.isEmpty {
+                    guard let chainCode = Utils.getChainCode() else {
+                        logger.error("fail to get chain code")
+                        self.currentState = .Failure
+                        return
+                    }
+                    self.vault.hexChainCode = chainCode
+                }
+                if !self.vault.localPartyID.isEmpty {
+                    self.localPartyID = self.localPartyID
+                } else {
+                    self.localPartyID = Utils.getLocalDeviceIdentity()
+                    self.vault.localPartyID = self.localPartyID
+                }
+            }
+            .onDisappear {
+                logger.info("mediator server stopped")
+                self.participantDiscovery.stop()
+                self.mediator.stop()
+            }
+        }
+    }
+    
+    var background: some View {
+        Color.backgroundBlue
+            .ignoresSafeArea()
+    }
+    
+    var waitingForDevices: some View {
         VStack {
-            switch self.currentState {
-            case .WaitingForDevices:
-                    
-                VStack {
-                    Text(NSLocalizedString("pairWithOtherDevices", comment: "Pair with two other devices"))
-                        .font(.body18MenloBold)
-                        .multilineTextAlignment(.center)
-                    self.getQrImage(size: 100)
-                        .resizable()
-                        .scaledToFit()
-                        .padding()
-                    Text(NSLocalizedString("scanQrCode", comment: "Scan QR Code"))
-                        .font(.body13Menlo)
-                        .multilineTextAlignment(.center)
-                }
+            self.paringBarcode
+            if self.participantDiscovery.peersFound.count == 0 {
+                self.lookingForDevices
+            }
+            self.deviceList
+            self.bottomButtons
+        }
+    }
+    
+    var lookingForDevices: some View {
+        VStack {
+            HStack {
+                Text("Looking for devices... ")
+                    .font(.body15MenloBold)
+                    .multilineTextAlignment(.center)
+                
+                ProgressView()
+                    .progressViewStyle(.circular)
+                    .padding(2)
+            }
+        }
+        .padding()
+        .cornerRadius(10)
+        .shadow(radius: 5)
+    }
+    
+    var paringBarcode: some View {
+        VStack {
+            Text(NSLocalizedString("pairWithOtherDevices", comment: "Pair with two other devices"))
+                .font(.body18MenloBold)
+                .multilineTextAlignment(.center)
+            self.getQrImage(size: 100)
+                .resizable()
+                .scaledToFit()
                 .padding()
-                .background(Color.systemFill)
-                .cornerRadius(10)
-                .shadow(radius: 5)
-                .padding()
-                    
-                // TODO: Validate if it is <= 3 devices
-                if self.participantDiscovery.peersFound.count == 0 {
-                    VStack {
-                        HStack {
-                            Text("Looking for devices... ")
-                                .font(.body15MenloBold)
-                                .multilineTextAlignment(.center)
-                                
-                            ProgressView()
-                                .progressViewStyle(.circular)
-                                .padding(2)
-                        }
-                    }
-                    .padding()
-                    .background(Color.systemFill)
-                    .cornerRadius(10)
-                    .shadow(radius: 5)
-                    .padding()
+            Text(NSLocalizedString("scanQrCode", comment: "Scan QR Code"))
+                .font(.body13Menlo)
+                .multilineTextAlignment(.center)
+        }
+        .cornerRadius(10)
+        .shadow(radius: 5)
+        .padding()
+    }
+    
+    var deviceList: some View {
+        List(self.participantDiscovery.peersFound, id: \.self, selection: self.$selections) { peer in
+            HStack {
+                Image(systemName: self.selections.contains(peer) ? "checkmark.circle" : "circle")
+                Text(peer)
+            }
+            .onTapGesture {
+                if self.selections.contains(peer) {
+                    self.selections.remove(peer)
+                } else {
+                    self.selections.insert(peer)
                 }
-                    
-                List(self.participantDiscovery.peersFound, id: \.self, selection: self.$selections) { peer in
-                    HStack {
-                        Image(systemName: self.selections.contains(peer) ? "checkmark.circle" : "circle")
-                        Text(peer)
-                    }
-                    .onTapGesture {
-                        if self.selections.contains(peer) {
-                            self.selections.remove(peer)
-                        } else {
-                            self.selections.insert(peer)
-                        }
-                    }
-                }
-                    
-                Button(action: {
-                    self.startKeygen(allParticipants: self.selections.map { $0 })
-                    self.currentState = .Keygen
-                    self.participantDiscovery.stop()
-                }) {
-                    HStack {
-                        Text(NSLocalizedString("continue", comment: "Continue"))
-                            .font(.title30MenloBold)
-                            .fontWeight(.black)
-                        Image(systemName: "chevron.right")
-                            .resizable()
-                            .frame(width: 10, height: 15)
-                    }
-                }
-                .buttonStyle(PlainButtonStyle())
-                // TODO: Only for testing purpose.
-                .disabled(self.selections.count < 2)
-            case .Keygen:
-                KeygenView(presentationStack: self.$presentationStack,
-                           vault: self.vault,
-                           tssType: self.tssType,
-                           keygenCommittee: self.selections.map { $0 },
-                           oldParties: self.vault.signers, // for new vault , this should be empty
-                           mediatorURL: self.serverAddr,
-                           sessionID: self.sessionID)
-            case .Failure:
-                Text("Something is wrong")
             }
         }
-        .navigationTitle(NSLocalizedString("mainDevice", comment: "Main Device"))
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                NavigationBackButton()
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                NavigationHelpButton()
-            }
-        }
-        .task {
-            self.mediator.start(name: self.serviceName)
-            logger.info("mediator server started")
-            self.startSession()
-            self.participantDiscovery.getParticipants(serverAddr: self.serverAddr, sessionID: self.sessionID)
-        }.onAppear {
-            if self.vault.hexChainCode.isEmpty {
-                guard let chainCode = Utils.getChainCode() else {
-                    logger.error("fail to get chain code")
-                    self.currentState = .Failure
-                    return
-                }
-                self.vault.hexChainCode = chainCode
-            }
-            if !self.vault.localPartyID.isEmpty {
-                self.localPartyID = self.localPartyID
-            } else {
-                self.localPartyID = Utils.getLocalDeviceIdentity()
-                self.vault.localPartyID = self.localPartyID
-            }
-        }
-        .onDisappear {
-            logger.info("mediator server stopped")
+    }
+    
+    var bottomButtons: some View {
+        Button(action: {
+            self.startKeygen(allParticipants: self.selections.map { $0 })
+            self.currentState = .Keygen
             self.participantDiscovery.stop()
-            self.mediator.stop()
-        }
+        }) {
+            FilledButton(title: "continue")
+                .disabled(self.selections.count < 2)
+            
+        }.disabled(self.selections.count < 2)
+            .grayscale(self.selections.count < 2 ? 0 : 1)
     }
     
     private func getQrImage(size: CGFloat) -> Image {
