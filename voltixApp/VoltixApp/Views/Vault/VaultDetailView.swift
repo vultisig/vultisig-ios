@@ -27,9 +27,12 @@ struct VaultDetailView: View {
         .onChange(of: vault) {
             setData()
         }
+        .onChange(of: vault.coins) {
+            setData()
+        }
         .sheet(isPresented: $showSheet, content: {
             NavigationView {
-                TokenSelectionView(showTokenSelectionSheet: $showSheet)
+                TokenSelectionView(showTokenSelectionSheet: $showSheet, vault: vault)
             }
         })
     }
