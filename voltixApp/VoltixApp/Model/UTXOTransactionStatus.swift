@@ -7,7 +7,7 @@
 
 import Foundation
 
-class TransactionStatus: Codable {
+class UTXOTransactionStatus: Codable {
     let confirmed: Bool
     let block_height: Int?
     let block_hash: String?

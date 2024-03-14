@@ -1,13 +1,13 @@
 import Foundation
 
-class BitcoinTransactionMempool: Codable {
+class UTXOTransactionMempool: Codable {
     let txid: String
     let version: Int
     let locktime: Int
     let vin: [Input]
     let vout: [Output]
     let fee: Int
-    let status: TransactionStatus
+    let status: UTXOTransactionStatus
     private var _userAddress: String?
     
     var userAddress: String {
@@ -51,7 +51,7 @@ class BitcoinTransactionMempool: Codable {
         return totalSentToOthers
     }
     
-    init(txid: String, version: Int, locktime: Int, vin: [Input], vout: [Output], fee: Int, status: TransactionStatus, userAddress: String) {
+    init(txid: String, version: Int, locktime: Int, vin: [Input], vout: [Output], fee: Int, status: UTXOTransactionStatus, userAddress: String) {
         self.txid = txid
         self.version = version
         self.locktime = locktime

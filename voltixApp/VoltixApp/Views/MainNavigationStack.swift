@@ -52,19 +52,19 @@ struct MainNavigationStack: View {
                         case .swapDone:
                             SwapDoneView(presentationStack: $presentationStack)
                         // NEW UI
-                        case .vaultSelection:
-                            HomeView()
-                        // OLD UI
 //                        case .vaultSelection:
-//                            VaultSelectionView(presentationStack: $presentationStack)
+//                            HomeView()
+                        // OLD UI
+                        case .vaultSelection:
+                            VaultSelectionView(presentationStack: $presentationStack)
                         case .joinKeygen:
                             JoinKeygenView(presentationStack: $presentationStack)
                         case .KeysignDiscovery(let keysignPayload):
                             KeysignDiscoveryView(presentationStack: $presentationStack, keysignPayload: keysignPayload)
                         case .JoinKeysign:
                             JoinKeysignView(presentationStack: $presentationStack)
-                        case .bitcoinTransactionsListView:
-                            BitcoinTransactionListView(presentationStack: $presentationStack)
+                        case .bitcoinTransactionsListView(let tx):
+							UTXOTransactionListView(presentationStack: $presentationStack, tx: tx)
                         case .ethereumTransactionsListView:
                             EthereumTransactionListView(presentationStack: $presentationStack)
                         case .erc20TransactionsListView(let contractAddress):
