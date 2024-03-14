@@ -8,7 +8,10 @@
 import SwiftUI
 
 struct TokenCell: View {
+    let asset: Asset
     @State var isSelected = false
+    
+    @EnvironmentObject var tokenSelectionViewModel: TokenSelectionViewModel
     
     var body: some View {
         HStack {
@@ -21,7 +24,12 @@ struct TokenCell: View {
         .padding(.horizontal, 16)
         .background(Color.blue600)
         .cornerRadius(10)
-        .padding(.horizontal, 16)
+        .onAppear {
+            setData()
+        }
+        .onChange(of: isSelected) { _, newValue in
+            handleSelection(newValue)
+        }
     }
     
     var image: some View {
@@ -32,11 +40,11 @@ struct TokenCell: View {
     
     var text: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("ETH")
+            Text(asset.ticker)
                 .font(.body16MontserratBold)
                 .foregroundColor(.neutral0)
             
-            Text("Ethereum")
+            Text(asset.chainName)
                 .font(.body12MontserratSemiBold)
                 .foregroundColor(.neutral0)
         }
@@ -47,10 +55,23 @@ struct TokenCell: View {
             .labelsHidden()
             .scaleEffect(0.6)
     }
+    
+    private func setData() {
+        if tokenSelectionViewModel.selection.contains(asset) {
+            isSelected = true
+        } else {
+            isSelected = false
+        }
+    }
+    
+    private func handleSelection(_ isSelected: Bool) {
+        tokenSelectionViewModel.handleSelection(isSelected: isSelected, asset: asset)
+    }
 }
 
 #Preview {
     ScrollView {
-        TokenCell()
+        TokenCell(asset: Asset.example)
+            .environmentObject(TokenSelectionViewModel())
     }
 }

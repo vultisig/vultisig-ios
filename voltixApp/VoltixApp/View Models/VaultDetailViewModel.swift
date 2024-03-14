@@ -47,6 +47,7 @@ class VaultDetailViewModel: ObservableObject {
             
             addCoin(coin)
         }
+        coinsGroupedByChains.sort { $0.name < $1.name }
     }
     
     private func addCoin(_ coin: Coin) {

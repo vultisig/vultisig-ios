@@ -30,4 +30,6 @@ class Asset : Codable, Hashable {
         hasher.combine(image)
         hasher.combine(contractAddress)
     }
+    
+    static let example = Asset(ticker: "BTC", chainName: "Bitcoin", image: "BitcoinLogo", contractAddress: "bc1psrjtwm7682v6nhx2...uwfgcfelrennd7pcvq")
 }

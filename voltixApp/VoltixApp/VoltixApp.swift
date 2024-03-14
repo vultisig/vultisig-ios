@@ -16,6 +16,7 @@ struct VoltixApp: App {
     @StateObject var coinViewModel = CoinViewModel()
     @StateObject var applicationState = ApplicationState.shared
     @StateObject var vaultDetailViewModel = VaultDetailViewModel()
+    @StateObject var tokenSelectionViewModel = TokenSelectionViewModel()
     
     init() {
         SDImageCodersManager.shared.addCoder(SDImageSVGCoder.shared)
@@ -27,6 +28,7 @@ struct VoltixApp: App {
                 .environmentObject(coinViewModel)
                 .environmentObject(applicationState) // Shared monolithic mutable state
                 .environmentObject(vaultDetailViewModel)
+                .environmentObject(tokenSelectionViewModel)
         }
         .modelContainer(sharedModelContainer)
 //        .onChange(of: scenePhase) { phase in
