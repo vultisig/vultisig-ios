@@ -165,6 +165,7 @@
 		DE6DCB932B97D81C009A39D5 /* THORChainSwaps.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6DCB922B97D81C009A39D5 /* THORChainSwaps.swift */; };
 		DE6DCB952B97D88A009A39D5 /* THORChainSwapPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6DCB942B97D88A009A39D5 /* THORChainSwapPayload.swift */; };
 		DE7CE6462B886B6300ED0BFB /* VoltixVaultDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE7CE6452B886B6300ED0BFB /* VoltixVaultDocument.swift */; };
+		DE9EB0EA2BA2A5FF001747D9 /* ResharePeerDiscoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0E92BA2A5FF001747D9 /* ResharePeerDiscoveryView.swift */; };
 		DEBF93972B8D5FEF002868CD /* KeysignPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */; };
 		DEEADCF72B916676007978DE /* Solana.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEADCF62B916676007978DE /* Solana.swift */; };
 		DEEDAEE12B8AF7EF005170E8 /* eth.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEDAEE02B8AF7EF005170E8 /* eth.swift */; };
@@ -355,6 +356,7 @@
 		DE6DCB922B97D81C009A39D5 /* THORChainSwaps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainSwaps.swift; sourceTree = "<group>"; };
 		DE6DCB942B97D88A009A39D5 /* THORChainSwapPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainSwapPayload.swift; sourceTree = "<group>"; };
 		DE7CE6452B886B6300ED0BFB /* VoltixVaultDocument.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VoltixVaultDocument.swift; sourceTree = "<group>"; };
+		DE9EB0E92BA2A5FF001747D9 /* ResharePeerDiscoveryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResharePeerDiscoveryView.swift; sourceTree = "<group>"; };
 		DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignPayload.swift; sourceTree = "<group>"; };
 		DEEADCF62B916676007978DE /* Solana.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Solana.swift; sourceTree = "<group>"; };
 		DEEDAEE02B8AF7EF005170E8 /* eth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = eth.swift; sourceTree = "<group>"; };
@@ -642,6 +644,7 @@
 		D9AD8ED72B67225F0009F8D5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				DE9EB0E82BA29C63001747D9 /* Reshare */,
 				DE49A1682B65F6D9000F3AFB /* MainNavigationStack.swift */,
 				D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */,
 				46D067E42B8852B70052F535 /* Keygen */,
@@ -881,6 +884,14 @@
 				DE4DFA7A2B7B1692004F8E73 /* ModelContainerPreview.swift */,
 			);
 			path = PreviewHelper;
+			sourceTree = "<group>";
+		};
+		DE9EB0E82BA29C63001747D9 /* Reshare */ = {
+			isa = PBXGroup;
+			children = (
+				DE9EB0E92BA2A5FF001747D9 /* ResharePeerDiscoveryView.swift */,
+			);
+			path = Reshare;
 			sourceTree = "<group>";
 		};
 		DEF2E2CE2B9DA41A000737B8 /* Chains */ = {
@@ -1134,6 +1145,7 @@
 				DEEDAEE12B8AF7EF005170E8 /* eth.swift in Sources */,
 				46F8F7282B9A011B0099454E /* ThorchainBroadcastTransactionService.swift in Sources */,
 				A65649E12B96602700E4B329 /* Int64Extension.swift in Sources */,
+				DE9EB0EA2BA2A5FF001747D9 /* ResharePeerDiscoveryView.swift in Sources */,
 				D9AD8EEC2B6730ED0009F8D5 /* VaultAssetsView.swift in Sources */,
 				DEBF93972B8D5FEF002868CD /* KeysignPayload.swift in Sources */,
 				DE6DCB932B97D81C009A39D5 /* THORChainSwaps.swift in Sources */,

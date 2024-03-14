@@ -46,3 +46,8 @@
 "need3Devices" = "You need 3 devices";
 "chooseTokens" = "Choose Tokens";
 "chooseChains" = "Choose Chains";
+"reshare" = "Reshare";
+"reshareVault" = "Reshare vault with a new committee";
+"pairWithOtherDevices" = "Pair with other devices:";
+"scanQrCode" = "Scan QR Code";
+"mainDevice" = "Main Device";

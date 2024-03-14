@@ -70,6 +70,7 @@ struct EditVaultView: View {
             VStack(spacing: 16) {
                 backupVault
                 editVault
+                reshareVault
                 deleteVault
             }
         }
@@ -99,7 +100,13 @@ struct EditVaultView: View {
             EditVaultCell(title: "delete", description: "deleteVault", icon: "trash.fill", isDestructive: true)
         }
     }
-    
+    var reshareVault: some View {
+        Button {
+            
+        } label: {
+            EditVaultCell(title: "reshare", description: "reshareVault", icon: "square.and.arrow.up.fill")
+        }
+    }
     private func showDeleteAlert() {
         showAlert.toggle()
     }
