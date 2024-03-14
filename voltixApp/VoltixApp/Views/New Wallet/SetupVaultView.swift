@@ -101,14 +101,13 @@ struct SetupVaultView: View {
     
     private func startNetwork() {
         let vault = Vault(name: "Vault #\(vaults.count + 1)")
-        appState.creatingVault = vault
-        self.presentationStack.append(.peerDiscovery)
+        print("start network")
+        self.presentationStack.append(.peerDiscovery(vault: vault, tssType: .Keygen))
     }
     
     private func joinNetwork() {
         let vault = Vault(name: "Vault #\(vaults.count + 1)")
-        appState.creatingVault = vault
-        self.presentationStack.append(.joinKeygen)
+        self.presentationStack.append(.joinKeygen(vault))
     }
 }
 

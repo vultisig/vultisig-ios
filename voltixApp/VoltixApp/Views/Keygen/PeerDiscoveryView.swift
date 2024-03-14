@@ -10,24 +10,10 @@ import OSLog
 import Security
 import SwiftUI
 
-func getChainCode() -> String? {
-    var bytes = [UInt8](repeating: 0, count: 32)
-    let status = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
-    
-    guard status == errSecSuccess else {
-        print("Error generating random bytes: \(status)")
-        return nil
-    }
-    
-    return bytesToHexString(bytes)
-}
-
-func bytesToHexString(_ bytes: [UInt8]) -> String {
-    return bytes.map { String(format: "%02x", $0) }.joined()
-}
-
 private let logger = Logger(subsystem: "peers-discory", category: "communication")
 struct PeerDiscoveryView: View {
+    let tssType: TssType
+    let vault: Vault
     enum PeerDiscoveryStatus {
         case WaitingForDevices
         case Keygen
@@ -35,13 +21,11 @@ struct PeerDiscoveryView: View {
     }
     
     @Binding var presentationStack: [CurrentScreen]
-    @EnvironmentObject var appState: ApplicationState
     @State private var selections = Set<String>()
     private let mediator = Mediator.shared
     // it should be ok to hardcode here , as this view start the mediator server itself
     private let serverAddr = "http://127.0.0.1:8080"
     private let sessionID = UUID().uuidString
-    private let chainCode = getChainCode()
     @State private var currentState = PeerDiscoveryStatus.WaitingForDevices
     @State private var localPartyID = ""
     @ObservedObject var participantDiscovery = ParticipantDiscovery()
@@ -53,14 +37,14 @@ struct PeerDiscoveryView: View {
                 case .WaitingForDevices:
                     
                     VStack {
-                        Text("Pair with two other devices:".uppercased())
+                        Text(NSLocalizedString("pairWithOtherDevices", comment: "Pair with two other devices"))
                             .font(.body18MenloBold)
                             .multilineTextAlignment(.center)
                         self.getQrImage(size: 100)
                             .resizable()
                             .scaledToFit()
                             .padding()
-                        Text("Scan the above QR CODE.".uppercased())
+                        Text(NSLocalizedString("scanQrCode", comment: "Scan QR Code"))
                             .font(.body13Menlo)
                             .multilineTextAlignment(.center)
                     }
@@ -110,7 +94,7 @@ struct PeerDiscoveryView: View {
                         self.participantDiscovery.stop()
                     }) {
                         HStack {
-                            Text("CREATE WALLET".uppercased())
+                            Text(NSLocalizedString("continue", comment: "Continue"))
                                 .font(.title30MenloBold)
                                 .fontWeight(.black)
                             Image(systemName: "chevron.right")
@@ -127,13 +111,13 @@ struct PeerDiscoveryView: View {
                                mediatorURL: self.serverAddr,
                                sessionID: self.sessionID,
                                localPartyKey: self.localPartyID,
-                               hexChainCode: self.chainCode ?? "",
-                               vaultName: self.appState.creatingVault?.name ?? "New Vault")
+                               hexChainCode: vault.hexChainCode,
+                               vaultName: self.vault.name)
                 case .Failure:
                     Text("Something is wrong")
             }
         }
-        .navigationTitle("MAIN DEVICE")
+        .navigationTitle(NSLocalizedString("mainDevice", comment: "Main Device"))
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .toolbar {
@@ -150,17 +134,19 @@ struct PeerDiscoveryView: View {
             self.startSession()
             self.participantDiscovery.getParticipants(serverAddr: self.serverAddr, sessionID: self.sessionID)
         }.onAppear {
-            // by this step , creatingVault should be available already
-            if self.appState.creatingVault == nil {
-                self.currentState = .Failure
-                return
+            if vault.hexChainCode.isEmpty {
+                guard let chainCode = Utils.getChainCode() else {
+                    logger.error("fail to get chain code")
+                    self.currentState = .Failure
+                    return
+                }
+                vault.hexChainCode = chainCode
             }
-            
-            if let localPartyID = appState.creatingVault?.localPartyID, !localPartyID.isEmpty {
-                self.localPartyID = localPartyID
+            if !self.vault.localPartyID.isEmpty {
+                self.localPartyID = self.localPartyID
             } else {
                 self.localPartyID = Utils.getLocalDeviceIdentity()
-                self.appState.creatingVault?.localPartyID = self.localPartyID
+                self.vault.localPartyID = self.localPartyID
             }
         }
         .onDisappear {
@@ -171,15 +157,23 @@ struct PeerDiscoveryView: View {
     }
     
     private func getQrImage(size: CGFloat) -> Image {
-        guard let chainCode = self.chainCode else {
-            return Image(systemName: "xmark")
-        }
-        let km = keygenMessage(sessionID: sessionID, hexChainCode: chainCode, serviceName: self.serviceName)
-        let jsonEncoder = JSONEncoder()
-        do {
-            let data = try jsonEncoder.encode(km)
+        do{
+            let jsonEncoder = JSONEncoder()
+            var data: Data
+            switch tssType {
+            case .Keygen:
+                let km = keygenMessage(sessionID: sessionID, hexChainCode: vault.hexChainCode, serviceName: self.serviceName)
+                data = try jsonEncoder.encode(PeerDiscoveryPayload.Keygen(km))
+            case .Reshare:
+                let reshareMsg = ReshareMessage(sessionID: sessionID, hexChainCode: vault.hexChainCode, serviceName: self.serviceName, pubKeyECDSA: vault.pubKeyECDSA, oldParties: vault.signers)
+                data = try jsonEncoder.encode(PeerDiscoveryPayload.Reshare(reshareMsg))
+            default:
+                logger.error("invalid tss type")
+                self.currentState = .Failure
+                return Image(systemName: "xmark")
+            }
             return Utils.getQrImage(data: data, size: size)
-        } catch {
+        }catch {
             logger.error("fail to encode keygen message to json,error:\(error.localizedDescription)")
             return Image(systemName: "xmark")
         }
@@ -205,12 +199,6 @@ struct PeerDiscoveryView: View {
     }
 }
 
-struct keygenMessage: Codable {
-    let sessionID: String
-    let hexChainCode: String
-    let serviceName: String
-}
-
 #Preview {
-    PeerDiscoveryView(presentationStack: .constant([]))
+    PeerDiscoveryView(tssType: .Keygen, vault: Vault.example, presentationStack: .constant([]))
 }
