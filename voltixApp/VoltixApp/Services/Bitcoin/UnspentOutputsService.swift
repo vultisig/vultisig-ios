@@ -7,7 +7,7 @@ public class UnspentOutputsService: ObservableObject {
     @Published var errorMessage: String?
     
     // Dictionary to store cache entries with address as the key
-    private var cache: [String: CacheEntry] = [:]
+    private var cache: [String: UTXOCacheEntry] = [:]
     
     // Function to check if cache for a given address is valid (not older than 1 minutes)
     private func isCacheValid(for address: String) -> Bool {
@@ -19,30 +19,23 @@ public class UnspentOutputsService: ObservableObject {
         return false
     }
     
-    // Replace with your actual function to fetch unspent outputs
     func fetchUnspentOutputs(for address: String) async {
-        // Use cache if it's valid for the requested address
         if isCacheValid(for: address), let cachedData = cache[address]?.data {
             self.walletData = cachedData
             return
         }
         
-        // Construct the URL
         guard let url = URL(string: Endpoint.fetchUnspentOutputs(address)) else {
             print("Invalid URL")
             return
         }
         
         do {
-            // Fetch data from the URL
             let (data, _) = try await URLSession.shared.data(from: url)
-            let decoder = JSONDecoder()
+			print(String(data: data, encoding: String.Encoding.utf8))
+			let decoder = JSONDecoder()
             let decodedData = try decoder.decode(BitcoinTransaction.self, from: data)
-            
-            // Update the cache with new data and current timestamp for the address
-            cache[address] = CacheEntry(data: decodedData, timestamp: Date())
-            
-            // Update your published property with the decoded data
+            cache[address] = UTXOCacheEntry(data: decodedData, timestamp: Date())
             self.walletData = decodedData
         } catch {
             print("Fetch failed: \(error.localizedDescription)")
@@ -51,8 +44,7 @@ public class UnspentOutputsService: ObservableObject {
     }
 }
 
-// Cache structure to hold data and timestamp
-fileprivate struct CacheEntry {
+fileprivate struct UTXOCacheEntry {
     let data: BitcoinTransaction
     let timestamp: Date
 }

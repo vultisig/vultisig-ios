@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension BitcoinTransactionMempool {
+extension UTXOTransactionMempool {
     var opReturnData: String? {
         for output in vout {
             let asm = output.scriptpubkey_asm

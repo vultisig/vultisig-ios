@@ -13,6 +13,7 @@ struct EditVaultView: View {
     @State var showVaultExporter = false
     @State var showAlert = false
     
+    @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) private var modelContext
     
     var body: some View {
@@ -119,6 +120,7 @@ struct EditVaultView: View {
         } catch {
             print("Error: \(error)")
         }
+        dismiss()
     }
 }
 

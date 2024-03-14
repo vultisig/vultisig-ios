@@ -8,7 +8,9 @@
 import Foundation
 
 class Endpoint {
-    static let broadcastTransaction = "https://mempool.space/api/tx"
+    static let btcBroadcastTransaction = "https://mempool.space/api/tx"
+	
+	static let ltcBroadcastTransaction = "https://litecoinspace.org/api/tx"
     
     static let broadcastTransactionThorchainNineRealms = "https://thornode.ninerealms.com/cosmos/tx/v1beta1/txs"
     
@@ -19,12 +21,15 @@ class Endpoint {
 	static let solanaServiceAlchemyRpc = "https://solana-mainnet.g.alchemy.com/v2/\(AppConfiguration.alchemyApiKey)"
 
 	static let web3ServiceInfura = "https://mainnet.infura.io/v3/\(AppConfiguration.infuraApiKey)"
-    
-        // With parameters
-    static func bitcoinLabelTxHash(_ value: String) -> String {
+
+	static func bitcoinLabelTxHash(_ value: String) -> String {
         "https://mempool.space/tx/\(value)"
     }
-    
+	
+	static func litecoinLabelTxHash(_ value: String) -> String {
+		"https://litecoinspace.org/tx/\(value)"
+	}
+
     static func ethereumLabelTxHash(_ value: String) -> String {
         "https://etherscan.io/tx/\(value)"
     }
@@ -32,7 +37,11 @@ class Endpoint {
     static func fetchUnspentOutputs(_ value: String) -> String {
         "https://api.blockcypher.com/v1/btc/main/addrs/\(value)?unspentOnly=true"
     }
-    
+	
+	static func fetchLitecoinUnspentOutputs(_ userAddress: String) -> String {
+		"https://litecoinspace.org/api/address/\(userAddress)/utxo"
+	}
+	
     static func fetchCryptoPrices(coin: String, fiat: String) -> String {
         "https://api.coingecko.com/api/v3/simple/price?ids=\(coin)&vs_currencies=\(fiat)"
     }
@@ -40,7 +49,11 @@ class Endpoint {
     static func fetchBitcoinTransactions(_ userAddress: String) -> String {
         "https://mempool.space/api/address/\(userAddress)/txs"
     }
-    
+
+	static func fetchLitecoinTransactions(_ userAddress: String) -> String {
+		"https://litecoinspace.org/api/address/\(userAddress)/txs"
+	}
+
     static func getEthInfo(_ address: String) -> String {
         "https://api.ethplorer.io/getAddressInfo/\(address)?apiKey=freekey"
     }

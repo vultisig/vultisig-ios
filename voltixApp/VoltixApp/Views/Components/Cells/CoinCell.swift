@@ -12,7 +12,8 @@ struct CoinCell: View {
     
     @StateObject var tx = SendTransaction()
     @StateObject var coinViewModel = CoinViewModel()
-    @StateObject var uxto = UnspentOutputsService()
+    @StateObject var utxoBtc = UnspentOutputsService()
+	@StateObject var utxoLtc = LitecoinUnspentOutputsService()
     @StateObject var eth = EthplorerAPIService()
     @StateObject var thor = ThorchainService.shared
     
@@ -80,7 +81,7 @@ struct CoinCell: View {
     
     var sendButton: some View {
         NavigationLink {
-            SendCryptoView()
+            SendInputDetailsView(presentationStack: .constant([]), tx: tx)
         } label: {
             Text(NSLocalizedString("send", comment: "Send button text").uppercased())
                 .font(.body16MenloBold)
@@ -96,7 +97,8 @@ struct CoinCell: View {
         tx.coin = coin
         
         await coinViewModel.loadData(
-            uxto: uxto,
+			utxoBtc: utxoBtc,
+			utxoLtc: utxoLtc,
             eth: eth,
             thor: thor,
             tx: tx

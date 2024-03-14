@@ -6,8 +6,12 @@
 //
 
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct ImportWalletView2: View {
+    @Environment(\.modelContext) private var context
+    @StateObject var viewModel = ImportVaultViewModel()
+    @State var showFileImporter = false
     
     var body: some View {
         ZStack {
@@ -17,11 +21,30 @@ struct ImportWalletView2: View {
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("import", comment: "Import title"))
         .navigationBarTitleDisplayMode(.inline)
-        .font(.body20MontserratSemiBold)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 NavigationBackButton()
             }
+        }
+        .fileImporter(
+            isPresented: $showFileImporter,
+            allowedContentTypes: [UTType.data],
+            allowsMultipleSelection: false
+        ) { result in
+            viewModel.readFile(for: result)
+        }
+        .navigationDestination(isPresented: $viewModel.isLinkActive) {
+            HomeView()
+        }
+        .alert(isPresented: $viewModel.showAlert) {
+            Alert(
+                title: Text(NSLocalizedString("error", comment: "")),
+                message: Text(viewModel.errorMessage),
+                dismissButton: .default(Text("ok"))
+            )
+        }
+        .onDisappear {
+            viewModel.removeFile()
         }
     }
     
@@ -34,10 +57,16 @@ struct ImportWalletView2: View {
         VStack(spacing: 15) {
             instruction
             uploadSection
+            
+            if let filename = viewModel.filename {
+                fileCell(filename)
+            }
+            
             Spacer()
-            button
+            continueButton
         }
         .padding(.top, 30)
+        .padding(.horizontal, 30)
     }
     
     var instruction: some View {
@@ -47,31 +76,56 @@ struct ImportWalletView2: View {
     }
     
     var uploadSection: some View {
-        VStack(spacing: 26) {
-            Image("fileIcon")
-            uploadText
+        Button {
+            showFileImporter.toggle()
+        } label: {
+            ImportWalletUploadSection(viewModel: viewModel)
         }
-        .frame(height: 200)
-        .frame(maxWidth: .infinity)
-        .background(Color.turquoise600.opacity(0.15))
-        .cornerRadius(10)
-        .overlay (
-            RoundedRectangle(cornerRadius: 10)
-                .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 1, dash: [10]))
-        )
-        .padding(.horizontal, 30)
     }
     
-    var uploadText: some View {
-        Text(NSLocalizedString("uploadFile", comment: "Upload file details"))
-            .font(.body12MontserratSemiBold)
+    var continueButton: some View {
+        Button {
+            viewModel.restoreVault(modelContext: context)
+        } label: {
+            FilledButton(title: "continue")
+                .disabled(!viewModel.isFileUploaded)
+                .grayscale(viewModel.isFileUploaded ? 0 : 1)
+        }
+        .padding(.horizontal, 10)
+        .padding(.bottom, 40)
+    }
+    
+    var fileImage: some View {
+        Image("fileIcon")
+            .resizable()
+            .frame(width: 24, height: 24)
+    }
+    
+    func fileName(_ name: String) -> some View {
+        Text(name)
+            .font(.body12Menlo)
             .foregroundColor(.neutral0)
     }
     
-    var button: some View {
-        FilledButton(title: "continue")
-            .padding(40)
-        
+    var closeButton: some View {
+        Button {
+            viewModel.removeFile()
+        } label: {
+            Image(systemName: "xmark")
+                .font(.body16MontserratMedium)
+                .foregroundColor(.neutral0)
+                .padding(8)
+        }
+    }
+    
+    private func fileCell(_ name: String) -> some View {
+        HStack {
+            fileImage
+            fileName(name)
+            Spacer()
+            closeButton
+        }
+        .padding(12)
     }
 }
 

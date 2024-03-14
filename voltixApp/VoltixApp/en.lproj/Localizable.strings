@@ -23,6 +23,7 @@
 "main" = "Main";
 "address" = "Address";
 "backup" = "Backup";
+"error" = "Error";
 "backupVault" = "Backup your vault";
 "rename" = "Rename";
 "renameVault" = "Edit your vault name";

@@ -9,6 +9,9 @@ import SwiftUI
 
 struct TokenSelectionView: View {
     @Binding var showTokenSelectionSheet: Bool
+    let vault: Vault
+    
+    @EnvironmentObject var viewModel: TokenSelectionViewModel
     
     var body: some View {
         ZStack {
@@ -23,6 +26,15 @@ struct TokenSelectionView: View {
                 NavigationBackSheetButton(showSheet: $showTokenSelectionSheet)
             }
         }
+        .onAppear {
+            setData()
+        }
+        .onChange(of: vault) {
+            setData()
+        }
+        .onDisappear {
+            saveAssets()
+        }
     }
     
     var background: some View {
@@ -32,11 +44,26 @@ struct TokenSelectionView: View {
     
     var view: some View {
         ScrollView {
-            
+            VStack(spacing: 24) {
+                ForEach(viewModel.groupedAssets.keys.sorted(), id: \.self) { key in
+                    TokenSelectionSection(title: key, assets: viewModel.groupedAssets[key] ?? [])
+                }
+            }
+            .padding(.top, 30)
         }
+        .padding(.horizontal, 16)
+    }
+    
+    private func setData() {
+        viewModel.setData(for: vault)
+    }
+    
+    private func saveAssets() {
+        viewModel.saveAssets(for: vault)
     }
 }
 
 #Preview {
-    TokenSelectionView(showTokenSelectionSheet: .constant(true))
+    TokenSelectionView(showTokenSelectionSheet: .constant(true), vault: Vault.example)
+        .environmentObject(TokenSelectionViewModel())
 }
