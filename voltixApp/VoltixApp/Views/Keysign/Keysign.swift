@@ -116,7 +116,7 @@ struct KeysignView: View {
 											print(tx)
 											Task {
 												do {
-													self.txid = try await BitcoinTransactionsService.broadcastTransaction(tx)
+													self.txid = try await UTXOTransactionsService.broadcastTransaction(tx, endpointUrl: Endpoint.btcBroadcastTransaction)
 													print("Transaction Broadcasted Successfully, txid: \(self.txid)")
 												} catch let error as BitcoinTransactionError {
 													switch error {
@@ -164,6 +164,28 @@ struct KeysignView: View {
 									switch result {
 										case .success(let tx):
 											print(tx)
+											Task {
+												do {
+													self.txid = try await UTXOTransactionsService.broadcastTransaction(tx, endpointUrl: Endpoint.ltcBroadcastTransaction)
+													print("Transaction Broadcasted Successfully, txid: \(self.txid)")
+												} catch let error as BitcoinTransactionError {
+													switch error {
+														case .invalidURL:
+															print("Invalid URL.")
+														case .httpError(let statusCode):
+															print("HTTP Error with status code: \(statusCode).")
+														case .apiError(let message):
+															print("API Error: \(message)")
+														case .unexpectedResponse:
+															print("Unexpected response from the server.")
+														case .unknown(let unknownError):
+															print("An unknown error occurred: \(unknownError.localizedDescription)")
+													}
+												} catch {
+													print("An unexpected error occurred: \(error.localizedDescription)")
+												}
+											}
+											
 										case .failure(let err):
 											switch err {
 												case HelperError.runtimeError(let errDetail):
@@ -239,15 +261,17 @@ struct KeysignView: View {
 									let result = SolanaHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyEdDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
 									switch result {
 										case .success(let tx):
-											print(tx)
 											
-											Task {
-												await SolanaService.shared.sendSolanaTransaction(encodedTransaction: tx)
-												
-												await MainActor.run {
-													self.txid = SolanaService.shared.transactionResult ?? ""
-												}
-											}
+											
+											print("SOLANA TX: \(tx)")
+											
+//											Task {
+//												await SolanaService.shared.sendSolanaTransaction(encodedTransaction: tx)
+//												
+//												await MainActor.run {
+//													self.txid = SolanaService.shared.transactionResult ?? ""
+//												}
+//											}
 											
 											
 											

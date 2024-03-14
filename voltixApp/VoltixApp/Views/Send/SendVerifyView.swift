@@ -10,7 +10,8 @@ struct SendVerifyView: View {
 	@Binding var presentationStack: [CurrentScreen]
 	@ObservedObject var tx: SendTransaction
 	@StateObject private var web3Service = Web3Service()
-	@StateObject var unspentOutputsService: UnspentOutputsService = .init()
+	@StateObject var utxoBtc: UnspentOutputsService = .init()
+	@StateObject var utxoLtc: LitecoinUnspentOutputsService = .init()
 	@StateObject var thor: ThorchainService = ThorchainService.shared
 	@StateObject var sol: SolanaService = SolanaService.shared
 	@State private var errorMessage: String = ""
@@ -24,9 +25,15 @@ struct SendVerifyView: View {
 	
 	private func reloadTransactions() {
 		if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
-			if unspentOutputsService.walletData == nil {
+			if utxoBtc.walletData == nil {
 				Task {
-					await unspentOutputsService.fetchUnspentOutputs(for: tx.fromAddress)
+					await utxoBtc.fetchUnspentOutputs(for: tx.fromAddress)
+				}
+			}
+		} else if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
+			if utxoLtc.walletData == nil {
+				Task {
+					await utxoLtc.fetchLitecoinUnspentOutputs(for: tx.fromAddress)
 				}
 			}
 		} else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
@@ -93,9 +100,9 @@ struct SendVerifyView: View {
 									return
 								}
 								
-								if tx.coin.chain.name.lowercased() == "bitcoin" {
+								if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
 									
-									if let walletData = unspentOutputsService.walletData {
+									if let walletData = utxoBtc.walletData {
 											// Calculate total amount needed by summing the amount and the fee
 										let totalAmountNeeded = tx.amountInSats + tx.feeInSats
 										
@@ -138,7 +145,46 @@ struct SendVerifyView: View {
 										self.errorMessage = "Error fetching the data"
 									}
 									
-								} else if tx.coin.chain.name.lowercased() == "ethereum" {
+								} else if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
+									
+									if let walletData = utxoLtc.walletData {
+										let totalAmountNeeded = tx.amountInSats + tx.feeInSats
+										
+										let utxoInfo = walletData.selectUTXOsForPayment(amountNeeded: Int64(totalAmountNeeded)).map {
+											UtxoInfo(hash: $0.txid, amount: Int64($0.value), index: UInt32($0.vout))
+										}
+										
+										if utxoInfo.count == 0 {
+											self.errorMessage = "You don't have enough balance to send this transaction"
+											return
+										}
+										
+										let totalSelectedAmount = utxoInfo.reduce(0) { $0 + $1.amount }
+										
+										if totalSelectedAmount < Int64(totalAmountNeeded) {
+											self.errorMessage = "You don't have enough balance to send this transaction"
+											return
+										}
+										
+										let keysignPayload = KeysignPayload(
+											coin: tx.coin,
+											toAddress: tx.toAddress,
+											toAmount: tx.amountInSats,
+											chainSpecific: BlockChainSpecific.UTXO(byteFee: tx.feeInSats),
+											utxos: utxoInfo,
+											memo: tx.memo,
+											swapPayload: nil
+										)
+										
+										self.errorMessage = ""
+										self.presentationStack.append(.KeysignDiscovery(keysignPayload))
+										
+										
+									} else {
+										self.errorMessage = "Error fetching the data"
+									}
+									
+								} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
 									
 									if tx.coin.contractAddress.isEmpty {
 										

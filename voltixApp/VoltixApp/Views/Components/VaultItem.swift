@@ -86,8 +86,11 @@ struct VaultItem: View {
                     Spacer().frame(width: 20)
                     Button(action: {
                         
-                        if coin.chain.name.lowercased() == "bitcoin" {
-                            presentationStack.append(.bitcoinTransactionsListView)
+						if 
+							coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() ||
+							coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased()
+						{
+							presentationStack.append(.bitcoinTransactionsListView(SendTransaction(coin: coin)))
                         } else if coin.chain.name.lowercased() == "ethereum" {
                             if !coin.contractAddress.isEmpty {
                                 presentationStack.append(.erc20TransactionsListView(coin.contractAddress))

@@ -43,7 +43,7 @@ enum CurrentScreen: Hashable {
     case listVaultAssetView
     
     // transactions
-    case bitcoinTransactionsListView
+    case bitcoinTransactionsListView(SendTransaction)
     case ethereumTransactionsListView
     case erc20TransactionsListView(String)
 }

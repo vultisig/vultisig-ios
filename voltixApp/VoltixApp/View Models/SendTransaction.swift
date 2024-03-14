@@ -84,6 +84,14 @@ class SendTransaction: ObservableObject, Hashable {
         self.memo = ""
         self.gas = ""
     }
+	
+	init(coin: Coin) {
+		self.toAddress = ""
+		self.amount = ""
+		self.memo = ""
+		self.gas = ""
+		self.coin = coin
+	}
     
     init(toAddress: String, amount: String, memo: String, gas: String) {
         self.toAddress = toAddress
