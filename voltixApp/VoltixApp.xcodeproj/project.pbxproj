@@ -101,6 +101,8 @@
 		A66A0BD92BA12DF50021A483 /* RenameVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */; };
 		A66A0BDB2BA13B570021A483 /* CoinsGrouped.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BDA2BA13B570021A483 /* CoinsGrouped.swift */; };
 		A66A0BDD2BA15C650021A483 /* WebSVGImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BDC2BA15C650021A483 /* WebSVGImage.swift */; };
+		A6CBA8EE2BA299E8008B110C /* ImportVaultViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CBA8ED2BA299E8008B110C /* ImportVaultViewModel.swift */; };
+		A6CBA8F02BA2A629008B110C /* ImportWalletUploadSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CBA8EF2BA2A629008B110C /* ImportWalletUploadSection.swift */; };
 		A6F2C5452B9FE3A00095C8E3 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */; };
 		A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5462B9FFC560095C8E3 /* NavigationBackSheetButton.swift */; };
 		A6F2C5492BA001460095C8E3 /* TokenSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5482BA001460095C8E3 /* TokenSelectionView.swift */; };
@@ -291,6 +293,8 @@
 		A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenameVaultView.swift; sourceTree = "<group>"; };
 		A66A0BDA2BA13B570021A483 /* CoinsGrouped.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinsGrouped.swift; sourceTree = "<group>"; };
 		A66A0BDC2BA15C650021A483 /* WebSVGImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebSVGImage.swift; sourceTree = "<group>"; };
+		A6CBA8ED2BA299E8008B110C /* ImportVaultViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportVaultViewModel.swift; sourceTree = "<group>"; };
+		A6CBA8EF2BA2A629008B110C /* ImportWalletUploadSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportWalletUploadSection.swift; sourceTree = "<group>"; };
 		A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		A6F2C5462B9FFC560095C8E3 /* NavigationBackSheetButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBackSheetButton.swift; sourceTree = "<group>"; };
 		A6F2C5482BA001460095C8E3 /* TokenSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionView.swift; sourceTree = "<group>"; };
@@ -433,6 +437,7 @@
 				A633B1342B997D35003D1738 /* Navigation Items */,
 				A61BC8152BA256C600484689 /* ProgressBar.swift */,
 				A61BC81A2BA26D9900484689 /* TokenSelectionSection.swift */,
+				A6CBA8EF2BA2A629008B110C /* ImportWalletUploadSection.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -600,6 +605,7 @@
 				A6F9F7EA2B9D1B3700790258 /* VaultDetailViewModel.swift */,
 				A6F9F7EC2B9D1F5700790258 /* CoinViewModel.swift */,
 				A6F2C54E2BA009420095C8E3 /* TokenSelectionViewModel.swift */,
+				A6CBA8ED2BA299E8008B110C /* ImportVaultViewModel.swift */,
 			);
 			path = "View Models";
 			sourceTree = "<group>";
@@ -1074,6 +1080,7 @@
 				A6F2C54B2BA003E10095C8E3 /* TokenCell.swift in Sources */,
 				A633B12F2B9952D8003D1738 /* OutlineButton.swift in Sources */,
 				465B09A72B7C049400952DD9 /* UnspentOutputsService.swift in Sources */,
+				A6CBA8EE2BA299E8008B110C /* ImportVaultViewModel.swift in Sources */,
 				049BBB582B71E72F004C231F /* DeviceView.swift in Sources */,
 				D9AD8EF12B6731660009F8D5 /* SendInputDetailsView.swift in Sources */,
 				D9AD8F012B6732360009F8D5 /* SwapVerifyView.swift in Sources */,
@@ -1184,6 +1191,7 @@
 				A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */,
 				A65649EC2B96697B00E4B329 /* Asset.swift in Sources */,
 				46ED3A482B9F696000FFCB8A /* SolanaRecentBlockhash.swift in Sources */,
+				A6CBA8F02BA2A629008B110C /* ImportWalletUploadSection.swift in Sources */,
 				D9AD8EFD2B6732070009F8D5 /* SwapPeerDiscoveryView.swift in Sources */,
 				467B2D662B7B51F700AEDF64 /* NavigationStackButtons.swift in Sources */,
 				A66A0BD52BA124D00021A483 /* EditVaultView.swift in Sources */,

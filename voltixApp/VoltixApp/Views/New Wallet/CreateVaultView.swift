@@ -63,16 +63,11 @@ struct CreateVaultView: View {
     }
     
     var importVaultButton: some View {
-        Button {
-            self.presentationStack.append(.importWallet)
+        NavigationLink {
+            ImportWalletView2()
         } label: {
             OutlineButton(title: "importExistingVault")
         }
-//        NavigationLink {
-//            ImportWalletView2()
-//        } label: {
-//            OutlineButton(title: "importExistingVault")
-//        }
     }
 }
 
