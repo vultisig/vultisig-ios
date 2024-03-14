@@ -35,7 +35,7 @@ class Endpoint {
     }
     
     static func fetchUnspentOutputs(_ value: String) -> String {
-        "https://api.blockcypher.com/v1/btc/main/addrs/\(value)?unspentOnly=true"
+		"https://api.blockcypher.com/v1/btc/main/addrs/\(value)?unspentOnly=true&token=\(AppConfiguration.blockCypherApiKey)"
     }
 	
 	static func fetchLitecoinUnspentOutputs(_ userAddress: String) -> String {
