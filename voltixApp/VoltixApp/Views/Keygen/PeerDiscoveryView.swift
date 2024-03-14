@@ -28,7 +28,7 @@ struct PeerDiscoveryView: View {
     private let sessionID = UUID().uuidString
     @State private var currentState = PeerDiscoveryStatus.WaitingForDevices
     @State private var localPartyID = ""
-    @ObservedObject var participantDiscovery = ParticipantDiscovery()
+    @StateObject var participantDiscovery = ParticipantDiscovery()
     private let serviceName = "VoltixApp-" + Int.random(in: 1 ... 1000).description
     
     var body: some View {
@@ -121,11 +121,11 @@ struct PeerDiscoveryView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                NavigationButtons.backButton(presentationStack: self.$presentationStack)
+            ToolbarItem(placement: .topBarLeading) {
+                NavigationBackButton()
             }
-            ToolbarItem(placement: .navigationBarTrailing) {
-                NavigationButtons.questionMarkButton
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationHelpButton()
             }
         }
         .task {
@@ -181,6 +181,7 @@ struct PeerDiscoveryView: View {
     
     private func startSession() {
         let urlString = "\(self.serverAddr)/\(self.sessionID)"
+        logger.info("start session:\(urlString)")
         let body = [self.localPartyID]
         Utils.sendRequest(urlString: urlString, method: "POST", body: body) { success in
             if success {

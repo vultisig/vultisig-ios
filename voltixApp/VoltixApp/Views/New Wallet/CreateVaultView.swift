@@ -48,13 +48,7 @@ struct CreateVaultView: View {
         .padding(40)
     }
     
-    var newVaultButton: some View {
-//        Button {
-//            self.presentationStack.append(.newWalletInstructions)
-//        } label: {
-//            FilledButton(title: "createNewVault")
-//        }
-        
+    var newVaultButton: some View {        
         NavigationLink {
             SetupVaultView(presentationStack: $presentationStack)
         } label: {

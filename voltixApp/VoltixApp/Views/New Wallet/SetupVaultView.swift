@@ -5,8 +5,8 @@
 //  Created by Amol Kumar on 2024-03-07.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct SetupVaultView: View {
     @Binding var presentationStack: [CurrentScreen]
@@ -84,30 +84,21 @@ struct SetupVaultView: View {
     }
     
     var startButton: some View {
-        Button {
-            startNetwork()
+        NavigationLink {
+            let vault = Vault(name: "Vault #\(vaults.count + 1)")
+            PeerDiscoveryView(tssType: .Keygen, vault: vault, presentationStack: $presentationStack)
         } label: {
             FilledButton(title: "start")
         }
     }
     
     var joinButton: some View {
-        Button {
-            joinNetwork()
+        NavigationLink {
+            let vault = Vault(name: "Vault #\(vaults.count + 1)")
+            JoinKeygenView(vault: vault, presentationStack: $presentationStack)
         } label: {
             OutlineButton(title: "join")
         }
-    }
-    
-    private func startNetwork() {
-        let vault = Vault(name: "Vault #\(vaults.count + 1)")
-        print("start network")
-        self.presentationStack.append(.peerDiscovery(vault: vault, tssType: .Keygen))
-    }
-    
-    private func joinNetwork() {
-        let vault = Vault(name: "Vault #\(vaults.count + 1)")
-        self.presentationStack.append(.joinKeygen(vault))
     }
 }
 
