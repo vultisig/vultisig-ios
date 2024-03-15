@@ -177,7 +177,7 @@ class KeysignViewModel: ObservableObject {
                     do {
                         self.txid = try await UTXOTransactionsService.broadcastTransaction(tx, endpointUrl: Endpoint.btcBroadcastTransaction)
                         print("Transaction Broadcasted Successfully, txid: \(self.txid)")
-                    } catch let error as BitcoinTransactionError {
+                    } catch let error as UTXOTransactionError {
                         handleBitcoinTransactionError(err: error)
                     } catch {
                         print("An unexpected error occurred: \(error.localizedDescription)")
@@ -203,7 +203,7 @@ class KeysignViewModel: ObservableObject {
                     do {
                         self.txid = try await UTXOTransactionsService.broadcastTransaction(tx, endpointUrl: Endpoint.ltcBroadcastTransaction)
                         print("Transaction Broadcasted Successfully, txid: \(self.txid)")
-                    } catch let error as BitcoinTransactionError {
+                    } catch let error as UTXOTransactionError {
                         handleBitcoinTransactionError(err: error)
                     } catch {
                         print("An unexpected error occurred: \(error.localizedDescription)")
@@ -274,7 +274,7 @@ class KeysignViewModel: ObservableObject {
         }
     }
 
-    func handleBitcoinTransactionError(err: BitcoinTransactionError) {
+    func handleBitcoinTransactionError(err: UTXOTransactionError) {
         switch err {
         case .invalidURL:
             print("Invalid URL.")
