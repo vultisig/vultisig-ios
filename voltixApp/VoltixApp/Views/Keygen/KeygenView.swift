@@ -61,6 +61,9 @@ struct KeygenView: View {
         .navigationDestination(isPresented: $viewModel.isLinkActive) {
             HomeView()
         }
+        .onAppear {
+            viewModel.setData(vault: vault, tssType: tssType, keygenCommittee: keygenCommittee, vaultOldCommittee: vaultOldCommittee, mediatorURL: mediatorURL, sessionID: sessionID)
+        }
         .task {
             await viewModel.startKeygen(context: context)
         }
@@ -71,12 +74,24 @@ struct KeygenView: View {
         case .Keygen:
             HStack {
                 Text(NSLocalizedString("keygenFailed", comment: "key generation failed"))
+                    .font(.body15MenloBold)
+                    .foregroundColor(.neutral0)
+                    .multilineTextAlignment(.center)
                 Text(viewModel.keygenError)
+                    .font(.body15MenloBold)
+                    .foregroundColor(.neutral0)
+                    .multilineTextAlignment(.center)
             }
         case .Reshare:
             HStack {
                 Text(NSLocalizedString("reshareFailed", comment: "Resharing key failed"))
+                    .font(.body15MenloBold)
+                    .foregroundColor(.neutral0)
+                    .multilineTextAlignment(.center)
                 Text(viewModel.keygenError)
+                    .font(.body15MenloBold)
+                    .foregroundColor(.neutral0)
+                    .multilineTextAlignment(.center)
             }
         }
     }

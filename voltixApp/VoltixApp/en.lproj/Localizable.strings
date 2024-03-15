@@ -86,3 +86,4 @@
 "signingWithECDSA" = "SIGNING USING ECDSA KEY... ";
 "signingWithEdDSA" = "SIGNING USING EdDSA KEY... ";
 "keysignFinished" = "KEYSIGN FINISHED...";
+"waitingForKeygenStart" = "Waiting for key generation to start...";
