@@ -187,6 +187,8 @@
 		DE9EB0F22BA2D97B001747D9 /* PeerDiscoveryPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0F12BA2D97B001747D9 /* PeerDiscoveryPayload.swift */; };
 		DE9EB0F42BA309AB001747D9 /* MessagePuller.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0F32BA309AB001747D9 /* MessagePuller.swift */; };
 		DE9EB0F62BA3F9C2001747D9 /* ParticipantDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0F52BA3F9C2001747D9 /* ParticipantDiscovery.swift */; };
+		DE9EB0F82BA43388001747D9 /* KeysignViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0F72BA43388001747D9 /* KeysignViewModel.swift */; };
+		DE9EB0FA2BA4491B001747D9 /* CoinExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0F92BA4491B001747D9 /* CoinExtension.swift */; };
 		DEBF93972B8D5FEF002868CD /* KeysignPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */; };
 		DEEADCF72B916676007978DE /* Solana.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEADCF62B916676007978DE /* Solana.swift */; };
 		DEEDAEE12B8AF7EF005170E8 /* eth.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEDAEE02B8AF7EF005170E8 /* eth.swift */; };
@@ -399,6 +401,8 @@
 		DE9EB0F12BA2D97B001747D9 /* PeerDiscoveryPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerDiscoveryPayload.swift; sourceTree = "<group>"; };
 		DE9EB0F32BA309AB001747D9 /* MessagePuller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagePuller.swift; sourceTree = "<group>"; };
 		DE9EB0F52BA3F9C2001747D9 /* ParticipantDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticipantDiscovery.swift; sourceTree = "<group>"; };
+		DE9EB0F72BA43388001747D9 /* KeysignViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignViewModel.swift; sourceTree = "<group>"; };
+		DE9EB0F92BA4491B001747D9 /* CoinExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinExtension.swift; sourceTree = "<group>"; };
 		DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignPayload.swift; sourceTree = "<group>"; };
 		DEEADCF62B916676007978DE /* Solana.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Solana.swift; sourceTree = "<group>"; };
 		DEEDAEE02B8AF7EF005170E8 /* eth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = eth.swift; sourceTree = "<group>"; };
@@ -683,6 +687,7 @@
 				A6F9F7EC2B9D1F5700790258 /* CoinViewModel.swift */,
 				A6F2C54E2BA009420095C8E3 /* TokenSelectionViewModel.swift */,
 				A6CBA8ED2BA299E8008B110C /* ImportVaultViewModel.swift */,
+				DE9EB0F72BA43388001747D9 /* KeysignViewModel.swift */,
 			);
 			path = "View Models";
 			sourceTree = "<group>";
@@ -700,6 +705,7 @@
 				A65649DE2B96602700E4B329 /* TssExtension.swift */,
 				A633B11B2B99273A003D1738 /* ColorExtensions.swift */,
 				DEEFF4FC2B9835DE0015692E /* THORChainSwapChainExtension.swift */,
+				DE9EB0F92BA4491B001747D9 /* CoinExtension.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -1103,7 +1109,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */;
+			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -1272,11 +1278,13 @@
 				DEBF93972B8D5FEF002868CD /* KeysignPayload.swift in Sources */,
 				DE6DCB932B97D81C009A39D5 /* THORChainSwaps.swift in Sources */,
 				D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */,
+				DE9EB0FA2BA4491B001747D9 /* CoinExtension.swift in Sources */,
 				465B09AB2B7C840100952DD9 /* ToastView.swift in Sources */,
 				465A8D562B9E6E0B006E7457 /* SolanaRpc.swift in Sources */,
 				A65649FA2B96998500E4B329 /* EthAddressInfo.swift in Sources */,
 				DE9EB0F22BA2D97B001747D9 /* PeerDiscoveryPayload.swift in Sources */,
 				A65649E52B96602700E4B329 /* VaultExtension.swift in Sources */,
+				DE9EB0F82BA43388001747D9 /* KeysignViewModel.swift in Sources */,
 				DE9EB0F42BA309AB001747D9 /* MessagePuller.swift in Sources */,
 				049BBB622B71E8E7004C231F /* AssetItem.swift in Sources */,
 				A61BC8162BA256C600484689 /* ProgressBar.swift in Sources */,
@@ -1536,7 +1544,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.2;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.voltix.voltixApp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.voltix.voltixApp.enrique;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = auto;
@@ -1690,7 +1698,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */ = {
+		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DE49A1882B65F6DB000F3AFB /* Debug */,
