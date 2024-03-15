@@ -70,18 +70,23 @@ struct CoinCell: View {
     }
     
     var swapButton: some View {
-        Text(NSLocalizedString("swap", comment: "Swap button text").uppercased())
-            .font(.body16MenloBold)
-            .foregroundColor(.blue200)
-            .padding(.vertical, 5)
-            .frame(maxWidth: .infinity)
-            .background(Color.blue800)
-            .cornerRadius(50)
+        NavigationLink {
+            SwapCryptoView()
+        } label: {
+            Text(NSLocalizedString("swap", comment: "Swap button text").uppercased())
+                .font(.body16MenloBold)
+                .foregroundColor(.blue200)
+                .padding(.vertical, 5)
+                .frame(maxWidth: .infinity)
+                .background(Color.blue800)
+                .cornerRadius(50)
+        }
     }
     
     var sendButton: some View {
         NavigationLink {
             SendInputDetailsView(presentationStack: .constant([]), tx: tx)
+//            SendCryptoView()
         } label: {
             Text(NSLocalizedString("send", comment: "Send button text").uppercased())
                 .font(.body16MenloBold)

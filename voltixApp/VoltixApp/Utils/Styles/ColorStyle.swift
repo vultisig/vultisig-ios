@@ -25,6 +25,8 @@ extension Color {
     static let blue600 = Color(hex: "061B3A")
     static let blue800 = Color(hex: "02122B")
     
+    static let persianBlue400 = Color(hex: "2155DF")
+    
     static let turquoise600 = Color(hex: "33E6BF")
     
     static let destructive = Color(hex: "E45944")
