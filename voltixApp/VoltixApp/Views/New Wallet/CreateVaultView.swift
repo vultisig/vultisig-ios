@@ -48,9 +48,9 @@ struct CreateVaultView: View {
         .padding(40)
     }
     
-    var newVaultButton: some View {        
+    var newVaultButton: some View {
         NavigationLink {
-            SetupVaultView(presentationStack: $presentationStack)
+            SetupVaultView(tssType: .Keygen)
         } label: {
             FilledButton(title: "createNewVault")
         }

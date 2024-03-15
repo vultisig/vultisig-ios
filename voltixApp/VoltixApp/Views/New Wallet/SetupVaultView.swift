@@ -9,8 +9,8 @@ import SwiftData
 import SwiftUI
 
 struct SetupVaultView: View {
+    let tssType: TssType
     @State var vault: Vault? = nil
-    @Binding var presentationStack: [CurrentScreen]
     @Query var vaults: [Vault]
     
     var body: some View {
@@ -89,7 +89,7 @@ struct SetupVaultView: View {
     
     var startButton: some View {
         NavigationLink {
-            PeerDiscoveryView(tssType: .Keygen, vault: vault ?? Vault(name: "New Vault"))
+            PeerDiscoveryView(tssType: tssType, vault: vault ?? Vault(name: "New Vault"))
         } label: {
             FilledButton(title: "start")
         }
@@ -105,6 +105,5 @@ struct SetupVaultView: View {
 }
 
 #Preview {
-    SetupVaultView(presentationStack: .constant([]))
-        .environmentObject(ApplicationState.shared)
+    SetupVaultView(tssType: .Keygen)
 }

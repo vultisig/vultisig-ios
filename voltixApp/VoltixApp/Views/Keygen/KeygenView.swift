@@ -24,7 +24,7 @@ struct KeygenView: View {
         case KeygenFailed
     }
     
-    @State private var currentStatus = KeygenStatus.CreatingInstance
+    
     let vault: Vault
     let tssType: TssType // keygen or reshare
     let keygenCommittee: [String]
@@ -32,7 +32,7 @@ struct KeygenView: View {
     let mediatorURL: String
     let sessionID: String
     
-    @State private var keygenDone = false
+    @State private var currentStatus = KeygenStatus.CreatingInstance
     @State private var tssService: TssServiceImpl? = nil
     @State private var tssMessenger: TssMessengerImpl? = nil
     @State private var stateAccess: LocalStateAccessorImpl? = nil
@@ -76,7 +76,7 @@ struct KeygenView: View {
                                             self.context.insert(self.vault)
                                         }
                                     }
-                                    // add the vault to modelcontext
+                                    
                                     do {
                                         try self.context.save()
                                     } catch {
@@ -163,6 +163,7 @@ struct KeygenView: View {
                     self.currentStatus = .ReshareEdDSA
                     try await Task.sleep(for: .seconds(1)) // Sleep one sec to allow other parties to get in the same step
                     reshareReq.pubKey = vault.pubKeyEdDSA
+                    reshareReq.newResharePrefix = ecdsaResp.resharePrefix
                     let eddsaResp = try await tssReshare(service: tssService, req: reshareReq, keyType: .EdDSA)
                     self.vault.pubKeyEdDSA = eddsaResp.pubKey
                 }

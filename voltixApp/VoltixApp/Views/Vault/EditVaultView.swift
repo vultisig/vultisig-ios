@@ -101,13 +101,15 @@ struct EditVaultView: View {
             EditVaultCell(title: "delete", description: "deleteVault", icon: "trash.fill", isDestructive: true)
         }
     }
+
     var reshareVault: some View {
-        Button {
-            
+        NavigationLink {
+            SetupVaultView(tssType: .Reshare, vault: vault)
         } label: {
             EditVaultCell(title: "reshare", description: "reshareVault", icon: "square.and.arrow.up.fill")
         }
     }
+
     private func showDeleteAlert() {
         showAlert.toggle()
     }
