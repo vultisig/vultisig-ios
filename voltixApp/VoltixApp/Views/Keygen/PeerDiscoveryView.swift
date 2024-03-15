@@ -39,7 +39,7 @@ struct PeerDiscoveryView: View {
                     KeygenView(vault: self.vault,
                                tssType: self.tssType,
                                keygenCommittee: self.selections.map { $0 },
-                               vaultOldCommittee: self.vault.signers, // for new vault , this should be empty
+                               vaultOldCommittee: self.vault.signers.filter { selections.contains($0) },
                                mediatorURL: self.serverAddr,
                                sessionID: self.sessionID)
                 case .Failure:
@@ -81,7 +81,7 @@ struct PeerDiscoveryView: View {
                     self.vault.hexChainCode = chainCode
                 }
                 if !self.vault.localPartyID.isEmpty {
-                    self.localPartyID = self.localPartyID
+                    self.localPartyID = vault.localPartyID
                 } else {
                     self.localPartyID = Utils.getLocalDeviceIdentity()
                     self.vault.localPartyID = self.localPartyID
@@ -160,6 +160,7 @@ struct PeerDiscoveryView: View {
                 }
             }
         }
+        .scrollContentBackground(.hidden)
     }
     
     var bottomButtons: some View {

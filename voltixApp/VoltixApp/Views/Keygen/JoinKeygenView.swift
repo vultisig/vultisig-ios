@@ -110,7 +110,7 @@ struct JoinKeygenView: View {
                 KeygenView(vault: vault,
                            tssType: tssType,
                            keygenCommittee: keygenCommittee,
-                           vaultOldCommittee: oldCommittee,
+                           vaultOldCommittee: oldCommittee.filter { keygenCommittee.contains($0) },
                            mediatorURL: serviceDelegate.serverURL!,
                            sessionID: self.sessionID!)
             } else {
