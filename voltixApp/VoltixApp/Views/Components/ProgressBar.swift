@@ -18,6 +18,7 @@ struct ProgressBar: View {
             }
         }
         .padding(.horizontal, 16)
+        .frame(height: 10)
     }
     
     var base: some View {
