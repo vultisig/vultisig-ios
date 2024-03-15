@@ -51,9 +51,12 @@ struct MainNavigationStack: View {
                             SwapVerifyView(presentationStack: $presentationStack)
                         case .swapDone:
                             SwapDoneView(presentationStack: $presentationStack)
-                        // NEW UI
+						// NEW UI
 //                        case .vaultSelection:
-//                            VaultSelectionView(presentationStack: $presentationStack)
+//                            HomeView()
+                        // OLD UI
+                        case .vaultSelection:
+                            VaultSelectionView(presentationStack: $presentationStack)
                         case .joinKeygen(let vault):
                             JoinKeygenView(vault: vault)
                         case .KeysignDiscovery(let keysignPayload):
