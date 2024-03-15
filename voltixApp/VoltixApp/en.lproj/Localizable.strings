@@ -45,6 +45,8 @@
 "skip" = "Skip";
 "from" = "From";
 "to" = "To";
+"fees" = "Fees";
+"time" = "Time";
 "amount" = "Amount";
 "gas(auto)" = "Gas (auto)";
 "enterPreviousVault" = "Enter your previously created vault share";

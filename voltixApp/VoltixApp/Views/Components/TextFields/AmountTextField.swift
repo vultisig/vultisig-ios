@@ -9,6 +9,7 @@ import SwiftUI
 
 struct AmountTextField: View {
     @Binding var amount: String
+    var showButton = true
     
     var body: some View {
         ZStack(alignment: .trailing) {
@@ -21,7 +22,9 @@ struct AmountTextField: View {
                 TextField(NSLocalizedString("enterAmount", comment: "").capitalized, text: $amount)
                     .submitLabel(.next)
                 
-                maxButton
+                if showButton {
+                    maxButton
+                }
             }
         }
         .font(.body12Menlo)

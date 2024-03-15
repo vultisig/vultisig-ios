@@ -44,23 +44,7 @@ struct SendCryptoDetailsView: View {
     }
     
     var coinSelector: some View {
-        HStack(spacing: 12) {
-            Image("eth")
-                .resizable()
-                .frame(width: 32, height: 32)
-                .cornerRadius(100)
-            
-            Text("Ethereum")
-            Spacer()
-            Text("23.2")
-            Image(systemName: "chevron.down")
-        }
-        .font(.body16Menlo)
-        .foregroundColor(.neutral0)
-        .frame(height: 48)
-        .padding(.horizontal, 12)
-        .background(Color.blue600)
-        .cornerRadius(10)
+        TokenSelectorDropdown(title: "Ethereum", imageName: "eth", amount: "23.3")
     }
     
     var fromField: some View {
