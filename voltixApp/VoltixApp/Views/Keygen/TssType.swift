@@ -8,5 +8,4 @@ import Foundation
 enum TssType {
     case Keygen
     case Reshare
-    case Keysign
 }

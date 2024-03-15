@@ -32,7 +32,7 @@ struct MainNavigationStack: View {
                         case .newWalletInstructions:
                             NewWalletInstructions(presentationStack: $presentationStack)
                         case .peerDiscovery(let vault, let tssType):
-                            PeerDiscoveryView(tssType: tssType, vault: vault, presentationStack: $presentationStack)
+                            PeerDiscoveryView(tssType: tssType, vault: vault)
                         case .vaultAssets(let tx):
                             VaultAssetsView(presentationStack: $presentationStack, tx: tx)
                         case .menu:
@@ -58,7 +58,7 @@ struct MainNavigationStack: View {
 //                        case .vaultSelection:
 //                            VaultSelectionView(presentationStack: $presentationStack)
                         case .joinKeygen(let vault):
-                            JoinKeygenView(vault: vault, presentationStack: $presentationStack)
+                            JoinKeygenView(vault: vault)
                         case .KeysignDiscovery(let keysignPayload):
                             KeysignDiscoveryView(presentationStack: $presentationStack, keysignPayload: keysignPayload)
                         case .JoinKeysign:

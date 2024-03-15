@@ -3,15 +3,12 @@
 //  VoltixApp
 //
 
-import CoreImage
-import CoreImage.CIFilterBuiltins
 import Mediator
 import OSLog
-import Security
 import SwiftUI
 
-private let logger = Logger(subsystem: "peers-discory", category: "communication")
 struct PeerDiscoveryView: View {
+    private let logger = Logger(subsystem: "peers-discory", category: "communication")
     let tssType: TssType
     let vault: Vault
     enum PeerDiscoveryStatus {
@@ -19,17 +16,16 @@ struct PeerDiscoveryView: View {
         case Keygen
         case Failure
     }
-    
-    @Binding var presentationStack: [CurrentScreen]
+        
     @State private var selections = Set<String>()
     private let mediator = Mediator.shared
     // it should be ok to hardcode here , as this view start the mediator server itself
     private let serverAddr = "http://127.0.0.1:8080"
-    private let sessionID = UUID().uuidString
+    @State var sessionID = ""
     @State private var currentState = PeerDiscoveryStatus.WaitingForDevices
     @State private var localPartyID = ""
     @StateObject var participantDiscovery = ParticipantDiscovery()
-    private let serviceName = "VoltixApp-" + Int.random(in: 1 ... 1000).description
+    @State var serviceName = ""
     @State private var errorMessage = ""
     
     var body: some View {
@@ -40,15 +36,14 @@ struct PeerDiscoveryView: View {
                 case .WaitingForDevices:
                     self.waitingForDevices
                 case .Keygen:
-                    KeygenView(presentationStack: self.$presentationStack,
-                               vault: self.vault,
+                    KeygenView(vault: self.vault,
                                tssType: self.tssType,
                                keygenCommittee: self.selections.map { $0 },
-                               oldParties: self.vault.signers, // for new vault , this should be empty
+                               vaultOldCommittee: self.vault.signers, // for new vault , this should be empty
                                mediatorURL: self.serverAddr,
                                sessionID: self.sessionID)
                 case .Failure:
-                    Text(errorMessage)
+                    Text(self.errorMessage)
                         .font(.body15MenloBold)
                         .multilineTextAlignment(.center)
                         .foregroundColor(.red)
@@ -67,13 +62,19 @@ struct PeerDiscoveryView: View {
             }
             .task {
                 self.mediator.start(name: self.serviceName)
-                logger.info("mediator server started")
+                self.logger.info("mediator server started")
                 self.startSession()
                 self.participantDiscovery.getParticipants(serverAddr: self.serverAddr, sessionID: self.sessionID)
             }.onAppear {
+                if self.sessionID.isEmpty {
+                    self.sessionID = UUID().uuidString
+                }
+                if self.serviceName.isEmpty {
+                    self.serviceName = "VoltixApp-" + Int.random(in: 1 ... 1000).description
+                }
                 if self.vault.hexChainCode.isEmpty {
                     guard let chainCode = Utils.getChainCode() else {
-                        logger.error("fail to get chain code")
+                        self.logger.error("fail to get chain code")
                         self.currentState = .Failure
                         return
                     }
@@ -87,7 +88,7 @@ struct PeerDiscoveryView: View {
                 }
             }
             .onDisappear {
-                logger.info("mediator server stopped")
+                self.logger.info("mediator server stopped")
                 self.participantDiscovery.stop()
                 self.mediator.stop()
             }
@@ -185,27 +186,22 @@ struct PeerDiscoveryView: View {
             case .Reshare:
                 let reshareMsg = ReshareMessage(sessionID: sessionID, hexChainCode: vault.hexChainCode, serviceName: self.serviceName, pubKeyECDSA: self.vault.pubKeyECDSA, oldParties: self.vault.signers)
                 data = try jsonEncoder.encode(PeerDiscoveryPayload.Reshare(reshareMsg))
-            default:
-                logger.error("invalid tss type")
-                self.currentState = .Failure
-                return Image(systemName: "xmark")
             }
             return Utils.getQrImage(data: data, size: size)
         } catch {
-            logger.error("fail to encode keygen message to json,error:\(error.localizedDescription)")
+            self.logger.error("fail to encode keygen message to json,error:\(error.localizedDescription)")
             return Image(systemName: "xmark")
         }
     }
     
     private func startSession() {
         let urlString = "\(self.serverAddr)/\(self.sessionID)"
-        logger.info("start session:\(urlString)")
         let body = [self.localPartyID]
         Utils.sendRequest(urlString: urlString, method: "POST", body: body) { success in
             if success {
-                logger.info("Started session successfully.")
+                self.logger.info("Started session successfully.")
             } else {
-                logger.info("Failed to start session.")
+                self.logger.info("Failed to start session.")
             }
         }
     }
@@ -213,11 +209,11 @@ struct PeerDiscoveryView: View {
     private func startKeygen(allParticipants: [String]) {
         let urlString = "\(self.serverAddr)/start/\(self.sessionID)"
         Utils.sendRequest(urlString: urlString, method: "POST", body: allParticipants) { _ in
-            logger.info("kicked off keygen successfully")
+            self.logger.info("kicked off keygen successfully")
         }
     }
 }
 
 #Preview {
-    PeerDiscoveryView(tssType: .Keygen, vault: Vault.example, presentationStack: .constant([]))
+    PeerDiscoveryView(tssType: .Keygen, vault: Vault.example)
 }

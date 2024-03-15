@@ -9,9 +9,8 @@ import SwiftData
 import SwiftUI
 
 struct SetupVaultView: View {
+    @State var vault: Vault? = nil
     @Binding var presentationStack: [CurrentScreen]
-    @Environment(\.modelContext) private var modelContext
-    @EnvironmentObject var appState: ApplicationState
     @Query var vaults: [Vault]
     
     var body: some View {
@@ -28,6 +27,11 @@ struct SetupVaultView: View {
             }
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationHelpButton()
+            }
+        }
+        .onAppear {
+            if vault == nil {
+                vault = Vault(name: "Vault #\(vaults.count + 1)")
             }
         }
     }
@@ -85,7 +89,7 @@ struct SetupVaultView: View {
     
     var startButton: some View {
         NavigationLink {
-            PeerDiscoveryView(tssType: .Keygen, vault: Vault(name: "Vault #\(vaults.count + 1)"), presentationStack: $presentationStack)
+            PeerDiscoveryView(tssType: .Keygen, vault: vault ?? Vault(name: "New Vault"))
         } label: {
             FilledButton(title: "start")
         }
@@ -93,7 +97,7 @@ struct SetupVaultView: View {
     
     var joinButton: some View {
         NavigationLink {
-            JoinKeygenView(vault: Vault(name: "Vault #\(vaults.count + 1)"), presentationStack: $presentationStack)
+            JoinKeygenView(vault: vault ?? Vault(name: "New Vault"))
         } label: {
             OutlineButton(title: "join")
         }

@@ -9,7 +9,7 @@ import WalletCore
 @Model
 final class Vault: ObservableObject, Codable {
     @Attribute(.unique) var name: String
-    var signers: [String] = [String]()
+    var signers: [String] = []
     var createdAt: Date = Date.now
     var pubKeyECDSA: String = ""
     var pubKeyEdDSA: String = ""
@@ -19,6 +19,7 @@ final class Vault: ObservableObject, Codable {
     // it is important to record the localPartID of the vault, when the vault is created, the local party id has been record as part of it's local keyshare , and keygen committee
     // thus , when user change their device name , or if they lost the original device , and restore the keyshare to a new device , keysign can still work
     var localPartyID: String = ""
+    var resharePrefix: String? = nil
     
     var coins = [Coin]()
     
@@ -31,6 +32,7 @@ final class Vault: ObservableObject, Codable {
         case hexChainCode
         case keyshares
         case localPartyID
+        case resharePrefix
     }
     
     required init(from decoder: Decoder) throws {
@@ -43,13 +45,14 @@ final class Vault: ObservableObject, Codable {
         hexChainCode = try container.decode(String.self, forKey: .hexChainCode)
         keyshares = try container.decode([KeyShare].self, forKey: .keyshares)
         localPartyID = try container.decode(String.self, forKey: .localPartyID)
+        resharePrefix = try container.decodeIfPresent(String.self, forKey: .resharePrefix)
     }
     
     init(name: String) {
         self.name = name
     }
     
-    init(name: String, signers: [String], pubKeyECDSA: String, pubKeyEdDSA: String, keyshares: [KeyShare], localPartyID: String, hexChainCode: String) {
+    init(name: String, signers: [String], pubKeyECDSA: String, pubKeyEdDSA: String, keyshares: [KeyShare], localPartyID: String, hexChainCode: String, resharePrefix: String?) {
         self.name = name
         self.signers = signers
         createdAt = Date.now
@@ -58,6 +61,7 @@ final class Vault: ObservableObject, Codable {
         self.keyshares = keyshares
         self.localPartyID = localPartyID
         self.hexChainCode = hexChainCode
+        self.resharePrefix = resharePrefix
     }
     
     func encode(to encoder: Encoder) throws {
@@ -70,6 +74,7 @@ final class Vault: ObservableObject, Codable {
         try container.encode(hexChainCode, forKey: .hexChainCode)
         try container.encode(keyshares, forKey: .keyshares)
         try container.encode(localPartyID, forKey: .localPartyID)
+        try container.encodeIfPresent(resharePrefix, forKey: .resharePrefix)
     }
     
     func addKeyshare(pubkey: String, keyshare: String) {
@@ -89,5 +94,5 @@ final class Vault: ObservableObject, Codable {
         }
     }
     
-    static let example = Vault(name: "Bitcoin", signers: [], pubKeyECDSA: "ECDSAKey", pubKeyEdDSA: "EdDSAKey", keyshares: [], localPartyID: "partyID", hexChainCode: "hexCode")
+    static let example = Vault(name: "Bitcoin", signers: [], pubKeyECDSA: "ECDSAKey", pubKeyEdDSA: "EdDSAKey", keyshares: [], localPartyID: "partyID", hexChainCode: "hexCode", resharePrefix: nil)
 }

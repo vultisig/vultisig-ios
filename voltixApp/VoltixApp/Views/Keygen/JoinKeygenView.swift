@@ -22,12 +22,11 @@ struct JoinKeygenView: View {
     }
     
     @State var tssType: TssType = .Keygen
-    @Binding var presentationStack: [CurrentScreen]
     @State private var isShowingScanner = false
     @State private var sessionID: String? = nil
     @State private var hexChainCode: String = ""
-    @ObservedObject private var serviceDelegate = ServiceDelegate()
-    @State private var netService = NetService(domain: "local.", type: "_http._tcp.", name: "VoltixApp")
+    @StateObject private var serviceDelegate = ServiceDelegate()
+    @State private var netService: NetService? = nil
     @State private var currentStatus = JoinKeygenStatus.DiscoverSessionID
     @State private var keygenCommittee = [String]()
     @State var oldCommittee = [String]()
@@ -108,11 +107,10 @@ struct JoinKeygenView: View {
     var keygenStarted: some View {
         HStack {
             if serviceDelegate.serverURL != nil && self.sessionID != nil {
-                KeygenView(presentationStack: $presentationStack,
-                           vault: vault,
+                KeygenView(vault: vault,
                            tssType: tssType,
                            keygenCommittee: keygenCommittee,
-                           oldParties: oldCommittee,
+                           vaultOldCommittee: oldCommittee,
                            mediatorURL: serviceDelegate.serverURL!,
                            sessionID: self.sessionID!)
             } else {
@@ -146,7 +144,6 @@ struct JoinKeygenView: View {
             }) {
                 scanButton
             }
-            
         }
     }
     
@@ -180,8 +177,8 @@ struct JoinKeygenView: View {
             .onAppear {
                 logger.info("Start to discover service")
                 self.netService = NetService(domain: "local.", type: "_http._tcp.", name: self.serviceName)
-                netService.delegate = self.serviceDelegate
-                netService.resolve(withTimeout: 10)
+                netService?.delegate = self.serviceDelegate
+                netService?.resolve(withTimeout: 10)
             }
     }
     
@@ -329,6 +326,6 @@ final class ServiceDelegate: NSObject, NetServiceDelegate, ObservableObject {
                      
 struct JoinKeygenView_Previews: PreviewProvider {
     static var previews: some View {
-        JoinKeygenView(vault: Vault.example, presentationStack: .constant([]))
+        JoinKeygenView(vault: Vault.example)
     }
 }
