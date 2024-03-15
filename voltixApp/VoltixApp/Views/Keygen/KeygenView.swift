@@ -58,33 +58,37 @@ struct KeygenView: View {
                         case .ReshareEdDSA:
                             StatusText(status: NSLocalizedString("reshareEdDSA", comment: "Resharing EdDSA KEY"))
                         case .KeygenFinished:
-                            Text("DONE").onAppear {
-                                if let stateAccess {
-                                    self.vault.keyshares = stateAccess.keyshares
-                                }
-                                switch tssType {
-                                case .Keygen:
-                                    self.context.insert(self.vault)
-                                case .Reshare:
-                                    // if local party is not in the old committee , then he is the new guy , need to add the vault
-                                    // otherwise , they previously have the vault
-                                    if !vaultOldCommittee.contains(vault.localPartyID) {
+                            Text("DONE")
+                                .font(.body15MenloBold)
+                                .foregroundColor(.neutral0)
+                                .multilineTextAlignment(.center)
+                                .onAppear {
+                                    if let stateAccess {
+                                        self.vault.keyshares = stateAccess.keyshares
+                                    }
+                                    switch tssType {
+                                    case .Keygen:
                                         self.context.insert(self.vault)
+                                    case .Reshare:
+                                        // if local party is not in the old committee , then he is the new guy , need to add the vault
+                                        // otherwise , they previously have the vault
+                                        if !vaultOldCommittee.contains(vault.localPartyID) {
+                                            self.context.insert(self.vault)
+                                        }
+                                    }
+                                    // add the vault to modelcontext
+                                    do {
+                                        try self.context.save()
+                                    } catch {
+                                        logger.error("Failed to save vault to model context")
+                                    }
+                                
+                                    Task {
+                                        // when user didn't touch it for 5 seconds , automatically goto home screen
+                                        try await Task.sleep(for: .seconds(5)) // Back off 5s
+                                        isLinkActive = true
                                     }
                                 }
-                                // add the vault to modelcontext
-                                do {
-                                    try self.context.save()
-                                } catch {
-                                    logger.error("Failed to save vault to model context")
-                                }
-                                
-                                Task {
-                                    // when user didn't touch it for 5 seconds , automatically goto home screen
-                                    try await Task.sleep(for: .seconds(5)) // Back off 5s
-                                    isLinkActive = true
-                                }
-                            }
                             
                         case .KeygenFailed:
                             keygenFailedView

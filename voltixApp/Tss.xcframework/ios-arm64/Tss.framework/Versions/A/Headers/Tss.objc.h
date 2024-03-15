@@ -157,6 +157,7 @@
 @property (nonatomic) NSString* _Nonnull chainCodeHex;
 @property (nonatomic) NSString* _Nonnull oldParties;
 @property (nonatomic) NSString* _Nonnull resharePrefix;
+@property (nonatomic) NSString* _Nonnull newResharePrefix;
 // skipped method ReshareRequest.GetNewParties with unsupported parameter or return types
 
 // skipped method ReshareRequest.GetOldParties with unsupported parameter or return types

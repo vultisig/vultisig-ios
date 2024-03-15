@@ -1,14 +1,14 @@
-    //
-    //  WifiBar.swift
-    //  VoltixApp
-    //
+//
+//  WifiBar.swift
+//  VoltixApp
+//
 
 import SwiftUI
 
 struct WifiBar: View {
     var body: some View {
         HStack(spacing: 25) {
-            ZStack() {
+            ZStack {
                 Image(systemName: "wifi")
                     .resizable()
                     .frame(width: 36, height: 29)
@@ -18,9 +18,13 @@ struct WifiBar: View {
                 .lineLimit(nil)
                 .fixedSize(horizontal: false, vertical: /*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
                 .lineSpacing(5)
+                .font(.body15MenloBold)
+                .foregroundColor(.neutral0)
+                .multilineTextAlignment(.center)
         }
+
         .padding(EdgeInsets(top: 0, leading: 10, bottom: 0, trailing: 0))
-        .frame(height: 71);
+        .frame(height: 71)
     }
 }
 

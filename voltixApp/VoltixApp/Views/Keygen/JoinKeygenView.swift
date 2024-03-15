@@ -7,9 +7,8 @@ import Network
 import OSLog
 import SwiftUI
 
-private let logger = Logger(subsystem: "join-committee", category: "communication")
-
 struct JoinKeygenView: View {
+    private let logger = Logger(subsystem: "join-keygen", category: "communication")
     let vault: Vault
     
     enum JoinKeygenStatus {
@@ -266,7 +265,7 @@ struct JoinKeygenView: View {
     }
     
     private func handleScan(result: Result<ScanResult, ScanError>) {
-        defer{
+        defer {
             isShowingScanner = false
         }
         switch result {
@@ -319,6 +318,7 @@ struct JoinKeygenView: View {
 }
 
 final class ServiceDelegate: NSObject, NetServiceDelegate, ObservableObject {
+    private let logger = Logger(subsystem: "service-delegate", category: "communication")
     @Published var serverURL: String?
     
     public func netServiceDidResolveAddress(_ sender: NetService) {
