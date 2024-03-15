@@ -30,7 +30,7 @@ struct NavigationButtons {
     
     static func qrCodeButton(presentationStack: Binding<[CurrentScreen]>) -> some View {
         Button(action: {
-            presentationStack.wrappedValue.append(.joinKeygen)
+            //presentationStack.wrappedValue.append(.joinKeygen)
         }) {
             Image(systemName: "qrcode.viewfinder")
         }.buttonStyle(PlainButtonStyle())

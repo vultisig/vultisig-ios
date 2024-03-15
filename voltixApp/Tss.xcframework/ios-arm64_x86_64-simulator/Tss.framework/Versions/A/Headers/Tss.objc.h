@@ -17,6 +17,8 @@
 @class TssKeysignResponse;
 @class TssLocalState;
 @class TssMessageFromTss;
+@class TssReshareRequest;
+@class TssReshareResponse;
 @class TssServiceImpl;
 @protocol TssLocalStateAccessor;
 @class TssLocalStateAccessor;
@@ -125,6 +127,7 @@
 
 @property (nonatomic) NSString* _Nonnull localPartyKey;
 @property (nonatomic) NSString* _Nonnull chainCodeHex;
+@property (nonatomic) NSString* _Nonnull resharePrefix;
 @end
 
 @interface TssMessageFromTss : NSObject <goSeqRefInterface> {
@@ -135,7 +138,40 @@
 - (nonnull instancetype)init;
 @property (nonatomic) NSData* _Nullable wireBytes;
 @property (nonatomic) NSString* _Nonnull from;
+@property (nonatomic) NSString* _Nonnull to;
 @property (nonatomic) BOOL isBroadcast;
+@end
+
+/**
+ * ReshareRequest is used to request a reshare
+ */
+@interface TssReshareRequest : NSObject <goSeqRefInterface> {
+}
+@property(strong, readonly) _Nonnull id _ref;
+
+- (nonnull instancetype)initWithRef:(_Nonnull id)ref;
+- (nonnull instancetype)init;
+@property (nonatomic) NSString* _Nonnull pubKey;
+@property (nonatomic) NSString* _Nonnull localPartyID;
+@property (nonatomic) NSString* _Nonnull newParties;
+@property (nonatomic) NSString* _Nonnull chainCodeHex;
+@property (nonatomic) NSString* _Nonnull oldParties;
+@property (nonatomic) NSString* _Nonnull resharePrefix;
+@property (nonatomic) NSString* _Nonnull newResharePrefix;
+// skipped method ReshareRequest.GetNewParties with unsupported parameter or return types
+
+// skipped method ReshareRequest.GetOldParties with unsupported parameter or return types
+
+@end
+
+@interface TssReshareResponse : NSObject <goSeqRefInterface> {
+}
+@property(strong, readonly) _Nonnull id _ref;
+
+- (nonnull instancetype)initWithRef:(_Nonnull id)ref;
+- (nonnull instancetype)init;
+@property (nonatomic) NSString* _Nonnull pubKey;
+@property (nonatomic) NSString* _Nonnull resharePrefix;
 @end
 
 @interface TssServiceImpl : NSObject <goSeqRefInterface, TssService> {
@@ -152,6 +188,8 @@
 - (TssKeygenResponse* _Nullable)keygenEdDSA:(TssKeygenRequest* _Nullable)req error:(NSError* _Nullable* _Nullable)error;
 - (TssKeysignResponse* _Nullable)keysignECDSA:(TssKeysignRequest* _Nullable)req error:(NSError* _Nullable* _Nullable)error;
 - (TssKeysignResponse* _Nullable)keysignEdDSA:(TssKeysignRequest* _Nullable)req error:(NSError* _Nullable* _Nullable)error;
+- (TssReshareResponse* _Nullable)reshareECDSA:(TssReshareRequest* _Nullable)req error:(NSError* _Nullable* _Nullable)error;
+- (TssReshareResponse* _Nullable)resharingEdDSA:(TssReshareRequest* _Nullable)req error:(NSError* _Nullable* _Nullable)error;
 @end
 
 // skipped function Contains with unsupported parameter or return types

@@ -5,13 +5,12 @@
 //  Created by Amol Kumar on 2024-03-07.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct SetupVaultView: View {
-    @Binding var presentationStack: [CurrentScreen]
-    @Environment(\.modelContext) private var modelContext
-    @EnvironmentObject var appState: ApplicationState
+    let tssType: TssType
+    @State var vault: Vault? = nil
     @Query var vaults: [Vault]
     
     var body: some View {
@@ -28,6 +27,11 @@ struct SetupVaultView: View {
             }
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationHelpButton()
+            }
+        }
+        .onAppear {
+            if vault == nil {
+                vault = Vault(name: "Vault #\(vaults.count + 1)")
             }
         }
     }
@@ -84,35 +88,22 @@ struct SetupVaultView: View {
     }
     
     var startButton: some View {
-        Button {
-            startNetwork()
+        NavigationLink {
+            PeerDiscoveryView(tssType: tssType, vault: vault ?? Vault(name: "New Vault"))
         } label: {
             FilledButton(title: "start")
         }
     }
     
     var joinButton: some View {
-        Button {
-            joinNetwork()
+        NavigationLink {
+            JoinKeygenView(vault: vault ?? Vault(name: "New Vault"))
         } label: {
             OutlineButton(title: "join")
         }
     }
-    
-    private func startNetwork() {
-        let vault = Vault(name: "Vault #\(vaults.count + 1)")
-        appState.creatingVault = vault
-        self.presentationStack.append(.peerDiscovery)
-    }
-    
-    private func joinNetwork() {
-        let vault = Vault(name: "Vault #\(vaults.count + 1)")
-        appState.creatingVault = vault
-        self.presentationStack.append(.joinKeygen)
-    }
 }
 
 #Preview {
-    SetupVaultView(presentationStack: .constant([]))
-        .environmentObject(ApplicationState.shared)
+    SetupVaultView(tssType: .Keygen)
 }

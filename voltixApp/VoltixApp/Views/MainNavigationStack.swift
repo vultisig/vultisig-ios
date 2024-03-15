@@ -1,7 +1,7 @@
-    //
-    //  ContentView.swift
-    //  VoltixApp
-    //
+//
+//  ContentView.swift
+//  VoltixApp
+//
 
 import SwiftData
 import SwiftUI
@@ -10,29 +10,29 @@ struct MainNavigationStack: View {
     @Environment(\.modelContext) private var modelContext
     @Query var vaults: [Vault]
     @EnvironmentObject var appState: ApplicationState
-        // Push/pop onto this array to control presentation overlay globally
+    // Push/pop onto this array to control presentation overlay globally
     @State private var presentationStack: [CurrentScreen] = []
-    
+
     // TODO: Remove this after implementing support for both light and dark mode.
     init() {
         UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: UIColor.white]
     }
-    
+
     var body: some View {
         NavigationStack(path: $presentationStack) {
             VaultSelectionView(presentationStack: $presentationStack)
                 .navigationDestination(for: CurrentScreen.self) { screen in
                     switch screen {
                         case .welcome:
-                        WelcomeView(presentationStack: $presentationStack)
+                            WelcomeView(presentationStack: $presentationStack)
                         case .startScreen:
                             StartView(presentationStack: $presentationStack)
                         case .importWallet:
                             ImportWalletView(presentationStack: $presentationStack)
                         case .newWalletInstructions:
                             NewWalletInstructions(presentationStack: $presentationStack)
-                        case .peerDiscovery:
-                            PeerDiscoveryView(presentationStack: $presentationStack)
+                        case .peerDiscovery(let vault, let tssType):
+                            PeerDiscoveryView(tssType: tssType, vault: vault)
                         case .vaultAssets(let tx):
                             VaultAssetsView(presentationStack: $presentationStack, tx: tx)
                         case .menu:
@@ -53,18 +53,15 @@ struct MainNavigationStack: View {
                             SwapDoneView(presentationStack: $presentationStack)
                         // NEW UI
 //                        case .vaultSelection:
-//                            HomeView()
-                        // OLD UI
-                        case .vaultSelection:
-                            VaultSelectionView(presentationStack: $presentationStack)
-                        case .joinKeygen:
-                            JoinKeygenView(presentationStack: $presentationStack)
+//                            VaultSelectionView(presentationStack: $presentationStack)
+                        case .joinKeygen(let vault):
+                            JoinKeygenView(vault: vault)
                         case .KeysignDiscovery(let keysignPayload):
-                            KeysignDiscoveryView(presentationStack: $presentationStack, keysignPayload: keysignPayload)
+                            KeysignDiscoveryView(vault: appState.currentVault ?? Vault.example, keysignPayload: keysignPayload)
                         case .JoinKeysign:
-                            JoinKeysignView(presentationStack: $presentationStack)
+                            JoinKeysignView(vault: appState.currentVault ?? Vault.example)
                         case .bitcoinTransactionsListView(let tx):
-							UTXOTransactionListView(presentationStack: $presentationStack, tx: tx)
+                            UTXOTransactionListView(presentationStack: $presentationStack, tx: tx)
                         case .ethereumTransactionsListView:
                             EthereumTransactionListView(presentationStack: $presentationStack)
                         case .erc20TransactionsListView(let contractAddress):
@@ -77,7 +74,7 @@ struct MainNavigationStack: View {
             if vaults.count == 0 {
                 self.presentationStack = [CurrentScreen.welcome]
             }
-                // when current vault is nil , and there are already vaults, then just go to vault selection view
+            // when current vault is nil , and there are already vaults, then just go to vault selection view
             if appState.currentVault == nil && vaults.count > 0 {
                 self.presentationStack.append(CurrentScreen.vaultSelection)
             }
@@ -85,8 +82,8 @@ struct MainNavigationStack: View {
     }
 }
 
-//#Preview {
+// #Preview {
 //    MainNavigationStack()
 //        .modelContainer(for: Vault.self, inMemory: true)
 //        .environmentObject(ApplicationState.shared)
-//}
+// }

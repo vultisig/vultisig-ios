@@ -1,10 +1,10 @@
-/* 
-  Localizable.strings
-  VoltixApp
-
-  Created by Amol Kumar on 2024-03-04.
-  
-*/
+/*
+ Localizable.strings
+ VoltixApp
+ 
+ Created by Amol Kumar on 2024-03-04.
+ 
+ */
 "secureCryptoVault" = "SECURE CRYPTO VAULT";
 "thisDevice" = "THIS DEVICE:";
 "homeViewDescription" = "TWO FACTOR AUTHENTICATION\nSECURE, TRUSTED DEVICES\nFULLY SELF-CUSTODIAL\nNO TRACKING, NO REGISTRATION\nFULLY OPEN-SOURCE\nAUDITED";
@@ -41,9 +41,48 @@
 "editVault" = "Edit Vault";
 "addressCopied" = "Address copied";
 "ok" = "OK";
+"next" = "Next";
+"skip" = "Skip";
+"from" = "From";
+"to" = "To";
+"fees" = "Fees";
+"time" = "Time";
+"amount" = "Amount";
+"gas(auto)" = "Gas (auto)";
 "enterPreviousVault" = "Enter your previously created vault share";
 "uploadFile" = "Upload file, text or image";
 "devicesOnSameWifi" = "Keep devices on the same WiFi Network with VOLTIX open";
 "need3Devices" = "You need 3 devices";
 "chooseTokens" = "Choose Tokens";
 "chooseChains" = "Choose Chains";
+"enterAddress" = "Enter Address";
+"enterAmount" = "Enter Amount";
+"reshare" = "Reshare";
+"reshareVault" = "Reshare vault with a new committee";
+"pairWithOtherDevices" = "Pair with other devices:";
+"scanQrCode" = "Scan QR Code";
+"mainDevice" = "Main Device";
+"joinKeygen" = "JOIN KEYGEN / RESHARE";
+"failToStartKeygen" = "Unable to start key generation due to missing information";
+"scanQRCodeJoinKeygen" = "Scan the barcode on another VoltixApp device to start.";
+"discoveringMediator" = "Discovering mediator service, please wait...";
+"joiningKeygen" = "Joining key generation / share process, please wait...";
+"waitingForKeygenToStart" = "Waiting for key generation to start, please be patient...";
+"preparingVault" = "PREPARING VAULT...";
+"generatingECDSA" = "GENERATING ECDSA KEY";
+"generatingEdDSA" = "GENERATING EdDSA KEY";
+"reshareECDSA" = "Resharing ECDSA KEY";
+"reshareEdDSA" = "Resharing EdDSA KEY";
+"keygenFailed" = "Key generation failed";
+"reshareFailed" = "Resharing key failed";
+"joinKeyshare" = "Join Keyshare";
+"lookingForDevices" = "Looking for devices... ";
+"sign" = "Sign";
+"failStartKeysign" = "fail to start keysign";
+"waitingForKeySignStart" = "Waiting for the signing process to begin...";
+"keysignFail" = "The keysign process could not be started. Please check your settings and try again.";
+"joinKeySign" = "Join keysign";
+"creatingTssInstance" = "CREATING TSS INSTANCE...";
+"signingWithECDSA" = "SIGNING USING ECDSA KEY... ";
+"signingWithEdDSA" = "SIGNING USING EdDSA KEY... ";
+"keysignFinished" = "KEYSIGN FINISHED...";

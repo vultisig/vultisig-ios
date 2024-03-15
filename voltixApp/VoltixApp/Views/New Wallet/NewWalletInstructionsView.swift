@@ -1,7 +1,7 @@
-    //
-    //  NewWalletInstructions.swift
-    //  VoltixApp
-    //
+//
+//  NewWalletInstructions.swift
+//  VoltixApp
+//
 
 import SwiftData
 import SwiftUI
@@ -11,14 +11,14 @@ struct NewWalletInstructions: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var appState: ApplicationState
     @Query var vaults: [Vault]
-    
+
     var body: some View {
         VStack {
             VStack {
                 Text("YOU NEED THREE DEVICES.")
                     .fontWeight(.medium)
                 Spacer()
-                VStack{
+                VStack {
                     DeviceView(
                         number: "1.circle",
                         description: "MAIN",
@@ -41,23 +41,22 @@ struct NewWalletInstructions: View {
                 Spacer()
                 WifiBar()
                 Spacer()
-                HStack{
+                HStack {
                     Button("PAIR") {
                         let vault = Vault(name: "Vault #\(vaults.count + 1)")
-                        appState.creatingVault = vault
-                        self.presentationStack.append(.joinKeygen)
+                        self.presentationStack.append(.joinKeygen(vault))
                     }
                     .fontWeight(.black)
                     .font(.title30MenloBold)
                     .buttonStyle(PlainButtonStyle())
                     Spacer()
-                    
+
                     Button(action: {
                         let vault = Vault(name: "Vault #\(vaults.count + 1)")
                         appState.creatingVault = vault
-                        self.presentationStack.append(.peerDiscovery)
+                        self.presentationStack.append(.peerDiscovery(vault: vault, tssType: .Keygen))
                     }) {
-                        HStack() {
+                        HStack {
                             Text("START")
                                 .font(.title30MenloBlack)
                             Image(systemName: "chevron.right")
@@ -66,7 +65,7 @@ struct NewWalletInstructions: View {
                         }
                     }
                     .buttonStyle(PlainButtonStyle())
-                    
+
                 }.padding()
             }
             .navigationTitle("SETUP")
