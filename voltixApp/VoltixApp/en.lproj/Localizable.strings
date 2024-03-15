@@ -41,6 +41,8 @@
 "editVault" = "Edit Vault";
 "addressCopied" = "Address copied";
 "ok" = "OK";
+"next" = "Next";
+"skip" = "Skip";
 "enterPreviousVault" = "Enter your previously created vault share";
 "uploadFile" = "Upload file, text or image";
 "devicesOnSameWifi" = "Keep devices on the same WiFi Network with VOLTIX open";
