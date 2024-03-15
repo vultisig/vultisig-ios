@@ -7,7 +7,7 @@
 
 import Foundation
 
-class Price: Codable {
+class ETHInfoPrice: Codable {
     let rate: Double
     let diff: Double
     let diff7d: Double

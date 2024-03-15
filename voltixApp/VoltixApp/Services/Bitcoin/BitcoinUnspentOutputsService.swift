@@ -2,7 +2,7 @@ import Foundation
 import SwiftUI
 
 @MainActor
-public class UnspentOutputsService: ObservableObject {
+public class BitcoinUnspentOutputsService: ObservableObject {
     @Published var walletData: BitcoinTransaction?
     @Published var errorMessage: String?
     

@@ -65,7 +65,7 @@ struct EthereumTransactionListView: View {
 }
 
 struct EthTransactionRow: View {
-    let transaction: TransactionDetail
+    let transaction: EtherscanAPITransactionDetail
     let myAddress: String
     
     var body: some View {
