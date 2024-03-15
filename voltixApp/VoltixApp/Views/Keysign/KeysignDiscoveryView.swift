@@ -21,132 +21,81 @@ struct KeysignDiscoveryView: View {
     @State private var selections = Set<String>()
     private let mediator = Mediator.shared
     private let serverAddr = "http://127.0.0.1:8080"
-    private let sessionID = UUID().uuidString
+    @State var sessionID = ""
     @State private var currentState = KeysignDiscoveryStatus.WaitingForDevices
     @State private var localPartyID = ""
     let keysignPayload: KeysignPayload
     @State private var keysignMessages = [String]()
     @StateObject var participantDiscovery = ParticipantDiscovery()
-    private let serviceName = "VoltixApp-" + Int.random(in: 1 ... 1000).description
+    @State var serviceName = ""
+    @State var errorMessage = ""
     
     var body: some View {
         VStack {
             switch self.currentState {
-                case .WaitingForDevices:
-                    VStack {
-                        Text("Pair with two other devices:".uppercased())
-                            .font(.body18MenloBold)
-                            .multilineTextAlignment(.center)
-                        
-                        self.getQrImage(size: 100)
-                            .resizable()
-                            .scaledToFit()
-                            .padding()
-                        Text("Scan the above QR CODE.".uppercased())
-                            .font(.body13Menlo)
-                            .multilineTextAlignment(.center)
-                    }
-                    .padding()
-                    .background(Color.systemFill)
-                    .cornerRadius(10)
-                    .shadow(radius: 5)
-                    .padding()
-                    
-                    // TODO: Validate if it is <= 3 devices
-                    if self.participantDiscovery.peersFound.count == 0 {
-                        VStack {
-                            HStack {
-                                Text("Looking for devices... ")
-                                    .font(.body15MenloBold)
-                                    .multilineTextAlignment(.center)
-                                
-                                ProgressView()
-                                    .progressViewStyle(.circular)
-                                    .padding(2)
-                            }
-                        }
-                        .padding()
-                        .background(Color.systemFill)
-                        .cornerRadius(10)
-                        .shadow(radius: 5)
-                        .padding()
-                    }
-                    
-                    List(self.participantDiscovery.peersFound, id: \.self, selection: self.$selections) { peer in
-                        HStack {
-                            Image(systemName: self.selections.contains(peer) ? "checkmark.circle" : "circle")
-                            Text(peer)
-                        }
-                        .onTapGesture {
-                            if self.selections.contains(peer) {
-                                self.selections.remove(peer)
-                            } else {
-                                self.selections.insert(peer)
-                            }
-                        }
-                    }
-                    
-                    Button(action: {
-                        self.startKeysign(allParticipants: self.selections.map { $0 })
-                        self.currentState = .Keysign
-                        self.participantDiscovery.stop()
-                    }) {
-                        HStack {
-                            Text("Sign".uppercased())
-                                .font(.title30MenloBlack)
-                            Image(systemName: "chevron.right")
-                                .resizable()
-                                .frame(width: 10, height: 15)
-                        }
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    .disabled(self.selections.count < self.appState.currentVault?.getThreshold() ?? Int.max)
-                case .FailToStart:
-                    Text("fail to start keysign")
-                case .Keysign:
-                    KeysignView(presentationStack: self.$presentationStack,
-                                keysignCommittee: self.selections.map { $0 },
-                                mediatorURL: self.serverAddr,
-                                sessionID: self.sessionID,
-                                keysignType: self.keysignPayload.coin.chain.signingKeyType,
-                                messsageToSign: self.keysignMessages, // need to figure out all the prekeysign hashes
-                                localPartyKey: self.localPartyID,
-                                keysignPayload: self.keysignPayload)
+            case .WaitingForDevices:
+                self.waitingForDevices
+            case .FailToStart:
+                HStack {
+                    Text(NSLocalizedString("failToStart", comment: "Fail to start"))
+                        .font(.body15MenloBold)
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(.red)
+                    Text(self.errorMessage)
+                        .font(.body15MenloBold)
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(.red)
+                }
+            case .Keysign:
+                KeysignView(presentationStack: self.$presentationStack,
+                            keysignCommittee: self.selections.map { $0 },
+                            mediatorURL: self.serverAddr,
+                            sessionID: self.sessionID,
+                            keysignType: self.keysignPayload.coin.chain.signingKeyType,
+                            messsageToSign: self.keysignMessages, // need to figure out all the prekeysign hashes
+                            localPartyKey: self.localPartyID,
+                            keysignPayload: self.keysignPayload)
             }
         }
-        .navigationTitle("MAIN DEVICE")
+        .navigationTitle(NSLocalizedString("mainDevice", comment: "Main Device"))
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                NavigationButtons.backButton(presentationStack: self.$presentationStack)
+            ToolbarItem(placement: .topBarLeading) {
+                NavigationBackButton()
             }
-            ToolbarItem(placement: .navigationBarTrailing) {
-                NavigationButtons.questionMarkButton
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationHelpButton()
             }
         }
         .onAppear {
+            if self.sessionID.isEmpty {
+                self.sessionID = UUID().uuidString
+            }
+            if self.serviceName.isEmpty {
+                self.serviceName = "VoltixApp-" + Int.random(in: 1 ... 1000).description
+            }
             if let localPartyID = appState.currentVault?.localPartyID, !localPartyID.isEmpty {
                 self.localPartyID = localPartyID
             } else {
                 self.localPartyID = Utils.getLocalDeviceIdentity()
             }
             guard let vault = appState.currentVault else {
+                self.errorMessage = "No Vault found"
                 self.currentState = .FailToStart
-                logger.error("no vault found")
                 return
             }
             let keysignMessageResult = self.keysignPayload.getKeysignMessages(vault: vault)
             switch keysignMessageResult {
-                case .success(let preSignedImageHash):
-                    self.keysignMessages = preSignedImageHash
-                    if self.keysignMessages.isEmpty {
-                        logger.error("no meessage need to be signed")
-                        self.currentState = .FailToStart
-                    }
-                case .failure(let err):
-                    logger.error("Failed to get preSignedImageHash: \(err)")
+            case .success(let preSignedImageHash):
+                self.keysignMessages = preSignedImageHash
+                if self.keysignMessages.isEmpty {
+                    logger.error("no meessage need to be signed")
                     self.currentState = .FailToStart
+                }
+            case .failure(let err):
+                logger.error("Failed to get preSignedImageHash: \(err)")
+                self.currentState = .FailToStart
             }
         }
         .task {
@@ -162,6 +111,88 @@ struct KeysignDiscoveryView: View {
             self.participantDiscovery.stop()
             self.mediator.stop()
         }
+    }
+    
+    var background: some View {
+        Color.backgroundBlue
+            .ignoresSafeArea()
+    }
+    
+    var waitingForDevices: some View {
+        VStack {
+            self.paringQRCode
+            if self.participantDiscovery.peersFound.count == 0 {
+                self.lookingForDevices
+            }
+            self.deviceList
+            self.bottomButtons
+        }
+    }
+    
+    var paringQRCode: some View {
+        VStack {
+            Text(NSLocalizedString("pairWithOtherDevices", comment: "Pair with two other devices"))
+                .font(.body18MenloBold)
+                .multilineTextAlignment(.center)
+            
+            self.getQrImage(size: 100)
+                .resizable()
+                .scaledToFit()
+                .padding()
+            
+            Text(NSLocalizedString("scanQrCode", comment: "Scan QR Code"))
+                .font(.body13Menlo)
+                .multilineTextAlignment(.center)
+        }
+        .cornerRadius(10)
+        .shadow(radius: 5)
+        .padding()
+    }
+    
+    var lookingForDevices: some View {
+        VStack {
+            HStack {
+                Text(NSLocalizedString("lookingForDevices", comment: "Looking for devices"))
+                    .font(.body15MenloBold)
+                    .multilineTextAlignment(.center)
+                
+                ProgressView()
+                    .progressViewStyle(.circular)
+                    .padding(2)
+            }
+        }
+        .cornerRadius(10)
+        .shadow(radius: 5)
+        .padding()
+    }
+    
+    var deviceList: some View {
+        List(self.participantDiscovery.peersFound, id: \.self, selection: self.$selections) { peer in
+            HStack {
+                Image(systemName: self.selections.contains(peer) ? "checkmark.circle" : "circle")
+                Text(peer)
+            }
+            .onTapGesture {
+                if self.selections.contains(peer) {
+                    self.selections.remove(peer)
+                } else {
+                    self.selections.insert(peer)
+                }
+            }
+        }
+        .scrollContentBackground(.hidden)
+    }
+    
+    var bottomButtons: some View {
+        Button(action: {
+            self.startKeysign(allParticipants: self.selections.map { $0 })
+            self.currentState = .Keysign
+            self.participantDiscovery.stop()
+        }) {
+            FilledButton(title: "sign")
+                .disabled(self.selections.count < (self.appState.currentVault?.getThreshold() ?? Int.max))
+        }
+        .disabled(self.selections.count < (self.appState.currentVault?.getThreshold() ?? Int.max))
     }
     
     private func startKeysign(allParticipants: [String]) {
@@ -198,59 +229,3 @@ struct KeysignDiscoveryView: View {
         return Image(systemName: "xmark")
     }
 }
-
-class ParticipantDiscovery: ObservableObject {
-    @Published var peersFound = [String]()
-    var discoverying = true
-    
-    func stop() {
-        self.discoverying = false
-    }
-    
-    func getParticipants(serverAddr: String, sessionID: String) {
-        let urlString = "\(serverAddr)/\(sessionID)"
-        Task.detached {
-            repeat {
-                Utils.getRequest(urlString: urlString, headers: [String: String](), completion: { result in
-                    switch result {
-                        case .success(let data):
-                            if data.isEmpty {
-                                logger.error("No participants available yet")
-                                return
-                            }
-                            do {
-                                let decoder = JSONDecoder()
-                                let peers = try decoder.decode([String].self, from: data)
-                                DispatchQueue.main.async {
-                                    for peer in peers {
-                                        if !self.peersFound.contains(peer) {
-                                            self.peersFound.append(peer)
-                                        }
-                                    }
-                                }
-                            } catch {
-                                logger.error("Failed to decode response to JSON: \(error)")
-                            }
-                        case .failure(let error):
-                            logger.error("Failed to start session, error: \(error)")
-                    }
-                })
-                try await Task.sleep(for: .seconds(1)) // wait for a second to continue
-            } while self.discoverying
-        }
-    }
-}
-
-//
-// #Preview {
-//    KeysignDiscoveryView(
-//        presentationStack: .constant([]),
-//        keysignPayload: KeysignPayload(coin: Coin(chain: Chain.Bitcoin,
-//                                                  ticker: "BTC", logo: "",
-//                                                  address: "bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu",
-//                                                  hexPublicKey: "", feeUnit: "SATS"),
-//                                       toAddress: "bc1qj9q4nsl3q7z6t36un08j6t7knv5v3cwnnstaxu",
-//                                       toAmount: 1000,
-//                                       chainSpecific: .Bitcoin(byteFee: 25),
-//                                       utxos: [], memo: nil))
-// }

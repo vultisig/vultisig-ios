@@ -66,3 +66,9 @@
 "keygenFailed" = "Key generation failed";
 "reshareFailed" = "Resharing key failed";
 "joinKeyshare" = "Join Keyshare";
+"lookingForDevices" = "Looking for devices... ";
+"sign" = "Sign";
+"failStartKeysign" = "fail to start keysign";
+"waitingForKeySignStart" = "Waiting for the signing process to begin...";
+"keysignFail" = "The keysign process could not be started. Please check your settings and try again.";
+"joinKeySign" = "Join key sign";

@@ -176,6 +176,7 @@
 		DE9EB0F02BA2CFB7001747D9 /* ReshareMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0EF2BA2CFB7001747D9 /* ReshareMessage.swift */; };
 		DE9EB0F22BA2D97B001747D9 /* PeerDiscoveryPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0F12BA2D97B001747D9 /* PeerDiscoveryPayload.swift */; };
 		DE9EB0F42BA309AB001747D9 /* MessagePuller.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0F32BA309AB001747D9 /* MessagePuller.swift */; };
+		DE9EB0F62BA3F9C2001747D9 /* ParticipantDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0F52BA3F9C2001747D9 /* ParticipantDiscovery.swift */; };
 		DEBF93972B8D5FEF002868CD /* KeysignPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */; };
 		DEEADCF72B916676007978DE /* Solana.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEADCF62B916676007978DE /* Solana.swift */; };
 		DEEDAEE12B8AF7EF005170E8 /* eth.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEDAEE02B8AF7EF005170E8 /* eth.swift */; };
@@ -377,6 +378,7 @@
 		DE9EB0EF2BA2CFB7001747D9 /* ReshareMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReshareMessage.swift; sourceTree = "<group>"; };
 		DE9EB0F12BA2D97B001747D9 /* PeerDiscoveryPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerDiscoveryPayload.swift; sourceTree = "<group>"; };
 		DE9EB0F32BA309AB001747D9 /* MessagePuller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagePuller.swift; sourceTree = "<group>"; };
+		DE9EB0F52BA3F9C2001747D9 /* ParticipantDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticipantDiscovery.swift; sourceTree = "<group>"; };
 		DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignPayload.swift; sourceTree = "<group>"; };
 		DEEADCF62B916676007978DE /* Solana.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Solana.swift; sourceTree = "<group>"; };
 		DEEDAEE02B8AF7EF005170E8 /* eth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = eth.swift; sourceTree = "<group>"; };
@@ -833,6 +835,7 @@
 				DE15729C2B70F284009BC7C5 /* KeysignDiscoveryView.swift */,
 				DE15729D2B70F284009BC7C5 /* Keysign.swift */,
 				DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */,
+				DE9EB0F52BA3F9C2001747D9 /* ParticipantDiscovery.swift */,
 			);
 			path = Keysign;
 			sourceTree = "<group>";
@@ -1203,6 +1206,7 @@
 				A65649EA2B96690400E4B329 /* KeyShare.swift in Sources */,
 				A633B13C2B9A6564003D1738 /* SetupVaultView.swift in Sources */,
 				DE49A1B22B6A0F77000F3AFB /* JoinKeygenView.swift in Sources */,
+				DE9EB0F62BA3F9C2001747D9 /* ParticipantDiscovery.swift in Sources */,
 				A6F9F7DD2B9BA5F000790258 /* CoinCell.swift in Sources */,
 				DEFC7BFF2B8EC95E0090B07A /* thorchain.swift in Sources */,
 				A61BC8192BA2687E00484689 /* TokensStore.swift in Sources */,

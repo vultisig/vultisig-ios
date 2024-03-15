@@ -16,7 +16,7 @@ struct PeerDiscoveryView: View {
         case Keygen
         case Failure
     }
-        
+    
     @State private var selections = Set<String>()
     private let mediator = Mediator.shared
     // it should be ok to hardcode here , as this view start the mediator server itself
@@ -114,7 +114,7 @@ struct PeerDiscoveryView: View {
     var lookingForDevices: some View {
         VStack {
             HStack {
-                Text("Looking for devices... ")
+                Text(NSLocalizedString("lookingForDevices", comment: "Looking for devices"))
                     .font(.body15MenloBold)
                     .multilineTextAlignment(.center)
                 
