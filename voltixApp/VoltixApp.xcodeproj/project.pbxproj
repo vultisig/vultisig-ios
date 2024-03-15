@@ -108,6 +108,8 @@
 		A6966D222BA3E1B000903CA4 /* TextStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D212BA3E1B000903CA4 /* TextStore.swift */; };
 		A6966D242BA3E2A500903CA4 /* OnboardingView2.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D232BA3E2A500903CA4 /* OnboardingView2.swift */; };
 		A6966D262BA3E2CF00903CA4 /* OnboardingView3.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D252BA3E2CF00903CA4 /* OnboardingView3.swift */; };
+		A6966D292BA400B700903CA4 /* AddressTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D282BA400B700903CA4 /* AddressTextField.swift */; };
+		A6966D2B2BA4018600903CA4 /* AmountTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D2A2BA4018600903CA4 /* AmountTextField.swift */; };
 		A6CBA8EE2BA299E8008B110C /* ImportVaultViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CBA8ED2BA299E8008B110C /* ImportVaultViewModel.swift */; };
 		A6CBA8F02BA2A629008B110C /* ImportWalletUploadSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CBA8EF2BA2A629008B110C /* ImportWalletUploadSection.swift */; };
 		A6F2C5452B9FE3A00095C8E3 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */; };
@@ -307,6 +309,8 @@
 		A6966D212BA3E1B000903CA4 /* TextStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextStore.swift; sourceTree = "<group>"; };
 		A6966D232BA3E2A500903CA4 /* OnboardingView2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView2.swift; sourceTree = "<group>"; };
 		A6966D252BA3E2CF00903CA4 /* OnboardingView3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView3.swift; sourceTree = "<group>"; };
+		A6966D282BA400B700903CA4 /* AddressTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressTextField.swift; sourceTree = "<group>"; };
+		A6966D2A2BA4018600903CA4 /* AmountTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountTextField.swift; sourceTree = "<group>"; };
 		A6CBA8ED2BA299E8008B110C /* ImportVaultViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportVaultViewModel.swift; sourceTree = "<group>"; };
 		A6CBA8EF2BA2A629008B110C /* ImportWalletUploadSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportWalletUploadSection.swift; sourceTree = "<group>"; };
 		A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
@@ -448,6 +452,7 @@
 				A66A0BDC2BA15C650021A483 /* WebSVGImage.swift */,
 				A6F9F7D92B9BA2CF00790258 /* Cells */,
 				A633B1232B993FCC003D1738 /* Buttons */,
+				A6966D272BA4009B00903CA4 /* TextFields */,
 				A633B1342B997D35003D1738 /* Navigation Items */,
 				A61BC8152BA256C600484689 /* ProgressBar.swift */,
 				A61BC81A2BA26D9900484689 /* TokenSelectionSection.swift */,
@@ -695,6 +700,15 @@
 				A6966D252BA3E2CF00903CA4 /* OnboardingView3.swift */,
 			);
 			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		A6966D272BA4009B00903CA4 /* TextFields */ = {
+			isa = PBXGroup;
+			children = (
+				A6966D282BA400B700903CA4 /* AddressTextField.swift */,
+				A6966D2A2BA4018600903CA4 /* AmountTextField.swift */,
+			);
+			path = TextFields;
 			sourceTree = "<group>";
 		};
 		A6F9F7D92B9BA2CF00790258 /* Cells */ = {
@@ -1188,6 +1202,7 @@
 				469ED39D2B98E8C0008D4951 /* ThorchainBalancePagination.swift in Sources */,
 				465B09AF2B7C84C600952DD9 /* ShareSheet.swift in Sources */,
 				DE6DCB952B97D88A009A39D5 /* THORChainSwapPayload.swift in Sources */,
+				A6966D2B2BA4018600903CA4 /* AmountTextField.swift in Sources */,
 				46AC40A82B920061001704E6 /* EtherscanService.swift in Sources */,
 				A62758F22B97B10600ADE3A6 /* Endpoint.swift in Sources */,
 				049BBB562B71E5F5004C231F /* Choose.swift in Sources */,
@@ -1251,6 +1266,7 @@
 				DE32F0062B8460670035D81E /* ListVaultAssetView.swift in Sources */,
 				DEEDAEE52B8AFB5D005170E8 /* common.swift in Sources */,
 				A65649E22B96602700E4B329 /* DataExtension.swift in Sources */,
+				A6966D292BA400B700903CA4 /* AddressTextField.swift in Sources */,
 				A6F9F7EB2B9D1B3700790258 /* VaultDetailViewModel.swift in Sources */,
 				A65649F22B966A2300E4B329 /* UTXOTransactionStatus.swift in Sources */,
 				A6564A082B969AFC00E4B329 /* TransactionDetail.swift in Sources */,
