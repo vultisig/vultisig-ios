@@ -21,7 +21,6 @@ struct VaultDetailView: View {
             background
             view
             scanButton
-            testButton
         }
         .onAppear {
             setData()
@@ -73,38 +72,24 @@ struct VaultDetailView: View {
     }
     
     var scanButton: some View {
-        ZStack {
-            Circle()
-                .foregroundColor(.blue800)
-                .frame(width: 80, height: 80)
-                .opacity(0.8)
-            
-            Circle()
-                .foregroundColor(.turquoise600)
-                .frame(width: 60, height: 60)
-            
-            Image(systemName: "camera")
-                .font(.title30MenloUltraLight)
-                .foregroundColor(.blue600)
-        }
-        .opacity(showVaultsList ? 0 : 1)
-    }
-
-    var testButton: some View {
         NavigationLink {
-            KeysignDiscoveryView(presentationStack: .constant([]),
-                                 keysignPayload: KeysignPayload(coin: vault.coins.first { $0.ticker == "LTC" }!,
-                                                                toAddress: "ltc1q4c3y3acddm4n22uk2rrekq2wrczqq7mg2cy99w",
-                                                                toAmount: 2000000, //
-                                                                chainSpecific: BlockChainSpecific.UTXO(byteFee: 10),
-                                                                utxos: [
-                                                                    UtxoInfo(hash: "ffb6117cd1a8502baca498da9ff3ce1e49fd6386f5c7aa52e7f6456a1255eb74", amount: 50000000, index: 0)
-                                                                ],
-                                                                memo: "",
-                                                                swapPayload: nil))
+            JoinKeysignView(vault: vault)
         } label: {
-            FilledButton(title: "test", icon: "doc.questionmark")
-                .padding(16)
+            ZStack {
+                Circle()
+                    .foregroundColor(.blue800)
+                    .frame(width: 80, height: 80)
+                    .opacity(0.8)
+                
+                Circle()
+                    .foregroundColor(.turquoise600)
+                    .frame(width: 60, height: 60)
+                
+                Image(systemName: "camera")
+                    .font(.title30MenloUltraLight)
+                    .foregroundColor(.blue600)
+            }
+            .opacity(showVaultsList ? 0 : 1)
         }
     }
     

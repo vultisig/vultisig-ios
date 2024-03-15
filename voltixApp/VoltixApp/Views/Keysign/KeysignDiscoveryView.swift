@@ -9,14 +9,13 @@ import SwiftUI
 
 private let logger = Logger(subsystem: "keysign-discovery", category: "view")
 struct KeysignDiscoveryView: View {
+    let vault: Vault
     enum KeysignDiscoveryStatus {
         case WaitingForDevices
         case FailToStart
         case Keysign
     }
     
-    @Binding var presentationStack: [CurrentScreen]
-    @EnvironmentObject var appState: ApplicationState
     @State private var peersFound = [String]()
     @State private var selections = Set<String>()
     private let mediator = Mediator.shared
@@ -47,7 +46,7 @@ struct KeysignDiscoveryView: View {
                         .foregroundColor(.red)
                 }
             case .Keysign:
-                KeysignView(presentationStack: self.$presentationStack,
+                KeysignView(vault: self.vault,
                             keysignCommittee: self.selections.map { $0 },
                             mediatorURL: self.serverAddr,
                             sessionID: self.sessionID,
@@ -75,17 +74,13 @@ struct KeysignDiscoveryView: View {
             if self.serviceName.isEmpty {
                 self.serviceName = "VoltixApp-" + Int.random(in: 1 ... 1000).description
             }
-            if let localPartyID = appState.currentVault?.localPartyID, !localPartyID.isEmpty {
-                self.localPartyID = localPartyID
+            if !self.vault.localPartyID.isEmpty {
+                self.localPartyID = self.vault.localPartyID
             } else {
                 self.localPartyID = Utils.getLocalDeviceIdentity()
             }
-            guard let vault = appState.currentVault else {
-                self.errorMessage = "No Vault found"
-                self.currentState = .FailToStart
-                return
-            }
-            let keysignMessageResult = self.keysignPayload.getKeysignMessages(vault: vault)
+            
+            let keysignMessageResult = self.keysignPayload.getKeysignMessages(vault: self.vault)
             switch keysignMessageResult {
             case .success(let preSignedImageHash):
                 self.keysignMessages = preSignedImageHash
@@ -190,9 +185,9 @@ struct KeysignDiscoveryView: View {
             self.participantDiscovery.stop()
         }) {
             FilledButton(title: "sign")
-                .disabled(self.selections.count < (self.appState.currentVault?.getThreshold() ?? Int.max))
+                .disabled(self.selections.count < self.vault.getThreshold())
         }
-        .disabled(self.selections.count < (self.appState.currentVault?.getThreshold() ?? Int.max))
+        .disabled(self.selections.count < self.vault.getThreshold())
     }
     
     private func startKeysign(allParticipants: [String]) {
