@@ -9,7 +9,7 @@ import SwiftUI
 enum CurrentScreen: Hashable {
     // Onboarding
     case welcome // Welcome screen
-    case startScreen  // New or Import wallet
+    case startScreen // New or Import wallet
     case vaultSelection // a list of vault for selection
     case importWallet
     
@@ -18,8 +18,8 @@ enum CurrentScreen: Hashable {
     
     // Create new wallet from TSS
     case newWalletInstructions
-    case peerDiscovery
-    case joinKeygen
+    case peerDiscovery(vault: Vault, tssType: TssType)
+    case joinKeygen(Vault)
     
     // keysign
     case KeysignDiscovery(KeysignPayload)
@@ -27,7 +27,7 @@ enum CurrentScreen: Hashable {
     
     // Normal use (typically launches here if wallet imported/generated already)
     case vaultAssets(SendTransaction) // Main landing page for normal use. Lists ETH, BTC, ... assets.
-    case menu  // Add/Export/Forget vaults
+    case menu // Add/Export/Forget vaults
     
     // Send
     case sendInputDetails(SendTransaction)

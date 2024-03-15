@@ -49,14 +49,8 @@ struct CreateVaultView: View {
     }
     
     var newVaultButton: some View {
-//        Button {
-//            self.presentationStack.append(.newWalletInstructions)
-//        } label: {
-//            FilledButton(title: "createNewVault")
-//        }
-        
         NavigationLink {
-            SetupVaultView(presentationStack: $presentationStack)
+            SetupVaultView(tssType: .Keygen)
         } label: {
             FilledButton(title: "createNewVault")
         }
