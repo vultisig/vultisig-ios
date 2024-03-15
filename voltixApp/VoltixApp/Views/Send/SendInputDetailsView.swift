@@ -39,7 +39,7 @@ struct SendInputDetailsView: View {
 	
 	@EnvironmentObject var appState: ApplicationState
 	@Binding var presentationStack: [CurrentScreen]
-	@StateObject var uxto: UnspentOutputsService = .init()
+	@StateObject var uxto: BitcoinUnspentOutputsService = .init()
 	@StateObject var uxtoLtc: LitecoinUnspentOutputsService = .init()
 	@StateObject var eth: EthplorerAPIService = .init()
 	@StateObject var web3Service = Web3Service()

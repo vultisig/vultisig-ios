@@ -7,8 +7,8 @@
 
 import Foundation
 
-class Token: Codable {
-    let tokenInfo: TokenInfo
+class EthToken: Codable {
+    let tokenInfo: EthTokenInfo
     let balance: Int // If always integer in JSON
     let rawBalance: String
     

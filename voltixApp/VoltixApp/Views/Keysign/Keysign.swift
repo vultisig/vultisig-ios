@@ -118,7 +118,7 @@ struct KeysignView: View {
 												do {
 													self.txid = try await UTXOTransactionsService.broadcastTransaction(tx, endpointUrl: Endpoint.btcBroadcastTransaction)
 													print("Transaction Broadcasted Successfully, txid: \(self.txid)")
-												} catch let error as BitcoinTransactionError {
+												} catch let error as UTXOTransactionError {
 													switch error {
 														case .invalidURL:
 															print("Invalid URL.")
@@ -168,7 +168,7 @@ struct KeysignView: View {
 												do {
 													self.txid = try await UTXOTransactionsService.broadcastTransaction(tx, endpointUrl: Endpoint.ltcBroadcastTransaction)
 													print("Transaction Broadcasted Successfully, txid: \(self.txid)")
-												} catch let error as BitcoinTransactionError {
+												} catch let error as UTXOTransactionError {
 													switch error {
 														case .invalidURL:
 															print("Invalid URL.")

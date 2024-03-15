@@ -7,7 +7,7 @@
 
 import Foundation
 
-class TransactionDetail: Codable {
+class EtherscanAPITransactionDetail: Codable {
     let blockNumber: String?
     let timeStamp: String?
     let hash: String?

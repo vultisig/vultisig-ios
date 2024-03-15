@@ -4,7 +4,7 @@ import Foundation
 public struct VaultAssetsView: View {
 	@Binding var presentationStack: [CurrentScreen]
 	@EnvironmentObject var appState: ApplicationState
-	@StateObject var uxto: UnspentOutputsService = UnspentOutputsService()
+	@StateObject var uxto: BitcoinUnspentOutputsService = BitcoinUnspentOutputsService()
 	@StateObject var uxtoLtc: LitecoinUnspentOutputsService = LitecoinUnspentOutputsService()
 	@StateObject var eth: EthplorerAPIService = EthplorerAPIService()
 	@StateObject var thor: ThorchainService = ThorchainService.shared

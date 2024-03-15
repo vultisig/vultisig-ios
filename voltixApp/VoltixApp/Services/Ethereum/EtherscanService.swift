@@ -13,7 +13,7 @@ enum EtherScanError: Error {
 public class EtherScanService: ObservableObject {
     @Published var transactionHash: String?
     @Published var errorMessage: String?
-    @Published var transactions: [TransactionDetail]? = []
+    @Published var transactions: [EtherscanAPITransactionDetail]? = []
     @Published var addressFor: String?
     
     public func broadcastTransaction(hex: String, apiKey: String) async {
@@ -40,7 +40,7 @@ public class EtherScanService: ObservableObject {
             print(String(data: data, encoding: .utf8) ?? "No response body")
             
             let decoder = JSONDecoder()
-            let broadcastResponse = try decoder.decode(BroadcastResponse.self, from: data)
+            let broadcastResponse = try decoder.decode(EtherscanBroadcastResponse.self, from: data)
             
             DispatchQueue.main.async {
                 print("ETHER BROADCAST: \(broadcastResponse.result)")

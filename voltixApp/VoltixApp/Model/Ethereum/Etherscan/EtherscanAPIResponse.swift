@@ -10,5 +10,5 @@ import Foundation
 class EtherscanAPIResponse: Codable {
     let status: String
     let message: String
-    let result: [TransactionDetail]?
+    let result: [EtherscanAPITransactionDetail]?
 }
