@@ -189,6 +189,7 @@
 		DE9EB0F62BA3F9C2001747D9 /* ParticipantDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0F52BA3F9C2001747D9 /* ParticipantDiscovery.swift */; };
 		DE9EB0F82BA43388001747D9 /* KeysignViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0F72BA43388001747D9 /* KeysignViewModel.swift */; };
 		DE9EB0FA2BA4491B001747D9 /* CoinExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0F92BA4491B001747D9 /* CoinExtension.swift */; };
+		DE9EB0FC2BA463F7001747D9 /* KeygenViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0FB2BA463F7001747D9 /* KeygenViewModel.swift */; };
 		DEBF93972B8D5FEF002868CD /* KeysignPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */; };
 		DEEADCF72B916676007978DE /* Solana.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEADCF62B916676007978DE /* Solana.swift */; };
 		DEEDAEE12B8AF7EF005170E8 /* eth.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEDAEE02B8AF7EF005170E8 /* eth.swift */; };
@@ -403,6 +404,7 @@
 		DE9EB0F52BA3F9C2001747D9 /* ParticipantDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticipantDiscovery.swift; sourceTree = "<group>"; };
 		DE9EB0F72BA43388001747D9 /* KeysignViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignViewModel.swift; sourceTree = "<group>"; };
 		DE9EB0F92BA4491B001747D9 /* CoinExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinExtension.swift; sourceTree = "<group>"; };
+		DE9EB0FB2BA463F7001747D9 /* KeygenViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenViewModel.swift; sourceTree = "<group>"; };
 		DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignPayload.swift; sourceTree = "<group>"; };
 		DEEADCF62B916676007978DE /* Solana.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Solana.swift; sourceTree = "<group>"; };
 		DEEDAEE02B8AF7EF005170E8 /* eth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = eth.swift; sourceTree = "<group>"; };
@@ -688,6 +690,7 @@
 				A6F2C54E2BA009420095C8E3 /* TokenSelectionViewModel.swift */,
 				A6CBA8ED2BA299E8008B110C /* ImportVaultViewModel.swift */,
 				DE9EB0F72BA43388001747D9 /* KeysignViewModel.swift */,
+				DE9EB0FB2BA463F7001747D9 /* KeygenViewModel.swift */,
 			);
 			path = "View Models";
 			sourceTree = "<group>";
@@ -1185,6 +1188,7 @@
 				DE1572992B70F26A009BC7C5 /* KeyType.swift in Sources */,
 				4606B3AE2B8045F60045094D /* UTXOTransactionListView.swift in Sources */,
 				A633B13A2B9A5A22003D1738 /* ImportWalletView2.swift in Sources */,
+				DE9EB0FC2BA463F7001747D9 /* KeygenViewModel.swift in Sources */,
 				A6F2C54B2BA003E10095C8E3 /* TokenCell.swift in Sources */,
 				DE9EB0F02BA2CFB7001747D9 /* ReshareMessage.swift in Sources */,
 				A633B12F2B9952D8003D1738 /* OutlineButton.swift in Sources */,

@@ -48,6 +48,7 @@ struct VaultDetailView: View {
         ScrollView {
             list
             addButton
+            testButton
         }
         .opacity(showVaultsList ? 0 : 1)
     }
@@ -66,6 +67,25 @@ struct VaultDetailView: View {
             showSheet.toggle()
         } label: {
             FilledButton(title: "chooseTokens", icon: "plus")
+        }
+        .padding(16)
+        .padding(.bottom, 150)
+    }
+    
+    var testButton: some View {
+        NavigationLink {
+            KeysignDiscoveryView(vault: vault, keysignPayload: KeysignPayload(
+                coin: vault.coins.first{$0.ticker == "LTC"}!,
+                toAddress: "ltc1q4c3y3acddm4n22uk2rrekq2wrczqq7mg2cy99w",
+                toAmount: 2000000, //
+                chainSpecific: BlockChainSpecific.UTXO(byteFee: 10),
+                utxos: [
+                    UtxoInfo(hash: "ffb6117cd1a8502baca498da9ff3ce1e49fd6386f5c7aa52e7f6456a1255eb74", amount: 50000000, index: 0)
+                ],
+                memo: "",
+                swapPayload: nil))
+        } label: {
+            FilledButton(title: "test")
         }
         .padding(16)
         .padding(.bottom, 150)
