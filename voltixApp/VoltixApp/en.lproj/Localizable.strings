@@ -43,9 +43,15 @@
 "ok" = "OK";
 "next" = "Next";
 "skip" = "Skip";
+"from" = "From";
+"to" = "To";
+"amount" = "Amount";
+"gas(auto)" = "Gas (auto)";
 "enterPreviousVault" = "Enter your previously created vault share";
 "uploadFile" = "Upload file, text or image";
 "devicesOnSameWifi" = "Keep devices on the same WiFi Network with VOLTIX open";
 "need3Devices" = "You need 3 devices";
 "chooseTokens" = "Choose Tokens";
 "chooseChains" = "Choose Chains";
+"enterAddress" = "Enter Address";
+"enterAmount" = "Enter Amount";
