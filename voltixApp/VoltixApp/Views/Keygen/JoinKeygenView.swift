@@ -223,13 +223,13 @@ struct JoinKeygenView: View {
             }
         }
     }
-                     
+    
     private func checkKeygenStarted() {
         guard let serverURL = serviceDelegate.serverURL, let sessionID = sessionID else {
             logger.error("Required information for checking key generation start is missing.")
             return
         }
-                    
+        
         let urlString = "\(serverURL)/start/\(sessionID)"
         Utils.getRequest(urlString: urlString, headers: [String: String](), completion: { result in
             switch result {
@@ -249,13 +249,13 @@ struct JoinKeygenView: View {
             }
         })
     }
-                     
+    
     private func joinKeygenCommittee() {
         guard let serverURL = serviceDelegate.serverURL, let sessionID = sessionID else {
             logger.error("Required information for joining key generation committee is missing.")
             return
         }
-                    
+        
         let urlString = "\(serverURL)/\(sessionID)"
         let body = [localPartyID]
         Utils.sendRequest(urlString: urlString, method: "POST", body: body) { success in
@@ -264,8 +264,11 @@ struct JoinKeygenView: View {
             }
         }
     }
-                     
+    
     private func handleScan(result: Result<ScanResult, ScanError>) {
+        defer{
+            isShowingScanner = false
+        }
         switch result {
         case .success(let result):
             guard let scanData = result.string.data(using: .utf8) else {
@@ -300,7 +303,7 @@ struct JoinKeygenView: View {
                         }
                     }
                 }
-                            
+                
             } catch {
                 errorMessage = "Failed to decode peer discovery message: \(error.localizedDescription)"
                 currentStatus = .FailToStart
@@ -314,16 +317,16 @@ struct JoinKeygenView: View {
         }
     }
 }
-                     
+
 final class ServiceDelegate: NSObject, NetServiceDelegate, ObservableObject {
     @Published var serverURL: String?
-                    
+    
     public func netServiceDidResolveAddress(_ sender: NetService) {
         logger.info("Service found: \(sender.name), \(sender.hostName ?? ""), port \(sender.port) in domain \(sender.domain)")
         serverURL = "http://\(sender.hostName ?? ""):\(sender.port)"
     }
 }
-                     
+
 struct JoinKeygenView_Previews: PreviewProvider {
     static var previews: some View {
         JoinKeygenView(vault: Vault.example)

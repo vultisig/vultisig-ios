@@ -240,8 +240,10 @@ private struct StatusText: View {
     var body: some View {
         HStack {
             Text(self.status)
-                .fontWeight(/*@START_MENU_TOKEN@*/ .bold/*@END_MENU_TOKEN@*/)
+                .font(.body15MenloBold)
+                .foregroundColor(.neutral0)
                 .multilineTextAlignment(.center)
+        
             ProgressView()
                 .progressViewStyle(.circular)
                 .padding(2)
