@@ -10,7 +10,7 @@ struct SendVerifyView: View {
 	@Binding var presentationStack: [CurrentScreen]
 	@ObservedObject var tx: SendTransaction
 	@StateObject private var web3Service = Web3Service()
-	@StateObject var utxoBtc: UnspentOutputsService = .init()
+	@StateObject var utxoBtc: BitcoinUnspentOutputsService = .init()
 	@StateObject var utxoLtc: LitecoinUnspentOutputsService = .init()
 	@StateObject var thor: ThorchainService = ThorchainService.shared
 	@StateObject var sol: SolanaService = SolanaService.shared

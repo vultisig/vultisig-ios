@@ -7,7 +7,7 @@
 
 import Foundation
 
-class BroadcastResponse: Decodable, CustomStringConvertible {
+class EtherscanBroadcastResponse: Decodable, CustomStringConvertible {
     let id: Int
     let jsonrpc: String
     let result: String // This will hold the transaction hash

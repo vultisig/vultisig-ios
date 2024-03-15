@@ -10,7 +10,7 @@ import SwiftUI
 class EthAddressInfo: Codable {
     let address: String
     let ETH: ETHInfo
-    let tokens: [Token]?
+    let tokens: [EthToken]?
     
     func toString() -> String {
         let encoder = JSONEncoder()

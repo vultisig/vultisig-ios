@@ -7,7 +7,7 @@
 
 import Foundation
 
-class TokenInfo: Codable {
+class EthTokenInfo: Codable {
     let address: String
     let name: String
     let decimals: String
@@ -15,5 +15,5 @@ class TokenInfo: Codable {
     let totalSupply: String
     let owner: String
     let lastUpdated: Int
-    let price: Price
+    let price: ETHInfoPrice
 }
