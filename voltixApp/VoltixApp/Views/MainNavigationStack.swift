@@ -51,20 +51,20 @@ struct MainNavigationStack: View {
                             SwapVerifyView(presentationStack: $presentationStack)
                         case .swapDone:
                             SwapDoneView(presentationStack: $presentationStack)
-                        // NEW UI
-                        case .vaultSelection:
-                            HomeView()
-                        // OLD UI
+						// NEW UI
 //                        case .vaultSelection:
-//                            VaultSelectionView(presentationStack: $presentationStack)
+//                            HomeView()
+                        // OLD UI
+                        case .vaultSelection:
+                            VaultSelectionView(presentationStack: $presentationStack)
                         case .joinKeygen(let vault):
                             JoinKeygenView(vault: vault)
                         case .KeysignDiscovery(let keysignPayload):
-                            KeysignDiscoveryView(presentationStack: $presentationStack, keysignPayload: keysignPayload)
+                            KeysignDiscoveryView(vault: appState.currentVault ?? Vault.example, keysignPayload: keysignPayload)
                         case .JoinKeysign:
-                            JoinKeysignView(presentationStack: $presentationStack)
+                            JoinKeysignView(vault: appState.currentVault ?? Vault.example)
                         case .bitcoinTransactionsListView(let tx):
-							UTXOTransactionListView(presentationStack: $presentationStack, tx: tx)
+                            UTXOTransactionListView(presentationStack: $presentationStack, tx: tx)
                         case .ethereumTransactionsListView:
                             EthereumTransactionListView(presentationStack: $presentationStack)
                         case .erc20TransactionsListView(let contractAddress):

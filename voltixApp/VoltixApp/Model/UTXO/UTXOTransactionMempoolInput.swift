@@ -7,10 +7,10 @@
 
 import Foundation
 
-class Input: Codable {
+class UTXOTransactionMempoolInput: Codable {
     let txid: String
     let vout: Int
-    let prevout: PreviousOutput?
+    let prevout: UTXOTransactionMempoolPreviousOutput?
     let sequence: UInt32
     let scriptsig: String?
     let scriptsig_asm: String?

@@ -1,6 +1,6 @@
 import SwiftUI
 
-enum BitcoinTransactionError: Error {
+enum UTXOTransactionError: Error {
     case invalidURL
     case httpError(Int) // Includes the HTTP status code
     case apiError(String) // Error message from the API
@@ -70,7 +70,7 @@ public class UTXOTransactionsService: ObservableObject {
     	
 	public static func broadcastTransaction(_ rawTransaction: String, endpointUrl: String) async throws -> String {
 		guard let url = URL(string: endpointUrl) else {
-			throw BitcoinTransactionError.invalidURL
+			throw UTXOTransactionError.invalidURL
 		}
 		
 		var request = URLRequest(url: url)
@@ -82,7 +82,7 @@ public class UTXOTransactionsService: ObservableObject {
 			let (data, response) = try await URLSession.shared.data(for: request)
 			
 			guard let httpResponse = response as? HTTPURLResponse else {
-				throw BitcoinTransactionError.unexpectedResponse
+				throw UTXOTransactionError.unexpectedResponse
 			}
 			
 			let responseString = String(data: data, encoding: .utf8) ?? ""
@@ -95,13 +95,13 @@ public class UTXOTransactionsService: ObservableObject {
 				if httpResponse.statusCode == 400, // Or other relevant status codes
 				   !responseString.isEmpty {
 						// Here you could also attempt to parse the responseString if it's JSON formatted
-					throw BitcoinTransactionError.apiError(responseString)
+					throw UTXOTransactionError.apiError(responseString)
 				} else {
-					throw BitcoinTransactionError.httpError(httpResponse.statusCode)
+					throw UTXOTransactionError.httpError(httpResponse.statusCode)
 				}
 			}
 		} catch {
-			throw BitcoinTransactionError.unknown(error)
+			throw UTXOTransactionError.unknown(error)
 		}
 	}
 

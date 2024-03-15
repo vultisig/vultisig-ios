@@ -4,8 +4,8 @@ class UTXOTransactionMempool: Codable {
     let txid: String
     let version: Int
     let locktime: Int
-    let vin: [Input]
-    let vout: [Output]
+    let vin: [UTXOTransactionMempoolInput]
+    let vout: [UTXOTransactionMempoolOutput]
     let fee: Int
     let status: UTXOTransactionStatus
     private var _userAddress: String?
@@ -51,7 +51,7 @@ class UTXOTransactionMempool: Codable {
         return totalSentToOthers
     }
     
-    init(txid: String, version: Int, locktime: Int, vin: [Input], vout: [Output], fee: Int, status: UTXOTransactionStatus, userAddress: String) {
+    init(txid: String, version: Int, locktime: Int, vin: [UTXOTransactionMempoolInput], vout: [UTXOTransactionMempoolOutput], fee: Int, status: UTXOTransactionStatus, userAddress: String) {
         self.txid = txid
         self.version = version
         self.locktime = locktime

@@ -12,7 +12,7 @@ import Foundation
 	@Published var balanceUSD = "US$ 0,00"
 	@Published var coinBalance = "0.0"
 	
-	func loadData(utxoBtc: UnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, eth: EthplorerAPIService, thor: ThorchainService, tx: SendTransaction) async {
+	func loadData(utxoBtc: BitcoinUnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, eth: EthplorerAPIService, thor: ThorchainService, tx: SendTransaction) async {
 		print("realoading data...")
 		isLoading = true
 		
@@ -33,7 +33,7 @@ import Foundation
 		isLoading = false
 	}
 	
-	private func updateState(utxoBtc: UnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, eth: EthplorerAPIService, thor: ThorchainService, tx: SendTransaction) {
+	private func updateState(utxoBtc: BitcoinUnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, eth: EthplorerAPIService, thor: ThorchainService, tx: SendTransaction) {
 		balanceUSD = "US$ 0,00"
 		coinBalance = "0.0"
 		

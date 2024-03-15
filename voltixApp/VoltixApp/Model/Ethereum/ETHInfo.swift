@@ -8,7 +8,7 @@
 import Foundation
 
 class ETHInfo: Codable {
-    let price: Price
+    let price: ETHInfoPrice
     let balance: Double
     let rawBalance: String
     

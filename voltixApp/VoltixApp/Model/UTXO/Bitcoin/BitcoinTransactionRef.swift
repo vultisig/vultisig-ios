@@ -7,7 +7,7 @@
 
 import Foundation
 
-class TransactionRef: Codable, Identifiable {
+class BitcoinTransactionRef: Codable, Identifiable {
     var id: String {
         txHash ?? "N/A" // Use txHash as the identifier, or a fallback if missing
     }

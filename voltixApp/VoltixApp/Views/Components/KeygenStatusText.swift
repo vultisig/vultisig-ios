@@ -16,6 +16,7 @@ struct KeyGenStatusText: View {
                 Spacer()
                 Text(self.status)
                     .font(.body15MenloBold)
+                    .foregroundColor(.neutral0)
                     .multilineTextAlignment(.center)
                 ProgressView()
                     .progressViewStyle(.circular)
@@ -23,8 +24,6 @@ struct KeyGenStatusText: View {
                 Spacer()
             }.padding(.vertical, 30)
         }
-        .padding()
-        .background(Color.systemFill)
         .cornerRadius(10)
         .shadow(radius: 5)
         .padding()
