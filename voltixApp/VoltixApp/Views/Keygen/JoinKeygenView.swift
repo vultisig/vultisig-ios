@@ -159,7 +159,7 @@ struct JoinKeygenView: View {
                     .multilineTextAlignment(.center)
             }
             HStack {
-                Text(NSLocalizedString("discoverinyMediator", comment: "Discovering mediator service, please wait..."))
+                Text(NSLocalizedString("discoveringMediator", comment: "Discovering mediator service, please wait..."))
                     .foregroundColor(.neutral0)
                     .font(.body15MenloBold)
                     .multilineTextAlignment(.center)
@@ -203,11 +203,19 @@ struct JoinKeygenView: View {
         VStack {
             HStack {
                 Text("thisDevice")
+                    .font(.body15MenloBold)
+                    .foregroundColor(.neutral0)
+                    .multilineTextAlignment(.center)
+            
                 Text(self.localPartyID)
+                    .font(.body15MenloBold)
+                    .foregroundColor(.neutral0)
+                    .multilineTextAlignment(.center)
             }
             HStack {
                 Text(NSLocalizedString("waitingForKeygenStart", comment: "Waiting for key generation to start..."))
                     .font(.body15MenloBold)
+                    .foregroundColor(.neutral0)
                     .multilineTextAlignment(.center)
                 ProgressView().progressViewStyle(.circular).padding(2)
             }
