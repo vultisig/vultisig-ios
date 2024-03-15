@@ -83,6 +83,7 @@ struct SetupVaultView: View {
         VStack(spacing: 20) {
             startButton
             joinButton
+            joinKeyshareButton
         }
         .padding(40)
     }
@@ -92,6 +93,14 @@ struct SetupVaultView: View {
             PeerDiscoveryView(tssType: tssType, vault: vault ?? Vault(name: "New Vault"))
         } label: {
             FilledButton(title: "start")
+        }
+    }
+
+    var joinKeyshareButton: some View {
+        NavigationLink {
+            JoinKeygenView(vault: vault ?? Vault(name: "New Vault"))
+        } label: {
+            OutlineButton(title: "joinKeyshare")
         }
     }
     

@@ -65,3 +65,4 @@
 "reshareEdDSA" = "Resharing EdDSA KEY";
 "keygenFailed" = "Key generation failed";
 "reshareFailed" = "Resharing key failed";
+"joinKeyshare" = "Join Keyshare";

@@ -10,8 +10,8 @@ struct WifiBar: View {
         HStack(spacing: 25) {
             ZStack {
                 Image(systemName: "wifi")
-                    .resizable()
-                    .frame(width: 36, height: 29)
+                    .font(.title30MenloBlack)
+                    .foregroundColor(.neutral0)
             }
             .frame(width: 36, height: 29)
             Text("Keep devices on same WiFi Network with VOLTIX open")
