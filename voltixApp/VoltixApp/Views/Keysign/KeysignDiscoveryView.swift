@@ -26,7 +26,7 @@ struct KeysignDiscoveryView: View {
     @State private var localPartyID = ""
     let keysignPayload: KeysignPayload
     @State private var keysignMessages = [String]()
-    @ObservedObject var participantDiscovery = ParticipantDiscovery()
+    @StateObject var participantDiscovery = ParticipantDiscovery()
     private let serviceName = "VoltixApp-" + Int.random(in: 1 ... 1000).description
     
     var body: some View {
@@ -233,7 +233,6 @@ class ParticipantDiscovery: ObservableObject {
                             }
                         case .failure(let error):
                             logger.error("Failed to start session, error: \(error)")
-                            return
                     }
                 })
                 try await Task.sleep(for: .seconds(1)) // wait for a second to continue
