@@ -10,6 +10,8 @@ import SwiftUI
 struct SendCryptoView: View {
     @ObservedObject var tx: SendTransaction
     
+    @StateObject var viewModel = SendCryptoViewModel()
+    
     var body: some View {
         ZStack {
             background
@@ -22,6 +24,9 @@ struct SendCryptoView: View {
             ToolbarItem(placement: .topBarLeading) {
                 NavigationBackButton()
             }
+            ToolbarItem(placement: .topBarTrailing) {
+                refreshButton
+            }
         }
     }
     
@@ -32,9 +37,26 @@ struct SendCryptoView: View {
     
     var view: some View {
         VStack(spacing: 30) {
-            ProgressBar(progress: 0.25)
+            ProgressBar(progress: viewModel.getProgress())
                 .padding(.top, 30)
-            SendCryptoDetailsView(tx: tx)
+            tabView
+        }
+    }
+    
+    var tabView: some View {
+        TabView(selection: $viewModel.tabIndex) {
+            SendCryptoDetailsView(tx: tx, viewModel: viewModel).tag(1)
+            SendCryptoQRScannerView(viewModel: viewModel).tag(2)
+        }
+        .tabViewStyle(PageTabViewStyle())
+        .frame(maxHeight: .infinity)
+    }
+    
+    var refreshButton: some View {
+        Button {
+            
+        } label: {
+            NavigationRefreshButton()
         }
     }
 }

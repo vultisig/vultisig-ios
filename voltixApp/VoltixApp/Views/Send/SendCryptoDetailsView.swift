@@ -10,6 +10,7 @@ import SwiftUI
 
 struct SendCryptoDetailsView: View {
     @ObservedObject var tx: SendTransaction
+    @ObservedObject var viewModel: SendCryptoViewModel
     
     @State var toAddress = ""
     @State var amount = ""
@@ -21,6 +22,7 @@ struct SendCryptoDetailsView: View {
             background
             view
         }
+        .gesture(DragGesture())
     }
     
     var background: some View {
@@ -96,8 +98,12 @@ struct SendCryptoDetailsView: View {
     }
     
     var button: some View {
-        FilledButton(title: "continue")
-            .padding(40)
+        Button {
+            viewModel.moveToNextView()
+        } label: {
+            FilledButton(title: "continue")
+        }
+        .padding(40)
     }
     
     private func getTitle(for text: String) -> some View {
@@ -109,5 +115,5 @@ struct SendCryptoDetailsView: View {
 }
 
 #Preview {
-    SendCryptoDetailsView(tx: SendTransaction())
+    SendCryptoDetailsView(tx: SendTransaction(), viewModel: SendCryptoViewModel())
 }

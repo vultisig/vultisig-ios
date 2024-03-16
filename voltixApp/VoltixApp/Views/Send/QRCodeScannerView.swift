@@ -45,6 +45,7 @@ struct QRCodeScannerView: View {
         ZStack {
             CodeScannerView(codeTypes: [.qr], completion: handleScan)
             outline
+                .allowsHitTesting(false)
         }
     }
     
