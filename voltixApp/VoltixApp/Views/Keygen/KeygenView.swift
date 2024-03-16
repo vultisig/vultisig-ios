@@ -109,6 +109,7 @@ private struct StatusText: View {
             ProgressView()
                 .progressViewStyle(.circular)
                 .padding(2)
+                .foregroundColor(.neutral0)
         }
     }
 }

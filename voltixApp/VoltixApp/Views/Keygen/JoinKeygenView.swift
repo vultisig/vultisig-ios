@@ -298,6 +298,7 @@ struct JoinKeygenView: View {
                     oldCommittee = reshareMsg.oldParties
                     sessionID = reshareMsg.sessionID
                     hexChainCode = reshareMsg.hexChainCode
+                    serviceName = reshareMsg.serviceName
                     // this means the vault is new , and it join the reshare to become the new committee
                     if vault.pubKeyECDSA.isEmpty {
                         vault.hexChainCode = reshareMsg.hexChainCode
