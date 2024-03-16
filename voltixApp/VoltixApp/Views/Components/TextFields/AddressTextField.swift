@@ -52,7 +52,7 @@ struct AddressTextField: View {
     }
     
     var codeScanner: some View {
-        CodeScannerView(codeTypes: [.qr], completion: self.handleScan)
+        QRCodeScannerView(showScanner: $showScanner, handleScan: handleScan)
     }
     
     var scanButton: some View {

@@ -47,6 +47,7 @@
 "to" = "To";
 "fees" = "Fees";
 "time" = "Time";
+"scan" = "Scan";
 "amount" = "Amount";
 "gas(auto)" = "Gas (auto)";
 "enterPreviousVault" = "Enter your previously created vault share";

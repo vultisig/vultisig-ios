@@ -71,6 +71,7 @@
 		A633B13A2B9A5A22003D1738 /* ImportWalletView2.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B1392B9A5A22003D1738 /* ImportWalletView2.swift */; };
 		A633B13C2B9A6564003D1738 /* SetupVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B13B2B9A6564003D1738 /* SetupVaultView.swift */; };
 		A633B13E2B9A9E30003D1738 /* VaultDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B13D2B9A9E30003D1738 /* VaultDetailView.swift */; };
+		A65324282BA51E8700DDE6EB /* QRCodeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65324272BA51E8700DDE6EB /* QRCodeScannerView.swift */; };
 		A65649DF2B96602700E4B329 /* DecodableDefaultExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */; };
 		A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D82B96602700E4B329 /* BigUIntExtension.swift */; };
 		A65649E12B96602700E4B329 /* Int64Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D92B96602700E4B329 /* Int64Extension.swift */; };
@@ -283,6 +284,7 @@
 		A633B1392B9A5A22003D1738 /* ImportWalletView2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportWalletView2.swift; sourceTree = "<group>"; };
 		A633B13B2B9A6564003D1738 /* SetupVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultView.swift; sourceTree = "<group>"; };
 		A633B13D2B9A9E30003D1738 /* VaultDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailView.swift; sourceTree = "<group>"; };
+		A65324272BA51E8700DDE6EB /* QRCodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeScannerView.swift; sourceTree = "<group>"; };
 		A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DecodableDefaultExtension.swift; sourceTree = "<group>"; };
 		A65649D82B96602700E4B329 /* BigUIntExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BigUIntExtension.swift; sourceTree = "<group>"; };
 		A65649D92B96602700E4B329 /* Int64Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Int64Extension.swift; sourceTree = "<group>"; };
@@ -891,6 +893,7 @@
 				46AC40A92B922931001704E6 /* EthereumTransactionListView.swift */,
 				A61BC8112BA2407A00484689 /* SendCryptoView.swift */,
 				A61BC8132BA240FC00484689 /* SendCryptoDetailsView.swift */,
+				A65324272BA51E8700DDE6EB /* QRCodeScannerView.swift */,
 			);
 			path = Send;
 			sourceTree = "<group>";
@@ -1239,6 +1242,7 @@
 				A6F9F7E32B9BB48700790258 /* VaultsView.swift in Sources */,
 				465B09AD2B7C841B00952DD9 /* QrCodeView.swift in Sources */,
 				469ED3A02B98F5B4008D4951 /* ThorchainAccountNumberResponse.swift in Sources */,
+				A65324282BA51E8700DDE6EB /* QRCodeScannerView.swift in Sources */,
 				465B09B32B7D710A00952DD9 /* DocumentPicker.swift in Sources */,
 				DE1572992B70F26A009BC7C5 /* KeyType.swift in Sources */,
 				4606B3AE2B8045F60045094D /* UTXOTransactionListView.swift in Sources */,
@@ -1576,7 +1580,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_ASSET_PATHS = "\"voltixApp/Preview Content\"";
-				DEVELOPMENT_TEAM = KEUQSEUKAQ;
+				DEVELOPMENT_TEAM = LNG8PFABR7;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1623,7 +1627,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_ASSET_PATHS = "\"voltixApp/Preview Content\"";
-				DEVELOPMENT_TEAM = KEUQSEUKAQ;
+				DEVELOPMENT_TEAM = LNG8PFABR7;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
