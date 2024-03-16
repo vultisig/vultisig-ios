@@ -55,19 +55,21 @@ class KeygenViewModel: ObservableObject {
         self.mediatorURL = mediatorURL
         self.sessionID = sessionID
     }
+
     func delaySwitchToMain() {
         Task {
             // when user didn't touch it for 5 seconds , automatically goto home screen
             try await Task.sleep(for: .seconds(5)) // Back off 5s
-            isLinkActive = true
+            self.isLinkActive = true
         }
     }
+
     func startKeygen(context: ModelContext) async {
         defer {
             self.messagePuller.stop()
         }
         do {
-            self.vault.signers.append(contentsOf: self.keygenCommittee)
+            self.vault.signers = self.keygenCommittee
             // Create keygen instance, it takes time to generate the preparams
             let messengerImp = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: nil)
             let stateAccessorImp = LocalStateAccessorImpl(vault: self.vault)
