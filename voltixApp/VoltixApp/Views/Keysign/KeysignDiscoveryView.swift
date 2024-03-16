@@ -52,7 +52,6 @@ struct KeysignDiscoveryView: View {
                             sessionID: self.sessionID,
                             keysignType: self.keysignPayload.coin.chain.signingKeyType,
                             messsageToSign: self.keysignMessages, // need to figure out all the prekeysign hashes
-                            localPartyKey: self.localPartyID,
                             keysignPayload: self.keysignPayload)
             }
         }
