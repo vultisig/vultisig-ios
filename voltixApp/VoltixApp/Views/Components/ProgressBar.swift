@@ -31,6 +31,7 @@ struct ProgressBar: View {
         RoundedRectangle(cornerRadius: 30)
             .frame(width: width*progress, height: 10)
             .foregroundStyle(LinearGradient.progressGradient)
+            .animation(.easeInOut, value: progress)
     }
 }
 

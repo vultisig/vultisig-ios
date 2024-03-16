@@ -19,9 +19,6 @@ struct SendCryptoQRCodeView: View {
             view
         }
         .gesture(DragGesture())
-        .onTapGesture {
-            viewModel.moveToNextView()
-        }
     }
     
     var background: some View {
