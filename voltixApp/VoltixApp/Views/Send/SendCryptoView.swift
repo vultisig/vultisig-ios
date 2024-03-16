@@ -24,9 +24,6 @@ struct SendCryptoView: View {
             ToolbarItem(placement: .topBarLeading) {
                 NavigationBackButton()
             }
-            ToolbarItem(placement: .topBarTrailing) {
-                refreshButton
-            }
         }
     }
     
@@ -47,17 +44,11 @@ struct SendCryptoView: View {
         TabView(selection: $viewModel.currentIndex) {
             SendCryptoDetailsView(tx: tx, viewModel: viewModel).tag(1)
             SendCryptoQRScannerView(viewModel: viewModel).tag(2)
+            SendCryptoQRCodeView(viewModel: viewModel).tag(3)
+            SendCryptoQRScannerView(viewModel: viewModel).tag(4)
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
         .frame(maxHeight: .infinity)
-    }
-    
-    var refreshButton: some View {
-        Button {
-            
-        } label: {
-            NavigationRefreshButton()
-        }
     }
 }
 

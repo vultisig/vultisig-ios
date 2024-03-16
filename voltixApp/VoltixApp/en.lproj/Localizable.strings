@@ -91,3 +91,4 @@
 "signingWithECDSA" = "SIGNING USING ECDSA KEY... ";
 "signingWithEdDSA" = "SIGNING USING EdDSA KEY... ";
 "keysignFinished" = "KEYSIGN FINISHED...";
+"scanWithPairedDevice" = "Scan with your Paired device:";
