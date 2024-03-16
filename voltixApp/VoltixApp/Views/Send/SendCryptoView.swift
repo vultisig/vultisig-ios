@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct SendCryptoView: View {
+    @ObservedObject var tx: SendTransaction
+    
     var body: some View {
         ZStack {
             background
@@ -32,11 +34,11 @@ struct SendCryptoView: View {
         VStack(spacing: 30) {
             ProgressBar(progress: 0.25)
                 .padding(.top, 30)
-            SendCryptoDetailsView()
+            SendCryptoDetailsView(tx: tx)
         }
     }
 }
 
 #Preview {
-    SendCryptoView()
+    SendCryptoView(tx: SendTransaction())
 }

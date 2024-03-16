@@ -71,7 +71,7 @@ struct CoinCell: View {
     
     var swapButton: some View {
         NavigationLink {
-            SwapCryptoView()
+            SendInputDetailsView(presentationStack: .constant([]), tx: tx)
         } label: {
             Text(NSLocalizedString("swap", comment: "Swap button text").uppercased())
                 .font(.body16MenloBold)
@@ -85,8 +85,7 @@ struct CoinCell: View {
     
     var sendButton: some View {
         NavigationLink {
-            SendInputDetailsView(presentationStack: .constant([]), tx: tx)
-//            SendCryptoView()
+            SendCryptoView(tx: tx)
         } label: {
             Text(NSLocalizedString("send", comment: "Send button text").uppercased())
                 .font(.body16MenloBold)

@@ -5,11 +5,16 @@
 //  Created by Amol Kumar on 2024-03-13.
 //
 
+import OSLog
 import SwiftUI
 
 struct SendCryptoDetailsView: View {
+    @ObservedObject var tx: SendTransaction
+    
     @State var toAddress = ""
     @State var amount = ""
+    
+    let logger = Logger(subsystem: "send-input-details", category: "transaction")
     
     var body: some View {
         ZStack {
@@ -55,7 +60,7 @@ struct SendCryptoDetailsView: View {
     }
     
     var fromTextField: some View {
-        Text("0x0cb1D4a24292bB89862f599Ac5B10F42b6DE07e4")
+        Text(tx.fromAddress)
             .font(.body12Menlo)
             .foregroundColor(.neutral0)
             .frame(height: 48)
@@ -63,12 +68,13 @@ struct SendCryptoDetailsView: View {
             .padding(.horizontal, 12)
             .background(Color.blue600)
             .cornerRadius(10)
+            .lineLimit(1)
     }
     
     var toField: some View {
         VStack(spacing: 8) {
             getTitle(for: "to")
-            AddressTextField(address: $toAddress)
+            AddressTextField(tx: tx, logger: logger)
         }
     }
     
@@ -83,7 +89,7 @@ struct SendCryptoDetailsView: View {
         HStack {
             Text(NSLocalizedString("gas(auto)", comment: ""))
             Spacer()
-            Text("$4.00")
+            Text(tx.gas)
         }
         .font(.body16Menlo)
         .foregroundColor(.neutral0)
@@ -103,5 +109,5 @@ struct SendCryptoDetailsView: View {
 }
 
 #Preview {
-    SendCryptoDetailsView()
+    SendCryptoDetailsView(tx: SendTransaction())
 }
