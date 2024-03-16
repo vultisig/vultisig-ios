@@ -18,7 +18,7 @@ struct SendCryptoView: View {
             view
         }
         .navigationBarBackButtonHidden(true)
-        .navigationTitle(NSLocalizedString("send", comment: "SendCryptoView title"))
+        .navigationTitle(NSLocalizedString(viewModel.currentTitle, comment: "SendCryptoView title"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -44,11 +44,11 @@ struct SendCryptoView: View {
     }
     
     var tabView: some View {
-        TabView(selection: $viewModel.tabIndex) {
+        TabView(selection: $viewModel.currentIndex) {
             SendCryptoDetailsView(tx: tx, viewModel: viewModel).tag(1)
             SendCryptoQRScannerView(viewModel: viewModel).tag(2)
         }
-        .tabViewStyle(PageTabViewStyle())
+        .tabViewStyle(.page(indexDisplayMode: .never))
         .frame(maxHeight: .infinity)
     }
     

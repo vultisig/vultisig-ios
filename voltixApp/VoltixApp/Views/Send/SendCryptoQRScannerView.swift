@@ -17,6 +17,7 @@ struct SendCryptoQRScannerView: View {
             outline
                 .allowsHitTesting(false)
         }
+        .gesture(DragGesture())
     }
     
     var qrCodeScanner: some View {

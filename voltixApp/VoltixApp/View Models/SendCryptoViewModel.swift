@@ -9,19 +9,22 @@ import SwiftUI
 
 class SendCryptoViewModel: ObservableObject {
     @Published var isLoading = false
-    @Published var tabIndex = 1
+    @Published var currentIndex = 1
+    @Published var currentTitle = "send"
     
     let totalViews = 7
+    let titles = ["send", "scan", "send", "pair", "verify", "keysign", "done"]
     
     func reloadTransactions() {
         
     }
     
     func moveToNextView() {
-        tabIndex += 1
+        currentIndex += 1
+        currentTitle = titles[currentIndex]
     }
     
     func getProgress() -> Double {
-        Double(tabIndex)/Double(totalViews)
+        Double(currentIndex)/Double(totalViews)
     }
 }

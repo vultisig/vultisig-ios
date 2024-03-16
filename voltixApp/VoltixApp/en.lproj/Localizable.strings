@@ -48,7 +48,11 @@
 "fees" = "Fees";
 "time" = "Time";
 "scan" = "Scan";
+"pair" = "Pair";
+"verify" = "Verify";
 "amount" = "Amount";
+"keysign" = "Keysign";
+"done" = "Done";
 "gas(auto)" = "Gas (auto)";
 "enterPreviousVault" = "Enter your previously created vault share";
 "uploadFile" = "Upload file, text or image";
