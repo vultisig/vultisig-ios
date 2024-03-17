@@ -16,8 +16,8 @@ public class EtherScanService: ObservableObject {
     @Published var transactions: [EtherscanAPITransactionDetail]? = []
     @Published var addressFor: String?
     
-    public func broadcastTransaction(hex: String, apiKey: String) async {
-        let urlString = Endpoint.broadcastEtherscanTransaction(hex: hex, apiKey: apiKey)
+    public func broadcastTransaction(hex: String) async {
+        let urlString = Endpoint.broadcastEtherscanTransaction(hex: hex)
         
         guard let url = URL(string: urlString) else {
             self.errorMessage = "Invalid URL"
@@ -69,8 +69,8 @@ public class EtherScanService: ObservableObject {
         }
     }
     
-    func fetchTransactions(forAddress address: String, apiKey: String) async {
-        let urlString = Endpoint.fetchEtherscanTransactions(address: address, apiKey: apiKey)
+    func fetchTransactions(forAddress address: String) async {
+        let urlString = Endpoint.fetchEtherscanTransactions(address: address)
         
         guard let url = URL(string: urlString) else {
             self.errorMessage = "Invalid URL"
@@ -101,8 +101,8 @@ public class EtherScanService: ObservableObject {
         }
     }
     
-    func fetchERC20Transactions(forAddress address: String, apiKey: String, contractAddress: String) async {
-        let urlString = Endpoint.fetchERC20Transactions(address: address, apiKey: apiKey, contractAddress: contractAddress)
+    func fetchERC20Transactions(forAddress address: String, contractAddress: String) async {
+        let urlString = Endpoint.fetchERC20Transactions(address: address, contractAddress: contractAddress)
         
         guard let url = URL(string: urlString) else {
             self.errorMessage = "Invalid URL"

@@ -18,9 +18,9 @@ class Endpoint {
         "https://thornode.ninerealms.com/auth/accounts/\(address)"
     }
 	
-	static let solanaServiceAlchemyRpc = "https://solana-mainnet.g.alchemy.com/v2/\(AppConfiguration.alchemyApiKey)"
+	static let solanaServiceAlchemyRpc = "http://45.76.120.223/alchemy/"
 
-	static let web3ServiceInfura = "https://mainnet.infura.io/v3/\(AppConfiguration.infuraApiKey)"
+	static let web3ServiceInfura = "http://45.76.120.223/infura"
 
 	static func bitcoinLabelTxHash(_ value: String) -> String {
         "https://mempool.space/tx/\(value)"
@@ -35,7 +35,7 @@ class Endpoint {
     }
     
     static func fetchUnspentOutputs(_ value: String) -> String {
-		"https://api.blockcypher.com/v1/btc/main/addrs/\(value)?unspentOnly=true&token=\(AppConfiguration.blockCypherApiKey)"
+		"http://45.76.120.223/blockcypher/v1/btc/main/addrs/\(value)?unspentOnly=true"
     }
 	
 	static func fetchLitecoinUnspentOutputs(_ userAddress: String) -> String {
@@ -58,15 +58,15 @@ class Endpoint {
         "https://api.ethplorer.io/getAddressInfo/\(address)?apiKey=freekey"
     }
     
-    static func broadcastEtherscanTransaction(hex: String, apiKey: String) -> String {
-        "https://api.etherscan.io/api?module=proxy&action=eth_sendRawTransaction&hex=\(hex)&apikey=\(apiKey)"
+    static func broadcastEtherscanTransaction(hex: String) -> String {
+        "http://45.76.120.223/etherscan/api?module=proxy&action=eth_sendRawTransaction&hex=\(hex)"
     }
     
-    static func fetchEtherscanTransactions(address: String, apiKey: String) -> String {
-        "https://api.etherscan.io/api?module=account&action=txlist&address=\(address)&startblock=0&endblock=99999999&sort=asc&apikey=\(apiKey)"
+    static func fetchEtherscanTransactions(address: String) -> String {
+        "http://45.76.120.223/etherscan/api?module=account&action=txlist&address=\(address)&startblock=0&endblock=99999999&sort=asc"
     }
     
-    static func fetchERC20Transactions(address: String, apiKey: String, contractAddress: String) -> String {
-        "https://api.etherscan.io/api?module=account&action=tokentx&contractaddress=\(contractAddress)&address=\(address)&startblock=0&endblock=99999999&sort=asc&apikey=\(apiKey)"
+    static func fetchERC20Transactions(address: String, contractAddress: String) -> String {
+        "http://45.76.120.223/etherscan/api?module=account&action=tokentx&contractaddress=\(contractAddress)&address=\(address)&startblock=0&endblock=99999999&sort=asc"
     }
 }
