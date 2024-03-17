@@ -16,7 +16,8 @@ struct CoinCell: View {
 	@StateObject var utxoLtc = LitecoinUnspentOutputsService()
     @StateObject var eth = EthplorerAPIService()
     @StateObject var thor = ThorchainService.shared
-    
+	@StateObject var blockchair = BlockchairService.shared
+	
     var body: some View {
         cell
             .onAppear {

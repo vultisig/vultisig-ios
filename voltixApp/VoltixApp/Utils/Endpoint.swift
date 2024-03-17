@@ -29,7 +29,11 @@ class Endpoint {
 	static func litecoinLabelTxHash(_ value: String) -> String {
 		"https://litecoinspace.org/tx/\(value)"
 	}
-
+	
+	static func blockchairDashboard(_ address: String, _ coinName: String) -> String {
+		"https://api.blockchair.com/\(coinName)/dashboards/address/\(address)?key=A___PLqLolRBKDsYRO9SUi5EzgeXjMt5"
+	}
+	
     static func ethereumLabelTxHash(_ value: String) -> String {
         "https://etherscan.io/tx/\(value)"
     }
