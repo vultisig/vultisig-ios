@@ -107,7 +107,8 @@ struct CoinCell: View {
 			utxoLtc: utxoLtc,
             eth: eth,
             thor: thor,
-            tx: tx
+            tx: tx,
+			blockchair: blockchair
         )
     }
 }

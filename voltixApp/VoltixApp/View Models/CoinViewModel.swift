@@ -12,9 +12,11 @@ import Foundation
 	@Published var balanceUSD = "US$ 0,00"
 	@Published var coinBalance = "0.0"
 	
-	func loadData(utxoBtc: BitcoinUnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, eth: EthplorerAPIService, thor: ThorchainService, tx: SendTransaction) async {
+	func loadData(utxoBtc: BitcoinUnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, eth: EthplorerAPIService, thor: ThorchainService, tx: SendTransaction, blockchair: BlockchairService) async {
 		print("realoading data...")
 		isLoading = true
+		
+		await blockchair.fetchBlockchairData(for: tx.fromAddress, coinName: Chain.Bitcoin.name.lowercased())
 		
 		if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
 			await utxoBtc.fetchUnspentOutputs(for: tx.fromAddress)
