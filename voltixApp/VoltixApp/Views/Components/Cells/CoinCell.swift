@@ -24,6 +24,9 @@ struct CoinCell: View {
                     await setData()
                 }
             }
+            .onChange(of: coinViewModel.coinBalance) {
+                updateState()
+            }
     }
     
     var cell: some View {
@@ -51,15 +54,21 @@ struct CoinCell: View {
     }
     
     var quantity: some View {
-        Text(coinViewModel.coinBalance)
+        let balance = coinViewModel.coinBalance
+        
+        return Text(balance ?? "0.00001")
             .font(.body16Menlo)
             .foregroundColor(.neutral0)
+            .redacted(reason: balance==nil ? .placeholder : [])
     }
     
     var amount: some View {
-        Text(coinViewModel.balanceUSD)
+        let balance = coinViewModel.balanceUSD
+        
+        return Text(balance ?? "US$1000")
             .font(.body16MenloBold)
             .foregroundColor(.neutral0)
+            .redacted(reason: balance==nil ? .placeholder : [])
     }
     
     var buttons: some View {
@@ -103,6 +112,16 @@ struct CoinCell: View {
         await coinViewModel.loadData(
 			utxoBtc: utxoBtc,
 			utxoLtc: utxoLtc,
+            eth: eth,
+            thor: thor,
+            tx: tx
+        )
+    }
+    
+    private func updateState() {
+        coinViewModel.updateState(
+            utxoBtc: utxoBtc,
+            utxoLtc: utxoLtc,
             eth: eth,
             thor: thor,
             tx: tx

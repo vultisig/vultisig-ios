@@ -7,10 +7,11 @@
 
 import Foundation
 
-@MainActor class CoinViewModel: ObservableObject {
+@MainActor 
+class CoinViewModel: ObservableObject {
 	@Published var isLoading = false
-	@Published var balanceUSD = "US$ 0,00"
-	@Published var coinBalance = "0.0"
+    @Published var balanceUSD: String? = nil
+	@Published var coinBalance: String? = nil
 	
 	func loadData(utxoBtc: BitcoinUnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, eth: EthplorerAPIService, thor: ThorchainService, tx: SendTransaction) async {
 		print("realoading data...")
@@ -27,13 +28,20 @@ import Foundation
 			await thor.fetchAccountNumber(tx.fromAddress)
 		}
 		
-		await CryptoPriceService.shared.fetchCryptoPrices(for: "bitcoin,litecoin,thorchain,solana", for: "usd")
+        await fetchCryptoPrices()
 		
-		updateState(utxoBtc: utxoBtc, utxoLtc: utxoLtc, eth: eth, thor: thor, tx: tx)
+        DispatchQueue.main.async {
+            self.updateState(utxoBtc: utxoBtc, utxoLtc: utxoLtc, eth: eth, thor: thor, tx: tx)
+        }
+		
 		isLoading = false
 	}
+    
+    private func fetchCryptoPrices() async {
+        await CryptoPriceService.shared.fetchCryptoPrices(for: "bitcoin,litecoin,thorchain,solana", for: "usd")
+    }
 	
-	private func updateState(utxoBtc: BitcoinUnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, eth: EthplorerAPIService, thor: ThorchainService, tx: SendTransaction) {
+	func updateState(utxoBtc: BitcoinUnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, eth: EthplorerAPIService, thor: ThorchainService, tx: SendTransaction) {
 		balanceUSD = "US$ 0,00"
 		coinBalance = "0.0"
 		
