@@ -170,10 +170,10 @@ struct PeerDiscoveryView: View {
             self.participantDiscovery.stop()
         }) {
             FilledButton(title: "continue")
-                .disabled(self.selections.count < 2)
-            
-        }.disabled(self.selections.count < 2)
-            .grayscale(self.selections.count < 2 ? 0 : 1)
+                .padding(40)
+        }
+        .disabled(self.selections.count < 2)
+        .opacity(self.selections.count < 2 ? 0.8 : 1)
     }
     
     private func getQrImage(size: CGFloat) -> Image {
