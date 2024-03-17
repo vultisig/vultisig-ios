@@ -92,3 +92,4 @@
 "signingWithEdDSA" = "SIGNING USING EdDSA KEY... ";
 "keysignFinished" = "KEYSIGN FINISHED...";
 "scanWithPairedDevice" = "Scan with your Paired device:";
+"waitingForKeygenStart" = "Waiting for key generation to start...";

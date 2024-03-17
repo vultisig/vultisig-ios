@@ -57,7 +57,6 @@ struct JoinKeysignView: View {
                                         sessionID: self.sessionID,
                                         keysignType: self.keysignPayload?.coin.chain.signingKeyType ?? .ECDSA,
                                         messsageToSign: self.keysignMessages,
-                                        localPartyKey: self.localPartyID,
                                         keysignPayload: self.keysignPayload)
                         } else {
                             Text("Unable to start the keysign process due to missing information.")
@@ -79,7 +78,7 @@ struct JoinKeysignView: View {
             .cornerRadius(10)
             .shadow(radius: 5)
         }
-        .navigationTitle(NSLocalizedString("joinKeysign", comment: "Join Keysign"))
+        .navigationTitle(NSLocalizedString("joinKeySign", comment: "Join Keysign"))
         .sheet(isPresented: self.$isShowingScanner, content: {
             CodeScannerView(codeTypes: [.qr], completion: self.handleScan)
         })

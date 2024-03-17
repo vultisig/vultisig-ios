@@ -70,7 +70,7 @@ struct VaultDetailView: View {
         .padding(16)
         .padding(.bottom, 150)
     }
-    
+       
     var scanButton: some View {
         NavigationLink {
             JoinKeysignView(vault: vault)
