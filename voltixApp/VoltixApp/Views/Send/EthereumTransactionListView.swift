@@ -47,12 +47,11 @@ struct EthereumTransactionListView: View {
                             if let contract = contractAddress {
                                 await etherScanService.fetchERC20Transactions(
                                     forAddress: eth.address,
-                                    apiKey: AppConfiguration.etherScanApiKey,
                                     contractAddress: contract
                                 )
                                 
                             } else {
-                                await etherScanService.fetchTransactions(forAddress: eth.address, apiKey: AppConfiguration.etherScanApiKey)
+                                await etherScanService.fetchTransactions(forAddress: eth.address)
                             }
                         case .failure(let error):
                             print("error: \(error)")

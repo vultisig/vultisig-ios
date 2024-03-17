@@ -217,7 +217,7 @@ class KeysignViewModel: ObservableObject {
                     let result = EthereumHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
                     switch result {
                     case .success(let tx):
-                        await self.etherScanService.broadcastTransaction(hex: tx, apiKey: AppConfiguration.etherScanApiKey)
+                        await self.etherScanService.broadcastTransaction(hex: tx)
                     case .failure(let err):
                         self.handleHelperError(err: err)
                     }
@@ -227,7 +227,7 @@ class KeysignViewModel: ObservableObject {
                     let result = ERC20Helper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
                     switch result {
                     case .success(let tx):
-                        await self.etherScanService.broadcastTransaction(hex: tx, apiKey: AppConfiguration.etherScanApiKey)
+                        await self.etherScanService.broadcastTransaction(hex: tx)
                     case .failure(let err):
                         self.handleHelperError(err: err)
                     }
