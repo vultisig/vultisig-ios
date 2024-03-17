@@ -20,11 +20,11 @@ class Blockchair: Codable {
 		var type: String?
 		var scriptHex: String?
 		var balance: Int?
-		var balanceUSD: Double?
+		var balanceUsd: Double?
 		var received: Int?
-		var receivedUSD: Double?
+		var receivedUsd: Double?
 		var spent: Int?
-		var spentUSD: Double?
+		var spentUsd: Double?
 		var outputCount: Int?
 		var unspentOutputCount: Int?
 		var firstSeenReceiving: String?

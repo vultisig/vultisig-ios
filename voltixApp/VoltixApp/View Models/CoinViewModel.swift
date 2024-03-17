@@ -16,7 +16,8 @@ import Foundation
 		print("realoading data...")
 		isLoading = true
 		
-		await blockchair.fetchBlockchairData(for: tx.fromAddress, coinName: Chain.Bitcoin.name.lowercased())
+		
+		await blockchair.fetchBlockchairData(for: tx.fromAddress, coinName: tx.coin.chain.name.lowercased())
 		
 		if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
 			await utxoBtc.fetchUnspentOutputs(for: tx.fromAddress)

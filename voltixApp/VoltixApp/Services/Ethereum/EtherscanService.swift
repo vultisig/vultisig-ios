@@ -37,7 +37,7 @@ public class EtherScanService: ObservableObject {
                 throw EtherScanError.httpError(statusCode, "HTTP Error: \(statusCode) - \(responseString)")
             }
             
-            print(String(data: data, encoding: .utf8) ?? "No response body")
+            // print(String(data: data, encoding: .utf8) ?? "No response body")
             
             let decoder = JSONDecoder()
             let broadcastResponse = try decoder.decode(EtherscanBroadcastResponse.self, from: data)
