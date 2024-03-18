@@ -66,7 +66,7 @@ class SolanaService: ObservableObject {
 			]
 			let data = try await postRequest(with: requestBody)
 			
-			print(String(data: data, encoding: String.Encoding.utf8))
+			// print(String(data: data, encoding: String.Encoding.utf8))
 			
 			let response = try jsonDecoder.decode(SolanaRPCResponse<String>.self, from: data)
 			DispatchQueue.main.async { [weak self] in
