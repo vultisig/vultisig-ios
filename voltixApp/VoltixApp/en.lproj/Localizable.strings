@@ -86,6 +86,8 @@
 "amount" = "Amount";
 "memo" = "Memo";
 "gas" = "Gas";
+"signing" = "Signing";
+"tryAgain" = "Try Again";
 "failStartKeysign" = "fail to start keysign";
 "waitingForKeySignStart" = "Waiting for the signing process to begin...";
 "keysignFail" = "The keysign process could not be started. Please check your settings and try again.";
@@ -99,3 +101,5 @@
 "sendingRightAddressCheck" = "I’m sending the right address";
 "correctAmountCheck" = "The amount is correct";
 "notHackedCheck" = "I’m not being hacked or phished";
+"signInErrorTryAgain" = "Signing Error. Please try again.";
+"sameWifiEntendedInstruction" = "Keep devices on the same WiFi Network, correct vault and pair devices. Make sure no other devices are running Voltix.";

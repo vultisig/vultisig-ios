@@ -72,6 +72,7 @@
 		A633B13C2B9A6564003D1738 /* SetupVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B13B2B9A6564003D1738 /* SetupVaultView.swift */; };
 		A633B13E2B9A9E30003D1738 /* VaultDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B13D2B9A9E30003D1738 /* VaultDetailView.swift */; };
 		A63953B02BA7BEDA000802EC /* Checkbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63953AF2BA7BEDA000802EC /* Checkbox.swift */; };
+		A63953B22BA7CB8E000802EC /* SendCryptoKeysignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63953B12BA7CB8E000802EC /* SendCryptoKeysignView.swift */; };
 		A65324282BA51E8700DDE6EB /* QRCodeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65324272BA51E8700DDE6EB /* QRCodeScannerView.swift */; };
 		A653242A2BA52A4700DDE6EB /* SendCryptoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65324292BA52A4700DDE6EB /* SendCryptoViewModel.swift */; };
 		A653242C2BA52E2200DDE6EB /* SendCryptoQRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A653242B2BA52E2200DDE6EB /* SendCryptoQRScannerView.swift */; };
@@ -293,6 +294,7 @@
 		A633B13B2B9A6564003D1738 /* SetupVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultView.swift; sourceTree = "<group>"; };
 		A633B13D2B9A9E30003D1738 /* VaultDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailView.swift; sourceTree = "<group>"; };
 		A63953AF2BA7BEDA000802EC /* Checkbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checkbox.swift; sourceTree = "<group>"; };
+		A63953B12BA7CB8E000802EC /* SendCryptoKeysignView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoKeysignView.swift; sourceTree = "<group>"; };
 		A65324272BA51E8700DDE6EB /* QRCodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeScannerView.swift; sourceTree = "<group>"; };
 		A65324292BA52A4700DDE6EB /* SendCryptoViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoViewModel.swift; sourceTree = "<group>"; };
 		A653242B2BA52E2200DDE6EB /* SendCryptoQRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoQRScannerView.swift; sourceTree = "<group>"; };
@@ -918,6 +920,7 @@
 				A653242B2BA52E2200DDE6EB /* SendCryptoQRScannerView.swift */,
 				A653242D2BA53D0900DDE6EB /* SendCryptoPairView.swift */,
 				A653242F2BA540ED00DDE6EB /* SendCryptoVerifyView.swift */,
+				A63953B12BA7CB8E000802EC /* SendCryptoKeysignView.swift */,
 			);
 			path = Send;
 			sourceTree = "<group>";
@@ -1277,6 +1280,7 @@
 				A633B12F2B9952D8003D1738 /* OutlineButton.swift in Sources */,
 				465B09A72B7C049400952DD9 /* BitcoinUnspentOutputsService.swift in Sources */,
 				A6CBA8EE2BA299E8008B110C /* ImportVaultViewModel.swift in Sources */,
+				A63953B22BA7CB8E000802EC /* SendCryptoKeysignView.swift in Sources */,
 				049BBB582B71E72F004C231F /* DeviceView.swift in Sources */,
 				D9AD8EF12B6731660009F8D5 /* SendInputDetailsView.swift in Sources */,
 				D9AD8F012B6732360009F8D5 /* SwapVerifyView.swift in Sources */,

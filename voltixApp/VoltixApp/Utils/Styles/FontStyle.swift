@@ -67,6 +67,10 @@ extension Font {
     static let title30MenloBlack = Font.custom("Menlo", size: 30).weight(.black)
     static let title40MenloBlack = Font.custom("Menlo", size: 40).weight(.black)
     
+    /// X-LARGE TITLE
+    static let title80Menlo = Font.custom("Menlo", size: 80)
+    static let title100Menlo = Font.custom("Menlo", size: 100)
+    
     /// DYNAMIC
     static func dynamicMenlo(_ fontsize: CGFloat) -> Font {
         Font.custom("Menlo", size: fontsize)

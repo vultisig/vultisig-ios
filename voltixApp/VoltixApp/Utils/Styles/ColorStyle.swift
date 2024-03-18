@@ -32,6 +32,9 @@ extension Color {
     
     static let destructive = Color(hex: "E45944")
     
+    static let loadingBlue = Color(hex: "1DA7FA")
+    static let loadingGreen = Color(hex: "24D7A6")
+    
     // Background
     static let backgroundBlue = Color(hex: "02122B")
 }
