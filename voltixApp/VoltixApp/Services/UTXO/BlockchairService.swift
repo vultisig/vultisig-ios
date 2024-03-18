@@ -18,6 +18,8 @@ public class BlockchairService: ObservableObject {
 	
 	public func fetchBlockchairData(for address: String, coinName: String) async {
 		
+		let coinName = coinName.lowercased().replacingOccurrences(of: Chain.BitcoinCash.name.lowercased(), with: "bitcoin-cash")
+		
 		let key: String = "\(address)-\(coinName)"
 		
 		guard let url = URL(string: Endpoint.blockchairDashboard(address, coinName)) else {

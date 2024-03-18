@@ -39,13 +39,12 @@ struct SendInputDetailsView: View {
 	
 	@EnvironmentObject var appState: ApplicationState
 	@Binding var presentationStack: [CurrentScreen]
-	@StateObject var uxto: BitcoinUnspentOutputsService = .init()
-	@StateObject var uxtoLtc: LitecoinUnspentOutputsService = .init()
 	@StateObject var eth: EthplorerAPIService = .init()
 	@StateObject var web3Service = Web3Service()
 	@StateObject var cryptoPrice = CryptoPriceService.shared
 	@StateObject var thor: ThorchainService = .shared
 	@StateObject var sol: SolanaService = SolanaService.shared
+	@StateObject var utxo = BlockchairService.shared
 	@ObservedObject var tx: SendTransaction
 	@State private var isShowingScanner = false
 	@State private var isValidAddress = false
@@ -377,20 +376,8 @@ struct SendInputDetailsView: View {
 			return isValidForm
 		}
 		
-		
-		if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
-			let walletBalanceInSats = uxto.walletData?.balance ?? 0
-			let totalTransactionCostInSats = tx.amountInSats + tx.feeInSats
-			print("Total transaction cost: \(totalTransactionCostInSats)")
-			
-			if totalTransactionCostInSats > walletBalanceInSats {
-				formErrorMessages += "The combined amount and fee exceed your wallet's balance. Please adjust to proceed. \n"
-				logger.log("Total transaction cost exceeds wallet balance.")
-				isValidForm = false
-			}
-			
-		} else if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
-			let walletBalanceInSats = uxtoLtc.walletData?.balance ?? 0
+		if  tx.coin.chain.chainType == ChainType.UTXO {
+			let walletBalanceInSats = utxo.blockchairData?[key]?.address?.balance ?? 0
 			let totalTransactionCostInSats = tx.amountInSats + tx.feeInSats
 			print("Total transaction cost: \(totalTransactionCostInSats)")
 			
@@ -472,19 +459,9 @@ struct SendInputDetailsView: View {
 	}
 	
 	private func setMaxValues() {
-		if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
-			let rate = priceRate
-			if let walletData = uxto.walletData {
-				tx.amount = walletData.balanceInBTC
-				tx.amountInUSD = String(format: "%.2f", walletData.balanceDecimal * rate)
-			}
-		}
-		if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
-			let rate = priceRate
-			if let walletData = uxtoLtc.walletData {
-				tx.amount = walletData.balanceInLTC
-				tx.amountInUSD = String(format: "%.2f", walletData.balanceDecimal * rate)
-			}
+		if  tx.coin.chain.chainType == ChainType.UTXO {
+			tx.amount = utxo.blockchairData?[key]?.address?.balanceInBTC ?? "0.0"
+			tx.amountInUSD = utxo.blockchairData?[key]?.address?.balanceInUSD ?? "US$ 0,00"
 		} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
 			if tx.coin.ticker.uppercased() == "ETH" {
 				tx.amount = eth.addressInfo?.ETH.balanceString ?? "0.0"

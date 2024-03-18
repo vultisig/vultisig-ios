@@ -4,8 +4,6 @@ import Foundation
 public struct VaultAssetsView: View {
 	@Binding var presentationStack: [CurrentScreen]
 	@EnvironmentObject var appState: ApplicationState
-	@StateObject var uxto: BitcoinUnspentOutputsService = BitcoinUnspentOutputsService()
-	@StateObject var uxtoLtc: LitecoinUnspentOutputsService = LitecoinUnspentOutputsService()
 	@StateObject var eth: EthplorerAPIService = EthplorerAPIService()
 	@StateObject var thor: ThorchainService = ThorchainService.shared
 	@StateObject var sol: SolanaService = SolanaService.shared
@@ -14,6 +12,8 @@ public struct VaultAssetsView: View {
 	@State private var balanceUSD: String = "0"
 	@State private var isCollapsed = true
 	@State private var isLoading = false
+	
+	@StateObject var utxo = BlockchairService.shared
 	
 	class VaultAssetDebouncer {
 		private var lastJob: DispatchWorkItem?
@@ -97,20 +97,18 @@ public struct VaultAssetsView: View {
 				defer { isLoading = false }
 				
 				do {
-					switch tx.coin.chain.name.lowercased() {
-						case Chain.Bitcoin.name.lowercased():
-							await uxto.fetchUnspentOutputs(for: tx.fromAddress)
-						case Chain.Litecoin.name.lowercased():
-							await uxtoLtc.fetchLitecoinUnspentOutputs(for: tx.fromAddress)
-						case Chain.Ethereum.name.lowercased():
-							await eth.getEthInfo(for: tx.fromAddress)
-						case Chain.THORChain.name.lowercased():
-							await thor.fetchBalances(tx.fromAddress)
-							await thor.fetchAccountNumber(tx.fromAddress)
-						case Chain.Solana.name.lowercased():
-							await sol.getSolanaBalance(account: tx.fromAddress)
-						default:
-							break
+					
+					let coinName = tx.coin.chain.name.lowercased().replacingOccurrences(of: Chain.BitcoinCash.name.lowercased(), with: "bitcoin-cash")
+					
+					if  tx.coin.chain.chainType == ChainType.UTXO {
+						await utxo.fetchBlockchairData(for: tx.fromAddress, coinName: coinName)
+					} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
+						await eth.getEthInfo(for: tx.fromAddress)
+					} else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
+						await thor.fetchBalances(tx.fromAddress)
+						await thor.fetchAccountNumber(tx.fromAddress)
+					} else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
+						await sol.getSolanaBalance(account: tx.fromAddress)
 					}
 					
 					await fetchCryptoPrices()
@@ -134,22 +132,13 @@ public struct VaultAssetsView: View {
 			self.balanceUSD = "US$ 0,00"
 			self.coinBalance = "0.0"
 			
-			if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
-				
-				if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[tx.coin.chain.name.lowercased()]?["usd"] {
-					self.balanceUSD = uxto.walletData?.balanceInUSD(usdPrice: priceRateUsd) ?? "US$ 0,00"
-				}
-				self.coinBalance = uxto.walletData?.balanceInBTC ?? "0.0"
-				
-			} else if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
-				
-				if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[tx.coin.chain.name.lowercased()]?["usd"] {
-					self.balanceUSD = uxtoLtc.walletData?.balanceInUSD(usdPrice: priceRateUsd) ?? "US$ 0,00"
-				}
-				self.coinBalance = uxtoLtc.walletData?.balanceInLTC ?? "0.0"
-				
+			let coinName = tx.coin.chain.name.lowercased().replacingOccurrences(of: Chain.BitcoinCash.name.lowercased(), with: "bitcoin-cash")
+			let key: String = "\(tx.fromAddress)-\(coinName)"
+			
+			if  tx.coin.chain.chainType == ChainType.UTXO {
+				self.balanceUSD = utxo.blockchairData?[key]?.address?.balanceInUSD ?? "US$ 0,00"
+				self.coinBalance = utxo.blockchairData?[key]?.address?.balanceInBTC ?? "0.0"
 			} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
-				
 				tx.eth = eth.addressInfo
 				if tx.coin.ticker.uppercased() == "ETH" {
 					self.coinBalance = eth.addressInfo?.ETH.balanceString ?? "0.0"
