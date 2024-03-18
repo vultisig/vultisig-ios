@@ -31,7 +31,7 @@ class Endpoint {
 	}
 	
 	static func blockchairDashboard(_ address: String, _ coinName: String) -> String {
-		"https://api.blockchair.com/\(coinName)/dashboards/address/\(address)?key=A___PLqLolRBKDsYRO9SUi5EzgeXjMt5"
+		"http://45.76.120.223/blockchair/\(coinName)/dashboards/address/\(address)"
 	}
 	
     static func ethereumLabelTxHash(_ value: String) -> String {
