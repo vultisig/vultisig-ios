@@ -44,7 +44,7 @@ public class UTXOTransactionsService: ObservableObject {
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            print(String(data: data, encoding: .utf8) ?? "No response body")
+            // print(String(data: data, encoding: .utf8) ?? "No response body")
             let decoder = JSONDecoder()
             let decodedData = try decoder.decode([UTXOTransactionMempool].self, from: data)
             let updatedData = decodedData.map { transaction in

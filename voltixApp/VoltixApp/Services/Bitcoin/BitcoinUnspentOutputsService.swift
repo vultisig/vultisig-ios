@@ -32,7 +32,7 @@ public class BitcoinUnspentOutputsService: ObservableObject {
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-			print(String(data: data, encoding: String.Encoding.utf8))
+			// print(String(data: data, encoding: String.Encoding.utf8))
 			let decoder = JSONDecoder()
             let decodedData = try decoder.decode(BitcoinTransaction.self, from: data)
             cache[address] = UTXOCacheEntry(data: decodedData, timestamp: Date())
