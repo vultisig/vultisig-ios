@@ -87,6 +87,8 @@
 "memo" = "Memo";
 "gas" = "Gas";
 "signing" = "Signing";
+"transaction" = "Transaction";
+"complete" = "Complete";
 "tryAgain" = "Try Again";
 "failStartKeysign" = "fail to start keysign";
 "waitingForKeySignStart" = "Waiting for the signing process to begin...";

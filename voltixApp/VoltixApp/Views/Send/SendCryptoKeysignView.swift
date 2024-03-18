@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct SendCryptoKeysignView: View {
+    @ObservedObject var viewModel: SendCryptoViewModel
+    
     @State var isSigning = true
     @State var didSwitch = false
     
@@ -25,6 +27,9 @@ struct SendCryptoKeysignView: View {
             signingAnimation
             Spacer()
             wifiInstructions
+        }
+        .onTapGesture {
+            viewModel.moveToNextView()
         }
     }
     
@@ -118,6 +123,6 @@ struct SendCryptoKeysignView: View {
         Color.blue800
             .ignoresSafeArea()
         
-        SendCryptoKeysignView()
+        SendCryptoKeysignView(viewModel: SendCryptoViewModel())
     }
 }

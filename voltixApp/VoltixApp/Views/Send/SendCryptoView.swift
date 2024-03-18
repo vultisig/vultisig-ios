@@ -47,6 +47,8 @@ struct SendCryptoView: View {
             SendCryptoPairView(viewModel: viewModel).tag(3)
             SendCryptoQRScannerView(viewModel: viewModel).tag(4)
             SendCryptoVerifyView(viewModel: viewModel).tag(5)
+            SendCryptoKeysignView(viewModel: viewModel).tag(6)
+            SendCryptoDoneView().tag(7)
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
         .frame(maxHeight: .infinity)
