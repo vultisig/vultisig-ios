@@ -80,6 +80,9 @@ class JoinKeygenViewModel: ObservableObject {
             }
         }
     }
+    func stopJoinKeygen(){
+        self.status = .DiscoverService
+    }
     func waitForKeygenStart() async {
         do{
             let t = Task {

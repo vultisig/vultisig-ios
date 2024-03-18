@@ -2,11 +2,10 @@
 //  JoinKeygen.swift
 //  VoltixApp
 
-
+import CodeScanner
 import Network
 import OSLog
 import SwiftUI
-import CodeScanner
 
 struct JoinKeygenView: View {
     private let logger = Logger(subsystem: "join-keygen", category: "communication")
@@ -55,7 +54,10 @@ struct JoinKeygenView: View {
             }
         }
         .onAppear {
-            viewModel.setData(vault: vault,serviceDelegate: self.serviceDelegate)
+            viewModel.setData(vault: vault, serviceDelegate: self.serviceDelegate)
+        }
+        .onDisappear {
+            viewModel.stopJoinKeygen()
         }
     }
     
@@ -194,9 +196,8 @@ struct JoinKeygenView: View {
         .task {
             await viewModel.waitForKeygenStart()
         }
-    }    
+    }
 }
-
 
 struct JoinKeygenView_Previews: PreviewProvider {
     static var previews: some View {

@@ -84,7 +84,9 @@ class JoinKeysignViewModel: ObservableObject {
         self.netService?.delegate = self.serviceDelegate
         self.netService?.resolve(withTimeout: 10)
     }
-    
+    func stopJoiningKeysign(){
+        self.status = .DiscoverSigningMsg
+    }
     func waitForKeysignStart() async {
         do {
             let t = Task {

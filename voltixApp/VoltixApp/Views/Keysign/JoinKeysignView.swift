@@ -74,6 +74,9 @@ struct JoinKeysignView: View {
         .onAppear {
             self.viewModel.setData(vault: self.vault, serviceDelegate: self.serviceDelegate)
         }
+        .onDisappear(){
+            self.viewModel.stopJoiningKeysign()
+        }
     }
     
     var keysignMessageConfirm: some View {
