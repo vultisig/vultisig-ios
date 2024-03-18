@@ -18,6 +18,8 @@ public class BlockchairService: ObservableObject {
 	
 	public func fetchBlockchairData(for address: String, coinName: String) async {
 		
+		let key: String = "\(address)-\(coinName)"
+		
 		guard let url = URL(string: Endpoint.blockchairDashboard(address, coinName)) else {
 			print("Invalid URL")
 			return
@@ -25,6 +27,8 @@ public class BlockchairService: ObservableObject {
 		
 		do {
 			let (data, _) = try await URLSession.shared.data(from: url)
+			
+			print(String(data: data, encoding: .utf8))
 			let decoder = JSONDecoder()
 			decoder.keyDecodingStrategy = .convertFromSnakeCase
 			let decodedData = try decoder.decode(BlockchairResponse.self, from: data)
@@ -32,28 +36,28 @@ public class BlockchairService: ObservableObject {
 				if self.blockchairData == nil {
 					self.blockchairData = [String: Blockchair]()
 				}
-				self.blockchairData?[coinName] = blockchairData
+				self.blockchairData?[key] = blockchairData
 			}
 		} catch let DecodingError.dataCorrupted(context) {
 			print("Data corrupted: \(context)")
 			self.errorMessage = self.errorMessage ?? [String: String]()
-			self.errorMessage?[coinName] = "Data corrupted: \(context)"
-		} catch let DecodingError.keyNotFound(key, context) {
+			self.errorMessage?[key] = "Data corrupted: \(context)"
+		} catch let DecodingError.keyNotFound(key2, context) {
 			print("Key '\(key)' not found: \(context.debugDescription)")
 			self.errorMessage = self.errorMessage ?? [String: String]()
-			self.errorMessage?[coinName] = "Key '\(key)' not found: \(context.debugDescription)"
+			self.errorMessage?[key] = "Key '\(key2)' not found: \(context.debugDescription)"
 		} catch let DecodingError.valueNotFound(value, context) {
 			print("Value '\(value)' not found: \(context.debugDescription)")
 			self.errorMessage = self.errorMessage ?? [String: String]()
-			self.errorMessage?[coinName] = "Value '\(value)' not found: \(context.debugDescription)"
+			self.errorMessage?[key] = "Value '\(value)' not found: \(context.debugDescription)"
 		} catch let DecodingError.typeMismatch(type, context) {
 			print("Type '\(type)' mismatch: \(context.debugDescription)")
 			self.errorMessage = self.errorMessage ?? [String: String]()
-			self.errorMessage?[coinName] = "Type '\(type)' mismatch: \(context.debugDescription)"
+			self.errorMessage?[key] = "Type '\(type)' mismatch: \(context.debugDescription)"
 		} catch {
 			print("Error: \(error.localizedDescription)")
 			self.errorMessage = self.errorMessage ?? [String: String]()
-			self.errorMessage?[coinName] = "Error: \(error.localizedDescription)"
+			self.errorMessage?[key] = "Error: \(error.localizedDescription)"
 		}
 	}
 	
