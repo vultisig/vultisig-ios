@@ -83,6 +83,9 @@
 "joinKeyshare" = "Join Keyshare";
 "lookingForDevices" = "Looking for devices... ";
 "sign" = "Sign";
+"amount" = "Amount";
+"memo" = "Memo";
+"gas" = "Gas";
 "failStartKeysign" = "fail to start keysign";
 "waitingForKeySignStart" = "Waiting for the signing process to begin...";
 "keysignFail" = "The keysign process could not be started. Please check your settings and try again.";
@@ -93,3 +96,6 @@
 "keysignFinished" = "KEYSIGN FINISHED...";
 "scanWithPairedDevice" = "Scan with your Paired device:";
 "waitingForKeygenStart" = "Waiting for key generation to start...";
+"sendingRightAddressCheck" = "I’m sending the right address";
+"correctAmountCheck" = "The amount is correct";
+"notHackedCheck" = "I’m not being hacked or phished";

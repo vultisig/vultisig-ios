@@ -71,6 +71,7 @@
 		A633B13A2B9A5A22003D1738 /* ImportWalletView2.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B1392B9A5A22003D1738 /* ImportWalletView2.swift */; };
 		A633B13C2B9A6564003D1738 /* SetupVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B13B2B9A6564003D1738 /* SetupVaultView.swift */; };
 		A633B13E2B9A9E30003D1738 /* VaultDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B13D2B9A9E30003D1738 /* VaultDetailView.swift */; };
+		A63953B02BA7BEDA000802EC /* Checkbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63953AF2BA7BEDA000802EC /* Checkbox.swift */; };
 		A65324282BA51E8700DDE6EB /* QRCodeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65324272BA51E8700DDE6EB /* QRCodeScannerView.swift */; };
 		A653242A2BA52A4700DDE6EB /* SendCryptoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65324292BA52A4700DDE6EB /* SendCryptoViewModel.swift */; };
 		A653242C2BA52E2200DDE6EB /* SendCryptoQRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A653242B2BA52E2200DDE6EB /* SendCryptoQRScannerView.swift */; };
@@ -291,6 +292,7 @@
 		A633B1392B9A5A22003D1738 /* ImportWalletView2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportWalletView2.swift; sourceTree = "<group>"; };
 		A633B13B2B9A6564003D1738 /* SetupVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultView.swift; sourceTree = "<group>"; };
 		A633B13D2B9A9E30003D1738 /* VaultDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailView.swift; sourceTree = "<group>"; };
+		A63953AF2BA7BEDA000802EC /* Checkbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checkbox.swift; sourceTree = "<group>"; };
 		A65324272BA51E8700DDE6EB /* QRCodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeScannerView.swift; sourceTree = "<group>"; };
 		A65324292BA52A4700DDE6EB /* SendCryptoViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoViewModel.swift; sourceTree = "<group>"; };
 		A653242B2BA52E2200DDE6EB /* SendCryptoQRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoQRScannerView.swift; sourceTree = "<group>"; };
@@ -484,14 +486,15 @@
 				46A616E92B8807B700372994 /* KeygenStatusText.swift */,
 				A6F9F7DE2B9BAA9F00790258 /* Separator.swift */,
 				A66A0BDC2BA15C650021A483 /* WebSVGImage.swift */,
-				A6F9F7D92B9BA2CF00790258 /* Cells */,
-				A633B1232B993FCC003D1738 /* Buttons */,
-				A6966D272BA4009B00903CA4 /* TextFields */,
-				A633B1342B997D35003D1738 /* Navigation Items */,
 				A61BC8152BA256C600484689 /* ProgressBar.swift */,
 				A61BC81A2BA26D9900484689 /* TokenSelectionSection.swift */,
 				A6CBA8EF2BA2A629008B110C /* ImportWalletUploadSection.swift */,
 				A6966D2C2BA402A900903CA4 /* TokenSelectorDropdown.swift */,
+				A63953AF2BA7BEDA000802EC /* Checkbox.swift */,
+				A6F9F7D92B9BA2CF00790258 /* Cells */,
+				A633B1232B993FCC003D1738 /* Buttons */,
+				A6966D272BA4009B00903CA4 /* TextFields */,
+				A633B1342B997D35003D1738 /* Navigation Items */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1191,7 +1194,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */;
+			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -1418,6 +1421,7 @@
 				465B09A92B7C176700952DD9 /* SendTransaction.swift in Sources */,
 				A6564A022B969A1200E4B329 /* ETHInfoPrice.swift in Sources */,
 				A633B12D2B994E92003D1738 /* CreateVaultView.swift in Sources */,
+				A63953B02BA7BEDA000802EC /* Checkbox.swift in Sources */,
 				A6966D1E2BA3DDAD00903CA4 /* OnboardingView.swift in Sources */,
 				A633B1382B997F39003D1738 /* NavigationHelpButton.swift in Sources */,
 				A6F2C5492BA001460095C8E3 /* TokenSelectionView.swift in Sources */,
@@ -1786,7 +1790,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */ = {
+		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DE49A1882B65F6DB000F3AFB /* Debug */,

@@ -84,7 +84,7 @@ struct CoinCell: View {
         } label: {
             Text(NSLocalizedString("swap", comment: "Swap button text").uppercased())
                 .font(.body16MenloBold)
-                .foregroundColor(.blue200)
+                .foregroundColor(.persianBlue200)
                 .padding(.vertical, 5)
                 .frame(maxWidth: .infinity)
                 .background(Color.blue800)
