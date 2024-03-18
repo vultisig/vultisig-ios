@@ -11,7 +11,12 @@ struct SendCryptoView: View {
     @ObservedObject var tx: SendTransaction
     let group: GroupedChain
     
-    @StateObject var viewModel = SendCryptoViewModel()
+    @StateObject var sendCryptoViewModel = SendCryptoViewModel()
+    @StateObject var coinViewModel = CoinViewModel()
+    @StateObject var utxoBtc = BitcoinUnspentOutputsService()
+    @StateObject var utxoLtc = LitecoinUnspentOutputsService()
+    @StateObject var eth = EthplorerAPIService()
+    @StateObject var thor = ThorchainService.shared
     
     var body: some View {
         ZStack {
@@ -19,11 +24,21 @@ struct SendCryptoView: View {
             view
         }
         .navigationBarBackButtonHidden(true)
-        .navigationTitle(NSLocalizedString(viewModel.currentTitle, comment: "SendCryptoView title"))
+        .navigationTitle(NSLocalizedString(sendCryptoViewModel.currentTitle, comment: "SendCryptoView title"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 NavigationBackButton()
+            }
+        }
+        .onAppear {
+            Task {
+                await setData()
+            }
+        }
+        .onChange(of: tx.coin) {
+            Task {
+                await setData()
             }
         }
     }
@@ -35,24 +50,43 @@ struct SendCryptoView: View {
     
     var view: some View {
         VStack(spacing: 30) {
-            ProgressBar(progress: viewModel.getProgress())
+            ProgressBar(progress: sendCryptoViewModel.getProgress())
                 .padding(.top, 30)
             tabView
         }
     }
     
     var tabView: some View {
-        TabView(selection: $viewModel.currentIndex) {
-            SendCryptoDetailsView(tx: tx, viewModel: viewModel, group: group).tag(1)
-            SendCryptoQRScannerView(viewModel: viewModel).tag(2)
-            SendCryptoPairView(viewModel: viewModel).tag(3)
-            SendCryptoQRScannerView(viewModel: viewModel).tag(4)
-            SendCryptoVerifyView(viewModel: viewModel).tag(5)
-            SendCryptoKeysignView(viewModel: viewModel).tag(6)
+        TabView(selection: $sendCryptoViewModel.currentIndex) {
+            detailsView.tag(1)
+            SendCryptoQRScannerView(viewModel: sendCryptoViewModel).tag(2)
+            SendCryptoPairView(viewModel: sendCryptoViewModel).tag(3)
+            SendCryptoQRScannerView(viewModel: sendCryptoViewModel).tag(4)
+            SendCryptoVerifyView(viewModel: sendCryptoViewModel).tag(5)
+            SendCryptoKeysignView(viewModel: sendCryptoViewModel).tag(6)
             SendCryptoDoneView().tag(7)
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
         .frame(maxHeight: .infinity)
+    }
+    
+    var detailsView: some View {
+        SendCryptoDetailsView(
+            tx: tx,
+            sendCryptoViewModel: sendCryptoViewModel, 
+            coinViewModel: coinViewModel,
+            group: group
+        )
+    }
+    
+    private func setData() async {
+        await coinViewModel.loadData(
+            utxoBtc: utxoBtc,
+            utxoLtc: utxoLtc,
+            eth: eth,
+            thor: thor,
+            tx: tx
+        )
     }
 }
 
