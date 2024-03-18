@@ -21,7 +21,7 @@ class SendCryptoViewModel: ObservableObject {
     
     func moveToNextView() {
         currentIndex += 1
-        currentTitle = titles[currentIndex]
+        currentTitle = titles[currentIndex-1]
     }
     
     func getProgress() -> Double {

@@ -44,7 +44,7 @@ struct SendCryptoView: View {
         TabView(selection: $viewModel.currentIndex) {
             SendCryptoDetailsView(tx: tx, viewModel: viewModel).tag(1)
             SendCryptoQRScannerView(viewModel: viewModel).tag(2)
-            SendCryptoQRCodeView(viewModel: viewModel).tag(3)
+            SendCryptoPairView(viewModel: viewModel).tag(3)
             SendCryptoQRScannerView(viewModel: viewModel).tag(4)
             SendCryptoVerifyView(viewModel: viewModel).tag(5)
         }

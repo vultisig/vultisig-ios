@@ -1,5 +1,5 @@
 //
-//  SendCryptoQRCodeView.swift
+//  SendCryptoPairView.swift
 //  VoltixApp
 //
 //  Created by Amol Kumar on 2024-03-15.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct SendCryptoQRCodeView: View {
+struct SendCryptoPairView: View {
     @ObservedObject var viewModel: SendCryptoViewModel
     @State var address = "123456789"
     
@@ -19,6 +19,9 @@ struct SendCryptoQRCodeView: View {
             view
         }
         .gesture(DragGesture())
+        .onTapGesture {
+            viewModel.moveToNextView()
+        }
     }
     
     var background: some View {
@@ -76,5 +79,5 @@ struct SendCryptoQRCodeView: View {
 }
 
 #Preview {
-    SendCryptoQRCodeView(viewModel: SendCryptoViewModel())
+    SendCryptoPairView(viewModel: SendCryptoViewModel())
 }

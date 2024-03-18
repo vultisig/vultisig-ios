@@ -13,13 +13,16 @@ struct Checkbox: View {
     var isExtended: Bool = true
     
     var body: some View {
-        HStack(alignment: .top, spacing: 10) {
+        HStack(spacing: 10) {
             check
             description
             
             if isExtended {
                 Spacer()
             }
+        }
+        .onTapGesture {
+            isChecked.toggle()
         }
     }
     

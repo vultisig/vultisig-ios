@@ -75,7 +75,7 @@
 		A65324282BA51E8700DDE6EB /* QRCodeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65324272BA51E8700DDE6EB /* QRCodeScannerView.swift */; };
 		A653242A2BA52A4700DDE6EB /* SendCryptoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65324292BA52A4700DDE6EB /* SendCryptoViewModel.swift */; };
 		A653242C2BA52E2200DDE6EB /* SendCryptoQRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A653242B2BA52E2200DDE6EB /* SendCryptoQRScannerView.swift */; };
-		A653242E2BA53D0900DDE6EB /* SendCryptoQRCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A653242D2BA53D0900DDE6EB /* SendCryptoQRCodeView.swift */; };
+		A653242E2BA53D0900DDE6EB /* SendCryptoPairView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A653242D2BA53D0900DDE6EB /* SendCryptoPairView.swift */; };
 		A65324302BA540ED00DDE6EB /* SendCryptoVerifyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A653242F2BA540ED00DDE6EB /* SendCryptoVerifyView.swift */; };
 		A65649DF2B96602700E4B329 /* DecodableDefaultExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */; };
 		A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D82B96602700E4B329 /* BigUIntExtension.swift */; };
@@ -296,7 +296,7 @@
 		A65324272BA51E8700DDE6EB /* QRCodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeScannerView.swift; sourceTree = "<group>"; };
 		A65324292BA52A4700DDE6EB /* SendCryptoViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoViewModel.swift; sourceTree = "<group>"; };
 		A653242B2BA52E2200DDE6EB /* SendCryptoQRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoQRScannerView.swift; sourceTree = "<group>"; };
-		A653242D2BA53D0900DDE6EB /* SendCryptoQRCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoQRCodeView.swift; sourceTree = "<group>"; };
+		A653242D2BA53D0900DDE6EB /* SendCryptoPairView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoPairView.swift; sourceTree = "<group>"; };
 		A653242F2BA540ED00DDE6EB /* SendCryptoVerifyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVerifyView.swift; sourceTree = "<group>"; };
 		A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DecodableDefaultExtension.swift; sourceTree = "<group>"; };
 		A65649D82B96602700E4B329 /* BigUIntExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BigUIntExtension.swift; sourceTree = "<group>"; };
@@ -916,7 +916,7 @@
 				A61BC8132BA240FC00484689 /* SendCryptoDetailsView.swift */,
 				A65324272BA51E8700DDE6EB /* QRCodeScannerView.swift */,
 				A653242B2BA52E2200DDE6EB /* SendCryptoQRScannerView.swift */,
-				A653242D2BA53D0900DDE6EB /* SendCryptoQRCodeView.swift */,
+				A653242D2BA53D0900DDE6EB /* SendCryptoPairView.swift */,
 				A653242F2BA540ED00DDE6EB /* SendCryptoVerifyView.swift */,
 			);
 			path = Send;
@@ -1397,7 +1397,7 @@
 				DE32F0062B8460670035D81E /* ListVaultAssetView.swift in Sources */,
 				DE9EB0EC2BA2CC3C001747D9 /* TssType.swift in Sources */,
 				DEEDAEE52B8AFB5D005170E8 /* common.swift in Sources */,
-				A653242E2BA53D0900DDE6EB /* SendCryptoQRCodeView.swift in Sources */,
+				A653242E2BA53D0900DDE6EB /* SendCryptoPairView.swift in Sources */,
 				A65649E22B96602700E4B329 /* DataExtension.swift in Sources */,
 				A6966D292BA400B700903CA4 /* AddressTextField.swift in Sources */,
 				A6F9F7EB2B9D1B3700790258 /* VaultDetailViewModel.swift in Sources */,
