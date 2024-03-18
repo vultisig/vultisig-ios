@@ -131,8 +131,8 @@ struct PeerDiscoveryView: View {
             FilledButton(title: "continue")
                 .padding(40)
         }
-        .disabled(self.selections.count < 2)
-        .opacity(self.selections.count < 2 ? 0.8 : 1)
+        .disabled(self.viewModel.selections.count < 2)
+        .opacity(self.viewModel.selections.count < 2 ? 0.8 : 1)
     }
     
     private func getQrImage(size: CGFloat) -> Image {
