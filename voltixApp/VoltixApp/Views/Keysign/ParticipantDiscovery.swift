@@ -35,7 +35,6 @@ class ParticipantDiscovery: ObservableObject {
                                 for peer in peers {
                                     if !self.peersFound.contains(peer) {
                                         self.peersFound.append(peer)
-                                        self.objectWillChange.send()
                                     }
                                 }
                             }
