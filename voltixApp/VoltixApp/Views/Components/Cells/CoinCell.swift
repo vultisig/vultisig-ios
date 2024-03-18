@@ -23,9 +23,6 @@ struct CoinCell: View {
                     await setData()
                 }
             }
-            .onChange(of: coinViewModel.coinBalance) {
-                updateState()
-            }
     }
     
     var cell: some View {
@@ -109,16 +106,6 @@ struct CoinCell: View {
         tx.coin = coin
         
         await coinViewModel.loadData(
-            eth: eth,
-            thor: thor,
-            tx: tx
-        )
-    }
-    
-    private func updateState() {
-        coinViewModel.updateState(
-            utxoBtc: utxoBtc,
-            utxoLtc: utxoLtc,
             eth: eth,
             thor: thor,
             tx: tx

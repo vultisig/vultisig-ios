@@ -80,9 +80,7 @@ struct SendCryptoView: View {
     }
     
     private func setData() async {
-        await coinViewModel.loadData(
-            utxoBtc: utxoBtc,
-            utxoLtc: utxoLtc,
+        await coinViewModel.loadData( 
             eth: eth,
             thor: thor,
             tx: tx

@@ -30,8 +30,8 @@ class CoinViewModel: ObservableObject {
 			await thor.fetchBalances(tx.fromAddress)
 			await thor.fetchAccountNumber(tx.fromAddress)
 		}
-		await CryptoPriceService.shared.fetchCryptoPrices(for: "bitcoin,bitcoin-cash,dogecoin,litecoin,thorchain,solana", for: "usd")
-		
+        
+		await fetchCryptoPrices()
 		updateState(eth: eth, thor: thor, tx: tx)
 		isLoading = false
 	}
@@ -40,7 +40,7 @@ class CoinViewModel: ObservableObject {
         await CryptoPriceService.shared.fetchCryptoPrices(for: "bitcoin,litecoin,thorchain,solana", for: "usd")
     }
 	
-	private func updateState(eth: EthplorerAPIService, thor: ThorchainService, tx: SendTransaction) {
+	func updateState(eth: EthplorerAPIService, thor: ThorchainService, tx: SendTransaction) {
 		balanceUSD = "US$ 0,00"
 		coinBalance = "0.0"
 		
