@@ -182,6 +182,10 @@
 		DE49A1B52B6A1088000F3AFB /* CodeScanner in Frameworks */ = {isa = PBXBuildFile; platformFilter = ios; productRef = DE49A1B42B6A1088000F3AFB /* CodeScanner */; };
 		DE4DFA7B2B7B1692004F8E73 /* ModelContainerPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE4DFA7A2B7B1692004F8E73 /* ModelContainerPreview.swift */; };
 		DE64A4C62BA7E0E400C342E3 /* KeygenPeerDiscoveryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE64A4C52BA7E0E400C342E3 /* KeygenPeerDiscoveryViewModel.swift */; };
+		DE64A4C82BA7EBEC00C342E3 /* JoinKeygenViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE64A4C72BA7EBEC00C342E3 /* JoinKeygenViewModel.swift */; };
+		DE64A4CA2BA7F90E00C342E3 /* ServiceDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE64A4C92BA7F90E00C342E3 /* ServiceDelegate.swift */; };
+		DE64A4CC2BA7F97500C342E3 /* KeysignDiscoveryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE64A4CB2BA7F97500C342E3 /* KeysignDiscoveryViewModel.swift */; };
+		DE64A4CE2BA7FEE100C342E3 /* JoinKeysignViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE64A4CD2BA7FEE100C342E3 /* JoinKeysignViewModel.swift */; };
 		DE6DCB932B97D81C009A39D5 /* THORChainSwaps.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6DCB922B97D81C009A39D5 /* THORChainSwaps.swift */; };
 		DE6DCB952B97D88A009A39D5 /* THORChainSwapPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6DCB942B97D88A009A39D5 /* THORChainSwapPayload.swift */; };
 		DE7CE6462B886B6300ED0BFB /* VoltixVaultDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE7CE6452B886B6300ED0BFB /* VoltixVaultDocument.swift */; };
@@ -401,6 +405,10 @@
 		DE49A1B62B6A1222000F3AFB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		DE4DFA7A2B7B1692004F8E73 /* ModelContainerPreview.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelContainerPreview.swift; sourceTree = "<group>"; };
 		DE64A4C52BA7E0E400C342E3 /* KeygenPeerDiscoveryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenPeerDiscoveryViewModel.swift; sourceTree = "<group>"; };
+		DE64A4C72BA7EBEC00C342E3 /* JoinKeygenViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinKeygenViewModel.swift; sourceTree = "<group>"; };
+		DE64A4C92BA7F90E00C342E3 /* ServiceDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceDelegate.swift; sourceTree = "<group>"; };
+		DE64A4CB2BA7F97500C342E3 /* KeysignDiscoveryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignDiscoveryViewModel.swift; sourceTree = "<group>"; };
+		DE64A4CD2BA7FEE100C342E3 /* JoinKeysignViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinKeysignViewModel.swift; sourceTree = "<group>"; };
 		DE6DCB922B97D81C009A39D5 /* THORChainSwaps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainSwaps.swift; sourceTree = "<group>"; };
 		DE6DCB942B97D88A009A39D5 /* THORChainSwapPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainSwapPayload.swift; sourceTree = "<group>"; };
 		DE7CE6452B886B6300ED0BFB /* VoltixVaultDocument.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VoltixVaultDocument.swift; sourceTree = "<group>"; };
@@ -795,6 +803,9 @@
 				DE9EB0F72BA43388001747D9 /* KeysignViewModel.swift */,
 				DE9EB0FB2BA463F7001747D9 /* KeygenViewModel.swift */,
 				DE64A4C52BA7E0E400C342E3 /* KeygenPeerDiscoveryViewModel.swift */,
+				DE64A4C72BA7EBEC00C342E3 /* JoinKeygenViewModel.swift */,
+				DE64A4CB2BA7F97500C342E3 /* KeysignDiscoveryViewModel.swift */,
+				DE64A4CD2BA7FEE100C342E3 /* JoinKeysignViewModel.swift */,
 			);
 			path = "View Models";
 			sourceTree = "<group>";
@@ -971,6 +982,7 @@
 			children = (
 				DE1572942B70F254009BC7C5 /* TssMessenger.swift */,
 				DE1572952B70F254009BC7C5 /* LocalStateAccessorImp.swift */,
+				DE64A4C92BA7F90E00C342E3 /* ServiceDelegate.swift */,
 			);
 			path = Tss;
 			sourceTree = "<group>";
@@ -1310,6 +1322,7 @@
 				049BBB542B71E4F8004C231F /* BottomBar.swift in Sources */,
 				D9AD8EE22B67307F0009F8D5 /* ImportWalletView.swift in Sources */,
 				D9AD8F032B6732450009F8D5 /* SwapDoneView.swift in Sources */,
+				DE64A4CC2BA7F97500C342E3 /* KeysignDiscoveryViewModel.swift in Sources */,
 				A62758F72B97DF4A00ADE3A6 /* ColorStyle.swift in Sources */,
 				A6F2C54F2BA009420095C8E3 /* TokenSelectionViewModel.swift in Sources */,
 				D9AD8EF72B6731B30009F8D5 /* SendVerifyView.swift in Sources */,
@@ -1317,6 +1330,7 @@
 				A66A0BDD2BA15C650021A483 /* WebSVGImage.swift in Sources */,
 				DE1572972B70F254009BC7C5 /* LocalStateAccessorImp.swift in Sources */,
 				DE15729F2B70F284009BC7C5 /* KeysignDiscoveryView.swift in Sources */,
+				DE64A4C82BA7EBEC00C342E3 /* JoinKeygenViewModel.swift in Sources */,
 				A6564A042B969AA500E4B329 /* EtherscanBroadcastResponse.swift in Sources */,
 				D9AD8EDC2B6723D10009F8D5 /* AppNavigationState.swift in Sources */,
 				469ED3992B98E896008D4951 /* ThorchainBalanceResponse.swift in Sources */,
@@ -1412,8 +1426,10 @@
 				A6F9F7EB2B9D1B3700790258 /* VaultDetailViewModel.swift in Sources */,
 				A65649F22B966A2300E4B329 /* UTXOTransactionStatus.swift in Sources */,
 				A6564A082B969AFC00E4B329 /* EtherscanAPITransactionDetail.swift in Sources */,
+				DE64A4CE2BA7FEE100C342E3 /* JoinKeysignViewModel.swift in Sources */,
 				A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */,
 				A65649EC2B96697B00E4B329 /* Asset.swift in Sources */,
+				DE64A4CA2BA7F90E00C342E3 /* ServiceDelegate.swift in Sources */,
 				46ED3A482B9F696000FFCB8A /* SolanaRecentBlockhash.swift in Sources */,
 				A6CBA8F02BA2A629008B110C /* ImportWalletUploadSection.swift in Sources */,
 				D9AD8EFD2B6732070009F8D5 /* SwapPeerDiscoveryView.swift in Sources */,
