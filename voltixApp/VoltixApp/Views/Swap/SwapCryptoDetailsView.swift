@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct SwapCryptoDetailsView: View {
+    let group: GroupedChain
+    
     @State var fromAmount = ""
     @State var toAmount = ""
     
@@ -47,7 +49,7 @@ struct SwapCryptoDetailsView: View {
     var fromCoinField: some View {
         VStack(spacing: 8) {
             getTitle(for: "from")
-            TokenSelectorDropdown(title: "Ethereum", imageName: "eth", amount: "")
+            TokenSelectorDropdown(title: "Ethereum", imageName: "eth", amount: "", group: group)
             
             Text("Balance: 23.2")
                 .font(.body12Menlo)
@@ -73,7 +75,7 @@ struct SwapCryptoDetailsView: View {
     var toCoinField: some View {
         VStack(spacing: 8) {
             getTitle(for: "to")
-            TokenSelectorDropdown(title: "Bitcoin", imageName: "btc", amount: "")
+            TokenSelectorDropdown(title: "Bitcoin", imageName: "btc", amount: "", group: group)
             
             Text("Balance: 23.2")
                 .font(.body12Menlo)
@@ -119,5 +121,5 @@ struct SwapCryptoDetailsView: View {
 }
 
 #Preview {
-    SwapCryptoDetailsView()
+    SwapCryptoDetailsView(group: GroupedChain.example)
 }

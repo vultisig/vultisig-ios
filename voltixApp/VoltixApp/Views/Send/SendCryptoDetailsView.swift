@@ -11,6 +11,7 @@ import SwiftUI
 struct SendCryptoDetailsView: View {
     @ObservedObject var tx: SendTransaction
     @ObservedObject var viewModel: SendCryptoViewModel
+    let group: GroupedChain
     
     @State var toAddress = ""
     @State var amount = ""
@@ -51,7 +52,7 @@ struct SendCryptoDetailsView: View {
     }
     
     var coinSelector: some View {
-        TokenSelectorDropdown(title: "Ethereum", imageName: "eth", amount: "23.3")
+        TokenSelectorDropdown(title: "Ethereum", imageName: "eth", amount: "23.3", group: group)
     }
     
     var fromField: some View {
@@ -115,5 +116,5 @@ struct SendCryptoDetailsView: View {
 }
 
 #Preview {
-    SendCryptoDetailsView(tx: SendTransaction(), viewModel: SendCryptoViewModel())
+    SendCryptoDetailsView(tx: SendTransaction(), viewModel: SendCryptoViewModel(), group: GroupedChain.example)
 }

@@ -126,7 +126,7 @@ struct ChainCell: View {
         ForEach(group.coins, id: \.self) { coin in
             VStack(spacing: 0) {
                 Separator()
-                CoinCell(coin: coin)
+                CoinCell(coin: coin, group: group)
             }
         }
     }
