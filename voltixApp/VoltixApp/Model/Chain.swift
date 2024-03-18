@@ -9,7 +9,7 @@ class Chain: Codable, Hashable {
     var name: String
     var ticker: String
     var signingKeyType: KeyType
-	var chainType: ChainType
+	var chainType: ChainType?
     
 	init(name: String, ticker: String, signingKeyType: KeyType, chainType: ChainType) {
         self.name = name
