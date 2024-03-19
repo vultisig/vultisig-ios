@@ -20,10 +20,14 @@ struct JoinKeysignView: View {
             states
         }
         .navigationTitle(NSLocalizedString("joinKeySign", comment: "Join Keysign"))
-        .navigationBarBackButtonHidden(false)
+        .navigationBarBackButtonHidden(true)
         .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                NavigationBackButton()
+            }
+            
             ToolbarItem(placement: .navigationBarTrailing) {
-                NavigationButtons.questionMarkButton
+                NavigationHelpButton()
             }
         }
         .sheet(isPresented: $viewModel.isShowingScanner, content: {
