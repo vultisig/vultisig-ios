@@ -45,6 +45,9 @@ struct SendCryptoView: View {
                 await setData()
             }
         }
+        .alert(isPresented: $sendCryptoViewModel.showAlert) {
+            alert
+        }
     }
     
     var background: some View {
@@ -85,6 +88,14 @@ struct SendCryptoView: View {
             sendCryptoViewModel: sendCryptoViewModel,
             coinViewModel: coinViewModel,
             group: group
+        )
+    }
+    
+    var alert: Alert {
+        Alert(
+            title: Text(NSLocalizedString("error", comment: "")),
+            message: Text(sendCryptoViewModel.errorMessage),
+            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }
     

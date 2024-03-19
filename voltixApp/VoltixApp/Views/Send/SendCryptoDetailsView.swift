@@ -30,8 +30,6 @@ struct SendCryptoDetailsView: View {
     
     @FocusState private var focusedField: Field?
     
-    let logger = Logger(subsystem: "send-input-details", category: "transaction")
-    
     var body: some View {
         ZStack {
             background
@@ -92,7 +90,7 @@ struct SendCryptoDetailsView: View {
     var toField: some View {
         VStack(spacing: 8) {
             getTitle(for: "to")
-            SendCryptoAddressTextField(tx: tx, logger: logger)
+            SendCryptoAddressTextField(tx: tx, sendCryptoViewModel: sendCryptoViewModel)
                 .focused($focusedField, equals: .toAddress)
         }
     }
@@ -149,7 +147,7 @@ struct SendCryptoDetailsView: View {
     
     var button: some View {
         Button {
-            sendCryptoViewModel.moveToNextView()
+            validateForm()
         } label: {
             FilledButton(title: "continue")
         }
@@ -161,6 +159,12 @@ struct SendCryptoDetailsView: View {
             .font(.body14MontserratMedium)
             .foregroundColor(.neutral0)
             .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
+    private func validateForm() {
+        if sendCryptoViewModel.validateForm(tx: tx, utxoBtc: utxoBtc, utxoLtc: utxoLtc, eth: eth, sol: sol) {
+            sendCryptoViewModel.moveToNextView()
+        }
     }
 }
 

@@ -11,7 +11,7 @@ import CodeScanner
 
 struct SendCryptoAddressTextField: View {
     @ObservedObject var tx: SendTransaction
-    let logger: Logger
+    @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     
     @State var showScanner = false
     
@@ -43,13 +43,21 @@ struct SendCryptoAddressTextField: View {
     
     var field: some View {
         HStack(spacing: 0) {
-            TextField(NSLocalizedString("enterAddress", comment: "").capitalized, text: $tx.toAddress)
-                .foregroundColor(.neutral0)
-                .submitLabel(.next)
-                .textInputAutocapitalization(.never)
-                .disableAutocorrection(true)
-                .keyboardType(.default)
-                .textContentType(.oneTimeCode)
+            TextField(NSLocalizedString("enterAddress", comment: "").capitalized, text: Binding<String>(
+                get: { tx.toAddress },
+                set: { newValue in
+                    tx.toAddress = newValue
+                    DebounceHelper.shared.debounce {
+                        validateAddress(newValue)
+                    }
+                }
+            ))
+            .foregroundColor(.neutral0)
+            .submitLabel(.next)
+            .textInputAutocapitalization(.never)
+            .disableAutocorrection(true)
+            .keyboardType(.default)
+            .textContentType(.oneTimeCode)
             
             scanButton
         }
@@ -77,11 +85,15 @@ struct SendCryptoAddressTextField: View {
                 tx.parseCryptoURI(qrCodeResult)
                 showScanner = false
             case .failure(let err):
-                logger.error("fail to scan QR code,error:\(err.localizedDescription)")
+            sendCryptoViewModel.logger.error("fail to scan QR code,error:\(err.localizedDescription)")
         }
+    }
+    
+    private func validateAddress(_ newValue: String) {
+        sendCryptoViewModel.validateAddress(tx: tx, address: newValue)
     }
 }
 
 #Preview {
-    SendCryptoAddressTextField(tx: SendTransaction(), logger: Logger())
+    SendCryptoAddressTextField(tx: SendTransaction(), sendCryptoViewModel: SendCryptoViewModel())
 }

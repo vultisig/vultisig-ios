@@ -7,17 +7,25 @@
 
 import SwiftUI
 import BigInt
+import OSLog
+import WalletCore
 
 @MainActor
 class SendCryptoViewModel: ObservableObject {
     @Published var isLoading = false
+    @Published var isValidAddress = false
+    @Published var isValidForm = true
+    @Published var showAlert = false
     @Published var currentIndex = 1
     @Published var currentTitle = "send"
     @Published var priceRate = 0.0
     @Published var coinBalance: String = "0"
+    @Published var errorMessage = ""
     
     let totalViews = 7
     let titles = ["send", "scan", "send", "pair", "verify", "keysign", "done"]
+    
+    let logger = Logger(subsystem: "send-input-details", category: "transaction")
     
     func setMaxValues(tx: SendTransaction, utxoBtc: BitcoinUnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, eth: EthplorerAPIService, thor: ThorchainService, sol: SolanaService) {
         if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
@@ -58,7 +66,7 @@ class SendCryptoViewModel: ObservableObject {
             var newCoinAmount = ""
             
             if    tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() ||
-                tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased()
+                    tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased()
             {
                 let rate = priceRate
                 if rate > 0 {
@@ -122,7 +130,7 @@ class SendCryptoViewModel: ObservableObject {
     
     func updateState(tx: SendTransaction, utxoBtc: BitcoinUnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, eth: EthplorerAPIService, thor: ThorchainService, sol: SolanaService, cryptoPrice: CryptoPriceService, web3Service: Web3Service) {
         isLoading = true
-            // TODO: move this logic into an abstraction
+        // TODO: move this logic into an abstraction
         
         if let priceRateUsd = cryptoPrice.cryptoPrices?.prices[tx.coin.chain.name.lowercased()]?["usd"] {
             priceRate = priceRateUsd
@@ -133,7 +141,7 @@ class SendCryptoViewModel: ObservableObject {
         } else if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
             coinBalance = utxoLtc.walletData?.balanceInLTC ?? "0"
         } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
-                // We need to pass it to the next view
+            // We need to pass it to the next view
             tx.eth = eth.addressInfo
             
             let gasPriceInGwei = BigInt(web3Service.gasPrice ?? 0) / BigInt(10).power(9)
@@ -162,8 +170,8 @@ class SendCryptoViewModel: ObservableObject {
     }
     
     func reloadTransactions(tx: SendTransaction, utxoBtc: BitcoinUnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, eth: EthplorerAPIService, thor: ThorchainService, sol: SolanaService, cryptoPrice: CryptoPriceService, web3Service: Web3Service) {
-            // TODO: move this logic into an abstraction
-            // ETH gets the price from other sourcers.
+        // TODO: move this logic into an abstraction
+        // ETH gets the price from other sourcers.
         Task {
             isLoading = true
             
@@ -199,6 +207,153 @@ class SendCryptoViewModel: ObservableObject {
                 self.isLoading = false
             }
         }
+    }
+    
+    func validateAddress(tx: SendTransaction, address: String) {
+        if tx.coin.ticker.uppercased() == Chain.Bitcoin.ticker.uppercased() {
+            isValidAddress = CoinType.bitcoin.validate(address: address)
+        } else if tx.coin.ticker.uppercased() == Chain.Litecoin.ticker.uppercased() {
+            isValidAddress = CoinType.litecoin.validate(address: address)
+        } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
+            isValidAddress = CoinType.ethereum.validate(address: address)
+        } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
+            isValidAddress = CoinType.thorchain.validate(address: address)
+        } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
+            isValidAddress = CoinType.solana.validate(address: address)
+        }
+    }
+    
+    func validateForm(tx: SendTransaction, utxoBtc: BitcoinUnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, eth: EthplorerAPIService, sol: SolanaService) -> Bool {
+        errorMessage = ""
+        isValidForm = true
+        
+        if !isValidAddress {
+            errorMessage = "Please enter a valid address."
+            logger.log("Invalid address.")
+            isValidForm = false
+            showAlert = true
+        }
+        
+        let amount = tx.amountDecimal
+        let gasFee = tx.gasDecimal
+        
+        if amount <= 0 {
+            errorMessage = "Amount must be a positive number. Please correct your entry."
+            logger.log("Invalid or non-positive amount.")
+            isValidForm = false
+            showAlert = true
+            return isValidForm
+        }
+        
+        if gasFee <= 0 {
+            errorMessage = "Fee must be a non-negative number. Please correct your entry."
+            logger.log("Invalid or negative fee.")
+            isValidForm = false
+            showAlert = true
+            return isValidForm
+        }
+        
+        
+        if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
+            let walletBalanceInSats = utxoBtc.walletData?.balance ?? 0
+            let totalTransactionCostInSats = tx.amountInSats + tx.feeInSats
+            print("Total transaction cost: \(totalTransactionCostInSats)")
+            
+            if totalTransactionCostInSats > walletBalanceInSats {
+                errorMessage = "The combined amount and fee exceed your wallet's balance. Please adjust to proceed."
+                logger.log("Total transaction cost exceeds wallet balance.")
+                isValidForm = false
+                showAlert = true
+            }
+            
+        } else if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
+            let walletBalanceInSats = utxoLtc.walletData?.balance ?? 0
+            let totalTransactionCostInSats = tx.amountInSats + tx.feeInSats
+            print("Total transaction cost: \(totalTransactionCostInSats)")
+            
+            if totalTransactionCostInSats > walletBalanceInSats {
+                errorMessage = "The combined amount and fee exceed your wallet's balance. Please adjust to proceed."
+                logger.log("Total transaction cost exceeds wallet balance.")
+                isValidForm = false
+                showAlert = true
+            }
+            
+        } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
+            let ethBalanceInWei = Int(eth.addressInfo?.ETH.rawBalance ?? "0") ?? 0 // it is in WEI
+            
+            if tx.coin.ticker.uppercased() == "ETH" {
+                if tx.totalEthTransactionCostWei > ethBalanceInWei {
+                    errorMessage = "The combined amount and fee exceed your wallet's balance. Please adjust to proceed."
+                    logger.log("Total transaction cost exceeds wallet balance.")
+                    isValidForm = false
+                    showAlert = true
+                }
+                
+            } else {
+                if let tokenInfo = eth.addressInfo?.tokens?.first(where: { $0.tokenInfo.symbol == tx.coin.ticker.uppercased() }) {
+                    print("tx.feeInWei \(tx.feeInWei)")
+                    print("ethBalanceInWei \(ethBalanceInWei)")
+                    
+                    print("has eth to pay the fee?  \(tx.feeInWei > ethBalanceInWei)")
+                    
+                    if tx.feeInWei > ethBalanceInWei {
+                        errorMessage = "You must have ETH in to send any TOKEN, so you can pay the fees."
+                        logger.log("You must have ETH in to send any TOKEN, so you can pay the fees.")
+                        isValidForm = false
+                        showAlert = true
+                    }
+                    
+                    let tokenBalance = Int(tokenInfo.rawBalance) ?? 0
+                    
+                    if tx.amountInTokenWei > tokenBalance {
+                        errorMessage = "Total transaction cost exceeds wallet balance."
+                        logger.log("Total transaction cost exceeds wallet balance.")
+                        isValidForm = false
+                        showAlert = true
+                    }
+                }
+            }
+        } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
+            
+        } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
+            
+            guard let walletBalanceInLamports = sol.balance else {
+                errorMessage = "Wallet balance is not available."
+                logger.log("Wallet balance is not available for Solana.")
+                isValidForm = false
+                showAlert = true
+                return isValidForm
+            }
+            
+            let optionalGas: String? = tx.gas
+            guard let feeStr = optionalGas, let feeInLamports = Decimal(string: feeStr) else {
+                errorMessage = "Invalid gas fee provided."
+                logger.log("Invalid gas fee for Solana.")
+                isValidForm = false
+                showAlert = true
+                return isValidForm
+            }
+            
+            guard let amountInSOL = Decimal(string: tx.amount) else {
+                errorMessage = "Invalid transaction amount provided."
+                logger.log("Invalid transaction amount for Solana.")
+                isValidForm = false
+                showAlert = true
+                return isValidForm
+            }
+            
+            let amountInLamports = amountInSOL * Decimal(1_000_000_000)
+            
+            let totalCostInLamports = amountInLamports + feeInLamports
+            if totalCostInLamports > Decimal(walletBalanceInLamports) {
+                errorMessage = "The combined amount and fee exceed your wallet's balance for Solana. Please adjust to proceed."
+                logger.log("Total transaction cost exceeds wallet balance for Solana.")
+                isValidForm = false
+                showAlert = true
+            }
+        }
+        
+        return isValidForm
     }
     
     func moveToNextView() {
