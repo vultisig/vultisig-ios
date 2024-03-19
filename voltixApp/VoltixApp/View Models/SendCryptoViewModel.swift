@@ -1,5 +1,5 @@
 //
-//  SendCryptoViewModel.swift
+//  SendCryptoDetailsViewModel.swift
 //  VoltixApp
 //
 //  Created by Amol Kumar on 2024-03-15.
@@ -22,12 +22,16 @@ class SendCryptoViewModel: ObservableObject {
     @Published var coinBalance: String = "0"
     @Published var errorMessage = ""
     
+    @StateObject var thor = ThorchainService.shared
+    @StateObject var sol: SolanaService = SolanaService.shared
+    @StateObject var cryptoPrice = CryptoPriceService.shared
+    
     let totalViews = 7
     let titles = ["send", "scan", "send", "pair", "verify", "keysign", "done"]
     
     let logger = Logger(subsystem: "send-input-details", category: "transaction")
     
-    func setMaxValues(tx: SendTransaction, utxoBtc: BitcoinUnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, eth: EthplorerAPIService, thor: ThorchainService, sol: SolanaService) {
+    func setMaxValues(tx: SendTransaction, utxoBtc: BitcoinUnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, eth: EthplorerAPIService) {
         if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
             let rate = priceRate
             if let walletData = utxoBtc.walletData {
@@ -128,7 +132,7 @@ class SendCryptoViewModel: ObservableObject {
         }
     }
     
-    func updateState(tx: SendTransaction, utxoBtc: BitcoinUnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, eth: EthplorerAPIService, thor: ThorchainService, sol: SolanaService, cryptoPrice: CryptoPriceService, web3Service: Web3Service) {
+    func updateState(tx: SendTransaction, utxoBtc: BitcoinUnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, eth: EthplorerAPIService, web3Service: Web3Service) {
         isLoading = true
         // TODO: move this logic into an abstraction
         
@@ -169,7 +173,7 @@ class SendCryptoViewModel: ObservableObject {
         isLoading = false
     }
     
-    func reloadTransactions(tx: SendTransaction, utxoBtc: BitcoinUnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, eth: EthplorerAPIService, thor: ThorchainService, sol: SolanaService, cryptoPrice: CryptoPriceService, web3Service: Web3Service) {
+    func reloadTransactions(tx: SendTransaction, utxoBtc: BitcoinUnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, eth: EthplorerAPIService, web3Service: Web3Service) {
         // TODO: move this logic into an abstraction
         // ETH gets the price from other sourcers.
         Task {
@@ -199,9 +203,6 @@ class SendCryptoViewModel: ObservableObject {
                     utxoBtc: utxoBtc,
                     utxoLtc: utxoLtc,
                     eth: eth,
-                    thor: thor,
-                    sol: sol,
-                    cryptoPrice: cryptoPrice,
                     web3Service: web3Service
                 )
                 self.isLoading = false
@@ -223,7 +224,7 @@ class SendCryptoViewModel: ObservableObject {
         }
     }
     
-    func validateForm(tx: SendTransaction, utxoBtc: BitcoinUnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, eth: EthplorerAPIService, sol: SolanaService) -> Bool {
+    func validateForm(tx: SendTransaction, utxoBtc: BitcoinUnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, eth: EthplorerAPIService) -> Bool {
         errorMessage = ""
         isValidForm = true
         

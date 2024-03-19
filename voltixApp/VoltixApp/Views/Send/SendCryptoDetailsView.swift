@@ -19,8 +19,6 @@ struct SendCryptoDetailsView: View {
     @ObservedObject var utxoBtc: BitcoinUnspentOutputsService
     @ObservedObject var utxoLtc: LitecoinUnspentOutputsService
     @ObservedObject var eth: EthplorerAPIService
-    @ObservedObject var thor: ThorchainService
-    @ObservedObject var sol: SolanaService
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @ObservedObject var coinViewModel: CoinViewModel
     let group: GroupedChain
@@ -103,8 +101,6 @@ struct SendCryptoDetailsView: View {
             utxoBtc: utxoBtc,
             utxoLtc: utxoLtc,
             eth: eth,
-            thor: thor,
-            sol: sol,
             sendCryptoViewModel: sendCryptoViewModel
         )
         .focused($focusedField, equals: .amount)
@@ -123,8 +119,6 @@ struct SendCryptoDetailsView: View {
             utxoBtc: utxoBtc,
             utxoLtc: utxoLtc,
             eth: eth,
-            thor: thor,
-            sol: sol,
             sendCryptoViewModel: sendCryptoViewModel
         )
         .focused($focusedField, equals: .amountInUSD)
@@ -157,7 +151,7 @@ struct SendCryptoDetailsView: View {
     }
     
     private func validateForm() {
-        if sendCryptoViewModel.validateForm(tx: tx, utxoBtc: utxoBtc, utxoLtc: utxoLtc, eth: eth, sol: sol) {
+        if sendCryptoViewModel.validateForm(tx: tx, utxoBtc: utxoBtc, utxoLtc: utxoLtc, eth: eth) {
             sendCryptoViewModel.moveToNextView()
         }
     }
@@ -169,8 +163,6 @@ struct SendCryptoDetailsView: View {
         utxoBtc: BitcoinUnspentOutputsService(),
         utxoLtc: LitecoinUnspentOutputsService(),
         eth: EthplorerAPIService(),
-        thor: ThorchainService.shared,
-        sol: SolanaService.shared,
         sendCryptoViewModel: SendCryptoViewModel(),
         coinViewModel: CoinViewModel(),
         group: GroupedChain.example

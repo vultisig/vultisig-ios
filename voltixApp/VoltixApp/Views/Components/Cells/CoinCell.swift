@@ -16,7 +16,6 @@ struct CoinCell: View {
     @StateObject var utxoBtc = BitcoinUnspentOutputsService()
     @StateObject var utxoLtc = LitecoinUnspentOutputsService()
     @StateObject var eth = EthplorerAPIService()
-    @StateObject var thor = ThorchainService.shared
 	
     var body: some View {
         cell
@@ -112,7 +111,6 @@ struct CoinCell: View {
             utxoBtc: utxoBtc,
             utxoLtc: utxoLtc,
             eth: eth,
-            thor: thor,
             tx: tx
         )
     }

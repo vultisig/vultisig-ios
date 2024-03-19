@@ -12,14 +12,12 @@ struct SendCryptoView: View {
     let group: GroupedChain
     
     @StateObject var sendCryptoViewModel = SendCryptoViewModel()
+    @StateObject var sendCryptoVerifyViewModel = SendCryptoVerifyViewModel()
     @StateObject var coinViewModel = CoinViewModel()
+    
     @StateObject var utxoBtc = BitcoinUnspentOutputsService()
     @StateObject var utxoLtc = LitecoinUnspentOutputsService()
     @StateObject var eth = EthplorerAPIService()
-    @StateObject var thor = ThorchainService.shared
-    @StateObject var sol: SolanaService = SolanaService.shared
-    
-    @StateObject var cryptoPrice = CryptoPriceService.shared
     @StateObject var web3Service = Web3Service()
     
     var body: some View {
@@ -61,12 +59,7 @@ struct SendCryptoView: View {
     var tabView: some View {
         TabView(selection: $sendCryptoViewModel.currentIndex) {
             detailsView.tag(1)
-            SendCryptoQRScannerView(viewModel: sendCryptoViewModel).tag(2)
-            SendCryptoPairView(viewModel: sendCryptoViewModel).tag(3)
-            SendCryptoQRScannerView(viewModel: sendCryptoViewModel).tag(4)
-            SendCryptoVerifyView(viewModel: sendCryptoViewModel).tag(5)
-            SendCryptoKeysignView(viewModel: sendCryptoViewModel).tag(6)
-            SendCryptoDoneView().tag(7)
+            verifyView.tag(2)
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
         .frame(maxHeight: .infinity)
@@ -78,12 +71,14 @@ struct SendCryptoView: View {
             utxoBtc: utxoBtc,
             utxoLtc: utxoLtc,
             eth: eth,
-            thor: thor,
-            sol: sol,
             sendCryptoViewModel: sendCryptoViewModel,
             coinViewModel: coinViewModel,
             group: group
         )
+    }
+    
+    var verifyView: some View {
+        SendCryptoVerifyView(sendCryptoViewModel: sendCryptoViewModel, sendCryptoVerifyViewModel: sendCryptoVerifyViewModel)
     }
     
     var alert: Alert {
@@ -99,17 +94,14 @@ struct SendCryptoView: View {
             utxoBtc: utxoBtc,
             utxoLtc: utxoLtc,
             eth: eth,
-            thor: thor,
             tx: tx
         )
+        
         sendCryptoViewModel.reloadTransactions(
             tx: tx,
             utxoBtc: utxoBtc,
             utxoLtc: utxoLtc,
             eth: eth,
-            thor: thor,
-            sol: sol,
-            cryptoPrice: cryptoPrice,
             web3Service: web3Service
         )
     }

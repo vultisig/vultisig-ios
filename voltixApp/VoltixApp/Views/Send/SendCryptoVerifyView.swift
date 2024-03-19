@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct SendCryptoVerifyView: View {
-    @ObservedObject var viewModel: SendCryptoViewModel
+    @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
+    @ObservedObject var sendCryptoVerifyViewModel: SendCryptoVerifyViewModel
     
     @State var isAddressCorrect = false
     @State var isAmountCorrect = false
@@ -20,6 +21,9 @@ struct SendCryptoVerifyView: View {
             view
         }
         .gesture(DragGesture())
+        .onAppear {
+            reloadTransactions()
+        }
     }
     
     var view: some View {
@@ -66,7 +70,7 @@ struct SendCryptoVerifyView: View {
     
     var button: some View {
         Button {
-            viewModel.moveToNextView()
+            sendCryptoViewModel.moveToNextView()
         } label: {
             FilledButton(title: "sign")
         }
@@ -95,8 +99,12 @@ struct SendCryptoVerifyView: View {
         .font(.body16MenloBold)
         .foregroundColor(.neutral100)
     }
+    
+    private func reloadTransactions() {
+//        sendCryptoVerifyViewModel.r
+    }
 }
 
 #Preview {
-    SendCryptoVerifyView(viewModel: SendCryptoViewModel())
+    SendCryptoVerifyView(sendCryptoViewModel: SendCryptoViewModel(), sendCryptoVerifyViewModel: SendCryptoVerifyViewModel())
 }

@@ -14,7 +14,9 @@ class CoinViewModel: ObservableObject {
     @Published var balanceUSD: String? = nil
     @Published var coinBalance: String? = nil
     
-    func loadData(utxoBtc: BitcoinUnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, eth: EthplorerAPIService, thor: ThorchainService, tx: SendTransaction) async {
+    @StateObject var thor = ThorchainService.shared
+    
+    func loadData(utxoBtc: BitcoinUnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, eth: EthplorerAPIService, tx: SendTransaction) async {
         print("realoading data...")
         isLoading = true
         
@@ -32,7 +34,7 @@ class CoinViewModel: ObservableObject {
         await fetchCryptoPrices()
         
         DispatchQueue.main.async {
-            self.updateState(utxoBtc: utxoBtc, utxoLtc: utxoLtc, eth: eth, thor: thor, tx: tx)
+            self.updateState(utxoBtc: utxoBtc, utxoLtc: utxoLtc, eth: eth, tx: tx)
         }
         
         isLoading = false
@@ -42,7 +44,7 @@ class CoinViewModel: ObservableObject {
         await CryptoPriceService.shared.fetchCryptoPrices(for: "bitcoin,litecoin,thorchain,solana", for: "usd")
     }
     
-    func updateState(utxoBtc: BitcoinUnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, eth: EthplorerAPIService, thor: ThorchainService, tx: SendTransaction) {
+    func updateState(utxoBtc: BitcoinUnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, eth: EthplorerAPIService, tx: SendTransaction) {
         balanceUSD = "US$ 0,00"
         coinBalance = "0.0"
         

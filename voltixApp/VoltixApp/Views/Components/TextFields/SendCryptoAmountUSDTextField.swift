@@ -12,8 +12,6 @@ struct SendCryptoAmountUSDTextField: View {
     @ObservedObject var utxoBtc: BitcoinUnspentOutputsService
     @ObservedObject var utxoLtc: LitecoinUnspentOutputsService
     @ObservedObject var eth: EthplorerAPIService
-    @ObservedObject var thor: ThorchainService
-    @ObservedObject var sol: SolanaService
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     
     var body: some View {
@@ -53,8 +51,6 @@ struct SendCryptoAmountUSDTextField: View {
         utxoBtc: BitcoinUnspentOutputsService(),
         utxoLtc: LitecoinUnspentOutputsService(),
         eth: EthplorerAPIService(),
-        thor: ThorchainService.shared,
-        sol: SolanaService.shared,
         sendCryptoViewModel: SendCryptoViewModel()
     )
 }
