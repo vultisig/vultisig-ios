@@ -1,5 +1,5 @@
 //
-//  AmountTextField.swift
+//  SendCryptoAmountTextField.swift
 //  VoltixApp
 //
 //  Created by Amol Kumar on 2024-03-15.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct AmountTextField: View {
+struct SendCryptoAmountTextField: View {
     @ObservedObject var tx: SendTransaction
     @ObservedObject var utxoBtc: BitcoinUnspentOutputsService
     @ObservedObject var utxoLtc: LitecoinUnspentOutputsService
@@ -19,16 +19,16 @@ struct AmountTextField: View {
     
     var body: some View {
         ZStack(alignment: .trailing) {
-//            if tx.amount.isEmpty {
-//                Text(NSLocalizedString("enterAmount", comment: ""))
-//                    .frame(maxWidth: .infinity, alignment: .leading)
-//            }
+            if tx.amount.isEmpty {
+                Text(NSLocalizedString("enterAmount", comment: ""))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
             
             HStack(spacing: 0) {
                 TextField(NSLocalizedString("enterAmount", comment: "").capitalized, text: Binding<String>(
-                    get: { tx.amount },
+                    get: { self.tx.amount },
                     set: { newValue in
-                        tx.amount = newValue
+                        self.tx.amount = newValue
                         DebounceHelper.shared.debounce {
                             sendCryptoViewModel.convertToUSD(newValue: newValue, tx: tx, eth: eth)
                         }
@@ -70,7 +70,7 @@ struct AmountTextField: View {
 }
 
 #Preview {
-    AmountTextField(
+    SendCryptoAmountTextField(
         tx: SendTransaction(),
         utxoBtc: BitcoinUnspentOutputsService(),
         utxoLtc: LitecoinUnspentOutputsService(),

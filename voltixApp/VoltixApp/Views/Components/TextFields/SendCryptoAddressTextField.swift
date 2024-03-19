@@ -9,7 +9,7 @@ import OSLog
 import SwiftUI
 import CodeScanner
 
-struct AddressTextField: View {
+struct SendCryptoAddressTextField: View {
     @ObservedObject var tx: SendTransaction
     let logger: Logger
     
@@ -46,6 +46,10 @@ struct AddressTextField: View {
             TextField(NSLocalizedString("enterAddress", comment: "").capitalized, text: $tx.toAddress)
                 .foregroundColor(.neutral0)
                 .submitLabel(.next)
+                .textInputAutocapitalization(.never)
+                .disableAutocorrection(true)
+                .keyboardType(.default)
+                .textContentType(.oneTimeCode)
             
             scanButton
         }
@@ -79,5 +83,5 @@ struct AddressTextField: View {
 }
 
 #Preview {
-    AddressTextField(tx: SendTransaction(), logger: Logger())
+    SendCryptoAddressTextField(tx: SendTransaction(), logger: Logger())
 }

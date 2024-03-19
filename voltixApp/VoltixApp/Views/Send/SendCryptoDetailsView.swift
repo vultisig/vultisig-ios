@@ -8,6 +8,12 @@
 import OSLog
 import SwiftUI
 
+enum Field: Hashable {
+    case toAddress
+    case amount
+    case amountInUSD
+}
+
 struct SendCryptoDetailsView: View {
     @ObservedObject var tx: SendTransaction
     @ObservedObject var utxoBtc: BitcoinUnspentOutputsService
@@ -21,6 +27,8 @@ struct SendCryptoDetailsView: View {
     
     @State var toAddress = ""
     @State var amount = ""
+    
+    @FocusState private var focusedField: Field?
     
     let logger = Logger(subsystem: "send-input-details", category: "transaction")
     
@@ -51,6 +59,7 @@ struct SendCryptoDetailsView: View {
                 fromField
                 toField
                 amountField
+                amountUSDField
                 gasField
             }
             .padding(.horizontal, 16)
@@ -83,7 +92,8 @@ struct SendCryptoDetailsView: View {
     var toField: some View {
         VStack(spacing: 8) {
             getTitle(for: "to")
-            AddressTextField(tx: tx, logger: logger)
+            SendCryptoAddressTextField(tx: tx, logger: logger)
+                .focused($focusedField, equals: .toAddress)
         }
     }
     
@@ -95,7 +105,26 @@ struct SendCryptoDetailsView: View {
     }
     
     var textField: some View {
-        AmountTextField(
+        SendCryptoAmountTextField(
+            tx: tx,
+            utxoBtc: utxoBtc,
+            utxoLtc: utxoLtc,
+            eth: eth,
+            thor: thor,
+            sol: sol,
+            sendCryptoViewModel: sendCryptoViewModel
+        )
+    }
+    
+    var amountUSDField: some View {
+        VStack(spacing: 8) {
+            getTitle(for: "amount(inUSD)")
+            textFieldUSD
+        }
+    }
+    
+    var textFieldUSD: some View {
+        SendCryptoAmountUSDTextField(
             tx: tx,
             utxoBtc: utxoBtc,
             utxoLtc: utxoLtc,

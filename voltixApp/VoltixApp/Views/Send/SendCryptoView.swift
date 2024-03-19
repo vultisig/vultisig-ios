@@ -19,6 +19,9 @@ struct SendCryptoView: View {
     @StateObject var thor = ThorchainService.shared
     @StateObject var sol: SolanaService = SolanaService.shared
     
+    @StateObject var cryptoPrice = CryptoPriceService.shared
+    @StateObject var web3Service = Web3Service()
+    
     var body: some View {
         ZStack {
             background
@@ -92,6 +95,16 @@ struct SendCryptoView: View {
             eth: eth,
             thor: thor,
             tx: tx
+        )
+        sendCryptoViewModel.reloadTransactions(
+            tx: tx,
+            utxoBtc: utxoBtc,
+            utxoLtc: utxoLtc,
+            eth: eth,
+            thor: thor,
+            sol: sol,
+            cryptoPrice: cryptoPrice,
+            web3Service: web3Service
         )
     }
 }

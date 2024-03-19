@@ -84,6 +84,7 @@
 "lookingForDevices" = "Looking for devices... ";
 "sign" = "Sign";
 "amount" = "Amount";
+"amount(inUSD)" = "Amount (in USD)";
 "memo" = "Memo";
 "gas" = "Gas";
 "signing" = "Signing";

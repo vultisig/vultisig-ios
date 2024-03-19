@@ -15,18 +15,6 @@ import UIKit
 import UniformTypeIdentifiers
 import WalletCore
 
-//private class DebounceHelper {
-//	static let shared = DebounceHelper()
-//	private var workItem: DispatchWorkItem?
-//	
-//	func debounce(delay: TimeInterval = 0.5, action: @escaping () -> Void) {
-//		workItem?.cancel()
-//		let task = DispatchWorkItem { action() }
-//		workItem = task
-//		DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: task)
-//	}
-//}
-
 private let logger = Logger(subsystem: "send-input-details", category: "transaction")
 struct SendInputDetailsView: View {
 	enum Field: Hashable {

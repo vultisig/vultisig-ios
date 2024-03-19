@@ -107,7 +107,8 @@
 		A6564A062B969ADF00E4B329 /* EtherscanAPIResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6564A052B969ADF00E4B329 /* EtherscanAPIResponse.swift */; };
 		A6564A082B969AFC00E4B329 /* EtherscanAPITransactionDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6564A072B969AFC00E4B329 /* EtherscanAPITransactionDetail.swift */; };
 		A6564A0B2B96A04D00E4B329 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = A6564A0D2B96A04D00E4B329 /* Localizable.strings */; };
-		A65BA97E2BA91F0300B2D8AA /* DebounceHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA97D2BA91F0300B2D8AA /* DebounceHelper.swift */; };
+		A65BA9802BA9361B00B2D8AA /* SendCryptoAmountUSDTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA97F2BA9361B00B2D8AA /* SendCryptoAmountUSDTextField.swift */; };
+		A65BA9822BA93A9F00B2D8AA /* DebounceHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9812BA93A9F00B2D8AA /* DebounceHelper.swift */; };
 		A66A0BD02BA0FC210021A483 /* SDWebImageSVGCoder in Frameworks */ = {isa = PBXBuildFile; productRef = A66A0BCF2BA0FC210021A483 /* SDWebImageSVGCoder */; };
 		A66A0BD32BA0FC290021A483 /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = A66A0BD22BA0FC290021A483 /* SDWebImageSwiftUI */; };
 		A66A0BD52BA124D00021A483 /* EditVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD42BA124D00021A483 /* EditVaultView.swift */; };
@@ -120,8 +121,8 @@
 		A6966D222BA3E1B000903CA4 /* TextStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D212BA3E1B000903CA4 /* TextStore.swift */; };
 		A6966D242BA3E2A500903CA4 /* OnboardingView2.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D232BA3E2A500903CA4 /* OnboardingView2.swift */; };
 		A6966D262BA3E2CF00903CA4 /* OnboardingView3.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D252BA3E2CF00903CA4 /* OnboardingView3.swift */; };
-		A6966D292BA400B700903CA4 /* AddressTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D282BA400B700903CA4 /* AddressTextField.swift */; };
-		A6966D2B2BA4018600903CA4 /* AmountTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D2A2BA4018600903CA4 /* AmountTextField.swift */; };
+		A6966D292BA400B700903CA4 /* SendCryptoAddressTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D282BA400B700903CA4 /* SendCryptoAddressTextField.swift */; };
+		A6966D2B2BA4018600903CA4 /* SendCryptoAmountTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D2A2BA4018600903CA4 /* SendCryptoAmountTextField.swift */; };
 		A6966D2D2BA402A900903CA4 /* TokenSelectorDropdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D2C2BA402A900903CA4 /* TokenSelectorDropdown.swift */; };
 		A6966D2F2BA4045C00903CA4 /* SwapCryptoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D2E2BA4045C00903CA4 /* SwapCryptoView.swift */; };
 		A6966D312BA4048800903CA4 /* SwapCryptoDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D302BA4048800903CA4 /* SwapCryptoDetailsView.swift */; };
@@ -339,7 +340,8 @@
 		A6564A052B969ADF00E4B329 /* EtherscanAPIResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EtherscanAPIResponse.swift; sourceTree = "<group>"; };
 		A6564A072B969AFC00E4B329 /* EtherscanAPITransactionDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EtherscanAPITransactionDetail.swift; sourceTree = "<group>"; };
 		A6564A0C2B96A04D00E4B329 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
-		A65BA97D2BA91F0300B2D8AA /* DebounceHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebounceHelper.swift; sourceTree = "<group>"; };
+		A65BA97F2BA9361B00B2D8AA /* SendCryptoAmountUSDTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoAmountUSDTextField.swift; sourceTree = "<group>"; };
+		A65BA9812BA93A9F00B2D8AA /* DebounceHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebounceHelper.swift; sourceTree = "<group>"; };
 		A66A0BD42BA124D00021A483 /* EditVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditVaultView.swift; sourceTree = "<group>"; };
 		A66A0BD62BA125C50021A483 /* EditVaultCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditVaultCell.swift; sourceTree = "<group>"; };
 		A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenameVaultView.swift; sourceTree = "<group>"; };
@@ -350,8 +352,8 @@
 		A6966D212BA3E1B000903CA4 /* TextStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextStore.swift; sourceTree = "<group>"; };
 		A6966D232BA3E2A500903CA4 /* OnboardingView2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView2.swift; sourceTree = "<group>"; };
 		A6966D252BA3E2CF00903CA4 /* OnboardingView3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView3.swift; sourceTree = "<group>"; };
-		A6966D282BA400B700903CA4 /* AddressTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressTextField.swift; sourceTree = "<group>"; };
-		A6966D2A2BA4018600903CA4 /* AmountTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountTextField.swift; sourceTree = "<group>"; };
+		A6966D282BA400B700903CA4 /* SendCryptoAddressTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoAddressTextField.swift; sourceTree = "<group>"; };
+		A6966D2A2BA4018600903CA4 /* SendCryptoAmountTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoAmountTextField.swift; sourceTree = "<group>"; };
 		A6966D2C2BA402A900903CA4 /* TokenSelectorDropdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectorDropdown.swift; sourceTree = "<group>"; };
 		A6966D2E2BA4045C00903CA4 /* SwapCryptoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoView.swift; sourceTree = "<group>"; };
 		A6966D302BA4048800903CA4 /* SwapCryptoDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoDetailsView.swift; sourceTree = "<group>"; };
@@ -874,8 +876,9 @@
 		A6966D272BA4009B00903CA4 /* TextFields */ = {
 			isa = PBXGroup;
 			children = (
-				A6966D282BA400B700903CA4 /* AddressTextField.swift */,
-				A6966D2A2BA4018600903CA4 /* AmountTextField.swift */,
+				A6966D282BA400B700903CA4 /* SendCryptoAddressTextField.swift */,
+				A6966D2A2BA4018600903CA4 /* SendCryptoAmountTextField.swift */,
+				A65BA97F2BA9361B00B2D8AA /* SendCryptoAmountUSDTextField.swift */,
 			);
 			path = TextFields;
 			sourceTree = "<group>";
@@ -1031,7 +1034,7 @@
 				DE1572AB2B7174D3009BC7C5 /* Utils.swift */,
 				A62758F12B97B10600ADE3A6 /* Endpoint.swift */,
 				A62758F32B97CE7E00ADE3A6 /* Styles */,
-				A65BA97D2BA91F0300B2D8AA /* DebounceHelper.swift */,
+				A65BA9812BA93A9F00B2D8AA /* DebounceHelper.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -1340,7 +1343,6 @@
 				D9AD8EFB2B6731E50009F8D5 /* SwapInputDetailsView.swift in Sources */,
 				A65649FC2B9699AA00E4B329 /* ETHInfo.swift in Sources */,
 				465B09B52B7D8E7B00952DD9 /* CryptoPriceService.swift in Sources */,
-				A65BA97E2BA91F0300B2D8AA /* DebounceHelper.swift in Sources */,
 				049BBB5C2B71E7F6004C231F /* LargeButton.swift in Sources */,
 				DE49A1A52B68BB6B000F3AFB /* VaultSelectionView.swift in Sources */,
 				A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */,
@@ -1359,6 +1361,7 @@
 				D9AD8EF72B6731B30009F8D5 /* SendVerifyView.swift in Sources */,
 				A65649E32B96602700E4B329 /* BitcoinTransactionExtension.swift in Sources */,
 				A66A0BDD2BA15C650021A483 /* WebSVGImage.swift in Sources */,
+				A65BA9822BA93A9F00B2D8AA /* DebounceHelper.swift in Sources */,
 				DE1572972B70F254009BC7C5 /* LocalStateAccessorImp.swift in Sources */,
 				DE15729F2B70F284009BC7C5 /* KeysignDiscoveryView.swift in Sources */,
 				DE64A4C82BA7EBEC00C342E3 /* JoinKeygenViewModel.swift in Sources */,
@@ -1380,7 +1383,7 @@
 				469ED39D2B98E8C0008D4951 /* ThorchainBalancePagination.swift in Sources */,
 				465B09AF2B7C84C600952DD9 /* ShareSheet.swift in Sources */,
 				DE6DCB952B97D88A009A39D5 /* THORChainSwapPayload.swift in Sources */,
-				A6966D2B2BA4018600903CA4 /* AmountTextField.swift in Sources */,
+				A6966D2B2BA4018600903CA4 /* SendCryptoAmountTextField.swift in Sources */,
 				46AC40A82B920061001704E6 /* EtherscanService.swift in Sources */,
 				A62758F22B97B10600ADE3A6 /* Endpoint.swift in Sources */,
 				049BBB562B71E5F5004C231F /* Choose.swift in Sources */,
@@ -1423,6 +1426,7 @@
 				D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */,
 				DE9EB0FA2BA4491B001747D9 /* CoinExtension.swift in Sources */,
 				465B09AB2B7C840100952DD9 /* ToastView.swift in Sources */,
+				A65BA9802BA9361B00B2D8AA /* SendCryptoAmountUSDTextField.swift in Sources */,
 				465A8D562B9E6E0B006E7457 /* SolanaRpc.swift in Sources */,
 				A65649FA2B96998500E4B329 /* EthAddressInfo.swift in Sources */,
 				DE9EB0F22BA2D97B001747D9 /* PeerDiscoveryPayload.swift in Sources */,
@@ -1455,7 +1459,7 @@
 				DEEDAEE52B8AFB5D005170E8 /* common.swift in Sources */,
 				A653242E2BA53D0900DDE6EB /* SendCryptoPairView.swift in Sources */,
 				A65649E22B96602700E4B329 /* DataExtension.swift in Sources */,
-				A6966D292BA400B700903CA4 /* AddressTextField.swift in Sources */,
+				A6966D292BA400B700903CA4 /* SendCryptoAddressTextField.swift in Sources */,
 				A6F9F7EB2B9D1B3700790258 /* VaultDetailViewModel.swift in Sources */,
 				A65649F22B966A2300E4B329 /* UTXOTransactionStatus.swift in Sources */,
 				A6564A082B969AFC00E4B329 /* EtherscanAPITransactionDetail.swift in Sources */,
