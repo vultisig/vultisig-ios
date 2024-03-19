@@ -33,6 +33,9 @@ struct SendCryptoAmountUSDTextField: View {
                 }
             ))
             .submitLabel(.next)
+            .keyboardType(.decimalPad)
+            .textContentType(.oneTimeCode)
+            .disableAutocorrection(true)
         }
         .font(.body12Menlo)
         .foregroundColor(.neutral0)

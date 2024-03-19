@@ -114,6 +114,7 @@ struct SendCryptoDetailsView: View {
             sol: sol,
             sendCryptoViewModel: sendCryptoViewModel
         )
+        .focused($focusedField, equals: .amount)
     }
     
     var amountUSDField: some View {
@@ -133,6 +134,7 @@ struct SendCryptoDetailsView: View {
             sol: sol,
             sendCryptoViewModel: sendCryptoViewModel
         )
+        .focused($focusedField, equals: .amountInUSD)
     }
     
     var gasField: some View {

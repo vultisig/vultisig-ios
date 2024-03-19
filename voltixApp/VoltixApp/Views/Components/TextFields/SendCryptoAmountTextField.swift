@@ -35,6 +35,10 @@ struct SendCryptoAmountTextField: View {
                     }
                 ))
                 .submitLabel(.next)
+                .textInputAutocapitalization(.never)
+                .keyboardType(.decimalPad)
+                .textContentType(.oneTimeCode)
+                .disableAutocorrection(true)
                 
                 if showButton {
                     maxButton
