@@ -141,7 +141,7 @@ struct SendCryptoDetailsView: View {
         HStack {
             Text(NSLocalizedString("gas(auto)", comment: ""))
             Spacer()
-            Text(tx.gas)
+            Text("\(tx.gas) \(tx.coin.feeUnit )")
         }
         .font(.body16Menlo)
         .foregroundColor(.neutral0)

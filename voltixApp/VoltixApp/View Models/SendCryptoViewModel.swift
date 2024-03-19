@@ -120,7 +120,7 @@ class SendCryptoViewModel: ObservableObject {
         }
     }
     
-    private func updateState(tx: SendTransaction, utxoBtc: BitcoinUnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, eth: EthplorerAPIService, thor: ThorchainService, sol: SolanaService, cryptoPrice: CryptoPriceService, web3Service: Web3Service) {
+    func updateState(tx: SendTransaction, utxoBtc: BitcoinUnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, eth: EthplorerAPIService, thor: ThorchainService, sol: SolanaService, cryptoPrice: CryptoPriceService, web3Service: Web3Service) {
         isLoading = true
             // TODO: move this logic into an abstraction
         

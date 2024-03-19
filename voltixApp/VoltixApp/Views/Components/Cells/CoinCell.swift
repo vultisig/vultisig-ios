@@ -106,6 +106,7 @@ struct CoinCell: View {
     
     private func setData() async {
         tx.coin = coin
+        tx.gas = "20"
         
         await coinViewModel.loadData(
             utxoBtc: utxoBtc,
