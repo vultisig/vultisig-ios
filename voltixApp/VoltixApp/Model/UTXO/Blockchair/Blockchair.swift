@@ -16,6 +16,27 @@ class Blockchair: Codable {
 	var transactions: [String]?
 	var utxo: [BlockchairUtxo]?
 	
+	func selectUTXOsForPayment(amountNeeded: Int64) -> [BlockchairUtxo] {
+		let txrefs = self.utxo ?? []
+		
+			// Sort the UTXOs by their value in ascending order
+		let sortedTxrefs = txrefs.sorted { $0.value ?? 0 < $1.value  ?? 0 }
+		
+		var selectedTxrefs: [BlockchairUtxo] = []
+		var total = 0
+		
+			// Iterate through the sorted UTXOs and select enough to cover the amountNeeded
+		for txref in sortedTxrefs {
+			selectedTxrefs.append(txref)
+			total += Int(txref.value  ?? 0)
+			if total >= amountNeeded {
+				break
+			}
+		}
+		
+		return selectedTxrefs
+	}
+	
 	class BlockchairAddress: Codable {
 		var type: String?
 		var scriptHex: String?
@@ -46,6 +67,18 @@ class Blockchair: Codable {
 			formatter.currencyCode = "USD"
 			return formatter.string(from: NSNumber(value: balanceUsd ?? 0.0)) ?? "0.0"
 		}
+		
+		var balanceInDecimalUSD: String {
+			let formatter = NumberFormatter()
+			formatter.numberStyle = .decimal
+			formatter.decimalSeparator = "."
+			formatter.locale = Locale.current
+			formatter.minimumFractionDigits = 2
+			formatter.maximumFractionDigits = 2
+
+			return formatter.string(from: NSNumber(value: balanceUsd ?? 0.0)) ?? "0.00"
+		}
+
 		// Helper function to format an amount in satoshis as Bitcoin
 		private func formatAsBitcoin(_ satoshis: Int) -> String {
 			let formatter = NumberFormatter()

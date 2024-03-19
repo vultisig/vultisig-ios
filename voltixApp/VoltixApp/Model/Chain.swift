@@ -33,7 +33,7 @@ class Chain: Codable, Hashable {
     static let Solana = Chain(name: "Solana", ticker: "SOL", signingKeyType: KeyType.EdDSA, chainType: .Solana)
 	static let Ethereum = Chain(name: "Ethereum", ticker: "ETH", signingKeyType: .ECDSA, chainType: .EVM)
 	static let Bitcoin = Chain(name: "Bitcoin", ticker: "BTC", signingKeyType: .ECDSA, chainType: .UTXO)
-    static let BitcoinCash = Chain(name: "BitcoinCash", ticker: "BCH", signingKeyType: .ECDSA, chainType: .UTXO)
+    static let BitcoinCash = Chain(name: "Bitcoin-Cash", ticker: "BCH", signingKeyType: .ECDSA, chainType: .UTXO)
     static let Litecoin = Chain(name: "Litecoin", ticker: "LTC", signingKeyType: .ECDSA, chainType: .UTXO)
     static let Dogecoin = Chain(name: "Dogecoin", ticker: "DOGE", signingKeyType: .ECDSA, chainType: .UTXO)
     

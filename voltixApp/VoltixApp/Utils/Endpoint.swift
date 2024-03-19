@@ -8,9 +8,6 @@
 import Foundation
 
 class Endpoint {
-    static let btcBroadcastTransaction = "https://mempool.space/api/tx"
-	
-	static let ltcBroadcastTransaction = "https://litecoinspace.org/api/tx"
     
     static let broadcastTransactionThorchainNineRealms = "https://thornode.ninerealms.com/cosmos/tx/v1beta1/txs"
     
@@ -28,6 +25,10 @@ class Endpoint {
 	
 	static func litecoinLabelTxHash(_ value: String) -> String {
 		"https://litecoinspace.org/tx/\(value)"
+	}
+	
+	static func blockchairBroadcast(_ chainName: String) -> String {
+		"https://api.blockchair.com/\(chainName)/push/transaction?key=A___PLqLolRBKDsYRO9SUi5EzgeXjMt5"
 	}
 	
 	static func blockchairDashboard(_ address: String, _ coinName: String) -> String {

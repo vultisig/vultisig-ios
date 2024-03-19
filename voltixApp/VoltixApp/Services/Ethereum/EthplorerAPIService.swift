@@ -24,7 +24,7 @@ public class EthplorerAPIService: ObservableObject {
         
         let urlString = Endpoint.getEthInfo(address)
         
-        print(urlString)
+        // print(urlString)
         
         guard let url = URL(string: urlString) else {
             DispatchQueue.main.async {
@@ -69,7 +69,7 @@ public class EthplorerAPIService: ObservableObject {
                 }
                 
                 self.errorMessage = errorDescription
-                // print(self.errorMessage ?? "Unknown error")
+                print(self.errorMessage ?? "Unknown error")
             }
         }
     }

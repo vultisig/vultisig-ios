@@ -39,13 +39,12 @@ struct SendInputDetailsView: View {
 	
 	@EnvironmentObject var appState: ApplicationState
 	@Binding var presentationStack: [CurrentScreen]
-	@StateObject var uxto: BitcoinUnspentOutputsService = .init()
-	@StateObject var uxtoLtc: LitecoinUnspentOutputsService = .init()
 	@StateObject var eth: EthplorerAPIService = .init()
 	@StateObject var web3Service = Web3Service()
 	@StateObject var cryptoPrice = CryptoPriceService.shared
 	@StateObject var thor: ThorchainService = .shared
 	@StateObject var sol: SolanaService = SolanaService.shared
+	@StateObject var utxo = BlockchairService.shared
 	@ObservedObject var tx: SendTransaction
 	@State private var isShowingScanner = false
 	@State private var isValidAddress = false
@@ -271,9 +270,7 @@ struct SendInputDetailsView: View {
 		if let newValueDouble = Double(newValue) {
 			var newCoinAmount = ""
 			
-			if	tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() ||
-				tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased()
-			{
+			if  tx.coin.chain.chainType == ChainType.UTXO {
 				let rate = priceRate
 				if rate > 0 {
 					let newValueCoin = newValueDouble / rate
@@ -307,9 +304,7 @@ struct SendInputDetailsView: View {
 		if let newValueDouble = Double(newValue) {
 			var newValueUSD = ""
 			
-			if 	tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() ||
-				tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased()
-			{
+			if  tx.coin.chain.chainType == ChainType.UTXO {
 				let rate = priceRate
 				newValueUSD = String(format: "%.2f", newValueDouble * rate)
 			} else if tx.coin.chain.name.lowercased() == "ethereum" {
@@ -335,17 +330,15 @@ struct SendInputDetailsView: View {
 	}
 	
 	private func validateAddress(_ address: String) {
-		if tx.coin.ticker.uppercased() == Chain.Bitcoin.ticker.uppercased() {
-			isValidAddress = CoinType.bitcoin.validate(address: address)
-		} else if tx.coin.ticker.uppercased() == Chain.Litecoin.ticker.uppercased() {
-			isValidAddress = CoinType.litecoin.validate(address: address)
-		} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
-			isValidAddress = CoinType.ethereum.validate(address: address)
-		} else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
-			isValidAddress = CoinType.thorchain.validate(address: address)
-		} else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
-			isValidAddress = CoinType.solana.validate(address: address)
+		
+		let chainName = tx.coin.chain.name.lowercased()
+		
+		guard let coinType = CoinType.from(string: chainName) else {
+			print("Coin type not found on Wallet Core")
+			return
 		}
+		
+		isValidAddress = coinType.validate(address: address)
 	}
 	
 	private func validateForm() -> Bool {
@@ -377,20 +370,11 @@ struct SendInputDetailsView: View {
 			return isValidForm
 		}
 		
+		let coinName = tx.coin.chain.name.lowercased()
+		let key: String = "\(tx.fromAddress)-\(coinName)"
 		
-		if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
-			let walletBalanceInSats = uxto.walletData?.balance ?? 0
-			let totalTransactionCostInSats = tx.amountInSats + tx.feeInSats
-			print("Total transaction cost: \(totalTransactionCostInSats)")
-			
-			if totalTransactionCostInSats > walletBalanceInSats {
-				formErrorMessages += "The combined amount and fee exceed your wallet's balance. Please adjust to proceed. \n"
-				logger.log("Total transaction cost exceeds wallet balance.")
-				isValidForm = false
-			}
-			
-		} else if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
-			let walletBalanceInSats = uxtoLtc.walletData?.balance ?? 0
+		if  tx.coin.chain.chainType == ChainType.UTXO {
+			let walletBalanceInSats = utxo.blockchairData?[key]?.address?.balance ?? 0
 			let totalTransactionCostInSats = tx.amountInSats + tx.feeInSats
 			print("Total transaction cost: \(totalTransactionCostInSats)")
 			
@@ -472,19 +456,12 @@ struct SendInputDetailsView: View {
 	}
 	
 	private func setMaxValues() {
-		if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
-			let rate = priceRate
-			if let walletData = uxto.walletData {
-				tx.amount = walletData.balanceInBTC
-				tx.amountInUSD = String(format: "%.2f", walletData.balanceDecimal * rate)
-			}
-		}
-		if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
-			let rate = priceRate
-			if let walletData = uxtoLtc.walletData {
-				tx.amount = walletData.balanceInLTC
-				tx.amountInUSD = String(format: "%.2f", walletData.balanceDecimal * rate)
-			}
+		let coinName = tx.coin.chain.name.lowercased()
+		let key: String = "\(tx.fromAddress)-\(coinName)"
+		
+		if  tx.coin.chain.chainType == ChainType.UTXO {
+			tx.amount = utxo.blockchairData?[key]?.address?.balanceInBTC ?? "0.0"
+			tx.amountInUSD = utxo.blockchairData?[key]?.address?.balanceInDecimalUSD ?? "0.0"
 		} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
 			if tx.coin.ticker.uppercased() == "ETH" {
 				tx.amount = eth.addressInfo?.ETH.balanceString ?? "0.0"
@@ -514,12 +491,13 @@ struct SendInputDetailsView: View {
 			priceRate = priceRateUsd
 		}
 		
-		if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
-			coinBalance = uxto.walletData?.balanceInBTC ?? "0"
-		} else if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
-			coinBalance = uxtoLtc.walletData?.balanceInLTC ?? "0"
+		let coinName = tx.coin.chain.name.lowercased()
+		let key: String = "\(tx.fromAddress)-\(coinName)"
+		
+		if  tx.coin.chain.chainType == ChainType.UTXO {
+			coinBalance = utxo.blockchairData?[key]?.address?.balanceInBTC ?? "0.0"
 		} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
-				// We need to pass it to the next view
+			// We need to pass it to the next view
 			tx.eth = eth.addressInfo
 			
 			let gasPriceInGwei = BigInt(web3Service.gasPrice ?? 0) / BigInt(10).power(9)
@@ -553,12 +531,12 @@ struct SendInputDetailsView: View {
 		Task {
 			isLoading = true
 			
-			await cryptoPrice.fetchCryptoPrices(for: "bitcoin,litecoin,thorchain,solana", for: "usd")
+			await cryptoPrice.fetchCryptoPrices(appState.currentVault)
 			
-			if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
-				await uxto.fetchUnspentOutputs(for: tx.fromAddress)
-			} else if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
-				await uxtoLtc.fetchLitecoinUnspentOutputs(for: tx.fromAddress)
+			let coinName = tx.coin.chain.name.lowercased()
+			
+			if  tx.coin.chain.chainType == ChainType.UTXO {
+				await utxo.fetchBlockchairData(for: tx.fromAddress, coinName: coinName)
 			} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
 				await eth.getEthInfo(for: tx.fromAddress)
 				do {
