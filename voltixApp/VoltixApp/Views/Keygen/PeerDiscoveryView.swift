@@ -15,7 +15,7 @@ struct PeerDiscoveryView: View {
     
     var body: some View {
         ZStack {
-            self.background
+            Background()
             VStack {
                 switch self.viewModel.status {
                 case .WaitingForDevices:
@@ -54,11 +54,6 @@ struct PeerDiscoveryView: View {
                 viewModel.stopMediator()
             }
         }
-    }
-    
-    var background: some View {
-        Color.backgroundBlue
-            .ignoresSafeArea()
     }
     
     var waitingForDevices: some View {

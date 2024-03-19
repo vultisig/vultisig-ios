@@ -16,14 +16,9 @@ struct SwapCryptoDetailsView: View {
     
     var body: some View {
         ZStack {
-            background
+            Background()
             view
         }
-    }
-    
-    var background: some View {
-        Color.backgroundBlue
-            .ignoresSafeArea()
     }
     
     var view: some View {

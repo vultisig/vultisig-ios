@@ -16,7 +16,7 @@ struct JoinKeysignView: View {
 
     var body: some View {
         ZStack {
-            background
+            Background()
             states
         }
         .navigationTitle(NSLocalizedString("joinKeySign", comment: "Join Keysign"))
@@ -39,11 +39,6 @@ struct JoinKeysignView: View {
         .onDisappear(){
             self.viewModel.stopJoiningKeysign()
         }
-    }
-    
-    var background: some View {
-        Color.backgroundBlue
-            .ignoresSafeArea()
     }
     
     var states: some View {

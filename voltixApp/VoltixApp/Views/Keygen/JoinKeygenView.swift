@@ -17,7 +17,7 @@ struct JoinKeygenView: View {
     
     var body: some View {
         ZStack {
-            background
+            Background()
             states
         }
         .navigationTitle(NSLocalizedString("joinKeygen", comment: "Join keygen/reshare"))
@@ -39,11 +39,6 @@ struct JoinKeygenView: View {
         .onDisappear {
             viewModel.stopJoinKeygen()
         }
-    }
-    
-    var background: some View {
-        Color.backgroundBlue
-            .ignoresSafeArea()
     }
     
     var states: some View {

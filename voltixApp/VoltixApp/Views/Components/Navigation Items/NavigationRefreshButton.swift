@@ -23,8 +23,7 @@ struct NavigationRefreshButton: View {
 
 #Preview {
     ZStack {
-        Color.backgroundBlue
-            .ignoresSafeArea()
+        Background()
         NavigationRefreshButton()
     }
 }

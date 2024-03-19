@@ -15,7 +15,7 @@ struct AddressQRCodeView: View {
     
     var body: some View {
         ZStack {
-            background
+            Background()
             view
         }
         .navigationBarBackButtonHidden(true)
@@ -26,11 +26,6 @@ struct AddressQRCodeView: View {
                 NavigationBackSheetButton(showSheet: $showSheet)
             }
         }
-    }
-    
-    var background: some View {
-        Color.backgroundBlue
-            .ignoresSafeArea()
     }
     
     var view: some View {

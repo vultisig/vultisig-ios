@@ -12,7 +12,7 @@ struct CreateVaultView: View {
     
     var body: some View {
         ZStack {
-            background
+            Background()
             view
         }
         .navigationBarBackButtonHidden(true)
@@ -24,11 +24,6 @@ struct CreateVaultView: View {
                 NavigationHelpButton()
             }
         }
-    }
-    
-    var background: some View {
-        Color.backgroundBlue
-            .ignoresSafeArea()
     }
     
     var view: some View {

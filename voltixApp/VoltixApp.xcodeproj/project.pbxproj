@@ -109,6 +109,7 @@
 		A6564A0B2B96A04D00E4B329 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = A6564A0D2B96A04D00E4B329 /* Localizable.strings */; };
 		A65BA9802BA9361B00B2D8AA /* SendCryptoAmountUSDTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA97F2BA9361B00B2D8AA /* SendCryptoAmountUSDTextField.swift */; };
 		A65BA9822BA93A9F00B2D8AA /* DebounceHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9812BA93A9F00B2D8AA /* DebounceHelper.swift */; };
+		A65BA9842BAA07B500B2D8AA /* Background.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9832BAA07B500B2D8AA /* Background.swift */; };
 		A66A0BD02BA0FC210021A483 /* SDWebImageSVGCoder in Frameworks */ = {isa = PBXBuildFile; productRef = A66A0BCF2BA0FC210021A483 /* SDWebImageSVGCoder */; };
 		A66A0BD32BA0FC290021A483 /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = A66A0BD22BA0FC290021A483 /* SDWebImageSwiftUI */; };
 		A66A0BD52BA124D00021A483 /* EditVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD42BA124D00021A483 /* EditVaultView.swift */; };
@@ -342,6 +343,7 @@
 		A6564A0C2B96A04D00E4B329 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		A65BA97F2BA9361B00B2D8AA /* SendCryptoAmountUSDTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoAmountUSDTextField.swift; sourceTree = "<group>"; };
 		A65BA9812BA93A9F00B2D8AA /* DebounceHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebounceHelper.swift; sourceTree = "<group>"; };
+		A65BA9832BAA07B500B2D8AA /* Background.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Background.swift; sourceTree = "<group>"; };
 		A66A0BD42BA124D00021A483 /* EditVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditVaultView.swift; sourceTree = "<group>"; };
 		A66A0BD62BA125C50021A483 /* EditVaultCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditVaultCell.swift; sourceTree = "<group>"; };
 		A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenameVaultView.swift; sourceTree = "<group>"; };
@@ -519,6 +521,7 @@
 				A633B1232B993FCC003D1738 /* Buttons */,
 				A6966D272BA4009B00903CA4 /* TextFields */,
 				A633B1342B997D35003D1738 /* Navigation Items */,
+				A65BA9832BAA07B500B2D8AA /* Background.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1461,6 +1464,7 @@
 				A65649E22B96602700E4B329 /* DataExtension.swift in Sources */,
 				A6966D292BA400B700903CA4 /* SendCryptoAddressTextField.swift in Sources */,
 				A6F9F7EB2B9D1B3700790258 /* VaultDetailViewModel.swift in Sources */,
+				A65BA9842BAA07B500B2D8AA /* Background.swift in Sources */,
 				A65649F22B966A2300E4B329 /* UTXOTransactionStatus.swift in Sources */,
 				A6564A082B969AFC00E4B329 /* EtherscanAPITransactionDetail.swift in Sources */,
 				DE64A4CE2BA7FEE100C342E3 /* JoinKeysignViewModel.swift in Sources */,

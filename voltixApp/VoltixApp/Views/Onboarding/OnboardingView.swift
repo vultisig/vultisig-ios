@@ -12,15 +12,10 @@ struct OnboardingView: View {
     
     var body: some View {
         ZStack {
-            background
+            Background()
             view
         }
         .toolbar(.hidden, for: .navigationBar)
-    }
-    
-    var background: some View {
-        Color.backgroundBlue
-            .ignoresSafeArea()
     }
     
     var view: some View {

@@ -15,18 +15,13 @@ struct SendCryptoPairView: View {
     
     var body: some View {
         ZStack {
-            background
+            Background()
             view
         }
         .gesture(DragGesture())
         .onTapGesture {
             viewModel.moveToNextView()
         }
-    }
-    
-    var background: some View {
-        Color.backgroundBlue
-            .ignoresSafeArea()
     }
     
     var view: some View {

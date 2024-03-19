@@ -32,15 +32,10 @@ struct SendCryptoDetailsView: View {
     
     var body: some View {
         ZStack {
-            background
+            Background()
             view
         }
         .gesture(DragGesture())
-    }
-    
-    var background: some View {
-        Color.backgroundBlue
-            .ignoresSafeArea()
     }
     
     var view: some View {

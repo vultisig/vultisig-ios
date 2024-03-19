@@ -19,7 +19,7 @@ struct VaultDetailView: View {
     
     var body: some View {
         ZStack(alignment: .bottom) {
-            background
+            Background()
             view
             scanButton
         }
@@ -38,11 +38,6 @@ struct VaultDetailView: View {
                 TokenSelectionView(showTokenSelectionSheet: $showSheet, vault: vault)
             }
         })
-    }
-    
-    var background: some View {
-        Color.backgroundBlue
-            .ignoresSafeArea()
     }
     
     var view: some View {

@@ -61,11 +61,6 @@ struct KeysignDiscoveryView: View {
         }
     }
     
-    var background: some View {
-        Color.backgroundBlue
-            .ignoresSafeArea()
-    }
-    
     var waitingForDevices: some View {
         VStack {
             self.paringQRCode

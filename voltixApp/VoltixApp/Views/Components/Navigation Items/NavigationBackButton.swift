@@ -25,8 +25,7 @@ struct NavigationBackButton: View {
 
 #Preview {
     ZStack {
-        Color.backgroundBlue
-            .ignoresSafeArea()
+        Background()
         NavigationBackButton()
     }
 }
