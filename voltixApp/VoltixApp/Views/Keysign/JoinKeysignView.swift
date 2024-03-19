@@ -46,13 +46,13 @@ struct JoinKeysignView: View {
         VStack {
             switch self.viewModel.status {
             case .DiscoverSigningMsg:
-                self.discoveringSignMessage
+                discoveringSignMessage
             case .DiscoverService:
-                self.discoverService
+                discoverService
             case .JoinKeysign:
-                self.keysignMessageConfirm
+                keysignMessageConfirm
             case .WaitingForKeysignToStart:
-                self.waitingForKeySignStart
+                waitingForKeySignStart
             case .KeysignStarted:
                 keysignStartedView
             case .FailedToStart:
@@ -71,7 +71,9 @@ struct JoinKeysignView: View {
             } else {
                 Text("Unable to start the keysign process due to missing information.")
                     .font(.body15MenloBold)
+                    .foregroundColor(.neutral0)
                     .multilineTextAlignment(.center)
+                    .padding(.horizontal, 30)
             }
         }
     }
@@ -89,12 +91,14 @@ struct JoinKeysignView: View {
     }
     
     var keysignFailedText: some View {
-        VStack {
+        VStack(spacing: 8) {
             Text(NSLocalizedString("keysignFail", comment: "Failed to start the keysign process"))
             Text(self.viewModel.errorMsg)
         }
         .font(.body15MenloBold)
+        .foregroundColor(.neutral0)
         .multilineTextAlignment(.center)
+        .padding(.horizontal, 30)
     }
     
     var keysignMessageConfirm: some View {
@@ -102,7 +106,7 @@ struct JoinKeysignView: View {
             Text("Confirm to sign the message?")
                 .frame(maxWidth: .infinity)
             
-            Divider()
+            Separator()
             
             HStack {
                 Text("To: ")
@@ -113,38 +117,34 @@ struct JoinKeysignView: View {
             Text("Amount: \(String(self.viewModel.keysignPayload?.toAmount ?? 0))")
                 .padding(.vertical)
             
+            Spacer()
+            
             Button(action: {
                 self.viewModel.joinKeysignCommittee()
             }) {
                 FilledButton(title: "joinKeySign")
             }
-            .buttonStyle(PlainButtonStyle())
-            .frame(maxWidth: .infinity)
-            .padding()
-            .padding(.vertical, 15)
-            .font(.body15MenloBold)
-            .foregroundColor(.neutral0)
-            .multilineTextAlignment(.center)
         }
     }
 
     var waitingForKeySignStart: some View {
-        VStack {
+        VStack(spacing: 16) {
+            ProgressView()
+                .preferredColorScheme(.dark)
+            
             HStack {
                 Text("thisDevice")
                 Text(self.viewModel.localPartyID)
             }
             
-            HStack {
-                Text(NSLocalizedString("waitingForKeySignStart", comment: "Waiting for the keysign process to start"))
-                ProgressView()
-                    .progressViewStyle(.circular)
-                    .padding(2)
-            }
+            Text(NSLocalizedString("waitingForKeySignStart", comment: "Waiting for the keysign process to start"))
         }
         .font(.body15MenloBold)
         .foregroundColor(.neutral0)
         .multilineTextAlignment(.center)
+        .padding(30)
+        .background(Color.blue600)
+        .cornerRadius(10)
         .task {
             await self.viewModel.waitForKeysignStart()
         }
@@ -156,6 +156,7 @@ struct JoinKeysignView: View {
                 .font(.body15MenloBold)
                 .foregroundColor(.neutral0)
                 .multilineTextAlignment(.center)
+                .padding(.horizontal, 30)
             
             Button(action: {
                 viewModel.startScan()
@@ -166,28 +167,32 @@ struct JoinKeysignView: View {
     }
     
     var discoverService: some View {
-        VStack {
-            HStack {
-                Text("thisDevice")
-                Text(self.viewModel.localPartyID)
-            }
-            
-            HStack {
-                Text(NSLocalizedString("discoveringMediator", comment: "Discovering mediator service, please wait..."))
-                
+        VStack(spacing: 16) {
+            ZStack {
                 if self.serviceDelegate.serverURL == nil {
-                    ProgressView().progressViewStyle(.circular).padding(2)
+                    ProgressView()
+                        .preferredColorScheme(.dark)
                 } else {
                     Image(systemName: "checkmark").onAppear {
                         self.viewModel.setStatus(status: .JoinKeysign)
                     }
                 }
             }
+            .padding(.bottom, 18)
+            
+            HStack {
+                Text(NSLocalizedString("thisDevice", comment: ""))
+                Text(self.viewModel.localPartyID)
+            }
+            
+            Text(NSLocalizedString("discoveringMediator", comment: "Discovering mediator service, please wait..."))
         }
         .font(.body15MenloBold)
         .foregroundColor(.neutral0)
         .multilineTextAlignment(.center)
-        .padding(.vertical, 30)
+        .padding(30)
+        .background(Color.blue600)
+        .cornerRadius(10)
         .onAppear {
             self.viewModel.discoverService()
         }

@@ -6,7 +6,7 @@
  
  */
 "secureCryptoVault" = "SECURE CRYPTO VAULT";
-"thisDevice" = "THIS DEVICE:";
+"thisDevice" = "This Device:";
 "homeViewDescription" = "TWO FACTOR AUTHENTICATION\nSECURE, TRUSTED DEVICES\nFULLY SELF-CUSTODIAL\nNO TRACKING, NO REGISTRATION\nFULLY OPEN-SOURCE\nAUDITED";
 "start" = "Start";
 "createNewVault" = "Create a New Vault";
