@@ -8,42 +8,19 @@ import OSLog
 import SwiftUI
 
 struct JoinKeygenView: View {
-    private let logger = Logger(subsystem: "join-keygen", category: "communication")
     let vault: Vault
+    
     @StateObject var viewModel = JoinKeygenViewModel()
     @StateObject var serviceDelegate = ServiceDelegate()
-    var background: some View {
-        Color.backgroundBlue
-            .ignoresSafeArea()
-    }
+    
+    let logger = Logger(subsystem: "join-keygen", category: "communication")
     
     var body: some View {
         ZStack {
             background
-            VStack {
-                switch viewModel.status {
-                case .DiscoverSessionID:
-                    discoveringSessionID
-                case .DiscoverService:
-                    discoveringService
-                case .JoinKeygen:
-                    joinKeygen
-                case .WaitingForKeygenToStart:
-                    waitingForKeygenStart
-                case .KeygenStarted:
-                    keygenStarted
-                case .FailToStart:
-                    failToStartKeygen
-                }
-            }
-            .padding()
-            .cornerRadius(10)
-            .shadow(radius: 5)
+            states
         }
-        .sheet(isPresented: $viewModel.isShowingScanner, content: {
-            CodeScannerView(codeTypes: [.qr], completion: self.viewModel.handleScan)
-        })
-        .navigationTitle(NSLocalizedString("joinKeygen", comment: "Join keygen / reshare"))
+        .navigationTitle(NSLocalizedString("joinKeygen", comment: "Join keygen/reshare"))
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -53,6 +30,9 @@ struct JoinKeygenView: View {
                 NavigationHelpButton()
             }
         }
+        .sheet(isPresented: $viewModel.isShowingScanner, content: {
+            CodeScannerView(codeTypes: [.qr], completion: self.viewModel.handleScan)
+        })
         .onAppear {
             viewModel.setData(vault: vault, serviceDelegate: self.serviceDelegate)
         }
@@ -61,13 +41,35 @@ struct JoinKeygenView: View {
         }
     }
     
+    var background: some View {
+        Color.backgroundBlue
+            .ignoresSafeArea()
+    }
+    
+    var states: some View {
+        VStack {
+            switch viewModel.status {
+            case .DiscoverSessionID:
+                discoveringSessionID
+            case .DiscoverService:
+                discoveringService
+            case .JoinKeygen:
+                joinKeygen
+            case .WaitingForKeygenToStart:
+                waitingForKeygenStart
+            case .KeygenStarted:
+                keygenStarted
+            case .FailToStart:
+                failToStartKeygen
+            }
+        }
+        .padding()
+        .cornerRadius(10)
+        .shadow(radius: 5)
+    }
+    
     var scanButton: some View {
         ZStack {
-            Circle()
-                .foregroundColor(.blue800)
-                .frame(width: 80, height: 80)
-                .opacity(0.8)
-            
             Circle()
                 .foregroundColor(.turquoise600)
                 .frame(width: 60, height: 60)
@@ -81,37 +83,46 @@ struct JoinKeygenView: View {
     var keygenStarted: some View {
         HStack {
             if serviceDelegate.serverURL != nil && self.viewModel.sessionID != nil {
-                KeygenView(vault: vault,
-                           tssType: self.viewModel.tssType,
-                           keygenCommittee: self.viewModel.keygenCommittee,
-                           vaultOldCommittee: self.viewModel.oldCommittee.filter { self.viewModel.keygenCommittee.contains($0) },
-                           mediatorURL: serviceDelegate.serverURL!,
-                           sessionID: self.viewModel.sessionID!)
+                keygenView
             } else {
-                Text(NSLocalizedString("failToStartKeygen", comment: "Unable to start key generation due to missing information"))
-                    .font(.body15MenloBold)
-                    .foregroundColor(.neutral0)
-                    .multilineTextAlignment(.center)
+                keygenErrorText
             }
         }
         .padding(.vertical, 30)
     }
     
+    var keygenView: some View {
+        KeygenView(
+            vault: vault,
+            tssType: self.viewModel.tssType,
+            keygenCommittee: self.viewModel.keygenCommittee,
+            vaultOldCommittee: self.viewModel.oldCommittee.filter { self.viewModel.keygenCommittee.contains($0) },
+            mediatorURL: serviceDelegate.serverURL!,
+            sessionID: self.viewModel.sessionID!
+        )
+    }
+    
+    var keygenErrorText: some View {
+        Text(NSLocalizedString("failToStartKeygen", comment: "Unable to start key generation due to missing information"))
+            .font(.body15MenloBold)
+            .foregroundColor(.neutral0)
+            .multilineTextAlignment(.center)
+    }
+    
     var failToStartKeygen: some View {
-        HStack {
-            Text(viewModel.errorMessage)
-                .font(.body15MenloBold)
-                .multilineTextAlignment(.center)
-        }
-        .padding(.vertical, 30)
+        Text(viewModel.errorMessage)
+            .font(.body15MenloBold)
+            .multilineTextAlignment(.center)
+            .padding(.vertical, 30)
     }
     
     var discoveringSessionID: some View {
-        VStack {
+        VStack(spacing: 24) {
             Text(NSLocalizedString("scanQRCodeJoinKeygen", comment: "Scan the barcode on another VoltixApp device to start"))
                 .font(.body15MenloBold)
                 .foregroundColor(.neutral0)
                 .multilineTextAlignment(.center)
+                .padding(.horizontal, 30)
             
             Button(action: {
                 viewModel.showBarcodeScanner()
@@ -124,34 +135,31 @@ struct JoinKeygenView: View {
     var discoveringService: some View {
         VStack {
             HStack {
-                Text("thisDevice")
-                    .font(.body15MenloBold)
-                    .foregroundColor(.neutral0)
-                    .multilineTextAlignment(.center)
+                Text(NSLocalizedString("thisDevice", comment: "This device"))
                 Text(self.viewModel.localPartyID)
-                    .font(.body15MenloBold)
-                    .foregroundColor(.neutral0)
-                    .multilineTextAlignment(.center)
             }
+            
             HStack {
                 Text(NSLocalizedString("discoveringMediator", comment: "Discovering mediator service, please wait..."))
-                    .foregroundColor(.neutral0)
-                    .font(.body15MenloBold)
-                    .multilineTextAlignment(.center)
                 
                 if serviceDelegate.serverURL == nil {
                     ProgressView().progressViewStyle(.circular).padding(2)
                 } else {
-                    Image(systemName: "checkmark").onAppear {
-                        viewModel.setStatus(status: .JoinKeygen)
-                    }
+                    Image(systemName: "checkmark")
+                        .onAppear {
+                            viewModel.setStatus(status: .JoinKeygen)
+                        }
                 }
             }
-        }.padding(.vertical, 30)
-            .onAppear {
-                logger.info("Start to discover service")
-                viewModel.discoverService()
-            }
+        }
+        .font(.body15MenloBold)
+        .foregroundColor(.neutral0)
+        .multilineTextAlignment(.center)
+        .padding(.vertical, 30)
+        .onAppear {
+            logger.info("Start to discover service")
+            viewModel.discoverService()
+        }
     }
     
     var joinKeygen: some View {
@@ -160,38 +168,34 @@ struct JoinKeygenView: View {
                 Text("thisDevice")
                 Text(self.viewModel.localPartyID)
             }
+            
             HStack {
                 Text(NSLocalizedString("joinKeygen", comment: "Joining key generation, please wait..."))
-                    .font(.body15MenloBold)
-                    .multilineTextAlignment(.center)
                     .onAppear {
                         viewModel.joinKeygenCommittee()
                     }
             }
-        }.padding(.vertical, 30)
+        }
+        .font(.body15MenloBold)
+        .multilineTextAlignment(.center)
+        .padding(.vertical, 30)
     }
     
     var waitingForKeygenStart: some View {
         VStack {
             HStack {
                 Text("thisDevice")
-                    .font(.body15MenloBold)
-                    .foregroundColor(.neutral0)
-                    .multilineTextAlignment(.center)
-            
                 Text(self.viewModel.localPartyID)
-                    .font(.body15MenloBold)
-                    .foregroundColor(.neutral0)
-                    .multilineTextAlignment(.center)
             }
+            
             HStack {
                 Text(NSLocalizedString("waitingForKeygenStart", comment: "Waiting for key generation to start..."))
-                    .font(.body15MenloBold)
-                    .foregroundColor(.neutral0)
-                    .multilineTextAlignment(.center)
                 ProgressView().progressViewStyle(.circular).padding(2)
             }
         }
+        .font(.body15MenloBold)
+        .foregroundColor(.neutral0)
+        .multilineTextAlignment(.center)
         .padding(.vertical, 30)
         .task {
             await viewModel.waitForKeygenStart()
