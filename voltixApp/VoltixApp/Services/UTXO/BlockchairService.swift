@@ -62,6 +62,5 @@ public class BlockchairService: ObservableObject {
 			self.errorMessage?[key] = "Error: \(error.localizedDescription)"
 		}
 	}
-	
 }
 

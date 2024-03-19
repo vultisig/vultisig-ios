@@ -21,6 +21,7 @@
 		460347882BA15118007ED3AC /* LitecoinExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 460347872BA15118007ED3AC /* LitecoinExtension.swift */; };
 		4606B3AE2B8045F60045094D /* UTXOTransactionListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4606B3AD2B8045F60045094D /* UTXOTransactionListView.swift */; };
 		4606B3B02B80465E0045094D /* UTXOTransactionsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4606B3AF2B80465E0045094D /* UTXOTransactionsService.swift */; };
+		463408662BA9C1D200246248 /* CoinTypeExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 463408652BA9C1D200246248 /* CoinTypeExtension.swift */; };
 		464854712B8E052B008D37A7 /* EthplorerAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 464854702B8E052B008D37A7 /* EthplorerAPIService.swift */; };
 		465A8D532B9E689B006E7457 /* SolanaService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465A8D522B9E689B006E7457 /* SolanaService.swift */; };
 		465A8D562B9E6E0B006E7457 /* SolanaRpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465A8D542B9E6E0A006E7457 /* SolanaRpc.swift */; };
@@ -242,6 +243,7 @@
 		460347872BA15118007ED3AC /* LitecoinExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LitecoinExtension.swift; sourceTree = "<group>"; };
 		4606B3AD2B8045F60045094D /* UTXOTransactionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionListView.swift; sourceTree = "<group>"; };
 		4606B3AF2B80465E0045094D /* UTXOTransactionsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionsService.swift; sourceTree = "<group>"; };
+		463408652BA9C1D200246248 /* CoinTypeExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinTypeExtension.swift; sourceTree = "<group>"; };
 		464854702B8E052B008D37A7 /* EthplorerAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EthplorerAPIService.swift; sourceTree = "<group>"; };
 		465A8D522B9E689B006E7457 /* SolanaService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolanaService.swift; sourceTree = "<group>"; };
 		465A8D542B9E6E0A006E7457 /* SolanaRpc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SolanaRpc.swift; sourceTree = "<group>"; };
@@ -498,14 +500,6 @@
 			path = Components;
 			sourceTree = "<group>";
 		};
-		460347812BA14887007ED3AC /* Bitcoin */ = {
-			isa = PBXGroup;
-			children = (
-				4606B3AF2B80465E0045094D /* UTXOTransactionsService.swift */,
-			);
-			path = Bitcoin;
-			sourceTree = "<group>";
-		};
 		460347822BA148A2007ED3AC /* Ethereum */ = {
 			isa = PBXGroup;
 			children = (
@@ -529,7 +523,6 @@
 			children = (
 				46C8CBBA2BA76CC100E68E08 /* UTXO */,
 				460347822BA148A2007ED3AC /* Ethereum */,
-				460347812BA14887007ED3AC /* Bitcoin */,
 				465A8D512B9E6887006E7457 /* Solana */,
 				469ED3952B98E782008D4951 /* Thorchain */,
 				465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */,
@@ -682,6 +675,7 @@
 		46C8CBBA2BA76CC100E68E08 /* UTXO */ = {
 			isa = PBXGroup;
 			children = (
+				4606B3AF2B80465E0045094D /* UTXOTransactionsService.swift */,
 				46C8CBBE2BA777BF00E68E08 /* BlockchairService.swift */,
 			);
 			path = UTXO;
@@ -810,6 +804,7 @@
 				A633B11B2B99273A003D1738 /* ColorExtensions.swift */,
 				DEEFF4FC2B9835DE0015692E /* THORChainSwapChainExtension.swift */,
 				DE9EB0F92BA4491B001747D9 /* CoinExtension.swift */,
+				463408652BA9C1D200246248 /* CoinTypeExtension.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -1265,6 +1260,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				463408662BA9C1D200246248 /* CoinTypeExtension.swift in Sources */,
 				DE4DFA7B2B7B1692004F8E73 /* ModelContainerPreview.swift in Sources */,
 				A6F9F7E52B9BB4D100790258 /* NavigationMenuButton.swift in Sources */,
 				049BBB662B71E987004C231F /* VaultItem.swift in Sources */,

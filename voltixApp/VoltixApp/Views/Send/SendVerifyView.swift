@@ -98,22 +98,19 @@ struct SendVerifyView: View {
 									
 									let totalAmountNeeded = tx.amountInSats + tx.feeInSats
 									
-									let utxoInfo = utxo.blockchairData?[key]?.selectUTXOsForPayment(amountNeeded: Int64(totalAmountNeeded)).map {
+									guard let utxoInfo = utxo.blockchairData?[key]?.selectUTXOsForPayment(amountNeeded: Int64(totalAmountNeeded)).map({
 										UtxoInfo(
 											hash: $0.transactionHash ?? "",
 											amount: Int64($0.value ?? 0),
 											index: UInt32($0.index ?? -1)
 										)
-									}
-									
-									if utxoInfo.count == 0 {
+									}), !utxoInfo.isEmpty else {
 										self.errorMessage = "You don't have enough balance to send this transaction"
 										return
 									}
 									
 									let totalSelectedAmount = utxoInfo.reduce(0) { $0 + $1.amount }
 									
-										// Check if the total selected amount is greater than or equal to the needed balance
 									if totalSelectedAmount < Int64(totalAmountNeeded) {
 										self.errorMessage = "You don't have enough balance to send this transaction"
 										return
