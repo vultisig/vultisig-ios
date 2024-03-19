@@ -13,6 +13,8 @@ import SwiftUI
 	@Published var balanceUSD = "US$ 0,00"
 	@Published var coinBalance = "0.0"
 	
+	@EnvironmentObject var appState: ApplicationState
+	
 	private var utxo = BlockchairService.shared
 	
 	func loadData(eth: EthplorerAPIService, thor: ThorchainService, tx: SendTransaction) async {
@@ -29,7 +31,7 @@ import SwiftUI
 			await thor.fetchBalances(tx.fromAddress)
 			await thor.fetchAccountNumber(tx.fromAddress)
 		}
-		await CryptoPriceService.shared.fetchCryptoPrices(for: "bitcoin,bitcoin-cash,dogecoin,litecoin,thorchain,solana", for: "usd")
+		await CryptoPriceService.shared.fetchCryptoPrices(appState.currentVault)
 		
 		updateState(eth: eth, thor: thor, tx: tx)
 		isLoading = false

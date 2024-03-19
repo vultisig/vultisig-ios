@@ -330,17 +330,15 @@ struct SendInputDetailsView: View {
 	}
 	
 	private func validateAddress(_ address: String) {
-		if tx.coin.ticker.uppercased() == Chain.Bitcoin.ticker.uppercased() {
-			isValidAddress = CoinType.bitcoin.validate(address: address)
-		} else if tx.coin.ticker.uppercased() == Chain.Litecoin.ticker.uppercased() {
-			isValidAddress = CoinType.litecoin.validate(address: address)
-		} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
-			isValidAddress = CoinType.ethereum.validate(address: address)
-		} else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
-			isValidAddress = CoinType.thorchain.validate(address: address)
-		} else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
-			isValidAddress = CoinType.solana.validate(address: address)
+		
+		let chainName = tx.coin.chain.name.lowercased()
+		
+		guard let coinType = CoinType.from(string: chainName) else {
+			print("Coin type not found on Wallet Core")
+			return
 		}
+		
+		isValidAddress = coinType.validate(address: address)
 	}
 	
 	private func validateForm() -> Bool {
@@ -463,7 +461,7 @@ struct SendInputDetailsView: View {
 		
 		if  tx.coin.chain.chainType == ChainType.UTXO {
 			tx.amount = utxo.blockchairData?[key]?.address?.balanceInBTC ?? "0.0"
-			tx.amountInUSD = utxo.blockchairData?[key]?.address?.balanceInUSD ?? "US$ 0,00"
+			tx.amountInUSD = utxo.blockchairData?[key]?.address?.balanceInDecimalUSD ?? "0.0"
 		} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
 			if tx.coin.ticker.uppercased() == "ETH" {
 				tx.amount = eth.addressInfo?.ETH.balanceString ?? "0.0"
@@ -499,7 +497,7 @@ struct SendInputDetailsView: View {
 		if  tx.coin.chain.chainType == ChainType.UTXO {
 			coinBalance = utxo.blockchairData?[key]?.address?.balanceInBTC ?? "0.0"
 		} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
-				// We need to pass it to the next view
+			// We need to pass it to the next view
 			tx.eth = eth.addressInfo
 			
 			let gasPriceInGwei = BigInt(web3Service.gasPrice ?? 0) / BigInt(10).power(9)
@@ -533,7 +531,7 @@ struct SendInputDetailsView: View {
 		Task {
 			isLoading = true
 			
-			await cryptoPrice.fetchCryptoPrices(for: "bitcoin,litecoin,thorchain,solana", for: "usd")
+			await cryptoPrice.fetchCryptoPrices(appState.currentVault)
 			
 			let coinName = tx.coin.chain.name.lowercased().replacingOccurrences(of: Chain.BitcoinCash.name.lowercased(), with: "bitcoin-cash")
 			

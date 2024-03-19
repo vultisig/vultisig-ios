@@ -72,7 +72,7 @@ public class UTXOTransactionsService: ObservableObject {
 		
 		let chainName = chain.lowercased().replacingOccurrences(of: Chain.BitcoinCash.name.lowercased(), with: "bitcoin-cash")
 		
-		guard let url = URL(string: "https://api.blockchair.com/\(chainName)/push/transaction") else {
+		guard let url = URL(string: Endpoint.blockchairBroadcast(chainName)) else {
 			completion(.failure(NSError(domain: "BlockchairServiceError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
 			return
 		}

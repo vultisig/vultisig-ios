@@ -3,6 +3,7 @@ import SwiftUI
 
 @MainActor
 public class CryptoPriceService: ObservableObject {
+	
     @Published var cryptoPrices: CryptoPrice?
     @Published var errorMessage: String?
     
@@ -18,6 +19,19 @@ public class CryptoPriceService: ObservableObject {
         let elapsedTime = Date().timeIntervalSince(cacheEntry.timestamp)
         return elapsedTime <= 3600 // 1 hour in seconds
     }
+	
+	func fetchCryptoPrices(_ currentVault: Vault?) async {
+		guard let vault = currentVault else {
+			print("current vault is nil")
+			return
+		}
+		
+		let coins = vault.coins.map {
+			$0.chain.name.lowercased()
+		}.joined(separator: ",")
+		
+		await fetchCryptoPrices(for: coins, for: "usd")
+	}
     
     func fetchCryptoPrices(for coin: String = "bitcoin", for fiat: String = "usd") async {
         let cacheKey = "\(coin)-\(fiat)"

@@ -67,6 +67,18 @@ class Blockchair: Codable {
 			formatter.currencyCode = "USD"
 			return formatter.string(from: NSNumber(value: balanceUsd ?? 0.0)) ?? "0.0"
 		}
+		
+		var balanceInDecimalUSD: String {
+			let formatter = NumberFormatter()
+			formatter.numberStyle = .decimal
+			formatter.decimalSeparator = "."
+			formatter.locale = Locale.current
+			formatter.minimumFractionDigits = 2
+			formatter.maximumFractionDigits = 2
+
+			return formatter.string(from: NSNumber(value: balanceUsd ?? 0.0)) ?? "0.00"
+		}
+
 		// Helper function to format an amount in satoshis as Bitcoin
 		private func formatAsBitcoin(_ satoshis: Int) -> String {
 			let formatter = NumberFormatter()

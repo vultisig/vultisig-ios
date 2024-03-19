@@ -124,7 +124,7 @@ public struct VaultAssetsView: View {
 	}
 	
 	private func fetchCryptoPrices() async {
-		await CryptoPriceService.shared.fetchCryptoPrices(for: "bitcoin,litecoin,thorchain,solana", for: "usd")
+		await CryptoPriceService.shared.fetchCryptoPrices(appState.currentVault)
 	}
 	
 	private func updateState() {
