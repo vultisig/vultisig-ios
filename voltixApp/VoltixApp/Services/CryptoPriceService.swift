@@ -30,14 +30,15 @@ public class CryptoPriceService: ObservableObject {
 			$0.chain.name.lowercased()
 		}.joined(separator: ",")
 		
+		print(coins)
+		
 		await fetchCryptoPrices(for: coins, for: "usd")
 	}
     
     func fetchCryptoPrices(for coin: String = "bitcoin", for fiat: String = "usd") async {
-        let cacheKey = "\(coin)-\(fiat)"
+        var cacheKey = "\(coin)-\(fiat)"
         
-        // Check cache validity
-        if let cacheEntry = cache[cacheKey], isCacheValid(for: cacheKey) {
+		if let cacheEntry = cache[cacheKey], isCacheValid(for: cacheKey) {
             print("Crypto Price Service > The data came from the cache !!")
             self.cryptoPrices = cacheEntry.data
             return
@@ -56,13 +57,11 @@ public class CryptoPriceService: ObservableObject {
             if let jsonStr = String(data: data, encoding: .utf8) {
                 print("Crypto Price Service > Raw JSON string: \(jsonStr)")
             }
-            //print(data)
             
             let decodedData = try JSONDecoder().decode(CryptoPrice.self, from: data)
             
             DispatchQueue.main.async {
                 self.cryptoPrices = decodedData
-                // Update cache with new data and current timestamp
                 self.cache[cacheKey] = (data: decodedData, timestamp: Date())
             }
         } catch {
@@ -84,7 +83,7 @@ public class CryptoPriceService: ObservableObject {
                 }
                 
                 self.errorMessage = errorDescription
-                // print(self.errorMessage ?? "Unknown error")
+                print(self.errorMessage ?? "Unknown error")
             }
         }
     }

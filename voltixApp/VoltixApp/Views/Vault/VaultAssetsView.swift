@@ -98,7 +98,7 @@ public struct VaultAssetsView: View {
 				
 				do {
 					
-					let coinName = tx.coin.chain.name.lowercased().replacingOccurrences(of: Chain.BitcoinCash.name.lowercased(), with: "bitcoin-cash")
+					let coinName = tx.coin.chain.name.lowercased()
 					
 					if  tx.coin.chain.chainType == ChainType.UTXO {
 						await utxo.fetchBlockchairData(for: tx.fromAddress, coinName: coinName)
@@ -132,7 +132,7 @@ public struct VaultAssetsView: View {
 			self.balanceUSD = "US$ 0,00"
 			self.coinBalance = "0.0"
 			
-			let coinName = tx.coin.chain.name.lowercased().replacingOccurrences(of: Chain.BitcoinCash.name.lowercased(), with: "bitcoin-cash")
+			let coinName = tx.coin.chain.name.lowercased()
 			let key: String = "\(tx.fromAddress)-\(coinName)"
 			
 			if  tx.coin.chain.chainType == ChainType.UTXO {

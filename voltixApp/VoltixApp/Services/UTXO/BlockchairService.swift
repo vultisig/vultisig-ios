@@ -1,9 +1,9 @@
-	//
-	//  BlockchairService.swift
-	//  VoltixApp
-	//
-	//  Created by Enrique Souza Soares on 17/03/2024.
-	//
+//
+//  BlockchairService.swift
+//  VoltixApp
+//
+//  Created by Enrique Souza Soares on 17/03/2024.
+//
 
 import Foundation
 
@@ -18,7 +18,7 @@ public class BlockchairService: ObservableObject {
 	
 	public func fetchBlockchairData(for address: String, coinName: String) async {
 		
-		let coinName = coinName.lowercased().replacingOccurrences(of: Chain.BitcoinCash.name.lowercased(), with: "bitcoin-cash")
+		let coinName = coinName.lowercased()
 		
 		let key: String = "\(address)-\(coinName)"
 		
@@ -29,8 +29,7 @@ public class BlockchairService: ObservableObject {
 		
 		do {
 			let (data, _) = try await URLSession.shared.data(from: url)
-			
-			print(String(data: data, encoding: .utf8))
+			// print(String(data: data, encoding: .utf8))
 			let decoder = JSONDecoder()
 			decoder.keyDecodingStrategy = .convertFromSnakeCase
 			let decodedData = try decoder.decode(BlockchairResponse.self, from: data)

@@ -93,7 +93,7 @@ struct SendVerifyView: View {
 								
 								if tx.coin.chain.chainType == ChainType.UTXO {
 									
-									let coinName = tx.coin.chain.name.lowercased().replacingOccurrences(of: Chain.BitcoinCash.name.lowercased(), with: "bitcoin-cash")
+									let coinName = tx.coin.chain.name.lowercased()
 									let key: String = "\(tx.fromAddress)-\(coinName)"
 									
 									let totalAmountNeeded = tx.amountInSats + tx.feeInSats

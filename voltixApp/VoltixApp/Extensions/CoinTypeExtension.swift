@@ -10,8 +10,9 @@ import WalletCore
 
 extension CoinType {
 	static func from(string: String) -> CoinType? {
+		let coinName = string.replacingOccurrences(of: "-", with: "")
 		for coinType in CoinType.allCases {
-			if String(describing: coinType).lowercased() == string.lowercased() {
+			if String(describing: coinType).lowercased() == coinName.lowercased() {
 				return coinType
 			}
 		}

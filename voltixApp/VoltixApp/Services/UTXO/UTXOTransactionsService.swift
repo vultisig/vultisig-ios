@@ -13,16 +13,16 @@ public class UTXOTransactionsService: ObservableObject {
 	@Published var walletData: [UTXOTransactionMempool]?
 	@Published var errorMessage: String?
 	
-		// Cache structure to hold data and timestamp
+	// Cache structure to hold data and timestamp
 	private struct CacheEntry {
 		let data: [UTXOTransactionMempool]
 		let timestamp: Date
 	}
 	
-		// Dictionary to store cache entries with userAddress as the key
+	// Dictionary to store cache entries with userAddress as the key
 	private var cache: [String: CacheEntry] = [:]
 	
-		// Function to check if cache for a given userAddress is valid (not older than 5 minutes)
+	// Function to check if cache for a given userAddress is valid (not older than 5 minutes)
 	private func isCacheValid(for userAddress: String) -> Bool {
 		if let entry = cache[userAddress], -entry.timestamp.timeIntervalSinceNow < 300 {
 			return true // Cache is valid if less than 5 minutes old
@@ -70,9 +70,7 @@ public class UTXOTransactionsService: ObservableObject {
 	
 	public static func broadcastTransaction(chain: String, signedTransaction: String, completion: @escaping (Result<String, Error>) -> Void) {
 		
-		let chainName = chain.lowercased().replacingOccurrences(of: Chain.BitcoinCash.name.lowercased(), with: "bitcoin-cash")
-		
-		guard let url = URL(string: Endpoint.blockchairBroadcast(chainName)) else {
+		guard let url = URL(string: Endpoint.blockchairBroadcast(chain.lowercased())) else {
 			completion(.failure(NSError(domain: "BlockchairServiceError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
 			return
 		}
