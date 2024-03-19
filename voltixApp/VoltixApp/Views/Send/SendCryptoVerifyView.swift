@@ -8,12 +8,14 @@
 import SwiftUI
 
 struct SendCryptoVerifyView: View {
+    @Binding var keysignPayload: KeysignPayload?
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @ObservedObject var sendCryptoVerifyViewModel: SendCryptoVerifyViewModel
     @ObservedObject var tx: SendTransaction
     @ObservedObject var utxoBtc: BitcoinUnspentOutputsService
     @ObservedObject var utxoLtc: LitecoinUnspentOutputsService
     @ObservedObject var eth: EthplorerAPIService
+    @ObservedObject var web3Service: Web3Service
     
     var body: some View {
         ZStack {
@@ -83,7 +85,9 @@ struct SendCryptoVerifyView: View {
     
     var button: some View {
         Button {
-            sendCryptoViewModel.moveToNextView()
+            Task {
+                await validateForm()
+            }
         } label: {
             FilledButton(title: "sign")
         }
@@ -122,6 +126,19 @@ struct SendCryptoVerifyView: View {
         )
     }
     
+    private func validateForm() async {
+        keysignPayload = await sendCryptoVerifyViewModel.validateForm(
+            tx: tx,
+            utxoBtc: utxoBtc,
+            utxoLtc: utxoLtc,
+            web3Service: web3Service
+        )
+        
+        if keysignPayload != nil {
+            sendCryptoViewModel.moveToNextView()
+        }
+    }
+    
     private func getAmount() -> String {
         tx.amount + " " + tx.coin.ticker
     }
@@ -137,11 +154,13 @@ struct SendCryptoVerifyView: View {
 
 #Preview {
     SendCryptoVerifyView(
+        keysignPayload: .constant(nil),
         sendCryptoViewModel: SendCryptoViewModel(),
         sendCryptoVerifyViewModel: SendCryptoVerifyViewModel(),
         tx: SendTransaction(),
         utxoBtc: BitcoinUnspentOutputsService(),
         utxoLtc: LitecoinUnspentOutputsService(),
-        eth: EthplorerAPIService()
+        eth: EthplorerAPIService(), 
+        web3Service: Web3Service()
     )
 }

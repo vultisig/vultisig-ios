@@ -10,6 +10,7 @@ import SwiftUI
 struct SendCryptoView: View {
     @ObservedObject var tx: SendTransaction
     let group: GroupedChain
+    let vault: Vault
     
     @StateObject var sendCryptoViewModel = SendCryptoViewModel()
     @StateObject var sendCryptoVerifyViewModel = SendCryptoVerifyViewModel()
@@ -19,6 +20,8 @@ struct SendCryptoView: View {
     @StateObject var utxoLtc = LitecoinUnspentOutputsService()
     @StateObject var eth = EthplorerAPIService()
     @StateObject var web3Service = Web3Service()
+    
+    @State var keysignPayload: KeysignPayload? = nil
     
     var body: some View {
         ZStack {
@@ -57,6 +60,7 @@ struct SendCryptoView: View {
         TabView(selection: $sendCryptoViewModel.currentIndex) {
             detailsView.tag(1)
             verifyView.tag(2)
+            pairView.tag(3)
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
         .frame(maxHeight: .infinity)
@@ -76,13 +80,26 @@ struct SendCryptoView: View {
     
     var verifyView: some View {
         SendCryptoVerifyView(
+            keysignPayload: $keysignPayload,
             sendCryptoViewModel: sendCryptoViewModel,
             sendCryptoVerifyViewModel: sendCryptoVerifyViewModel,
             tx: tx,
             utxoBtc: utxoBtc,
             utxoLtc: utxoLtc,
-            eth: eth
+            eth: eth,
+            web3Service: web3Service
         )
+    }
+    
+    var pairView: some View {
+        ZStack {
+            if let keysignPayload = keysignPayload {
+                KeysignDiscoveryView(vault: vault, keysignPayload: keysignPayload)
+            }
+        }
+        .onAppear {
+            print(keysignPayload)
+        }
     }
     
     private func setData() async {
@@ -104,5 +121,5 @@ struct SendCryptoView: View {
 }
 
 #Preview {
-    SendCryptoView(tx: SendTransaction(), group: GroupedChain.example)
+    SendCryptoView(tx: SendTransaction(), group: GroupedChain.example, vault: Vault.example)
 }

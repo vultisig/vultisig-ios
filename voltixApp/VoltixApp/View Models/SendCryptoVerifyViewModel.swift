@@ -88,11 +88,12 @@ class SendCryptoVerifyViewModel: ObservableObject {
         return 0
     }
     
-    private func validateForm(tx: SendTransaction, utxoBtc: BitcoinUnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, web3Service: Web3Service) async {
+    func validateForm(tx: SendTransaction, utxoBtc: BitcoinUnspentOutputsService, utxoLtc: LitecoinUnspentOutputsService, web3Service: Web3Service) async -> KeysignPayload? {
         
         if !isValidForm {
-            self.errorMessage = "* You must agree with the terms."
-            return
+            errorMessage = "You must agree with the terms."
+            showAlert = true
+            return nil
         }
         
         if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
@@ -112,7 +113,8 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 
                 if utxoInfo.count == 0 {
                     self.errorMessage = "You don't have enough balance to send this transaction"
-                    return
+                    showAlert = true
+                    return nil
                 }
                 
                 let totalSelectedAmount = utxoInfo.reduce(0) { $0 + $1.amount }
@@ -120,7 +122,8 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 // Check if the total selected amount is greater than or equal to the needed balance
                 if totalSelectedAmount < Int64(totalAmountNeeded) {
                     self.errorMessage = "You don't have enough balance to send this transaction"
-                    return
+                    showAlert = true
+                    return nil
                 }
                 
                 let keysignPayload = KeysignPayload(
@@ -134,12 +137,10 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 )
                 
                 self.errorMessage = ""
-                
-                //TODO: MOVE TO NEW VIEW
-//                self.presentationStack.append(.KeysignDiscovery(keysignPayload))
-                
+                return keysignPayload
             } else {
                 self.errorMessage = "Error fetching the data"
+                showAlert = true
             }
             
         } else if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
@@ -153,14 +154,16 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 
                 if utxoInfo.count == 0 {
                     self.errorMessage = "You don't have enough balance to send this transaction"
-                    return
+                    showAlert = true
+                    return nil
                 }
                 
                 let totalSelectedAmount = utxoInfo.reduce(0) { $0 + $1.amount }
                 
                 if totalSelectedAmount < Int64(totalAmountNeeded) {
                     self.errorMessage = "You don't have enough balance to send this transaction"
-                    return
+                    showAlert = true
+                    return nil
                 }
                 
                 let keysignPayload = KeysignPayload(
@@ -174,15 +177,11 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 )
                 
                 self.errorMessage = ""
-                
-                //TODO: MOVE TO NEW VIEW
-//                self.presentationStack.append(.KeysignDiscovery(keysignPayload))
-                
-                
+                return keysignPayload
             } else {
                 self.errorMessage = "Error fetching the data"
+                showAlert = true
             }
-            
         } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
             
             if tx.coin.contractAddress.isEmpty {
@@ -191,25 +190,29 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 
                 guard estimatedGas > 0 else {
                     errorMessage = "Error to estimate gas for ETH"
-                    return
+                    showAlert = true
+                    return nil
                 }
                 
-                //TODO: MOVE TO NEW VIEW
-//                self.presentationStack.append(.KeysignDiscovery(KeysignPayload(
-//                    coin: tx.coin,
-//                    toAddress: tx.toAddress,
-//                    toAmount: tx.amountInGwei, // in Gwei
-//                    chainSpecific: BlockChainSpecific.Ethereum(maxFeePerGasGwei: Int64(tx.gas) ?? 24, priorityFeeGwei: 1, nonce: tx.nonce, gasLimit: estimatedGas),
-//                    utxos: [],
-//                    memo: nil,
-//                    swapPayload: nil)))
+                let keysignPayload = KeysignPayload(
+                    coin: tx.coin,
+                    toAddress: tx.toAddress,
+                    toAmount: tx.amountInGwei, // in Gwei
+                    chainSpecific: BlockChainSpecific.Ethereum(maxFeePerGasGwei: Int64(tx.gas) ?? 24, priorityFeeGwei: 1, nonce: tx.nonce, gasLimit: estimatedGas),
+                    utxos: [],
+                    memo: nil,
+                    swapPayload: nil
+                )
+                
+                return keysignPayload
             } else {
                 
                 let estimatedGas = Int64(await estimateGasForERC20Transfer(tx: tx, web3Service: web3Service))
                 
                 guard estimatedGas > 0 else {
                     errorMessage = "Error to estimate gas for the TOKEN"
-                    return
+                    showAlert = true
+                    return nil
                 }
                 
                 let decimals: Double = Double(tx.token?.tokenInfo.decimals ?? "18") ?? 18
@@ -218,54 +221,61 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 
                 let amountToSend = Int64(amountInSmallestUnit)
                 
-                //TODO: MOVE TO NEW VIEW
-//                self.presentationStack.append(.KeysignDiscovery(KeysignPayload(
-//                    coin: tx.coin,
-//                    toAddress: tx.toAddress,
-//                    toAmount: amountToSend, // The amount must be in the token decimals
-//                    chainSpecific: BlockChainSpecific.ERC20(maxFeePerGasGwei: Int64(tx.gas) ?? 42, priorityFeeGwei: 1, nonce: tx.nonce, gasLimit: Int64(estimatedGas), contractAddr: tx.coin.contractAddress),
-//                    utxos: [],
-//                    memo: nil,
-//                    swapPayload: nil)))
+                let keysignPayload = KeysignPayload(
+                    coin: tx.coin,
+                    toAddress: tx.toAddress,
+                    toAmount: amountToSend, // The amount must be in the token decimals
+                    chainSpecific: BlockChainSpecific.ERC20(maxFeePerGasGwei: Int64(tx.gas) ?? 42, priorityFeeGwei: 1, nonce: tx.nonce, gasLimit: Int64(estimatedGas), contractAddr: tx.coin.contractAddress),
+                    utxos: [],
+                    memo: nil,
+                    swapPayload: nil
+                )
+                
+                return keysignPayload
             }
             
         } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
             
             guard let accountNumberString = thor.account?.accountNumber, let intAccountNumber = UInt64(accountNumberString) else {
                 print("We need the ACCOUNT NUMBER to broadcast a transaction")
-                return
+                return nil
             }
             
             guard let sequenceString = thor.account?.sequence, let intSequence = UInt64(sequenceString) else {
                 print("We need the SEQUENCE to broadcast a transaction")
-                return
+                return nil
             }
             
-            //TODO: MOVE TO NEW VIEW
-//            self.presentationStack.append(.KeysignDiscovery(KeysignPayload(
-//                coin: tx.coin,
-//                toAddress: tx.toAddress,
-//                toAmount: tx.amountInSats,
-//                chainSpecific: BlockChainSpecific.THORChain(accountNumber: intAccountNumber, sequence: intSequence),
-//                utxos: [],
-//                memo: tx.memo, swapPayload: nil)))
+            let keysignPayload = KeysignPayload(
+                coin: tx.coin,
+                toAddress: tx.toAddress,
+                toAmount: tx.amountInSats,
+                chainSpecific: BlockChainSpecific.THORChain(accountNumber: intAccountNumber, sequence: intSequence),
+                utxos: [],
+                memo: tx.memo, swapPayload: nil
+            )
+            
+            return keysignPayload
             
         } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
             
             guard let recentBlockHash = sol.recentBlockHash else {
                 print("We need the recentBlockHash to broadcast a transaction")
-                return
+                return nil
             }
             
-            //TODO: MOVE TO NEW VIEW
-//            self.presentationStack.append(.KeysignDiscovery(KeysignPayload(
-//                coin: tx.coin,
-//                toAddress: tx.toAddress,
-//                toAmount: tx.amountInLamports,
-//                chainSpecific: BlockChainSpecific.Solana(recentBlockHash: recentBlockHash),
-//                utxos: [],
-//                memo: tx.memo, swapPayload: nil)))
+            let keysignPayload = KeysignPayload(
+                coin: tx.coin,
+                toAddress: tx.toAddress,
+                toAmount: tx.amountInLamports,
+                chainSpecific: BlockChainSpecific.Solana(recentBlockHash: recentBlockHash),
+                utxos: [],
+                memo: tx.memo, swapPayload: nil
+            )
             
+            return keysignPayload
         }
+        
+        return nil
     }
 }

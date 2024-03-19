@@ -51,7 +51,7 @@ struct VaultDetailView: View {
     var list: some View {
         LazyVStack(spacing: 16) {
             ForEach(viewModel.coinsGroupedByChains, id: \.address) { group in
-                ChainCell(group: group)
+                ChainCell(group: group, vault: vault)
             }
         }
         .padding(.top, 30)

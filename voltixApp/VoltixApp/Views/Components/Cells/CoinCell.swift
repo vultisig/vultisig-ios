@@ -10,6 +10,7 @@ import SwiftUI
 struct CoinCell: View {
     let coin: Coin
     let group: GroupedChain
+    let vault: Vault
     
     @StateObject var tx = SendTransaction()
     @StateObject var coinViewModel = CoinViewModel()
@@ -91,7 +92,7 @@ struct CoinCell: View {
     
     var sendButton: some View {
         NavigationLink {
-            SendCryptoView(tx: tx, group: group)
+            SendCryptoView(tx: tx, group: group, vault: vault)
         } label: {
             Text(NSLocalizedString("send", comment: "Send button text").uppercased())
                 .font(.body16MenloBold)
@@ -117,5 +118,5 @@ struct CoinCell: View {
 }
 
 #Preview {
-    CoinCell(coin: Coin.example, group: GroupedChain.example)
+    CoinCell(coin: Coin.example, group: GroupedChain.example, vault: Vault.example)
 }
