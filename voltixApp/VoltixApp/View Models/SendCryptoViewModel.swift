@@ -22,9 +22,9 @@ class SendCryptoViewModel: ObservableObject {
     @Published var coinBalance: String = "0"
     @Published var errorMessage = ""
     
-    @StateObject var thor = ThorchainService.shared
-    @StateObject var sol: SolanaService = SolanaService.shared
-    @StateObject var cryptoPrice = CryptoPriceService.shared
+    @Published var thor = ThorchainService.shared
+    @Published var sol: SolanaService = SolanaService.shared
+    @Published var cryptoPrice = CryptoPriceService.shared
     
     let totalViews = 7
     let titles = ["send", "scan", "send", "pair", "verify", "keysign", "done"]

@@ -43,9 +43,6 @@ struct SendCryptoView: View {
                 await setData()
             }
         }
-        .alert(isPresented: $sendCryptoViewModel.showAlert) {
-            alert
-        }
     }
     
     var view: some View {
@@ -78,14 +75,13 @@ struct SendCryptoView: View {
     }
     
     var verifyView: some View {
-        SendCryptoVerifyView(sendCryptoViewModel: sendCryptoViewModel, sendCryptoVerifyViewModel: sendCryptoVerifyViewModel)
-    }
-    
-    var alert: Alert {
-        Alert(
-            title: Text(NSLocalizedString("error", comment: "")),
-            message: Text(sendCryptoViewModel.errorMessage),
-            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+        SendCryptoVerifyView(
+            sendCryptoViewModel: sendCryptoViewModel,
+            sendCryptoVerifyViewModel: sendCryptoVerifyViewModel,
+            tx: tx,
+            utxoBtc: utxoBtc,
+            utxoLtc: utxoLtc,
+            eth: eth
         )
     }
     

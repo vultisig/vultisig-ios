@@ -34,6 +34,9 @@ struct SendCryptoDetailsView: View {
             view
         }
         .gesture(DragGesture())
+        .alert(isPresented: $sendCryptoViewModel.showAlert) {
+            alert
+        }
     }
     
     var view: some View {
@@ -41,6 +44,14 @@ struct SendCryptoDetailsView: View {
             fields
             button
         }
+    }
+    
+    var alert: Alert {
+        Alert(
+            title: Text(NSLocalizedString("error", comment: "")),
+            message: Text(sendCryptoViewModel.errorMessage),
+            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+        )
     }
     
     var fields: some View {
