@@ -14,41 +14,9 @@ struct KeysignDiscoveryView: View {
     @StateObject var viewModel = KeysignDiscoveryViewModel()
     
     var body: some View {
-        VStack {
-            switch self.viewModel.status {
-            case .WaitingForDevices:
-                self.waitingForDevices
-            case .FailToStart:
-                HStack {
-                    Text(NSLocalizedString("failToStart", comment: "Fail to start"))
-                        .font(.body15MenloBold)
-                        .multilineTextAlignment(.center)
-                        .foregroundColor(.red)
-                    Text(self.viewModel.errorMessage)
-                        .font(.body15MenloBold)
-                        .multilineTextAlignment(.center)
-                        .foregroundColor(.red)
-                }
-            case .Keysign:
-                KeysignView(vault: self.vault,
-                            keysignCommittee: self.viewModel.selections.map { $0 },
-                            mediatorURL: self.viewModel.serverAddr,
-                            sessionID: self.viewModel.sessionID,
-                            keysignType: self.keysignPayload.coin.chain.signingKeyType,
-                            messsageToSign: self.viewModel.keysignMessages, // need to figure out all the prekeysign hashes
-                            keysignPayload: self.viewModel.keysignPayload)
-            }
-        }
-        .navigationTitle(NSLocalizedString("mainDevice", comment: "Main Device"))
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                NavigationBackButton()
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                NavigationHelpButton()
-            }
+        ZStack {
+            Background()
+            view
         }
         .onAppear {
             self.viewModel.setData(vault: self.vault, keysignPayload: self.keysignPayload, participantDiscovery: self.participantDiscovery)
@@ -59,6 +27,41 @@ struct KeysignDiscoveryView: View {
         .onDisappear {
             self.viewModel.stopMediator()
         }
+    }
+    
+    var view: some View {
+        VStack {
+            switch self.viewModel.status {
+            case .WaitingForDevices:
+                self.waitingForDevices
+            case .FailToStart:
+                errorText
+            case .Keysign:
+                keysignView
+            }
+        }
+    }
+    
+    var errorText: some View {
+        HStack {
+            Text(NSLocalizedString("failToStart", comment: "Fail to start"))
+            Text(self.viewModel.errorMessage)
+        }
+        .font(.body15MenloBold)
+        .multilineTextAlignment(.center)
+        .foregroundColor(.red)
+    }
+    
+    var keysignView: some View {
+        KeysignView(
+            vault: self.vault,
+            keysignCommittee: self.viewModel.selections.map { $0 },
+            mediatorURL: self.viewModel.serverAddr,
+            sessionID: self.viewModel.sessionID,
+            keysignType: self.keysignPayload.coin.chain.signingKeyType,
+            messsageToSign: self.viewModel.keysignMessages, // need to figure out all the prekeysign hashes
+            keysignPayload: self.viewModel.keysignPayload
+        )
     }
     
     var waitingForDevices: some View {
@@ -78,7 +81,7 @@ struct KeysignDiscoveryView: View {
                 .font(.body18MenloBold)
                 .multilineTextAlignment(.center)
             
-            self.getQrImage(size: 100)
+            getQrImage(size: 100)
                 .resizable()
                 .scaledToFit()
                 .padding()
@@ -87,6 +90,7 @@ struct KeysignDiscoveryView: View {
                 .font(.body13Menlo)
                 .multilineTextAlignment(.center)
         }
+        .foregroundColor(.neutral0)
         .cornerRadius(10)
         .shadow(radius: 5)
         .padding()
@@ -98,6 +102,7 @@ struct KeysignDiscoveryView: View {
                 Text(NSLocalizedString("lookingForDevices", comment: "Looking for devices"))
                     .font(.body15MenloBold)
                     .multilineTextAlignment(.center)
+                    .foregroundColor(.neutral0)
                 
                 ProgressView()
                     .progressViewStyle(.circular)
@@ -111,38 +116,47 @@ struct KeysignDiscoveryView: View {
     
     var deviceList: some View {
         List(self.participantDiscovery.peersFound, id: \.self, selection: self.$viewModel.selections) { peer in
-            HStack {
-                Image(systemName: self.viewModel.selections.contains(peer) ? "checkmark.circle" : "circle")
-                Text(peer)
-            }
-            .onTapGesture {
-                if self.viewModel.selections.contains(peer) {
-                    self.viewModel.selections.remove(peer)
-                } else {
-                    self.viewModel.selections.insert(peer)
-                }
-            }
+            getPeerCell(peer)
         }
-        .scrollContentBackground(.hidden)
     }
     
     var bottomButtons: some View {
-        Button(action: {
+        let isDisabled = viewModel.selections.count < vault.getThreshold()
+        
+        return Button(action: {
             self.viewModel.startKeysign()
         }) {
             FilledButton(title: "sign")
-                .disabled(self.viewModel.selections.count < self.vault.getThreshold())
         }
-        .disabled(self.viewModel.selections.count < self.vault.getThreshold())
+        .disabled(isDisabled)
+        .opacity(isDisabled ? 0.8 : 1)
+        .grayscale(isDisabled ? 1 : 0)
+        .padding(40)
     }
     
-    func getQrImage(size: CGFloat) -> Image {
-        let keysignMsg = KeysignMessage(sessionID: self.viewModel.sessionID,
-                                        serviceName: self.viewModel.serviceName,
-                                        payload: self.keysignPayload)
+    private func getPeerCell(_ peer: String) -> some View {
+        HStack {
+            Image(systemName: self.viewModel.selections.contains(peer) ? "checkmark.circle" : "circle")
+            Text(peer)
+                .font(.body12Menlo)
+                .foregroundColor(.neutral0)
+        }
+        .onTapGesture {
+            if self.viewModel.selections.contains(peer) {
+                self.viewModel.selections.remove(peer)
+            } else {
+                self.viewModel.selections.insert(peer)
+            }
+        }
+    }
+    
+    private func getQrImage(size: CGFloat) -> Image {
+        let keysignMsg = KeysignMessage(sessionID: self.viewModel.sessionID, serviceName: self.viewModel.serviceName, payload: self.keysignPayload)
+        
         do {
             let encoder = JSONEncoder()
             let jsonData = try encoder.encode(keysignMsg)
+            
             return Utils.getQrImage(data: jsonData, size: size)
         } catch {
             self.logger.error("fail to encode keysign messages to json,error:\(error)")

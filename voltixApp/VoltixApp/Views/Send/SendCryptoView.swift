@@ -97,9 +97,6 @@ struct SendCryptoView: View {
                 KeysignDiscoveryView(vault: vault, keysignPayload: keysignPayload)
             }
         }
-        .onAppear {
-            print(keysignPayload)
-        }
     }
     
     private func setData() async {
