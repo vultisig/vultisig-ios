@@ -13,6 +13,8 @@ struct CoinCell: View {
     
     @StateObject var tx = SendTransaction()
     @StateObject var coinViewModel = CoinViewModel()
+    @StateObject var utxoBtc = BitcoinUnspentOutputsService()
+    @StateObject var utxoLtc = LitecoinUnspentOutputsService()
     @StateObject var eth = EthplorerAPIService()
     @StateObject var thor = ThorchainService.shared
 	
@@ -106,6 +108,8 @@ struct CoinCell: View {
         tx.coin = coin
         
         await coinViewModel.loadData(
+            utxoBtc: utxoBtc,
+            utxoLtc: utxoLtc,
             eth: eth,
             thor: thor,
             tx: tx

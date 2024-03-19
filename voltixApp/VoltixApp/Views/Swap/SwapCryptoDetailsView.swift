@@ -60,7 +60,8 @@ struct SwapCryptoDetailsView: View {
     }
     
     var fromAmountField: some View {
-        AmountTextField(amount: $fromAmount)
+//        AmountTextField(tx: tx)
+        Text("amount")
     }
     
     var swapButton: some View {
@@ -86,7 +87,8 @@ struct SwapCryptoDetailsView: View {
     }
     
     var toAmountField: some View {
-        AmountTextField(amount: $toAmount, showButton: false)
+//        AmountTextField(tx: tx)
+        Text("Amount")
     }
     
     var summary: some View {

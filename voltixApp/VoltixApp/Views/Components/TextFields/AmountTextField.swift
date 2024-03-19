@@ -8,19 +8,33 @@
 import SwiftUI
 
 struct AmountTextField: View {
-    @Binding var amount: String
+    @ObservedObject var tx: SendTransaction
+    @ObservedObject var utxoBtc: BitcoinUnspentOutputsService
+    @ObservedObject var utxoLtc: LitecoinUnspentOutputsService
+    @ObservedObject var eth: EthplorerAPIService
+    @ObservedObject var thor: ThorchainService
+    @ObservedObject var sol: SolanaService
+    @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     var showButton = true
     
     var body: some View {
         ZStack(alignment: .trailing) {
-            if amount.isEmpty {
-                Text(NSLocalizedString("enterAmount", comment: ""))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
+//            if tx.amount.isEmpty {
+//                Text(NSLocalizedString("enterAmount", comment: ""))
+//                    .frame(maxWidth: .infinity, alignment: .leading)
+//            }
             
             HStack(spacing: 0) {
-                TextField(NSLocalizedString("enterAmount", comment: "").capitalized, text: $amount)
-                    .submitLabel(.next)
+                TextField(NSLocalizedString("enterAmount", comment: "").capitalized, text: Binding<String>(
+                    get: { tx.amount },
+                    set: { newValue in
+                        tx.amount = newValue
+                        DebounceHelper.shared.debounce {
+                            sendCryptoViewModel.convertToUSD(newValue: newValue, tx: tx, eth: eth)
+                        }
+                    }
+                ))
+                .submitLabel(.next)
                 
                 if showButton {
                     maxButton
@@ -37,13 +51,32 @@ struct AmountTextField: View {
     }
     
     var maxButton: some View {
-        Text(NSLocalizedString("max", comment: "").uppercased())
-            .font(.body16Menlo)
-            .foregroundColor(.neutral0)
-            .frame(width: 40, height: 40)
+        Button {
+            sendCryptoViewModel.setMaxValues(
+                tx: tx,
+                utxoBtc: utxoBtc,
+                utxoLtc: utxoLtc,
+                eth: eth,
+                thor: thor,
+                sol: sol
+            )
+        } label: {
+            Text(NSLocalizedString("max", comment: "").uppercased())
+                .font(.body16Menlo)
+                .foregroundColor(.neutral0)
+                .frame(width: 40, height: 40)
+        }
     }
 }
 
 #Preview {
-    AmountTextField(amount: .constant("0"))
+    AmountTextField(
+        tx: SendTransaction(),
+        utxoBtc: BitcoinUnspentOutputsService(),
+        utxoLtc: LitecoinUnspentOutputsService(),
+        eth: EthplorerAPIService(),
+        thor: ThorchainService.shared,
+        sol: SolanaService.shared,
+        sendCryptoViewModel: SendCryptoViewModel()
+    )
 }

@@ -17,6 +17,7 @@ struct SendCryptoView: View {
     @StateObject var utxoLtc = LitecoinUnspentOutputsService()
     @StateObject var eth = EthplorerAPIService()
     @StateObject var thor = ThorchainService.shared
+    @StateObject var sol: SolanaService = SolanaService.shared
     
     var body: some View {
         ZStack {
@@ -73,14 +74,21 @@ struct SendCryptoView: View {
     var detailsView: some View {
         SendCryptoDetailsView(
             tx: tx,
-            sendCryptoViewModel: sendCryptoViewModel, 
+            utxoBtc: utxoBtc,
+            utxoLtc: utxoLtc,
+            eth: eth,
+            thor: thor,
+            sol: sol,
+            sendCryptoViewModel: sendCryptoViewModel,
             coinViewModel: coinViewModel,
             group: group
         )
     }
     
     private func setData() async {
-        await coinViewModel.loadData( 
+        await coinViewModel.loadData(
+            utxoBtc: utxoBtc,
+            utxoLtc: utxoLtc,
             eth: eth,
             thor: thor,
             tx: tx

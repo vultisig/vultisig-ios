@@ -10,6 +10,11 @@ import SwiftUI
 
 struct SendCryptoDetailsView: View {
     @ObservedObject var tx: SendTransaction
+    @ObservedObject var utxoBtc: BitcoinUnspentOutputsService
+    @ObservedObject var utxoLtc: LitecoinUnspentOutputsService
+    @ObservedObject var eth: EthplorerAPIService
+    @ObservedObject var thor: ThorchainService
+    @ObservedObject var sol: SolanaService
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @ObservedObject var coinViewModel: CoinViewModel
     let group: GroupedChain
@@ -85,8 +90,20 @@ struct SendCryptoDetailsView: View {
     var amountField: some View {
         VStack(spacing: 8) {
             getTitle(for: "amount")
-            AmountTextField(amount: $amount)
+            textField
         }
+    }
+    
+    var textField: some View {
+        AmountTextField(
+            tx: tx,
+            utxoBtc: utxoBtc,
+            utxoLtc: utxoLtc,
+            eth: eth,
+            thor: thor,
+            sol: sol,
+            sendCryptoViewModel: sendCryptoViewModel
+        )
     }
     
     var gasField: some View {
@@ -117,5 +134,15 @@ struct SendCryptoDetailsView: View {
 }
 
 #Preview {
-    SendCryptoDetailsView(tx: SendTransaction(), sendCryptoViewModel: SendCryptoViewModel(), coinViewModel: CoinViewModel(), group: GroupedChain.example)
+    SendCryptoDetailsView(
+        tx: SendTransaction(),
+        utxoBtc: BitcoinUnspentOutputsService(),
+        utxoLtc: LitecoinUnspentOutputsService(),
+        eth: EthplorerAPIService(),
+        thor: ThorchainService.shared,
+        sol: SolanaService.shared,
+        sendCryptoViewModel: SendCryptoViewModel(),
+        coinViewModel: CoinViewModel(),
+        group: GroupedChain.example
+    )
 }
