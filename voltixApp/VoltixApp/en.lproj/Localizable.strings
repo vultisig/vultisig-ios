@@ -13,6 +13,7 @@
 "importExistingVault" = "Import an Existing Vault";
 "import" = "Import";
 "continue" = "Continue";
+"changeVault" = "Change Vault";
 "setup" = "Setup";
 "pair" = "Pair";
 "join" = "Join";
@@ -104,5 +105,6 @@
 "sendingRightAddressCheck" = "I’m sending the right address";
 "correctAmountCheck" = "The amount is correct";
 "notHackedCheck" = "I’m not being hacked or phished";
+"wrongVaultTryAgain" = "Wrong Vault or Pair Device.";
 "signInErrorTryAgain" = "Signing Error. Please try again.";
 "sameWifiEntendedInstruction" = "Keep devices on the same WiFi Network, correct vault and pair devices. Make sure no other devices are running Voltix.";

@@ -40,7 +40,6 @@ struct TokenSelectorDropdown: View {
         } label: {
             cell
         }
-
     }
     
     var cell: some View {

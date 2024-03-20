@@ -26,7 +26,7 @@ class SendCryptoViewModel: ObservableObject {
     @Published var sol: SolanaService = SolanaService.shared
     @Published var cryptoPrice = CryptoPriceService.shared
     
-    let totalViews = 7
+    let totalViews = 3
     let titles = ["send", "scan", "send", "pair", "verify", "keysign", "done"]
     
     let logger = Logger(subsystem: "send-input-details", category: "transaction")

@@ -95,6 +95,8 @@ struct SendCryptoView: View {
         ZStack {
             if let keysignPayload = keysignPayload {
                 KeysignDiscoveryView(vault: vault, keysignPayload: keysignPayload)
+            } else {
+                SendCryptoVaultErrorView()
             }
         }
     }

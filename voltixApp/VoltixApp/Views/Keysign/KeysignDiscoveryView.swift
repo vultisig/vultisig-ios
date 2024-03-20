@@ -118,6 +118,7 @@ struct KeysignDiscoveryView: View {
         List(self.participantDiscovery.peersFound, id: \.self, selection: self.$viewModel.selections) { peer in
             getPeerCell(peer)
         }
+        .scrollContentBackground(.hidden)
     }
     
     var bottomButtons: some View {
@@ -138,9 +139,10 @@ struct KeysignDiscoveryView: View {
         HStack {
             Image(systemName: self.viewModel.selections.contains(peer) ? "checkmark.circle" : "circle")
             Text(peer)
-                .font(.body12Menlo)
-                .foregroundColor(.neutral0)
         }
+        .font(.body12Menlo)
+        .foregroundColor(.neutral0)
+        .listRowBackground(Color.blue600)
         .onTapGesture {
             if self.viewModel.selections.contains(peer) {
                 self.viewModel.selections.remove(peer)
