@@ -10,8 +10,6 @@ struct SendVerifyView: View {
 	@Binding var presentationStack: [CurrentScreen]
 	@ObservedObject var tx: SendTransaction
 	@StateObject private var web3Service = Web3Service()
-	@StateObject var utxoBtc: BitcoinUnspentOutputsService = .init()
-	@StateObject var utxoLtc: LitecoinUnspentOutputsService = .init()
 	@StateObject var thor: ThorchainService = ThorchainService.shared
 	@StateObject var sol: SolanaService = SolanaService.shared
 	@State private var errorMessage: String = ""
@@ -19,29 +17,21 @@ struct SendVerifyView: View {
 	@State private var isChecked2 = false
 	@State private var isChecked3 = false
 	
+	@StateObject var utxo = BlockchairService.shared
+	
 	private var isValidForm: Bool {
 		return isChecked1 && isChecked2 && isChecked3
 	}
 	
 	private func reloadTransactions() {
-		if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
-			if utxoBtc.walletData == nil {
-				Task {
-					await utxoBtc.fetchUnspentOutputs(for: tx.fromAddress)
-				}
-			}
-		} else if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
-			if utxoLtc.walletData == nil {
-				Task {
-					await utxoLtc.fetchLitecoinUnspentOutputs(for: tx.fromAddress)
-				}
-			}
-		} else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
-			Task {
+		
+		Task {
+			if  tx.coin.chain.chainType == ChainType.UTXO {
+				await utxo.fetchBlockchairData(for: tx.fromAddress, coinName: tx.coin.chain.name.lowercased())
+			} else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
 				await thor.fetchAccountNumber(tx.fromAddress)
-			}
-		} else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
-			Task {
+			} else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
+				
 				await sol.getSolanaBalance(account: tx.fromAddress)
 				await sol.fetchRecentBlockhash()
 				
@@ -50,6 +40,7 @@ struct SendVerifyView: View {
 						self.tx.gas = String(feeInLamports)
 					}
 				}
+				
 			}
 		}
 	}
@@ -100,89 +91,45 @@ struct SendVerifyView: View {
 									return
 								}
 								
-								if tx.coin.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() {
+								if tx.coin.chain.chainType == ChainType.UTXO {
 									
-									if let walletData = utxoBtc.walletData {
-											// Calculate total amount needed by summing the amount and the fee
-										let totalAmountNeeded = tx.amountInSats + tx.feeInSats
-										
-											// Select UTXOs sufficient to cover the total amount needed and map to UtxoInfo
-										let utxoInfo = walletData.selectUTXOsForPayment(amountNeeded: Int64(totalAmountNeeded)).map {
-											UtxoInfo(
-												hash: $0.txHash ?? "",
-												amount: Int64($0.value ?? 0),
-												index: UInt32($0.txOutputN ?? -1)
-											)
-										}
-										
-										if utxoInfo.count == 0 {
-											self.errorMessage = "You don't have enough balance to send this transaction"
-											return
-										}
-										
-										let totalSelectedAmount = utxoInfo.reduce(0) { $0 + $1.amount }
-										
-											// Check if the total selected amount is greater than or equal to the needed balance
-										if totalSelectedAmount < Int64(totalAmountNeeded) {
-											self.errorMessage = "You don't have enough balance to send this transaction"
-											return
-										}
-										
-										let keysignPayload = KeysignPayload(
-											coin: tx.coin,
-											toAddress: tx.toAddress,
-											toAmount: tx.amountInSats,
-											chainSpecific: BlockChainSpecific.UTXO(byteFee: tx.feeInSats),
-											utxos: utxoInfo,
-											memo: tx.memo,
-											swapPayload: nil
+									let coinName = tx.coin.chain.name.lowercased()
+									let key: String = "\(tx.fromAddress)-\(coinName)"
+									
+									let totalAmountNeeded = tx.amountInSats + tx.feeInSats
+									
+									guard let utxoInfo = utxo.blockchairData[key]?.selectUTXOsForPayment(amountNeeded: Int64(totalAmountNeeded)).map({
+										UtxoInfo(
+											hash: $0.transactionHash ?? "",
+											amount: Int64($0.value ?? 0),
+											index: UInt32($0.index ?? -1)
 										)
-										
-										self.errorMessage = ""
-										self.presentationStack.append(.KeysignDiscovery(keysignPayload))
-										
-									} else {
-										self.errorMessage = "Error fetching the data"
+									}), !utxoInfo.isEmpty else {
+										self.errorMessage = "You don't have enough balance to send this transaction"
+										return
 									}
 									
-								} else if tx.coin.chain.name.lowercased() == Chain.Litecoin.name.lowercased() {
+									let totalSelectedAmount = utxoInfo.reduce(0) { $0 + $1.amount }
 									
-									if let walletData = utxoLtc.walletData {
-										let totalAmountNeeded = tx.amountInSats + tx.feeInSats
-										
-										let utxoInfo = walletData.selectUTXOsForPayment(amountNeeded: Int64(totalAmountNeeded)).map {
-											UtxoInfo(hash: $0.txid, amount: Int64($0.value), index: UInt32($0.vout))
-										}
-										
-										if utxoInfo.count == 0 {
-											self.errorMessage = "You don't have enough balance to send this transaction"
-											return
-										}
-										
-										let totalSelectedAmount = utxoInfo.reduce(0) { $0 + $1.amount }
-										
-										if totalSelectedAmount < Int64(totalAmountNeeded) {
-											self.errorMessage = "You don't have enough balance to send this transaction"
-											return
-										}
-										
-										let keysignPayload = KeysignPayload(
-											coin: tx.coin,
-											toAddress: tx.toAddress,
-											toAmount: tx.amountInSats,
-											chainSpecific: BlockChainSpecific.UTXO(byteFee: tx.feeInSats),
-											utxos: utxoInfo,
-											memo: tx.memo,
-											swapPayload: nil
-										)
-										
-										self.errorMessage = ""
-										self.presentationStack.append(.KeysignDiscovery(keysignPayload))
-										
-										
-									} else {
-										self.errorMessage = "Error fetching the data"
+									if totalSelectedAmount < Int64(totalAmountNeeded) {
+										self.errorMessage = "You don't have enough balance to send this transaction"
+										return
 									}
+									
+									let keysignPayload = KeysignPayload(
+										coin: tx.coin,
+										toAddress: tx.toAddress,
+										toAmount: tx.amountInSats,
+										chainSpecific: BlockChainSpecific.UTXO(byteFee: tx.feeInSats),
+										utxos: utxoInfo,
+										memo: tx.memo,
+										swapPayload: nil
+									)
+									
+									self.errorMessage = ""
+									self.presentationStack.append(.KeysignDiscovery(keysignPayload))
+									
+									
 									
 								} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
 									

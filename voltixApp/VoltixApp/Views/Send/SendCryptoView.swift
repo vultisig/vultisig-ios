@@ -13,8 +13,6 @@ struct SendCryptoView: View {
     
     @StateObject var sendCryptoViewModel = SendCryptoViewModel()
     @StateObject var coinViewModel = CoinViewModel()
-    @StateObject var utxoBtc = BitcoinUnspentOutputsService()
-    @StateObject var utxoLtc = LitecoinUnspentOutputsService()
     @StateObject var eth = EthplorerAPIService()
     @StateObject var thor = ThorchainService.shared
     
@@ -81,8 +79,6 @@ struct SendCryptoView: View {
     
     private func setData() async {
         await coinViewModel.loadData(
-            utxoBtc: utxoBtc,
-            utxoLtc: utxoLtc,
             eth: eth,
             thor: thor,
             tx: tx

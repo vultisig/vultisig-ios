@@ -10,29 +10,8 @@ import SwiftUI
 struct JoinKeygenView: View {
     private let logger = Logger(subsystem: "join-keygen", category: "communication")
     let vault: Vault
-    
-    enum JoinKeygenStatus {
-        case DiscoverSessionID
-        case DiscoverService
-        case JoinKeygen
-        case WaitingForKeygenToStart
-        case KeygenStarted
-        case FailToStart
-    }
-    
-    @State var tssType: TssType = .Keygen
-    @State private var isShowingScanner = false
-    @State private var sessionID: String? = nil
-    @State private var hexChainCode: String = ""
-    @StateObject private var serviceDelegate = ServiceDelegate()
-    @State private var netService: NetService? = nil
-    @State private var currentStatus = JoinKeygenStatus.DiscoverSessionID
-    @State private var keygenCommittee = [String]()
-    @State var oldCommittee = [String]()
-    @State var localPartyID: String = ""
-    @State private var serviceName = ""
-    @State var errorMessage = ""
-    
+    @StateObject var viewModel = JoinKeygenViewModel()
+    @StateObject var serviceDelegate = ServiceDelegate()
     var background: some View {
         Color.backgroundBlue
             .ignoresSafeArea()
@@ -42,7 +21,7 @@ struct JoinKeygenView: View {
         ZStack {
             background
             VStack {
-                switch currentStatus {
+                switch viewModel.status {
                 case .DiscoverSessionID:
                     discoveringSessionID
                 case .DiscoverService:
@@ -61,8 +40,8 @@ struct JoinKeygenView: View {
             .cornerRadius(10)
             .shadow(radius: 5)
         }
-        .sheet(isPresented: $isShowingScanner, content: {
-            CodeScannerView(codeTypes: [.qr], completion: self.handleScan)
+        .sheet(isPresented: $viewModel.isShowingScanner, content: {
+            CodeScannerView(codeTypes: [.qr], completion: self.viewModel.handleScan)
         })
         .navigationTitle(NSLocalizedString("joinKeygen", comment: "Join keygen / reshare"))
         .navigationBarBackButtonHidden(true)
@@ -75,14 +54,10 @@ struct JoinKeygenView: View {
             }
         }
         .onAppear {
-            if !vault.localPartyID.isEmpty {
-                self.localPartyID = vault.localPartyID
-            } else {
-                self.localPartyID = Utils.getLocalDeviceIdentity()
-                vault.localPartyID = self.localPartyID
-            }
-        }.onDisappear {
-            self.currentStatus = .FailToStart
+            viewModel.setData(vault: vault, serviceDelegate: self.serviceDelegate)
+        }
+        .onDisappear {
+            viewModel.stopJoinKeygen()
         }
     }
     
@@ -105,13 +80,13 @@ struct JoinKeygenView: View {
     
     var keygenStarted: some View {
         HStack {
-            if serviceDelegate.serverURL != nil && self.sessionID != nil {
+            if serviceDelegate.serverURL != nil && self.viewModel.sessionID != nil {
                 KeygenView(vault: vault,
-                           tssType: tssType,
-                           keygenCommittee: keygenCommittee,
-                           vaultOldCommittee: oldCommittee.filter { keygenCommittee.contains($0) },
+                           tssType: self.viewModel.tssType,
+                           keygenCommittee: self.viewModel.keygenCommittee,
+                           vaultOldCommittee: self.viewModel.oldCommittee.filter { self.viewModel.keygenCommittee.contains($0) },
                            mediatorURL: serviceDelegate.serverURL!,
-                           sessionID: self.sessionID!)
+                           sessionID: self.viewModel.sessionID!)
             } else {
                 Text(NSLocalizedString("failToStartKeygen", comment: "Unable to start key generation due to missing information"))
                     .font(.body15MenloBold)
@@ -124,7 +99,7 @@ struct JoinKeygenView: View {
     
     var failToStartKeygen: some View {
         HStack {
-            Text(errorMessage)
+            Text(viewModel.errorMessage)
                 .font(.body15MenloBold)
                 .multilineTextAlignment(.center)
         }
@@ -139,7 +114,7 @@ struct JoinKeygenView: View {
                 .multilineTextAlignment(.center)
             
             Button(action: {
-                self.isShowingScanner = true
+                viewModel.showBarcodeScanner()
             }) {
                 scanButton
             }
@@ -153,7 +128,7 @@ struct JoinKeygenView: View {
                     .font(.body15MenloBold)
                     .foregroundColor(.neutral0)
                     .multilineTextAlignment(.center)
-                Text(self.localPartyID)
+                Text(self.viewModel.localPartyID)
                     .font(.body15MenloBold)
                     .foregroundColor(.neutral0)
                     .multilineTextAlignment(.center)
@@ -168,16 +143,14 @@ struct JoinKeygenView: View {
                     ProgressView().progressViewStyle(.circular).padding(2)
                 } else {
                     Image(systemName: "checkmark").onAppear {
-                        currentStatus = .JoinKeygen
+                        viewModel.setStatus(status: .JoinKeygen)
                     }
                 }
             }
         }.padding(.vertical, 30)
             .onAppear {
                 logger.info("Start to discover service")
-                self.netService = NetService(domain: "local.", type: "_http._tcp.", name: self.serviceName)
-                netService?.delegate = self.serviceDelegate
-                netService?.resolve(withTimeout: 10)
+                viewModel.discoverService()
             }
     }
     
@@ -185,15 +158,14 @@ struct JoinKeygenView: View {
         VStack {
             HStack {
                 Text("thisDevice")
-                Text(self.localPartyID)
+                Text(self.viewModel.localPartyID)
             }
             HStack {
                 Text(NSLocalizedString("joinKeygen", comment: "Joining key generation, please wait..."))
                     .font(.body15MenloBold)
                     .multilineTextAlignment(.center)
                     .onAppear {
-                        joinKeygenCommittee()
-                        currentStatus = .WaitingForKeygenToStart
+                        viewModel.joinKeygenCommittee()
                     }
             }
         }.padding(.vertical, 30)
@@ -207,7 +179,7 @@ struct JoinKeygenView: View {
                     .foregroundColor(.neutral0)
                     .multilineTextAlignment(.center)
             
-                Text(self.localPartyID)
+                Text(self.viewModel.localPartyID)
                     .font(.body15MenloBold)
                     .foregroundColor(.neutral0)
                     .multilineTextAlignment(.center)
@@ -222,117 +194,8 @@ struct JoinKeygenView: View {
         }
         .padding(.vertical, 30)
         .task {
-            Task {
-                repeat {
-                    checkKeygenStarted()
-                    try await Task.sleep(for: .seconds(1))
-                } while self.currentStatus == .WaitingForKeygenToStart
-            }
+            await viewModel.waitForKeygenStart()
         }
-    }
-    
-    private func checkKeygenStarted() {
-        guard let serverURL = serviceDelegate.serverURL, let sessionID = sessionID else {
-            logger.error("Required information for checking key generation start is missing.")
-            return
-        }
-        
-        let urlString = "\(serverURL)/start/\(sessionID)"
-        Utils.getRequest(urlString: urlString, headers: [String: String](), completion: { result in
-            switch result {
-            case .success(let data):
-                do {
-                    let decoder = JSONDecoder()
-                    let peers = try decoder.decode([String].self, from: data)
-                    if peers.contains(self.localPartyID) {
-                        self.keygenCommittee.append(contentsOf: peers)
-                        self.currentStatus = .KeygenStarted
-                    }
-                } catch {
-                    logger.error("Failed to decode response to JSON: \(data)")
-                }
-            case .failure(let error):
-                logger.error("Failed to check if key generation has started, error: \(error)")
-            }
-        })
-    }
-    
-    private func joinKeygenCommittee() {
-        guard let serverURL = serviceDelegate.serverURL, let sessionID = sessionID else {
-            logger.error("Required information for joining key generation committee is missing.")
-            return
-        }
-        
-        let urlString = "\(serverURL)/\(sessionID)"
-        let body = [localPartyID]
-        Utils.sendRequest(urlString: urlString, method: "POST", body: body) { success in
-            if success {
-                logger.info("Successfully joined the key generation committee.")
-            }
-        }
-    }
-    
-    private func handleScan(result: Result<ScanResult, ScanError>) {
-        defer {
-            isShowingScanner = false
-        }
-        switch result {
-        case .success(let result):
-            guard let scanData = result.string.data(using: .utf8) else {
-                errorMessage = "Failed to process scan data."
-                currentStatus = .FailToStart
-                return
-            }
-            do {
-                let decoder = JSONDecoder()
-                let result = try decoder.decode(PeerDiscoveryPayload.self, from: scanData)
-                switch result {
-                case .Keygen(let keysignMsg):
-                    tssType = .Keygen
-                    sessionID = keysignMsg.sessionID
-                    hexChainCode = keysignMsg.hexChainCode
-                    vault.hexChainCode = hexChainCode
-                    serviceName = keysignMsg.serviceName
-                case .Reshare(let reshareMsg):
-                    tssType = .Reshare
-                    oldCommittee = reshareMsg.oldParties
-                    sessionID = reshareMsg.sessionID
-                    hexChainCode = reshareMsg.hexChainCode
-                    serviceName = reshareMsg.serviceName
-                    // this means the vault is new , and it join the reshare to become the new committee
-                    if vault.pubKeyECDSA.isEmpty {
-                        vault.hexChainCode = reshareMsg.hexChainCode
-                    } else {
-                        if vault.pubKeyECDSA != reshareMsg.pubKeyECDSA {
-                            errorMessage = "You choose the wrong vault"
-                            logger.error("The vault's public key doesn't match the reshare message's public key")
-                            currentStatus = .FailToStart
-                            return
-                        }
-                    }
-                }
-                
-            } catch {
-                errorMessage = "Failed to decode peer discovery message: \(error.localizedDescription)"
-                currentStatus = .FailToStart
-                return
-            }
-            currentStatus = .DiscoverService
-        case .failure(let error):
-            errorMessage = "Failed to scan QR code: \(error.localizedDescription)"
-            currentStatus = .FailToStart
-            return
-        }
-    }
-}
-
-final class ServiceDelegate: NSObject, NetServiceDelegate, ObservableObject {
-    private let logger = Logger(subsystem: "service-delegate", category: "communication")
-    @Published var serverURL: String?
-    
-    public func netServiceDidResolveAddress(_ sender: NetService) {
-        logger.info("Service found: \(sender.name), \(sender.hostName ?? ""), port \(sender.port) in domain \(sender.domain)")
-        serverURL = "http://\(sender.hostName ?? ""):\(sender.port)"
     }
 }
 

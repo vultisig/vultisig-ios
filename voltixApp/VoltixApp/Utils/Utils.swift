@@ -157,7 +157,6 @@ enum Utils {
 	
     public static func handleJsonDecodingError(_ error: Error) -> String {
         let errorDescription: String
-		
         switch error {
             case let DecodingError.dataCorrupted(context):
                 errorDescription = "Data corrupted: \(context)"

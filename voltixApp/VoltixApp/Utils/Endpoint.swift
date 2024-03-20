@@ -8,14 +8,14 @@
 import Foundation
 
 class Endpoint {
-    static let btcBroadcastTransaction = "https://mempool.space/api/tx"
-	
-	static let ltcBroadcastTransaction = "https://litecoinspace.org/api/tx"
     
     static let broadcastTransactionThorchainNineRealms = "https://thornode.ninerealms.com/cosmos/tx/v1beta1/txs"
     
     static func fetchAccountNumberThorchainNineRealms(_ address: String) -> String {
         "https://thornode.ninerealms.com/auth/accounts/\(address)"
+    }
+    static func fetchAccountBalanceThorchainNineRealms(address: String) -> String{
+        "https://thornode.ninerealms.com/cosmos/bank/v1beta1/balances/\(address)"
     }
 	
 	static let solanaServiceAlchemyRpc = "http://45.76.120.223/alchemy/"
@@ -29,7 +29,15 @@ class Endpoint {
 	static func litecoinLabelTxHash(_ value: String) -> String {
 		"https://litecoinspace.org/tx/\(value)"
 	}
-
+	
+	static func blockchairBroadcast(_ chainName: String) -> String {
+		"http://45.76.120.223/blockchair/\(chainName)/push/transaction"
+	}
+	
+	static func blockchairDashboard(_ address: String, _ coinName: String) -> String {
+		"http://45.76.120.223/blockchair/\(coinName)/dashboards/address/\(address)"
+	}
+	
     static func ethereumLabelTxHash(_ value: String) -> String {
         "https://etherscan.io/tx/\(value)"
     }
