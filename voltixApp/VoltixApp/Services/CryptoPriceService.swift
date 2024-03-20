@@ -1,7 +1,7 @@
 import Foundation
 import SwiftUI
 
-@MainActor
+
 public class CryptoPriceService: ObservableObject {
 	
     @Published var cryptoPrices: CryptoPrice?
@@ -36,7 +36,7 @@ public class CryptoPriceService: ObservableObject {
 	}
     
     func fetchCryptoPrices(for coin: String = "bitcoin", for fiat: String = "usd") async {
-        var cacheKey = "\(coin)-\(fiat)"
+        let cacheKey = "\(coin)-\(fiat)"
         
 		if let cacheEntry = cache[cacheKey], isCacheValid(for: cacheKey) {
             print("Crypto Price Service > The data came from the cache !!")
@@ -65,26 +65,7 @@ public class CryptoPriceService: ObservableObject {
                 self.cache[cacheKey] = (data: decodedData, timestamp: Date())
             }
         } catch {
-            DispatchQueue.main.async {
-                let errorDescription: String
-                
-                switch error {
-                case let DecodingError.dataCorrupted(context):
-                    errorDescription = "Data corrupted: \(context)"
-                case let DecodingError.keyNotFound(key, context):
-                    errorDescription = "Key '\(key)' not found: \(context.debugDescription), path: \(context.codingPath.map { $0.stringValue }.joined(separator: "."))"
-                case let DecodingError.valueNotFound(value, context):
-                    errorDescription = "Value '\(value)' not found: \(context.debugDescription), path: \(context.codingPath.map { $0.stringValue }.joined(separator: "."))"
-                case let DecodingError.typeMismatch(type, context):
-                    let path = context.codingPath.map { $0.stringValue }.joined(separator: ".")
-                    errorDescription = "Type '\(type)' mismatch: \(context.debugDescription), path: \(path)"
-                default:
-                    errorDescription = "Error: \(error.localizedDescription)"
-                }
-                
-                self.errorMessage = errorDescription
-                print(self.errorMessage ?? "Unknown error")
-            }
+            self.errorMessage = Utils.handleJsonDecodingError(error)
         }
     }
 }
