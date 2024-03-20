@@ -103,11 +103,10 @@ class SolanaService: ObservableObject {
             let data = try await postRequest(with: requestBody)
             let response = try jsonDecoder.decode(SolanaRPCResponse<SolanaRecentBlockhashResponse>.self, from: data)
 			
-            DispatchQueue.main.async { [weak self] in
-                self?.recentBlockHash = response.result.value.blockhash
-                self?.feeInLamports = String(response.result.value.feeCalculator.lamportsPerSignature)
-                print("feeInLamports > \(String(describing: self?.feeInLamports))")
-            }
+            self.recentBlockHash = response.result.value.blockhash
+            self.feeInLamports = String(response.result.value.feeCalculator.lamportsPerSignature)
+            print("feeInLamports > \(String(describing: self.feeInLamports))")
+            
         } catch {
             print("Error fetching recent blockhash: \(error.localizedDescription)")
         }

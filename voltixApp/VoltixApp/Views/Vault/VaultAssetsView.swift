@@ -109,10 +109,7 @@ public struct VaultAssetsView: View {
                 }
 					
                 await fetchCryptoPrices()
-					
-                DispatchQueue.main.async {
-                    updateState()
-                }
+                updateState()
             }
         }
     }
