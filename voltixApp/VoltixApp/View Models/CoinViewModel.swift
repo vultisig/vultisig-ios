@@ -4,6 +4,12 @@
 //
 //  Created by Amol Kumar on 2024-03-09.
 //
+//
+//  CoinViewModel.swift
+//  VoltixApp
+//
+//  Created by Amol Kumar on 2024-03-09.
+//
 
 import Foundation
 import SwiftUI

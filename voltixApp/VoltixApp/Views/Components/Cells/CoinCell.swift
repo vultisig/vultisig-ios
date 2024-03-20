@@ -10,11 +10,13 @@ import SwiftUI
 struct CoinCell: View {
     let coin: Coin
     let group: GroupedChain
+    let vault: Vault
     
     @StateObject var tx = SendTransaction()
     @StateObject var coinViewModel = CoinViewModel()
+    @StateObject var utxoBtc = BitcoinUnspentOutputsService()
+    @StateObject var utxoLtc = LitecoinUnspentOutputsService()
     @StateObject var eth = EthplorerAPIService()
-    @StateObject var thor = ThorchainService.shared
 	
     var body: some View {
         cell
@@ -22,9 +24,6 @@ struct CoinCell: View {
                 Task {
                     await setData()
                 }
-            }
-            .onChange(of: coinViewModel.coinBalance) {
-                updateState()
             }
     }
     
@@ -93,7 +92,7 @@ struct CoinCell: View {
     
     var sendButton: some View {
         NavigationLink {
-            SendCryptoView(tx: tx, group: group)
+            SendCryptoView(tx: tx, group: group, vault: vault)
         } label: {
             Text(NSLocalizedString("send", comment: "Send button text").uppercased())
                 .font(.body16MenloBold)
@@ -107,6 +106,7 @@ struct CoinCell: View {
     
     private func setData() async {
         tx.coin = coin
+        tx.gas = "20"
         
         await coinViewModel.loadData(
             eth: eth,
@@ -118,12 +118,11 @@ struct CoinCell: View {
     public func updateState() {
         coinViewModel.updateState(
             eth: eth,
-            thor: thor,
             tx: tx
         )
     }
 }
 
 #Preview {
-    CoinCell(coin: Coin.example, group: GroupedChain.example)
+    CoinCell(coin: Coin.example, group: GroupedChain.example, vault: Vault.example)
 }

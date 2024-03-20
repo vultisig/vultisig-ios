@@ -8,23 +8,27 @@
 import SwiftUI
 
 struct SendCryptoVerifyView: View {
-    @ObservedObject var viewModel: SendCryptoViewModel
-    
-    @State var isAddressCorrect = false
-    @State var isAmountCorrect = false
-    @State var isHackedOrPhished = false
+    @Binding var keysignPayload: KeysignPayload?
+    @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
+    @ObservedObject var sendCryptoVerifyViewModel: SendCryptoVerifyViewModel
+    @ObservedObject var tx: SendTransaction
+    @ObservedObject var utxoBtc: BitcoinUnspentOutputsService
+    @ObservedObject var utxoLtc: LitecoinUnspentOutputsService
+    @ObservedObject var eth: EthplorerAPIService
+    @ObservedObject var web3Service: Web3Service
     
     var body: some View {
         ZStack {
-            background
+            Background()
             view
         }
         .gesture(DragGesture())
-    }
-    
-    var background: some View {
-        Color.backgroundBlue
-            .ignoresSafeArea()
+        .onAppear {
+            reloadTransactions()
+        }
+        .alert(isPresented: $sendCryptoVerifyViewModel.showAlert) {
+            alert
+        }
     }
     
     var view: some View {
@@ -32,6 +36,14 @@ struct SendCryptoVerifyView: View {
             fields
             button
         }
+    }
+    
+    var alert: Alert {
+        Alert(
+            title: Text(NSLocalizedString("error", comment: "")),
+            message: Text(sendCryptoVerifyViewModel.errorMessage),
+            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+        )
     }
     
     var fields: some View {
@@ -46,15 +58,17 @@ struct SendCryptoVerifyView: View {
     
     var summary: some View {
         VStack(spacing: 16) {
-            getAddressCell(for: "from", with: "0xF42b6DE07e40cb1D4a24292bB89862f599Ac5")
+            getAddressCell(for: "from", with: tx.fromAddress)
             Separator()
-            getAddressCell(for: "to", with: "0xF42b6DE07e40cb1D4a24292bB89862f599Ac5")
+            getAddressCell(for: "to", with: tx.toAddress)
             Separator()
-            getDetailsCell(for: "amount", with: "1.0 ETH")
+            getDetailsCell(for: "amount", with: getAmount())
             Separator()
-            getDetailsCell(for: "memo", with: "")
+            getDetailsCell(for: "amount(inUSD)", with: getUSDAmount())
             Separator()
-            getDetailsCell(for: "gas", with: "$4.00")
+            getDetailsCell(for: "memo", with: tx.memo)
+            Separator()
+            getDetailsCell(for: "gas", with: getGasAmount())
         }
         .padding(16)
         .background(Color.blue600)
@@ -63,22 +77,24 @@ struct SendCryptoVerifyView: View {
     
     var checkboxes: some View {
         VStack(spacing: 16) {
-            Checkbox(isChecked: $isAddressCorrect, text: "sendingRightAddressCheck")
-            Checkbox(isChecked: $isAmountCorrect, text: "correctAmountCheck")
-            Checkbox(isChecked: $isHackedOrPhished, text: "notHackedCheck")
+            Checkbox(isChecked: $sendCryptoVerifyViewModel.isAddressCorrect, text: "sendingRightAddressCheck")
+            Checkbox(isChecked: $sendCryptoVerifyViewModel.isAmountCorrect, text: "correctAmountCheck")
+            Checkbox(isChecked: $sendCryptoVerifyViewModel.isHackedOrPhished, text: "notHackedCheck")
         }
     }
     
     var button: some View {
         Button {
-            viewModel.moveToNextView()
+            Task {
+                await validateForm()
+            }
         } label: {
             FilledButton(title: "sign")
         }
         .padding(40)
     }
     
-    func getAddressCell(for title: String, with address: String) -> some View {
+    private func getAddressCell(for title: String, with address: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(NSLocalizedString(title, comment: ""))
                 .font(.body20MontserratSemiBold)
@@ -91,7 +107,7 @@ struct SendCryptoVerifyView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
     
-    func getDetailsCell(for title: String, with value: String) -> some View {
+    private func getDetailsCell(for title: String, with value: String) -> some View {
         HStack {
             Text(NSLocalizedString(title, comment: ""))
             Spacer()
@@ -100,8 +116,51 @@ struct SendCryptoVerifyView: View {
         .font(.body16MenloBold)
         .foregroundColor(.neutral100)
     }
+    
+    private func reloadTransactions() {
+        sendCryptoVerifyViewModel.reloadTransactions(
+            tx: tx,
+            utxoBtc: utxoBtc,
+            utxoLtc: utxoLtc,
+            eth: eth
+        )
+    }
+    
+    private func validateForm() async {
+        keysignPayload = await sendCryptoVerifyViewModel.validateForm(
+            tx: tx,
+            utxoBtc: utxoBtc,
+            utxoLtc: utxoLtc,
+            web3Service: web3Service
+        )
+        
+        if keysignPayload != nil {
+            sendCryptoViewModel.moveToNextView()
+        }
+    }
+    
+    private func getAmount() -> String {
+        tx.amount + " " + tx.coin.ticker
+    }
+    
+    private func getUSDAmount() -> String {
+        "$" + tx.amountInUSD
+    }
+    
+    private func getGasAmount() -> String {
+        tx.gas + " " + tx.coin.feeUnit
+    }
 }
 
 #Preview {
-    SendCryptoVerifyView(viewModel: SendCryptoViewModel())
+    SendCryptoVerifyView(
+        keysignPayload: .constant(nil),
+        sendCryptoViewModel: SendCryptoViewModel(),
+        sendCryptoVerifyViewModel: SendCryptoVerifyViewModel(),
+        tx: SendTransaction(),
+        utxoBtc: BitcoinUnspentOutputsService(),
+        utxoLtc: LitecoinUnspentOutputsService(),
+        eth: EthplorerAPIService(), 
+        web3Service: Web3Service()
+    )
 }

@@ -8,8 +8,17 @@
 import OSLog
 import SwiftUI
 
+enum Field: Hashable {
+    case toAddress
+    case amount
+    case amountInUSD
+}
+
 struct SendCryptoDetailsView: View {
     @ObservedObject var tx: SendTransaction
+    @ObservedObject var utxoBtc: BitcoinUnspentOutputsService
+    @ObservedObject var utxoLtc: LitecoinUnspentOutputsService
+    @ObservedObject var eth: EthplorerAPIService
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @ObservedObject var coinViewModel: CoinViewModel
     let group: GroupedChain
@@ -17,19 +26,17 @@ struct SendCryptoDetailsView: View {
     @State var toAddress = ""
     @State var amount = ""
     
-    let logger = Logger(subsystem: "send-input-details", category: "transaction")
+    @FocusState private var focusedField: Field?
     
     var body: some View {
         ZStack {
-            background
+            Background()
             view
         }
         .gesture(DragGesture())
-    }
-    
-    var background: some View {
-        Color.backgroundBlue
-            .ignoresSafeArea()
+        .alert(isPresented: $sendCryptoViewModel.showAlert) {
+            alert
+        }
     }
     
     var view: some View {
@@ -39,6 +46,14 @@ struct SendCryptoDetailsView: View {
         }
     }
     
+    var alert: Alert {
+        Alert(
+            title: Text(NSLocalizedString("error", comment: "")),
+            message: Text(sendCryptoViewModel.errorMessage),
+            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+        )
+    }
+    
     var fields: some View {
         ScrollView {
             VStack(spacing: 16) {
@@ -46,6 +61,7 @@ struct SendCryptoDetailsView: View {
                 fromField
                 toField
                 amountField
+                amountUSDField
                 gasField
             }
             .padding(.horizontal, 16)
@@ -78,22 +94,52 @@ struct SendCryptoDetailsView: View {
     var toField: some View {
         VStack(spacing: 8) {
             getTitle(for: "to")
-            AddressTextField(tx: tx, logger: logger)
+            SendCryptoAddressTextField(tx: tx, sendCryptoViewModel: sendCryptoViewModel)
+                .focused($focusedField, equals: .toAddress)
         }
     }
     
     var amountField: some View {
         VStack(spacing: 8) {
             getTitle(for: "amount")
-            AmountTextField(amount: $amount)
+            textField
         }
+    }
+    
+    var textField: some View {
+        SendCryptoAmountTextField(
+            tx: tx,
+            utxoBtc: utxoBtc,
+            utxoLtc: utxoLtc,
+            eth: eth,
+            sendCryptoViewModel: sendCryptoViewModel
+        )
+        .focused($focusedField, equals: .amount)
+    }
+    
+    var amountUSDField: some View {
+        VStack(spacing: 8) {
+            getTitle(for: "amount(inUSD)")
+            textFieldUSD
+        }
+    }
+    
+    var textFieldUSD: some View {
+        SendCryptoAmountUSDTextField(
+            tx: tx,
+            utxoBtc: utxoBtc,
+            utxoLtc: utxoLtc,
+            eth: eth,
+            sendCryptoViewModel: sendCryptoViewModel
+        )
+        .focused($focusedField, equals: .amountInUSD)
     }
     
     var gasField: some View {
         HStack {
             Text(NSLocalizedString("gas(auto)", comment: ""))
             Spacer()
-            Text(tx.gas)
+            Text("\(tx.gas) \(tx.coin.feeUnit )")
         }
         .font(.body16Menlo)
         .foregroundColor(.neutral0)
@@ -101,7 +147,7 @@ struct SendCryptoDetailsView: View {
     
     var button: some View {
         Button {
-            sendCryptoViewModel.moveToNextView()
+            validateForm()
         } label: {
             FilledButton(title: "continue")
         }
@@ -114,8 +160,22 @@ struct SendCryptoDetailsView: View {
             .foregroundColor(.neutral0)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
+    
+    private func validateForm() {
+        if sendCryptoViewModel.validateForm(tx: tx, utxoBtc: utxoBtc, utxoLtc: utxoLtc, eth: eth) {
+            sendCryptoViewModel.moveToNextView()
+        }
+    }
 }
 
 #Preview {
-    SendCryptoDetailsView(tx: SendTransaction(), sendCryptoViewModel: SendCryptoViewModel(), coinViewModel: CoinViewModel(), group: GroupedChain.example)
+    SendCryptoDetailsView(
+        tx: SendTransaction(),
+        utxoBtc: BitcoinUnspentOutputsService(),
+        utxoLtc: LitecoinUnspentOutputsService(),
+        eth: EthplorerAPIService(),
+        sendCryptoViewModel: SendCryptoViewModel(),
+        coinViewModel: CoinViewModel(),
+        group: GroupedChain.example
+    )
 }

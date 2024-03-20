@@ -17,7 +17,7 @@ struct VaultsView: View {
     var body: some View {
         VStack {
             ZStack {
-                background
+                Background()
                 view
             }
             .frame(maxHeight: showVaultsList ? .none : 0)
@@ -26,12 +26,6 @@ struct VaultsView: View {
             Spacer()
         }
         .allowsHitTesting(showVaultsList)
-    }
-    
-    var background: some View {
-        Color.backgroundBlue
-            .ignoresSafeArea()
-            .frame(maxHeight: 10000)
     }
     
     var view: some View {

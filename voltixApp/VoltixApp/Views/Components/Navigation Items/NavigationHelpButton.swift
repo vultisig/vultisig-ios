@@ -23,8 +23,7 @@ struct NavigationHelpButton: View {
 
 #Preview {
     ZStack {
-        Color.backgroundBlue
-            .ignoresSafeArea()
+        Background()
         NavigationHelpButton()
     }
 }

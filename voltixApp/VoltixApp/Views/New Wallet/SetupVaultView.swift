@@ -15,7 +15,7 @@ struct SetupVaultView: View {
     
     var body: some View {
         ZStack {
-            background
+            Background()
             view
         }
         .navigationBarBackButtonHidden(true)
@@ -34,11 +34,6 @@ struct SetupVaultView: View {
                 vault = Vault(name: "Vault #\(vaults.count + 1)")
             }
         }
-    }
-    
-    var background: some View {
-        Color.backgroundBlue
-            .ignoresSafeArea()
     }
     
     var view: some View {

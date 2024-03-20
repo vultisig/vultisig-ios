@@ -40,13 +40,12 @@ struct TokenSelectorDropdown: View {
         } label: {
             cell
         }
-
     }
     
     var cell: some View {
         HStack(spacing: 12) {
             image
-            Text("\(tx.coin.ticker) (\(tx.coin.chain.name))")
+            Text("\(tx.coin.ticker)")
             Spacer()
             Text(coinViewModel.coinBalance ?? "0")
             

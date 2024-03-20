@@ -8,18 +8,13 @@ struct WelcomeView: View {
     
     var body: some View {
         ZStack {
-            background
+            Background()
             view
         }
         .toolbar(.hidden, for: .navigationBar)
         .onAppear {
             setData()
         }
-    }
-    
-    var background: some View {
-        Color.backgroundBlue
-            .ignoresSafeArea()
     }
     
     var view: some View {

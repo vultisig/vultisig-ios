@@ -15,7 +15,7 @@ struct TokenSelectionView: View {
     
     var body: some View {
         ZStack {
-            background
+            Background()
             view
         }
         .navigationBarBackButtonHidden(true)
@@ -35,11 +35,6 @@ struct TokenSelectionView: View {
         .onDisappear {
             saveAssets()
         }
-    }
-    
-    var background: some View {
-        Color.backgroundBlue
-            .ignoresSafeArea()
     }
     
     var view: some View {
