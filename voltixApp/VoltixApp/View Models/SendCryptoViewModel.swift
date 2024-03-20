@@ -170,7 +170,7 @@ class SendCryptoViewModel: ObservableObject {
 		Task {
 			isLoading = true
 			
-			await cryptoPrice.fetchCryptoPrices(appState.currentVault)
+			await cryptoPrice.fetchCryptoPrices()
 			
 			let coinName = tx.coin.chain.name.lowercased()
 			

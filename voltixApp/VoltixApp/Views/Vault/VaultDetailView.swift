@@ -26,6 +26,7 @@ struct VaultDetailView: View {
         .onAppear {
             setData()
             appState.currentVault = vault
+			ApplicationState.shared.currentVault = vault
         }
         .onChange(of: vault) {
             setData()

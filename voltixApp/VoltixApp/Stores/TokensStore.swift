@@ -10,7 +10,7 @@ import Foundation
 class TokensStore {
     static var TokenSelectionAssets = [
 		Asset(ticker: "BTC", chainName: "Bitcoin", image: "btc", contractAddress: nil, chainType: .UTXO),
-        Asset(ticker: "BCH", chainName: "BitcoinCash", image: "bch", contractAddress: nil, chainType: .UTXO),
+        Asset(ticker: "BCH", chainName: "Bitcoin-Cash", image: "bch", contractAddress: nil, chainType: .UTXO),
         Asset(ticker: "LTC", chainName: "Litecoin", image: "ltc", contractAddress: nil, chainType: .UTXO),
         Asset(ticker: "DOGE", chainName: "Dogecoin", image: "doge", contractAddress: nil, chainType: .UTXO),
         Asset(ticker: "RUNE", chainName: "THORChain", image: "rune", contractAddress: nil, chainType: .THORChain),
