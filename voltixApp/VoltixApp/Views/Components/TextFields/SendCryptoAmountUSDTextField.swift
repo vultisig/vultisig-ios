@@ -9,8 +9,6 @@ import SwiftUI
 
 struct SendCryptoAmountUSDTextField: View {
     @ObservedObject var tx: SendTransaction
-    @ObservedObject var utxoBtc: BitcoinUnspentOutputsService
-    @ObservedObject var utxoLtc: LitecoinUnspentOutputsService
     @ObservedObject var eth: EthplorerAPIService
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     
@@ -45,12 +43,10 @@ struct SendCryptoAmountUSDTextField: View {
     }
 }
 
-#Preview {
-    SendCryptoAmountUSDTextField(
-        tx: SendTransaction(),
-        utxoBtc: BitcoinUnspentOutputsService(),
-        utxoLtc: LitecoinUnspentOutputsService(),
-        eth: EthplorerAPIService(),
-        sendCryptoViewModel: SendCryptoViewModel()
-    )
-}
+//#Preview {
+//    SendCryptoAmountUSDTextField(
+//        tx: SendTransaction(),
+//        eth: EthplorerAPIService(),
+//        sendCryptoViewModel: SendCryptoViewModel()
+//    )
+//}

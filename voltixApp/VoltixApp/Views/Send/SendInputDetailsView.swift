@@ -34,6 +34,7 @@ struct SendInputDetailsView: View {
 	@StateObject var sol: SolanaService = SolanaService.shared
 	@StateObject var utxo = BlockchairService.shared
 	@ObservedObject var tx: SendTransaction
+	
 	@State private var isShowingScanner = false
 	@State private var isValidAddress = false
 	@State private var formErrorMessages = ""

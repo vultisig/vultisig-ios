@@ -14,9 +14,8 @@ struct CoinCell: View {
     
     @StateObject var tx = SendTransaction()
     @StateObject var coinViewModel = CoinViewModel()
-    @StateObject var utxoBtc = BitcoinUnspentOutputsService()
-    @StateObject var utxoLtc = LitecoinUnspentOutputsService()
     @StateObject var eth = EthplorerAPIService()
+	@StateObject var thor = ThorchainService.shared
 	
     var body: some View {
         cell
@@ -117,7 +116,7 @@ struct CoinCell: View {
     
     public func updateState() {
         coinViewModel.updateState(
-            eth: eth,
+			eth: eth, thor: ThorchainService.shared,
             tx: tx
         )
     }

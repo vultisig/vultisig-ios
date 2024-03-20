@@ -9,8 +9,6 @@ import SwiftUI
 
 struct SendCryptoAmountTextField: View {
     @ObservedObject var tx: SendTransaction
-    @ObservedObject var utxoBtc: BitcoinUnspentOutputsService
-    @ObservedObject var utxoLtc: LitecoinUnspentOutputsService
     @ObservedObject var eth: EthplorerAPIService
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     var showButton = true
@@ -56,8 +54,6 @@ struct SendCryptoAmountTextField: View {
         Button {
             sendCryptoViewModel.setMaxValues(
                 tx: tx,
-                utxoBtc: utxoBtc,
-                utxoLtc: utxoLtc,
                 eth: eth
             )
         } label: {
@@ -69,12 +65,10 @@ struct SendCryptoAmountTextField: View {
     }
 }
 
-#Preview {
-    SendCryptoAmountTextField(
-        tx: SendTransaction(),
-        utxoBtc: BitcoinUnspentOutputsService(),
-        utxoLtc: LitecoinUnspentOutputsService(),
-        eth: EthplorerAPIService(),
-        sendCryptoViewModel: SendCryptoViewModel()
-    )
-}
+//#Preview {
+//    SendCryptoAmountTextField(
+//        tx: SendTransaction(),
+//        eth: EthplorerAPIService(),
+//        sendCryptoViewModel: SendCryptoViewModel()
+//    )
+//}

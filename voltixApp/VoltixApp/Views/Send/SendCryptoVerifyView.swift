@@ -12,8 +12,6 @@ struct SendCryptoVerifyView: View {
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @ObservedObject var sendCryptoVerifyViewModel: SendCryptoVerifyViewModel
     @ObservedObject var tx: SendTransaction
-    @ObservedObject var utxoBtc: BitcoinUnspentOutputsService
-    @ObservedObject var utxoLtc: LitecoinUnspentOutputsService
     @ObservedObject var eth: EthplorerAPIService
     @ObservedObject var web3Service: Web3Service
     
@@ -120,8 +118,6 @@ struct SendCryptoVerifyView: View {
     private func reloadTransactions() {
         sendCryptoVerifyViewModel.reloadTransactions(
             tx: tx,
-            utxoBtc: utxoBtc,
-            utxoLtc: utxoLtc,
             eth: eth
         )
     }
@@ -129,8 +125,6 @@ struct SendCryptoVerifyView: View {
     private func validateForm() async {
         keysignPayload = await sendCryptoVerifyViewModel.validateForm(
             tx: tx,
-            utxoBtc: utxoBtc,
-            utxoLtc: utxoLtc,
             web3Service: web3Service
         )
         
@@ -158,8 +152,6 @@ struct SendCryptoVerifyView: View {
         sendCryptoViewModel: SendCryptoViewModel(),
         sendCryptoVerifyViewModel: SendCryptoVerifyViewModel(),
         tx: SendTransaction(),
-        utxoBtc: BitcoinUnspentOutputsService(),
-        utxoLtc: LitecoinUnspentOutputsService(),
         eth: EthplorerAPIService(), 
         web3Service: Web3Service()
     )

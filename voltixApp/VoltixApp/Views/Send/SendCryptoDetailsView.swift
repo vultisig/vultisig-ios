@@ -16,8 +16,6 @@ enum Field: Hashable {
 
 struct SendCryptoDetailsView: View {
     @ObservedObject var tx: SendTransaction
-    @ObservedObject var utxoBtc: BitcoinUnspentOutputsService
-    @ObservedObject var utxoLtc: LitecoinUnspentOutputsService
     @ObservedObject var eth: EthplorerAPIService
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @ObservedObject var coinViewModel: CoinViewModel
@@ -109,8 +107,6 @@ struct SendCryptoDetailsView: View {
     var textField: some View {
         SendCryptoAmountTextField(
             tx: tx,
-            utxoBtc: utxoBtc,
-            utxoLtc: utxoLtc,
             eth: eth,
             sendCryptoViewModel: sendCryptoViewModel
         )
@@ -127,8 +123,6 @@ struct SendCryptoDetailsView: View {
     var textFieldUSD: some View {
         SendCryptoAmountUSDTextField(
             tx: tx,
-            utxoBtc: utxoBtc,
-            utxoLtc: utxoLtc,
             eth: eth,
             sendCryptoViewModel: sendCryptoViewModel
         )
@@ -162,7 +156,7 @@ struct SendCryptoDetailsView: View {
     }
     
     private func validateForm() {
-        if sendCryptoViewModel.validateForm(tx: tx, utxoBtc: utxoBtc, utxoLtc: utxoLtc, eth: eth) {
+        if sendCryptoViewModel.validateForm(tx: tx, eth: eth) {
             sendCryptoViewModel.moveToNextView()
         }
     }
@@ -171,8 +165,6 @@ struct SendCryptoDetailsView: View {
 #Preview {
     SendCryptoDetailsView(
         tx: SendTransaction(),
-        utxoBtc: BitcoinUnspentOutputsService(),
-        utxoLtc: LitecoinUnspentOutputsService(),
         eth: EthplorerAPIService(),
         sendCryptoViewModel: SendCryptoViewModel(),
         coinViewModel: CoinViewModel(),

@@ -15,8 +15,9 @@ struct SendCryptoView: View {
     @StateObject var sendCryptoViewModel = SendCryptoViewModel()
     @StateObject var sendCryptoVerifyViewModel = SendCryptoVerifyViewModel()
     @StateObject var coinViewModel = CoinViewModel()
-    @StateObject var eth = EthplorerAPIService()
-    @StateObject var web3Service = Web3Service()
+	@StateObject var eth = EthplorerAPIService()
+	@StateObject var web3Service = Web3Service()
+	@StateObject var thor = ThorchainService.shared
     
     @State var keysignPayload: KeysignPayload? = nil
     
@@ -66,8 +67,6 @@ struct SendCryptoView: View {
     var detailsView: some View {
         SendCryptoDetailsView(
             tx: tx,
-            utxoBtc: utxoBtc,
-            utxoLtc: utxoLtc,
             eth: eth,
             sendCryptoViewModel: sendCryptoViewModel,
             coinViewModel: coinViewModel,
@@ -81,8 +80,6 @@ struct SendCryptoView: View {
             sendCryptoViewModel: sendCryptoViewModel,
             sendCryptoVerifyViewModel: sendCryptoVerifyViewModel,
             tx: tx,
-            utxoBtc: utxoBtc,
-            utxoLtc: utxoLtc,
             eth: eth,
             web3Service: web3Service
         )
