@@ -14,6 +14,9 @@ class Endpoint {
     static func fetchAccountNumberThorchainNineRealms(_ address: String) -> String {
         "https://thornode.ninerealms.com/auth/accounts/\(address)"
     }
+    static func fetchAccountBalanceThorchainNineRealms(address: String) -> String{
+        "https://thornode.ninerealms.com/cosmos/bank/v1beta1/balances/\(address)"
+    }
 	
 	static let solanaServiceAlchemyRpc = "http://45.76.120.223/alchemy/"
 
@@ -28,7 +31,7 @@ class Endpoint {
 	}
 	
 	static func blockchairBroadcast(_ chainName: String) -> String {
-		"https://api.blockchair.com/\(chainName)/push/transaction?key=A___PLqLolRBKDsYRO9SUi5EzgeXjMt5"
+		"http://45.76.120.223/blockchair/\(chainName)/push/transaction"
 	}
 	
 	static func blockchairDashboard(_ address: String, _ coinName: String) -> String {

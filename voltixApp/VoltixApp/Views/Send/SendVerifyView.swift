@@ -98,7 +98,7 @@ struct SendVerifyView: View {
 									
 									let totalAmountNeeded = tx.amountInSats + tx.feeInSats
 									
-									guard let utxoInfo = utxo.blockchairData?[key]?.selectUTXOsForPayment(amountNeeded: Int64(totalAmountNeeded)).map({
+									guard let utxoInfo = utxo.blockchairData[key]?.selectUTXOsForPayment(amountNeeded: Int64(totalAmountNeeded)).map({
 										UtxoInfo(
 											hash: $0.transactionHash ?? "",
 											amount: Int64($0.value ?? 0),

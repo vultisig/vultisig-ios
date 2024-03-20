@@ -27,50 +27,18 @@ public class EthplorerAPIService: ObservableObject {
         // print(urlString)
         
         guard let url = URL(string: urlString) else {
-            DispatchQueue.main.async {
-                self.errorMessage = "Invalid URL"
-                print(String(describing: self.errorMessage))
-            }
-            
+            self.errorMessage = "Invalid URL"
             return
         }
         
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            
-            // Print raw JSON string for debugging
-            if let jsonStr = String(data: data, encoding: .utf8) {
-                // print("Raw JSON string: \(jsonStr)")
-            }
-            
             let decodedData = try JSONDecoder().decode(EthAddressInfo.self, from: data)
+            self.addressInfo = decodedData
+            self.cache[cacheKey] = (data: decodedData, timestamp: Date())
             
-            DispatchQueue.main.async {
-                self.addressInfo = decodedData
-                // print(self.addressInfo?.toString() ?? "ERROR")
-                self.cache[cacheKey] = (data: decodedData, timestamp: Date())
-            }
         } catch {
-            DispatchQueue.main.async {
-                let errorDescription: String
-                
-                switch error {
-                case let DecodingError.dataCorrupted(context):
-                    errorDescription = "Data corrupted: \(context)"
-                case let DecodingError.keyNotFound(key, context):
-                    errorDescription = "Key '\(key)' not found: \(context.debugDescription), path: \(context.codingPath.map { $0.stringValue }.joined(separator: "."))"
-                case let DecodingError.valueNotFound(value, context):
-                    errorDescription = "Value '\(value)' not found: \(context.debugDescription), path: \(context.codingPath.map { $0.stringValue }.joined(separator: "."))"
-                case let DecodingError.typeMismatch(type, context):
-                    let path = context.codingPath.map { $0.stringValue }.joined(separator: ".")
-                    errorDescription = "Type '\(type)' mismatch: \(context.debugDescription), path: \(path)"
-                default:
-                    errorDescription = "Error: \(error.localizedDescription)"
-                }
-                
-                self.errorMessage = errorDescription
-                print(self.errorMessage ?? "Unknown error")
-            }
+            self.errorMessage = Utils.handleJsonDecodingError(error)
         }
     }
 }

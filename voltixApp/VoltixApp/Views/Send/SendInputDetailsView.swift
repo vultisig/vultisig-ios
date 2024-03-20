@@ -374,7 +374,7 @@ struct SendInputDetailsView: View {
 		let key: String = "\(tx.fromAddress)-\(coinName)"
 		
 		if  tx.coin.chain.chainType == ChainType.UTXO {
-			let walletBalanceInSats = utxo.blockchairData?[key]?.address?.balance ?? 0
+			let walletBalanceInSats = utxo.blockchairData[key]?.address?.balance ?? 0
 			let totalTransactionCostInSats = tx.amountInSats + tx.feeInSats
 			print("Total transaction cost: \(totalTransactionCostInSats)")
 			
@@ -460,8 +460,8 @@ struct SendInputDetailsView: View {
 		let key: String = "\(tx.fromAddress)-\(coinName)"
 		
 		if  tx.coin.chain.chainType == ChainType.UTXO {
-			tx.amount = utxo.blockchairData?[key]?.address?.balanceInBTC ?? "0.0"
-			tx.amountInUSD = utxo.blockchairData?[key]?.address?.balanceInDecimalUSD ?? "0.0"
+			tx.amount = utxo.blockchairData[key]?.address?.balanceInBTC ?? "0.0"
+			tx.amountInUSD = utxo.blockchairData[key]?.address?.balanceInDecimalUSD ?? "0.0"
 		} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
 			if tx.coin.ticker.uppercased() == "ETH" {
 				tx.amount = eth.addressInfo?.ETH.balanceString ?? "0.0"
@@ -495,7 +495,7 @@ struct SendInputDetailsView: View {
 		let key: String = "\(tx.fromAddress)-\(coinName)"
 		
 		if  tx.coin.chain.chainType == ChainType.UTXO {
-			coinBalance = utxo.blockchairData?[key]?.address?.balanceInBTC ?? "0.0"
+			coinBalance = utxo.blockchairData[key]?.address?.balanceInBTC ?? "0.0"
 		} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
 			// We need to pass it to the next view
 			tx.eth = eth.addressInfo

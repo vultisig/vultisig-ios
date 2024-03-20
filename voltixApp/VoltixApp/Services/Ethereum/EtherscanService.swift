@@ -42,30 +42,13 @@ public class EtherScanService: ObservableObject {
             let decoder = JSONDecoder()
             let broadcastResponse = try decoder.decode(EtherscanBroadcastResponse.self, from: data)
             
-            DispatchQueue.main.async {
-                print("ETHER BROADCAST: \(broadcastResponse.result)")
-                print(broadcastResponse)
-                self.transactionHash = broadcastResponse.result
-            }
+            print("ETHER BROADCAST: \(broadcastResponse.result)")
+            print(broadcastResponse)
+            self.transactionHash = broadcastResponse.result
+            
         } catch {
-            DispatchQueue.main.async {
-                if let decodingError = error as? DecodingError {
-                    self.errorMessage = "Decoding error: \(decodingError.localizedDescription)"
-                } else if let etherScanError = error as? EtherScanError {
-                    switch etherScanError {
-                    case .httpError(let statusCode, let message):
-                        self.errorMessage = "HTTP Error \(statusCode): \(message)"
-                    case .apiError(let message):
-                        self.errorMessage = message
-                    default:
-                        self.errorMessage = "Error: \(error.localizedDescription)"
-                    }
-                } else {
-                    self.errorMessage = "Unknown error: \(error.localizedDescription)"
-                }
-                
-                print(String(describing: self.errorMessage))
-            }
+            self.errorMessage = Utils.handleJsonDecodingError(error)
+            print(String(describing: self.errorMessage))
         }
     }
     
@@ -90,14 +73,11 @@ public class EtherScanService: ObservableObject {
             
             let decodedResponse = try JSONDecoder().decode(EtherscanAPIResponse.self, from: data)
             
-            DispatchQueue.main.async {
-                self.transactions = decodedResponse.result ?? []
-                self.addressFor = address
-            }
+            self.transactions = decodedResponse.result ?? []
+            self.addressFor = address
+            
         } catch {
-            DispatchQueue.main.async {
-                self.handleError(error: error)
-            }
+            self.handleError(error: error)
         }
     }
     
@@ -124,15 +104,12 @@ public class EtherScanService: ObservableObject {
             
             let decodedResponse = try JSONDecoder().decode(EtherscanAPIResponse.self, from: data)
             
-            DispatchQueue.main.async {
-                self.transactions = decodedResponse.result ?? []
-                self.addressFor = address
-            }
+            self.transactions = decodedResponse.result ?? []
+            self.addressFor = address
+            
         } catch {
-            DispatchQueue.main.async {
-                self.handleError(error: error)
-                print(error)
-            }
+            self.handleError(error: error)
+            print(error)
         }
     }
     
