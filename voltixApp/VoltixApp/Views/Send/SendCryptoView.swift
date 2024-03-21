@@ -21,6 +21,7 @@ struct SendCryptoView: View {
     
     @State var keysignPayload: KeysignPayload? = nil
     @State var keysignView: KeysignView? = nil
+    @State var hash: String? = nil
     
     var body: some View {
         ZStack {
@@ -114,7 +115,13 @@ struct SendCryptoView: View {
     }
     
     var doneView: some View {
-        SendCryptoDoneView()
+        ZStack {
+            if let hash = hash {
+                SendCryptoDoneView(hash: hash)
+            } else {
+                SendCryptoSigningErrorView()
+            }
+        }
     }
     
     private func setData() async {

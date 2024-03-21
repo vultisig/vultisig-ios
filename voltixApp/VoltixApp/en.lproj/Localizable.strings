@@ -41,6 +41,7 @@
 "addNewVault" = "Add New Vault";
 "editVault" = "Edit Vault";
 "addressCopied" = "Address copied";
+"hashCopied" = "Hash copied";
 "ok" = "OK";
 "next" = "Next";
 "skip" = "Skip";
