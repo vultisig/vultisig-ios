@@ -205,7 +205,7 @@ struct SendInputDetailsView: View {
 								.background(Color.gray.opacity(0.5))
 								.cornerRadius(10)
 							Spacer()
-							Text("\($tx.gas.wrappedValue) \(tx.coin.feeUnit ?? "NO UNIT")")
+							Text("\($tx.gas.wrappedValue) \(tx.coin.feeUnit)")
 								.font(.body18MenloBold)
 						}
 					}.padding(.bottom)
