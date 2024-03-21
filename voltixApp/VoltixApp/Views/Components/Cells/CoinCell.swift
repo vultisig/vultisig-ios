@@ -15,14 +15,12 @@ struct CoinCell: View {
     @StateObject var tx = SendTransaction()
     @StateObject var coinViewModel = CoinViewModel()
     @StateObject var eth = EthplorerAPIService()
-	@StateObject var thor = ThorchainService.shared
+    @StateObject var thor = ThorchainService.shared
 	
     var body: some View {
         cell
-            .onAppear {
-                Task {
-                    await setData()
-                }
+            .task {
+                await setData()
             }
     }
     
@@ -53,7 +51,7 @@ struct CoinCell: View {
     var quantity: some View {
         let balance = coinViewModel.coinBalance
         
-        return Text(balance ?? "0.00001")
+        return Text(balance ?? "1000")
             .font(.body16Menlo)
             .foregroundColor(.neutral0)
             .redacted(reason: balance==nil ? .placeholder : [])
@@ -62,7 +60,7 @@ struct CoinCell: View {
     var amount: some View {
         let balance = coinViewModel.balanceUSD
         
-        return Text(balance ?? "US$1000")
+        return Text(balance ?? "0.0000")
             .font(.body16MenloBold)
             .foregroundColor(.neutral0)
             .redacted(reason: balance==nil ? .placeholder : [])
@@ -116,7 +114,7 @@ struct CoinCell: View {
     
     public func updateState() {
         coinViewModel.updateState(
-			eth: eth, thor: ThorchainService.shared,
+            eth: eth, thor: ThorchainService.shared,
             tx: tx
         )
     }

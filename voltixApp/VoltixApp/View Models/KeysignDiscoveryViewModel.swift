@@ -10,7 +10,6 @@ import OSLog
 enum KeysignDiscoveryStatus {
     case WaitingForDevices
     case FailToStart
-    case Keysign
 }
 
 class KeysignDiscoveryViewModel: ObservableObject {
@@ -72,10 +71,23 @@ class KeysignDiscoveryViewModel: ObservableObject {
         self.startKeysignSession()
         self.participantDiscovery?.getParticipants(serverAddr: self.serverAddr, sessionID: self.sessionID)
     }
-    func startKeysign(){
-        self.kickoffKeysign(allParticipants: self.selections.map { $0 })
-        self.status = .Keysign
-        self.participantDiscovery?.stop()
+    
+    @MainActor func startKeysign(vault: Vault, viewModel: SendCryptoViewModel) -> KeysignView {
+        kickoffKeysign(allParticipants: self.selections.map { $0 })
+        participantDiscovery?.stop()
+        viewModel.moveToNextView()
+        
+        return KeysignView(
+            vault: vault,
+            keysignCommittee: selections.map { $0 },
+            mediatorURL: serverAddr,
+            sessionID: sessionID,
+            keysignType: keysignPayload.coin.chain.signingKeyType,
+            messsageToSign: keysignMessages, // need to figure out all the prekeysign hashes
+            keysignPayload: keysignPayload, 
+            isSending: true,
+            sendCryptoViewModel: viewModel
+        )
     }
     
     func kickoffKeysign(allParticipants: [String]) {
