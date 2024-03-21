@@ -21,7 +21,6 @@ struct SendCryptoView: View {
     
     @State var keysignPayload: KeysignPayload? = nil
     @State var keysignView: KeysignView? = nil
-    @State var hash: String? = nil
     
     var body: some View {
         ZStack {
@@ -57,14 +56,20 @@ struct SendCryptoView: View {
     }
     
     var tabView: some View {
-        TabView(selection: $sendCryptoViewModel.currentIndex) {
-            detailsView.tag(1)
-            verifyView.tag(2)
-            pairView.tag(3)
-            keysign.tag(4)
-            doneView.tag(5)
+        ZStack {
+            switch sendCryptoViewModel.currentIndex {
+            case 1:
+                detailsView
+            case 2:
+                verifyView
+            case 3:
+                pairView
+            case 4:
+                keysign
+            default:
+                doneView
+            }
         }
-        .tabViewStyle(.page(indexDisplayMode: .never))
         .frame(maxHeight: .infinity)
     }
     
@@ -116,7 +121,7 @@ struct SendCryptoView: View {
     
     var doneView: some View {
         ZStack {
-            if let hash = hash {
+            if let hash = sendCryptoViewModel.hash {
                 SendCryptoDoneView(hash: hash)
             } else {
                 SendCryptoSigningErrorView()

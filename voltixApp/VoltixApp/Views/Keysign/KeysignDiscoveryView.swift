@@ -88,6 +88,7 @@ struct KeysignDiscoveryView: View {
                     .foregroundColor(.neutral0)
                 
                 ProgressView()
+                    .preferredColorScheme(.dark)
                     .progressViewStyle(.circular)
                     .padding(2)
             }

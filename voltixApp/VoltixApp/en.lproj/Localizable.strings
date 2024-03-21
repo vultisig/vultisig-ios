@@ -69,6 +69,7 @@
 "pairWithOtherDevices" = "Pair with other devices:";
 "scanQrCode" = "Scan QR Code";
 "mainDevice" = "Main Device";
+"pleaseWait" = "Please wait...";
 "joinKeygen" = "JOIN KEYGEN/RESHARE";
 "failToStartKeygen" = "Unable to start key generation due to missing information";
 "scanQRCodeJoinKeygen" = "Scan the barcode on another Voltix app to start.";

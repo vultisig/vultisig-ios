@@ -40,7 +40,6 @@
 		469ED3A02B98F5B4008D4951 /* ThorchainAccountNumberResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED39F2B98F5B4008D4951 /* ThorchainAccountNumberResponse.swift */; };
 		469ED3A22B98F5CB008D4951 /* ThorchainAccountResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED3A12B98F5CB008D4951 /* ThorchainAccountResult.swift */; };
 		469ED3A42B98F5DE008D4951 /* ThorchainAccountValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED3A32B98F5DE008D4951 /* ThorchainAccountValue.swift */; };
-		46A616EA2B8807B700372994 /* KeygenStatusText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46A616E92B8807B700372994 /* KeygenStatusText.swift */; };
 		46AC40A12B91C024001704E6 /* Web3Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AC40A02B91C024001704E6 /* Web3Service.swift */; };
 		46AC40A42B91F50A001704E6 /* AppConfiguration.example.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AC40A32B91F50A001704E6 /* AppConfiguration.example.swift */; };
 		46AC40A82B920061001704E6 /* EtherscanService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AC40A72B920061001704E6 /* EtherscanService.swift */; };
@@ -276,7 +275,6 @@
 		469ED39F2B98F5B4008D4951 /* ThorchainAccountNumberResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainAccountNumberResponse.swift; sourceTree = "<group>"; };
 		469ED3A12B98F5CB008D4951 /* ThorchainAccountResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainAccountResult.swift; sourceTree = "<group>"; };
 		469ED3A32B98F5DE008D4951 /* ThorchainAccountValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainAccountValue.swift; sourceTree = "<group>"; };
-		46A616E92B8807B700372994 /* KeygenStatusText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenStatusText.swift; sourceTree = "<group>"; };
 		46AC40A02B91C024001704E6 /* Web3Service.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Web3Service.swift; sourceTree = "<group>"; };
 		46AC40A32B91F50A001704E6 /* AppConfiguration.example.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.example.swift; sourceTree = "<group>"; };
 		46AC40A72B920061001704E6 /* EtherscanService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EtherscanService.swift; sourceTree = "<group>"; };
@@ -511,7 +509,6 @@
 				465B09AC2B7C841B00952DD9 /* QrCodeView.swift */,
 				465B09AE2B7C84C600952DD9 /* ShareSheet.swift */,
 				465B09B22B7D710A00952DD9 /* DocumentPicker.swift */,
-				46A616E92B8807B700372994 /* KeygenStatusText.swift */,
 				A6F9F7DE2B9BAA9F00790258 /* Separator.swift */,
 				A66A0BDC2BA15C650021A483 /* WebSVGImage.swift */,
 				A61BC8152BA256C600484689 /* ProgressBar.swift */,
@@ -1368,7 +1365,6 @@
 				A6564A062B969ADF00E4B329 /* EtherscanAPIResponse.swift in Sources */,
 				A65649F82B96701300E4B329 /* UTXOTransactionMempoolPreviousOutput.swift in Sources */,
 				DE7CE6462B886B6300ED0BFB /* VoltixVaultDocument.swift in Sources */,
-				46A616EA2B8807B700372994 /* KeygenStatusText.swift in Sources */,
 				46F8F7212B99FDB70099454E /* TransactionBroadcastResponse.swift in Sources */,
 				A6966D242BA3E2A500903CA4 /* OnboardingView2.swift in Sources */,
 				46AC40A12B91C024001704E6 /* Web3Service.swift in Sources */,

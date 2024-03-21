@@ -14,6 +14,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
 	@Published var isAmountCorrect = false
 	@Published var isHackedOrPhished = false
 	@Published var showAlert = false
+    @Published var isLoading = false
 	@Published var errorMessage = ""
 	
 	@Published var thor = ThorchainService.shared
@@ -55,6 +56,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
 		} catch {
 			errorMessage = "\(NSLocalizedString("gasEstimateError:", comment: "")) \(error.localizedDescription)"
 			showAlert = true
+            isLoading = false
 		}
 		return 0
 	}
@@ -76,6 +78,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
 		} catch {
 			errorMessage = "\(NSLocalizedString("gasEstimateError:", comment: "")) \(error.localizedDescription)"
 			showAlert = true
+            isLoading = false
 		}
 		return 0
 	}
@@ -86,6 +89,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
 		if !isValidForm {
 			self.errorMessage = "mustAgreeTermsError"
 			showAlert = true
+            isLoading = false
 			return nil
 		}
 		
@@ -105,6 +109,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
 			}), !utxoInfo.isEmpty else {
 				self.errorMessage = "notEnoughBalanceError"
 				showAlert = true
+                isLoading = false
 				return nil
 			}
 			
@@ -113,6 +118,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
 			if totalSelectedAmount < Int64(totalAmountNeeded) {
 				self.errorMessage = "notEnoughBalanceError"
 				showAlert = true
+                isLoading = false
 				return nil
 			}
 			
@@ -140,6 +146,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
 				guard estimatedGas > 0 else {
 					errorMessage = "gasEstimateETHError"
 					showAlert = true
+                    isLoading = false
 					return nil
 				}
 				
@@ -161,6 +168,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
 				guard estimatedGas > 0 else {
 					errorMessage = "gasEstimateTOKENError"
 					showAlert = true
+                    isLoading = false
                     return nil
 				}
 				

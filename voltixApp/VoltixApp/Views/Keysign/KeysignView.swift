@@ -7,14 +7,16 @@ import SwiftUI
 
 struct KeysignView: View {
     let vault: Vault
-    private let logger = Logger(subsystem: "keysign", category: "tss")
-
     let keysignCommittee: [String]
     let mediatorURL: String
     let sessionID: String
     let keysignType: KeyType
     let messsageToSign: [String]
     let keysignPayload: KeysignPayload? // need to pass it along to the next view
+    var isSending = false
+    let sendCryptoViewModel: SendCryptoViewModel?
+    
+    let logger = Logger(subsystem: "keysign", category: "tss")
 
     @StateObject var viewModel = KeysignViewModel()
 
@@ -28,25 +30,7 @@ struct KeysignView: View {
                 case .KeysignEdDSA:
                     SendCryptoKeysignView(title: "signingWithEdDSA")
                 case .KeysignFinished:
-                    KeyGenStatusText(status: NSLocalizedString("keysignFinished", comment: "KEYSIGN FINISHED..."))
-                    VStack {
-                        if let transactionHash = viewModel.etherScanService.transactionHash {
-                            Text("Transaction Hash: \(transactionHash)")
-                        } else if let errorMessage = viewModel.etherScanService.errorMessage {
-                            Text("Error: \(errorMessage)")
-                                .foregroundColor(.red)
-                        }
-
-                        if !viewModel.txid.isEmpty {
-                            Text("Transaction Hash: \(viewModel.txid)")
-                        }
-
-                        Button(action: {
-                            viewModel.isLinkActive = true
-                        }) {
-                            FilledButton(title: "DONE")
-                        }
-                    }
+                    keysignFinished
                 case .KeysignFailed:
                     SendCryptoKeysignView(title: "Sorry keysign failed, you can retry it,error: \(viewModel.keysignError)", showError: true)
             }
@@ -56,6 +40,45 @@ struct KeysignView: View {
         }
         .task {
             await viewModel.startKeysign()
+        }
+    }
+    
+    var keysignFinished: some View {
+        ZStack {
+            if isSending {
+                forStartKeysign
+            } else {
+                forJoinKeysign
+            }
+        }
+    }
+    
+    var forStartKeysign: some View {
+        EmptyView()
+            .onAppear {
+                sendCryptoViewModel?.moveToNextView()
+                sendCryptoViewModel?.hash = viewModel.etherScanService.transactionHash
+            }
+    }
+    
+    var forJoinKeysign: some View {
+        VStack {
+            if let transactionHash = viewModel.etherScanService.transactionHash {
+                Text("Transaction Hash: \(transactionHash)")
+            } else if let errorMessage = viewModel.etherScanService.errorMessage {
+                Text("Error: \(errorMessage)")
+                    .foregroundColor(.red)
+            }
+
+            if !viewModel.txid.isEmpty {
+                Text("Transaction Hash: \(viewModel.txid)")
+            }
+
+            Button(action: {
+                viewModel.isLinkActive = true
+            }) {
+                FilledButton(title: "DONE")
+            }
         }
     }
     
@@ -80,6 +103,7 @@ struct KeysignView: View {
         sessionID: "session",
         keysignType: .ECDSA,
         messsageToSign: ["message"],
-        keysignPayload: nil
+        keysignPayload: nil, 
+        sendCryptoViewModel: nil
     )
 }

@@ -47,7 +47,7 @@ struct TokenSelectorDropdown: View {
             image
             Text("\(tx.coin.ticker)")
             Spacer()
-            Text(coinViewModel.coinBalance ?? "0")
+            Text(coinViewModel.coinBalance ?? "0.00000")
             
             if isActive {
                 Image(systemName: "chevron.down")

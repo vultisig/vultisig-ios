@@ -19,6 +19,10 @@ struct SendCryptoVerifyView: View {
         ZStack {
             Background()
             view
+            
+            if sendCryptoVerifyViewModel.isLoading {
+                loader
+            }
         }
         .gesture(DragGesture())
         .onAppear {
@@ -34,6 +38,7 @@ struct SendCryptoVerifyView: View {
             fields
             button
         }
+        .blur(radius: sendCryptoVerifyViewModel.isLoading ? 1 : 0)
     }
     
     var alert: Alert {
@@ -83,13 +88,37 @@ struct SendCryptoVerifyView: View {
     
     var button: some View {
         Button {
-            Task {
-                await validateForm()
+            sendCryptoVerifyViewModel.isLoading = true
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                Task {
+                    await validateForm()
+                }
             }
         } label: {
             FilledButton(title: "sign")
         }
         .padding(40)
+    }
+    
+    var loader: some View {
+        ZStack {
+            Color.black
+                .ignoresSafeArea()
+                .opacity(0.3)
+            
+            VStack(spacing: 30) {
+                ProgressView()
+                    .preferredColorScheme(.dark)
+                
+                Text(NSLocalizedString("pleaseWait", comment: ""))
+                    .font(.body20MontserratSemiBold)
+                    .foregroundColor(.neutral0)
+            }
+            .frame(width: 200, height: 150)
+            .background(Color.blue600)
+            .cornerRadius(10)
+        }
     }
     
     private func getAddressCell(for title: String, with address: String) -> some View {

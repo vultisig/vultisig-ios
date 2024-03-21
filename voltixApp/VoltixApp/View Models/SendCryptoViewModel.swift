@@ -21,6 +21,7 @@ class SendCryptoViewModel: ObservableObject {
     @Published var priceRate = 0.0
     @Published var coinBalance: String = "0"
     @Published var errorMessage = ""
+    @Published var hash: String? = nil
     
 	@EnvironmentObject var appState: ApplicationState
     @Published var thor = ThorchainService.shared
