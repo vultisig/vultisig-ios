@@ -60,7 +60,8 @@ struct MainNavigationStack: View {
                         case .joinKeygen(let vault):
                             JoinKeygenView(vault: vault)
                         case .KeysignDiscovery(let keysignPayload):
-                            KeysignDiscoveryView(vault: appState.currentVault ?? Vault.example, keysignPayload: keysignPayload)
+//                            KeysignDiscoveryView(vault: appState.currentVault ?? Vault.example, keysignPayload: keysignPayload)
+                            Text("Keysign Discovery View")
                         case .JoinKeysign:
                             JoinKeysignView(vault: appState.currentVault ?? Vault.example)
                         case .bitcoinTransactionsListView(let tx):

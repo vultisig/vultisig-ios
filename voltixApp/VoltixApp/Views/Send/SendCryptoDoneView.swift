@@ -8,14 +8,32 @@
 import SwiftUI
 
 struct SendCryptoDoneView: View {
+    let hash: String
+    
+    @State var showAlert = false
+    
     var body: some View {
-        VStack {
+        ZStack {
+            Background()
             view
-            button
+        }
+        .alert(isPresented: $showAlert) {
+            Alert(
+                title: Text(NSLocalizedString("hashCopied", comment: "")),
+                message: Text(hash),
+                dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+            )
         }
     }
     
     var view: some View {
+        VStack {
+            cards
+            continueButton
+        }
+    }
+    
+    var cards: some View {
         ScrollView {
             card
         }
@@ -23,11 +41,9 @@ struct SendCryptoDoneView: View {
     
     var card: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(NSLocalizedString("transaction", comment: "Transaction"))
-                .font(.body20MontserratSemiBold)
-                .foregroundColor(.neutral0)
+            titleSection
             
-            Text("bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w")
+            Text(hash)
                 .font(.body13Menlo)
                 .foregroundColor(.turquoise600)
         }
@@ -37,12 +53,55 @@ struct SendCryptoDoneView: View {
         .padding(.horizontal, 16)
     }
     
-    var button: some View {
+    var titleSection: some View {
+        HStack(spacing: 12) {
+            Text(NSLocalizedString("transaction", comment: "Transaction"))
+                .font(.body20MontserratSemiBold)
+                .foregroundColor(.neutral0)
+            
+            copyButton
+            linkButton
+        }
+    }
+    
+    var copyButton: some View {
+        Button {
+            copyHash()
+        } label: {
+            Image(systemName: "square.on.square")
+                .font(.body18Menlo)
+                .foregroundColor(.neutral0)
+        }
+
+    }
+    
+    var linkButton: some View {
+        Button {
+            shareLink()
+        } label: {
+            Image(systemName: "link")
+                .font(.body18Menlo)
+                .foregroundColor(.neutral0)
+        }
+
+    }
+    
+    var continueButton: some View {
         FilledButton(title: "complete")
             .padding(40)
+    }
+    
+    private func copyHash() {
+        showAlert = true
+        let pasteboard = UIPasteboard.general
+        pasteboard.string = hash
+    }
+    
+    private func shareLink() {
+        
     }
 }
 
 #Preview {
-    SendCryptoDoneView()
+    SendCryptoDoneView(hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w")
 }

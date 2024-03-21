@@ -14,12 +14,12 @@ class SendCryptoVerifyViewModel: ObservableObject {
 	@Published var isAmountCorrect = false
 	@Published var isHackedOrPhished = false
 	@Published var showAlert = false
+    @Published var isLoading = false
 	@Published var errorMessage = ""
 	
-	@StateObject var thor = ThorchainService.shared
-	@StateObject var sol: SolanaService = SolanaService.shared
-	
-	@StateObject var utxo = BlockchairService.shared
+	@Published var thor = ThorchainService.shared
+	@Published var sol: SolanaService = SolanaService.shared
+	@Published var utxo = BlockchairService.shared
 	
 	private var isValidForm: Bool {
 		return isAddressCorrect && isAmountCorrect && isHackedOrPhished
@@ -54,8 +54,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
 			
 			return estimatedGas
 		} catch {
-			errorMessage = "Error estimating gas: \(error.localizedDescription)"
+			errorMessage = "\(NSLocalizedString("gasEstimateError:", comment: "")) \(error.localizedDescription)"
 			showAlert = true
+            isLoading = false
 		}
 		return 0
 	}
@@ -75,8 +76,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
 			
 			return estimatedGas
 		} catch {
-			errorMessage = "Error estimating gas: \(error.localizedDescription)"
+			errorMessage = "\(NSLocalizedString("gasEstimateError:", comment: "")) \(error.localizedDescription)"
 			showAlert = true
+            isLoading = false
 		}
 		return 0
 	}
@@ -85,8 +87,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
 		
 		
 		if !isValidForm {
-			self.errorMessage = "* You must agree with the terms."
+			self.errorMessage = "mustAgreeTermsError"
 			showAlert = true
+            isLoading = false
 			return nil
 		}
 		
@@ -104,16 +107,18 @@ class SendCryptoVerifyViewModel: ObservableObject {
 					index: UInt32($0.index ?? -1)
 				)
 			}), !utxoInfo.isEmpty else {
-				self.errorMessage = "You don't have enough balance to send this transaction"
+				self.errorMessage = "notEnoughBalanceError"
 				showAlert = true
+                isLoading = false
 				return nil
 			}
 			
 			let totalSelectedAmount = utxoInfo.reduce(0) { $0 + $1.amount }
 			
 			if totalSelectedAmount < Int64(totalAmountNeeded) {
-				self.errorMessage = "You don't have enough balance to send this transaction"
+				self.errorMessage = "notEnoughBalanceError"
 				showAlert = true
+                isLoading = false
 				return nil
 			}
 			
@@ -139,8 +144,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
 				let estimatedGas = Int64(await estimateGasForEthTransfer(tx: tx, web3Service: web3Service))
 				
 				guard estimatedGas > 0 else {
-					errorMessage = "Error to estimate gas for ETH"
+					errorMessage = "gasEstimateETHError"
 					showAlert = true
+                    isLoading = false
 					return nil
 				}
 				
@@ -160,8 +166,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
 				let estimatedGas = Int64(await estimateGasForERC20Transfer(tx: tx, web3Service: web3Service))
 				
 				guard estimatedGas > 0 else {
-					errorMessage = "Error to estimate gas for the TOKEN"
+					errorMessage = "gasEstimateTOKENError"
 					showAlert = true
+                    isLoading = false
                     return nil
 				}
 				

@@ -12,8 +12,8 @@ import SwiftUI
 @MainActor
 class CoinViewModel: ObservableObject {
     @Published var isLoading = false
-    @Published var balanceUSD = "US$ 0,00"
-    @Published var coinBalance = "0.0"
+    @Published var balanceUSD: String? = nil
+    @Published var coinBalance: String? = nil
 	
     private var utxo = BlockchairService.shared
 	

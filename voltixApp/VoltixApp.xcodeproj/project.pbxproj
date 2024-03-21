@@ -40,7 +40,6 @@
 		469ED3A02B98F5B4008D4951 /* ThorchainAccountNumberResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED39F2B98F5B4008D4951 /* ThorchainAccountNumberResponse.swift */; };
 		469ED3A22B98F5CB008D4951 /* ThorchainAccountResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED3A12B98F5CB008D4951 /* ThorchainAccountResult.swift */; };
 		469ED3A42B98F5DE008D4951 /* ThorchainAccountValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED3A32B98F5DE008D4951 /* ThorchainAccountValue.swift */; };
-		46A616EA2B8807B700372994 /* KeygenStatusText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46A616E92B8807B700372994 /* KeygenStatusText.swift */; };
 		46AC40A12B91C024001704E6 /* Web3Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AC40A02B91C024001704E6 /* Web3Service.swift */; };
 		46AC40A42B91F50A001704E6 /* AppConfiguration.example.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AC40A32B91F50A001704E6 /* AppConfiguration.example.swift */; };
 		46AC40A82B920061001704E6 /* EtherscanService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AC40A72B920061001704E6 /* EtherscanService.swift */; };
@@ -111,6 +110,7 @@
 		A65BA9862BAA0F0D00B2D8AA /* SendCryptoVerifyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9852BAA0F0D00B2D8AA /* SendCryptoVerifyViewModel.swift */; };
 		A65BA9882BAAA0B700B2D8AA /* SendCryptoSigningErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9872BAAA0B700B2D8AA /* SendCryptoSigningErrorView.swift */; };
 		A65BA98A2BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9892BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift */; };
+		A65BA98C2BABD1AA00B2D8AA /* SendCryptoStartErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA98B2BABD1AA00B2D8AA /* SendCryptoStartErrorView.swift */; };
 		A66A0BD02BA0FC210021A483 /* SDWebImageSVGCoder in Frameworks */ = {isa = PBXBuildFile; productRef = A66A0BCF2BA0FC210021A483 /* SDWebImageSVGCoder */; };
 		A66A0BD32BA0FC290021A483 /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = A66A0BD22BA0FC290021A483 /* SDWebImageSwiftUI */; };
 		A66A0BD52BA124D00021A483 /* EditVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD42BA124D00021A483 /* EditVaultView.swift */; };
@@ -168,7 +168,7 @@
 		DE1572992B70F26A009BC7C5 /* KeyType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1572982B70F26A009BC7C5 /* KeyType.swift */; };
 		DE15729E2B70F284009BC7C5 /* JoinKeysignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE15729B2B70F284009BC7C5 /* JoinKeysignView.swift */; };
 		DE15729F2B70F284009BC7C5 /* KeysignDiscoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE15729C2B70F284009BC7C5 /* KeysignDiscoveryView.swift */; };
-		DE1572A02B70F284009BC7C5 /* Keysign.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE15729D2B70F284009BC7C5 /* Keysign.swift */; };
+		DE1572A02B70F284009BC7C5 /* KeysignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE15729D2B70F284009BC7C5 /* KeysignView.swift */; };
 		DE1572A22B70F873009BC7C5 /* Tss.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE1572A12B70F873009BC7C5 /* Tss.xcframework */; };
 		DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1572AB2B7174D3009BC7C5 /* Utils.swift */; };
 		DE28F5312B7B0FE900E33058 /* WalletCore in Frameworks */ = {isa = PBXBuildFile; productRef = DE28F5302B7B0FE900E33058 /* WalletCore */; };
@@ -275,7 +275,6 @@
 		469ED39F2B98F5B4008D4951 /* ThorchainAccountNumberResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainAccountNumberResponse.swift; sourceTree = "<group>"; };
 		469ED3A12B98F5CB008D4951 /* ThorchainAccountResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainAccountResult.swift; sourceTree = "<group>"; };
 		469ED3A32B98F5DE008D4951 /* ThorchainAccountValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainAccountValue.swift; sourceTree = "<group>"; };
-		46A616E92B8807B700372994 /* KeygenStatusText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenStatusText.swift; sourceTree = "<group>"; };
 		46AC40A02B91C024001704E6 /* Web3Service.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Web3Service.swift; sourceTree = "<group>"; };
 		46AC40A32B91F50A001704E6 /* AppConfiguration.example.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.example.swift; sourceTree = "<group>"; };
 		46AC40A72B920061001704E6 /* EtherscanService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EtherscanService.swift; sourceTree = "<group>"; };
@@ -346,6 +345,7 @@
 		A65BA9852BAA0F0D00B2D8AA /* SendCryptoVerifyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVerifyViewModel.swift; sourceTree = "<group>"; };
 		A65BA9872BAAA0B700B2D8AA /* SendCryptoSigningErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoSigningErrorView.swift; sourceTree = "<group>"; };
 		A65BA9892BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVaultErrorView.swift; sourceTree = "<group>"; };
+		A65BA98B2BABD1AA00B2D8AA /* SendCryptoStartErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoStartErrorView.swift; sourceTree = "<group>"; };
 		A66A0BD42BA124D00021A483 /* EditVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditVaultView.swift; sourceTree = "<group>"; };
 		A66A0BD62BA125C50021A483 /* EditVaultCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditVaultCell.swift; sourceTree = "<group>"; };
 		A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenameVaultView.swift; sourceTree = "<group>"; };
@@ -400,7 +400,7 @@
 		DE1572982B70F26A009BC7C5 /* KeyType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeyType.swift; sourceTree = "<group>"; };
 		DE15729B2B70F284009BC7C5 /* JoinKeysignView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JoinKeysignView.swift; sourceTree = "<group>"; };
 		DE15729C2B70F284009BC7C5 /* KeysignDiscoveryView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeysignDiscoveryView.swift; sourceTree = "<group>"; };
-		DE15729D2B70F284009BC7C5 /* Keysign.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Keysign.swift; sourceTree = "<group>"; };
+		DE15729D2B70F284009BC7C5 /* KeysignView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeysignView.swift; sourceTree = "<group>"; };
 		DE1572A12B70F873009BC7C5 /* Tss.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
 		DE1572AB2B7174D3009BC7C5 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		DE28F52B2B7B0D6500E33058 /* WalletCore */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = WalletCore; path = ../WalletCore; sourceTree = "<group>"; };
@@ -509,7 +509,6 @@
 				465B09AC2B7C841B00952DD9 /* QrCodeView.swift */,
 				465B09AE2B7C84C600952DD9 /* ShareSheet.swift */,
 				465B09B22B7D710A00952DD9 /* DocumentPicker.swift */,
-				46A616E92B8807B700372994 /* KeygenStatusText.swift */,
 				A6F9F7DE2B9BAA9F00790258 /* Separator.swift */,
 				A66A0BDC2BA15C650021A483 /* WebSVGImage.swift */,
 				A61BC8152BA256C600484689 /* ProgressBar.swift */,
@@ -956,6 +955,7 @@
 				A63953B32BA7F120000802EC /* SendCryptoDoneView.swift */,
 				A65BA9872BAAA0B700B2D8AA /* SendCryptoSigningErrorView.swift */,
 				A65BA9892BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift */,
+				A65BA98B2BABD1AA00B2D8AA /* SendCryptoStartErrorView.swift */,
 			);
 			path = Send;
 			sourceTree = "<group>";
@@ -1009,7 +1009,7 @@
 			children = (
 				DE15729B2B70F284009BC7C5 /* JoinKeysignView.swift */,
 				DE15729C2B70F284009BC7C5 /* KeysignDiscoveryView.swift */,
-				DE15729D2B70F284009BC7C5 /* Keysign.swift */,
+				DE15729D2B70F284009BC7C5 /* KeysignView.swift */,
 				DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */,
 				DE9EB0F52BA3F9C2001747D9 /* ParticipantDiscovery.swift */,
 			);
@@ -1302,7 +1302,7 @@
 				A6F9F7E52B9BB4D100790258 /* NavigationMenuButton.swift in Sources */,
 				049BBB662B71E987004C231F /* VaultItem.swift in Sources */,
 				049BBB5E2B71E83D004C231F /* VoltixLogo.swift in Sources */,
-				DE1572A02B70F284009BC7C5 /* Keysign.swift in Sources */,
+				DE1572A02B70F284009BC7C5 /* KeysignView.swift in Sources */,
 				46AC40AA2B922931001704E6 /* EthereumTransactionListView.swift in Sources */,
 				A6F9F7E32B9BB48700790258 /* VaultsView.swift in Sources */,
 				465B09AD2B7C841B00952DD9 /* QrCodeView.swift in Sources */,
@@ -1365,7 +1365,6 @@
 				A6564A062B969ADF00E4B329 /* EtherscanAPIResponse.swift in Sources */,
 				A65649F82B96701300E4B329 /* UTXOTransactionMempoolPreviousOutput.swift in Sources */,
 				DE7CE6462B886B6300ED0BFB /* VoltixVaultDocument.swift in Sources */,
-				46A616EA2B8807B700372994 /* KeygenStatusText.swift in Sources */,
 				46F8F7212B99FDB70099454E /* TransactionBroadcastResponse.swift in Sources */,
 				A6966D242BA3E2A500903CA4 /* OnboardingView2.swift in Sources */,
 				46AC40A12B91C024001704E6 /* Web3Service.swift in Sources */,
@@ -1427,6 +1426,7 @@
 				049BBB622B71E8E7004C231F /* AssetItem.swift in Sources */,
 				A61BC8162BA256C600484689 /* ProgressBar.swift in Sources */,
 				D9AD8EEA2B6730E30009F8D5 /* MenuView.swift in Sources */,
+				A65BA98C2BABD1AA00B2D8AA /* SendCryptoStartErrorView.swift in Sources */,
 				049BBB602B71E8A2004C231F /* MenuItem.swift in Sources */,
 				DEF2E2CB2B9AD5EA000737B8 /* UTXOChainsHelper.swift in Sources */,
 				DEFC7BFB2B8D87370090B07A /* erc20.swift in Sources */,
