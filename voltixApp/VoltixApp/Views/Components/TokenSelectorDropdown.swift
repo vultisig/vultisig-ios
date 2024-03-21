@@ -53,6 +53,7 @@ struct TokenSelectorDropdown: View {
                 Image(systemName: "chevron.down")
             }
         }
+        .redacted(reason: coinViewModel.coinBalance==nil ? .placeholder : [])
         .font(.body16Menlo)
         .foregroundColor(.neutral0)
         .frame(height: 48)
