@@ -15,7 +15,7 @@ struct ImportWalletView2: View {
     
     var body: some View {
         ZStack {
-            background
+            Background()
             view
         }
         .navigationBarBackButtonHidden(true)
@@ -46,11 +46,6 @@ struct ImportWalletView2: View {
         .onDisappear {
             viewModel.removeFile()
         }
-    }
-    
-    var background: some View {
-        Color.backgroundBlue
-            .ignoresSafeArea()
     }
     
     var view: some View {

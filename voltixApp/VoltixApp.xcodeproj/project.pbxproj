@@ -72,6 +72,14 @@
 		A633B13A2B9A5A22003D1738 /* ImportWalletView2.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B1392B9A5A22003D1738 /* ImportWalletView2.swift */; };
 		A633B13C2B9A6564003D1738 /* SetupVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B13B2B9A6564003D1738 /* SetupVaultView.swift */; };
 		A633B13E2B9A9E30003D1738 /* VaultDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B13D2B9A9E30003D1738 /* VaultDetailView.swift */; };
+		A63953B02BA7BEDA000802EC /* Checkbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63953AF2BA7BEDA000802EC /* Checkbox.swift */; };
+		A63953B22BA7CB8E000802EC /* SendCryptoKeysignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63953B12BA7CB8E000802EC /* SendCryptoKeysignView.swift */; };
+		A63953B42BA7F120000802EC /* SendCryptoDoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63953B32BA7F120000802EC /* SendCryptoDoneView.swift */; };
+		A65324282BA51E8700DDE6EB /* QRCodeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65324272BA51E8700DDE6EB /* QRCodeScannerView.swift */; };
+		A653242A2BA52A4700DDE6EB /* SendCryptoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65324292BA52A4700DDE6EB /* SendCryptoViewModel.swift */; };
+		A653242C2BA52E2200DDE6EB /* SendCryptoQRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A653242B2BA52E2200DDE6EB /* SendCryptoQRScannerView.swift */; };
+		A653242E2BA53D0900DDE6EB /* SendCryptoPairView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A653242D2BA53D0900DDE6EB /* SendCryptoPairView.swift */; };
+		A65324302BA540ED00DDE6EB /* SendCryptoVerifyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A653242F2BA540ED00DDE6EB /* SendCryptoVerifyView.swift */; };
 		A65649DF2B96602700E4B329 /* DecodableDefaultExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */; };
 		A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D82B96602700E4B329 /* BigUIntExtension.swift */; };
 		A65649E12B96602700E4B329 /* Int64Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D92B96602700E4B329 /* Int64Extension.swift */; };
@@ -97,6 +105,12 @@
 		A6564A062B969ADF00E4B329 /* EtherscanAPIResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6564A052B969ADF00E4B329 /* EtherscanAPIResponse.swift */; };
 		A6564A082B969AFC00E4B329 /* EtherscanAPITransactionDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6564A072B969AFC00E4B329 /* EtherscanAPITransactionDetail.swift */; };
 		A6564A0B2B96A04D00E4B329 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = A6564A0D2B96A04D00E4B329 /* Localizable.strings */; };
+		A65BA9802BA9361B00B2D8AA /* SendCryptoAmountUSDTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA97F2BA9361B00B2D8AA /* SendCryptoAmountUSDTextField.swift */; };
+		A65BA9822BA93A9F00B2D8AA /* DebounceHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9812BA93A9F00B2D8AA /* DebounceHelper.swift */; };
+		A65BA9842BAA07B500B2D8AA /* Background.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9832BAA07B500B2D8AA /* Background.swift */; };
+		A65BA9862BAA0F0D00B2D8AA /* SendCryptoVerifyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9852BAA0F0D00B2D8AA /* SendCryptoVerifyViewModel.swift */; };
+		A65BA9882BAAA0B700B2D8AA /* SendCryptoSigningErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9872BAAA0B700B2D8AA /* SendCryptoSigningErrorView.swift */; };
+		A65BA98A2BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9892BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift */; };
 		A66A0BD02BA0FC210021A483 /* SDWebImageSVGCoder in Frameworks */ = {isa = PBXBuildFile; productRef = A66A0BCF2BA0FC210021A483 /* SDWebImageSVGCoder */; };
 		A66A0BD32BA0FC290021A483 /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = A66A0BD22BA0FC290021A483 /* SDWebImageSwiftUI */; };
 		A66A0BD52BA124D00021A483 /* EditVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD42BA124D00021A483 /* EditVaultView.swift */; };
@@ -109,8 +123,8 @@
 		A6966D222BA3E1B000903CA4 /* TextStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D212BA3E1B000903CA4 /* TextStore.swift */; };
 		A6966D242BA3E2A500903CA4 /* OnboardingView2.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D232BA3E2A500903CA4 /* OnboardingView2.swift */; };
 		A6966D262BA3E2CF00903CA4 /* OnboardingView3.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D252BA3E2CF00903CA4 /* OnboardingView3.swift */; };
-		A6966D292BA400B700903CA4 /* AddressTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D282BA400B700903CA4 /* AddressTextField.swift */; };
-		A6966D2B2BA4018600903CA4 /* AmountTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D2A2BA4018600903CA4 /* AmountTextField.swift */; };
+		A6966D292BA400B700903CA4 /* SendCryptoAddressTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D282BA400B700903CA4 /* SendCryptoAddressTextField.swift */; };
+		A6966D2B2BA4018600903CA4 /* SendCryptoAmountTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D2A2BA4018600903CA4 /* SendCryptoAmountTextField.swift */; };
 		A6966D2D2BA402A900903CA4 /* TokenSelectorDropdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D2C2BA402A900903CA4 /* TokenSelectorDropdown.swift */; };
 		A6966D2F2BA4045C00903CA4 /* SwapCryptoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D2E2BA4045C00903CA4 /* SwapCryptoView.swift */; };
 		A6966D312BA4048800903CA4 /* SwapCryptoDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D302BA4048800903CA4 /* SwapCryptoDetailsView.swift */; };
@@ -293,6 +307,14 @@
 		A633B1392B9A5A22003D1738 /* ImportWalletView2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportWalletView2.swift; sourceTree = "<group>"; };
 		A633B13B2B9A6564003D1738 /* SetupVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultView.swift; sourceTree = "<group>"; };
 		A633B13D2B9A9E30003D1738 /* VaultDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailView.swift; sourceTree = "<group>"; };
+		A63953AF2BA7BEDA000802EC /* Checkbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checkbox.swift; sourceTree = "<group>"; };
+		A63953B12BA7CB8E000802EC /* SendCryptoKeysignView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoKeysignView.swift; sourceTree = "<group>"; };
+		A63953B32BA7F120000802EC /* SendCryptoDoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDoneView.swift; sourceTree = "<group>"; };
+		A65324272BA51E8700DDE6EB /* QRCodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeScannerView.swift; sourceTree = "<group>"; };
+		A65324292BA52A4700DDE6EB /* SendCryptoViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoViewModel.swift; sourceTree = "<group>"; };
+		A653242B2BA52E2200DDE6EB /* SendCryptoQRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoQRScannerView.swift; sourceTree = "<group>"; };
+		A653242D2BA53D0900DDE6EB /* SendCryptoPairView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoPairView.swift; sourceTree = "<group>"; };
+		A653242F2BA540ED00DDE6EB /* SendCryptoVerifyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVerifyView.swift; sourceTree = "<group>"; };
 		A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DecodableDefaultExtension.swift; sourceTree = "<group>"; };
 		A65649D82B96602700E4B329 /* BigUIntExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BigUIntExtension.swift; sourceTree = "<group>"; };
 		A65649D92B96602700E4B329 /* Int64Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Int64Extension.swift; sourceTree = "<group>"; };
@@ -318,6 +340,12 @@
 		A6564A052B969ADF00E4B329 /* EtherscanAPIResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EtherscanAPIResponse.swift; sourceTree = "<group>"; };
 		A6564A072B969AFC00E4B329 /* EtherscanAPITransactionDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EtherscanAPITransactionDetail.swift; sourceTree = "<group>"; };
 		A6564A0C2B96A04D00E4B329 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A65BA97F2BA9361B00B2D8AA /* SendCryptoAmountUSDTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoAmountUSDTextField.swift; sourceTree = "<group>"; };
+		A65BA9812BA93A9F00B2D8AA /* DebounceHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebounceHelper.swift; sourceTree = "<group>"; };
+		A65BA9832BAA07B500B2D8AA /* Background.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Background.swift; sourceTree = "<group>"; };
+		A65BA9852BAA0F0D00B2D8AA /* SendCryptoVerifyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVerifyViewModel.swift; sourceTree = "<group>"; };
+		A65BA9872BAAA0B700B2D8AA /* SendCryptoSigningErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoSigningErrorView.swift; sourceTree = "<group>"; };
+		A65BA9892BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVaultErrorView.swift; sourceTree = "<group>"; };
 		A66A0BD42BA124D00021A483 /* EditVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditVaultView.swift; sourceTree = "<group>"; };
 		A66A0BD62BA125C50021A483 /* EditVaultCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditVaultCell.swift; sourceTree = "<group>"; };
 		A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenameVaultView.swift; sourceTree = "<group>"; };
@@ -328,8 +356,8 @@
 		A6966D212BA3E1B000903CA4 /* TextStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextStore.swift; sourceTree = "<group>"; };
 		A6966D232BA3E2A500903CA4 /* OnboardingView2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView2.swift; sourceTree = "<group>"; };
 		A6966D252BA3E2CF00903CA4 /* OnboardingView3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView3.swift; sourceTree = "<group>"; };
-		A6966D282BA400B700903CA4 /* AddressTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressTextField.swift; sourceTree = "<group>"; };
-		A6966D2A2BA4018600903CA4 /* AmountTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountTextField.swift; sourceTree = "<group>"; };
+		A6966D282BA400B700903CA4 /* SendCryptoAddressTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoAddressTextField.swift; sourceTree = "<group>"; };
+		A6966D2A2BA4018600903CA4 /* SendCryptoAmountTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoAmountTextField.swift; sourceTree = "<group>"; };
 		A6966D2C2BA402A900903CA4 /* TokenSelectorDropdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectorDropdown.swift; sourceTree = "<group>"; };
 		A6966D2E2BA4045C00903CA4 /* SwapCryptoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoView.swift; sourceTree = "<group>"; };
 		A6966D302BA4048800903CA4 /* SwapCryptoDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoDetailsView.swift; sourceTree = "<group>"; };
@@ -484,14 +512,16 @@
 				46A616E92B8807B700372994 /* KeygenStatusText.swift */,
 				A6F9F7DE2B9BAA9F00790258 /* Separator.swift */,
 				A66A0BDC2BA15C650021A483 /* WebSVGImage.swift */,
-				A6F9F7D92B9BA2CF00790258 /* Cells */,
-				A633B1232B993FCC003D1738 /* Buttons */,
-				A6966D272BA4009B00903CA4 /* TextFields */,
-				A633B1342B997D35003D1738 /* Navigation Items */,
 				A61BC8152BA256C600484689 /* ProgressBar.swift */,
 				A61BC81A2BA26D9900484689 /* TokenSelectionSection.swift */,
 				A6CBA8EF2BA2A629008B110C /* ImportWalletUploadSection.swift */,
 				A6966D2C2BA402A900903CA4 /* TokenSelectorDropdown.swift */,
+				A63953AF2BA7BEDA000802EC /* Checkbox.swift */,
+				A6F9F7D92B9BA2CF00790258 /* Cells */,
+				A633B1232B993FCC003D1738 /* Buttons */,
+				A6966D272BA4009B00903CA4 /* TextFields */,
+				A633B1342B997D35003D1738 /* Navigation Items */,
+				A65BA9832BAA07B500B2D8AA /* Background.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -776,12 +806,14 @@
 				A6F9F7EC2B9D1F5700790258 /* CoinViewModel.swift */,
 				A6F2C54E2BA009420095C8E3 /* TokenSelectionViewModel.swift */,
 				A6CBA8ED2BA299E8008B110C /* ImportVaultViewModel.swift */,
+				A65324292BA52A4700DDE6EB /* SendCryptoViewModel.swift */,
 				DE9EB0F72BA43388001747D9 /* KeysignViewModel.swift */,
 				DE9EB0FB2BA463F7001747D9 /* KeygenViewModel.swift */,
 				DE64A4C52BA7E0E400C342E3 /* KeygenPeerDiscoveryViewModel.swift */,
 				DE64A4C72BA7EBEC00C342E3 /* JoinKeygenViewModel.swift */,
 				DE64A4CB2BA7F97500C342E3 /* KeysignDiscoveryViewModel.swift */,
 				DE64A4CD2BA7FEE100C342E3 /* JoinKeysignViewModel.swift */,
+				A65BA9852BAA0F0D00B2D8AA /* SendCryptoVerifyViewModel.swift */,
 			);
 			path = "View Models";
 			sourceTree = "<group>";
@@ -830,8 +862,9 @@
 		A6966D272BA4009B00903CA4 /* TextFields */ = {
 			isa = PBXGroup;
 			children = (
-				A6966D282BA400B700903CA4 /* AddressTextField.swift */,
-				A6966D2A2BA4018600903CA4 /* AmountTextField.swift */,
+				A6966D282BA400B700903CA4 /* SendCryptoAddressTextField.swift */,
+				A6966D2A2BA4018600903CA4 /* SendCryptoAmountTextField.swift */,
+				A65BA97F2BA9361B00B2D8AA /* SendCryptoAmountUSDTextField.swift */,
 			);
 			path = TextFields;
 			sourceTree = "<group>";
@@ -915,6 +948,14 @@
 				46AC40A92B922931001704E6 /* EthereumTransactionListView.swift */,
 				A61BC8112BA2407A00484689 /* SendCryptoView.swift */,
 				A61BC8132BA240FC00484689 /* SendCryptoDetailsView.swift */,
+				A65324272BA51E8700DDE6EB /* QRCodeScannerView.swift */,
+				A653242B2BA52E2200DDE6EB /* SendCryptoQRScannerView.swift */,
+				A653242D2BA53D0900DDE6EB /* SendCryptoPairView.swift */,
+				A653242F2BA540ED00DDE6EB /* SendCryptoVerifyView.swift */,
+				A63953B12BA7CB8E000802EC /* SendCryptoKeysignView.swift */,
+				A63953B32BA7F120000802EC /* SendCryptoDoneView.swift */,
+				A65BA9872BAAA0B700B2D8AA /* SendCryptoSigningErrorView.swift */,
+				A65BA9892BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift */,
 			);
 			path = Send;
 			sourceTree = "<group>";
@@ -981,6 +1022,7 @@
 				DE1572AB2B7174D3009BC7C5 /* Utils.swift */,
 				A62758F12B97B10600ADE3A6 /* Endpoint.swift */,
 				A62758F32B97CE7E00ADE3A6 /* Styles */,
+				A65BA9812BA93A9F00B2D8AA /* DebounceHelper.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -1192,7 +1234,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */;
+			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -1265,6 +1307,7 @@
 				A6F9F7E32B9BB48700790258 /* VaultsView.swift in Sources */,
 				465B09AD2B7C841B00952DD9 /* QrCodeView.swift in Sources */,
 				469ED3A02B98F5B4008D4951 /* ThorchainAccountNumberResponse.swift in Sources */,
+				A65324282BA51E8700DDE6EB /* QRCodeScannerView.swift in Sources */,
 				465B09B32B7D710A00952DD9 /* DocumentPicker.swift in Sources */,
 				DE1572992B70F26A009BC7C5 /* KeyType.swift in Sources */,
 				4606B3AE2B8045F60045094D /* UTXOTransactionListView.swift in Sources */,
@@ -1274,6 +1317,8 @@
 				DE9EB0F02BA2CFB7001747D9 /* ReshareMessage.swift in Sources */,
 				A633B12F2B9952D8003D1738 /* OutlineButton.swift in Sources */,
 				A6CBA8EE2BA299E8008B110C /* ImportVaultViewModel.swift in Sources */,
+				A65BA9862BAA0F0D00B2D8AA /* SendCryptoVerifyViewModel.swift in Sources */,
+				A63953B22BA7CB8E000802EC /* SendCryptoKeysignView.swift in Sources */,
 				049BBB582B71E72F004C231F /* DeviceView.swift in Sources */,
 				D9AD8EF12B6731660009F8D5 /* SendInputDetailsView.swift in Sources */,
 				D9AD8F012B6732360009F8D5 /* SwapVerifyView.swift in Sources */,
@@ -1283,6 +1328,7 @@
 				A6F9F7DB2B9BA2DE00790258 /* ChainCell.swift in Sources */,
 				049BBB682B71E9C5004C231F /* WifiBar.swift in Sources */,
 				465B09B72B7D909400952DD9 /* CryptoPrice.swift in Sources */,
+				A65BA9882BAAA0B700B2D8AA /* SendCryptoSigningErrorView.swift in Sources */,
 				DE64A4C62BA7E0E400C342E3 /* KeygenPeerDiscoveryViewModel.swift in Sources */,
 				D9AD8EFB2B6731E50009F8D5 /* SwapInputDetailsView.swift in Sources */,
 				A65649FC2B9699AA00E4B329 /* ETHInfo.swift in Sources */,
@@ -1292,6 +1338,7 @@
 				A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */,
 				469ED3942B98E776008D4951 /* ThorchainService.swift in Sources */,
 				A6966D262BA3E2CF00903CA4 /* OnboardingView3.swift in Sources */,
+				A65BA98A2BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift in Sources */,
 				D9AD8EE02B6730640009F8D5 /* StartView.swift in Sources */,
 				46C8CBBF2BA777BF00E68E08 /* BlockchairService.swift in Sources */,
 				46AC40A42B91F50A001704E6 /* AppConfiguration.example.swift in Sources */,
@@ -1299,11 +1346,13 @@
 				D9AD8EE22B67307F0009F8D5 /* ImportWalletView.swift in Sources */,
 				D9AD8F032B6732450009F8D5 /* SwapDoneView.swift in Sources */,
 				DE64A4CC2BA7F97500C342E3 /* KeysignDiscoveryViewModel.swift in Sources */,
+				A653242C2BA52E2200DDE6EB /* SendCryptoQRScannerView.swift in Sources */,
 				A62758F72B97DF4A00ADE3A6 /* ColorStyle.swift in Sources */,
 				A6F2C54F2BA009420095C8E3 /* TokenSelectionViewModel.swift in Sources */,
 				D9AD8EF72B6731B30009F8D5 /* SendVerifyView.swift in Sources */,
 				A65649E32B96602700E4B329 /* BitcoinTransactionExtension.swift in Sources */,
 				A66A0BDD2BA15C650021A483 /* WebSVGImage.swift in Sources */,
+				A65BA9822BA93A9F00B2D8AA /* DebounceHelper.swift in Sources */,
 				DE1572972B70F254009BC7C5 /* LocalStateAccessorImp.swift in Sources */,
 				DE15729F2B70F284009BC7C5 /* KeysignDiscoveryView.swift in Sources */,
 				DE64A4C82BA7EBEC00C342E3 /* JoinKeygenViewModel.swift in Sources */,
@@ -1325,7 +1374,7 @@
 				469ED39D2B98E8C0008D4951 /* ThorchainBalancePagination.swift in Sources */,
 				465B09AF2B7C84C600952DD9 /* ShareSheet.swift in Sources */,
 				DE6DCB952B97D88A009A39D5 /* THORChainSwapPayload.swift in Sources */,
-				A6966D2B2BA4018600903CA4 /* AmountTextField.swift in Sources */,
+				A6966D2B2BA4018600903CA4 /* SendCryptoAmountTextField.swift in Sources */,
 				46AC40A82B920061001704E6 /* EtherscanService.swift in Sources */,
 				A62758F22B97B10600ADE3A6 /* Endpoint.swift in Sources */,
 				049BBB562B71E5F5004C231F /* Choose.swift in Sources */,
@@ -1367,9 +1416,11 @@
 				D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */,
 				DE9EB0FA2BA4491B001747D9 /* CoinExtension.swift in Sources */,
 				465B09AB2B7C840100952DD9 /* ToastView.swift in Sources */,
+				A65BA9802BA9361B00B2D8AA /* SendCryptoAmountUSDTextField.swift in Sources */,
 				465A8D562B9E6E0B006E7457 /* SolanaRpc.swift in Sources */,
 				A65649FA2B96998500E4B329 /* EthAddressInfo.swift in Sources */,
 				DE9EB0F22BA2D97B001747D9 /* PeerDiscoveryPayload.swift in Sources */,
+				A65324302BA540ED00DDE6EB /* SendCryptoVerifyView.swift in Sources */,
 				A65649E52B96602700E4B329 /* VaultExtension.swift in Sources */,
 				DE9EB0F82BA43388001747D9 /* KeysignViewModel.swift in Sources */,
 				DE9EB0F42BA309AB001747D9 /* MessagePuller.swift in Sources */,
@@ -1396,9 +1447,11 @@
 				46B106512BA7CAFE00564023 /* ChainType.swift in Sources */,
 				DE9EB0EC2BA2CC3C001747D9 /* TssType.swift in Sources */,
 				DEEDAEE52B8AFB5D005170E8 /* common.swift in Sources */,
+				A653242E2BA53D0900DDE6EB /* SendCryptoPairView.swift in Sources */,
 				A65649E22B96602700E4B329 /* DataExtension.swift in Sources */,
-				A6966D292BA400B700903CA4 /* AddressTextField.swift in Sources */,
+				A6966D292BA400B700903CA4 /* SendCryptoAddressTextField.swift in Sources */,
 				A6F9F7EB2B9D1B3700790258 /* VaultDetailViewModel.swift in Sources */,
+				A65BA9842BAA07B500B2D8AA /* Background.swift in Sources */,
 				A65649F22B966A2300E4B329 /* UTXOTransactionStatus.swift in Sources */,
 				A6564A082B969AFC00E4B329 /* EtherscanAPITransactionDetail.swift in Sources */,
 				DE64A4CE2BA7FEE100C342E3 /* JoinKeysignViewModel.swift in Sources */,
@@ -1415,11 +1468,14 @@
 				A6966D2D2BA402A900903CA4 /* TokenSelectorDropdown.swift in Sources */,
 				A6F2C5452B9FE3A00095C8E3 /* HomeView.swift in Sources */,
 				A66A0BD72BA125C50021A483 /* EditVaultCell.swift in Sources */,
+				A63953B42BA7F120000802EC /* SendCryptoDoneView.swift in Sources */,
 				DE49A1A02B67143B000F3AFB /* Chain.swift in Sources */,
 				A65649F02B966A1200E4B329 /* UTXOTransactionMempoolOutput.swift in Sources */,
+				A653242A2BA52A4700DDE6EB /* SendCryptoViewModel.swift in Sources */,
 				465B09A92B7C176700952DD9 /* SendTransaction.swift in Sources */,
 				A6564A022B969A1200E4B329 /* ETHInfoPrice.swift in Sources */,
 				A633B12D2B994E92003D1738 /* CreateVaultView.swift in Sources */,
+				A63953B02BA7BEDA000802EC /* Checkbox.swift in Sources */,
 				A6966D1E2BA3DDAD00903CA4 /* OnboardingView.swift in Sources */,
 				A633B1382B997F39003D1738 /* NavigationHelpButton.swift in Sources */,
 				A6F2C5492BA001460095C8E3 /* TokenSelectionView.swift in Sources */,
@@ -1798,7 +1854,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */ = {
+		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DE49A1882B65F6DB000F3AFB /* Debug */,

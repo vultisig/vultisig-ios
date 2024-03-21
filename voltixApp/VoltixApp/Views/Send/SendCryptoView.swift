@@ -8,35 +8,102 @@
 import SwiftUI
 
 struct SendCryptoView: View {
+    @ObservedObject var tx: SendTransaction
+    let group: GroupedChain
+    let vault: Vault
+    
+    @StateObject var sendCryptoViewModel = SendCryptoViewModel()
+    @StateObject var sendCryptoVerifyViewModel = SendCryptoVerifyViewModel()
+    @StateObject var coinViewModel = CoinViewModel()
+	@StateObject var eth = EthplorerAPIService()
+	@StateObject var web3Service = Web3Service()
+	@StateObject var thor = ThorchainService.shared
+    
+    @State var keysignPayload: KeysignPayload? = nil
+    
     var body: some View {
         ZStack {
-            background
+            Background()
             view
         }
         .navigationBarBackButtonHidden(true)
-        .navigationTitle(NSLocalizedString("send", comment: "SendCryptoView title"))
+        .navigationTitle(NSLocalizedString(sendCryptoViewModel.currentTitle, comment: "SendCryptoView title"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 NavigationBackButton()
             }
         }
-    }
-    
-    var background: some View {
-        Color.backgroundBlue
-            .ignoresSafeArea()
+        .onAppear {
+            Task {
+                await setData()
+            }
+        }
+        .onChange(of: tx.coin) {
+            Task {
+                await setData()
+            }
+        }
     }
     
     var view: some View {
         VStack(spacing: 30) {
-            ProgressBar(progress: 0.25)
+            ProgressBar(progress: sendCryptoViewModel.getProgress())
                 .padding(.top, 30)
-            SendCryptoDetailsView()
+            tabView
         }
+    }
+    
+    var tabView: some View {
+        TabView(selection: $sendCryptoViewModel.currentIndex) {
+            detailsView.tag(1)
+            verifyView.tag(2)
+            pairView.tag(3)
+        }
+        .tabViewStyle(.page(indexDisplayMode: .never))
+        .frame(maxHeight: .infinity)
+    }
+    
+    var detailsView: some View {
+        SendCryptoDetailsView(
+            tx: tx,
+            eth: eth,
+            sendCryptoViewModel: sendCryptoViewModel,
+            coinViewModel: coinViewModel,
+            group: group
+        )
+    }
+    
+    var verifyView: some View {
+        SendCryptoVerifyView(
+            keysignPayload: $keysignPayload,
+            sendCryptoViewModel: sendCryptoViewModel,
+            sendCryptoVerifyViewModel: sendCryptoVerifyViewModel,
+            tx: tx,
+            eth: eth,
+            web3Service: web3Service
+        )
+    }
+    
+    var pairView: some View {
+        ZStack {
+            if let keysignPayload = keysignPayload {
+                KeysignDiscoveryView(vault: vault, keysignPayload: keysignPayload)
+            } else {
+                SendCryptoVaultErrorView()
+            }
+        }
+    }
+    
+    private func setData() async {
+        await coinViewModel.loadData(
+            eth: eth,
+            thor: thor,
+            tx: tx
+        )
     }
 }
 
 #Preview {
-    SendCryptoView()
+    SendCryptoView(tx: SendTransaction(), group: GroupedChain.example, vault: Vault.example)
 }

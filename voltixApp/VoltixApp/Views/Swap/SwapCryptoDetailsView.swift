@@ -8,19 +8,17 @@
 import SwiftUI
 
 struct SwapCryptoDetailsView: View {
+    @ObservedObject var tx: SendTransaction
+    let group: GroupedChain
+    
     @State var fromAmount = ""
     @State var toAmount = ""
     
     var body: some View {
         ZStack {
-            background
+            Background()
             view
         }
-    }
-    
-    var background: some View {
-        Color.backgroundBlue
-            .ignoresSafeArea()
     }
     
     var view: some View {
@@ -47,7 +45,7 @@ struct SwapCryptoDetailsView: View {
     var fromCoinField: some View {
         VStack(spacing: 8) {
             getTitle(for: "from")
-            TokenSelectorDropdown(title: "Ethereum", imageName: "eth", amount: "")
+//            TokenSelectorDropdown(tx: tx, coinViewModel: <#CoinViewModel#>, group: group)
             
             Text("Balance: 23.2")
                 .font(.body12Menlo)
@@ -57,7 +55,8 @@ struct SwapCryptoDetailsView: View {
     }
     
     var fromAmountField: some View {
-        AmountTextField(amount: $fromAmount)
+//        AmountTextField(tx: tx)
+        Text("amount")
     }
     
     var swapButton: some View {
@@ -73,7 +72,7 @@ struct SwapCryptoDetailsView: View {
     var toCoinField: some View {
         VStack(spacing: 8) {
             getTitle(for: "to")
-            TokenSelectorDropdown(title: "Bitcoin", imageName: "btc", amount: "")
+//            TokenSelectorDropdown(tx: tx, group: group)
             
             Text("Balance: 23.2")
                 .font(.body12Menlo)
@@ -83,7 +82,8 @@ struct SwapCryptoDetailsView: View {
     }
     
     var toAmountField: some View {
-        AmountTextField(amount: $toAmount, showButton: false)
+//        AmountTextField(tx: tx)
+        Text("Amount")
     }
     
     var summary: some View {
@@ -119,5 +119,5 @@ struct SwapCryptoDetailsView: View {
 }
 
 #Preview {
-    SwapCryptoDetailsView()
+    SwapCryptoDetailsView(tx: SendTransaction(), group: GroupedChain.example)
 }

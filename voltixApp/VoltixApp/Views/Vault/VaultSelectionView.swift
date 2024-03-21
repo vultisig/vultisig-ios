@@ -37,6 +37,7 @@ struct VaultSelectionView: View {
                         HStack {
                             Button(action: {
                                 self.appState.currentVault = vault
+								ApplicationState.shared.currentVault = vault
                                 self.presentationStack.append(.listVaultAssetView)
                             }) {
                                 HStack {

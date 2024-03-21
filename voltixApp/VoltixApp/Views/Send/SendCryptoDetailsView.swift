@@ -5,22 +5,36 @@
 //  Created by Amol Kumar on 2024-03-13.
 //
 
+import OSLog
 import SwiftUI
 
+enum Field: Hashable {
+    case toAddress
+    case amount
+    case amountInUSD
+}
+
 struct SendCryptoDetailsView: View {
+    @ObservedObject var tx: SendTransaction
+    @ObservedObject var eth: EthplorerAPIService
+    @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
+    @ObservedObject var coinViewModel: CoinViewModel
+    let group: GroupedChain
+    
     @State var toAddress = ""
     @State var amount = ""
     
+    @FocusState private var focusedField: Field?
+    
     var body: some View {
         ZStack {
-            background
+            Background()
             view
         }
-    }
-    
-    var background: some View {
-        Color.backgroundBlue
-            .ignoresSafeArea()
+        .gesture(DragGesture())
+        .alert(isPresented: $sendCryptoViewModel.showAlert) {
+            alert
+        }
     }
     
     var view: some View {
@@ -30,6 +44,14 @@ struct SendCryptoDetailsView: View {
         }
     }
     
+    var alert: Alert {
+        Alert(
+            title: Text(NSLocalizedString("error", comment: "")),
+            message: Text(sendCryptoViewModel.errorMessage),
+            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+        )
+    }
+    
     var fields: some View {
         ScrollView {
             VStack(spacing: 16) {
@@ -37,6 +59,7 @@ struct SendCryptoDetailsView: View {
                 fromField
                 toField
                 amountField
+                amountUSDField
                 gasField
             }
             .padding(.horizontal, 16)
@@ -44,7 +67,7 @@ struct SendCryptoDetailsView: View {
     }
     
     var coinSelector: some View {
-        TokenSelectorDropdown(title: "Ethereum", imageName: "eth", amount: "23.3")
+        TokenSelectorDropdown(tx: tx, coinViewModel: coinViewModel, group: group)
     }
     
     var fromField: some View {
@@ -55,7 +78,7 @@ struct SendCryptoDetailsView: View {
     }
     
     var fromTextField: some View {
-        Text("0x0cb1D4a24292bB89862f599Ac5B10F42b6DE07e4")
+        Text(tx.fromAddress)
             .font(.body12Menlo)
             .foregroundColor(.neutral0)
             .frame(height: 48)
@@ -63,35 +86,66 @@ struct SendCryptoDetailsView: View {
             .padding(.horizontal, 12)
             .background(Color.blue600)
             .cornerRadius(10)
+            .lineLimit(1)
     }
     
     var toField: some View {
         VStack(spacing: 8) {
             getTitle(for: "to")
-            AddressTextField(address: $toAddress)
+            SendCryptoAddressTextField(tx: tx, sendCryptoViewModel: sendCryptoViewModel)
+                .focused($focusedField, equals: .toAddress)
         }
     }
     
     var amountField: some View {
         VStack(spacing: 8) {
             getTitle(for: "amount")
-            AmountTextField(amount: $amount)
+            textField
         }
+    }
+    
+    var textField: some View {
+        SendCryptoAmountTextField(
+            tx: tx,
+            eth: eth,
+            sendCryptoViewModel: sendCryptoViewModel
+        )
+        .focused($focusedField, equals: .amount)
+    }
+    
+    var amountUSDField: some View {
+        VStack(spacing: 8) {
+            getTitle(for: "amount(inUSD)")
+            textFieldUSD
+        }
+    }
+    
+    var textFieldUSD: some View {
+        SendCryptoAmountUSDTextField(
+            tx: tx,
+            eth: eth,
+            sendCryptoViewModel: sendCryptoViewModel
+        )
+        .focused($focusedField, equals: .amountInUSD)
     }
     
     var gasField: some View {
         HStack {
             Text(NSLocalizedString("gas(auto)", comment: ""))
             Spacer()
-            Text("$4.00")
+            Text("\(tx.gas) \(tx.coin.feeUnit )")
         }
         .font(.body16Menlo)
         .foregroundColor(.neutral0)
     }
     
     var button: some View {
-        FilledButton(title: "continue")
-            .padding(40)
+        Button {
+            validateForm()
+        } label: {
+            FilledButton(title: "continue")
+        }
+        .padding(40)
     }
     
     private func getTitle(for text: String) -> some View {
@@ -100,8 +154,20 @@ struct SendCryptoDetailsView: View {
             .foregroundColor(.neutral0)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
+    
+    private func validateForm() {
+        if sendCryptoViewModel.validateForm(tx: tx, eth: eth) {
+            sendCryptoViewModel.moveToNextView()
+        }
+    }
 }
 
 #Preview {
-    SendCryptoDetailsView()
+    SendCryptoDetailsView(
+        tx: SendTransaction(),
+        eth: EthplorerAPIService(),
+        sendCryptoViewModel: SendCryptoViewModel(),
+        coinViewModel: CoinViewModel(),
+        group: GroupedChain.example
+    )
 }

@@ -1,7 +1,7 @@
 import Foundation
 import SwiftUI
 
-
+@MainActor
 public class CryptoPriceService: ObservableObject {
 	
     @Published var cryptoPrices: CryptoPrice?
@@ -20,8 +20,8 @@ public class CryptoPriceService: ObservableObject {
         return elapsedTime <= 3600 // 1 hour in seconds
     }
 	
-	func fetchCryptoPrices(_ currentVault: Vault?) async {
-		guard let vault = currentVault else {
+	func fetchCryptoPrices() async {
+		guard let vault = ApplicationState.shared.currentVault else {
 			print("current vault is nil")
 			return
 		}

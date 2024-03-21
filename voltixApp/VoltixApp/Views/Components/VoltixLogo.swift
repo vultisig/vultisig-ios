@@ -97,8 +97,7 @@ struct VoltixLogo: View {
 
 #Preview {
     ZStack {
-        Color.backgroundBlue
-            .ignoresSafeArea()
+        Background()
         VoltixLogo()
     }
 }

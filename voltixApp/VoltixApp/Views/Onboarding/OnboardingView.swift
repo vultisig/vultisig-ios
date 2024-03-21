@@ -12,22 +12,16 @@ struct OnboardingView: View {
     
     var body: some View {
         ZStack {
-            background
+            Background()
             view
         }
-    }
-    
-    var background: some View {
-        Color.backgroundBlue
-            .ignoresSafeArea()
+        .toolbar(.hidden, for: .navigationBar)
     }
     
     var view: some View {
         VStack {
             title
-            Spacer()
             tabs
-            Spacer()
             buttons
         }
     }
@@ -44,7 +38,7 @@ struct OnboardingView: View {
             OnboardingView3().tag(2)
         }
         .tabViewStyle(PageTabViewStyle())
-        .frame(height: .infinity)
+        .frame(maxHeight: .infinity)
     }
     
     var buttons: some View {
@@ -52,7 +46,8 @@ struct OnboardingView: View {
             nextButton
             skipButton
         }
-        .padding(40)
+        .padding(.horizontal, 40)
+        .padding(.bottom, 10)
     }
     
     var nextButton: some View {

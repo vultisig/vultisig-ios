@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ChainCell: View {
     let group: GroupedChain
+    let vault: Vault
     
     @State var isExpanded = false
     @State var showQRcode = false
@@ -126,7 +127,7 @@ struct ChainCell: View {
         ForEach(group.coins, id: \.self) { coin in
             VStack(spacing: 0) {
                 Separator()
-                CoinCell(coin: coin)
+                CoinCell(coin: coin, group: group, vault: vault)
             }
         }
     }
@@ -154,6 +155,6 @@ struct ChainCell: View {
 
 #Preview {
     ScrollView {
-        ChainCell(group: GroupedChain.example)
+        ChainCell(group: GroupedChain.example, vault: Vault.example)
     }
 }

@@ -115,7 +115,7 @@ public struct VaultAssetsView: View {
     }
 	
     private func fetchCryptoPrices() async {
-        await CryptoPriceService.shared.fetchCryptoPrices(appState.currentVault)
+        await CryptoPriceService.shared.fetchCryptoPrices()
     }
 	
     private func updateState() {

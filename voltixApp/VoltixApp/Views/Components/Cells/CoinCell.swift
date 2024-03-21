@@ -9,11 +9,13 @@ import SwiftUI
 
 struct CoinCell: View {
     let coin: Coin
+    let group: GroupedChain
+    let vault: Vault
     
     @StateObject var tx = SendTransaction()
     @StateObject var coinViewModel = CoinViewModel()
     @StateObject var eth = EthplorerAPIService()
-    @StateObject var thor = ThorchainService.shared
+	@StateObject var thor = ThorchainService.shared
 	
     var body: some View {
         cell
@@ -49,15 +51,21 @@ struct CoinCell: View {
     }
     
     var quantity: some View {
-        Text(coinViewModel.coinBalance)
+        let balance = coinViewModel.coinBalance
+        
+        return Text(balance ?? "0.00001")
             .font(.body16Menlo)
             .foregroundColor(.neutral0)
+            .redacted(reason: balance==nil ? .placeholder : [])
     }
     
     var amount: some View {
-        Text(coinViewModel.balanceUSD)
+        let balance = coinViewModel.balanceUSD
+        
+        return Text(balance ?? "US$1000")
             .font(.body16MenloBold)
             .foregroundColor(.neutral0)
+            .redacted(reason: balance==nil ? .placeholder : [])
     }
     
     var buttons: some View {
@@ -69,11 +77,11 @@ struct CoinCell: View {
     
     var swapButton: some View {
         NavigationLink {
-            SwapCryptoView()
+            SendInputDetailsView(presentationStack: .constant([]), tx: tx)
         } label: {
             Text(NSLocalizedString("swap", comment: "Swap button text").uppercased())
                 .font(.body16MenloBold)
-                .foregroundColor(.blue200)
+                .foregroundColor(.persianBlue200)
                 .padding(.vertical, 5)
                 .frame(maxWidth: .infinity)
                 .background(Color.blue800)
@@ -83,8 +91,7 @@ struct CoinCell: View {
     
     var sendButton: some View {
         NavigationLink {
-            SendInputDetailsView(presentationStack: .constant([]), tx: tx)
-//            SendCryptoView()
+            SendCryptoView(tx: tx, group: group, vault: vault)
         } label: {
             Text(NSLocalizedString("send", comment: "Send button text").uppercased())
                 .font(.body16MenloBold)
@@ -98,6 +105,7 @@ struct CoinCell: View {
     
     private func setData() async {
         tx.coin = coin
+        tx.gas = "20"
         
         await coinViewModel.loadData(
             eth: eth,
@@ -105,8 +113,15 @@ struct CoinCell: View {
             tx: tx
         )
     }
+    
+    public func updateState() {
+        coinViewModel.updateState(
+			eth: eth, thor: ThorchainService.shared,
+            tx: tx
+        )
+    }
 }
 
 #Preview {
-    CoinCell(coin: Coin.example)
+    CoinCell(coin: Coin.example, group: GroupedChain.example, vault: Vault.example)
 }

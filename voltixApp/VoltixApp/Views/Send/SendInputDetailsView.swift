@@ -15,18 +15,6 @@ import UIKit
 import UniformTypeIdentifiers
 import WalletCore
 
-private class DebounceHelper {
-	static let shared = DebounceHelper()
-	private var workItem: DispatchWorkItem?
-	
-	func debounce(delay: TimeInterval = 0.5, action: @escaping () -> Void) {
-		workItem?.cancel()
-		let task = DispatchWorkItem { action() }
-		workItem = task
-		DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: task)
-	}
-}
-
 private let logger = Logger(subsystem: "send-input-details", category: "transaction")
 struct SendInputDetailsView: View {
 	enum Field: Hashable {
@@ -46,6 +34,7 @@ struct SendInputDetailsView: View {
 	@StateObject var sol: SolanaService = SolanaService.shared
 	@StateObject var utxo = BlockchairService.shared
 	@ObservedObject var tx: SendTransaction
+	
 	@State private var isShowingScanner = false
 	@State private var isValidAddress = false
 	@State private var formErrorMessages = ""
@@ -525,13 +514,14 @@ struct SendInputDetailsView: View {
 		isLoading = false
 	}
 	
+    //
 	private func reloadTransactions() {
 			// TODO: move this logic into an abstraction
 			// ETH gets the price from other sourcers.
 		Task {
 			isLoading = true
 			
-			await cryptoPrice.fetchCryptoPrices(appState.currentVault)
+			await cryptoPrice.fetchCryptoPrices()
 			
 			let coinName = tx.coin.chain.name.lowercased()
 			
@@ -556,6 +546,7 @@ struct SendInputDetailsView: View {
 		}
 	}
 	
+    //
 	private func handleScan(result: Result<ScanResult, ScanError>) {
 		switch result {
 			case .success(let result):

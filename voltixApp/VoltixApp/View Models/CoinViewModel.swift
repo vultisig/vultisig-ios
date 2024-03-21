@@ -4,16 +4,21 @@
 //
 //  Created by Amol Kumar on 2024-03-09.
 //
+//
+//  CoinViewModel.swift
+//  VoltixApp
+//
+//  Created by Amol Kumar on 2024-03-09.
+//
 
 import Foundation
 import SwiftUI
 
+@MainActor
 class CoinViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var balanceUSD = "US$ 0,00"
     @Published var coinBalance = "0.0"
-	
-    @EnvironmentObject var appState: ApplicationState
 	
     private var utxo = BlockchairService.shared
 	
@@ -31,13 +36,14 @@ class CoinViewModel: ObservableObject {
             await thor.fetchBalances(tx.fromAddress)
             await thor.fetchAccountNumber(tx.fromAddress)
         }
-        await CryptoPriceService.shared.fetchCryptoPrices(appState.currentVault)
-		
-        updateState(eth: eth, thor: thor, tx: tx)
+		await CryptoPriceService.shared.fetchCryptoPrices()
+		DispatchQueue.main.async {
+			self.updateState(eth: eth, thor: thor, tx: tx)
+		}
         isLoading = false
     }
 	
-    private func updateState(eth: EthplorerAPIService, thor: ThorchainService, tx: SendTransaction) {
+    public func updateState(eth: EthplorerAPIService, thor: ThorchainService, tx: SendTransaction) {
         balanceUSD = "US$ 0,00"
         coinBalance = "0.0"
 		

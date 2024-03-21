@@ -1,4 +1,5 @@
 //
+//
 //  VaultDetailView.swift
 //  VoltixApp
 //
@@ -18,13 +19,14 @@ struct VaultDetailView: View {
     
     var body: some View {
         ZStack(alignment: .bottom) {
-            background
+            Background()
             view
             scanButton
         }
         .onAppear {
             setData()
             appState.currentVault = vault
+			ApplicationState.shared.currentVault = vault
         }
         .onChange(of: vault) {
             setData()
@@ -39,11 +41,6 @@ struct VaultDetailView: View {
         })
     }
     
-    var background: some View {
-        Color.backgroundBlue
-            .ignoresSafeArea()
-    }
-    
     var view: some View {
         ScrollView {
             list
@@ -55,7 +52,7 @@ struct VaultDetailView: View {
     var list: some View {
         LazyVStack(spacing: 16) {
             ForEach(viewModel.coinsGroupedByChains, id: \.address) { group in
-                ChainCell(group: group)
+                ChainCell(group: group, vault: vault)
             }
         }
         .padding(.top, 30)

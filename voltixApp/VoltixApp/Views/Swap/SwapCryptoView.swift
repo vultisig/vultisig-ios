@@ -8,9 +8,12 @@
 import SwiftUI
 
 struct SwapCryptoView: View {
+    @ObservedObject var tx: SendTransaction
+    let group: GroupedChain
+    
     var body: some View {
         ZStack {
-            background
+            Background()
             view
         }
         .navigationBarBackButtonHidden(true)
@@ -23,20 +26,15 @@ struct SwapCryptoView: View {
         }
     }
     
-    var background: some View {
-        Color.backgroundBlue
-            .ignoresSafeArea()
-    }
-    
     var view: some View {
         VStack(spacing: 30) {
             ProgressBar(progress: 0.25)
                 .padding(.top, 30)
-            SwapCryptoDetailsView()
+            SwapCryptoDetailsView(tx: tx, group: group)
         }
     }
 }
 
 #Preview {
-    SwapCryptoView()
+    SwapCryptoView(tx: SendTransaction(), group: GroupedChain.example)
 }

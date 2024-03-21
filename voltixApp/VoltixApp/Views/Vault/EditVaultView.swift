@@ -22,7 +22,7 @@ struct EditVaultView: View {
     
     var base: some View {
         ZStack {
-            background
+            Background()
             view
         }
     }
@@ -59,11 +59,6 @@ struct EditVaultView: View {
                         print("Exported to \(url)")
                 }
             }
-    }
-    
-    var background: some View {
-        Color.backgroundBlue
-            .ignoresSafeArea()
     }
     
     var view: some View {
