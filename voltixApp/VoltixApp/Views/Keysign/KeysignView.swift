@@ -19,15 +19,14 @@ struct KeysignView: View {
     @StateObject var viewModel = KeysignViewModel()
 
     var body: some View {
-        VStack {
-            Spacer()
+        ZStack {
             switch viewModel.status {
                 case .CreatingInstance:
-                    KeyGenStatusText(status: NSLocalizedString("creatingTssInstance", comment: "CREATING TSS INSTANCE..."))
+                    SendCryptoKeysignView(title: "creatingTssInstance")
                 case .KeysignECDSA:
-                    KeyGenStatusText(status: NSLocalizedString("signingWithECDSA", comment: "SIGNING USING ECDSA KEY... "))
+                    SendCryptoKeysignView(title: "signingWithECDSA")
                 case .KeysignEdDSA:
-                    KeyGenStatusText(status: NSLocalizedString("signingWithEdDSA", comment: "SIGNING USING EdDSA KEY... "))
+                    SendCryptoKeysignView(title: "signingWithEdDSA")
                 case .KeysignFinished:
                     KeyGenStatusText(status: NSLocalizedString("keysignFinished", comment: "KEYSIGN FINISHED..."))
                     VStack {
@@ -49,34 +48,38 @@ struct KeysignView: View {
                         }
                     }
                 case .KeysignFailed:
-                    Text("Sorry keysign failed, you can retry it,error:\(viewModel.keysignError)")
+                    SendCryptoKeysignView(title: "Sorry keysign failed, you can retry it,error: \(viewModel.keysignError)", showError: true)
             }
-            Spacer()
-        }
-        .navigationDestination(isPresented: $viewModel.isLinkActive) {
-            HomeView()
         }
         .onAppear {
-            viewModel.setData(keysignCommittee: self.keysignCommittee,
-                              mediatorURL: self.mediatorURL,
-                              sessionID: self.sessionID,
-                              keysignType: self.keysignType,
-                              messagesToSign: self.messsageToSign,
-                              vault: self.vault,
-                              keysignPayload: self.keysignPayload)
+            setData()
         }
         .task {
             await viewModel.startKeysign()
         }
     }
+    
+    private func setData() {
+        viewModel.setData(
+            keysignCommittee: self.keysignCommittee,
+            mediatorURL: self.mediatorURL,
+            sessionID: self.sessionID,
+            keysignType: self.keysignType,
+            messagesToSign: self.messsageToSign,
+            vault: self.vault,
+            keysignPayload: self.keysignPayload
+        )
+    }
 }
 
 #Preview {
-    KeysignView(vault: Vault.example,
-                keysignCommittee: [],
-                mediatorURL: "",
-                sessionID: "session",
-                keysignType: .ECDSA,
-                messsageToSign: ["message"],
-                keysignPayload: nil)
+    KeysignView(
+        vault: Vault.example,
+        keysignCommittee: [],
+        mediatorURL: "",
+        sessionID: "session",
+        keysignType: .ECDSA,
+        messsageToSign: ["message"],
+        keysignPayload: nil
+    )
 }

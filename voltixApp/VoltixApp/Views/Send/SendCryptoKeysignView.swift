@@ -8,16 +8,17 @@
 import SwiftUI
 
 struct SendCryptoKeysignView: View {
-    @ObservedObject var viewModel: SendCryptoViewModel
-    
-    @State var isSigning = true
+    let title: String
+    var showError = false
     @State var didSwitch = false
     
+    @Environment(\.dismiss) var dismiss
+    
     var body: some View {
-        if isSigning {
-            signingView
-        } else {
+        if showError {
             errorView
+        } else {
+            signingView
         }
     }
     
@@ -27,9 +28,6 @@ struct SendCryptoKeysignView: View {
             signingAnimation
             Spacer()
             wifiInstructions
-        }
-        .onTapGesture {
-            viewModel.moveToNextView()
         }
     }
     
@@ -44,7 +42,7 @@ struct SendCryptoKeysignView: View {
     
     var signingAnimation: some View {
         VStack(spacing: 32) {
-            Text(NSLocalizedString("signing", comment: "Signing"))
+            Text(NSLocalizedString(title, comment: "Signing"))
                 .font(.body16MenloBold)
                 .foregroundColor(.neutral0)
             animation
@@ -113,8 +111,12 @@ struct SendCryptoKeysignView: View {
     }
     
     var tryAgainButton: some View {
-        FilledButton(title: "tryAgain")
-            .padding(40)
+        Button {
+            dismiss()
+        } label: {
+            FilledButton(title: "tryAgain")
+        }
+        .padding(40)
     }
 }
 
@@ -123,6 +125,6 @@ struct SendCryptoKeysignView: View {
         Color.blue800
             .ignoresSafeArea()
         
-        SendCryptoKeysignView(viewModel: SendCryptoViewModel())
+        SendCryptoKeysignView(title: "signing")
     }
 }

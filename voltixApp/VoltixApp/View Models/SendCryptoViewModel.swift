@@ -28,8 +28,8 @@ class SendCryptoViewModel: ObservableObject {
     @Published var cryptoPrice = CryptoPriceService.shared
 	@Published var utxo = BlockchairService.shared
 
-    let totalViews = 3
-    let titles = ["send", "scan", "send", "pair", "verify", "keysign", "done"]
+    let totalViews = 5
+    let titles = ["send", "verify", "pair", "keysign", "done"]
     
     let logger = Logger(subsystem: "send-input-details", category: "transaction")
     

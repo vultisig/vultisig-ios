@@ -60,7 +60,8 @@ struct SendCryptoView: View {
             detailsView.tag(1)
             verifyView.tag(2)
             pairView.tag(3)
-            keysign.tag(3)
+            keysign.tag(4)
+            doneView.tag(5)
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
         .frame(maxHeight: .infinity)
@@ -110,6 +111,10 @@ struct SendCryptoView: View {
                 SendCryptoSigningErrorView()
             }
         }
+    }
+    
+    var doneView: some View {
+        SendCryptoDoneView()
     }
     
     private func setData() async {
