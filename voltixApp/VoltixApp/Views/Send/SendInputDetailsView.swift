@@ -27,7 +27,7 @@ struct SendInputDetailsView: View {
 	
 	@EnvironmentObject var appState: ApplicationState
 	@Binding var presentationStack: [CurrentScreen]
-	@StateObject var eth: EthplorerAPIService = .init()
+	@StateObject var eth: EthTokensService = .init()
 	@StateObject var web3Service = Web3Service()
 	@StateObject var cryptoPrice = CryptoPriceService.shared
 	@StateObject var thor: ThorchainService = .shared

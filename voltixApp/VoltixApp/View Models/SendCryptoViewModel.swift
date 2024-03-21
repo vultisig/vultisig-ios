@@ -34,7 +34,7 @@ class SendCryptoViewModel: ObservableObject {
     
     let logger = Logger(subsystem: "send-input-details", category: "transaction")
     
-    func setMaxValues(tx: SendTransaction, eth: EthplorerAPIService) {
+    func setMaxValues(tx: SendTransaction, eth: EthTokensService) {
 		let coinName = tx.coin.chain.name.lowercased()
 		let key: String = "\(tx.fromAddress)-\(coinName)"
 		
@@ -62,7 +62,7 @@ class SendCryptoViewModel: ObservableObject {
 		}
     }
     
-	func convertUSDToCoin(newValue: String, tx: SendTransaction, eth: EthplorerAPIService) async {
+	func convertUSDToCoin(newValue: String, tx: SendTransaction, eth: EthTokensService) async {
 		
 		await cryptoPrice.fetchCryptoPrices()
 		
@@ -103,7 +103,7 @@ class SendCryptoViewModel: ObservableObject {
 		}
     }
     
-    func convertToUSD(newValue: String, tx: SendTransaction, eth: EthplorerAPIService) async {
+    func convertToUSD(newValue: String, tx: SendTransaction, eth: EthTokensService) async {
 		
 		await cryptoPrice.fetchCryptoPrices()
 		
@@ -150,7 +150,7 @@ class SendCryptoViewModel: ObservableObject {
 		isValidAddress = coinType.validate(address: address)
     }
     
-    func validateForm(tx: SendTransaction, eth: EthplorerAPIService) -> Bool {
+    func validateForm(tx: SendTransaction, eth: EthTokensService) -> Bool {
 			// Reset validation state at the beginning
 		errorMessage = ""
 		isValidForm = true

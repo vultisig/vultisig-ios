@@ -4,7 +4,7 @@ import SwiftUI
 public struct VaultAssetsView: View {
     @Binding var presentationStack: [CurrentScreen]
     @EnvironmentObject var appState: ApplicationState
-    @StateObject var eth: EthplorerAPIService = .init()
+    @StateObject var eth: EthTokensService = .init()
     @StateObject var thor: ThorchainService = .shared
     @StateObject var sol: SolanaService = .shared
     @ObservedObject var tx: SendTransaction

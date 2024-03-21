@@ -15,7 +15,7 @@ struct SendCryptoView: View {
     @StateObject var sendCryptoViewModel = SendCryptoViewModel()
     @StateObject var sendCryptoVerifyViewModel = SendCryptoVerifyViewModel()
     @StateObject var coinViewModel = CoinViewModel()
-	@StateObject var eth = EthplorerAPIService()
+	@StateObject var eth = EthTokensService()
 	@StateObject var web3Service = Web3Service()
 	@StateObject var thor = ThorchainService.shared
     

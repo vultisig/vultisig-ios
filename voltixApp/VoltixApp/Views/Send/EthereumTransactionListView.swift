@@ -6,7 +6,7 @@
 import SwiftUI
 
 struct EthereumTransactionListView: View {
-    @StateObject var etherScanService: EtherScanService = EtherScanService()
+    @StateObject var etherScanService: EthTransactionsService = EthTransactionsService()
     @EnvironmentObject var appState: ApplicationState
     @Binding var presentationStack: [CurrentScreen]
     @State var contractAddress: String?

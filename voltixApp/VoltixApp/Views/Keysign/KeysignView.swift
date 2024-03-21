@@ -57,19 +57,11 @@ struct KeysignView: View {
         EmptyView()
             .onAppear {
                 sendCryptoViewModel?.moveToNextView()
-                sendCryptoViewModel?.hash = viewModel.etherScanService.transactionHash
             }
     }
     
     var forJoinKeysign: some View {
         VStack {
-            if let transactionHash = viewModel.etherScanService.transactionHash {
-                Text("Transaction Hash: \(transactionHash)")
-            } else if let errorMessage = viewModel.etherScanService.errorMessage {
-                Text("Error: \(errorMessage)")
-                    .foregroundColor(.red)
-            }
-
             if !viewModel.txid.isEmpty {
                 Text("Transaction Hash: \(viewModel.txid)")
             }

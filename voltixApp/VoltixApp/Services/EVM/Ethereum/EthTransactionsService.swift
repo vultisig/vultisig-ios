@@ -9,48 +9,15 @@ enum EtherScanError: Error {
     case unknown(Error)
 }
 
+// Etherscan basically brings the transaction details so we can list them all
+// I use them for both ETH and ERC20.
+// ETHplorer does not do that.
+// Infura is only for RPC calls.
 @MainActor
-public class EtherScanService: ObservableObject {
-    @Published var transactionHash: String?
+public class EthTransactionsService: ObservableObject {
     @Published var errorMessage: String?
     @Published var transactions: [EtherscanAPITransactionDetail]? = []
     @Published var addressFor: String?
-    
-    public func broadcastTransaction(hex: String) async {
-        let urlString = Endpoint.broadcastEtherscanTransaction(hex: hex)
-        
-        guard let url = URL(string: urlString) else {
-            self.errorMessage = "Invalid URL"
-            return
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST" // The method is POST, parameters are included in the URL
-        
-        do {
-            let (data, response) = try await URLSession.shared.data(for: request)
-            
-            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-                let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
-                let responseString = String(data: data, encoding: .utf8) ?? "No response body"
-                print("HTTP Error: \(statusCode) - \(responseString)")
-                throw EtherScanError.httpError(statusCode, "HTTP Error: \(statusCode) - \(responseString)")
-            }
-            
-            // print(String(data: data, encoding: .utf8) ?? "No response body")
-            
-            let decoder = JSONDecoder()
-            let broadcastResponse = try decoder.decode(EtherscanBroadcastResponse.self, from: data)
-            
-            print("ETHER BROADCAST: \(broadcastResponse.result)")
-            print(broadcastResponse)
-            self.transactionHash = broadcastResponse.result
-            
-        } catch {
-            self.errorMessage = Utils.handleJsonDecodingError(error)
-            print(String(describing: self.errorMessage))
-        }
-    }
     
     func fetchTransactions(forAddress address: String) async {
         let urlString = Endpoint.fetchEtherscanTransactions(address: address)

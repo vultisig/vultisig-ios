@@ -12,7 +12,7 @@ struct SendCryptoVerifyView: View {
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @ObservedObject var sendCryptoVerifyViewModel: SendCryptoVerifyViewModel
     @ObservedObject var tx: SendTransaction
-    @ObservedObject var eth: EthplorerAPIService
+    @ObservedObject var eth: EthTokensService
     @ObservedObject var web3Service: Web3Service
     
     var body: some View {
@@ -181,7 +181,7 @@ struct SendCryptoVerifyView: View {
         sendCryptoViewModel: SendCryptoViewModel(),
         sendCryptoVerifyViewModel: SendCryptoVerifyViewModel(),
         tx: SendTransaction(),
-        eth: EthplorerAPIService(), 
+        eth: EthTokensService(), 
         web3Service: Web3Service()
     )
 }

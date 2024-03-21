@@ -16,7 +16,7 @@ enum Field: Hashable {
 
 struct SendCryptoDetailsView: View {
     @ObservedObject var tx: SendTransaction
-    @ObservedObject var eth: EthplorerAPIService
+    @ObservedObject var eth: EthTokensService
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @ObservedObject var coinViewModel: CoinViewModel
     let group: GroupedChain
@@ -165,7 +165,7 @@ struct SendCryptoDetailsView: View {
 #Preview {
     SendCryptoDetailsView(
         tx: SendTransaction(),
-        eth: EthplorerAPIService(),
+        eth: EthTokensService(),
         sendCryptoViewModel: SendCryptoViewModel(),
         coinViewModel: CoinViewModel(),
         group: GroupedChain.example

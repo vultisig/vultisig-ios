@@ -17,7 +17,7 @@ class CoinViewModel: ObservableObject {
 	
     private var utxo = BlockchairService.shared
 	
-    func loadData(eth: EthplorerAPIService, thor: ThorchainService, tx: SendTransaction) async {
+    func loadData(eth: EthTokensService, thor: ThorchainService, tx: SendTransaction) async {
         print("realoading data...")
         isLoading = true
 		
@@ -38,7 +38,7 @@ class CoinViewModel: ObservableObject {
         isLoading = false
     }
 	
-    public func updateState(eth: EthplorerAPIService, thor: ThorchainService, tx: SendTransaction) {
+    public func updateState(eth: EthTokensService, thor: ThorchainService, tx: SendTransaction) {
         balanceUSD = "US$ 0,00"
         coinBalance = "0.0"
 		

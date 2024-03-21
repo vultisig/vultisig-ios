@@ -25,7 +25,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
 		return isAddressCorrect && isAmountCorrect && isHackedOrPhished
 	}
 	
-	func reloadTransactions(tx: SendTransaction, eth: EthplorerAPIService) {
+	func reloadTransactions(tx: SendTransaction, eth: EthTokensService) {
 		Task {
 			if  tx.coin.chain.chainType == ChainType.UTXO {
 				await utxo.fetchBlockchairData(for: tx.fromAddress, coinName: tx.coin.chain.name.lowercased())

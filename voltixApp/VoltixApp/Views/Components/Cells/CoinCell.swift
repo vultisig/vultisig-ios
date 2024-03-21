@@ -14,7 +14,7 @@ struct CoinCell: View {
     
     @StateObject var tx = SendTransaction()
     @StateObject var coinViewModel = CoinViewModel()
-    @StateObject var eth = EthplorerAPIService()
+    @StateObject var eth = EthTokensService()
     @StateObject var thor = ThorchainService.shared
 	
     var body: some View {
