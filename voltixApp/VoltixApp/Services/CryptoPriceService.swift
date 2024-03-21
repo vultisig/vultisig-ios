@@ -1,7 +1,7 @@
 import Foundation
 import SwiftUI
 
-
+@MainActor
 public class CryptoPriceService: ObservableObject {
 	
     @Published var cryptoPrices: CryptoPrice?

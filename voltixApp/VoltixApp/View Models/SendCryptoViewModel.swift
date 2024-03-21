@@ -62,7 +62,14 @@ class SendCryptoViewModel: ObservableObject {
 		}
     }
     
-    func convertUSDToCoin(newValue: String, tx: SendTransaction, eth: EthplorerAPIService) {
+	func convertUSDToCoin(newValue: String, tx: SendTransaction, eth: EthplorerAPIService) async {
+		
+		await cryptoPrice.fetchCryptoPrices()
+		
+		if let priceRateUsd = cryptoPrice.cryptoPrices?.prices[tx.coin.chain.name.lowercased()]?["usd"] {
+			priceRate = priceRateUsd
+		}
+		
 		if let newValueDouble = Double(newValue) {
 			var newCoinAmount = ""
 			
@@ -96,7 +103,14 @@ class SendCryptoViewModel: ObservableObject {
 		}
     }
     
-    func convertToUSD(newValue: String, tx: SendTransaction, eth: EthplorerAPIService) {
+    func convertToUSD(newValue: String, tx: SendTransaction, eth: EthplorerAPIService) async {
+		
+		await cryptoPrice.fetchCryptoPrices()
+		
+		if let priceRateUsd = cryptoPrice.cryptoPrices?.prices[tx.coin.chain.name.lowercased()]?["usd"] {
+			priceRate = priceRateUsd
+		}
+		
 		if let newValueDouble = Double(newValue) {
 			var newValueUSD = ""
 			
@@ -125,78 +139,78 @@ class SendCryptoViewModel: ObservableObject {
 		}
     }
     
-    func updateState(tx: SendTransaction, eth: EthplorerAPIService, web3Service: Web3Service) {
-		isLoading = true
-		
-		if let priceRateUsd = cryptoPrice.cryptoPrices?.prices[tx.coin.chain.name.lowercased()]?["usd"] {
-			priceRate = priceRateUsd
-		}
-		
-		let coinName = tx.coin.chain.name.lowercased()
-		let key: String = "\(tx.fromAddress)-\(coinName)"
-		
-		if  tx.coin.chain.chainType == ChainType.UTXO {
-			coinBalance = utxo.blockchairData[key]?.address?.balanceInBTC ?? "0.0"
-		} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
-				// We need to pass it to the next view
-			tx.eth = eth.addressInfo
-			
-			let gasPriceInGwei = BigInt(web3Service.gasPrice ?? 0) / BigInt(10).power(9)
-			
-			tx.gas = String(gasPriceInGwei)
-			tx.nonce = Int64(web3Service.nonce ?? 0)
-			
-			if tx.token != nil {
-				coinBalance = tx.token?.balanceString ?? ""
-			} else {
-				coinBalance = eth.addressInfo?.ETH.balanceString ?? "0.0"
-			}
-		} else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
-			coinBalance = thor.formattedRuneBalance ?? "0.0"
-			tx.gas = String("0.02")
-		} else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
-			coinBalance = sol.formattedSolBalance ?? "0.0"
-			if let feeInLamports = Int(sol.feeInLamports ?? "0") {
-				tx.gas = String(feeInLamports)
-			} else {
-				tx.gas = "0"
-			}
-		}
-		
-		isLoading = false
-    }
-    
-    func reloadTransactions(tx: SendTransaction, eth: EthplorerAPIService, web3Service: Web3Service) {
-		Task {
-			isLoading = true
-			
-			await cryptoPrice.fetchCryptoPrices()
-			
-			let coinName = tx.coin.chain.name.lowercased()
-			
-			if  tx.coin.chain.chainType == ChainType.UTXO {
-				await utxo.fetchBlockchairData(for: tx.fromAddress, coinName: coinName)
-			} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
-				await eth.getEthInfo(for: tx.fromAddress)
-				do {
-					try await web3Service.updateNonceAndGasPrice(forAddress: tx.fromAddress)
-				} catch {
-					print(error)
-				}
-			} else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
-				await sol.getSolanaBalance(account: tx.fromAddress)
-				await sol.fetchRecentBlockhash()
-			}
-			
-			DispatchQueue.main.async {
-				self.updateState(tx: tx, eth: eth, web3Service: web3Service)
-				self.isLoading = false
-			}
-		}
-    }
+//    func updateState(tx: SendTransaction, eth: EthplorerAPIService, web3Service: Web3Service) {
+//		isLoading = true
+//		
+//		if let priceRateUsd = cryptoPrice.cryptoPrices?.prices[tx.coin.chain.name.lowercased()]?["usd"] {
+//			priceRate = priceRateUsd
+//		}
+//		
+//		let coinName = tx.coin.chain.name.lowercased()
+//		let key: String = "\(tx.fromAddress)-\(coinName)"
+//		
+//		if  tx.coin.chain.chainType == ChainType.UTXO {
+//			coinBalance = utxo.blockchairData[key]?.address?.balanceInBTC ?? "0.0"
+//		} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
+//			// We need to pass it to the next view
+//			tx.eth = eth.addressInfo
+//			
+//			let gasPriceInGwei = BigInt(web3Service.gasPrice ?? 0) / BigInt(10).power(9)
+//			
+//			tx.gas = String(gasPriceInGwei)
+//			tx.nonce = Int64(web3Service.nonce ?? 0)
+//			
+//			if tx.token != nil {
+//				coinBalance = tx.token?.balanceString ?? ""
+//			} else {
+//				coinBalance = eth.addressInfo?.ETH.balanceString ?? "0.0"
+//			}
+//		} else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
+//			coinBalance = thor.formattedRuneBalance ?? "0.0"
+//			tx.gas = String("0.02")
+//		} else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
+//			coinBalance = sol.formattedSolBalance ?? "0.0"
+//			if let feeInLamports = Int(sol.feeInLamports ?? "0") {
+//				tx.gas = String(feeInLamports)
+//			} else {
+//				tx.gas = "0"
+//			}
+//		}
+//		
+//		isLoading = false
+//    }
+//    
+//    func reloadTransactions(tx: SendTransaction, eth: EthplorerAPIService, web3Service: Web3Service) {
+//		Task {
+//			isLoading = true
+//			
+//			await cryptoPrice.fetchCryptoPrices()
+//			
+//			let coinName = tx.coin.chain.name.lowercased()
+//			
+//			if  tx.coin.chain.chainType == ChainType.UTXO {
+//				await utxo.fetchBlockchairData(for: tx.fromAddress, coinName: coinName)
+//			} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
+//				await eth.getEthInfo(for: tx.fromAddress)
+//				do {
+//					try await web3Service.updateNonceAndGasPrice(forAddress: tx.fromAddress)
+//				} catch {
+//					print(error)
+//				}
+//			} else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
+//				await sol.getSolanaBalance(account: tx.fromAddress)
+//				await sol.fetchRecentBlockhash()
+//			}
+//			
+//			DispatchQueue.main.async {
+//				self.updateState(tx: tx, eth: eth, web3Service: web3Service)
+//				self.isLoading = false
+//			}
+//		}
+//    }
     
     func validateAddress(tx: SendTransaction, address: String) {
-		let chainName = tx.coin.chain.name.lowercased()
+		let chainName = tx.coin.chain.name.lowercased().replacingOccurrences(of: "-", with: "")
 		
 		guard let coinType = CoinType.from(string: chainName) else {
 			print("Coin type not found on Wallet Core")
