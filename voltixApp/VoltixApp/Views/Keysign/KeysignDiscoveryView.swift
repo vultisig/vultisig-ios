@@ -6,12 +6,15 @@ import OSLog
 import SwiftUI
 
 struct KeysignDiscoveryView: View {
-    private let logger = Logger(subsystem: "keysign-discovery", category: "view")
     let vault: Vault
     let keysignPayload: KeysignPayload
+    @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
+    @Binding var keysignView: KeysignView?
     
     @StateObject var participantDiscovery = ParticipantDiscovery()
     @StateObject var viewModel = KeysignDiscoveryViewModel()
+    
+    let logger = Logger(subsystem: "keysign-discovery", category: "view")
     
     var body: some View {
         ZStack {
@@ -19,43 +22,29 @@ struct KeysignDiscoveryView: View {
             view
         }
         .onAppear {
-            self.viewModel.setData(vault: self.vault, keysignPayload: self.keysignPayload, participantDiscovery: self.participantDiscovery)
+            viewModel.setData(vault: vault, keysignPayload: keysignPayload, participantDiscovery: participantDiscovery)
         }
         .task {
-            self.viewModel.startDiscovery()
+            viewModel.startDiscovery()
         }
         .onDisappear {
-            self.viewModel.stopMediator()
+            viewModel.stopMediator()
         }
     }
     
     var view: some View {
         VStack {
-            switch self.viewModel.status {
+            switch viewModel.status {
             case .WaitingForDevices:
                 waitingForDevices
             case .FailToStart:
                 errorText
-            case .Keysign:
-                keysignView
             }
         }
     }
     
     var errorText: some View {
         SendCryptoStartErrorView(errorText: viewModel.errorMessage)
-    }
-    
-    var keysignView: some View {
-        KeysignView(
-            vault: self.vault,
-            keysignCommittee: self.viewModel.selections.map { $0 },
-            mediatorURL: self.viewModel.serverAddr,
-            sessionID: self.viewModel.sessionID,
-            keysignType: self.keysignPayload.coin.chain.signingKeyType,
-            messsageToSign: self.viewModel.keysignMessages, // need to figure out all the prekeysign hashes
-            keysignPayload: self.viewModel.keysignPayload
-        )
     }
     
     var waitingForDevices: some View {
@@ -109,7 +98,7 @@ struct KeysignDiscoveryView: View {
     }
     
     var deviceList: some View {
-        List(self.participantDiscovery.peersFound, id: \.self, selection: self.$viewModel.selections) { peer in
+        List(participantDiscovery.peersFound, id: \.self, selection: $viewModel.selections) { peer in
             getPeerCell(peer)
         }
         .scrollContentBackground(.hidden)
@@ -119,7 +108,7 @@ struct KeysignDiscoveryView: View {
         let isDisabled = viewModel.selections.count < vault.getThreshold()
         
         return Button(action: {
-            self.viewModel.startKeysign()
+            keysignView = viewModel.startKeysign(vault: vault, viewModel: sendCryptoViewModel)
         }) {
             FilledButton(title: "sign")
         }
@@ -131,23 +120,23 @@ struct KeysignDiscoveryView: View {
     
     private func getPeerCell(_ peer: String) -> some View {
         HStack {
-            Image(systemName: self.viewModel.selections.contains(peer) ? "checkmark.circle" : "circle")
+            Image(systemName: viewModel.selections.contains(peer) ? "checkmark.circle" : "circle")
             Text(peer)
         }
         .font(.body12Menlo)
         .foregroundColor(.neutral0)
         .listRowBackground(Color.blue600)
         .onTapGesture {
-            if self.viewModel.selections.contains(peer) {
-                self.viewModel.selections.remove(peer)
+            if viewModel.selections.contains(peer) {
+                viewModel.selections.remove(peer)
             } else {
-                self.viewModel.selections.insert(peer)
+                viewModel.selections.insert(peer)
             }
         }
     }
     
     private func getQrImage(size: CGFloat) -> Image {
-        let keysignMsg = KeysignMessage(sessionID: self.viewModel.sessionID, serviceName: self.viewModel.serviceName, payload: self.keysignPayload)
+        let keysignMsg = KeysignMessage(sessionID: viewModel.sessionID, serviceName: viewModel.serviceName, payload: keysignPayload)
         
         do {
             let encoder = JSONEncoder()
@@ -155,7 +144,7 @@ struct KeysignDiscoveryView: View {
             
             return Utils.getQrImage(data: jsonData, size: size)
         } catch {
-            self.logger.error("fail to encode keysign messages to json,error:\(error)")
+            logger.error("fail to encode keysign messages to json,error:\(error)")
         }
         
         return Image(systemName: "xmark")

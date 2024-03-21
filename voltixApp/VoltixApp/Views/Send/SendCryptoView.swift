@@ -20,6 +20,7 @@ struct SendCryptoView: View {
 	@StateObject var thor = ThorchainService.shared
     
     @State var keysignPayload: KeysignPayload? = nil
+    @State var keysignView: KeysignView? = nil
     
     var body: some View {
         ZStack {
@@ -59,6 +60,7 @@ struct SendCryptoView: View {
             detailsView.tag(1)
             verifyView.tag(2)
             pairView.tag(3)
+            keysign.tag(3)
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
         .frame(maxHeight: .infinity)
@@ -88,9 +90,24 @@ struct SendCryptoView: View {
     var pairView: some View {
         ZStack {
             if let keysignPayload = keysignPayload {
-                KeysignDiscoveryView(vault: vault, keysignPayload: keysignPayload)
+                KeysignDiscoveryView(
+                    vault: vault,
+                    keysignPayload: keysignPayload,
+                    sendCryptoViewModel: sendCryptoViewModel, 
+                    keysignView: $keysignView
+                )
             } else {
                 SendCryptoVaultErrorView()
+            }
+        }
+    }
+    
+    var keysign: some View {
+        ZStack {
+            if let keysignView = keysignView {
+                keysignView
+            } else {
+                SendCryptoSigningErrorView()
             }
         }
     }

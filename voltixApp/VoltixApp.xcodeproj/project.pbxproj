@@ -169,7 +169,7 @@
 		DE1572992B70F26A009BC7C5 /* KeyType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1572982B70F26A009BC7C5 /* KeyType.swift */; };
 		DE15729E2B70F284009BC7C5 /* JoinKeysignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE15729B2B70F284009BC7C5 /* JoinKeysignView.swift */; };
 		DE15729F2B70F284009BC7C5 /* KeysignDiscoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE15729C2B70F284009BC7C5 /* KeysignDiscoveryView.swift */; };
-		DE1572A02B70F284009BC7C5 /* Keysign.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE15729D2B70F284009BC7C5 /* Keysign.swift */; };
+		DE1572A02B70F284009BC7C5 /* KeysignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE15729D2B70F284009BC7C5 /* KeysignView.swift */; };
 		DE1572A22B70F873009BC7C5 /* Tss.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE1572A12B70F873009BC7C5 /* Tss.xcframework */; };
 		DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1572AB2B7174D3009BC7C5 /* Utils.swift */; };
 		DE28F5312B7B0FE900E33058 /* WalletCore in Frameworks */ = {isa = PBXBuildFile; productRef = DE28F5302B7B0FE900E33058 /* WalletCore */; };
@@ -402,7 +402,7 @@
 		DE1572982B70F26A009BC7C5 /* KeyType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeyType.swift; sourceTree = "<group>"; };
 		DE15729B2B70F284009BC7C5 /* JoinKeysignView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JoinKeysignView.swift; sourceTree = "<group>"; };
 		DE15729C2B70F284009BC7C5 /* KeysignDiscoveryView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeysignDiscoveryView.swift; sourceTree = "<group>"; };
-		DE15729D2B70F284009BC7C5 /* Keysign.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Keysign.swift; sourceTree = "<group>"; };
+		DE15729D2B70F284009BC7C5 /* KeysignView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeysignView.swift; sourceTree = "<group>"; };
 		DE1572A12B70F873009BC7C5 /* Tss.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
 		DE1572AB2B7174D3009BC7C5 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		DE28F52B2B7B0D6500E33058 /* WalletCore */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = WalletCore; path = ../WalletCore; sourceTree = "<group>"; };
@@ -1012,7 +1012,7 @@
 			children = (
 				DE15729B2B70F284009BC7C5 /* JoinKeysignView.swift */,
 				DE15729C2B70F284009BC7C5 /* KeysignDiscoveryView.swift */,
-				DE15729D2B70F284009BC7C5 /* Keysign.swift */,
+				DE15729D2B70F284009BC7C5 /* KeysignView.swift */,
 				DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */,
 				DE9EB0F52BA3F9C2001747D9 /* ParticipantDiscovery.swift */,
 			);
@@ -1305,7 +1305,7 @@
 				A6F9F7E52B9BB4D100790258 /* NavigationMenuButton.swift in Sources */,
 				049BBB662B71E987004C231F /* VaultItem.swift in Sources */,
 				049BBB5E2B71E83D004C231F /* VoltixLogo.swift in Sources */,
-				DE1572A02B70F284009BC7C5 /* Keysign.swift in Sources */,
+				DE1572A02B70F284009BC7C5 /* KeysignView.swift in Sources */,
 				46AC40AA2B922931001704E6 /* EthereumTransactionListView.swift in Sources */,
 				A6F9F7E32B9BB48700790258 /* VaultsView.swift in Sources */,
 				465B09AD2B7C841B00952DD9 /* QrCodeView.swift in Sources */,
