@@ -44,6 +44,8 @@ struct SendCryptoView: View {
             Task {
                 await setData()
             }
+        }.onDisappear(){
+            sendCryptoViewModel.stopMediator()
         }
     }
     
@@ -126,6 +128,8 @@ struct SendCryptoView: View {
             } else {
                 SendCryptoSigningErrorView()
             }
+        }.onAppear(){
+            self.sendCryptoViewModel.stopMediator()
         }
     }
     

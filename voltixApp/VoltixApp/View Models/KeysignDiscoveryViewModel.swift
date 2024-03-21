@@ -96,9 +96,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
             self.logger.info("kicked off keysign successfully")
         }
     }
-    func stopMediator() {
-        self.logger.info("mediator server stopped")
-        self.mediator.stop()
+    func stopDiscovery() {
         self.participantDiscovery?.stop()
     }
 
