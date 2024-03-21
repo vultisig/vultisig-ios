@@ -88,6 +88,7 @@ struct AssetsList: View {
 		}
 		.environment(\.editMode, $editMode)
 		.navigationTitle("select assets")
+        
 		.onChange(of: selection) { _ in
 			updateExpandedGroups()
 		}

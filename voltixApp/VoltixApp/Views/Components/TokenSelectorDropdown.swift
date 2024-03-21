@@ -47,7 +47,7 @@ struct TokenSelectorDropdown: View {
             image
             Text("\(tx.coin.ticker)")
             Spacer()
-            Text(coinViewModel.coinBalance ?? "0")
+            Text(coinViewModel.coinBalance)
             
             if isActive {
                 Image(systemName: "chevron.down")
@@ -56,7 +56,7 @@ struct TokenSelectorDropdown: View {
         .font(.body16Menlo)
         .foregroundColor(.neutral0)
         .frame(height: 48)
-        .redacted(reason: coinViewModel.coinBalance==nil ? .placeholder : [])
+        .redacted(reason: coinViewModel.coinBalance == "" ? .placeholder : [])
     }
     
     var image: some View {

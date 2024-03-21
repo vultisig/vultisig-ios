@@ -15,7 +15,7 @@ enum JoinKeysignStatus {
     case KeysignStarted
     case FailedToStart
 }
-
+@MainActor
 class JoinKeysignViewModel: ObservableObject {
     private let logger = Logger(subsystem: "join-keysign", category: "viewmodel")
     var vault: Vault
