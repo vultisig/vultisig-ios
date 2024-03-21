@@ -26,9 +26,8 @@ class SendCryptoViewModel: ObservableObject {
     @Published var thor = ThorchainService.shared
     @Published var sol: SolanaService = SolanaService.shared
     @Published var cryptoPrice = CryptoPriceService.shared
-	@StateObject var utxo = BlockchairService.shared
+	@Published var utxo = BlockchairService.shared
 
-	
     let totalViews = 3
     let titles = ["send", "scan", "send", "pair", "verify", "keysign", "done"]
     
@@ -139,76 +138,6 @@ class SendCryptoViewModel: ObservableObject {
 		}
     }
     
-//    func updateState(tx: SendTransaction, eth: EthplorerAPIService, web3Service: Web3Service) {
-//		isLoading = true
-//		
-//		if let priceRateUsd = cryptoPrice.cryptoPrices?.prices[tx.coin.chain.name.lowercased()]?["usd"] {
-//			priceRate = priceRateUsd
-//		}
-//		
-//		let coinName = tx.coin.chain.name.lowercased()
-//		let key: String = "\(tx.fromAddress)-\(coinName)"
-//		
-//		if  tx.coin.chain.chainType == ChainType.UTXO {
-//			coinBalance = utxo.blockchairData[key]?.address?.balanceInBTC ?? "0.0"
-//		} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
-//			// We need to pass it to the next view
-//			tx.eth = eth.addressInfo
-//			
-//			let gasPriceInGwei = BigInt(web3Service.gasPrice ?? 0) / BigInt(10).power(9)
-//			
-//			tx.gas = String(gasPriceInGwei)
-//			tx.nonce = Int64(web3Service.nonce ?? 0)
-//			
-//			if tx.token != nil {
-//				coinBalance = tx.token?.balanceString ?? ""
-//			} else {
-//				coinBalance = eth.addressInfo?.ETH.balanceString ?? "0.0"
-//			}
-//		} else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
-//			coinBalance = thor.formattedRuneBalance ?? "0.0"
-//			tx.gas = String("0.02")
-//		} else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
-//			coinBalance = sol.formattedSolBalance ?? "0.0"
-//			if let feeInLamports = Int(sol.feeInLamports ?? "0") {
-//				tx.gas = String(feeInLamports)
-//			} else {
-//				tx.gas = "0"
-//			}
-//		}
-//		
-//		isLoading = false
-//    }
-//    
-//    func reloadTransactions(tx: SendTransaction, eth: EthplorerAPIService, web3Service: Web3Service) {
-//		Task {
-//			isLoading = true
-//			
-//			await cryptoPrice.fetchCryptoPrices()
-//			
-//			let coinName = tx.coin.chain.name.lowercased()
-//			
-//			if  tx.coin.chain.chainType == ChainType.UTXO {
-//				await utxo.fetchBlockchairData(for: tx.fromAddress, coinName: coinName)
-//			} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
-//				await eth.getEthInfo(for: tx.fromAddress)
-//				do {
-//					try await web3Service.updateNonceAndGasPrice(forAddress: tx.fromAddress)
-//				} catch {
-//					print(error)
-//				}
-//			} else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
-//				await sol.getSolanaBalance(account: tx.fromAddress)
-//				await sol.fetchRecentBlockhash()
-//			}
-//			
-//			DispatchQueue.main.async {
-//				self.updateState(tx: tx, eth: eth, web3Service: web3Service)
-//				self.isLoading = false
-//			}
-//		}
-//    }
-    
     func validateAddress(tx: SendTransaction, address: String) {
 		let chainName = tx.coin.chain.name.lowercased().replacingOccurrences(of: "-", with: "")
 		
@@ -227,7 +156,8 @@ class SendCryptoViewModel: ObservableObject {
 		
 			// Validate the "To" address
 		if !isValidAddress {
-			errorMessage += "Please enter a valid address. \n"
+			errorMessage = "validAddressError"
+            showAlert = true
 			logger.log("Invalid address.")
 			isValidForm = false
 		}
@@ -236,14 +166,16 @@ class SendCryptoViewModel: ObservableObject {
 		let gasFee = tx.gasDecimal
 		
 		if amount <= 0 {
-			errorMessage += "Amount must be a positive number. Please correct your entry. \n"
+			errorMessage = "positiveAmountError"
+            showAlert = true
 			logger.log("Invalid or non-positive amount.")
 			isValidForm = false
 			return isValidForm
 		}
 		
 		if gasFee <= 0 {
-			errorMessage += "Fee must be a non-negative number. Please correct your entry. \n"
+			errorMessage = "nonNegativeFeeError"
+            showAlert = true
 			logger.log("Invalid or negative fee.")
 			isValidForm = false
 			return isValidForm
@@ -258,7 +190,8 @@ class SendCryptoViewModel: ObservableObject {
 			print("Total transaction cost: \(totalTransactionCostInSats)")
 			
 			if totalTransactionCostInSats > walletBalanceInSats {
-				errorMessage += "The combined amount and fee exceed your wallet's balance. Please adjust to proceed. \n"
+				errorMessage = "walletBalanceExceededError"
+                showAlert = true
 				logger.log("Total transaction cost exceeds wallet balance.")
 				isValidForm = false
 			}
@@ -268,7 +201,8 @@ class SendCryptoViewModel: ObservableObject {
 			
 			if tx.coin.ticker.uppercased() == "ETH" {
 				if tx.totalEthTransactionCostWei > ethBalanceInWei {
-					errorMessage += "The combined amount and fee exceed your wallet's balance. Please adjust to proceed. \n"
+					errorMessage = "walletBalanceExceededError"
+                    showAlert = true
 					logger.log("Total transaction cost exceeds wallet balance.")
 					isValidForm = false
 				}
@@ -281,7 +215,8 @@ class SendCryptoViewModel: ObservableObject {
 					print("has eth to pay the fee?  \(tx.feeInWei > ethBalanceInWei)")
 					
 					if tx.feeInWei > ethBalanceInWei {
-						errorMessage += "You must have ETH in to send any TOKEN, so you can pay the fees. \n"
+						errorMessage = "mustHaveETHError"
+                        showAlert = true
 						logger.log("You must have ETH in to send any TOKEN, so you can pay the fees. \n")
 						isValidForm = false
 					}
@@ -289,7 +224,8 @@ class SendCryptoViewModel: ObservableObject {
 					let tokenBalance = Int(tokenInfo.rawBalance) ?? 0
 					
 					if tx.amountInTokenWei > tokenBalance {
-						errorMessage += "Total transaction cost exceeds wallet balance. \n"
+						errorMessage = "walletBalanceExceededError"
+                        showAlert = true
 						logger.log("Total transaction cost exceeds wallet balance.")
 						isValidForm = false
 					}
@@ -300,7 +236,8 @@ class SendCryptoViewModel: ObservableObject {
 		} else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
 			
 			guard let walletBalanceInLamports = sol.balance else {
-				errorMessage += "Wallet balance is not available. \n"
+				errorMessage = "unavailableBalanceError"
+                showAlert = true
 				logger.log("Wallet balance is not available for Solana.")
 				isValidForm = false
 				return isValidForm
@@ -308,14 +245,16 @@ class SendCryptoViewModel: ObservableObject {
 			
 			let optionalGas: String? = tx.gas
 			guard let feeStr = optionalGas, let feeInLamports = Decimal(string: feeStr) else {
-				errorMessage += "Invalid gas fee provided. \n"
+				errorMessage = "invalidGasFeeError"
+                showAlert = true
 				logger.log("Invalid gas fee for Solana.")
 				isValidForm = false
 				return isValidForm
 			}
 			
 			guard let amountInSOL = Decimal(string: tx.amount) else {
-				errorMessage += "Invalid transaction amount provided. \n"
+				errorMessage = "invalidTransactionAmountError"
+                showAlert = true
 				logger.log("Invalid transaction amount for Solana.")
 				isValidForm = false
 				return isValidForm
@@ -325,7 +264,8 @@ class SendCryptoViewModel: ObservableObject {
 			
 			let totalCostInLamports = amountInLamports + feeInLamports
 			if totalCostInLamports > Decimal(walletBalanceInLamports) {
-				errorMessage += "The combined amount and fee exceed your wallet's balance for Solana. Please adjust to proceed. \n"
+				errorMessage = "walletBalanceExceededSolanaError"
+                showAlert = true
 				logger.log("Total transaction cost exceeds wallet balance for Solana.")
 				isValidForm = false
 			}

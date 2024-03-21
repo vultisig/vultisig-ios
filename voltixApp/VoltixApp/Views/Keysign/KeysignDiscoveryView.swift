@@ -33,7 +33,7 @@ struct KeysignDiscoveryView: View {
         VStack {
             switch self.viewModel.status {
             case .WaitingForDevices:
-                self.waitingForDevices
+                waitingForDevices
             case .FailToStart:
                 errorText
             case .Keysign:
@@ -43,13 +43,7 @@ struct KeysignDiscoveryView: View {
     }
     
     var errorText: some View {
-        HStack {
-            Text(NSLocalizedString("failToStart", comment: "Fail to start"))
-            Text(self.viewModel.errorMessage)
-        }
-        .font(.body15MenloBold)
-        .multilineTextAlignment(.center)
-        .foregroundColor(.red)
+        SendCryptoStartErrorView(errorText: viewModel.errorMessage)
     }
     
     var keysignView: some View {
@@ -66,12 +60,12 @@ struct KeysignDiscoveryView: View {
     
     var waitingForDevices: some View {
         VStack {
-            self.paringQRCode
-            if self.participantDiscovery.peersFound.count == 0 {
-                self.lookingForDevices
+            paringQRCode
+            if participantDiscovery.peersFound.count == 0 {
+                lookingForDevices
             }
-            self.deviceList
-            self.bottomButtons
+            deviceList
+            bottomButtons
         }
     }
     

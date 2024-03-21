@@ -16,10 +16,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
 	@Published var showAlert = false
 	@Published var errorMessage = ""
 	
-	@StateObject var thor = ThorchainService.shared
-	@StateObject var sol: SolanaService = SolanaService.shared
-	
-	@StateObject var utxo = BlockchairService.shared
+	@Published var thor = ThorchainService.shared
+	@Published var sol: SolanaService = SolanaService.shared
+	@Published var utxo = BlockchairService.shared
 	
 	private var isValidForm: Bool {
 		return isAddressCorrect && isAmountCorrect && isHackedOrPhished
@@ -85,7 +84,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
 		
 		
 		if !isValidForm {
-			self.errorMessage = "* You must agree with the terms."
+			self.errorMessage = "You must agree with the terms."
 			showAlert = true
 			return nil
 		}

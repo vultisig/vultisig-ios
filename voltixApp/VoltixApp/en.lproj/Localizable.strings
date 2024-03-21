@@ -108,3 +108,13 @@
 "wrongVaultTryAgain" = "Wrong Vault or Pair Device.";
 "signInErrorTryAgain" = "Signing Error. Please try again.";
 "sameWifiEntendedInstruction" = "Keep devices on the same WiFi Network, correct vault and pair devices. Make sure no other devices are running Voltix.";
+"validAddressError" = "Please enter a valid address.";
+"positiveAmountError" = "Amount must be a positive number. Please correct your entry.";
+"positiveAmountError" = "Amount must be a positive number. Please correct your entry.";
+"nonNegativeFeeError" = "Fee must be a non-negative number. Please correct your entry.";
+"walletBalanceExceededError" = "The combined amount and fee exceed your wallet's balance. Please adjust to proceed.";
+"mustHaveETHError" = "You must have ETH in to send any TOKEN, so you can pay the fees.";
+"unavailableBalanceError" = "Wallet balance is not available.";
+"invalidGasFeeError" = "Invalid gas fee provided.";
+"invalidTransactionAmountError" = "Invalid transaction amount provided.";
+"walletBalanceExceededSolanaError" = "The combined amount and fee exceed your wallet's balance for Solana. Please adjust to proceed.";
