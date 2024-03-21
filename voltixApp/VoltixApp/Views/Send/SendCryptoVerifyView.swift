@@ -39,7 +39,7 @@ struct SendCryptoVerifyView: View {
     var alert: Alert {
         Alert(
             title: Text(NSLocalizedString("error", comment: "")),
-            message: Text(sendCryptoVerifyViewModel.errorMessage),
+            message: Text(NSLocalizedString(sendCryptoVerifyViewModel.errorMessage, comment: "")),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }

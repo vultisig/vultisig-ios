@@ -118,3 +118,8 @@
 "invalidGasFeeError" = "Invalid gas fee provided.";
 "invalidTransactionAmountError" = "Invalid transaction amount provided.";
 "walletBalanceExceededSolanaError" = "The combined amount and fee exceed your wallet's balance for Solana. Please adjust to proceed.";
+"notEnoughBalanceError" = "You don't have enough balance to send this transaction";
+"gasEstimateETHError" = "Error to estimate gas for ETH";
+"gasEstimateTOKENError" = "Error to estimate gas for the TOKEN";
+"gasEstimateError:" = "Error estimating gas: ";
+"mustAgreeTermsError" = "You must agree with the terms.";
