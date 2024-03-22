@@ -15,7 +15,6 @@ struct CoinCell: View {
     @StateObject var tx = SendTransaction()
     @StateObject var coinViewModel = CoinViewModel()
     @StateObject var eth = EthplorerAPIService()
-    @StateObject var thor = ThorchainService.shared
 	
     var body: some View {
         cell
@@ -107,14 +106,13 @@ struct CoinCell: View {
         
         await coinViewModel.loadData(
             eth: eth,
-            thor: thor,
             tx: tx
         )
     }
     
     public func updateState() {
         coinViewModel.updateState(
-            eth: eth, thor: ThorchainService.shared,
+            eth: eth, 
             tx: tx
         )
     }

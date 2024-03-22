@@ -21,6 +21,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
 	@Published var sol: SolanaService = SolanaService.shared
 	@Published var utxo = BlockchairService.shared
 	
+    var THORChainAccount: ThorchainAccountValue? = nil
 	private var isValidForm: Bool {
 		return isAddressCorrect && isAmountCorrect && isHackedOrPhished
 	}
@@ -30,7 +31,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
 			if  tx.coin.chain.chainType == ChainType.UTXO {
 				await utxo.fetchBlockchairData(for: tx.fromAddress, coinName: tx.coin.chain.name.lowercased())
 			} else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
-				await thor.fetchAccountNumber(tx.fromAddress)
+                self.THORChainAccount = try await thor.fetchAccountNumber(tx.fromAddress)
 			} else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
 				
 				await sol.getSolanaBalance(account: tx.fromAddress)
@@ -193,12 +194,12 @@ class SendCryptoVerifyViewModel: ObservableObject {
 			
 		} else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
 			
-			guard let accountNumberString = thor.account?.accountNumber, let intAccountNumber = UInt64(accountNumberString) else {
+			guard let accountNumberString = THORChainAccount?.accountNumber, let intAccountNumber = UInt64(accountNumberString) else {
 				print("We need the ACCOUNT NUMBER to broadcast a transaction")
 				return nil
 			}
 			
-			guard let sequenceString = thor.account?.sequence, let intSequence = UInt64(sequenceString) else {
+			guard let sequenceString = THORChainAccount?.sequence, let intSequence = UInt64(sequenceString) else {
 				print("We need the SEQUENCE to broadcast a transaction")
 				return nil
 			}
