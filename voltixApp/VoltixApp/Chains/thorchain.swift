@@ -94,7 +94,7 @@ enum THORChainHelper {
             $0.chainID = coin.chainId
             $0.accountNumber = accountNumber
             $0.sequence = sequence
-            $0.mode = .block
+            $0.mode = .sync
             if let memo = keysignPayload.memo {
                 $0.memo = memo
             }

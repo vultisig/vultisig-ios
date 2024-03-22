@@ -59,7 +59,7 @@ struct MainNavigationStack: View {
 //                            VaultSelectionView(presentationStack: $presentationStack)
                         case .joinKeygen(let vault):
                             JoinKeygenView(vault: vault)
-                        case .KeysignDiscovery(let keysignPayload):
+                    case .KeysignDiscovery:
 //                            KeysignDiscoveryView(vault: appState.currentVault ?? Vault.example, keysignPayload: keysignPayload)
                             Text("Keysign Discovery View")
                         case .JoinKeysign:
