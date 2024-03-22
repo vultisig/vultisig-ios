@@ -29,6 +29,7 @@ class CoinViewModel: ObservableObject {
         } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
             await eth.getEthInfo(for: tx.fromAddress)
         } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
+            tx.gas = "0.02"
             do{
                 let thorBalances = try await thor.fetchBalances(tx.fromAddress)
                 if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.THORChain.name.lowercased()]?["usd"] {

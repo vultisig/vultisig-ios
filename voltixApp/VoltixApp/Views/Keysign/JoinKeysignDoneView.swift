@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct JoinKeysignDoneView: View {
-    @ObservedObject var viewModel: KeysignViewModel
     
+    @ObservedObject var viewModel: KeysignViewModel
     @State var showAlert = false
     
     var body: some View {
@@ -98,8 +98,7 @@ struct JoinKeysignDoneView: View {
     
     var continueButton: some View {
         NavigationLink {
-            viewModel.isLinkActive = true
-            return HomeView()
+            HomeView()
         } label: {
             FilledButton(title: "DONE")
                 .padding(20)
