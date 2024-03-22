@@ -14,12 +14,18 @@ struct KeysignDiscoveryView: View {
     @StateObject var participantDiscovery = ParticipantDiscovery()
     @StateObject var viewModel = KeysignDiscoveryViewModel()
     
+    @State var isLoading = false
+    
     let logger = Logger(subsystem: "keysign-discovery", category: "view")
     
     var body: some View {
         ZStack {
             Background()
             view
+            
+            if isLoading {
+                loader
+            }
         }
         .onAppear {
             viewModel.setData(vault: vault, keysignPayload: keysignPayload, participantDiscovery: participantDiscovery)
@@ -40,6 +46,17 @@ struct KeysignDiscoveryView: View {
             case .FailToStart:
                 errorText
             }
+        }
+        .blur(radius: isLoading ? 1 : 0)
+    }
+    
+    var loader: some View {
+        ZStack {
+            Color.black
+                .ignoresSafeArea()
+                .opacity(0.3)
+            
+            Loader()
         }
     }
     
@@ -108,9 +125,13 @@ struct KeysignDiscoveryView: View {
     var bottomButtons: some View {
         let isDisabled = viewModel.selections.count < vault.getThreshold()
         
-        return Button(action: {
-            keysignView = viewModel.startKeysign(vault: vault, viewModel: sendCryptoViewModel)
-        }) {
+        return Button {
+            isLoading = true
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                keysignView = viewModel.startKeysign(vault: vault, viewModel: sendCryptoViewModel)
+            }
+        } label: {
             FilledButton(title: "sign")
         }
         .disabled(isDisabled)
@@ -128,11 +149,7 @@ struct KeysignDiscoveryView: View {
         .foregroundColor(.neutral0)
         .listRowBackground(Color.blue600)
         .onTapGesture {
-            if viewModel.selections.contains(peer) {
-                viewModel.selections.remove(peer)
-            } else {
-                viewModel.selections.insert(peer)
-            }
+            handleSelection(peer)
         }
     }
     
@@ -149,5 +166,19 @@ struct KeysignDiscoveryView: View {
         }
         
         return Image(systemName: "xmark")
+    }
+    
+    private func handleSelection(_ peer: String) {
+        isLoading = true
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            if viewModel.selections.contains(peer) {
+                viewModel.selections.remove(peer)
+                isLoading = false
+            } else {
+                viewModel.selections.insert(peer)
+                isLoading = false
+            }
+        }
     }
 }

@@ -86,12 +86,12 @@ struct KeysignView: View {
     }
     
     private func movetoDoneView() {
-        guard !viewModel.txid.isEmpty else {
+        guard let sendCryptoViewModel = sendCryptoViewModel, !viewModel.txid.isEmpty else {
             return
         }
         
-        sendCryptoViewModel?.moveToNextView()
-        sendCryptoViewModel?.hash = viewModel.txid
+        sendCryptoViewModel.moveToNextView()
+        sendCryptoViewModel.hash = viewModel.txid
     }
 }
 
