@@ -50,9 +50,14 @@ class KeysignViewModel: ObservableObject {
         self.messsageToSign = []
         self.keysignPayload = nil
     }
-	
-    func setData(keysignCommittee: [String], mediatorURL: String, sessionID: String, keysignType: KeyType, messagesToSign: [String], vault: Vault, keysignPayload: KeysignPayload?)
-    {
+    
+    func setData(keysignCommittee: [String],
+                 mediatorURL: String,
+                 sessionID: String,
+                 keysignType: KeyType,
+                 messagesToSign: [String],
+                 vault: Vault,
+                 keysignPayload: KeysignPayload?) {
         self.keysignCommittee = keysignCommittee
         self.mediatorURL = mediatorURL
         self.sessionID = sessionID
