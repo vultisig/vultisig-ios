@@ -111,6 +111,7 @@
 		A65BA9882BAAA0B700B2D8AA /* SendCryptoSigningErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9872BAAA0B700B2D8AA /* SendCryptoSigningErrorView.swift */; };
 		A65BA98A2BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9892BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift */; };
 		A65BA98C2BABD1AA00B2D8AA /* SendCryptoStartErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA98B2BABD1AA00B2D8AA /* SendCryptoStartErrorView.swift */; };
+		A65BA98E2BAD311200B2D8AA /* Loader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA98D2BAD311200B2D8AA /* Loader.swift */; };
 		A66A0BD02BA0FC210021A483 /* SDWebImageSVGCoder in Frameworks */ = {isa = PBXBuildFile; productRef = A66A0BCF2BA0FC210021A483 /* SDWebImageSVGCoder */; };
 		A66A0BD32BA0FC290021A483 /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = A66A0BD22BA0FC290021A483 /* SDWebImageSwiftUI */; };
 		A66A0BD52BA124D00021A483 /* EditVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD42BA124D00021A483 /* EditVaultView.swift */; };
@@ -346,6 +347,7 @@
 		A65BA9872BAAA0B700B2D8AA /* SendCryptoSigningErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoSigningErrorView.swift; sourceTree = "<group>"; };
 		A65BA9892BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVaultErrorView.swift; sourceTree = "<group>"; };
 		A65BA98B2BABD1AA00B2D8AA /* SendCryptoStartErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoStartErrorView.swift; sourceTree = "<group>"; };
+		A65BA98D2BAD311200B2D8AA /* Loader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Loader.swift; sourceTree = "<group>"; };
 		A66A0BD42BA124D00021A483 /* EditVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditVaultView.swift; sourceTree = "<group>"; };
 		A66A0BD62BA125C50021A483 /* EditVaultCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditVaultCell.swift; sourceTree = "<group>"; };
 		A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenameVaultView.swift; sourceTree = "<group>"; };
@@ -521,6 +523,7 @@
 				A6966D272BA4009B00903CA4 /* TextFields */,
 				A633B1342B997D35003D1738 /* Navigation Items */,
 				A65BA9832BAA07B500B2D8AA /* Background.swift */,
+				A65BA98D2BAD311200B2D8AA /* Loader.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1371,6 +1374,7 @@
 				464854712B8E052B008D37A7 /* EthplorerAPIService.swift in Sources */,
 				A65649E62B96602700E4B329 /* TssExtension.swift in Sources */,
 				469ED39D2B98E8C0008D4951 /* ThorchainBalancePagination.swift in Sources */,
+				A65BA98E2BAD311200B2D8AA /* Loader.swift in Sources */,
 				465B09AF2B7C84C600952DD9 /* ShareSheet.swift in Sources */,
 				DE6DCB952B97D88A009A39D5 /* THORChainSwapPayload.swift in Sources */,
 				A6966D2B2BA4018600903CA4 /* SendCryptoAmountTextField.swift in Sources */,

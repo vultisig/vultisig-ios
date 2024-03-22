@@ -56,17 +56,7 @@ struct KeysignView: View {
     }
     
     var forStartKeysign: some View {
-        VStack(spacing: 30) {
-            ProgressView()
-                .preferredColorScheme(.dark)
-            
-            Text(NSLocalizedString("pleaseWait", comment: ""))
-                .font(.body20MontserratSemiBold)
-                .foregroundColor(.neutral0)
-        }
-        .frame(width: 200, height: 150)
-        .background(Color.blue600)
-        .cornerRadius(10)
+        Loader()
     }
     
     var forJoinKeysign: some View {
