@@ -87,8 +87,12 @@ struct SendCryptoDoneView: View {
     }
     
     var continueButton: some View {
-        FilledButton(title: "complete")
-            .padding(40)
+        NavigationLink {
+            HomeView()
+        } label: {
+            FilledButton(title: "complete")
+        }
+        .padding(40)
     }
     
     private func copyHash() {

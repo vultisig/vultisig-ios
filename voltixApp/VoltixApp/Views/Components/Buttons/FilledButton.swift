@@ -16,7 +16,6 @@ struct FilledButton: View {
             if !icon.isEmpty {
                 image
             }
-            
             text
         }
         .padding(12)

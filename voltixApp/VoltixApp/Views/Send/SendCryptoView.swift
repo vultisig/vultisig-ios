@@ -68,8 +68,10 @@ struct SendCryptoView: View {
                 pairView
             case 4:
                 keysign
-            default:
+            case 5:
                 doneView
+            default:
+                errorView
             }
         }
         .frame(maxHeight: .infinity)
@@ -131,6 +133,10 @@ struct SendCryptoView: View {
         }.onAppear(){
             self.sendCryptoViewModel.stopMediator()
         }
+    }
+    
+    var errorView: some View {
+        SendCryptoSigningErrorView()
     }
     
     private func setData() async {
