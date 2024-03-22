@@ -112,6 +112,11 @@
 		A65BA98A2BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9892BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift */; };
 		A65BA98C2BABD1AA00B2D8AA /* SendCryptoStartErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA98B2BABD1AA00B2D8AA /* SendCryptoStartErrorView.swift */; };
 		A65BA98E2BAD311200B2D8AA /* Loader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA98D2BAD311200B2D8AA /* Loader.swift */; };
+		A65BA9902BAD402A00B2D8AA /* KeysignMessageConfirmView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA98F2BAD402A00B2D8AA /* KeysignMessageConfirmView.swift */; };
+		A65BA9922BAD439900B2D8AA /* KeysignDiscoverServiceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9912BAD439900B2D8AA /* KeysignDiscoverServiceView.swift */; };
+		A65BA9942BAD449F00B2D8AA /* DiscoveringSignMessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9932BAD449F00B2D8AA /* DiscoveringSignMessageView.swift */; };
+		A65BA9962BAD460600B2D8AA /* KeysignStartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9952BAD460600B2D8AA /* KeysignStartView.swift */; };
+		A65BA9982BAD479C00B2D8AA /* JoinKeysignDoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9972BAD479C00B2D8AA /* JoinKeysignDoneView.swift */; };
 		A66A0BD02BA0FC210021A483 /* SDWebImageSVGCoder in Frameworks */ = {isa = PBXBuildFile; productRef = A66A0BCF2BA0FC210021A483 /* SDWebImageSVGCoder */; };
 		A66A0BD32BA0FC290021A483 /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = A66A0BD22BA0FC290021A483 /* SDWebImageSwiftUI */; };
 		A66A0BD52BA124D00021A483 /* EditVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD42BA124D00021A483 /* EditVaultView.swift */; };
@@ -348,6 +353,11 @@
 		A65BA9892BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVaultErrorView.swift; sourceTree = "<group>"; };
 		A65BA98B2BABD1AA00B2D8AA /* SendCryptoStartErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoStartErrorView.swift; sourceTree = "<group>"; };
 		A65BA98D2BAD311200B2D8AA /* Loader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Loader.swift; sourceTree = "<group>"; };
+		A65BA98F2BAD402A00B2D8AA /* KeysignMessageConfirmView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignMessageConfirmView.swift; sourceTree = "<group>"; };
+		A65BA9912BAD439900B2D8AA /* KeysignDiscoverServiceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignDiscoverServiceView.swift; sourceTree = "<group>"; };
+		A65BA9932BAD449F00B2D8AA /* DiscoveringSignMessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveringSignMessageView.swift; sourceTree = "<group>"; };
+		A65BA9952BAD460600B2D8AA /* KeysignStartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignStartView.swift; sourceTree = "<group>"; };
+		A65BA9972BAD479C00B2D8AA /* JoinKeysignDoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinKeysignDoneView.swift; sourceTree = "<group>"; };
 		A66A0BD42BA124D00021A483 /* EditVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditVaultView.swift; sourceTree = "<group>"; };
 		A66A0BD62BA125C50021A483 /* EditVaultCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditVaultCell.swift; sourceTree = "<group>"; };
 		A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenameVaultView.swift; sourceTree = "<group>"; };
@@ -1015,6 +1025,11 @@
 				DE15729D2B70F284009BC7C5 /* KeysignView.swift */,
 				DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */,
 				DE9EB0F52BA3F9C2001747D9 /* ParticipantDiscovery.swift */,
+				A65BA98F2BAD402A00B2D8AA /* KeysignMessageConfirmView.swift */,
+				A65BA9912BAD439900B2D8AA /* KeysignDiscoverServiceView.swift */,
+				A65BA9932BAD449F00B2D8AA /* DiscoveringSignMessageView.swift */,
+				A65BA9952BAD460600B2D8AA /* KeysignStartView.swift */,
+				A65BA9972BAD479C00B2D8AA /* JoinKeysignDoneView.swift */,
 			);
 			path = Keysign;
 			sourceTree = "<group>";
@@ -1323,6 +1338,7 @@
 				A65BA9862BAA0F0D00B2D8AA /* SendCryptoVerifyViewModel.swift in Sources */,
 				A63953B22BA7CB8E000802EC /* SendCryptoKeysignView.swift in Sources */,
 				049BBB582B71E72F004C231F /* DeviceView.swift in Sources */,
+				A65BA9982BAD479C00B2D8AA /* JoinKeysignDoneView.swift in Sources */,
 				D9AD8EF12B6731660009F8D5 /* SendInputDetailsView.swift in Sources */,
 				D9AD8F012B6732360009F8D5 /* SwapVerifyView.swift in Sources */,
 				A6564A002B9699FF00E4B329 /* EthTokenInfo.swift in Sources */,
@@ -1357,6 +1373,7 @@
 				A66A0BDD2BA15C650021A483 /* WebSVGImage.swift in Sources */,
 				A65BA9822BA93A9F00B2D8AA /* DebounceHelper.swift in Sources */,
 				DE1572972B70F254009BC7C5 /* LocalStateAccessorImp.swift in Sources */,
+				A65BA9962BAD460600B2D8AA /* KeysignStartView.swift in Sources */,
 				DE15729F2B70F284009BC7C5 /* KeysignDiscoveryView.swift in Sources */,
 				DE64A4C82BA7EBEC00C342E3 /* JoinKeygenViewModel.swift in Sources */,
 				A6564A042B969AA500E4B329 /* EtherscanBroadcastResponse.swift in Sources */,
@@ -1390,6 +1407,7 @@
 				D9AD8EFF2B67321D0009F8D5 /* SwapWaitingForPeersView.swift in Sources */,
 				DE1572962B70F254009BC7C5 /* TssMessenger.swift in Sources */,
 				A65649F52B966F3E00E4B329 /* DecodableDefault.swift in Sources */,
+				A65BA9942BAD449F00B2D8AA /* DiscoveringSignMessageView.swift in Sources */,
 				DE491CEF2B708260007C88D5 /* KeygenView.swift in Sources */,
 				A65649E82B9668BF00E4B329 /* BitcoinTransactionRef.swift in Sources */,
 				A66A0BDB2BA13B570021A483 /* CoinsGrouped.swift in Sources */,
@@ -1421,6 +1439,7 @@
 				465B09AB2B7C840100952DD9 /* ToastView.swift in Sources */,
 				A65BA9802BA9361B00B2D8AA /* SendCryptoAmountUSDTextField.swift in Sources */,
 				465A8D562B9E6E0B006E7457 /* SolanaRpc.swift in Sources */,
+				A65BA9922BAD439900B2D8AA /* KeysignDiscoverServiceView.swift in Sources */,
 				A65649FA2B96998500E4B329 /* EthAddressInfo.swift in Sources */,
 				DE9EB0F22BA2D97B001747D9 /* PeerDiscoveryPayload.swift in Sources */,
 				A65324302BA540ED00DDE6EB /* SendCryptoVerifyView.swift in Sources */,
@@ -1466,6 +1485,7 @@
 				A6CBA8F02BA2A629008B110C /* ImportWalletUploadSection.swift in Sources */,
 				D9AD8EFD2B6732070009F8D5 /* SwapPeerDiscoveryView.swift in Sources */,
 				467B2D662B7B51F700AEDF64 /* NavigationStackButtons.swift in Sources */,
+				A65BA9902BAD402A00B2D8AA /* KeysignMessageConfirmView.swift in Sources */,
 				A66A0BD52BA124D00021A483 /* EditVaultView.swift in Sources */,
 				DE49A19C2B67133D000F3AFB /* Vault.swift in Sources */,
 				A65649EE2B9669DD00E4B329 /* UTXOTransactionMempoolInput.swift in Sources */,

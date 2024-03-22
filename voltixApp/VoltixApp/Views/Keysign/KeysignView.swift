@@ -60,17 +60,7 @@ struct KeysignView: View {
     }
     
     var forJoinKeysign: some View {
-        VStack {
-            if !viewModel.txid.isEmpty {
-                Text("Transaction Hash: \(viewModel.txid)")
-            }
-
-            Button(action: {
-                viewModel.isLinkActive = true
-            }) {
-                FilledButton(title: "DONE")
-            }
-        }
+        JoinKeysignDoneView(viewModel: viewModel)
     }
     
     private func setData() {
