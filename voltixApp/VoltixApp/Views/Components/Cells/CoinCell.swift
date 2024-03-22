@@ -109,13 +109,6 @@ struct CoinCell: View {
             tx: tx
         )
     }
-    
-    public func updateState() {
-        coinViewModel.updateState(
-            eth: eth, 
-            tx: tx
-        )
-    }
 }
 
 #Preview {

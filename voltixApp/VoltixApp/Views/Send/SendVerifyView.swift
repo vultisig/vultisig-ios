@@ -173,24 +173,7 @@ struct SendVerifyView: View {
                                     }
                                     
                                 } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
-//                                    
-//                                    guard let accountNumberString = thor.account?.accountNumber, let intAccountNumber = UInt64(accountNumberString) else {
-//                                        print("We need the ACCOUNT NUMBER to broadcast a transaction")
-//                                        return
-//                                    }
-//                                    
-//                                    guard let sequenceString = thor.account?.sequence, let intSequence = UInt64(sequenceString) else {
-//                                        print("We need the SEQUENCE to broadcast a transaction")
-//                                        return
-//                                    }
-//                                    
-//                                    self.presentationStack.append(.KeysignDiscovery(KeysignPayload(
-//                                        coin: tx.coin,
-//                                        toAddress: tx.toAddress,
-//                                        toAmount: tx.amountInSats,
-//                                        chainSpecific: BlockChainSpecific.THORChain(accountNumber: intAccountNumber, sequence: intSequence),
-//                                        utxos: [],
-//                                        memo: tx.memo, swapPayload: nil)))
+
                                     
                                 } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
                                     

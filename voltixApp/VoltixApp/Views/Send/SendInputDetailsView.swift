@@ -459,10 +459,6 @@ struct SendInputDetailsView: View {
                 tx.amountInUSD = tokenInfo.balanceInUsd.replacingOccurrences(of: "US$ ", with: "")
             }
         } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
-//            if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.THORChain.name.lowercased()]?["usd"] {
-//                tx.amountInUSD = thor.runeBalanceInUSD(usdPrice: priceRateUsd, includeCurrencySymbol: false) ?? "US$ 0,00"
-//            }
-//            tx.amount = thor.formattedRuneBalance ?? "0.00"
         } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
             if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.Solana.name.lowercased()]?["usd"] {
                 tx.amountInUSD = sol.solBalanceInUSD(usdPrice: priceRateUsd, includeCurrencySymbol: false) ?? "US$ 0,00"
@@ -499,8 +495,6 @@ struct SendInputDetailsView: View {
                 coinBalance = eth.addressInfo?.ETH.balanceString ?? "0.0"
             }
         } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
-//            coinBalance = thor.formattedRuneBalance ?? "0.0"
-//            tx.gas = String("0.02")
         } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
             coinBalance = sol.formattedSolBalance ?? "0.0"
             if let feeInLamports = Int(sol.feeInLamports ?? "0") {
