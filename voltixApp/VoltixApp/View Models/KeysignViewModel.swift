@@ -57,8 +57,7 @@ class KeysignViewModel: ObservableObject {
                  keysignType: KeyType,
                  messagesToSign: [String],
                  vault: Vault,
-                 keysignPayload: KeysignPayload?)
-    {
+                 keysignPayload: KeysignPayload?) {
         self.keysignCommittee = keysignCommittee
         self.mediatorURL = mediatorURL
         self.sessionID = sessionID

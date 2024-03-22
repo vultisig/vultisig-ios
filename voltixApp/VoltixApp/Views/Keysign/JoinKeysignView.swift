@@ -31,19 +31,19 @@ struct JoinKeysignView: View {
             }
         }
         .sheet(isPresented: $viewModel.isShowingScanner, content: {
-            CodeScannerView(codeTypes: [.qr], completion: self.viewModel.handleScan)
+            CodeScannerView(codeTypes: [.qr], completion: viewModel.handleScan)
         })
         .onAppear {
-            self.viewModel.setData(vault: self.vault, serviceDelegate: self.serviceDelegate)
+            viewModel.setData(vault: vault, serviceDelegate: serviceDelegate)
         }
         .onDisappear(){
-            self.viewModel.stopJoiningKeysign()
+            viewModel.stopJoiningKeysign()
         }
     }
     
     var states: some View {
-        VStack {
-            switch self.viewModel.status {
+        ZStack {
+            switch viewModel.status {
             case .DiscoverSigningMsg:
                 discoveringSignMessage
             case .DiscoverService:
@@ -64,11 +64,11 @@ struct JoinKeysignView: View {
     }
     
     var keysignStartedView: some View {
-        HStack {
-            if self.serviceDelegate.serverURL != nil && !self.viewModel.sessionID.isEmpty {
+        ZStack {
+            if serviceDelegate.serverURL != nil && !viewModel.sessionID.isEmpty {
                 keysignView
             } else {
-                Text("Unable to start the keysign process due to missing information.")
+                Text(NSLocalizedString("unableToStartKeysignProcess", comment: ""))
                     .font(.body15MenloBold)
                     .foregroundColor(.neutral0)
                     .multilineTextAlignment(.center)
@@ -79,13 +79,13 @@ struct JoinKeysignView: View {
     
     var keysignView: some View {
         KeysignView(
-            vault: self.vault,
-            keysignCommittee: self.viewModel.keysignCommittee,
-            mediatorURL: self.serviceDelegate.serverURL ?? "",
-            sessionID: self.viewModel.sessionID,
-            keysignType: self.viewModel.keysignPayload?.coin.chain.signingKeyType ?? .ECDSA,
-            messsageToSign: self.viewModel.keysignMessages,
-            keysignPayload: self.viewModel.keysignPayload, 
+            vault: vault,
+            keysignCommittee: viewModel.keysignCommittee,
+            mediatorURL: serviceDelegate.serverURL ?? "",
+            sessionID: viewModel.sessionID,
+            keysignType: viewModel.keysignPayload?.coin.chain.signingKeyType ?? .ECDSA,
+            messsageToSign: viewModel.keysignMessages,
+            keysignPayload: viewModel.keysignPayload,
             sendCryptoViewModel: nil
         )
     }
@@ -93,7 +93,7 @@ struct JoinKeysignView: View {
     var keysignFailedText: some View {
         VStack(spacing: 8) {
             Text(NSLocalizedString("keysignFail", comment: "Failed to start the keysign process"))
-            Text(self.viewModel.errorMsg)
+            Text(viewModel.errorMsg)
         }
         .font(.body15MenloBold)
         .foregroundColor(.neutral0)
@@ -102,112 +102,19 @@ struct JoinKeysignView: View {
     }
     
     var keysignMessageConfirm: some View {
-        VStack(alignment: .leading) {
-            Text("Confirm to sign the message?")
-                .frame(maxWidth: .infinity)
-            
-            Separator()
-            
-            HStack {
-                Text("To: ")
-                Text("\(self.viewModel.keysignPayload?.toAddress ?? "")")
-            }
-            .padding(.vertical)
-            
-            Text("Amount: \(String(self.viewModel.keysignPayload?.toAmount ?? 0))")
-                .padding(.vertical)
-            
-            Spacer()
-            
-            Button(action: {
-                self.viewModel.joinKeysignCommittee()
-            }) {
-                FilledButton(title: "joinKeySign")
-            }
-        }
+        KeysignMessageConfirmView(viewModel: viewModel)
     }
 
     var waitingForKeySignStart: some View {
-        VStack(spacing: 16) {
-            ProgressView()
-                .preferredColorScheme(.dark)
-            
-            HStack {
-                Text("thisDevice")
-                Text(self.viewModel.localPartyID)
-            }
-            
-            Text(NSLocalizedString("waitingForKeySignStart", comment: "Waiting for the keysign process to start"))
-        }
-        .font(.body15MenloBold)
-        .foregroundColor(.neutral0)
-        .multilineTextAlignment(.center)
-        .padding(30)
-        .background(Color.blue600)
-        .cornerRadius(10)
-        .task {
-            await self.viewModel.waitForKeysignStart()
-        }
+        KeysignStartView(viewModel: viewModel)
     }
     
     var discoveringSignMessage: some View {
-        VStack(spacing: 24) {
-            Text(NSLocalizedString("scanQRCodeJoinKeygen", comment: "Scan the barcode on another VoltixApp device to start"))
-                .font(.body15MenloBold)
-                .foregroundColor(.neutral0)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 30)
-            
-            Button(action: {
-                viewModel.startScan()
-            }) {
-                scanButton
-            }
-        }
+        DiscoveringSignMessageView(viewModel: viewModel)
     }
     
     var discoverService: some View {
-        VStack(spacing: 16) {
-            ZStack {
-                if self.serviceDelegate.serverURL == nil {
-                    ProgressView()
-                        .preferredColorScheme(.dark)
-                } else {
-                    Image(systemName: "checkmark").onAppear {
-                        self.viewModel.setStatus(status: .JoinKeysign)
-                    }
-                }
-            }
-            .padding(.bottom, 18)
-            
-            HStack {
-                Text(NSLocalizedString("thisDevice", comment: ""))
-                Text(self.viewModel.localPartyID)
-            }
-            
-            Text(NSLocalizedString("discoveringMediator", comment: "Discovering mediator service, please wait..."))
-        }
-        .font(.body15MenloBold)
-        .foregroundColor(.neutral0)
-        .multilineTextAlignment(.center)
-        .padding(30)
-        .background(Color.blue600)
-        .cornerRadius(10)
-        .onAppear {
-            self.viewModel.discoverService()
-        }
-    }
-    
-    var scanButton: some View {
-        ZStack {
-            Circle()
-                .foregroundColor(.turquoise600)
-                .frame(width: 60, height: 60)
-            
-            Image(systemName: "camera")
-                .font(.title30MenloUltraLight)
-                .foregroundColor(.blue600)
-        }
+        KeysignDiscoverServiceView(viewModel: viewModel, serviceDelegate: serviceDelegate)
     }
 }
 

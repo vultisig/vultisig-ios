@@ -1,33 +1,32 @@
 //
-//  SendCryptoDoneView.swift
+//  JoinKeysignDoneView.swift
 //  VoltixApp
 //
-//  Created by Amol Kumar on 2024-03-17.
+//  Created by Amol Kumar on 2024-03-22.
 //
 
 import SwiftUI
 
-struct SendCryptoDoneView: View {
-    let hash: String
+struct JoinKeysignDoneView: View {
+    @ObservedObject var viewModel: KeysignViewModel
     
     @State var showAlert = false
     
     var body: some View {
-        ZStack {
-            Background()
-            view
-        }
-        .alert(isPresented: $showAlert) {
-            Alert(
-                title: Text(NSLocalizedString("hashCopied", comment: "")),
-                message: Text(hash),
-                dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
-            )
-        }
+        view
+            .redacted(reason: viewModel.txid.isEmpty ? .placeholder : [])
+            .alert(isPresented: $showAlert) {
+                Alert(
+                    title: Text(NSLocalizedString("hashCopied", comment: "")),
+                    message: Text(viewModel.txid),
+                    dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+                )
+            }
     }
     
     var view: some View {
-        VStack {
+        VStack(spacing: 32) {
+            header
             cards
             continueButton
         }
@@ -35,7 +34,11 @@ struct SendCryptoDoneView: View {
     
     var cards: some View {
         ScrollView {
-            card
+            if viewModel.txid.isEmpty {
+                transactionComplete
+            } else {
+                card
+            }
         }
     }
     
@@ -43,7 +46,7 @@ struct SendCryptoDoneView: View {
         VStack(alignment: .leading, spacing: 8) {
             titleSection
             
-            Text(hash)
+            Text(viewModel.txid)
                 .font(.body13Menlo)
                 .foregroundColor(.turquoise600)
         }
@@ -52,6 +55,12 @@ struct SendCryptoDoneView: View {
         .background(Color.blue600)
         .cornerRadius(10)
         .padding(.horizontal, 16)
+    }
+    
+    var transactionComplete: some View {
+        Text(NSLocalizedString("transactionComplete", comment: "Transaction"))
+            .font(.body24MontserratMedium)
+            .foregroundColor(.neutral0)
     }
     
     var titleSection: some View {
@@ -89,17 +98,25 @@ struct SendCryptoDoneView: View {
     
     var continueButton: some View {
         NavigationLink {
-            HomeView()
+            viewModel.isLinkActive = true
+            return HomeView()
         } label: {
-            FilledButton(title: "complete")
+            FilledButton(title: "DONE")
+                .padding(20)
         }
-        .padding(40)
+    }
+    
+    var header: some View {
+        Text(NSLocalizedString("transactionComplete", comment: ""))
+            .font(.body)
+            .bold()
+            .foregroundColor(.neutral0)
     }
     
     private func copyHash() {
         showAlert = true
         let pasteboard = UIPasteboard.general
-        pasteboard.string = hash
+        pasteboard.string = viewModel.txid
     }
     
     private func shareLink() {
@@ -108,5 +125,8 @@ struct SendCryptoDoneView: View {
 }
 
 #Preview {
-    SendCryptoDoneView(hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w")
+    ZStack {
+        Background()
+        JoinKeysignDoneView(viewModel: KeysignViewModel())
+    }
 }

@@ -84,8 +84,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
             sessionID: sessionID,
             keysignType: keysignPayload.coin.chain.signingKeyType,
             messsageToSign: keysignMessages, // need to figure out all the prekeysign hashes
-            keysignPayload: keysignPayload, 
-            isSending: true,
+            keysignPayload: keysignPayload,
             sendCryptoViewModel: viewModel
         )
     }
