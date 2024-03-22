@@ -28,7 +28,7 @@ struct KeysignDiscoveryView: View {
             viewModel.startDiscovery()
         }
         .onDisappear {
-            viewModel.stopMediator()
+            viewModel.stopDiscovery()
         }
     }
     

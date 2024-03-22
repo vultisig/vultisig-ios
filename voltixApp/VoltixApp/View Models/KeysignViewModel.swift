@@ -135,9 +135,8 @@ class KeysignViewModel: ObservableObject {
                 return
             }
         }
-		
-        self.status = .KeysignFinished
         await self.broadcastTransaction()
+        self.status = .KeysignFinished
     }
 	
     func tssKeysign(service: TssServiceImpl, req: TssKeysignRequest, keysignType: KeyType) async throws -> TssKeysignResponse {
@@ -203,6 +202,7 @@ class KeysignViewModel: ObservableObject {
                         switch result {
                             case .success(let tx):
                                 await self.etherScanService.broadcastTransaction(hex: tx)
+                            self.txid = etherScanService.transactionHash ?? ""
                             case .failure(let err):
                                 self.handleHelperError(err: err)
                         }
