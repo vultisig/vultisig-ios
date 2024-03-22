@@ -22,7 +22,6 @@ enum KeysignStatus {
 class KeysignViewModel: ObservableObject {
     private let logger = Logger(subsystem: "keysign", category: "tss")
     @Published var status: KeysignStatus = .CreatingInstance
-    @Published var isLinkActive = false
     @Published var keysignError: String = ""
     @Published var signatures = [String: TssKeysignResponse]()
     @Published var etherScanService = EtherScanService()
@@ -136,6 +135,7 @@ class KeysignViewModel: ObservableObject {
         }
         await self.broadcastTransaction()
         self.status = .KeysignFinished
+        
     }
     
     func tssKeysign(service: TssServiceImpl, req: TssKeysignRequest, keysignType: KeyType) async throws -> TssKeysignResponse {
@@ -228,7 +228,6 @@ class KeysignViewModel: ObservableObject {
                     case .failure(let error):
                         print("Transaction failed, error: \(error.localizedDescription)")
                     }
-                    
                     
                 case .failure(let err):
                     self.handleHelperError(err: err)

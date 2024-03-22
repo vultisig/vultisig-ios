@@ -34,6 +34,7 @@ class JoinKeysignViewModel: ObservableObject {
     
     init() {
         self.vault = Vault(name: "New Vault")
+        self.isShowingScanner = false
     }
     
     func setData(vault: Vault, serviceDelegate: ServiceDelegate) {
@@ -115,17 +116,19 @@ class JoinKeysignViewModel: ObservableObject {
         Utils.getRequest(urlString: urlString, headers: [String: String](), completion: { result in
             switch result {
             case .success(let data):
-                do {
-                    let decoder = JSONDecoder()
-                    let peers = try decoder.decode([String].self, from: data)
-                    if peers.contains(self.localPartyID) {
-                        self.keysignCommittee.append(contentsOf: peers)
-                        self.status = .KeysignStarted
-                        self.logger.info("Keysign process has started successfully.")
+                DispatchQueue.main.async {
+                    do {
+                        let decoder = JSONDecoder()
+                        let peers = try decoder.decode([String].self, from: data)
+                        if peers.contains(self.localPartyID) {
+                            self.keysignCommittee.append(contentsOf: peers)
+                            self.status = .KeysignStarted
+                            self.logger.info("Keysign process has started successfully.")
+                        }
+                    } catch {
+                        self.errorMsg = "There was an issue processing the keysign start response. Please try again."
+                        self.status = .FailedToStart
                     }
-                } catch {
-                    self.errorMsg = "There was an issue processing the keysign start response. Please try again."
-                    self.status = .FailedToStart
                 }
             case .failure(let error):
                 let err = error as NSError
