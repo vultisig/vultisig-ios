@@ -125,3 +125,6 @@
 "gasEstimateTOKENError" = "Error to estimate gas for the TOKEN";
 "gasEstimateError:" = "Error estimating gas: ";
 "mustAgreeTermsError" = "You must agree with the terms.";
+"confirmToSign" = "Confirm to sign the message?";
+"unableToStartKeysignProcess" = "Unable to start the keysign process due to missing information.";
+"transactionComplete" = "Transaction Complete";

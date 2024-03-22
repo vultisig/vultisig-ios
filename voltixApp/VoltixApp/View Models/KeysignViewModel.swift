@@ -27,12 +27,12 @@ class KeysignViewModel: ObservableObject {
     @Published var signatures = [String: TssKeysignResponse]()
     @Published var etherScanService = EtherScanService()
     @Published var txid: String = ""
-	
+    
     private var tssService: TssServiceImpl? = nil
     private var tssMessenger: TssMessengerImpl? = nil
     private var stateAccess: LocalStateAccessorImpl? = nil
     private var messagePuller = MessagePuller()
-	
+    
     var keysignCommittee: [String]
     var mediatorURL: String
     var sessionID: String
@@ -40,7 +40,7 @@ class KeysignViewModel: ObservableObject {
     var messsageToSign: [String]
     var vault: Vault
     var keysignPayload: KeysignPayload?
-	
+    
     init() {
         self.keysignCommittee = []
         self.mediatorURL = ""
@@ -50,15 +50,14 @@ class KeysignViewModel: ObservableObject {
         self.messsageToSign = []
         self.keysignPayload = nil
     }
-	
+    
     func setData(keysignCommittee: [String],
                  mediatorURL: String,
                  sessionID: String,
                  keysignType: KeyType,
                  messagesToSign: [String],
                  vault: Vault,
-                 keysignPayload: KeysignPayload?)
-    {
+                 keysignPayload: KeysignPayload?) {
         self.keysignCommittee = keysignCommittee
         self.mediatorURL = mediatorURL
         self.sessionID = sessionID
@@ -67,7 +66,7 @@ class KeysignViewModel: ObservableObject {
         self.vault = vault
         self.keysignPayload = keysignPayload
     }
-	
+    
     func startKeysign() async {
         defer {
             self.messagePuller.stop()
@@ -95,7 +94,7 @@ class KeysignViewModel: ObservableObject {
                                             localPartyKey: self.vault.localPartyID,
                                             tssService: service,
                                             messageID: msgHash)
-			
+            
             let keysignReq = TssKeysignRequest()
             keysignReq.localPartyKey = self.vault.localPartyID
             keysignReq.keysignCommitteeKeys = self.keysignCommittee.joined(separator: ",")
@@ -113,15 +112,15 @@ class KeysignViewModel: ObservableObject {
             if let msgToSign = Data(hexString: msg)?.base64EncodedString() {
                 keysignReq.messageToSign = msgToSign
             }
-			
+            
             do {
                 switch self.keysignType {
-                    case .ECDSA:
-                        keysignReq.pubKey = self.vault.pubKeyECDSA
-                        self.status = .KeysignECDSA
-                    case .EdDSA:
-                        keysignReq.pubKey = self.vault.pubKeyEdDSA
-                        self.status = .KeysignEdDSA
+                case .ECDSA:
+                    keysignReq.pubKey = self.vault.pubKeyECDSA
+                    self.status = .KeysignECDSA
+                case .EdDSA:
+                    keysignReq.pubKey = self.vault.pubKeyEdDSA
+                    self.status = .KeysignEdDSA
                 }
                 if let service = self.tssService {
                     let resp = try await tssKeysign(service: service, req: keysignReq, keysignType: keysignType)
@@ -138,19 +137,19 @@ class KeysignViewModel: ObservableObject {
         await self.broadcastTransaction()
         self.status = .KeysignFinished
     }
-	
+    
     func tssKeysign(service: TssServiceImpl, req: TssKeysignRequest, keysignType: KeyType) async throws -> TssKeysignResponse {
         let t = Task.detached(priority: .high) {
             switch keysignType {
-                case .ECDSA:
-                    return try service.keysignECDSA(req)
-                case .EdDSA:
-                    return try service.keysignEdDSA(req)
+            case .ECDSA:
+                return try service.keysignECDSA(req)
+            case .EdDSA:
+                return try service.keysignEdDSA(req)
             }
         }
         return try await t.value
     }
-	
+    
     // TODO: refactor this
     func broadcastTransaction() async {
         if let keysignPayload {
@@ -158,119 +157,118 @@ class KeysignViewModel: ObservableObject {
                 let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode)
                 let result = swaps.getSignedTransaction(keysignPayload: keysignPayload, signatures: self.signatures)
                 switch result {
-                    case .success(let tx):
-                        print(tx)
-                    case .failure(let err):
-                        print(err.localizedDescription)
+                case .success(let tx):
+                    print(tx)
+                case .failure(let err):
+                    print(err.localizedDescription)
                 }
                 return
             }
             switch keysignPayload.coin.chain.chainType {
-                case .UTXO:
-					
-                    let chainName = keysignPayload.coin.chain.name.lowercased()
-					
-                    guard let coinType = CoinType.from(string: chainName) else {
-                        print("Coin type not found on Wallet Core")
-                        return
-                    }
-					
-                    let utxoHelper = UTXOChainsHelper(coin: coinType, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode)
-					
-                    let result = utxoHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: self.signatures)
-					
-                    switch result {
-                        case .success(let tx):
-                            print("Broadcasting UTXO transaction from \(chainName): \(tx)")
-                            UTXOTransactionsService.broadcastTransaction(chain: chainName, signedTransaction: tx) { result in
-                                switch result {
-                                    case .success(let transactionHash):
-                                        self.txid = transactionHash
-                                        print("Transaction successfully broadcasted. Hash: \(transactionHash)")
-                                    case .failure(let error):
-                                        print("Error broadcasting transaction: \(error.localizedDescription)")
-                                }
-                            }
-                        case .failure(let err):
-                            self.handleHelperError(err: err)
-                    }
-					
-                case .EVM:
-                    // ETH
-                    if keysignPayload.coin.contractAddress.isEmpty {
-                        let result = EthereumHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+            case .UTXO:
+                
+                let chainName = keysignPayload.coin.chain.name.lowercased()
+                
+                guard let coinType = CoinType.from(string: chainName) else {
+                    print("Coin type not found on Wallet Core")
+                    return
+                }
+                
+                let utxoHelper = UTXOChainsHelper(coin: coinType, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode)
+                
+                let result = utxoHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: self.signatures)
+                
+                switch result {
+                case .success(let tx):
+                    print("Broadcasting UTXO transaction from \(chainName): \(tx)")
+                    UTXOTransactionsService.broadcastTransaction(chain: chainName, signedTransaction: tx) { result in
                         switch result {
-                            case .success(let tx):
-                                await self.etherScanService.broadcastTransaction(hex: tx)
-                            self.txid = etherScanService.transactionHash ?? ""
-                            case .failure(let err):
-                                self.handleHelperError(err: err)
-                        }
-						
-                    } else {
-                        // It should work for all ERC20
-                        let result = ERC20Helper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
-                        switch result {
-                            case .success(let tx):
-                                await self.etherScanService.broadcastTransaction(hex: tx)
-                            case .failure(let err):
-                                self.handleHelperError(err: err)
+                        case .success(let transactionHash):
+                            self.txid = transactionHash
+                            print("Transaction successfully broadcasted. Hash: \(transactionHash)")
+                        case .failure(let error):
+                            print("Error broadcasting transaction: \(error.localizedDescription)")
                         }
                     }
-                case .THORChain:
-                    let result = THORChainHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                case .failure(let err):
+                    self.handleHelperError(err: err)
+                }
+                
+            case .EVM:
+                // ETH
+                if keysignPayload.coin.contractAddress.isEmpty {
+                    let result = EthereumHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
                     switch result {
-                        case .success(let tx):
-                            ThorchainService.shared.broadcastTransaction(jsonString: tx) { result in
-                                DispatchQueue.main.async {
-                                    switch result {
-                                        case .success(let txHash):
-                                            self.txid = txHash
-                                            print("Transaction successful, hash: \(txHash)")
-                                        case .failure(let error):
-                                            print("Transaction failed, error: \(error.localizedDescription)")
-                                    }
-                                }
-                            }
-                        case .failure(let err):
-                            self.handleHelperError(err: err)
+                    case .success(let tx):
+                        await self.etherScanService.broadcastTransaction(hex: tx)
+                        self.txid = etherScanService.transactionHash ?? ""
+                    case .failure(let err):
+                        self.handleHelperError(err: err)
                     }
-                case .Solana:
-                    let result = SolanaHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyEdDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                    
+                } else {
+                    // It should work for all ERC20
+                    let result = ERC20Helper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
                     switch result {
-                        case .success(let tx):
-                            await SolanaService.shared.sendSolanaTransaction(encodedTransaction: tx)
-                            self.txid = SolanaService.shared.transactionResult ?? ""
-                        case .failure(let err):
-                            self.handleHelperError(err: err)
+                    case .success(let tx):
+                        await self.etherScanService.broadcastTransaction(hex: tx)
+                    case .failure(let err):
+                        self.handleHelperError(err: err)
                     }
-                default:
-                    self.logger.error("unsupported coin:\(keysignPayload.coin.ticker)")
+                }
+            case .THORChain:
+                let result = THORChainHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                switch result {
+                case .success(let tx):
+                    let broadcastResult = await ThorchainService.shared.broadcastTransaction(jsonString: tx)
+                    switch broadcastResult {
+                    case .success(let txHash):
+                        self.txid = txHash
+                        print("Transaction successful, hash: \(txHash)")
+                    case .failure(let error):
+                        print("Transaction failed, error: \(error.localizedDescription)")
+                    }
+                    
+                    
+                case .failure(let err):
+                    self.handleHelperError(err: err)
+                }
+            case .Solana:
+                let result = SolanaHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyEdDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                switch result {
+                case .success(let tx):
+                    await SolanaService.shared.sendSolanaTransaction(encodedTransaction: tx)
+                    self.txid = SolanaService.shared.transactionResult ?? ""
+                case .failure(let err):
+                    self.handleHelperError(err: err)
+                }
+            default:
+                self.logger.error("unsupported coin:\(keysignPayload.coin.ticker)")
             }
         }
     }
-	
+    
     func handleHelperError(err: Error) {
         switch err {
-            case HelperError.runtimeError(let errDetail):
-                self.logger.error("Failed to get signed transaction,error:\(errDetail)")
-            default:
-                self.logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
+        case HelperError.runtimeError(let errDetail):
+            self.logger.error("Failed to get signed transaction,error:\(errDetail)")
+        default:
+            self.logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
         }
     }
-	
+    
     func handleBitcoinTransactionError(err: UTXOTransactionError) {
         switch err {
-            case .invalidURL:
-                print("Invalid URL.")
-            case .httpError(let statusCode):
-                print("HTTP Error with status code: \(statusCode).")
-            case .apiError(let message):
-                print("API Error: \(message)")
-            case .unexpectedResponse:
-                print("Unexpected response from the server.")
-            case .unknown(let unknownError):
-                print("An unknown error occurred: \(unknownError.localizedDescription)")
+        case .invalidURL:
+            print("Invalid URL.")
+        case .httpError(let statusCode):
+            print("HTTP Error with status code: \(statusCode).")
+        case .apiError(let message):
+            print("API Error: \(message)")
+        case .unexpectedResponse:
+            print("Unexpected response from the server.")
+        case .unknown(let unknownError):
+            print("An unknown error occurred: \(unknownError.localizedDescription)")
         }
     }
 }

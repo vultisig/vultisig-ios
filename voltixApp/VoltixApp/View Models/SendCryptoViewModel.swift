@@ -52,10 +52,17 @@ class SendCryptoViewModel: ObservableObject {
                 tx.amountInUSD = tokenInfo.balanceInUsd.replacingOccurrences(of: "US$ ", with: "")
             }
         } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
-            if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.THORChain.name.lowercased()]?["usd"] {
-                tx.amountInUSD = thor.runeBalanceInUSD(usdPrice: priceRateUsd, includeCurrencySymbol: false) ?? "US$ 0,00"
+            Task{
+                do{
+                    let thorBalances = try await thor.fetchBalances(tx.fromAddress)
+                    if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.THORChain.name.lowercased()]?["usd"] {
+                        tx.amountInUSD = thorBalances.runeBalanceInUSD(usdPrice: priceRateUsd, includeCurrencySymbol: false) ?? "US$ 0,00"
+                    }
+                    tx.amount = thorBalances.formattedRuneBalance() ?? "0.00"
+                }catch{
+                    print("fail to get THORChain balance,error:\(error.localizedDescription)")
+                }
             }
-            tx.amount = thor.formattedRuneBalance ?? "0.00"
         } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
             if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.Solana.name.lowercased()]?["usd"] {
                 tx.amountInUSD = sol.solBalanceInUSD(usdPrice: priceRateUsd, includeCurrencySymbol: false) ?? "US$ 0,00"

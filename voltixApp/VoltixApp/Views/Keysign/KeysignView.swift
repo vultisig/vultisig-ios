@@ -13,7 +13,6 @@ struct KeysignView: View {
     let keysignType: KeyType
     let messsageToSign: [String]
     let keysignPayload: KeysignPayload? // need to pass it along to the next view
-    var isSending = false
     let sendCryptoViewModel: SendCryptoViewModel?
     
     let logger = Logger(subsystem: "keysign", category: "tss")
@@ -41,11 +40,14 @@ struct KeysignView: View {
         .task {
             await viewModel.startKeysign()
         }
+        .onChange(of: viewModel.txid) {
+            movetoDoneView()
+        }
     }
     
     var keysignFinished: some View {
         ZStack {
-            if isSending {
+            if sendCryptoViewModel != nil {
                 forStartKeysign
             } else {
                 forJoinKeysign
@@ -54,25 +56,11 @@ struct KeysignView: View {
     }
     
     var forStartKeysign: some View {
-        EmptyView()
-            .onAppear {
-                sendCryptoViewModel?.moveToNextView()
-                sendCryptoViewModel?.hash = viewModel.txid
-            }
+        Loader()
     }
     
     var forJoinKeysign: some View {
-        VStack {
-            if !viewModel.txid.isEmpty {
-                Text("Transaction Hash: \(viewModel.txid)")
-            }
-
-            Button(action: {
-                viewModel.isLinkActive = true
-            }) {
-                FilledButton(title: "DONE")
-            }
-        }
+        JoinKeysignDoneView(viewModel: viewModel)
     }
     
     private func setData() {
@@ -85,6 +73,15 @@ struct KeysignView: View {
             vault: self.vault,
             keysignPayload: self.keysignPayload
         )
+    }
+    
+    private func movetoDoneView() {
+        guard let sendCryptoViewModel = sendCryptoViewModel, !viewModel.txid.isEmpty else {
+            return
+        }
+        
+        sendCryptoViewModel.moveToNextView()
+        sendCryptoViewModel.hash = viewModel.txid
     }
 }
 

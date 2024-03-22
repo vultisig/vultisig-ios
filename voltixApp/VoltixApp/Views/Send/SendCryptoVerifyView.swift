@@ -107,17 +107,7 @@ struct SendCryptoVerifyView: View {
                 .ignoresSafeArea()
                 .opacity(0.3)
             
-            VStack(spacing: 30) {
-                ProgressView()
-                    .preferredColorScheme(.dark)
-                
-                Text(NSLocalizedString("pleaseWait", comment: ""))
-                    .font(.body20MontserratSemiBold)
-                    .foregroundColor(.neutral0)
-            }
-            .frame(width: 200, height: 150)
-            .background(Color.blue600)
-            .cornerRadius(10)
+            Loader()
         }
     }
     
