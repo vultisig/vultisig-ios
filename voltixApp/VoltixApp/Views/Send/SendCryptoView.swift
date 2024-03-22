@@ -129,8 +129,11 @@ struct SendCryptoView: View {
             } else {
                 SendCryptoSigningErrorView()
             }
-        }.onAppear(){
-            self.sendCryptoViewModel.stopMediator()
+        }.onAppear() {
+            Task{
+                try await Task.sleep(for: .seconds(5)) // Back off 5s
+                self.sendCryptoViewModel.stopMediator()
+            }
         }
     }
     

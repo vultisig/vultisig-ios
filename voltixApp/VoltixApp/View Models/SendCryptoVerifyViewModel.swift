@@ -199,7 +199,11 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 return nil
             }
             
-            guard let sequenceString = THORChainAccount?.sequence, let intSequence = UInt64(sequenceString) else {
+            var sequenceString = "0"
+            if THORChainAccount?.sequence != nil {
+                sequenceString = THORChainAccount!.sequence!
+            }
+            guard  let intSequence = UInt64(sequenceString) else {
                 print("We need the SEQUENCE to broadcast a transaction")
                 return nil
             }
