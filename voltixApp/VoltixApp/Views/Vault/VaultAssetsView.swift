@@ -195,9 +195,7 @@ public struct VaultAssetsView: View {
 
 #Preview {
     VaultAssetsView(
-        presentationStack: .constant(
-            []
-        ),
+        presentationStack: .constant([]),
         tx: SendTransaction()
     )
     .environmentObject(
