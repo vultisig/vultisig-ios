@@ -10,43 +10,39 @@ public class EtherScanService: ObservableObject {
 	
 	var addressInfo: EthAddressInfo = EthAddressInfo()
 	
-	enum EtherScanError: Error {
-		case invalidURL
-		case httpError(Int, String)
-		case apiError(String)
-		case unexpectedResponse
-		case decodingError(String)
-		case unknown(Error)
-		case resultParsingError
-		case conversionError
-		case jsonDecodingError
-		case resultExtractionFailed
-		case customError(String)
-	}
+	private var cacheGasPrice: [String: (data: BigInt, timestamp: Date)] = [:]
+	private var cacheNonce: [String: (data: Int64, timestamp: Date)] = [:]
 	
 	func getEthInfo(tx: SendTransaction) async throws -> Void {
 		
-		// Start fetching all information concurrently
-		async let gasPrice = fetchGasPrice()
-		async let nonce = fetchNonce(address: tx.fromAddress)
-		async let cryptoPrice = CryptoPriceService.shared.cryptoPrices?.prices[tx.coin.priceProviderId]?["usd"]
-		
-		if let priceRateUsd = await cryptoPrice {
-			tx.coin.priceRate = priceRateUsd
+		do {
+				// Start fetching all information concurrently
+			async let gasPrice = fetchGasPrice()
+			async let nonce = fetchNonce(address: tx.fromAddress)
+			async let cryptoPrice = CryptoPriceService.shared.cryptoPrices?.prices[tx.coin.priceProviderId]?["usd"]
+			
+			if let priceRateUsd = await cryptoPrice {
+				tx.coin.priceRate = priceRateUsd
+			}
+			
+			if tx.coin.isToken {
+				tx.coin.rawBalance = try await fetchTokenRawBalance(contractAddress: tx.coin.contractAddress, address: tx.fromAddress)
+			} else {
+				tx.coin.rawBalance = try await fetchEthRawBalance(address: tx.fromAddress)
+			}
+			
+			tx.gas = String(try await gasPrice)
+			tx.nonce = try await nonce
+			
+			print("\(tx.coin.ticker) raw balance: \(tx.coin.rawBalance)")
+			print("\(tx.coin.ticker) GAS: \(tx.gas)")
+			print("\(tx.coin.ticker) Nonce: \(tx.nonce)")
+			
+		} catch let error as EtherScanError {
+			handleEtherScanError(error)
+		} catch {
+			print(error.localizedDescription)
 		}
-		
-		if tx.coin.isToken {
-			tx.coin.rawBalance = try await fetchTokenRawBalance(contractAddress: tx.coin.contractAddress, address: tx.fromAddress)
-		} else {
-			tx.coin.rawBalance = try await fetchEthRawBalance(address: tx.fromAddress)
-		}
-		
-		tx.gas = String(try await gasPrice)
-		tx.nonce = try await nonce
-		
-		print("\(tx.coin.ticker) raw balance: \(tx.coin.rawBalance)")
-		print("\(tx.coin.ticker) GAS: \(tx.gas)")
-		print("\(tx.coin.ticker) Nonce: \(tx.nonce)")
 	}
 	
 	func broadcastTransaction(hex: String) async throws -> String {
@@ -75,10 +71,9 @@ public class EtherScanService: ObservableObject {
 		}
 	}
 	
-	func estimateGasForERC20Transfer(senderAddress: String, contractAddress: String, recipientAddress: String, value: BigInt) async throws -> BigInt {
-		
-		let data = constructERC20TransferData(recipientAddress: recipientAddress, value: value)
-		let urlString = Endpoint.fetchEtherscanEstimateGasForERC20Transaction(data: data, contractAddress: contractAddress)
+	func estimateGasForERC20Transfer(tx: SendTransaction) async throws -> BigInt {
+		let data = constructERC20TransferData(recipientAddress: tx.toAddress, value: tx.amountInTokenWei)
+		let urlString = Endpoint.fetchEtherscanEstimateGasForERC20Transaction(data: data, contractAddress: tx.coin.contractAddress)
 		let resultData = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
 		
 		guard let resultString = extractResult(fromData: resultData) else {
@@ -133,8 +128,13 @@ public class EtherScanService: ObservableObject {
 		}
 	}
 	
-	//TODO: cache it
 	func fetchNonce(address: String) async throws -> Int64 {
+		let cacheKey = "\(address)-etherscan-nonce"
+		if let cacheEntry = cacheNonce[cacheKey], isNonceCacheValid(for: cacheKey) {
+			print("\(cacheKey) > The data came from the cache !!")
+			return cacheEntry.data
+		}
+		
 		let urlString = Endpoint.fetchEtherscanTransactionCount(address: address)
 		let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
 		
@@ -142,33 +142,49 @@ public class EtherScanService: ObservableObject {
 			throw EtherScanError.jsonDecodingError
 		}
 		
-		let trimmedResultString = resultString.trimmingCharacters(in: CharacterSet(charactersIn: "0x"))
+		let trimmedResultString: String
+		if resultString.hasPrefix("0x") {
+			trimmedResultString = String(resultString.dropFirst(2))
+		} else {
+			trimmedResultString = resultString
+		}
+		
 		guard let intResult = Int64(trimmedResultString, radix: 16) else {
 			throw EtherScanError.conversionError
 		}
 		
+		self.cacheNonce[cacheKey] = (data: intResult, timestamp: Date())
+		
 		return intResult
 	}
-	
-	//TODO: cache it
+
 	func fetchGasPrice() async throws -> BigInt {
+		let cacheKey = "etherscan-gas-price"
+		if let cacheEntry = cacheGasPrice[cacheKey], isGasPriceCacheValid(for: cacheKey) {
+			print("GAS Price > The data came from the cache !!")
+			return cacheEntry.data
+		}
+		
 		let urlString = Endpoint.fetchEtherscanGasPrice()
 		let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
 		if let resultString = extractResult(fromData: data) {
 			let trimmedResultString = resultString.trimmingCharacters(in: CharacterSet(charactersIn: "0x"))
 			if let bigIntResult = BigInt(trimmedResultString, radix: 16) {
 				let bigIntResultGwei = bigIntResult / BigInt(1_000_000_000)
+				self.cacheGasPrice[cacheKey] = (data: bigIntResultGwei, timestamp: Date())
 				return bigIntResultGwei
 			} else {
-				throw EtherScanError.conversionError
+				throw EtherScanError.fetchGasPriceConversionError
 			}
 		} else {
-			throw EtherScanError.conversionError
+			throw EtherScanError.fetchGasPriceConversionError
 		}
 	}
 	
 	private func extractResult(fromData data: Data) -> String? {
 		do {
+			print(String(data: data, encoding: .utf8))
+			
 			if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
 			   let result = json["result"] as? String {
 				return result
@@ -187,5 +203,58 @@ public class EtherScanService: ObservableObject {
 		let paddedValue = valueHex.paddingLeft(toLength: 64, withPad: "0")
 		let data = "0x" + methodId + paddedAddress + paddedValue
 		return data
+	}
+	
+	private func isGasPriceCacheValid(for key: String) -> Bool {
+		guard let cacheEntry = cacheGasPrice[key] else { return false }
+		let elapsedTime = Date().timeIntervalSince(cacheEntry.timestamp)
+		return elapsedTime <= 60 * 5
+	}
+	
+	private func isNonceCacheValid(for key: String) -> Bool {
+		guard let cacheEntry = cacheNonce[key] else { return false }
+		let elapsedTime = Date().timeIntervalSince(cacheEntry.timestamp)
+		return elapsedTime <= 60 * 1
+	}
+	
+	enum EtherScanError: Error, CustomStringConvertible {
+		case invalidURL
+		case httpError(Int, String)
+		case apiError(String)
+		case unexpectedResponse
+		case decodingError(String)
+		case unknown(Error)
+		case resultParsingError
+		case conversionError
+		case jsonDecodingError
+		case resultExtractionFailed
+		case customError(String)
+		
+		case fetchNonceConversionError
+		case fetchGasPriceConversionError
+		
+		
+		var description: String {
+			switch self {
+				case .invalidURL: return "invalidURL"
+				case .httpError(let statusCode, let message): return "httpError(\(statusCode), \(message))"
+				case .apiError(let message): return "apiError(\(message))"
+				case .unexpectedResponse: return "unexpectedResponse"
+				case .decodingError(let message): return "decodingError(\(message))"
+				case .unknown(let error): return "unknown(\(error))"
+				case .resultParsingError: return "resultParsingError"
+				case .conversionError: return "conversionError"
+				case .jsonDecodingError: return "jsonDecodingError"
+				case .resultExtractionFailed: return "resultExtractionFailed"
+				case .customError(let message): return "customError(\(message))"
+					
+				case .fetchNonceConversionError: return "fetchNonceConversionError"
+				case .fetchGasPriceConversionError: return "fetchGasPriceConversionError"
+			}
+		}
+	}
+	
+	private func handleEtherScanError(_ error: EtherScanError) {
+		print(error.description)
 	}
 }

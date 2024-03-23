@@ -44,6 +44,12 @@ class SendTransaction: ObservableObject, Hashable {
     var totalEthTransactionCostWei: BigInt {
         amountInWei + feeInWei
     }
+	
+	var amountInTokenWeiInt64: Int64 {
+		let decimals = Double(coin.decimals ?? "18") ?? 18.0 // The default is always in WEI unless the token has a different one like UDSC
+		
+		return Int64(amountDecimal * pow(10, decimals))
+	}
     
     var amountInTokenWei: BigInt {
         let decimals = Double(coin.decimals ?? "18") ?? 18.0 // The default is always in WEI unless the token has a different one like UDSC

@@ -65,18 +65,8 @@ class SendCryptoVerifyViewModel: ObservableObject {
     }
     
     private func estimateGasForERC20Transfer(tx: SendTransaction) async -> BigInt {
-        
-		let decimals: Double = Double(tx.coin.decimals ?? "18") ?? 18
-        
-        let amountInSmallestUnit: Double = tx.amountDecimal * pow(10.0, decimals)
-        
-        let value = BigInt(amountInSmallestUnit)
-        
         do {
-			let estimatedGas = try await eth.estimateGasForERC20Transfer(senderAddress: tx.fromAddress, contractAddress: tx.coin.contractAddress, recipientAddress: tx.toAddress, value: value)
-            
-            print("Estimated gas: \(estimatedGas)")
-            
+			let estimatedGas = try await eth.estimateGasForERC20Transfer(tx: tx)
             return estimatedGas
         } catch {
             errorMessage = "\(NSLocalizedString("gasEstimateError:", comment: "")) \(error.localizedDescription)"
@@ -166,26 +156,11 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 return keysignPayload
             } else {
                 
-                let estimatedGas = Int64(await estimateGasForERC20Transfer(tx: tx))
-                
-                guard estimatedGas > 0 else {
-                    errorMessage = "gasEstimateTOKENError"
-                    showAlert = true
-                    isLoading = false
-                    return nil
-                }
-                
-				let decimals: Double = Double(tx.coin.decimals ?? "18") ?? 18
-                
-                let amountInSmallestUnit: Double = tx.amountDecimal * pow(10.0, decimals)
-                
-                let amountToSend = Int64(amountInSmallestUnit)
-                
-                let keysignPayload = KeysignPayload(
+                                let keysignPayload = KeysignPayload(
                     coin: tx.coin,
                     toAddress: tx.toAddress,
-                    toAmount: amountToSend, // The amount must be in the token decimals
-					chainSpecific: BlockChainSpecific.ERC20(maxFeePerGasGwei: Int64(tx.gas) ?? 42, priorityFeeGwei: 1, nonce: tx.nonce, gasLimit: Int64(estimatedGas), contractAddr: tx.coin.contractAddress),
+					toAmount: tx.amountInTokenWeiInt64, // The amount must be in the token decimals
+					chainSpecific: BlockChainSpecific.ERC20(maxFeePerGasGwei: Int64(tx.gas) ?? 42, priorityFeeGwei: 1, nonce: tx.nonce, gasLimit: Int64(95000), contractAddr: tx.coin.contractAddress),
                     utxos: [],
                     memo: nil,
                     swapPayload: nil
