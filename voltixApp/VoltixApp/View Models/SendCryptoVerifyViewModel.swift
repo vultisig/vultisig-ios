@@ -66,7 +66,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
     
     private func estimateGasForERC20Transfer(tx: SendTransaction) async -> BigInt {
         
-        let decimals: Double = Double(tx.token?.tokenInfo.decimals ?? "18") ?? 18
+        let decimals: Double = Double(tx.token?.decimals ?? "18") ?? 18
         
         let amountInSmallestUnit: Double = tx.amountDecimal * pow(10.0, decimals)
         
@@ -175,7 +175,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
                     return nil
                 }
                 
-                let decimals: Double = Double(tx.token?.tokenInfo.decimals ?? "18") ?? 18
+                let decimals: Double = Double(tx.token?.decimals ?? "18") ?? 18
                 
                 let amountInSmallestUnit: Double = tx.amountDecimal * pow(10.0, decimals)
                 

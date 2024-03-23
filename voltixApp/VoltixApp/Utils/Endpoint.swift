@@ -81,7 +81,7 @@ class Endpoint {
 	static func fetchEtherscanBalance(address: String) -> String {
 		"http://45.76.120.223/etherscan/api?module=account&action=balance&address=\(address)&tag=latest"
 	}
-
+	
 	static func fetchEtherscanTokenBalance(contractAddress: String, address: String) -> String {
 		"http://45.76.120.223/etherscan/api?module=account&action=tokenbalance&contractaddress=\(contractAddress)&address=\(address)&tag=latest"
 	}
@@ -96,6 +96,10 @@ class Endpoint {
 	
 	static func fetchEtherscanGasPrice() -> String {
 		"http://45.76.120.223/etherscan/api?module=proxy&action=eth_gasPrice"
+	}
+	
+	static func fetchEtherscanAddressTokensBalance(address: String) -> String {
+		"http://45.76.120.223/etherscan/api?module=account&action=addresstokenbalance&address=\(address)&page=1&offset=100"
 	}
 	
 	static func fetchERC20Transactions(address: String, contractAddress: String) -> String {

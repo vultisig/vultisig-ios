@@ -20,8 +20,8 @@ class CoinViewModel: ObservableObject {
 	private let thor = ThorchainService.shared
 	private let eth = EtherScanService.shared
 	
-	//TODO: Something is wrong with this load data
-	//TODO: We need to check because it is called at least 5x
+		//TODO: Something is wrong with this load data
+		//TODO: We need to check because it is called at least 5x
 	func loadData(tx: SendTransaction) async {
 		print("realoading data...")
 		isLoading = true
@@ -32,20 +32,21 @@ class CoinViewModel: ObservableObject {
 			await utxo.fetchBlockchairData(for: tx.fromAddress, coinName: coinName)
 		} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
 			do {
-				print("The loadData ETH is called")
+				
+				print("The loadData ETH is called \(tx.coin.ticker)")
 				
 				// Start fetching all information concurrently
 				async let ethAddressInfo = eth.getEthInfo(for: tx.fromAddress)
 				async let gasPrice = eth.fetchGasPrice()
 				async let nonce = eth.fetchNonce(address: tx.fromAddress)
 				
-				self.ethAddressInfo = try await ethAddressInfo
+				tx.eth = try await ethAddressInfo
 				tx.gas = String(try await gasPrice)
 				tx.nonce = try await nonce
 			} catch {
 				print("error fetching eth balances:\(error.localizedDescription)")
 			}
-
+			
 		} else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
 			tx.gas = "0.02"
 			do{
@@ -75,8 +76,8 @@ class CoinViewModel: ObservableObject {
 		} else if tx.coin.chain.chainType == ChainType.EVM {
 			tx.eth = self.ethAddressInfo
 			if tx.coin.ticker.uppercased() == "ETH" {
-				coinBalance = self.ethAddressInfo.ETH.balanceString
-				balanceUSD = self.ethAddressInfo.ETH.balanceInUsd
+				coinBalance = self.ethAddressInfo.balanceString
+				balanceUSD = self.ethAddressInfo.balanceInUsd
 			} else if let tokenInfo = tx.token {
 				balanceUSD = tokenInfo.balanceInUsd
 				coinBalance = tokenInfo.balanceString

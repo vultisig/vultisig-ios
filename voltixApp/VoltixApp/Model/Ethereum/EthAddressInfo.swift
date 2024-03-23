@@ -8,14 +8,46 @@
 import SwiftUI
 
 class EthAddressInfo: Codable {
-	let address: String
-	let ETH: ETHInfo
-	let tokens: [EthToken]?
+	var address: String
+	var tokens: [EthToken]?
 	
 	init() {
 		self.address = "0x0"
-		self.ETH = ETHInfo()
 		self.tokens = nil
+		
+		self.priceRate = 0.0
+		self.rawBalance = ""
+	}
+	
+	var priceRate: Double
+	
+	var rawBalance: String
+	
+	var balance: Double {
+		guard let wei = Double(rawBalance) else {
+			return 0.0
+		}
+		return wei / 1_000_000_000_000_000_000
+	}
+
+	var balanceString: String {
+		return "\(String(format: "%.8f", balance))" // Wei is too long
+	}
+	
+	var balanceInUsd: String {
+		let ethBalanceInUsd = balance * priceRate
+		return "US$ \(String(format: "%.2f", ethBalanceInUsd))"
+	}
+	
+	func getAmountInUsd(_ amount: Double) -> String {
+		let ethAmountInUsd = amount * priceRate
+		return "\(String(format: "%.2f", ethAmountInUsd))"
+	}
+	
+	func getAmountInEth(_ usdAmount: Double) -> String {
+		let ethRate = priceRate
+		let amountInEth = usdAmount / ethRate
+		return "\(String(format: "%.4f", amountInEth))"
 	}
 	
 	func toString() -> String {

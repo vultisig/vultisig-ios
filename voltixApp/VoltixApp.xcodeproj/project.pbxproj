@@ -95,10 +95,7 @@
 		A65649F52B966F3E00E4B329 /* DecodableDefault.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649F42B966F3E00E4B329 /* DecodableDefault.swift */; };
 		A65649F82B96701300E4B329 /* UTXOTransactionMempoolPreviousOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649F72B96701300E4B329 /* UTXOTransactionMempoolPreviousOutput.swift */; };
 		A65649FA2B96998500E4B329 /* EthAddressInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649F92B96998500E4B329 /* EthAddressInfo.swift */; };
-		A65649FC2B9699AA00E4B329 /* ETHInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649FB2B9699AA00E4B329 /* ETHInfo.swift */; };
 		A65649FE2B9699BE00E4B329 /* EthToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649FD2B9699BE00E4B329 /* EthToken.swift */; };
-		A6564A002B9699FF00E4B329 /* EthTokenInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649FF2B9699FF00E4B329 /* EthTokenInfo.swift */; };
-		A6564A022B969A1200E4B329 /* ETHInfoPrice.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6564A012B969A1200E4B329 /* ETHInfoPrice.swift */; };
 		A6564A042B969AA500E4B329 /* EtherscanBroadcastResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6564A032B969AA500E4B329 /* EtherscanBroadcastResponse.swift */; };
 		A6564A062B969ADF00E4B329 /* EtherscanAPIResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6564A052B969ADF00E4B329 /* EtherscanAPIResponse.swift */; };
 		A6564A082B969AFC00E4B329 /* EtherscanAPITransactionDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6564A072B969AFC00E4B329 /* EtherscanAPITransactionDetail.swift */; };
@@ -335,10 +332,7 @@
 		A65649F42B966F3E00E4B329 /* DecodableDefault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodableDefault.swift; sourceTree = "<group>"; };
 		A65649F72B96701300E4B329 /* UTXOTransactionMempoolPreviousOutput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionMempoolPreviousOutput.swift; sourceTree = "<group>"; };
 		A65649F92B96998500E4B329 /* EthAddressInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EthAddressInfo.swift; sourceTree = "<group>"; };
-		A65649FB2B9699AA00E4B329 /* ETHInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ETHInfo.swift; sourceTree = "<group>"; };
 		A65649FD2B9699BE00E4B329 /* EthToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EthToken.swift; sourceTree = "<group>"; };
-		A65649FF2B9699FF00E4B329 /* EthTokenInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EthTokenInfo.swift; sourceTree = "<group>"; };
-		A6564A012B969A1200E4B329 /* ETHInfoPrice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ETHInfoPrice.swift; sourceTree = "<group>"; };
 		A6564A032B969AA500E4B329 /* EtherscanBroadcastResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EtherscanBroadcastResponse.swift; sourceTree = "<group>"; };
 		A6564A052B969ADF00E4B329 /* EtherscanAPIResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EtherscanAPIResponse.swift; sourceTree = "<group>"; };
 		A6564A072B969AFC00E4B329 /* EtherscanAPITransactionDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EtherscanAPITransactionDetail.swift; sourceTree = "<group>"; };
@@ -632,10 +626,7 @@
 			children = (
 				465B18A22BA3D8F1001D7407 /* Etherscan */,
 				A65649F92B96998500E4B329 /* EthAddressInfo.swift */,
-				A65649FB2B9699AA00E4B329 /* ETHInfo.swift */,
-				A6564A012B969A1200E4B329 /* ETHInfoPrice.swift */,
 				A65649FD2B9699BE00E4B329 /* EthToken.swift */,
-				A65649FF2B9699FF00E4B329 /* EthTokenInfo.swift */,
 			);
 			path = Ethereum;
 			sourceTree = "<group>";
@@ -1338,7 +1329,6 @@
 				049BBB582B71E72F004C231F /* DeviceView.swift in Sources */,
 				A65BA9982BAD479C00B2D8AA /* JoinKeysignDoneView.swift in Sources */,
 				D9AD8F012B6732360009F8D5 /* SwapVerifyView.swift in Sources */,
-				A6564A002B9699FF00E4B329 /* EthTokenInfo.swift in Sources */,
 				A6F9F7DF2B9BAA9F00790258 /* Separator.swift in Sources */,
 				A6966D222BA3E1B000903CA4 /* TextStore.swift in Sources */,
 				A6F9F7DB2B9BA2DE00790258 /* ChainCell.swift in Sources */,
@@ -1347,7 +1337,6 @@
 				A65BA9882BAAA0B700B2D8AA /* SendCryptoSigningErrorView.swift in Sources */,
 				DE64A4C62BA7E0E400C342E3 /* KeygenPeerDiscoveryViewModel.swift in Sources */,
 				D9AD8EFB2B6731E50009F8D5 /* SwapInputDetailsView.swift in Sources */,
-				A65649FC2B9699AA00E4B329 /* ETHInfo.swift in Sources */,
 				465B09B52B7D8E7B00952DD9 /* CryptoPriceService.swift in Sources */,
 				049BBB5C2B71E7F6004C231F /* LargeButton.swift in Sources */,
 				DE49A1A52B68BB6B000F3AFB /* VaultSelectionView.swift in Sources */,
@@ -1493,7 +1482,6 @@
 				A65649F02B966A1200E4B329 /* UTXOTransactionMempoolOutput.swift in Sources */,
 				A653242A2BA52A4700DDE6EB /* SendCryptoViewModel.swift in Sources */,
 				465B09A92B7C176700952DD9 /* SendTransaction.swift in Sources */,
-				A6564A022B969A1200E4B329 /* ETHInfoPrice.swift in Sources */,
 				A633B12D2B994E92003D1738 /* CreateVaultView.swift in Sources */,
 				A63953B02BA7BEDA000802EC /* Checkbox.swift in Sources */,
 				A6966D1E2BA3DDAD00903CA4 /* OnboardingView.swift in Sources */,

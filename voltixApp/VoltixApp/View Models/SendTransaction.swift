@@ -29,7 +29,7 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     var token: EthToken? {
-        eth?.tokens?.first(where: { $0.tokenInfo.symbol == coin.ticker})
+        eth?.tokens?.first(where: { $0.symbol == coin.ticker})
     }
     
     var totalEthTransactionCostWei: BigInt {
@@ -37,7 +37,7 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     var amountInTokenWei: BigInt {
-        let decimals = Double(token?.tokenInfo.decimals ?? "18") ?? 18.0 // The default is always in WEI unless the token has a different one like UDSC
+        let decimals = Double(token?.decimals ?? "18") ?? 18.0 // The default is always in WEI unless the token has a different one like UDSC
         
         return BigInt(amountDecimal * pow(10, decimals))
     }

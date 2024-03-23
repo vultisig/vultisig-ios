@@ -8,6 +8,8 @@ public class EtherScanService: ObservableObject {
 	static let shared = EtherScanService()
 	private init() {}
 	
+	var addressInfo: EthAddressInfo = EthAddressInfo()
+	
 	enum EtherScanError: Error {
 		case invalidURL
 		case httpError(Int, String)
@@ -22,8 +24,27 @@ public class EtherScanService: ObservableObject {
 		case customError(String)
 	}
 	
+		
+	
 	func getEthInfo(for address: String) async throws -> EthAddressInfo {
-		return EthAddressInfo()
+		
+		let ethAddressInfo = EthAddressInfo()
+		ethAddressInfo.address = address
+		
+		async let cryptoPrice = CryptoPriceService.shared.cryptoPrices?.prices[Chain.Ethereum.name.lowercased()]?["usd"]
+		async let ethBalance = fetchEthRawBalance(address: address)
+		async let tokens: [EthToken] = Utils.fetchArray(from: Endpoint.fetchEtherscanAddressTokensBalance(address: address))
+		
+		if let priceRateUsd = await cryptoPrice {
+			ethAddressInfo.priceRate = priceRateUsd
+		}
+		
+		ethAddressInfo.rawBalance = try await ethBalance
+		
+		ethAddressInfo.tokens = try await tokens
+		
+		self.addressInfo = ethAddressInfo
+		return ethAddressInfo
 	}
 	
 	func broadcastTransaction(hex: String) async throws -> String {
@@ -91,18 +112,18 @@ public class EtherScanService: ObservableObject {
 		}
 	}
 	
-	func fetchBalance(address: String) async throws -> BigInt {
+	func fetchEthRawBalance(address: String) async throws -> String {
 		let urlString = Endpoint.fetchEtherscanBalance(address: address)
 		let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
-		if let resultString = extractResult(fromData: data),
-		   let bigIntResult = BigInt(resultString, radix: 16) {
-			return bigIntResult
+		
+		if let resultString = extractResult(fromData: data) {
+			return resultString
 		} else {
 			throw EtherScanError.conversionError
 		}
 	}
 	
-	//TODO: cache it
+		//TODO: cache it
 	func fetchNonce(address: String) async throws -> Int64 {
 		let urlString = Endpoint.fetchEtherscanTransactionCount(address: address)
 		let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
@@ -119,7 +140,7 @@ public class EtherScanService: ObservableObject {
 		return intResult
 	}
 	
-	//TODO: cache it
+		//TODO: cache it
 	func fetchGasPrice() async throws -> BigInt {
 		let urlString = Endpoint.fetchEtherscanGasPrice()
 		let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])

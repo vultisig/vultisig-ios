@@ -175,8 +175,8 @@ public struct VaultAssetsView: View {
                 
 				tx.eth = self.ethAddressInfo
 				if tx.coin.ticker.uppercased() == "ETH" {
-					self.coinBalance = self.ethAddressInfo.ETH.balanceString ?? "0.0"
-                    self.balanceUSD = self.ethAddressInfo.ETH.balanceInUsd ?? "US$ 0,00"
+					self.coinBalance = self.ethAddressInfo.balanceString ?? "0.0"
+                    self.balanceUSD = self.ethAddressInfo.balanceInUsd ?? "US$ 0,00"
                 } else if let tokenInfo = tx.token {
                     self.balanceUSD = tokenInfo.balanceInUsd
                     self.coinBalance = tokenInfo.balanceString

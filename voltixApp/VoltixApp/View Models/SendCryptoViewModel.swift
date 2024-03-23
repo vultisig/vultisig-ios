@@ -45,8 +45,8 @@ class SendCryptoViewModel: ObservableObject {
             tx.amountInUSD = utxo.blockchairData[key]?.address?.balanceInDecimalUSD ?? "0.0"
         } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
             if tx.coin.ticker.uppercased() == "ETH" {
-                tx.amount = eth.ETH.balanceString ?? "0.0"
-                tx.amountInUSD = eth.ETH.balanceInUsd.replacingOccurrences(of: "US$ ", with: "") ?? ""
+                tx.amount = eth.balanceString ?? "0.0"
+                tx.amountInUSD = eth.balanceInUsd.replacingOccurrences(of: "US$ ", with: "") ?? ""
             } else if let tokenInfo = tx.token {
                 tx.amount = tokenInfo.balanceString
                 tx.amountInUSD = tokenInfo.balanceInUsd.replacingOccurrences(of: "US$ ", with: "")
@@ -90,7 +90,7 @@ class SendCryptoViewModel: ObservableObject {
                 }
             } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
                 if tx.coin.ticker.uppercased() == Chain.Ethereum.ticker.uppercased() {
-                    newCoinAmount = eth.ETH.getAmountInEth(newValueDouble) ?? ""
+                    newCoinAmount = eth.getAmountInEth(newValueDouble) ?? ""
                 } else if let tokenInfo = tx.token {
                     newCoinAmount = tokenInfo.getAmountInTokens(newValueDouble)
                 }
@@ -128,7 +128,7 @@ class SendCryptoViewModel: ObservableObject {
                 newValueUSD = String(format: "%.2f", newValueDouble * rate)
             } else if tx.coin.chain.name.lowercased() == "ethereum" {
                 if tx.coin.ticker.uppercased() == "ETH" {
-                    newValueUSD = eth.ETH.getAmountInUsd(newValueDouble) ?? ""
+                    newValueUSD = eth.getAmountInUsd(newValueDouble) ?? ""
                 } else if let tokenInfo = tx.token {
                     newValueUSD = tokenInfo.getAmountInUsd(newValueDouble)
                 }
@@ -207,7 +207,7 @@ class SendCryptoViewModel: ObservableObject {
             }
             
         } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
-            let ethBalanceInWei = Int(eth.ETH.rawBalance ?? "0") ?? 0 // it is in WEI
+            let ethBalanceInWei = Int(eth.rawBalance) ?? 0// it is in WEI
             
             if tx.coin.ticker.uppercased() == "ETH" {
                 if tx.totalEthTransactionCostWei > ethBalanceInWei {
@@ -218,7 +218,7 @@ class SendCryptoViewModel: ObservableObject {
                 }
                 
             } else {
-                if let tokenInfo = eth.tokens?.first(where: { $0.tokenInfo.symbol == tx.coin.ticker.uppercased() }) {
+                if let tokenInfo = eth.tokens?.first(where: { $0.symbol == tx.coin.ticker.uppercased() }) {
                     print("tx.feeInWei \(tx.feeInWei)")
                     print("ethBalanceInWei \(ethBalanceInWei)")
                     
