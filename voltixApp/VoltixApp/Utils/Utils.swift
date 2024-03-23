@@ -78,21 +78,21 @@ enum Utils {
 		}.resume()
 	}
 	
-	public static func getRequest(urlString: String, headers: [String: String], completion: @escaping (Result<Data, Error>) -> Void) {
-		guard let url = URL(string: urlString) else {
-			completion(.failure(NSError(domain: "Invalid URL", code: 0, userInfo: nil)))
-			return
-		}
-		var request = URLRequest(url: url)
-		request.httpMethod = "GET"
-		request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-		for item in headers {
-			request.addValue(item.key, forHTTPHeaderField: item.value)
-		}
-		URLSession.shared.dataTask(with: request) { data, response, error in
-			if let error = error {
-				completion(.failure(error))
-			}
+    public static func getRequest(urlString: String, headers: [String: String], completion: @escaping (Result<Data, Error>) -> Void) {
+        guard let url = URL(string: urlString) else {
+            completion(.failure(NSError(domain: "Invalid URL", code: 0, userInfo: nil)))
+            return
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        for item in headers {
+            request.setValue(item.value, forHTTPHeaderField: item.key)
+        }
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                completion(.failure(error))
+            }
 			
 			guard let httpResponse = response as? HTTPURLResponse else {
 				completion(.failure(NSError(domain: "Invalid response", code: 0, userInfo: nil)))

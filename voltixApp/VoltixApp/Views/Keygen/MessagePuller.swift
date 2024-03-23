@@ -12,12 +12,14 @@ class MessagePuller: ObservableObject {
     var cache = NSCache<NSString, AnyObject>()
     private var pollingInboundMessages = true
     private let logger = Logger(subsystem: "message-puller", category: "communication")
-
+    private var currentTask: Task<Void,Error>? = nil
+    
     func stop() {
         pollingInboundMessages = false
         cache.removeAllObjects()
+        currentTask?.cancel()
     }
-
+    
     func pollMessages(mediatorURL: String,
                       sessionID: String,
                       localPartyKey: String,
@@ -25,15 +27,19 @@ class MessagePuller: ObservableObject {
                       messageID: String?)
     {
         pollingInboundMessages = true
-        Task.detached {
+        currentTask = Task.detached {
             repeat {
-                if Task.isCancelled { return }
+                if Task.isCancelled {
+                    print("stop pulling for messageid:\(messageID ?? "")")
+                    return
+                }
+                print("pulling for messageid:\(messageID ?? "")")
                 self.pollInboundMessages(mediatorURL: mediatorURL, sessionID: sessionID, localPartyKey: localPartyKey, tssService: tssService, messageID: messageID)
                 try await Task.sleep(for: .seconds(1)) // Back off 1s
             } while self.pollingInboundMessages
         }
     }
-
+    
     private func pollInboundMessages(mediatorURL: String, sessionID: String, localPartyKey: String, tssService: TssServiceImpl, messageID: String?) {
         let urlString = "\(mediatorURL)/message/\(sessionID)/\(localPartyKey)"
         var header = [String: String]()
@@ -56,7 +62,7 @@ class MessagePuller: ObservableObject {
                             // message has been applied before
                             continue
                         }
-                        self.logger.debug("Got message from: \(msg.from), to: \(msg.to)")
+                        self.logger.debug("Got message from: \(msg.from), to: \(msg.to), key:\(key)")
                         try tssService.applyData(msg.body)
                         self.cache.setObject(NSObject(), forKey: key)
                         Task {
@@ -75,9 +81,9 @@ class MessagePuller: ObservableObject {
             }
         })
     }
-
+    
     private func deleteMessageFromServer(mediatorURL: String, sessionID: String, localPartyKey: String, hash: String, messageID: String?) {
         let urlString = "\(mediatorURL)/message/\(sessionID)/\(localPartyKey)/\(hash)"
-        Utils.deleteFromServer(urlString: urlString, messageID: nil)
+        Utils.deleteFromServer(urlString: urlString, messageID: messageID)
     }
 }

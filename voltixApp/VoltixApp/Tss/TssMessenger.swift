@@ -47,7 +47,7 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
         req.httpMethod = "POST"
         req.addValue("application/json", forHTTPHeaderField: "Content-Type")
         if let messageID = self.messageID {
-            req.addValue("message_id", forHTTPHeaderField: messageID)
+            req.setValue(messageID, forHTTPHeaderField: "message_id")
         }
         let msg = Message(session_id: sessionID, from: fromParty, to: [to], body: body, hash: Utils.getMessageBodyHash(msg: body), sequenceNo: self.counter)
         self.counter += 1

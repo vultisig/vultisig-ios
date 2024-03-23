@@ -9,7 +9,7 @@ public class CryptoPriceService: ObservableObject {
 	
 	public static let shared = CryptoPriceService()
 	
-		// Dictionary to hold cached data and their timestamps
+	// Dictionary to hold cached data and their timestamps
 	private var cache: [String: (data: CryptoPrice, timestamp: Date)] = [:]
 	
 	private init() {}
