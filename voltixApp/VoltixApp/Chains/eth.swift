@@ -25,7 +25,7 @@ enum EthereumHelper {
                  address: addr,
                  hexPublicKey: derivePubKey,
                  feeUnit: "GWEI",
-                 contractAddress: nil)
+                 token: nil)
         }
     }
 

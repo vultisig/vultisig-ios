@@ -22,7 +22,7 @@ enum THORChainHelper {
                  address: addr,
                  hexPublicKey: derivePubKey,
                  feeUnit: "RUNE", // TODO: double check the thor unit,
-                 contractAddress: nil)
+                 token: nil)
         }
     }
 

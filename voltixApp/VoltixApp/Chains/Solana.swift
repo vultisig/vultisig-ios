@@ -16,7 +16,7 @@ enum SolanaHelper {
                  address: addr,
                  hexPublicKey: hexPubKey,
                  feeUnit: "Lamports",
-                 contractAddress: nil
+                 token: nil
             )
         }
     }

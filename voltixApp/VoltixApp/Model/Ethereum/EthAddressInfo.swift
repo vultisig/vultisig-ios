@@ -9,7 +9,7 @@ import SwiftUI
 
 class EthAddressInfo: Codable {
 	var address: String
-	var tokens: [EthToken]?
+	var tokens: [Token]?
 	
 	init() {
 		self.address = "0x0"

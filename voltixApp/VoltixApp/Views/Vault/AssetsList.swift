@@ -7,27 +7,27 @@ import OSLog
 import SwiftData
 import SwiftUI
 import WalletCore
-
+//TODO: Remove the old view
 private let logger = Logger(subsystem: "assets-list", category: "view")
 struct AssetsList: View {
 	@EnvironmentObject var appState: ApplicationState
 	@State private var assets = [
-		Asset(ticker: "BTC", chainName: "Bitcoin", image: "btc", contractAddress: nil, chainType: ChainType.UTXO),
-		Asset(ticker: "BCH", chainName: "Bitcoin-Cash", image: "bch", contractAddress: nil, chainType: ChainType.UTXO),
-		Asset(ticker: "LTC", chainName: "Litecoin", image: "ltc", contractAddress: nil, chainType: ChainType.UTXO),
-		Asset(ticker: "DOGE", chainName: "Dogecoin", image: "doge", contractAddress: nil, chainType: ChainType.UTXO),
-		Asset(ticker: "RUNE", chainName: "THORChain", image: "rune", contractAddress: nil, chainType: ChainType.THORChain),
+		Asset(ticker: "BTC", chainName: "Bitcoin", image: "btc", chainType: .UTXO, priceProviderId: "bitcoin", tokenInfo: nil),
+		Asset(ticker: "BCH", chainName: "Bitcoin-Cash", image: "bch", chainType: .UTXO, priceProviderId: "bitcoin-cash", tokenInfo: nil),
+		Asset(ticker: "LTC", chainName: "Litecoin", image: "ltc", chainType: .UTXO, priceProviderId: "litecoin", tokenInfo: nil),
+		Asset(ticker: "DOGE", chainName: "Dogecoin", image: "doge", chainType: .UTXO, priceProviderId: "dogecoin", tokenInfo: nil),
+		Asset(ticker: "RUNE", chainName: "THORChain", image: "rune", chainType: .THORChain, priceProviderId: "thorchain", tokenInfo: nil),
 		// Ethereum chain
-		Asset(ticker: "ETH", chainName: "Ethereum", image: "eth", contractAddress: nil, chainType: ChainType.EVM),
-		Asset(ticker: "USDC", chainName: "Ethereum", image: "usdc", contractAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", chainType: ChainType.EVM),
-		Asset(ticker: "USDT", chainName: "Ethereum", image: "usdt", contractAddress: "0xdac17f958d2ee523a2206206994597c13d831ec7", chainType: ChainType.EVM),
-		Asset(ticker: "UNI", chainName: "Ethereum", image: "uni", contractAddress: "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984", chainType: ChainType.EVM),
-		Asset(ticker: "MATIC", chainName: "Ethereum", image: "matic", contractAddress: "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0", chainType: ChainType.EVM),
-		Asset(ticker: "WBTC", chainName: "Ethereum", image: "wbtc", contractAddress: "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599", chainType: ChainType.EVM),
-		Asset(ticker: "LINK", chainName: "Ethereum", image: "link", contractAddress: "0x514910771af9ca656af840dff83e8264ecf986ca", chainType: ChainType.EVM),
-		Asset(ticker: "FLIP", chainName: "Ethereum", image: "flip", contractAddress: "0x826180541412d574cf1336d22c0c0a287822678a", chainType: ChainType.EVM),
+		Asset(ticker: "ETH", chainName: "Ethereum", image: "eth", chainType: .EVM, priceProviderId: "ethereum", tokenInfo: nil),
+		Asset(ticker: "USDC", chainName: "Ethereum", image: "usdc", chainType: .EVM, priceProviderId: "usd-coin", tokenInfo: Token(rawBalance: "", address: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", name: "USD Coin", decimals: "6", symbol: "USDC")),
+		Asset(ticker: "USDT", chainName: "Ethereum", image: "usdt", chainType: .EVM, priceProviderId: "tether", tokenInfo: Token(rawBalance: "", address: "0xdac17f958d2ee523a2206206994597c13d831ec7", name: "Tether USD", decimals: "6", symbol: "USDT")),
+		Asset(ticker: "UNI", chainName: "Ethereum", image: "uni", chainType: .EVM, priceProviderId: "uniswap", tokenInfo: Token(rawBalance: "", address: "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984", name: "Uniswap", decimals: "18", symbol: "UNI")),
+		Asset(ticker: "MATIC", chainName: "Ethereum", image: "matic", chainType: .EVM, priceProviderId: "polygon", tokenInfo: Token(rawBalance: "", address: "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0", name: "Polygon", decimals: "18", symbol: "MATIC")),
+		Asset(ticker: "WBTC", chainName: "Ethereum", image: "wbtc", chainType: .EVM, priceProviderId: "wrapped-bitcoin", tokenInfo: Token(rawBalance: "", address: "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599", name: "Wrapped Bitcoin", decimals: "8", symbol: "WBTC")),
+		Asset(ticker: "LINK", chainName: "Ethereum", image: "link", chainType: .EVM, priceProviderId: "chainlink", tokenInfo: Token(rawBalance: "", address: "0x514910771af9ca656af840dff83e8264ecf986ca", name: "Chainlink", decimals: "18", symbol: "LINK")),
+		Asset(ticker: "FLIP", chainName: "Ethereum", image: "flip", chainType: .EVM, priceProviderId: "chainflip", tokenInfo: Token(rawBalance: "", address: "0x826180541412d574cf1336d22c0c0a287822678a", name: "Chainflip", decimals: "18", symbol: "FLIP")),
 		// Solana chain
-		Asset(ticker: "SOL", chainName: "Solana", image: "solana", contractAddress: nil, chainType: ChainType.Solana)
+		Asset(ticker: "SOL", chainName: "Solana", image: "solana", chainType: .Solana, priceProviderId: "solana", tokenInfo: nil)
 	]
 	@State private var selection = Set<Asset>()
 	@State private var expandedGroups: Set<String> = Set()
@@ -49,42 +49,42 @@ struct AssetsList: View {
 	
 	var body: some View {
 		List {
-			ForEach(groupedAssets.keys.sorted(), id: \.self) { chainName in
-				Section(header: HStack {
-					Text(chainName)
-					Spacer()
-					Image(systemName: expandedGroups.contains(chainName) ? "chevron.up" : "chevron.down")
-				}
-					.contentShape(Rectangle())
-					.onTapGesture {
-						if expandedGroups.contains(chainName) {
-							expandedGroups.remove(chainName)
-						} else {
-							expandedGroups.insert(chainName)
-						}
-					}
-				) {
-					if expandedGroups.contains(chainName) {
-						ForEach(groupedAssets[chainName] ?? [], id: \.self) { asset in
-							HStack {
-								Text("\(asset.chainName) - \(asset.ticker)")
-								Spacer()
-								if selection.contains(asset) {
-									Image(systemName: "checkmark")
-								}
-							}
-							.padding(.leading, asset.contractAddress != nil ? 20 : 0) // Add padding if it's a child token
-							.onTapGesture {
-								if selection.contains(asset) {
-									selection.remove(asset)
-								} else {
-									selection.insert(asset)
-								}
-							}
-						}
-					}
-				}
-			}
+//			ForEach(groupedAssets.keys.sorted(), id: \.self) { chainName in
+//				Section(header: HStack {
+//					Text(chainName)
+//					Spacer()
+//					Image(systemName: expandedGroups.contains(chainName) ? "chevron.up" : "chevron.down")
+//				}
+//					.contentShape(Rectangle())
+//					.onTapGesture {
+//						if expandedGroups.contains(chainName) {
+//							expandedGroups.remove(chainName)
+//						} else {
+//							expandedGroups.insert(chainName)
+//						}
+//					}
+//				) {
+//					if expandedGroups.contains(chainName) {
+//						ForEach(groupedAssets[chainName] ?? [], id: \.self) { asset in
+//							HStack {
+//								Text("\(asset.chainName) - \(asset.ticker)")
+//								Spacer()
+//								if selection.contains(asset) {
+//									Image(systemName: "checkmark")
+//								}
+//							}
+//							.padding(.leading, asset.contractAddress != nil ? 20 : 0) // Add padding if it's a child token
+//							.onTapGesture {
+//								if selection.contains(asset) {
+//									selection.remove(asset)
+//								} else {
+//									selection.insert(asset)
+//								}
+//							}
+//						}
+//					}
+//				}
+//			}
 		}
 		.environment(\.editMode, $editMode)
 		.navigationTitle("select assets")
@@ -105,67 +105,7 @@ struct AssetsList: View {
 				}
 			}
 		}
-		.onDisappear {
-			guard let vault = appState.currentVault else {
-				print("current vault is nil")
-				return
-			}
-			
-			vault.coins = vault.coins.filter { coin in
-				selection.contains(where: { $0.ticker == coin.ticker })
-			}
-			
-			for item in selection {
-				if !vault.coins.contains(where: { $0.ticker == item.ticker }) {
-					switch item.chainName {
-						case Chain.THORChain.name:
-							let runeCoinResult = THORChainHelper.getRUNECoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
-							switch runeCoinResult {
-								case .success(let coin):
-									vault.coins.append(coin)
-								case .failure(let error):
-									logger.info("fail to get thorchain address,error:\(error.localizedDescription)")
-							}
-						case Chain.Ethereum.name:
-							let coinResult = EthereumHelper.getEthereum(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
-							switch coinResult {
-								case .success(let coin):
-									if coin.ticker == "Ethereum" {
-										vault.coins.append(coin)
-									} else {
-										let newCoin = Coin(chain: coin.chain, ticker: item.ticker, logo: item.image, address: coin.address, hexPublicKey: coin.hexPublicKey, feeUnit: "GWEI", contractAddress: item.contractAddress)
-										vault.coins.append(newCoin)
-									}
-								case .failure(let error):
-									logger.info("fail to get ethereum address,error:\(error.localizedDescription)")
-							}
-						case Chain.Bitcoin.name, Chain.BitcoinCash.name, Chain.Litecoin.name, Chain.Dogecoin.name:
-							guard let coinType = CoinType.from(string: item.chainName) else {
-								print("Coin type not found on Wallet Core")
-								return
-							}
-							let coinResult = UTXOChainsHelper(coin: coinType, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode).getCoin()
-							switch coinResult {
-								case .success(let btc):
-									vault.coins.append(btc)
-								case .failure(let err):
-									logger.info("fail to get bitcoin address,error:\(err.localizedDescription)")
-							}
-						case Chain.Solana.name:
-							let coinResult = SolanaHelper.getSolana(hexPubKey: vault.pubKeyEdDSA, hexChainCode: vault.hexChainCode)
-							switch coinResult {
-								case .success(let sol):
-									vault.coins.append(sol)
-								case .failure(let err):
-									logger.info("fail to get solana address,error:\(err.localizedDescription)")
-							}
-						default:
-							print("Unsupported chain: \(item.chainName)")
-					}
-				}
-			}
-			
-		}
+		
 	}
 }
 

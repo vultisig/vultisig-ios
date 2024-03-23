@@ -1,32 +1,39 @@
-	//
-	//  Token.swift
-	//  VoltixApp
-	//
-	//  Created by Amol Kumar on 2024-03-04.
-	//
-
 import Foundation
 import BigInt
 
-class EthToken: Codable {
-	var balance: BigInt? {
-		return BigInt(rawBalance)
-	}
-	var rawBalance: String
+class Token: Codable, Equatable, Hashable {
 	
+	var rawBalance: String
 	var address: String
 	var name: String
 	var decimals: String
 	var symbol: String
-	
 	var priceRate: Double?
 	
-	enum CodingKeys: String, CodingKey {
-		case rawBalance = "TokenQuantity"
-		case address = "TokenAddress"
-		case name = "TokenName"
-		case decimals = "TokenDivisor"
-		case symbol = "TokenSymbol"
+	static func == (lhs: Token, rhs: Token) -> Bool {
+		lhs.address == rhs.address && lhs.name == rhs.name && lhs.decimals == rhs.decimals && lhs.symbol == rhs.symbol
+	}
+	
+	func hash(into hasher: inout Hasher) {
+		hasher.combine(rawBalance)
+		hasher.combine(address)
+		hasher.combine(name)
+		hasher.combine(decimals)
+		hasher.combine(symbol)
+		hasher.combine(priceRate)
+	}
+	
+	init(rawBalance: String, address: String, name: String, decimals: String, symbol: String, priceRate: Double? = nil) {
+		self.rawBalance = rawBalance
+		self.address = address
+		self.name = name
+		self.decimals = decimals
+		self.symbol = symbol
+		self.priceRate = priceRate
+	}
+	
+	var balance: BigInt? {
+		return BigInt(rawBalance)
 	}
 	
 	var balanceDecimal: Double {
@@ -37,9 +44,7 @@ class EthToken: Codable {
 	}
 	
 	var balanceString: String {
-		let tokenBalance = Double(rawBalance) ?? 0.0
-		let tokenDecimals = Double(decimals) ?? 0.0
-		let balanceInDecimal = (tokenBalance / pow(10, tokenDecimals))
+		let balanceInDecimal = self.balanceDecimal
 		return String(format: "%.\(decimals)f", balanceInDecimal)
 	}
 	
@@ -56,11 +61,9 @@ class EthToken: Codable {
 	}
 	
 	var balanceInUsd: String {
-		let tokenBalance = Double(rawBalance) ?? 0.0
+		let balanceInDecimal = self.balanceDecimal
 		let tokenRate = priceRate ?? 0.0
-		let tokenDecimals = Double(decimals) ?? 0.0
-		let balanceInUsd = (tokenBalance / pow(10, tokenDecimals)) * tokenRate
-		
+		let balanceInUsd = balanceInDecimal * tokenRate
 		return "US$ \(String(format: "%.2f", balanceInUsd))"
 	}
 }

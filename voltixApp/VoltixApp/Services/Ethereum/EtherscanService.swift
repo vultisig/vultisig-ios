@@ -24,8 +24,6 @@ public class EtherScanService: ObservableObject {
 		case customError(String)
 	}
 	
-		
-	
 	func getEthInfo(for address: String) async throws -> EthAddressInfo {
 		
 		let ethAddressInfo = EthAddressInfo()
@@ -33,7 +31,7 @@ public class EtherScanService: ObservableObject {
 		
 		async let cryptoPrice = CryptoPriceService.shared.cryptoPrices?.prices[Chain.Ethereum.name.lowercased()]?["usd"]
 		async let ethBalance = fetchEthRawBalance(address: address)
-		async let tokens: [EthToken] = Utils.fetchArray(from: Endpoint.fetchEtherscanAddressTokensBalance(address: address))
+		//async let tokens: [EthToken] = Utils.fetchArray(from: Endpoint.fetchEtherscanAddressTokensBalance(address: address))
 		
 		if let priceRateUsd = await cryptoPrice {
 			ethAddressInfo.priceRate = priceRateUsd
@@ -41,7 +39,7 @@ public class EtherScanService: ObservableObject {
 		
 		ethAddressInfo.rawBalance = try await ethBalance
 		
-		ethAddressInfo.tokens = try await tokens
+		//ethAddressInfo.tokens = try await tokens
 		
 		self.addressInfo = ethAddressInfo
 		return ethAddressInfo

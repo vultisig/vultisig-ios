@@ -61,6 +61,7 @@ class TokenSelectionViewModel: ObservableObject {
 				let runeCoinResult = THORChainHelper.getRUNECoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
 				switch runeCoinResult {
 					case .success(let coin):
+						coin.priceProviderId = asset.priceProviderId ?? ""
 						vault.coins.append(coin)
 					case .failure(let error):
 						logger.info("fail to get thorchain address,error:\(error.localizedDescription)")
@@ -70,9 +71,11 @@ class TokenSelectionViewModel: ObservableObject {
 				switch coinResult {
 					case .success(let coin):
 						if coin.ticker == "Ethereum" {
+							coin.priceProviderId = asset.priceProviderId ?? ""
 							vault.coins.append(coin)
 						} else {
-							let newCoin = Coin(chain: coin.chain, ticker: asset.ticker, logo: asset.image, address: coin.address, hexPublicKey: coin.hexPublicKey, feeUnit: "GWEI", contractAddress: asset.contractAddress)
+							let newCoin = Coin(chain: coin.chain, ticker: asset.ticker, logo: asset.image, address: coin.address, hexPublicKey: coin.hexPublicKey, feeUnit: "GWEI", token: asset.tokenInfo)
+							newCoin.priceProviderId = asset.priceProviderId ?? ""
 							vault.coins.append(newCoin)
 						}
 					case .failure(let error):
@@ -86,6 +89,7 @@ class TokenSelectionViewModel: ObservableObject {
 				let coinResult = UTXOChainsHelper(coin: coinType, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode).getCoin()
 				switch coinResult {
 					case .success(let btc):
+						btc.priceProviderId = asset.priceProviderId ?? ""
 						vault.coins.append(btc)
 					case .failure(let err):
 						logger.info("fail to get bitcoin address,error:\(err.localizedDescription)")
@@ -94,6 +98,7 @@ class TokenSelectionViewModel: ObservableObject {
 				let coinResult = SolanaHelper.getSolana(hexPubKey: vault.pubKeyEdDSA, hexChainCode: vault.hexChainCode)
 				switch coinResult {
 					case .success(let sol):
+						sol.priceProviderId = asset.priceProviderId ?? ""
 						vault.coins.append(sol)
 					case .failure(let err):
 						logger.info("fail to get solana address,error:\(err.localizedDescription)")

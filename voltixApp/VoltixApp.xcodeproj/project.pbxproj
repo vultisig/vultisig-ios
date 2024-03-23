@@ -95,7 +95,7 @@
 		A65649F52B966F3E00E4B329 /* DecodableDefault.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649F42B966F3E00E4B329 /* DecodableDefault.swift */; };
 		A65649F82B96701300E4B329 /* UTXOTransactionMempoolPreviousOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649F72B96701300E4B329 /* UTXOTransactionMempoolPreviousOutput.swift */; };
 		A65649FA2B96998500E4B329 /* EthAddressInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649F92B96998500E4B329 /* EthAddressInfo.swift */; };
-		A65649FE2B9699BE00E4B329 /* EthToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649FD2B9699BE00E4B329 /* EthToken.swift */; };
+		A65649FE2B9699BE00E4B329 /* Token.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649FD2B9699BE00E4B329 /* Token.swift */; };
 		A6564A042B969AA500E4B329 /* EtherscanBroadcastResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6564A032B969AA500E4B329 /* EtherscanBroadcastResponse.swift */; };
 		A6564A062B969ADF00E4B329 /* EtherscanAPIResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6564A052B969ADF00E4B329 /* EtherscanAPIResponse.swift */; };
 		A6564A082B969AFC00E4B329 /* EtherscanAPITransactionDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6564A072B969AFC00E4B329 /* EtherscanAPITransactionDetail.swift */; };
@@ -332,7 +332,7 @@
 		A65649F42B966F3E00E4B329 /* DecodableDefault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodableDefault.swift; sourceTree = "<group>"; };
 		A65649F72B96701300E4B329 /* UTXOTransactionMempoolPreviousOutput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionMempoolPreviousOutput.swift; sourceTree = "<group>"; };
 		A65649F92B96998500E4B329 /* EthAddressInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EthAddressInfo.swift; sourceTree = "<group>"; };
-		A65649FD2B9699BE00E4B329 /* EthToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EthToken.swift; sourceTree = "<group>"; };
+		A65649FD2B9699BE00E4B329 /* Token.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Token.swift; sourceTree = "<group>"; };
 		A6564A032B969AA500E4B329 /* EtherscanBroadcastResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EtherscanBroadcastResponse.swift; sourceTree = "<group>"; };
 		A6564A052B969ADF00E4B329 /* EtherscanAPIResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EtherscanAPIResponse.swift; sourceTree = "<group>"; };
 		A6564A072B969AFC00E4B329 /* EtherscanAPITransactionDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EtherscanAPITransactionDetail.swift; sourceTree = "<group>"; };
@@ -626,7 +626,7 @@
 			children = (
 				465B18A22BA3D8F1001D7407 /* Etherscan */,
 				A65649F92B96998500E4B329 /* EthAddressInfo.swift */,
-				A65649FD2B9699BE00E4B329 /* EthToken.swift */,
+				A65649FD2B9699BE00E4B329 /* Token.swift */,
 			);
 			path = Ethereum;
 			sourceTree = "<group>";
@@ -1439,7 +1439,7 @@
 				DEFC7BFB2B8D87370090B07A /* erc20.swift in Sources */,
 				460347882BA15118007ED3AC /* LitecoinExtension.swift in Sources */,
 				A61BC8122BA2407A00484689 /* SendCryptoView.swift in Sources */,
-				A65649FE2B9699BE00E4B329 /* EthToken.swift in Sources */,
+				A65649FE2B9699BE00E4B329 /* Token.swift in Sources */,
 				4606B3B02B80465E0045094D /* UTXOTransactionsService.swift in Sources */,
 				DEEFF4FD2B9835DE0015692E /* THORChainSwapChainExtension.swift in Sources */,
 				A61BC81B2BA26D9900484689 /* TokenSelectionSection.swift in Sources */,

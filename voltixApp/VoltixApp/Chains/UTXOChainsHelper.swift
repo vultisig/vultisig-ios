@@ -54,7 +54,7 @@ class UTXOChainsHelper {
                      address: addr,
                      hexPublicKey: self.getDerivedPubKey(),
                      feeUnit: "SATS",
-                     contractAddress: nil)
+                     token: nil)
             }
     }
     

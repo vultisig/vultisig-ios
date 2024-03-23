@@ -73,7 +73,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
         let value = BigInt(amountInSmallestUnit)
         
         do {
-            let estimatedGas = try await eth.estimateGasForERC20Transfer(senderAddress: tx.fromAddress, contractAddress: tx.coin.contractAddress, recipientAddress: tx.toAddress, value: value)
+			let estimatedGas = try await eth.estimateGasForERC20Transfer(senderAddress: tx.fromAddress, contractAddress: tx.coin.token?.address ?? "", recipientAddress: tx.toAddress, value: value)
             
             print("Estimated gas: \(estimatedGas)")
             
@@ -142,7 +142,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
             
         } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
             
-            if tx.coin.contractAddress.isEmpty {
+			if tx.coin.token == nil {
                 
                 let estimatedGas = Int64(await estimateGasForEthTransfer(tx: tx))
                 
@@ -185,7 +185,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
                     coin: tx.coin,
                     toAddress: tx.toAddress,
                     toAmount: amountToSend, // The amount must be in the token decimals
-                    chainSpecific: BlockChainSpecific.ERC20(maxFeePerGasGwei: Int64(tx.gas) ?? 42, priorityFeeGwei: 1, nonce: tx.nonce, gasLimit: Int64(estimatedGas), contractAddr: tx.coin.contractAddress),
+					chainSpecific: BlockChainSpecific.ERC20(maxFeePerGasGwei: Int64(tx.gas) ?? 42, priorityFeeGwei: 1, nonce: tx.nonce, gasLimit: Int64(estimatedGas), contractAddr: tx.coin.token?.address ?? ""),
                     utxos: [],
                     memo: nil,
                     swapPayload: nil

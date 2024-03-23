@@ -13,8 +13,8 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var memo: String = ""
     @Published var gas: String = ""
     @Published var nonce: Int64 = 0
-    @Published var coin: Coin = Coin(chain: Chain.Bitcoin, ticker: "BTC", logo: "", address: "",hexPublicKey: "", feeUnit: "", contractAddress: nil)
-    @Published var eth: EthAddressInfo?
+	@Published var coin: Coin = Coin(chain: Chain.Bitcoin, ticker: "BTC", logo: "", address: "", hexPublicKey: "", feeUnit: "", token: nil)
+	@Published var eth: EthAddressInfo?
     
     var fromAddress: String {
         coin.address
@@ -28,7 +28,7 @@ class SendTransaction: ObservableObject, Hashable {
         Int64(amountDecimal * pow(10, 9))
     }
     
-    var token: EthToken? {
+    var token: Token? {
         eth?.tokens?.first(where: { $0.symbol == coin.ticker})
     }
     
