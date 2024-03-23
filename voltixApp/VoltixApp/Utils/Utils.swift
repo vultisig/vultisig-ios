@@ -85,9 +85,9 @@ enum Utils {
         }
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         for item in headers {
-            request.addValue(item.key, forHTTPHeaderField: item.value)
+            request.setValue(item.value, forHTTPHeaderField: item.key)
         }
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {

@@ -54,7 +54,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         let keysignMessageResult = self.keysignPayload.getKeysignMessages(vault: self.vault)
         switch keysignMessageResult {
         case .success(let preSignedImageHash):
-            self.keysignMessages = preSignedImageHash
+            self.keysignMessages = preSignedImageHash.sorted()
             if self.keysignMessages.isEmpty {
                 self.logger.error("no meessage need to be signed")
                 self.status = .FailToStart

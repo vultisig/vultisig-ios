@@ -71,6 +71,7 @@ class KeysignViewModel: ObservableObject {
             self.messagePuller.stop()
         }
         for msg in self.messsageToSign {
+            logger.info("signing message:\(msg)")
             let msgHash = Utils.getMessageBodyHash(msg: msg)
             self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: msgHash)
             self.stateAccess = LocalStateAccessorImpl(vault: self.vault)
@@ -88,6 +89,7 @@ class KeysignViewModel: ObservableObject {
                 self.status = .KeysignFailed
                 return
             }
+            
             self.messagePuller.pollMessages(mediatorURL: self.mediatorURL,
                                             sessionID: self.sessionID,
                                             localPartyKey: self.vault.localPartyID,
@@ -126,18 +128,22 @@ class KeysignViewModel: ObservableObject {
                     self.signatures[msg] = resp
                 }
                 self.messagePuller.stop()
+                try await Task.sleep(for: .seconds(1)) // backoff for 1 seconds , so other party can finish appropriately
             } catch {
                 self.logger.error("fail to do keysign,error:\(error.localizedDescription)")
                 self.keysignError = error.localizedDescription
                 self.status = .KeysignFailed
                 return
             }
+            
         }
         await self.broadcastTransaction()
         self.status = .KeysignFinished
         
     }
-    
+    func stopMessagePuller(){
+        self.messagePuller.stop()
+    }
     func tssKeysign(service: TssServiceImpl, req: TssKeysignRequest, keysignType: KeyType) async throws -> TssKeysignResponse {
         let t = Task.detached(priority: .high) {
             switch keysignType {

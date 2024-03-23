@@ -176,7 +176,6 @@ class JoinKeysignViewModel: ObservableObject {
             self.logger.info("Successfully prepared messages for keysigning.")
             self.keysignMessages = preSignedImageHash.sorted()
             if self.keysignMessages.isEmpty {
-                self.logger.error("")
                 self.errorMsg = "There is no messages to be signed"
                 self.status = .FailedToStart
             }
