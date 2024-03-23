@@ -71,7 +71,7 @@ class KeysignViewModel: ObservableObject {
             self.messagePuller.stop()
         }
         for msg in self.messsageToSign {
-            print("signing message:\(msg)")
+            logger.info("signing message:\(msg)")
             let msgHash = Utils.getMessageBodyHash(msg: msg)
             self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: msgHash)
             self.stateAccess = LocalStateAccessorImpl(vault: self.vault)

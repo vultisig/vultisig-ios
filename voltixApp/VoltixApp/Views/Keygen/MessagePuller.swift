@@ -16,6 +16,7 @@ class MessagePuller: ObservableObject {
     
     func stop() {
         pollingInboundMessages = false
+        cache.removeAllObjects()
         currentTask?.cancel()
     }
     
