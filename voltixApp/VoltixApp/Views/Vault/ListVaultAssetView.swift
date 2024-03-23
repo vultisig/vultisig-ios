@@ -83,7 +83,7 @@ struct ListVaultAssetView: View {
                 let result = UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode).getCoin()
                 switch result {
                     case .success(let btc):
-                        self.sendTransaction.coin = btc
+                        //self.sendTransaction.coin = btc
                         
                         // SET BTC as default if none
                         if vault.coins.count == 0 {

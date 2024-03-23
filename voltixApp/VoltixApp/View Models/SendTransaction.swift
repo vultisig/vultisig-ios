@@ -13,9 +13,22 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var memo: String = ""
     @Published var gas: String = ""
     @Published var nonce: Int64 = 0
-	@Published var coin: Coin = Coin(chain: Chain.Bitcoin, ticker: "BTC", logo: "", address: "", hexPublicKey: "", feeUnit: "", token: nil)
-	@Published var eth: EthAddressInfo?
-    
+	@Published var coin: Coin = Coin(
+		chain: Chain.Bitcoin,
+		ticker: "BTC",
+		logo: "",
+		address: "",
+		priceRate: 0.0,
+		chainType: ChainType.UTXO,
+		decimals: "8",
+		hexPublicKey: "",
+		feeUnit: "",
+		priceProviderId: "",
+		contractAddress: "",
+		rawBalance: "0",
+		isToken: false
+	)
+
     var fromAddress: String {
         coin.address
     }
@@ -28,16 +41,12 @@ class SendTransaction: ObservableObject, Hashable {
         Int64(amountDecimal * pow(10, 9))
     }
     
-    var token: Token? {
-        eth?.tokens?.first(where: { $0.symbol == coin.ticker})
-    }
-    
     var totalEthTransactionCostWei: BigInt {
         amountInWei + feeInWei
     }
     
     var amountInTokenWei: BigInt {
-        let decimals = Double(token?.decimals ?? "18") ?? 18.0 // The default is always in WEI unless the token has a different one like UDSC
+        let decimals = Double(coin.decimals ?? "18") ?? 18.0 // The default is always in WEI unless the token has a different one like UDSC
         
         return BigInt(amountDecimal * pow(10, decimals))
     }

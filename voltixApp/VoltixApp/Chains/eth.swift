@@ -18,15 +18,22 @@ enum EthereumHelper {
             return .failure(HelperError.runtimeError("derived public key is empty"))
         }
 
-        return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).map { addr in
-            Coin(chain: Chain.Ethereum,
-                 ticker: "ETH",
-                 logo: "",
-                 address: addr,
-                 hexPublicKey: derivePubKey,
-                 feeUnit: "GWEI",
-                 token: nil)
-        }
+		return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).map { addr in
+			Coin(chain: Chain.Ethereum,
+				 ticker: "ETH",
+				 logo: "",
+				 address: addr,
+				 priceRate: 0.0,
+				 chainType: ChainType.EVM,
+				 decimals: "18",
+				 hexPublicKey: hexPubKey,
+				 feeUnit: "GWEI",
+				 priceProviderId: "",
+				 contractAddress: "",
+				 rawBalance: "0",
+				 isToken: false) 
+		}
+
     }
 
     static func getAddressFromPublicKey(hexPubKey: String, hexChainCode: String) -> Result<String, Error> {

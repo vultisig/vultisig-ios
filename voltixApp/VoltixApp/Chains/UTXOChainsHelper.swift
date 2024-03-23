@@ -46,16 +46,23 @@ class UTXOChainsHelper {
         default:
             return .failure(HelperError.runtimeError("doesn't support coin \(coin)"))
         }
-        return getAddressFromPubKey()
-            .map { addr in
-                Coin(chain: chain,
-                     ticker: ticker,
-                     logo: "",
-                     address: addr,
-                     hexPublicKey: self.getDerivedPubKey(),
-                     feeUnit: "SATS",
-                     token: nil)
-            }
+		return getAddressFromPubKey()
+			.map { addr in
+				Coin(chain: chain,
+					 ticker: ticker,
+					 logo: "",
+					 address: addr,
+					 priceRate: 0.0,
+					 chainType: .UTXO,
+					 decimals: "8",
+					 hexPublicKey: self.getDerivedPubKey(),
+					 feeUnit: "SATS",
+					 priceProviderId: "",
+					 contractAddress: "",
+					 rawBalance: "0",
+					 isToken: false)
+			}
+
     }
     
     func getDerivedPubKey() -> String {

@@ -92,8 +92,8 @@ struct VaultItem: View {
 						{
 							presentationStack.append(.bitcoinTransactionsListView(SendTransaction(coin: coin)))
                         } else if coin.chain.name.lowercased() == "ethereum" {
-							if coin.token != nil {
-								presentationStack.append(.erc20TransactionsListView(coin.token?.address ?? ""))
+							if coin.isToken {
+								presentationStack.append(.erc20TransactionsListView(coin.contractAddress))
                             } else {
                                 presentationStack.append(.ethereumTransactionsListView)
                             }

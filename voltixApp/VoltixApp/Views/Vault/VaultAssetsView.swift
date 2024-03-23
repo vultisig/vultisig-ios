@@ -11,9 +11,6 @@ public struct VaultAssetsView: View {
     @State private var isCollapsed = true
     @State private var isLoading = false
 	
-	@State private var ethAddressInfo: EthAddressInfo = EthAddressInfo()
-	
-    
     @StateObject var utxo = BlockchairService.shared
 	@StateObject var eth = EtherScanService.shared
 	
@@ -134,11 +131,8 @@ public struct VaultAssetsView: View {
                         coinName: coinName
                     )
                 } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
-                   
 					do{
-						self.ethAddressInfo = try await eth.getEthInfo(
-							for: tx.fromAddress
-						)
+						try await eth.getEthInfo(tx: tx)
 					} catch {
 						print("\(error.localizedDescription)")
 					}
@@ -173,14 +167,17 @@ public struct VaultAssetsView: View {
                 self.coinBalance = utxo.blockchairData[key]?.address?.balanceInBTC ?? "0.0"
             } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
                 
-				tx.eth = self.ethAddressInfo
-				if tx.coin.ticker.uppercased() == "ETH" {
-					self.coinBalance = self.ethAddressInfo.balanceString ?? "0.0"
-                    self.balanceUSD = self.ethAddressInfo.balanceInUsd ?? "US$ 0,00"
-                } else if let tokenInfo = tx.token {
-                    self.balanceUSD = tokenInfo.balanceInUsd
-                    self.coinBalance = tokenInfo.balanceString
-                }
+//				self.coinBalance = tx.coin.balanceString ?? "0.0"
+//				self.balanceUSD = self.ethAddressInfo.balanceInUsd ?? "US$ 0,00"
+//				
+//				
+//				if tx.coin.ticker.uppercased() == "ETH" {
+//					self.coinBalance = self.ethAddressInfo.balanceString ?? "0.0"
+//                    self.balanceUSD = self.ethAddressInfo.balanceInUsd ?? "US$ 0,00"
+//                } else if let tokenInfo = tx.token {
+//                    self.balanceUSD = tokenInfo.balanceInUsd
+//                    self.coinBalance = tokenInfo.balanceString
+//                }
 				
             } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
                 

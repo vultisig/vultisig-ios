@@ -44,13 +44,13 @@ class SendCryptoViewModel: ObservableObject {
             tx.amount = utxo.blockchairData[key]?.address?.balanceInBTC ?? "0.0"
             tx.amountInUSD = utxo.blockchairData[key]?.address?.balanceInDecimalUSD ?? "0.0"
         } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
-            if tx.coin.ticker.uppercased() == "ETH" {
-                tx.amount = eth.balanceString ?? "0.0"
-                tx.amountInUSD = eth.balanceInUsd.replacingOccurrences(of: "US$ ", with: "") ?? ""
-            } else if let tokenInfo = tx.token {
-                tx.amount = tokenInfo.balanceString
-                tx.amountInUSD = tokenInfo.balanceInUsd.replacingOccurrences(of: "US$ ", with: "")
-            }
+//            if tx.coin.ticker.uppercased() == "ETH" {
+//                tx.amount = eth.balanceString ?? "0.0"
+//                tx.amountInUSD = eth.balanceInUsd.replacingOccurrences(of: "US$ ", with: "") ?? ""
+//            } else if let tokenInfo = tx.token {
+//                tx.amount = tokenInfo.balanceString
+//                tx.amountInUSD = tokenInfo.balanceInUsd.replacingOccurrences(of: "US$ ", with: "")
+//            }
         } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
             Task{
                 do{
@@ -89,11 +89,11 @@ class SendCryptoViewModel: ObservableObject {
                     newCoinAmount = newValueCoin != 0 ? String(format: "%.8f", newValueCoin) : ""
                 }
             } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
-                if tx.coin.ticker.uppercased() == Chain.Ethereum.ticker.uppercased() {
-                    newCoinAmount = eth.getAmountInEth(newValueDouble) ?? ""
-                } else if let tokenInfo = tx.token {
-                    newCoinAmount = tokenInfo.getAmountInTokens(newValueDouble)
-                }
+//                if tx.coin.ticker.uppercased() == Chain.Ethereum.ticker.uppercased() {
+//                    newCoinAmount = eth.getAmountInEth(newValueDouble) ?? ""
+//                } else if let tokenInfo = tx.token {
+//                    newCoinAmount = tokenInfo.getAmountInTokens(newValueDouble)
+//                }
             } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
                 if let rate = CryptoPriceService.shared.cryptoPrices?.prices[Chain.THORChain.name.lowercased()]?["usd"], rate > 0 {
                     let newValueCoin = newValueDouble / rate
@@ -127,11 +127,11 @@ class SendCryptoViewModel: ObservableObject {
                 let rate = priceRate
                 newValueUSD = String(format: "%.2f", newValueDouble * rate)
             } else if tx.coin.chain.name.lowercased() == "ethereum" {
-                if tx.coin.ticker.uppercased() == "ETH" {
-                    newValueUSD = eth.getAmountInUsd(newValueDouble) ?? ""
-                } else if let tokenInfo = tx.token {
-                    newValueUSD = tokenInfo.getAmountInUsd(newValueDouble)
-                }
+//                if tx.coin.ticker.uppercased() == "ETH" {
+//                    newValueUSD = eth.getAmountInUsd(newValueDouble) ?? ""
+//                } else if let tokenInfo = tx.token {
+//                    newValueUSD = tokenInfo.getAmountInUsd(newValueDouble)
+//                }
             } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
                 if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.THORChain.name.lowercased()]?["usd"] {
                     newValueUSD = String(format: "%.2f", newValueDouble * priceRateUsd)
@@ -231,7 +231,7 @@ class SendCryptoViewModel: ObservableObject {
                         isValidForm = false
                     }
                     
-                    let tokenBalance = Int(tokenInfo.rawBalance) ?? 0
+					let tokenBalance = Int(tx.coin.rawBalance) ?? 0
                     
                     if tx.amountInTokenWei > tokenBalance {
                         errorMessage = "walletBalanceExceededError"

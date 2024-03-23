@@ -24,25 +24,18 @@ public class EtherScanService: ObservableObject {
 		case customError(String)
 	}
 	
-	func getEthInfo(for address: String) async throws -> EthAddressInfo {
+	func getEthInfo(tx: SendTransaction) async throws -> Void {
 		
-		let ethAddressInfo = EthAddressInfo()
-		ethAddressInfo.address = address
-		
-		async let cryptoPrice = CryptoPriceService.shared.cryptoPrices?.prices[Chain.Ethereum.name.lowercased()]?["usd"]
-		async let ethBalance = fetchEthRawBalance(address: address)
-		//async let tokens: [EthToken] = Utils.fetchArray(from: Endpoint.fetchEtherscanAddressTokensBalance(address: address))
-		
+		async let cryptoPrice = CryptoPriceService.shared.cryptoPrices?.prices[tx.coin.priceProviderId]?["usd"]
 		if let priceRateUsd = await cryptoPrice {
-			ethAddressInfo.priceRate = priceRateUsd
+			tx.coin.priceRate = priceRateUsd
 		}
 		
-		ethAddressInfo.rawBalance = try await ethBalance
-		
-		//ethAddressInfo.tokens = try await tokens
-		
-		self.addressInfo = ethAddressInfo
-		return ethAddressInfo
+		if !tx.coin.isToken {
+			tx.coin.rawBalance = try await fetchEthRawBalance(address: tx.fromAddress)
+		} else {
+			tx.coin.rawBalance = try await fetchTokenRawBalance(contractAddress: tx.coin.contractAddress ?? "" , address: tx.fromAddress)
+		}
 	}
 	
 	func broadcastTransaction(hex: String) async throws -> String {
@@ -99,12 +92,11 @@ public class EtherScanService: ObservableObject {
 		}
 	}
 	
-	func fetchTokenBalance(contractAddress:String, address: String) async throws -> BigInt {
+	func fetchTokenRawBalance(contractAddress:String, address: String) async throws -> String {
 		let urlString = Endpoint.fetchEtherscanTokenBalance(contractAddress: contractAddress, address: address)
 		let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
-		if let resultString = extractResult(fromData: data),
-		   let bigIntResult = BigInt(resultString, radix: 16) {
-			return bigIntResult
+		if let resultString = extractResult(fromData: data) {
+			return resultString
 		} else {
 			throw EtherScanError.conversionError
 		}

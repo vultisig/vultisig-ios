@@ -1,45 +1,76 @@
-//
-//  Coin.swift
-//  VoltixApp
-
 import Foundation
 import SwiftData
+import BigInt
 
 class Coin: Codable, Hashable {
 	let chain: Chain
 	let ticker: String
 	let logo: String
 	let address: String
-	var token: Token?
+	let chainType: ChainType
 	
+	@DecodableDefault.EmptyString var decimals: String
 	@DecodableDefault.EmptyString var hexPublicKey: String
 	@DecodableDefault.EmptyString var feeUnit: String
 	@DecodableDefault.EmptyString var priceProviderId: String
+	@DecodableDefault.EmptyString var contractAddress: String
+	@DecodableDefault.EmptyString var rawBalance: String
+	@DecodableDefault.False var isToken: Bool
+	@DecodableDefaultDouble var priceRate: Double
 	
-	init(chain: Chain, ticker: String, logo: String, address: String, hexPublicKey: String, feeUnit: String, token: Token? = nil) {
+	init(chain: Chain, ticker: String, logo: String, address: String, priceRate: Double, chainType: ChainType, decimals: String, hexPublicKey: String, feeUnit: String, priceProviderId: String, contractAddress: String, rawBalance: String, isToken: Bool) {
 		self.chain = chain
 		self.ticker = ticker
 		self.logo = logo
 		self.address = address
+		self.priceRate = priceRate
+		self.chainType = chainType
+		self.decimals = decimals
 		self.hexPublicKey = hexPublicKey
 		self.feeUnit = feeUnit
-		self.token = token
-	}
-	
-	static func == (lhs: Coin, rhs: Coin) -> Bool {
-		lhs.chain == rhs.chain &&
-		lhs.ticker == rhs.ticker &&
-		lhs.logo == rhs.logo &&
-		lhs.address == rhs.address &&
-		lhs.token == rhs.token
+		self.priceProviderId = priceProviderId
+		self.contractAddress = contractAddress
+		self.rawBalance = rawBalance
+		self.isToken = isToken
 	}
 	
 	func hash(into hasher: inout Hasher) {
-		hasher.combine(chain)
 		hasher.combine(ticker)
-		hasher.combine(logo)
 		hasher.combine(address)
 	}
 	
-	static let example = Coin(chain: Chain.Bitcoin, ticker: "btc", logo: "BitcoinLogo", address: "bc1psrjtwm7682v6nhx2...uwfgcfelrennd7pcvq", hexPublicKey: "HexUnit", feeUnit: "fee", token: nil)
+	static func == (lhs: Coin, rhs: Coin) -> Bool {
+		return lhs.ticker == rhs.ticker && lhs.address == rhs.address
+	}
+	
+	var balance: BigInt? {
+		BigInt(rawBalance, radix: 10)
+	}
+	
+	var balanceDecimal: Double {
+		let tokenBalance = Double(rawBalance) ?? 0.0
+		let tokenDecimals = Double(Int(decimals) ?? 0)
+		return tokenBalance / pow(10, tokenDecimals)
+	}
+	
+	var balanceString: String {
+		String(format: "%.\(Int(decimals) ?? 0)f", balanceDecimal)
+	}
+	
+	func getAmountInUsd(_ amount: Double) -> String {
+		let balanceInUsd = amount * priceRate
+		return String(format: "%.2f", balanceInUsd)
+	}
+	
+	func getAmountInTokens(_ usdAmount: Double) -> String {
+		let tokenAmount = usdAmount / priceRate
+		return String(format: "%.\(Int(decimals) ?? 0)f", tokenAmount)
+	}
+	
+	var balanceInUsd: String {
+		let balanceInUsd = balanceDecimal * priceRate
+		return "US$ \(String(format: "%.2f", balanceInUsd))"
+	}
+	
+	static let example = Coin(chain: Chain.Bitcoin, ticker: "BTC", logo: "BitcoinLogo", address: "bc1qxyz...", priceRate: 20000.0, chainType: ChainType.UTXO, decimals: "8", hexPublicKey: "HexPublicKeyExample", feeUnit: "Satoshi", priceProviderId: "Bitcoin", contractAddress: "ContractAddressExample", rawBalance: "500000000", isToken: false)
 }
