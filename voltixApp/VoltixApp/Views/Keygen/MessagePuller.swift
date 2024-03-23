@@ -12,12 +12,16 @@ class MessagePuller: ObservableObject {
     var cache = NSCache<NSString, AnyObject>()
     private var pollingInboundMessages = true
     private let logger = Logger(subsystem: "message-puller", category: "communication")
-
+    private var currentTask: Task<Void,Error>? = nil
+    
     func stop() {
         pollingInboundMessages = false
         cache.removeAllObjects()
+        if currentTask != nil {
+            currentTask?.cancel()
+        }
     }
-
+    
     func pollMessages(mediatorURL: String,
                       sessionID: String,
                       localPartyKey: String,
@@ -25,7 +29,7 @@ class MessagePuller: ObservableObject {
                       messageID: String?)
     {
         pollingInboundMessages = true
-        Task.detached {
+        currentTask = Task.detached {
             repeat {
                 if Task.isCancelled { return }
                 self.pollInboundMessages(mediatorURL: mediatorURL, sessionID: sessionID, localPartyKey: localPartyKey, tssService: tssService, messageID: messageID)
@@ -33,7 +37,7 @@ class MessagePuller: ObservableObject {
             } while self.pollingInboundMessages
         }
     }
-
+    
     private func pollInboundMessages(mediatorURL: String, sessionID: String, localPartyKey: String, tssService: TssServiceImpl, messageID: String?) {
         let urlString = "\(mediatorURL)/message/\(sessionID)/\(localPartyKey)"
         var header = [String: String]()
@@ -75,7 +79,7 @@ class MessagePuller: ObservableObject {
             }
         })
     }
-
+    
     private func deleteMessageFromServer(mediatorURL: String, sessionID: String, localPartyKey: String, hash: String, messageID: String?) {
         let urlString = "\(mediatorURL)/message/\(sessionID)/\(localPartyKey)/\(hash)"
         Utils.deleteFromServer(urlString: urlString, messageID: nil)

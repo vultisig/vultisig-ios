@@ -71,6 +71,7 @@ class KeysignViewModel: ObservableObject {
             self.messagePuller.stop()
         }
         for msg in self.messsageToSign {
+            print("signing message:\(msg)")
             let msgHash = Utils.getMessageBodyHash(msg: msg)
             self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: msgHash)
             self.stateAccess = LocalStateAccessorImpl(vault: self.vault)
@@ -88,6 +89,8 @@ class KeysignViewModel: ObservableObject {
                 self.status = .KeysignFailed
                 return
             }
+            // this stop the previous message pulling task
+            self.messagePuller.stop()
             self.messagePuller.pollMessages(mediatorURL: self.mediatorURL,
                                             sessionID: self.sessionID,
                                             localPartyKey: self.vault.localPartyID,
