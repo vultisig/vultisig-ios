@@ -81,12 +81,16 @@ public class EtherScanService: ObservableObject {
 		let urlString = Endpoint.fetchEtherscanEstimateGasForERC20Transaction(data: data, contractAddress: contractAddress)
 		let resultData = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
 		
-		guard let resultString = extractResult(fromData: resultData),
-			  let resultHex = BigInt(resultString, radix: 16) else {
-			throw EtherScanError.resultParsingError
+		guard let resultString = extractResult(fromData: resultData) else {
+			throw EtherScanError.jsonDecodingError
 		}
 		
-		return resultHex
+		let trimmedResultString = resultString.trimmingCharacters(in: CharacterSet(charactersIn: "0x"))
+		guard let intResult = BigInt(trimmedResultString, radix: 16) else {
+			throw EtherScanError.conversionError
+		}
+		
+		return intResult
 	}
 	
 	func estimateGasForEthTransaction(senderAddress: String, recipientAddress: String, value: BigInt, memo: String?) async throws -> BigInt {
@@ -96,11 +100,16 @@ public class EtherScanService: ObservableObject {
 		let urlString = Endpoint.fetchEtherscanEstimateGasForEthTransaction(data: data, to: to, valueHex: valueHex)
 		let resultData = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
 		
-		if let resultString = extractResult(fromData: resultData), let resultHex = BigInt(resultString, radix: 16) {
-			return resultHex
-		} else {
-			throw EtherScanError.resultParsingError
+		guard let resultString = extractResult(fromData: resultData) else {
+			throw EtherScanError.jsonDecodingError
 		}
+		
+		let trimmedResultString = resultString.trimmingCharacters(in: CharacterSet(charactersIn: "0x"))
+		guard let intResult = BigInt(trimmedResultString, radix: 16) else {
+			throw EtherScanError.conversionError
+		}
+		
+		return intResult
 	}
 	
 	func fetchTokenRawBalance(contractAddress:String, address: String) async throws -> String {
