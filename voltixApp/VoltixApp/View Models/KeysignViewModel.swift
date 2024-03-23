@@ -89,8 +89,7 @@ class KeysignViewModel: ObservableObject {
                 self.status = .KeysignFailed
                 return
             }
-            // this stop the previous message pulling task
-            self.messagePuller.stop()
+            
             self.messagePuller.pollMessages(mediatorURL: self.mediatorURL,
                                             sessionID: self.sessionID,
                                             localPartyKey: self.vault.localPartyID,
@@ -129,12 +128,14 @@ class KeysignViewModel: ObservableObject {
                     self.signatures[msg] = resp
                 }
                 self.messagePuller.stop()
+                try await Task.sleep(for: .seconds(1)) // backoff for 1 seconds , so other party can finish appropriately
             } catch {
                 self.logger.error("fail to do keysign,error:\(error.localizedDescription)")
                 self.keysignError = error.localizedDescription
                 self.status = .KeysignFailed
                 return
             }
+            
         }
         await self.broadcastTransaction()
         self.status = .KeysignFinished

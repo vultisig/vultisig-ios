@@ -16,10 +16,7 @@ class MessagePuller: ObservableObject {
     
     func stop() {
         pollingInboundMessages = false
-        cache.removeAllObjects()
-        if currentTask != nil {
-            currentTask?.cancel()
-        }
+        currentTask?.cancel()
     }
     
     func pollMessages(mediatorURL: String,
@@ -31,7 +28,11 @@ class MessagePuller: ObservableObject {
         pollingInboundMessages = true
         currentTask = Task.detached {
             repeat {
-                if Task.isCancelled { return }
+                if Task.isCancelled {
+                    print("stop pulling for messageid:\(messageID ?? "")")
+                    return
+                }
+                print("pulling for messageid:\(messageID ?? "")")
                 self.pollInboundMessages(mediatorURL: mediatorURL, sessionID: sessionID, localPartyKey: localPartyKey, tssService: tssService, messageID: messageID)
                 try await Task.sleep(for: .seconds(1)) // Back off 1s
             } while self.pollingInboundMessages
@@ -60,7 +61,7 @@ class MessagePuller: ObservableObject {
                             // message has been applied before
                             continue
                         }
-                        self.logger.debug("Got message from: \(msg.from), to: \(msg.to)")
+                        self.logger.debug("Got message from: \(msg.from), to: \(msg.to), key:\(key)")
                         try tssService.applyData(msg.body)
                         self.cache.setObject(NSObject(), forKey: key)
                         Task {
@@ -82,6 +83,6 @@ class MessagePuller: ObservableObject {
     
     private func deleteMessageFromServer(mediatorURL: String, sessionID: String, localPartyKey: String, hash: String, messageID: String?) {
         let urlString = "\(mediatorURL)/message/\(sessionID)/\(localPartyKey)/\(hash)"
-        Utils.deleteFromServer(urlString: urlString, messageID: nil)
+        Utils.deleteFromServer(urlString: urlString, messageID: messageID)
     }
 }

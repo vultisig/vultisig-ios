@@ -109,7 +109,7 @@ public final class Mediator {
                 if let messageID {
                     key = "\(cleanSessionID)-\(recipient)-\(messageID)-\(message.hash)"
                 }
-                logger.info("received message \(message.hash) from \(message.from) to \(recipient)")
+                logger.info("received message \(key) from \(message.from) to \(recipient)")
                 self.cache.setObject(message, forKey: key)
             }
         } catch {
