@@ -1,12 +1,13 @@
-//
-//  CoinViewModel.swift
-//  VoltixApp
-//
-//  Created by Amol Kumar on 2024-03-09.
-//
+	//
+	//  CoinViewModel.swift
+	//  VoltixApp
+	//
+	//  Created by Amol Kumar on 2024-03-09.
+	//
 
 import Foundation
 import SwiftUI
+import BigInt
 
 @MainActor
 class CoinViewModel: ObservableObject {
@@ -19,6 +20,8 @@ class CoinViewModel: ObservableObject {
 	private let thor = ThorchainService.shared
 	private let eth = EtherScanService.shared
 	
+	//TODO: Something is wrong with this load data
+	//TODO: We need to check because it is called at least 5x
 	func loadData(tx: SendTransaction) async {
 		print("realoading data...")
 		isLoading = true
@@ -29,10 +32,20 @@ class CoinViewModel: ObservableObject {
 			await utxo.fetchBlockchairData(for: tx.fromAddress, coinName: coinName)
 		} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
 			do {
-				self.ethAddressInfo = try await eth.getEthInfo(for: tx.fromAddress)
+				print("The loadData ETH is called")
+				
+				// Start fetching all information concurrently
+				async let ethAddressInfo = eth.getEthInfo(for: tx.fromAddress)
+				async let gasPrice = eth.fetchGasPrice()
+				async let nonce = eth.fetchNonce(address: tx.fromAddress)
+				
+				self.ethAddressInfo = try await ethAddressInfo
+				tx.gas = String(try await gasPrice)
+				tx.nonce = try await nonce
 			} catch {
 				print("error fetching eth balances:\(error.localizedDescription)")
 			}
+
 		} else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
 			tx.gas = "0.02"
 			do{

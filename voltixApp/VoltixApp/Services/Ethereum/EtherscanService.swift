@@ -66,19 +66,18 @@ public class EtherScanService: ObservableObject {
 		return resultHex
 	}
 	
-	func fetchNonce(address: String) async throws -> Int64 {
-		let urlString = Endpoint.fetchEtherscanTransactionCount(address: address)
-		let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
+	func estimateGasForEthTransaction(senderAddress: String, recipientAddress: String, value: BigInt, memo: String?) async throws -> BigInt {
+		let data = "0x" + (memo?.data(using: .utf8)?.map { String(format: "%02x", $0) }.joined() ?? "")
+		let to = recipientAddress
+		let valueHex = "0x" + String(value, radix: 16)
+		let urlString = Endpoint.fetchEtherscanEstimateGasForEthTransaction(data: data, to: to, valueHex: valueHex)
+		let resultData = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
 		
-		guard let resultString = extractResult(fromData: data) else {
-			throw EtherScanError.jsonDecodingError
+		if let resultString = extractResult(fromData: resultData), let resultHex = BigInt(resultString, radix: 16) {
+			return resultHex
+		} else {
+			throw EtherScanError.resultParsingError
 		}
-		
-		guard let intResult = Int64(resultString) else {
-			throw EtherScanError.conversionError
-		}
-		
-		return intResult
 	}
 	
 	func fetchTokenBalance(contractAddress:String, address: String) async throws -> BigInt {
@@ -103,28 +102,37 @@ public class EtherScanService: ObservableObject {
 		}
 	}
 	
+	//TODO: cache it
+	func fetchNonce(address: String) async throws -> Int64 {
+		let urlString = Endpoint.fetchEtherscanTransactionCount(address: address)
+		let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
+		
+		guard let resultString = extractResult(fromData: data) else {
+			throw EtherScanError.jsonDecodingError
+		}
+		
+		let trimmedResultString = resultString.trimmingCharacters(in: CharacterSet(charactersIn: "0x"))
+		guard let intResult = Int64(trimmedResultString, radix: 16) else {
+			throw EtherScanError.conversionError
+		}
+		
+		return intResult
+	}
+	
+	//TODO: cache it
 	func fetchGasPrice() async throws -> BigInt {
 		let urlString = Endpoint.fetchEtherscanGasPrice()
 		let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
-		if let resultString = extractResult(fromData: data),
-		   let bigIntResult = BigInt(resultString, radix: 16) {
-			return bigIntResult
+		if let resultString = extractResult(fromData: data) {
+			let trimmedResultString = resultString.trimmingCharacters(in: CharacterSet(charactersIn: "0x"))
+			if let bigIntResult = BigInt(trimmedResultString, radix: 16) {
+				let bigIntResultGwei = bigIntResult / BigInt(1_000_000_000)
+				return bigIntResultGwei
+			} else {
+				throw EtherScanError.conversionError
+			}
 		} else {
 			throw EtherScanError.conversionError
-		}
-	}
-	
-	func estimateGasForEthTransaction(senderAddress: String, recipientAddress: String, value: BigInt, memo: String?) async throws -> BigInt {
-		let data = "0x" + (memo?.data(using: .utf8)?.map { String(format: "%02x", $0) }.joined() ?? "")
-		let to = recipientAddress
-		let valueHex = "0x" + String(value, radix: 16)
-		let urlString = Endpoint.fetchEtherscanEstimateGasForEthTransaction(data: data, to: to, valueHex: valueHex)
-		let resultData = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
-		
-		if let resultString = extractResult(fromData: resultData), let resultHex = BigInt(resultString, radix: 16) {
-			return resultHex
-		} else {
-			throw EtherScanError.resultParsingError
 		}
 	}
 	
