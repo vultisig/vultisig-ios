@@ -7,9 +7,7 @@ public class EtherScanService: ObservableObject {
 	
 	static let shared = EtherScanService()
 	private init() {}
-	
-	var addressInfo: EthAddressInfo = EthAddressInfo()
-	
+		
 	private var cacheGasPrice: [String: (data: BigInt, timestamp: Date)] = [:]
 	private var cacheNonce: [String: (data: Int64, timestamp: Date)] = [:]
 	
@@ -183,8 +181,6 @@ public class EtherScanService: ObservableObject {
 	
 	private func extractResult(fromData data: Data) -> String? {
 		do {
-			print(String(data: data, encoding: .utf8))
-			
 			if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
 			   let result = json["result"] as? String {
 				return result

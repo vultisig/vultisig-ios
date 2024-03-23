@@ -75,7 +75,7 @@ class KeysignViewModel: ObservableObject {
 			self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: msgHash)
 			self.stateAccess = LocalStateAccessorImpl(vault: self.vault)
 			var err: NSError?
-				// keysign doesn't need to recreate preparams
+			// keysign doesn't need to recreate preparams
 			self.tssService = TssNewService(self.tssMessenger, self.stateAccess, false, &err)
 			if let err {
 				self.logger.error("Failed to create TSS instance, error: \(err.localizedDescription)")
@@ -106,8 +106,8 @@ class KeysignViewModel: ObservableObject {
 					self.status = .KeysignFailed
 				}
 			}
-				// sign messages one by one , since the msg is in hex format , so we need convert it to base64
-				// and then pass it to TSS for keysign
+			// sign messages one by one , since the msg is in hex format , so we need convert it to base64
+			// and then pass it to TSS for keysign
 			if let msgToSign = Data(hexString: msg)?.base64EncodedString() {
 				keysignReq.messageToSign = msgToSign
 			}
@@ -150,7 +150,6 @@ class KeysignViewModel: ObservableObject {
 		return try await t.value
 	}
 	
-		// TODO: refactor this
 	func broadcastTransaction() async {
 		if let keysignPayload {
 			if keysignPayload.swapPayload != nil {
@@ -195,7 +194,7 @@ class KeysignViewModel: ObservableObject {
 					}
 					
 				case .EVM:
-						// ETH
+					// ETH
 					if !keysignPayload.coin.isToken {
 						let result = EthereumHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
 						switch result {
@@ -210,8 +209,9 @@ class KeysignViewModel: ObservableObject {
 								self.handleHelperError(err: err)
 						}
 					} else {
-							// It should work for all ERC20
+						// It should work for all ERC20
 						let result = ERC20Helper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+						
 						switch result {
 							case .success(let tx):
 								do {
