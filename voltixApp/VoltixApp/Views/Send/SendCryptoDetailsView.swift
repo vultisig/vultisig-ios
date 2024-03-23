@@ -155,7 +155,7 @@ struct SendCryptoDetailsView: View {
     }
     
     private func validateForm() {
-        if sendCryptoViewModel.validateForm(tx: tx, eth: coinViewModel.ethAddressInfo) {
+        if sendCryptoViewModel.validateForm(tx: tx) {
             sendCryptoViewModel.moveToNextView()
         }
     }

@@ -26,7 +26,7 @@ struct SendCryptoAmountUSDTextField: View {
 					
 					DebounceHelper.shared.debounce {
 						Task{
-							await sendCryptoViewModel.convertUSDToCoin(newValue: newValue, tx: tx, eth: eth)
+							await sendCryptoViewModel.convertUSDToCoin(newValue: newValue, tx: tx)
 						}
                     }
                 }

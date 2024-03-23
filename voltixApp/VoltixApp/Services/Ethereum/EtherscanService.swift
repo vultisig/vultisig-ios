@@ -26,16 +26,27 @@ public class EtherScanService: ObservableObject {
 	
 	func getEthInfo(tx: SendTransaction) async throws -> Void {
 		
+		// Start fetching all information concurrently
+		async let gasPrice = fetchGasPrice()
+		async let nonce = fetchNonce(address: tx.fromAddress)
 		async let cryptoPrice = CryptoPriceService.shared.cryptoPrices?.prices[tx.coin.priceProviderId]?["usd"]
+		
 		if let priceRateUsd = await cryptoPrice {
 			tx.coin.priceRate = priceRateUsd
 		}
 		
-		if !tx.coin.isToken {
-			tx.coin.rawBalance = try await fetchEthRawBalance(address: tx.fromAddress)
+		if tx.coin.isToken {
+			tx.coin.rawBalance = try await fetchTokenRawBalance(contractAddress: tx.coin.contractAddress, address: tx.fromAddress)
 		} else {
-			tx.coin.rawBalance = try await fetchTokenRawBalance(contractAddress: tx.coin.contractAddress ?? "" , address: tx.fromAddress)
+			tx.coin.rawBalance = try await fetchEthRawBalance(address: tx.fromAddress)
 		}
+		
+		tx.gas = String(try await gasPrice)
+		tx.nonce = try await nonce
+		
+		print("\(tx.coin.ticker) raw balance: \(tx.coin.rawBalance)")
+		print("\(tx.coin.ticker) GAS: \(tx.gas)")
+		print("\(tx.coin.ticker) Nonce: \(tx.nonce)")
 	}
 	
 	func broadcastTransaction(hex: String) async throws -> String {
@@ -113,7 +124,7 @@ public class EtherScanService: ObservableObject {
 		}
 	}
 	
-		//TODO: cache it
+	//TODO: cache it
 	func fetchNonce(address: String) async throws -> Int64 {
 		let urlString = Endpoint.fetchEtherscanTransactionCount(address: address)
 		let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
@@ -130,7 +141,7 @@ public class EtherScanService: ObservableObject {
 		return intResult
 	}
 	
-		//TODO: cache it
+	//TODO: cache it
 	func fetchGasPrice() async throws -> BigInt {
 		let urlString = Endpoint.fetchEtherscanGasPrice()
 		let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])

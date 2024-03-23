@@ -20,7 +20,7 @@ struct MainNavigationStack: View {
 
     var body: some View {
         NavigationStack(path: $presentationStack) {
-            VaultSelectionView(presentationStack: $presentationStack)
+			WelcomeView(presentationStack: $presentationStack)
                 .navigationDestination(for: CurrentScreen.self) { screen in
                     switch screen {
                         case .welcome:
@@ -33,8 +33,6 @@ struct MainNavigationStack: View {
                             NewWalletInstructions(presentationStack: $presentationStack)
                         case .peerDiscovery(let vault, let tssType):
                             PeerDiscoveryView(tssType: tssType, vault: vault)
-                        case .vaultAssets(let tx):
-                            VaultAssetsView(presentationStack: $presentationStack, tx: tx)
                         case .menu:
                             MenuView(presentationStack: $presentationStack)
                         case .swapInputDetails:
@@ -66,8 +64,6 @@ struct MainNavigationStack: View {
                             EthereumTransactionListView(presentationStack: $presentationStack)
                         case .erc20TransactionsListView(let contractAddress):
                             EthereumTransactionListView(presentationStack: $presentationStack, contractAddress: contractAddress)
-                        case .listVaultAssetView:
-                            ListVaultAssetView(presentationStack: $presentationStack)
                     }
                 }
         }.onAppear {

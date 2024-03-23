@@ -25,7 +25,7 @@ enum THORChainHelper {
 				 decimals: "8",
 				 hexPublicKey: hexPubKey,
 				 feeUnit: "RUNE",
-				 priceProviderId: "",
+				 priceProviderId: "thorchain",
 				 contractAddress: "",
 				 rawBalance: "0",
 				 isToken: false)

@@ -26,7 +26,7 @@ enum CurrentScreen: Hashable {
     case JoinKeysign
     
     // Normal use (typically launches here if wallet imported/generated already)
-    case vaultAssets(SendTransaction) // Main landing page for normal use. Lists ETH, BTC, ... assets.
+    // case vaultAssets(SendTransaction) // Main landing page for normal use. Lists ETH, BTC, ... assets.
     case menu // Add/Export/Forget vaults
     
     // Swap
@@ -36,7 +36,7 @@ enum CurrentScreen: Hashable {
     case swapVerifyScreen
     case swapDone
     
-    case listVaultAssetView
+    //case listVaultAssetView
     
     // transactions
     case bitcoinTransactionsListView(SendTransaction)

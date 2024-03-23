@@ -36,7 +36,7 @@ class SendCryptoViewModel: ObservableObject {
     
     let logger = Logger(subsystem: "send-input-details", category: "transaction")
     
-    func setMaxValues(tx: SendTransaction, eth: EthAddressInfo) {
+    func setMaxValues(tx: SendTransaction) {
         let coinName = tx.coin.chain.name.lowercased()
         let key: String = "\(tx.fromAddress)-\(coinName)"
         
@@ -44,13 +44,8 @@ class SendCryptoViewModel: ObservableObject {
             tx.amount = utxo.blockchairData[key]?.address?.balanceInBTC ?? "0.0"
             tx.amountInUSD = utxo.blockchairData[key]?.address?.balanceInDecimalUSD ?? "0.0"
         } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
-//            if tx.coin.ticker.uppercased() == "ETH" {
-//                tx.amount = eth.balanceString ?? "0.0"
-//                tx.amountInUSD = eth.balanceInUsd.replacingOccurrences(of: "US$ ", with: "") ?? ""
-//            } else if let tokenInfo = tx.token {
-//                tx.amount = tokenInfo.balanceString
-//                tx.amountInUSD = tokenInfo.balanceInUsd.replacingOccurrences(of: "US$ ", with: "")
-//            }
+			tx.amount = tx.coin.balanceString
+			tx.amountInUSD = tx.coin.balanceInUsd.replacingOccurrences(of: "US$ ", with: "")
         } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
             Task{
                 do{
@@ -71,7 +66,7 @@ class SendCryptoViewModel: ObservableObject {
         }
     }
     
-    func convertUSDToCoin(newValue: String, tx: SendTransaction, eth: EthAddressInfo) async {
+    func convertUSDToCoin(newValue: String, tx: SendTransaction) async {
         
         await cryptoPrice.fetchCryptoPrices()
         
@@ -89,11 +84,7 @@ class SendCryptoViewModel: ObservableObject {
                     newCoinAmount = newValueCoin != 0 ? String(format: "%.8f", newValueCoin) : ""
                 }
             } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
-//                if tx.coin.ticker.uppercased() == Chain.Ethereum.ticker.uppercased() {
-//                    newCoinAmount = eth.getAmountInEth(newValueDouble) ?? ""
-//                } else if let tokenInfo = tx.token {
-//                    newCoinAmount = tokenInfo.getAmountInTokens(newValueDouble)
-//                }
+				newCoinAmount = tx.coin.getAmountInTokens(newValueDouble)
             } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
                 if let rate = CryptoPriceService.shared.cryptoPrices?.prices[Chain.THORChain.name.lowercased()]?["usd"], rate > 0 {
                     let newValueCoin = newValueDouble / rate
@@ -112,7 +103,7 @@ class SendCryptoViewModel: ObservableObject {
         }
     }
     
-    func convertToUSD(newValue: String, tx: SendTransaction, eth: EthAddressInfo) async {
+    func convertToUSD(newValue: String, tx: SendTransaction) async {
         
         await cryptoPrice.fetchCryptoPrices()
         
@@ -127,11 +118,7 @@ class SendCryptoViewModel: ObservableObject {
                 let rate = priceRate
                 newValueUSD = String(format: "%.2f", newValueDouble * rate)
             } else if tx.coin.chain.name.lowercased() == "ethereum" {
-//                if tx.coin.ticker.uppercased() == "ETH" {
-//                    newValueUSD = eth.getAmountInUsd(newValueDouble) ?? ""
-//                } else if let tokenInfo = tx.token {
-//                    newValueUSD = tokenInfo.getAmountInUsd(newValueDouble)
-//                }
+				newValueUSD = tx.coin.getAmountInUsd(newValueDouble)
             } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
                 if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.THORChain.name.lowercased()]?["usd"] {
                     newValueUSD = String(format: "%.2f", newValueDouble * priceRateUsd)
@@ -159,7 +146,7 @@ class SendCryptoViewModel: ObservableObject {
         isValidAddress = coinType.validate(address: address)
     }
     
-    func validateForm(tx: SendTransaction, eth: EthAddressInfo) -> Bool {
+    func validateForm(tx: SendTransaction) -> Bool {
         // Reset validation state at the beginning
         errorMessage = ""
         isValidForm = true
@@ -207,40 +194,40 @@ class SendCryptoViewModel: ObservableObject {
             }
             
         } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
-            let ethBalanceInWei = Int(eth.rawBalance) ?? 0// it is in WEI
-            
-            if tx.coin.ticker.uppercased() == "ETH" {
-                if tx.totalEthTransactionCostWei > ethBalanceInWei {
-                    errorMessage = "walletBalanceExceededError"
-                    showAlert = true
-                    logger.log("Total transaction cost exceeds wallet balance.")
-                    isValidForm = false
-                }
-                
-            } else {
-                if let tokenInfo = eth.tokens?.first(where: { $0.symbol == tx.coin.ticker.uppercased() }) {
-                    print("tx.feeInWei \(tx.feeInWei)")
-                    print("ethBalanceInWei \(ethBalanceInWei)")
-                    
-                    print("has eth to pay the fee?  \(tx.feeInWei > ethBalanceInWei)")
-                    
-                    if tx.feeInWei > ethBalanceInWei {
-                        errorMessage = "mustHaveETHError"
-                        showAlert = true
-                        logger.log("You must have ETH in to send any TOKEN, so you can pay the fees. \n")
-                        isValidForm = false
-                    }
-                    
-					let tokenBalance = Int(tx.coin.rawBalance) ?? 0
-                    
-                    if tx.amountInTokenWei > tokenBalance {
-                        errorMessage = "walletBalanceExceededError"
-                        showAlert = true
-                        logger.log("Total transaction cost exceeds wallet balance.")
-                        isValidForm = false
-                    }
-                }
-            }
+//            let ethBalanceInWei = Int(eth.rawBalance) ?? 0// it is in WEI
+//            
+//            if tx.coin.ticker.uppercased() == "ETH" {
+//                if tx.totalEthTransactionCostWei > ethBalanceInWei {
+//                    errorMessage = "walletBalanceExceededError"
+//                    showAlert = true
+//                    logger.log("Total transaction cost exceeds wallet balance.")
+//                    isValidForm = false
+//                }
+//                
+//            } else {
+//                if let tokenInfo = eth.tokens?.first(where: { $0.symbol == tx.coin.ticker.uppercased() }) {
+//                    print("tx.feeInWei \(tx.feeInWei)")
+//                    print("ethBalanceInWei \(ethBalanceInWei)")
+//                    
+//                    print("has eth to pay the fee?  \(tx.feeInWei > ethBalanceInWei)")
+//                    
+//                    if tx.feeInWei > ethBalanceInWei {
+//                        errorMessage = "mustHaveETHError"
+//                        showAlert = true
+//                        logger.log("You must have ETH in to send any TOKEN, so you can pay the fees. \n")
+//                        isValidForm = false
+//                    }
+//                    
+//					let tokenBalance = Int(tx.coin.rawBalance) ?? 0
+//                    
+//                    if tx.amountInTokenWei > tokenBalance {
+//                        errorMessage = "walletBalanceExceededError"
+//                        showAlert = true
+//                        logger.log("Total transaction cost exceeds wallet balance.")
+//                        isValidForm = false
+//                    }
+//                }
+//            }
         } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
             
         } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {

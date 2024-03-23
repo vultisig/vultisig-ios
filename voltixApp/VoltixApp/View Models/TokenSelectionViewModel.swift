@@ -61,7 +61,7 @@ class TokenSelectionViewModel: ObservableObject {
 				let runeCoinResult = THORChainHelper.getRUNECoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
 				switch runeCoinResult {
 					case .success(let coin):
-						coin.priceProviderId = asset.priceProviderId ?? ""
+						coin.priceProviderId = asset.priceProviderId
 						vault.coins.append(coin)
 					case .failure(let error):
 						logger.info("fail to get thorchain address,error:\(error.localizedDescription)")

@@ -28,7 +28,7 @@ enum EthereumHelper {
 				 decimals: "18",
 				 hexPublicKey: hexPubKey,
 				 feeUnit: "GWEI",
-				 priceProviderId: "",
+				 priceProviderId: "ethereum",
 				 contractAddress: "",
 				 rawBalance: "0",
 				 isToken: false) 

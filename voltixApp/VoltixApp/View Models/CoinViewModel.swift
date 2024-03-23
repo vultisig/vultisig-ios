@@ -32,17 +32,10 @@ class CoinViewModel: ObservableObject {
 			await utxo.fetchBlockchairData(for: tx.fromAddress, coinName: coinName)
 		} else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
 			do {
-				
-				print("The loadData ETH is called \(tx.coin.ticker)")
-				
-				// Start fetching all information concurrently
-				async let gasPrice = eth.fetchGasPrice()
-				async let nonce = eth.fetchNonce(address: tx.fromAddress)
-				
-				tx.gas = String(try await gasPrice)
-				tx.nonce = try await nonce
+				print("The loadData for \(tx.coin.ticker)")
 				try await eth.getEthInfo(tx: tx)
-				
+				balanceUSD = tx.coin.balanceInUsd
+				coinBalance = tx.coin.balanceString
 			} catch {
 				print("error fetching eth balances:\(error.localizedDescription)")
 			}
@@ -73,14 +66,6 @@ class CoinViewModel: ObservableObject {
 		if tx.coin.chain.chainType == ChainType.UTXO {
 			balanceUSD = utxo.blockchairData[key]?.address?.balanceInUSD ?? "US$ 0,00"
 			coinBalance = utxo.blockchairData[key]?.address?.balanceInBTC ?? "0.0"
-		} else if tx.coin.chain.chainType == ChainType.EVM {
-//			if tx.coin.ticker.uppercased() == "ETH" {
-//				coinBalance = self.ethAddressInfo.balanceString
-//				balanceUSD = self.ethAddressInfo.balanceInUsd
-//			} else if let tokenInfo = tx.token {
-//				balanceUSD = tokenInfo.balanceInUsd
-//				coinBalance = tokenInfo.balanceString
-//			}
 		}
 	}
 }
