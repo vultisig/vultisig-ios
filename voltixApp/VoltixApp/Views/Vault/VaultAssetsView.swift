@@ -4,16 +4,19 @@ import SwiftUI
 public struct VaultAssetsView: View {
     @Binding var presentationStack: [CurrentScreen]
     @EnvironmentObject var appState: ApplicationState
-    @StateObject var eth: EthplorerAPIService = .init()
     @StateObject var sol: SolanaService = .shared
     @ObservedObject var tx: SendTransaction
     @State private var coinBalance: String = "0"
     @State private var balanceUSD: String = "0"
     @State private var isCollapsed = true
     @State private var isLoading = false
+	
+	@State private var ethAddressInfo: EthAddressInfo = EthAddressInfo()
+	
     
     @StateObject var utxo = BlockchairService.shared
-    
+	@StateObject var eth = EtherScanService.shared
+	
     class VaultAssetDebouncer {
         private var lastJob: DispatchWorkItem?
         private let queue: DispatchQueue
@@ -106,11 +109,7 @@ public struct VaultAssetsView: View {
                     print(
                         "Vault Assets View: \(tx.fromAddress)"
                     )
-                    presentationStack.append(
-                        .sendInputDetails(
-                            tx
-                        )
-                    )
+                    
                 },
                 swapClick: {
                 }
@@ -135,9 +134,14 @@ public struct VaultAssetsView: View {
                         coinName: coinName
                     )
                 } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
-                    await eth.getEthInfo(
-                        for: tx.fromAddress
-                    )
+                   
+					do{
+						self.ethAddressInfo = try await eth.getEthInfo(
+							for: tx.fromAddress
+						)
+					} catch {
+						print("\(error.localizedDescription)")
+					}
                 } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
                     
                 } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
@@ -168,14 +172,16 @@ public struct VaultAssetsView: View {
                 self.balanceUSD = utxo.blockchairData[key]?.address?.balanceInUSD ?? "US$ 0,00"
                 self.coinBalance = utxo.blockchairData[key]?.address?.balanceInBTC ?? "0.0"
             } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
-                tx.eth = eth.addressInfo
-                if tx.coin.ticker.uppercased() == "ETH" {
-                    self.coinBalance = eth.addressInfo?.ETH.balanceString ?? "0.0"
-                    self.balanceUSD = eth.addressInfo?.ETH.balanceInUsd ?? "US$ 0,00"
+                
+				tx.eth = self.ethAddressInfo
+				if tx.coin.ticker.uppercased() == "ETH" {
+					self.coinBalance = self.ethAddressInfo.ETH.balanceString ?? "0.0"
+                    self.balanceUSD = self.ethAddressInfo.ETH.balanceInUsd ?? "US$ 0,00"
                 } else if let tokenInfo = tx.token {
                     self.balanceUSD = tokenInfo.balanceInUsd
                     self.coinBalance = tokenInfo.balanceString
                 }
+				
             } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
                 
                 

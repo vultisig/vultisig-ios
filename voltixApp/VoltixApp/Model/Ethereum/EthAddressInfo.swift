@@ -8,23 +8,29 @@
 import SwiftUI
 
 class EthAddressInfo: Codable {
-    let address: String
-    let ETH: ETHInfo
-    let tokens: [EthToken]?
-    
-    func toString() -> String {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
-        
-        do {
-            let jsonData = try encoder.encode(self)
-            if let jsonString = String(data: jsonData, encoding: .utf8) {
-                return jsonString
-            }
-        } catch {
-            print("Error encoding JSON: \(error)")
-            return "Error encoding JSON: \(error)"
-        }
-        return ""
-    }
+	let address: String
+	let ETH: ETHInfo
+	let tokens: [EthToken]?
+	
+	init() {
+		self.address = "0x0"
+		self.ETH = ETHInfo()
+		self.tokens = nil
+	}
+	
+	func toString() -> String {
+		let encoder = JSONEncoder()
+		encoder.outputFormatting = .prettyPrinted
+		
+		do {
+			let jsonData = try encoder.encode(self)
+			if let jsonString = String(data: jsonData, encoding: .utf8) {
+				return jsonString
+			}
+		} catch {
+			print("Error encoding JSON: \(error)")
+			return "Error encoding JSON: \(error)"
+		}
+		return ""
+	}
 }

@@ -8,9 +8,15 @@
 import Foundation
 
 class ETHInfo: Codable {
-    let price: ETHInfoPrice
-    let balance: Double
-    let rawBalance: String
+	let price: ETHInfoPrice
+	let balance: Double
+	let rawBalance: String
+	
+	init(){
+		self.price = ETHInfoPrice()
+		self.balance = 0.0
+		self.rawBalance = ""
+	}
     
     var balanceString: String {
         return "\(String(format: "%.8f", balance))" // Wei is too long

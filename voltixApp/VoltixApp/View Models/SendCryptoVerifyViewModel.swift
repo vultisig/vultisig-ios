@@ -20,13 +20,15 @@ class SendCryptoVerifyViewModel: ObservableObject {
     @Published var thor = ThorchainService.shared
     @Published var sol: SolanaService = SolanaService.shared
     @Published var utxo = BlockchairService.shared
+	@Published var eth = EtherScanService.shared
+	
     
     var THORChainAccount: ThorchainAccountValue? = nil
     private var isValidForm: Bool {
         return isAddressCorrect && isAmountCorrect && isHackedOrPhished
     }
     
-    func reloadTransactions(tx: SendTransaction, eth: EthplorerAPIService) {
+    func reloadTransactions(tx: SendTransaction) {
         Task {
             if  tx.coin.chain.chainType == ChainType.UTXO {
                 await utxo.fetchBlockchairData(for: tx.fromAddress, coinName: tx.coin.chain.name.lowercased())
@@ -47,9 +49,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
         }
     }
     
-    private func estimateGasForEthTransfer(tx: SendTransaction, web3Service: Web3Service) async -> BigInt {
+    private func estimateGasForEthTransfer(tx: SendTransaction) async -> BigInt {
         do {
-            let estimatedGas = try await web3Service.estimateGasForEthTransaction(senderAddress: tx.fromAddress, recipientAddress: tx.toAddress, value: tx.amountInWei, memo: tx.memo)
+			let estimatedGas = try await eth.estimateGasForEthTransaction(senderAddress: tx.fromAddress, recipientAddress: tx.toAddress, value: tx.amountInWei, memo: tx.memo)
             
             print("Estimated gas: \(estimatedGas)")
             
@@ -62,7 +64,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
         return 0
     }
     
-    private func estimateGasForERC20Transfer(tx: SendTransaction, web3Service: Web3Service) async -> BigInt {
+    private func estimateGasForERC20Transfer(tx: SendTransaction) async -> BigInt {
         
         let decimals: Double = Double(tx.token?.tokenInfo.decimals ?? "18") ?? 18
         
@@ -71,7 +73,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
         let value = BigInt(amountInSmallestUnit)
         
         do {
-            let estimatedGas = try await web3Service.estimateGasForERC20Transfer(senderAddress: tx.fromAddress, contractAddress: tx.coin.contractAddress, recipientAddress: tx.toAddress, value: value)
+            let estimatedGas = try await eth.estimateGasForERC20Transfer(senderAddress: tx.fromAddress, contractAddress: tx.coin.contractAddress, recipientAddress: tx.toAddress, value: value)
             
             print("Estimated gas: \(estimatedGas)")
             
@@ -84,7 +86,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
         return 0
     }
     
-    func validateForm(tx: SendTransaction, web3Service: Web3Service) async -> KeysignPayload? {
+    func validateForm(tx: SendTransaction) async -> KeysignPayload? {
         
         
         if !isValidForm {
@@ -142,7 +144,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
             
             if tx.coin.contractAddress.isEmpty {
                 
-                let estimatedGas = Int64(await estimateGasForEthTransfer(tx: tx, web3Service: web3Service))
+                let estimatedGas = Int64(await estimateGasForEthTransfer(tx: tx))
                 
                 guard estimatedGas > 0 else {
                     errorMessage = "gasEstimateETHError"
@@ -164,7 +166,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 return keysignPayload
             } else {
                 
-                let estimatedGas = Int64(await estimateGasForERC20Transfer(tx: tx, web3Service: web3Service))
+                let estimatedGas = Int64(await estimateGasForERC20Transfer(tx: tx))
                 
                 guard estimatedGas > 0 else {
                     errorMessage = "gasEstimateTOKENError"

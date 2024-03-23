@@ -29,10 +29,6 @@ enum CurrentScreen: Hashable {
     case vaultAssets(SendTransaction) // Main landing page for normal use. Lists ETH, BTC, ... assets.
     case menu // Add/Export/Forget vaults
     
-    // Send
-    case sendInputDetails(SendTransaction)
-    case sendVerifyScreen(SendTransaction) // 2nd device goes to here automatically on receiving a p2p keysign msg
-    
     // Swap
     case swapInputDetails
     case swapPeerDiscovery

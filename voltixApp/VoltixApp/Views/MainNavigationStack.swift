@@ -37,10 +37,6 @@ struct MainNavigationStack: View {
                             VaultAssetsView(presentationStack: $presentationStack, tx: tx)
                         case .menu:
                             MenuView(presentationStack: $presentationStack)
-                        case .sendInputDetails(let tx):
-                            SendInputDetailsView(presentationStack: $presentationStack, tx: tx)
-                        case .sendVerifyScreen(let tx):
-                            SendVerifyView(presentationStack: $presentationStack, tx: tx)
                         case .swapInputDetails:
                             SwapInputDetailsView(presentationStack: $presentationStack)
                         case .swapPeerDiscovery:

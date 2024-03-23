@@ -36,7 +36,7 @@ class SendCryptoViewModel: ObservableObject {
     
     let logger = Logger(subsystem: "send-input-details", category: "transaction")
     
-    func setMaxValues(tx: SendTransaction, eth: EthplorerAPIService) {
+    func setMaxValues(tx: SendTransaction, eth: EthAddressInfo) {
         let coinName = tx.coin.chain.name.lowercased()
         let key: String = "\(tx.fromAddress)-\(coinName)"
         
@@ -45,8 +45,8 @@ class SendCryptoViewModel: ObservableObject {
             tx.amountInUSD = utxo.blockchairData[key]?.address?.balanceInDecimalUSD ?? "0.0"
         } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
             if tx.coin.ticker.uppercased() == "ETH" {
-                tx.amount = eth.addressInfo?.ETH.balanceString ?? "0.0"
-                tx.amountInUSD = eth.addressInfo?.ETH.balanceInUsd.replacingOccurrences(of: "US$ ", with: "") ?? ""
+                tx.amount = eth.ETH.balanceString ?? "0.0"
+                tx.amountInUSD = eth.ETH.balanceInUsd.replacingOccurrences(of: "US$ ", with: "") ?? ""
             } else if let tokenInfo = tx.token {
                 tx.amount = tokenInfo.balanceString
                 tx.amountInUSD = tokenInfo.balanceInUsd.replacingOccurrences(of: "US$ ", with: "")
@@ -71,7 +71,7 @@ class SendCryptoViewModel: ObservableObject {
         }
     }
     
-    func convertUSDToCoin(newValue: String, tx: SendTransaction, eth: EthplorerAPIService) async {
+    func convertUSDToCoin(newValue: String, tx: SendTransaction, eth: EthAddressInfo) async {
         
         await cryptoPrice.fetchCryptoPrices()
         
@@ -90,7 +90,7 @@ class SendCryptoViewModel: ObservableObject {
                 }
             } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
                 if tx.coin.ticker.uppercased() == Chain.Ethereum.ticker.uppercased() {
-                    newCoinAmount = eth.addressInfo?.ETH.getAmountInEth(newValueDouble) ?? ""
+                    newCoinAmount = eth.ETH.getAmountInEth(newValueDouble) ?? ""
                 } else if let tokenInfo = tx.token {
                     newCoinAmount = tokenInfo.getAmountInTokens(newValueDouble)
                 }
@@ -112,7 +112,7 @@ class SendCryptoViewModel: ObservableObject {
         }
     }
     
-    func convertToUSD(newValue: String, tx: SendTransaction, eth: EthplorerAPIService) async {
+    func convertToUSD(newValue: String, tx: SendTransaction, eth: EthAddressInfo) async {
         
         await cryptoPrice.fetchCryptoPrices()
         
@@ -128,7 +128,7 @@ class SendCryptoViewModel: ObservableObject {
                 newValueUSD = String(format: "%.2f", newValueDouble * rate)
             } else if tx.coin.chain.name.lowercased() == "ethereum" {
                 if tx.coin.ticker.uppercased() == "ETH" {
-                    newValueUSD = eth.addressInfo?.ETH.getAmountInUsd(newValueDouble) ?? ""
+                    newValueUSD = eth.ETH.getAmountInUsd(newValueDouble) ?? ""
                 } else if let tokenInfo = tx.token {
                     newValueUSD = tokenInfo.getAmountInUsd(newValueDouble)
                 }
@@ -159,7 +159,7 @@ class SendCryptoViewModel: ObservableObject {
         isValidAddress = coinType.validate(address: address)
     }
     
-    func validateForm(tx: SendTransaction, eth: EthplorerAPIService) -> Bool {
+    func validateForm(tx: SendTransaction, eth: EthAddressInfo) -> Bool {
         // Reset validation state at the beginning
         errorMessage = ""
         isValidForm = true
@@ -207,7 +207,7 @@ class SendCryptoViewModel: ObservableObject {
             }
             
         } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
-            let ethBalanceInWei = Int(eth.addressInfo?.ETH.rawBalance ?? "0") ?? 0 // it is in WEI
+            let ethBalanceInWei = Int(eth.ETH.rawBalance ?? "0") ?? 0 // it is in WEI
             
             if tx.coin.ticker.uppercased() == "ETH" {
                 if tx.totalEthTransactionCostWei > ethBalanceInWei {
@@ -218,7 +218,7 @@ class SendCryptoViewModel: ObservableObject {
                 }
                 
             } else {
-                if let tokenInfo = eth.addressInfo?.tokens?.first(where: { $0.tokenInfo.symbol == tx.coin.ticker.uppercased() }) {
+                if let tokenInfo = eth.tokens?.first(where: { $0.tokenInfo.symbol == tx.coin.ticker.uppercased() }) {
                     print("tx.feeInWei \(tx.feeInWei)")
                     print("ethBalanceInWei \(ethBalanceInWei)")
                     

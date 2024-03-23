@@ -14,7 +14,6 @@ struct CoinCell: View {
     
     @StateObject var tx = SendTransaction()
     @StateObject var coinViewModel = CoinViewModel()
-    @StateObject var eth = EthplorerAPIService()
 	
     var body: some View {
         cell
@@ -74,7 +73,7 @@ struct CoinCell: View {
     
     var swapButton: some View {
         NavigationLink {
-            SendInputDetailsView(presentationStack: .constant([]), tx: tx)
+            //SendInputDetailsView(presentationStack: .constant([]), tx: tx)
         } label: {
             Text(NSLocalizedString("swap", comment: "Swap button text").uppercased())
                 .font(.body16MenloBold)
@@ -105,7 +104,6 @@ struct CoinCell: View {
         tx.gas = "20"
         
         await coinViewModel.loadData(
-            eth: eth,
             tx: tx
         )
     }

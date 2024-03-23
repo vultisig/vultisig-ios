@@ -1,132 +1,152 @@
 import SwiftUI
-
-enum EtherScanError: Error {
-    case invalidURL
-    case httpError(Int, String) // Includes HTTP status code and message
-    case apiError(String)
-    case unexpectedResponse
-    case decodingError(String)
-    case unknown(Error)
-}
+import Foundation
+import BigInt
 
 @MainActor
 public class EtherScanService: ObservableObject {
-    @Published var transactionHash: String?
-    @Published var errorMessage: String?
-    @Published var transactions: [EtherscanAPITransactionDetail]? = []
-    @Published var addressFor: String?
-    
-    public func broadcastTransaction(hex: String) async {
-        let urlString = Endpoint.broadcastEtherscanTransaction(hex: hex)
-        
-        guard let url = URL(string: urlString) else {
-            self.errorMessage = "Invalid URL"
-            return
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST" // The method is POST, parameters are included in the URL
-        
-        do {
-            let (data, response) = try await URLSession.shared.data(for: request)
-            
-            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-                let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
-                let responseString = String(data: data, encoding: .utf8) ?? "No response body"
-                print("HTTP Error: \(statusCode) - \(responseString)")
-                throw EtherScanError.httpError(statusCode, "HTTP Error: \(statusCode) - \(responseString)")
-            }
-            
-            // print(String(data: data, encoding: .utf8) ?? "No response body")
-            
-            let decoder = JSONDecoder()
-            let broadcastResponse = try decoder.decode(EtherscanBroadcastResponse.self, from: data)
-            
-            print("ETHER BROADCAST: \(broadcastResponse.result)")
-            print(broadcastResponse)
-            self.transactionHash = broadcastResponse.result
-            
-        } catch {
-            self.errorMessage = Utils.handleJsonDecodingError(error)
-            print(String(describing: self.errorMessage))
-        }
-    }
-    
-    func fetchTransactions(forAddress address: String) async {
-        let urlString = Endpoint.fetchEtherscanTransactions(address: address)
-        
-        guard let url = URL(string: urlString) else {
-            self.errorMessage = "Invalid URL"
-            return
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        
-        do {
-            let (data, response) = try await URLSession.shared.data(for: request)
-            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-                let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
-                let responseString = String(data: data, encoding: .utf8) ?? "No response body"
-                throw EtherScanError.httpError(statusCode, "HTTP Error: \(statusCode) - \(responseString)")
-            }
-            
-            let decodedResponse = try JSONDecoder().decode(EtherscanAPIResponse.self, from: data)
-            
-            self.transactions = decodedResponse.result ?? []
-            self.addressFor = address
-            
-        } catch {
-            self.handleError(error: error)
-        }
-    }
-    
-    func fetchERC20Transactions(forAddress address: String, contractAddress: String) async {
-        let urlString = Endpoint.fetchERC20Transactions(address: address, contractAddress: contractAddress)
-        
-        guard let url = URL(string: urlString) else {
-            self.errorMessage = "Invalid URL"
-            return
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        
-        print(urlString)
-        
-        do {
-            let (data, response) = try await URLSession.shared.data(for: request)
-            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-                let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
-                let responseString = String(data: data, encoding: .utf8) ?? "No response body"
-                throw EtherScanError.httpError(statusCode, "HTTP Error: \(statusCode) - \(responseString)")
-            }
-            
-            let decodedResponse = try JSONDecoder().decode(EtherscanAPIResponse.self, from: data)
-            
-            self.transactions = decodedResponse.result ?? []
-            self.addressFor = address
-            
-        } catch {
-            self.handleError(error: error)
-            print(error)
-        }
-    }
-    
-    private func handleError(error: Error) {
-        if let decodingError = error as? DecodingError {
-            self.errorMessage = "Decoding error: \(decodingError.localizedDescription)"
-        } else if let etherScanError = error as? EtherScanError {
-            switch etherScanError {
-            case .httpError(let statusCode, let message):
-                self.errorMessage = "HTTP Error \(statusCode): \(message)"
-            case .apiError(let message):
-                self.errorMessage = message
-            default:
-                self.errorMessage = "Error: \(error.localizedDescription)"
-            }
-        } else {
-            self.errorMessage = "Unknown error: \(error.localizedDescription)"
-        }
-    }
+	
+	static let shared = EtherScanService()
+	private init() {}
+	
+	enum EtherScanError: Error {
+		case invalidURL
+		case httpError(Int, String)
+		case apiError(String)
+		case unexpectedResponse
+		case decodingError(String)
+		case unknown(Error)
+		case resultParsingError
+		case conversionError
+		case jsonDecodingError
+		case resultExtractionFailed
+		case customError(String)
+	}
+	
+	func getEthInfo(for address: String) async throws -> EthAddressInfo {
+		return EthAddressInfo()
+	}
+	
+	func broadcastTransaction(hex: String) async throws -> String {
+		let data = try await Utils.asyncPostRequest(urlString: Endpoint.broadcastEtherscanTransaction(hex: hex), headers: [:], body: Data())
+		guard let result = extractResult(fromData: data) else {
+			throw EtherScanError.resultExtractionFailed
+		}
+		return result
+	}
+	
+	func fetchTransactions(forAddress address: String) async throws -> ([EtherscanAPITransactionDetail], String) {
+		let decodedResponse: EtherscanAPIResponse = try await Utils.fetchObject(from: Endpoint.fetchEtherscanTransactions(address: address))
+		if let transactions = decodedResponse.result {
+			return (transactions, address)
+		} else {
+			throw EtherScanError.decodingError("Error to decode the transaction")
+		}
+	}
+	
+	func fetchERC20Transactions(forAddress address: String, contractAddress: String) async throws -> ([EtherscanAPITransactionDetail], String) {
+		let decodedResponse:EtherscanAPIResponse = try await Utils.fetchObject(from: Endpoint.fetchERC20Transactions(address: address, contractAddress: contractAddress))
+		if let transactions = decodedResponse.result {
+			return (transactions, address)
+		} else {
+			throw EtherScanError.decodingError("Error to decode the transaction")
+		}
+	}
+	
+	func estimateGasForERC20Transfer(senderAddress: String, contractAddress: String, recipientAddress: String, value: BigInt) async throws -> BigInt {
+		
+		let data = constructERC20TransferData(recipientAddress: recipientAddress, value: value)
+		let urlString = Endpoint.fetchEtherscanEstimateGasForERC20Transaction(data: data, contractAddress: contractAddress)
+		let resultData = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
+		
+		guard let resultString = extractResult(fromData: resultData),
+			  let resultHex = BigInt(resultString, radix: 16) else {
+			throw EtherScanError.resultParsingError
+		}
+		
+		return resultHex
+	}
+	
+	func fetchNonce(address: String) async throws -> Int64 {
+		let urlString = Endpoint.fetchEtherscanTransactionCount(address: address)
+		let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
+		
+		guard let resultString = extractResult(fromData: data) else {
+			throw EtherScanError.jsonDecodingError
+		}
+		
+		guard let intResult = Int64(resultString) else {
+			throw EtherScanError.conversionError
+		}
+		
+		return intResult
+	}
+	
+	func fetchTokenBalance(contractAddress:String, address: String) async throws -> BigInt {
+		let urlString = Endpoint.fetchEtherscanTokenBalance(contractAddress: contractAddress, address: address)
+		let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
+		if let resultString = extractResult(fromData: data),
+		   let bigIntResult = BigInt(resultString, radix: 16) {
+			return bigIntResult
+		} else {
+			throw EtherScanError.conversionError
+		}
+	}
+	
+	func fetchBalance(address: String) async throws -> BigInt {
+		let urlString = Endpoint.fetchEtherscanBalance(address: address)
+		let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
+		if let resultString = extractResult(fromData: data),
+		   let bigIntResult = BigInt(resultString, radix: 16) {
+			return bigIntResult
+		} else {
+			throw EtherScanError.conversionError
+		}
+	}
+	
+	func fetchGasPrice() async throws -> BigInt {
+		let urlString = Endpoint.fetchEtherscanGasPrice()
+		let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
+		if let resultString = extractResult(fromData: data),
+		   let bigIntResult = BigInt(resultString, radix: 16) {
+			return bigIntResult
+		} else {
+			throw EtherScanError.conversionError
+		}
+	}
+	
+	func estimateGasForEthTransaction(senderAddress: String, recipientAddress: String, value: BigInt, memo: String?) async throws -> BigInt {
+		let data = "0x" + (memo?.data(using: .utf8)?.map { String(format: "%02x", $0) }.joined() ?? "")
+		let to = recipientAddress
+		let valueHex = "0x" + String(value, radix: 16)
+		let urlString = Endpoint.fetchEtherscanEstimateGasForEthTransaction(data: data, to: to, valueHex: valueHex)
+		let resultData = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
+		
+		if let resultString = extractResult(fromData: resultData), let resultHex = BigInt(resultString, radix: 16) {
+			return resultHex
+		} else {
+			throw EtherScanError.resultParsingError
+		}
+	}
+	
+	private func extractResult(fromData data: Data) -> String? {
+		do {
+			if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+			   let result = json["result"] as? String {
+				return result
+			}
+		} catch {
+			print("JSON decoding error: \(error)")
+		}
+		return nil
+	}
+	
+	private func constructERC20TransferData(recipientAddress: String, value: BigInt) -> String {
+		let methodId = "a9059cbb"
+		let strippedRecipientAddress = recipientAddress.stripHexPrefix()
+		let paddedAddress = strippedRecipientAddress.paddingLeft(toLength: 64, withPad: "0")
+		let valueHex = String(value, radix: 16)
+		let paddedValue = valueHex.paddingLeft(toLength: 64, withPad: "0")
+		let data = "0x" + methodId + paddedAddress + paddedValue
+		return data
+	}
 }
