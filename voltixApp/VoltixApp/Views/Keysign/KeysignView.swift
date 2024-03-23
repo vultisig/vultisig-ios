@@ -43,6 +43,9 @@ struct KeysignView: View {
         .onChange(of: viewModel.txid) {
             movetoDoneView()
         }
+        .onDisappear(){
+            viewModel.stopMessagePuller()
+        }
     }
     
     var keysignFinished: some View {

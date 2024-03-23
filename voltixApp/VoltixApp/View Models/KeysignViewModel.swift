@@ -141,7 +141,9 @@ class KeysignViewModel: ObservableObject {
         self.status = .KeysignFinished
         
     }
-    
+    func stopMessagePuller(){
+        self.messagePuller.stop()
+    }
     func tssKeysign(service: TssServiceImpl, req: TssKeysignRequest, keysignType: KeyType) async throws -> TssKeysignResponse {
         let t = Task.detached(priority: .high) {
             switch keysignType {
