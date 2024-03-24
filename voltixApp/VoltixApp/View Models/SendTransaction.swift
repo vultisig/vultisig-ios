@@ -94,6 +94,30 @@ class SendTransaction: ObservableObject, Hashable {
         return Double(gasString) ?? 0
     }
     
+    var gasFeePredictionForEvm: Double {
+        if let gasDouble = Double(gas), let feeDefaultDouble = Double(coin.feeDefault) {
+            return calculateTransactionFee(gasPriceGwei: gasDouble, gasUsed: feeDefaultDouble)
+        } else {
+            return 0.0
+        }
+    }
+    
+    var gasFeePredictionForEvmUsd: Double {
+        if let gasDouble = Double(gas), let feeDefaultDouble = Double(coin.feeDefault) {
+            let feeInEth = calculateTransactionFee(gasPriceGwei: gasDouble, gasUsed: feeDefaultDouble)
+            return feeInEth * coin.priceRate
+        } else {
+            return 0.0
+        }
+    }
+
+    private func calculateTransactionFee(gasPriceGwei: Double, gasUsed: Double) -> Double {
+        let gweiToEthConversionFactor = 1_000_000_000.0
+        let transactionFeeGwei = gasPriceGwei * gasUsed
+        let transactionFeeEth = transactionFeeGwei / gweiToEthConversionFactor
+        return transactionFeeEth
+    }
+
     init() {
         self.toAddress = ""
         self.amount = ""
