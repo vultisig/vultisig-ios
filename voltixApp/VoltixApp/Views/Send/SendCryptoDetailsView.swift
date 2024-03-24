@@ -106,7 +106,6 @@ struct SendCryptoDetailsView: View {
     var textField: some View {
         SendCryptoAmountTextField(
             tx: tx,
-			eth: coinViewModel.ethAddressInfo,
             sendCryptoViewModel: sendCryptoViewModel
         )
         .focused($focusedField, equals: .amount)
@@ -122,7 +121,6 @@ struct SendCryptoDetailsView: View {
     var textFieldUSD: some View {
         SendCryptoAmountUSDTextField(
             tx: tx,
-            eth: coinViewModel.ethAddressInfo,
             sendCryptoViewModel: sendCryptoViewModel
         )
         .focused($focusedField, equals: .amountInUSD)

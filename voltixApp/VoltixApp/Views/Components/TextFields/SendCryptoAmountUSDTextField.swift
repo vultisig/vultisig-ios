@@ -9,7 +9,6 @@ import SwiftUI
 
 struct SendCryptoAmountUSDTextField: View {
     @ObservedObject var tx: SendTransaction
-    @State var eth: EthAddressInfo
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     
     var body: some View {

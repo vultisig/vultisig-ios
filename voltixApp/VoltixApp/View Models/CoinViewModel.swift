@@ -14,7 +14,6 @@ class CoinViewModel: ObservableObject {
 	@Published var isLoading = false
 	@Published var balanceUSD: String? = nil
 	@Published var coinBalance: String? = nil
-	@Published var ethAddressInfo: EthAddressInfo = EthAddressInfo()
 	
 	private var utxo = BlockchairService.shared
 	private let thor = ThorchainService.shared
