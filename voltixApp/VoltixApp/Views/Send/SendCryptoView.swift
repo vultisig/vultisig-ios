@@ -125,7 +125,7 @@ struct SendCryptoView: View {
     var doneView: some View {
         ZStack {
             if let hash = sendCryptoViewModel.hash {
-                SendCryptoDoneView(hash: hash)
+                SendCryptoDoneView(hash: hash,explorerLink: Endpoint.getExplorerURL(chainTicker: keysignPayload?.coin.chain.ticker ?? "", txid: hash))
             } else {
                 SendCryptoSigningErrorView()
             }

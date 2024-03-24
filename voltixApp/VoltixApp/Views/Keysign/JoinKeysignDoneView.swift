@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct JoinKeysignDoneView: View {
-    
+    @Environment(\.openURL) var openURL
     @ObservedObject var viewModel: KeysignViewModel
     @State var showAlert = false
     
@@ -82,7 +82,7 @@ struct JoinKeysignDoneView: View {
                 .font(.body18Menlo)
                 .foregroundColor(.neutral0)
         }
-
+        
     }
     
     var linkButton: some View {
@@ -93,7 +93,7 @@ struct JoinKeysignDoneView: View {
                 .font(.body18Menlo)
                 .foregroundColor(.neutral0)
         }
-
+        
     }
     
     var continueButton: some View {
@@ -119,7 +119,10 @@ struct JoinKeysignDoneView: View {
     }
     
     private func shareLink() {
-        
+        let urlStr = viewModel.getTransactionExplorerURL(txid: viewModel.txid)
+        if !urlStr.isEmpty, let u = URL(string:urlStr) {
+            openURL(u)
+        }
     }
 }
 
