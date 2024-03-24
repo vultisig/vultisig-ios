@@ -86,7 +86,7 @@ class TokenSelectionViewModel: ObservableObject {
 											   priceProviderId: asset.priceProviderId ,
 											   contractAddress: asset.contractAddress , // Assuming asset has a contractAddress field
 											   rawBalance: "0",
-											   isToken: asset.isToken)
+											   isNativeToken: asset.isNativeToken)
 							vault.coins.append(newCoin)
 						}
 					case .failure(let error):

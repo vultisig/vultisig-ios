@@ -88,7 +88,6 @@
 		A65649E62B96602700E4B329 /* TssExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649DE2B96602700E4B329 /* TssExtension.swift */; };
 		A65649E82B9668BF00E4B329 /* BitcoinTransactionRef.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649E72B9668BF00E4B329 /* BitcoinTransactionRef.swift */; };
 		A65649EA2B96690400E4B329 /* KeyShare.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649E92B96690400E4B329 /* KeyShare.swift */; };
-		A65649EC2B96697B00E4B329 /* Asset.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649EB2B96697B00E4B329 /* Asset.swift */; };
 		A65649EE2B9669DD00E4B329 /* UTXOTransactionMempoolInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649ED2B9669DD00E4B329 /* UTXOTransactionMempoolInput.swift */; };
 		A65649F02B966A1200E4B329 /* UTXOTransactionMempoolOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649EF2B966A1200E4B329 /* UTXOTransactionMempoolOutput.swift */; };
 		A65649F22B966A2300E4B329 /* UTXOTransactionStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649F12B966A2300E4B329 /* UTXOTransactionStatus.swift */; };
@@ -321,7 +320,6 @@
 		A65649DE2B96602700E4B329 /* TssExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TssExtension.swift; sourceTree = "<group>"; };
 		A65649E72B9668BF00E4B329 /* BitcoinTransactionRef.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BitcoinTransactionRef.swift; sourceTree = "<group>"; };
 		A65649E92B96690400E4B329 /* KeyShare.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyShare.swift; sourceTree = "<group>"; };
-		A65649EB2B96697B00E4B329 /* Asset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Asset.swift; sourceTree = "<group>"; };
 		A65649ED2B9669DD00E4B329 /* UTXOTransactionMempoolInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionMempoolInput.swift; sourceTree = "<group>"; };
 		A65649EF2B966A1200E4B329 /* UTXOTransactionMempoolOutput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionMempoolOutput.swift; sourceTree = "<group>"; };
 		A65649F12B966A2300E4B329 /* UTXOTransactionStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionStatus.swift; sourceTree = "<group>"; };
@@ -912,7 +910,6 @@
 				DE49A19B2B67133D000F3AFB /* Vault.swift */,
 				DE49A19F2B67143B000F3AFB /* Chain.swift */,
 				DE49A19D2B671416000F3AFB /* Coin.swift */,
-				A65649EB2B96697B00E4B329 /* Asset.swift */,
 				A65649F72B96701300E4B329 /* UTXOTransactionMempoolPreviousOutput.swift */,
 				DE6DCB942B97D88A009A39D5 /* THORChainSwapPayload.swift */,
 				A66A0BDA2BA13B570021A483 /* CoinsGrouped.swift */,
@@ -1449,7 +1446,6 @@
 				A6564A082B969AFC00E4B329 /* EtherscanAPITransactionDetail.swift in Sources */,
 				DE64A4CE2BA7FEE100C342E3 /* JoinKeysignViewModel.swift in Sources */,
 				A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */,
-				A65649EC2B96697B00E4B329 /* Asset.swift in Sources */,
 				DE64A4CA2BA7F90E00C342E3 /* ServiceDelegate.swift in Sources */,
 				46ED3A482B9F696000FFCB8A /* SolanaRecentBlockhash.swift in Sources */,
 				A6CBA8F02BA2A629008B110C /* ImportWalletUploadSection.swift in Sources */,

@@ -60,7 +60,7 @@ class UTXOChainsHelper {
 					 priceProviderId: "",
 					 contractAddress: "",
 					 rawBalance: "0",
-					 isToken: false)
+					 isNativeToken: false)
 			}
 
     }

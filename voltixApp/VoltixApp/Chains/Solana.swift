@@ -22,7 +22,7 @@ enum SolanaHelper {
 				 priceProviderId: "solana",
 				 contractAddress: "",
 				 rawBalance: "0",
-				 isToken: false
+				 isNativeToken: false
 			)
 		}
 	}

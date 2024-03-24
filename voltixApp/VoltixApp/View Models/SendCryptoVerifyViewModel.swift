@@ -20,8 +20,8 @@ class SendCryptoVerifyViewModel: ObservableObject {
     @Published var thor = ThorchainService.shared
     @Published var sol: SolanaService = SolanaService.shared
     @Published var utxo = BlockchairService.shared
-	@Published var eth = EtherScanService.shared
-	
+    @Published var eth = EtherScanService.shared
+    
     
     var THORChainAccount: ThorchainAccountValue? = nil
     private var isValidForm: Bool {
@@ -49,35 +49,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
         }
     }
     
-    private func estimateGasForEthTransfer(tx: SendTransaction) async -> BigInt {
-        do {
-			let estimatedGas = try await eth.estimateGasForEthTransaction(senderAddress: tx.fromAddress, recipientAddress: tx.toAddress, value: tx.amountInWei, memo: tx.memo)
-            
-            print("Estimated gas: \(estimatedGas)")
-            
-            return estimatedGas
-        } catch {
-            errorMessage = "\(NSLocalizedString("gasEstimateError:", comment: "")) \(error.localizedDescription)"
-            showAlert = true
-            isLoading = false
-        }
-        return 0
-    }
-    
-    private func estimateGasForERC20Transfer(tx: SendTransaction) async -> BigInt {
-        do {
-			let estimatedGas = try await eth.estimateGasForERC20Transfer(tx: tx)
-            return estimatedGas
-        } catch {
-            errorMessage = "\(NSLocalizedString("gasEstimateError:", comment: "")) \(error.localizedDescription)"
-            showAlert = true
-            isLoading = false
-        }
-        return 0
-    }
-    
     func validateForm(tx: SendTransaction) async -> KeysignPayload? {
-        
         
         if !isValidForm {
             self.errorMessage = "mustAgreeTermsError"
@@ -132,22 +104,12 @@ class SendCryptoVerifyViewModel: ObservableObject {
             
         } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
             
-			if !tx.coin.isToken {
-                
-                let estimatedGas = Int64(await estimateGasForEthTransfer(tx: tx))
-                
-                guard estimatedGas > 0 else {
-                    errorMessage = "gasEstimateETHError"
-                    showAlert = true
-                    isLoading = false
-                    return nil
-                }
-                
+            if !tx.coin.isNativeToken {
                 let keysignPayload = KeysignPayload(
                     coin: tx.coin,
                     toAddress: tx.toAddress,
                     toAmount: tx.amountInGwei, // in Gwei
-                    chainSpecific: BlockChainSpecific.Ethereum(maxFeePerGasGwei: Int64(tx.gas) ?? 24, priorityFeeGwei: 1, nonce: tx.nonce, gasLimit: estimatedGas),
+                    chainSpecific: BlockChainSpecific.Ethereum(maxFeePerGasGwei: Int64(tx.gas) ?? 24, priorityFeeGwei: 1, nonce: tx.nonce, gasLimit: Int64(21000)),
                     utxos: [],
                     memo: nil,
                     swapPayload: nil
@@ -156,11 +118,11 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 return keysignPayload
             } else {
                 
-                                let keysignPayload = KeysignPayload(
+                let keysignPayload = KeysignPayload(
                     coin: tx.coin,
                     toAddress: tx.toAddress,
-					toAmount: tx.amountInTokenWeiInt64, // The amount must be in the token decimals
-					chainSpecific: BlockChainSpecific.ERC20(maxFeePerGasGwei: Int64(tx.gas) ?? 42, priorityFeeGwei: 1, nonce: tx.nonce, gasLimit: Int64(95000), contractAddr: tx.coin.contractAddress),
+                    toAmount: tx.amountInTokenWeiInt64, // The amount must be in the token decimals
+                    chainSpecific: BlockChainSpecific.ERC20(maxFeePerGasGwei: Int64(tx.gas) ?? 42, priorityFeeGwei: 1, nonce: tx.nonce, gasLimit: Int64(120000), contractAddr: tx.coin.contractAddress),
                     utxos: [],
                     memo: nil,
                     swapPayload: nil

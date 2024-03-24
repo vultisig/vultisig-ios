@@ -54,7 +54,7 @@ struct KeysignPayload: Codable, Hashable {
                 let utxoHelper = UTXOChainsHelper(coin: .dogecoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
                 return utxoHelper.getPreSignedImageHash(keysignPayload: self)
             case Chain.Ethereum.name.lowercased():
-				if !coin.isToken {
+				if !coin.isNativeToken {
                     result = EthereumHelper.getPreSignedImageHash(keysignPayload: self)
                 }else{
                     result = ERC20Helper.getPreSignedImageHash(keysignPayload: self)

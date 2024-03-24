@@ -26,12 +26,12 @@ enum EthereumHelper {
 				 priceRate: 0.0,
 				 chainType: ChainType.EVM,
 				 decimals: "18",
-				 hexPublicKey: hexPubKey,
+				 hexPublicKey: derivePubKey,
 				 feeUnit: "GWEI",
 				 priceProviderId: "ethereum",
 				 contractAddress: "",
 				 rawBalance: "0",
-				 isToken: false) 
+				 isNativeToken: false) 
 		}
 
     }

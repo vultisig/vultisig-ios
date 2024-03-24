@@ -26,7 +26,7 @@ class SendTransaction: ObservableObject, Hashable {
 		priceProviderId: "",
 		contractAddress: "",
 		rawBalance: "0",
-		isToken: false
+		isNativeToken: false
 	)
 
     var fromAddress: String {

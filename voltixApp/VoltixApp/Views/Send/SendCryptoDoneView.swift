@@ -9,7 +9,8 @@ import SwiftUI
 
 struct SendCryptoDoneView: View {
     let hash: String
-    
+    let explorerLink: String
+    @Environment(\.openURL) var openURL
     @State var showAlert = false
     
     var body: some View {
@@ -73,7 +74,7 @@ struct SendCryptoDoneView: View {
                 .font(.body18Menlo)
                 .foregroundColor(.neutral0)
         }
-
+        
     }
     
     var linkButton: some View {
@@ -84,7 +85,7 @@ struct SendCryptoDoneView: View {
                 .font(.body18Menlo)
                 .foregroundColor(.neutral0)
         }
-
+        
     }
     
     var continueButton: some View {
@@ -103,10 +104,13 @@ struct SendCryptoDoneView: View {
     }
     
     private func shareLink() {
-        
+        if !explorerLink.isEmpty, let u = URL(string:explorerLink) {
+            openURL(u)
+        }
     }
 }
 
 #Preview {
-    SendCryptoDoneView(hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w")
+    SendCryptoDoneView(hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w", explorerLink: "https://blockstream.info/tx/")
+        .previewDevice("iPhone 13 Pro")
 }

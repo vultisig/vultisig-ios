@@ -20,57 +20,62 @@ enum KeysignStatus {
 
 @MainActor
 class KeysignViewModel: ObservableObject {
-	private let logger = Logger(subsystem: "keysign", category: "tss")
-	@Published var status: KeysignStatus = .CreatingInstance
-	@Published var keysignError: String = ""
-	@Published var signatures = [String: TssKeysignResponse]()
-	@Published var etherScanService = EtherScanService.shared
-	@Published var txid: String = ""
-	
-	private var tssService: TssServiceImpl? = nil
-	private var tssMessenger: TssMessengerImpl? = nil
-	private var stateAccess: LocalStateAccessorImpl? = nil
-	private var messagePuller = MessagePuller()
-	
-	var keysignCommittee: [String]
-	var mediatorURL: String
-	var sessionID: String
-	var keysignType: KeyType
-	var messsageToSign: [String]
-	var vault: Vault
-	var keysignPayload: KeysignPayload?
-	
-	init() {
-		self.keysignCommittee = []
-		self.mediatorURL = ""
-		self.sessionID = ""
-		self.vault = Vault(name: "tempory")
-		self.keysignType = .ECDSA
-		self.messsageToSign = []
-		self.keysignPayload = nil
-	}
-	
-	func setData(keysignCommittee: [String],
-				 mediatorURL: String,
-				 sessionID: String,
-				 keysignType: KeyType,
-				 messagesToSign: [String],
-				 vault: Vault,
-				 keysignPayload: KeysignPayload?) {
-		self.keysignCommittee = keysignCommittee
-		self.mediatorURL = mediatorURL
-		self.sessionID = sessionID
-		self.keysignType = keysignType
-		self.messsageToSign = messagesToSign
-		self.vault = vault
-		self.keysignPayload = keysignPayload
-	}
-	
-	func startKeysign() async {
-		defer {
-			self.messagePuller.stop()
-		}
-		for msg in self.messsageToSign {
+    private let logger = Logger(subsystem: "keysign", category: "tss")
+    @Published var status: KeysignStatus = .CreatingInstance
+    @Published var keysignError: String = ""
+    @Published var signatures = [String: TssKeysignResponse]()
+    @Published var etherScanService = EtherScanService.shared
+    @Published var txid: String = ""
+    
+    private var tssService: TssServiceImpl? = nil
+    private var tssMessenger: TssMessengerImpl? = nil
+    private var stateAccess: LocalStateAccessorImpl? = nil
+    private var messagePuller = MessagePuller()
+    
+    var keysignCommittee: [String]
+    var mediatorURL: String
+    var sessionID: String
+    var keysignType: KeyType
+    var messsageToSign: [String]
+    var vault: Vault
+    var keysignPayload: KeysignPayload?
+    
+    init() {
+        self.keysignCommittee = []
+        self.mediatorURL = ""
+        self.sessionID = ""
+        self.vault = Vault(name: "tempory")
+        self.keysignType = .ECDSA
+        self.messsageToSign = []
+        self.keysignPayload = nil
+    }
+    
+    func setData(keysignCommittee: [String],
+                 mediatorURL: String,
+                 sessionID: String,
+                 keysignType: KeyType,
+                 messagesToSign: [String],
+                 vault: Vault,
+                 keysignPayload: KeysignPayload?) {
+        self.keysignCommittee = keysignCommittee
+        self.mediatorURL = mediatorURL
+        self.sessionID = sessionID
+        self.keysignType = keysignType
+        self.messsageToSign = messagesToSign
+        self.vault = vault
+        self.keysignPayload = keysignPayload
+    }
+    func getTransactionExplorerURL(txid: String) -> String{
+        guard let keysignPayload else {
+            return ""
+        }
+        return Endpoint.getExplorerURL(chainTicker: keysignPayload.coin.chain.ticker, txid: txid)
+    }
+    func startKeysign() async {
+        defer {
+            self.messagePuller.stop()
+        }
+        for msg in self.messsageToSign {
             logger.info("signing message:\(msg)")
 			let msgHash = Utils.getMessageBodyHash(msg: msg)
 			self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: msgHash)
@@ -201,7 +206,7 @@ class KeysignViewModel: ObservableObject {
 					
 				case .EVM:
 					// ETH
-					if !keysignPayload.coin.isToken {
+					if !keysignPayload.coin.isNativeToken {
 						let result = EthereumHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
 						switch result {
 							case .success(let tx):
