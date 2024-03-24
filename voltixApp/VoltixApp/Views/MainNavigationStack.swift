@@ -24,7 +24,7 @@ struct MainNavigationStack: View {
                 .navigationDestination(for: CurrentScreen.self) { screen in
                     switch screen {
                         case .welcome:
-                            WelcomeView(presentationStack: $presentationStack)
+                            WelcomeView()
                         case .startScreen:
                             StartView(presentationStack: $presentationStack)
                         case .importWallet:

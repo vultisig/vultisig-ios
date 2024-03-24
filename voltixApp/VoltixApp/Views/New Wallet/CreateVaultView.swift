@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct CreateVaultView: View {
-    @Binding var presentationStack: [CurrentScreen]
     
     var body: some View {
         ZStack {
@@ -61,5 +60,5 @@ struct CreateVaultView: View {
 }
 
 #Preview {
-    CreateVaultView(presentationStack: .constant([]))
+    CreateVaultView()
 }

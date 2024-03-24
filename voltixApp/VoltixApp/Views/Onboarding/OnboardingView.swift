@@ -9,6 +9,7 @@ import SwiftUI
 
 struct OnboardingView: View {
     @State var tabIndex = 0
+    @EnvironmentObject var accountViewModel: AccountViewModel
     
     var body: some View {
         ZStack {
@@ -51,7 +52,11 @@ struct OnboardingView: View {
     }
     
     var nextButton: some View {
-        FilledButton(title: "next")
+        Button {
+            nextTapped()
+        } label: {
+            FilledButton(title: "next")
+        }
     }
     
     var skipButton: some View {
@@ -69,11 +74,27 @@ struct OnboardingView: View {
         .animation(.easeInOut, value: tabIndex)
     }
     
-    private func skipTapped() {
+    private func nextTapped() {
+        guard tabIndex<2 else {
+            moveToVaultView()
+            return
+        }
         
+        withAnimation {
+            tabIndex+=1
+        }
+    }
+    
+    private func skipTapped() {
+        moveToVaultView()
+    }
+    
+    private func moveToVaultView() {
+        accountViewModel.showOnboarding = false
     }
 }
 
 #Preview {
     OnboardingView()
+        .environmentObject(AccountViewModel())
 }
