@@ -1,132 +1,129 @@
-import CodeScanner
-import OSLog
-import SwiftData
+//
+//  ImportWalletView.swift
+//  VoltixApp
+//
+//  Created by Amol Kumar on 2024-03-07.
+//
+
 import SwiftUI
 import UniformTypeIdentifiers
 
-private let logger = Logger(subsystem: "import-wallet", category: "communication")
 struct ImportWalletView: View {
-    @Binding var presentationStack: [CurrentScreen]
     @Environment(\.modelContext) private var context
-    @State private var vaultText = ""
-    @State private var errorMsg: String = ""
-    @State private var isShowingScanner = false
-    @State private var showingPicker = false
-    @State private var pickedURLs: [URL] = []
-    
-    @State private var isShowingFileImporter = false
+    @StateObject var viewModel = ImportVaultViewModel()
+    @State var showFileImporter = false
     
     var body: some View {
-        GeometryReader { geometry in
-            VStack(alignment: .leading) {
-                Spacer().frame(height: 30)
-                ZStack(alignment: .bottomTrailing) {
-                    TextEditor(text: self.$vaultText)
-                        .font(.dynamicAmericanTypewriter(geometry.size.width * 0.05))
-                        .scrollContentBackground(.hidden)
-                        .frame(height: geometry.size.height * 0.4)
-                        .padding()
-                        .background(Color.primary.opacity(0.5))
-                        .cornerRadius(12)
-                    
-                    HStack {
-                        Button(action: {
-                            self.isShowingFileImporter = true
-                        }) {
-                            Image(systemName: "doc.text.viewfinder")
-                        }
-                        .padding(.all, 20)
-                        .buttonStyle(PlainButtonStyle())
-                        .fileImporter(
-                            isPresented: self.$isShowingFileImporter,
-                            allowedContentTypes: [UTType.data], // Adjust based on the file types you want to allow
-                            allowsMultipleSelection: false
-                        ) { result in
-                            switch result {
-                                case .success(let urls):
-                                    guard let selectedFileURL = urls.first else { return }
-                                    
-                                    print(selectedFileURL)
-                                    // Read the content of the file
-                                    self.readContent(of: selectedFileURL)
-                                case .failure(let error):
-                                    // Handle the error
-                                    print("Error selecting file: \(error.localizedDescription)")
-                            }
-                        }
-                    }
-                }
-                
-                Text("ENTER YOUR PREVIOUSLY CREATED VAULT SHARE")
-                    .font(.system(size: geometry.size.width * 0.04, weight: .medium))
-                    .padding(.top, 8)
-                if !errorMsg.isEmpty {
-                    Text(errorMsg)
-                        .font(.system(size: geometry.size.width * 0.04, weight: .medium))
-                        .foregroundStyle(.red)
-                        .padding(.top, 8)
-                }
-                Spacer()
-                
-                BottomBar(
-                    content: "CONTINUE",
-                    onClick: {
-                        if restoreVault(hexVaultData: vaultText, modelContext: context) {
-                            self.presentationStack.append(.vaultSelection)
-                        }
-                    }
-                )
-                .padding(.bottom)
-            }
-            .padding([.leading, .trailing], geometry.size.width * 0.05)
-            // Conditionally apply navigationBarTitleDisplayMode for non-macOS targets
-            .navigationTitle("IMPORT")
-            .modifier(InlineNavigationBarTitleModifier())
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    NavigationButtons.questionMarkButton
-                }
+        ZStack {
+            Background()
+            view
+        }
+        .navigationBarBackButtonHidden(true)
+        .navigationTitle(NSLocalizedString("import", comment: "Import title"))
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                NavigationBackButton()
             }
         }
+        .fileImporter(
+            isPresented: $showFileImporter,
+            allowedContentTypes: [UTType.data],
+            allowsMultipleSelection: false
+        ) { result in
+            viewModel.readFile(for: result)
+        }
+        .navigationDestination(isPresented: $viewModel.isLinkActive) {
+            HomeView()
+        }
+        .alert(isPresented: $viewModel.showAlert) {
+            Alert(
+                title: Text(NSLocalizedString("error", comment: "")),
+                message: Text(viewModel.errorMessage),
+                dismissButton: .default(Text("ok"))
+            )
+        }
+        .onDisappear {
+            viewModel.removeFile()
+        }
     }
-
-    private func readContent(of url: URL) {
-        let success = url.startAccessingSecurityScopedResource()
-        defer { url.stopAccessingSecurityScopedResource() }
-        
-        guard success else {
-            errorMsg = "Permission denied for accessing the file."
-            return
+    
+    var view: some View {
+        VStack(spacing: 15) {
+            instruction
+            uploadSection
+            
+            if let filename = viewModel.filename {
+                fileCell(filename)
+            }
+            
+            Spacer()
+            continueButton
         }
-        
-        do {
-            let fileContent = try String(contentsOf: url, encoding: .utf8)
-            vaultText = fileContent
-        } catch {
-            errorMsg = "Failed to read file: \(error.localizedDescription)"
+        .padding(.top, 30)
+        .padding(.horizontal, 30)
+    }
+    
+    var instruction: some View {
+        Text(NSLocalizedString("enterPreviousVault", comment: "Import Vault instruction"))
+            .font(.body12Menlo)
+            .foregroundColor(.neutral0)
+    }
+    
+    var uploadSection: some View {
+        Button {
+            showFileImporter.toggle()
+        } label: {
+            ImportWalletUploadSection(viewModel: viewModel)
         }
     }
-
-    private func restoreVault(hexVaultData: String, modelContext: ModelContext) -> Bool {
-        let vaultData = Data(hexString: hexVaultData)
-        guard let vaultData else {
-            errorMsg = "invalid vault data"
-            return false
+    
+    var continueButton: some View {
+        Button {
+            viewModel.restoreVault(modelContext: context)
+        } label: {
+            FilledButton(title: "continue")
+                .disabled(!viewModel.isFileUploaded)
+                .grayscale(viewModel.isFileUploaded ? 0 : 1)
         }
-        let decoder = JSONDecoder()
-        do {
-            let vault = try decoder.decode(Vault.self,
-                                           from: vaultData)
-            modelContext.insert(vault)
-            return true
-        } catch {
-            logger.error("fail to restore vault: \(error.localizedDescription)")
-            errorMsg = "fail to restore vault: \(error.localizedDescription)"
+        .padding(.horizontal, 10)
+        .padding(.bottom, 40)
+    }
+    
+    var fileImage: some View {
+        Image("fileIcon")
+            .resizable()
+            .frame(width: 24, height: 24)
+    }
+    
+    func fileName(_ name: String) -> some View {
+        Text(name)
+            .font(.body12Menlo)
+            .foregroundColor(.neutral0)
+    }
+    
+    var closeButton: some View {
+        Button {
+            viewModel.removeFile()
+        } label: {
+            Image(systemName: "xmark")
+                .font(.body16MontserratMedium)
+                .foregroundColor(.neutral0)
+                .padding(8)
         }
-        return false
+    }
+    
+    private func fileCell(_ name: String) -> some View {
+        HStack {
+            fileImage
+            fileName(name)
+            Spacer()
+            closeButton
+        }
+        .padding(12)
     }
 }
 
 #Preview {
-    ImportWalletView(presentationStack: .constant([]))
+    ImportWalletView()
 }

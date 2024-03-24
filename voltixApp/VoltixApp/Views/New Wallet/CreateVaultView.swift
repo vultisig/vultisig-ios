@@ -52,7 +52,7 @@ struct CreateVaultView: View {
     
     var importVaultButton: some View {
         NavigationLink {
-            ImportWalletView2()
+            ImportWalletView()
         } label: {
             OutlineButton(title: "importExistingVault")
         }

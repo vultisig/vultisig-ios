@@ -28,7 +28,7 @@ struct MainNavigationStack: View {
                         case .startScreen:
                             StartView(presentationStack: $presentationStack)
                         case .importWallet:
-                            ImportWalletView(presentationStack: $presentationStack)
+                            ImportWalletView()
                         case .newWalletInstructions:
                             NewWalletInstructions(presentationStack: $presentationStack)
                         case .peerDiscovery(let vault, let tssType):
