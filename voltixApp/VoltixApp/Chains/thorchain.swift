@@ -15,23 +15,11 @@ enum THORChainHelper {
         if derivePubKey.isEmpty {
             return .failure(HelperError.runtimeError("derived public key is empty"))
         }
-		return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).map { addr in
-			Coin(chain: Chain.THORChain,
-				 ticker: "RUNE",
-				 logo: "",
-				 address: addr,
-				 priceRate: 0.0,
-				 chainType: ChainType.THORChain,
-				 decimals: "8",
-				 hexPublicKey: derivePubKey,
-				 feeUnit: "RUNE",
-				 priceProviderId: "thorchain",
-				 contractAddress: "",
-				 rawBalance: "0",
-				 isNativeToken: false)
-		}
+        return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).flatMap { addr -> Result<Coin, Error> in
+            TokensStore.createNewCoinInstance(ticker: "RUNE", address: addr, hexPublicKey: derivePubKey)
+        }
     }
-
+    
     static func getAddressFromPublicKey(hexPubKey: String, hexChainCode: String) -> Result<String, Error> {
         let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
                                                             hexChainCode: hexChainCode,
@@ -44,7 +32,7 @@ enum THORChainHelper {
         }
         return .success(CoinType.thorchain.deriveAddressFromPublicKey(publicKey: publicKey))
     }
-
+    
     static func getSwapPreSignedInputData(keysignPayload: KeysignPayload, signingInput: CosmosSigningInput) -> Result<Data, Error> {
         guard case .THORChain(let accountNumber, let sequence) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get account number and sequence"))
@@ -74,7 +62,7 @@ enum THORChainHelper {
             return .failure(HelperError.runtimeError("fail to get plan"))
         }
     }
-
+    
     static func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
         guard keysignPayload.coin.chain.ticker == "RUNE" else {
             return .failure(HelperError.runtimeError("coin is not RUNE"))
@@ -82,7 +70,7 @@ enum THORChainHelper {
         guard let fromAddr = AnyAddress(string: keysignPayload.coin.address, coin: .thorchain) else {
             return .failure(HelperError.runtimeError("\(keysignPayload.coin.address) is invalid"))
         }
-
+        
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .thorchain) else {
             return .failure(HelperError.runtimeError("\(keysignPayload.toAddress) is invalid"))
         }
@@ -93,7 +81,7 @@ enum THORChainHelper {
             return .failure(HelperError.runtimeError("invalid hex public key"))
         }
         let coin = CoinType.thorchain
-
+        
         let input = CosmosSigningInput.with {
             $0.publicKey = pubKeyData
             $0.signingMode = .protobuf
@@ -123,7 +111,7 @@ enum THORChainHelper {
                 }]
             }
         }
-
+        
         do {
             let inputData = try input.serializedData()
             return .success(inputData)
@@ -131,7 +119,7 @@ enum THORChainHelper {
             return .failure(HelperError.runtimeError("fail to get plan"))
         }
     }
-
+    
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) -> Result<[String], Error> {
         let result = getPreSignedInputData(keysignPayload: keysignPayload)
         switch result {
@@ -147,7 +135,7 @@ enum THORChainHelper {
             return .failure(err)
         }
     }
-
+    
     static func getSignedTransaction(vaultHexPubKey: String,
                                      vaultHexChainCode: String,
                                      keysignPayload: KeysignPayload,
@@ -157,12 +145,12 @@ enum THORChainHelper {
         switch result {
         case .success(let inputData):
             return getSignedTransaction(vaultHexPubKey: vaultHexPubKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
-
+            
         case .failure(let err):
             return .failure(err)
         }
     }
-
+    
     static func getSignedTransaction(vaultHexPubKey: String,
                                      vaultHexChainCode: String,
                                      inputData: Data,
@@ -174,7 +162,7 @@ enum THORChainHelper {
         else {
             return .failure(HelperError.runtimeError("public key \(thorPublicKey) is invalid"))
         }
-
+        
         do {
             let hashes = TransactionCompiler.preImageHashes(coinType: .thorchain, txInputData: inputData)
             let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
@@ -185,7 +173,7 @@ enum THORChainHelper {
             guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash) else {
                 return .failure(HelperError.runtimeError("fail to verify signature"))
             }
-
+            
             allSignatures.add(data: signature)
             publicKeys.add(data: pubkeyData)
             let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .thorchain,

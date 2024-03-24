@@ -17,25 +17,12 @@ enum EthereumHelper {
         if derivePubKey.isEmpty {
             return .failure(HelperError.runtimeError("derived public key is empty"))
         }
-
-		return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).map { addr in
-			Coin(chain: Chain.Ethereum,
-				 ticker: "ETH",
-				 logo: "",
-				 address: addr,
-				 priceRate: 0.0,
-				 chainType: ChainType.EVM,
-				 decimals: "18",
-				 hexPublicKey: derivePubKey,
-				 feeUnit: "GWEI",
-				 priceProviderId: "ethereum",
-				 contractAddress: "",
-				 rawBalance: "0",
-				 isNativeToken: false) 
-		}
-
+        
+        return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).flatMap { addr -> Result<Coin, Error> in
+            TokensStore.createNewCoinInstance(ticker: "ETH", address: addr, hexPublicKey: derivePubKey)
+        }
     }
-
+    
     static func getAddressFromPublicKey(hexPubKey: String, hexChainCode: String) -> Result<String, Error> {
         let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
                                                             hexChainCode: hexChainCode,
@@ -48,13 +35,13 @@ enum EthereumHelper {
         }
         return .success(CoinType.ethereum.deriveAddressFromPublicKey(publicKey: publicKey))
     }
-
+    
     // this method convert GWei to Wei, and in little endian encoded Data
     static func convertEthereumNumber(input: Int64) -> Data {
         let inputInt = BigInt(input * weiPerGWei).magnitude.serialize()
         return inputInt
     }
-
+    
     static func getPreSignedInputData(signingInput: EthereumSigningInput, keysignPayload: KeysignPayload) -> Result<Data, Error> {
         guard keysignPayload.coin.chain.ticker == "ETH" else {
             return .failure(HelperError.runtimeError("coin is not ETH"))
@@ -83,7 +70,7 @@ enum EthereumHelper {
             return .failure(HelperError.runtimeError("fail to get plan"))
         }
     }
-
+    
     static func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
         guard keysignPayload.coin.chain.ticker == "ETH" else {
             return .failure(HelperError.runtimeError("coin is not ETH"))
@@ -123,7 +110,7 @@ enum EthereumHelper {
             return .failure(HelperError.runtimeError("fail to get plan"))
         }
     }
-
+    
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) -> Result<[String], Error> {
         let result = getPreSignedInputData(keysignPayload: keysignPayload)
         switch result {
@@ -139,7 +126,7 @@ enum EthereumHelper {
             return .failure(err)
         }
     }
-
+    
     static func getSignedTransaction(vaultHexPubKey: String,
                                      vaultHexChainCode: String,
                                      keysignPayload: KeysignPayload,
@@ -153,7 +140,7 @@ enum EthereumHelper {
             return .failure(err)
         }
     }
-
+    
     static func getSignedTransaction(vaultHexPubKey: String,
                                      vaultHexChainCode: String,
                                      inputData: Data,
@@ -165,7 +152,7 @@ enum EthereumHelper {
         else {
             return .failure(HelperError.runtimeError("public key \(ethPublicKey) is invalid"))
         }
-
+        
         do {
             let hashes = TransactionCompiler.preImageHashes(coinType: .ethereum, txInputData: inputData)
             let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
@@ -176,9 +163,9 @@ enum EthereumHelper {
             guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash) else {
                 return .failure(HelperError.runtimeError("fail to verify signature"))
             }
-
+            
             allSignatures.add(data: signature)
-
+            
             // it looks like the pubkey compileWithSignature accept is extended public key
             // also , it can be empty as well , since we don't have extended public key , so just leave it empty
             let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .ethereum,

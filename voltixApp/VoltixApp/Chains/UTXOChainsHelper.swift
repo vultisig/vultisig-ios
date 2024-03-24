@@ -31,38 +31,26 @@ class UTXOChainsHelper {
         var ticker = "BTC"
         var chain: Chain
         switch coin {
-        case CoinType.bitcoin:
+        case .bitcoin:
             ticker = "BTC"
-            chain = Chain.Bitcoin
-        case CoinType.bitcoinCash:
+            chain = .Bitcoin
+        case .bitcoinCash:
             ticker = "BCH"
-            chain = Chain.BitcoinCash
-        case CoinType.litecoin:
+            chain = .BitcoinCash
+        case .litecoin:
             ticker = "LTC"
-            chain = Chain.Litecoin
-        case CoinType.dogecoin:
+            chain = .Litecoin
+        case .dogecoin:
             ticker = "DOGE"
-            chain = Chain.Dogecoin
+            chain = .Dogecoin
         default:
             return .failure(HelperError.runtimeError("doesn't support coin \(coin)"))
         }
-		return getAddressFromPubKey()
-			.map { addr in
-				Coin(chain: chain,
-					 ticker: ticker,
-					 logo: "",
-					 address: addr,
-					 priceRate: 0.0,
-					 chainType: .UTXO,
-					 decimals: "8",
-					 hexPublicKey: self.getDerivedPubKey(),
-					 feeUnit: "SATS",
-					 priceProviderId: "",
-					 contractAddress: "",
-					 rawBalance: "0",
-					 isNativeToken: false)
-			}
-
+        
+        return getAddressFromPubKey()
+            .flatMap { addr -> Result<Coin, Error> in
+                TokensStore.createNewCoinInstance(ticker: ticker, address: addr, hexPublicKey: self.getDerivedPubKey())
+            }
     }
     
     func getDerivedPubKey() -> String {

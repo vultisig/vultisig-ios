@@ -71,7 +71,6 @@ class TokenSelectionViewModel: ObservableObject {
 				switch coinResult {
 					case .success(let coin):
 						if coin.ticker == "Ethereum" {
-							coin.priceProviderId = asset.priceProviderId
 							vault.coins.append(coin)
 						} else {
 							let newCoin = Coin(chain: asset.chain,
@@ -86,7 +85,10 @@ class TokenSelectionViewModel: ObservableObject {
 											   priceProviderId: asset.priceProviderId ,
 											   contractAddress: asset.contractAddress , // Assuming asset has a contractAddress field
 											   rawBalance: "0",
-											   isNativeToken: asset.isNativeToken)
+											   isNativeToken: asset.isNativeToken,
+                                               feeDefault: "120000"
+                            
+                            )
 							vault.coins.append(newCoin)
 						}
 					case .failure(let error):

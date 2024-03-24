@@ -103,6 +103,7 @@ struct CoinCell: View {
 	//This SET data is calling the loadData multiples times for the same coin
     private func setData() async {
         tx.coin = coin
+        tx.gas = coin.feeDefault
 		await coinViewModel.loadData(
             tx: tx
         )
