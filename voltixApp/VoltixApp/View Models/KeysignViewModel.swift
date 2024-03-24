@@ -66,10 +66,10 @@ class KeysignViewModel: ObservableObject {
         self.keysignPayload = keysignPayload
     }
     func getTransactionExplorerURL(txid: String) -> String{
-        if let keysignPayload {
-            return Endpoint.getExplorerURL(chainTicker: keysignPayload.coin.chain.ticker, txid: txid)
+        guard let keysignPayload else {
+            return ""
         }
-        return ""
+        return Endpoint.getExplorerURL(chainTicker: keysignPayload.coin.chain.ticker, txid: txid)
     }
     func startKeysign() async {
         defer {
