@@ -15,6 +15,7 @@ struct KeysignDiscoveryView: View {
     @StateObject var viewModel = KeysignDiscoveryViewModel()
     
     @State var isLoading = false
+    @State private var orientation = UIDevice.current.orientation
     
     let logger = Logger(subsystem: "keysign-discovery", category: "view")
     
@@ -27,6 +28,7 @@ struct KeysignDiscoveryView: View {
                 loader
             }
         }
+        .detectOrientation($orientation)
         .onAppear {
             viewModel.setData(vault: vault, keysignPayload: keysignPayload, participantDiscovery: participantDiscovery)
         }
@@ -66,12 +68,44 @@ struct KeysignDiscoveryView: View {
     
     var waitingForDevices: some View {
         VStack {
+            content
+            bottomButtons
+        }
+    }
+    
+    var content: some View {
+        ZStack {
+            if orientation == .landscapeLeft || orientation == .landscapeRight {
+                landscapeContent
+            } else {
+                portraitContent
+            }
+        }
+    }
+    
+    var landscapeContent: some View {
+        HStack {
             paringQRCode
+                .padding(60)
+            list
+                .padding(20)
+        }
+    }
+    
+    var portraitContent: some View {
+        VStack {
+            paringQRCode
+            list
+        }
+    }
+    
+    var list: some View {
+        ZStack {
             if participantDiscovery.peersFound.count == 0 {
                 lookingForDevices
+            } else {
+                deviceList
             }
-            deviceList
-            bottomButtons
         }
     }
     
@@ -181,4 +215,8 @@ struct KeysignDiscoveryView: View {
             }
         }
     }
+}
+
+#Preview {
+    KeysignDiscoveryView(vault: Vault.example, keysignPayload: KeysignPayload.example, sendCryptoViewModel: SendCryptoViewModel(), keysignView: .constant(nil))
 }

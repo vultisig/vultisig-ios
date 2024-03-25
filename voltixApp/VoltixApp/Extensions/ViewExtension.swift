@@ -14,4 +14,8 @@ extension View {
         UINavigationBar.appearance().largeTitleTextAttributes = [.foregroundColor: uiColor ]
         return self
     }
+    
+    func detectOrientation(_ orientation: Binding<UIDeviceOrientation>) -> some View {
+        modifier(DetectOrientation(orientation: orientation))
+    }
 }
