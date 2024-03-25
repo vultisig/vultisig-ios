@@ -99,10 +99,6 @@ struct KeysignDiscoveryView: View {
         }
     }
     
-    var qrCode: some View {
-        paringQRCode
-    }
-    
     var list: some View {
         ZStack {
             if participantDiscovery.peersFound.count == 0 {
