@@ -6,6 +6,7 @@
 import Foundation
 import Mediator
 import OSLog
+import SwiftUI
 
 enum PeerDiscoveryStatus {
     case WaitingForDevices
@@ -101,6 +102,25 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         let urlString = "\(self.serverAddr)/start/\(self.sessionID)"
         Utils.sendRequest(urlString: urlString, method: "POST", body: allParticipants) { _ in
             self.logger.info("kicked off keygen successfully")
+        }
+    }
+    
+    func getQrImage(size: CGFloat) -> Image {
+        do {
+            let jsonEncoder = JSONEncoder()
+            var data: Data
+            switch tssType {
+            case .Keygen:
+                let km = keygenMessage(sessionID: sessionID, hexChainCode: vault.hexChainCode, serviceName: serviceName)
+                data = try jsonEncoder.encode(PeerDiscoveryPayload.Keygen(km))
+            case .Reshare:
+                let reshareMsg = ReshareMessage(sessionID: sessionID, hexChainCode: vault.hexChainCode, serviceName: serviceName, pubKeyECDSA: vault.pubKeyECDSA, oldParties: vault.signers)
+                data = try jsonEncoder.encode(PeerDiscoveryPayload.Reshare(reshareMsg))
+            }
+            return Utils.getQrImage(data: data, size: size)
+        } catch {
+            logger.error("fail to encode keygen message to json,error:\(error.localizedDescription)")
+            return Image(systemName: "xmark")
         }
     }
 }

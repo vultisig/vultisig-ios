@@ -7,77 +7,78 @@ import OSLog
 import SwiftUI
 
 struct PeerDiscoveryView: View {
-    private let logger = Logger(subsystem: "peers-discory", category: "communication")
     let tssType: TssType
     let vault: Vault
+    
     @StateObject var viewModel = KeygenPeerDiscoveryViewModel()
     @StateObject var participantDiscovery = ParticipantDiscovery()
+    
+    let logger = Logger(subsystem: "peers-discory", category: "communication")
     
     var body: some View {
         ZStack {
             Background()
-            VStack {
-                switch self.viewModel.status {
-                case .WaitingForDevices:
-                    self.waitingForDevices
-                case .Keygen:
-                    KeygenView(vault: self.vault,
-                               tssType: self.tssType,
-                               keygenCommittee: self.viewModel.selections.map { $0 },
-                               vaultOldCommittee: self.vault.signers.filter { self.viewModel.selections.contains($0) },
-                               mediatorURL: self.viewModel.serverAddr,
-                               sessionID: self.viewModel.sessionID)
-                case .Failure:
-                    Text(self.viewModel.errorMessage)
-                        .font(.body15MenloBold)
-                        .multilineTextAlignment(.center)
-                        .foregroundColor(.red)
-                }
+            states
+        }
+        .navigationTitle(NSLocalizedString("mainDevice", comment: "Main Device"))
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                NavigationBackButton()
             }
-            .navigationTitle(NSLocalizedString("mainDevice", comment: "Main Device"))
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarBackButtonHidden(true)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    NavigationBackButton()
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    NavigationHelpButton()
-                }
-            }
-            .task {
-                viewModel.startDiscovery()
-            }.onAppear {
-                self.viewModel.setData(vault: vault, tssType: self.tssType, participantDiscovery: self.participantDiscovery)
-            }
-            .onDisappear {
-                viewModel.stopMediator()
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationHelpButton()
             }
         }
+        .task {
+            viewModel.startDiscovery()
+        }
+        .onAppear {
+            viewModel.setData(vault: vault, tssType: tssType, participantDiscovery: participantDiscovery)
+        }
+        .onDisappear {
+            viewModel.stopMediator()
+        }
+    }
+    
+    var states: some View {
+        VStack {
+            switch viewModel.status {
+            case .WaitingForDevices:
+                waitingForDevices
+            case .Keygen:
+                keygenView
+            case .Failure:
+                failureText
+            }
+        }
+        .foregroundColor(.neutral0)
     }
     
     var waitingForDevices: some View {
         VStack {
-            self.paringBarcode
-            if self.participantDiscovery.peersFound.count == 0 {
-                self.lookingForDevices
+            paringBarcode
+            
+            if participantDiscovery.peersFound.count == 0 {
+                lookingForDevices
             }
-            self.deviceList
-            self.bottomButtons
+            
+            deviceList
+            bottomButtons
         }
     }
     
     var lookingForDevices: some View {
-        VStack {
-            HStack {
-                Text(NSLocalizedString("lookingForDevices", comment: "Looking for devices"))
-                    .font(.body15MenloBold)
-                    .multilineTextAlignment(.center)
-                
-                ProgressView()
-                    .progressViewStyle(.circular)
-                    .padding(2)
-            }
+        HStack {
+            Text(NSLocalizedString("lookingForDevices", comment: "Looking for devices"))
+                .font(.body15MenloBold)
+                .multilineTextAlignment(.center)
+            
+            ProgressView()
+                .preferredColorScheme(.dark)
+                .progressViewStyle(.circular)
+                .padding(2)
         }
         .padding()
         .cornerRadius(10)
@@ -89,10 +90,12 @@ struct PeerDiscoveryView: View {
             Text(NSLocalizedString("pairWithOtherDevices", comment: "Pair with two other devices"))
                 .font(.body18MenloBold)
                 .multilineTextAlignment(.center)
-            self.getQrImage(size: 100)
+            
+            viewModel.getQrImage(size: 100)
                 .resizable()
                 .scaledToFit()
                 .padding()
+            
             Text(NSLocalizedString("scanQrCode", comment: "Scan QR Code"))
                 .font(.body13Menlo)
                 .multilineTextAlignment(.center)
@@ -104,17 +107,7 @@ struct PeerDiscoveryView: View {
     
     var deviceList: some View {
         List(participantDiscovery.peersFound, id: \.self, selection: $viewModel.selections) { peer in
-            HStack {
-                Image(systemName: self.viewModel.selections.contains(peer) ? "checkmark.circle" : "circle")
-                Text(peer)
-            }
-            .onTapGesture {
-                if self.viewModel.selections.contains(peer) {
-                    self.viewModel.selections.remove(peer)
-                } else {
-                    self.viewModel.selections.insert(peer)
-                }
-            }
+            getPeerCell(peer)
         }
         .scrollContentBackground(.hidden)
     }
@@ -126,26 +119,43 @@ struct PeerDiscoveryView: View {
             FilledButton(title: "continue")
                 .padding(40)
         }
-        .disabled(self.viewModel.selections.count < 2)
-        .opacity(self.viewModel.selections.count < 2 ? 0.8 : 1)
+        .disabled(viewModel.selections.count < 2)
+        .opacity(viewModel.selections.count < 2 ? 0.8 : 1)
     }
     
-    private func getQrImage(size: CGFloat) -> Image {
-        do {
-            let jsonEncoder = JSONEncoder()
-            var data: Data
-            switch tssType {
-            case .Keygen:
-                let km = keygenMessage(sessionID: viewModel.sessionID, hexChainCode: viewModel.vault.hexChainCode, serviceName: viewModel.serviceName)
-                data = try jsonEncoder.encode(PeerDiscoveryPayload.Keygen(km))
-            case .Reshare:
-                let reshareMsg = ReshareMessage(sessionID: viewModel.sessionID, hexChainCode: viewModel.vault.hexChainCode, serviceName: viewModel.serviceName, pubKeyECDSA: viewModel.vault.pubKeyECDSA, oldParties: viewModel.vault.signers)
-                data = try jsonEncoder.encode(PeerDiscoveryPayload.Reshare(reshareMsg))
+    var keygenView: some View {
+        KeygenView(
+            vault: vault,
+            tssType: tssType,
+            keygenCommittee: viewModel.selections.map { $0 },
+            vaultOldCommittee: vault.signers.filter { viewModel.selections.contains($0)
+            },
+            mediatorURL: viewModel.serverAddr,
+            sessionID: viewModel.sessionID
+        )
+    }
+    
+    var failureText: some View {
+        Text(self.viewModel.errorMessage)
+            .font(.body15MenloBold)
+            .multilineTextAlignment(.center)
+            .foregroundColor(.red)
+    }
+    
+    private func getPeerCell(_ peer: String) -> some View {
+        HStack {
+            Image(systemName: self.viewModel.selections.contains(peer) ? "checkmark.circle" : "circle")
+            Text(peer)
+        }
+        .font(.body12Menlo)
+        .foregroundColor(.neutral0)
+        .listRowBackground(Color.blue600)
+        .onTapGesture {
+            if viewModel.selections.contains(peer) {
+                viewModel.selections.remove(peer)
+            } else {
+                viewModel.selections.insert(peer)
             }
-            return Utils.getQrImage(data: data, size: size)
-        } catch {
-            logger.error("fail to encode keygen message to json,error:\(error.localizedDescription)")
-            return Image(systemName: "xmark")
         }
     }
 }
