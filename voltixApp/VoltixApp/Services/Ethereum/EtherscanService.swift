@@ -31,11 +31,6 @@ public class EtherScanService: ObservableObject {
 			
 			tx.gas = String(try await gasPrice)
 			tx.nonce = try await nonce
-			
-			print("\(tx.coin.ticker) raw balance: \(tx.coin.rawBalance)")
-			print("\(tx.coin.ticker) GAS: \(tx.gas)")
-			print("\(tx.coin.ticker) Nonce: \(tx.nonce)")
-			
 		} catch let error as EtherScanError {
 			handleEtherScanError(error)
 		} catch {

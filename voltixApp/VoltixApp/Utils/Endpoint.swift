@@ -62,10 +62,6 @@ class Endpoint {
         "https://litecoinspace.org/api/address/\(userAddress)/txs"
     }
 	    
-	static func getEthInfo(_ address: String) -> String {
-		"https://api.ethplorer.io/getAddressInfo/\(address)?apiKey=EK-qHhpP-qzAvwsm-WSsW3"
-	}
-	
 	static func broadcastEtherscanTransaction(hex: String) -> String {
 		"http://45.76.120.223/etherscan/api?module=proxy&action=eth_sendRawTransaction&hex=\(hex)"
 	}

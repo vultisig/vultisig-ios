@@ -192,44 +192,6 @@ class SendCryptoViewModel: ObservableObject {
                 logger.log("Total transaction cost exceeds wallet balance.")
                 isValidForm = false
             }
-            
-        } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
-//            let ethBalanceInWei = Int(eth.rawBalance) ?? 0// it is in WEI
-//            
-//            if tx.coin.ticker.uppercased() == "ETH" {
-//                if tx.totalEthTransactionCostWei > ethBalanceInWei {
-//                    errorMessage = "walletBalanceExceededError"
-//                    showAlert = true
-//                    logger.log("Total transaction cost exceeds wallet balance.")
-//                    isValidForm = false
-//                }
-//                
-//            } else {
-//                if let tokenInfo = eth.tokens?.first(where: { $0.symbol == tx.coin.ticker.uppercased() }) {
-//                    print("tx.feeInWei \(tx.feeInWei)")
-//                    print("ethBalanceInWei \(ethBalanceInWei)")
-//                    
-//                    print("has eth to pay the fee?  \(tx.feeInWei > ethBalanceInWei)")
-//                    
-//                    if tx.feeInWei > ethBalanceInWei {
-//                        errorMessage = "mustHaveETHError"
-//                        showAlert = true
-//                        logger.log("You must have ETH in to send any TOKEN, so you can pay the fees. \n")
-//                        isValidForm = false
-//                    }
-//                    
-//					let tokenBalance = Int(tx.coin.rawBalance) ?? 0
-//                    
-//                    if tx.amountInTokenWei > tokenBalance {
-//                        errorMessage = "walletBalanceExceededError"
-//                        showAlert = true
-//                        logger.log("Total transaction cost exceeds wallet balance.")
-//                        isValidForm = false
-//                    }
-//                }
-//            }
-        } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
-            
         } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
             
             guard let walletBalanceInLamports = sol.balance else {

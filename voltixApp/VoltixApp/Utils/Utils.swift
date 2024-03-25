@@ -119,8 +119,6 @@ enum Utils {
 	static func fetchArray<T: Decodable>(from urlString: String) async throws -> [T] {
 		do {
 			let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
-			print("fetchArray")
-			print(String(data: data, encoding: String.Encoding.utf8))
 			return try JSONDecoder().decode([T].self, from: data)
 		} catch let error as DecodingError {
 			let errorDescription = handleJsonDecodingError(error)
