@@ -20,15 +20,15 @@ struct MainNavigationStack: View {
 
     var body: some View {
         NavigationStack(path: $presentationStack) {
-			WelcomeView(presentationStack: $presentationStack)
+			WelcomeView()
                 .navigationDestination(for: CurrentScreen.self) { screen in
                     switch screen {
                         case .welcome:
-                            WelcomeView(presentationStack: $presentationStack)
+                            WelcomeView()
                         case .startScreen:
                             StartView(presentationStack: $presentationStack)
                         case .importWallet:
-                            ImportWalletView(presentationStack: $presentationStack)
+                            ImportWalletView()
                         case .newWalletInstructions:
                             NewWalletInstructions(presentationStack: $presentationStack)
                         case .peerDiscovery(let vault, let tssType):

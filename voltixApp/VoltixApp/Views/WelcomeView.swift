@@ -2,8 +2,6 @@ import SwiftUI
 import SwiftData
 
 struct WelcomeView: View {
-    @Binding var presentationStack: [CurrentScreen]
-    
     @State var didAppear = false
     
     var body: some View {
@@ -18,11 +16,9 @@ struct WelcomeView: View {
     }
     
     var view: some View {
-        VStack {
-            Spacer()
+        VStack(spacing: 32) {
             content
-            Spacer()
-            button
+            progress
         }
     }
     
@@ -56,14 +52,9 @@ struct WelcomeView: View {
             .opacity(didAppear ? 0.8 : 0)
     }
     
-    var button: some View {
-        NavigationLink {
-            CreateVaultView(presentationStack: $presentationStack)
-        } label: {
-            FilledButton(title: "start")
-                .padding(40)
-                .opacity(didAppear ? 1 : 0)
-        }
+    var progress: some View {
+        ProgressView()
+            .preferredColorScheme(.dark)
     }
     
     private func setData() {
@@ -76,6 +67,6 @@ struct WelcomeView: View {
 // Preview
 struct WelcomeView_Previews: PreviewProvider {
     static var previews: some View {
-        WelcomeView(presentationStack: .constant([]))
+        WelcomeView()
     }
 }

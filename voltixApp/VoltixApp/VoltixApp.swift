@@ -7,7 +7,6 @@ import Mediator
 import SwiftData
 import SwiftUI
 import WalletCore
-import SDWebImageSVGCoder
 
 @main
 struct VoltixApp: App {
@@ -17,25 +16,18 @@ struct VoltixApp: App {
     @StateObject var applicationState = ApplicationState.shared
     @StateObject var vaultDetailViewModel = VaultDetailViewModel()
     @StateObject var tokenSelectionViewModel = TokenSelectionViewModel()
-    
-    init() {
-        SDImageCodersManager.shared.addCoder(SDImageSVGCoder.shared)
-    }
+    @StateObject var accountViewModel = AccountViewModel()
 
     var body: some Scene {
         WindowGroup {
-            MainNavigationStack()
+            ContentView()
                 .environmentObject(coinViewModel)
                 .environmentObject(applicationState) // Shared monolithic mutable state
                 .environmentObject(vaultDetailViewModel)
                 .environmentObject(tokenSelectionViewModel)
+                .environmentObject(accountViewModel)
         }
         .modelContainer(sharedModelContainer)
-//        .onChange(of: scenePhase) { phase in
-//            if phase == .inactive {
-//                // TODO: Anything that needs doing on app backgrounded.
-//            }
-//        }
     }
     
     var sharedModelContainer: ModelContainer = {

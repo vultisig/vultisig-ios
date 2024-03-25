@@ -47,7 +47,7 @@ struct SetupVaultView: View {
     }
     
     var image: some View {
-        Image("setupDevicesImage")
+        Image("SetupDevicesImage")
             .resizable()
             .aspectRatio(contentMode: .fit)
             .padding(30)

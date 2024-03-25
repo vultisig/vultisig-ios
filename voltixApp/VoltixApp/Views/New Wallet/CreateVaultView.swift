@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct CreateVaultView: View {
-    @Binding var presentationStack: [CurrentScreen]
     
     var body: some View {
         ZStack {
@@ -53,7 +52,7 @@ struct CreateVaultView: View {
     
     var importVaultButton: some View {
         NavigationLink {
-            ImportWalletView2()
+            ImportWalletView()
         } label: {
             OutlineButton(title: "importExistingVault")
         }
@@ -61,5 +60,5 @@ struct CreateVaultView: View {
 }
 
 #Preview {
-    CreateVaultView(presentationStack: .constant([]))
+    CreateVaultView()
 }
