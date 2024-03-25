@@ -15,9 +15,7 @@ struct SendCryptoView: View {
     @StateObject var sendCryptoViewModel = SendCryptoViewModel()
     @StateObject var sendCryptoVerifyViewModel = SendCryptoVerifyViewModel()
     @StateObject var coinViewModel = CoinViewModel()
-    @StateObject var eth = EthplorerAPIService()
-    @StateObject var web3Service = Web3Service()
-    
+	
     @State var keysignPayload: KeysignPayload? = nil
     @State var keysignView: KeysignView? = nil
     
@@ -79,7 +77,6 @@ struct SendCryptoView: View {
     var detailsView: some View {
         SendCryptoDetailsView(
             tx: tx,
-            eth: eth,
             sendCryptoViewModel: sendCryptoViewModel,
             coinViewModel: coinViewModel,
             group: group
@@ -91,9 +88,7 @@ struct SendCryptoView: View {
             keysignPayload: $keysignPayload,
             sendCryptoViewModel: sendCryptoViewModel,
             sendCryptoVerifyViewModel: sendCryptoVerifyViewModel,
-            tx: tx,
-            eth: eth,
-            web3Service: web3Service
+            tx: tx
         )
     }
     
@@ -143,7 +138,6 @@ struct SendCryptoView: View {
     
     private func setData() async {
         await coinViewModel.loadData(
-            eth: eth,
             tx: tx
         )
     }

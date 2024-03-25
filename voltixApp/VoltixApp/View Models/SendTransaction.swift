@@ -13,9 +13,23 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var memo: String = ""
     @Published var gas: String = ""
     @Published var nonce: Int64 = 0
-    @Published var coin: Coin = Coin(chain: Chain.Bitcoin, ticker: "BTC", logo: "", address: "",hexPublicKey: "", feeUnit: "", contractAddress: nil)
-    @Published var eth: EthAddressInfo?
-    
+	@Published var coin: Coin = Coin(
+		chain: Chain.Bitcoin,
+		ticker: "BTC",
+		logo: "",
+		address: "",
+		priceRate: 0.0,
+		chainType: ChainType.UTXO,
+		decimals: "8",
+		hexPublicKey: "",
+		feeUnit: "",
+		priceProviderId: "",
+		contractAddress: "",
+		rawBalance: "0",
+		isNativeToken: false,
+        feeDefault: "20"
+	)
+
     var fromAddress: String {
         coin.address
     }
@@ -28,16 +42,18 @@ class SendTransaction: ObservableObject, Hashable {
         Int64(amountDecimal * pow(10, 9))
     }
     
-    var token: EthToken? {
-        eth?.tokens?.first(where: { $0.tokenInfo.symbol == coin.ticker})
-    }
-    
     var totalEthTransactionCostWei: BigInt {
         amountInWei + feeInWei
     }
+	
+	var amountInTokenWeiInt64: Int64 {
+		let decimals = Double(coin.decimals ?? "18") ?? 18.0 // The default is always in WEI unless the token has a different one like UDSC
+		
+		return Int64(amountDecimal * pow(10, decimals))
+	}
     
     var amountInTokenWei: BigInt {
-        let decimals = Double(token?.tokenInfo.decimals ?? "18") ?? 18.0 // The default is always in WEI unless the token has a different one like UDSC
+        let decimals = Double(coin.decimals ?? "18") ?? 18.0 // The default is always in WEI unless the token has a different one like UDSC
         
         return BigInt(amountDecimal * pow(10, decimals))
     }
@@ -78,6 +94,30 @@ class SendTransaction: ObservableObject, Hashable {
         return Double(gasString) ?? 0
     }
     
+    var gasFeePredictionForEvm: Double {
+        if let gasDouble = Double(gas), let feeDefaultDouble = Double(coin.feeDefault) {
+            return calculateTransactionFee(gasPriceGwei: gasDouble, gasUsed: feeDefaultDouble)
+        } else {
+            return 0.0
+        }
+    }
+    
+    var gasFeePredictionForEvmUsd: Double {
+        if let gasDouble = Double(gas), let feeDefaultDouble = Double(coin.feeDefault) {
+            let feeInEth = calculateTransactionFee(gasPriceGwei: gasDouble, gasUsed: feeDefaultDouble)
+            return feeInEth * coin.priceRate
+        } else {
+            return 0.0
+        }
+    }
+
+    private func calculateTransactionFee(gasPriceGwei: Double, gasUsed: Double) -> Double {
+        let gweiToEthConversionFactor = 1_000_000_000.0
+        let transactionFeeGwei = gasPriceGwei * gasUsed
+        let transactionFeeEth = transactionFeeGwei / gweiToEthConversionFactor
+        return transactionFeeEth
+    }
+
     init() {
         self.toAddress = ""
         self.amount = ""

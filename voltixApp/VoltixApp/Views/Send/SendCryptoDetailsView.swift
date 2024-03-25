@@ -16,7 +16,6 @@ enum Field: Hashable {
 
 struct SendCryptoDetailsView: View {
     @ObservedObject var tx: SendTransaction
-    @ObservedObject var eth: EthplorerAPIService
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @ObservedObject var coinViewModel: CoinViewModel
     let group: GroupedChain
@@ -107,7 +106,6 @@ struct SendCryptoDetailsView: View {
     var textField: some View {
         SendCryptoAmountTextField(
             tx: tx,
-            eth: eth,
             sendCryptoViewModel: sendCryptoViewModel
         )
         .focused($focusedField, equals: .amount)
@@ -123,7 +121,6 @@ struct SendCryptoDetailsView: View {
     var textFieldUSD: some View {
         SendCryptoAmountUSDTextField(
             tx: tx,
-            eth: eth,
             sendCryptoViewModel: sendCryptoViewModel
         )
         .focused($focusedField, equals: .amountInUSD)
@@ -133,7 +130,7 @@ struct SendCryptoDetailsView: View {
         HStack {
             Text(NSLocalizedString("gas(auto)", comment: ""))
             Spacer()
-            Text("\(tx.gas) \(tx.coin.feeUnit )")
+			Text("\(tx.gas) \(tx.coin.feeUnit )")
         }
         .font(.body16Menlo)
         .foregroundColor(.neutral0)
@@ -156,7 +153,7 @@ struct SendCryptoDetailsView: View {
     }
     
     private func validateForm() {
-        if sendCryptoViewModel.validateForm(tx: tx, eth: eth) {
+        if sendCryptoViewModel.validateForm(tx: tx) {
             sendCryptoViewModel.moveToNextView()
         }
     }
@@ -165,7 +162,6 @@ struct SendCryptoDetailsView: View {
 #Preview {
     SendCryptoDetailsView(
         tx: SendTransaction(),
-        eth: EthplorerAPIService(),
         sendCryptoViewModel: SendCryptoViewModel(),
         coinViewModel: CoinViewModel(),
         group: GroupedChain.example

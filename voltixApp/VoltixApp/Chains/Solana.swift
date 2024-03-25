@@ -8,19 +8,12 @@ import Tss
 import WalletCore
 
 enum SolanaHelper {
-    static func getSolana(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {		
-		return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).map { addr in
-            Coin(chain: Chain.Solana,
-                 ticker: "SOL",
-                 logo: "",
-                 address: addr,
-                 hexPublicKey: hexPubKey,
-                 feeUnit: "Lamports",
-                 contractAddress: nil
-            )
+    static func getSolana(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
+        return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).flatMap { addr -> Result<Coin, Error> in
+            TokensStore.createNewCoinInstance(ticker: "SOL", address: addr, hexPublicKey: hexPubKey)
         }
     }
-
+    
     static func getAddressFromPublicKey(hexPubKey: String, hexChainCode: String) -> Result<String, Error> {
         // Solana is using EdDSA , so it doesn't need to use HD derive
         guard let pubKeyData = Data(hexString: hexPubKey) else {
@@ -31,7 +24,7 @@ enum SolanaHelper {
         }
         return .success(CoinType.solana.deriveAddressFromPublicKey(publicKey: publicKey))
     }
-
+    
     static func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
         guard keysignPayload.coin.chain.ticker == "SOL" else {
             return .failure(HelperError.runtimeError("coin is not SOL"))
@@ -42,7 +35,7 @@ enum SolanaHelper {
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .solana) else {
             return .failure(HelperError.runtimeError("fail to get to address"))
         }
-
+        
         let input = SolanaSigningInput.with {
             $0.transferTransaction = SolanaTransfer.with {
                 $0.recipient = toAddress.description
@@ -61,7 +54,7 @@ enum SolanaHelper {
             return .failure(HelperError.runtimeError("fail to get PreSign input data"))
         }
     }
-
+    
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) -> Result<[String], Error> {
         let result = getPreSignedInputData(keysignPayload: keysignPayload)
         switch result {
@@ -78,7 +71,7 @@ enum SolanaHelper {
             return .failure(err)
         }
     }
-
+    
     static func getSignedTransaction(vaultHexPubKey: String,
                                      vaultHexChainCode: String,
                                      keysignPayload: KeysignPayload,
@@ -90,7 +83,7 @@ enum SolanaHelper {
         guard let publicKey = PublicKey(data: pubkeyData, type: .ed25519) else {
             return .failure(HelperError.runtimeError("public key \(vaultHexPubKey) is invalid"))
         }
-
+        
         let result = getPreSignedInputData(keysignPayload: keysignPayload)
         switch result {
         case .success(let inputData):
@@ -104,7 +97,7 @@ enum SolanaHelper {
                 guard publicKey.verify(signature: signature, message: preSigningOutput.data) else {
                     return .failure(HelperError.runtimeError("fail to verify signature"))
                 }
-
+                
                 allSignatures.add(data: signature)
                 publicKeys.add(data: pubkeyData)
                 let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .solana,

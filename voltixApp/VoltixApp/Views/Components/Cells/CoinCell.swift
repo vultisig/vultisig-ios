@@ -14,7 +14,6 @@ struct CoinCell: View {
     
     @StateObject var tx = SendTransaction()
     @StateObject var coinViewModel = CoinViewModel()
-    @StateObject var eth = EthplorerAPIService()
 	
     var body: some View {
         cell
@@ -74,7 +73,7 @@ struct CoinCell: View {
     
     var swapButton: some View {
         NavigationLink {
-            SendInputDetailsView(presentationStack: .constant([]), tx: tx)
+            //SendInputDetailsView(presentationStack: .constant([]), tx: tx)
         } label: {
             Text(NSLocalizedString("swap", comment: "Swap button text").uppercased())
                 .font(.body16MenloBold)
@@ -100,12 +99,12 @@ struct CoinCell: View {
         }
     }
     
+	//TODO: The tx gas is being set here, but it should be set inside the load data
+	//This SET data is calling the loadData multiples times for the same coin
     private func setData() async {
         tx.coin = coin
-        tx.gas = "20"
-        
-        await coinViewModel.loadData(
-            eth: eth,
+        tx.gas = coin.feeDefault
+		await coinViewModel.loadData(
             tx: tx
         )
     }

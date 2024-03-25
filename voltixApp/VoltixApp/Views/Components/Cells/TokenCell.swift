@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct TokenCell: View {
-    let asset: Asset
+    let asset: Coin
     @State var isSelected = false
     
     @EnvironmentObject var tokenSelectionViewModel: TokenSelectionViewModel
@@ -33,7 +33,7 @@ struct TokenCell: View {
     }
     
     var image: some View {
-        Image(asset.image)
+        Image(asset.logo)
             .resizable()
             .frame(width: 32, height: 32)
             .cornerRadius(100)
@@ -45,7 +45,7 @@ struct TokenCell: View {
                 .font(.body16MontserratBold)
                 .foregroundColor(.neutral0)
             
-            Text(asset.chainName)
+			Text(asset.chain.name)
                 .font(.body12MontserratSemiBold)
                 .foregroundColor(.neutral0)
         }
@@ -72,7 +72,7 @@ struct TokenCell: View {
 
 #Preview {
     ScrollView {
-        TokenCell(asset: Asset.example)
+        TokenCell(asset: Coin.example)
             .environmentObject(TokenSelectionViewModel())
     }
 }

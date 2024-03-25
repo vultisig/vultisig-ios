@@ -9,7 +9,6 @@ import SwiftUI
 
 struct SendCryptoAmountUSDTextField: View {
     @ObservedObject var tx: SendTransaction
-    @ObservedObject var eth: EthplorerAPIService
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     
     var body: some View {
@@ -26,7 +25,7 @@ struct SendCryptoAmountUSDTextField: View {
 					
 					DebounceHelper.shared.debounce {
 						Task{
-							await sendCryptoViewModel.convertUSDToCoin(newValue: newValue, tx: tx, eth: eth)
+							await sendCryptoViewModel.convertUSDToCoin(newValue: newValue, tx: tx)
 						}
                     }
                 }

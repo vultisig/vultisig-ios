@@ -12,8 +12,6 @@ struct SendCryptoVerifyView: View {
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @ObservedObject var sendCryptoVerifyViewModel: SendCryptoVerifyViewModel
     @ObservedObject var tx: SendTransaction
-    @ObservedObject var eth: EthplorerAPIService
-    @ObservedObject var web3Service: Web3Service
     
     var body: some View {
         ZStack {
@@ -136,15 +134,13 @@ struct SendCryptoVerifyView: View {
     
     private func reloadTransactions() {
         sendCryptoVerifyViewModel.reloadTransactions(
-            tx: tx,
-            eth: eth
+            tx: tx
         )
     }
     
     private func validateForm() async {
         keysignPayload = await sendCryptoVerifyViewModel.validateForm(
-            tx: tx,
-            web3Service: web3Service
+            tx: tx
         )
         
         if keysignPayload != nil {
@@ -170,8 +166,6 @@ struct SendCryptoVerifyView: View {
         keysignPayload: .constant(nil),
         sendCryptoViewModel: SendCryptoViewModel(),
         sendCryptoVerifyViewModel: SendCryptoVerifyViewModel(),
-        tx: SendTransaction(),
-        eth: EthplorerAPIService(), 
-        web3Service: Web3Service()
+        tx: SendTransaction()
     )
 }
