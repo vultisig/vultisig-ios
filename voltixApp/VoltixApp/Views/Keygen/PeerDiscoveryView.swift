@@ -58,14 +58,34 @@ struct PeerDiscoveryView: View {
     
     var waitingForDevices: some View {
         VStack {
-            paringBarcode
-            
+            content
+            bottomButtons
+        }
+    }
+    
+    var content: some View {
+        
+    }
+    
+    var horizontalContent: some View {
+        
+    }
+    
+    var verticalContent: some View {
+        
+    }
+    
+    var qrCode: some View {
+        paringBarcode
+    }
+    
+    var list: some View {
+        ZStack {
             if participantDiscovery.peersFound.count == 0 {
                 lookingForDevices
+            } else {
+                deviceList
             }
-            
-            deviceList
-            bottomButtons
         }
     }
     
