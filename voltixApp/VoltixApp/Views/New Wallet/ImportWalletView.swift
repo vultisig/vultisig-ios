@@ -91,7 +91,7 @@ struct ImportWalletView: View {
     }
     
     var fileImage: some View {
-        Image("fileIcon")
+        Image("FileIcon")
             .resizable()
             .frame(width: 24, height: 24)
     }
