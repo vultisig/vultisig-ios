@@ -14,19 +14,23 @@ struct ContentView: View {
     @EnvironmentObject var accountViewModel: AccountViewModel
     
     var body: some View {
-        ZStack {
-            if showSplashView {
-                WelcomeView()
-            } else if accountViewModel.showOnboarding {
-                OnboardingView()
-            } else if vaults.count>0 {
-                HomeView()
-            } else {
-                CreateVaultView()
+        NavigationStack {
+            ZStack {
+                if showSplashView {
+                    WelcomeView()
+                } else if accountViewModel.showOnboarding {
+                    OnboardingView()
+                } else if vaults.count>0 {
+                    HomeView()
+                } else {
+                    CreateVaultView()
+                }
             }
-        }
-        .onAppear {
-            performSegue()
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleTextColor(.neutral0)
+            .onAppear {
+                performSegue()
+            }
         }
     }
     
