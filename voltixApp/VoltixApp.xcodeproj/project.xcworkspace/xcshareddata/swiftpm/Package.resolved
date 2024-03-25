@@ -1,6 +1,6 @@
 {
   "pins" : [
-    {
+{
       "identity" : "bigint",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/attaswift/BigInt.git",
@@ -18,7 +18,7 @@
         "version" : "6.1.0"
       }
     },
-    {
+{
       "identity" : "codescanner",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/twostraws/CodeScanner",

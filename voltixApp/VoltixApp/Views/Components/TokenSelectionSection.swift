@@ -9,7 +9,7 @@ import SwiftUI
 
 struct TokenSelectionSection: View {
     let title: String
-    let assets: [Asset]
+    let assets: [Coin]
     
     var body: some View {
         VStack {
@@ -35,5 +35,5 @@ struct TokenSelectionSection: View {
 }
 
 #Preview {
-    TokenSelectionSection(title: "Bitcoin", assets: [Asset.example])
+    TokenSelectionSection(title: "Bitcoin", assets: [Coin.example])
 }

@@ -109,6 +109,7 @@ struct TokenSelectorDropdown: View {
     private func handleSelection(for coin: Coin) {
         isExpanded = false
         tx.coin = coin
+        tx.gas = coin.feeDefault
     }
 }
 

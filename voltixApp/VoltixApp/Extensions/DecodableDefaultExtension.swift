@@ -6,6 +6,9 @@
 //
 
 import Foundation
+import Foundation
+import BigInt // Ensure this import is correct for BigInt support
+
 
 extension DecodableDefault {
     typealias Source = DecodableDefaultSource
@@ -70,3 +73,51 @@ extension DecodableDefault.Wrapper: Equatable where Value: Equatable {}
 
 extension DecodableDefault.Wrapper: Hashable where Value: Hashable {}
 
+@propertyWrapper
+struct DecodableDefaultDouble {
+	var wrappedValue: Double
+}
+
+@propertyWrapper
+struct DecodableDefaultInt32 {
+	var wrappedValue: Int32
+}
+
+@propertyWrapper
+struct DecodableDefaultBigInt {
+	var wrappedValue: BigInt
+}
+
+@propertyWrapper
+struct DecodableDefaultInt64 {
+	var wrappedValue: Int64
+}
+
+extension DecodableDefaultDouble: Codable {
+	init(from decoder: Decoder) throws {
+		let container = try decoder.singleValueContainer()
+		wrappedValue = (try? container.decode(Double.self)) ?? 0.0
+	}
+}
+
+extension DecodableDefaultInt32: Codable {
+	init(from decoder: Decoder) throws {
+		let container = try decoder.singleValueContainer()
+		wrappedValue = (try? container.decode(Int32.self)) ?? 0
+	}
+}
+
+extension DecodableDefaultBigInt: Codable {
+	init(from decoder: Decoder) throws {
+		let container = try decoder.singleValueContainer()
+		let stringValue = (try? container.decode(String.self)) ?? "0"
+		wrappedValue = BigInt(stringValue) ?? BigInt(0)
+	}
+}
+
+extension DecodableDefaultInt64: Codable {
+	init(from decoder: Decoder) throws {
+		let container = try decoder.singleValueContainer()
+		wrappedValue = (try? container.decode(Int64.self)) ?? 0
+	}
+}
