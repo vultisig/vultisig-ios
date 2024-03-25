@@ -105,7 +105,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
             
         } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
             
-            if !tx.coin.isNativeToken {
+            if tx.coin.isNativeToken {
                 let keysignPayload = KeysignPayload(
                     coin: tx.coin,
                     toAddress: tx.toAddress,

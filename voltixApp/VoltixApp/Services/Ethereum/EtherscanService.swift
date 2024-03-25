@@ -22,7 +22,7 @@ public class EtherScanService: ObservableObject {
             if let priceRateUsd = await cryptoPrice {
                 tx.coin.priceRate = priceRateUsd
             }
-            if tx.coin.isNativeToken {
+            if !tx.coin.isNativeToken {
                 tx.coin.rawBalance = try await fetchTokenRawBalance(contractAddress: tx.coin.contractAddress, address: tx.fromAddress)
             } else {
                 tx.coin.rawBalance = try await fetchEthRawBalance(address: tx.fromAddress)
