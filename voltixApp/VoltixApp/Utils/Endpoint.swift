@@ -20,8 +20,6 @@ class Endpoint {
     
     static let solanaServiceAlchemyRpc = "http://45.76.120.223/alchemy/"
 	    
-    static let web3ServiceInfura = "http://45.76.120.223/infura"
-	    
     static func bitcoinLabelTxHash(_ value: String) -> String {
 		"https://mempool.space/tx/\(value)"
 	}

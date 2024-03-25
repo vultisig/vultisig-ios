@@ -7,7 +7,7 @@ class Coin: Codable, Hashable {
     let ticker: String
     let logo: String
     var address: String
-    let chainType: ChainType
+    let chainType: ChainType?
     
     @DecodableDefault.EmptyString var decimals: String
     @DecodableDefault.EmptyString var hexPublicKey: String
@@ -17,9 +17,24 @@ class Coin: Codable, Hashable {
     @DecodableDefault.EmptyString var contractAddress: String
     @DecodableDefault.EmptyString var rawBalance: String
     @DecodableDefault.False var isNativeToken: Bool
-    @DecodableDefaultDouble var priceRate: Double
+    @DecodableDefault.EmptyDouble var priceRate: Double
     
-    init(chain: Chain, ticker: String, logo: String, address: String, priceRate: Double, chainType: ChainType, decimals: String, hexPublicKey: String, feeUnit: String, priceProviderId: String, contractAddress: String, rawBalance: String, isNativeToken: Bool, feeDefault: String) {
+    init(
+        chain: Chain,
+        ticker: String,
+        logo: String,
+        address: String,
+        priceRate: Double,
+        chainType: ChainType?,
+        decimals: String,
+        hexPublicKey: String,
+        feeUnit: String,
+        priceProviderId: String,
+        contractAddress: String,
+        rawBalance: String,
+        isNativeToken: Bool,
+        feeDefault: String
+    ) {
         self.chain = chain
         self.ticker = ticker
         self.logo = logo
@@ -37,7 +52,22 @@ class Coin: Codable, Hashable {
     }
     
     func clone() -> Coin {
-        return Coin(chain: chain, ticker: ticker, logo: logo, address: address, priceRate: priceRate, chainType: chainType, decimals: decimals, hexPublicKey: hexPublicKey, feeUnit: feeUnit, priceProviderId: priceProviderId, contractAddress: contractAddress, rawBalance: rawBalance, isNativeToken: isNativeToken, feeDefault: feeDefault)
+        return Coin(
+            chain: chain,
+            ticker: ticker,
+            logo: logo,
+            address: address,
+            priceRate: priceRate,
+            chainType: chainType,
+            decimals: decimals,
+            hexPublicKey: hexPublicKey,
+            feeUnit: feeUnit,
+            priceProviderId: priceProviderId,
+            contractAddress: contractAddress,
+            rawBalance: rawBalance,
+            isNativeToken: isNativeToken,
+            feeDefault: feeDefault
+        )
     }
     
     func hash(into hasher: inout Hasher) {
@@ -78,5 +108,20 @@ class Coin: Codable, Hashable {
         return "US$ \(String(format: "%.2f", balanceInUsd))"
     }
     
-    static let example = Coin(chain: Chain.Bitcoin, ticker: "BTC", logo: "BitcoinLogo", address: "bc1qxyz...", priceRate: 20000.0, chainType: ChainType.UTXO, decimals: "8", hexPublicKey: "HexPublicKeyExample", feeUnit: "Satoshi", priceProviderId: "Bitcoin", contractAddress: "ContractAddressExample", rawBalance: "500000000", isNativeToken: false, feeDefault: "20")
+    static let example = Coin(
+        chain: Chain.Bitcoin,
+        ticker: "BTC",
+        logo: "BitcoinLogo",
+        address: "bc1qxyz...",
+        priceRate: 20000.0,
+        chainType: ChainType.UTXO,
+        decimals: "8",
+        hexPublicKey: "HexPublicKeyExample",
+        feeUnit: "Satoshi",
+        priceProviderId: "Bitcoin",
+        contractAddress: "ContractAddressExample",
+        rawBalance: "500000000",
+        isNativeToken: false,
+        feeDefault: "20"
+    )
 }
