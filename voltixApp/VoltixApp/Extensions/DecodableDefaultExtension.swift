@@ -19,6 +19,7 @@ extension DecodableDefault {
     typealias EmptyString = Wrapper<Sources.EmptyString>
     typealias EmptyList<T: List> = Wrapper<Sources.EmptyList<T>>
     typealias EmptyMap<T: Map> = Wrapper<Sources.EmptyMap<T>>
+    typealias EmptyDouble = Wrapper<Sources.EmptyDouble>
     
     enum Sources {
         enum True: Source {
@@ -39,6 +40,9 @@ extension DecodableDefault {
         
         enum EmptyMap<T: Map>: Source {
             static var defaultValue: T { [:] }
+        }
+        enum EmptyDouble: Source {
+            static var defaultValue: Double { 0.0 }
         }
     }
     
@@ -72,52 +76,3 @@ extension DecodableDefault.Wrapper: Encodable where Value: Encodable {
 extension DecodableDefault.Wrapper: Equatable where Value: Equatable {}
 
 extension DecodableDefault.Wrapper: Hashable where Value: Hashable {}
-
-@propertyWrapper
-struct DecodableDefaultDouble {
-	var wrappedValue: Double
-}
-
-@propertyWrapper
-struct DecodableDefaultInt32 {
-	var wrappedValue: Int32
-}
-
-@propertyWrapper
-struct DecodableDefaultBigInt {
-	var wrappedValue: BigInt
-}
-
-@propertyWrapper
-struct DecodableDefaultInt64 {
-	var wrappedValue: Int64
-}
-
-extension DecodableDefaultDouble: Codable {
-	init(from decoder: Decoder) throws {
-		let container = try decoder.singleValueContainer()
-		wrappedValue = (try? container.decode(Double.self)) ?? 0.0
-	}
-}
-
-extension DecodableDefaultInt32: Codable {
-	init(from decoder: Decoder) throws {
-		let container = try decoder.singleValueContainer()
-		wrappedValue = (try? container.decode(Int32.self)) ?? 0
-	}
-}
-
-extension DecodableDefaultBigInt: Codable {
-	init(from decoder: Decoder) throws {
-		let container = try decoder.singleValueContainer()
-		let stringValue = (try? container.decode(String.self)) ?? "0"
-		wrappedValue = BigInt(stringValue) ?? BigInt(0)
-	}
-}
-
-extension DecodableDefaultInt64: Codable {
-	init(from decoder: Decoder) throws {
-		let container = try decoder.singleValueContainer()
-		wrappedValue = (try? container.decode(Int64.self)) ?? 0
-	}
-}

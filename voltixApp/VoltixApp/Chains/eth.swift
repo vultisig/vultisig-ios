@@ -9,7 +9,10 @@ import Tss
 import WalletCore
 
 enum EthereumHelper {
+    static let defaultETHTransferGasUnit:Int64 = 21000
+    static let defaultERC20TransferGasUnit:Int64 = 120000
     static let weiPerGWei: Int64 = 1_000_000_000
+    static let ethDecimals = 18
     static func getEthereum(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
         let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
                                                             hexChainCode: hexChainCode,

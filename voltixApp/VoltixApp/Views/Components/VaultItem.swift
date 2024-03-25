@@ -92,7 +92,7 @@ struct VaultItem: View {
 						{
 							presentationStack.append(.bitcoinTransactionsListView(SendTransaction(coin: coin)))
                         } else if coin.chain.name.lowercased() == "ethereum" {
-							if coin.isNativeToken {
+							if !coin.isNativeToken {
 								presentationStack.append(.erc20TransactionsListView(coin.contractAddress))
                             } else {
                                 presentationStack.append(.ethereumTransactionsListView)

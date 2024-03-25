@@ -206,7 +206,7 @@ class KeysignViewModel: ObservableObject {
 					
 				case .EVM:
 					// ETH
-					if !keysignPayload.coin.isNativeToken {
+					if keysignPayload.coin.isNativeToken {
 						let result = EthereumHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
 						switch result {
 							case .success(let tx):

@@ -26,7 +26,7 @@ class SendTransaction: ObservableObject, Hashable {
 		priceProviderId: "",
 		contractAddress: "",
 		rawBalance: "0",
-		isNativeToken: false,
+		isNativeToken: true,
         feeDefault: "20"
 	)
 
@@ -35,11 +35,11 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     var amountInWei: BigInt {
-        BigInt(amountDecimal * pow(10, 18))
+        BigInt(amountDecimal * pow(10, Double(EthereumHelper.ethDecimals)))
     }
     
     var amountInGwei: Int64 {
-        Int64(amountDecimal * pow(10, 9))
+        Int64(amountDecimal * Double(EthereumHelper.weiPerGWei))
     }
     
     var totalEthTransactionCostWei: BigInt {
@@ -47,13 +47,13 @@ class SendTransaction: ObservableObject, Hashable {
     }
 	
 	var amountInTokenWeiInt64: Int64 {
-		let decimals = Double(coin.decimals ?? "18") ?? 18.0 // The default is always in WEI unless the token has a different one like UDSC
+        let decimals = Double(coin.decimals) ?? Double(EthereumHelper.ethDecimals) // The default is always in WEI unless the token has a different one like UDSC
 		
 		return Int64(amountDecimal * pow(10, decimals))
 	}
     
     var amountInTokenWei: BigInt {
-        let decimals = Double(coin.decimals ?? "18") ?? 18.0 // The default is always in WEI unless the token has a different one like UDSC
+        let decimals = Double(coin.decimals) ?? Double(EthereumHelper.ethDecimals) // The default is always in WEI unless the token has a different one like UDSC
         
         return BigInt(amountDecimal * pow(10, decimals))
     }
@@ -63,7 +63,7 @@ class SendTransaction: ObservableObject, Hashable {
         let gasString: String = gas
         
         if let gasGwei = BigInt(gasString) {
-            let gasWei: BigInt = gasGwei * 1_000_000_000 // Equivalent to 10^9
+            let gasWei: BigInt = gasGwei * BigInt(EthereumHelper.weiPerGWei) // Equivalent to 10^9
             return gasWei
         } else {
             print("Invalid gas value")
@@ -112,9 +112,8 @@ class SendTransaction: ObservableObject, Hashable {
     }
 
     private func calculateTransactionFee(gasPriceGwei: Double, gasUsed: Double) -> Double {
-        let gweiToEthConversionFactor = 1_000_000_000.0
         let transactionFeeGwei = gasPriceGwei * gasUsed
-        let transactionFeeEth = transactionFeeGwei / gweiToEthConversionFactor
+        let transactionFeeEth = transactionFeeGwei / Double(EthereumHelper.weiPerGWei)
         return transactionFeeEth
     }
 
