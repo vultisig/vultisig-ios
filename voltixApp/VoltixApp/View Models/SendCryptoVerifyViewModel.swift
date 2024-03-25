@@ -10,8 +10,7 @@ import BigInt
 
 @MainActor
 class SendCryptoVerifyViewModel: ObservableObject {
-    static let defaultETHTransferGasUnit:Int64 = 21000
-    static let defaultERC20TransferGasUnit:Int64 = 120000
+    
     @Published var isAddressCorrect = false
     @Published var isAmountCorrect = false
     @Published var isHackedOrPhished = false
@@ -111,7 +110,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
                     coin: tx.coin,
                     toAddress: tx.toAddress,
                     toAmount: tx.amountInGwei, // in Gwei
-                    chainSpecific: BlockChainSpecific.Ethereum(maxFeePerGasGwei: Int64(tx.gas) ?? 24, priorityFeeGwei: 0, nonce: tx.nonce, gasLimit: SendCryptoVerifyViewModel.defaultETHTransferGasUnit),
+                    chainSpecific: BlockChainSpecific.Ethereum(maxFeePerGasGwei: Int64(tx.gas) ?? 24, priorityFeeGwei: 0, nonce: tx.nonce, gasLimit: EthereumHelper.defaultETHTransferGasUnit),
                     utxos: [],
                     memo: nil,
                     swapPayload: nil
@@ -124,7 +123,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
                     coin: tx.coin,
                     toAddress: tx.toAddress,
                     toAmount: tx.amountInTokenWeiInt64, // The amount must be in the token decimals
-                    chainSpecific: BlockChainSpecific.ERC20(maxFeePerGasGwei: Int64(tx.gas) ?? 42, priorityFeeGwei: 0, nonce: tx.nonce, gasLimit: SendCryptoVerifyViewModel.defaultERC20TransferGasUnit, contractAddr: tx.coin.contractAddress),
+                    chainSpecific: BlockChainSpecific.ERC20(maxFeePerGasGwei: Int64(tx.gas) ?? 42, priorityFeeGwei: 0, nonce: tx.nonce, gasLimit: EthereumHelper.defaultERC20TransferGasUnit, contractAddr: tx.coin.contractAddress),
                     utxos: [],
                     memo: nil,
                     swapPayload: nil
