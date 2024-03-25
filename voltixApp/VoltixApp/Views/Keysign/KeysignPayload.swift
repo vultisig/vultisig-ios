@@ -68,4 +68,6 @@ struct KeysignPayload: Codable, Hashable {
         }
         return result
     }
+    
+    static let example = KeysignPayload(coin: Coin.example, toAddress: "toAddress", toAmount: 100, chainSpecific: BlockChainSpecific.UTXO(byteFee: 100), utxos: [], memo: "Memo", swapPayload: nil)
 }
