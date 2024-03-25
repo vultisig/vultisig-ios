@@ -177,7 +177,6 @@ public class EtherScanService: ObservableObject {
         do {
             if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                let result = json["result"] as? String {
-                print(json)
                 return result
             }
         } catch {
