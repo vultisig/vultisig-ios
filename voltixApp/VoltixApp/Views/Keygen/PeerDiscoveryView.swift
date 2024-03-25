@@ -13,6 +13,8 @@ struct PeerDiscoveryView: View {
     @StateObject var viewModel = KeygenPeerDiscoveryViewModel()
     @StateObject var participantDiscovery = ParticipantDiscovery()
     
+    @State private var orientation = UIDevice.current.orientation
+    
     let logger = Logger(subsystem: "peers-discory", category: "communication")
     
     var body: some View {
@@ -23,6 +25,7 @@ struct PeerDiscoveryView: View {
         .navigationTitle(NSLocalizedString("mainDevice", comment: "Main Device"))
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
+        .detectOrientation($orientation)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 NavigationBackButton()
@@ -64,15 +67,29 @@ struct PeerDiscoveryView: View {
     }
     
     var content: some View {
-        
+        ZStack {
+            if orientation == .landscapeLeft || orientation == .landscapeRight {
+                landscapeContent
+            } else {
+                portraitContent
+            }
+        }
     }
     
-    var horizontalContent: some View {
-        
+    var landscapeContent: some View {
+        HStack {
+            paringBarcode
+                .padding(60)
+            list
+                .padding(20)
+        }
     }
     
-    var verticalContent: some View {
-        
+    var portraitContent: some View {
+        VStack {
+            paringBarcode
+            list
+        }
     }
     
     var qrCode: some View {
@@ -100,6 +117,7 @@ struct PeerDiscoveryView: View {
                 .progressViewStyle(.circular)
                 .padding(2)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding()
         .cornerRadius(10)
         .shadow(radius: 5)
