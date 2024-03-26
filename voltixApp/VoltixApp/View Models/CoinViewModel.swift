@@ -36,10 +36,9 @@ class CoinViewModel: ObservableObject {
             }
         } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
             do {
-                print("The loadData for \(tx.coin.ticker)")
                 try await eth.getEthInfo(tx: tx)
                 balanceUSD = tx.coin.balanceInUsd
-                coinBalance = tx.coin.balanceString
+                coinBalance = tx.coin.balanceString                
             } catch {
                 print("error fetching eth balances:\(error.localizedDescription)")
             }

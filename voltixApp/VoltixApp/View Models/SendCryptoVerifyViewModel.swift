@@ -106,31 +106,37 @@ class SendCryptoVerifyViewModel: ObservableObject {
             
         } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
             
-            if tx.coin.isNativeToken {
-                let keysignPayload = KeysignPayload(
-                    coin: tx.coin,
-                    toAddress: tx.toAddress,
-                    toAmount: tx.amountInGwei, // in Gwei
-                    chainSpecific: BlockChainSpecific.Ethereum(maxFeePerGasGwei: Int64(tx.gas) ?? 24, priorityFeeGwei: 1, nonce: tx.nonce, gasLimit: EVMHelper.defaultETHTransferGasUnit),
-                    utxos: [],
-                    memo: nil,
-                    swapPayload: nil
-                )
-                
-                return keysignPayload
-            } else {
-                
-                let keysignPayload = KeysignPayload(
-                    coin: tx.coin,
-                    toAddress: tx.toAddress,
-                    toAmount: tx.amountInTokenWeiInt64, // The amount must be in the token decimals
-                    chainSpecific: BlockChainSpecific.ERC20(maxFeePerGasGwei: Int64(tx.gas) ?? 42, priorityFeeGwei: 1, nonce: tx.nonce, gasLimit: EVMHelper.defaultERC20TransferGasUnit, contractAddr: tx.coin.contractAddress),
-                    utxos: [],
-                    memo: nil,
-                    swapPayload: nil
-                )
-                
-                return keysignPayload
+            do{
+                let (_, priorityFeeGwei) = try await EtherScanService.shared.fetchOracle()
+                                
+                if tx.coin.isNativeToken {
+                    let keysignPayload = KeysignPayload(
+                        coin: tx.coin,
+                        toAddress: tx.toAddress,
+                        toAmount: tx.amountInGwei, // in Gwei
+                        chainSpecific: BlockChainSpecific.Ethereum(maxFeePerGasGwei: Int64(tx.gas) ?? 24, priorityFeeGwei: priorityFeeGwei, nonce: tx.nonce, gasLimit: EVMHelper.defaultETHTransferGasUnit),
+                        utxos: [],
+                        memo: nil,
+                        swapPayload: nil
+                    )
+                    
+                    return keysignPayload
+                } else {
+                    
+                    let keysignPayload = KeysignPayload(
+                        coin: tx.coin,
+                        toAddress: tx.toAddress,
+                        toAmount: tx.amountInTokenWeiInt64, // The amount must be in the token decimals
+                        chainSpecific: BlockChainSpecific.ERC20(maxFeePerGasGwei: Int64(tx.gas) ?? 42, priorityFeeGwei: priorityFeeGwei, nonce: tx.nonce, gasLimit: EVMHelper.defaultERC20TransferGasUnit, contractAddr: tx.coin.contractAddress),
+                        utxos: [],
+                        memo: nil,
+                        swapPayload: nil
+                    )
+                    
+                    return keysignPayload
+                }
+            } catch {
+                print(error)
             }
             
         } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
