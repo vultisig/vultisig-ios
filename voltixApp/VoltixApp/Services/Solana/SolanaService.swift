@@ -84,8 +84,6 @@ class SolanaService: ObservableObject {
             let data = try await postRequest(with: requestBody)
             let response = try jsonDecoder.decode(SolanaRPCResponse<SolanaBalanceResponse>.self, from: data)
             self.balance = response.result.value
-            print("SOLANA balance \(response.result.value)")
-			
         } catch {
             print("Error fetching balance: \(error.localizedDescription)")
         }
@@ -104,9 +102,7 @@ class SolanaService: ObservableObject {
             let response = try jsonDecoder.decode(SolanaRPCResponse<SolanaRecentBlockhashResponse>.self, from: data)
 			
             self.recentBlockHash = response.result.value.blockhash
-            self.feeInLamports = String(response.result.value.feeCalculator.lamportsPerSignature)
-            print("feeInLamports > \(String(describing: self.feeInLamports))")
-            
+            self.feeInLamports = String(response.result.value.feeCalculator.lamportsPerSignature)            
         } catch {
             print("Error fetching recent blockhash: \(error.localizedDescription)")
         }

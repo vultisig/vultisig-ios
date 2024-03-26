@@ -35,7 +35,6 @@ public class CryptoPriceService: ObservableObject {
 		let cacheKey = "\(coin)-\(fiat)"
 		
 		if let cacheEntry = cache[cacheKey], isCacheValid(for: cacheKey) {
-			print("Crypto Price Service > The data came from the cache !!")
 			self.cryptoPrices = cacheEntry.data
 			return
 		}
@@ -49,11 +48,6 @@ public class CryptoPriceService: ObservableObject {
 		
 		do {
 			let (data, _) = try await URLSession.shared.data(from: url)
-			
-			if let jsonStr = String(data: data, encoding: .utf8) {
-				print("Crypto Price Service > Raw JSON string: \(jsonStr)")
-			}
-			
 			let decodedData = try JSONDecoder().decode(CryptoPrice.self, from: data)
 			
 			DispatchQueue.main.async {
