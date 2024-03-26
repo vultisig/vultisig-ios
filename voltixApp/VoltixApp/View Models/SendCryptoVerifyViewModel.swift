@@ -107,10 +107,8 @@ class SendCryptoVerifyViewModel: ObservableObject {
         } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
             
             do{
-                let priorityFeeGwei = try await EtherScanService.shared.fetchPriorityFeeGwei()
-                
-                print("priorityFeeGwei: \(priorityFeeGwei)")
-                
+                let (_, priorityFeeGwei) = try await EtherScanService.shared.fetchOracle()
+                                
                 if tx.coin.isNativeToken {
                     let keysignPayload = KeysignPayload(
                         coin: tx.coin,
