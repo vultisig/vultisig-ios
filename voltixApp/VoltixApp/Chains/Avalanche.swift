@@ -8,45 +8,45 @@ import Foundation
 import Tss
 import WalletCore
 
-enum EthereumHelper {
-    static let defaultETHTransferGasUnit:Int64 = 21000
+class AvalancheHelper {
+    static let defaultAvaxTransferGasUnit:Int64 = 21000
     static let defaultERC20TransferGasUnit:Int64 = 120000
     static let weiPerGWei: Int64 = 1_000_000_000
     static let ethDecimals = 18
-    static func getEthereum(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
+    static func getAvalanche(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
         let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
                                                             hexChainCode: hexChainCode,
-                                                            derivePath: CoinType.ethereum.derivationPath())
+                                                            derivePath: CoinType.avalancheCChain.derivationPath())
         if derivePubKey.isEmpty {
             return .failure(HelperError.runtimeError("derived public key is empty"))
         }
         
         return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).flatMap { addr -> Result<Coin, Error> in
-            TokensStore.createNewCoinInstance(ticker: "ETH", address: addr, hexPublicKey: derivePubKey)
+            TokensStore.createNewCoinInstance(ticker: "AVAX", address: addr, hexPublicKey: derivePubKey)
         }
     }
     
     static func getAddressFromPublicKey(hexPubKey: String, hexChainCode: String) -> Result<String, Error> {
         let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
                                                             hexChainCode: hexChainCode,
-                                                            derivePath: CoinType.ethereum.derivationPath())
+                                                            derivePath: CoinType.avalancheCChain.derivationPath())
         if derivePubKey.isEmpty {
             return .failure(HelperError.runtimeError("derived public key is empty"))
         }
         guard let pubKeyData = Data(hexString: derivePubKey), let publicKey = PublicKey(data: pubKeyData, type: .secp256k1) else {
             return .failure(HelperError.runtimeError("public key: \(derivePubKey) is invalid"))
         }
-        return .success(CoinType.ethereum.deriveAddressFromPublicKey(publicKey: publicKey))
+        return .success(CoinType.avalancheCChain.deriveAddressFromPublicKey(publicKey: publicKey))
     }
     
     // this method convert GWei to Wei, and in little endian encoded Data
-    static func convertEthereumNumber(input: Int64) -> Data {
+    static func convertAvaxNumber(input: Int64) -> Data {
         let inputInt = BigInt(input * weiPerGWei).magnitude.serialize()
         return inputInt
     }
     
     static func getPreSignedInputData(signingInput: EthereumSigningInput, keysignPayload: KeysignPayload) -> Result<Data, Error> {
-        guard keysignPayload.coin.chain.ticker == "ETH" else {
+        guard keysignPayload.coin.chain.ticker == "AVAX" else {
             return .failure(HelperError.runtimeError("coin is not ETH"))
         }
         let coin = CoinType.ethereum
@@ -64,8 +64,8 @@ enum EthereumHelper {
         input.chainID = Data(hexString: Int64(intChainID).hexString())!
         input.nonce = Data(hexString: nonce.hexString())!
         input.gasLimit = Data(hexString: gasLimit.hexString())!
-        input.maxFeePerGas = convertEthereumNumber(input: maxFeePerGasGWei)
-        input.maxInclusionFeePerGas = convertEthereumNumber(input: priorityFeeGWei)
+        input.maxFeePerGas = convertAvaxNumber(input: maxFeePerGasGWei)
+        input.maxInclusionFeePerGas = convertAvaxNumber(input: priorityFeeGWei)
         do {
             let inputData = try input.serializedData()
             return .success(inputData)
@@ -75,10 +75,10 @@ enum EthereumHelper {
     }
     
     static func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
-        guard keysignPayload.coin.chain.ticker == "ETH" else {
+        guard keysignPayload.coin.chain.ticker == "AVAX" else {
             return .failure(HelperError.runtimeError("coin is not ETH"))
         }
-        let coin = CoinType.ethereum
+        let coin = CoinType.avalancheCChain
         guard let intChainID = Int(coin.chainId) else {
             return .failure(HelperError.runtimeError("fail to get chainID"))
         }
@@ -93,13 +93,13 @@ enum EthereumHelper {
             $0.chainID = Data(hexString: Int64(intChainID).hexString())!
             $0.nonce = Data(hexString: nonce.hexString())!
             $0.gasLimit = Data(hexString: gasLimit.hexString())!
-            $0.maxFeePerGas = convertEthereumNumber(input: maxFeePerGasGWei)
-            $0.maxInclusionFeePerGas = convertEthereumNumber(input: priorityFeeGWei)
+            $0.maxFeePerGas = convertAvaxNumber(input: maxFeePerGasGWei)
+            $0.maxInclusionFeePerGas = convertAvaxNumber(input: priorityFeeGWei)
             $0.toAddress = keysignPayload.toAddress
             $0.txMode = .enveloped
             $0.transaction = EthereumTransaction.with {
                 $0.transfer = EthereumTransaction.Transfer.with {
-                    $0.amount = convertEthereumNumber(input: keysignPayload.toAmount)
+                    $0.amount = convertAvaxNumber(input: keysignPayload.toAmount)
                     if let memo = keysignPayload.memo {
                         $0.data = Data(memo.utf8)
                     }
@@ -149,7 +149,7 @@ enum EthereumHelper {
                                      inputData: Data,
                                      signatures: [String: TssKeysignResponse]) -> Result<String, Error>
     {
-        let ethPublicKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: vaultHexPubKey, hexChainCode: vaultHexChainCode, derivePath: CoinType.ethereum.derivationPath())
+        let ethPublicKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: vaultHexPubKey, hexChainCode: vaultHexChainCode, derivePath: CoinType.avalancheCChain.derivationPath())
         guard let pubkeyData = Data(hexString: ethPublicKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
         else {
@@ -157,7 +157,7 @@ enum EthereumHelper {
         }
         
         do {
-            let hashes = TransactionCompiler.preImageHashes(coinType: .ethereum, txInputData: inputData)
+            let hashes = TransactionCompiler.preImageHashes(coinType: .avalancheCChain, txInputData: inputData)
             let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
             let allSignatures = DataVector()
             let publicKeys = DataVector()
@@ -171,7 +171,7 @@ enum EthereumHelper {
             
             // it looks like the pubkey compileWithSignature accept is extended public key
             // also , it can be empty as well , since we don't have extended public key , so just leave it empty
-            let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .ethereum,
+            let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .avalancheCChain,
                                                                                  txInputData: inputData,
                                                                                  signatures: allSignatures,
                                                                                  publicKeys: publicKeys)
