@@ -18,17 +18,22 @@ class CoinViewModel: ObservableObject {
     private var utxo = BlockchairService.shared
     private let thor = ThorchainService.shared
     private let eth = EtherScanService.shared
-    
-    //TODO: Something is wrong with this load data
-    //TODO: We need to check because it is called at least 5x
+
     func loadData(tx: SendTransaction) async {
         print("realoading data...")
         isLoading = true
         await CryptoPriceService.shared.fetchCryptoPrices()
         
-        let coinName = tx.coin.chain.name.lowercased()
         if tx.coin.chain.chainType == ChainType.UTXO {
-            await utxo.fetchBlockchairData(for: tx.fromAddress, coinName: coinName)
+            do {
+                async let sats = utxo.fetchSatsPrice(tx: tx)
+                async let blockchairData: () = utxo.fetchBlockchairData(for: tx)
+                
+                tx.gas = String(try await sats)
+                _ = await blockchairData
+            } catch {
+                print("error fetching data: \(error.localizedDescription)")
+            }
         } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
             do {
                 print("The loadData for \(tx.coin.ticker)")
