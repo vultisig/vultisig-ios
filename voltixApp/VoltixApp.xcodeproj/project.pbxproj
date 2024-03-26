@@ -207,7 +207,7 @@
 		DE9EB0FC2BA463F7001747D9 /* KeygenViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0FB2BA463F7001747D9 /* KeygenViewModel.swift */; };
 		DEBF93972B8D5FEF002868CD /* KeysignPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */; };
 		DEEADCF72B916676007978DE /* Solana.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEADCF62B916676007978DE /* Solana.swift */; };
-		DEEDAEE12B8AF7EF005170E8 /* eth.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEDAEE02B8AF7EF005170E8 /* eth.swift */; };
+		DEEDAEE12B8AF7EF005170E8 /* evm.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEDAEE02B8AF7EF005170E8 /* evm.swift */; };
 		DEEDAEE32B8AF8B1005170E8 /* publickey.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEDAEE22B8AF8B1005170E8 /* publickey.swift */; };
 		DEEDAEE52B8AFB5D005170E8 /* common.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEDAEE42B8AFB5D005170E8 /* common.swift */; };
 		DEEDAEE82B8B50A4005170E8 /* BigInt in Frameworks */ = {isa = PBXBuildFile; productRef = DEEDAEE72B8B50A4005170E8 /* BigInt */; };
@@ -440,7 +440,7 @@
 		DE9EB0FB2BA463F7001747D9 /* KeygenViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenViewModel.swift; sourceTree = "<group>"; };
 		DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignPayload.swift; sourceTree = "<group>"; };
 		DEEADCF62B916676007978DE /* Solana.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Solana.swift; sourceTree = "<group>"; };
-		DEEDAEE02B8AF7EF005170E8 /* eth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = eth.swift; sourceTree = "<group>"; };
+		DEEDAEE02B8AF7EF005170E8 /* evm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = evm.swift; sourceTree = "<group>"; };
 		DEEDAEE22B8AF8B1005170E8 /* publickey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = publickey.swift; sourceTree = "<group>"; };
 		DEEDAEE42B8AFB5D005170E8 /* common.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = common.swift; sourceTree = "<group>"; };
 		DEEFF4FC2B9835DE0015692E /* THORChainSwapChainExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainSwapChainExtension.swift; sourceTree = "<group>"; };
@@ -1021,7 +1021,7 @@
 			children = (
 				DEEADCF62B916676007978DE /* Solana.swift */,
 				DEFC7BFE2B8EC95E0090B07A /* thorchain.swift */,
-				DEEDAEE02B8AF7EF005170E8 /* eth.swift */,
+				DEEDAEE02B8AF7EF005170E8 /* evm.swift */,
 				DEEDAEE22B8AF8B1005170E8 /* publickey.swift */,
 				DEEDAEE42B8AFB5D005170E8 /* common.swift */,
 				DEFC7BFA2B8D87370090B07A /* erc20.swift */,
@@ -1222,7 +1222,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */;
+			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -1387,7 +1387,7 @@
 				DE15729E2B70F284009BC7C5 /* JoinKeysignView.swift in Sources */,
 				DEEADCF72B916676007978DE /* Solana.swift in Sources */,
 				A6966D312BA4048800903CA4 /* SwapCryptoDetailsView.swift in Sources */,
-				DEEDAEE12B8AF7EF005170E8 /* eth.swift in Sources */,
+				DEEDAEE12B8AF7EF005170E8 /* evm.swift in Sources */,
 				A6966D2F2BA4045C00903CA4 /* SwapCryptoView.swift in Sources */,
 				46F8F7282B9A011B0099454E /* ThorchainBroadcastTransactionService.swift in Sources */,
 				A65649E12B96602700E4B329 /* Int64Extension.swift in Sources */,
@@ -1839,7 +1839,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */ = {
+		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DE49A1882B65F6DB000F3AFB /* Debug */,

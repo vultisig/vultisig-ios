@@ -8,12 +8,14 @@
 import Foundation
 
 class GroupedChain {
+    let id: String
     let name: String
     let address: String
     var count: Int
     var coins: [Coin]
     
     init(name: String, address: String, count: Int = 0, coins: [Coin]) {
+        self.id = name + "-" + address
         self.name = name
         self.address = address
         self.count = count

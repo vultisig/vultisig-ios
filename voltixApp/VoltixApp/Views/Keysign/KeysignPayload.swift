@@ -55,9 +55,9 @@ struct KeysignPayload: Codable, Hashable {
                 return utxoHelper.getPreSignedImageHash(keysignPayload: self)
             case Chain.Ethereum.name.lowercased():
 				if coin.isNativeToken {
-                    result = EthereumHelper.getPreSignedImageHash(keysignPayload: self)
+                    result = EVMHelper.getEthereumHelper().getPreSignedImageHash(keysignPayload: self)
                 }else{
-                    result = ERC20Helper.getPreSignedImageHash(keysignPayload: self)
+                    result = ERC20Helper.getEthereumERC20Helper().getPreSignedImageHash(keysignPayload: self)
                 }
             case Chain.THORChain.name.lowercased():
                 result = THORChainHelper.getPreSignedImageHash(keysignPayload: self)

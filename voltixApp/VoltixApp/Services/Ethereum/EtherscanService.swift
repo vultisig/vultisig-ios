@@ -1,10 +1,11 @@
 import SwiftUI
 import Foundation
 import BigInt
+import OSLog
 
 @MainActor
 public class EtherScanService: ObservableObject {
-    
+    private let logger = Logger(subsystem: "etherscan-service", category: "service")
     static let shared = EtherScanService()
     private init() {}
     
@@ -175,6 +176,7 @@ public class EtherScanService: ObservableObject {
     
     private func extractResult(fromData data: Data) -> String? {
         do {
+            logger.debug("Data: \(String(data: data, encoding: .utf8) ?? "nil")")
             if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                let result = json["result"] as? String {
                 return result

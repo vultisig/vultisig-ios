@@ -47,7 +47,7 @@ class THORChainSwaps {
                 let utxoHelper = UTXOChainsHelper(coin: .dogecoin, vaultHexPublicKey: self.vaultHexPublicKey, vaultHexChainCode: self.vaultHexChainCode)
                 return utxoHelper.getSigningInputData(keysignPayload: keysignPayload, signingInput: output.bitcoin)
             case .eth:
-                return EthereumHelper.getPreSignedInputData(signingInput: output.ethereum, keysignPayload: keysignPayload)
+                return EVMHelper.getEthereumHelper().getPreSignedInputData(signingInput: output.ethereum, keysignPayload: keysignPayload)
             default:
                 return .failure(HelperError.runtimeError("not support yet"))
             }
@@ -116,7 +116,8 @@ class THORChainSwaps {
                 let utxoHelper = UTXOChainsHelper(coin: .dogecoin, vaultHexPublicKey: self.vaultHexPublicKey, vaultHexChainCode: self.vaultHexChainCode)
                 return utxoHelper.getSignedTransaction(inputData: inputData, signatures: signatures)
             case .eth:
-                return EthereumHelper.getSignedTransaction(vaultHexPubKey: self.vaultHexPublicKey, vaultHexChainCode: self.vaultHexChainCode, inputData: inputData, signatures: signatures)
+                // TODO what if it is ERC20
+                return EVMHelper.getEthereumHelper().getSignedTransaction(vaultHexPubKey: self.vaultHexPublicKey, vaultHexChainCode: self.vaultHexChainCode, inputData: inputData, signatures: signatures)
             default:
                 return .failure(HelperError.runtimeError("not support"))
             }

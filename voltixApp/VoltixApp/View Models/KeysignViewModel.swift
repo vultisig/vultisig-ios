@@ -207,7 +207,7 @@ class KeysignViewModel: ObservableObject {
 				case .EVM:
 					// ETH
 					if keysignPayload.coin.isNativeToken {
-						let result = EthereumHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                        let result = EVMHelper.getEthereumHelper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
 						switch result {
 							case .success(let tx):
 								do {
@@ -221,7 +221,7 @@ class KeysignViewModel: ObservableObject {
 						}
 					} else {
 						// It should work for all ERC20
-						let result = ERC20Helper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                        let result = ERC20Helper.getEthereumERC20Helper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
 						
 						switch result {
 							case .success(let tx):
@@ -272,6 +272,11 @@ class KeysignViewModel: ObservableObject {
 			default:
 				self.logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
 		}
+        // since it failed to get transaction or failed to broadcast , go to failed page
+        DispatchQueue.main.async {
+            self.status = .KeysignFailed
+        }
+        
 	}
 	
 	func handleBitcoinTransactionError(err: UTXOTransactionError) {
