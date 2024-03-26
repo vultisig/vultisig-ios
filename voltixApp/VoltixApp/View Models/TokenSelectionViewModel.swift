@@ -70,7 +70,7 @@ class TokenSelectionViewModel: ObservableObject {
             let coinResult = EVMHelper.getEthereumHelper().getCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
             switch coinResult {
             case .success(let coin):
-                if coin.ticker == Chain.Ethereum.ticker {
+                if coin.ticker == "Ethereum" {
                     vault.coins.append(coin)
                 } else {
                     let newCoin = Coin(chain: asset.chain,
