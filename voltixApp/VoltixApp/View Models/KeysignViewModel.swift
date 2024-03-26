@@ -272,6 +272,11 @@ class KeysignViewModel: ObservableObject {
 			default:
 				self.logger.error("Failed to get signed transaction,error:\(err.localizedDescription)")
 		}
+        // since it failed to get transaction or failed to broadcast , go to failed page
+        DispatchQueue.main.async {
+            self.status = .KeysignFailed
+        }
+        
 	}
 	
 	func handleBitcoinTransactionError(err: UTXOTransactionError) {
