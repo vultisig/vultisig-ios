@@ -28,6 +28,10 @@ class Endpoint {
         "https://litecoinspace.org/tx/\(value)"
     }
     
+    static func blockchairStats(_ chainName: String) -> String {
+        "http://45.76.120.223/blockchair/\(chainName)/stats"
+    }
+    
     static func blockchairBroadcast(_ chainName: String) -> String {
         "http://45.76.120.223/blockchair/\(chainName)/push/transaction"
     }

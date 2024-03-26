@@ -7,6 +7,7 @@
 
 import SwiftUI
 import BigInt
+import WalletCore
 
 @MainActor
 class SendCryptoVerifyViewModel: ObservableObject {
@@ -32,7 +33,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
     func reloadTransactions(tx: SendTransaction) {
         Task {
             if  tx.coin.chain.chainType == ChainType.UTXO {
-                await utxo.fetchBlockchairData(for: tx.fromAddress, coinName: tx.coin.chain.name.lowercased())
+                await utxo.fetchBlockchairData(for: tx)
             } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
                 self.THORChainAccount = try await thor.fetchAccountNumber(tx.fromAddress)
             } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
