@@ -228,22 +228,38 @@ public class EtherScanService: ObservableObject {
         let urlString = Endpoint.fetchEtherscanGasOracle()
         let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
         
-        // Extract ProposeGasPrice and convert to Int64
         guard let resultProposeGasPrice = Utils.extractResultFromJson(fromData: data, path: "result.ProposeGasPrice"),
               let proposeGasPriceString = resultProposeGasPrice as? String,
               let proposeGasPriceInt = Int64(proposeGasPriceString) else {
+            throw EtherScanError.customError("ERROR: Extract ProposeGasPrice and convert to Int64")
+        }
+        
+        if proposeGasPriceInt == 0 {
             throw EtherScanError.fetchGasPriceConversionError
         }
         
-        // Extract suggestBaseFee and convert to Double
         guard let resultSuggestBaseFee = Utils.extractResultFromJson(fromData: data, path: "result.suggestBaseFee"),
               let suggestBaseFeeString = resultSuggestBaseFee as? String,
               let suggestBaseFeeDouble = Double(suggestBaseFeeString) else {
-            throw EtherScanError.fetchGasPriceConversionError
+            throw EtherScanError.customError("ERROR: Extract suggestBaseFee and convert to Double")
         }
         
-        // Calculate priorityFeeGwei by subtracting suggestBaseFee from ProposeGasPrice and round the result
-        let priorityFeeGwei = Int64(round(Double(proposeGasPriceInt) - suggestBaseFeeDouble))
+        if suggestBaseFeeDouble == 0.0 {
+            throw EtherScanError.customError("ERROR: Extract suggestBaseFee is ZERO")
+        }
+        
+        var priorityFeeGweiDouble = Double(proposeGasPriceInt) - suggestBaseFeeDouble
+        
+        // It can't be ZERO, so we calculate it.
+        if priorityFeeGweiDouble > 0.0, priorityFeeGweiDouble < 1 {
+            priorityFeeGweiDouble = 1
+        }
+        
+        if priorityFeeGweiDouble == 0 {
+            throw EtherScanError.customError("ERROR: Calculate priorityFeeGwei by subtracting suggestBaseFee from ProposeGasPrice and round the result")
+        }
+        
+        let priorityFeeGwei = Int64(round(priorityFeeGweiDouble))
         
         // Update cache and return priorityFeeGwei
         self.cachePriorityFeeGwei[cacheKey] = (data: priorityFeeGwei, timestamp: Date())
