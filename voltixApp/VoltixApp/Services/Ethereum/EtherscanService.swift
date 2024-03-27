@@ -238,16 +238,19 @@ public class EtherScanService: ObservableObject {
     
     private func extractResult(fromData data: Data) -> String? {
         do {
-            logger.debug("Data: \(String(data: data, encoding: .utf8) ?? "nil")")
-            if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let result = json["result"] as? String {
-                return result
+            if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                if let result = json["result"] as? String {
+                    return result
+                } else if let error = json["error"] as? [String: Any], let message = error["message"] as? String, message == "already known" {
+                    return "Your other device already broadcasted it"
+                }
             }
         } catch {
             print("JSON decoding error: \(error)")
         }
         return nil
     }
+    
     
     private func constructERC20TransferData(recipientAddress: String, value: BigInt) -> String {
         let methodId = "a9059cbb"
