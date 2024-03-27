@@ -12,6 +12,7 @@ class EVMHelper {
     static let defaultETHTransferGasUnit:Int64 = 21000
     static let defaultERC20TransferGasUnit:Int64 = 120000
     static let weiPerGWei: Int64 = 1_000_000_000
+    static let wei: Int64 = 1_000_000_000_000_000_000
     static let ethDecimals = 18
     let coinType: CoinType
     

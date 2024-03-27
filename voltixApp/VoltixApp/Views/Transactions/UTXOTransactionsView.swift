@@ -74,7 +74,7 @@ struct UTXOTransactionsView: View {
         ScrollView {
             VStack(spacing: 16) {
                 ForEach(transactions, id: \.txid) { transaction in
-                    UTXOTransactionCell(transaction: transaction, tx: tx)
+                    UTXOTransactionCell(transaction: transaction, tx: tx, utxoTransactionsService: utxoTransactionsService)
                 }
             }
         }

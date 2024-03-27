@@ -249,4 +249,24 @@ public class EtherScanService: ObservableObject {
     private func handleEtherScanError(_ error: EtherScanError) {
         print(error.description)
     }
+    
+    func convertToEther(fromWei value: String, _ decimals: Int = EVMHelper.ethDecimals) -> String {
+        if let wei = Decimal(string: value) {
+            let decimalValue = Decimal(pow(10.0, Double(decimals)))
+            let ether = wei / decimalValue // Correctly perform exponentiation
+            return String(format: "%.4f", ether as CVarArg)
+        } else {
+            return "Invalid Value"
+        }
+    }
+    
+    func calculateTransactionFee(gasUsed: String, gasPrice: String) -> String {
+        guard let gasUsedDouble = Double(gasUsed), let gasPriceDouble = Double(gasPrice) else {
+            return "Invalid Data"
+        }
+        
+        let feeInWei = Decimal(gasUsedDouble * gasPriceDouble)
+        let feeInEther = feeInWei / Decimal(EVMHelper.wei)
+        return String(format: "%.6f ETH", feeInEther as CVarArg)
+    }
 }

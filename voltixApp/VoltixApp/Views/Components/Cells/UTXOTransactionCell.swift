@@ -10,6 +10,7 @@ import SwiftUI
 struct UTXOTransactionCell: View {
     let transaction: UTXOTransactionMempool
     let tx: SendTransaction
+    @ObservedObject var utxoTransactionsService: UTXOTransactionsService
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -88,7 +89,10 @@ struct UTXOTransactionCell: View {
     }
     
     var amountCell: some View {
-        getSummaryCell(title: "amount", value: getAmount())
+        getSummaryCell(
+            title: "amount",
+            value: utxoTransactionsService.getAmount(for: transaction, tx: tx)
+        )
     }
     
     var memoCell: some View {
@@ -107,26 +111,5 @@ struct UTXOTransactionCell: View {
         .frame(height: 32)
         .font(.body16MenloBold)
         .foregroundColor(.neutral0)
-    }
-    
-    private func getAmount() -> String {
-        if transaction.isSent {
-            return formatAmount(transaction.amountSent)
-        } else if transaction.isReceived {
-            return formatAmount(transaction.amountReceived)
-        }
-        return ""
-    }
-    
-    private func formatAmount(_ amountSatoshis: Int) -> String {
-        let amountBTC = Double(amountSatoshis) / 100_000_000 // Convert satoshis to BTC
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.minimumFractionDigits = 0 // Minimum number of digits after the decimal point
-        formatter.maximumFractionDigits = 8 // Maximum number of digits after the decimal point, adjust if needed
-        formatter.decimalSeparator = "." // Use dot for decimal separation
-        formatter.groupingSeparator = "," // Use comma for thousands separation, adjust if needed
-        
-        return (formatter.string(from: NSNumber(value: amountBTC)) ?? "\(amountBTC) \(tx.coin.ticker.uppercased())")
     }
 }

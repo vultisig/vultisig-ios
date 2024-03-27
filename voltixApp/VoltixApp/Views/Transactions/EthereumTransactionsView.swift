@@ -39,7 +39,7 @@ struct EthereumTransactionsView: View {
         ScrollView {
             VStack(spacing: 16) {
                 ForEach(transactions, id: \.hash) { transaction in
-                    EthereumTransactionCell(transaction: transaction, myAddress: addressFor)
+                    EthereumTransactionCell(transaction: transaction, myAddress: addressFor, etherScanService: etherScanService)
                 }
             }
         }
@@ -51,28 +51,32 @@ struct EthereumTransactionsView: View {
     }
     
     private func setData() async {
-        if let vault = appState.currentVault {
-            let eth = vault.coins.first{$0.ticker == "ETH"}
-            guard let eth else {
-                return
+        guard let vault = appState.currentVault else {
+            return
+        }
+        
+        let eth = vault.coins.first{$0.ticker == "ETH"}
+        guard let eth else {
+            return
+        }
+        
+        do {
+            var transactions: [EtherscanAPITransactionDetail] = []
+            var forAddress: String = ""
+            
+            if let contract = contractAddress {
+                (transactions, forAddress) = try await etherScanService.fetchERC20Transactions(
+                    forAddress: eth.address,
+                    contractAddress: contract
+                )
+            } else {
+                (transactions, forAddress) = try await etherScanService.fetchTransactions(forAddress: eth.address)
             }
-            do {
-                var transactions: [EtherscanAPITransactionDetail] = []
-                var forAddress: String = ""
-                if let contract = contractAddress {
-                    (transactions, forAddress) = try await etherScanService.fetchERC20Transactions(
-                        forAddress: eth.address,
-                        contractAddress: contract
-                    )
-                } else {
-                    (transactions, forAddress) = try await etherScanService.fetchTransactions(forAddress: eth.address)
-                }
-                
-                addressFor = forAddress
-                self.transactions = transactions
-            } catch {
-                print("error: \(error)")
-            }
+            
+            addressFor = forAddress
+            self.transactions = transactions
+        } catch {
+            print("error: \(error)")
         }
     }
 }

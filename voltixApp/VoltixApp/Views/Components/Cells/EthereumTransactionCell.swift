@@ -10,6 +10,7 @@ import SwiftUI
 struct EthereumTransactionCell: View {
     let transaction: EtherscanAPITransactionDetail
     let myAddress: String
+    @ObservedObject var etherScanService: EtherScanService
     
     @State var isSent = true
     
@@ -108,15 +109,18 @@ struct EthereumTransactionCell: View {
     }
     
     var amountCell: some View {
-        let decimals: Int = Int(transaction.tokenDecimal ?? "18") ?? 18
-        let etherValue = convertToEther(fromWei: transaction.value, decimals)
+        let decimals: Int = Int(transaction.tokenDecimal ?? "\(EVMHelper.ethDecimals)") ?? EVMHelper.ethDecimals
+        let etherValue = etherScanService.convertToEther(fromWei: transaction.value, decimals)
         let tokenSymbol = transaction.tokenSymbol ?? "ETH"
         
         return getSummaryCell(title: "amount", value: "\(etherValue) \(tokenSymbol)")
     }
     
     var feesCell: some View {
-        let feeDisplay = calculateTransactionFee(gasUsed: transaction.gasUsed ?? "", gasPrice: transaction.gasPrice)
+        let feeDisplay = etherScanService.calculateTransactionFee(
+            gasUsed: transaction.gasUsed ?? "",
+            gasPrice: transaction.gasPrice
+        )
         
         return getSummaryCell(title: "gas", value: feeDisplay)
     }
@@ -134,24 +138,5 @@ struct EthereumTransactionCell: View {
         .frame(height: 32)
         .font(.body16MenloBold)
         .foregroundColor(.neutral0)
-    }
-    
-    private func convertToEther(fromWei value: String, _ decimals: Int = 18) -> String {
-        if let wei = Double(value) {
-            let ether = wei / pow(10.0, Double(decimals)) // Correctly perform exponentiation
-            return String(format: "%.4f", ether)
-        } else {
-            return "Invalid Value"
-        }
-    }
-    
-    private func calculateTransactionFee(gasUsed: String, gasPrice: String) -> String {
-        guard let gasUsedDouble = Double(gasUsed), let gasPriceDouble = Double(gasPrice) else {
-            return "Invalid Data"
-        }
-        
-        let feeInWei = gasUsedDouble * gasPriceDouble
-        let feeInEther = feeInWei / 1_000_000_000_000_000_000
-        return String(format: "%.6f ETH", feeInEther)
     }
 }
