@@ -135,6 +135,7 @@
 		A6C0D5612BB3B76700156689 /* EthereumTransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D5602BB3B76700156689 /* EthereumTransactionsView.swift */; };
 		A6C0D5632BB3B78100156689 /* Erc20TransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D5622BB3B78100156689 /* Erc20TransactionsView.swift */; };
 		A6C0D5652BB3BD0F00156689 /* TransactionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D5642BB3BD0F00156689 /* TransactionCell.swift */; };
+		A6C0D5692BB3C6D400156689 /* ErrorMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D5682BB3C6D400156689 /* ErrorMessage.swift */; };
 		A6CBA8EE2BA299E8008B110C /* ImportVaultViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CBA8ED2BA299E8008B110C /* ImportVaultViewModel.swift */; };
 		A6CBA8F02BA2A629008B110C /* ImportWalletUploadSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CBA8EF2BA2A629008B110C /* ImportWalletUploadSection.swift */; };
 		A6F2C5452B9FE3A00095C8E3 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */; };
@@ -372,6 +373,7 @@
 		A6C0D5602BB3B76700156689 /* EthereumTransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EthereumTransactionsView.swift; sourceTree = "<group>"; };
 		A6C0D5622BB3B78100156689 /* Erc20TransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Erc20TransactionsView.swift; sourceTree = "<group>"; };
 		A6C0D5642BB3BD0F00156689 /* TransactionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionCell.swift; sourceTree = "<group>"; };
+		A6C0D5682BB3C6D400156689 /* ErrorMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMessage.swift; sourceTree = "<group>"; };
 		A6CBA8ED2BA299E8008B110C /* ImportVaultViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportVaultViewModel.swift; sourceTree = "<group>"; };
 		A6CBA8EF2BA2A629008B110C /* ImportWalletUploadSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportWalletUploadSection.swift; sourceTree = "<group>"; };
 		A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
@@ -518,6 +520,7 @@
 				A61BC81A2BA26D9900484689 /* TokenSelectionSection.swift */,
 				A6CBA8EF2BA2A629008B110C /* ImportWalletUploadSection.swift */,
 				A6966D2C2BA402A900903CA4 /* TokenSelectorDropdown.swift */,
+				A6C0D5682BB3C6D400156689 /* ErrorMessage.swift */,
 				A63953AF2BA7BEDA000802EC /* Checkbox.swift */,
 				A6F9F7D92B9BA2CF00790258 /* Cells */,
 				A633B1232B993FCC003D1738 /* Buttons */,
@@ -1503,6 +1506,7 @@
 				DE49A19E2B671416000F3AFB /* Coin.swift in Sources */,
 				A65649E42B96602700E4B329 /* StringExtension.swift in Sources */,
 				A6F9F7E92B9BBFD500790258 /* AddressQRCodeView.swift in Sources */,
+				A6C0D5692BB3C6D400156689 /* ErrorMessage.swift in Sources */,
 				46C8CBBD2BA7753900E68E08 /* Blockchair.swift in Sources */,
 				469ED3A42B98F5DE008D4951 /* ThorchainAccountValue.swift in Sources */,
 				DE49A1672B65F6D9000F3AFB /* VoltixApp.swift in Sources */,

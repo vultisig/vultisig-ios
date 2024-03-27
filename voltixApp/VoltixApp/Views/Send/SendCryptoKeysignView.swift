@@ -82,17 +82,7 @@ struct SendCryptoKeysignView: View {
     }
     
     var errorMessage: some View {
-        VStack(spacing: 24) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.title80Menlo)
-                .symbolRenderingMode(.multicolor)
-            
-            Text(NSLocalizedString("signInErrorTryAgain", comment: "Signing Error. Please try again."))
-                .font(.body16MenloBold)
-                .foregroundColor(.neutral0)
-                .frame(maxWidth: 200)
-                .multilineTextAlignment(.center)
-        }
+        ErrorMessage(text: "signInErrorTryAgain")
     }
     
     var bottomBar: some View {
