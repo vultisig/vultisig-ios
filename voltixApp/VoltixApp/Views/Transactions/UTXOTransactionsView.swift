@@ -27,7 +27,11 @@ struct UTXOTransactionsView: View {
     var view: some View {
         ZStack {
             if let transactions = utxoTransactionsService.walletData, let tx = tx {
-                getList(for: transactions, tx: tx)
+                if transactions.count>0 {
+                    getList(for: transactions, tx: tx)
+                } else {
+                    ErrorMessage(text: "noTransactions")
+                }
             } else if let error = utxoTransactionsService.errorMessage {
                 getErrorMessage(error)
             } else {
