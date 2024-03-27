@@ -11,10 +11,11 @@ import SwiftUI
 struct VaultDetailView: View {
     @Binding var presentationStack: [CurrentScreen]
     @Binding var showVaultsList: Bool
-    @EnvironmentObject var appState: ApplicationState
     let vault: Vault
     
+    @EnvironmentObject var appState: ApplicationState
     @EnvironmentObject var viewModel: VaultDetailViewModel
+    
     @State var showSheet = false
     
     var body: some View {
@@ -98,4 +99,5 @@ struct VaultDetailView: View {
 #Preview {
     VaultDetailView(presentationStack: .constant([]), showVaultsList: .constant(false), vault: Vault.example)
         .environmentObject(VaultDetailViewModel())
+        .environmentObject(ApplicationState.shared)
 }
