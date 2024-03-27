@@ -13,23 +13,24 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var memo: String = ""
     @Published var gas: String = ""
     @Published var nonce: Int64 = 0
-	@Published var coin: Coin = Coin(
-		chain: Chain.Bitcoin,
-		ticker: "BTC",
-		logo: "",
-		address: "",
-		priceRate: 0.0,
-		chainType: ChainType.UTXO,
-		decimals: "8",
-		hexPublicKey: "",
-		feeUnit: "",
-		priceProviderId: "",
-		contractAddress: "",
-		rawBalance: "0",
-		isNativeToken: true,
+    var priorityFeeGwei: Int64 = 0
+    @Published var coin: Coin = Coin(
+        chain: Chain.Bitcoin,
+        ticker: "BTC",
+        logo: "",
+        address: "",
+        priceRate: 0.0,
+        chainType: ChainType.UTXO,
+        decimals: "8",
+        hexPublicKey: "",
+        feeUnit: "",
+        priceProviderId: "",
+        contractAddress: "",
+        rawBalance: "0",
+        isNativeToken: true,
         feeDefault: "20"
-	)
-
+    )
+    
     var fromAddress: String {
         coin.address
     }
@@ -45,12 +46,12 @@ class SendTransaction: ObservableObject, Hashable {
     var totalEthTransactionCostWei: BigInt {
         amountInWei + feeInWei
     }
-	
-	var amountInTokenWeiInt64: Int64 {
+    
+    var amountInTokenWeiInt64: Int64 {
         let decimals = Double(coin.decimals) ?? Double(EVMHelper.ethDecimals) // The default is always in WEI unless the token has a different one like UDSC
-		
-		return Int64(amountDecimal * pow(10, decimals))
-	}
+        
+        return Int64(amountDecimal * pow(10, decimals))
+    }
     
     var amountInTokenWei: BigInt {
         let decimals = Double(coin.decimals) ?? Double(EVMHelper.ethDecimals) // The default is always in WEI unless the token has a different one like UDSC
@@ -72,10 +73,10 @@ class SendTransaction: ObservableObject, Hashable {
         return 0
     }
     
-	var amountInLamports: Int64 {
-		Int64(amountDecimal * 1_000_000_000)
-	}
-	
+    var amountInLamports: Int64 {
+        Int64(amountDecimal * 1_000_000_000)
+    }
+    
     var amountInSats: Int64 {
         Int64(amountDecimal * 100_000_000)
     }
@@ -94,43 +95,75 @@ class SendTransaction: ObservableObject, Hashable {
         return Double(gasString) ?? 0
     }
     
-    var gasFeePredictionForEvm: Double {
-        if let gasDouble = Double(gas), let feeDefaultDouble = Double(coin.feeDefault) {
-            return calculateTransactionFee(gasPriceGwei: gasDouble, gasUsed: feeDefaultDouble)
-        } else {
-            return 0.0
+    var gasFeePredictionForEvm: String {
+        
+        guard let gasInt = Int64(gas) else {
+            return ""
         }
+        
+        guard let gasLimitDefault = Int64(coin.feeDefault) else {
+            return ""
+        }
+        
+        let maxFeePerGasWei: BigInt = BigInt(gasInt * EVMHelper.weiPerGWei)
+        let gasLimitETHTransfer: BigInt = BigInt(gasLimitDefault)
+        let totalCostETHTransferWei = maxFeePerGasWei * gasLimitETHTransfer
+        let totalCostETHTransferETH = Double(totalCostETHTransferWei) / Double(EVMHelper.wei)
+        
+        
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = Int(coin.decimals) ?? EVMHelper.ethDecimals
+        formatter.minimumFractionDigits = 0
+        formatter.groupingSeparator = ""
+        formatter.decimalSeparator = "."
+        
+        let returnString = formatter.string(from: NSNumber(value: totalCostETHTransferETH))  ?? ""
+        
+        if !returnString.isEmpty {
+            return "\(returnString) \(coin.chain.ticker)"
+        }
+        
+        return ""
     }
     
-    var gasFeePredictionForEvmUsd: Double {
-        if let gasDouble = Double(gas), let feeDefaultDouble = Double(coin.feeDefault) {
-            let feeInEth = calculateTransactionFee(gasPriceGwei: gasDouble, gasUsed: feeDefaultDouble)
-            return feeInEth * coin.priceRate
-        } else {
-            return 0.0
+    var gasFeePredictionForEvmUsd: String {
+        
+        guard let gasInt = Int64(gas) else {
+            return ""
         }
+        
+        guard let gasLimitDefault = Int64(coin.feeDefault) else {
+            return ""
+        }
+        
+        let maxFeePerGasWei: BigInt = BigInt(gasInt * EVMHelper.weiPerGWei)
+        let gasLimitETHTransfer: BigInt = BigInt(gasLimitDefault)
+        let totalCostETHTransferWei = maxFeePerGasWei * gasLimitETHTransfer
+        let totalCostETHTransferETH = Double(totalCostETHTransferWei) / Double(EVMHelper.wei)
+        let totalCostETHTransferUSD = totalCostETHTransferETH * coin.priceRate
+        
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = "USD"
+        
+        return formatter.string(from: NSNumber(value: totalCostETHTransferUSD)) ?? ""
     }
-
-    private func calculateTransactionFee(gasPriceGwei: Double, gasUsed: Double) -> Double {
-        let transactionFeeGwei = gasPriceGwei * gasUsed
-        let transactionFeeEth = transactionFeeGwei / Double(EVMHelper.weiPerGWei)
-        return transactionFeeEth
-    }
-
+    
     init() {
         self.toAddress = ""
         self.amount = ""
         self.memo = ""
         self.gas = ""
     }
-	
-	init(coin: Coin) {
-		self.toAddress = ""
-		self.amount = ""
-		self.memo = ""
-		self.gas = ""
-		self.coin = coin
-	}
+    
+    init(coin: Coin) {
+        self.toAddress = ""
+        self.amount = ""
+        self.memo = ""
+        self.gas = ""
+        self.coin = coin
+    }
     
     init(toAddress: String, amount: String, memo: String, gas: String) {
         self.toAddress = toAddress

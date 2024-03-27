@@ -9,17 +9,16 @@ public class EtherScanService: ObservableObject {
     static let shared = EtherScanService()
     private init() {}
     
+    private var cacheSafeFeeGwei: [String: (data: Int64, timestamp: Date)] = [:]
+    private var cacheOracle: [String: (data: (Int64, Int64), timestamp: Date)] = [:]
     private var cacheGasPrice: [String: (data: BigInt, timestamp: Date)] = [:]
     private var cacheNonce: [String: (data: Int64, timestamp: Date)] = [:]
     
-    func getEthInfo(tx: SendTransaction) async throws -> Void {
+    func getEthBalance(tx: SendTransaction) async throws -> Void {
         
         do {
             // Start fetching all information concurrently
-            async let gasPrice = fetchGasPrice()
-            async let nonce = fetchNonce(address: tx.fromAddress)
             async let cryptoPrice = CryptoPriceService.shared.cryptoPrices?.prices[tx.coin.priceProviderId]?["usd"]
-            
             if let priceRateUsd = await cryptoPrice {
                 tx.coin.priceRate = priceRateUsd
             }
@@ -29,13 +28,18 @@ public class EtherScanService: ObservableObject {
                 tx.coin.rawBalance = try await fetchEthRawBalance(address: tx.fromAddress)
             }
             
-            tx.gas = String(try await gasPrice)
-            tx.nonce = try await nonce
+            
         } catch let error as EtherScanError {
             handleEtherScanError(error)
         } catch {
             print(error.localizedDescription)
         }
+    }
+    
+    func getETHGasInfo(fromAddress: String) async throws -> (gasPrice:String,priorityFee:Int64,nonce:Int64){
+        async let (gasPrice, priorityFee) = fetchOracle()
+        async let nonce = fetchNonce(address: fromAddress)
+        return (String(try await gasPrice),try await priorityFee,try await nonce)
     }
     
     func broadcastTransaction(hex: String) async throws -> String {
@@ -123,9 +127,9 @@ public class EtherScanService: ObservableObject {
     
     func fetchNonce(address: String) async throws -> Int64 {
         let cacheKey = "\(address)-etherscan-nonce"
-        if let cacheEntry = cacheNonce[cacheKey], isNonceCacheValid(for: cacheKey) {
-            print("\(cacheKey) > The data came from the cache !!")
-            return cacheEntry.data
+        
+        if let cachedData: Int64 = try await Utils.getCachedData(cacheKey: cacheKey, cache: cacheNonce, timeInSeconds: 60) {
+            return cachedData
         }
         
         let urlString = Endpoint.fetchEtherscanTransactionCount(address: address)
@@ -153,9 +157,9 @@ public class EtherScanService: ObservableObject {
     
     func fetchGasPrice() async throws -> BigInt {
         let cacheKey = "etherscan-gas-price"
-        if let cacheEntry = cacheGasPrice[cacheKey], isGasPriceCacheValid(for: cacheKey) {
-            print("GAS Price > The data came from the cache !!")
-            return cacheEntry.data
+        
+        if let cachedData: BigInt = try await Utils.getCachedData(cacheKey: cacheKey, cache: cacheGasPrice, timeInSeconds: 60 * 5) {
+            return cachedData
         }
         
         let urlString = Endpoint.fetchEtherscanGasPrice()
@@ -172,6 +176,64 @@ public class EtherScanService: ObservableObject {
         } else {
             throw EtherScanError.fetchGasPriceConversionError
         }
+    }
+    
+    func fetchOracle() async throws -> (Int64, Int64) {
+        let cacheKey = "etherscan-gas-priority-fee-gwei"
+        
+        if let cachedData: (Int64, Int64) = try await Utils.getCachedData(cacheKey: cacheKey, cache: cacheOracle, timeInSeconds: 60 * 5) {
+            return cachedData
+        }
+        
+        let urlString = Endpoint.fetchEtherscanGasOracle()
+        let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
+        
+        guard let resultSafeGasPrice = Utils.extractResultFromJson(fromData: data, path: "result.SafeGasPrice"),
+              let resultSafeGasPriceString = resultSafeGasPrice as? String else {
+            throw EtherScanError.customError("Error to convert the result Safe Gas Price to String")
+        }
+        
+        guard let intResultSafeGasPrice = Int64(resultSafeGasPriceString) else {
+            throw EtherScanError.customError("Error to convert the result Safe Gas Price String to Int64")
+        }
+        
+        guard let resultProposeGasPrice = Utils.extractResultFromJson(fromData: data, path: "result.ProposeGasPrice"),
+              let proposeGasPriceString = resultProposeGasPrice as? String,
+              let proposeGasPriceInt = Int64(proposeGasPriceString) else {
+            throw EtherScanError.customError("Error to extract the propose gas price and convert to Int64")
+        }
+        
+        if proposeGasPriceInt == 0 {
+            throw EtherScanError.fetchGasPriceConversionError
+        }
+        
+        guard let resultSuggestBaseFee = Utils.extractResultFromJson(fromData: data, path: "result.suggestBaseFee"),
+              let suggestBaseFeeString = resultSuggestBaseFee as? String,
+              let suggestBaseFeeDouble = Double(suggestBaseFeeString) else {
+            throw EtherScanError.customError("Error to extract the suggested base fee and convert to Double")
+        }
+        
+        if suggestBaseFeeDouble == 0.0 {
+            throw EtherScanError.customError("ERROR: Extract suggestBaseFee is ZERO")
+        }
+        
+        var priorityFeeGweiDouble = Double(proposeGasPriceInt) - suggestBaseFeeDouble
+        
+        // It can't be ZERO, so we calculate it.
+        if priorityFeeGweiDouble > 0.0, priorityFeeGweiDouble < 1 {
+            priorityFeeGweiDouble = 1
+        }
+        
+        if priorityFeeGweiDouble == 0 {
+            throw EtherScanError.customError("ERROR: Calculate priorityFeeGwei by subtracting suggestBaseFee from ProposeGasPrice and round the result")
+        }
+        
+        let priorityFeeGwei = Int64(round(priorityFeeGweiDouble))
+        
+        // Update cache and return priorityFeeGwei
+        self.cacheOracle[cacheKey] = (data: (intResultSafeGasPrice, priorityFeeGwei), timestamp: Date())
+        
+        return (intResultSafeGasPrice, priorityFeeGwei)
     }
     
     private func extractResult(fromData data: Data) -> String? {
@@ -195,18 +257,6 @@ public class EtherScanService: ObservableObject {
         let paddedValue = valueHex.paddingLeft(toLength: 64, withPad: "0")
         let data = "0x" + methodId + paddedAddress + paddedValue
         return data
-    }
-    
-    private func isGasPriceCacheValid(for key: String) -> Bool {
-        guard let cacheEntry = cacheGasPrice[key] else { return false }
-        let elapsedTime = Date().timeIntervalSince(cacheEntry.timestamp)
-        return elapsedTime <= 60 * 5
-    }
-    
-    private func isNonceCacheValid(for key: String) -> Bool {
-        guard let cacheEntry = cacheNonce[key] else { return false }
-        let elapsedTime = Date().timeIntervalSince(cacheEntry.timestamp)
-        return elapsedTime <= 60 * 1
     }
     
     enum EtherScanError: Error, CustomStringConvertible {

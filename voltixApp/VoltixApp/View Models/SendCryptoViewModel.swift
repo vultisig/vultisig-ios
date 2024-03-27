@@ -29,12 +29,36 @@ class SendCryptoViewModel: ObservableObject {
     @Published var sol: SolanaService = SolanaService.shared
     @Published var cryptoPrice = CryptoPriceService.shared
     @Published var utxo = BlockchairService.shared
+    
+    private let eth = EtherScanService.shared
     private let mediator = Mediator.shared
     
     let totalViews = 5
     let titles = ["send", "verify", "pair", "keysign", "done"]
     
     let logger = Logger(subsystem: "send-input-details", category: "transaction")
+    
+    func loadGasInfoForSending(tx: SendTransaction) async{
+        do {
+            if tx.coin.chain.chainType == ChainType.UTXO {
+                let sats = try await utxo.fetchSatsPrice(tx: tx)
+                tx.gas = String(sats)
+                
+            } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
+                print("The loadData for \(tx.coin.ticker)")
+                let (gasPrice,priorityFee,nonce) = try await eth.getETHGasInfo(fromAddress: tx.fromAddress)
+                tx.gas = gasPrice
+                tx.nonce = nonce
+                tx.priorityFeeGwei = priorityFee
+                
+            } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
+                // THORChain gas fee is 0.02 RUNE fixed
+                tx.gas = "0.02"
+            }
+        } catch {
+            print("error fetching data: \(error.localizedDescription)")
+        }
+    }
     
     func setMaxValues(tx: SendTransaction) {
         let coinName = tx.coin.chain.name.lowercased()
@@ -44,8 +68,8 @@ class SendCryptoViewModel: ObservableObject {
             tx.amount = utxo.blockchairData[key]?.address?.balanceInBTC ?? "0.0"
             tx.amountInUSD = utxo.blockchairData[key]?.address?.balanceInDecimalUSD ?? "0.0"
         } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
-			tx.amount = tx.coin.balanceString
-			tx.amountInUSD = tx.coin.balanceInUsd.replacingOccurrences(of: "US$ ", with: "")
+            tx.amount = tx.coin.balanceString
+            tx.amountInUSD = tx.coin.balanceInUsd.replacingOccurrences(of: "US$ ", with: "")
         } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
             Task{
                 do{
@@ -84,7 +108,7 @@ class SendCryptoViewModel: ObservableObject {
                     newCoinAmount = newValueCoin != 0 ? String(format: "%.8f", newValueCoin) : ""
                 }
             } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
-				newCoinAmount = tx.coin.getAmountInTokens(newValueDouble)
+                newCoinAmount = tx.coin.getAmountInTokens(newValueDouble)
             } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
                 if let rate = CryptoPriceService.shared.cryptoPrices?.prices[Chain.THORChain.name.lowercased()]?["usd"], rate > 0 {
                     let newValueCoin = newValueDouble / rate
@@ -118,7 +142,7 @@ class SendCryptoViewModel: ObservableObject {
                 let rate = priceRate
                 newValueUSD = String(format: "%.2f", newValueDouble * rate)
             } else if tx.coin.chain.name.lowercased() == "ethereum" {
-				newValueUSD = tx.coin.getAmountInUsd(newValueDouble)
+                newValueUSD = tx.coin.getAmountInUsd(newValueDouble)
             } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
                 if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.THORChain.name.lowercased()]?["usd"] {
                     newValueUSD = String(format: "%.2f", newValueDouble * priceRateUsd)

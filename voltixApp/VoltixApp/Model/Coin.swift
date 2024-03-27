@@ -83,14 +83,15 @@ class Coin: Codable, Hashable {
         BigInt(rawBalance, radix: 10)
     }
     
-    var balanceDecimal: Double {
-        let tokenBalance = Double(rawBalance) ?? 0.0
-        let tokenDecimals = Double(Int(decimals) ?? 0)
+    var balanceDecimal: Decimal {
+        
+        let tokenBalance = Decimal(string: rawBalance) ?? 0.0
+        let tokenDecimals = Int(decimals) ?? 0
         return tokenBalance / pow(10, tokenDecimals)
     }
     
     var balanceString: String {
-        String(format: "%.\(Int(decimals) ?? 0)f", balanceDecimal)
+        return "\(balanceDecimal)"
     }
     
     func getAmountInUsd(_ amount: Double) -> String {
@@ -104,8 +105,8 @@ class Coin: Codable, Hashable {
     }
     
     var balanceInUsd: String {
-        let balanceInUsd = balanceDecimal * priceRate
-        return "US$ \(String(format: "%.2f", balanceInUsd))"
+        let balanceInUsd = balanceDecimal * Decimal(priceRate)
+        return "US$ \(balanceInUsd))"
     }
     
     static let example = Coin(
