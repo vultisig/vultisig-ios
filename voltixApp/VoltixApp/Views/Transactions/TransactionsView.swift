@@ -11,7 +11,7 @@ struct TransactionsView: View {
     let group: GroupedChain
     
     var body: some View {
-        ZStack(alignment: .bottom) {
+        ZStack {
             Background()
             view
         }

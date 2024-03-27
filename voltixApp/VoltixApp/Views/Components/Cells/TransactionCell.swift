@@ -21,6 +21,8 @@ struct TransactionCell: View {
         }
         .padding(16)
         .background(Color.blue600)
+        .cornerRadius(10)
+        .padding(.horizontal, 16)
     }
     
     var transactionIDField: some View {
@@ -59,28 +61,27 @@ struct TransactionCell: View {
     }
     
     var address: some View {
-        ZStack {
-            if transaction.isSent {
-                ForEach(transaction.sentTo, id: \.self) { address in
-                    LabelText(title: "To:".uppercased(), value: address)
-                        .padding(.vertical, 1)
-                }
-            } else if transaction.isReceived {
-                ForEach(transaction.receivedFrom, id: \.self) { address in
-                    LabelText(title: "From:".uppercased(), value: address)
-                        .padding(.vertical, 1)
-                }
-            }
+        var address: String? = ""
+        
+        if transaction.isSent {
+            address = transaction.sentTo.first
+        } else if transaction.isReceived {
+            address = transaction.receivedFrom.first
         }
-//        Text("0xF42b6DE07e40cb1D4a24292bB89862f599Ac5")
-//            .font(.body13Menlo)
-//            .foregroundColor(.turquoise600)
+        
+        return Text(address ?? "")
+            .font(.body13Menlo)
+            .foregroundColor(.turquoise600)
     }
     
     var summary: some View {
         VStack(spacing: 12) {
             amountCell
-            memoCell
+            
+            if transaction.opReturnData != nil {
+                memoCell
+            }
+            
             Separator()
             getSummaryCell(title: "gas", value: "$4.00")
         }
@@ -91,11 +92,9 @@ struct TransactionCell: View {
     }
     
     var memoCell: some View {
-        ZStack {
-            if transaction.opReturnData != nil {
-                Separator()
-                getSummaryCell(title: "Memo", value: transaction.opReturnData ?? "")
-            }
+        VStack(spacing: 12) {
+            Separator()
+            getSummaryCell(title: "Memo", value: transaction.opReturnData ?? "")
         }
     }
     
@@ -129,15 +128,5 @@ struct TransactionCell: View {
         formatter.groupingSeparator = "," // Use comma for thousands separation, adjust if needed
         
         return (formatter.string(from: NSNumber(value: amountBTC)) ?? "\(amountBTC) \(tx.coin.ticker.uppercased())")
-    }
-    
-    private func LabelText(title: String, value: String) -> some View {
-        VStack(alignment: .leading) {
-            Text(title)
-                .font(.body20MenloBold)
-            Text(value)
-                .font(.body13MontserratMedium)
-                .padding(.vertical, 5)
-        }
     }
 }

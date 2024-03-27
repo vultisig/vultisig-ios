@@ -68,8 +68,10 @@ struct UTXOTransactionsView: View {
     
     private func getList(for transactions: [UTXOTransactionMempool], tx: SendTransaction) -> some View {
         ScrollView {
-            ForEach(transactions, id: \.txid) { transaction in
-                TransactionCell(transaction: transaction, tx: tx)
+            VStack(spacing: 16) {
+                ForEach(transactions, id: \.txid) { transaction in
+                    TransactionCell(transaction: transaction, tx: tx)
+                }
             }
         }
     }
