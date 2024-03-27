@@ -27,6 +27,8 @@ struct EthereumTransactionsView: View {
         ZStack {
             if !transactions.isEmpty, !addressFor.isEmpty {
                 list
+            } else if transactions.count==0 {
+                ErrorMessage(text: "noTransactions")
             } else {
                 loader
             }
