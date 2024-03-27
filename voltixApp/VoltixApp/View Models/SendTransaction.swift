@@ -13,6 +13,7 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var memo: String = ""
     @Published var gas: String = ""
     @Published var nonce: Int64 = 0
+    var priorityFeeGwei: Int64 = 0
     @Published var coin: Coin = Coin(
         chain: Chain.Bitcoin,
         ticker: "BTC",
