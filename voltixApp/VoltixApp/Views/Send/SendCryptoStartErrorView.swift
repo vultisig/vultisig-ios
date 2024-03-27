@@ -22,17 +22,7 @@ struct SendCryptoStartErrorView: View {
     }
     
     var errorMessage: some View {
-        VStack(spacing: 24) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.title80Menlo)
-                .symbolRenderingMode(.multicolor)
-            
-            Text(NSLocalizedString("failToStart", comment: "Fail to start"))
-                .font(.body16MenloBold)
-                .foregroundColor(.neutral0)
-                .frame(maxWidth: 200)
-                .multilineTextAlignment(.center)
-        }
+        ErrorMessage(text: "failToStart")
     }
     
     var bottomBar: some View {
