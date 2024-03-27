@@ -41,7 +41,7 @@ struct TransactionsView: View {
                 UTXOTransactionsView(coin: coin)
             } else if ethereumCondition {
                 if isNativeCondition {
-                    Erc20TransactionsView()
+                    EthereumTransactionsView(contractAddress: coin?.contractAddress)
                 } else {
                     EthereumTransactionsView()
                 }

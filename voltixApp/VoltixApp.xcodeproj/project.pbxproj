@@ -134,8 +134,9 @@
 		A6C0D55F2BB3B73900156689 /* UTXOTransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D55E2BB3B73900156689 /* UTXOTransactionsView.swift */; };
 		A6C0D5612BB3B76700156689 /* EthereumTransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D5602BB3B76700156689 /* EthereumTransactionsView.swift */; };
 		A6C0D5632BB3B78100156689 /* Erc20TransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D5622BB3B78100156689 /* Erc20TransactionsView.swift */; };
-		A6C0D5652BB3BD0F00156689 /* TransactionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D5642BB3BD0F00156689 /* TransactionCell.swift */; };
+		A6C0D5652BB3BD0F00156689 /* UTXOTransactionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D5642BB3BD0F00156689 /* UTXOTransactionCell.swift */; };
 		A6C0D5692BB3C6D400156689 /* ErrorMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D5682BB3C6D400156689 /* ErrorMessage.swift */; };
+		A6C0D56B2BB3DC4000156689 /* EthereumTransactionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D56A2BB3DC4000156689 /* EthereumTransactionCell.swift */; };
 		A6CBA8EE2BA299E8008B110C /* ImportVaultViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CBA8ED2BA299E8008B110C /* ImportVaultViewModel.swift */; };
 		A6CBA8F02BA2A629008B110C /* ImportWalletUploadSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CBA8EF2BA2A629008B110C /* ImportWalletUploadSection.swift */; };
 		A6F2C5452B9FE3A00095C8E3 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */; };
@@ -372,8 +373,9 @@
 		A6C0D55E2BB3B73900156689 /* UTXOTransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionsView.swift; sourceTree = "<group>"; };
 		A6C0D5602BB3B76700156689 /* EthereumTransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EthereumTransactionsView.swift; sourceTree = "<group>"; };
 		A6C0D5622BB3B78100156689 /* Erc20TransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Erc20TransactionsView.swift; sourceTree = "<group>"; };
-		A6C0D5642BB3BD0F00156689 /* TransactionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionCell.swift; sourceTree = "<group>"; };
+		A6C0D5642BB3BD0F00156689 /* UTXOTransactionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionCell.swift; sourceTree = "<group>"; };
 		A6C0D5682BB3C6D400156689 /* ErrorMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMessage.swift; sourceTree = "<group>"; };
+		A6C0D56A2BB3DC4000156689 /* EthereumTransactionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EthereumTransactionCell.swift; sourceTree = "<group>"; };
 		A6CBA8ED2BA299E8008B110C /* ImportVaultViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportVaultViewModel.swift; sourceTree = "<group>"; };
 		A6CBA8EF2BA2A629008B110C /* ImportWalletUploadSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportWalletUploadSection.swift; sourceTree = "<group>"; };
 		A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
@@ -894,7 +896,8 @@
 				A6F2C54A2BA003E10095C8E3 /* TokenCell.swift */,
 				A66A0BD62BA125C50021A483 /* EditVaultCell.swift */,
 				A6C0D5592BB3AAA200156689 /* ChainHeaderCell.swift */,
-				A6C0D5642BB3BD0F00156689 /* TransactionCell.swift */,
+				A6C0D5642BB3BD0F00156689 /* UTXOTransactionCell.swift */,
+				A6C0D56A2BB3DC4000156689 /* EthereumTransactionCell.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -1374,7 +1377,7 @@
 				DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */,
 				DE9EB0EE2BA2CF49001747D9 /* KeygenMessage.swift in Sources */,
 				A6F9F7ED2B9D1F5700790258 /* CoinViewModel.swift in Sources */,
-				A6C0D5652BB3BD0F00156689 /* TransactionCell.swift in Sources */,
+				A6C0D5652BB3BD0F00156689 /* UTXOTransactionCell.swift in Sources */,
 				A6564A062B969ADF00E4B329 /* EtherscanAPIResponse.swift in Sources */,
 				A65649F82B96701300E4B329 /* UTXOTransactionMempoolPreviousOutput.swift in Sources */,
 				DE7CE6462B886B6300ED0BFB /* VoltixVaultDocument.swift in Sources */,
@@ -1463,6 +1466,7 @@
 				469ED39B2B98E8B5008D4951 /* ThorchainBalance.swift in Sources */,
 				DE5FA58A2BAD1EF2008FD910 /* THORChainBalanceCacheEntry.swift in Sources */,
 				DEEDAEE32B8AF8B1005170E8 /* publickey.swift in Sources */,
+				A6C0D56B2BB3DC4000156689 /* EthereumTransactionCell.swift in Sources */,
 				D9AD8EE42B6730940009F8D5 /* NewWalletInstructionsView.swift in Sources */,
 				A633B11C2B99273A003D1738 /* ColorExtensions.swift in Sources */,
 				46B106512BA7CAFE00564023 /* ChainType.swift in Sources */,

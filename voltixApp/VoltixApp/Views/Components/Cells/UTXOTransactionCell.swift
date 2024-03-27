@@ -1,5 +1,5 @@
 //
-//  TransactionCell.swift
+//  UTXOTransactionCell.swift
 //  VoltixApp
 //
 //  Created by Amol Kumar on 2024-03-26.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct TransactionCell: View {
+struct UTXOTransactionCell: View {
     let transaction: UTXOTransactionMempool
     let tx: SendTransaction
     
