@@ -87,7 +87,10 @@ struct CoinCell: View {
     
     var sendButton: some View {
         NavigationLink {
-            SendCryptoView(tx: tx, group: group, vault: vault)
+            SendCryptoView(tx: tx, 
+                           coinViewModel: coinViewModel,
+                           group: group,
+                           vault: vault)
         } label: {
             Text(NSLocalizedString("send", comment: "Send button text").uppercased())
                 .font(.body16MenloBold)
@@ -99,11 +102,8 @@ struct CoinCell: View {
         }
     }
     
-	//TODO: The tx gas is being set here, but it should be set inside the load data
-	//This SET data is calling the loadData multiples times for the same coin
     private func setData() async {
-        tx.coin = coin
-        tx.gas = coin.feeDefault
+        tx.coin = coin    
 		await coinViewModel.loadData(
             tx: tx
         )

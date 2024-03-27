@@ -9,12 +9,13 @@ import SwiftUI
 
 struct SendCryptoView: View {
     @ObservedObject var tx: SendTransaction
+    @ObservedObject var coinViewModel: CoinViewModel
     let group: GroupedChain
     let vault: Vault
     
     @StateObject var sendCryptoViewModel = SendCryptoViewModel()
     @StateObject var sendCryptoVerifyViewModel = SendCryptoVerifyViewModel()
-    @StateObject var coinViewModel = CoinViewModel()
+    
 	
     @State var keysignPayload: KeysignPayload? = nil
     @State var keysignView: KeysignView? = nil
@@ -137,12 +138,12 @@ struct SendCryptoView: View {
     }
     
     private func setData() async {
-        await coinViewModel.loadData(
+        await sendCryptoViewModel.loadGasInfoForSending(
             tx: tx
         )
     }
 }
 
 #Preview {
-    SendCryptoView(tx: SendTransaction(), group: GroupedChain.example, vault: Vault.example)
+    SendCryptoView(tx: SendTransaction(), coinViewModel:CoinViewModel(),group: GroupedChain.example, vault: Vault.example)
 }

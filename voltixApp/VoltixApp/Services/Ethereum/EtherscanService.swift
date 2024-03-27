@@ -14,14 +14,11 @@ public class EtherScanService: ObservableObject {
     private var cacheGasPrice: [String: (data: BigInt, timestamp: Date)] = [:]
     private var cacheNonce: [String: (data: Int64, timestamp: Date)] = [:]
     
-    func getEthInfo(tx: SendTransaction) async throws -> Void {
+    func getEthBalance(tx: SendTransaction) async throws -> Void {
         
         do {
             // Start fetching all information concurrently
-            async let (gasPrice, _) = fetchOracle()
-            async let nonce = fetchNonce(address: tx.fromAddress)
             async let cryptoPrice = CryptoPriceService.shared.cryptoPrices?.prices[tx.coin.priceProviderId]?["usd"]
-            
             if let priceRateUsd = await cryptoPrice {
                 tx.coin.priceRate = priceRateUsd
             }
@@ -31,13 +28,18 @@ public class EtherScanService: ObservableObject {
                 tx.coin.rawBalance = try await fetchEthRawBalance(address: tx.fromAddress)
             }
             
-            tx.gas = String(try await gasPrice)
-            tx.nonce = try await nonce
+            
         } catch let error as EtherScanError {
             handleEtherScanError(error)
         } catch {
             print(error.localizedDescription)
         }
+    }
+    
+    func getETHGasInfo(fromAddress: String) async throws -> (gasPrice:String,priorityFee:Int64,nonce:Int64){
+        async let (gasPrice, priorityFee) = fetchOracle()
+        async let nonce = fetchNonce(address: fromAddress)
+        return (String(try await gasPrice),try await priorityFee,try await nonce)
     }
     
     func broadcastTransaction(hex: String) async throws -> String {
