@@ -26,10 +26,8 @@ struct TransactionsView: View {
     }
     
     var view: some View {
-        ScrollView {
-            content
-                .padding(.top, 30)
-        }
+        content
+            .padding(.top, 30)
     }
     
     var content: some View {
@@ -55,10 +53,7 @@ struct TransactionsView: View {
     }
     
     var errorText: some View {
-        Text(NSLocalizedString("cannotFindTransactions", comment: "Cannot Find Transactions"))
-            .font(.body15MenloBold)
-            .foregroundColor(.neutral0)
-            .multilineTextAlignment(.center)
+        ErrorMessage(text: "cannotFindTransactions")
     }
 }
 

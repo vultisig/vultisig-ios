@@ -131,3 +131,4 @@
 "transactions" = "Transactions";
 "cannotFindTransactions" = "Cannot Find Transactions";
 "transactionID" = "Transaction ID";
+"errorFetchingTransactions" = "Error fetching transactions";
