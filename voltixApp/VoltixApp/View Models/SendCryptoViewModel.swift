@@ -110,19 +110,12 @@ class SendCryptoViewModel: ObservableObject {
             
             if let plan = getTransactionPlan(tx: tx, key: key) {
                 
-                //TODO: Should we show the fee that is planned to user to pay it?
-                //I can remove the prints after we decide if are moving with showing the actual fee.
-                print("Plan fee: \(plan.fee)")
-                print("Plan amount: \(plan.amount)")
-                print("Plan availableAmount: \(plan.availableAmount)")
-                
                 tx.amount = utxo.blockchairData[key]?.address?.formatAsBitcoin(Int(plan.amount)) ?? "0.0"
                 Task{
                     await convertToUSD(newValue: tx.amount, tx: tx)
                 }
                 
             }
-            
             
         } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
             tx.amount = tx.coin.balanceString
