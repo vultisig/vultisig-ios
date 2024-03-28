@@ -28,7 +28,7 @@ extension THORChainSwapChain {
         case .avax:
             return CoinType.avalancheCChain
         case .bsc:
-            return CoinType.opBNB
+            return CoinType.smartChain
         default:
             return nil
         }

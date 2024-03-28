@@ -26,7 +26,7 @@ extension Coin {
         case Chain.Ethereum:
             return CoinType.ethereum
         case Chain.BSCChain:
-            return CoinType.opBNB
+            return CoinType.smartChain
         case Chain.Avalache:
             return CoinType.avalancheCChain
         default:
