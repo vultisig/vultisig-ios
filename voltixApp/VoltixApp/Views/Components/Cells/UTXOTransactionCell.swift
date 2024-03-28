@@ -98,7 +98,7 @@ struct UTXOTransactionCell: View {
     var memoCell: some View {
         VStack(spacing: 12) {
             Separator()
-            getSummaryCell(title: "Memo", value: transaction.opReturnData ?? "")
+            getSummaryCell(title: "Memo", value: transaction.opReturnData ?? "-")
         }
     }
     
