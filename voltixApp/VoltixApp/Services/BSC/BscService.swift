@@ -206,8 +206,8 @@ public class BSCService {
         }
         
        
-        
-        let priorityFeeGwei = Int64(0)
+        // here hard code priority fee to 1 gwei , since bscscan doesn't give us the information
+        let priorityFeeGwei = Int64(1)
         
         // Update cache and return priorityFeeGwei
         self.cacheOracle[cacheKey] = (data: (intResultSafeGasPrice, priorityFeeGwei), timestamp: Date())
