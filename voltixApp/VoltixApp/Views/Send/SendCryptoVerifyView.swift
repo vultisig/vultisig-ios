@@ -66,10 +66,12 @@ struct SendCryptoVerifyView: View {
             getDetailsCell(for: "amount", with: getAmount())
             Separator()
             getDetailsCell(for: "amount(inUSD)", with: getUSDAmount())
+            
             if !tx.memo.isEmpty {
                 Separator()
                 getDetailsCell(for: "memo", with: tx.memo)
             }
+            
             Separator()
             getDetailsCell(for: "gas", with: getGasAmount())
         }
