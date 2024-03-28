@@ -58,9 +58,9 @@ struct KeysignMessageConfirmView: View {
     }
     
     var amountField: some View {
-        getSummaryCell(title: "amount", value: String(viewModel.keysignPayload?.toAmount ?? 0))
+        getSummaryCell(title: "amount", value: viewModel.keysignPayload?.toAmountString ?? "")
     }
-    
+        
     var gasField: some View {
         getSummaryCell(title: "gas", value: "$4.00")
     }

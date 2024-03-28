@@ -33,6 +33,13 @@ struct KeysignPayload: Codable, Hashable {
     let memo: String? // optional memo
     let swapPayload: THORChainSwapPayload?
     
+    var toAmountString: String {
+        if(coin.chainType == .EVM){
+            return "\(Decimal(toAmount) / Decimal(EVMHelper.weiPerGWei)) \(coin.ticker)"
+        }
+        return "\(Decimal(toAmount) / pow(10, Int(coin.decimals) ?? 0)) \(coin.ticker)"
+    }
+        
     func getKeysignMessages(vault:Vault) -> Result<[String], Error> {
         var result: Result<[String], Error>
         // this is a swap
