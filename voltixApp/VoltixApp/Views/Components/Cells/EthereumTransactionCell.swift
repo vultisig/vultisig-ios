@@ -50,6 +50,7 @@ struct EthereumTransactionCell: View {
         .font(.body20MontserratSemiBold)
         .foregroundColor(.neutral0)
     }
+    
     func getTxHashLink(hash: String) -> String{
         if chain?.name == Chain.Ethereum.name {
             return Endpoint.ethereumLabelTxHash(hash)
@@ -59,6 +60,7 @@ struct EthereumTransactionCell: View {
         }
         return ""
     }
+    
     var txHash: some View {
         let hash = transaction.hash ?? ""
         let url = getTxHashLink(hash:hash)

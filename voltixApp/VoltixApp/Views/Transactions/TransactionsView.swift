@@ -43,7 +43,7 @@ struct TransactionsView: View {
                 if isNativeCondition {
                     EthereumTransactionsView(chain:coin?.chain,contractAddress: coin?.contractAddress)
                 } else {
-                    EthereumTransactionsView(chain:coin?.chain)
+                    EthereumTransactionsView(chain:coin?.chain,contractAddress: nil)
                 }
             } else {
                 errorText
