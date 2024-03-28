@@ -18,6 +18,7 @@ class CoinViewModel: ObservableObject {
     private var utxo = BlockchairService.shared
     private let thor = ThorchainService.shared
     private let eth = EtherScanService.shared
+    private let bsc = BSCService.shared
     
     func loadData(tx: SendTransaction) async {
         print("realoading data...")
@@ -43,6 +44,10 @@ class CoinViewModel: ObservableObject {
                     balanceUSD = thorBalances.runeBalanceInUSD(usdPrice: priceRateUsd) ?? "US$ 0,00"
                 }
                 coinBalance = thorBalances.formattedRuneBalance() ?? "0.0"
+            } else if tx.coin.chain.name == Chain.BSCChain.name {
+                try await bsc.getBNBBalance(tx: tx)
+                balanceUSD = tx.coin.balanceInUsd
+                coinBalance = tx.coin.balanceString
             }
         }
         catch{

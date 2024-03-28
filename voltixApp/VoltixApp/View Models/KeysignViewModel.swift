@@ -31,6 +31,7 @@ class KeysignViewModel: ObservableObject {
     private var tssMessenger: TssMessengerImpl? = nil
     private var stateAccess: LocalStateAccessorImpl? = nil
     private var messagePuller = MessagePuller()
+    private let bscService = BSCService.shared
     
     var keysignCommittee: [String]
     var mediatorURL: String
@@ -176,7 +177,6 @@ class KeysignViewModel: ObservableObject {
 			}
 			switch keysignPayload.coin.chain.chainType {
 				case .UTXO:
-					
 					let chainName = keysignPayload.coin.chain.name.lowercased()
 					
 					guard let coinType = CoinType.from(string: chainName) else {
@@ -205,35 +205,65 @@ class KeysignViewModel: ObservableObject {
 					}
 					
 				case .EVM:
-					// ETH
-					if keysignPayload.coin.isNativeToken {
+                if keysignPayload.coin.chain.name == Chain.Ethereum.name {
+                    if keysignPayload.coin.isNativeToken {
                         let result = EVMHelper.getEthereumHelper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
-						switch result {
-							case .success(let tx):
-								do {
-									self.txid = try await  self.etherScanService.broadcastTransaction(hex: tx)
-								} catch {
-									self.handleHelperError(err: error)
-								}
-								
-							case .failure(let err):
-								self.handleHelperError(err: err)
-						}
-					} else {
-						// It should work for all ERC20
+                        switch result {
+                        case .success(let tx):
+                            do {
+                                self.txid = try await  self.etherScanService.broadcastTransaction(hex: tx)
+                            } catch {
+                                self.handleHelperError(err: error)
+                            }
+                            
+                        case .failure(let err):
+                            self.handleHelperError(err: err)
+                        }
+                    } else {
+                        // It should work for all ERC20
                         let result = ERC20Helper.getEthereumERC20Helper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
-						
-						switch result {
-							case .success(let tx):
-								do {
-									self.txid = try await  self.etherScanService.broadcastTransaction(hex: tx)
-								} catch {
-									self.handleHelperError(err: error)
-								}
-							case .failure(let err):
-								self.handleHelperError(err: err)
-						}
-					}
+                        
+                        switch result {
+                        case .success(let tx):
+                            do {
+                                self.txid = try await  self.etherScanService.broadcastTransaction(hex: tx)
+                            } catch {
+                                self.handleHelperError(err: error)
+                            }
+                        case .failure(let err):
+                            self.handleHelperError(err: err)
+                        }
+                    }
+                } else if keysignPayload.coin.chain.name == Chain.BSCChain.name {
+                    if keysignPayload.coin.isNativeToken {
+                        let result = EVMHelper.getBSCHelper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                        switch result {
+                        case .success(let tx):
+                            do {
+                                self.txid = try await  self.bscService.broadcastTransaction(hex: tx)
+                            } catch {
+                                self.handleHelperError(err: error)
+                            }
+                            
+                        case .failure(let err):
+                            self.handleHelperError(err: err)
+                        }
+                    } else {
+                        // It should work for all ERC20
+                        let result = ERC20Helper.getBSCHelper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                        
+                        switch result {
+                        case .success(let tx):
+                            do {
+                                self.txid = try await  self.bscService.broadcastTransaction(hex: tx)
+                            } catch {
+                                self.handleHelperError(err: error)
+                            }
+                        case .failure(let err):
+                            self.handleHelperError(err: err)
+                        }
+                    }
+                }
 				case .THORChain:
 					let result = THORChainHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
 					switch result {

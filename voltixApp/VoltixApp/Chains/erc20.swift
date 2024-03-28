@@ -21,7 +21,7 @@ class ERC20Helper {
     static func getAvaxERC20Helper() -> ERC20Helper{
         return ERC20Helper(coinType: CoinType.avalancheCChain)
     }
-    static func getBSCERC20Helper() -> ERC20Helper{
+    static func getBSCBEP20Helper() -> ERC20Helper{
         return ERC20Helper(coinType: CoinType.opBNB)
     }
     

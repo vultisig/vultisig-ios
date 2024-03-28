@@ -106,7 +106,11 @@ class Coin: Codable, Hashable {
     
     var balanceInUsd: String {
         let balanceInUsd = balanceDecimal * Decimal(priceRate)
-        return "US$ \(balanceInUsd))"
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.locale = Locale.current
+        formatter.currencyCode = "USD"
+        return formatter.string(from: balanceInUsd as NSDecimalNumber) ?? "0.0"
     }
     
     static let example = Coin(
