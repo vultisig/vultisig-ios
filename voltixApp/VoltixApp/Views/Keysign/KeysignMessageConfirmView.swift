@@ -28,9 +28,19 @@ struct KeysignMessageConfirmView: View {
     var summary: some View {
         ScrollView {
             VStack(spacing: 16) {
+                fromField
+                Separator()
                 toField
                 Separator()
                 amountField
+                
+                if let memo = viewModel.keysignPayload?.memo, !memo.isEmpty {
+                    Separator()
+                    getSummaryCell(title: "memo", value: memo)
+                }
+                    
+                Separator()
+                gasField
             }
             .padding(16)
             .background(Color.blue600)
@@ -39,29 +49,20 @@ struct KeysignMessageConfirmView: View {
         }
     }
     
+    var fromField: some View {
+        getPrimaryCell(title: "from", value: viewModel.keysignPayload?.coin.address ?? "0xF")
+    }
+    
     var toField: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(NSLocalizedString("to", comment: "") + ":")
-                .font(.body20MontserratSemiBold)
-                .foregroundColor(.neutral0)
-            
-            Text(viewModel.keysignPayload?.toAddress ?? "11")
-                .font(.body12Menlo)
-                .foregroundColor(.turquoise600)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        getPrimaryCell(title: "to", value: viewModel.keysignPayload?.toAddress ?? "0xF")
     }
     
     var amountField: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(NSLocalizedString("amount", comment: "") + ":")
-                .font(.body20MontserratSemiBold)
-                .foregroundColor(.neutral0)
-            Text("\(viewModel.keysignPayload?.toAmount ?? 0)")
-                .font(.body12Menlo)
-                .foregroundColor(.turquoise600)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        getSummaryCell(title: "amount", value: String(viewModel.keysignPayload?.toAmount ?? 0))
+    }
+    
+    var gasField: some View {
+        getSummaryCell(title: "gas", value: "$4.00")
     }
     
     var button: some View {
@@ -71,6 +72,28 @@ struct KeysignMessageConfirmView: View {
             FilledButton(title: "joinKeySign")
         }
         .padding(20)
+    }
+    
+    private func getPrimaryCell(title: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(NSLocalizedString(title, comment: "") + ":")
+                .font(.body20MontserratSemiBold)
+                .foregroundColor(.neutral0)
+            Text(value)
+                .font(.body12Menlo)
+                .foregroundColor(.turquoise600)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
+    private func getSummaryCell(title: String, value: String) -> some View {
+        HStack {
+            Text(NSLocalizedString(title, comment: "") + ":")
+            Spacer()
+            Text(value)
+        }
+        .font(.body16MenloBold)
+        .foregroundColor(.neutral0)
     }
 }
 
