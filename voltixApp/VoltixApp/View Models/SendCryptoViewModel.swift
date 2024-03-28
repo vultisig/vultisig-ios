@@ -158,11 +158,14 @@ class SendCryptoViewModel: ObservableObject {
         } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
             Task{
                 do{
-                    let thorBalances = try await thor.fetchBalances(tx.fromAddress)
+                    let thorBalances = try await self.thor.fetchBalances(tx.fromAddress)
                     if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.THORChain.name.lowercased()]?["usd"] {
-                        tx.amountInUSD = thorBalances.runeBalanceInUSD(usdPrice: priceRateUsd, includeCurrencySymbol: false) ?? "US$ 0,00"
+                        tx.coin.priceRate = priceRateUsd
                     }
-                    tx.amount = thorBalances.formattedRuneBalance() ?? "0.00"
+                    
+                    tx.coin.rawBalance = thorBalances.runeBalance() ?? "0"
+                    tx.amount = "\(tx.coin.getMaxValue(20000000))"
+                    await convertToUSD(newValue: tx.amount, tx: tx)
                 }catch{
                     print("fail to get THORChain balance,error:\(error.localizedDescription)")
                 }
