@@ -113,27 +113,48 @@ class SendCryptoViewModel: ObservableObject {
     }
     
     
-    func setMaxValues(tx: SendTransaction) {
+    func setMaxValues(tx: SendTransaction)  {
         let coinName = tx.coin.chain.name.lowercased()
         let key: String = "\(tx.fromAddress)-\(coinName)"
         
         if  tx.coin.chain.chainType == ChainType.UTXO {
             
             tx.amount = utxo.blockchairData[key]?.address?.balanceInBTC ?? "0.0"
-            tx.amountInUSD = utxo.blockchairData[key]?.address?.balanceInDecimalUSD ?? "0.0"
             
             if let plan = getTransactionPlan(tx: tx, key: key) {
-                
                 tx.amount = utxo.blockchairData[key]?.address?.formatAsBitcoin(Int(plan.amount)) ?? "0.0"
-                Task{
-                    await convertToUSD(newValue: tx.amount, tx: tx)
-                }
-                
+            }
+            Task{
+                await convertToUSD(newValue: tx.amount, tx: tx)
             }
             
         } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
-            tx.amount = tx.coin.balanceString
-            tx.amountInUSD = tx.coin.balanceInUsd.replacingOccurrences(of: "US$ ", with: "")
+            Task {
+                do {
+                    let (gasPrice, _, _) = try await EtherScanService.shared.getETHGasInfo(fromAddress: tx.fromAddress)
+                    
+                    guard let gasLimitBigInt = BigInt(tx.coin.feeDefault) else {
+                        print("Invalid gas limit")
+                        return
+                    }
+                    
+                    guard let gasPriceBigInt = BigInt(gasPrice) else {
+                        print("Invalid gas price")
+                        return
+                    }
+                    
+                    let gasPriceGwei: BigInt = gasPriceBigInt
+                    let gasPriceWei: BigInt = gasPriceGwei * BigInt(EVMHelper.weiPerGWei)
+                    let totalFeeWei: BigInt = gasLimitBigInt * gasPriceWei
+                    
+                    tx.amount = "\(tx.coin.getMaxValue(totalFeeWei))"
+                } catch {
+                    tx.amount = tx.coin.balanceString
+                    print("Failed to get EVM balance, error: \(error.localizedDescription)")
+                }
+                
+                await convertToUSD(newValue: tx.amount, tx: tx)
+            }
         } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
             Task{
                 do{
