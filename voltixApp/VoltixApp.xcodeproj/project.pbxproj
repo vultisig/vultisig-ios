@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		049BBB5C2B71E7F6004C231F /* LargeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB5B2B71E7F6004C231F /* LargeButton.swift */; };
 		049BBB5E2B71E83D004C231F /* VoltixLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB5D2B71E83D004C231F /* VoltixLogo.swift */; };
 		049BBB682B71E9C5004C231F /* WifiInstruction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB672B71E9C5004C231F /* WifiInstruction.swift */; };
 		460347882BA15118007ED3AC /* LitecoinExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 460347872BA15118007ED3AC /* LitecoinExtension.swift */; };
@@ -220,7 +219,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		049BBB5B2B71E7F6004C231F /* LargeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeButton.swift; sourceTree = "<group>"; };
 		049BBB5D2B71E83D004C231F /* VoltixLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoltixLogo.swift; sourceTree = "<group>"; };
 		049BBB672B71E9C5004C231F /* WifiInstruction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WifiInstruction.swift; sourceTree = "<group>"; };
 		4600167D2B71A12D00CE17C7 /* Tss.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
@@ -714,7 +712,6 @@
 		A633B1232B993FCC003D1738 /* Buttons */ = {
 			isa = PBXGroup;
 			children = (
-				049BBB5B2B71E7F6004C231F /* LargeButton.swift */,
 				A633B1242B993FE7003D1738 /* FilledButton.swift */,
 				A633B12E2B9952D8003D1738 /* OutlineButton.swift */,
 			);
@@ -1276,7 +1273,6 @@
 				A65BA9882BAAA0B700B2D8AA /* SendCryptoSigningErrorView.swift in Sources */,
 				DE64A4C62BA7E0E400C342E3 /* KeygenPeerDiscoveryViewModel.swift in Sources */,
 				465B09B52B7D8E7B00952DD9 /* CryptoPriceService.swift in Sources */,
-				049BBB5C2B71E7F6004C231F /* LargeButton.swift in Sources */,
 				A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */,
 				469ED3942B98E776008D4951 /* ThorchainService.swift in Sources */,
 				A6966D262BA3E2CF00903CA4 /* OnboardingView3.swift in Sources */,
