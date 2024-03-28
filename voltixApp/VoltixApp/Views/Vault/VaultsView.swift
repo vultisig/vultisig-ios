@@ -40,7 +40,7 @@ struct VaultsView: View {
         ScrollView {
             LazyVStack {
                 ForEach(vaults, id: \.self) { vault in
-                    VaultCell(presentationStack: .constant([]), vault: vault)
+                    VaultCell(vault: vault)
                         .onTapGesture {
                             selectedVault = vault
                             showVaultsList = false

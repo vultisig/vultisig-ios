@@ -61,17 +61,8 @@ struct SetupVaultView: View {
     }
     
     var messageModal: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "wifi")
-                .font(.title30MenloBlack)
-                .foregroundColor(.neutral0)
-            
-            Text(NSLocalizedString("devicesOnSameWifi", comment: "Same Wifi instructions"))
-                .font(.body12Menlo)
-                .foregroundColor(.neutral0)
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: 250)
+        WifiInstruction()
+            .frame(maxHeight: 80)
     }
     
     var buttons: some View {

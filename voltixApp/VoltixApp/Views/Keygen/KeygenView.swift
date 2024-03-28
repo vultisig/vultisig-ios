@@ -53,7 +53,7 @@ struct KeygenView: View {
                         }
                     }.frame(width: geometry.size.width, height: geometry.size.height * 0.8)
                     Spacer()
-                    WifiBar()
+                    WifiInstruction()
                 }
             }
         }
