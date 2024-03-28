@@ -20,17 +20,7 @@ struct SendCryptoVaultErrorView: View {
     }
     
     var errorMessage: some View {
-        VStack(spacing: 24) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.title80Menlo)
-                .symbolRenderingMode(.multicolor)
-            
-            Text(NSLocalizedString("wrongVaultTryAgain", comment: "Wrong Vault or Pair Device."))
-                .font(.body16MenloBold)
-                .foregroundColor(.neutral0)
-                .frame(maxWidth: 200)
-                .multilineTextAlignment(.center)
-        }
+        ErrorMessage(text: "wrongVaultTryAgain")
     }
     
     var tryAgainButton: some View {

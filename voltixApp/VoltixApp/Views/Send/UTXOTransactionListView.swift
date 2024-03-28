@@ -49,6 +49,10 @@ struct UTXOTransactionListView: View {
 	}
 }
 
+#Preview {
+    UTXOTransactionListView(presentationStack: .constant([]), tx: SendTransaction(coin: Coin.example))
+}
+
 struct TransactionRow: View {
 	let transaction: UTXOTransactionMempool
 	let tx: SendTransaction

@@ -12,8 +12,6 @@ struct ChainCell: View {
     let vault: Vault
     
     @State var isExpanded = false
-    @State var showQRcode = false
-    @State var showAlert = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -28,18 +26,6 @@ struct ChainCell: View {
         .cornerRadius(10)
         .padding(.horizontal, 16)
         .clipped()
-        .alert(isPresented: $showAlert) {
-            Alert(
-                title: Text(NSLocalizedString("addressCopied", comment: "")),
-                message: Text(group.address),
-                dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
-            )
-        }
-        .sheet(isPresented: $showQRcode) {
-            NavigationView {
-                AddressQRCodeView(addressData: group.address, showSheet: $showQRcode)
-            }
-        }
     }
     
     var main: some View {
@@ -51,76 +37,7 @@ struct ChainCell: View {
     }
     
     var card: some View {
-        content
-            .padding(.horizontal, 16)
-            .padding(.vertical, 24)
-    }
-    
-    var content: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            header
-            quantity
-            address
-        }
-    }
-    
-    var header: some View {
-        HStack {
-            title
-            Spacer()
-            actions
-        }
-    }
-    
-    var title: some View {
-        Text(group.name.capitalized)
-            .font(.body20MontserratSemiBold)
-            .foregroundColor(.neutral0)
-    }
-    
-    var actions: some View {
-        HStack(spacing: 12) {
-            showQRButton
-            copyButton
-        }
-    }
-    
-    var copyButton: some View {
-        Button {
-            copyAddress()
-        } label: {
-            Image(systemName: "square.on.square")
-                .foregroundColor(.neutral0)
-                .font(.body18MenloMedium)
-        }
-    }
-    
-    var showQRButton: some View {
-        Button(action: {
-            showQRcode.toggle()
-        }, label: {
-            Image(systemName: "qrcode")
-                .foregroundColor(.neutral0)
-                .font(.body18MenloMedium)
-        })
-    }
-    
-    var quantity: some View {
-        Text(getQuantity())
-            .font(.body12Menlo)
-            .foregroundColor(.neutral100)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 2)
-            .background(Color.blue400)
-            .cornerRadius(50)
-    }
-    
-    var address: some View {
-        Text(group.address)
-            .font(.body12Menlo)
-            .foregroundColor(.turquoise600)
-            .lineLimit(1)
-            .padding(.top, 12)
+        ChainHeaderCell(group: group)
     }
     
     var cells: some View {
@@ -136,20 +53,6 @@ struct ChainCell: View {
         withAnimation {
             isExpanded.toggle()
         }
-    }
-    
-    private func copyAddress() {
-        showAlert = true
-        let pasteboard = UIPasteboard.general
-        pasteboard.string = group.address
-    }
-    
-    private func getQuantity() -> String {
-        guard group.coins.count>1 else {
-            return "1 " + NSLocalizedString("asset", comment: "")
-        }
-        
-        return "\(group.coins.count) \(NSLocalizedString("assets", comment: ""))"
     }
 }
 

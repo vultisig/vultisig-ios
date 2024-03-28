@@ -238,16 +238,19 @@ public class EtherScanService: ObservableObject {
     
     private func extractResult(fromData data: Data) -> String? {
         do {
-            logger.debug("Data: \(String(data: data, encoding: .utf8) ?? "nil")")
-            if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let result = json["result"] as? String {
-                return result
+            if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                if let result = json["result"] as? String {
+                    return result
+                } else if let error = json["error"] as? [String: Any], let message = error["message"] as? String, message == "already known" {
+                    return "Your other device already broadcasted it"
+                }
             }
         } catch {
             print("JSON decoding error: \(error)")
         }
         return nil
     }
+    
     
     private func constructERC20TransferData(recipientAddress: String, value: BigInt) -> String {
         let methodId = "a9059cbb"
@@ -298,5 +301,25 @@ public class EtherScanService: ObservableObject {
     
     private func handleEtherScanError(_ error: EtherScanError) {
         print(error.description)
+    }
+    
+    func convertToEther(fromWei value: String, _ decimals: Int = EVMHelper.ethDecimals) -> String {
+        if let wei = Decimal(string: value) {
+            let decimalValue = Decimal(pow(10.0, Double(decimals)))
+            let ether = wei / decimalValue // Correctly perform exponentiation
+            return String(format: "%.4f", ether as CVarArg)
+        } else {
+            return "Invalid Value"
+        }
+    }
+    
+    func calculateTransactionFee(gasUsed: String, gasPrice: String) -> String {
+        guard let gasUsedDouble = Double(gasUsed), let gasPriceDouble = Double(gasPrice) else {
+            return "Invalid Data"
+        }
+        
+        let feeInWei = Decimal(gasUsedDouble * gasPriceDouble)
+        let feeInEther = feeInWei / Decimal(EVMHelper.wei)
+        return String(format: "%.6f ETH", feeInEther as CVarArg)
     }
 }

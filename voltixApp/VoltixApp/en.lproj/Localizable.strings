@@ -128,3 +128,8 @@
 "confirmToSign" = "Confirm to sign the message?";
 "unableToStartKeysignProcess" = "Unable to start the keysign process due to missing information.";
 "transactionComplete" = "Transaction Complete";
+"transactions" = "Transactions";
+"cannotFindTransactions" = "Cannot Find Transactions";
+"transactionID" = "Transaction ID";
+"errorFetchingTransactions" = "Error fetching transactions";
+"noTransactions" = "No transactions yet";
