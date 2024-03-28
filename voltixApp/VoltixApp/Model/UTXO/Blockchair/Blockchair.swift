@@ -80,7 +80,7 @@ class Blockchair: Codable {
 		}
 
 		// Helper function to format an amount in satoshis as Bitcoin
-		private func formatAsBitcoin(_ satoshis: Int) -> String {
+        func formatAsBitcoin(_ satoshis: Int) -> String {
 			let formatter = NumberFormatter()
 			formatter.numberStyle = .decimal
 			formatter.maximumFractionDigits = 8 // Bitcoin can have up to 8 decimal places
