@@ -64,5 +64,8 @@ struct VaultsView: View {
 }
 
 #Preview {
-    VaultsView(selectedVault: .constant(Vault.example), showVaultsList: .constant(false))
+    ZStack {
+        Background()
+        VaultsView(selectedVault: .constant(Vault.example), showVaultsList: .constant(false))
+    }
 }

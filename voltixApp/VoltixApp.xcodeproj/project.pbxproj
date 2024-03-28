@@ -460,12 +460,12 @@
 				A6966D2C2BA402A900903CA4 /* TokenSelectorDropdown.swift */,
 				A6C0D5682BB3C6D400156689 /* ErrorMessage.swift */,
 				A63953AF2BA7BEDA000802EC /* Checkbox.swift */,
+				A65BA9832BAA07B500B2D8AA /* Background.swift */,
+				A65BA98D2BAD311200B2D8AA /* Loader.swift */,
 				A6F9F7D92B9BA2CF00790258 /* Cells */,
 				A633B1232B993FCC003D1738 /* Buttons */,
 				A6966D272BA4009B00903CA4 /* TextFields */,
 				A633B1342B997D35003D1738 /* Navigation Items */,
-				A65BA9832BAA07B500B2D8AA /* Background.swift */,
-				A65BA98D2BAD311200B2D8AA /* Loader.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -927,11 +927,11 @@
 		D9AD8F042B675E230009F8D5 /* Vault */ = {
 			isa = PBXGroup;
 			children = (
+				A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */,
 				DE7CE6452B886B6300ED0BFB /* VoltixVaultDocument.swift */,
 				A633B13D2B9A9E30003D1738 /* VaultDetailView.swift */,
 				A6F9F7E22B9BB48700790258 /* VaultsView.swift */,
 				A6F9F7E82B9BBFD500790258 /* AddressQRCodeView.swift */,
-				A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */,
 				A6F2C5482BA001460095C8E3 /* TokenSelectionView.swift */,
 				A66A0BD42BA124D00021A483 /* EditVaultView.swift */,
 				A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */,
