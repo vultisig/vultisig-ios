@@ -100,9 +100,6 @@ class EVMHelper {
     }
     
     func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
-        guard keysignPayload.coin.chain.ticker == "ETH" else {
-            return .failure(HelperError.runtimeError("coin is not ETH"))
-        }
         let coin = self.coinType
         guard let intChainID = Int(coin.chainId) else {
             return .failure(HelperError.runtimeError("fail to get chainID"))

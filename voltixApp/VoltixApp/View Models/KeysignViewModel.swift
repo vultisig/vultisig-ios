@@ -249,8 +249,8 @@ class KeysignViewModel: ObservableObject {
                             self.handleHelperError(err: err)
                         }
                     } else {
-                        // It should work for all ERC20
-                        let result = ERC20Helper.getBSCHelper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                        // It should work for all BEP20
+                        let result = ERC20Helper.getBSCBEP20Helper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
                         
                         switch result {
                         case .success(let tx):

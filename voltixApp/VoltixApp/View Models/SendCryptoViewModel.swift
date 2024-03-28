@@ -64,6 +64,12 @@ class SendCryptoViewModel: ObservableObject {
                 tx.gas = "0.02"
             }
         } catch {
+            if let err =  error as? HelperError {
+                switch err{
+                case HelperError.runtimeError(let desc):
+                    print(desc)
+                }
+            }
             print("error fetching data: \(error.localizedDescription)")
         }
     }
@@ -172,9 +178,7 @@ class SendCryptoViewModel: ObservableObject {
     }
     
     func validateAddress(tx: SendTransaction, address: String) {
-        let chainName = tx.coin.chain.name.lowercased().replacingOccurrences(of: "-", with: "")
-        
-        guard let coinType = CoinType.from(string: chainName) else {
+        guard let coinType = tx.coin.getCoinType() else {
             print("Coin type not found on Wallet Core")
             return
         }

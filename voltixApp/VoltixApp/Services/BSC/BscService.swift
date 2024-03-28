@@ -73,7 +73,7 @@ public class BSCService {
         let urlString = Endpoint.fetchEtherscanEstimateGasForERC20Transaction(data: data, contractAddress: tx.coin.contractAddress)
         let resultData = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
         
-        guard let resultString = try extractResult(data: resultData) else {
+        guard let resultString = Utils.extractResultFromJson(fromData: resultData, path: "result") as? String else {
             throw HelperError.runtimeError("Error to gas for BRC20 transfer")
         }
         
@@ -92,7 +92,7 @@ public class BSCService {
         let urlString = Endpoint.fetchBscscanEstimateGasForBNBTransaction(data: data, to: to, valueHex: valueHex)
         let resultData = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
         
-        guard let resultString = try extractResult(data: resultData) else {
+        guard let resultString = Utils.extractResultFromJson(fromData: resultData, path: "result") as? String else {
             throw HelperError.runtimeError("Error to gas for BNB transfer")
         }
         
@@ -133,7 +133,7 @@ public class BSCService {
         let urlString = Endpoint.fetchBscTransactionCount(address: address)
         let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
         
-        guard let resultString = try extractResult(data: data) else {
+        guard let resultString = Utils.extractResultFromJson(fromData: data, path: "result") as? String else {
             throw HelperError.runtimeError("fail to extract result from data")
         }
         
@@ -162,7 +162,7 @@ public class BSCService {
         
         let urlString = Endpoint.fetchBscGasPrice()
         let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
-        if let resultString = try extractResult(data: data) {
+        if let resultString = Utils.extractResultFromJson(fromData: data, path: "result") as? String {
             let trimmedResultString = resultString.trimmingCharacters(in: CharacterSet(charactersIn: "0x"))
             if let bigIntResult = BigInt(trimmedResultString, radix: 16) {
                 let bigIntResultGwei = bigIntResult / BigInt(1_000_000_000)
@@ -205,28 +205,9 @@ public class BSCService {
             throw HelperError.runtimeError("Error to get the propose gas price from the oracle")
         }
         
-        guard let resultSuggestBaseFee = Utils.extractResultFromJson(fromData: data, path: "result.suggestBaseFee"),
-              let suggestBaseFeeString = resultSuggestBaseFee as? String,
-              let suggestBaseFeeDouble = Double(suggestBaseFeeString) else {
-            throw HelperError.runtimeError("Error to extract the suggested base fee and convert to Double")
-        }
+       
         
-        if suggestBaseFeeDouble == 0.0 {
-            throw HelperError.runtimeError("ERROR: Extract suggestBaseFee is ZERO")
-        }
-        
-        var priorityFeeGweiDouble = Double(proposeGasPriceInt) - suggestBaseFeeDouble
-        
-        // It can't be ZERO, so we calculate it.
-        if priorityFeeGweiDouble > 0.0, priorityFeeGweiDouble < 1 {
-            priorityFeeGweiDouble = 1
-        }
-        
-        if priorityFeeGweiDouble == 0 {
-            throw HelperError.runtimeError("ERROR: Calculate priorityFeeGwei by subtracting suggestBaseFee from ProposeGasPrice and round the result")
-        }
-        
-        let priorityFeeGwei = Int64(round(priorityFeeGweiDouble))
+        let priorityFeeGwei = Int64(0)
         
         // Update cache and return priorityFeeGwei
         self.cacheOracle[cacheKey] = (data: (intResultSafeGasPrice, priorityFeeGwei), timestamp: Date())
