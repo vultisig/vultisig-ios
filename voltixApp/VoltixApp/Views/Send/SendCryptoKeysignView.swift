@@ -68,17 +68,9 @@ struct SendCryptoKeysignView: View {
     }
     
     var wifiInstructions: some View {
-        VStack(spacing: 8) {
-            Image(systemName: "wifi")
-                .font(.title30MenloBold)
-                .foregroundColor(.turquoise600)
-            
-            Text(NSLocalizedString("devicesOnSameWifi", comment: "Keep devices on the same WiFi Network with VOLTIX open"))
-                .font(.body12Menlo)
-                .foregroundColor(.neutral0)
-                .frame(maxWidth: 250)
-        }
-        .padding(.bottom, 100)
+        WifiInstruction()
+            .frame(maxHeight: 80)
+            .padding(.bottom, 100)
     }
     
     var errorMessage: some View {

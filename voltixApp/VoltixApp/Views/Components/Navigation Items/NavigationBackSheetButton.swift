@@ -23,5 +23,8 @@ struct NavigationBackSheetButton: View {
 }
 
 #Preview {
-    NavigationBackSheetButton(showSheet: .constant(true))
+    ZStack {
+        Background()
+        NavigationBackSheetButton(showSheet: .constant(true))
+    }
 }

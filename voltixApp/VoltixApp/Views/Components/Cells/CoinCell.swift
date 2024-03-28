@@ -70,7 +70,7 @@ struct CoinCell: View {
     
     var swapButton: some View {
         NavigationLink {
-            //SendInputDetailsView(presentationStack: .constant([]), tx: tx)
+            
         } label: {
             Text(NSLocalizedString("swap", comment: "Swap button text").uppercased())
                 .font(.body16MenloBold)

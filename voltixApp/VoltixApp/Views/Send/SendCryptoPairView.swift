@@ -59,17 +59,7 @@ struct SendCryptoPairView: View {
     }
     
     var wifiInstruction: some View {
-        VStack(spacing: 8) {
-            Image(systemName: "wifi")
-                .font(.title30MenloUltraLight)
-                .foregroundColor(.turquoise600)
-            
-            Text(NSLocalizedString("devicesOnSameWifi", comment: ""))
-                .font(.body12Menlo)
-                .foregroundColor(.neutral0)
-                .frame(maxWidth: 250)
-        }
-        .frame(maxHeight: .infinity)
+        WifiInstruction()
     }
 }
 

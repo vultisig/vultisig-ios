@@ -35,5 +35,8 @@ struct TokenSelectionSection: View {
 }
 
 #Preview {
-    TokenSelectionSection(title: "Bitcoin", assets: [Coin.example])
+    ZStack {
+        Background()
+        TokenSelectionSection(title: "Bitcoin", assets: [])
+    }
 }
