@@ -107,6 +107,34 @@ class Endpoint {
     static func fetchERC20Transactions(address: String, contractAddress: String) -> String {
         "http://45.76.120.223/etherscan/api?module=account&action=tokentx&contractaddress=\(contractAddress)&address=\(address)&startblock=0&endblock=99999999&sort=asc"
     }
+    
+    static func broadcastBscTransaction(hex: String) -> String {
+        "http://45.76.120.223/bscscan/api?module=proxy&action=eth_sendRawTransaction&hex=\(hex)"
+    }
+    static func fetchBscTransactions(address: String) -> String {
+        "http://45.76.120.223/bscscan/api?module=account&action=txlist&address=\(address)&startblock=0&endblock=99999999&sort=asc"
+    }
+    static func fetchBRC20Transactions(address: String, contractAddress: String) -> String {
+        "http://45.76.120.223/bscscan/api?module=account&action=tokentx&contractaddress=\(contractAddress)&address=\(address)&startblock=0&endblock=99999999&sort=asc"
+    }
+    static func fetchBscscanEstimateGasForBNBTransaction(data: String, to: String, valueHex: String) -> String {
+        "http://45.76.120.223/bscscan/api?module=proxy&action=eth_estimateGas&data=\(data)&to=\(to)&value=\(valueHex)"
+    }
+    static func fetchBscTransactionCount(address: String) -> String {
+        "http://45.76.120.223/bscscan/api?module=proxy&action=eth_getTransactionCount&address=\(address)&tag=latest"
+    }
+    static func fetchBscGasPrice() -> String {
+        "http://45.76.120.223/bscscan/api?module=proxy&action=eth_gasPrice"
+    }
+    static func fetchBscGasOracle() -> String {
+        "http://45.76.120.223/bscscan/api?module=gastracker&action=gasoracle"
+    }
+    static func fetchBscBalance(address: String) -> String {
+        "http://45.76.120.223/bscscan/api?module=account&action=balance&address=\(address)&tag=latest"
+    }
+    static func fetchBscTokenBalance(contractAddress: String, address: String) -> String {
+        "http://45.76.120.223/etherscan/api?module=account&action=tokenbalance&contractaddress=\(contractAddress)&address=\(address)&tag=latest"
+    }
     static func getExplorerURL(chainTicker: String, txid: String) -> String{
         switch chainTicker {
         case "BTC":

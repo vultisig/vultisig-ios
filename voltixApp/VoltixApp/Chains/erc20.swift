@@ -21,8 +21,8 @@ class ERC20Helper {
     static func getAvaxERC20Helper() -> ERC20Helper{
         return ERC20Helper(coinType: CoinType.avalancheCChain)
     }
-    static func getBSCERC20Helper() -> ERC20Helper{
-        return ERC20Helper(coinType: CoinType.opBNB)
+    static func getBSCBEP20Helper() -> ERC20Helper{
+        return ERC20Helper(coinType: CoinType.smartChain)
     }
     
     func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {

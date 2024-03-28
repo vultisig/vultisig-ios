@@ -61,7 +61,7 @@ struct TokenSelectorDropdown: View {
     }
     
     var image: some View {
-        Image(tx.coin.ticker.lowercased())
+        Image(tx.coin.logo)
             .resizable()
             .frame(width: 32, height: 32)
             .cornerRadius(100)

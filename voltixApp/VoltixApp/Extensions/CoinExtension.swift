@@ -25,6 +25,10 @@ extension Coin {
             return CoinType.dogecoin
         case Chain.Ethereum:
             return CoinType.ethereum
+        case Chain.BSCChain:
+            return CoinType.smartChain
+        case Chain.Avalache:
+            return CoinType.avalancheCChain
         default:
             return nil
         }

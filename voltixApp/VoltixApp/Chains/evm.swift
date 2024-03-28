@@ -28,7 +28,7 @@ class EVMHelper {
         return EVMHelper(coinType: CoinType.avalancheCChain)
     }
     static func getBSCHelper() -> EVMHelper{
-        return EVMHelper(coinType: CoinType.opBNB)
+        return EVMHelper(coinType: CoinType.smartChain)
     }
     func getCoin(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
         let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
@@ -45,7 +45,7 @@ class EVMHelper {
                 ticker = "ETH"
             case .avalancheCChain:
                 ticker = "AVAX"
-            case .opBNB:
+            case .smartChain:
                 ticker = "BNB"
             default:
                 ticker = ""
@@ -100,9 +100,6 @@ class EVMHelper {
     }
     
     func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
-        guard keysignPayload.coin.chain.ticker == "ETH" else {
-            return .failure(HelperError.runtimeError("coin is not ETH"))
-        }
         let coin = self.coinType
         guard let intChainID = Int(coin.chainId) else {
             return .failure(HelperError.runtimeError("fail to get chainID"))
