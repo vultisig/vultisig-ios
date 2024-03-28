@@ -35,7 +35,7 @@ struct HomeView: View {
     var view: some View {
         ZStack {
             if let vault = selectedVault {
-                VaultDetailView(presentationStack: .constant([]), showVaultsList: $showVaultsList, vault: vault)
+                VaultDetailView(showVaultsList: $showVaultsList, vault: vault)
             }
             
             VaultsView(selectedVault: $selectedVault, showVaultsList: $showVaultsList)

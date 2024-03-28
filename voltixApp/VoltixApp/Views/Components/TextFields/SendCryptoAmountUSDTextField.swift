@@ -45,10 +45,9 @@ struct SendCryptoAmountUSDTextField: View {
     }
 }
 
-//#Preview {
-//    SendCryptoAmountUSDTextField(
-//        tx: SendTransaction(),
-//        eth: EthplorerAPIService(),
-//        sendCryptoViewModel: SendCryptoViewModel()
-//    )
-//}
+#Preview {
+    SendCryptoAmountUSDTextField(
+        tx: SendTransaction(),
+        sendCryptoViewModel: SendCryptoViewModel()
+    )
+}
