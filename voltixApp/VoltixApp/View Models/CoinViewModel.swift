@@ -19,6 +19,7 @@ class CoinViewModel: ObservableObject {
     private let thor = ThorchainService.shared
     private let eth = EtherScanService.shared
     private let bsc = BSCService.shared
+    private let sol = SolanaService.shared
     
     func loadData(tx: SendTransaction) async {
         print("realoading data...")
@@ -48,6 +49,16 @@ class CoinViewModel: ObservableObject {
                 try await bsc.getBNBBalance(tx: tx)
                 balanceUSD = tx.coin.balanceInUsd
                 coinBalance = tx.coin.balanceString
+            } else if tx.coin.chain.name == Chain.Solana.name {
+                await sol.getSolanaBalance(tx:tx)
+                await sol.fetchRecentBlockhash()
+                balanceUSD = tx.coin.balanceInUsd
+                coinBalance = tx.coin.balanceString
+                await MainActor.run {
+                    if let feeInLamports = sol.feeInLamports {
+                        tx.gas = String(feeInLamports)
+                    }
+                }
             }
         }
         catch{

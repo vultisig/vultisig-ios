@@ -171,10 +171,21 @@ class SendCryptoViewModel: ObservableObject {
                 }
             }
         } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
-            if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.Solana.name.lowercased()]?["usd"] {
-                tx.amountInUSD = sol.solBalanceInUSD(usdPrice: priceRateUsd, includeCurrencySymbol: false) ?? "US$ 0,00"
+            Task{
+                await sol.getSolanaBalance(tx: tx)
+                await sol.fetchRecentBlockhash()
+                
+                guard
+                    let feeLamportsStr = sol.feeInLamports,
+                    let feeInLamports = BigInt(feeLamportsStr) else {
+                    print("Invalid fee In Lamports")
+                    return
+                }
+                
+                tx.coin.rawBalance = sol.rawBalance
+                tx.amount = "\(tx.coin.getMaxValue(feeInLamports))"
+                await convertToUSD(newValue: tx.amount, tx: tx)
             }
-            tx.amount = sol.formattedSolBalance ?? "0.00"
         }
     }
     
