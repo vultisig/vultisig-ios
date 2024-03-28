@@ -30,6 +30,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
         return isAddressCorrect && isAmountCorrect && isHackedOrPhished
     }
     
+    //TODO: Remove that, we need to use the loadData only
     func reloadTransactions(tx: SendTransaction) {
         Task {
             if  tx.coin.chain.chainType == ChainType.UTXO {
@@ -38,7 +39,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 self.THORChainAccount = try await thor.fetchAccountNumber(tx.fromAddress)
             } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
                 
-                await sol.getSolanaBalance(account: tx.fromAddress)
+                await sol.getSolanaBalance(tx: tx)
                 await sol.fetchRecentBlockhash()
                 
                 await MainActor.run {
