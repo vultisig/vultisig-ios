@@ -50,11 +50,11 @@ struct KeysignMessageConfirmView: View {
     }
     
     var fromField: some View {
-        getPrimaryCell(title: "from", value: viewModel.keysignPayload?.coin.address ?? "0xF")
+        getPrimaryCell(title: "from", value: viewModel.keysignPayload?.coin.address ?? "")
     }
     
     var toField: some View {
-        getPrimaryCell(title: "to", value: viewModel.keysignPayload?.toAddress ?? "0xF")
+        getPrimaryCell(title: "to", value: viewModel.keysignPayload?.toAddress ?? "")
     }
     
     var amountField: some View {
