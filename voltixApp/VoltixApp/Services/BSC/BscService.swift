@@ -224,8 +224,11 @@ public class BSCService {
         if result.result != nil {
             return result.result
         }
-        if result.error != nil {
-            return result.error?.message
+        if let err = result.error {
+            if err.code ==  -32000 {
+                return "" // return empty
+            }
+            throw HelperError.runtimeError("code:\(err.code),message:\(err.message)")
         }
         return nil
     }
