@@ -274,7 +274,7 @@ class KeysignViewModel: ObservableObject {
                         self.txid = txHash
                         print("Transaction successful, hash: \(txHash)")
                     case .failure(let error):
-                        print("Transaction failed, error: \(error.localizedDescription)")
+                        self.handleBroadcastError(err: error)
                     }
                     
                 case .failure(let err):

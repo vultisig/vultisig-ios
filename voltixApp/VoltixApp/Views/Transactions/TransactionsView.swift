@@ -32,8 +32,8 @@ struct TransactionsView: View {
     
     var content: some View {
         let coin = group.coins.first
-        let bitcoinCondition = coin?.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() || coin?.chain.name.lowercased() == Chain.Litecoin.name.lowercased()
-        let ethereumCondition = coin?.chain.name.lowercased() == "ethereum"
+        let bitcoinCondition = coin?.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() || coin?.chain.name.lowercased() == Chain.Litecoin.name.lowercased() || coin?.chain.name == Chain.BitcoinCash.name || coin?.chain.name == Chain.Dogecoin.name
+        let ethereumCondition = coin?.chain.name == Chain.Ethereum.name || coin?.chain.name == Chain.BSCChain.name
         let isNativeCondition = !(coin?.isNativeToken ?? true)
         
         return ZStack {
@@ -41,9 +41,9 @@ struct TransactionsView: View {
                 UTXOTransactionsView(coin: coin)
             } else if ethereumCondition {
                 if isNativeCondition {
-                    EthereumTransactionsView(contractAddress: coin?.contractAddress)
+                    EthereumTransactionsView(chain:coin?.chain,contractAddress: coin?.contractAddress)
                 } else {
-                    EthereumTransactionsView()
+                    EthereumTransactionsView(chain:coin?.chain)
                 }
             } else {
                 errorText

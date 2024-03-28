@@ -135,6 +135,11 @@ class Endpoint {
     static func fetchBscTokenBalance(contractAddress: String, address: String) -> String {
         "http://45.76.120.223/etherscan/api?module=account&action=tokenbalance&contractaddress=\(contractAddress)&address=\(address)&tag=latest"
     }
+    
+    static func bscLabelTxHash(_ value: String) -> String {
+        "https://bscscan.com/tx/\(value)"
+    }
+    
     static func getExplorerURL(chainTicker: String, txid: String) -> String{
         switch chainTicker {
         case "BTC":
