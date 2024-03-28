@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct EthereumTransactionCell: View {
+    let chain: Chain?
     let transaction: EtherscanAPITransactionDetail
     let myAddress: String
     @ObservedObject var etherScanService: EtherScanService
@@ -29,6 +30,7 @@ struct EthereumTransactionCell: View {
         .cornerRadius(10)
         .padding(.horizontal, 16)
         .onAppear {
+            print(transaction)
             setData()
         }
     }
@@ -49,9 +51,19 @@ struct EthereumTransactionCell: View {
         .foregroundColor(.neutral0)
     }
     
+    func getTxHashLink(hash: String) -> String{
+        if chain?.name == Chain.Ethereum.name {
+            return Endpoint.ethereumLabelTxHash(hash)
+        }
+        if chain?.name == Chain.BSCChain.name {
+            return Endpoint.bscLabelTxHash(hash)
+        }
+        return ""
+    }
+    
     var txHash: some View {
         let hash = transaction.hash ?? ""
-        let url = Endpoint.ethereumLabelTxHash(hash)
+        let url = getTxHashLink(hash:hash)
         
         return Link(destination: URL(string: url)!) {
             Text(hash)
@@ -107,11 +119,19 @@ struct EthereumTransactionCell: View {
             feesCell
         }
     }
-    
+    func getTokenSymbol() -> String {
+        if chain?.name == Chain.Ethereum.name {
+            return "ETH"
+        }
+        if chain?.name == Chain.BSCChain.name {
+            return "BNB"
+        }
+        return ""
+    }
     var amountCell: some View {
         let decimals: Int = Int(transaction.tokenDecimal ?? "\(EVMHelper.ethDecimals)") ?? EVMHelper.ethDecimals
         let etherValue = etherScanService.convertToEther(fromWei: transaction.value, decimals)
-        let tokenSymbol = transaction.tokenSymbol ?? "ETH"
+        let tokenSymbol = transaction.tokenSymbol ?? getTokenSymbol()
         
         return getSummaryCell(title: "amount", value: "\(etherValue) \(tokenSymbol)")
     }
@@ -122,7 +142,7 @@ struct EthereumTransactionCell: View {
             gasPrice: transaction.gasPrice
         )
         
-        return getSummaryCell(title: "gas", value: feeDisplay)
+        return getSummaryCell(title: "gas", value: "\(feeDisplay) \(getTokenSymbol())")
     }
     
     private func setData() {

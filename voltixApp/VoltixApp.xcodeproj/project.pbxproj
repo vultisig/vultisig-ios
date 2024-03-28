@@ -173,6 +173,7 @@
 		DE63AE4B2BB4D87F001BBE5C /* BscService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE63AE4A2BB4D87F001BBE5C /* BscService.swift */; };
 		DE63AE4D2BB4E94E001BBE5C /* JSONRPCResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE63AE4C2BB4E94E001BBE5C /* JSONRPCResponse.swift */; };
 		DE63AE4F2BB4E96E001BBE5C /* JSONRPCError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE63AE4E2BB4E96E001BBE5C /* JSONRPCError.swift */; };
+		DE63AE512BB563B8001BBE5C /* EthereumTransactionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE63AE502BB563B8001BBE5C /* EthereumTransactionViewModel.swift */; };
 		DE64A4C62BA7E0E400C342E3 /* KeygenPeerDiscoveryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE64A4C52BA7E0E400C342E3 /* KeygenPeerDiscoveryViewModel.swift */; };
 		DE64A4C82BA7EBEC00C342E3 /* JoinKeygenViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE64A4C72BA7EBEC00C342E3 /* JoinKeygenViewModel.swift */; };
 		DE64A4CA2BA7F90E00C342E3 /* ServiceDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE64A4C92BA7F90E00C342E3 /* ServiceDelegate.swift */; };
@@ -391,6 +392,7 @@
 		DE63AE4A2BB4D87F001BBE5C /* BscService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BscService.swift; sourceTree = "<group>"; };
 		DE63AE4C2BB4E94E001BBE5C /* JSONRPCResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONRPCResponse.swift; sourceTree = "<group>"; };
 		DE63AE4E2BB4E96E001BBE5C /* JSONRPCError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONRPCError.swift; sourceTree = "<group>"; };
+		DE63AE502BB563B8001BBE5C /* EthereumTransactionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EthereumTransactionViewModel.swift; sourceTree = "<group>"; };
 		DE64A4C52BA7E0E400C342E3 /* KeygenPeerDiscoveryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenPeerDiscoveryViewModel.swift; sourceTree = "<group>"; };
 		DE64A4C72BA7EBEC00C342E3 /* JoinKeygenViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinKeygenViewModel.swift; sourceTree = "<group>"; };
 		DE64A4C92BA7F90E00C342E3 /* ServiceDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceDelegate.swift; sourceTree = "<group>"; };
@@ -755,6 +757,7 @@
 				DE64A4CD2BA7FEE100C342E3 /* JoinKeysignViewModel.swift */,
 				A65BA9852BAA0F0D00B2D8AA /* SendCryptoVerifyViewModel.swift */,
 				A60CA7E62BB0EC6100FDEB5C /* AccountViewModel.swift */,
+				DE63AE502BB563B8001BBE5C /* EthereumTransactionViewModel.swift */,
 			);
 			path = "View Models";
 			sourceTree = "<group>";
@@ -1201,7 +1204,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */;
+			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -1369,6 +1372,7 @@
 				465A8D562B9E6E0B006E7457 /* SolanaRpc.swift in Sources */,
 				A65BA9922BAD439900B2D8AA /* KeysignDiscoverServiceView.swift in Sources */,
 				DE9EB0F22BA2D97B001747D9 /* PeerDiscoveryPayload.swift in Sources */,
+				DE63AE512BB563B8001BBE5C /* EthereumTransactionViewModel.swift in Sources */,
 				A65324302BA540ED00DDE6EB /* SendCryptoVerifyView.swift in Sources */,
 				A65649E52B96602700E4B329 /* VaultExtension.swift in Sources */,
 				DE9EB0F82BA43388001747D9 /* KeysignViewModel.swift in Sources */,
@@ -1803,7 +1807,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */ = {
+		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DE49A1882B65F6DB000F3AFB /* Debug */,

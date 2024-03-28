@@ -307,7 +307,7 @@ public class EtherScanService: ObservableObject {
         if let wei = Decimal(string: value) {
             let decimalValue = Decimal(pow(10.0, Double(decimals)))
             let ether = wei / decimalValue // Correctly perform exponentiation
-            return String(format: "%.4f", ether as CVarArg)
+            return "\(ether)"
         } else {
             return "Invalid Value"
         }
@@ -320,6 +320,8 @@ public class EtherScanService: ObservableObject {
         
         let feeInWei = Decimal(gasUsedDouble * gasPriceDouble)
         let feeInEther = feeInWei / Decimal(EVMHelper.wei)
-        return String(format: "%.6f ETH", feeInEther as CVarArg)
+        let handler = NSDecimalNumberHandler(roundingMode: .plain, scale: 6, raiseOnExactness: false, raiseOnOverflow: false, raiseOnUnderflow: false, raiseOnDivideByZero: false)
+        let roundedDecimal = NSDecimalNumber(decimal: feeInEther).rounding(accordingToBehavior: handler)
+        return "\(roundedDecimal)"
     }
 }

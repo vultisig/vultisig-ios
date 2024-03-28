@@ -8,26 +8,26 @@
 import SwiftUI
 
 struct EthereumTransactionsView: View {
-    @StateObject var etherScanService: EtherScanService = .shared
+    let chain: Chain?
+    let contractAddress: String?
     @EnvironmentObject var appState: ApplicationState
-    @State var contractAddress: String?
-    @State var addressFor: String = ""
-    @State var transactions: [EtherscanAPITransactionDetail] = []
+    @StateObject var viewModel = EthereumTransactionViewModel()
     
     var body: some View {
         view
-            .onAppear {
-                Task {
-                    await setData()
+            .task {
+                guard let vault = appState.currentVault else {
+                    return
                 }
+                await viewModel.setData(chain: chain, vault: vault)
             }
     }
     
     var view: some View {
         ZStack {
-            if !transactions.isEmpty, !addressFor.isEmpty {
+            if !viewModel.transactions.isEmpty, !viewModel.addressFor.isEmpty {
                 list
-            } else if transactions.count==0 {
+            } else if viewModel.transactions.count==0 {
                 ErrorMessage(text: "noTransactions")
             } else {
                 loader
@@ -38,8 +38,8 @@ struct EthereumTransactionsView: View {
     var list: some View {
         ScrollView {
             VStack(spacing: 16) {
-                ForEach(transactions, id: \.hash) { transaction in
-                    EthereumTransactionCell(transaction: transaction, myAddress: addressFor, etherScanService: etherScanService)
+                ForEach(viewModel.transactions, id: \.hash) { transaction in
+                    EthereumTransactionCell(chain:chain, transaction: transaction, myAddress: viewModel.addressFor, etherScanService: viewModel.etherScanService)
                 }
             }
         }
@@ -50,37 +50,8 @@ struct EthereumTransactionsView: View {
             .preferredColorScheme(.dark)
     }
     
-    private func setData() async {
-        guard let vault = appState.currentVault else {
-            return
-        }
-        
-        let eth = vault.coins.first{$0.ticker == "ETH"}
-        guard let eth else {
-            return
-        }
-        
-        do {
-            var transactions: [EtherscanAPITransactionDetail] = []
-            var forAddress: String = ""
-            
-            if let contract = contractAddress {
-                (transactions, forAddress) = try await etherScanService.fetchERC20Transactions(
-                    forAddress: eth.address,
-                    contractAddress: contract
-                )
-            } else {
-                (transactions, forAddress) = try await etherScanService.fetchTransactions(forAddress: eth.address)
-            }
-            
-            addressFor = forAddress
-            self.transactions = transactions
-        } catch {
-            print("error: \(error)")
-        }
-    }
 }
 
 #Preview {
-    EthereumTransactionsView()
+    EthereumTransactionsView(chain:Chain.Ethereum,contractAddress: nil)
 }
