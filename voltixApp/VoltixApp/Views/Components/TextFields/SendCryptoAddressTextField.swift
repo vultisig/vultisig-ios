@@ -93,7 +93,7 @@ struct SendCryptoAddressTextField: View {
         sendCryptoViewModel.validateAddress(tx: tx, address: newValue)
     }
 }
-//
-//#Preview {
-//    SendCryptoAddressTextField(tx: SendTransaction(), sendCryptoViewModel: SendCryptoViewModel())
-//}
+
+#Preview {
+    SendCryptoAddressTextField(tx: SendTransaction(), sendCryptoViewModel: SendCryptoViewModel())
+}
