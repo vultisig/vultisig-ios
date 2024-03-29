@@ -8,6 +8,7 @@ import Tss
 import WalletCore
 
 enum THORChainHelper {
+    static let THORChainGas: UInt64 = 2000000
     static func getRUNECoin(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
         let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
                                                             hexChainCode: hexChainCode,
@@ -104,7 +105,7 @@ enum THORChainHelper {
             }]
             // THORChain fee is 0.02 RUNE
             $0.fee = CosmosFee.with {
-                $0.gas = 20000000
+                $0.gas = THORChainGas
                 $0.amounts = [CosmosAmount.with {
                     $0.denom = "rune"
                     $0.amount = "2000000"
