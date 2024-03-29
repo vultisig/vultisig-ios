@@ -1204,7 +1204,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */;
+			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -1622,7 +1622,7 @@
 				CURRENT_PROJECT_VERSION = 11;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"voltixApp/Preview Content\"";
-				DEVELOPMENT_TEAM = KEUQSEUKAQ;
+				DEVELOPMENT_TEAM = LNG8PFABR7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				ENABLE_PREVIEWS = YES;
@@ -1631,6 +1631,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Volitix;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
 				INFOPLIST_KEY_NSCameraUsageDescription = "We need to scan QR Codes.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Secure your Vault using Face ID";
 				INFOPLIST_KEY_NSFileProviderDomainUsageDescription = "We need to access your files.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -1671,7 +1672,7 @@
 				CURRENT_PROJECT_VERSION = 11;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"voltixApp/Preview Content\"";
-				DEVELOPMENT_TEAM = KEUQSEUKAQ;
+				DEVELOPMENT_TEAM = LNG8PFABR7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				ENABLE_PREVIEWS = YES;
@@ -1680,6 +1681,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = Volitix;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
 				INFOPLIST_KEY_NSCameraUsageDescription = "We need to scan QR Codes.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Secure your Vault using Face ID";
 				INFOPLIST_KEY_NSFileProviderDomainUsageDescription = "We need to access your files.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -1807,7 +1809,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */ = {
+		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DE49A1882B65F6DB000F3AFB /* Debug */,
