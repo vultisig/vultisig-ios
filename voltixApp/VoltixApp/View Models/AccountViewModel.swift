@@ -15,6 +15,7 @@ class AccountViewModel: ObservableObject {
     
     @Published var isAuthenticated: Bool = false
     @Published var showSplashView = true
+    @Published var didUserCancelAuthentication: Bool = false
     
     func authenticateUser() {
         let context = LAContext()
@@ -29,17 +30,20 @@ class AccountViewModel: ObservableObject {
                             self.isAuthenticated = true
                             self.showSplashView = false
                             self.isAuthenticationEnabled = true
+                            self.didUserCancelAuthentication = false
                         } else {
                             if let error = error as? LAError {
                                 switch error.code {
                                 case .biometryLockout, .biometryNotEnrolled, .biometryNotAvailable:
                                     self.isAuthenticationEnabled = false
+                                    self.showSplashView = false
                                 default:
                                     self.isAuthenticationEnabled = true
+                                    self.showSplashView = true
                                 }
                             }
                             self.isAuthenticated = false
-                            self.showSplashView = true
+                            self.didUserCancelAuthentication = true
                         }
                     }
                 }
@@ -47,11 +51,13 @@ class AccountViewModel: ObservableObject {
                 isAuthenticationEnabled = false
                 isAuthenticated = false
                 showSplashView = false
+                didUserCancelAuthentication = false
             }
         } else {
             isAuthenticationEnabled = false
             isAuthenticated = false
             showSplashView = false
+            didUserCancelAuthentication = false
         }
     }
 }

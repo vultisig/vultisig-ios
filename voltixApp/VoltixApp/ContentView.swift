@@ -35,11 +35,6 @@ struct ContentView: View {
         WelcomeView()
             .onAppear {
                 authenticateUser()
-                print("----------")
-                print("APPEARED")
-                print("----------")
-                print(vaults.count)
-                print("----------")
             }
     }
     
@@ -56,6 +51,13 @@ struct ContentView: View {
     }
     
     private func authenticateUser() {
+        guard !accountViewModel.showOnboarding && vaults.count>0 else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                accountViewModel.showSplashView = false
+            }
+            return
+        }
+        
         accountViewModel.authenticateUser()
     }
 }
