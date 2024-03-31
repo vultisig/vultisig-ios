@@ -164,7 +164,7 @@ class SendCryptoViewModel: ObservableObject {
                     }
                     
                     tx.coin.rawBalance = thorBalances.runeBalance() ?? "0"
-                    tx.amount = "\(tx.coin.getMaxValue(20000000))"
+                    tx.amount = "\(tx.coin.getMaxValue(BigInt(THORChainHelper.THORChainGas)))"
                     await convertToUSD(newValue: tx.amount, tx: tx)
                 }catch{
                     print("fail to get THORChain balance,error:\(error.localizedDescription)")
