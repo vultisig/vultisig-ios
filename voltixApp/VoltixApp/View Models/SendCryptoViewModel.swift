@@ -113,44 +113,79 @@ class SendCryptoViewModel: ObservableObject {
     }
     
     
-    func setMaxValues(tx: SendTransaction) {
+    func setMaxValues(tx: SendTransaction)  {
         let coinName = tx.coin.chain.name.lowercased()
         let key: String = "\(tx.fromAddress)-\(coinName)"
         
         if  tx.coin.chain.chainType == ChainType.UTXO {
             
             tx.amount = utxo.blockchairData[key]?.address?.balanceInBTC ?? "0.0"
-            tx.amountInUSD = utxo.blockchairData[key]?.address?.balanceInDecimalUSD ?? "0.0"
             
             if let plan = getTransactionPlan(tx: tx, key: key) {
-                
                 tx.amount = utxo.blockchairData[key]?.address?.formatAsBitcoin(Int(plan.amount)) ?? "0.0"
-                Task{
-                    await convertToUSD(newValue: tx.amount, tx: tx)
-                }
-                
+            }
+            Task{
+                await convertToUSD(newValue: tx.amount, tx: tx)
             }
             
         } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
-            tx.amount = tx.coin.balanceString
-            tx.amountInUSD = tx.coin.balanceInUsd.replacingOccurrences(of: "US$ ", with: "")
+            Task {
+                do {
+                    let (gasPrice, _, _) = try await EtherScanService.shared.getETHGasInfo(fromAddress: tx.fromAddress)
+                    
+                    guard let gasLimitBigInt = BigInt(tx.coin.feeDefault) else {
+                        print("Invalid gas limit")
+                        return
+                    }
+                    
+                    guard let gasPriceBigInt = BigInt(gasPrice) else {
+                        print("Invalid gas price")
+                        return
+                    }
+                    
+                    let gasPriceGwei: BigInt = gasPriceBigInt
+                    let gasPriceWei: BigInt = gasPriceGwei * BigInt(EVMHelper.weiPerGWei)
+                    let totalFeeWei: BigInt = gasLimitBigInt * gasPriceWei
+                    
+                    tx.amount = "\(tx.coin.getMaxValue(totalFeeWei))"
+                } catch {
+                    tx.amount = tx.coin.balanceString
+                    print("Failed to get EVM balance, error: \(error.localizedDescription)")
+                }
+                
+                await convertToUSD(newValue: tx.amount, tx: tx)
+            }
         } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
             Task{
                 do{
-                    let thorBalances = try await thor.fetchBalances(tx.fromAddress)
+                    let thorBalances = try await self.thor.fetchBalances(tx.fromAddress)
                     if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.THORChain.name.lowercased()]?["usd"] {
-                        tx.amountInUSD = thorBalances.runeBalanceInUSD(usdPrice: priceRateUsd, includeCurrencySymbol: false) ?? "US$ 0,00"
+                        tx.coin.priceRate = priceRateUsd
                     }
-                    tx.amount = thorBalances.formattedRuneBalance() ?? "0.00"
+                    
+                    tx.coin.rawBalance = thorBalances.runeBalance() ?? "0"
+                    tx.amount = "\(tx.coin.getMaxValue(BigInt(THORChainHelper.THORChainGas)))"
+                    await convertToUSD(newValue: tx.amount, tx: tx)
                 }catch{
                     print("fail to get THORChain balance,error:\(error.localizedDescription)")
                 }
             }
         } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
-            if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.Solana.name.lowercased()]?["usd"] {
-                tx.amountInUSD = sol.solBalanceInUSD(usdPrice: priceRateUsd, includeCurrencySymbol: false) ?? "US$ 0,00"
+            Task{
+                await sol.getSolanaBalance(tx: tx)
+                await sol.fetchRecentBlockhash()
+                
+                guard
+                    let feeLamportsStr = sol.feeInLamports,
+                    let feeInLamports = BigInt(feeLamportsStr) else {
+                    print("Invalid fee In Lamports")
+                    return
+                }
+                
+                tx.coin.rawBalance = sol.rawBalance
+                tx.amount = "\(tx.coin.getMaxValue(feeInLamports))"
+                await convertToUSD(newValue: tx.amount, tx: tx)
             }
-            tx.amount = sol.formattedSolBalance ?? "0.00"
         }
     }
     

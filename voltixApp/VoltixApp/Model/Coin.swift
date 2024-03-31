@@ -94,6 +94,13 @@ class Coin: Codable, Hashable {
         return "\(balanceDecimal)"
     }
     
+    func getMaxValue(_ fee: BigInt) -> Decimal {
+        let maxValue = (BigInt(rawBalance, radix: 10) ?? 0) - fee
+        let maxValueDecimal = Decimal(string: String(maxValue)) ?? 0.0
+        let tokenDecimals = Int(decimals) ?? 0
+        return maxValueDecimal / pow(10, tokenDecimals)
+    }
+    
     func getAmountInUsd(_ amount: Double) -> String {
         let balanceInUsd = amount * priceRate
         return String(format: "%.2f", balanceInUsd)
