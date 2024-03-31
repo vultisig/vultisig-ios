@@ -76,7 +76,7 @@ struct WelcomeView: View {
         Button {
             viewModel.authenticateUser()
         } label: {
-            FilledButton(title: "tryFaceIDAgain")
+            FilledButton(title: "loginUsingFaceID")
         }
     }
     

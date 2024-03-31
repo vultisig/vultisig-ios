@@ -134,3 +134,4 @@
 "errorFetchingTransactions" = "Error fetching transactions";
 "noTransactions" = "No transactions yet";
 "tryFaceIDAgain" = "Try Face ID again";
+"loginUsingFaceID" = "Login using Face ID";

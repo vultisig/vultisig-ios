@@ -58,7 +58,9 @@ struct ContentView: View {
             return
         }
         
-        accountViewModel.authenticateUser()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            accountViewModel.authenticateUser()
+        }
     }
 }
 

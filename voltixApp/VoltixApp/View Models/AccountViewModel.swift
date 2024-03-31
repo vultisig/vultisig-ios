@@ -60,4 +60,14 @@ class AccountViewModel: ObservableObject {
             didUserCancelAuthentication = false
         }
     }
+    
+    func resetLogin() {
+        guard !showOnboarding || isAuthenticationEnabled else {
+            return
+        }
+        
+        isAuthenticated = false
+        showSplashView = true
+        didUserCancelAuthentication = false
+    }
 }
