@@ -19,12 +19,12 @@
 		465B09B52B7D8E7B00952DD9 /* CryptoPriceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */; };
 		465B09B72B7D909400952DD9 /* CryptoPrice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09B62B7D909400952DD9 /* CryptoPrice.swift */; };
 		469ED3942B98E776008D4951 /* ThorchainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED3932B98E776008D4951 /* ThorchainService.swift */; };
-		469ED3992B98E896008D4951 /* ThorchainBalanceResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED3982B98E896008D4951 /* ThorchainBalanceResponse.swift */; };
-		469ED39B2B98E8B5008D4951 /* ThorchainBalance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED39A2B98E8B5008D4951 /* ThorchainBalance.swift */; };
-		469ED39D2B98E8C0008D4951 /* ThorchainBalancePagination.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED39C2B98E8C0008D4951 /* ThorchainBalancePagination.swift */; };
-		469ED3A02B98F5B4008D4951 /* ThorchainAccountNumberResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED39F2B98F5B4008D4951 /* ThorchainAccountNumberResponse.swift */; };
-		469ED3A22B98F5CB008D4951 /* ThorchainAccountResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED3A12B98F5CB008D4951 /* ThorchainAccountResult.swift */; };
-		469ED3A42B98F5DE008D4951 /* ThorchainAccountValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED3A32B98F5DE008D4951 /* ThorchainAccountValue.swift */; };
+		469ED3992B98E896008D4951 /* CosmosBalanceResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED3982B98E896008D4951 /* CosmosBalanceResponse.swift */; };
+		469ED39B2B98E8B5008D4951 /* CosmosBalance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED39A2B98E8B5008D4951 /* CosmosBalance.swift */; };
+		469ED39D2B98E8C0008D4951 /* CosmosBalancePagination.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED39C2B98E8C0008D4951 /* CosmosBalancePagination.swift */; };
+		469ED3A02B98F5B4008D4951 /* CosmosAccountNumberResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED39F2B98F5B4008D4951 /* CosmosAccountNumberResponse.swift */; };
+		469ED3A22B98F5CB008D4951 /* CosmosAccountResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED3A12B98F5CB008D4951 /* CosmosAccountResult.swift */; };
+		469ED3A42B98F5DE008D4951 /* CosmosAccountValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED3A32B98F5DE008D4951 /* CosmosAccountValue.swift */; };
 		46AC40A42B91F50A001704E6 /* AppConfiguration.example.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AC40A32B91F50A001704E6 /* AppConfiguration.example.swift */; };
 		46AC40A82B920061001704E6 /* EtherscanService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AC40A72B920061001704E6 /* EtherscanService.swift */; };
 		46B106512BA7CAFE00564023 /* ChainType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B106502BA7CAFE00564023 /* ChainType.swift */; };
@@ -34,7 +34,7 @@
 		46ED3A482B9F696000FFCB8A /* SolanaRecentBlockhash.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46ED3A472B9F696000FFCB8A /* SolanaRecentBlockhash.swift */; };
 		46F47CBB2B870EE900D964EA /* UTXOTransactionMempool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F47CBA2B870EE900D964EA /* UTXOTransactionMempool.swift */; };
 		46F8F7212B99FDB70099454E /* TransactionBroadcastResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F8F7202B99FDB70099454E /* TransactionBroadcastResponse.swift */; };
-		46F8F7262B99FEEC0099454E /* ThorchainErrorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F8F7252B99FEEC0099454E /* ThorchainErrorResponse.swift */; };
+		46F8F7262B99FEEC0099454E /* CosmosErrorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F8F7252B99FEEC0099454E /* CosmosErrorResponse.swift */; };
 		46F8F7282B9A011B0099454E /* ThorchainBroadcastTransactionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F8F7272B9A011B0099454E /* ThorchainBroadcastTransactionService.swift */; };
 		A60CA7E52BB0D37D00FDEB5C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60CA7E42BB0D37D00FDEB5C /* ContentView.swift */; };
 		A60CA7E72BB0EC6100FDEB5C /* AccountViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60CA7E62BB0EC6100FDEB5C /* AccountViewModel.swift */; };
@@ -168,13 +168,14 @@
 		DE49A1B22B6A0F77000F3AFB /* JoinKeygenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE49A1B12B6A0F77000F3AFB /* JoinKeygenView.swift */; };
 		DE49A1B52B6A1088000F3AFB /* CodeScanner in Frameworks */ = {isa = PBXBuildFile; platformFilter = ios; productRef = DE49A1B42B6A1088000F3AFB /* CodeScanner */; };
 		DE4DFA7B2B7B1692004F8E73 /* ModelContainerPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE4DFA7A2B7B1692004F8E73 /* ModelContainerPreview.swift */; };
-		DE5FA58A2BAD1EF2008FD910 /* THORChainBalanceCacheEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE5FA5892BAD1EF2008FD910 /* THORChainBalanceCacheEntry.swift */; };
+		DE5FA58A2BAD1EF2008FD910 /* CosmosBalanceCacheEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE5FA5892BAD1EF2008FD910 /* CosmosBalanceCacheEntry.swift */; };
 		DE63AE0E2BAD2408001BBE5C /* THORBalanceExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE63AE0D2BAD2408001BBE5C /* THORBalanceExtension.swift */; };
 		DE63AE4B2BB4D87F001BBE5C /* BscService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE63AE4A2BB4D87F001BBE5C /* BscService.swift */; };
 		DE63AE4D2BB4E94E001BBE5C /* JSONRPCResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE63AE4C2BB4E94E001BBE5C /* JSONRPCResponse.swift */; };
 		DE63AE4F2BB4E96E001BBE5C /* JSONRPCError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE63AE4E2BB4E96E001BBE5C /* JSONRPCError.swift */; };
 		DE63AE512BB563B8001BBE5C /* EthereumTransactionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE63AE502BB563B8001BBE5C /* EthereumTransactionViewModel.swift */; };
 		DE63AE532BBA627B001BBE5C /* atom.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE63AE522BBA627B001BBE5C /* atom.swift */; };
+		DE63AE562BBA788D001BBE5C /* GaiaService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE63AE552BBA788D001BBE5C /* GaiaService.swift */; };
 		DE64A4C62BA7E0E400C342E3 /* KeygenPeerDiscoveryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE64A4C52BA7E0E400C342E3 /* KeygenPeerDiscoveryViewModel.swift */; };
 		DE64A4C82BA7EBEC00C342E3 /* JoinKeygenViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE64A4C72BA7EBEC00C342E3 /* JoinKeygenViewModel.swift */; };
 		DE64A4CA2BA7F90E00C342E3 /* ServiceDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE64A4C92BA7F90E00C342E3 /* ServiceDelegate.swift */; };
@@ -237,12 +238,12 @@
 		465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoPriceService.swift; sourceTree = "<group>"; };
 		465B09B62B7D909400952DD9 /* CryptoPrice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoPrice.swift; sourceTree = "<group>"; };
 		469ED3932B98E776008D4951 /* ThorchainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainService.swift; sourceTree = "<group>"; };
-		469ED3982B98E896008D4951 /* ThorchainBalanceResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainBalanceResponse.swift; sourceTree = "<group>"; };
-		469ED39A2B98E8B5008D4951 /* ThorchainBalance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainBalance.swift; sourceTree = "<group>"; };
-		469ED39C2B98E8C0008D4951 /* ThorchainBalancePagination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainBalancePagination.swift; sourceTree = "<group>"; };
-		469ED39F2B98F5B4008D4951 /* ThorchainAccountNumberResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainAccountNumberResponse.swift; sourceTree = "<group>"; };
-		469ED3A12B98F5CB008D4951 /* ThorchainAccountResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainAccountResult.swift; sourceTree = "<group>"; };
-		469ED3A32B98F5DE008D4951 /* ThorchainAccountValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainAccountValue.swift; sourceTree = "<group>"; };
+		469ED3982B98E896008D4951 /* CosmosBalanceResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosBalanceResponse.swift; sourceTree = "<group>"; };
+		469ED39A2B98E8B5008D4951 /* CosmosBalance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosBalance.swift; sourceTree = "<group>"; };
+		469ED39C2B98E8C0008D4951 /* CosmosBalancePagination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosBalancePagination.swift; sourceTree = "<group>"; };
+		469ED39F2B98F5B4008D4951 /* CosmosAccountNumberResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosAccountNumberResponse.swift; sourceTree = "<group>"; };
+		469ED3A12B98F5CB008D4951 /* CosmosAccountResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosAccountResult.swift; sourceTree = "<group>"; };
+		469ED3A32B98F5DE008D4951 /* CosmosAccountValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosAccountValue.swift; sourceTree = "<group>"; };
 		46AC40A32B91F50A001704E6 /* AppConfiguration.example.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.example.swift; sourceTree = "<group>"; };
 		46AC40A72B920061001704E6 /* EtherscanService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EtherscanService.swift; sourceTree = "<group>"; };
 		46B106502BA7CAFE00564023 /* ChainType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainType.swift; sourceTree = "<group>"; };
@@ -252,7 +253,7 @@
 		46ED3A472B9F696000FFCB8A /* SolanaRecentBlockhash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolanaRecentBlockhash.swift; sourceTree = "<group>"; };
 		46F47CBA2B870EE900D964EA /* UTXOTransactionMempool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionMempool.swift; sourceTree = "<group>"; };
 		46F8F7202B99FDB70099454E /* TransactionBroadcastResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionBroadcastResponse.swift; sourceTree = "<group>"; };
-		46F8F7252B99FEEC0099454E /* ThorchainErrorResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainErrorResponse.swift; sourceTree = "<group>"; };
+		46F8F7252B99FEEC0099454E /* CosmosErrorResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosErrorResponse.swift; sourceTree = "<group>"; };
 		46F8F7272B9A011B0099454E /* ThorchainBroadcastTransactionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainBroadcastTransactionService.swift; sourceTree = "<group>"; };
 		A60CA7E42BB0D37D00FDEB5C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A60CA7E62BB0EC6100FDEB5C /* AccountViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountViewModel.swift; sourceTree = "<group>"; };
@@ -388,13 +389,14 @@
 		DE49A1B12B6A0F77000F3AFB /* JoinKeygenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinKeygenView.swift; sourceTree = "<group>"; };
 		DE49A1B62B6A1222000F3AFB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		DE4DFA7A2B7B1692004F8E73 /* ModelContainerPreview.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelContainerPreview.swift; sourceTree = "<group>"; };
-		DE5FA5892BAD1EF2008FD910 /* THORChainBalanceCacheEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainBalanceCacheEntry.swift; sourceTree = "<group>"; };
+		DE5FA5892BAD1EF2008FD910 /* CosmosBalanceCacheEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosBalanceCacheEntry.swift; sourceTree = "<group>"; };
 		DE63AE0D2BAD2408001BBE5C /* THORBalanceExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORBalanceExtension.swift; sourceTree = "<group>"; };
 		DE63AE4A2BB4D87F001BBE5C /* BscService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BscService.swift; sourceTree = "<group>"; };
 		DE63AE4C2BB4E94E001BBE5C /* JSONRPCResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONRPCResponse.swift; sourceTree = "<group>"; };
 		DE63AE4E2BB4E96E001BBE5C /* JSONRPCError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONRPCError.swift; sourceTree = "<group>"; };
 		DE63AE502BB563B8001BBE5C /* EthereumTransactionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EthereumTransactionViewModel.swift; sourceTree = "<group>"; };
 		DE63AE522BBA627B001BBE5C /* atom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = atom.swift; sourceTree = "<group>"; };
+		DE63AE552BBA788D001BBE5C /* GaiaService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GaiaService.swift; sourceTree = "<group>"; };
 		DE64A4C52BA7E0E400C342E3 /* KeygenPeerDiscoveryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenPeerDiscoveryViewModel.swift; sourceTree = "<group>"; };
 		DE64A4C72BA7EBEC00C342E3 /* JoinKeygenViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinKeygenViewModel.swift; sourceTree = "<group>"; };
 		DE64A4C92BA7F90E00C342E3 /* ServiceDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceDelegate.swift; sourceTree = "<group>"; };
@@ -499,6 +501,7 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				DE63AE542BBA7878001BBE5C /* Cosmos */,
 				DE63AE492BB4D86A001BBE5C /* BSC */,
 				46C8CBBA2BA76CC100E68E08 /* UTXO */,
 				460347822BA148A2007ED3AC /* Ethereum */,
@@ -609,23 +612,23 @@
 			path = Thorchain;
 			sourceTree = "<group>";
 		};
-		469ED3962B98E7B7008D4951 /* Thorchain */ = {
+		469ED3962B98E7B7008D4951 /* Cosmos */ = {
 			isa = PBXGroup;
 			children = (
 				46F8F71F2B99FDAC0099454E /* TransactionManager */,
 				469ED39E2B98F5A9008D4951 /* AccountManager */,
 				469ED3972B98E885008D4951 /* BalanceManager */,
 			);
-			path = Thorchain;
+			path = Cosmos;
 			sourceTree = "<group>";
 		};
 		469ED3972B98E885008D4951 /* BalanceManager */ = {
 			isa = PBXGroup;
 			children = (
-				469ED3982B98E896008D4951 /* ThorchainBalanceResponse.swift */,
-				469ED39A2B98E8B5008D4951 /* ThorchainBalance.swift */,
-				469ED39C2B98E8C0008D4951 /* ThorchainBalancePagination.swift */,
-				DE5FA5892BAD1EF2008FD910 /* THORChainBalanceCacheEntry.swift */,
+				469ED3982B98E896008D4951 /* CosmosBalanceResponse.swift */,
+				469ED39A2B98E8B5008D4951 /* CosmosBalance.swift */,
+				469ED39C2B98E8C0008D4951 /* CosmosBalancePagination.swift */,
+				DE5FA5892BAD1EF2008FD910 /* CosmosBalanceCacheEntry.swift */,
 			);
 			path = BalanceManager;
 			sourceTree = "<group>";
@@ -633,9 +636,9 @@
 		469ED39E2B98F5A9008D4951 /* AccountManager */ = {
 			isa = PBXGroup;
 			children = (
-				469ED39F2B98F5B4008D4951 /* ThorchainAccountNumberResponse.swift */,
-				469ED3A12B98F5CB008D4951 /* ThorchainAccountResult.swift */,
-				469ED3A32B98F5DE008D4951 /* ThorchainAccountValue.swift */,
+				469ED39F2B98F5B4008D4951 /* CosmosAccountNumberResponse.swift */,
+				469ED3A12B98F5CB008D4951 /* CosmosAccountResult.swift */,
+				469ED3A32B98F5DE008D4951 /* CosmosAccountValue.swift */,
 			);
 			path = AccountManager;
 			sourceTree = "<group>";
@@ -680,7 +683,7 @@
 			isa = PBXGroup;
 			children = (
 				46F8F7202B99FDB70099454E /* TransactionBroadcastResponse.swift */,
-				46F8F7252B99FEEC0099454E /* ThorchainErrorResponse.swift */,
+				46F8F7252B99FEEC0099454E /* CosmosErrorResponse.swift */,
 			);
 			path = TransactionManager;
 			sourceTree = "<group>";
@@ -887,7 +890,7 @@
 				465B189E2BA3D7B5001D7407 /* Prices */,
 				465B189C2BA3D786001D7407 /* UTXO */,
 				465A8D552B9E6E0A006E7457 /* Solana */,
-				469ED3962B98E7B7008D4951 /* Thorchain */,
+				469ED3962B98E7B7008D4951 /* Cosmos */,
 				A65649E92B96690400E4B329 /* KeyShare.swift */,
 				DE49A19B2B67133D000F3AFB /* Vault.swift */,
 				DE49A19F2B67143B000F3AFB /* Chain.swift */,
@@ -1111,6 +1114,14 @@
 			path = BSC;
 			sourceTree = "<group>";
 		};
+		DE63AE542BBA7878001BBE5C /* Cosmos */ = {
+			isa = PBXGroup;
+			children = (
+				DE63AE552BBA788D001BBE5C /* GaiaService.swift */,
+			);
+			path = Cosmos;
+			sourceTree = "<group>";
+		};
 		DEF2E2CE2B9DA41A000737B8 /* Chains */ = {
 			isa = PBXGroup;
 			children = (
@@ -1274,7 +1285,7 @@
 				049BBB5E2B71E83D004C231F /* VoltixLogo.swift in Sources */,
 				DE1572A02B70F284009BC7C5 /* KeysignView.swift in Sources */,
 				A6F9F7E32B9BB48700790258 /* VaultsView.swift in Sources */,
-				469ED3A02B98F5B4008D4951 /* ThorchainAccountNumberResponse.swift in Sources */,
+				469ED3A02B98F5B4008D4951 /* CosmosAccountNumberResponse.swift in Sources */,
 				A65324282BA51E8700DDE6EB /* QRCodeScannerView.swift in Sources */,
 				DE1572992B70F26A009BC7C5 /* KeyType.swift in Sources */,
 				46E98FFC2BAE407300C53D97 /* DecodingErrorExtension.swift in Sources */,
@@ -1317,7 +1328,7 @@
 				DE63AE4F2BB4E96E001BBE5C /* JSONRPCError.swift in Sources */,
 				A6564A042B969AA500E4B329 /* EtherscanBroadcastResponse.swift in Sources */,
 				D9AD8EDC2B6723D10009F8D5 /* AppNavigationState.swift in Sources */,
-				469ED3992B98E896008D4951 /* ThorchainBalanceResponse.swift in Sources */,
+				469ED3992B98E896008D4951 /* CosmosBalanceResponse.swift in Sources */,
 				DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */,
 				DE9EB0EE2BA2CF49001747D9 /* KeygenMessage.swift in Sources */,
 				A6F9F7ED2B9D1F5700790258 /* CoinViewModel.swift in Sources */,
@@ -1328,7 +1339,7 @@
 				46F8F7212B99FDB70099454E /* TransactionBroadcastResponse.swift in Sources */,
 				A6966D242BA3E2A500903CA4 /* OnboardingView2.swift in Sources */,
 				A65649E62B96602700E4B329 /* TssExtension.swift in Sources */,
-				469ED39D2B98E8C0008D4951 /* ThorchainBalancePagination.swift in Sources */,
+				469ED39D2B98E8C0008D4951 /* CosmosBalancePagination.swift in Sources */,
 				A65BA98E2BAD311200B2D8AA /* Loader.swift in Sources */,
 				DE6DCB952B97D88A009A39D5 /* THORChainSwapPayload.swift in Sources */,
 				A6966D2B2BA4018600903CA4 /* SendCryptoAmountTextField.swift in Sources */,
@@ -1347,9 +1358,9 @@
 				A65649E82B9668BF00E4B329 /* BitcoinTransactionRef.swift in Sources */,
 				A66A0BDB2BA13B570021A483 /* CoinsGrouped.swift in Sources */,
 				A6F9F7E12B9BAFA700790258 /* NavigationRefreshButton.swift in Sources */,
-				469ED3A22B98F5CB008D4951 /* ThorchainAccountResult.swift in Sources */,
+				469ED3A22B98F5CB008D4951 /* CosmosAccountResult.swift in Sources */,
 				A6F9F7E72B9BB63700790258 /* VaultCell.swift in Sources */,
-				46F8F7262B99FEEC0099454E /* ThorchainErrorResponse.swift in Sources */,
+				46F8F7262B99FEEC0099454E /* CosmosErrorResponse.swift in Sources */,
 				A65649EA2B96690400E4B329 /* KeyShare.swift in Sources */,
 				A633B13C2B9A6564003D1738 /* SetupVaultView.swift in Sources */,
 				A6C0D55F2BB3B73900156689 /* UTXOTransactionsView.swift in Sources */,
@@ -1365,6 +1376,7 @@
 				A6966D2F2BA4045C00903CA4 /* SwapCryptoView.swift in Sources */,
 				46F8F7282B9A011B0099454E /* ThorchainBroadcastTransactionService.swift in Sources */,
 				A65649E12B96602700E4B329 /* Int64Extension.swift in Sources */,
+				DE63AE562BBA788D001BBE5C /* GaiaService.swift in Sources */,
 				A6966D202BA3DF0C00903CA4 /* OnboardingView1.swift in Sources */,
 				DEBF93972B8D5FEF002868CD /* KeysignPayload.swift in Sources */,
 				DE6DCB932B97D81C009A39D5 /* THORChainSwaps.swift in Sources */,
@@ -1397,8 +1409,8 @@
 				A61BC81B2BA26D9900484689 /* TokenSelectionSection.swift in Sources */,
 				A65649DF2B96602700E4B329 /* DecodableDefaultExtension.swift in Sources */,
 				A633B13E2B9A9E30003D1738 /* VaultDetailView.swift in Sources */,
-				469ED39B2B98E8B5008D4951 /* ThorchainBalance.swift in Sources */,
-				DE5FA58A2BAD1EF2008FD910 /* THORChainBalanceCacheEntry.swift in Sources */,
+				469ED39B2B98E8B5008D4951 /* CosmosBalance.swift in Sources */,
+				DE5FA58A2BAD1EF2008FD910 /* CosmosBalanceCacheEntry.swift in Sources */,
 				DEEDAEE32B8AF8B1005170E8 /* publickey.swift in Sources */,
 				A6C0D56B2BB3DC4000156689 /* EthereumTransactionCell.swift in Sources */,
 				A633B11C2B99273A003D1738 /* ColorExtensions.swift in Sources */,
@@ -1444,7 +1456,7 @@
 				A6F9F7E92B9BBFD500790258 /* AddressQRCodeView.swift in Sources */,
 				A6C0D5692BB3C6D400156689 /* ErrorMessage.swift in Sources */,
 				46C8CBBD2BA7753900E68E08 /* Blockchair.swift in Sources */,
-				469ED3A42B98F5DE008D4951 /* ThorchainAccountValue.swift in Sources */,
+				469ED3A42B98F5DE008D4951 /* CosmosAccountValue.swift in Sources */,
 				DE49A1672B65F6D9000F3AFB /* VoltixApp.swift in Sources */,
 				465B09A42B7C01CC00952DD9 /* BitcoinTransaction.swift in Sources */,
 				A60CA7E72BB0EC6100FDEB5C /* AccountViewModel.swift in Sources */,

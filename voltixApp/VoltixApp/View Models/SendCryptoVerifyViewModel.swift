@@ -23,9 +23,10 @@ class SendCryptoVerifyViewModel: ObservableObject {
     @Published var sol: SolanaService = SolanaService.shared
     @Published var utxo = BlockchairService.shared
     @Published var eth = EtherScanService.shared
+    var gaia = GaiaService.shared
     
-    
-    var THORChainAccount: ThorchainAccountValue? = nil
+    var THORChainAccount: CosmosAccountValue? = nil
+    var CosmosChainAccount: CosmosAccountValue? = nil
     private var isValidForm: Bool {
         return isAddressCorrect && isAmountCorrect && isHackedOrPhished
     }
@@ -48,6 +49,8 @@ class SendCryptoVerifyViewModel: ObservableObject {
                     }
                 }
                 
+            }else if tx.coin.chain.name == Chain.GaiaChain.name {
+                self.CosmosChainAccount = try await gaia.fetchAccountNumber(tx.fromAddress)
             }
         }
     }
@@ -185,6 +188,33 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 toAddress: tx.toAddress,
                 toAmount: tx.amountInSats,
                 chainSpecific: BlockChainSpecific.THORChain(accountNumber: intAccountNumber, sequence: intSequence),
+                utxos: [],
+                memo: tx.memo, swapPayload: nil
+            )
+            
+            return keysignPayload
+            
+        } else if tx.coin.chain.name  == Chain.GaiaChain.name {
+            
+            guard let accountNumberString = CosmosChainAccount?.accountNumber, let intAccountNumber = UInt64(accountNumberString) else {
+                print("We need the ACCOUNT NUMBER to broadcast a transaction")
+                return nil
+            }
+            
+            var sequenceString = "0"
+            if CosmosChainAccount?.sequence != nil {
+                sequenceString = CosmosChainAccount!.sequence!
+            }
+            guard  let intSequence = UInt64(sequenceString) else {
+                print("We need the SEQUENCE to broadcast a transaction")
+                return nil
+            }
+            
+            let keysignPayload = KeysignPayload(
+                coin: tx.coin,
+                toAddress: tx.toAddress,
+                toAmount: tx.amountInSats,
+                chainSpecific: BlockChainSpecific.Cosmos(accountNumber: intAccountNumber, sequence: intSequence, gas: 7500),
                 utxos: [],
                 memo: tx.memo, swapPayload: nil
             )

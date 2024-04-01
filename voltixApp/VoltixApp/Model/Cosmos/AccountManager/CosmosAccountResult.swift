@@ -7,7 +7,7 @@
 
 import Foundation
 
-class ThorchainAccountResult: Codable {
+class CosmosAccountResult: Codable {
     var type: String
-    var value: ThorchainAccountValue?
+    var value: CosmosAccountValue?
 }

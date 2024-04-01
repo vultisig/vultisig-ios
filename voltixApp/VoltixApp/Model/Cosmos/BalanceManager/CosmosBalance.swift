@@ -7,7 +7,7 @@
 
 import Foundation
 
-class ThorchainBalance: Codable {
+class CosmosBalance: Codable {
     var denom: String
     var amount: String
     

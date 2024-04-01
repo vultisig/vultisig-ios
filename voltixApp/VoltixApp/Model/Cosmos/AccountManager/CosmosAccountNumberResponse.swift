@@ -7,7 +7,7 @@
 
 import Foundation
 
-class ThorchainAccountNumberResponse: Codable {
+class CosmosAccountNumberResponse: Codable {
     var height: String
-    var result: ThorchainAccountResult
+    var result: CosmosAccountResult
 }
