@@ -38,5 +38,5 @@ class Chain: Codable, Hashable {
     static let BitcoinCash = Chain(name: "Bitcoin-Cash", ticker: "BCH", signingKeyType: .ECDSA, chainType: .UTXO)
     static let Litecoin = Chain(name: "Litecoin", ticker: "LTC", signingKeyType: .ECDSA, chainType: .UTXO)
     static let Dogecoin = Chain(name: "Dogecoin", ticker: "DOGE", signingKeyType: .ECDSA, chainType: .UTXO)
-    
+    static let GaiaChain = Chain(name: "Gaia", ticker: "ATOM", signingKeyType: .ECDSA, chainType: .Cosmos)
 }

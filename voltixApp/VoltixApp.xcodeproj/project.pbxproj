@@ -174,6 +174,7 @@
 		DE63AE4D2BB4E94E001BBE5C /* JSONRPCResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE63AE4C2BB4E94E001BBE5C /* JSONRPCResponse.swift */; };
 		DE63AE4F2BB4E96E001BBE5C /* JSONRPCError.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE63AE4E2BB4E96E001BBE5C /* JSONRPCError.swift */; };
 		DE63AE512BB563B8001BBE5C /* EthereumTransactionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE63AE502BB563B8001BBE5C /* EthereumTransactionViewModel.swift */; };
+		DE63AE532BBA627B001BBE5C /* atom.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE63AE522BBA627B001BBE5C /* atom.swift */; };
 		DE64A4C62BA7E0E400C342E3 /* KeygenPeerDiscoveryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE64A4C52BA7E0E400C342E3 /* KeygenPeerDiscoveryViewModel.swift */; };
 		DE64A4C82BA7EBEC00C342E3 /* JoinKeygenViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE64A4C72BA7EBEC00C342E3 /* JoinKeygenViewModel.swift */; };
 		DE64A4CA2BA7F90E00C342E3 /* ServiceDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE64A4C92BA7F90E00C342E3 /* ServiceDelegate.swift */; };
@@ -393,6 +394,7 @@
 		DE63AE4C2BB4E94E001BBE5C /* JSONRPCResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONRPCResponse.swift; sourceTree = "<group>"; };
 		DE63AE4E2BB4E96E001BBE5C /* JSONRPCError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONRPCError.swift; sourceTree = "<group>"; };
 		DE63AE502BB563B8001BBE5C /* EthereumTransactionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EthereumTransactionViewModel.swift; sourceTree = "<group>"; };
+		DE63AE522BBA627B001BBE5C /* atom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = atom.swift; sourceTree = "<group>"; };
 		DE64A4C52BA7E0E400C342E3 /* KeygenPeerDiscoveryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenPeerDiscoveryViewModel.swift; sourceTree = "<group>"; };
 		DE64A4C72BA7EBEC00C342E3 /* JoinKeygenViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinKeygenViewModel.swift; sourceTree = "<group>"; };
 		DE64A4C92BA7F90E00C342E3 /* ServiceDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceDelegate.swift; sourceTree = "<group>"; };
@@ -1001,6 +1003,7 @@
 				DEFC7BFA2B8D87370090B07A /* erc20.swift */,
 				DE6DCB922B97D81C009A39D5 /* THORChainSwaps.swift */,
 				DEF2E2CA2B9AD5EA000737B8 /* UTXOChainsHelper.swift */,
+				DE63AE522BBA627B001BBE5C /* atom.swift */,
 			);
 			path = Chains;
 			sourceTree = "<group>";
@@ -1204,7 +1207,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */;
+			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -1403,6 +1406,7 @@
 				DE9EB0EC2BA2CC3C001747D9 /* TssType.swift in Sources */,
 				DEEDAEE52B8AFB5D005170E8 /* common.swift in Sources */,
 				A653242E2BA53D0900DDE6EB /* SendCryptoPairView.swift in Sources */,
+				DE63AE532BBA627B001BBE5C /* atom.swift in Sources */,
 				A65649E22B96602700E4B329 /* DataExtension.swift in Sources */,
 				A6966D292BA400B700903CA4 /* SendCryptoAddressTextField.swift in Sources */,
 				A6F9F7EB2B9D1B3700790258 /* VaultDetailViewModel.swift in Sources */,
@@ -1622,7 +1626,7 @@
 				CURRENT_PROJECT_VERSION = 16;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"voltixApp/Preview Content\"";
-				DEVELOPMENT_TEAM = LNG8PFABR7;
+				DEVELOPMENT_TEAM = G8Q5XUAJD9;
 				ENABLE_HARDENED_RUNTIME = YES;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				ENABLE_PREVIEWS = YES;
@@ -1672,7 +1676,7 @@
 				CURRENT_PROJECT_VERSION = 16;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"voltixApp/Preview Content\"";
-				DEVELOPMENT_TEAM = LNG8PFABR7;
+				DEVELOPMENT_TEAM = G8Q5XUAJD9;
 				ENABLE_HARDENED_RUNTIME = YES;
 				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				ENABLE_PREVIEWS = YES;
@@ -1809,7 +1813,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */ = {
+		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DE49A1882B65F6DB000F3AFB /* Debug */,
