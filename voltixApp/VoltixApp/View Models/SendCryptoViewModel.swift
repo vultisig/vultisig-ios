@@ -172,13 +172,15 @@ class SendCryptoViewModel: ObservableObject {
                         return
                     }
                     
-                    guard let gasPriceWei = BigInt(gasPrice) else {
+                    guard let gasPriceBigInt = BigInt(gasPrice) else {
                         print("Invalid gas price")
                         return
                     }
                     
+                    let gasPriceGwei: BigInt = gasPriceBigInt
+                    let gasPriceWei: BigInt = gasPriceGwei * BigInt(EVMHelper.weiPerGWei)
                     let totalFeeWei: BigInt = gasLimitBigInt * gasPriceWei
-                    
+             
                     tx.amount = "\(tx.coin.getMaxValue(totalFeeWei))"
                 } catch {
                     tx.amount = tx.coin.balanceString
@@ -228,8 +230,7 @@ class SendCryptoViewModel: ObservableObject {
         if let priceRateUsd = cryptoPrice.cryptoPrices?.prices[tx.coin.priceProviderId]?["usd"] {
             if let newValueDouble = Double(newValue) {
                 let newValueCoin = newValueDouble / priceRateUsd
-                let newCoinAmount = newValueCoin != 0 ? String(format: "%.\(tx.coin.decimals)f", newValueCoin) : ""
-                tx.amount = newCoinAmount
+                tx.amount = String(newValueCoin)
             } else {
                 tx.amount = ""
             }

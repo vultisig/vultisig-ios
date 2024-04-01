@@ -270,6 +270,7 @@ class KeysignViewModel: ObservableObject {
                         switch result {
                         case .success(let tx):
                             do {
+                                print("AVAX signed tx \(tx)")
                                 self.txid = try await self.avaxScanService.broadcastTransaction(hex: tx)
                             } catch {
                                 self.handleBroadcastError(err: error)

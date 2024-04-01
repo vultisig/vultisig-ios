@@ -58,8 +58,10 @@ class RpcEvmService: ObservableObject {
     }
     
     func broadcastTransaction(hex: String) async throws -> String {
-        return try await strRpcCall(method: "eth_sendRawTransaction", params: [hex])
+        let hexWithPrefix = hex.hasPrefix("0x") ? hex : "0x\(hex)"
+        return try await strRpcCall(method: "eth_sendRawTransaction", params: [hexWithPrefix])
     }
+
     
     func estimateGasForEthTransaction(senderAddress: String, recipientAddress: String, value: BigInt, memo: String?) async throws -> BigInt {
         // Convert the memo to hex (if present). Assume memo is a String.

@@ -66,6 +66,12 @@ struct KeysignPayload: Codable, Hashable {
             }else{
                 result = ERC20Helper.getEthereumERC20Helper().getPreSignedImageHash(keysignPayload: self)
             }
+        case Chain.Avalache.name.lowercased():
+            if coin.isNativeToken {
+                result = EVMHelper.getAvaxHelper().getPreSignedImageHash(keysignPayload: self)
+            }else{
+                result = ERC20Helper.getAvaxERC20Helper().getPreSignedImageHash(keysignPayload: self)
+            }
         case Chain.BSCChain.name.lowercased():
             if coin.isNativeToken {
                 result = EVMHelper.getBSCHelper().getPreSignedImageHash(keysignPayload: self)
