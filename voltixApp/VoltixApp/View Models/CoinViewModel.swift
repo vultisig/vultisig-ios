@@ -52,7 +52,7 @@ class CoinViewModel: ObservableObject {
                 coinBalance = tx.coin.balanceString
             } else if tx.coin.chain.name == Chain.GaiaChain.name {
                 let atomBalance =  try await gaia.fetchBalances(tx.fromAddress)
-                if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.GaiaChain.name.lowercased()]?["usd"] {
+                if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[tx.coin.priceProviderId]?["usd"] {
                     balanceUSD = atomBalance.atomBalanceInUSD(usdPrice: priceRateUsd) ?? "US$ 0,00"
                 }
                 coinBalance = atomBalance.formattedAtomBalance() ?? "0.0"
