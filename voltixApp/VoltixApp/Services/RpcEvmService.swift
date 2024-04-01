@@ -43,6 +43,8 @@ class RpcEvmService: ObservableObject {
             }
             if tx.coin.isNativeToken {
                 tx.coin.rawBalance = String(try await fetchBalance(address: tx.fromAddress))
+            } else {
+                tx.coin.rawBalance = String(try await fetchERC20TokenBalance(contractAddress: tx.coin.contractAddress, walletAddress: tx.fromAddress))
             }
             
         } catch {
@@ -96,7 +98,7 @@ class RpcEvmService: ObservableObject {
     }
     
     // Method to get ERC20 token balance for a given address
-    func getERC20TokenBalance(contractAddress: String, walletAddress: String) async throws -> BigInt {
+    func fetchERC20TokenBalance(contractAddress: String, walletAddress: String) async throws -> BigInt {
         // Prepare the data for the `balanceOf` function call
         // Function signature hash of `balanceOf(address)` is `0x70a08231`
         // The wallet address must be padded to 32 bytes (64 hex characters)
