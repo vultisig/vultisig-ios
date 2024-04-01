@@ -147,22 +147,30 @@ class RpcEvmService: ObservableObject {
         
         do {
             let (data, _) = try await URLSession.shared.data(for: request)
-            guard let response = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-                  let result = response["result"] else {
-                throw RpcEvmServiceError.invalidResponse
+
+            guard let response = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                throw RpcEvmServiceError.rpcError(code: 500, message: "Error to decode the JSON response")
             }
             
-            return try decode(result)
+            if let error = response["error"] as? [String: Any], let message = error["message"] as? String {
+                print("ERROR sendRPCRequest \(message)")
+                throw RpcEvmServiceError.rpcError(code: error["code"] as? Int ?? 500, message: message)
+            } else if let result = response["result"] {
+                return try decode(result)
+            } else {
+                throw RpcEvmServiceError.rpcError(code: 500, message: "Unknown error")
+            }
         } catch {
             throw RpcEvmServiceError.unknown(error)
         }
+
     }
     
     func intRpcCall(method: String, params: [Any]) async throws -> BigInt {
         return try await sendRPCRequest(method: method, params: params) { result in
             guard let resultString = result as? String,
                   let bigIntResult = BigInt(resultString.stripHexPrefix(), radix: 16) else {
-                throw RpcEvmServiceError.invalidResponse
+                throw RpcEvmServiceError.rpcError(code: 500, message: "Error to convert the RPC result to BigInt")
             }
             return bigIntResult
         }
@@ -172,7 +180,7 @@ class RpcEvmService: ObservableObject {
     func strRpcCall(method: String, params: [Any]) async throws -> String {
         return try await sendRPCRequest(method: method, params: params) { result in
             guard let resultString = result as? String else {
-                throw RpcEvmServiceError.invalidResponse
+                throw RpcEvmServiceError.rpcError(code: 500, message: "Error to convert the RPC result to String")
             }
             return resultString
         }
