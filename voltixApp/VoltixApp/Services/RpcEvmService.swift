@@ -181,6 +181,8 @@ class RpcEvmService: ObservableObject {
                 throw RpcEvmServiceError.rpcError(code: 500, message: "Unknown error")
             }
         } catch {
+            print(payload)
+            print(error.localizedDescription)
             throw RpcEvmServiceError.unknown(error)
         }
 

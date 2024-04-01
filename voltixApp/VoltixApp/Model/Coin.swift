@@ -73,10 +73,11 @@ class Coin: Codable, Hashable {
     func hash(into hasher: inout Hasher) {
         hasher.combine(ticker)
         hasher.combine(address)
+        hasher.combine(chain.name)
     }
     
     static func == (lhs: Coin, rhs: Coin) -> Bool {
-        return lhs.ticker == rhs.ticker && lhs.address == rhs.address
+        return lhs.ticker == rhs.ticker && lhs.address == rhs.address && lhs.chain.name == rhs.chain.name
     }
     
     var balance: BigInt? {
