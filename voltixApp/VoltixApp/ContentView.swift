@@ -10,42 +10,56 @@ import SwiftData
 
 struct ContentView: View {
     @Query var vaults: [Vault]
-    @State var showSplashView = true
+    
     @EnvironmentObject var accountViewModel: AccountViewModel
     
     var body: some View {
         NavigationStack {
             ZStack {
-                if showSplashView {
-                    WelcomeView()
+                if accountViewModel.showSplashView {
+                    splashView
                 } else if accountViewModel.showOnboarding {
-                    OnboardingView()
+                    onboardingView
                 } else if vaults.count>0 {
-                    HomeView()
+                    homeView
                 } else {
-                    CreateVaultView()
+                    createVaultView
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarTitleTextColor(.neutral0)
-            .onAppear {
-                performSegue()
-            }
         }
     }
     
-    var onboarding: some View {
+    var splashView: some View {
+        WelcomeView()
+            .onAppear {
+                authenticateUser()
+            }
+    }
+    
+    var onboardingView: some View {
         OnboardingView()
     }
     
-    var splash: some View {
-        WelcomeView()
+    var homeView: some View {
+        HomeView()
     }
     
-    private func performSegue() {
-        // Perform pre app load logics here
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            showSplashView = false
+    var createVaultView: some View {
+        CreateVaultView()
+    }
+    
+    private func authenticateUser() {
+        guard !accountViewModel.showOnboarding && vaults.count>0 else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                accountViewModel.showSplashView = false
+            }
+            return
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            accountViewModel.authenticateUser()
         }
     }
 }

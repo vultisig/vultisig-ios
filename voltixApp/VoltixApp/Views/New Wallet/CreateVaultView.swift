@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct CreateVaultView: View {
+    var showBackButton = false
     
     var body: some View {
         ZStack {
@@ -16,9 +17,12 @@ struct CreateVaultView: View {
         }
         .navigationBarBackButtonHidden(true)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                NavigationBackButton()
+            if showBackButton {
+                ToolbarItem(placement: .topBarLeading) {
+                    NavigationBackButton()
+                }
             }
+            
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationHelpButton()
             }

@@ -2,6 +2,8 @@ import SwiftUI
 import SwiftData
 
 struct WelcomeView: View {
+    @EnvironmentObject var viewModel: AccountViewModel
+    
     @State var didAppear = false
     
     var body: some View {
@@ -17,9 +19,22 @@ struct WelcomeView: View {
     
     var view: some View {
         VStack(spacing: 32) {
+            Spacer()
             content
-            progress
+            Spacer()
+            loader
         }
+    }
+    
+    var loader: some View {
+        ZStack {
+            if viewModel.didUserCancelAuthentication {
+                tryAgainButton
+            } else {
+                progress
+            }
+        }
+        .padding(40)
     }
     
     var content: some View {
@@ -57,6 +72,14 @@ struct WelcomeView: View {
             .preferredColorScheme(.dark)
     }
     
+    var tryAgainButton: some View {
+        Button {
+            viewModel.authenticateUser()
+        } label: {
+            FilledButton(title: "loginUsingFaceID")
+        }
+    }
+    
     private func setData() {
         withAnimation {
             didAppear = true
@@ -68,5 +91,6 @@ struct WelcomeView: View {
 struct WelcomeView_Previews: PreviewProvider {
     static var previews: some View {
         WelcomeView()
+            .environmentObject(AccountViewModel())
     }
 }
