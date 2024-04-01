@@ -28,6 +28,8 @@
 		46AC40A42B91F50A001704E6 /* AppConfiguration.example.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AC40A32B91F50A001704E6 /* AppConfiguration.example.swift */; };
 		46AC40A82B920061001704E6 /* EtherscanService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AC40A72B920061001704E6 /* EtherscanService.swift */; };
 		46B106512BA7CAFE00564023 /* ChainType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B106502BA7CAFE00564023 /* ChainType.swift */; };
+		46B60BBE2BBA811D0043EBBA /* AvalancheService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B60BBD2BBA811D0043EBBA /* AvalancheService.swift */; };
+		46B60BC02BBB20130043EBBA /* RpcService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B60BBF2BBB20130043EBBA /* RpcService.swift */; };
 		46C8CBBD2BA7753900E68E08 /* Blockchair.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46C8CBBC2BA7753900E68E08 /* Blockchair.swift */; };
 		46C8CBBF2BA777BF00E68E08 /* BlockchairService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46C8CBBE2BA777BF00E68E08 /* BlockchairService.swift */; };
 		46E98FFC2BAE407300C53D97 /* DecodingErrorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46E98FFB2BAE407300C53D97 /* DecodingErrorExtension.swift */; };
@@ -245,6 +247,8 @@
 		46AC40A32B91F50A001704E6 /* AppConfiguration.example.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.example.swift; sourceTree = "<group>"; };
 		46AC40A72B920061001704E6 /* EtherscanService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EtherscanService.swift; sourceTree = "<group>"; };
 		46B106502BA7CAFE00564023 /* ChainType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainType.swift; sourceTree = "<group>"; };
+		46B60BBD2BBA811D0043EBBA /* AvalancheService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvalancheService.swift; sourceTree = "<group>"; };
+		46B60BBF2BBB20130043EBBA /* RpcService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RpcService.swift; sourceTree = "<group>"; };
 		46C8CBBC2BA7753900E68E08 /* Blockchair.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Blockchair.swift; sourceTree = "<group>"; };
 		46C8CBBE2BA777BF00E68E08 /* BlockchairService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockchairService.swift; sourceTree = "<group>"; };
 		46E98FFB2BAE407300C53D97 /* DecodingErrorExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingErrorExtension.swift; sourceTree = "<group>"; };
@@ -497,12 +501,14 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				46B60BBC2BBA810C0043EBBA /* Avalanche */,
 				DE63AE492BB4D86A001BBE5C /* BSC */,
 				46C8CBBA2BA76CC100E68E08 /* UTXO */,
 				460347822BA148A2007ED3AC /* Ethereum */,
 				465A8D512B9E6887006E7457 /* Solana */,
 				469ED3952B98E782008D4951 /* Thorchain */,
 				465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */,
+				46B60BBF2BBB20130043EBBA /* RpcService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -644,6 +650,14 @@
 				46AC40A32B91F50A001704E6 /* AppConfiguration.example.swift */,
 			);
 			path = Configs;
+			sourceTree = "<group>";
+		};
+		46B60BBC2BBA810C0043EBBA /* Avalanche */ = {
+			isa = PBXGroup;
+			children = (
+				46B60BBD2BBA811D0043EBBA /* AvalancheService.swift */,
+			);
+			path = Avalanche;
 			sourceTree = "<group>";
 		};
 		46C8CBBA2BA76CC100E68E08 /* UTXO */ = {
@@ -1316,6 +1330,7 @@
 				D9AD8EDC2B6723D10009F8D5 /* AppNavigationState.swift in Sources */,
 				469ED3992B98E896008D4951 /* ThorchainBalanceResponse.swift in Sources */,
 				DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */,
+				46B60BC02BBB20130043EBBA /* RpcService.swift in Sources */,
 				DE9EB0EE2BA2CF49001747D9 /* KeygenMessage.swift in Sources */,
 				A6F9F7ED2B9D1F5700790258 /* CoinViewModel.swift in Sources */,
 				A6C0D5652BB3BD0F00156689 /* UTXOTransactionCell.swift in Sources */,
@@ -1338,6 +1353,7 @@
 				D9AD8EDA2B6722CC0009F8D5 /* ApplicationState.swift in Sources */,
 				A6C0D55A2BB3AAA200156689 /* ChainHeaderCell.swift in Sources */,
 				DE1572962B70F254009BC7C5 /* TssMessenger.swift in Sources */,
+				46B60BBE2BBA811D0043EBBA /* AvalancheService.swift in Sources */,
 				A65649F52B966F3E00E4B329 /* DecodableDefault.swift in Sources */,
 				A65BA9942BAD449F00B2D8AA /* DiscoveringSignMessageView.swift in Sources */,
 				DE491CEF2B708260007C88D5 /* KeygenView.swift in Sources */,
