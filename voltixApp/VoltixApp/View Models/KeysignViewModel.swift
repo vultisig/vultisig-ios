@@ -289,6 +289,15 @@ class KeysignViewModel: ObservableObject {
                 case .failure(let err):
                     self.handleHelperError(err: err)
                 }
+            case .Cosmos:
+                let result = ATOMHelper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                switch result{
+                case .success(let tx):
+                    print(tx)
+                    // broadcast the tx to cosmoshub
+                case .failure(let err):
+                    self.handleHelperError(err: err)
+                }
             default:
                 self.logger.error("unsupported coin:\(keysignPayload.coin.ticker)")
             }
