@@ -31,8 +31,8 @@ class GaiaService{
         }
         
         let (data, _) = try await URLSession.shared.data(from: url)
-        let accountResponse = try JSONDecoder().decode(CosmosAccountNumberResponse.self, from: data)
-        return accountResponse.result.value
+        let accountResponse = try JSONDecoder().decode(CosmosAccountsResponse.self, from: data)
+        return accountResponse.account
     }
     
     private func cacheBalances(_ balances: [CosmosBalance], forAddress address: String) {

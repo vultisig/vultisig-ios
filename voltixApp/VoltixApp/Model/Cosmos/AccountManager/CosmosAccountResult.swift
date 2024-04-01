@@ -11,3 +11,7 @@ class CosmosAccountResult: Codable {
     var type: String
     var value: CosmosAccountValue?
 }
+
+class CosmosAccountsResponse: Codable {
+    var account: CosmosAccountValue
+}

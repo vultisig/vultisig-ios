@@ -294,6 +294,13 @@ class KeysignViewModel: ObservableObject {
                 switch result{
                 case .success(let tx):
                     print(tx)
+                    let broadcastResult = await GaiaService.shared.broadcastTransaction(jsonString: tx)
+                    switch broadcastResult {
+                    case .success(let hash):
+                        self.txid = hash
+                    case .failure(let err):
+                        self.handleBroadcastError(err: err)
+                    }
                     // broadcast the tx to cosmoshub
                 case .failure(let err):
                     self.handleHelperError(err: err)

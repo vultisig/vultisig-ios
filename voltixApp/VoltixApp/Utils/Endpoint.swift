@@ -164,6 +164,8 @@ class Endpoint {
             return "https://explorer.solana.com/tx/\(txid)"
         case "ETH":
             return "https://etherscan.io/tx/\(txid)"
+        case "UATOM":
+            return "https://www.mintscan.io/cosmos/tx/\(txid)"
         default:
             return ""
         }
