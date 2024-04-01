@@ -29,7 +29,7 @@
 		46AC40A82B920061001704E6 /* EtherscanService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AC40A72B920061001704E6 /* EtherscanService.swift */; };
 		46B106512BA7CAFE00564023 /* ChainType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B106502BA7CAFE00564023 /* ChainType.swift */; };
 		46B60BBE2BBA811D0043EBBA /* AvalancheService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B60BBD2BBA811D0043EBBA /* AvalancheService.swift */; };
-		46B60BC02BBB20130043EBBA /* RpcService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B60BBF2BBB20130043EBBA /* RpcService.swift */; };
+		46B60BC02BBB20130043EBBA /* RpcEvmService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B60BBF2BBB20130043EBBA /* RpcEvmService.swift */; };
 		46C8CBBD2BA7753900E68E08 /* Blockchair.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46C8CBBC2BA7753900E68E08 /* Blockchair.swift */; };
 		46C8CBBF2BA777BF00E68E08 /* BlockchairService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46C8CBBE2BA777BF00E68E08 /* BlockchairService.swift */; };
 		46E98FFC2BAE407300C53D97 /* DecodingErrorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46E98FFB2BAE407300C53D97 /* DecodingErrorExtension.swift */; };
@@ -248,7 +248,7 @@
 		46AC40A72B920061001704E6 /* EtherscanService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EtherscanService.swift; sourceTree = "<group>"; };
 		46B106502BA7CAFE00564023 /* ChainType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainType.swift; sourceTree = "<group>"; };
 		46B60BBD2BBA811D0043EBBA /* AvalancheService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvalancheService.swift; sourceTree = "<group>"; };
-		46B60BBF2BBB20130043EBBA /* RpcService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RpcService.swift; sourceTree = "<group>"; };
+		46B60BBF2BBB20130043EBBA /* RpcEvmService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RpcEvmService.swift; sourceTree = "<group>"; };
 		46C8CBBC2BA7753900E68E08 /* Blockchair.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Blockchair.swift; sourceTree = "<group>"; };
 		46C8CBBE2BA777BF00E68E08 /* BlockchairService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockchairService.swift; sourceTree = "<group>"; };
 		46E98FFB2BAE407300C53D97 /* DecodingErrorExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingErrorExtension.swift; sourceTree = "<group>"; };
@@ -508,7 +508,7 @@
 				465A8D512B9E6887006E7457 /* Solana */,
 				469ED3952B98E782008D4951 /* Thorchain */,
 				465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */,
-				46B60BBF2BBB20130043EBBA /* RpcService.swift */,
+				46B60BBF2BBB20130043EBBA /* RpcEvmService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -1330,7 +1330,7 @@
 				D9AD8EDC2B6723D10009F8D5 /* AppNavigationState.swift in Sources */,
 				469ED3992B98E896008D4951 /* ThorchainBalanceResponse.swift in Sources */,
 				DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */,
-				46B60BC02BBB20130043EBBA /* RpcService.swift in Sources */,
+				46B60BC02BBB20130043EBBA /* RpcEvmService.swift in Sources */,
 				DE9EB0EE2BA2CF49001747D9 /* KeygenMessage.swift in Sources */,
 				A6F9F7ED2B9D1F5700790258 /* CoinViewModel.swift in Sources */,
 				A6C0D5652BB3BD0F00156689 /* UTXOTransactionCell.swift in Sources */,

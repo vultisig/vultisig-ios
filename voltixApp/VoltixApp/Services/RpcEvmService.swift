@@ -95,6 +95,24 @@ class RpcEvmService: ObservableObject {
         return try await intRpcCall(method: "eth_estimateGas", params: [transactionObject])
     }
     
+    // Method to get ERC20 token balance for a given address
+    func getERC20TokenBalance(contractAddress: String, walletAddress: String) async throws -> BigInt {
+        // Prepare the data for the `balanceOf` function call
+        // Function signature hash of `balanceOf(address)` is `0x70a08231`
+        // The wallet address must be padded to 32 bytes (64 hex characters)
+        let data = "0x70a08231" + walletAddress.paddingLeft(toLength: 64, withPad: "0")
+        
+        // Params for the eth_call
+        let params: [Any] = [
+            ["to": contractAddress, "data": data],
+            "latest"
+        ]
+        
+        // Use the `intRpcCall` to perform the request and expect a BigInt result
+        let balance: BigInt = try await intRpcCall(method: "eth_call", params: params)
+        return balance
+    }
+    
     private func fetchBalance(address: String) async throws -> BigInt {
         return try await intRpcCall(method: "eth_getBalance", params: [address, "latest"])
     }
