@@ -140,6 +140,47 @@ class Endpoint {
         "https://bscscan.com/tx/\(value)"
     }
     
+    
+    // Avalanche
+    
+    static func broadcastAvalancheTransaction(hex: String) -> String {
+        "http://45.76.120.223/routescan/v2/network/mainnet/evm/43114/etherscan/api?module=proxy&action=eth_sendRawTransaction&hex=\(hex)"
+    }
+    static func fetchAvalanchescanEstimateGasForAvaxTransaction(data: String, to: String, valueHex: String) -> String {
+        "http://45.76.120.223/routescan/v2/network/mainnet/evm/43114/etherscan/api?module=proxy&action=eth_estimateGas&data=\(data)&to=\(to)&value=\(valueHex)"
+    }
+    static func fetchAvalancheTransactionCount(address: String) -> String {
+        "http://45.76.120.223/routescan/v2/network/mainnet/evm/43114/etherscan/api?module=proxy&action=eth_getTransactionCount&address=\(address)&tag=latest"
+    }
+    static func fetchAvalancheGasPrice() -> String {
+        "http://45.76.120.223/routescan/v2/network/mainnet/evm/43114/etherscan/api?module=proxy&action=eth_gasPrice"
+    }
+    
+    static func fetchAvalancheTransactions(address: String) -> String {
+        "http://45.76.120.223/routescan/v2/network/mainnet/evm/43114/etherscan/api?module=account&action=txlist&address=\(address)&startblock=0&endblock=99999999&sort=asc"
+    }
+    
+    static func fetchARC20Transactions(address: String, contractAddress: String) -> String {
+        "http://45.76.120.223/routescan/v2/network/mainnet/evm/43114/etherscan/api?module=account&action=tokentx&contractaddress=\(contractAddress)&address=\(address)&startblock=0&endblock=99999999&sort=asc"
+    }
+    static func fetchAvalancheGasOracle() -> String {
+        "http://45.76.120.223/routescan/v2/network/mainnet/evm/43114/etherscan/api?module=gastracker&action=gasoracle"
+    }
+    static func fetchAvalancheBalance(address: String) -> String {
+        "http://45.76.120.223/routescan/v2/network/mainnet/evm/43114/etherscan/api?module=account&action=balance&address=\(address)&tag=latest"
+    }
+    static func fetchAvalancheTokenBalance(contractAddress: String, address: String) -> String {
+        "http://45.76.120.223/routescan/v2/network/mainnet/evm/43114/etherscan/api?module=account&action=tokenbalance&contractaddress=\(contractAddress)&address=\(address)&tag=latest"
+    }
+    static func avalancheLabelTxHash(_ value: String) -> String {
+        "https://bscscan.com/tx/\(value)"
+    }
+
+    // END Avalanche
+    
+    
+    
+    
     static func getExplorerURL(chainTicker: String, txid: String) -> String{
         switch chainTicker {
         case "BTC":
