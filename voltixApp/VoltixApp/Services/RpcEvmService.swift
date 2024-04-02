@@ -35,6 +35,8 @@ class RpcEvmService: ObservableObject {
                 tx.coin.rawBalance = String(try await fetchBalance(address: tx.fromAddress))
             } else {
                 tx.coin.rawBalance = String(try await fetchERC20TokenBalance(contractAddress: tx.coin.contractAddress, walletAddress: tx.fromAddress))
+                
+                print("BALANCE ARC20: \(tx.coin.rawBalance)")
             }
             
         } catch {
