@@ -96,7 +96,12 @@ class Coin: Codable, Hashable {
     }
     
     func getMaxValue(_ fee: BigInt) -> Decimal {
-        let maxValue = (BigInt(rawBalance, radix: 10) ?? 0) - fee
+        
+        // USDC has 6 decimals
+        let adjustmentFactor = BigInt(10).power(18 - (Int(decimals) ?? 0))
+        let totalFeeAdjusted = fee / adjustmentFactor
+        
+        let maxValue = (BigInt(rawBalance, radix: 10) ?? 0) - totalFeeAdjusted
         let maxValueDecimal = Decimal(string: String(maxValue)) ?? 0.0
         let tokenDecimals = Int(decimals) ?? 0
         return maxValueDecimal / pow(10, tokenDecimals)

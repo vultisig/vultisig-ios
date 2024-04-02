@@ -183,7 +183,7 @@ class SendCryptoViewModel: ObservableObject {
                     let gasPriceGwei: BigInt = gasPriceBigInt
                     let gasPriceWei: BigInt = gasPriceGwei * BigInt(EVMHelper.weiPerGWei)
                     let totalFeeWei: BigInt = gasLimitBigInt * gasPriceWei
-             
+                    
                     tx.amount = "\(tx.coin.getMaxValue(totalFeeWei))"
                 } catch {
                     tx.amount = tx.coin.balanceString
