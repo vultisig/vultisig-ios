@@ -8,7 +8,7 @@
 import Foundation
 
 class TextStore {
-    static let OnboardingText1 = "Voltix is a secure, multi-device crypto vault, compatible with 30+ chains and 10,000+ tokens. Voltix is fully self-custodial."
-    static let OnboardingText2 = "Voltix does not track your activities or require any registrations. Voltix is fully open-source, ensuring transparency and trust."
-    static let OnboardingText3 = "Voltix is audited and secure. Join thousands of users who trust Voltix with their digital assets. "
+    static let OnboardingText1 = "Voltix is a multi-chain crypto vault with built-in two-device auth. There is no seed phrase and the vault is automatically backed-up."
+    static let OnboardingText2 = "Voltix is open-source, audited and fully self-custodial, using a modern threshold-signature scheme. Voltix does not require registration."
+    static let OnboardingText3 = "Voltix supports sending, receiving, swapping and other advanced DeFi features. You do not need specialised hardware devices or browser extensions."
 }
