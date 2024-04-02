@@ -27,4 +27,8 @@ extension String {
         
         return self
     }
+    
+    func formatCurrency() -> String {
+        return self.replacingOccurrences(of: ",", with: ".")
+    }
 }
