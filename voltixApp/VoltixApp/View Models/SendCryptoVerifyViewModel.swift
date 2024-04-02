@@ -174,6 +174,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
             
             guard let accountNumberString = THORChainAccount?.accountNumber, let intAccountNumber = UInt64(accountNumberString) else {
                 print("We need the ACCOUNT NUMBER to broadcast a transaction")
+                self.errorMessage = "failToGetAccountNumber"
+                showAlert = true
+                isLoading = false
                 return nil
             }
             
@@ -183,6 +186,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
             }
             guard  let intSequence = UInt64(sequenceString) else {
                 print("We need the SEQUENCE to broadcast a transaction")
+                self.errorMessage = "failToGetSequenceNo"
+                showAlert = true
+                isLoading = false
                 return nil
             }
             
@@ -200,7 +206,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
         } else if tx.coin.chain.name  == Chain.GaiaChain.name {
             
             guard let accountNumberString = CosmosChainAccount?.accountNumber, let intAccountNumber = UInt64(accountNumberString) else {
-                print("We need the ACCOUNT NUMBER to broadcast a transaction")
+                self.errorMessage = "failToGetAccountNumber"
+                showAlert = true
+                isLoading = false
                 return nil
             }
             
@@ -210,6 +218,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
             }
             guard  let intSequence = UInt64(sequenceString) else {
                 print("We need the SEQUENCE to broadcast a transaction")
+                self.errorMessage = "failToGetSequenceNo"
+                showAlert = true
+                isLoading = false
                 return nil
             }
             
@@ -225,9 +236,11 @@ class SendCryptoVerifyViewModel: ObservableObject {
             return keysignPayload
             
         } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
-            
             guard let recentBlockHash = sol.recentBlockHash else {
                 print("We need the recentBlockHash to broadcast a transaction")
+                self.errorMessage = "failToGetRecentBlockHash"
+                showAlert = true
+                isLoading = false
                 return nil
             }
             

@@ -318,6 +318,7 @@ class KeysignViewModel: ObservableObject {
         default:
             errMessage = "Failed to broadcast transaction,error:\(err.localizedDescription)"
         }
+        print(errMessage)
         DispatchQueue.main.async {
             self.keysignError = errMessage
             self.status = .KeysignFailed

@@ -135,3 +135,6 @@
 "noTransactions" = "No transactions yet";
 "tryFaceIDAgain" = "Try Face ID again";
 "loginUsingFaceID" = "Login using Face ID";
+"failToGetAccountNumber" = "Unable to get account number";
+"failToGetSequenceNo" = "Unable to get sequence no";
+"failToGetRecentBlockHash" = "Unable to get recent block hash";

@@ -62,7 +62,7 @@ class SendCryptoViewModel: ObservableObject {
                 // THORChain gas fee is 0.02 RUNE fixed
                 tx.gas = "0.02"
             } else if tx.coin.chain.name == Chain.GaiaChain.name {
-                tx.gas = "0.002"
+                tx.gas = "0.0075"
             }
             
         } catch {
