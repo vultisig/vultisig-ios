@@ -39,8 +39,8 @@ struct SendCryptoSigningErrorView: View {
     }
     
     var tryAgainButton: some View {
-        Button {
-            dismiss()
+        NavigationLink {
+            HomeView()
         } label: {
             FilledButton(title: "tryAgain")
         }

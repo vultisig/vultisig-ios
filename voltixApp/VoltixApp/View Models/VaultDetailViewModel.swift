@@ -37,6 +37,7 @@ class VaultDetailViewModel: ObservableObject {
                     let chain = GroupedChain(
                         name: element.chain.name,
                         address: element.address,
+                        logo: element.logo,
                         count: 1,
                         coins: [coin]
                     )
@@ -61,7 +62,8 @@ class VaultDetailViewModel: ObservableObject {
         
         let chain = GroupedChain(
             name: coin.chain.name,
-            address: coin.address,
+            address: coin.address, 
+            logo: coin.logo,
             count: 1,
             coins: [coin]
         )
