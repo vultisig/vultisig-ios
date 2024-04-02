@@ -1,35 +1,38 @@
-	//
-	//  SendCryptoAmountTextField.swift
-	//  VoltixApp
-	//
-	//  Created by Amol Kumar on 2024-03-15.
-	//
+//
+//  SendCryptoAmountTextField.swift
+//  VoltixApp
+//
+//  Created by Amol Kumar on 2024-03-15.
+//
 
 import SwiftUI
 
 struct SendCryptoAmountTextField: View {
-	@ObservedObject var tx: SendTransaction
-	@ObservedObject var sendCryptoViewModel: SendCryptoViewModel
-	var showButton = true
-	
+
+    @Binding var amount: String
+
+    var onChange: (String) async -> Void
+    var onMaxPressed: () -> Void
+    var showButton = true
+
 	var body: some View {
 		ZStack(alignment: .trailing) {
-			if tx.amount.isEmpty {
+			if amount.isEmpty {
 				Text(NSLocalizedString("enterAmount", comment: ""))
 					.frame(maxWidth: .infinity, alignment: .leading)
 			}
 			
 			HStack(spacing: 0) {
 				TextField(NSLocalizedString("enterAmount", comment: "").capitalized, text: Binding<String>(
-					get: { self.tx.amount },
+					get: { amount },
 					set: { newValue in
                         let newAmount = newValue.formatCurrency()
-                        self.tx.amount = newAmount
-						DebounceHelper.shared.debounce {
-							Task {
-								await sendCryptoViewModel.convertToUSD(newValue: newAmount, tx: tx)
-							}
-						}
+                        amount = newAmount
+                        DebounceHelper.shared.debounce {
+                            Task {
+                                await onChange(newAmount)
+                            }
+                        }
 					}
 				))
 				.submitLabel(.next)
@@ -53,9 +56,7 @@ struct SendCryptoAmountTextField: View {
 	}
 	
 	var maxButton: some View {
-		Button {
-			sendCryptoViewModel.setMaxValues(tx: tx)
-		} label: {
+		Button { onMaxPressed() } label: {
 			Text(NSLocalizedString("max", comment: "").uppercased())
 				.font(.body16Menlo)
 				.foregroundColor(.neutral0)
@@ -66,7 +67,8 @@ struct SendCryptoAmountTextField: View {
 
 #Preview {
     SendCryptoAmountTextField(
-        tx: SendTransaction(),
-        sendCryptoViewModel: SendCryptoViewModel()
+        amount: .constant(.empty), 
+        onChange: { _ in },
+        onMaxPressed: { }
     )
 }

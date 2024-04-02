@@ -66,7 +66,7 @@ struct SendCryptoDetailsView: View {
     }
     
     var coinSelector: some View {
-        TokenSelectorDropdown(tx: tx, coinViewModel: coinViewModel, group: group)
+        TokenSelectorDropdown(coinViewModel: coinViewModel, group: group, selected: tx.coin)
     }
     
     var fromField: some View {
@@ -105,8 +105,9 @@ struct SendCryptoDetailsView: View {
     
     var textField: some View {
         SendCryptoAmountTextField(
-            tx: tx,
-            sendCryptoViewModel: sendCryptoViewModel
+            amount: $tx.amount,
+            onChange: { await sendCryptoViewModel.convertUSDToCoin(newValue: $0, tx: tx) },
+            onMaxPressed: { sendCryptoViewModel.setMaxValues(tx: tx) }
         )
         .focused($focusedField, equals: .amount)
     }

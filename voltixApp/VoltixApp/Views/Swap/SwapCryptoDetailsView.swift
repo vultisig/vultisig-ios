@@ -8,12 +8,17 @@
 import SwiftUI
 
 struct SwapCryptoDetailsView: View {
-    @ObservedObject var tx: SendTransaction
+   
+    @ObservedObject var tx: SwapTransaction
+    @ObservedObject var swapViewModel: SwapCryptoViewModel
+    @ObservedObject var coinViewModel: CoinViewModel
+
     let group: GroupedChain
     
     @State var fromAmount = ""
     @State var toAmount = ""
-    
+    @State var isToCoinExpanded = false
+
     var body: some View {
         ZStack {
             Background()
@@ -45,18 +50,12 @@ struct SwapCryptoDetailsView: View {
     var fromCoinField: some View {
         VStack(spacing: 8) {
             getTitle(for: "from")
-//            TokenSelectorDropdown(tx: tx, coinViewModel: <#CoinViewModel#>, group: group)
-            
-            Text("Balance: 23.2")
-                .font(.body12Menlo)
-                .foregroundColor(.neutral0)
-                .frame(maxWidth: .infinity, alignment: .leading)
+//            TokenSelectorDropdown(tx: tx, coinViewModel: coinViewModel, group: group)
         }
     }
     
     var fromAmountField: some View {
-//        AmountTextField(tx: tx)
-        Text("amount")
+        SendCryptoAmountTextField(amount: $tx.fromAmount, onChange: { _ in }, onMaxPressed: { })
     }
     
     var swapButton: some View {
@@ -72,18 +71,12 @@ struct SwapCryptoDetailsView: View {
     var toCoinField: some View {
         VStack(spacing: 8) {
             getTitle(for: "to")
-//            TokenSelectorDropdown(tx: tx, group: group)
-            
-            Text("Balance: 23.2")
-                .font(.body12Menlo)
-                .foregroundColor(.neutral0)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            TokenSelectorDropdown(coinViewModel: coinViewModel, group: group, selected: tx.toCoin, isActive: true, isExpanded: isToCoinExpanded)
         }
     }
     
     var toAmountField: some View {
-//        AmountTextField(tx: tx)
-        Text("Amount")
+        SendCryptoAmountTextField(amount: $tx.fromAmount, onChange: { _ in }, onMaxPressed: { })
     }
     
     var summary: some View {
@@ -119,5 +112,5 @@ struct SwapCryptoDetailsView: View {
 }
 
 #Preview {
-    SwapCryptoDetailsView(tx: SendTransaction(), group: GroupedChain.example)
+    SwapCryptoDetailsView(tx: SwapTransaction(), swapViewModel: SwapCryptoViewModel(), coinViewModel: CoinViewModel(), group: GroupedChain.example)
 }
