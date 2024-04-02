@@ -2,21 +2,12 @@ import Foundation
 import BigInt
 
 enum RpcEvmServiceError: Error {
-    case badURL
     case rpcError(code: Int, message: String)
-    case invalidResponse
-    case unknown(Error)
     
     var localizedDescription: String {
         switch self {
-        case .badURL:
-            return "Invalid URL."
         case let .rpcError(code, message):
             return "RPC Error \(code): \(message)"
-        case .invalidResponse:
-            return "Invalid response from the server."
-        case let .unknown(error):
-            return "Unknown error: \(error.localizedDescription)"
         }
     }
 }
@@ -34,7 +25,6 @@ class RpcEvmService: ObservableObject {
     }
     
     func getBalance(tx: SendTransaction) async throws -> Void {
-        
         do {
             // Start fetching all information concurrently
             async let cryptoPrice = CryptoPriceService.shared.cryptoPrices?.prices[tx.coin.priceProviderId]?["usd"]
@@ -48,7 +38,7 @@ class RpcEvmService: ObservableObject {
             }
             
         } catch {
-            print(error.localizedDescription)
+            print("getBalance:: \(error.localizedDescription)")
         }
     }
     
@@ -97,22 +87,18 @@ class RpcEvmService: ObservableObject {
         return try await intRpcCall(method: "eth_estimateGas", params: [transactionObject])
     }
     
-    // Method to get ERC20 token balance for a given address
     func fetchERC20TokenBalance(contractAddress: String, walletAddress: String) async throws -> BigInt {
-        // Prepare the data for the `balanceOf` function call
         // Function signature hash of `balanceOf(address)` is `0x70a08231`
-        // The wallet address must be padded to 32 bytes (64 hex characters)
-        let data = "0x70a08231" + walletAddress.paddingLeft(toLength: 64, withPad: "0")
+        // The wallet address is stripped of '0x', left-padded with zeros to 64 characters
+        let paddedWalletAddress = String(walletAddress.dropFirst(2)).paddingLeft(toLength: 64, withPad: "0")
+        let data = "0x70a08231" + paddedWalletAddress
         
-        // Params for the eth_call
         let params: [Any] = [
             ["to": contractAddress, "data": data],
             "latest"
         ]
         
-        // Use the `intRpcCall` to perform the request and expect a BigInt result
-        let balance: BigInt = try await intRpcCall(method: "eth_call", params: params)
-        return balance
+        return try await intRpcCall(method: "eth_call", params: params)
     }
     
     private func fetchBalance(address: String) async throws -> BigInt {
@@ -157,7 +143,7 @@ class RpcEvmService: ObservableObject {
         ]
         
         guard let url = URL(string: rpcEndpoint) else {
-            throw RpcEvmServiceError.badURL
+            throw RpcEvmServiceError.rpcError(code: 404, message: "We didn't find the URL \(rpcEndpoint)")
         }
         
         var request = URLRequest(url: url)
@@ -183,7 +169,7 @@ class RpcEvmService: ObservableObject {
         } catch {
             print(payload)
             print(error.localizedDescription)
-            throw RpcEvmServiceError.unknown(error)
+            throw RpcEvmServiceError.rpcError(code: 500, message: error.localizedDescription)
         }
 
     }
