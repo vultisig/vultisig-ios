@@ -14,7 +14,7 @@ struct ChainHeaderCell: View {
     @State var showQRcode = false
     
     var body: some View {
-        content
+        cell
             .alert(isPresented: $showAlert) {
                 Alert(
                     title: Text(NSLocalizedString("addressCopied", comment: "")),
@@ -29,23 +29,38 @@ struct ChainHeaderCell: View {
             }
     }
     
-    var content: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            header
-            quantity
-            address
+    var cell: some View {
+        HStack(alignment: .top, spacing: 12) {
+            logo
+            content
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 24)
         .background(Color.blue600)
     }
     
+    var content: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            header
+            quantity
+            address
+        }
+    }
+    
     var header: some View {
-        HStack {
+        HStack(spacing: 12) {
             title
             Spacer()
             actions
         }
+    }
+    
+    var logo: some View {
+        Image(group.logo)
+            .resizable()
+            .frame(width: 32, height: 32)
+            .cornerRadius(50)
+            .padding(.top, 10)
     }
     
     var title: some View {
@@ -107,7 +122,6 @@ struct ChainHeaderCell: View {
             .font(.body12Menlo)
             .foregroundColor(.turquoise600)
             .lineLimit(1)
-            .padding(.top, 12)
     }
     
     private func copyAddress() {
