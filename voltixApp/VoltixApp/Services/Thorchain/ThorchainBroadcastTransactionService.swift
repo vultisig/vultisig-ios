@@ -29,7 +29,7 @@ extension ThorchainService {
             guard (200...299).contains(httpResponse.statusCode) else {
                 return .failure(HelperError.runtimeError("status code:\(httpResponse.statusCode), \(String(data: data, encoding: .utf8) ?? "Unknown error")"))
             }
-            let response = try JSONDecoder().decode(ThorchainTransactionBroadcastResponse.self, from: data)
+            let response = try JSONDecoder().decode(CosmosTransactionBroadcastResponse.self, from: data)
             // Check if the transaction was successful based on the `code` field
             // code 19 means the transaction has been exist in the mempool , which indicate another party already broadcast successfully
             if let code = response.txResponse?.code, code == 0 || code == 19 {

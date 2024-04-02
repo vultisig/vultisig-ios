@@ -12,4 +12,5 @@ enum ChainType : Codable{
 	case EVM
 	case Solana
 	case THORChain
+    case Cosmos
 }

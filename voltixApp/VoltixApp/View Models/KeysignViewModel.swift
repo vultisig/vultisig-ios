@@ -289,6 +289,22 @@ class KeysignViewModel: ObservableObject {
                 case .failure(let err):
                     self.handleHelperError(err: err)
                 }
+            case .Cosmos:
+                let result = ATOMHelper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                switch result{
+                case .success(let tx):
+                    print(tx)
+                    let broadcastResult = await GaiaService.shared.broadcastTransaction(jsonString: tx)
+                    switch broadcastResult {
+                    case .success(let hash):
+                        self.txid = hash
+                    case .failure(let err):
+                        self.handleBroadcastError(err: err)
+                    }
+                    // broadcast the tx to cosmoshub
+                case .failure(let err):
+                    self.handleHelperError(err: err)
+                }
             default:
                 self.logger.error("unsupported coin:\(keysignPayload.coin.ticker)")
             }
@@ -302,6 +318,7 @@ class KeysignViewModel: ObservableObject {
         default:
             errMessage = "Failed to broadcast transaction,error:\(err.localizedDescription)"
         }
+        print(errMessage)
         DispatchQueue.main.async {
             self.keysignError = errMessage
             self.status = .KeysignFailed

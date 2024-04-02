@@ -89,7 +89,11 @@ class SendTransaction: ObservableObject, Hashable {
         let amountString = amount.replacingOccurrences(of: ",", with: ".")
         return Double(amountString) ?? 0
     }
-    
+    var amountInCoinDecimal: Int64 {
+        let amountDouble = amountDecimal
+        let decimals = Int(coin.decimals) ?? 8
+        return Int64(amountDouble * pow(10,Double(decimals)))
+    }
     var gasDecimal: Double {
         let gasString = gas.replacingOccurrences(of: ",", with: ".")
         return Double(gasString) ?? 0

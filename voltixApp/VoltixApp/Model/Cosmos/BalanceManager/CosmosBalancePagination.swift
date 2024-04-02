@@ -7,7 +7,7 @@
 
 import Foundation
 
-class ThorchainBalancePagination: Codable {
+class CosmosBalancePagination: Codable {
     var next_key: String?
     var total: String
     

@@ -8,6 +8,6 @@
 import Foundation
 
 struct BalanceCacheEntry: Codable {
-    let balances: [ThorchainBalance]
+    let balances: [CosmosBalance]
     let timestamp: Date
 }

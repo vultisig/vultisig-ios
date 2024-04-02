@@ -7,15 +7,15 @@
 
 import Foundation
 
-class ThorchainTransactionBroadcastResponse: Codable {
-    var txResponse: ThorchainTransactionBroadcastTx?
+class CosmosTransactionBroadcastResponse: Codable {
+    var txResponse: CosmosTransactionBroadcastTx?
     
     enum CodingKeys: String, CodingKey {
         case txResponse = "tx_response"
     }
 }
 
-class ThorchainTransactionBroadcastTx: Codable {
+class CosmosTransactionBroadcastTx: Codable {
     var height: String?
     var txhash: String?
     var codespace: String?
