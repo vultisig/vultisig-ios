@@ -69,7 +69,10 @@ class SendCryptoViewModel: ObservableObject {
             else if tx.coin.chain.name  == Chain.THORChain.name  {
                 // THORChain gas fee is 0.02 RUNE fixed
                 tx.gas = "0.02"
+            } else if tx.coin.chain.name == Chain.GaiaChain.name {
+                tx.gas = "0.0075"
             }
+            
         } catch {
             if let err =  error as? HelperError {
                 switch err{

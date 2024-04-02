@@ -7,7 +7,7 @@
 
 import Foundation
 
-class ThorchainErrorResponse: Codable {
+class CosmosErrorResponse: Codable {
     let code: Int
     let message: String
     let details: [String]

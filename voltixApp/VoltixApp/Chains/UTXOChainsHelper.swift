@@ -44,20 +44,15 @@ class UTXOChainsHelper {
     
     func getCoin() -> Result<Coin, Error> {
         var ticker = "BTC"
-        var chain: Chain
         switch coin {
         case .bitcoin:
             ticker = "BTC"
-            chain = .Bitcoin
         case .bitcoinCash:
             ticker = "BCH"
-            chain = .BitcoinCash
         case .litecoin:
             ticker = "LTC"
-            chain = .Litecoin
         case .dogecoin:
             ticker = "DOGE"
-            chain = .Dogecoin
         default:
             return .failure(HelperError.runtimeError("doesn't support coin \(coin)"))
         }

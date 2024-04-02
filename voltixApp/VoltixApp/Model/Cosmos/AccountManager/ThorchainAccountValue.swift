@@ -2,14 +2,15 @@
 //  ThorchainAccountValue.swift
 //  VoltixApp
 //
-//  Created by Enrique Souza Soares on 06/03/2024.
+//  Created by Johnny Luo on 2/4/2024.
 //
 
 import Foundation
 
-class ThorchainAccountValue: Codable {
+
+class THORChainAccountValue: Codable {
     var address: String?
-    var publicKey: ThorchainAccountValuePublicKey?
+    var publicKey: THORChainAccountValuePublicKey?
     var accountNumber: String?
     var sequence: String?
     
@@ -18,7 +19,8 @@ class ThorchainAccountValue: Codable {
     }
 }
 
-class ThorchainAccountValuePublicKey: Codable {
+class THORChainAccountValuePublicKey: Codable {
     var type: String
     var value: String
+   
 }

@@ -16,6 +16,7 @@ enum BlockChainSpecific: Codable, Hashable {
     case Ethereum(maxFeePerGasGwei: Int64, priorityFeeGwei: Int64, nonce: Int64, gasLimit: Int64) // maxFeePerGasGwei, priorityFeeGwei, nonce , gasLimit
     case ERC20(maxFeePerGasGwei: Int64, priorityFeeGwei: Int64, nonce: Int64, gasLimit: Int64, contractAddr: String)
     case THORChain(accountNumber: UInt64, sequence: UInt64)
+    case Cosmos(accountNumber:UInt64,sequence:UInt64,gas:UInt64)
     case Solana(recentBlockHash: String)
 }
 
@@ -82,6 +83,8 @@ struct KeysignPayload: Codable, Hashable {
             result = THORChainHelper.getPreSignedImageHash(keysignPayload: self)
         case Chain.Solana.name.lowercased():
             result = SolanaHelper.getPreSignedImageHash(keysignPayload: self)
+        case Chain.GaiaChain.name.lowercased():
+            result = ATOMHelper().getPreSignedImageHash(keysignPayload: self)
         default:
             return .failure(HelperError.runtimeError("unsupported coin"))
         }

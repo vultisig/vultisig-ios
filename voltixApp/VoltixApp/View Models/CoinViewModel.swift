@@ -21,6 +21,7 @@ class CoinViewModel: ObservableObject {
     private let bsc = BSCService.shared
     private let avax = AvalancheService.shared
     private let sol = SolanaService.shared
+    private let gaia = GaiaService.shared
     
     func loadData(tx: SendTransaction) async {
         print("realoading data...")
@@ -54,6 +55,13 @@ class CoinViewModel: ObservableObject {
                 try await avax.getBalance(tx: tx)
                 balanceUSD = tx.coin.balanceInUsd
                 coinBalance = tx.coin.balanceString
+            } else if tx.coin.chain.name == Chain.GaiaChain.name {
+                let atomBalance =  try await gaia.fetchBalances(tx.fromAddress)
+                if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[tx.coin.priceProviderId]?["usd"] {
+                    balanceUSD = atomBalance.atomBalanceInUSD(usdPrice: priceRateUsd) ?? "US$ 0,00"
+                }
+                coinBalance = atomBalance.formattedAtomBalance() ?? "0.0"
+                
             } else if tx.coin.chain.name == Chain.Solana.name {
                 await sol.getSolanaBalance(tx:tx)
                 await sol.fetchRecentBlockhash()

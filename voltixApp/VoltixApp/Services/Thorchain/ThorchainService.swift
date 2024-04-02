@@ -12,32 +12,33 @@ class ThorchainService {
     
     private init() {}
     
-    func fetchBalances(_ address: String) async throws -> [ThorchainBalance] {
+    func fetchBalances(_ address: String) async throws -> [CosmosBalance] {
         let cachedBalances = loadBalancesFromCache(forAddress: address)
         if cachedBalances.count > 0 {
             return cachedBalances
         }
         guard let url = URL(string: Endpoint.fetchAccountBalanceThorchainNineRealms(address: address)) else        {
-            return [ThorchainBalance]()
+            return [CosmosBalance]()
         }
         
         let (data, _) = try await URLSession.shared.data(from: url)
-        let balanceResponse = try JSONDecoder().decode(ThorchainBalanceResponse.self, from: data)
+        
+        let balanceResponse = try JSONDecoder().decode(CosmosBalanceResponse.self, from: data)
         self.cacheBalances(balanceResponse.balances, forAddress: address)
         return balanceResponse.balances
     }
     
-    func fetchAccountNumber(_ address: String) async throws -> ThorchainAccountValue? {
+    func fetchAccountNumber(_ address: String) async throws -> THORChainAccountValue? {
         guard let url = URL(string: Endpoint.fetchAccountNumberThorchainNineRealms(address)) else {
             return nil
         }
         
         let (data, _) = try await URLSession.shared.data(from: url)
-        let accountResponse = try JSONDecoder().decode(ThorchainAccountNumberResponse.self, from: data)
+        let accountResponse = try JSONDecoder().decode(THORChainAccountNumberResponse.self, from: data)
         return accountResponse.result.value
     }
     
-    private func cacheBalances(_ balances: [ThorchainBalance], forAddress address: String) {
+    private func cacheBalances(_ balances: [CosmosBalance], forAddress address: String) {
         let addressKey = "balancesCache_\(address)"
         let cacheEntry = BalanceCacheEntry(balances: balances, timestamp: Date())
         
@@ -46,14 +47,14 @@ class ThorchainService {
         }
     }
     
-    private func loadBalancesFromCache(forAddress address: String) -> [ThorchainBalance] {
+    private func loadBalancesFromCache(forAddress address: String) -> [CosmosBalance] {
         let addressKey = "balancesCache_\(address)"
         
         guard let savedData = UserDefaults.standard.object(forKey: addressKey) as? Data,
               let cacheEntry = try? JSONDecoder().decode(BalanceCacheEntry.self, from: savedData),
               -cacheEntry.timestamp.timeIntervalSinceNow < 60
         else { // Checks if the cache is older than 1 minute
-            return [ThorchainBalance]()
+            return [CosmosBalance]()
         }
         
         return cacheEntry.balances
