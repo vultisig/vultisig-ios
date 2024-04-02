@@ -12,19 +12,18 @@ class VaultDetailViewModel: ObservableObject {
     @Published var coinsGroupedByChains = [GroupedChain]()
     
     func fetchCoins(for vault: Vault) {
-        let result = UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode).getCoin()
-        
-        switch result {
+        // add bitcoin when the vault doesn't have any coins in it
+        if vault.coins.count == 0 {
+            let result = UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode).getCoin()
+            
+            switch result {
             case .success(let btc):
-                if vault.coins.count == 0 {
-                    vault.coins.append(btc)
-                } else {
-                    coins = vault.coins
-                }
-                
+                vault.coins.append(btc)
             case .failure(let error):
                 print("error: \(error)")
+            }
         }
+        coins = vault.coins
         categorizeCoins()
     }
     
@@ -32,20 +31,6 @@ class VaultDetailViewModel: ObservableObject {
         coinsGroupedByChains = [GroupedChain]()
         
         for coin in coins {
-            guard coinsGroupedByChains.count>0 else {
-                if let element = coins.first {
-                    let chain = GroupedChain(
-                        name: element.chain.name,
-                        address: element.address,
-                        logo: element.logo,
-                        count: 1,
-                        coins: [coin]
-                    )
-                    coinsGroupedByChains.append(chain)
-                }
-                continue
-            }
-            
             addCoin(coin)
         }
         coinsGroupedByChains.sort { $0.name < $1.name }
@@ -56,13 +41,16 @@ class VaultDetailViewModel: ObservableObject {
             if group.address == coin.address && group.name == coin.chain.name {
                 group.coins.append(coin)
                 group.count+=1
+                if coin.isNativeToken {
+                    group.logo = coin.logo
+                }
                 return
             }
         }
         
         let chain = GroupedChain(
             name: coin.chain.name,
-            address: coin.address, 
+            address: coin.address,
             logo: coin.logo,
             count: 1,
             coins: [coin]

@@ -70,7 +70,7 @@ class THORChainSwaps {
                     let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
                     return .success([preSigningOutput.dataHash.hexString])
                 case .btc:
-                    let hashes = TransactionCompiler.preImageHashes(coinType: .thorchain, txInputData: inputData)
+                    let hashes = TransactionCompiler.preImageHashes(coinType: .bitcoin, txInputData: inputData)
                     let preSigningOutput = try BitcoinPreSigningOutput(serializedData: hashes)
                     return .success(preSigningOutput.hashPublicKeys.map { $0.dataHash.hexString })
                 case .eth:

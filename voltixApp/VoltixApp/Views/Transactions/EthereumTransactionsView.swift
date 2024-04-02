@@ -28,7 +28,17 @@ struct EthereumTransactionsView: View {
             if !viewModel.transactions.isEmpty, !viewModel.addressFor.isEmpty {
                 list
             } else if viewModel.transactions.count==0 {
-                ErrorMessage(text: "noTransactions")
+                VStack{
+                    Spacer()
+                    ErrorMessage(text: "noTransactions")
+                    if let explorerUrl = viewModel.explorerByAddressUrl, let url = URL(string:explorerUrl) {
+                        Link("checkExplorer",destination: url)
+                            .font(.body16MenloBold)
+                            .foregroundColor(.neutral0)
+                            .underline()
+                    }
+                    Spacer()
+                }
             } else {
                 loader
             }

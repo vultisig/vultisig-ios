@@ -15,6 +15,7 @@ class EthereumTransactionViewModel : ObservableObject {
     @Published var transactions: [EtherscanAPITransactionDetail] = []
     @Published var contractAddress: String?
     @Published var addressFor: String = ""
+    @Published var explorerByAddressUrl: String? = nil
     var etherScanService: EtherScanService = .shared
     
     func setData(chain:Chain?,vault:Vault) async {
@@ -35,6 +36,7 @@ class EthereumTransactionViewModel : ObservableObject {
         guard let bnb else {
             return
         }
+        explorerByAddressUrl = Endpoint.getExplorerByAddressURL(chainTicker: bnb.chain.ticker, address: bnb.address)
         do {
             var transactions: [EtherscanAPITransactionDetail] = []
             var forAddress: String = ""
@@ -57,6 +59,7 @@ class EthereumTransactionViewModel : ObservableObject {
         guard let eth else {
             return
         }
+        explorerByAddressUrl = Endpoint.getExplorerByAddressURL(chainTicker: eth.chain.ticker, address: eth.address)
         do {
             var transactions: [EtherscanAPITransactionDetail] = []
             var forAddress: String = ""
