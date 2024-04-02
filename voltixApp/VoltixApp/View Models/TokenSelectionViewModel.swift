@@ -130,7 +130,7 @@ class TokenSelectionViewModel: ObservableObject {
             let coinResult = EVMHelper.getAvaxHelper().getCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
             switch coinResult {
             case .success(let coin):
-                if coin.ticker == "AVAX" {
+                if asset.ticker == "AVAX" {
                     vault.coins.append(coin)
                 } else {
                     let newCoin = Coin(chain: asset.chain,
@@ -158,7 +158,7 @@ class TokenSelectionViewModel: ObservableObject {
             let coinResult = EVMHelper.getBSCHelper().getCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
             switch coinResult {
             case .success(let coin):
-                if coin.ticker == "BNB" {
+                if asset.ticker == "BNB" {
                     vault.coins.append(coin)
                 } else {
                     // BRC20 tokens

@@ -25,6 +25,7 @@ class KeysignViewModel: ObservableObject {
     @Published var keysignError: String = ""
     @Published var signatures = [String: TssKeysignResponse]()
     @Published var etherScanService = EtherScanService.shared
+    @Published var avaxScanService = AvalancheService.shared
     @Published var txid: String = ""
     
     private var tssService: TssServiceImpl? = nil
@@ -256,6 +257,36 @@ class KeysignViewModel: ObservableObject {
                         case .success(let tx):
                             do {
                                 self.txid = try await  self.bscService.broadcastTransaction(hex: tx)
+                            } catch {
+                                self.handleBroadcastError(err: error)
+                            }
+                        case .failure(let err):
+                            self.handleHelperError(err: err)
+                        }
+                    }
+                }else if keysignPayload.coin.chain.name == Chain.Avalache.name {
+                    if keysignPayload.coin.isNativeToken {
+                        let result = EVMHelper.getAvaxHelper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                        switch result {
+                        case .success(let tx):
+                            do {
+                                print("AVAX signed tx \(tx)")
+                                self.txid = try await self.avaxScanService.broadcastTransaction(hex: tx)
+                            } catch {
+                                self.handleBroadcastError(err: error)
+                            }
+                            
+                        case .failure(let err):
+                            self.handleHelperError(err: err)
+                        }
+                    } else {
+                        // It should work for all ERC20
+                        let result = ERC20Helper.getAvaxERC20Helper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                        
+                        switch result {
+                        case .success(let tx):
+                            do {
+                                self.txid = try await self.avaxScanService.broadcastTransaction(hex: tx)
                             } catch {
                                 self.handleBroadcastError(err: error)
                             }

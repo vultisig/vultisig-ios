@@ -28,6 +28,7 @@ class SendCryptoViewModel: ObservableObject {
     @Published var sol: SolanaService = SolanaService.shared
     @Published var cryptoPrice = CryptoPriceService.shared
     @Published var utxo = BlockchairService.shared
+    @Published var avax = AvalancheService.shared
     
     private let eth = EtherScanService.shared
     private let bsc = BSCService.shared
@@ -58,7 +59,14 @@ class SendCryptoViewModel: ObservableObject {
                 tx.gas = gasPrice
                 tx.nonce = nonce
                 tx.priorityFeeGwei = priorityFee
-            } else if tx.coin.chain.name  == Chain.THORChain.name  {
+            } else if tx.coin.chain.name  == Chain.Avalache.name  {
+                print("The loadData for \(tx.coin.ticker)")
+                let (gasPrice,priorityFee,nonce) = try await avax.getGasInfo(fromAddress: tx.fromAddress)
+                tx.gas = gasPrice
+                tx.nonce = nonce
+                tx.priorityFeeGwei = priorityFee
+            }
+            else if tx.coin.chain.name  == Chain.THORChain.name  {
                 // THORChain gas fee is 0.02 RUNE fixed
                 tx.gas = "0.02"
             } else if tx.coin.chain.name == Chain.GaiaChain.name {
@@ -157,7 +165,34 @@ class SendCryptoViewModel: ObservableObject {
                 
                 await convertToUSD(newValue: tx.amount, tx: tx)
             }
-        } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
+        } else if tx.coin.chain.name.lowercased() == Chain.Avalache.name.lowercased() {
+            Task {
+                do {
+                    let (gasPrice, _, _) = try await AvalancheService.shared.getGasInfo(fromAddress: tx.fromAddress)
+                    
+                    guard let gasLimitBigInt = BigInt(tx.coin.feeDefault) else {
+                        print("Invalid gas limit")
+                        return
+                    }
+                    
+                    guard let gasPriceBigInt = BigInt(gasPrice) else {
+                        print("Invalid gas price")
+                        return
+                    }
+                    
+                    let gasPriceGwei: BigInt = gasPriceBigInt
+                    let gasPriceWei: BigInt = gasPriceGwei * BigInt(EVMHelper.weiPerGWei)
+                    let totalFeeWei: BigInt = gasLimitBigInt * gasPriceWei
+                    
+                    tx.amount = "\(tx.coin.getMaxValue(totalFeeWei))"
+                } catch {
+                    tx.amount = tx.coin.balanceString
+                    print("Failed to get EVM balance, error: \(error.localizedDescription)")
+                }
+                
+                await convertToUSD(newValue: tx.amount, tx: tx)
+            }
+        }  else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
             Task{
                 do{
                     let thorBalances = try await self.thor.fetchBalances(tx.fromAddress)
@@ -195,44 +230,13 @@ class SendCryptoViewModel: ObservableObject {
         
         await cryptoPrice.fetchCryptoPrices()
         
-        if let priceRateUsd = cryptoPrice.cryptoPrices?.prices[tx.coin.chain.name.lowercased()]?["usd"] {
-            priceRate = priceRateUsd
-        }
-        
-        if let newValueDouble = Double(newValue) {
-            var newCoinAmount = ""
-            
-            if  tx.coin.chain.chainType == ChainType.UTXO {
-                let rate = priceRate
-                if rate > 0 {
-                    let newValueCoin = newValueDouble / rate
-                    newCoinAmount = newValueCoin != 0 ? String(format: "%.8f", newValueCoin) : ""
-                }
-            } else if tx.coin.chain.name == Chain.Ethereum.name  {
-                newCoinAmount = tx.coin.getAmountInTokens(newValueDouble)
-            } else if tx.coin.chain.name  == Chain.BSCChain.name  {
-                newCoinAmount = tx.coin.getAmountInTokens(newValueDouble)
-            } else if tx.coin.chain.name  == Chain.THORChain.name  {
-                if let rate = CryptoPriceService.shared.cryptoPrices?.prices[Chain.THORChain.name.lowercased()]?["usd"], rate > 0 {
-                    let newValueCoin = newValueDouble / rate
-                    newCoinAmount = newValueCoin != 0 ? String(format: "%.8f", newValueCoin) : ""
-                }
-            } else if tx.coin.chain.name == Chain.GaiaChain.name {
-                if let rate = CryptoPriceService.shared.cryptoPrices?.prices[tx.coin.priceProviderId]?["usd"], rate > 0 {
-                    let newValueCoin = newValueDouble / rate
-                    newCoinAmount = newValueCoin != 0 ? String(format: "%.6f", newValueCoin) : ""
-                }
+        if let priceRateUsd = cryptoPrice.cryptoPrices?.prices[tx.coin.priceProviderId]?["usd"] {
+            if let newValueDouble = Double(newValue) {
+                let newValueCoin = newValueDouble / priceRateUsd
+                tx.amount = String(newValueCoin)
+            } else {
+                tx.amount = ""
             }
-            else if tx.coin.chain.name  == Chain.Solana.name  {
-                if let rate = CryptoPriceService.shared.cryptoPrices?.prices[Chain.Solana.name.lowercased()]?["usd"], rate > 0 {
-                    let newValueCoin = newValueDouble / rate
-                    newCoinAmount = newValueCoin != 0 ? String(format: "%.9f", newValueCoin) : ""
-                }
-            }
-            
-            tx.amount = newCoinAmount
-        } else {
-            tx.amount = ""
         }
     }
     
@@ -240,37 +244,13 @@ class SendCryptoViewModel: ObservableObject {
         
         await cryptoPrice.fetchCryptoPrices()
         
-        if let priceRateUsd = cryptoPrice.cryptoPrices?.prices[tx.coin.chain.name.lowercased()]?["usd"] {
-            priceRate = priceRateUsd
-        }
-        
-        if let newValueDouble = Double(newValue) {
-            var newValueUSD = ""
-            
-            if  tx.coin.chain.chainType == ChainType.UTXO {
-                let rate = priceRate
-                newValueUSD = String(format: "%.2f", newValueDouble * rate)
-            } else if tx.coin.chain.name == Chain.Ethereum.name {
-                newValueUSD = tx.coin.getAmountInUsd(newValueDouble)
-            } else if tx.coin.chain.name == Chain.BSCChain.name {
-                newValueUSD = tx.coin.getAmountInUsd(newValueDouble)
-            } else if tx.coin.chain.name  == Chain.THORChain.name  {
-                if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.THORChain.name.lowercased()]?["usd"] {
-                    newValueUSD = String(format: "%.2f", newValueDouble * priceRateUsd)
-                }
-            } else if tx.coin.chain.name == Chain.GaiaChain.name {
-                if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[tx.coin.priceProviderId]?["usd"] {
-                    newValueUSD = String(format: "%.2f", newValueDouble * priceRateUsd)
-                }
-            } else if tx.coin.chain.name  == Chain.Solana.name  {
-                if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.Solana.name.lowercased()]?["usd"] {
-                    newValueUSD = String(format: "%.2f", newValueDouble * priceRateUsd)
-                }
+        if let priceRateUsd = cryptoPrice.cryptoPrices?.prices[tx.coin.priceProviderId]?["usd"] {
+            if let newValueDouble = Double(newValue) {
+                let newValueUSD = String(format: "%.2f", newValueDouble * priceRateUsd)
+                tx.amountInUSD = newValueUSD.isEmpty ? "" : newValueUSD
+            } else {
+                tx.amountInUSD = ""
             }
-            
-            tx.amountInUSD = newValueUSD.isEmpty ? "" : newValueUSD
-        } else {
-            tx.amountInUSD = ""
         }
     }
     
