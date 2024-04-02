@@ -32,7 +32,7 @@ class TokensStore {
         
         Coin(chain: Chain.Avalache, ticker: "AVAX", logo: "avax", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "avalanche-2", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "21000"),
         
-        Coin(chain: Chain.Avalache, ticker: "USDC", logo: "usdc", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "6", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "usd-coin", contractAddress: "0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e", rawBalance: "0", isNativeToken: false, feeDefault: "21000"),
+        Coin(chain: Chain.Avalache, ticker: "USDC-avax", logo: "usdc", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "6", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "usd-coin", contractAddress: "0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e", rawBalance: "0", isNativeToken: false, feeDefault: "21000"),
         
         
         Coin(chain: Chain.BSCChain, ticker: "BNB", logo: "bsc", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "binancecoin", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "21000"),
