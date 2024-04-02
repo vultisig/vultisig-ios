@@ -11,7 +11,7 @@ class GroupedChain {
     let id: String
     let name: String
     let address: String
-    let logo: String
+    var logo: String
     var count: Int
     var coins: [Coin]
     

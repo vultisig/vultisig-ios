@@ -53,7 +53,17 @@ struct TransactionsView: View {
     }
     
     var errorText: some View {
-        ErrorMessage(text: "cannotFindTransactions")
+        VStack{
+            Spacer()
+            ErrorMessage(text: "cannotFindTransactions")
+            if let coin = group.coins.first {
+                Link("checkExplorer",destination: URL(string:Endpoint.getExplorerByAddressURL(chainTicker:coin.chain.ticker,address:coin.address))!)
+                    .font(.body16MenloBold)
+                    .foregroundColor(.neutral0)
+                    .underline()
+                Spacer()
+            }
+        }
     }
 }
 
