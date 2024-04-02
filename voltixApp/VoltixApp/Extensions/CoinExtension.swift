@@ -29,6 +29,8 @@ extension Coin {
             return CoinType.smartChain
         case Chain.Avalache:
             return CoinType.avalancheCChain
+        case Chain.GaiaChain:
+            return CoinType.cosmos
         default:
             return nil
         }

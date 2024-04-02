@@ -23,9 +23,10 @@ class SendCryptoVerifyViewModel: ObservableObject {
     @Published var sol: SolanaService = SolanaService.shared
     @Published var utxo = BlockchairService.shared
     @Published var eth = EtherScanService.shared
+    var gaia = GaiaService.shared
     
-    
-    var THORChainAccount: ThorchainAccountValue? = nil
+    var THORChainAccount: THORChainAccountValue? = nil
+    var CosmosChainAccount: CosmosAccountValue? = nil
     private var isValidForm: Bool {
         return isAddressCorrect && isAmountCorrect && isHackedOrPhished
     }
@@ -33,21 +34,26 @@ class SendCryptoVerifyViewModel: ObservableObject {
     //TODO: Remove that, we need to use the loadData only
     func reloadTransactions(tx: SendTransaction) {
         Task {
-            if  tx.coin.chain.chainType == ChainType.UTXO {
-                await utxo.fetchBlockchairData(for: tx)
-            } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
-                self.THORChainAccount = try await thor.fetchAccountNumber(tx.fromAddress)
-            } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
-                
-                await sol.getSolanaBalance(tx: tx)
-                await sol.fetchRecentBlockhash()
-                
-                await MainActor.run {
-                    if let feeInLamports = sol.feeInLamports {
-                        tx.gas = String(feeInLamports)
+            do{
+                if  tx.coin.chain.chainType == ChainType.UTXO {
+                    await utxo.fetchBlockchairData(for: tx)
+                } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
+                    self.THORChainAccount = try await thor.fetchAccountNumber(tx.fromAddress)
+                } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
+                    await sol.getSolanaBalance(tx: tx)
+                    await sol.fetchRecentBlockhash()
+                    await MainActor.run {
+                        if let feeInLamports = sol.feeInLamports {
+                            tx.gas = String(feeInLamports)
+                        }
                     }
+                } else if tx.coin.chain.name == Chain.GaiaChain.name {
+                    self.CosmosChainAccount = try await gaia.fetchAccountNumber(tx.fromAddress)
                 }
-                
+            }
+            
+            catch{
+                print(error.localizedDescription)
             }
         }
     }
@@ -168,6 +174,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
             
             guard let accountNumberString = THORChainAccount?.accountNumber, let intAccountNumber = UInt64(accountNumberString) else {
                 print("We need the ACCOUNT NUMBER to broadcast a transaction")
+                self.errorMessage = "failToGetAccountNumber"
+                showAlert = true
+                isLoading = false
                 return nil
             }
             
@@ -177,6 +186,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
             }
             guard  let intSequence = UInt64(sequenceString) else {
                 print("We need the SEQUENCE to broadcast a transaction")
+                self.errorMessage = "failToGetSequenceNo"
+                showAlert = true
+                isLoading = false
                 return nil
             }
             
@@ -191,10 +203,44 @@ class SendCryptoVerifyViewModel: ObservableObject {
             
             return keysignPayload
             
-        } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
+        } else if tx.coin.chain.name  == Chain.GaiaChain.name {
             
+            guard let accountNumberString = CosmosChainAccount?.accountNumber, let intAccountNumber = UInt64(accountNumberString) else {
+                self.errorMessage = "failToGetAccountNumber"
+                showAlert = true
+                isLoading = false
+                return nil
+            }
+            
+            var sequenceString = "0"
+            if CosmosChainAccount?.sequence != nil {
+                sequenceString = CosmosChainAccount!.sequence!
+            }
+            guard  let intSequence = UInt64(sequenceString) else {
+                print("We need the SEQUENCE to broadcast a transaction")
+                self.errorMessage = "failToGetSequenceNo"
+                showAlert = true
+                isLoading = false
+                return nil
+            }
+            
+            let keysignPayload = KeysignPayload(
+                coin: tx.coin,
+                toAddress: tx.toAddress,
+                toAmount: tx.amountInCoinDecimal,
+                chainSpecific: BlockChainSpecific.Cosmos(accountNumber: intAccountNumber, sequence: intSequence, gas: 7500),
+                utxos: [],
+                memo: tx.memo, swapPayload: nil
+            )
+            
+            return keysignPayload
+            
+        } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
             guard let recentBlockHash = sol.recentBlockHash else {
                 print("We need the recentBlockHash to broadcast a transaction")
+                self.errorMessage = "failToGetRecentBlockHash"
+                showAlert = true
+                isLoading = false
                 return nil
             }
             

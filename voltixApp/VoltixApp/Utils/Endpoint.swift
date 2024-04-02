@@ -140,6 +140,14 @@ class Endpoint {
         "https://bscscan.com/tx/\(value)"
     }
     
+    static func fetchCosmosAccountBalance(address: String) -> String{
+        "https://cosmos-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
+    }
+    static func fetchCosmosAccountNumber(_ address: String) -> String {
+        "https://cosmos-rest.publicnode.com/cosmos/auth/v1beta1/accounts/\(address)"
+    }
+    
+    static let broadcastCosmosTransaction = "https://cosmos-rest.publicnode.com/cosmos/tx/v1beta1/txs"
     static func getExplorerURL(chainTicker: String, txid: String) -> String{
         switch chainTicker {
         case "BTC":
@@ -156,6 +164,8 @@ class Endpoint {
             return "https://explorer.solana.com/tx/\(txid)"
         case "ETH":
             return "https://etherscan.io/tx/\(txid)"
+        case "UATOM":
+            return "https://www.mintscan.io/cosmos/tx/\(txid)"
         default:
             return ""
         }
