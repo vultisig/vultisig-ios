@@ -40,20 +40,15 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
                     self.THORChainAccount = try await thor.fetchAccountNumber(tx.fromAddress)
                 } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
-                    
                     await sol.getSolanaBalance(tx: tx)
                     await sol.fetchRecentBlockhash()
-                    
                     await MainActor.run {
                         if let feeInLamports = sol.feeInLamports {
                             tx.gas = String(feeInLamports)
                         }
                     }
-                    
                 } else if tx.coin.chain.name == Chain.GaiaChain.name {
-                    
                     self.CosmosChainAccount = try await gaia.fetchAccountNumber(tx.fromAddress)
-                    
                 }
             }
             
