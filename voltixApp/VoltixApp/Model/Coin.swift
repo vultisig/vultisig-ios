@@ -73,10 +73,11 @@ class Coin: Codable, Hashable {
     func hash(into hasher: inout Hasher) {
         hasher.combine(ticker)
         hasher.combine(address)
+        hasher.combine(chain.name)
     }
     
     static func == (lhs: Coin, rhs: Coin) -> Bool {
-        return lhs.ticker == rhs.ticker && lhs.address == rhs.address
+        return lhs.ticker == rhs.ticker && lhs.address == rhs.address && lhs.chain.name == rhs.chain.name
     }
     
     var balance: BigInt? {
@@ -95,7 +96,14 @@ class Coin: Codable, Hashable {
     }
     
     func getMaxValue(_ fee: BigInt) -> Decimal {
-        let maxValue = (BigInt(rawBalance, radix: 10) ?? 0) - fee
+        
+        var totalFeeAdjusted = fee
+        if chain.chainType == .EVM {
+            let adjustmentFactor = BigInt(10).power(EVMHelper.ethDecimals - (Int(decimals) ?? 0))
+            totalFeeAdjusted = fee / adjustmentFactor
+        }
+        
+        let maxValue = (BigInt(rawBalance, radix: 10) ?? 0) - totalFeeAdjusted
         let maxValueDecimal = Decimal(string: String(maxValue)) ?? 0.0
         let tokenDecimals = Int(decimals) ?? 0
         return maxValueDecimal / pow(10, tokenDecimals)

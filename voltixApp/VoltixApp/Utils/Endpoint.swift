@@ -18,6 +18,8 @@ class Endpoint {
         "https://thornode.ninerealms.com/cosmos/bank/v1beta1/balances/\(address)"
     }
     
+    static let avalancheServiceRpcService = "https://avalanche-c-chain-rpc.publicnode.com"
+    
     static let solanaServiceAlchemyRpc = "http://45.76.120.223/alchemy/"
     
     static func bitcoinLabelTxHash(_ value: String) -> String {
