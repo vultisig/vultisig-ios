@@ -169,12 +169,14 @@ class Endpoint {
             return "https://etherscan.io/tx/\(txid)"
         case "UATOM":
             return "https://www.mintscan.io/cosmos/tx/\(txid)"
+        case "AVAX":
+            return "https://snowtrace.io/tx/\(txid)"
         default:
             return ""
         }
     }
     
-    static func getExplorerByAddressURL(chainTicker:String,address:String) ->String{
+    static func getExplorerByAddressURL(chainTicker:String,address:String) -> String? {
         switch chainTicker {
         case "BTC":
             return "https://blockchair.com/bitcoin/address/\(address)"
@@ -192,8 +194,10 @@ class Endpoint {
             return "https://etherscan.io/address/\(address)"
         case "UATOM":
             return "https://www.mintscan.io/cosmos/address/\(address)"
+        case "AVAX":
+            return "https://snowtrace.io/address/\(address)"
         default:
-            return ""
+            return nil
         }
     }
 }

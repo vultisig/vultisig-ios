@@ -31,8 +31,8 @@ struct EthereumTransactionsView: View {
                 VStack{
                     Spacer()
                     ErrorMessage(text: "noTransactions")
-                    if !viewModel.explorerByAddressUrl.isEmpty{
-                        Link("checkExplorer",destination: URL(string: viewModel.explorerByAddressUrl)!)
+                    if let explorerUrl = viewModel.explorerByAddressUrl, let url = URL(string:explorerUrl) {
+                        Link("checkExplorer",destination: url)
                             .font(.body16MenloBold)
                             .foregroundColor(.neutral0)
                             .underline()

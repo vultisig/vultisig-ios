@@ -15,7 +15,7 @@ class EthereumTransactionViewModel : ObservableObject {
     @Published var transactions: [EtherscanAPITransactionDetail] = []
     @Published var contractAddress: String?
     @Published var addressFor: String = ""
-    @Published var explorerByAddressUrl: String = ""
+    @Published var explorerByAddressUrl: String? = nil
     var etherScanService: EtherScanService = .shared
     
     func setData(chain:Chain?,vault:Vault) async {
