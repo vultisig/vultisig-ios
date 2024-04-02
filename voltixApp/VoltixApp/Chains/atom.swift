@@ -21,7 +21,7 @@ class ATOMHelper {
     func getATOMCoin(hexPubKey: String,hexChainCode: String) -> Result<Coin,Error> {
         let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
                                                             hexChainCode: hexChainCode,
-                                                            derivePath: CoinType.thorchain.derivationPath())
+                                                            derivePath: self.coinType.derivationPath())
         if derivePubKey.isEmpty {
             return .failure(HelperError.runtimeError("derived public key is empty"))
         }

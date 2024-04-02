@@ -22,18 +22,19 @@ class ThorchainService {
         }
         
         let (data, _) = try await URLSession.shared.data(from: url)
+        
         let balanceResponse = try JSONDecoder().decode(CosmosBalanceResponse.self, from: data)
         self.cacheBalances(balanceResponse.balances, forAddress: address)
         return balanceResponse.balances
     }
     
-    func fetchAccountNumber(_ address: String) async throws -> CosmosAccountValue? {
+    func fetchAccountNumber(_ address: String) async throws -> THORChainAccountValue? {
         guard let url = URL(string: Endpoint.fetchAccountNumberThorchainNineRealms(address)) else {
             return nil
         }
         
         let (data, _) = try await URLSession.shared.data(from: url)
-        let accountResponse = try JSONDecoder().decode(CosmosAccountNumberResponse.self, from: data)
+        let accountResponse = try JSONDecoder().decode(THORChainAccountNumberResponse.self, from: data)
         return accountResponse.result.value
     }
     

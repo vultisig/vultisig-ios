@@ -212,12 +212,18 @@ class SendCryptoViewModel: ObservableObject {
                 newCoinAmount = tx.coin.getAmountInTokens(newValueDouble)
             } else if tx.coin.chain.name  == Chain.BSCChain.name  {
                 newCoinAmount = tx.coin.getAmountInTokens(newValueDouble)
-            }   else if tx.coin.chain.name  == Chain.THORChain.name  {
+            } else if tx.coin.chain.name  == Chain.THORChain.name  {
                 if let rate = CryptoPriceService.shared.cryptoPrices?.prices[Chain.THORChain.name.lowercased()]?["usd"], rate > 0 {
                     let newValueCoin = newValueDouble / rate
                     newCoinAmount = newValueCoin != 0 ? String(format: "%.8f", newValueCoin) : ""
                 }
-            } else if tx.coin.chain.name  == Chain.Solana.name  {
+            } else if tx.coin.chain.name == Chain.GaiaChain.name {
+                if let rate = CryptoPriceService.shared.cryptoPrices?.prices[tx.coin.priceProviderId]?["usd"], rate > 0 {
+                    let newValueCoin = newValueDouble / rate
+                    newCoinAmount = newValueCoin != 0 ? String(format: "%.6f", newValueCoin) : ""
+                }
+            }
+            else if tx.coin.chain.name  == Chain.Solana.name  {
                 if let rate = CryptoPriceService.shared.cryptoPrices?.prices[Chain.Solana.name.lowercased()]?["usd"], rate > 0 {
                     let newValueCoin = newValueDouble / rate
                     newCoinAmount = newValueCoin != 0 ? String(format: "%.9f", newValueCoin) : ""
@@ -250,6 +256,10 @@ class SendCryptoViewModel: ObservableObject {
                 newValueUSD = tx.coin.getAmountInUsd(newValueDouble)
             } else if tx.coin.chain.name  == Chain.THORChain.name  {
                 if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.THORChain.name.lowercased()]?["usd"] {
+                    newValueUSD = String(format: "%.2f", newValueDouble * priceRateUsd)
+                }
+            } else if tx.coin.chain.name == Chain.GaiaChain.name {
+                if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[tx.coin.priceProviderId]?["usd"] {
                     newValueUSD = String(format: "%.2f", newValueDouble * priceRateUsd)
                 }
             } else if tx.coin.chain.name  == Chain.Solana.name  {

@@ -25,7 +25,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
     @Published var eth = EtherScanService.shared
     var gaia = GaiaService.shared
     
-    var THORChainAccount: CosmosAccountValue? = nil
+    var THORChainAccount: THORChainAccountValue? = nil
     var CosmosChainAccount: CosmosAccountValue? = nil
     private var isValidForm: Bool {
         return isAddressCorrect && isAmountCorrect && isHackedOrPhished
@@ -34,23 +34,31 @@ class SendCryptoVerifyViewModel: ObservableObject {
     //TODO: Remove that, we need to use the loadData only
     func reloadTransactions(tx: SendTransaction) {
         Task {
-            if  tx.coin.chain.chainType == ChainType.UTXO {
-                await utxo.fetchBlockchairData(for: tx)
-            } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
-                self.THORChainAccount = try await thor.fetchAccountNumber(tx.fromAddress)
-            } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
-                
-                await sol.getSolanaBalance(tx: tx)
-                await sol.fetchRecentBlockhash()
-                
-                await MainActor.run {
-                    if let feeInLamports = sol.feeInLamports {
-                        tx.gas = String(feeInLamports)
+            do{
+                if  tx.coin.chain.chainType == ChainType.UTXO {
+                    await utxo.fetchBlockchairData(for: tx)
+                } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
+                    self.THORChainAccount = try await thor.fetchAccountNumber(tx.fromAddress)
+                } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
+                    
+                    await sol.getSolanaBalance(tx: tx)
+                    await sol.fetchRecentBlockhash()
+                    
+                    await MainActor.run {
+                        if let feeInLamports = sol.feeInLamports {
+                            tx.gas = String(feeInLamports)
+                        }
                     }
+                    
+                } else if tx.coin.chain.name == Chain.GaiaChain.name {
+                    
+                    self.CosmosChainAccount = try await gaia.fetchAccountNumber(tx.fromAddress)
+                    
                 }
-                
-            }else if tx.coin.chain.name == Chain.GaiaChain.name {
-                self.CosmosChainAccount = try await gaia.fetchAccountNumber(tx.fromAddress)
+            }
+            
+            catch{
+                print(error.localizedDescription)
             }
         }
     }
@@ -213,7 +221,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
             let keysignPayload = KeysignPayload(
                 coin: tx.coin,
                 toAddress: tx.toAddress,
-                toAmount: tx.amountInSats,
+                toAmount: tx.amountInCoinDecimal,
                 chainSpecific: BlockChainSpecific.Cosmos(accountNumber: intAccountNumber, sequence: intSequence, gas: 7500),
                 utxos: [],
                 memo: tx.memo, swapPayload: nil
