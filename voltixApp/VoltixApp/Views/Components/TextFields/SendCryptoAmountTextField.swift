@@ -23,10 +23,11 @@ struct SendCryptoAmountTextField: View {
 				TextField(NSLocalizedString("enterAmount", comment: "").capitalized, text: Binding<String>(
 					get: { self.tx.amount },
 					set: { newValue in
-						self.tx.amount = newValue
+                        let newAmount = newValue.formatCurrency()
+                        self.tx.amount = newAmount
 						DebounceHelper.shared.debounce {
 							Task {
-								await sendCryptoViewModel.convertToUSD(newValue: newValue, tx: tx)
+								await sendCryptoViewModel.convertToUSD(newValue: newAmount, tx: tx)
 							}
 						}
 					}
