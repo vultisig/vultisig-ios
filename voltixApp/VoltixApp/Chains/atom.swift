@@ -153,7 +153,7 @@ class ATOMHelper {
             print(serializedData)
             return .success(serializedData)
         } catch {
-            return .failure(HelperError.runtimeError("fail to get signed ethereum transaction,error:\(error.localizedDescription)"))
+            return .failure(HelperError.runtimeError("fail to get signed transaction,error:\(error.localizedDescription)"))
         }
     }
 }
