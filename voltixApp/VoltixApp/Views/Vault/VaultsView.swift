@@ -53,7 +53,7 @@ struct VaultsView: View {
     
     var addVaultButton: some View {
         NavigationLink {
-            CreateVaultView()
+            CreateVaultView(showBackButton: true)
         } label: {
             FilledButton(title: "addNewVault", icon: "plus")
                 .padding(16)

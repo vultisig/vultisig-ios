@@ -8,7 +8,7 @@
 import Foundation
 
 @MainActor
-class EthereumTransactionViewModel : ObservableObject{
+class EthereumTransactionViewModel : ObservableObject {
     var chain: Chain?
     var vault: Vault = Vault(name: "temp")
     

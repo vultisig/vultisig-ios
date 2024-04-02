@@ -28,6 +28,14 @@ struct VoltixApp: App {
                 .environmentObject(accountViewModel)
         }
         .modelContainer(sharedModelContainer)
+        .onChange(of: scenePhase) {
+            switch scenePhase {
+            case .inactive, .background:
+                resetLogin()
+            default:
+                break
+            }
+        }
     }
     
     var sharedModelContainer: ModelContainer = {
@@ -41,4 +49,8 @@ struct VoltixApp: App {
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()
+    
+    private func resetLogin() {
+        accountViewModel.resetLogin()
+    }
 }
