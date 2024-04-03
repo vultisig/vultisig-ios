@@ -29,11 +29,11 @@ class CoinViewModel: ObservableObject {
         await CryptoPriceService.shared.fetchCryptoPrices()
         do{
             if tx.coin.chain.chainType == ChainType.UTXO {
-                await utxo.fetchBlockchairData(for: tx)
+                let blockChairData = try await utxo.fetchBlockchairData(address: tx.fromAddress, coin: tx.coin)
                 let coinName = tx.coin.chain.name.lowercased()
                 let key = "\(tx.fromAddress)-\(coinName)"
-                balanceUSD = utxo.blockchairData[key]?.address?.balanceInUSD ?? "US$ 0,00"
-                coinBalance = utxo.blockchairData[key]?.address?.balanceInBTC ?? "0.0"
+                balanceUSD = blockChairData?.address?.balanceInUSD ?? "US$ 0,00"
+                coinBalance = blockChairData?.address?.balanceInBTC ?? "0.0"
             } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
                 try await eth.getEthBalance(tx: tx)
                 balanceUSD = tx.coin.balanceInUsd

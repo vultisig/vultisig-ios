@@ -11,7 +11,7 @@ struct EthereumTransactionCell: View {
     let chain: Chain?
     let transaction: EtherscanAPITransactionDetail
     let myAddress: String
-    @ObservedObject var etherScanService: EtherScanService
+    var etherScanService: EtherScanService
     
     @State var isSent = true
     
@@ -130,10 +130,10 @@ struct EthereumTransactionCell: View {
     }
     var amountCell: some View {
         let decimals: Int = Int(transaction.tokenDecimal ?? "\(EVMHelper.ethDecimals)") ?? EVMHelper.ethDecimals
-        let etherValue = etherScanService.convertToEther(fromWei: transaction.value, decimals)
+    
         let tokenSymbol = transaction.tokenSymbol ?? getTokenSymbol()
         
-        return getSummaryCell(title: "amount", value: "\(etherValue) \(tokenSymbol)")
+        return getSummaryCell(title: "amount", value: "\(EtherScanService.convertToEther(fromWei: transaction.value, decimals)) \(tokenSymbol)")
     }
     
     var feesCell: some View {

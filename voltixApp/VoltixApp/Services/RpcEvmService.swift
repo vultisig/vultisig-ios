@@ -12,7 +12,7 @@ enum RpcEvmServiceError: Error {
     }
 }
 
-class RpcEvmService: ObservableObject {
+class RpcEvmService {
     
     private let session = URLSession.shared
     internal let rpcEndpoint: String // Modificado para `internal` para permitir acesso pela subclass

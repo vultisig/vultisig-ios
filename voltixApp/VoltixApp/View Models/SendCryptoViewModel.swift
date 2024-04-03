@@ -42,10 +42,8 @@ class SendCryptoViewModel: ObservableObject {
     func loadGasInfoForSending(tx: SendTransaction) async{
         do {
             if tx.coin.chain.chainType == ChainType.UTXO {
-                
-                let sats = try await utxo.fetchSatsPrice(tx: tx)
+                let sats = try await utxo.fetchSatsPrice(coin: tx.coin)
                 tx.gas = String(sats)
-                
             } else if tx.coin.chain.name  == Chain.Ethereum.name  {
                 print("The loadData for \(tx.coin.ticker)")
                 let (gasPrice,priorityFee,nonce) = try await eth.getETHGasInfo(fromAddress: tx.fromAddress)
@@ -213,9 +211,8 @@ class SendCryptoViewModel: ObservableObject {
             }
         } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
             Task{
-                await sol.getSolanaBalance(tx: tx)
+                await sol.getSolanaBalance(tx:tx)
                 await sol.fetchRecentBlockhash()
-                
                 guard
                     let feeLamportsStr = sol.feeInLamports,
                     let feeInLamports = BigInt(feeLamportsStr) else {

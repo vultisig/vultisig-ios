@@ -36,7 +36,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
         Task {
             do{
                 if  tx.coin.chain.chainType == ChainType.UTXO {
-                    await utxo.fetchBlockchairData(for: tx)
+                    _ = try await utxo.fetchBlockchairData(address: tx.fromAddress, coin: tx.coin)
                 } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
                     self.THORChainAccount = try await thor.fetchAccountNumber(tx.fromAddress)
                 } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
@@ -51,7 +51,6 @@ class SendCryptoVerifyViewModel: ObservableObject {
                     self.CosmosChainAccount = try await gaia.fetchAccountNumber(tx.fromAddress)
                 }
             }
-            
             catch{
                 print(error.localizedDescription)
             }
