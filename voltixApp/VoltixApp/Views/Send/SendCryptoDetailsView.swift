@@ -106,7 +106,7 @@ struct SendCryptoDetailsView: View {
     var textField: some View {
         SendCryptoAmountTextField(
             amount: $tx.amount,
-            onChange: { await sendCryptoViewModel.convertUSDToCoin(newValue: $0, tx: tx) },
+            onChange: { await sendCryptoViewModel.convertToUSD(newValue: $0, tx: tx) },
             onMaxPressed: { sendCryptoViewModel.setMaxValues(tx: tx) }
         )
         .focused($focusedField, equals: .amount)
@@ -120,9 +120,9 @@ struct SendCryptoDetailsView: View {
     }
     
     var textFieldUSD: some View {
-        SendCryptoAmountUSDTextField(
-            tx: tx,
-            sendCryptoViewModel: sendCryptoViewModel
+        SendCryptoAmountTextField(
+            amount: $tx.amountInUSD,
+            onChange: { await sendCryptoViewModel.convertUSDToCoin(newValue: $0, tx: tx) }
         )
         .focused($focusedField, equals: .amountInUSD)
     }

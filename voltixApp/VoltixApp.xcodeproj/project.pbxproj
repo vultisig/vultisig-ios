@@ -91,7 +91,6 @@
 		A6564A062B969ADF00E4B329 /* EtherscanAPIResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6564A052B969ADF00E4B329 /* EtherscanAPIResponse.swift */; };
 		A6564A082B969AFC00E4B329 /* EtherscanAPITransactionDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6564A072B969AFC00E4B329 /* EtherscanAPITransactionDetail.swift */; };
 		A6564A0B2B96A04D00E4B329 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = A6564A0D2B96A04D00E4B329 /* Localizable.strings */; };
-		A65BA9802BA9361B00B2D8AA /* SendCryptoAmountUSDTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA97F2BA9361B00B2D8AA /* SendCryptoAmountUSDTextField.swift */; };
 		A65BA9822BA93A9F00B2D8AA /* DebounceHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9812BA93A9F00B2D8AA /* DebounceHelper.swift */; };
 		A65BA9842BAA07B500B2D8AA /* Background.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9832BAA07B500B2D8AA /* Background.swift */; };
 		A65BA9862BAA0F0D00B2D8AA /* SendCryptoVerifyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9852BAA0F0D00B2D8AA /* SendCryptoVerifyViewModel.swift */; };
@@ -316,7 +315,6 @@
 		A6564A052B969ADF00E4B329 /* EtherscanAPIResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EtherscanAPIResponse.swift; sourceTree = "<group>"; };
 		A6564A072B969AFC00E4B329 /* EtherscanAPITransactionDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EtherscanAPITransactionDetail.swift; sourceTree = "<group>"; };
 		A6564A0C2B96A04D00E4B329 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
-		A65BA97F2BA9361B00B2D8AA /* SendCryptoAmountUSDTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoAmountUSDTextField.swift; sourceTree = "<group>"; };
 		A65BA9812BA93A9F00B2D8AA /* DebounceHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebounceHelper.swift; sourceTree = "<group>"; };
 		A65BA9832BAA07B500B2D8AA /* Background.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Background.swift; sourceTree = "<group>"; };
 		A65BA9852BAA0F0D00B2D8AA /* SendCryptoVerifyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVerifyViewModel.swift; sourceTree = "<group>"; };
@@ -843,7 +841,6 @@
 			children = (
 				A6966D282BA400B700903CA4 /* SendCryptoAddressTextField.swift */,
 				A6966D2A2BA4018600903CA4 /* SendCryptoAmountTextField.swift */,
-				A65BA97F2BA9361B00B2D8AA /* SendCryptoAmountUSDTextField.swift */,
 			);
 			path = TextFields;
 			sourceTree = "<group>";
@@ -1414,7 +1411,6 @@
 				A60CA7EB2BB1020900FDEB5C /* DetectOrientation.swift in Sources */,
 				D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */,
 				DE9EB0FA2BA4491B001747D9 /* CoinExtension.swift in Sources */,
-				A65BA9802BA9361B00B2D8AA /* SendCryptoAmountUSDTextField.swift in Sources */,
 				465A8D562B9E6E0B006E7457 /* SolanaRpc.swift in Sources */,
 				A65BA9922BAD439900B2D8AA /* KeysignDiscoverServiceView.swift in Sources */,
 				DE9EB0F22BA2D97B001747D9 /* PeerDiscoveryPayload.swift in Sources */,

@@ -12,8 +12,7 @@ struct SendCryptoAmountTextField: View {
     @Binding var amount: String
 
     var onChange: (String) async -> Void
-    var onMaxPressed: () -> Void
-    var showButton = true
+    var onMaxPressed: (() -> Void)?
 
 	var body: some View {
 		ZStack(alignment: .trailing) {
@@ -24,16 +23,17 @@ struct SendCryptoAmountTextField: View {
 			
 			HStack(spacing: 0) {
 				TextField(NSLocalizedString("enterAmount", comment: "").capitalized, text: Binding<String>(
-					get: { amount },
-					set: { newValue in
-                        let newAmount = newValue.formatCurrency()
-                        amount = newAmount
+                    get: { amount },
+                    set: {
+                        let newValue = $0.formatCurrency()
+
+                        guard amount != newValue else { return }
+                        amount = newValue
+
                         DebounceHelper.shared.debounce {
-                            Task {
-                                await onChange(newAmount)
-                            }
+                            Task { await onChange(newValue) }
                         }
-					}
+                    }
 				))
 				.submitLabel(.next)
 				.textInputAutocapitalization(.never)
@@ -56,13 +56,17 @@ struct SendCryptoAmountTextField: View {
 	}
 	
 	var maxButton: some View {
-		Button { onMaxPressed() } label: {
+		Button { onMaxPressed?() } label: {
 			Text(NSLocalizedString("max", comment: "").uppercased())
 				.font(.body16Menlo)
 				.foregroundColor(.neutral0)
 				.frame(width: 40, height: 40)
 		}
 	}
+
+    var showButton: Bool {
+        return onMaxPressed != nil
+    }
 }
 
 #Preview {
