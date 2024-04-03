@@ -52,13 +52,14 @@ struct EthereumTransactionCell: View {
     }
     
     func getTxHashLink(hash: String) -> String{
-        if chain?.name == Chain.Ethereum.name {
+        switch chain {
+        case .ethereum:
             return Endpoint.ethereumLabelTxHash(hash)
-        }
-        if chain?.name == Chain.BSCChain.name {
+        case .bscChain:
             return Endpoint.bscLabelTxHash(hash)
+        default:
+            return ""
         }
-        return ""
     }
     
     var txHash: some View {
@@ -119,15 +120,11 @@ struct EthereumTransactionCell: View {
             feesCell
         }
     }
+
     func getTokenSymbol() -> String {
-        if chain?.name == Chain.Ethereum.name {
-            return "ETH"
-        }
-        if chain?.name == Chain.BSCChain.name {
-            return "BNB"
-        }
-        return ""
+        return chain?.ticker ?? ""
     }
+    
     var amountCell: some View {
         let decimals: Int = Int(transaction.tokenDecimal ?? "\(EVMHelper.ethDecimals)") ?? EVMHelper.ethDecimals
         let etherValue = etherScanService.convertToEther(fromWei: transaction.value, decimals)

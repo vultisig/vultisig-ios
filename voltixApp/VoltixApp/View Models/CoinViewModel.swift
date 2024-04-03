@@ -27,42 +27,42 @@ class CoinViewModel: ObservableObject {
         print("realoading data...")
         isLoading = true
         await CryptoPriceService.shared.fetchCryptoPrices()
-        do{
-            if tx.coin.chain.chainType == ChainType.UTXO {
+        do {
+            if tx.coin.chain.chainType == .UTXO {
                 await utxo.fetchBlockchairData(for: tx)
                 let coinName = tx.coin.chain.name.lowercased()
                 let key = "\(tx.fromAddress)-\(coinName)"
                 balanceUSD = utxo.blockchairData[key]?.address?.balanceInUSD ?? "US$ 0,00"
                 coinBalance = utxo.blockchairData[key]?.address?.balanceInBTC ?? "0.0"
-            } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
+            } else if tx.coin.chain == .ethereum {
                 try await eth.getEthBalance(tx: tx)
                 balanceUSD = tx.coin.balanceInUsd
                 coinBalance = tx.coin.balanceString
                 
-            } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
+            } else if tx.coin.chain == .thorChain {
                 tx.gas = "0.02"
                 
                 let thorBalances = try await thor.fetchBalances(tx.fromAddress)
-                if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.THORChain.name.lowercased()]?["usd"] {
+                if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.thorChain.name.lowercased()]?["usd"] {
                     balanceUSD = thorBalances.runeBalanceInUSD(usdPrice: priceRateUsd) ?? "US$ 0,00"
                 }
                 coinBalance = thorBalances.formattedRuneBalance() ?? "0.0"
-            } else if tx.coin.chain.name == Chain.BSCChain.name {
+            } else if tx.coin.chain == .bscChain {
                 try await bsc.getBNBBalance(tx: tx)
                 balanceUSD = tx.coin.balanceInUsd
                 coinBalance = tx.coin.balanceString
-            } else if tx.coin.chain.name.lowercased() == Chain.Avalache.name.lowercased() {
+            } else if tx.coin.chain == .avalanche {
                 try await avax.getBalance(tx: tx)
                 balanceUSD = tx.coin.balanceInUsd
                 coinBalance = tx.coin.balanceString
-            } else if tx.coin.chain.name == Chain.GaiaChain.name {
+            } else if tx.coin.chain == .gaiaChain {
                 let atomBalance =  try await gaia.fetchBalances(tx.fromAddress)
                 if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[tx.coin.priceProviderId]?["usd"] {
                     balanceUSD = atomBalance.atomBalanceInUSD(usdPrice: priceRateUsd) ?? "US$ 0,00"
                 }
                 coinBalance = atomBalance.formattedAtomBalance() ?? "0.0"
                 
-            } else if tx.coin.chain.name == Chain.Solana.name {
+            } else if tx.coin.chain == .solana {
                 await sol.getSolanaBalance(tx:tx)
                 await sol.fetchRecentBlockhash()
                 balanceUSD = tx.coin.balanceInUsd

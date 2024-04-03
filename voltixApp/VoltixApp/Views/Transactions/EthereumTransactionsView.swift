@@ -63,5 +63,5 @@ struct EthereumTransactionsView: View {
 }
 
 #Preview {
-    EthereumTransactionsView(chain:Chain.Ethereum,contractAddress: nil)
+    EthereumTransactionsView(chain: Chain.ethereum, contractAddress: nil)
 }

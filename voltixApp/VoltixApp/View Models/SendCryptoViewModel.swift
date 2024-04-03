@@ -41,35 +41,35 @@ class SendCryptoViewModel: ObservableObject {
     
     func loadGasInfoForSending(tx: SendTransaction) async{
         do {
-            if tx.coin.chain.chainType == ChainType.UTXO {
-                
+            if tx.coin.chain.chainType == .UTXO {
+
                 let sats = try await utxo.fetchSatsPrice(tx: tx)
                 tx.gas = String(sats)
                 
-            } else if tx.coin.chain.name  == Chain.Ethereum.name  {
+            } else if tx.coin.chain == .ethereum {
                 print("The loadData for \(tx.coin.ticker)")
                 let (gasPrice,priorityFee,nonce) = try await eth.getETHGasInfo(fromAddress: tx.fromAddress)
                 tx.gas = gasPrice
                 tx.nonce = nonce
                 tx.priorityFeeGwei = priorityFee
                 
-            } else if tx.coin.chain.name  == Chain.BSCChain.name  {
+            } else if tx.coin.chain == .bscChain  {
                 print("The loadData for \(tx.coin.ticker)")
                 let (gasPrice,priorityFee,nonce) = try await bsc.getBscGasInfo(fromAddress: tx.fromAddress)
                 tx.gas = gasPrice
                 tx.nonce = nonce
                 tx.priorityFeeGwei = priorityFee
-            } else if tx.coin.chain.name  == Chain.Avalache.name  {
+            } else if tx.coin.chain == .avalanche {
                 print("The loadData for \(tx.coin.ticker)")
                 let (gasPrice,priorityFee,nonce) = try await avax.getGasInfo(fromAddress: tx.fromAddress)
                 tx.gas = gasPrice
                 tx.nonce = nonce
                 tx.priorityFeeGwei = priorityFee
             }
-            else if tx.coin.chain.name  == Chain.THORChain.name  {
+            else if tx.coin.chain == .avalanche {
                 // THORChain gas fee is 0.02 RUNE fixed
                 tx.gas = "0.02"
-            } else if tx.coin.chain.name == Chain.GaiaChain.name {
+            } else if tx.coin.chain == .gaiaChain {
                 tx.gas = "0.0075"
             }
             
@@ -128,7 +128,7 @@ class SendCryptoViewModel: ObservableObject {
         let key: String = "\(tx.fromAddress)-\(coinName)"
         isLoading = true
         
-        if  tx.coin.chain.chainType == ChainType.UTXO {
+        if  tx.coin.chain.chainType == .UTXO {
             
             tx.amount = utxo.blockchairData[key]?.address?.balanceInBTC ?? "0.0"
             
@@ -139,7 +139,7 @@ class SendCryptoViewModel: ObservableObject {
                 await convertToUSD(newValue: tx.amount, tx: tx)
                 isLoading = false
             }
-        } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
+        } else if tx.coin.chain == .ethereum {
             Task {
                 do {
                     let (gasPrice, _, _) = try await EtherScanService.shared.getETHGasInfo(fromAddress: tx.fromAddress)
@@ -167,7 +167,7 @@ class SendCryptoViewModel: ObservableObject {
                 await convertToUSD(newValue: tx.amount, tx: tx)
                 isLoading = false
             }
-        } else if tx.coin.chain.name.lowercased() == Chain.Avalache.name.lowercased() {
+        } else if tx.coin.chain == .avalanche {
             Task {
                 do {
                     let (gasPrice, _, _) = try await AvalancheService.shared.getGasInfo(fromAddress: tx.fromAddress)
@@ -195,11 +195,11 @@ class SendCryptoViewModel: ObservableObject {
                 await convertToUSD(newValue: tx.amount, tx: tx)
                 isLoading = false
             }
-        }  else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
-            Task{
+        }  else if tx.coin.chain == .thorChain {
+            Task {
                 do{
                     let thorBalances = try await self.thor.fetchBalances(tx.fromAddress)
-                    if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.THORChain.name.lowercased()]?["usd"] {
+                    if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.thorChain.name.lowercased()]?["usd"] {
                         tx.coin.priceRate = priceRateUsd
                     }
                     
@@ -211,7 +211,7 @@ class SendCryptoViewModel: ObservableObject {
                 }
                 isLoading = false
             }
-        } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
+        } else if tx.coin.chain == .solana {
             Task{
                 await sol.getSolanaBalance(tx: tx)
                 await sol.fetchRecentBlockhash()
@@ -314,7 +314,7 @@ class SendCryptoViewModel: ObservableObject {
                 logger.log("Total transaction cost exceeds wallet balance.")
                 isValidForm = false
             }
-        } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
+        } else if tx.coin.chain == .solana {
             
             guard let walletBalanceInLamports = sol.balance else {
                 errorMessage = "unavailableBalanceError"

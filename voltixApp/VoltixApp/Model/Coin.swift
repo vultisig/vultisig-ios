@@ -129,7 +129,7 @@ class Coin: Codable, Hashable {
     }
     
     static let example = Coin(
-        chain: Chain.Bitcoin,
+        chain: Chain.bitcoin,
         ticker: "BTC",
         logo: "BitcoinLogo",
         address: "bc1qxyz...",

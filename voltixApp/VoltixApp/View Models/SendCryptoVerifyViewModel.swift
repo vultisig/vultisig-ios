@@ -37,9 +37,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
             do{
                 if  tx.coin.chain.chainType == ChainType.UTXO {
                     await utxo.fetchBlockchairData(for: tx)
-                } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
+                } else if tx.coin.chain == .thorChain {
                     self.THORChainAccount = try await thor.fetchAccountNumber(tx.fromAddress)
-                } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
+                } else if tx.coin.chain == .solana {
                     await sol.getSolanaBalance(tx: tx)
                     await sol.fetchRecentBlockhash()
                     await MainActor.run {
@@ -47,7 +47,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
                             tx.gas = String(feeInLamports)
                         }
                     }
-                } else if tx.coin.chain.name == Chain.GaiaChain.name {
+                } else if tx.coin.chain == .gaiaChain {
                     self.CosmosChainAccount = try await gaia.fetchAccountNumber(tx.fromAddress)
                 }
             }
@@ -138,8 +138,8 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 
                 return keysignPayload
             }
-        } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
-            
+        } else if tx.coin.chain == .thorChain {
+
             guard let accountNumberString = THORChainAccount?.accountNumber, let intAccountNumber = UInt64(accountNumberString) else {
                 print("We need the ACCOUNT NUMBER to broadcast a transaction")
                 self.errorMessage = "failToGetAccountNumber"
@@ -171,8 +171,8 @@ class SendCryptoVerifyViewModel: ObservableObject {
             
             return keysignPayload
             
-        } else if tx.coin.chain.name  == Chain.GaiaChain.name {
-            
+        } else if tx.coin.chain == .gaiaChain {
+
             guard let accountNumberString = CosmosChainAccount?.accountNumber, let intAccountNumber = UInt64(accountNumberString) else {
                 self.errorMessage = "failToGetAccountNumber"
                 showAlert = true
@@ -203,7 +203,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
             
             return keysignPayload
             
-        } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
+        } else if tx.coin.chain == .solana {
             guard let recentBlockHash = sol.recentBlockHash else {
                 print("We need the recentBlockHash to broadcast a transaction")
                 self.errorMessage = "failToGetRecentBlockHash"
