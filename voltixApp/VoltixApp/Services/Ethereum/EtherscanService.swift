@@ -14,21 +14,18 @@ public class EtherScanService: ObservableObject {
     private var cacheGasPrice: [String: (data: BigInt, timestamp: Date)] = [:]
     private var cacheNonce: [String: (data: Int64, timestamp: Date)] = [:]
     
-    func getEthBalance(tx: SendTransaction) async throws -> Void {
-        
+    func getEthBalance(coin: Coin) async throws {
         do {
             // Start fetching all information concurrently
-            async let cryptoPrice = CryptoPriceService.shared.cryptoPrices?.prices[tx.coin.priceProviderId]?["usd"]
+            async let cryptoPrice = CryptoPriceService.shared.cryptoPrices?.prices[coin.priceProviderId]?["usd"]
             if let priceRateUsd = await cryptoPrice {
-                tx.coin.priceRate = priceRateUsd
+                coin.priceRate = priceRateUsd
             }
-            if !tx.coin.isNativeToken {
-                tx.coin.rawBalance = try await fetchTokenRawBalance(contractAddress: tx.coin.contractAddress, address: tx.fromAddress)
+            if !coin.isNativeToken {
+                coin.rawBalance = try await fetchTokenRawBalance(contractAddress: coin.contractAddress, address: coin.address)
             } else {
-                tx.coin.rawBalance = try await fetchEthRawBalance(address: tx.fromAddress)
+                coin.rawBalance = try await fetchEthRawBalance(address: coin.address)
             }
-            
-            
         } catch let error as EtherScanError {
             handleEtherScanError(error)
         } catch {

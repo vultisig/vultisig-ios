@@ -71,8 +71,13 @@ class SendCryptoViewModel: ObservableObject {
                 tx.gas = "0.02"
             } else if tx.coin.chain == .gaiaChain {
                 tx.gas = "0.0075"
+            } else if tx.coin.chain == .solana {
+                await sol.fetchRecentBlockhash()
+                if let feeInLamports = sol.feeInLamports {
+                    tx.gas = String(feeInLamports)
+                }
             }
-            
+
         } catch {
             if let err =  error as? HelperError {
                 switch err{
@@ -206,14 +211,14 @@ class SendCryptoViewModel: ObservableObject {
                     tx.coin.rawBalance = thorBalances.runeBalance() ?? "0"
                     tx.amount = "\(tx.coin.getMaxValue(BigInt(THORChainHelper.THORChainGas)))"
                     await convertToUSD(newValue: tx.amount, tx: tx)
-                }catch{
+                } catch {
                     print("fail to get THORChain balance,error:\(error.localizedDescription)")
                 }
                 isLoading = false
             }
         } else if tx.coin.chain == .solana {
-            Task{
-                await sol.getSolanaBalance(tx: tx)
+            Task {
+                await sol.getSolanaBalance(coin: tx.coin)
                 await sol.fetchRecentBlockhash()
                 
                 guard

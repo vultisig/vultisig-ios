@@ -81,20 +81,20 @@ class SolanaService: ObservableObject {
         }
     }
 	
-    func getSolanaBalance(tx: SendTransaction) async {
+    func getSolanaBalance(coin: Coin) async {
         do {
             let requestBody: [String: Any] = [
                 "jsonrpc": "2.0",
                 "id": 1,
                 "method": "getBalance",
-                "params": [tx.fromAddress]
+                "params": [coin.address]
             ]
             let data = try await postRequest(with: requestBody)
             let response = try jsonDecoder.decode(SolanaRPCResponse<SolanaBalanceResponse>.self, from: data)
             self.balance = response.result.value
-            tx.coin.rawBalance = "\(response.result.value)"
+            coin.rawBalance = "\(response.result.value)"
             if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.solana.name.lowercased()]?["usd"] {
-                tx.coin.priceRate = priceRateUsd
+                coin.priceRate = priceRateUsd
             }
         } catch {
             print("Error fetching balance: \(error.localizedDescription)")

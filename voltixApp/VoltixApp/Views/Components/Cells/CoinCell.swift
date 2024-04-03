@@ -8,11 +8,13 @@
 import SwiftUI
 
 struct CoinCell: View {
+    
     let coin: Coin
     let group: GroupedChain
     let vault: Vault
     
-    @StateObject var tx = SendTransaction()
+    @StateObject var sendTx = SendTransaction()
+    @StateObject var swapTx = SwapTransaction()
     @StateObject var coinViewModel = CoinViewModel()
 	
     var body: some View {
@@ -41,7 +43,7 @@ struct CoinCell: View {
     }
     
     var title: some View {
-        Text(tx.coin.ticker)
+        Text(sendTx.coin.ticker)
             .font(.body20Menlo)
             .foregroundColor(.neutral0)
     }
@@ -74,7 +76,7 @@ struct CoinCell: View {
     
     var swapButton: some View {
         NavigationLink {
-            
+            SwapCryptoView(tx: swapTx, coinViewModel: coinViewModel, group: group)
         } label: {
             Text(NSLocalizedString("swap", comment: "Swap button text").uppercased())
                 .font(.body16MenloBold)
@@ -88,7 +90,7 @@ struct CoinCell: View {
     
     var sendButton: some View {
         NavigationLink {
-            SendCryptoView(tx: tx, 
+            SendCryptoView(tx: sendTx,
                            coinViewModel: coinViewModel,
                            group: group,
                            vault: vault)
@@ -104,10 +106,10 @@ struct CoinCell: View {
     }
     
     private func setData() async {
-        tx.coin = coin    
-		await coinViewModel.loadData(
-            tx: tx
-        )
+        sendTx.coin = coin
+        swapTx.fromCoin = coin
+
+        await coinViewModel.loadData(coin: coin)
     }
 }
 
