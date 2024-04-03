@@ -9,30 +9,29 @@ import Foundation
 import WalletCore
 
 extension Coin {
+
     func getCoinType() -> CoinType? {
-        switch self.chain {
-        case .Bitcoin:
+        switch chain {
+        case .bitcoin:
             return CoinType.bitcoin
-        case Chain.THORChain:
+        case .thorChain:
             return CoinType.thorchain
-        case Chain.Solana:
+        case .solana:
             return CoinType.solana
-        case Chain.BitcoinCash:
+        case .bitcoinCash:
             return CoinType.bitcoinCash
-        case Chain.Litecoin:
+        case .litecoin:
             return CoinType.litecoin
-        case Chain.Dogecoin:
+        case .dogecoin:
             return CoinType.dogecoin
-        case Chain.Ethereum:
+        case .ethereum:
             return CoinType.ethereum
-        case Chain.BSCChain:
+        case .bscChain:
             return CoinType.smartChain
-        case Chain.Avalache:
+        case .avalanche:
             return CoinType.avalancheCChain
-        case Chain.GaiaChain:
+        case .gaiaChain:
             return CoinType.cosmos
-        default:
-            return nil
         }
     }
 }

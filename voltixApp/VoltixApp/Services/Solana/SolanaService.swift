@@ -93,7 +93,7 @@ class SolanaService: ObservableObject {
             let response = try jsonDecoder.decode(SolanaRPCResponse<SolanaBalanceResponse>.self, from: data)
             self.balance = response.result.value
             tx.coin.rawBalance = "\(response.result.value)"
-            if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.Solana.name.lowercased()]?["usd"] {
+            if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.solana.name.lowercased()]?["usd"] {
                 tx.coin.priceRate = priceRateUsd
             }
         } catch {

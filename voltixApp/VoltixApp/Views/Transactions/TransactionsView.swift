@@ -32,8 +32,8 @@ struct TransactionsView: View {
     
     var content: some View {
         let coin = group.coins.first
-        let bitcoinCondition = coin?.chain.name.lowercased() == Chain.Bitcoin.name.lowercased() || coin?.chain.name.lowercased() == Chain.Litecoin.name.lowercased() || coin?.chain.name == Chain.BitcoinCash.name || coin?.chain.name == Chain.Dogecoin.name
-        let ethereumCondition = coin?.chain.name == Chain.Ethereum.name || coin?.chain.name == Chain.BSCChain.name
+        let bitcoinCondition = coin?.chain.chainType == .UTXO
+        let ethereumCondition = coin?.chain.chainType == .EVM
         let isNativeCondition = !(coin?.isNativeToken ?? true)
         
         return ZStack {

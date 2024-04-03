@@ -56,8 +56,8 @@ class TokenSelectionViewModel: ObservableObject {
     }
     
     private func addToChain(asset: Coin, to vault: Vault) {
-        switch asset.chain.name {
-        case Chain.THORChain.name:
+        switch asset.chain {
+        case .thorChain:
             let runeCoinResult = THORChainHelper.getRUNECoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
             switch runeCoinResult {
             case .success(let coin):
@@ -66,7 +66,7 @@ class TokenSelectionViewModel: ObservableObject {
             case .failure(let error):
                 logger.info("fail to get thorchain address,error:\(error.localizedDescription)")
             }
-        case Chain.Ethereum.name:
+        case .ethereum:
             let coinResult = EVMHelper.getEthereumHelper().getCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
             switch coinResult {
             case .success(let coin):
@@ -95,7 +95,7 @@ class TokenSelectionViewModel: ObservableObject {
                 logger.info("fail to get ethereum address, error: \(error.localizedDescription)")
             }
             
-        case Chain.Bitcoin.name, Chain.BitcoinCash.name, Chain.Litecoin.name, Chain.Dogecoin.name:
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin:
             guard let coinType = CoinType.from(string: asset.chain.name.replacingOccurrences(of: "-", with: "")) else {
                 print("Coin type not found on Wallet Core")
                 return
@@ -108,7 +108,7 @@ class TokenSelectionViewModel: ObservableObject {
             case .failure(let err):
                 logger.info("fail to get bitcoin address,error:\(err.localizedDescription)")
             }
-        case Chain.Solana.name:
+        case .solana:
             let coinResult = SolanaHelper.getSolana(hexPubKey: vault.pubKeyEdDSA, hexChainCode: vault.hexChainCode)
             switch coinResult {
             case .success(let sol):
@@ -117,7 +117,7 @@ class TokenSelectionViewModel: ObservableObject {
             case .failure(let err):
                 logger.info("fail to get solana address,error:\(err.localizedDescription)")
             }
-        case Chain.GaiaChain.name:
+        case .gaiaChain:
             let coinResult = ATOMHelper().getATOMCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
             switch coinResult {
             case .success(let atom):
@@ -126,7 +126,7 @@ class TokenSelectionViewModel: ObservableObject {
             case .failure(let err):
                 logger.info("fail to get solana address,error:\(err.localizedDescription)")
             }
-        case Chain.Avalache.name:
+        case .avalanche:
             let coinResult = EVMHelper.getAvaxHelper().getCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
             switch coinResult {
             case .success(let coin):
@@ -154,7 +154,7 @@ class TokenSelectionViewModel: ObservableObject {
             case .failure(let error):
                 logger.info("fail to get avalanche address, error: \(error.localizedDescription)")
             }
-        case Chain.BSCChain.name:
+        case .bscChain:
             let coinResult = EVMHelper.getBSCHelper().getCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
             switch coinResult {
             case .success(let coin):
@@ -183,8 +183,6 @@ class TokenSelectionViewModel: ObservableObject {
             case .failure(let error):
                 logger.info("fail to get avalanche address, error: \(error.localizedDescription)")
             }
-        default:
-            print("Unsupported chain: \(asset.chain.name)")
         }
     }
 }
