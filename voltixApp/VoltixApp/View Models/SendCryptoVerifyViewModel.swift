@@ -216,7 +216,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 coin: tx.coin,
                 toAddress: tx.toAddress,
                 toAmount: tx.amountInLamports,
-                chainSpecific: BlockChainSpecific.Solana(recentBlockHash: recentBlockHash, priorityFee: 0),
+                chainSpecific: BlockChainSpecific.Solana(recentBlockHash: recentBlockHash, priorityFee: 500_000),
                 utxos: [],
                 memo: tx.memo, swapPayload: nil
             )

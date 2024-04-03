@@ -106,15 +106,14 @@ class SolanaService: ObservableObject {
             let requestBody: [String: Any] = [
                 "jsonrpc": "2.0",
                 "id": 1,
-                "method": "getRecentBlockhash",
+                "method": "getLatestBlockhash",
                 "params": [["commitment": "finalized"]]
             ]
 			
             let data = try await postRequest(with: requestBody)
-            let response = try jsonDecoder.decode(SolanaRPCResponse<SolanaRecentBlockhashResponse>.self, from: data)
-			
-            self.recentBlockHash = response.result.value.blockhash
-            self.feeInLamports = String(response.result.value.feeCalculator.lamportsPerSignature)            
+            
+            self.recentBlockHash = Utils.extractResultFromJson(fromData: data, path: "result.value.blockhash") as? String
+            self.feeInLamports = "7000"
         } catch {
             print("Error fetching recent blockhash: \(error.localizedDescription)")
         }
