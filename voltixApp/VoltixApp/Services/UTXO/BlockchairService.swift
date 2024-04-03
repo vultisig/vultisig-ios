@@ -17,13 +17,12 @@ public class BlockchairService: ObservableObject {
     @Published var blockchairData: [String: Blockchair] = [:]
     @Published var errorMessage: [String: String] = [:]
     
-    func fetchBlockchairData(for tx: SendTransaction) async {
-        
-        let address = tx.fromAddress
-        let coinName = tx.coin.chain.name.lowercased()
-        let key = "\(address)-\(coinName)"
-        
-        guard let url = URL(string: Endpoint.blockchairDashboard(address, coinName)) else {
+    func fetchBlockchairData(coin: Coin) async {
+
+        let coinName = coin.chain.name.lowercased()
+        let key = "\(coin.address)-\(coinName)"
+
+        guard let url = URL(string: Endpoint.blockchairDashboard(coin.address, coinName)) else {
             print("Invalid URL")
             return
         }
@@ -33,7 +32,7 @@ public class BlockchairService: ObservableObject {
             let decoder = JSONDecoder()
             decoder.keyDecodingStrategy = .convertFromSnakeCase
             let decodedData = try decoder.decode(BlockchairResponse.self, from: data)
-            if let blockchairData = decodedData.data[address] {
+            if let blockchairData = decodedData.data[coin.address] {
                 self.blockchairData[key] = blockchairData
             }
         } catch let error as DecodingError {

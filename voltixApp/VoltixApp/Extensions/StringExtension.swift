@@ -8,7 +8,9 @@
 import SwiftUI
 
 // MARK: - String Extensions for Padding and Hex Processing
+
 extension String {
+
     func paddingLeft(toLength: Int, withPad character: String) -> String {
         let toPad = toLength - self.count
         
@@ -30,5 +32,22 @@ extension String {
     
     func formatCurrency() -> String {
         return self.replacingOccurrences(of: ",", with: ".")
+    }
+}
+
+// MARK: - String constants
+
+extension String {
+
+    static var empty: String {
+        return ""
+    }
+
+    static var newline: String {
+        return "\n"
+    }
+
+    static var space: String {
+        return " "
     }
 }
