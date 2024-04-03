@@ -50,7 +50,7 @@ struct SwapCryptoDetailsView: View {
     var fromCoinField: some View {
         VStack(spacing: 8) {
             getTitle(for: "from")
-//            TokenSelectorDropdown(tx: tx, coinViewModel: coinViewModel, group: group)
+            TokenSelectorDropdown(coinViewModel: coinViewModel, group: group, selected: tx.fromCoin)
         }
     }
     
