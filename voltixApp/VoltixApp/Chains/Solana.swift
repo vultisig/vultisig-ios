@@ -29,7 +29,7 @@ enum SolanaHelper {
         guard keysignPayload.coin.chain.ticker == "SOL" else {
             return .failure(HelperError.runtimeError("coin is not SOL"))
         }
-        guard case .Solana(let recentBlockHash) = keysignPayload.chainSpecific else {
+        guard case .Solana(let recentBlockHash,let priorityFee) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get to address"))
         }
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .solana) else {
@@ -46,7 +46,11 @@ enum SolanaHelper {
             }
             $0.recentBlockhash = recentBlockHash
             $0.sender = keysignPayload.coin.address
+            $0.priorityFeePrice = SolanaPriorityFeePrice.with{
+                $0.price = priorityFee
+            }
         }
+        
         do {
             let inputData = try input.serializedData()
             return .success(inputData)
