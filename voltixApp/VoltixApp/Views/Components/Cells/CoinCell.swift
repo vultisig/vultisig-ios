@@ -62,10 +62,14 @@ struct CoinCell: View {
     }
     
     var buttons: some View {
-        HStack(spacing: 20) {
+        let isDisabled = coinViewModel.balanceUSD == nil
+        
+        return HStack(spacing: 20) {
             swapButton
             sendButton
         }
+        .disabled(isDisabled)
+        .redacted(reason: isDisabled ? .placeholder : [])
     }
     
     var swapButton: some View {

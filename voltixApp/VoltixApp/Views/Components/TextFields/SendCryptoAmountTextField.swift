@@ -54,9 +54,7 @@ struct SendCryptoAmountTextField: View {
 	
 	var maxButton: some View {
 		Button {
-			sendCryptoViewModel.setMaxValues(
-				tx: tx
-			)
+			sendCryptoViewModel.setMaxValues(tx: tx)
 		} label: {
 			Text(NSLocalizedString("max", comment: "").uppercased())
 				.font(.body16Menlo)

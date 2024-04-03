@@ -126,6 +126,7 @@ class SendCryptoViewModel: ObservableObject {
     func setMaxValues(tx: SendTransaction)  {
         let coinName = tx.coin.chain.name.lowercased()
         let key: String = "\(tx.fromAddress)-\(coinName)"
+        isLoading = true
         
         if  tx.coin.chain.chainType == ChainType.UTXO {
             
@@ -136,8 +137,8 @@ class SendCryptoViewModel: ObservableObject {
             }
             Task{
                 await convertToUSD(newValue: tx.amount, tx: tx)
+                isLoading = false
             }
-            
         } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
             Task {
                 do {
@@ -164,6 +165,7 @@ class SendCryptoViewModel: ObservableObject {
                 }
                 
                 await convertToUSD(newValue: tx.amount, tx: tx)
+                isLoading = false
             }
         } else if tx.coin.chain.name.lowercased() == Chain.Avalache.name.lowercased() {
             Task {
@@ -191,6 +193,7 @@ class SendCryptoViewModel: ObservableObject {
                 }
                 
                 await convertToUSD(newValue: tx.amount, tx: tx)
+                isLoading = false
             }
         }  else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
             Task{
@@ -206,6 +209,7 @@ class SendCryptoViewModel: ObservableObject {
                 }catch{
                     print("fail to get THORChain balance,error:\(error.localizedDescription)")
                 }
+                isLoading = false
             }
         } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
             Task{
@@ -222,6 +226,7 @@ class SendCryptoViewModel: ObservableObject {
                 tx.coin.rawBalance = sol.rawBalance
                 tx.amount = "\(tx.coin.getMaxValue(feeInLamports))"
                 await convertToUSD(newValue: tx.amount, tx: tx)
+                isLoading = false
             }
         }
     }
