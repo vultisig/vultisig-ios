@@ -53,13 +53,7 @@ struct KeysignDiscoveryView: View {
     }
     
     var loader: some View {
-        ZStack {
-            Color.black
-                .ignoresSafeArea()
-                .opacity(0.3)
-            
-            Loader()
-        }
+        Loader()
     }
     
     var errorText: some View {
