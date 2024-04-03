@@ -17,10 +17,6 @@ struct SendCryptoVerifyView: View {
         ZStack {
             Background()
             view
-            
-            if sendCryptoVerifyViewModel.isLoading {
-                loader
-            }
         }
         .gesture(DragGesture())
         .onAppear {
@@ -104,13 +100,7 @@ struct SendCryptoVerifyView: View {
     }
     
     var loader: some View {
-        ZStack {
-            Color.black
-                .ignoresSafeArea()
-                .opacity(0.3)
-            
-            Loader()
-        }
+        Loader()
     }
     
     private func getAddressCell(for title: String, with address: String) -> some View {

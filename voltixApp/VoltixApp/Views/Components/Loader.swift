@@ -9,6 +9,19 @@ import SwiftUI
 
 struct Loader: View {
     var body: some View {
+        ZStack {
+            overlay
+            loader
+        }
+    }
+    
+    var overlay: some View {
+        Color.black
+            .ignoresSafeArea()
+            .opacity(0.3)
+    }
+    
+    var loader: some View {
         VStack(spacing: 20) {
             ProgressView()
                 .preferredColorScheme(.dark)

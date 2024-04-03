@@ -24,6 +24,10 @@ struct SendCryptoView: View {
         ZStack {
             Background()
             view
+            
+            if sendCryptoViewModel.isLoading {
+                loader
+            }
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString(sendCryptoViewModel.currentTitle, comment: "SendCryptoView title"))
@@ -53,6 +57,7 @@ struct SendCryptoView: View {
                 .padding(.top, 30)
             tabView
         }
+        .blur(radius: sendCryptoViewModel.isLoading ? 1 : 0)
     }
     
     var tabView: some View {
@@ -137,10 +142,12 @@ struct SendCryptoView: View {
         SendCryptoSigningErrorView()
     }
     
+    var loader: some View {
+        Loader()
+    }
+    
     private func setData() async {
-        await sendCryptoViewModel.loadGasInfoForSending(
-            tx: tx
-        )
+        await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
     }
 }
 
