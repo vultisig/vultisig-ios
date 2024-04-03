@@ -30,12 +30,12 @@ class CoinViewModel: ObservableObject {
         do{
             if tx.coin.chain.chainType == ChainType.UTXO {
                 let blockChairData = try await utxo.fetchBlockchairData(address: tx.fromAddress, coin: tx.coin)
-                let coinName = tx.coin.chain.name.lowercased()
-                let key = "\(tx.fromAddress)-\(coinName)"
                 balanceUSD = blockChairData?.address?.balanceInUSD ?? "US$ 0,00"
                 coinBalance = blockChairData?.address?.balanceInBTC ?? "0.0"
             } else if tx.coin.chain.name.lowercased() == Chain.Ethereum.name.lowercased() {
-                try await eth.getEthBalance(tx: tx)
+                let (rawBalance,priceRate) = await eth.getEthBalance(coin:tx.coin,fromAddress: tx.fromAddress)
+                tx.coin.rawBalance = rawBalance
+                tx.coin.priceRate = priceRate
                 balanceUSD = tx.coin.balanceInUsd
                 coinBalance = tx.coin.balanceString
                 
@@ -48,7 +48,9 @@ class CoinViewModel: ObservableObject {
                 }
                 coinBalance = thorBalances.formattedRuneBalance() ?? "0.0"
             } else if tx.coin.chain.name == Chain.BSCChain.name {
-                try await bsc.getBNBBalance(tx: tx)
+                let (rawBalance,priceRate) = try await bsc.getBNBBalance(coin:tx.coin,fromAddress: tx.fromAddress)
+                tx.coin.rawBalance = rawBalance
+                tx.coin.priceRate = priceRate
                 balanceUSD = tx.coin.balanceInUsd
                 coinBalance = tx.coin.balanceString
             } else if tx.coin.chain.name.lowercased() == Chain.Avalache.name.lowercased() {

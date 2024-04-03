@@ -20,19 +20,17 @@ public class BSCService {
     private var cacheGasPrice: [String: (data: BigInt, timestamp: Date)] = [:]
     private var cacheNonce: [String: (data: Int64, timestamp: Date)] = [:]
     
-    func getBNBBalance(tx: SendTransaction) async throws -> Void {
-        
+    func getBNBBalance(coin:Coin, fromAddress: String) async throws -> (rawBalance:String,priceRate:Double) {
         // Start fetching all information concurrently
-        async let cryptoPrice = CryptoPriceService.shared.cryptoPrices?.prices[tx.coin.priceProviderId]?["usd"]
-        if let priceRateUsd = await cryptoPrice {
-            tx.coin.priceRate = priceRateUsd
-        }
-        if !tx.coin.isNativeToken {
-            tx.coin.rawBalance = try await fetchTokenRawBalance(contractAddress: tx.coin.contractAddress, address: tx.fromAddress)
-        } else {
-            tx.coin.rawBalance = try await fetchBNBRawBalance(address: tx.fromAddress)
-        }
+        let cryptoPrice = await CryptoPriceService.shared.cryptoPrices?.prices[coin.priceProviderId]?["usd"]
+        var rawBalance = "0"
         
+        if !coin.isNativeToken {
+            rawBalance = try await fetchTokenRawBalance(contractAddress: coin.contractAddress, address: fromAddress)
+        } else {
+            rawBalance = try await fetchBNBRawBalance(address: fromAddress)
+        }
+        return (rawBalance,cryptoPrice ?? 0)
     }
     
     func getBscGasInfo(fromAddress: String) async throws -> (gasPrice:String,priorityFee:Int64,nonce:Int64){
@@ -68,9 +66,9 @@ public class BSCService {
         }
     }
     
-    func estimateGasForBEP20Transfer(tx: SendTransaction) async throws -> BigInt {
-        let data = constructERC20TransferData(recipientAddress: tx.toAddress, value: tx.amountInTokenWei)
-        let urlString = Endpoint.fetchEtherscanEstimateGasForERC20Transaction(data: data, contractAddress: tx.coin.contractAddress)
+    func estimateGasForBEP20Transfer(toAddress: String ,contractAddress: String,amountInTokenWei: BigInt) async throws -> BigInt {
+        let data = constructERC20TransferData(recipientAddress: toAddress, value: amountInTokenWei)
+        let urlString = Endpoint.fetchEtherscanEstimateGasForERC20Transaction(data: data, contractAddress: contractAddress)
         let resultData = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
         
         guard let resultString = Utils.extractResultFromJson(fromData: resultData, path: "result") as? String else {
@@ -126,7 +124,7 @@ public class BSCService {
     func fetchNonce(address: String) async throws -> Int64 {
         let cacheKey = "\(address)-bsc-nonce"
         
-        if let cachedData: Int64 = try await Utils.getCachedData(cacheKey: cacheKey, cache: cacheNonce, timeInSeconds: 60) {
+        if let cachedData: Int64 = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheNonce, timeInSeconds: 60) {
             return cachedData
         }
         
@@ -156,7 +154,7 @@ public class BSCService {
     func fetchGasPrice() async throws -> BigInt {
         let cacheKey = "bsc-gas-price"
         
-        if let cachedData: BigInt = try await Utils.getCachedData(cacheKey: cacheKey, cache: cacheGasPrice, timeInSeconds: 60 * 5) {
+        if let cachedData: BigInt = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheGasPrice, timeInSeconds: 60 * 5) {
             return cachedData
         }
         
@@ -179,7 +177,7 @@ public class BSCService {
     func fetchOracle() async throws -> (Int64, Int64) {
         let cacheKey = "bsc-gas-priority-fee-gwei"
         
-        if let cachedData: (Int64, Int64) = try await Utils.getCachedData(cacheKey: cacheKey, cache: cacheOracle, timeInSeconds: 60 * 5) {
+        if let cachedData: (Int64, Int64) = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheOracle, timeInSeconds: 60 * 5) {
             return cachedData
         }
         

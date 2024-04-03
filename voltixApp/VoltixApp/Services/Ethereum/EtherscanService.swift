@@ -301,25 +301,4 @@ class EtherScanService {
         print(error.description)
     }
     
-    static func convertToEther(fromWei value: String, _ decimals: Int = EVMHelper.ethDecimals) -> String {
-        if let wei = Decimal(string: value) {
-            let decimalValue = Decimal(pow(10.0, Double(decimals)))
-            let ether = wei / decimalValue // Correctly perform exponentiation
-            return "\(ether)"
-        } else {
-            return "Invalid Value"
-        }
-    }
-    
-    func calculateTransactionFee(gasUsed: String, gasPrice: String) -> String {
-        guard let gasUsedDouble = Double(gasUsed), let gasPriceDouble = Double(gasPrice) else {
-            return "Invalid Data"
-        }
-        
-        let feeInWei = Decimal(gasUsedDouble * gasPriceDouble)
-        let feeInEther = feeInWei / Decimal(EVMHelper.wei)
-        let handler = NSDecimalNumberHandler(roundingMode: .plain, scale: 6, raiseOnExactness: false, raiseOnOverflow: false, raiseOnUnderflow: false, raiseOnDivideByZero: false)
-        let roundedDecimal = NSDecimalNumber(decimal: feeInEther).rounding(accordingToBehavior: handler)
-        return "\(roundedDecimal)"
-    }
 }
