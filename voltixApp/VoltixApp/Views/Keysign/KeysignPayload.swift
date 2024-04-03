@@ -17,7 +17,7 @@ enum BlockChainSpecific: Codable, Hashable {
     case ERC20(maxFeePerGasGwei: Int64, priorityFeeGwei: Int64, nonce: Int64, gasLimit: Int64, contractAddr: String)
     case THORChain(accountNumber: UInt64, sequence: UInt64)
     case Cosmos(accountNumber:UInt64,sequence:UInt64,gas:UInt64)
-    case Solana(recentBlockHash: String)
+    case Solana(recentBlockHash: String,priorityFee:UInt64)
 }
 
 struct KeysignPayload: Codable, Hashable {
