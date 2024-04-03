@@ -36,11 +36,11 @@ class SendCryptoVerifyViewModel: ObservableObject {
         Task {
             do{
                 if  tx.coin.chain.chainType == ChainType.UTXO {
-                    await utxo.fetchBlockchairData(for: tx)
+                    await utxo.fetchBlockchairData(coin: tx.coin)
                 } else if tx.coin.chain == .thorChain {
                     self.THORChainAccount = try await thor.fetchAccountNumber(tx.fromAddress)
                 } else if tx.coin.chain == .solana {
-                    await sol.getSolanaBalance(tx: tx)
+                    await sol.getSolanaBalance(coin: tx.coin)
                     await sol.fetchRecentBlockhash()
                     await MainActor.run {
                         if let feeInLamports = sol.feeInLamports {

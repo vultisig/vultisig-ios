@@ -109,8 +109,7 @@ struct CoinCell: View {
         sendTx.coin = coin
         swapTx.fromCoin = coin
 
-        await coinViewModel.loadData(tx: sendTx)
-//        await coinViewModel.loadData(tx: swapTx) /// !!!
+        await coinViewModel.loadData(coin: coin)
     }
 }
 
