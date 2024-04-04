@@ -65,6 +65,7 @@
 "enterAddress" = "Enter Address";
 "enterAmount" = "Enter Amount";
 "reshare" = "Reshare";
+"unknown" = "Unknown";
 "reshareVault" = "Reshare vault with a new committee";
 "pairWithOtherDevices" = "Pair with other devices:";
 "scanQrCode" = "Scan QR Code";

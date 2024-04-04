@@ -145,7 +145,11 @@ struct KeysignDiscoveryView: View {
     
     var deviceList: some View {
         List(participantDiscovery.peersFound, id: \.self, selection: $viewModel.selections) { peer in
-            getPeerCell(peer)
+            Button {
+                handleSelection(peer)
+            } label: {
+                PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
+            }
         }
         .scrollContentBackground(.hidden)
     }
@@ -166,19 +170,6 @@ struct KeysignDiscoveryView: View {
         .opacity(isDisabled ? 0.8 : 1)
         .grayscale(isDisabled ? 1 : 0)
         .padding(40)
-    }
-    
-    private func getPeerCell(_ peer: String) -> some View {
-        HStack {
-            Image(systemName: viewModel.selections.contains(peer) ? "checkmark.circle" : "circle")
-            Text(peer)
-        }
-        .font(.body12Menlo)
-        .foregroundColor(.neutral0)
-        .listRowBackground(Color.blue600)
-        .onTapGesture {
-            handleSelection(peer)
-        }
     }
     
     private func getQrImage(size: CGFloat) -> Image {

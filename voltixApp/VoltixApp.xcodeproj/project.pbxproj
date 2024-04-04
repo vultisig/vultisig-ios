@@ -104,6 +104,7 @@
 		A65BA9922BAD439900B2D8AA /* KeysignDiscoverServiceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9912BAD439900B2D8AA /* KeysignDiscoverServiceView.swift */; };
 		A65BA9962BAD460600B2D8AA /* KeysignStartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9952BAD460600B2D8AA /* KeysignStartView.swift */; };
 		A65BA9982BAD479C00B2D8AA /* JoinKeysignDoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9972BAD479C00B2D8AA /* JoinKeysignDoneView.swift */; };
+		A65C754D2BBF5A250076F30A /* PeerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65C754C2BBF5A250076F30A /* PeerCell.swift */; };
 		A66A0BD52BA124D00021A483 /* EditVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD42BA124D00021A483 /* EditVaultView.swift */; };
 		A66A0BD72BA125C50021A483 /* EditVaultCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD62BA125C50021A483 /* EditVaultCell.swift */; };
 		A66A0BD92BA12DF50021A483 /* RenameVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */; };
@@ -330,6 +331,7 @@
 		A65BA9912BAD439900B2D8AA /* KeysignDiscoverServiceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignDiscoverServiceView.swift; sourceTree = "<group>"; };
 		A65BA9952BAD460600B2D8AA /* KeysignStartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignStartView.swift; sourceTree = "<group>"; };
 		A65BA9972BAD479C00B2D8AA /* JoinKeysignDoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinKeysignDoneView.swift; sourceTree = "<group>"; };
+		A65C754C2BBF5A250076F30A /* PeerCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerCell.swift; sourceTree = "<group>"; };
 		A66A0BD42BA124D00021A483 /* EditVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditVaultView.swift; sourceTree = "<group>"; };
 		A66A0BD62BA125C50021A483 /* EditVaultCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditVaultCell.swift; sourceTree = "<group>"; };
 		A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenameVaultView.swift; sourceTree = "<group>"; };
@@ -884,6 +886,7 @@
 				A6C0D5642BB3BD0F00156689 /* UTXOTransactionCell.swift */,
 				A6C0D56A2BB3DC4000156689 /* EthereumTransactionCell.swift */,
 				A6E52F7F2BBE430600FD3785 /* TransactionCell.swift */,
+				A65C754C2BBF5A250076F30A /* PeerCell.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -1447,6 +1450,7 @@
 				DE5FA58A2BAD1EF2008FD910 /* CosmosBalanceCacheEntry.swift in Sources */,
 				DEEDAEE32B8AF8B1005170E8 /* publickey.swift in Sources */,
 				A6C0D56B2BB3DC4000156689 /* EthereumTransactionCell.swift in Sources */,
+				A65C754D2BBF5A250076F30A /* PeerCell.swift in Sources */,
 				A633B11C2B99273A003D1738 /* ColorExtensions.swift in Sources */,
 				46B106512BA7CAFE00564023 /* ChainType.swift in Sources */,
 				DE9EB0EC2BA2CC3C001747D9 /* TssType.swift in Sources */,
