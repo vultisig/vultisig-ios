@@ -70,17 +70,17 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         }
     }
 
-    var thorAsset: String {
+    var asset: String {
         switch self {
-        case .thorChain: return "THOR.RUNE"
-        case .ethereum: return "ETH.ETH"
-        case .avalanche: return "AVAX.AVAX"
-        case .bscChain: return "BSC.BNB"
-        case .bitcoin: return "BTC.BTC"
-        case .bitcoinCash: return "BCH.BCH"
-        case .litecoin: return "LTC.LTC"
-        case .dogecoin: return "DOGE.DOGE"
-        case .gaiaChain: return "GAIA.ATOM"
+        case .thorChain: return "THOR"
+        case .ethereum: return "ETH"
+        case .avalanche: return "AVAX"
+        case .bscChain: return "BSC"
+        case .bitcoin: return "BTC"
+        case .bitcoinCash: return "BCH"
+        case .litecoin: return "LTC"
+        case .dogecoin: return "DOGE"
+        case .gaiaChain: return "GAIA"
         case .solana:
             fatalError()
         }

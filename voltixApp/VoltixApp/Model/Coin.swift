@@ -126,7 +126,12 @@ class Coin: Codable, Hashable {
         formatter.currencyCode = "USD"
         return formatter.string(from: balanceInUsd as NSDecimalNumber) ?? "0.0"
     }
-    
+
+    var swapAsset: String {
+        guard !isNativeToken else { return "\(chain.asset).\(chain.ticker)" }
+        return "\(chain.asset).\(ticker)-\(contractAddress)"
+    }
+
     static let example = Coin(
         chain: Chain.bitcoin,
         ticker: "BTC",
