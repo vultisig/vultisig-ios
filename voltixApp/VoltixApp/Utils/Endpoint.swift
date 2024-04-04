@@ -14,10 +14,15 @@ class Endpoint {
     static func fetchAccountNumberThorchainNineRealms(_ address: String) -> String {
         "https://thornode.ninerealms.com/auth/accounts/\(address)"
     }
-    static func fetchAccountBalanceThorchainNineRealms(address: String) -> String{
+
+    static func fetchAccountBalanceThorchainNineRealms(address: String) -> String {
         "https://thornode.ninerealms.com/cosmos/bank/v1beta1/balances/\(address)"
     }
-    
+
+    static func fetchSwaoQuoteThorchainNineRealms(address: String, fromAsset: String, toAsset: String, amount: String) -> URL {
+        "https://thornode.ninerealms.com/thorchain/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)".asUrl
+    }
+
     static let avalancheServiceRpcService = "https://avalanche-c-chain-rpc.publicnode.com"
     
     static let solanaServiceAlchemyRpc = "https://solana-rpc.publicnode.com"
@@ -48,10 +53,6 @@ class Endpoint {
     
     static func fetchUnspentOutputs(_ value: String) -> String {
         "http://45.76.120.223/blockcypher/v1/btc/main/addrs/\(value)?unspentOnly=true"
-    }
-    
-    static func fetchLitecoinUnspentOutputs(_ userAddress: String) -> String {
-        "https://litecoinspace.org/api/address/\(userAddress)/utxo"
     }
     
     static func fetchCryptoPrices(coin: String, fiat: String) -> String {
@@ -199,5 +200,12 @@ class Endpoint {
         default:
             return nil
         }
+    }
+}
+
+fileprivate extension String {
+
+    var asUrl: URL {
+        return URL(string: self)!
     }
 }

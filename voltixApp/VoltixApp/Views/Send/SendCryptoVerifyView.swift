@@ -19,9 +19,6 @@ struct SendCryptoVerifyView: View {
             view
         }
         .gesture(DragGesture())
-        .onAppear {
-            reloadTransactions()
-        }
         .alert(isPresented: $sendCryptoVerifyViewModel.showAlert) {
             alert
         }
@@ -124,12 +121,6 @@ struct SendCryptoVerifyView: View {
         }
         .font(.body16MenloBold)
         .foregroundColor(.neutral100)
-    }
-    
-    private func reloadTransactions() {
-        sendCryptoVerifyViewModel.reloadTransactions(
-            tx: tx
-        )
     }
     
     private func validateForm() async {

@@ -85,7 +85,6 @@ class Coin: Codable, Hashable {
     }
     
     var balanceDecimal: Decimal {
-        
         let tokenBalance = Decimal(string: rawBalance) ?? 0.0
         let tokenDecimals = Int(decimals) ?? 0
         return tokenBalance / pow(10, tokenDecimals)
@@ -127,7 +126,13 @@ class Coin: Codable, Hashable {
         formatter.currencyCode = "USD"
         return formatter.string(from: balanceInUsd as NSDecimalNumber) ?? "0.0"
     }
-    
+
+    var swapAsset: String {
+        guard !isNativeToken else { return "\(chain.asset).\(chain.ticker)" }
+        let symbol = ticker.components(separatedBy: "-").first ?? ticker
+        return "\(chain.asset).\(symbol)-\(contractAddress)"
+    }
+
     static let example = Coin(
         chain: Chain.bitcoin,
         ticker: "BTC",

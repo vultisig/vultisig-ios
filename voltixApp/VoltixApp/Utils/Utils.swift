@@ -306,7 +306,7 @@ enum Utils {
         return elapsedTime <= timeInSeconds
     }
     
-    static func getCachedData<T>(cacheKey: String, cache: [String: (data: T, timestamp: Date)], timeInSeconds: TimeInterval) async throws -> T? {
+    static func getCachedData<T>(cacheKey: String, cache: [String: (data: T, timestamp: Date)], timeInSeconds: TimeInterval) async  -> T? {
         if let cacheEntry = cache[cacheKey], isCacheValid(for: cacheKey, in: cache, timeInSeconds: timeInSeconds) {
             return cacheEntry.data
         } else {

@@ -4,7 +4,7 @@ import BigInt
 import OSLog
 
 @MainActor
-public class EtherScanService: ObservableObject {
+class EtherScanService {
     private let logger = Logger(subsystem: "etherscan-service", category: "service")
     static let shared = EtherScanService()
     private init() {}
@@ -14,23 +14,25 @@ public class EtherScanService: ObservableObject {
     private var cacheGasPrice: [String: (data: BigInt, timestamp: Date)] = [:]
     private var cacheNonce: [String: (data: Int64, timestamp: Date)] = [:]
     
-    func getEthBalance(coin: Coin) async throws {
+    func getEthBalance(coin: Coin,fromAddress: String) async -> (rawBalance: String, priceRate:Double) {
+        var rawBalance = "0"
+        var cryptoPrice = 0.0
         do {
             // Start fetching all information concurrently
-            async let cryptoPrice = CryptoPriceService.shared.cryptoPrices?.prices[coin.priceProviderId]?["usd"]
-            if let priceRateUsd = await cryptoPrice {
-                coin.priceRate = priceRateUsd
-            }
+            cryptoPrice = CryptoPriceService.shared.cryptoPrices?.prices[coin.priceProviderId]?["usd"] ?? 0.0
+            
             if !coin.isNativeToken {
-                coin.rawBalance = try await fetchTokenRawBalance(contractAddress: coin.contractAddress, address: coin.address)
+                rawBalance = try await fetchTokenRawBalance(contractAddress: coin.contractAddress, address: fromAddress)
             } else {
-                coin.rawBalance = try await fetchEthRawBalance(address: coin.address)
+                rawBalance = try await fetchEthRawBalance(address: fromAddress)
             }
+            
         } catch let error as EtherScanError {
             handleEtherScanError(error)
         } catch {
             print(error.localizedDescription)
         }
+        return (rawBalance,cryptoPrice)
     }
     
     func getETHGasInfo(fromAddress: String) async throws -> (gasPrice:String,priorityFee:Int64,nonce:Int64){
@@ -65,11 +67,10 @@ public class EtherScanService: ObservableObject {
         }
     }
     
-    func estimateGasForERC20Transfer(tx: SendTransaction) async throws -> BigInt {
-        let data = constructERC20TransferData(recipientAddress: tx.toAddress, value: tx.amountInTokenWei)
-        let urlString = Endpoint.fetchEtherscanEstimateGasForERC20Transaction(data: data, contractAddress: tx.coin.contractAddress)
+    func estimateGasForERC20Transfer(toAddress: String ,contractAddress: String,amountInTokenWei: BigInt) async throws -> BigInt {
+        let data = constructERC20TransferData(recipientAddress: toAddress, value: amountInTokenWei)
+        let urlString = Endpoint.fetchEtherscanEstimateGasForERC20Transaction(data: data, contractAddress: contractAddress)
         let resultData = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
-        
         guard let resultString = extractResult(fromData: resultData) else {
             throw EtherScanError.jsonDecodingError
         }
@@ -125,7 +126,7 @@ public class EtherScanService: ObservableObject {
     func fetchNonce(address: String) async throws -> Int64 {
         let cacheKey = "\(address)-etherscan-nonce"
         
-        if let cachedData: Int64 = try await Utils.getCachedData(cacheKey: cacheKey, cache: cacheNonce, timeInSeconds: 60) {
+        if let cachedData: Int64 = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheNonce, timeInSeconds: 60) {
             return cachedData
         }
         
@@ -155,7 +156,7 @@ public class EtherScanService: ObservableObject {
     func fetchGasPrice() async throws -> BigInt {
         let cacheKey = "etherscan-gas-price"
         
-        if let cachedData: BigInt = try await Utils.getCachedData(cacheKey: cacheKey, cache: cacheGasPrice, timeInSeconds: 60 * 5) {
+        if let cachedData: BigInt = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheGasPrice, timeInSeconds: 60 * 5) {
             return cachedData
         }
         
@@ -178,7 +179,7 @@ public class EtherScanService: ObservableObject {
     func fetchOracle() async throws -> (Int64, Int64) {
         let cacheKey = "etherscan-gas-priority-fee-gwei"
         
-        if let cachedData: (Int64, Int64) = try await Utils.getCachedData(cacheKey: cacheKey, cache: cacheOracle, timeInSeconds: 60 * 5) {
+        if let cachedData: (Int64, Int64) = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheOracle, timeInSeconds: 60 * 5) {
             return cachedData
         }
         
@@ -300,25 +301,4 @@ public class EtherScanService: ObservableObject {
         print(error.description)
     }
     
-    func convertToEther(fromWei value: String, _ decimals: Int = EVMHelper.ethDecimals) -> String {
-        if let wei = Decimal(string: value) {
-            let decimalValue = Decimal(pow(10.0, Double(decimals)))
-            let ether = wei / decimalValue // Correctly perform exponentiation
-            return "\(ether)"
-        } else {
-            return "Invalid Value"
-        }
-    }
-    
-    func calculateTransactionFee(gasUsed: String, gasPrice: String) -> String {
-        guard let gasUsedDouble = Double(gasUsed), let gasPriceDouble = Double(gasPrice) else {
-            return "Invalid Data"
-        }
-        
-        let feeInWei = Decimal(gasUsedDouble * gasPriceDouble)
-        let feeInEther = feeInWei / Decimal(EVMHelper.wei)
-        let handler = NSDecimalNumberHandler(roundingMode: .plain, scale: 6, raiseOnExactness: false, raiseOnOverflow: false, raiseOnUnderflow: false, raiseOnDivideByZero: false)
-        let roundedDecimal = NSDecimalNumber(decimal: feeInEther).rounding(accordingToBehavior: handler)
-        return "\(roundedDecimal)"
-    }
 }

@@ -70,6 +70,31 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         }
     }
 
+    var asset: String {
+        switch self {
+        case .thorChain: return "THOR"
+        case .ethereum: return "ETH"
+        case .avalanche: return "AVAX"
+        case .bscChain: return "BSC"
+        case .bitcoin: return "BTC"
+        case .bitcoinCash: return "BCH"
+        case .litecoin: return "LTC"
+        case .dogecoin: return "DOGE"
+        case .gaiaChain: return "GAIA"
+        case .solana:
+            fatalError()
+        }
+    }
+
+    var isSwapSupported: Bool {
+        switch self {
+        case .thorChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .gaiaChain:
+            return true
+        case .solana:
+            return false
+        }
+    }
+
     var signingKeyType: KeyType {
         switch self {
         case .thorChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .gaiaChain:

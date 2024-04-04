@@ -27,35 +27,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
     
     var THORChainAccount: THORChainAccountValue? = nil
     var CosmosChainAccount: CosmosAccountValue? = nil
+    
     private var isValidForm: Bool {
         return isAddressCorrect && isAmountCorrect && isHackedOrPhished
-    }
-    
-    //TODO: Remove that, we need to use the loadData only
-    func reloadTransactions(tx: SendTransaction) {
-        Task {
-            do{
-                if  tx.coin.chain.chainType == ChainType.UTXO {
-                    await utxo.fetchBlockchairData(coin: tx.coin)
-                } else if tx.coin.chain == .thorChain {
-                    self.THORChainAccount = try await thor.fetchAccountNumber(tx.fromAddress)
-                } else if tx.coin.chain == .solana {
-                    await sol.getSolanaBalance(coin: tx.coin)
-                    await sol.fetchRecentBlockhash()
-                    await MainActor.run {
-                        if let feeInLamports = sol.feeInLamports {
-                            tx.gas = String(feeInLamports)
-                        }
-                    }
-                } else if tx.coin.chain == .gaiaChain {
-                    self.CosmosChainAccount = try await gaia.fetchAccountNumber(tx.fromAddress)
-                }
-            }
-            
-            catch{
-                print(error.localizedDescription)
-            }
-        }
     }
     
     func validateForm(tx: SendTransaction) async -> KeysignPayload? {
@@ -68,7 +42,11 @@ class SendCryptoVerifyViewModel: ObservableObject {
         }
         
         if tx.coin.chain.chainType == ChainType.UTXO {
-            
+            do{
+                _ = try await utxo.fetchBlockchairData(address: tx.fromAddress, coin: tx.coin)
+            }catch{
+                print("fail to fetch utxo data from blockchair , error:\(error.localizedDescription)")
+            }
             let coinName = tx.coin.chain.name.lowercased()
             let key: String = "\(tx.fromAddress)-\(coinName)"
             
@@ -139,7 +117,11 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 return keysignPayload
             }
         } else if tx.coin.chain == .thorChain {
-
+            do{
+                self.THORChainAccount = try await thor.fetchAccountNumber(tx.fromAddress)
+            } catch {
+                print(" fail to fetch thorchain account number, error: \(error.localizedDescription)")
+            }
             guard let accountNumberString = THORChainAccount?.accountNumber, let intAccountNumber = UInt64(accountNumberString) else {
                 print("We need the ACCOUNT NUMBER to broadcast a transaction")
                 self.errorMessage = "failToGetAccountNumber"
@@ -172,7 +154,11 @@ class SendCryptoVerifyViewModel: ObservableObject {
             return keysignPayload
             
         } else if tx.coin.chain == .gaiaChain {
-
+            do{
+                self.CosmosChainAccount = try await gaia.fetchAccountNumber(tx.fromAddress)
+            }catch{
+                print("fail to fetch gaia account number,error: \(error.localizedDescription)")
+            }
             guard let accountNumberString = CosmosChainAccount?.accountNumber, let intAccountNumber = UInt64(accountNumberString) else {
                 self.errorMessage = "failToGetAccountNumber"
                 showAlert = true
@@ -204,24 +190,34 @@ class SendCryptoVerifyViewModel: ObservableObject {
             return keysignPayload
             
         } else if tx.coin.chain == .solana {
-            guard let recentBlockHash = sol.recentBlockHash else {
-                print("We need the recentBlockHash to broadcast a transaction")
+            do {
+                let (recentBlockHash,feeInLamports) = try await sol.fetchRecentBlockhash()
+                tx.gas = String(feeInLamports)
+                guard let recentBlockHash else {
+                    print("We need the recentBlockHash to broadcast a transaction")
+                    self.errorMessage = "failToGetRecentBlockHash"
+                    showAlert = true
+                    isLoading = false
+                    return nil
+                }
+                
+                let keysignPayload = KeysignPayload(
+                    coin: tx.coin,
+                    toAddress: tx.toAddress,
+                    toAmount: tx.amountInLamports,
+                    chainSpecific: BlockChainSpecific.Solana(recentBlockHash: recentBlockHash, priorityFee: 500_000),
+                    utxos: [],
+                    memo: tx.memo, swapPayload: nil
+                )
+                return keysignPayload
+            } catch {
+                print("fail to get recent blockhash, error:\(error.localizedDescription)")
                 self.errorMessage = "failToGetRecentBlockHash"
                 showAlert = true
                 isLoading = false
                 return nil
             }
             
-            let keysignPayload = KeysignPayload(
-                coin: tx.coin,
-                toAddress: tx.toAddress,
-                toAmount: tx.amountInLamports,
-                chainSpecific: BlockChainSpecific.Solana(recentBlockHash: recentBlockHash, priorityFee: 500_000),
-                utxos: [],
-                memo: tx.memo, swapPayload: nil
-            )
-            
-            return keysignPayload
             
         }
         return nil
