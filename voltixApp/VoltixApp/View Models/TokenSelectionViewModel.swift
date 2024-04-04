@@ -29,7 +29,7 @@ class TokenSelectionViewModel: ObservableObject {
     private func checkSelected(for vault: Vault) {
         selection = Set<Coin>()
         for asset in vault.coins {
-            if let asset = TokensStore.TokenSelectionAssets.first(where: { $0.ticker == asset.ticker }) {
+            if let asset = TokensStore.TokenSelectionAssets.first(where: { $0.ticker == asset.ticker && $0.chain == asset.chain}) {
                 selection.insert(asset)
             }
         }
@@ -45,7 +45,7 @@ class TokenSelectionViewModel: ObservableObject {
     
     func saveAssets(for vault: Vault) {
         vault.coins = vault.coins.filter { coin in
-            selection.contains(where: { $0.ticker == coin.ticker })
+            selection.contains(where: { $0.ticker == coin.ticker && $0.chain == coin.chain})
         }
         
         for asset in selection {
