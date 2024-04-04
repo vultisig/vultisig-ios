@@ -176,7 +176,7 @@ class Endpoint {
         }
     }
     
-    static func getExplorerByAddressURL(chainTicker:String,address:String) -> String? {
+    static func getExplorerByAddressURL(chainTicker:String, address:String) -> String? {
         switch chainTicker {
         case "BTC":
             return "https://blockchair.com/bitcoin/address/\(address)"
