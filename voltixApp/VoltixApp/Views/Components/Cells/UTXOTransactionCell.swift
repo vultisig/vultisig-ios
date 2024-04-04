@@ -12,11 +12,16 @@ struct UTXOTransactionCell: View {
     let tx: SendTransaction
     @ObservedObject var utxoTransactionsService: UTXOTransactionsService
     
+    let selfText = NSLocalizedString("self", comment: "")
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             transactionIDField
             Separator()
-            addressField
+//            addressField
+            fromField
+            Separator()
+            toField
             Separator()
             summary
         }
@@ -48,29 +53,56 @@ struct UTXOTransactionCell: View {
             .foregroundColor(.turquoise600)
     }
     
-    var addressField: some View {
+    var fromField: some View {
         VStack(alignment: .leading, spacing: 8) {
-            addressTitle
-            address
+            fromTitle
+            fromAddress
         }
     }
     
-    var addressTitle: some View {
-        Text(NSLocalizedString(transaction.isSent ? "to" : "from", comment: ""))
+    var fromTitle: some View {
+        Text(NSLocalizedString("from", comment: ""))
             .font(.body20MontserratSemiBold)
             .foregroundColor(.neutral0)
     }
     
-    var address: some View {
-        var address: String? = ""
+    var fromAddress: some View {
+        var address = ""
         
         if transaction.isSent {
-            address = transaction.sentTo.first
+            address = selfText
         } else if transaction.isReceived {
-            address = transaction.receivedFrom.first
+            address = transaction.receivedFrom.first ?? ""
         }
         
-        return Text(address ?? "")
+        return Text(address)
+            .font(.body13Menlo)
+            .foregroundColor(.turquoise600)
+    }
+    
+    var toField: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            toTitle
+            toAddress
+        }
+    }
+    
+    var toTitle: some View {
+        Text(NSLocalizedString("to", comment: ""))
+            .font(.body20MontserratSemiBold)
+            .foregroundColor(.neutral0)
+    }
+    
+    var toAddress: some View {
+        var address: String = ""
+        
+        if transaction.isSent {
+            address = transaction.sentTo.first ?? ""
+        } else if transaction.isReceived {
+            address = selfText
+        }
+        
+        return Text(address)
             .font(.body13Menlo)
             .foregroundColor(.turquoise600)
     }

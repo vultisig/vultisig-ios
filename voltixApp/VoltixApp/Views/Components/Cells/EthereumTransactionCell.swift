@@ -15,6 +15,8 @@ struct EthereumTransactionCell: View {
     
     @State var isSent = true
     
+    let selfText = NSLocalizedString("self", comment: "")
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             transactionIDField
@@ -89,7 +91,7 @@ struct EthereumTransactionCell: View {
     }
     
     var fromAddress: some View {
-        Text(transaction.from)
+        Text(isSent ? selfText : transaction.from)
             .font(.body13Menlo)
             .foregroundColor(.turquoise600)
     }
@@ -108,7 +110,7 @@ struct EthereumTransactionCell: View {
     }
     
     var toAddress: some View {
-        Text(transaction.to)
+        Text(isSent ? transaction.to : selfText)
             .font(.body13Menlo)
             .foregroundColor(.turquoise600)
     }

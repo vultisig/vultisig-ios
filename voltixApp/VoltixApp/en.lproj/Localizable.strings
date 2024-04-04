@@ -139,3 +139,4 @@
 "failToGetSequenceNo" = "Unable to get sequence no";
 "failToGetRecentBlockHash" = "Unable to get recent block hash";
 "checkExplorer" = "check explorer";
+"self" = "Self";
