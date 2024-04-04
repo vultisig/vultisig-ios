@@ -40,7 +40,8 @@
 		46F8F7282B9A011B0099454E /* ThorchainBroadcastTransactionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F8F7272B9A011B0099454E /* ThorchainBroadcastTransactionService.swift */; };
 		A5199AF02BBD8C0400AA0A39 /* ThorchainSwapQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5199AEF2BBD8C0400AA0A39 /* ThorchainSwapQuote.swift */; };
 		A57495822BBC3FCA00D5F172 /* SwapCryptoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57495812BBC3FCA00D5F172 /* SwapCryptoViewModel.swift */; };
-		A57495842BBC56F300D5F172 /* SwapTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57495832BBC56F300D5F172 /* SwapTransaction.swift */; };
+		A5F97C8C2BBEF239000C30DF /* SwapTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F97C8B2BBEF239000C30DF /* SwapTransaction.swift */; };
+		A5F97C8E2BBF0BCF000C30DF /* BalanceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F97C8D2BBF0BCF000C30DF /* BalanceService.swift */; };
 		A60CA7E52BB0D37D00FDEB5C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60CA7E42BB0D37D00FDEB5C /* ContentView.swift */; };
 		A60CA7E72BB0EC6100FDEB5C /* AccountViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60CA7E62BB0EC6100FDEB5C /* AccountViewModel.swift */; };
 		A60CA7E92BB0F60100FDEB5C /* ViewExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60CA7E82BB0F60100FDEB5C /* ViewExtension.swift */; };
@@ -265,7 +266,8 @@
 		46F8F7272B9A011B0099454E /* ThorchainBroadcastTransactionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainBroadcastTransactionService.swift; sourceTree = "<group>"; };
 		A5199AEF2BBD8C0400AA0A39 /* ThorchainSwapQuote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainSwapQuote.swift; sourceTree = "<group>"; };
 		A57495812BBC3FCA00D5F172 /* SwapCryptoViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoViewModel.swift; sourceTree = "<group>"; };
-		A57495832BBC56F300D5F172 /* SwapTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapTransaction.swift; sourceTree = "<group>"; };
+		A5F97C8B2BBEF239000C30DF /* SwapTransaction.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SwapTransaction.swift; sourceTree = "<group>"; };
+		A5F97C8D2BBF0BCF000C30DF /* BalanceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BalanceService.swift; sourceTree = "<group>"; };
 		A60CA7E42BB0D37D00FDEB5C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A60CA7E62BB0EC6100FDEB5C /* AccountViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountViewModel.swift; sourceTree = "<group>"; };
 		A60CA7E82BB0F60100FDEB5C /* ViewExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewExtension.swift; sourceTree = "<group>"; };
@@ -522,6 +524,7 @@
 				469ED3952B98E782008D4951 /* Thorchain */,
 				465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */,
 				46B60BBF2BBB20130043EBBA /* RpcEvmService.swift */,
+				A5F97C8D2BBF0BCF000C30DF /* BalanceService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -774,7 +777,7 @@
 			children = (
 				D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */,
 				465B09A82B7C176700952DD9 /* SendTransaction.swift */,
-				A57495832BBC56F300D5F172 /* SwapTransaction.swift */,
+				A5F97C8B2BBEF239000C30DF /* SwapTransaction.swift */,
 				A6F9F7EA2B9D1B3700790258 /* VaultDetailViewModel.swift */,
 				A6F9F7EC2B9D1F5700790258 /* CoinViewModel.swift */,
 				A6F2C54E2BA009420095C8E3 /* TokenSelectionViewModel.swift */,
@@ -1329,7 +1332,7 @@
 				A6966D222BA3E1B000903CA4 /* TextStore.swift in Sources */,
 				A6F9F7DB2B9BA2DE00790258 /* ChainCell.swift in Sources */,
 				049BBB682B71E9C5004C231F /* WifiInstruction.swift in Sources */,
-				A57495842BBC56F300D5F172 /* SwapTransaction.swift in Sources */,
+				A5F97C8C2BBEF239000C30DF /* SwapTransaction.swift in Sources */,
 				465B09B72B7D909400952DD9 /* CryptoPrice.swift in Sources */,
 				A60CA7E92BB0F60100FDEB5C /* ViewExtension.swift in Sources */,
 				A65BA9882BAAA0B700B2D8AA /* SendCryptoSigningErrorView.swift in Sources */,
@@ -1403,6 +1406,7 @@
 				DE15729E2B70F284009BC7C5 /* JoinKeysignView.swift in Sources */,
 				DEEADCF72B916676007978DE /* Solana.swift in Sources */,
 				A6966D312BA4048800903CA4 /* SwapCryptoDetailsView.swift in Sources */,
+				A5F97C8E2BBF0BCF000C30DF /* BalanceService.swift in Sources */,
 				DEEDAEE12B8AF7EF005170E8 /* evm.swift in Sources */,
 				A6966D2F2BA4045C00903CA4 /* SwapCryptoView.swift in Sources */,
 				46F8F7282B9A011B0099454E /* ThorchainBroadcastTransactionService.swift in Sources */,

@@ -85,7 +85,6 @@ class Coin: Codable, Hashable {
     }
     
     var balanceDecimal: Decimal {
-        
         let tokenBalance = Decimal(string: rawBalance) ?? 0.0
         let tokenDecimals = Int(decimals) ?? 0
         return tokenBalance / pow(10, tokenDecimals)

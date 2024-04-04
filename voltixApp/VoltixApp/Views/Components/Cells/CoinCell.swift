@@ -14,7 +14,6 @@ struct CoinCell: View {
     let vault: Vault
     
     @StateObject var sendTx = SendTransaction()
-    @StateObject var swapTx = SwapTransaction()
     @StateObject var coinViewModel = CoinViewModel()
 	
     var body: some View {
@@ -76,7 +75,7 @@ struct CoinCell: View {
     
     var swapButton: some View {
         NavigationLink {
-            SwapCryptoView(tx: swapTx, coinViewModel: coinViewModel, group: group)
+            SwapCryptoView(coin: coin, vault: vault)
         } label: {
             Text(NSLocalizedString("swap", comment: "Swap button text").uppercased())
                 .font(.body16MenloBold)
@@ -107,8 +106,6 @@ struct CoinCell: View {
     
     private func setData() async {
         sendTx.coin = coin
-        swapTx.fromCoin = coin
-
         await coinViewModel.loadData(coin: coin)
     }
 }
