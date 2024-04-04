@@ -16,9 +16,8 @@ struct UTXOTransactionCell: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            transactionIDField
+            transactionIDLink
             Separator()
-//            addressField
             fromField
             Separator()
             toField
@@ -29,6 +28,22 @@ struct UTXOTransactionCell: View {
         .background(Color.blue600)
         .cornerRadius(10)
         .padding(.horizontal, 16)
+    }
+    
+    var transactionIDLink: some View {
+        let url = Endpoint.bitcoinLabelTxHash(transaction.txid)
+        
+        return Link(destination: URL(string: url)!) {
+            transactionIDCell
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+    
+    var transactionIDCell: some View {
+        HStack(spacing: 24) {
+            transactionIDField
+            chevron
+        }
     }
     
     var transactionIDField: some View {
@@ -132,6 +147,12 @@ struct UTXOTransactionCell: View {
             Separator()
             getSummaryCell(title: "Memo", value: transaction.opReturnData ?? "-")
         }
+    }
+    
+    var chevron: some View {
+        Image(systemName: "chevron.forward")
+            .foregroundColor(.neutral0)
+            .font(.body18MenloBold)
     }
     
     private func getSummaryCell(title: String, value: String) -> some View {
