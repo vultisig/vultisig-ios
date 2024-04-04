@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import BigInt
 
 @MainActor
 class SwapCryptoViewModel: ObservableObject {
@@ -17,18 +18,25 @@ class SwapCryptoViewModel: ObservableObject {
 
     @Published var fromCoin: Coin = .example {
         didSet {
-            Task { fromBalance = try await fetchBalance(coin: fromCoin) }
+            updateFromBalance()
+            updateQuote()
         }
     }
 
     @Published var toCoin: Coin = .example {
         didSet {
-            Task { toBalance = try await fetchBalance(coin: toCoin) }
+            updateToBalance()
+            updateQuote()
+        }
+    }
+
+    @Published var fromAmount: String = .empty {
+        didSet {
+            updateQuote()
         }
     }
 
     @Published var coins: [Coin] = []
-    @Published var fromAmount: String = .empty
     @Published var toAmount: String = .empty
     @Published var fromBalance: String = .empty
     @Published var toBalance: String = .empty
@@ -44,13 +52,6 @@ class SwapCryptoViewModel: ObservableObject {
         self.coins = coins
         self.fromCoin = fromCoin
         self.toCoin = coins.first!
-
-        let quote = try await thorchainService.fetchSwapQuotes(
-            address: fromCoin.address,
-            fromAsset: fromCoin.chain.thorAsset,
-            toAsset: toCoin.chain.thorAsset,
-            amount: fromAmount
-        )
     }
 
     // MARK: Progress
@@ -66,6 +67,41 @@ class SwapCryptoViewModel: ObservableObject {
 }
 
 private extension SwapCryptoViewModel {
+
+    enum Errors: Error {
+        case swapQuoteParsingFailed
+    }
+
+    func updateFromBalance() {
+        Task { fromBalance = try await fetchBalance(coin: fromCoin) }
+    }
+
+    func updateToBalance() {
+        Task { toBalance = try await fetchBalance(coin: toCoin) }
+    }
+
+    func updateQuote() {
+        Task { try await fetchQuotes() }
+    }
+
+    func fetchQuotes() async throws {
+        guard let amount = Decimal(string: fromAmount), fromCoin.swapAsset != toCoin.swapAsset else {
+            throw Errors.swapQuoteParsingFailed
+        }
+
+        let quote = try await thorchainService.fetchSwapQuotes(
+            address: toCoin.address,
+            fromAsset: fromCoin.swapAsset,
+            toAsset: toCoin.swapAsset,
+            amount: (amount * 100_000_000).description // https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
+        )
+
+        guard let expected = Decimal(string: quote.expectedAmountOut) else {
+            throw Errors.swapQuoteParsingFailed
+        }
+
+        toAmount = (expected / Decimal(100_000_000)).description
+    }
 
     func fetchBalance(coin: Coin) async throws -> String {
         return try await balanceService.balance(for: coin).coinBalance

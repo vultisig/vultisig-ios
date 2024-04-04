@@ -8,13 +8,13 @@
 import Foundation
 
 struct ThorchainSwapQuote: Codable {
-    let dustThreshold: String
+    let dustThreshold: String?
     let expectedAmountOut: String
     let expiry: Int
     let fees: Fees
     let inboundAddress: String
-    let inboundConfirmationBlocks: Int
-    let inboundConfirmationSeconds: Int
+    let inboundConfirmationBlocks: Int?
+    let inboundConfirmationSeconds: Int?
     let maxStreamingQuantity: Int
     let memo: String
     let notes: String
@@ -23,7 +23,7 @@ struct ThorchainSwapQuote: Codable {
     let recommendedMinAmountIn: String
     let slippageBps: Int
     let streamingSwapBlocks: Int
-    let totalSwapSeconds: Int
+    let totalSwapSeconds: Int?
     let warning: String
 
     enum CodingKeys: String, CodingKey {

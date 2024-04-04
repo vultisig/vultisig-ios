@@ -48,7 +48,7 @@ struct SwapCryptoDetailsView: View {
     }
     
     var fromAmountField: some View {
-        SendCryptoAmountTextField(amount: $viewModel.fromAmount, onChange: { _ in }, onMaxPressed: { })
+        SendCryptoAmountTextField(amount: $viewModel.fromAmount, onChange: { _ in })
     }
     
     var swapButton: some View {
@@ -70,7 +70,8 @@ struct SwapCryptoDetailsView: View {
     }
     
     var toAmountField: some View {
-        SendCryptoAmountTextField(amount: $viewModel.toAmount, onChange: { _ in }, onMaxPressed: { })
+        SendCryptoAmountTextField(amount: $viewModel.toAmount, onChange: { _ in })
+            .disabled(true)
     }
     
     var summary: some View {
