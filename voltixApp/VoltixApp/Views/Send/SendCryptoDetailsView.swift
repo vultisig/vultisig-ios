@@ -66,7 +66,7 @@ struct SendCryptoDetailsView: View {
     }
     
     var coinSelector: some View {
-        TokenSelectorDropdown(coinViewModel: coinViewModel, group: group, selected: tx.coin)
+        TokenSelectorDropdown(coins: .constant(group.coins), selected: $tx.coin)
     }
     
     var fromField: some View {

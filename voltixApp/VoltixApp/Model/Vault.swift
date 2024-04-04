@@ -87,7 +87,7 @@ final class Vault: ObservableObject, Codable {
         let threshold = Int(ceil(Double(totalSigners) * 2.0 / 3.0)) - 1
         return threshold
     }
-    
+
     static func predicate(searchName: String) -> Predicate<Vault> {
         #Predicate<Vault> { vault in
             searchName.isEmpty || vault.name == searchName

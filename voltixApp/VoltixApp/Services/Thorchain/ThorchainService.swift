@@ -37,7 +37,14 @@ class ThorchainService {
         let accountResponse = try JSONDecoder().decode(THORChainAccountNumberResponse.self, from: data)
         return accountResponse.result.value
     }
-    
+
+    func fetchSwapQuotes(address: String, fromAsset: String, toAsset: String, amount: String) async throws -> ThorchainSwapQuote {
+        let url = Endpoint.fetchSwaoQuoteThorchainNineRealms(address: address, fromAsset: fromAsset, toAsset: toAsset, amount: amount)
+        let (data, _) = try await URLSession.shared.data(from: url)
+        let response = try JSONDecoder().decode(ThorchainSwapQuote.self, from: data)
+        return response
+    }
+
     private func cacheBalances(_ balances: [CosmosBalance], forAddress address: String) {
         let addressKey = "balancesCache_\(address)"
         let cacheEntry = BalanceCacheEntry(balances: balances, timestamp: Date())

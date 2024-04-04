@@ -8,12 +8,10 @@
 import SwiftUI
 
 struct TokenSelectorDropdown: View {
-    @ObservedObject var coinViewModel: CoinViewModel
-    
-    let group: GroupedChain
 
-    @State var selected: Coin
-    @State var isActive = false
+    @Binding var coins: [Coin]
+    @Binding var selected: Coin
+
     @State var isExpanded = false
 
     var body: some View {
@@ -28,9 +26,6 @@ struct TokenSelectorDropdown: View {
         .background(Color.blue600)
         .cornerRadius(10)
         .disabled(!isActive)
-        .onAppear {
-            setData()
-        }
     }
     
     var selectedCell: some View {
@@ -48,17 +43,17 @@ struct TokenSelectorDropdown: View {
             image
             Text("\(selected.ticker)")
             Spacer()
-            Text(coinViewModel.coinBalance ?? "0.00000")
-            
+
             if isActive {
                 Image(systemName: "chevron.down")
+            } else {
+                Text(selected.balanceString.isEmpty ? "0.00000" : selected.balanceString)
             }
         }
-        .redacted(reason: coinViewModel.coinBalance==nil ? .placeholder : [])
+        .redacted(reason: selected.balanceString.isEmpty ? .placeholder : [])
         .font(.body16Menlo)
         .foregroundColor(.neutral0)
         .frame(height: 48)
-        .redacted(reason: coinViewModel.coinBalance == "" ? .placeholder : [])
     }
     
     var image: some View {
@@ -69,7 +64,7 @@ struct TokenSelectorDropdown: View {
     }
     
     var cells: some View {
-        ForEach(group.coins, id: \.self) { coin in
+        ForEach(coins, id: \.self) { coin in
             Button {
                 handleSelection(for: coin)
             } label: {
@@ -102,11 +97,11 @@ struct TokenSelectorDropdown: View {
         }
         .frame(height: 48)
     }
-    
-    private func setData() {
-        isActive = group.coins.count > 1
+
+    var isActive: Bool {
+        return coins.count > 1
     }
-    
+
     private func handleSelection(for coin: Coin) {
         isExpanded = false
         selected = coin
@@ -114,5 +109,5 @@ struct TokenSelectorDropdown: View {
 }
 
 #Preview {
-    TokenSelectorDropdown(coinViewModel: CoinViewModel(), group: GroupedChain.example, selected: .example)
+    TokenSelectorDropdown(coins: .constant([.example]), selected: .constant(.example))
 }
