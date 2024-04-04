@@ -49,7 +49,7 @@ class TokenSelectionViewModel: ObservableObject {
         }
         
         for asset in selection {
-            if !vault.coins.contains(where: { $0.ticker == asset.ticker }) {
+            if !vault.coins.contains(where: { $0.ticker == asset.ticker && $0.chain == asset.chain}) {
                 addToChain(asset: asset, to: vault)
             }
         }

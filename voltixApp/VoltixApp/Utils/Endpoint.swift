@@ -50,10 +50,6 @@ class Endpoint {
         "http://45.76.120.223/blockcypher/v1/btc/main/addrs/\(value)?unspentOnly=true"
     }
     
-    static func fetchLitecoinUnspentOutputs(_ userAddress: String) -> String {
-        "https://litecoinspace.org/api/address/\(userAddress)/utxo"
-    }
-    
     static func fetchCryptoPrices(coin: String, fiat: String) -> String {
         "https://api.coingecko.com/api/v3/simple/price?ids=\(coin)&vs_currencies=\(fiat)"
     }
