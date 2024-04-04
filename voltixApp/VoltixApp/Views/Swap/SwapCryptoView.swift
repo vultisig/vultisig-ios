@@ -9,13 +9,11 @@ import SwiftUI
 
 struct SwapCryptoView: View {
 
-    @StateObject var swapViewModel = SwapCryptoViewModel()
+    @StateObject var viewModel = SwapCryptoViewModel()
 
-    @ObservedObject var tx: SwapTransaction
-    @ObservedObject var coinViewModel: CoinViewModel
+    let coin: Coin
+    let vault: Vault
 
-    let group: GroupedChain
-    
     var body: some View {
         ZStack {
             Background()
@@ -29,17 +27,20 @@ struct SwapCryptoView: View {
                 NavigationBackButton()
             }
         }
+        .task {
+            try? await viewModel.load(fromCoin: coin, coins: vault.coins)
+        }
     }
     
     var view: some View {
         VStack(spacing: 30) {
-            ProgressBar(progress: swapViewModel.progress)
+            ProgressBar(progress: viewModel.progress)
                 .padding(.top, 30)
-            SwapCryptoDetailsView(tx: tx, swapViewModel: swapViewModel, coinViewModel: coinViewModel, group: group)
+            SwapCryptoDetailsView(viewModel: viewModel)
         }
     }
 }
 
 #Preview {
-    SwapCryptoView(tx: SwapTransaction(), coinViewModel: CoinViewModel(), group: GroupedChain.example)
+    SwapCryptoView(coin: .example, vault: .example)
 }

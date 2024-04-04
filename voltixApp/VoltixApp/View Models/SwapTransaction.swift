@@ -10,10 +10,20 @@ import SwiftUI
 
 class SwapTransaction: ObservableObject {
     @Published var fromCoin: Coin = .example
-    @Published var fromBalance: String = .empty
     @Published var fromAmount: String = .empty
     @Published var toCoin: Coin = .example
-    @Published var toBalance: String = .empty
     @Published var toAmount: String = .empty
     @Published var gas: String = .empty
+
+    var fromBalance: String {
+        return fromCoin.balanceString
+    }
+
+    var toBalance: String {
+        return toCoin.balanceString
+    }
+
+    var feeString: String {
+        return "\(gas) \(fromCoin.feeUnit)"
+    }
 }
