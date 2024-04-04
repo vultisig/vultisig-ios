@@ -73,7 +73,7 @@ class SendCryptoViewModel: ObservableObject {
                 let (_,feeInLamports) = try await sol.fetchRecentBlockhash()
                 tx.gas = String(feeInLamports)
             }
-
+            
         } catch {
             if let err =  error as? HelperError {
                 switch err{
@@ -318,7 +318,7 @@ class SendCryptoViewModel: ObservableObject {
                 isValidForm = false
             }
         } else if tx.coin.chain == .solana {
-             let walletBalanceInLamports = tx.coin.rawBalance
+            let walletBalanceInLamports = tx.coin.rawBalance
             let optionalGas: String? = tx.gas
             guard let feeStr = optionalGas, let feeInLamports = Decimal(string: feeStr) else {
                 errorMessage = "invalidGasFeeError"
