@@ -41,10 +41,10 @@ class SendCryptoViewModel: ObservableObject {
     
     func loadGasInfoForSending(tx: SendTransaction) async{
         do {
-            if tx.coin.chain.chainType == ChainType.UTXO {
+            if tx.coin.chain.chainType == .UTXO {
                 let sats = try await utxo.fetchSatsPrice(coin: tx.coin)
                 tx.gas = String(sats)
-            } else if tx.coin.chain.name  == Chain.Ethereum.name  {
+            } else if tx.coin.chain == .ethereum  {
                 print("The loadData for \(tx.coin.ticker)")
                 let (gasPrice,priorityFee,nonce) = try await eth.getETHGasInfo(fromAddress: tx.fromAddress)
                 tx.gas = gasPrice
@@ -70,10 +70,8 @@ class SendCryptoViewModel: ObservableObject {
             } else if tx.coin.chain == .gaiaChain {
                 tx.gas = "0.0075"
             } else if tx.coin.chain == .solana {
-                await sol.fetchRecentBlockhash()
-                if let feeInLamports = sol.feeInLamports {
-                    tx.gas = String(feeInLamports)
-                }
+                let (_,feeInLamports) = try await sol.fetchRecentBlockhash()
+                tx.gas = String(feeInLamports)
             }
 
         } catch {
@@ -132,7 +130,6 @@ class SendCryptoViewModel: ObservableObject {
         isLoading = true
         
         if  tx.coin.chain.chainType == .UTXO {
-            
             tx.amount = utxo.blockchairData[key]?.address?.balanceInBTC ?? "0.0"
             
             if let plan = getTransactionPlan(tx: tx, key: key) {
@@ -214,20 +211,24 @@ class SendCryptoViewModel: ObservableObject {
                 }
                 isLoading = false
             }
-        } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
+        } else if tx.coin.chain == .solana{
             Task{
-                await sol.getSolanaBalance(tx:tx)
-                await sol.fetchRecentBlockhash()
-                guard
-                    let feeLamportsStr = sol.feeInLamports,
-                    let feeInLamports = BigInt(feeLamportsStr) else {
-                    print("Invalid fee In Lamports")
-                    return
+                do{
+                    let (rawBalance,priceRate) = try await sol.getSolanaBalance(coin: tx.coin)
+                    let (_,feeLamportsStr) = try await sol.fetchRecentBlockhash()
+                    guard
+                        let feeInLamports = BigInt(feeLamportsStr) else {
+                        print("Invalid fee In Lamports")
+                        return
+                    }
+                    tx.coin.rawBalance = rawBalance
+                    tx.coin.priceRate = priceRate
+                    tx.amount = "\(tx.coin.getMaxValue(feeInLamports))"
+                    await convertToUSD(newValue: tx.amount, tx: tx)
+                } catch {
+                    print("fail to load solana balances,error:\(error.localizedDescription)")
                 }
                 
-                tx.coin.rawBalance = sol.rawBalance
-                tx.amount = "\(tx.coin.getMaxValue(feeInLamports))"
-                await convertToUSD(newValue: tx.amount, tx: tx)
                 isLoading = false
             }
         }
@@ -317,15 +318,7 @@ class SendCryptoViewModel: ObservableObject {
                 isValidForm = false
             }
         } else if tx.coin.chain == .solana {
-            
-            guard let walletBalanceInLamports = sol.balance else {
-                errorMessage = "unavailableBalanceError"
-                showAlert = true
-                logger.log("Wallet balance is not available for Solana.")
-                isValidForm = false
-                return isValidForm
-            }
-            
+             let walletBalanceInLamports = tx.coin.rawBalance
             let optionalGas: String? = tx.gas
             guard let feeStr = optionalGas, let feeInLamports = Decimal(string: feeStr) else {
                 errorMessage = "invalidGasFeeError"
@@ -346,7 +339,7 @@ class SendCryptoViewModel: ObservableObject {
             let amountInLamports = amountInSOL * Decimal(1_000_000_000)
             
             let totalCostInLamports = amountInLamports + feeInLamports
-            if totalCostInLamports > Decimal(walletBalanceInLamports) {
+            if totalCostInLamports > (Decimal(string: walletBalanceInLamports) ?? 0) {
                 errorMessage = "walletBalanceExceededSolanaError"
                 showAlert = true
                 logger.log("Total transaction cost exceeds wallet balance for Solana.")

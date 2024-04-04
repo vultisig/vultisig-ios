@@ -20,15 +20,14 @@ public class BSCService {
     private var cacheGasPrice: [String: (data: BigInt, timestamp: Date)] = [:]
     private var cacheNonce: [String: (data: Int64, timestamp: Date)] = [:]
     
-    func getBNBBalance(coin:Coin, fromAddress: String) async throws -> (rawBalance:String,priceRate:Double) {
+    func getBNBBalance(coin:Coin) async throws -> (rawBalance:String,priceRate:Double) {
         // Start fetching all information concurrently
         let cryptoPrice = await CryptoPriceService.shared.cryptoPrices?.prices[coin.priceProviderId]?["usd"]
         var rawBalance = "0"
-        
         if !coin.isNativeToken {
-            rawBalance = try await fetchTokenRawBalance(contractAddress: coin.contractAddress, address: fromAddress)
+            rawBalance = try await fetchTokenRawBalance(contractAddress: coin.contractAddress, address: coin.address)
         } else {
-            rawBalance = try await fetchBNBRawBalance(address: fromAddress)
+            rawBalance = try await fetchBNBRawBalance(address: coin.address)
         }
         return (rawBalance,cryptoPrice ?? 0)
     }

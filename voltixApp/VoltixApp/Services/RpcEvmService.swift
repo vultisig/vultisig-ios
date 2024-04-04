@@ -24,22 +24,22 @@ class RpcEvmService {
         }
     }
     
-    func getBalance(coin: Coin) async throws {
-        do {
-            // Start fetching all information concurrently
-            async let cryptoPrice = CryptoPriceService.shared.cryptoPrices?.prices[coin.priceProviderId]?["usd"]
-            if let priceRateUsd = await cryptoPrice {
-                coin.priceRate = priceRateUsd
-            }
+    func getBalance(coin: Coin) async throws ->(rawBalance: String,priceRate: Double){
+        // Start fetching all information concurrently
+        let cryptoPrice = await CryptoPriceService.shared.cryptoPrices?.prices[coin.priceProviderId]?["usd"]
+        var rawBalance = ""
+        do{
             if coin.isNativeToken {
-                coin.rawBalance = String(try await fetchBalance(address: coin.address))
+                rawBalance = String(try await fetchBalance(address: coin.address))
             } else {
-                coin.rawBalance = String(try await fetchERC20TokenBalance(contractAddress: coin.contractAddress, walletAddress: coin.address))
+                rawBalance = String(try await fetchERC20TokenBalance(contractAddress: coin.contractAddress, walletAddress: coin.address))
                 print("BALANCE ARC20: \(coin.rawBalance)")
             }
         } catch {
             print("getBalance:: \(error.localizedDescription)")
+            throw error
         }
+        return (rawBalance,cryptoPrice ?? 0.0)
     }
     
     func getGasInfo(fromAddress: String) async throws -> (gasPrice:String,priorityFee:Int64,nonce:Int64){
