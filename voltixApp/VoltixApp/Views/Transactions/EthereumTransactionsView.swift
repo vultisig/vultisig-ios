@@ -49,7 +49,7 @@ struct EthereumTransactionsView: View {
         ScrollView {
             VStack(spacing: 16) {
                 ForEach(viewModel.transactions, id: \.hash) { transaction in
-                    EthereumTransactionCell(chain:chain, transaction: transaction, myAddress: viewModel.addressFor, etherScanService: viewModel.etherScanService)
+                    EthereumTransactionCell(chain:chain, transaction: transaction, myAddress: viewModel.addressFor)
                 }
             }
         }

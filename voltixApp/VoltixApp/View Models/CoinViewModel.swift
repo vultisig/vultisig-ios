@@ -26,44 +26,50 @@ class CoinViewModel: ObservableObject {
     func loadData(coin: Coin) async {
         isLoading = true
         defer { isLoading = false }
-
+        
         await CryptoPriceService.shared.fetchCryptoPrices()
-
+        
         do {
             switch coin.chain {
             case .bitcoin, .bitcoinCash, .litecoin, .dogecoin:
-                await utxo.fetchBlockchairData(coin: coin)
-                let coinName = coin.chain.name.lowercased()
-                let key = "\(coin.address)-\(coinName)"
-                balanceUSD = utxo.blockchairData[key]?.address?.balanceInUSD ?? "US$ 0,00"
-                coinBalance = utxo.blockchairData[key]?.address?.balanceInBTC ?? "0.0"
-            
+                let blockChairData = try await utxo.fetchBlockchairData(address: coin.address,coin: coin)
+                balanceUSD = blockChairData?.address?.balanceInUSD ?? "US$ 0,00"
+                coinBalance = blockChairData?.address?.balanceInBTC ?? "0.0"
+                
             case .thorChain:
                 let thorBalances = try await thor.fetchBalances(coin.address)
                 if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.thorChain.name.lowercased()]?["usd"] {
                     balanceUSD = thorBalances.runeBalanceInUSD(usdPrice: priceRateUsd) ?? "US$ 0,00"
                 }
                 coinBalance = thorBalances.formattedRuneBalance() ?? "0.0"
-
+                
             case .solana:
-                await sol.getSolanaBalance(coin: coin)
+                let (rawBalance,priceRate) = try await sol.getSolanaBalance(coin: coin)
+                coin.rawBalance = rawBalance
+                coin.priceRate = priceRate
                 balanceUSD = coin.balanceInUsd
                 coinBalance = coin.balanceString
-
+                
             case .ethereum:
-                try await eth.getEthBalance(coin: coin)
+                let (rawBalance,priceRate) = await eth.getEthBalance(coin: coin,fromAddress: coin.address)
+                coin.rawBalance = rawBalance
+                coin.priceRate = priceRate
                 balanceUSD = coin.balanceInUsd
                 coinBalance = coin.balanceString
             case .avalanche:
-                try await avax.getBalance(coin: coin)
+                let (rawBalance,priceRate) = try await avax.getBalance(coin: coin)
+                coin.rawBalance = rawBalance
+                coin.priceRate = priceRate
                 balanceUSD = coin.balanceInUsd
                 coinBalance = coin.balanceString
-
+                
             case .bscChain:
-                try await bsc.getBNBBalance(coin: coin)
+                let (rawBalance,priceRate) = try await bsc.getBNBBalance(coin: coin)
+                coin.rawBalance = rawBalance
+                coin.priceRate = priceRate
                 balanceUSD = coin.balanceInUsd
                 coinBalance = coin.balanceString
-
+                
             case .gaiaChain:
                 let atomBalance =  try await gaia.fetchBalances(address: coin.address)
                 if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[coin.priceProviderId]?["usd"] {

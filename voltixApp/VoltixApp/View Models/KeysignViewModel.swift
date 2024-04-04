@@ -315,8 +315,8 @@ class KeysignViewModel: ObservableObject {
                 let result = SolanaHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyEdDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
                 switch result {
                 case .success(let tx):
-                    await SolanaService.shared.sendSolanaTransaction(encodedTransaction: tx)
-                    self.txid = SolanaService.shared.transactionResult ?? ""
+                    let transactionResult = await SolanaService.shared.sendSolanaTransaction(encodedTransaction: tx)
+                    self.txid = transactionResult ?? ""
                 case .failure(let err):
                     self.handleHelperError(err: err)
                 }
@@ -336,8 +336,6 @@ class KeysignViewModel: ObservableObject {
                 case .failure(let err):
                     self.handleHelperError(err: err)
                 }
-            default:
-                self.logger.error("unsupported coin:\(keysignPayload.coin.ticker)")
             }
         }
     }

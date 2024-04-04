@@ -1,32 +1,15 @@
 import Foundation
 import SwiftUI
 
-// MARK: - SolanaService
-
-@MainActor
-class SolanaService: ObservableObject {
+class SolanaService {
     static let shared = SolanaService()
     private init() {}
 	
-    @Published var transactionResult: String?
-    @Published var balance: Int?
-    @Published var recentBlockHash: String?
-    @Published var feeInLamports: String?
-    
-    var rawBalance: String {
-        if let balance = balance {
-            return "\(balance)"
-        } else {
-            return "0"
-        }
-    }
-	
-    func solBalanceInUSD(usdPrice: Double?, includeCurrencySymbol: Bool = true) -> String? {
-        guard let usdPrice = usdPrice,
-              let solBalance = balance else { return nil }
+    func solBalanceInUSD(balance: String, usdPrice: Double?, includeCurrencySymbol: Bool = true) -> String? {
+        guard let usdPrice = usdPrice else { return nil }
 		
-        let balanceSOL = Double(solBalance) / 1_000_000_000.0
-        let balanceUSD = balanceSOL * usdPrice
+        let balanceSOL = Decimal(string:balance) ?? 0 / 1_000_000_000
+        let balanceUSD = balanceSOL * Decimal(usdPrice)
 		
         let formatter = NumberFormatter()
 		
@@ -41,15 +24,15 @@ class SolanaService: ObservableObject {
             formatter.groupingSeparator = ""
         }
 		
-        return formatter.string(from: NSNumber(value: balanceUSD))
+        return formatter.string(from: balanceUSD as NSNumber)
     }
 	
-    var formattedSolBalance: String? {
+    func formattedSolBalance(balance: String?) -> String? {
         guard let solAmountInt = balance else {
             return "Balance not available"
         }
 		
-        let solAmount = Double(solAmountInt)
+        let solAmount = Decimal(string:solAmountInt) ?? 0
         let balanceSOL = solAmount / 1_000_000_000.0 // Adjusted for SOL
 		
         let formatter = NumberFormatter()
@@ -58,13 +41,13 @@ class SolanaService: ObservableObject {
         formatter.minimumFractionDigits = 0
         formatter.groupingSeparator = ""
         formatter.decimalSeparator = "."
-        return formatter.string(from: NSNumber(value: balanceSOL))
+        return formatter.string(from: balanceSOL as NSNumber)
     }
 	
     private let rpcURL = URL(string: Endpoint.solanaServiceAlchemyRpc)!
     private let jsonDecoder = JSONDecoder()
 	
-    func sendSolanaTransaction(encodedTransaction: String) async {
+    func sendSolanaTransaction(encodedTransaction: String) async -> String? {
         do {
             let requestBody: [String: Any] = [
                 "jsonrpc": "2.0",
@@ -74,49 +57,52 @@ class SolanaService: ObservableObject {
             ]
             let data = try await postRequest(with: requestBody)
             let response = try jsonDecoder.decode(SolanaRPCResponse<String>.self, from: data)
-            self.transactionResult = response.result
+            return response.result
 			
         } catch {
             print("Error sending transaction: \(error.localizedDescription)")
         }
+        return nil
     }
 	
-    func getSolanaBalance(coin: Coin) async {
+    func getSolanaBalance(coin: Coin) async throws -> (rawBalance: String, priceRate: Double){
+        var rawBalance = "0"
+        let priceRateUsd = await CryptoPriceService.shared.cryptoPrices?.prices[Chain.solana.name.lowercased()]?["usd"]
+        
+        let requestBody: [String: Any] = [
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "getBalance",
+            "params": [coin.address]
+        ]
         do {
-            let requestBody: [String: Any] = [
-                "jsonrpc": "2.0",
-                "id": 1,
-                "method": "getBalance",
-                "params": [coin.address]
-            ]
             let data = try await postRequest(with: requestBody)
             let response = try jsonDecoder.decode(SolanaRPCResponse<SolanaBalanceResponse>.self, from: data)
-            self.balance = response.result.value
-            coin.rawBalance = "\(response.result.value)"
-            if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.solana.name.lowercased()]?["usd"] {
-                coin.priceRate = priceRateUsd
-            }
+            rawBalance = "\(response.result.value)"
         } catch {
             print("Error fetching balance: \(error.localizedDescription)")
+            throw error
         }
+        return (rawBalance,priceRateUsd ?? 0.0)
     }
 	
-    func fetchRecentBlockhash() async {
+    func fetchRecentBlockhash() async throws -> (recentBlockHash: String?,feeInLamports: String) {
+        var blockHash: String? = nil
+        let feeInLamports = "7000"
+        let requestBody: [String: Any] = [
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "getLatestBlockhash",
+            "params": [["commitment": "finalized"]]
+        ]
         do {
-            let requestBody: [String: Any] = [
-                "jsonrpc": "2.0",
-                "id": 1,
-                "method": "getLatestBlockhash",
-                "params": [["commitment": "finalized"]]
-            ]
-			
             let data = try await postRequest(with: requestBody)
-            
-            self.recentBlockHash = Utils.extractResultFromJson(fromData: data, path: "result.value.blockhash") as? String
-            self.feeInLamports = "7000"
+            blockHash = Utils.extractResultFromJson(fromData: data, path: "result.value.blockhash") as? String
         } catch {
             print("Error fetching recent blockhash: \(error.localizedDescription)")
+            throw error
         }
+        return (blockHash,feeInLamports)
     }
 	
     private func postRequest(with body: [String: Any]) async throws -> Data {
@@ -124,7 +110,6 @@ class SolanaService: ObservableObject {
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
-		
         let (data, _) = try await URLSession.shared.data(for: request)
         return data
     }
