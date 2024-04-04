@@ -102,7 +102,6 @@
 		A65BA98E2BAD311200B2D8AA /* Loader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA98D2BAD311200B2D8AA /* Loader.swift */; };
 		A65BA9902BAD402A00B2D8AA /* KeysignMessageConfirmView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA98F2BAD402A00B2D8AA /* KeysignMessageConfirmView.swift */; };
 		A65BA9922BAD439900B2D8AA /* KeysignDiscoverServiceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9912BAD439900B2D8AA /* KeysignDiscoverServiceView.swift */; };
-		A65BA9942BAD449F00B2D8AA /* DiscoveringSignMessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9932BAD449F00B2D8AA /* DiscoveringSignMessageView.swift */; };
 		A65BA9962BAD460600B2D8AA /* KeysignStartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9952BAD460600B2D8AA /* KeysignStartView.swift */; };
 		A65BA9982BAD479C00B2D8AA /* JoinKeysignDoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9972BAD479C00B2D8AA /* JoinKeysignDoneView.swift */; };
 		A66A0BD52BA124D00021A483 /* EditVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD42BA124D00021A483 /* EditVaultView.swift */; };
@@ -329,7 +328,6 @@
 		A65BA98D2BAD311200B2D8AA /* Loader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Loader.swift; sourceTree = "<group>"; };
 		A65BA98F2BAD402A00B2D8AA /* KeysignMessageConfirmView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignMessageConfirmView.swift; sourceTree = "<group>"; };
 		A65BA9912BAD439900B2D8AA /* KeysignDiscoverServiceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignDiscoverServiceView.swift; sourceTree = "<group>"; };
-		A65BA9932BAD449F00B2D8AA /* DiscoveringSignMessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveringSignMessageView.swift; sourceTree = "<group>"; };
 		A65BA9952BAD460600B2D8AA /* KeysignStartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignStartView.swift; sourceTree = "<group>"; };
 		A65BA9972BAD479C00B2D8AA /* JoinKeysignDoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinKeysignDoneView.swift; sourceTree = "<group>"; };
 		A66A0BD42BA124D00021A483 /* EditVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditVaultView.swift; sourceTree = "<group>"; };
@@ -1008,7 +1006,6 @@
 				DE9EB0F52BA3F9C2001747D9 /* ParticipantDiscovery.swift */,
 				A65BA98F2BAD402A00B2D8AA /* KeysignMessageConfirmView.swift */,
 				A65BA9912BAD439900B2D8AA /* KeysignDiscoverServiceView.swift */,
-				A65BA9932BAD449F00B2D8AA /* DiscoveringSignMessageView.swift */,
 				A65BA9952BAD460600B2D8AA /* KeysignStartView.swift */,
 				A65BA9972BAD479C00B2D8AA /* JoinKeysignDoneView.swift */,
 			);
@@ -1388,7 +1385,6 @@
 				DE1572962B70F254009BC7C5 /* TssMessenger.swift in Sources */,
 				46B60BBE2BBA811D0043EBBA /* AvalancheService.swift in Sources */,
 				A65649F52B966F3E00E4B329 /* DecodableDefault.swift in Sources */,
-				A65BA9942BAD449F00B2D8AA /* DiscoveringSignMessageView.swift in Sources */,
 				DE491CEF2B708260007C88D5 /* KeygenView.swift in Sources */,
 				A65649E82B9668BF00E4B329 /* BitcoinTransactionRef.swift in Sources */,
 				A66A0BDB2BA13B570021A483 /* CoinsGrouped.swift in Sources */,
