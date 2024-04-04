@@ -34,7 +34,7 @@ extension [CosmosBalance] {
     
     func runeBalance() -> String? {
         for balance in self {
-            if balance.denom.lowercased() == Chain.THORChain.ticker.lowercased() {
+            if balance.denom.lowercased() == Chain.thorChain.ticker.lowercased() {
                 return balance.amount
             }
         }
@@ -43,7 +43,7 @@ extension [CosmosBalance] {
     
     func formattedRuneBalance() -> String? {
         for balance in self {
-            if balance.denom.lowercased() == Chain.THORChain.ticker.lowercased() {
+            if balance.denom.lowercased() == Chain.thorChain.ticker.lowercased() {
                 guard let runeAmount = Double(balance.amount) else { return "Invalid balance" }
                 let balanceRune = runeAmount / 100_000_000.0
                 
@@ -61,7 +61,7 @@ extension [CosmosBalance] {
     }
     func atomBalance() -> String? {
         for balance in self {
-            if balance.denom.lowercased() == Chain.GaiaChain.ticker.lowercased() {
+            if balance.denom.lowercased() == Chain.gaiaChain.ticker.lowercased() {
                 return balance.amount
             }
         }
@@ -94,7 +94,7 @@ extension [CosmosBalance] {
     
     func formattedAtomBalance() -> String? {
         for balance in self {
-            if balance.denom.lowercased() == Chain.GaiaChain.ticker.lowercased() {
+            if balance.denom.lowercased() == Chain.gaiaChain.ticker.lowercased() {
                 guard let atomAmount = Double(balance.amount) else { return "Invalid balance" }
                 let balanceAtom = atomAmount / 1_000_000.0
                 

@@ -20,7 +20,7 @@ class Endpoint {
     
     static let avalancheServiceRpcService = "https://avalanche-c-chain-rpc.publicnode.com"
     
-    static let solanaServiceAlchemyRpc = "http://45.76.120.223/alchemy/"
+    static let solanaServiceAlchemyRpc = "https://solana-rpc.publicnode.com"
     
     static func bitcoinLabelTxHash(_ value: String) -> String {
         "https://mempool.space/tx/\(value)"

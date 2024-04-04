@@ -24,14 +24,14 @@ class UTXOChainsHelper {
     }
     
     static func getHelper(vault: Vault, coin: Coin) -> UTXOChainsHelper? {
-        switch coin.chain.name.lowercased() {
-        case Chain.Bitcoin.name.lowercased():
+        switch coin.chain {
+        case .bitcoin:
             return UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-        case Chain.BitcoinCash.name.lowercased():
+        case .bitcoinCash:
             return UTXOChainsHelper(coin: .bitcoinCash, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-        case Chain.Litecoin.name.lowercased():
+        case .litecoin:
             return UTXOChainsHelper(coin: .litecoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-        case Chain.Dogecoin.name.lowercased():
+        case .dogecoin:
             return UTXOChainsHelper(coin: .dogecoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
         default:
             return nil

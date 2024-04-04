@@ -206,7 +206,7 @@ class KeysignViewModel: ObservableObject {
                 }
                 
             case .EVM:
-                if keysignPayload.coin.chain.name == Chain.Ethereum.name {
+                if keysignPayload.coin.chain.name == Chain.ethereum.name {
                     if keysignPayload.coin.isNativeToken {
                         let result = EVMHelper.getEthereumHelper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
                         switch result {
@@ -235,7 +235,7 @@ class KeysignViewModel: ObservableObject {
                             self.handleHelperError(err: err)
                         }
                     }
-                } else if keysignPayload.coin.chain.name == Chain.BSCChain.name {
+                } else if keysignPayload.coin.chain.name == Chain.bscChain.name {
                     if keysignPayload.coin.isNativeToken {
                         let result = EVMHelper.getBSCHelper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
                         switch result {
@@ -264,7 +264,7 @@ class KeysignViewModel: ObservableObject {
                             self.handleHelperError(err: err)
                         }
                     }
-                }else if keysignPayload.coin.chain.name == Chain.Avalache.name {
+                }else if keysignPayload.coin.chain.name == Chain.avalanche.name {
                     if keysignPayload.coin.isNativeToken {
                         let result = EVMHelper.getAvaxHelper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
                         switch result {

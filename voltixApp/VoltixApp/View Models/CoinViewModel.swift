@@ -23,9 +23,10 @@ class CoinViewModel: ObservableObject {
     private let sol = SolanaService.shared
     private let gaia = GaiaService.shared
     
-    func loadData(tx: SendTransaction) async {
-        print("realoading data...")
+    func loadData(coin: Coin) async {
         isLoading = true
+        defer { isLoading = false }
+
         await CryptoPriceService.shared.fetchCryptoPrices()
         do{
             if tx.coin.chain.chainType == ChainType.UTXO {
@@ -63,23 +64,10 @@ class CoinViewModel: ObservableObject {
                     balanceUSD = atomBalance.atomBalanceInUSD(usdPrice: priceRateUsd) ?? "US$ 0,00"
                 }
                 coinBalance = atomBalance.formattedAtomBalance() ?? "0.0"
-                
-            } else if tx.coin.chain.name == Chain.Solana.name {
-                await sol.getSolanaBalance(tx:tx)
-                await sol.fetchRecentBlockhash()
-                balanceUSD = tx.coin.balanceInUsd
-                coinBalance = tx.coin.balanceString
-                await MainActor.run {
-                    if let feeInLamports = sol.feeInLamports {
-                        tx.gas = String(feeInLamports)
-                    }
-                }
             }
         }
-        catch{
+        catch {
             print("error fetching data: \(error.localizedDescription)")
         }
-        
-        isLoading = false
     }
 }

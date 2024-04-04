@@ -8,13 +8,14 @@
 import SwiftUI
 
 struct TokenSelectorDropdown: View {
-    @ObservedObject var tx: SendTransaction
     @ObservedObject var coinViewModel: CoinViewModel
-    let group: GroupedChain
     
+    let group: GroupedChain
+
+    @State var selected: Coin
     @State var isActive = false
     @State var isExpanded = false
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             selectedCell
@@ -45,7 +46,7 @@ struct TokenSelectorDropdown: View {
     var cell: some View {
         HStack(spacing: 12) {
             image
-            Text("\(tx.coin.ticker)")
+            Text("\(selected.ticker)")
             Spacer()
             Text(coinViewModel.coinBalance ?? "0.00000")
             
@@ -61,7 +62,7 @@ struct TokenSelectorDropdown: View {
     }
     
     var image: some View {
-        Image(tx.coin.logo)
+        Image(selected.logo)
             .resizable()
             .frame(width: 32, height: 32)
             .cornerRadius(100)
@@ -93,7 +94,7 @@ struct TokenSelectorDropdown: View {
             
             Spacer()
             
-            if tx.coin == coin {
+            if selected == coin {
                 Image(systemName: "checkmark")
                     .font(.body16Menlo)
                     .foregroundColor(.neutral0)
@@ -103,16 +104,15 @@ struct TokenSelectorDropdown: View {
     }
     
     private func setData() {
-        isActive = group.coins.count>1
+        isActive = group.coins.count > 1
     }
     
     private func handleSelection(for coin: Coin) {
         isExpanded = false
-        tx.coin = coin
-        tx.gas = coin.feeDefault
+        selected = coin
     }
 }
 
 #Preview {
-    TokenSelectorDropdown(tx: SendTransaction(), coinViewModel: CoinViewModel(), group: GroupedChain.example)
+    TokenSelectorDropdown(coinViewModel: CoinViewModel(), group: GroupedChain.example, selected: .example)
 }

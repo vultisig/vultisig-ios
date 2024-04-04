@@ -55,10 +55,10 @@ struct UTXOTransactionsView: View {
         guard let tx else {
             return
         }
-        
-        if tx.coin.chain.name == Chain.Bitcoin.name {
+
+        if tx.coin.chain == .bitcoin {
             await utxoTransactionsService.fetchTransactions(tx.coin.address, endpointUrl: Endpoint.fetchBitcoinTransactions(tx.coin.address))
-        } else if tx.coin.chain.name == Chain.Litecoin.name {
+        } else if tx.coin.chain == .litecoin {
             await utxoTransactionsService.fetchTransactions(tx.coin.address, endpointUrl: Endpoint.fetchLitecoinTransactions(tx.coin.address))
         }
     }

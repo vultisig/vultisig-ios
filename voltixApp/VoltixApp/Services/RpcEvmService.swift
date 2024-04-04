@@ -24,21 +24,19 @@ class RpcEvmService {
         }
     }
     
-    func getBalance(tx: SendTransaction) async throws -> Void {
+    func getBalance(coin: Coin) async throws {
         do {
             // Start fetching all information concurrently
-            async let cryptoPrice = CryptoPriceService.shared.cryptoPrices?.prices[tx.coin.priceProviderId]?["usd"]
+            async let cryptoPrice = CryptoPriceService.shared.cryptoPrices?.prices[coin.priceProviderId]?["usd"]
             if let priceRateUsd = await cryptoPrice {
-                tx.coin.priceRate = priceRateUsd
+                coin.priceRate = priceRateUsd
             }
-            if tx.coin.isNativeToken {
-                tx.coin.rawBalance = String(try await fetchBalance(address: tx.fromAddress))
+            if coin.isNativeToken {
+                coin.rawBalance = String(try await fetchBalance(address: coin.address))
             } else {
-                tx.coin.rawBalance = String(try await fetchERC20TokenBalance(contractAddress: tx.coin.contractAddress, walletAddress: tx.fromAddress))
-                
-                print("BALANCE ARC20: \(tx.coin.rawBalance)")
+                coin.rawBalance = String(try await fetchERC20TokenBalance(contractAddress: coin.contractAddress, walletAddress: coin.address))
+                print("BALANCE ARC20: \(coin.rawBalance)")
             }
-            
         } catch {
             print("getBalance:: \(error.localizedDescription)")
         }

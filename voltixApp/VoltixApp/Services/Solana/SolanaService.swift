@@ -81,20 +81,20 @@ class SolanaService: ObservableObject {
         }
     }
 	
-    func getSolanaBalance(tx: SendTransaction) async {
+    func getSolanaBalance(coin: Coin) async {
         do {
             let requestBody: [String: Any] = [
                 "jsonrpc": "2.0",
                 "id": 1,
                 "method": "getBalance",
-                "params": [tx.fromAddress]
+                "params": [coin.address]
             ]
             let data = try await postRequest(with: requestBody)
             let response = try jsonDecoder.decode(SolanaRPCResponse<SolanaBalanceResponse>.self, from: data)
             self.balance = response.result.value
-            tx.coin.rawBalance = "\(response.result.value)"
-            if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.Solana.name.lowercased()]?["usd"] {
-                tx.coin.priceRate = priceRateUsd
+            coin.rawBalance = "\(response.result.value)"
+            if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.solana.name.lowercased()]?["usd"] {
+                coin.priceRate = priceRateUsd
             }
         } catch {
             print("Error fetching balance: \(error.localizedDescription)")
@@ -106,15 +106,14 @@ class SolanaService: ObservableObject {
             let requestBody: [String: Any] = [
                 "jsonrpc": "2.0",
                 "id": 1,
-                "method": "getRecentBlockhash",
+                "method": "getLatestBlockhash",
                 "params": [["commitment": "finalized"]]
             ]
 			
             let data = try await postRequest(with: requestBody)
-            let response = try jsonDecoder.decode(SolanaRPCResponse<SolanaRecentBlockhashResponse>.self, from: data)
-			
-            self.recentBlockHash = response.result.value.blockhash
-            self.feeInLamports = String(response.result.value.feeCalculator.lamportsPerSignature)            
+            
+            self.recentBlockHash = Utils.extractResultFromJson(fromData: data, path: "result.value.blockhash") as? String
+            self.feeInLamports = "7000"
         } catch {
             print("Error fetching recent blockhash: \(error.localizedDescription)")
         }

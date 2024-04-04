@@ -39,15 +39,15 @@ class SendCryptoVerifyViewModel: ObservableObject {
                     _ = try await utxo.fetchBlockchairData(address: tx.fromAddress, coin: tx.coin)
                 } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
                     self.THORChainAccount = try await thor.fetchAccountNumber(tx.fromAddress)
-                } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
-                    await sol.getSolanaBalance(tx: tx)
+                } else if tx.coin.chain == .solana {
+                    await sol.getSolanaBalance(coin: tx.coin)
                     await sol.fetchRecentBlockhash()
                     await MainActor.run {
                         if let feeInLamports = sol.feeInLamports {
                             tx.gas = String(feeInLamports)
                         }
                     }
-                } else if tx.coin.chain.name == Chain.GaiaChain.name {
+                } else if tx.coin.chain == .gaiaChain {
                     self.CosmosChainAccount = try await gaia.fetchAccountNumber(tx.fromAddress)
                 }
             }
@@ -137,8 +137,8 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 
                 return keysignPayload
             }
-        } else if tx.coin.chain.name.lowercased() == Chain.THORChain.name.lowercased() {
-            
+        } else if tx.coin.chain == .thorChain {
+
             guard let accountNumberString = THORChainAccount?.accountNumber, let intAccountNumber = UInt64(accountNumberString) else {
                 print("We need the ACCOUNT NUMBER to broadcast a transaction")
                 self.errorMessage = "failToGetAccountNumber"
@@ -170,8 +170,8 @@ class SendCryptoVerifyViewModel: ObservableObject {
             
             return keysignPayload
             
-        } else if tx.coin.chain.name  == Chain.GaiaChain.name {
-            
+        } else if tx.coin.chain == .gaiaChain {
+
             guard let accountNumberString = CosmosChainAccount?.accountNumber, let intAccountNumber = UInt64(accountNumberString) else {
                 self.errorMessage = "failToGetAccountNumber"
                 showAlert = true
@@ -202,7 +202,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
             
             return keysignPayload
             
-        } else if tx.coin.chain.name.lowercased() == Chain.Solana.name.lowercased() {
+        } else if tx.coin.chain == .solana {
             guard let recentBlockHash = sol.recentBlockHash else {
                 print("We need the recentBlockHash to broadcast a transaction")
                 self.errorMessage = "failToGetRecentBlockHash"
@@ -215,7 +215,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 coin: tx.coin,
                 toAddress: tx.toAddress,
                 toAmount: tx.amountInLamports,
-                chainSpecific: BlockChainSpecific.Solana(recentBlockHash: recentBlockHash, priorityFee: 0),
+                chainSpecific: BlockChainSpecific.Solana(recentBlockHash: recentBlockHash, priorityFee: 500_000),
                 utxos: [],
                 memo: tx.memo, swapPayload: nil
             )

@@ -8,7 +8,12 @@
 import SwiftUI
 
 struct SwapCryptoView: View {
-    @ObservedObject var tx: SendTransaction
+
+    @StateObject var swapViewModel = SwapCryptoViewModel()
+
+    @ObservedObject var tx: SwapTransaction
+    @ObservedObject var coinViewModel: CoinViewModel
+
     let group: GroupedChain
     
     var body: some View {
@@ -28,13 +33,13 @@ struct SwapCryptoView: View {
     
     var view: some View {
         VStack(spacing: 30) {
-            ProgressBar(progress: 0.25)
+            ProgressBar(progress: swapViewModel.progress)
                 .padding(.top, 30)
-            SwapCryptoDetailsView(tx: tx, group: group)
+            SwapCryptoDetailsView(tx: tx, swapViewModel: swapViewModel, coinViewModel: coinViewModel, group: group)
         }
     }
 }
 
 #Preview {
-    SwapCryptoView(tx: SendTransaction(), group: GroupedChain.example)
+    SwapCryptoView(tx: SwapTransaction(), coinViewModel: CoinViewModel(), group: GroupedChain.example)
 }

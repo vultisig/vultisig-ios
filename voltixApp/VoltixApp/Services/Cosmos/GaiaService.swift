@@ -7,11 +7,11 @@
 
 import Foundation
 
-class GaiaService{
+class GaiaService {
     static let shared = GaiaService()
     private init(){}
 
-    func fetchBalances(_ address: String) async throws -> [CosmosBalance] {
+    func fetchBalances(address: String) async throws -> [CosmosBalance] {
         let cachedBalances = loadBalancesFromCache(forAddress: address)
         if cachedBalances.count > 0 {
             return cachedBalances
@@ -25,6 +25,7 @@ class GaiaService{
         self.cacheBalances(balanceResponse.balances, forAddress: address)
         return balanceResponse.balances
     }
+
     func fetchAccountNumber(_ address: String) async throws -> CosmosAccountValue? {
         guard let url = URL(string: Endpoint.fetchCosmosAccountNumber(address)) else {
             return nil

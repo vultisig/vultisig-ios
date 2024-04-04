@@ -23,7 +23,7 @@ class BlockchairService {
             let decoder = JSONDecoder()
             decoder.keyDecodingStrategy = .convertFromSnakeCase
             let decodedData = try decoder.decode(BlockchairResponse.self, from: data)
-            if let blockchairData = decodedData.data[address] {
+            if let blockchairData = decodedData.data[coin.address] {
                 self.blockchairData[key] = blockchairData
                 return blockchairData
             }

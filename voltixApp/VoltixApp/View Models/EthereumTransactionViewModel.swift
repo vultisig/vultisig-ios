@@ -22,9 +22,9 @@ class EthereumTransactionViewModel : ObservableObject {
         self.chain = chain
         self.vault = vault
         switch chain?.name {
-        case Chain.Ethereum.name:
+        case Chain.ethereum.name:
             await loadETHTransactions(vault: vault)
-        case Chain.BSCChain.name:
+        case Chain.bscChain.name:
             await loadBSCTransactions(vault: vault)
         default:
             return

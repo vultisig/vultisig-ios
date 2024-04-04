@@ -42,53 +42,49 @@ struct KeysignPayload: Codable, Hashable {
     }
         
     func getKeysignMessages(vault:Vault) -> Result<[String], Error> {
-        var result: Result<[String], Error>
         // this is a swap
         if swapPayload != nil {
             let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
             return swaps.getPreSignedImageHash(keysignPayload: self)
         }
-        switch coin.chain.name.lowercased() {
-        case Chain.Bitcoin.name.lowercased():
+        switch coin.chain {
+        case .bitcoin:
             let utxoHelper = UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
             return utxoHelper.getPreSignedImageHash(keysignPayload: self)
-        case Chain.BitcoinCash.name.lowercased():
+        case .bitcoinCash:
             let utxoHelper = UTXOChainsHelper(coin: .bitcoinCash, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
             return utxoHelper.getPreSignedImageHash(keysignPayload: self)
-        case Chain.Litecoin.name.lowercased():
+        case .litecoin:
             let utxoHelper = UTXOChainsHelper(coin: .litecoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
             return utxoHelper.getPreSignedImageHash(keysignPayload: self)
-        case Chain.Dogecoin.name.lowercased():
+        case .dogecoin:
             let utxoHelper = UTXOChainsHelper(coin: .dogecoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
             return utxoHelper.getPreSignedImageHash(keysignPayload: self)
-        case Chain.Ethereum.name.lowercased():
+        case .ethereum:
             if coin.isNativeToken {
-                result = EVMHelper.getEthereumHelper().getPreSignedImageHash(keysignPayload: self)
+                return EVMHelper.getEthereumHelper().getPreSignedImageHash(keysignPayload: self)
             }else{
-                result = ERC20Helper.getEthereumERC20Helper().getPreSignedImageHash(keysignPayload: self)
+                return ERC20Helper.getEthereumERC20Helper().getPreSignedImageHash(keysignPayload: self)
             }
-        case Chain.Avalache.name.lowercased():
+        case .avalanche:
             if coin.isNativeToken {
-                result = EVMHelper.getAvaxHelper().getPreSignedImageHash(keysignPayload: self)
-            }else{
-                result = ERC20Helper.getAvaxERC20Helper().getPreSignedImageHash(keysignPayload: self)
+                return EVMHelper.getAvaxHelper().getPreSignedImageHash(keysignPayload: self)
+            } else {
+                return ERC20Helper.getAvaxERC20Helper().getPreSignedImageHash(keysignPayload: self)
             }
-        case Chain.BSCChain.name.lowercased():
+        case .bscChain:
             if coin.isNativeToken {
-                result = EVMHelper.getBSCHelper().getPreSignedImageHash(keysignPayload: self)
-            }else{
-                result = ERC20Helper.getBSCBEP20Helper().getPreSignedImageHash(keysignPayload: self)
+                return EVMHelper.getBSCHelper().getPreSignedImageHash(keysignPayload: self)
+            } else {
+                return ERC20Helper.getBSCBEP20Helper().getPreSignedImageHash(keysignPayload: self)
             }
-        case Chain.THORChain.name.lowercased():
-            result = THORChainHelper.getPreSignedImageHash(keysignPayload: self)
-        case Chain.Solana.name.lowercased():
-            result = SolanaHelper.getPreSignedImageHash(keysignPayload: self)
-        case Chain.GaiaChain.name.lowercased():
-            result = ATOMHelper().getPreSignedImageHash(keysignPayload: self)
-        default:
-            return .failure(HelperError.runtimeError("unsupported coin"))
+        case .thorChain:
+            return THORChainHelper.getPreSignedImageHash(keysignPayload: self)
+        case .solana:
+            return SolanaHelper.getPreSignedImageHash(keysignPayload: self)
+        case .gaiaChain:
+            return ATOMHelper().getPreSignedImageHash(keysignPayload: self)
         }
-        return result
     }
     
     static let example = KeysignPayload(coin: Coin.example, toAddress: "toAddress", toAmount: 100, chainSpecific: BlockChainSpecific.UTXO(byteFee: 100), utxos: [], memo: "Memo", swapPayload: nil)
