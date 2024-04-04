@@ -70,7 +70,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         }
     }
 
-    var asset: String {
+    var swapAsset: String {
         switch self {
         case .thorChain: return "THOR"
         case .ethereum: return "ETH"
@@ -81,8 +81,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .litecoin: return "LTC"
         case .dogecoin: return "DOGE"
         case .gaiaChain: return "GAIA"
-        case .solana:
-            fatalError()
+        case .solana: return "SOL"
         }
     }
 

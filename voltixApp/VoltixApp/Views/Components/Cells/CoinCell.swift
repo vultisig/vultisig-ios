@@ -66,7 +66,9 @@ struct CoinCell: View {
         let isDisabled = coinViewModel.balanceUSD == nil
         
         return HStack(spacing: 20) {
-            swapButton
+            if coin.chain.isSwapSupported {
+                swapButton
+            }
             sendButton
         }
         .disabled(isDisabled)

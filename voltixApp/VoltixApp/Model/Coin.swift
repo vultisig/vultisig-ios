@@ -128,9 +128,8 @@ class Coin: Codable, Hashable {
     }
 
     var swapAsset: String {
-        guard !isNativeToken else { return "\(chain.asset).\(chain.ticker)" }
-        let symbol = ticker.components(separatedBy: "-").first ?? ticker
-        return "\(chain.asset).\(symbol)-\(contractAddress)"
+        guard !isNativeToken else { return "\(chain.swapAsset).\(chain.ticker)" }
+        return "\(chain.swapAsset).\(ticker)-\(contractAddress)"
     }
 
     static let example = Coin(
