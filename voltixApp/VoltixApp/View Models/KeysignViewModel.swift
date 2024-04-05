@@ -24,7 +24,7 @@ class KeysignViewModel: ObservableObject {
     @Published var status: KeysignStatus = .CreatingInstance
     @Published var keysignError: String = ""
     @Published var signatures = [String: TssKeysignResponse]()
-    @Published var etherScanService = EtherScanService.shared
+    @Published var etherScanService = EthService.shared
     @Published var avaxScanService = AvalancheService.shared
     @Published var txid: String = ""
     

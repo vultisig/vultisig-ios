@@ -28,10 +28,7 @@ class SendCryptoViewModel: ObservableObject {
     @Published var sol: SolanaService = SolanaService.shared
     @Published var cryptoPrice = CryptoPriceService.shared
     @Published var utxo = BlockchairService.shared
-    @Published var avax = AvalancheService.shared
-    
-    private let eth = EtherScanService.shared
-    private let bsc = BSCService.shared
+
     private let mediator = Mediator.shared
     
     let totalViews = 5
@@ -44,28 +41,20 @@ class SendCryptoViewModel: ObservableObject {
             if tx.coin.chain.chainType == .UTXO {
                 let sats = try await utxo.fetchSatsPrice(coin: tx.coin)
                 tx.gas = String(sats)
-            } else if tx.coin.chain == .ethereum  {
-                print("The loadData for \(tx.coin.ticker)")
-                let (gasPrice,priorityFee,nonce) = try await eth.getETHGasInfo(fromAddress: tx.fromAddress)
-                tx.gas = gasPrice
-                tx.nonce = nonce
-                tx.priorityFeeGwei = priorityFee
+            } else if tx.coin.chain.chainType == .EVM {
+                let service = try EvmServiceFactory.getService(forChain: tx.coin)
+                let (gasPrice,priorityFee,nonce) = try await service.getGasInfo(fromAddress: tx.fromAddress)
                 
-            } else if tx.coin.chain == .bscChain  {
-                print("The loadData for \(tx.coin.ticker)")
-                let (gasPrice,priorityFee,nonce) = try await bsc.getBscGasInfo(fromAddress: tx.fromAddress)
                 tx.gas = gasPrice
-                tx.nonce = nonce
-                tx.priorityFeeGwei = priorityFee
-            } else if tx.coin.chain == .avalanche {
-                print("The loadData for \(tx.coin.ticker)")
-                let (gasPrice,priorityFee,nonce) = try await avax.getGasInfo(fromAddress: tx.fromAddress)
-                tx.gas = gasPrice
-                tx.nonce = nonce
-                tx.priorityFeeGwei = priorityFee
-            }
-            else if tx.coin.chain == .thorChain {
-                // THORChain gas fee is 0.02 RUNE fixed
+                tx.nonce = Int64(nonce)
+                tx.priorityFeeGwei = Int64(priorityFee)
+                
+                print("TICKER: \(tx.coin.ticker)")
+                print("gas: \(tx.gas)")
+                print("nonce: \(tx.nonce)")
+                print("priorityFeeGwei: \(tx.priorityFeeGwei)")
+                
+            }else if tx.coin.chain == .avalanche {
                 tx.gas = "0.02"
             } else if tx.coin.chain == .gaiaChain {
                 tx.gas = "0.0075"
@@ -142,15 +131,8 @@ class SendCryptoViewModel: ObservableObject {
         } else if tx.coin.chain.chainType == .EVM  {
             Task {
                 do {
-                    var (gasPrice, _, _) = ("", 0, 0)
-                    
-                    if tx.coin.chain == .ethereum {
-                        (gasPrice, _, _) = try await EtherScanService.shared.getETHGasInfo(fromAddress: tx.fromAddress)
-                    } else if tx.coin.chain == .bscChain {
-                        (gasPrice, _, _) = try await BSCService.shared.getBscGasInfo(fromAddress: tx.fromAddress)
-                    } else if tx.coin.chain == .avalanche {
-                        (gasPrice, _, _) = try await AvalancheService.shared.getGasInfo(fromAddress: tx.fromAddress)
-                    }
+                    let service = try EvmServiceFactory.getService(forChain: tx.coin)
+                    let (gasPrice,_,_) = try await service.getGasInfo(fromAddress: tx.fromAddress)
                     
                     guard let gasLimitBigInt = BigInt(tx.coin.feeDefault) else {
                         print("Invalid gas limit")

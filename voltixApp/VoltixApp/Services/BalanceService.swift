@@ -8,20 +8,17 @@
 import Foundation
 
 class BalanceService {
-
+    
     static let shared = BalanceService()
-
+    
     private let utxo = BlockchairService.shared
     private let thor = ThorchainService.shared
-    private let eth = EtherScanService.shared
-    private let bsc = BSCService.shared
-    private let avax = AvalancheService.shared
     private let sol = SolanaService.shared
     private let gaia = GaiaService.shared
-
+    
     func balance(for coin: Coin) async throws -> (coinBalance: String, balanceUSD: String) {
         await CryptoPriceService.shared.fetchCryptoPrices()
-
+        
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin:
             let blockChairData = try await utxo.fetchBlockchairData(address: coin.address,coin: coin)
@@ -30,7 +27,7 @@ class BalanceService {
             coin.rawBalance = String(blockChairData?.address?.balance ?? 0)
             coin.priceRate = await CryptoPriceService.shared.cryptoPrices?.prices[coin.priceProviderId]?["usd"] ?? 0.0
             return (coinBalance, balanceUSD)
-
+            
         case .thorChain:
             let thorBalances = try await thor.fetchBalances(coin.address)
             var balanceUSD: String = .empty
@@ -42,7 +39,7 @@ class BalanceService {
             coin.priceRate = priceRateUsd ?? 0.0
             let coinBalance = thorBalances.formattedRuneBalance() ?? "0.0"
             return (coinBalance, balanceUSD)
-
+            
         case .solana:
             let (rawBalance,priceRate) = try await sol.getSolanaBalance(coin: coin)
             coin.rawBalance = rawBalance
@@ -50,31 +47,16 @@ class BalanceService {
             let balanceUSD = coin.balanceInUsd
             let coinBalance = coin.balanceString
             return (coinBalance, balanceUSD)
-
-        case .ethereum:
-            let (rawBalance,priceRate) = await eth.getEthBalance(coin: coin,fromAddress: coin.address)
+            
+        case .ethereum, .avalanche, .bscChain:
+            let service = try EvmServiceFactory.getService(forChain: coin)
+            let (rawBalance,priceRate) = try await service.getBalance(coin: coin)
             coin.rawBalance = rawBalance
             coin.priceRate = priceRate
             let balanceUSD = coin.balanceInUsd
             let coinBalance = coin.balanceString
             return (coinBalance, balanceUSD)
-
-        case .avalanche:
-            let (rawBalance,priceRate) = try await avax.getBalance(coin: coin)
-            coin.rawBalance = rawBalance
-            coin.priceRate = priceRate
-            let balanceUSD = coin.balanceInUsd
-            let coinBalance = coin.balanceString
-            return (coinBalance, balanceUSD)
-
-        case .bscChain:
-            let (rawBalance,priceRate) = try await bsc.getBNBBalance(coin: coin)
-            coin.rawBalance = rawBalance
-            coin.priceRate = priceRate
-            let balanceUSD = coin.balanceInUsd
-            let coinBalance = coin.balanceString
-            return (coinBalance, balanceUSD)
-
+            
         case .gaiaChain:
             let atomBalance =  try await gaia.fetchBalances(address: coin.address)
             var balanceUSD: String = .empty
