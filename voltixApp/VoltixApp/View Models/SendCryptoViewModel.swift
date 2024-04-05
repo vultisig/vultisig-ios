@@ -64,7 +64,7 @@ class SendCryptoViewModel: ObservableObject {
                 tx.nonce = nonce
                 tx.priorityFeeGwei = priorityFee
             }
-            else if tx.coin.chain == .avalanche {
+            else if tx.coin.chain == .thorChain {
                 // THORChain gas fee is 0.02 RUNE fixed
                 tx.gas = "0.02"
             } else if tx.coin.chain == .gaiaChain {
