@@ -112,19 +112,11 @@ struct JoinKeygenView: View {
     }
     
     var discoveringSessionID: some View {
-        VStack(spacing: 24) {
-            Text(NSLocalizedString("scanQRCodeJoinKeygen", comment: "Scan the barcode on another VoltixApp device to start"))
-                .font(.body15MenloBold)
-                .foregroundColor(.neutral0)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 30)
-            
-            Button(action: {
+        ProgressView()
+            .preferredColorScheme(.dark)
+            .onAppear {
                 viewModel.showBarcodeScanner()
-            }) {
-                scanButton
             }
-        }
     }
     
     var discoveringService: some View {

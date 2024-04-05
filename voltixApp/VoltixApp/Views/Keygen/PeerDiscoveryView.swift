@@ -15,6 +15,11 @@ struct PeerDiscoveryView: View {
     
     @State private var orientation = UIDevice.current.orientation
     
+    let columns = [
+        GridItem(.adaptive(minimum: 160)),
+        GridItem(.adaptive(minimum: 160)),
+    ]
+    
     let logger = Logger(subsystem: "peers-discory", category: "communication")
     
     var body: some View {
@@ -144,10 +149,19 @@ struct PeerDiscoveryView: View {
     }
     
     var deviceList: some View {
-        List(participantDiscovery.peersFound, id: \.self, selection: $viewModel.selections) { peer in
-            getPeerCell(peer)
+        ScrollView{
+            LazyVGrid(columns: columns, spacing: 32) {
+                ForEach(participantDiscovery.peersFound, id: \.self) { peer in
+                    
+                    Button {
+                        handleSelection(peer)
+                    } label: {
+                        PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
+                    }
+                }
+            }
+            .padding(20)
         }
-        .scrollContentBackground(.hidden)
     }
     
     var bottomButtons: some View {
@@ -180,20 +194,11 @@ struct PeerDiscoveryView: View {
             .foregroundColor(.red)
     }
     
-    private func getPeerCell(_ peer: String) -> some View {
-        HStack {
-            Image(systemName: self.viewModel.selections.contains(peer) ? "checkmark.circle" : "circle")
-            Text(peer)
-        }
-        .font(.body12Menlo)
-        .foregroundColor(.neutral0)
-        .listRowBackground(Color.blue600)
-        .onTapGesture {
-            if viewModel.selections.contains(peer) {
-                viewModel.selections.remove(peer)
-            } else {
-                viewModel.selections.insert(peer)
-            }
+    private func handleSelection(_ peer: String) {
+        if viewModel.selections.contains(peer) {
+            viewModel.selections.remove(peer)
+        } else {
+            viewModel.selections.insert(peer)
         }
     }
 }

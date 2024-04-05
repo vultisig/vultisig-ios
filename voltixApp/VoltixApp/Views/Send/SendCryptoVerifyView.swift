@@ -22,6 +22,9 @@ struct SendCryptoVerifyView: View {
         .alert(isPresented: $sendCryptoVerifyViewModel.showAlert) {
             alert
         }
+        .onDisappear {
+            sendCryptoVerifyViewModel.isLoading = false
+        }
     }
     
     var view: some View {
