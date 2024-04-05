@@ -12,11 +12,15 @@ struct UTXOTransactionCell: View {
     let tx: SendTransaction
     @ObservedObject var utxoTransactionsService: UTXOTransactionsService
     
+    let selfText = NSLocalizedString("self", comment: "")
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            transactionIDField
+            transactionIDCell
             Separator()
-            addressField
+            fromCell
+            Separator()
+            toCell
             Separator()
             summary
         }
@@ -26,53 +30,59 @@ struct UTXOTransactionCell: View {
         .padding(.horizontal, 16)
     }
     
-    var transactionIDField: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            header
-            txID
-        }
+    var transactionIDCell: some View {
+        let id = transaction.txid
+        let url = Endpoint.getExplorerURL(chainTicker: tx.coin.ticker, txid: id)
+        let image = transaction.isSent ? "arrow.up.circle" : "arrow.down.circle"
+        
+        return TransactionCell(
+            title: "transactionID",
+            id: id,
+            url: url,
+            image: image
+        )
     }
     
-    var header: some View {
-        HStack(spacing: 12) {
-            Image(systemName: transaction.isSent ? "arrow.up.circle" : "arrow.down.circle")
-            Text(NSLocalizedString("transactionID", comment: "Transaction ID"))
-        }
-        .font(.body20MontserratSemiBold)
-        .foregroundColor(.neutral0)
-    }
-    
-    var txID: some View {
-        Text(transaction.txid)
-            .font(.body13Menlo)
-            .foregroundColor(.turquoise600)
-    }
-    
-    var addressField: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            addressTitle
-            address
-        }
-    }
-    
-    var addressTitle: some View {
-        Text(NSLocalizedString(transaction.isSent ? "to" : "from", comment: ""))
-            .font(.body20MontserratSemiBold)
-            .foregroundColor(.neutral0)
-    }
-    
-    var address: some View {
-        var address: String? = ""
+    var fromCell: some View {
+        var address = ""
+        var id = ""
         
         if transaction.isSent {
-            address = transaction.sentTo.first
+            id = selfText
+            address = transaction.sentTo.first ?? ""
         } else if transaction.isReceived {
-            address = transaction.receivedFrom.first
+            id = transaction.receivedFrom.first ?? ""
+            address = id
         }
         
-        return Text(address ?? "")
-            .font(.body13Menlo)
-            .foregroundColor(.turquoise600)
+        let url = Endpoint.getExplorerByAddressURL(chainTicker: tx.coin.ticker, address: address) ?? ""
+        
+        return TransactionCell(
+            title: "from",
+            id: id,
+            url: url
+        )
+    }
+    
+    var toCell: some View {
+        var address = ""
+        var id = ""
+        
+        if transaction.isSent {
+            id = transaction.sentTo.first ?? ""
+            address = id
+        } else if transaction.isReceived {
+            id = selfText
+            address = transaction.receivedFrom.first ?? ""
+        }
+        
+        let url = Endpoint.getExplorerByAddressURL(chainTicker: tx.coin.ticker, address: address) ?? ""
+        
+        return TransactionCell(
+            title: "to",
+            id: id,
+            url: url
+        )
     }
     
     var summary: some View {

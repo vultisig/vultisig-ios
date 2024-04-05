@@ -25,7 +25,7 @@ struct SendCryptoView: View {
             Background()
             view
             
-            if sendCryptoViewModel.isLoading {
+            if sendCryptoViewModel.isLoading || sendCryptoVerifyViewModel.isLoading {
                 loader
             }
         }

@@ -110,7 +110,10 @@ struct JoinKeysignView: View {
     }
     
     var discoveringSignMessage: some View {
-        DiscoveringSignMessageView(viewModel: viewModel)
+        Loader()
+            .onAppear {
+                viewModel.startScan()
+            }
     }
     
     var discoverService: some View {

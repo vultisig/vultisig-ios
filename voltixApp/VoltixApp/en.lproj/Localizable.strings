@@ -65,6 +65,7 @@
 "enterAddress" = "Enter Address";
 "enterAmount" = "Enter Amount";
 "reshare" = "Reshare";
+"unknown" = "Unknown";
 "reshareVault" = "Reshare vault with a new committee";
 "pairWithOtherDevices" = "Pair with other devices:";
 "scanQrCode" = "Scan QR Code";
@@ -139,3 +140,4 @@
 "failToGetSequenceNo" = "Unable to get sequence no";
 "failToGetRecentBlockHash" = "Unable to get recent block hash";
 "checkExplorer" = "check explorer";
+"self" = "Self";
