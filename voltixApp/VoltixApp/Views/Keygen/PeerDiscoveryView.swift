@@ -148,7 +148,7 @@ struct PeerDiscoveryView: View {
             ForEach(participantDiscovery.peersFound, id: \.self) { peer in
                 VStack(spacing: 12) {
                     Button {
-                        handleSelection(for: peer)
+                        handleSelection(peer)
                     } label: {
                         PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
                     }
@@ -188,7 +188,7 @@ struct PeerDiscoveryView: View {
             .foregroundColor(.red)
     }
     
-    private func handleSelection(for peer: String) {
+    private func handleSelection(_ peer: String) {
         if viewModel.selections.contains(peer) {
             viewModel.selections.remove(peer)
         } else {

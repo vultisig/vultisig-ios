@@ -144,14 +144,18 @@ struct KeysignDiscoveryView: View {
     }
     
     var deviceList: some View {
-        List(participantDiscovery.peersFound, id: \.self, selection: $viewModel.selections) { peer in
-            Button {
-                handleSelection(peer)
-            } label: {
-                PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
+        ScrollView{
+            ForEach(participantDiscovery.peersFound, id: \.self) { peer in
+                VStack(spacing: 12) {
+                    Button {
+                        handleSelection(peer)
+                    } label: {
+                        PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
+                    }
+                }
             }
+            .padding(20)
         }
-        .scrollContentBackground(.hidden)
     }
     
     var bottomButtons: some View {
