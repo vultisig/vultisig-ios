@@ -11,9 +11,6 @@ struct PeerCell: View {
     let id: String
     let isSelected: Bool
     
-    @State var deviceName = "Unknown"
-    @State var imageName = "smartphone"
-    
     var body: some View {
         HStack(spacing: 12) {
             image
@@ -30,15 +27,11 @@ struct PeerCell: View {
                 .opacity(isSelected ? 1 : 0)
         )
         .padding(1)
-        .onAppear {
-            getDevice()
-        }
     }
     
     var image: some View {
-        Image(systemName: imageName)
-            .font(.title40MontserratLight)
-            .foregroundColor(.neutral0)
+        getDeviceImage()
+            .frame(width: 50)
     }
     
     var deviceInformation: some View {
@@ -50,7 +43,7 @@ struct PeerCell: View {
     }
     
     var deviceId: some View {
-        Text(deviceName)
+        Text(getDeviceName())
             .font(.body18MenloMedium)
             .foregroundColor(.neutral0)
     }
@@ -70,15 +63,35 @@ struct PeerCell: View {
             .padding(.horizontal, 2)
     }
     
-    private func getDevice() {
+    private func getDeviceName() -> String {
         let idString = id.lowercased()
+        let deviceName: String
         
         if idString.contains("iphone") {
             deviceName = "iPhone"
-            imageName = "iphone"
         } else if idString.contains("ipad") {
             deviceName = "iPad"
-            imageName = "ipad"
+        } else {
+            deviceName = "Unknown"
+        }
+        return deviceName
+    }
+    
+    private func getDeviceImage() -> some View {
+        let idString = id.lowercased()
+        
+        if idString.contains("iphone") {
+            return Image("iPhoneAsset")
+                .resizable()
+                .frame(width: 30, height: 50)
+        } else if idString.contains("ipad") {
+            return Image("iPadAsset")
+                .resizable()
+                .frame(width: 38, height: 50)
+        } else {
+            return Image("macAsset")
+                .resizable()
+                .frame(width: 40, height: 27)
         }
     }
 }
