@@ -20,8 +20,7 @@ class ThorchainService {
         guard let url = URL(string: Endpoint.fetchAccountBalanceThorchainNineRealms(address: address)) else        {
             return [CosmosBalance]()
         }
-        
-        let (data, _) = try await URLSession.shared.data(from: url)
+        let (data, _) = try await URLSession.shared.data(for: get9RRequest(url: url))
         
         let balanceResponse = try JSONDecoder().decode(CosmosBalanceResponse.self, from: data)
         self.cacheBalances(balanceResponse.balances, forAddress: address)
@@ -32,15 +31,18 @@ class ThorchainService {
         guard let url = URL(string: Endpoint.fetchAccountNumberThorchainNineRealms(address)) else {
             return nil
         }
-        
-        let (data, _) = try await URLSession.shared.data(from: url)
+        let (data, _) = try await URLSession.shared.data(for: get9RRequest(url: url))
         let accountResponse = try JSONDecoder().decode(THORChainAccountNumberResponse.self, from: data)
         return accountResponse.result.value
     }
-
+    func get9RRequest(url: URL) -> URLRequest{
+        var req = URLRequest(url:url)
+        req.addValue("voltix", forHTTPHeaderField: "X-Client-ID")
+        return req
+    }
     func fetchSwapQuotes(address: String, fromAsset: String, toAsset: String, amount: String) async throws -> ThorchainSwapQuote {
         let url = Endpoint.fetchSwaoQuoteThorchainNineRealms(address: address, fromAsset: fromAsset, toAsset: toAsset, amount: amount)
-        let (data, _) = try await URLSession.shared.data(from: url)
+        let (data, _) = try await URLSession.shared.data(for: get9RRequest(url: url))
         let response = try JSONDecoder().decode(ThorchainSwapQuote.self, from: data)
         return response
     }
