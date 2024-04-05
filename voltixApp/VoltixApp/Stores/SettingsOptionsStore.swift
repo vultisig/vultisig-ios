@@ -38,3 +38,13 @@ enum SettingsCurrency: String, CaseIterable {
     case USD
     case AUD
 }
+
+class SettingsOptionsStore {
+    static let FAQData : [(question: String, answer: String)] = [
+        (question: "setupVaultFAQQuestion", answer: "setupVaultFAQQuestion"),
+        (question: "supportedCryptoFAQQuestion", answer: "supportedCryptoFAQQuestion"),
+        (question: "vaultSecurityFAQQuestion", answer: "vaultSecurityFAQQuestion"),
+        (question: "assetRecoveryFAQQuestion", answer: "assetRecoveryFAQQuestion"),
+        (question: "transactionFeesFAQQuestion", answer: "transactionFeesFAQQuestion")
+    ]
+}

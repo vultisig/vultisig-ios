@@ -127,6 +127,8 @@
 		A6980C2C2BC0896C00F452AB /* SettingsLanguageSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6980C2B2BC0896C00F452AB /* SettingsLanguageSelectionView.swift */; };
 		A6980C2E2BC089F900F452AB /* SettingSelectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6980C2D2BC089F900F452AB /* SettingSelectionCell.swift */; };
 		A6980C302BC0A11100F452AB /* SettingsCurrencySelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6980C2F2BC0A11100F452AB /* SettingsCurrencySelectionView.swift */; };
+		A6980C322BC0A2F700F452AB /* SettingsFAQView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6980C312BC0A2F700F452AB /* SettingsFAQView.swift */; };
+		A6980C342BC0A30900F452AB /* SettingFAQCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6980C332BC0A30900F452AB /* SettingFAQCell.swift */; };
 		A6C0D55A2BB3AAA200156689 /* ChainHeaderCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D5592BB3AAA200156689 /* ChainHeaderCell.swift */; };
 		A6C0D55C2BB3AE8600156689 /* TransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D55B2BB3AE8600156689 /* TransactionsView.swift */; };
 		A6C0D55F2BB3B73900156689 /* UTXOTransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D55E2BB3B73900156689 /* UTXOTransactionsView.swift */; };
@@ -360,6 +362,8 @@
 		A6980C2B2BC0896C00F452AB /* SettingsLanguageSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsLanguageSelectionView.swift; sourceTree = "<group>"; };
 		A6980C2D2BC089F900F452AB /* SettingSelectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingSelectionCell.swift; sourceTree = "<group>"; };
 		A6980C2F2BC0A11100F452AB /* SettingsCurrencySelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCurrencySelectionView.swift; sourceTree = "<group>"; };
+		A6980C312BC0A2F700F452AB /* SettingsFAQView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsFAQView.swift; sourceTree = "<group>"; };
+		A6980C332BC0A30900F452AB /* SettingFAQCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingFAQCell.swift; sourceTree = "<group>"; };
 		A6C0D5592BB3AAA200156689 /* ChainHeaderCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainHeaderCell.swift; sourceTree = "<group>"; };
 		A6C0D55B2BB3AE8600156689 /* TransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsView.swift; sourceTree = "<group>"; };
 		A6C0D55E2BB3B73900156689 /* UTXOTransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionsView.swift; sourceTree = "<group>"; };
@@ -873,6 +877,7 @@
 				A6980C232BC0836300F452AB /* SettingsView.swift */,
 				A6980C2B2BC0896C00F452AB /* SettingsLanguageSelectionView.swift */,
 				A6980C2F2BC0A11100F452AB /* SettingsCurrencySelectionView.swift */,
+				A6980C312BC0A2F700F452AB /* SettingsFAQView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -912,6 +917,7 @@
 				A65C754C2BBF5A250076F30A /* PeerCell.swift */,
 				A6980C252BC0848F00F452AB /* SettingCell.swift */,
 				A6980C2D2BC089F900F452AB /* SettingSelectionCell.swift */,
+				A6980C332BC0A30900F452AB /* SettingFAQCell.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -1370,6 +1376,7 @@
 				A65BA9882BAAA0B700B2D8AA /* SendCryptoSigningErrorView.swift in Sources */,
 				DE64A4C62BA7E0E400C342E3 /* KeygenPeerDiscoveryViewModel.swift in Sources */,
 				465B09B52B7D8E7B00952DD9 /* CryptoPriceService.swift in Sources */,
+				A6980C342BC0A30900F452AB /* SettingFAQCell.swift in Sources */,
 				A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */,
 				469ED3942B98E776008D4951 /* ThorchainService.swift in Sources */,
 				A6966D262BA3E2CF00903CA4 /* OnboardingView3.swift in Sources */,
@@ -1433,6 +1440,7 @@
 				A6C0D55F2BB3B73900156689 /* UTXOTransactionsView.swift in Sources */,
 				DE49A1B22B6A0F77000F3AFB /* JoinKeygenView.swift in Sources */,
 				DE9EB0F62BA3F9C2001747D9 /* ParticipantDiscovery.swift in Sources */,
+				A6980C322BC0A2F700F452AB /* SettingsFAQView.swift in Sources */,
 				A6F9F7DD2B9BA5F000790258 /* CoinCell.swift in Sources */,
 				DEFC7BFF2B8EC95E0090B07A /* thorchain.swift in Sources */,
 				A61BC8192BA2687E00484689 /* TokensStore.swift in Sources */,

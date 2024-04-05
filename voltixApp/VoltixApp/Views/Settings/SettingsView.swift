@@ -39,6 +39,7 @@ struct SettingsView: View {
         VStack(spacing: 16) {
             languageSelectionCell
             currencySelectionCell
+            faqCell
         }
     }
     
@@ -55,6 +56,14 @@ struct SettingsView: View {
             SettingsCurrencySelectionView()
         } label: {
             SettingCell(title: "currency", icon: "dollarsign.circle", selection: settingsViewModel.selectedCurrency.rawValue)
+        }
+    }
+    
+    var faqCell: some View {
+        NavigationLink {
+            SettingsFAQView()
+        } label: {
+            SettingCell(title: "faq", icon: "questionmark.circle")
         }
     }
     

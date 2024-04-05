@@ -144,3 +144,9 @@
 "settings" = "Settings";
 "language" = "Language";
 "currency" = "Currency";
+"faq" = "FAQ";
+"setupVaultFAQQuestion" = "How do I set up my crypto vault?";
+"supportedCryptoFAQQuestion" = "What cryptocurrencies are supported by Voltix?";
+"vaultSecurityFAQQuestion" = "How does the crypto vault app secure my cryptocurrencies?";
+"assetRecoveryFAQQuestion" = "Can I recover my assets if I forget my password?";
+"transactionFeesFAQQuestion" = "Are there any fees for using the crypto vault app?";
