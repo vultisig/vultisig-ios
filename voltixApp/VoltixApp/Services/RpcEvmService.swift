@@ -33,7 +33,6 @@ class RpcEvmService {
                 rawBalance = String(try await fetchBalance(address: coin.address))
             } else {
                 rawBalance = String(try await fetchERC20TokenBalance(contractAddress: coin.contractAddress, walletAddress: coin.address))
-                print("BALANCE ARC20: \(coin.rawBalance)")
             }
         } catch {
             print("getBalance:: \(error.localizedDescription)")
@@ -105,8 +104,17 @@ class RpcEvmService {
         return try await intRpcCall(method: "eth_getBalance", params: [address, "latest"])
     }
     
-    private func fetchMaxPriorityFeePerGas() async throws -> BigInt {
-        return try await intRpcCall(method: "eth_maxPriorityFeePerGas", params: [])
+    func fetchMaxPriorityFeePerGas() async throws -> BigInt {
+        let feeInGwei = try await intRpcCall(method: "eth_maxPriorityFeePerGas", params: [])
+        
+        let feeInGweiString = feeInGwei.description
+        let numberOfDigits = feeInGweiString.count
+        
+        let isConversionNeeded = numberOfDigits > 9
+        
+        let feeAdjusted = isConversionNeeded ? feeInGwei / BigInt(10).power(9) : feeInGwei
+        
+        return feeAdjusted
     }
     
     private func fetchNonce(address: String) async throws -> BigInt {
@@ -153,7 +161,7 @@ class RpcEvmService {
         
         do {
             let (data, _) = try await URLSession.shared.data(for: request)
-
+            
             guard let response = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
                 throw RpcEvmServiceError.rpcError(code: 500, message: "Error to decode the JSON response")
             }
