@@ -117,7 +117,7 @@ class Endpoint {
         case "RUNE":
             return "https://runescan.io/address/\(address)"
         case "SOL":
-            return "https://explorer.solana.com/tx/\(address)"
+            return "https://explorer.solana.com/address/\(address)"
         case "ETH":
             return "https://etherscan.io/address/\(address)"
         case "UATOM":
@@ -128,6 +128,34 @@ class Endpoint {
             return nil
         }
     }
+    
+    static func getExplorerByAddressURLByGroup(groupName: String, address: String) -> String? {
+        switch groupName {
+        case Chain.thorChain.name:
+            return "https://runescan.io/address/\(address)"
+        case Chain.solana.name:
+            return "https://explorer.solana.com/address/\(address)"
+        case Chain.ethereum.name:
+            return "https://etherscan.io/address/\(address)"
+        case Chain.gaiaChain.name:
+            return "https://www.mintscan.io/cosmos/address/\(address)"
+        case Chain.avalanche.name:
+            return "https://snowtrace.io/address/\(address)"
+        case Chain.bscChain.name:
+            return "https://bscscan.com/address/\(address)"
+        case Chain.bitcoin.name:
+            return "https://www.blockchain.com/btc/address/\(address)"
+        case Chain.bitcoinCash.name:
+            return "https://explorer.bitcoin.com/bch/address/\(address)"
+        case Chain.litecoin.name:
+            return "https://blockchair.com/litecoin/address/\(address)"
+        case Chain.dogecoin.name:
+            return "https://blockchair.com/dogecoin/address/\(address)"
+        default:
+            return nil
+        }
+    }
+
 }
 
 fileprivate extension String {

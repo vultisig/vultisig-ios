@@ -97,13 +97,28 @@ struct ChainHeaderCell: View {
         })
     }
     
+    @ViewBuilder
     var showTransactionsButton: some View {
-        NavigationLink {
-            TransactionsView(group: group)
-        } label: {
-            Image(systemName: "cube.transparent")
-                .foregroundColor(.neutral0)
-                .font(.body18MenloMedium)
+        
+        if group.name == Chain.bitcoin.name {
+            NavigationLink {
+                TransactionsView(group: group)
+            } label: {
+                Image(systemName: "cube.transparent")
+                    .foregroundColor(.neutral0)
+                    .font(.body18MenloMedium)
+            }
+        } else {
+            if let url = Endpoint.getExplorerByAddressURLByGroup(groupName: group.name, address: group.address),
+               let linkURL = URL(string: url) {
+                Link(destination: linkURL) {
+                    Image(systemName: "cube.transparent")
+                        .foregroundColor(.neutral0)
+                        .font(.body18MenloMedium)
+                }
+            } else {
+                EmptyView() 
+            }
         }
     }
     
