@@ -120,6 +120,8 @@
 		A6966D2D2BA402A900903CA4 /* TokenSelectorDropdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D2C2BA402A900903CA4 /* TokenSelectorDropdown.swift */; };
 		A6966D2F2BA4045C00903CA4 /* SwapCryptoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D2E2BA4045C00903CA4 /* SwapCryptoView.swift */; };
 		A6966D312BA4048800903CA4 /* SwapCryptoDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D302BA4048800903CA4 /* SwapCryptoDetailsView.swift */; };
+		A6980C242BC0836300F452AB /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6980C232BC0836300F452AB /* SettingsView.swift */; };
+		A6980C262BC0848F00F452AB /* SettingCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6980C252BC0848F00F452AB /* SettingCell.swift */; };
 		A6C0D55A2BB3AAA200156689 /* ChainHeaderCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D5592BB3AAA200156689 /* ChainHeaderCell.swift */; };
 		A6C0D55C2BB3AE8600156689 /* TransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D55B2BB3AE8600156689 /* TransactionsView.swift */; };
 		A6C0D55F2BB3B73900156689 /* UTXOTransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D55E2BB3B73900156689 /* UTXOTransactionsView.swift */; };
@@ -346,6 +348,8 @@
 		A6966D2C2BA402A900903CA4 /* TokenSelectorDropdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectorDropdown.swift; sourceTree = "<group>"; };
 		A6966D2E2BA4045C00903CA4 /* SwapCryptoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoView.swift; sourceTree = "<group>"; };
 		A6966D302BA4048800903CA4 /* SwapCryptoDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoDetailsView.swift; sourceTree = "<group>"; };
+		A6980C232BC0836300F452AB /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		A6980C252BC0848F00F452AB /* SettingCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingCell.swift; sourceTree = "<group>"; };
 		A6C0D5592BB3AAA200156689 /* ChainHeaderCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainHeaderCell.swift; sourceTree = "<group>"; };
 		A6C0D55B2BB3AE8600156689 /* TransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsView.swift; sourceTree = "<group>"; };
 		A6C0D55E2BB3B73900156689 /* UTXOTransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionsView.swift; sourceTree = "<group>"; };
@@ -851,6 +855,14 @@
 			path = TextFields;
 			sourceTree = "<group>";
 		};
+		A6980C222BC0834E00F452AB /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				A6980C232BC0836300F452AB /* SettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
 		A6A793E22BB508C000CC5950 /* Keygen */ = {
 			isa = PBXGroup;
 			children = (
@@ -884,6 +896,7 @@
 				A6C0D56A2BB3DC4000156689 /* EthereumTransactionCell.swift */,
 				A6E52F7F2BBE430600FD3785 /* TransactionCell.swift */,
 				A65C754C2BBF5A250076F30A /* PeerCell.swift */,
+				A6980C252BC0848F00F452AB /* SettingCell.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -908,6 +921,7 @@
 				D9AD8EEF2B6731570009F8D5 /* Swap */,
 				D9AD8EEE2B6731480009F8D5 /* Send */,
 				A6C0D55D2BB3B71300156689 /* Transactions */,
+				A6980C222BC0834E00F452AB /* Settings */,
 				A6966D1C2BA3DD9900903CA4 /* Onboarding */,
 			);
 			path = Views;
@@ -1329,12 +1343,14 @@
 				A65BA9862BAA0F0D00B2D8AA /* SendCryptoVerifyViewModel.swift in Sources */,
 				A63953B22BA7CB8E000802EC /* SendCryptoKeysignView.swift in Sources */,
 				A65BA9982BAD479C00B2D8AA /* JoinKeysignDoneView.swift in Sources */,
+				A6980C242BC0836300F452AB /* SettingsView.swift in Sources */,
 				A6F9F7DF2B9BAA9F00790258 /* Separator.swift in Sources */,
 				A6966D222BA3E1B000903CA4 /* TextStore.swift in Sources */,
 				A6F9F7DB2B9BA2DE00790258 /* ChainCell.swift in Sources */,
 				049BBB682B71E9C5004C231F /* WifiInstruction.swift in Sources */,
 				A5F97C8C2BBEF239000C30DF /* SwapTransaction.swift in Sources */,
 				465B09B72B7D909400952DD9 /* CryptoPrice.swift in Sources */,
+				A6980C262BC0848F00F452AB /* SettingCell.swift in Sources */,
 				A60CA7E92BB0F60100FDEB5C /* ViewExtension.swift in Sources */,
 				A65BA9882BAAA0B700B2D8AA /* SendCryptoSigningErrorView.swift in Sources */,
 				DE64A4C62BA7E0E400C342E3 /* KeygenPeerDiscoveryViewModel.swift in Sources */,

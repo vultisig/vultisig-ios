@@ -141,3 +141,5 @@
 "failToGetRecentBlockHash" = "Unable to get recent block hash";
 "checkExplorer" = "check explorer";
 "self" = "Self";
+"settings" = "Settings";
+"language" = "Language";
