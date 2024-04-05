@@ -109,7 +109,7 @@ struct ChainHeaderCell: View {
                     .font(.body18MenloMedium)
             }
         } else {
-            if let url = Endpoint.getExplorerByAddressURLByGroup(groupName: group.name, address: group.address),
+            if let url = Endpoint.getExplorerByAddressURLByGroup(chain: group.coins.first?.chain, address: group.address),
                let linkURL = URL(string: url) {
                 Link(destination: linkURL) {
                     Image(systemName: "cube.transparent")
