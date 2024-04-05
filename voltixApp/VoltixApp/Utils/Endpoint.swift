@@ -99,6 +99,8 @@ class Endpoint {
             return "https://www.mintscan.io/cosmos/tx/\(txid)"
         case "AVAX":
             return "https://snowtrace.io/tx/\(txid)"
+        case "BNB":
+            return "https://bscscan.com/tx/\(txid)"
         default:
             return ""
         }
@@ -124,6 +126,8 @@ class Endpoint {
             return "https://www.mintscan.io/cosmos/address/\(address)"
         case "AVAX":
             return "https://snowtrace.io/address/\(address)"
+        case "BNB":
+            return "https://bscscan.com/address/\(address)"
         default:
             return nil
         }

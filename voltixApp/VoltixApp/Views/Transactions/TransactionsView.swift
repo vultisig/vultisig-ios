@@ -33,8 +33,6 @@ struct TransactionsView: View {
     var content: some View {
         let coin = group.coins.first
         let bitcoinCondition = coin?.chain.chainType == .UTXO
-        let ethereumCondition = coin?.chain.chainType == .EVM
-        let isNativeCondition = !(coin?.isNativeToken ?? true)
         
         return ZStack {
             if bitcoinCondition {
