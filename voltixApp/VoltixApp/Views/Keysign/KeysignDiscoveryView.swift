@@ -17,6 +17,11 @@ struct KeysignDiscoveryView: View {
     @State var isLoading = false
     @State private var orientation = UIDevice.current.orientation
     
+    let columns = [
+        GridItem(.adaptive(minimum: 160)),
+        GridItem(.adaptive(minimum: 160)),
+    ]
+    
     let logger = Logger(subsystem: "keysign-discovery", category: "view")
     
     var body: some View {
@@ -144,10 +149,18 @@ struct KeysignDiscoveryView: View {
     }
     
     var deviceList: some View {
-        List(participantDiscovery.peersFound, id: \.self, selection: $viewModel.selections) { peer in
-            getPeerCell(peer)
+        ScrollView{
+            LazyVGrid(columns: columns, spacing: 32) {
+                ForEach(participantDiscovery.peersFound, id: \.self) { peer in
+                    Button {
+                        handleSelection(peer)
+                    } label: {
+                        PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
+                    }
+                }
+            }
+            .padding(20)
         }
-        .scrollContentBackground(.hidden)
     }
     
     var bottomButtons: some View {
@@ -166,19 +179,6 @@ struct KeysignDiscoveryView: View {
         .opacity(isDisabled ? 0.8 : 1)
         .grayscale(isDisabled ? 1 : 0)
         .padding(40)
-    }
-    
-    private func getPeerCell(_ peer: String) -> some View {
-        HStack {
-            Image(systemName: viewModel.selections.contains(peer) ? "checkmark.circle" : "circle")
-            Text(peer)
-        }
-        .font(.body12Menlo)
-        .foregroundColor(.neutral0)
-        .listRowBackground(Color.blue600)
-        .onTapGesture {
-            handleSelection(peer)
-        }
     }
     
     private func getQrImage(size: CGFloat) -> Image {

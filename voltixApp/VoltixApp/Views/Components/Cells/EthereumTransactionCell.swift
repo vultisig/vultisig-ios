@@ -14,13 +14,15 @@ struct EthereumTransactionCell: View {
     
     @State var isSent = true
     
+    let selfText = NSLocalizedString("self", comment: "")
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            transactionIDField
+            transactionIDCell
             Separator()
-            fromField
+            fromCell
             Separator()
-            toField
+            toCell
             Separator()
             summary
         }
@@ -34,82 +36,41 @@ struct EthereumTransactionCell: View {
         }
     }
     
-    var transactionIDField: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            header
-            txHash
-        }
-    }
-    
-    var header: some View {
-        HStack(spacing: 12) {
-            Image(systemName: isSent ? "arrow.up.circle" : "arrow.down.circle")
-            Text(NSLocalizedString("transactionID", comment: "Transaction ID"))
-        }
-        .font(.body20MontserratSemiBold)
-        .foregroundColor(.neutral0)
-    }
-    
-    func getTxHashLink(hash: String) -> String{
-        switch chain {
-        case .ethereum:
-            return Endpoint.ethereumLabelTxHash(hash)
-        case .bscChain:
-            return Endpoint.bscLabelTxHash(hash)
-        default:
-            return ""
-        }
-    }
-    
-    var txHash: some View {
+    var transactionIDCell: some View {
         let hash = transaction.hash ?? ""
-        let url = getTxHashLink(hash:hash)
+        let url = Endpoint.getExplorerURL(chainTicker: getTokenSymbol(), txid: hash)
+        let image = isSent ? "arrow.up.circle" : "arrow.down.circle"
         
-        return Link(destination: URL(string: url)!) {
-            Text(hash)
-                .font(.body13Menlo)
-                .foregroundColor(.turquoise600)
-                .underline()
-        }
-        .buttonStyle(PlainButtonStyle())
+        return TransactionCell(
+            title: "transactionID",
+            id: hash,
+            url: url,
+            image: image
+        )
     }
     
-    var fromField: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            fromTitle
-            fromAddress
-        }
+    var fromCell: some View {
+        let address = transaction.from
+        let id = isSent ? selfText : address
+        let url = Endpoint.getExplorerByAddressURL(chainTicker: getTokenSymbol(), address: address) ?? ""
+        
+        return TransactionCell(
+            title: "from",
+            id: id,
+            url: url
+        )
     }
     
-    var fromTitle: some View {
-        Text(NSLocalizedString("from", comment: ""))
-            .font(.body20MontserratSemiBold)
-            .foregroundColor(.neutral0)
-    }
-    
-    var fromAddress: some View {
-        Text(transaction.from)
-            .font(.body13Menlo)
-            .foregroundColor(.turquoise600)
-    }
-    
-    var toField: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            toTitle
-            toAddress
-        }
-    }
-    
-    var toTitle: some View {
-        Text(NSLocalizedString("to", comment: ""))
-            .font(.body20MontserratSemiBold)
-            .foregroundColor(.neutral0)
-    }
-    
-    var toAddress: some View {
-        Text(transaction.to)
-            .font(.body13Menlo)
-            .foregroundColor(.turquoise600)
+    var toCell: some View {
+        let address = transaction.to
+        let id = isSent ? address : selfText
+        let url = Endpoint.getExplorerByAddressURL(chainTicker: getTokenSymbol(), address: address) ?? ""
+        
+        return TransactionCell(
+            title: "to",
+            id: id,
+            url: url
+        )
     }
     
     var summary: some View {
@@ -118,10 +79,6 @@ struct EthereumTransactionCell: View {
             Separator()
             feesCell
         }
-    }
-
-    func getTokenSymbol() -> String {
-        return chain?.ticker ?? ""
     }
     
     var amountCell: some View {
@@ -154,5 +111,9 @@ struct EthereumTransactionCell: View {
         .frame(height: 32)
         .font(.body16MenloBold)
         .foregroundColor(.neutral0)
+    }
+    
+    private func getTokenSymbol() -> String {
+        return chain?.ticker ?? ""
     }
 }
