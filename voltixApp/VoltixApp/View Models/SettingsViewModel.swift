@@ -10,4 +10,5 @@ import SwiftUI
 @MainActor
 class SettingsViewModel: ObservableObject {
     @Published var selectedLanguage: SettingsLanguage = .English
+    @Published var selectedCurrency: SettingsCurrency = .USD
 }

@@ -126,6 +126,7 @@
 		A6980C2A2BC0870000F452AB /* SettingsOptionsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6980C292BC0870000F452AB /* SettingsOptionsStore.swift */; };
 		A6980C2C2BC0896C00F452AB /* SettingsLanguageSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6980C2B2BC0896C00F452AB /* SettingsLanguageSelectionView.swift */; };
 		A6980C2E2BC089F900F452AB /* SettingSelectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6980C2D2BC089F900F452AB /* SettingSelectionCell.swift */; };
+		A6980C302BC0A11100F452AB /* SettingsCurrencySelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6980C2F2BC0A11100F452AB /* SettingsCurrencySelectionView.swift */; };
 		A6C0D55A2BB3AAA200156689 /* ChainHeaderCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D5592BB3AAA200156689 /* ChainHeaderCell.swift */; };
 		A6C0D55C2BB3AE8600156689 /* TransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D55B2BB3AE8600156689 /* TransactionsView.swift */; };
 		A6C0D55F2BB3B73900156689 /* UTXOTransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D55E2BB3B73900156689 /* UTXOTransactionsView.swift */; };
@@ -358,6 +359,7 @@
 		A6980C292BC0870000F452AB /* SettingsOptionsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsOptionsStore.swift; sourceTree = "<group>"; };
 		A6980C2B2BC0896C00F452AB /* SettingsLanguageSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsLanguageSelectionView.swift; sourceTree = "<group>"; };
 		A6980C2D2BC089F900F452AB /* SettingSelectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingSelectionCell.swift; sourceTree = "<group>"; };
+		A6980C2F2BC0A11100F452AB /* SettingsCurrencySelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCurrencySelectionView.swift; sourceTree = "<group>"; };
 		A6C0D5592BB3AAA200156689 /* ChainHeaderCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainHeaderCell.swift; sourceTree = "<group>"; };
 		A6C0D55B2BB3AE8600156689 /* TransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsView.swift; sourceTree = "<group>"; };
 		A6C0D55E2BB3B73900156689 /* UTXOTransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionsView.swift; sourceTree = "<group>"; };
@@ -870,6 +872,7 @@
 			children = (
 				A6980C232BC0836300F452AB /* SettingsView.swift */,
 				A6980C2B2BC0896C00F452AB /* SettingsLanguageSelectionView.swift */,
+				A6980C2F2BC0A11100F452AB /* SettingsCurrencySelectionView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -1400,6 +1403,7 @@
 				A6980C2A2BC0870000F452AB /* SettingsOptionsStore.swift in Sources */,
 				A6966D242BA3E2A500903CA4 /* OnboardingView2.swift in Sources */,
 				A65649E62B96602700E4B329 /* TssExtension.swift in Sources */,
+				A6980C302BC0A11100F452AB /* SettingsCurrencySelectionView.swift in Sources */,
 				469ED39D2B98E8C0008D4951 /* CosmosBalancePagination.swift in Sources */,
 				A65BA98E2BAD311200B2D8AA /* Loader.swift in Sources */,
 				DE6DCB952B97D88A009A39D5 /* THORChainSwapPayload.swift in Sources */,

@@ -32,3 +32,9 @@ enum SettingsLanguage: String, CaseIterable {
         return value
     }
 }
+
+
+enum SettingsCurrency: String, CaseIterable {
+    case USD
+    case AUD
+}

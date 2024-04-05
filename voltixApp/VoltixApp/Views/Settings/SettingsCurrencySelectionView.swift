@@ -1,5 +1,5 @@
 //
-//  SettingsLanguageSelectionView.swift
+//  SettingsCurrencySelectionView.swift
 //  VoltixApp
 //
 //  Created by Amol Kumar on 2024-04-05.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct SettingsLanguageSelectionView: View {
+struct SettingsCurrencySelectionView: View {
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     
     @Environment(\.dismiss) var dismiss
@@ -18,7 +18,7 @@ struct SettingsLanguageSelectionView: View {
             view
         }
         .navigationBarBackButtonHidden(true)
-        .navigationTitle(NSLocalizedString("language", comment: "Language"))
+        .navigationTitle(NSLocalizedString("currency", comment: "Currency"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -35,14 +35,13 @@ struct SettingsLanguageSelectionView: View {
     
     var cells: some View {
         VStack(spacing: 16) {
-            ForEach(SettingsLanguage.allCases, id: \.self) { language in
+            ForEach(SettingsCurrency.allCases, id: \.self) { currency in
                 Button {
-                    handleSelection(language)
+                    handleSelection(currency)
                 } label: {
                     SettingSelectionCell(
-                        title: language.rawValue,
-                        isSelected: language==settingsViewModel.selectedLanguage,
-                        description: language.description()
+                        title: currency.rawValue,
+                        isSelected: currency==settingsViewModel.selectedCurrency
                     )
                 }
             }
@@ -51,13 +50,13 @@ struct SettingsLanguageSelectionView: View {
         .padding(.top, 30)
     }
     
-    private func handleSelection(_ language: SettingsLanguage) {
-        settingsViewModel.selectedLanguage = language
+    private func handleSelection(_ currency: SettingsCurrency) {
+        settingsViewModel.selectedCurrency = currency
         dismiss()
     }
 }
 
 #Preview {
-    SettingsLanguageSelectionView()
+    SettingsCurrencySelectionView()
         .environmentObject(SettingsViewModel())
 }

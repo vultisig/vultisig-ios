@@ -31,12 +31,30 @@ struct SettingsView: View {
                 mainSection
             }
             .padding(15)
+            .padding(.top, 30)
         }
     }
     
     var mainSection: some View {
         VStack(spacing: 16) {
+            languageSelectionCell
+            currencySelectionCell
+        }
+    }
+    
+    var languageSelectionCell: some View {
+        NavigationLink {
+            SettingsLanguageSelectionView()
+        } label: {
             SettingCell(title: "language", icon: "globe", selection: settingsViewModel.selectedLanguage.rawValue)
+        }
+    }
+    
+    var currencySelectionCell: some View {
+        NavigationLink {
+            SettingsCurrencySelectionView()
+        } label: {
+            SettingCell(title: "currency", icon: "dollarsign.circle", selection: settingsViewModel.selectedCurrency.rawValue)
         }
     }
     
