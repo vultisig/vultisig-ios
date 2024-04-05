@@ -105,18 +105,13 @@ class RpcEvmService {
     }
     
     func fetchMaxPriorityFeePerGas() async throws -> BigInt {
-        let feeInGwei = try await intRpcCall(method: "eth_maxPriorityFeePerGas", params: [])
+        let feeInWei = try await intRpcCall(method: "eth_maxPriorityFeePerGas", params: [])
+        let feeInGwei = feeInWei / BigInt(10).power(9)
+        let adjustedFeeInGwei = max(feeInGwei, BigInt(1))
+        return adjustedFeeInGwei
         
-        let feeInGweiString = feeInGwei.description
-        let numberOfDigits = feeInGweiString.count
-        
-        let isConversionNeeded = numberOfDigits > 9
-        
-        let feeAdjusted = isConversionNeeded ? feeInGwei / BigInt(10).power(9) : feeInGwei
-        
-        return feeAdjusted
     }
-    
+
     private func fetchNonce(address: String) async throws -> BigInt {
         return try await intRpcCall(method: "eth_getTransactionCount", params: [address, "latest"])
     }
@@ -165,6 +160,8 @@ class RpcEvmService {
             guard let response = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
                 throw RpcEvmServiceError.rpcError(code: 500, message: "Error to decode the JSON response")
             }
+            
+            print("\(method): \(String(data: data, encoding: .utf8))")
             
             if let error = response["error"] as? [String: Any], let message = error["message"] as? String {
                 print("ERROR sendRPCRequest \(message)")
