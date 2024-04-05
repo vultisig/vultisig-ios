@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @EnvironmentObject var settingsViewModel: SettingsViewModel
+    
     var body: some View {
         ZStack {
             Background()
@@ -25,13 +27,16 @@ struct SettingsView: View {
     
     var view: some View {
         ScrollView {
-            mainSection
+            VStack {
+                mainSection
+            }
+            .padding(15)
         }
     }
     
     var mainSection: some View {
         VStack(spacing: 16) {
-            
+            SettingCell(title: "language", icon: "globe", selection: settingsViewModel.selectedLanguage.rawValue)
         }
     }
     
@@ -45,4 +50,5 @@ struct SettingsView: View {
 
 #Preview {
     SettingsView()
+        .environmentObject(SettingsViewModel())
 }

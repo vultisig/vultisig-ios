@@ -17,6 +17,7 @@ struct VoltixApp: App {
     @StateObject var vaultDetailViewModel = VaultDetailViewModel()
     @StateObject var tokenSelectionViewModel = TokenSelectionViewModel()
     @StateObject var accountViewModel = AccountViewModel()
+    @StateObject var settingsViewModel = SettingsViewModel()
 
     var body: some Scene {
         WindowGroup {
@@ -26,6 +27,7 @@ struct VoltixApp: App {
                 .environmentObject(vaultDetailViewModel)
                 .environmentObject(tokenSelectionViewModel)
                 .environmentObject(accountViewModel)
+                .environmentObject(settingsViewModel)
         }
         .modelContainer(sharedModelContainer)
         .onChange(of: scenePhase) {

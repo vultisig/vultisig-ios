@@ -8,9 +8,27 @@
 import Foundation
 
 enum SettingsLanguage: String {
-    case English = "English (UK)"
-    case Deutsch = "German"
-    case Espanol = "Spanish"
-    case Italiano = "Italian"
-    case Hrvatski = "Croatian"
+    case English
+    case Deutsch
+    case Espanol
+    case Italiano
+    case Hrvatski
+    
+    private func description() -> String {
+        let value: String
+        
+        switch self {
+        case .English:
+            value = "English (UK)"
+        case .Deutsch:
+            value = "German"
+        case .Espanol:
+            value = "Spanish"
+        case .Italiano:
+            value = "Italian"
+        case .Hrvatski:
+            value = "Croatian"
+        }
+        return value
+    }
 }
