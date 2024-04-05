@@ -51,9 +51,6 @@ class Endpoint {
         "https://etherscan.io/tx/\(value)"
     }
     
-    static func fetchUnspentOutputs(_ value: String) -> String {
-        "http://45.76.120.223/blockcypher/v1/btc/main/addrs/\(value)?unspentOnly=true"
-    }
     
     static func fetchCryptoPrices(coin: String, fiat: String) -> String {
         "https://api.coingecko.com/api/v3/simple/price?ids=\(coin)&vs_currencies=\(fiat)"

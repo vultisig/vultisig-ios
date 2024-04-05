@@ -16,7 +16,7 @@ class THORChainSwaps {
         self.vaultHexChainCode = vaultHexChainCode
     }
 
-    static let affiliateFeeAddress = "thor1tgxm5jw6hrlvslrd6lqpk4jwuu4g29dxytrean"
+    static let affiliateFeeAddress = "v0"
     func getPreSignedInputData(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload) -> Result<Data, Error> {
         let input = THORChainSwapSwapInput.with {
             $0.fromAsset = swapPayload.fromAsset
@@ -26,6 +26,8 @@ class THORChainSwaps {
             $0.vaultAddress = swapPayload.vaultAddress
             $0.fromAmount = swapPayload.fromAmount
             $0.toAmountLimit = swapPayload.toAmountLimit
+            $0.affiliateFeeAddress = THORChainSwaps.affiliateFeeAddress
+            $0.affiliateFeeRateBp = "70"
         }
         do {
             let inputData = try input.serializedData()
