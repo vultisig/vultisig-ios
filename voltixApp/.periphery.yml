@@ -1,0 +1,5 @@
+project: VoltixApp.xcodeproj
+schemes:
+- VoltixApp
+targets:
+- VoltixApp
