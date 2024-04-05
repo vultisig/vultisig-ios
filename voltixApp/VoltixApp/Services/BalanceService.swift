@@ -19,14 +19,14 @@ class BalanceService {
     func balance(for coin: Coin) async throws -> (coinBalance: String, balanceUSD: String) {
         await CryptoPriceService.shared.fetchCryptoPrices()
         
-        switch coin.chainType {
-        case .UTXO:
+        switch coin.chain {
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin:
             let blockChairData = try await utxo.fetchBlockchairData(address: coin.address,coin: coin)
             let balanceUSD = blockChairData?.address?.balanceInUSD ?? "US$ 0,00"
             let coinBalance = blockChairData?.address?.balanceInBTC ?? "0.0"
             return (coinBalance, balanceUSD)
             
-        case .THORChain:
+        case .thorChain:
             let thorBalances = try await thor.fetchBalances(coin.address)
             var balanceUSD: String = .empty
             if let priceRateUsd = await CryptoPriceService.shared.cryptoPrices?.prices[Chain.thorChain.name.lowercased()]?["usd"] {
@@ -35,7 +35,7 @@ class BalanceService {
             let coinBalance = thorBalances.formattedRuneBalance() ?? "0.0"
             return (coinBalance, balanceUSD)
             
-        case .Solana:
+        case .solana:
             let (rawBalance,priceRate) = try await sol.getSolanaBalance(coin: coin)
             coin.rawBalance = rawBalance
             coin.priceRate = priceRate
@@ -43,7 +43,7 @@ class BalanceService {
             let coinBalance = coin.balanceString
             return (coinBalance, balanceUSD)
             
-        case .EVM:
+        case .ethereum, .avalanche, .bscChain:
             let service = try EvmServiceFactory.getService(forChain: coin)
             let (rawBalance,priceRate) = try await service.getBalance(coin: coin)
             coin.rawBalance = rawBalance
@@ -52,7 +52,7 @@ class BalanceService {
             let coinBalance = coin.balanceString
             return (coinBalance, balanceUSD)
             
-        case .Cosmos:
+        case .gaiaChain:
             let atomBalance =  try await gaia.fetchBalances(address: coin.address)
             var balanceUSD: String = .empty
             if let priceRateUsd = await CryptoPriceService.shared.cryptoPrices?.prices[coin.priceProviderId]?["usd"] {
@@ -60,8 +60,6 @@ class BalanceService {
             }
             let coinBalance = atomBalance.formattedAtomBalance() ?? "0.0"
             return (coinBalance, balanceUSD)
-        case .none:
-            return ("0.0", "US$ 0,00")
         }
     }
 }

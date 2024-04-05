@@ -161,8 +161,6 @@ class RpcEvmService {
                 throw RpcEvmServiceError.rpcError(code: 500, message: "Error to decode the JSON response")
             }
             
-            print("\(method): \(String(data: data, encoding: .utf8))")
-            
             if let error = response["error"] as? [String: Any], let message = error["message"] as? String {
                 print("ERROR sendRPCRequest \(message)")
                 throw RpcEvmServiceError.rpcError(code: error["code"] as? Int ?? 500, message: message)
