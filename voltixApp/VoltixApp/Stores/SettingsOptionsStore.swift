@@ -7,14 +7,14 @@
 
 import Foundation
 
-enum SettingsLanguage: String {
+enum SettingsLanguage: String, CaseIterable {
     case English
     case Deutsch
     case Espanol
     case Italiano
     case Hrvatski
     
-    private func description() -> String {
+    func description() -> String {
         let value: String
         
         switch self {

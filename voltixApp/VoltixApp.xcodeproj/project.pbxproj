@@ -124,6 +124,8 @@
 		A6980C262BC0848F00F452AB /* SettingCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6980C252BC0848F00F452AB /* SettingCell.swift */; };
 		A6980C282BC086BC00F452AB /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6980C272BC086BC00F452AB /* SettingsViewModel.swift */; };
 		A6980C2A2BC0870000F452AB /* SettingsOptionsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6980C292BC0870000F452AB /* SettingsOptionsStore.swift */; };
+		A6980C2C2BC0896C00F452AB /* SettingsLanguageSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6980C2B2BC0896C00F452AB /* SettingsLanguageSelectionView.swift */; };
+		A6980C2E2BC089F900F452AB /* SettingSelectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6980C2D2BC089F900F452AB /* SettingSelectionCell.swift */; };
 		A6C0D55A2BB3AAA200156689 /* ChainHeaderCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D5592BB3AAA200156689 /* ChainHeaderCell.swift */; };
 		A6C0D55C2BB3AE8600156689 /* TransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D55B2BB3AE8600156689 /* TransactionsView.swift */; };
 		A6C0D55F2BB3B73900156689 /* UTXOTransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D55E2BB3B73900156689 /* UTXOTransactionsView.swift */; };
@@ -354,6 +356,8 @@
 		A6980C252BC0848F00F452AB /* SettingCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingCell.swift; sourceTree = "<group>"; };
 		A6980C272BC086BC00F452AB /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 		A6980C292BC0870000F452AB /* SettingsOptionsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsOptionsStore.swift; sourceTree = "<group>"; };
+		A6980C2B2BC0896C00F452AB /* SettingsLanguageSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsLanguageSelectionView.swift; sourceTree = "<group>"; };
+		A6980C2D2BC089F900F452AB /* SettingSelectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingSelectionCell.swift; sourceTree = "<group>"; };
 		A6C0D5592BB3AAA200156689 /* ChainHeaderCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainHeaderCell.swift; sourceTree = "<group>"; };
 		A6C0D55B2BB3AE8600156689 /* TransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsView.swift; sourceTree = "<group>"; };
 		A6C0D55E2BB3B73900156689 /* UTXOTransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionsView.swift; sourceTree = "<group>"; };
@@ -865,6 +869,7 @@
 			isa = PBXGroup;
 			children = (
 				A6980C232BC0836300F452AB /* SettingsView.swift */,
+				A6980C2B2BC0896C00F452AB /* SettingsLanguageSelectionView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -903,6 +908,7 @@
 				A6E52F7F2BBE430600FD3785 /* TransactionCell.swift */,
 				A65C754C2BBF5A250076F30A /* PeerCell.swift */,
 				A6980C252BC0848F00F452AB /* SettingCell.swift */,
+				A6980C2D2BC089F900F452AB /* SettingSelectionCell.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -1445,6 +1451,7 @@
 				465A8D562B9E6E0B006E7457 /* SolanaRpc.swift in Sources */,
 				A65BA9922BAD439900B2D8AA /* KeysignDiscoverServiceView.swift in Sources */,
 				DE9EB0F22BA2D97B001747D9 /* PeerDiscoveryPayload.swift in Sources */,
+				A6980C2E2BC089F900F452AB /* SettingSelectionCell.swift in Sources */,
 				A65324302BA540ED00DDE6EB /* SendCryptoVerifyView.swift in Sources */,
 				A65649E52B96602700E4B329 /* VaultExtension.swift in Sources */,
 				DE9EB0F82BA43388001747D9 /* KeysignViewModel.swift in Sources */,
@@ -1492,6 +1499,7 @@
 				A65BA9902BAD402A00B2D8AA /* KeysignMessageConfirmView.swift in Sources */,
 				A66A0BD52BA124D00021A483 /* EditVaultView.swift in Sources */,
 				DE49A19C2B67133D000F3AFB /* Vault.swift in Sources */,
+				A6980C2C2BC0896C00F452AB /* SettingsLanguageSelectionView.swift in Sources */,
 				A65649EE2B9669DD00E4B329 /* UTXOTransactionMempoolInput.swift in Sources */,
 				A6966D2D2BA402A900903CA4 /* TokenSelectorDropdown.swift in Sources */,
 				A6F2C5452B9FE3A00095C8E3 /* HomeView.swift in Sources */,
