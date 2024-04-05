@@ -49,7 +49,7 @@ class SwapCryptoViewModel: ObservableObject {
     }
 
     func load(fromCoin: Coin, coins: [Coin]) async throws {
-        self.coins = coins
+        self.coins = coins.filter { $0.chain.isSwapSupported }
         self.fromCoin = fromCoin
         self.toCoin = coins.first!
     }
