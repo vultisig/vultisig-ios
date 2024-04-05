@@ -27,14 +27,19 @@ class BalanceService {
             let blockChairData = try await utxo.fetchBlockchairData(address: coin.address,coin: coin)
             let balanceUSD = blockChairData?.address?.balanceInUSD ?? "US$ 0,00"
             let coinBalance = blockChairData?.address?.balanceInBTC ?? "0.0"
+            coin.rawBalance = String(blockChairData?.address?.balance ?? 0)
+            coin.priceRate = await CryptoPriceService.shared.cryptoPrices?.prices[coin.priceProviderId]?["usd"] ?? 0.0
             return (coinBalance, balanceUSD)
 
         case .thorChain:
             let thorBalances = try await thor.fetchBalances(coin.address)
             var balanceUSD: String = .empty
-            if let priceRateUsd = await CryptoPriceService.shared.cryptoPrices?.prices[Chain.thorChain.name.lowercased()]?["usd"] {
+            let priceRateUsd = await CryptoPriceService.shared.cryptoPrices?.prices[Chain.thorChain.name.lowercased()]?["usd"]
+            if let priceRateUsd {
                 balanceUSD = thorBalances.runeBalanceInUSD(usdPrice: priceRateUsd) ?? "US$ 0,00"
             }
+            coin.rawBalance = thorBalances.runeBalance() ?? "0.0"
+            coin.priceRate = priceRateUsd ?? 0.0
             let coinBalance = thorBalances.formattedRuneBalance() ?? "0.0"
             return (coinBalance, balanceUSD)
 
@@ -75,7 +80,9 @@ class BalanceService {
             var balanceUSD: String = .empty
             if let priceRateUsd = await CryptoPriceService.shared.cryptoPrices?.prices[coin.priceProviderId]?["usd"] {
                 balanceUSD = atomBalance.atomBalanceInUSD(usdPrice: priceRateUsd) ?? "US$ 0,00"
+                coin.priceRate = priceRateUsd
             }
+            coin.rawBalance = atomBalance.atomBalance() ?? "0.0"
             let coinBalance = atomBalance.formattedAtomBalance() ?? "0.0"
             return (coinBalance, balanceUSD)
         }
