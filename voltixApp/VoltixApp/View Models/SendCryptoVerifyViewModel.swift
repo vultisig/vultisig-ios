@@ -22,7 +22,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
     @Published var thor = ThorchainService.shared
     @Published var sol: SolanaService = SolanaService.shared
     @Published var utxo = BlockchairService.shared
-    @Published var eth = EtherScanService.shared
+    @Published var eth = EthService.shared
     var gaia = GaiaService.shared
     
     var THORChainAccount: THORChainAccountValue? = nil

@@ -39,13 +39,7 @@ struct TransactionsView: View {
         return ZStack {
             if bitcoinCondition {
                 UTXOTransactionsView(coin: coin)
-            } else if ethereumCondition {
-                if isNativeCondition {
-                    EthereumTransactionsView(chain:coin?.chain,contractAddress: coin?.contractAddress)
-                } else {
-                    EthereumTransactionsView(chain:coin?.chain,contractAddress: nil)
-                }
-            } else {
+            }  else {
                 errorText
             }
         }

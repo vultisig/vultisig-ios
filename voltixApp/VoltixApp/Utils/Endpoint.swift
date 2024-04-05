@@ -14,16 +14,20 @@ class Endpoint {
     static func fetchAccountNumberThorchainNineRealms(_ address: String) -> String {
         "https://thornode.ninerealms.com/auth/accounts/\(address)"
     }
-
+    
     static func fetchAccountBalanceThorchainNineRealms(address: String) -> String {
         "https://thornode.ninerealms.com/cosmos/bank/v1beta1/balances/\(address)"
     }
-
+    
     static func fetchSwaoQuoteThorchainNineRealms(address: String, fromAsset: String, toAsset: String, amount: String) -> URL {
         "https://thornode.ninerealms.com/thorchain/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)".asUrl
     }
-
+    
     static let avalancheServiceRpcService = "https://avalanche-c-chain-rpc.publicnode.com"
+    
+    static let bscServiceRpcService = "https://bsc-rpc.publicnode.com"
+    
+    static let ethServiceRpcService = "https://ethereum-rpc.publicnode.com"
     
     static let solanaServiceAlchemyRpc = "https://solana-rpc.publicnode.com"
     
@@ -46,11 +50,9 @@ class Endpoint {
     static func blockchairDashboard(_ address: String, _ coinName: String) -> String {
         "http://45.76.120.223/blockchair/\(coinName)/dashboards/address/\(address)"
     }
-    
     static func ethereumLabelTxHash(_ value: String) -> String {
         "https://etherscan.io/tx/\(value)"
     }
-    
     
     static func fetchCryptoPrices(coin: String, fiat: String) -> String {
         "https://api.coingecko.com/api/v3/simple/price?ids=\(coin)&vs_currencies=\(fiat)"
@@ -62,78 +64,6 @@ class Endpoint {
     
     static func fetchLitecoinTransactions(_ userAddress: String) -> String {
         "https://litecoinspace.org/api/address/\(userAddress)/txs"
-    }
-    
-    static func broadcastEtherscanTransaction(hex: String) -> String {
-        "http://45.76.120.223/etherscan/api?module=proxy&action=eth_sendRawTransaction&hex=\(hex)"
-    }
-    
-    static func fetchEtherscanTransactions(address: String) -> String {
-        "http://45.76.120.223/etherscan/api?module=account&action=txlist&address=\(address)&startblock=0&endblock=99999999&sort=asc"
-    }
-    
-    static func fetchEtherscanTransactionCount(address: String) -> String {
-        "http://45.76.120.223/etherscan/api?module=proxy&action=eth_getTransactionCount&address=\(address)&tag=latest"
-    }
-    
-    static func fetchEtherscanBalance(address: String) -> String {
-        "http://45.76.120.223/etherscan/api?module=account&action=balance&address=\(address)&tag=latest"
-    }
-    
-    static func fetchEtherscanTokenBalance(contractAddress: String, address: String) -> String {
-        "http://45.76.120.223/etherscan/api?module=account&action=tokenbalance&contractaddress=\(contractAddress)&address=\(address)&tag=latest"
-    }
-    
-    static func fetchEtherscanEstimateGasForEthTransaction(data: String, to: String, valueHex: String) -> String {
-        "http://45.76.120.223/etherscan/api?module=proxy&action=eth_estimateGas&data=\(data)&to=\(to)&value=\(valueHex)"
-    }
-    
-    static func fetchEtherscanEstimateGasForERC20Transaction(data: String, contractAddress: String) -> String {
-        "http://45.76.120.223/etherscan/api?module=proxy&action=eth_estimateGas&data=\(data)&to=\(contractAddress)"
-    }
-    
-    static func fetchEtherscanGasPrice() -> String {
-        "http://45.76.120.223/etherscan/api?module=proxy&action=eth_gasPrice"
-    }
-    
-    static func fetchEtherscanGasOracle() -> String {
-        "http://45.76.120.223/etherscan/api?module=gastracker&action=gasoracle"
-    }
-    
-    static func fetchEtherscanAddressTokensBalance(address: String) -> String {
-        "http://45.76.120.223/etherscan/api?module=account&action=addresstokenbalance&address=\(address)&page=1&offset=100"
-    }
-    
-    static func fetchERC20Transactions(address: String, contractAddress: String) -> String {
-        "http://45.76.120.223/etherscan/api?module=account&action=tokentx&contractaddress=\(contractAddress)&address=\(address)&startblock=0&endblock=99999999&sort=asc"
-    }
-    
-    static func broadcastBscTransaction(hex: String) -> String {
-        "http://45.76.120.223/bscscan/api?module=proxy&action=eth_sendRawTransaction&hex=\(hex)"
-    }
-    static func fetchBscTransactions(address: String) -> String {
-        "http://45.76.120.223/bscscan/api?module=account&action=txlist&address=\(address)&startblock=0&endblock=99999999&sort=asc"
-    }
-    static func fetchBRC20Transactions(address: String, contractAddress: String) -> String {
-        "http://45.76.120.223/bscscan/api?module=account&action=tokentx&contractaddress=\(contractAddress)&address=\(address)&startblock=0&endblock=99999999&sort=asc"
-    }
-    static func fetchBscscanEstimateGasForBNBTransaction(data: String, to: String, valueHex: String) -> String {
-        "http://45.76.120.223/bscscan/api?module=proxy&action=eth_estimateGas&data=\(data)&to=\(to)&value=\(valueHex)"
-    }
-    static func fetchBscTransactionCount(address: String) -> String {
-        "http://45.76.120.223/bscscan/api?module=proxy&action=eth_getTransactionCount&address=\(address)&tag=latest"
-    }
-    static func fetchBscGasPrice() -> String {
-        "http://45.76.120.223/bscscan/api?module=proxy&action=eth_gasPrice"
-    }
-    static func fetchBscGasOracle() -> String {
-        "http://45.76.120.223/bscscan/api?module=gastracker&action=gasoracle"
-    }
-    static func fetchBscBalance(address: String) -> String {
-        "http://45.76.120.223/bscscan/api?module=account&action=balance&address=\(address)&tag=latest"
-    }
-    static func fetchBscTokenBalance(contractAddress: String, address: String) -> String {
-        "http://45.76.120.223/etherscan/api?module=account&action=tokenbalance&contractaddress=\(contractAddress)&address=\(address)&tag=latest"
     }
     
     static func bscLabelTxHash(_ value: String) -> String {
@@ -201,7 +131,7 @@ class Endpoint {
 }
 
 fileprivate extension String {
-
+    
     var asUrl: URL {
         return URL(string: self)!
     }
