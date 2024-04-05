@@ -164,7 +164,7 @@ struct KeysignDiscoveryView: View {
     }
     
     var bottomButtons: some View {
-        let isDisabled = viewModel.selections.count < vault.getThreshold()
+        let isDisabled = viewModel.selections.count < (vault.getThreshold() + 1)
         
         return Button {
             isLoading = true
@@ -196,12 +196,15 @@ struct KeysignDiscoveryView: View {
         return Image(systemName: "xmark")
     }
     
-    private func handleSelection(_ peer: String) {
+    func handleSelection(_ peer: String) {
         isLoading = true
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             if viewModel.selections.contains(peer) {
-                viewModel.selections.remove(peer)
+                // Don't remove itself
+                if peer != viewModel.localPartyID {
+                    viewModel.selections.remove(peer)
+                }
                 isLoading = false
             } else {
                 viewModel.selections.insert(peer)

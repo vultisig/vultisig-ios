@@ -65,6 +65,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             self.localPartyID = Utils.getLocalDeviceIdentity()
             self.vault.localPartyID = self.localPartyID
         }
+        self.selections.insert(self.localPartyID)
     }
     
     func startDiscovery() {

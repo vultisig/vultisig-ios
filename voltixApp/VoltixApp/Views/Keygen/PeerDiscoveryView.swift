@@ -196,7 +196,9 @@ struct PeerDiscoveryView: View {
     
     private func handleSelection(_ peer: String) {
         if viewModel.selections.contains(peer) {
-            viewModel.selections.remove(peer)
+            if peer != viewModel.localPartyID {
+                viewModel.selections.remove(peer)
+            }
         } else {
             viewModel.selections.insert(peer)
         }
