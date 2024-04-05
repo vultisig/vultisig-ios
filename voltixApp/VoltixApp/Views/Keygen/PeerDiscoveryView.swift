@@ -15,6 +15,11 @@ struct PeerDiscoveryView: View {
     
     @State private var orientation = UIDevice.current.orientation
     
+    let columns = [
+        GridItem(.adaptive(minimum: 160)),
+        GridItem(.adaptive(minimum: 160)),
+    ]
+    
     let logger = Logger(subsystem: "peers-discory", category: "communication")
     
     var body: some View {
@@ -145,8 +150,9 @@ struct PeerDiscoveryView: View {
     
     var deviceList: some View {
         ScrollView{
-            ForEach(participantDiscovery.peersFound, id: \.self) { peer in
-                VStack(spacing: 12) {
+            LazyVGrid(columns: columns, spacing: 32) {
+                ForEach(participantDiscovery.peersFound, id: \.self) { peer in
+                    
                     Button {
                         handleSelection(peer)
                     } label: {

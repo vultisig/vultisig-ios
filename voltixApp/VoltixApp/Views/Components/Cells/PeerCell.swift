@@ -12,13 +12,20 @@ struct PeerCell: View {
     let isSelected: Bool
     
     var body: some View {
-        HStack(spacing: 12) {
-            image
-            deviceInformation
+        ZStack(alignment: .topTrailing) {
+            cell
             check
         }
-        .padding(18)
-        .padding(.vertical, 4)
+    }
+    
+    var cell: some View {
+        VStack(spacing: 12) {
+            image
+            deviceId
+            description
+        }
+        .padding(16)
+        .frame(width: 150, height: 200)
         .background(Color.blue600)
         .cornerRadius(10)
         .overlay (
@@ -32,14 +39,7 @@ struct PeerCell: View {
     var image: some View {
         getDeviceImage()
             .frame(width: 50)
-    }
-    
-    var deviceInformation: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            deviceId
-            description
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxHeight: .infinity)
     }
     
     var deviceId: some View {
@@ -52,7 +52,7 @@ struct PeerCell: View {
         Text(id)
             .font(.body12Menlo)
             .foregroundColor(.neutral0)
-            .multilineTextAlignment(.leading)
+            .frame(height: 30)
     }
     
     var check: some View {
@@ -61,6 +61,7 @@ struct PeerCell: View {
             .font(.body18MenloMedium)
             .foregroundColor(.neutral0)
             .padding(.horizontal, 2)
+            .offset(x: -10, y: 10)
     }
     
     private func getDeviceName() -> String {
@@ -87,23 +88,29 @@ struct PeerCell: View {
         } else if idString.contains("ipad") {
             return Image("iPadAsset")
                 .resizable()
-                .frame(width: 38, height: 50)
+                .frame(width: 60, height: 80)
         } else {
             return Image("macAsset")
                 .resizable()
-                .frame(width: 40, height: 27)
+                .frame(width: 100, height: 67)
         }
     }
 }
 
 #Preview {
-    ZStack {
+    let columns = [
+        GridItem(.adaptive(minimum: 200)),
+        GridItem(.adaptive(minimum: 200)),
+    ]
+    
+    return ZStack {
         Background()
-        VStack {
+        LazyVGrid(columns: columns, spacing: 30) {
             PeerCell(id: "iPhone 15 Pro-5D2F5D984A37", isSelected: true)
             PeerCell(id: "iPhone 15 Pro-5D2F 5D984A37erere reretgjkhgijerh gje rhgr e jhg wd wdr", isSelected: false)
             PeerCell(id: "iPad 15 Pro-5D2F5D984A37", isSelected: false)
             PeerCell(id: "iPhone 15 Pro-5D2F 5D984A37erere reretgjkhgijerh gje rhgr e jhg wd wdr", isSelected: true)
+            PeerCell(id: "Pro-5D2F 5D984A37erere reretgjkhgijerh gje rhgr e jhg wd wdr", isSelected: true)
         }
     }
 }
