@@ -50,7 +50,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         } else {
             self.localPartyID = Utils.getLocalDeviceIdentity()
         }
-
+        self.selections.insert(self.localPartyID)
         let keysignMessageResult = self.keysignPayload.getKeysignMessages(vault: self.vault)
         switch keysignMessageResult {
         case .success(let preSignedImageHash):
@@ -110,4 +110,5 @@ class KeysignDiscoveryViewModel: ObservableObject {
             }
         }
     }
+    
 }
