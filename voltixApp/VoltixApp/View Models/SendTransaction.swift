@@ -7,11 +7,11 @@ import WalletCore
 import BigInt
 
 class SendTransaction: ObservableObject, Hashable {
-    @Published var toAddress: String = ""
-    @Published var amount: String = ""
-    @Published var amountInUSD: String = ""
-    @Published var memo: String = ""
-    @Published var gas: String = ""
+    @Published var toAddress: String = .empty
+    @Published var amount: String = .empty
+    @Published var amountInUSD: String = .empty
+    @Published var memo: String = .empty
+    @Published var gas: String = .empty
     @Published var nonce: Int64 = 0
     var priorityFeeGwei: Int64 = 0
 

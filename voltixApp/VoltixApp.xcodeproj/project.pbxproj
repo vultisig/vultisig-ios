@@ -24,7 +24,6 @@
 		469ED3A22B98F5CB008D4951 /* ThorchainAccountResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED3A12B98F5CB008D4951 /* ThorchainAccountResult.swift */; };
 		469ED3A42B98F5DE008D4951 /* CosmosAccountValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED3A32B98F5DE008D4951 /* CosmosAccountValue.swift */; };
 		46AAA4972BBF7EBA00E5BAB4 /* EvmServiceFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AAA4962BBF7EBA00E5BAB4 /* EvmServiceFactory.swift */; };
-		46AC40A42B91F50A001704E6 /* AppConfiguration.example.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AC40A32B91F50A001704E6 /* AppConfiguration.example.swift */; };
 		46AC40A82B920061001704E6 /* EtherscanService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AC40A72B920061001704E6 /* EtherscanService.swift */; };
 		46B106512BA7CAFE00564023 /* ChainType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B106502BA7CAFE00564023 /* ChainType.swift */; };
 		46B60BBE2BBA811D0043EBBA /* AvalancheService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B60BBD2BBA811D0043EBBA /* AvalancheService.swift */; };
@@ -241,7 +240,6 @@
 		469ED3A12B98F5CB008D4951 /* ThorchainAccountResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainAccountResult.swift; sourceTree = "<group>"; };
 		469ED3A32B98F5DE008D4951 /* CosmosAccountValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosAccountValue.swift; sourceTree = "<group>"; };
 		46AAA4962BBF7EBA00E5BAB4 /* EvmServiceFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvmServiceFactory.swift; sourceTree = "<group>"; };
-		46AC40A32B91F50A001704E6 /* AppConfiguration.example.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.example.swift; sourceTree = "<group>"; };
 		46AC40A72B920061001704E6 /* EtherscanService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EtherscanService.swift; sourceTree = "<group>"; };
 		46B106502BA7CAFE00564023 /* ChainType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainType.swift; sourceTree = "<group>"; };
 		46B60BBD2BBA811D0043EBBA /* AvalancheService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvalancheService.swift; sourceTree = "<group>"; };
@@ -605,14 +603,6 @@
 				DED05FE52BBB82F300E0496C /* CosmosAccountsResponse.swift */,
 			);
 			path = AccountManager;
-			sourceTree = "<group>";
-		};
-		46AC40A22B91F4F8001704E6 /* Configs */ = {
-			isa = PBXGroup;
-			children = (
-				46AC40A32B91F50A001704E6 /* AppConfiguration.example.swift */,
-			);
-			path = Configs;
 			sourceTree = "<group>";
 		};
 		46B60BBC2BBA810C0043EBBA /* Avalanche */ = {
@@ -1017,7 +1007,6 @@
 				D9AD8ED82B6722AC0009F8D5 /* Model */,
 				A65649D52B965FC400E4B329 /* View Models */,
 				A65649F32B966CCB00E4B329 /* States */,
-				46AC40A22B91F4F8001704E6 /* Configs */,
 				DE28F52C2B7B0E6200E33058 /* Chains */,
 				A65649D62B96602700E4B329 /* Extensions */,
 				A61BC8172BA2685E00484689 /* Stores */,
@@ -1286,7 +1275,6 @@
 				DE63AE4D2BB4E94E001BBE5C /* JSONRPCResponse.swift in Sources */,
 				A65BA98A2BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift in Sources */,
 				46C8CBBF2BA777BF00E68E08 /* BlockchairService.swift in Sources */,
-				46AC40A42B91F50A001704E6 /* AppConfiguration.example.swift in Sources */,
 				DE64A4CC2BA7F97500C342E3 /* KeysignDiscoveryViewModel.swift in Sources */,
 				A653242C2BA52E2200DDE6EB /* SendCryptoQRScannerView.swift in Sources */,
 				A62758F72B97DF4A00ADE3A6 /* ColorStyle.swift in Sources */,
