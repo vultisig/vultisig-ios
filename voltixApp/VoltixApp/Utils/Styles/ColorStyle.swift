@@ -19,6 +19,7 @@ extension Color {
     static let neutral0 = Color(hex: "FFFFFF")
     static let neutral100 = Color(hex: "F3F4F5")
     static let neutral200 = Color(hex: "EBECED")
+    static let neutral300 = Color(hex: "BDBDBD")
     
     static let blue200 = Color(hex: "1B3F73")
     static let blue400 = Color(hex: "11284A")

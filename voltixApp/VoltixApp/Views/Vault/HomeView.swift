@@ -19,7 +19,7 @@ struct HomeView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                NavigationMenuButton()
+                menuButton
             }
             
             ToolbarItem(placement: .principal) {
@@ -76,6 +76,14 @@ struct HomeView: View {
         .offset(y: showVaultsList ? 9 : -10)
         .frame(height: 20)
         .clipped()
+    }
+    
+    var menuButton: some View {
+        NavigationLink {
+            SettingsView()
+        } label: {
+            NavigationMenuButton()
+        }
     }
     
     private func switchView() {

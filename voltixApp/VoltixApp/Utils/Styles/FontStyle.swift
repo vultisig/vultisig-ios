@@ -16,6 +16,7 @@ extension Font {
     static let body8Menlo = Font.custom("Menlo", size: 8)
     static let body12Menlo = Font.custom("Menlo", size: 12)
     static let body13Menlo = Font.custom("Menlo", size: 13)
+    static let body14Menlo = Font.custom("Menlo", size: 14)
     static let body15Menlo = Font.custom("Menlo", size: 15)
     static let body16Menlo = Font.custom("Menlo", size: 16)
     static let body18Menlo = Font.custom("Menlo", size: 18)
