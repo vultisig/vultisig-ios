@@ -11,13 +11,9 @@ struct NavigationMenuButton: View {
     var tint: Color = Color.neutral0
     
     var body: some View {
-        Button(action: {
-            
-        }) {
-            Image("MenuIcon")
-                .font(.body18MenloBold)
-                .foregroundColor(tint)
-        }
+        Image("MenuIcon")
+            .font(.body18MenloBold)
+            .foregroundColor(tint)
     }
 }
 
