@@ -145,6 +145,8 @@
 "language" = "Language";
 "currency" = "Currency";
 "faq" = "FAQ";
+"other" = "Other";
+"shareTheApp" = "Share The App";
 "setupVaultFAQQuestion" = "How do I set up my crypto vault?";
 "supportedCryptoFAQQuestion" = "What cryptocurrencies are supported by Voltix?";
 "vaultSecurityFAQQuestion" = "How does the crypto vault app secure my cryptocurrencies?";

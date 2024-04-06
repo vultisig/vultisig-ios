@@ -29,6 +29,7 @@ struct SettingsView: View {
         ScrollView {
             VStack {
                 mainSection
+                otherSection
             }
             .padding(15)
             .padding(.top, 30)
@@ -41,6 +42,14 @@ struct SettingsView: View {
             currencySelectionCell
             faqCell
         }
+    }
+    
+    var otherSection: some View {
+        VStack(spacing: 16) {
+            getTitle("other")
+            shareAppCell
+        }
+        .padding(.top, 24)
     }
     
     var languageSelectionCell: some View {
@@ -64,6 +73,15 @@ struct SettingsView: View {
             SettingsFAQView()
         } label: {
             SettingCell(title: "faq", icon: "questionmark.circle")
+        }
+    }
+    
+    var shareAppCell: some View {
+        // TODO: Update with app's url
+        let link = URL(string: "https://www.google.com/")!
+        
+        return ShareLink(item: link) {
+            SettingCell(title: "shareTheApp", icon: "square.and.arrow.up")
         }
     }
     
