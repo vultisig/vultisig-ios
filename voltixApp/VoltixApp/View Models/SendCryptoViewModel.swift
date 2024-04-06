@@ -49,11 +49,6 @@ class SendCryptoViewModel: ObservableObject {
                 tx.nonce = Int64(nonce)
                 tx.priorityFeeGwei = Int64(priorityFee)
                 
-                print("TICKER: \(tx.coin.ticker)")
-                print("gas: \(tx.gas)")
-                print("nonce: \(tx.nonce)")
-                print("priorityFeeGwei: \(tx.priorityFeeGwei)")
-                
             }else if tx.coin.chain == .thorChain {
                 tx.gas = "0.02"
             } else if tx.coin.chain == .gaiaChain {
@@ -203,7 +198,7 @@ class SendCryptoViewModel: ObservableObject {
         if let priceRateUsd = cryptoPrice.cryptoPrices?.prices[tx.coin.priceProviderId]?["usd"] {
             if let newValueDouble = Double(newValue) {
                 let newValueCoin = newValueDouble / priceRateUsd
-                tx.amount = String(newValueCoin)
+                tx.amount = String(format: "%.9f", newValueCoin)
             } else {
                 tx.amount = ""
             }
