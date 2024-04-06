@@ -27,9 +27,11 @@ struct SettingsView: View {
     
     var view: some View {
         ScrollView {
-            VStack {
+            VStack(spacing: 24) {
                 mainSection
                 otherSection
+                socials
+                appVersion
             }
             .padding(15)
             .padding(.top, 30)
@@ -49,7 +51,6 @@ struct SettingsView: View {
             getTitle("other")
             shareAppCell
         }
-        .padding(.top, 24)
     }
     
     var languageSelectionCell: some View {
@@ -77,12 +78,38 @@ struct SettingsView: View {
     }
     
     var shareAppCell: some View {
-        // TODO: Update with app's url
-        let link = URL(string: "https://www.google.com/")!
-        
-        return ShareLink(item: link) {
+        ShareLink(item: StaticURL.AppStoreVoltixURL) {
             SettingCell(title: "shareTheApp", icon: "square.and.arrow.up")
         }
+    }
+    
+    var socials: some View {
+        HStack(spacing: 32) {
+            githubButton
+            xButton
+        }
+        .padding(.top, 100)
+    }
+    
+    var githubButton: some View {
+        Link(destination: StaticURL.GithubVoltixURL) {
+            Image("GithubLogo")
+        }
+    }
+    
+    var xButton: some View {
+        Link(destination: StaticURL.XVoltixURL) {
+            Image("xLogo")
+        }
+    }
+    
+    var appVersion: some View {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+        
+        return Text("VOLTIX APP V\(version ?? "1")")
+            .textCase(.uppercase)
+            .font(.body14Menlo)
+            .foregroundColor(.turquoise600)
     }
     
     private func getTitle(_ title: String) -> some View {
