@@ -76,7 +76,10 @@ class JoinKeygenViewModel: ObservableObject {
         Utils.sendRequest(urlString: urlString, method: "POST", body: body) { success in
             if success {
                 self.logger.info("Successfully joined the key generation committee.")
-                self.status = .WaitingForKeygenToStart
+                DispatchQueue.main.async {
+                    self.status = .WaitingForKeygenToStart
+                }
+                
             }
         }
     }
@@ -110,9 +113,11 @@ class JoinKeygenViewModel: ObservableObject {
                 do {
                     let decoder = JSONDecoder()
                     let peers = try decoder.decode([String].self, from: data)
-                    if peers.contains(self.localPartyID) {
-                        self.keygenCommittee.append(contentsOf: peers)
-                        self.status = .KeygenStarted
+                    DispatchQueue.main.async {
+                        if peers.contains(self.localPartyID) {
+                            self.keygenCommittee.append(contentsOf: peers)
+                            self.status = .KeygenStarted
+                        }
                     }
                 } catch {
                     self.logger.error("Failed to decode response to JSON: \(data)")
