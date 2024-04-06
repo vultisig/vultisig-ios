@@ -51,12 +51,12 @@ struct EditVaultView: View {
     
     var exporter: some View {
         alert
-            .fileExporter(isPresented: $showVaultExporter, document: VoltixDocument(vault: vault), contentType: .data, defaultFilename: "\(vault.name).dat") { result in
+            .fileExporter(isPresented: $showVaultExporter, document: VoltixDocument(vault: vault), contentType: .data, defaultFilename: "\(vault.getExportName())") { result in
                 switch result {
-                    case .failure(let error):
-                        print("Failed to export, error: \(error.localizedDescription)")
-                    case .success(let url):
-                        print("Exported to \(url)")
+                case .failure(let error):
+                    print("Failed to export, error: \(error.localizedDescription)")
+                case .success(let url):
+                    print("Exported to \(url)")
                 }
             }
     }
@@ -96,7 +96,7 @@ struct EditVaultView: View {
             EditVaultCell(title: "delete", description: "deleteVault", icon: "trash.fill", isDestructive: true)
         }
     }
-
+    
     var reshareVault: some View {
         NavigationLink {
             SetupVaultView(tssType: .Reshare, vault: vault)
@@ -104,7 +104,7 @@ struct EditVaultView: View {
             EditVaultCell(title: "reshare", description: "reshareVault", icon: "square.and.arrow.up.fill")
         }
     }
-
+    
     private func showDeleteAlert() {
         showAlert.toggle()
     }
