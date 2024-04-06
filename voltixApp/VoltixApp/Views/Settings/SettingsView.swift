@@ -26,16 +26,15 @@ struct SettingsView: View {
     }
     
     var view: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                mainSection
-                otherSection
-                socials
-                appVersion
-            }
-            .padding(15)
-            .padding(.top, 30)
+        VStack(spacing: 24) {
+            mainSection
+            otherSection
+            Spacer()
+            socials
+            appVersion
         }
+        .padding(15)
+        .padding(.top, 30)
     }
     
     var mainSection: some View {
