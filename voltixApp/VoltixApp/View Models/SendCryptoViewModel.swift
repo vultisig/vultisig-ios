@@ -54,7 +54,7 @@ class SendCryptoViewModel: ObservableObject {
                 print("nonce: \(tx.nonce)")
                 print("priorityFeeGwei: \(tx.priorityFeeGwei)")
                 
-            }else if tx.coin.chain == .avalanche {
+            }else if tx.coin.chain == .thorChain {
                 tx.gas = "0.02"
             } else if tx.coin.chain == .gaiaChain {
                 tx.gas = "0.0075"
