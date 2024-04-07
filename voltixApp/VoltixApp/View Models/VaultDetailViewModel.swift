@@ -10,17 +10,33 @@ import Foundation
 class VaultDetailViewModel: ObservableObject {
     @Published var coins = [Coin]()
     @Published var coinsGroupedByChains = [GroupedChain]()
+    let defaultChains = [Chain.bitcoin,Chain.ethereum,Chain.thorChain,Chain.solana]
     
     func fetchCoins(for vault: Vault) {
         // add bitcoin when the vault doesn't have any coins in it
         if vault.coins.count == 0 {
-            let result = UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode).getCoin()
-            
-            switch result {
-            case .success(let btc):
-                vault.coins.append(btc)
-            case .failure(let error):
-                print("error: \(error)")
+            for chain in defaultChains {
+                var result: Result<Coin,Error>
+                switch chain {
+                case .bitcoin:
+                    result = UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode).getCoin()
+                case .ethereum:
+                    result = EVMHelper(coinType: .ethereum).getCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
+                case .thorChain:
+                    result = THORChainHelper.getRUNECoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
+                case .solana:
+                    result = SolanaHelper.getSolana(hexPubKey: vault.pubKeyEdDSA, hexChainCode: vault.hexChainCode)
+                default:
+                    continue
+                }
+                
+                switch result {
+                case .success(let btc):
+                    vault.coins.append(btc)
+                case .failure(let error):
+                    print("error: \(error)")
+                }
+                
             }
         }
         coins = vault.coins

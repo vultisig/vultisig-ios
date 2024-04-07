@@ -69,6 +69,9 @@ public final class Mediator {
                 do {
                     let decoder = JSONDecoder()
                     let p = try decoder.decode([String].self, from: Data(req.body))
+                    if self.cache.objectExists(forKey: key) {
+                        self.cache.removeObject(forKey: key)
+                    }
                     self.cache.setObject(Session(SessionID: cleanSessionID, Participants: p), forKey: key)
                 } catch {
                     self.logger.error("fail to start keygen/keysign,error:\(error.localizedDescription)")
@@ -110,6 +113,11 @@ public final class Mediator {
                     key = "\(cleanSessionID)-\(recipient)-\(messageID)-\(message.hash)"
                 }
                 logger.info("received message \(key) from \(message.from) to \(recipient)")
+                // sometimes this might fail because the object with the same key already exist , probably because of client side retry
+                // thus if the object exist already , remove it first , and then add it back
+                if self.cache.objectExists(forKey: key) {
+                    self.cache.removeObject(forKey: key)
+                }
                 self.cache.setObject(message, forKey: key)
             }
         } catch {
@@ -167,6 +175,9 @@ public final class Mediator {
                         if !cachedValue.Participants.contains(where: { $0 == newParticipant }) {
                             cachedValue.Participants.append(newParticipant)
                         }
+                    }
+                    if self.cache.objectExists(forKey: key) {
+                        self.cache.removeObject(forKey: key)
                     }
                     self.cache.setObject(cachedValue, forKey: key)
                 }
