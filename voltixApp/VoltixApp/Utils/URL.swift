@@ -9,6 +9,6 @@ import Foundation
 
 class StaticURL {
     static let GithubVoltixURL = URL(string: "https://github.com/voltix-vault/voltix")!
-    static let XVoltixURL = URL(string: "https://twitter.com/home")!
+    static let XVoltixURL = URL(string: "https://twitter.com/voltixvault")!
     static let AppStoreVoltixURL = URL(string: "https://www.apple.com/")!
 }

@@ -66,12 +66,14 @@ class JoinKeysignViewModel: ObservableObject {
         let body = [self.localPartyID]
         
         Utils.sendRequest(urlString: urlString, method: "POST", body: body) { success in
-            if success {
-                self.logger.info("Successfully joined the keysign committee.")
-                self.status = .WaitingForKeysignToStart
-            } else {
-                self.errorMsg = "Failed to join the keysign committee. Please check your connection and try again."
-                self.status = .FailedToStart
+            DispatchQueue.main.async{
+                if success {
+                    self.logger.info("Successfully joined the keysign committee.")
+                    self.status = .WaitingForKeysignToStart
+                } else {
+                    self.errorMsg = "Failed to join the keysign committee. Please check your connection and try again."
+                    self.status = .FailedToStart
+                }
             }
         }
     }
