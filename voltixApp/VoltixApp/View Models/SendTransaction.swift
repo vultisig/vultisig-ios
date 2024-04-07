@@ -103,11 +103,11 @@ class SendTransaction: ObservableObject, Hashable {
     var gasFeePredictionForEvm: String {
         
         guard let gasInt = Int64(gas) else {
-            return ""
+            return .empty
         }
         
         guard let gasLimitDefault = Int64(coin.feeDefault) else {
-            return ""
+            return .empty
         }
         
         let maxFeePerGasWei: BigInt = BigInt(gasInt * EVMHelper.weiPerGWei)
@@ -129,17 +129,17 @@ class SendTransaction: ObservableObject, Hashable {
             return "\(returnString) \(coin.chain.ticker)"
         }
         
-        return ""
+        return .empty
     }
     
     var gasFeePredictionForEvmUsd: String {
         
         guard let gasInt = Int64(gas) else {
-            return ""
+            return .empty
         }
         
         guard let gasLimitDefault = Int64(coin.feeDefault) else {
-            return ""
+            return .empty
         }
         
         let maxFeePerGasWei: BigInt = BigInt(gasInt * EVMHelper.weiPerGWei)
@@ -156,18 +156,14 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     init() {
-        self.toAddress = ""
-        self.amount = ""
-        self.memo = ""
-        self.gas = ""
+        self.toAddress = .empty
+        self.amount = .empty
+        self.memo = .empty
+        self.gas = .empty
     }
     
     init(coin: Coin) {
-        self.toAddress = ""
-        self.amount = ""
-        self.memo = ""
-        self.gas = ""
-        self.coin = coin
+        self.reset(coin: coin)
     }
     
     init(toAddress: String, amount: String, memo: String, gas: String) {
@@ -199,6 +195,14 @@ class SendTransaction: ObservableObject, Hashable {
         hasher.combine(amount)
         hasher.combine(memo)
         hasher.combine(gas)
+    }
+    
+    func reset(coin: Coin) {
+        self.toAddress = .empty
+        self.amount = .empty
+        self.memo = .empty
+        self.gas = .empty
+        self.coin = coin
     }
     
     func parseCryptoURI(_ uri: String) {

@@ -107,7 +107,7 @@ struct CoinCell: View {
     }
     
     private func setData() async {
-        sendTx.coin = coin
+        sendTx.reset(coin: coin)
         await coinViewModel.loadData(coin: coin)
     }
 }
