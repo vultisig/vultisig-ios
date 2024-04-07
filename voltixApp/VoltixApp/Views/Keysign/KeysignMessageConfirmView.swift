@@ -40,7 +40,7 @@ struct KeysignMessageConfirmView: View {
                 }
                     
                 Separator()
-                gasField
+                //gasField
             }
             .padding(16)
             .background(Color.blue600)
