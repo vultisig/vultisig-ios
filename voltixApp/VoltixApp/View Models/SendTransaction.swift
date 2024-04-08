@@ -14,7 +14,7 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var gas: String = .empty
     @Published var nonce: Int64 = 0
     var priorityFeeGwei: Int64 = 0
-
+    
     @Published var coin: Coin = Coin(
         chain: Chain.bitcoin,
         ticker: "BTC",
@@ -31,7 +31,7 @@ class SendTransaction: ObservableObject, Hashable {
         isNativeToken: true,
         feeDefault: "20"
     )
-
+    
     var fromAddress: String {
         coin.address
     }
@@ -226,12 +226,31 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     func toString() -> String {
-        let fromAddressStr = "\(fromAddress)"
-        let toAddressStr = "\(toAddress)"
-        let amountStr = "\(amount)"
-        let memoStr = "\(memo)"
-        let gasStr = "\(gas)"
-        
-        return "fromAddress: \(fromAddressStr), toAddress: \(toAddressStr), amount: \(amountStr), memo: \(memoStr), gas: \(gasStr)"
+        let properties = [
+            "toAddress: \(toAddress)",
+            "amount: \(amount)",
+            "amountInFiat: \(amountInFiat)",
+            "memo: \(memo)",
+            "gas: \(gas)",
+            "nonce: \(nonce)",
+            "priorityFeeGwei: \(priorityFeeGwei)",
+            "coin: \(coin.toString())",
+            "fromAddress: \(fromAddress)",
+            "amountInWei: \(amountInWei)",
+            "amountInGwei: \(amountInGwei)",
+            "totalEthTransactionCostWei: \(totalEthTransactionCostWei)",
+            "amountInTokenWeiInt64: \(amountInTokenWeiInt64)",
+            "amountInTokenWei: \(amountInTokenWei)",
+            "feeInWei: \(feeInWei)",
+            "amountInLamports: \(amountInLamports)",
+            "amountInSats: \(amountInSats)",
+            "feeInSats: \(feeInSats)",
+            "amountDecimal: \(amountDecimal)",
+            "amountInCoinDecimal: \(amountInCoinDecimal)",
+            "gasDecimal: \(gasDecimal)",
+            "gasFeePredictionForEvm: \(gasFeePredictionForEvm)",
+            "gasFeePredictionForEvmFiat: \(gasFeePredictionForEvmFiat)"
+        ]
+        return properties.joined(separator: ",\n")
     }
 }

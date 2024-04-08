@@ -122,12 +122,35 @@ class Coin: Codable, Hashable {
         let balanceInFiat = balanceDecimal * Decimal(priceRate)
         return balanceInFiat.formatToFiat()
     }
-
+    
     var swapAsset: String {
         guard !isNativeToken else { return "\(chain.swapAsset).\(chain.ticker)" }
         return "\(chain.swapAsset).\(ticker)-\(contractAddress)"
     }
-
+    
+    func toString() -> String {
+        let properties = [
+            "chain: \(chain.name)",
+            "ticker: \(ticker)",
+            "logo: \(logo)",
+            "address: \(address)",
+            "chainType: \((chainType?.description) ?? "N/A")",
+            "decimals: \(decimals)",
+            "hexPublicKey: \(hexPublicKey)",
+            "feeUnit: \(feeUnit)",
+            "feeDefault: \(feeDefault)",
+            "priceProviderId: \(priceProviderId)",
+            "contractAddress: \(contractAddress)",
+            "rawBalance: \(rawBalance)",
+            "isNativeToken: \(isNativeToken)",
+            "priceRate: \(priceRate)",
+            "balance: \(balanceString)",
+            "balanceInFiat: \(balanceInFiat)",
+            "swapAsset: \(swapAsset)"
+        ]
+        return properties.joined(separator: ",\n")
+    }
+    
     static let example = Coin(
         chain: Chain.bitcoin,
         ticker: "BTC",
