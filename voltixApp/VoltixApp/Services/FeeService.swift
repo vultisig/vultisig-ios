@@ -16,6 +16,15 @@ final class FeeService {
         case thorchain(String)
         case gaia(String)
         case solana(String)
+
+        var gas: String {
+            switch self {
+            case .evm(let gas, _, _), .gaia(let gas), .solana(let gas), .thorchain(let gas):
+                return gas
+            case .utxo(let sats):
+                return String(sats)
+            }
+        }
     }
 
     static let shared = FeeService()

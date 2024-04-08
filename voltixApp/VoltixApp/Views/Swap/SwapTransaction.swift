@@ -70,12 +70,8 @@ private extension SwapTransaction {
     }
 
     func fetchFee() async throws {
-        switch try await feeService.fetchFee(for: fromCoin) {
-        case .evm(let gas, _, _), .gaia(let gas), .solana(let gas), .thorchain(let gas):
-            self.gas = gas
-        case .utxo(let sats):
-            self.gas = String(sats)
-        }
+        let response = try await feeService.fetchFee(for: fromCoin)
+        gas = response.gas
     }
 
     func fetchQuotes() async throws {
