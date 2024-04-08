@@ -43,6 +43,8 @@ struct SwapVerifyView: View {
             getValueCell(for: "from", with: getFromAmount())
             Separator()
             getValueCell(for: "to", with: getToAmount())
+            Separator()
+            getDetailsCell(for: "gas", with: getGasAmount())
         }
         .padding(16)
         .background(Color.blue600)
@@ -58,10 +60,12 @@ struct SwapVerifyView: View {
 
     var button: some View {
         Button {
-        
+            swapViewModel.moveToNextView()
         } label: {
             FilledButton(title: "sign")
         }
+        .disabled(!verifyViewModel.validateForm())
+        .opacity(verifyViewModel.validateForm() ? 1 : 0.5)
         .padding(40)
     }
 
@@ -71,6 +75,10 @@ struct SwapVerifyView: View {
 
     func getToAmount() -> String {
         return "\(tx.toAmount) \(tx.toCoin.ticker)"
+    }
+
+    private func getGasAmount() -> String {
+        return tx.feeString
     }
 
     func getValueCell(for title: String, with value: String) -> some View {
@@ -84,5 +92,18 @@ struct SwapVerifyView: View {
                 .foregroundColor(.turquoise600)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func getDetailsCell(for title: String, with value: String) -> some View {
+        HStack {
+            Text(
+                NSLocalizedString(title, comment: "")
+                    .replacingOccurrences(of: "Fiat", with: CryptoPriceService.shared.defaultCurrency.uppercased())
+            )
+            Spacer()
+            Text(value)
+        }
+        .font(.body16MenloBold)
+        .foregroundColor(.neutral100)
     }
 }

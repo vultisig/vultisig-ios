@@ -73,7 +73,7 @@ class SolanaService {
         return (rawBalance,priceRateFiat)
     }
 	
-    func fetchRecentBlockhash() async throws -> (recentBlockHash: String?,feeInLamports: String) {
+    func fetchRecentBlockhash() async throws -> (recentBlockHash: String?, feeInLamports: String) {
         var blockHash: String? = nil
         let feeInLamports = "7000"
         let requestBody: [String: Any] = [
