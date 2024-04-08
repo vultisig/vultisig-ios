@@ -9,7 +9,8 @@ import SwiftUI
 
 struct SwapCryptoView: View {
 
-    @StateObject var viewModel = SwapCryptoViewModel()
+    @StateObject var tx = SwapTransaction()
+    @StateObject var swapViewModel = SwapCryptoViewModel()
 
     let coin: Coin
     let vault: Vault
@@ -28,16 +29,41 @@ struct SwapCryptoView: View {
             }
         }
         .task {
-            try? await viewModel.load(fromCoin: coin, coins: vault.coins)
+            swapViewModel.load(tx: tx, fromCoin: coin, coins: vault.coins)
         }
     }
     
     var view: some View {
         VStack(spacing: 30) {
-            ProgressBar(progress: viewModel.progress)
+            ProgressBar(progress: swapViewModel.progress)
                 .padding(.top, 30)
-            SwapCryptoDetailsView(viewModel: viewModel)
+            tabView
         }
+    }
+
+    var tabView: some View {
+        ZStack {
+            switch swapViewModel.currentIndex {
+            case 1:
+                detailsView
+            case 2:
+                verifyView
+            default:
+                errorView
+            }
+        }
+    }
+
+    var detailsView: some View {
+        SwapCryptoDetailsView(tx: tx, swapViewModel: swapViewModel)
+    }
+
+    var verifyView: some View {
+        SwapVerifyView(tx: tx, swapViewModel: swapViewModel)
+    }
+
+    var errorView: some View {
+        SendCryptoSigningErrorView()
     }
 }
 

@@ -9,7 +9,8 @@ import SwiftUI
 
 struct SwapCryptoDetailsView: View {
 
-    @ObservedObject var viewModel: SwapCryptoViewModel
+    @ObservedObject var tx: SwapTransaction
+    @ObservedObject var swapViewModel: SwapCryptoViewModel
 
     var body: some View {
         ZStack {
@@ -42,13 +43,13 @@ struct SwapCryptoDetailsView: View {
     var fromCoinField: some View {
         VStack(spacing: 8) {
             getTitle(for: "from")
-            TokenSelectorDropdown(coins: $viewModel.coins, selected: $viewModel.fromCoin)
-            getBalance(for: viewModel.fromBalance)
+            TokenSelectorDropdown(coins: $swapViewModel.coins, selected: $tx.fromCoin)
+            getBalance(for: tx.fromBalance)
         }
     }
     
     var fromAmountField: some View {
-        SendCryptoAmountTextField(amount: $viewModel.fromAmount, onChange: { _ in })
+        SendCryptoAmountTextField(amount: $tx.fromAmount, onChange: { _ in })
     }
     
     var swapButton: some View {
@@ -64,25 +65,33 @@ struct SwapCryptoDetailsView: View {
     var toCoinField: some View {
         VStack(spacing: 8) {
             getTitle(for: "to")
-            TokenSelectorDropdown(coins: $viewModel.coins, selected: $viewModel.toCoin)
-            getBalance(for: viewModel.toBalance)
+            TokenSelectorDropdown(coins: $swapViewModel.coins, selected: $tx.toCoin)
+            getBalance(for: tx.toBalance)
         }
     }
     
     var toAmountField: some View {
-        SendCryptoAmountTextField(amount: $viewModel.toAmount, onChange: { _ in })
+        SendCryptoAmountTextField(amount: $tx.toAmount, onChange: { _ in })
             .disabled(true)
     }
     
     var summary: some View {
         VStack(spacing: 8) {
-            getSummaryCell(leadingText: "gas(auto)", trailingText: viewModel.feeString)
+            getSummaryCell(leadingText: "gas(auto)", trailingText: tx.feeString)
         }
     }
     
     var continueButton: some View {
-        FilledButton(title: "continue")
-            .padding(40)
+        Button {
+            if swapViewModel.validateForm(tx: tx) {
+                swapViewModel.moveToNextView()
+            }
+        } label: {
+            FilledButton(title: "continue")
+        }
+        .disabled(!swapViewModel.validateForm(tx: tx))
+        .opacity(swapViewModel.validateForm(tx: tx) ? 1 : 0.5)
+        .padding(40)
     }
     
     private func getTitle(for text: String) -> some View {
@@ -112,5 +121,5 @@ struct SwapCryptoDetailsView: View {
 }
 
 #Preview {
-    SwapCryptoDetailsView(viewModel: SwapCryptoViewModel())
+    SwapCryptoDetailsView(tx: SwapTransaction(), swapViewModel: SwapCryptoViewModel())
 }
