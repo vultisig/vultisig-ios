@@ -13,11 +13,13 @@ class SwapTransaction: ObservableObject {
 
     private let thorchainService = ThorchainService.shared
     private let balanceService = BalanceService.shared
+    private let feeService = FeeService.shared
 
     @Published var fromCoin: Coin = .example {
         didSet {
             updateFromBalance()
             updateQuote()
+            updateFee()
         }
     }
 
@@ -37,8 +39,8 @@ class SwapTransaction: ObservableObject {
     @Published var toAmount: String = .empty
     @Published var gas: String = .empty
 
-    @Published var fromBalance: String = .empty
-    @Published var toBalance: String = .empty
+    @Published var fromBalance: String = .zero
+    @Published var toBalance: String = .zero
 
     var feeString: String {
         return "\(gas) \(fromCoin.feeUnit)"
@@ -61,6 +63,19 @@ private extension SwapTransaction {
 
     func updateQuote() {
         Task { try await fetchQuotes() }
+    }
+
+    func updateFee() {
+        Task { try await fetchFee() }
+    }
+
+    func fetchFee() async throws {
+        switch try await feeService.fetchFee(for: fromCoin) {
+        case .evm(let gas, _, _), .gaia(let gas), .solana(let gas), .thorchain(let gas):
+            self.gas = gas
+        case .utxo(let sats):
+            self.gas = String(sats)
+        }
     }
 
     func fetchQuotes() async throws {
