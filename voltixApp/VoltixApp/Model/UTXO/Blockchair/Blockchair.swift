@@ -51,7 +51,7 @@ class Blockchair: Codable {
             let balanceUtxo = balance / 100_000_000.0
             let balanceFiat = balanceUtxo * price
             
-            return balanceFiat.formatToFiat()
+            return balanceFiat.formatToFiat(includeCurrencySymbol: includeCurrencySymbol)
         }
 		
 		// Helper function to format an amount in satoshis as Bitcoin

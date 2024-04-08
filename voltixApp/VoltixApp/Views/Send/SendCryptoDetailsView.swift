@@ -115,11 +115,11 @@ struct SendCryptoDetailsView: View {
     var amountFiatField: some View {
         VStack(spacing: 8) {
             getTitle(for: "amount(inFiat)")
-            textFieldField
+            textFiatField
         }
     }
     
-    var textFieldField: some View {
+    var textFiatField: some View {
         SendCryptoAmountTextField(
             amount: $tx.amountInFiat,
             onChange: { await sendCryptoViewModel.convertFiatToCoin(newValue: $0, tx: tx) }
