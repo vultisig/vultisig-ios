@@ -83,9 +83,7 @@ struct SwapCryptoDetailsView: View {
     
     var continueButton: some View {
         Button {
-            if swapViewModel.validateForm(tx: tx) {
-                swapViewModel.moveToNextView()
-            }
+            swapViewModel.moveToNextView()
         } label: {
             FilledButton(title: "continue")
         }

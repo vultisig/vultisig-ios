@@ -752,7 +752,6 @@
 				DE9EB0F72BA43388001747D9 /* KeysignViewModel.swift */,
 				DE9EB0FB2BA463F7001747D9 /* KeygenViewModel.swift */,
 				DE64A4C52BA7E0E400C342E3 /* KeygenPeerDiscoveryViewModel.swift */,
-				A57495812BBC3FCA00D5F172 /* SwapCryptoViewModel.swift */,
 				DE64A4C72BA7EBEC00C342E3 /* JoinKeygenViewModel.swift */,
 				DE64A4CB2BA7F97500C342E3 /* KeysignDiscoveryViewModel.swift */,
 				DE64A4CD2BA7FEE100C342E3 /* JoinKeysignViewModel.swift */,
@@ -950,6 +949,7 @@
 				A564ED412BC350520056FDC0 /* SwapTransaction.swift */,
 				A564ED3F2BC34B690056FDC0 /* SwapVerifyView.swift */,
 				A564ED432BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift */,
+				A57495812BBC3FCA00D5F172 /* SwapCryptoViewModel.swift */,
 				A6966D302BA4048800903CA4 /* SwapCryptoDetailsView.swift */,
 			);
 			path = Swap;
