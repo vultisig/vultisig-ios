@@ -41,7 +41,7 @@ struct SettingsCurrencySelectionView: View {
                 } label: {
                     SettingSelectionCell(
                         title: currency.rawValue,
-                        isSelected: currency==settingsViewModel.selectedCurrency
+                        isSelected: currency.description() == UserDefaults.standard.string(forKey: "currency")
                     )
                 }
             }
@@ -52,7 +52,6 @@ struct SettingsCurrencySelectionView: View {
     
     private func handleSelection(_ currency: SettingsCurrency) {
         UserDefaults.standard.set(currency.description(), forKey: "currency")
-        settingsViewModel.selectedCurrency = currency
         dismiss()
     }
 }
