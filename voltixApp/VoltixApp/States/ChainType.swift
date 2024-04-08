@@ -7,10 +7,25 @@
 
 import Foundation
 
-enum ChainType : Codable{
-	case UTXO
-	case EVM
-	case Solana
-	case THORChain
+enum ChainType: Codable, CustomStringConvertible {
+    case UTXO
+    case EVM
+    case Solana
+    case THORChain
     case Cosmos
+    
+    var description: String {
+        switch self {
+        case .UTXO:
+            return "Unspent Transaction Output"
+        case .EVM:
+            return "Ethereum Virtual Machine"
+        case .Solana:
+            return "Solana"
+        case .THORChain:
+            return "THORChain"
+        case .Cosmos:
+            return "Cosmos"
+        }
+    }
 }

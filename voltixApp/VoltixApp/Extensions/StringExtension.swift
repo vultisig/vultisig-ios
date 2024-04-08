@@ -51,3 +51,41 @@ extension String {
         return " "
     }
 }
+
+
+extension String {
+    
+    func formatToFiat(includeCurrencySymbol: Bool = true) -> String {
+        guard let decimalValue = Decimal(string: self) else { return "" }
+        
+        let formatter = NumberFormatter()
+        
+        if includeCurrencySymbol {
+            formatter.numberStyle = .currency
+            formatter.currencyCode = UserDefaults.standard.string(forKey: "currency") ?? SettingsCurrency.USD.description()
+        } else {
+            formatter.numberStyle = .decimal
+            formatter.maximumFractionDigits = 2
+            formatter.minimumFractionDigits = 2
+            formatter.decimalSeparator = "."
+            formatter.groupingSeparator = ""
+        }
+        
+        let number = NSDecimalNumber(decimal: decimalValue)
+        return formatter.string(from: number) ?? ""
+    }
+    
+    func formatToDecimal(digits: Int) -> String {
+        guard let decimalValue = Decimal(string: self) else { return "" }
+        
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = digits
+        formatter.minimumFractionDigits = 0
+        formatter.groupingSeparator = ""
+        formatter.decimalSeparator = "."
+        
+        let number = NSDecimalNumber(decimal: decimalValue)
+        return formatter.string(from: number) ?? ""
+    }
+}

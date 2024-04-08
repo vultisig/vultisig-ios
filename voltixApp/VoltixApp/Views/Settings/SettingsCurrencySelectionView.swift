@@ -51,6 +51,7 @@ struct SettingsCurrencySelectionView: View {
     }
     
     private func handleSelection(_ currency: SettingsCurrency) {
+        UserDefaults.standard.set(currency.description(), forKey: "currency")
         settingsViewModel.selectedCurrency = currency
         dismiss()
     }

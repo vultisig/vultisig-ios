@@ -8,28 +8,15 @@
 import Foundation
 
 extension [CosmosBalance] {
-    func runeBalanceInUSD(usdPrice: Double?, includeCurrencySymbol: Bool = true) -> String?{
-        guard let usdPrice = usdPrice,
+    func runeBalanceInFiat(price: Double?, includeCurrencySymbol: Bool = true) -> String?{
+        guard let price = price,
               let runeBalanceString = runeBalance(),
               let runeAmount = Double(runeBalanceString) else { return nil }
         
         let balanceRune = runeAmount / 100_000_000.0
-        let balanceUSD = balanceRune * usdPrice
+        let balanceFiat = balanceRune * price
         
-        let formatter = NumberFormatter()
-        
-        if includeCurrencySymbol {
-            formatter.numberStyle = .currency
-            formatter.currencyCode = "USD"
-        } else {
-            formatter.numberStyle = .decimal
-            formatter.maximumFractionDigits = 2
-            formatter.minimumFractionDigits = 2
-            formatter.decimalSeparator = "."
-            formatter.groupingSeparator = ""
-        }
-        
-        return formatter.string(from: NSNumber(value: balanceUSD))
+        return balanceFiat.formatToFiat()
     }
     
     func runeBalance() -> String? {
@@ -68,28 +55,15 @@ extension [CosmosBalance] {
         return nil
     }
     
-    func atomBalanceInUSD(usdPrice: Double?, includeCurrencySymbol: Bool = true) -> String?{
-        guard let usdPrice = usdPrice,
+    func atomBalanceInFiat(price: Double?, includeCurrencySymbol: Bool = true) -> String?{
+        guard let price = price,
               let runeBalanceString = atomBalance(),
               let runeAmount = Double(runeBalanceString) else { return nil }
         
         let balanceAtom = runeAmount / 1000_000.0
-        let balanceUSD = balanceAtom * usdPrice
+        let balanceFiat = balanceAtom * price
         
-        let formatter = NumberFormatter()
-        
-        if includeCurrencySymbol {
-            formatter.numberStyle = .currency
-            formatter.currencyCode = "USD"
-        } else {
-            formatter.numberStyle = .decimal
-            formatter.maximumFractionDigits = 2
-            formatter.minimumFractionDigits = 2
-            formatter.decimalSeparator = "."
-            formatter.groupingSeparator = ""
-        }
-        
-        return formatter.string(from: NSNumber(value: balanceUSD))
+        return balanceFiat.formatToFiat()
     }
     
     func formattedAtomBalance() -> String? {

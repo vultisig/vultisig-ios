@@ -9,12 +9,12 @@ import BigInt
 class SendTransaction: ObservableObject, Hashable {
     @Published var toAddress: String = .empty
     @Published var amount: String = .empty
-    @Published var amountInUSD: String = .empty
+    @Published var amountInFiat: String = .empty
     @Published var memo: String = .empty
     @Published var gas: String = .empty
     @Published var nonce: Int64 = 0
     var priorityFeeGwei: Int64 = 0
-
+    
     @Published var coin: Coin = Coin(
         chain: Chain.bitcoin,
         ticker: "BTC",
@@ -31,7 +31,7 @@ class SendTransaction: ObservableObject, Hashable {
         isNativeToken: true,
         feeDefault: "20"
     )
-
+    
     var fromAddress: String {
         coin.address
     }
@@ -132,7 +132,7 @@ class SendTransaction: ObservableObject, Hashable {
         return .empty
     }
     
-    var gasFeePredictionForEvmUsd: String {
+    var gasFeePredictionForEvmFiat: String {
         
         guard let gasInt = Int64(gas) else {
             return .empty
@@ -146,13 +146,9 @@ class SendTransaction: ObservableObject, Hashable {
         let gasLimitETHTransfer: BigInt = BigInt(gasLimitDefault)
         let totalCostETHTransferWei = maxFeePerGasWei * gasLimitETHTransfer
         let totalCostETHTransferETH = Double(totalCostETHTransferWei) / Double(EVMHelper.wei)
-        let totalCostETHTransferUSD = totalCostETHTransferETH * coin.priceRate
+        let totalCostETHTransferFiat = totalCostETHTransferETH * coin.priceRate
         
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = "USD"
-        
-        return formatter.string(from: NSNumber(value: totalCostETHTransferUSD)) ?? ""
+        return totalCostETHTransferFiat.formatToFiat()
     }
     
     init() {
@@ -230,12 +226,31 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     func toString() -> String {
-        let fromAddressStr = "\(fromAddress)"
-        let toAddressStr = "\(toAddress)"
-        let amountStr = "\(amount)"
-        let memoStr = "\(memo)"
-        let gasStr = "\(gas)"
-        
-        return "fromAddress: \(fromAddressStr), toAddress: \(toAddressStr), amount: \(amountStr), memo: \(memoStr), gas: \(gasStr)"
+        let properties = [
+            "toAddress: \(toAddress)",
+            "amount: \(amount)",
+            "amountInFiat: \(amountInFiat)",
+            "memo: \(memo)",
+            "gas: \(gas)",
+            "nonce: \(nonce)",
+            "priorityFeeGwei: \(priorityFeeGwei)",
+            "coin: \(coin.toString())",
+            "fromAddress: \(fromAddress)",
+            "amountInWei: \(amountInWei)",
+            "amountInGwei: \(amountInGwei)",
+            "totalEthTransactionCostWei: \(totalEthTransactionCostWei)",
+            "amountInTokenWeiInt64: \(amountInTokenWeiInt64)",
+            "amountInTokenWei: \(amountInTokenWei)",
+            "feeInWei: \(feeInWei)",
+            "amountInLamports: \(amountInLamports)",
+            "amountInSats: \(amountInSats)",
+            "feeInSats: \(feeInSats)",
+            "amountDecimal: \(amountDecimal)",
+            "amountInCoinDecimal: \(amountInCoinDecimal)",
+            "gasDecimal: \(gasDecimal)",
+            "gasFeePredictionForEvm: \(gasFeePredictionForEvm)",
+            "gasFeePredictionForEvmFiat: \(gasFeePredictionForEvmFiat)"
+        ]
+        return properties.joined(separator: ",\n")
     }
 }

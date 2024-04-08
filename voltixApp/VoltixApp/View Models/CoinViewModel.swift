@@ -12,7 +12,7 @@ import BigInt
 @MainActor
 class CoinViewModel: ObservableObject {
     @Published var isLoading = false
-    @Published var balanceUSD: String? = nil
+    @Published var balanceFiat: String? = nil
     @Published var coinBalance: String? = nil
     
     private let balanceService = BalanceService()
@@ -23,7 +23,7 @@ class CoinViewModel: ObservableObject {
         do {
             let balance = try await balanceService.balance(for: coin)
             coinBalance = balance.coinBalance
-            balanceUSD = balance.balanceUSD
+            balanceFiat = balance.balanceFiat
         }
         catch {
             print("error fetching data: \(error.localizedDescription)")

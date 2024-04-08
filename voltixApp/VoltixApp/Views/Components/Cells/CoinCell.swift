@@ -54,7 +54,7 @@ struct CoinCell: View {
     }
     
     var amount: some View {
-        let balance = coinViewModel.balanceUSD
+        let balance = coinViewModel.balanceFiat
         
         return Text(balance ?? "0.0000")
             .font(.body16MenloBold)
@@ -63,7 +63,7 @@ struct CoinCell: View {
     }
     
     var buttons: some View {
-        let isDisabled = coinViewModel.balanceUSD == nil
+        let isDisabled = coinViewModel.balanceFiat == nil
         
         return HStack(spacing: 20) {
             if coin.chain.isSwapSupported {

@@ -11,4 +11,9 @@ import SwiftUI
 class SettingsViewModel: ObservableObject {
     @Published var selectedLanguage: SettingsLanguage = .English
     @Published var selectedCurrency: SettingsCurrency = .USD
+    
+    // Singleton
+    static let shared = SettingsViewModel()
+    
+    init() {}
 }

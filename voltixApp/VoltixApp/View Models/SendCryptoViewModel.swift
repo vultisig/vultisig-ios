@@ -28,7 +28,7 @@ class SendCryptoViewModel: ObservableObject {
     @Published var sol: SolanaService = SolanaService.shared
     @Published var cryptoPrice = CryptoPriceService.shared
     @Published var utxo = BlockchairService.shared
-
+    
     private let mediator = Mediator.shared
     
     let totalViews = 5
@@ -70,9 +70,8 @@ class SendCryptoViewModel: ObservableObject {
     }
     
     private func getTransactionPlan(tx: SendTransaction, key:String) -> TW_Bitcoin_Proto_TransactionPlan? {
-        let totalAmountNeeded = tx.amountInSats + tx.feeInSats
         
-        guard let utxoInfo = utxo.blockchairData[key]?.selectUTXOsForPayment(amountNeeded: Int64(totalAmountNeeded)).map({
+        guard let utxoInfo = utxo.blockchairData[key]?.selectUTXOsForPayment(amountNeeded: Int64(tx.amountInSats)).map({
             UtxoInfo(
                 hash: $0.transactionHash ?? "",
                 amount: Int64($0.value ?? 0),
@@ -82,10 +81,12 @@ class SendCryptoViewModel: ObservableObject {
             return nil
         }
         
+        let totalSelectedAmount = utxoInfo.reduce(0) { $0 + $1.amount }
+        
         let keysignPayload = KeysignPayload(
             coin: tx.coin,
             toAddress: tx.toAddress,
-            toAmount: tx.amountInSats,
+            toAmount: totalSelectedAmount,
             chainSpecific: BlockChainSpecific.UTXO(byteFee: tx.feeInSats),
             utxos: utxoInfo,
             memo: tx.memo,
@@ -116,11 +117,11 @@ class SendCryptoViewModel: ObservableObject {
         if  tx.coin.chain.chainType == .UTXO {
             tx.amount = utxo.blockchairData[key]?.address?.balanceInBTC ?? "0.0"
             
-            if let plan = getTransactionPlan(tx: tx, key: key) {
+            if let plan = getTransactionPlan(tx: tx, key: key), plan.amount > 0 {
                 tx.amount = utxo.blockchairData[key]?.address?.formatAsBitcoin(Int(plan.amount)) ?? "0.0"
             }
             Task{
-                await convertToUSD(newValue: tx.amount, tx: tx)
+                await convertToFiat(newValue: tx.amount, tx: tx)
                 isLoading = false
             }
         } else if tx.coin.chain.chainType == .EVM  {
@@ -149,20 +150,17 @@ class SendCryptoViewModel: ObservableObject {
                     print("Failed to get EVM balance, error: \(error.localizedDescription)")
                 }
                 
-                await convertToUSD(newValue: tx.amount, tx: tx)
+                await convertToFiat(newValue: tx.amount, tx: tx)
                 isLoading = false
             }
         } else if tx.coin.chain == .thorChain {
             Task {
                 do{
                     let thorBalances = try await self.thor.fetchBalances(tx.fromAddress)
-                    if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.thorChain.name.lowercased()]?["usd"] {
-                        tx.coin.priceRate = priceRateUsd
-                    }
-                    
+                    tx.coin.priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
                     tx.coin.rawBalance = thorBalances.runeBalance() ?? "0"
                     tx.amount = "\(tx.coin.getMaxValue(BigInt(THORChainHelper.THORChainGas)))"
-                    await convertToUSD(newValue: tx.amount, tx: tx)
+                    await convertToFiat(newValue: tx.amount, tx: tx)
                 } catch {
                     print("fail to get THORChain balance,error:\(error.localizedDescription)")
                 }
@@ -181,7 +179,7 @@ class SendCryptoViewModel: ObservableObject {
                     tx.coin.rawBalance = rawBalance
                     tx.coin.priceRate = priceRate
                     tx.amount = "\(tx.coin.getMaxValue(feeInLamports))"
-                    await convertToUSD(newValue: tx.amount, tx: tx)
+                    await convertToFiat(newValue: tx.amount, tx: tx)
                 } catch {
                     print("fail to load solana balances,error:\(error.localizedDescription)")
                 }
@@ -191,32 +189,28 @@ class SendCryptoViewModel: ObservableObject {
         }
     }
     
-    func convertUSDToCoin(newValue: String, tx: SendTransaction) async {
+    func convertFiatToCoin(newValue: String, tx: SendTransaction) async {
         
-        await cryptoPrice.fetchCryptoPrices()
-        
-        if let priceRateUsd = cryptoPrice.cryptoPrices?.prices[tx.coin.priceProviderId]?["usd"] {
-            if let newValueDouble = Double(newValue) {
-                let newValueCoin = newValueDouble / priceRateUsd
-                tx.amount = String(format: "%.9f", newValueCoin)
-            } else {
-                tx.amount = ""
-            }
+        let priceRateFiat = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
+        if let newValueDouble = Double(newValue) {
+            let newValueCoin = newValueDouble / priceRateFiat
+            tx.amount = String(format: "%.9f", newValueCoin)
+        } else {
+            tx.amount = ""
         }
+        
     }
     
-    func convertToUSD(newValue: String, tx: SendTransaction) async {
+    func convertToFiat(newValue: String, tx: SendTransaction) async {
         
-        await cryptoPrice.fetchCryptoPrices()
-        
-        if let priceRateUsd = cryptoPrice.cryptoPrices?.prices[tx.coin.priceProviderId]?["usd"] {
-            if let newValueDouble = Double(newValue) {
-                let newValueUSD = String(format: "%.2f", newValueDouble * priceRateUsd)
-                tx.amountInUSD = newValueUSD.isEmpty ? "" : newValueUSD
-            } else {
-                tx.amountInUSD = ""
-            }
+        let priceRateFiat = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
+        if let newValueDouble = Double(newValue) {
+            let newValueFiat = String(format: "%.2f", newValueDouble * priceRateFiat)
+            tx.amountInFiat = newValueFiat.isEmpty ? "" : newValueFiat
+        } else {
+            tx.amountInFiat = ""
         }
+        
     }
     
     func validateAddress(tx: SendTransaction, address: String) {
