@@ -10,7 +10,6 @@ import Foundation
 class BalanceService {
     
     static let shared = BalanceService()
-    
     private let utxo = BlockchairService.shared
     private let thor = ThorchainService.shared
     private let sol = SolanaService.shared
@@ -23,11 +22,6 @@ class BalanceService {
             let blockChairData = try await utxo.fetchBlockchairData(address: coin.address,coin: coin)
             coin.rawBalance = blockChairData?.address?.balance?.description ?? "0"
             coin.priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
-            
-            print("ticker \(coin.ticker)")
-            print("rawBalance \(coin.rawBalance)")
-            print("priceRate \(coin.priceRate)")
-            
             let balanceUSD = coin.balanceInUsd
             let coinBalance = coin.balanceString
             return (coinBalance, balanceUSD)
