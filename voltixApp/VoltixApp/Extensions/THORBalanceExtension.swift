@@ -20,7 +20,7 @@ extension [CosmosBalance] {
         
         if includeCurrencySymbol {
             formatter.numberStyle = .currency
-            formatter.currencyCode = "USD"
+            formatter.currencySymbol = "$"
         } else {
             formatter.numberStyle = .decimal
             formatter.maximumFractionDigits = 2
@@ -80,7 +80,7 @@ extension [CosmosBalance] {
         
         if includeCurrencySymbol {
             formatter.numberStyle = .currency
-            formatter.currencyCode = "USD"
+            formatter.currencySymbol = "$"
         } else {
             formatter.numberStyle = .decimal
             formatter.maximumFractionDigits = 2

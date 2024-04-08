@@ -26,7 +26,7 @@ class RpcEvmService {
     
     func getBalance(coin: Coin) async throws ->(rawBalance: String,priceRate: Double){
         // Start fetching all information concurrently
-        let cryptoPrice = await CryptoPriceService.shared.cryptoPrices?.prices[coin.priceProviderId]?["usd"]
+        let cryptoPrice = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
         var rawBalance = ""
         do{
             if coin.isNativeToken {

@@ -15,7 +15,7 @@ class SolanaService {
 		
         if includeCurrencySymbol {
             formatter.numberStyle = .currency
-            formatter.currencyCode = "USD"
+            formatter.currencySymbol = "$"
         } else {
             formatter.numberStyle = .decimal
             formatter.maximumFractionDigits = 2
@@ -67,7 +67,7 @@ class SolanaService {
 	
     func getSolanaBalance(coin: Coin) async throws -> (rawBalance: String, priceRate: Double){
         var rawBalance = "0"
-        let priceRateUsd = await CryptoPriceService.shared.cryptoPrices?.prices[Chain.solana.name.lowercased()]?["usd"]
+        let priceRateUsd = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
         
         let requestBody: [String: Any] = [
             "jsonrpc": "2.0",

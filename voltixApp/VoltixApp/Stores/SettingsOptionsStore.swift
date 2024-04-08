@@ -37,6 +37,18 @@ enum SettingsLanguage: String, CaseIterable {
 enum SettingsCurrency: String, CaseIterable {
     case USD
     case AUD
+    
+    func description() -> String {
+        let value: String
+        
+        switch self {
+        case .USD:
+            value = "usd"
+        case .AUD:
+            value = "aud"
+        }
+        return value
+    }
 }
 
 class SettingsOptionsStore {

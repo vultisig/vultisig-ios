@@ -41,7 +41,7 @@ class Blockchair: Codable {
 		var type: String?
 		var scriptHex: String?
 		var balance: Int?
-		var balanceUsd: Double?
+		//var balanceUsd: Double?
 		var received: Int?
 		var receivedUsd: Double?
 		var spent: Int?
@@ -59,26 +59,28 @@ class Blockchair: Codable {
 		var balanceInBTC: String {
 			formatAsBitcoin(balance ?? 0)
 		}
+        
+        func balanceInFiat(balance: Double, usdPrice: Double, includeCurrencySymbol: Bool = true) -> String{
+            
+            let balanceUtxo = Double(balance ?? 0) / 100_000_000.0
+            let balanceUSD = balanceUtxo * usdPrice
+            
+            let formatter = NumberFormatter()
+            
+            if includeCurrencySymbol {
+                formatter.numberStyle = .currency
+                formatter.currencySymbol = "$"
+            } else {
+                formatter.numberStyle = .decimal
+                formatter.maximumFractionDigits = 2
+                formatter.minimumFractionDigits = 2
+                formatter.decimalSeparator = "."
+                formatter.groupingSeparator = ""
+            }
+            
+            return formatter.string(from: NSNumber(value: balanceUSD)) ?? "$ 0,00"
+        }
 		
-		var balanceInUSD: String {
-			let formatter = NumberFormatter()
-			formatter.numberStyle = .currency
-			formatter.locale = Locale.current
-			formatter.currencyCode = "USD"
-			return formatter.string(from: NSNumber(value: balanceUsd ?? 0.0)) ?? "0.0"
-		}
-		
-		var balanceInDecimalUSD: String {
-			let formatter = NumberFormatter()
-			formatter.numberStyle = .decimal
-			formatter.decimalSeparator = "."
-			formatter.locale = Locale.current
-			formatter.minimumFractionDigits = 2
-			formatter.maximumFractionDigits = 2
-
-			return formatter.string(from: NSNumber(value: balanceUsd ?? 0.0)) ?? "0.00"
-		}
-
 		// Helper function to format an amount in satoshis as Bitcoin
         func formatAsBitcoin(_ satoshis: Int) -> String {
 			let formatter = NumberFormatter()

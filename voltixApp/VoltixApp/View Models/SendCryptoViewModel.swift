@@ -28,7 +28,7 @@ class SendCryptoViewModel: ObservableObject {
     @Published var sol: SolanaService = SolanaService.shared
     @Published var cryptoPrice = CryptoPriceService.shared
     @Published var utxo = BlockchairService.shared
-
+    
     private let mediator = Mediator.shared
     
     let totalViews = 5
@@ -156,10 +156,7 @@ class SendCryptoViewModel: ObservableObject {
             Task {
                 do{
                     let thorBalances = try await self.thor.fetchBalances(tx.fromAddress)
-                    if let priceRateUsd = CryptoPriceService.shared.cryptoPrices?.prices[Chain.thorChain.name.lowercased()]?["usd"] {
-                        tx.coin.priceRate = priceRateUsd
-                    }
-                    
+                    tx.coin.priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
                     tx.coin.rawBalance = thorBalances.runeBalance() ?? "0"
                     tx.amount = "\(tx.coin.getMaxValue(BigInt(THORChainHelper.THORChainGas)))"
                     await convertToUSD(newValue: tx.amount, tx: tx)
@@ -193,30 +190,26 @@ class SendCryptoViewModel: ObservableObject {
     
     func convertUSDToCoin(newValue: String, tx: SendTransaction) async {
         
-        await cryptoPrice.fetchCryptoPrices()
-        
-        if let priceRateUsd = cryptoPrice.cryptoPrices?.prices[tx.coin.priceProviderId]?["usd"] {
-            if let newValueDouble = Double(newValue) {
-                let newValueCoin = newValueDouble / priceRateUsd
-                tx.amount = String(format: "%.9f", newValueCoin)
-            } else {
-                tx.amount = ""
-            }
+        let priceRateUsd = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
+        if let newValueDouble = Double(newValue) {
+            let newValueCoin = newValueDouble / priceRateUsd
+            tx.amount = String(format: "%.9f", newValueCoin)
+        } else {
+            tx.amount = ""
         }
+        
     }
     
     func convertToUSD(newValue: String, tx: SendTransaction) async {
         
-        await cryptoPrice.fetchCryptoPrices()
-        
-        if let priceRateUsd = cryptoPrice.cryptoPrices?.prices[tx.coin.priceProviderId]?["usd"] {
-            if let newValueDouble = Double(newValue) {
-                let newValueUSD = String(format: "%.2f", newValueDouble * priceRateUsd)
-                tx.amountInUSD = newValueUSD.isEmpty ? "" : newValueUSD
-            } else {
-                tx.amountInUSD = ""
-            }
+        let priceRateUsd = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
+        if let newValueDouble = Double(newValue) {
+            let newValueUSD = String(format: "%.2f", newValueDouble * priceRateUsd)
+            tx.amountInUSD = newValueUSD.isEmpty ? "" : newValueUSD
+        } else {
+            tx.amountInUSD = ""
         }
+        
     }
     
     func validateAddress(tx: SendTransaction, address: String) {

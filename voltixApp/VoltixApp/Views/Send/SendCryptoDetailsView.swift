@@ -147,7 +147,10 @@ struct SendCryptoDetailsView: View {
     }
     
     private func getTitle(for text: String) -> some View {
-        Text(NSLocalizedString(text, comment: ""))
+        Text(
+            NSLocalizedString(text, comment: "")
+                .replacingOccurrences(of: "USD", with: SettingsViewModel.shared.selectedCurrency.description().uppercased())
+        )
             .font(.body14MontserratMedium)
             .foregroundColor(.neutral0)
             .frame(maxWidth: .infinity, alignment: .leading)

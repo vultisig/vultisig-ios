@@ -118,7 +118,10 @@ struct SendCryptoVerifyView: View {
     
     private func getDetailsCell(for title: String, with value: String) -> some View {
         HStack {
-            Text(NSLocalizedString(title, comment: ""))
+            Text(
+                NSLocalizedString(title, comment: "")
+                    .replacingOccurrences(of: "USD", with: SettingsViewModel.shared.selectedCurrency.description().uppercased())
+            )
             Spacer()
             Text(value)
         }

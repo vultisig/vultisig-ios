@@ -17,7 +17,7 @@ struct VoltixApp: App {
     @StateObject var vaultDetailViewModel = VaultDetailViewModel()
     @StateObject var tokenSelectionViewModel = TokenSelectionViewModel()
     @StateObject var accountViewModel = AccountViewModel()
-    @StateObject var settingsViewModel = SettingsViewModel()
+    @StateObject var settingsViewModel = SettingsViewModel.shared
 
     var body: some Scene {
         WindowGroup {

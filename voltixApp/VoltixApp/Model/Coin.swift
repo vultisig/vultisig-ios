@@ -123,7 +123,7 @@ class Coin: Codable, Hashable {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.locale = Locale.current
-        formatter.currencyCode = "USD"
+        formatter.currencySymbol = "$"
         return formatter.string(from: balanceInUsd as NSDecimalNumber) ?? "0.0"
     }
 
