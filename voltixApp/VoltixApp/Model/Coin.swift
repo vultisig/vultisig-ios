@@ -120,11 +120,7 @@ class Coin: Codable, Hashable {
     
     var balanceInFiat: String {
         let balanceInFiat = balanceDecimal * Decimal(priceRate)
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.locale = Locale.current
-        formatter.currencySymbol = "$"
-        return formatter.string(from: balanceInFiat as NSDecimalNumber) ?? "0.0"
+        return balanceInFiat.formatToFiat()
     }
 
     var swapAsset: String {

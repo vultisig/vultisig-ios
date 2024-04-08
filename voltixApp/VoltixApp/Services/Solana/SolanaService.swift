@@ -11,20 +11,7 @@ class SolanaService {
         let balanceSOL = Decimal(string:balance) ?? 0 / 1_000_000_000
         let balanceFiat = balanceSOL * Decimal(fiatPrice)
 		
-        let formatter = NumberFormatter()
-		
-        if includeCurrencySymbol {
-            formatter.numberStyle = .currency
-            formatter.currencySymbol = "$"
-        } else {
-            formatter.numberStyle = .decimal
-            formatter.maximumFractionDigits = 2
-            formatter.minimumFractionDigits = 2
-            formatter.decimalSeparator = "."
-            formatter.groupingSeparator = ""
-        }
-		
-        return formatter.string(from: balanceFiat as NSNumber)
+        return balanceFiat.formatToFiat()
     }
 	
     func formattedSolBalance(balance: String?) -> String? {

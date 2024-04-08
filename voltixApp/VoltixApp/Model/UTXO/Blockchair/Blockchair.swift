@@ -51,20 +51,7 @@ class Blockchair: Codable {
             let balanceUtxo = balance / 100_000_000.0
             let balanceFiat = balanceUtxo * price
             
-            let formatter = NumberFormatter()
-            
-            if includeCurrencySymbol {
-                formatter.numberStyle = .currency
-                formatter.currencySymbol = "$"
-            } else {
-                formatter.numberStyle = .decimal
-                formatter.maximumFractionDigits = 2
-                formatter.minimumFractionDigits = 2
-                formatter.decimalSeparator = "."
-                formatter.groupingSeparator = ""
-            }
-            
-            return formatter.string(from: NSNumber(value: balanceFiat)) ?? "$ 0,00"
+            return balanceFiat.formatToFiat()
         }
 		
 		// Helper function to format an amount in satoshis as Bitcoin

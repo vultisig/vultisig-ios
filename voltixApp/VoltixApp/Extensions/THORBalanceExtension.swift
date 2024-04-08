@@ -16,20 +16,7 @@ extension [CosmosBalance] {
         let balanceRune = runeAmount / 100_000_000.0
         let balanceFiat = balanceRune * price
         
-        let formatter = NumberFormatter()
-        
-        if includeCurrencySymbol {
-            formatter.numberStyle = .currency
-            formatter.currencySymbol = "$"
-        } else {
-            formatter.numberStyle = .decimal
-            formatter.maximumFractionDigits = 2
-            formatter.minimumFractionDigits = 2
-            formatter.decimalSeparator = "."
-            formatter.groupingSeparator = ""
-        }
-        
-        return formatter.string(from: NSNumber(value: balanceFiat))
+        return balanceFiat.formatToFiat()
     }
     
     func runeBalance() -> String? {
@@ -76,20 +63,7 @@ extension [CosmosBalance] {
         let balanceAtom = runeAmount / 1000_000.0
         let balanceFiat = balanceAtom * price
         
-        let formatter = NumberFormatter()
-        
-        if includeCurrencySymbol {
-            formatter.numberStyle = .currency
-            formatter.currencySymbol = "$"
-        } else {
-            formatter.numberStyle = .decimal
-            formatter.maximumFractionDigits = 2
-            formatter.minimumFractionDigits = 2
-            formatter.decimalSeparator = "."
-            formatter.groupingSeparator = ""
-        }
-        
-        return formatter.string(from: NSNumber(value: balanceFiat))
+        return balanceFiat.formatToFiat()
     }
     
     func formattedAtomBalance() -> String? {

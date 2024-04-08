@@ -148,11 +148,7 @@ class SendTransaction: ObservableObject, Hashable {
         let totalCostETHTransferETH = Double(totalCostETHTransferWei) / Double(EVMHelper.wei)
         let totalCostETHTransferFiat = totalCostETHTransferETH * coin.priceRate
         
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencySymbol = "$"
-        
-        return formatter.string(from: NSNumber(value: totalCostETHTransferFiat)) ?? ""
+        return totalCostETHTransferFiat.formatToFiat()
     }
     
     init() {
