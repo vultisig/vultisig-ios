@@ -61,7 +61,7 @@ struct SendCryptoVerifyView: View {
             Separator()
             getDetailsCell(for: "amount", with: getAmount())
             Separator()
-            getDetailsCell(for: "amount(inUSD)", with: getUSDAmount())
+            getDetailsCell(for: "amount(inFiat)", with: getFiatAmount())
             
             if !tx.memo.isEmpty {
                 Separator()
@@ -120,7 +120,7 @@ struct SendCryptoVerifyView: View {
         HStack {
             Text(
                 NSLocalizedString(title, comment: "")
-                    .replacingOccurrences(of: "USD", with: SettingsViewModel.shared.selectedCurrency.description().uppercased())
+                    .replacingOccurrences(of: "Fiat", with: SettingsViewModel.shared.selectedCurrency.description().uppercased())
             )
             Spacer()
             Text(value)
@@ -143,8 +143,8 @@ struct SendCryptoVerifyView: View {
         tx.amount + " " + tx.coin.ticker
     }
     
-    private func getUSDAmount() -> String {
-        "$" + tx.amountInUSD
+    private func getFiatAmount() -> String {
+        "$" + tx.amountInFiat
     }
     
     private func getGasAmount() -> String {

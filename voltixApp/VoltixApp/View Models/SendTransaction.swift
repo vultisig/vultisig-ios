@@ -9,7 +9,7 @@ import BigInt
 class SendTransaction: ObservableObject, Hashable {
     @Published var toAddress: String = .empty
     @Published var amount: String = .empty
-    @Published var amountInUSD: String = .empty
+    @Published var amountInFiat: String = .empty
     @Published var memo: String = .empty
     @Published var gas: String = .empty
     @Published var nonce: Int64 = 0
@@ -132,7 +132,7 @@ class SendTransaction: ObservableObject, Hashable {
         return .empty
     }
     
-    var gasFeePredictionForEvmUsd: String {
+    var gasFeePredictionForEvmFiat: String {
         
         guard let gasInt = Int64(gas) else {
             return .empty
@@ -146,13 +146,13 @@ class SendTransaction: ObservableObject, Hashable {
         let gasLimitETHTransfer: BigInt = BigInt(gasLimitDefault)
         let totalCostETHTransferWei = maxFeePerGasWei * gasLimitETHTransfer
         let totalCostETHTransferETH = Double(totalCostETHTransferWei) / Double(EVMHelper.wei)
-        let totalCostETHTransferUSD = totalCostETHTransferETH * coin.priceRate
+        let totalCostETHTransferFiat = totalCostETHTransferETH * coin.priceRate
         
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.currencySymbol = "$"
         
-        return formatter.string(from: NSNumber(value: totalCostETHTransferUSD)) ?? ""
+        return formatter.string(from: NSNumber(value: totalCostETHTransferFiat)) ?? ""
     }
     
     init() {

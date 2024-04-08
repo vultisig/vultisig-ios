@@ -108,23 +108,23 @@ class Coin: Codable, Hashable {
         return maxValueDecimal / pow(10, tokenDecimals)
     }
     
-    func getAmountInUsd(_ amount: Double) -> String {
-        let balanceInUsd = amount * priceRate
-        return String(format: "%.2f", balanceInUsd)
+    func getAmountInFiat(_ amount: Double) -> String {
+        let balanceInFiat = amount * priceRate
+        return String(format: "%.2f", balanceInFiat)
     }
     
-    func getAmountInTokens(_ usdAmount: Double) -> String {
-        let tokenAmount = usdAmount / priceRate
+    func getAmountInTokens(_ amount: Double) -> String {
+        let tokenAmount = amount / priceRate
         return String(format: "%.\(Int(decimals) ?? 0)f", tokenAmount)
     }
     
-    var balanceInUsd: String {
-        let balanceInUsd = balanceDecimal * Decimal(priceRate)
+    var balanceInFiat: String {
+        let balanceInFiat = balanceDecimal * Decimal(priceRate)
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.locale = Locale.current
         formatter.currencySymbol = "$"
-        return formatter.string(from: balanceInUsd as NSDecimalNumber) ?? "0.0"
+        return formatter.string(from: balanceInFiat as NSDecimalNumber) ?? "0.0"
     }
 
     var swapAsset: String {

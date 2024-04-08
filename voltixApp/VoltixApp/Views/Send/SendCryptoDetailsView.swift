@@ -11,7 +11,7 @@ import SwiftUI
 enum Field: Hashable {
     case toAddress
     case amount
-    case amountInUSD
+    case amountInFiat
 }
 
 struct SendCryptoDetailsView: View {
@@ -58,7 +58,7 @@ struct SendCryptoDetailsView: View {
                 fromField
                 toField
                 amountField
-                amountUSDField
+                amountFiatField
                 gasField
             }
             .padding(.horizontal, 16)
@@ -106,25 +106,25 @@ struct SendCryptoDetailsView: View {
     var textField: some View {
         SendCryptoAmountTextField(
             amount: $tx.amount,
-            onChange: { await sendCryptoViewModel.convertToUSD(newValue: $0, tx: tx) },
+            onChange: { await sendCryptoViewModel.convertToFiat(newValue: $0, tx: tx) },
             onMaxPressed: { sendCryptoViewModel.setMaxValues(tx: tx) }
         )
         .focused($focusedField, equals: .amount)
     }
     
-    var amountUSDField: some View {
+    var amountFiatField: some View {
         VStack(spacing: 8) {
-            getTitle(for: "amount(inUSD)")
-            textFieldUSD
+            getTitle(for: "amount(inFiat)")
+            textFieldField
         }
     }
     
-    var textFieldUSD: some View {
+    var textFieldField: some View {
         SendCryptoAmountTextField(
-            amount: $tx.amountInUSD,
-            onChange: { await sendCryptoViewModel.convertUSDToCoin(newValue: $0, tx: tx) }
+            amount: $tx.amountInFiat,
+            onChange: { await sendCryptoViewModel.convertFiatToCoin(newValue: $0, tx: tx) }
         )
-        .focused($focusedField, equals: .amountInUSD)
+        .focused($focusedField, equals: .amountInFiat)
     }
     
     var gasField: some View {
@@ -149,7 +149,7 @@ struct SendCryptoDetailsView: View {
     private func getTitle(for text: String) -> some View {
         Text(
             NSLocalizedString(text, comment: "")
-                .replacingOccurrences(of: "USD", with: SettingsViewModel.shared.selectedCurrency.description().uppercased())
+                .replacingOccurrences(of: "Fiat", with: SettingsViewModel.shared.selectedCurrency.description().uppercased())
         )
             .font(.body14MontserratMedium)
             .foregroundColor(.neutral0)

@@ -116,11 +116,11 @@ class SendCryptoViewModel: ObservableObject {
         if  tx.coin.chain.chainType == .UTXO {
             tx.amount = utxo.blockchairData[key]?.address?.balanceInBTC ?? "0.0"
             
-            if let plan = getTransactionPlan(tx: tx, key: key) {
+            if let plan = getTransactionPlan(tx: tx, key: key), plan.amount > 0 {
                 tx.amount = utxo.blockchairData[key]?.address?.formatAsBitcoin(Int(plan.amount)) ?? "0.0"
             }
             Task{
-                await convertToUSD(newValue: tx.amount, tx: tx)
+                await convertToFiat(newValue: tx.amount, tx: tx)
                 isLoading = false
             }
         } else if tx.coin.chain.chainType == .EVM  {
@@ -149,7 +149,7 @@ class SendCryptoViewModel: ObservableObject {
                     print("Failed to get EVM balance, error: \(error.localizedDescription)")
                 }
                 
-                await convertToUSD(newValue: tx.amount, tx: tx)
+                await convertToFiat(newValue: tx.amount, tx: tx)
                 isLoading = false
             }
         } else if tx.coin.chain == .thorChain {
@@ -159,7 +159,7 @@ class SendCryptoViewModel: ObservableObject {
                     tx.coin.priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
                     tx.coin.rawBalance = thorBalances.runeBalance() ?? "0"
                     tx.amount = "\(tx.coin.getMaxValue(BigInt(THORChainHelper.THORChainGas)))"
-                    await convertToUSD(newValue: tx.amount, tx: tx)
+                    await convertToFiat(newValue: tx.amount, tx: tx)
                 } catch {
                     print("fail to get THORChain balance,error:\(error.localizedDescription)")
                 }
@@ -178,7 +178,7 @@ class SendCryptoViewModel: ObservableObject {
                     tx.coin.rawBalance = rawBalance
                     tx.coin.priceRate = priceRate
                     tx.amount = "\(tx.coin.getMaxValue(feeInLamports))"
-                    await convertToUSD(newValue: tx.amount, tx: tx)
+                    await convertToFiat(newValue: tx.amount, tx: tx)
                 } catch {
                     print("fail to load solana balances,error:\(error.localizedDescription)")
                 }
@@ -188,11 +188,11 @@ class SendCryptoViewModel: ObservableObject {
         }
     }
     
-    func convertUSDToCoin(newValue: String, tx: SendTransaction) async {
+    func convertFiatToCoin(newValue: String, tx: SendTransaction) async {
         
-        let priceRateUsd = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
+        let priceRateFiat = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
         if let newValueDouble = Double(newValue) {
-            let newValueCoin = newValueDouble / priceRateUsd
+            let newValueCoin = newValueDouble / priceRateFiat
             tx.amount = String(format: "%.9f", newValueCoin)
         } else {
             tx.amount = ""
@@ -200,14 +200,14 @@ class SendCryptoViewModel: ObservableObject {
         
     }
     
-    func convertToUSD(newValue: String, tx: SendTransaction) async {
+    func convertToFiat(newValue: String, tx: SendTransaction) async {
         
-        let priceRateUsd = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
+        let priceRateFiat = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
         if let newValueDouble = Double(newValue) {
-            let newValueUSD = String(format: "%.2f", newValueDouble * priceRateUsd)
-            tx.amountInUSD = newValueUSD.isEmpty ? "" : newValueUSD
+            let newValueFiat = String(format: "%.2f", newValueDouble * priceRateFiat)
+            tx.amountInFiat = newValueFiat.isEmpty ? "" : newValueFiat
         } else {
-            tx.amountInUSD = ""
+            tx.amountInFiat = ""
         }
         
     }

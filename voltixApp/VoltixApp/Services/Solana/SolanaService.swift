@@ -5,11 +5,11 @@ class SolanaService {
     static let shared = SolanaService()
     private init() {}
 	
-    func solBalanceInUSD(balance: String, usdPrice: Double?, includeCurrencySymbol: Bool = true) -> String? {
-        guard let usdPrice = usdPrice else { return nil }
+    func solBalanceInFiat(balance: String, price: Double?, includeCurrencySymbol: Bool = true) -> String? {
+        guard let fiatPrice = price else { return nil }
 		
         let balanceSOL = Decimal(string:balance) ?? 0 / 1_000_000_000
-        let balanceUSD = balanceSOL * Decimal(usdPrice)
+        let balanceFiat = balanceSOL * Decimal(fiatPrice)
 		
         let formatter = NumberFormatter()
 		
@@ -24,7 +24,7 @@ class SolanaService {
             formatter.groupingSeparator = ""
         }
 		
-        return formatter.string(from: balanceUSD as NSNumber)
+        return formatter.string(from: balanceFiat as NSNumber)
     }
 	
     func formattedSolBalance(balance: String?) -> String? {
@@ -67,7 +67,7 @@ class SolanaService {
 	
     func getSolanaBalance(coin: Coin) async throws -> (rawBalance: String, priceRate: Double){
         var rawBalance = "0"
-        let priceRateUsd = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
+        let priceRateFiat = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
         
         let requestBody: [String: Any] = [
             "jsonrpc": "2.0",
@@ -83,7 +83,7 @@ class SolanaService {
             print("Error fetching balance: \(error.localizedDescription)")
             throw error
         }
-        return (rawBalance,priceRateUsd ?? 0.0)
+        return (rawBalance,priceRateFiat)
     }
 	
     func fetchRecentBlockhash() async throws -> (recentBlockHash: String?,feeInLamports: String) {

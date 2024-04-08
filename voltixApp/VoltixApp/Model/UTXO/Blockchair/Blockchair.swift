@@ -41,29 +41,15 @@ class Blockchair: Codable {
 		var type: String?
 		var scriptHex: String?
 		var balance: Int?
-		//var balanceUsd: Double?
-		var received: Int?
-		var receivedUsd: Double?
-		var spent: Int?
-		var spentUsd: Double?
-		var outputCount: Int?
-		var unspentOutputCount: Int?
-		var firstSeenReceiving: String?
-		var lastSeenReceiving: String?
-		var firstSeenSpending: String?
-		var lastSeenSpending: String?
-		var scripthashType: String?
-		var transactionCount: Int?
-		
-		
+
 		var balanceInBTC: String {
 			formatAsBitcoin(balance ?? 0)
 		}
         
-        func balanceInFiat(balance: Double, usdPrice: Double, includeCurrencySymbol: Bool = true) -> String{
+        func balanceInFiat(balance: Double, price: Double, includeCurrencySymbol: Bool = true) -> String{
             
-            let balanceUtxo = Double(balance ?? 0) / 100_000_000.0
-            let balanceUSD = balanceUtxo * usdPrice
+            let balanceUtxo = balance / 100_000_000.0
+            let balanceFiat = balanceUtxo * price
             
             let formatter = NumberFormatter()
             
@@ -78,7 +64,7 @@ class Blockchair: Codable {
                 formatter.groupingSeparator = ""
             }
             
-            return formatter.string(from: NSNumber(value: balanceUSD)) ?? "$ 0,00"
+            return formatter.string(from: NSNumber(value: balanceFiat)) ?? "$ 0,00"
         }
 		
 		// Helper function to format an amount in satoshis as Bitcoin
