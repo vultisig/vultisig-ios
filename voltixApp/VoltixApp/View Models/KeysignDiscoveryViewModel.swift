@@ -17,9 +17,9 @@ class KeysignDiscoveryViewModel: ObservableObject {
     var vault: Vault
     var keysignPayload: KeysignPayload
     var participantDiscovery: ParticipantDiscovery?
-
+    
     private let mediator = Mediator.shared
-
+    
     let serverAddr = "http://127.0.0.1:8080"
     @Published var selections = Set<String>()
     @Published var sessionID = ""
@@ -28,13 +28,13 @@ class KeysignDiscoveryViewModel: ObservableObject {
     @Published var keysignMessages = [String]()
     @Published var serviceName = ""
     @Published var errorMessage = ""
-
+    
     init() {
         self.vault = Vault(name: "New Vault")
         self.keysignPayload = KeysignPayload(coin: Coin.example, toAddress: "", toAmount: 0, chainSpecific: BlockChainSpecific.UTXO(byteFee: 0), utxos: [], memo: nil, swapPayload: nil)
         self.participantDiscovery = nil
     }
-
+    
     func setData(vault: Vault, keysignPayload: KeysignPayload, participantDiscovery: ParticipantDiscovery) {
         self.vault = vault
         self.keysignPayload = keysignPayload
@@ -64,12 +64,12 @@ class KeysignDiscoveryViewModel: ObservableObject {
             self.status = .FailToStart
         }
     }
-
+    
     func startDiscovery() {
         self.mediator.start(name: self.serviceName)
         self.logger.info("mediator server started")
         self.startKeysignSession()
-        self.participantDiscovery?.getParticipants(serverAddr: self.serverAddr, sessionID: self.sessionID)
+        self.participantDiscovery?.getParticipants(serverAddr: self.serverAddr, sessionID: self.sessionID,localParty: self.localPartyID)
     }
     
     @MainActor func startKeysign(vault: Vault, viewModel: SendCryptoViewModel) -> KeysignView {
@@ -98,7 +98,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
     func stopDiscovery() {
         self.participantDiscovery?.stop()
     }
-
+    
     private func startKeysignSession() {
         let urlString = "\(self.serverAddr)/\(self.sessionID)"
         let body = [self.localPartyID]

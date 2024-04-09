@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct SendCryptoDoneView: View {
+    let vault: Vault
     let hash: String
     let explorerLink: String
     @Environment(\.openURL) var openURL
@@ -90,7 +91,7 @@ struct SendCryptoDoneView: View {
     
     var continueButton: some View {
         NavigationLink {
-            HomeView()
+            HomeView(selectedVault: vault,showVaultsList: false)
         } label: {
             FilledButton(title: "complete")
         }
@@ -111,6 +112,6 @@ struct SendCryptoDoneView: View {
 }
 
 #Preview {
-    SendCryptoDoneView(hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w", explorerLink: "https://blockstream.info/tx/")
+    SendCryptoDoneView(vault:Vault.example,hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w", explorerLink: "https://blockstream.info/tx/")
         .previewDevice("iPhone 13 Pro")
 }
