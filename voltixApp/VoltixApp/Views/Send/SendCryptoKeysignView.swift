@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct SendCryptoKeysignView: View {
+    let vault: Vault
     let title: String
     var showError = false
     @State var didSwitch = false
@@ -94,7 +95,7 @@ struct SendCryptoKeysignView: View {
     
     var tryAgainButton: some View {
         NavigationLink {
-            HomeView()
+            HomeView(selectedVault: vault,showVaultsList: false)
         } label: {
             FilledButton(title: "tryAgain")
         }
@@ -107,6 +108,6 @@ struct SendCryptoKeysignView: View {
         Color.blue800
             .ignoresSafeArea()
         
-        SendCryptoKeysignView(title: "signing")
+        SendCryptoKeysignView(vault:Vault.example,title: "signing")
     }
 }

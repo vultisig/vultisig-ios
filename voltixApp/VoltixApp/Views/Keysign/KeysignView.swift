@@ -16,22 +16,22 @@ struct KeysignView: View {
     let sendCryptoViewModel: SendCryptoViewModel?
     
     let logger = Logger(subsystem: "keysign", category: "tss")
-
+    
     @StateObject var viewModel = KeysignViewModel()
-
+    
     var body: some View {
         ZStack {
             switch viewModel.status {
-                case .CreatingInstance:
-                    SendCryptoKeysignView(title: "creatingTssInstance")
-                case .KeysignECDSA:
-                    SendCryptoKeysignView(title: "signingWithECDSA")
-                case .KeysignEdDSA:
-                    SendCryptoKeysignView(title: "signingWithEdDSA")
-                case .KeysignFinished:
-                    keysignFinished
-                case .KeysignFailed:
-                    SendCryptoKeysignView(title: "Sorry keysign failed, you can retry it,error: \(viewModel.keysignError)", showError: true)
+            case .CreatingInstance:
+                SendCryptoKeysignView(vault:vault,title: "creatingTssInstance")
+            case .KeysignECDSA:
+                SendCryptoKeysignView(vault:vault,title: "signingWithECDSA")
+            case .KeysignEdDSA:
+                SendCryptoKeysignView(vault:vault,title: "signingWithEdDSA")
+            case .KeysignFinished:
+                keysignFinished
+            case .KeysignFailed:
+                SendCryptoKeysignView(vault:vault,title: "Sorry keysign failed, you can retry it,error: \(viewModel.keysignError)", showError: true)
             }
         }
         .onAppear {
@@ -96,7 +96,7 @@ struct KeysignView: View {
         sessionID: "session",
         keysignType: .ECDSA,
         messsageToSign: ["message"],
-        keysignPayload: nil, 
+        keysignPayload: nil,
         sendCryptoViewModel: nil
     )
 }
