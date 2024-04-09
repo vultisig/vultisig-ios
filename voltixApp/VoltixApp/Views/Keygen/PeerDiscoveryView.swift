@@ -95,9 +95,9 @@ struct PeerDiscoveryView: View {
     
     var portraitContent: some View {
         VStack {
+            vaultDetail
             paringBarcode
             list
-            vaultDetail
         }
     }
     
