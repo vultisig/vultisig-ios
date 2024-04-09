@@ -1,25 +1,25 @@
 //
-//  SwapCryptoViewModel.swift
+//  SwapCryptoTransaction.swift
 //  VoltixApp
 //
-//  Created by Artur Guseinov on 02.04.2024.
+//  Created by Artur Guseinov on 08.04.2024.
 //
 
-import SwiftUI
-import BigInt
+import Foundation
+import WalletCore
 
 @MainActor
-class SwapCryptoViewModel: ObservableObject {
+class SwapTransaction: ObservableObject {
 
     private let thorchainService = ThorchainService.shared
     private let balanceService = BalanceService.shared
-
-    private let titles = ["send", "verify", "pair", "keysign", "done"]
+    private let feeService = FeeService.shared
 
     @Published var fromCoin: Coin = .example {
         didSet {
             updateFromBalance()
             updateQuote()
+            updateFee()
         }
     }
 
@@ -36,37 +36,18 @@ class SwapCryptoViewModel: ObservableObject {
         }
     }
 
-    @Published var coins: [Coin] = []
     @Published var toAmount: String = .empty
-    @Published var fromBalance: String = .empty
-    @Published var toBalance: String = .empty
     @Published var gas: String = .empty
-    @Published var currentIndex = 1
-    @Published var currentTitle = "send"
+
+    @Published var fromBalance: String = .zero
+    @Published var toBalance: String = .zero
 
     var feeString: String {
         return "\(gas) \(fromCoin.feeUnit)"
     }
-
-    func load(fromCoin: Coin, coins: [Coin]) async throws {
-        self.coins = coins.filter { $0.chain.isSwapSupported }
-        self.fromCoin = fromCoin
-        self.toCoin = coins.first!
-    }
-
-    // MARK: Progress
-
-    var progress: Double {
-        return Double(currentIndex) / Double(titles.count)
-    }
-
-    func moveToNextView() {
-        currentIndex += 1
-        currentTitle = titles[currentIndex-1]
-    }
 }
 
-private extension SwapCryptoViewModel {
+private extension SwapTransaction {
 
     enum Errors: Error {
         case swapQuoteParsingFailed
@@ -84,8 +65,17 @@ private extension SwapCryptoViewModel {
         Task { try await fetchQuotes() }
     }
 
+    func updateFee() {
+        Task { try await fetchFee() }
+    }
+
+    func fetchFee() async throws {
+        let response = try await feeService.fetchFee(for: fromCoin)
+        gas = response.gas
+    }
+
     func fetchQuotes() async throws {
-        guard let amount = Decimal(string: fromAmount), fromCoin.swapAsset != toCoin.swapAsset else {
+        guard let amount = Decimal(string: fromAmount), fromCoin != toCoin else {
             throw Errors.swapQuoteParsingFailed
         }
 
@@ -106,4 +96,35 @@ private extension SwapCryptoViewModel {
     func fetchBalance(coin: Coin) async throws -> String {
         return try await balanceService.balance(for: coin).coinBalance
     }
+
+    func swapAsset(for coin: Coin) -> THORChainSwapAsset {
+        return THORChainSwapAsset.with {
+            switch coin.chain {
+            case .thorChain:
+                $0.chain = .thor
+            case .ethereum:
+                $0.chain = .eth
+            case .avalanche:
+                $0.chain = .avax
+            case .bscChain:
+                $0.chain = .bsc
+            case .bitcoin:
+                $0.chain = .btc
+            case .bitcoinCash:
+                $0.chain = .bch
+            case .litecoin:
+                $0.chain = .ltc
+            case .dogecoin:
+                $0.chain = .doge
+            case .gaiaChain:
+                $0.chain = .atom
+            case .solana: break
+            }
+            $0.symbol = coin.ticker
+            if !coin.isNativeToken {
+                $0.tokenID = coin.contractAddress
+            }
+        }
+    }
 }
+

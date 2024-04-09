@@ -10,6 +10,7 @@ import Foundation
 class BalanceService {
     
     static let shared = BalanceService()
+
     private let utxo = BlockchairService.shared
     private let thor = ThorchainService.shared
     private let sol = SolanaService.shared

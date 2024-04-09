@@ -50,6 +50,10 @@ extension String {
     static var space: String {
         return " "
     }
+
+    static var zero: String {
+        return "0"
+    }
 }
 
 
