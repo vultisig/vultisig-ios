@@ -192,10 +192,10 @@ class SendCryptoVerifyViewModel: ObservableObject {
         } else if tx.coin.chain == .solana {
             do {
                 async let recentBlockHashPromise = sol.fetchRecentBlockhash()
-                async let calculatePrioritizationFeesPromise = sol.fetchAndCalculatePrioritizationFees(account: tx.coin.address)
+                async let highPriorityFeePromise = sol.fetchHighPriorityFee(account: tx.coin.address)
                 
                 let (recentBlockHash, feeInLamports) = try await recentBlockHashPromise
-                let (_, _, _, highPriorityFee) = try await calculatePrioritizationFeesPromise
+                let highPriorityFee = try await highPriorityFeePromise
                 
                 tx.gas = String(feeInLamports)
                 guard let recentBlockHash else {
@@ -210,7 +210,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
                     coin: tx.coin,
                     toAddress: tx.toAddress,
                     toAmount: tx.amountInLamports,
-                    chainSpecific: BlockChainSpecific.Solana(recentBlockHash: recentBlockHash, priorityFee: UInt64(highPriorityFee)),
+                    chainSpecific: BlockChainSpecific.Solana(recentBlockHash: recentBlockHash, priorityFee: highPriorityFee),
                     utxos: [],
                     memo: tx.memo, swapPayload: nil
                 )

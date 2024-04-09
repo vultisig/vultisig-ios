@@ -92,9 +92,7 @@ class SolanaService {
         return (blockHash,feeInLamports)
     }
     
-    // The implementation follows this example.
-    // https://docs.chainstack.com/docs/solana-estimate-priority-fees-getrecentprioritizationfees
-    func fetchAndCalculatePrioritizationFees(account: String) async throws -> (averageFeeIncludingZeros: Int, averageFeeExcludingZeros: Int, medianFee: Int, highPriorityFee: Int) {
+    func fetchHighPriorityFee(account: String) async throws -> UInt64 {
         
         struct PrioritizationFeeResponse: Decodable {
             let result: [FeeObject]
@@ -104,7 +102,6 @@ class SolanaService {
             let prioritizationFee: Int
             let slot: Int
         }
-        
         let requestBody: [String: Any] = [
             "jsonrpc": "2.0",
             "id": 1,
@@ -117,28 +114,14 @@ class SolanaService {
         let response = try decoder.decode(PrioritizationFeeResponse.self, from: data)
         
         let fees = response.result.map { $0.prioritizationFee }
-        let averageFeeIncludingZeros = fees.reduce(0, +) / fees.count
-        
         let nonZeroFees = fees.filter { $0 > 0 }
-        let averageFeeExcludingZeros = nonZeroFees.isEmpty ? 0 : nonZeroFees.reduce(0, +) / nonZeroFees.count
-        
-        let sortedNonZeroFees = nonZeroFees.sorted()
-        let medianFee: Int
-        if sortedNonZeroFees.isEmpty {
-            medianFee = 0
-        } else if sortedNonZeroFees.count % 2 == 0 {
-            let midIndex = sortedNonZeroFees.count / 2
-            medianFee = (sortedNonZeroFees[midIndex - 1] + sortedNonZeroFees[midIndex]) / 2
-        } else {
-            medianFee = sortedNonZeroFees[sortedNonZeroFees.count / 2]
-        }
         
         // Calculate the high priority fee
         let highPriorityFee = nonZeroFees.max() ?? 0
         
-        return (averageFeeIncludingZeros, averageFeeExcludingZeros, medianFee, highPriorityFee)
+        return UInt64(highPriorityFee)
     }
-    
+
     private func postRequest(with body: [String: Any]) async throws -> Data {
         var request = URLRequest(url: rpcURL)
         request.httpMethod = "POST"
