@@ -212,7 +212,7 @@ struct PeerDiscoveryView: View {
             viewModel.selections.insert(peer)
         }
         let totalSigners = viewModel.selections.count
-        if totalSigners >= 3 {
+        if totalSigners >= 2 {
             let threshold = Int(ceil(Double(totalSigners) * 2.0 / 3.0))
             viewModel.vaultDetail = "\(threshold)of\(totalSigners) Vault"
         }

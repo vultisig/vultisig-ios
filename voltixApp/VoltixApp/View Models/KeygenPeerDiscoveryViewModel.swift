@@ -73,7 +73,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         self.mediator.start(name: self.serviceName)
         self.logger.info("mediator server started")
         self.startSession()
-        self.participantDiscovery?.getParticipants(serverAddr: self.serverAddr, sessionID: self.sessionID)
+        self.participantDiscovery?.getParticipants(serverAddr: self.serverAddr, sessionID: self.sessionID,localParty: self.localPartyID)
     }
     
     func startKeygen() {

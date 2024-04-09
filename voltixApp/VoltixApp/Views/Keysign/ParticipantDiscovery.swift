@@ -17,7 +17,7 @@ class ParticipantDiscovery: ObservableObject {
         self.discoverying = false
     }
     
-    func getParticipants(serverAddr: String, sessionID: String) {
+    func getParticipants(serverAddr: String, sessionID: String, localParty: String) {
         let urlString = "\(serverAddr)/\(sessionID)"
         Task.detached {
             repeat {
@@ -33,6 +33,9 @@ class ParticipantDiscovery: ObservableObject {
                             let peers = try decoder.decode([String].self, from: data)
                             DispatchQueue.main.async {
                                 for peer in peers {
+                                    if peer == localParty {
+                                        continue
+                                    }
                                     if !self.peersFound.contains(peer) {
                                         self.peersFound.append(peer)
                                     }
