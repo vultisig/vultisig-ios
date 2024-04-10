@@ -7,7 +7,7 @@ import Swifter
 
 public final class Mediator {
     private let logger = Logger(subsystem: "Mediator", category: "communication")
-    let port: UInt16 = 8080
+    let port: UInt16 = 18080
     let server = HttpServer()
     let cache = MemoryStorage<String, Any>(config: MemoryConfig())
     private var service: NetService
