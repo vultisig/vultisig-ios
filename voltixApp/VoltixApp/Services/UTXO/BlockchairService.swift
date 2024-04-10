@@ -15,9 +15,7 @@ class BlockchairService {
     func fetchBlockchairData(address: String, coin: Coin) async throws -> Blockchair? {
         let coinName = coin.chain.name.lowercased()
         let key = "\(address)-\(coinName)"
-        guard let url = URL(string: Endpoint.blockchairDashboard(address, coinName)) else {
-            throw HelperError.runtimeError("invalid URL")
-        }
+        let url = Endpoint.blockchairDashboard(address, coinName)
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             print(String(data: data, encoding: .utf8))
@@ -41,7 +39,7 @@ class BlockchairService {
         if let cachedData: BigInt = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheFeePrice, timeInSeconds: 60*5) {
             return cachedData
         }
-        let urlString = Endpoint.blockchairStats(coin.chain.name.lowercased())
+        let urlString = Endpoint.blockchairStats(coin.chain.name.lowercased()).absoluteString
         let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
         if let result = Utils.extractResultFromJson(fromData: data, path: "data.suggested_transaction_fee_per_byte_sat"),
            let resultNumber = result as? NSNumber {

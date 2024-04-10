@@ -162,7 +162,6 @@
 		DE15729E2B70F284009BC7C5 /* JoinKeysignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE15729B2B70F284009BC7C5 /* JoinKeysignView.swift */; };
 		DE15729F2B70F284009BC7C5 /* KeysignDiscoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE15729C2B70F284009BC7C5 /* KeysignDiscoveryView.swift */; };
 		DE1572A02B70F284009BC7C5 /* KeysignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE15729D2B70F284009BC7C5 /* KeysignView.swift */; };
-		DE1572A22B70F873009BC7C5 /* Tss.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE1572A12B70F873009BC7C5 /* Tss.xcframework */; };
 		DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1572AB2B7174D3009BC7C5 /* Utils.swift */; };
 		DE28F5312B7B0FE900E33058 /* WalletCore in Frameworks */ = {isa = PBXBuildFile; productRef = DE28F5302B7B0FE900E33058 /* WalletCore */; };
 		DE28F5332B7B0FED00E33058 /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = DE28F5322B7B0FED00E33058 /* SwiftProtobuf */; };
@@ -196,6 +195,8 @@
 		DE6DCB932B97D81C009A39D5 /* THORChainSwaps.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6DCB922B97D81C009A39D5 /* THORChainSwaps.swift */; };
 		DE6DCB952B97D88A009A39D5 /* THORChainSwapPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6DCB942B97D88A009A39D5 /* THORChainSwapPayload.swift */; };
 		DE7CE6462B886B6300ED0BFB /* VoltixVaultDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE7CE6452B886B6300ED0BFB /* VoltixVaultDocument.swift */; };
+		DE8AD7402BC649A600339775 /* Tss.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE1572A12B70F873009BC7C5 /* Tss.xcframework */; };
+		DE8AD7432BC64A4C00339775 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = DE8AD73F2BC1600800339775 /* PrivacyInfo.xcprivacy */; };
 		DE9EB0EC2BA2CC3C001747D9 /* TssType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0EB2BA2CC3C001747D9 /* TssType.swift */; };
 		DE9EB0EE2BA2CF49001747D9 /* KeygenMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0ED2BA2CF49001747D9 /* KeygenMessage.swift */; };
 		DE9EB0F02BA2CFB7001747D9 /* ReshareMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0EF2BA2CFB7001747D9 /* ReshareMessage.swift */; };
@@ -463,9 +464,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				DE28F5312B7B0FE900E33058 /* WalletCore in Frameworks */,
-				DE1572A22B70F873009BC7C5 /* Tss.xcframework in Frameworks */,
 				DE49A19A2B660D8D000F3AFB /* Mediator in Frameworks */,
 				DEEDAEE82B8B50A4005170E8 /* BigInt in Frameworks */,
+				DE8AD7402BC649A600339775 /* Tss.xcframework in Frameworks */,
 				D9A22EB72B667C41007281BF /* Mediator in Frameworks */,
 				DE28F5332B7B0FED00E33058 /* SwiftProtobuf in Frameworks */,
 				DE49A1B52B6A1088000F3AFB /* CodeScanner in Frameworks */,
@@ -1270,6 +1271,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A633B1212B993BF5003D1738 /* Montserrat-Italic.ttf in Resources */,
+				DE8AD7432BC64A4C00339775 /* PrivacyInfo.xcprivacy in Resources */,
 				DE49A1712B65F6DB000F3AFB /* Preview Assets.xcassets in Resources */,
 				A6564A0B2B96A04D00E4B329 /* Localizable.strings in Resources */,
 				DE49A1942B65F7B6000F3AFB /* Mediator in Resources */,
