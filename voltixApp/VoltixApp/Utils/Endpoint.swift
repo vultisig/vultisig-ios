@@ -40,15 +40,15 @@ class Endpoint {
     }
     
     static func blockchairStats(_ chainName: String) -> String {
-        "http://45.76.120.223/blockchair/\(chainName)/stats"
+        "https://api.voltix.org/blockchair/\(chainName)/stats"
     }
     
     static func blockchairBroadcast(_ chainName: String) -> String {
-        "http://45.76.120.223/blockchair/\(chainName)/push/transaction"
+        "https://api.voltix.org/blockchair/\(chainName)/push/transaction"
     }
     
     static func blockchairDashboard(_ address: String, _ coinName: String) -> String {
-        "http://45.76.120.223/blockchair/\(coinName)/dashboards/address/\(address)"
+        "https://api.voltix.org/blockchair/\(coinName)/dashboards/address/\(address)"
     }
     static func ethereumLabelTxHash(_ value: String) -> String {
         "https://etherscan.io/tx/\(value)"
