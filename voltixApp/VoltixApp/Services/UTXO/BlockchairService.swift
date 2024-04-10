@@ -20,6 +20,7 @@ class BlockchairService {
         }
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
+            print(String(data: data, encoding: .utf8))
             let decoder = JSONDecoder()
             decoder.keyDecodingStrategy = .convertFromSnakeCase
             let decodedData = try decoder.decode(BlockchairResponse.self, from: data)

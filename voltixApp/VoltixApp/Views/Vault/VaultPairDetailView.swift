@@ -10,18 +10,6 @@ import SwiftUI
 struct VaultPairDetailView: View {
     let vault: Vault
     
-    struct DeviceInfo {
-        var Index: Int
-        var Signer: String
-        var PubKey: String
-        
-        init(Index: Int, Signer: String, PubKey: String) {
-            self.Index = Index
-            self.Signer = Signer
-            self.PubKey = PubKey
-        }
-    }
-    
     @State var devicesInfo: [DeviceInfo] = []
     @Environment(\.dismiss) var dismiss
     
@@ -48,14 +36,23 @@ struct VaultPairDetailView: View {
     var view: some View {
         VStack {
             content
-            Spacer()
         }
     }
     
     var content: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
-                Text("\(vault.getThreshold()) of \(vault.signers.count) Vault")
+                
+                VaultPairDetailCell(title: NSLocalizedString("vaultName", comment: ""), description: vault.name).frame(maxWidth: .infinity, alignment: .leading)
+                
+                VaultPairDetailCell(title: "Device Name", description: Utils.getLocalDeviceIdentity()).frame(maxWidth: .infinity, alignment: .leading)
+                
+                VaultPairDetailCell(title: "ECDSA", description: vault.pubKeyECDSA).frame(maxWidth: .infinity, alignment: .leading)
+                
+                VaultPairDetailCell(title: "EdDSA", description: vault.pubKeyEdDSA).frame(maxWidth: .infinity, alignment: .leading)
+                
+                
+                Text("\(vault.getThreshold() + 1) of \(vault.signers.count) Vault")
                     .font(.body14MontserratMedium)
                     .foregroundColor(.neutral0)
                     .padding(.vertical, 12)

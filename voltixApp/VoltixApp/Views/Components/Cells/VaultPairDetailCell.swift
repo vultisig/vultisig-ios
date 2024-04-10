@@ -16,7 +16,6 @@ struct VaultPairDetailCell: View {
     var body: some View {
         HStack(spacing: 15) {
             content
-            Spacer()
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 16)
@@ -43,5 +42,5 @@ struct VaultPairDetailCell: View {
 }
 
 #Preview {
-    EditVaultCell(title: "backup", description: "backupVault", icon: "arrow.down.circle.fill")
+    VaultPairDetailCell(title: "backup", description: "backupVault")
 }
