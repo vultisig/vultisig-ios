@@ -64,6 +64,7 @@ struct EditVaultView: View {
     var view: some View {
         ScrollView {
             VStack(spacing: 16) {
+                vaultDetails
                 backupVault
                 editVault
                 reshareVault
@@ -72,13 +73,21 @@ struct EditVaultView: View {
         }
     }
     
+    var vaultDetails: some View {
+        NavigationLink {
+            VaultPairDetailView(vault: vault)
+        } label: {
+            EditVaultCell(title: "vaultDetailsTitle", description: "vaultDetailsDescription", icon: "info")
+        }
+        .padding(.top, 30)
+    }
+    
     var backupVault: some View {
         Button {
             showVaultExporter = true
         } label: {
             EditVaultCell(title: "backup", description: "backupVault", icon: "arrow.down.circle.fill")
         }
-        .padding(.top, 30)
     }
     
     var editVault: some View {

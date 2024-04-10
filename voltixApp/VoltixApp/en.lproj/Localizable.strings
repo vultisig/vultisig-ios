@@ -23,6 +23,8 @@
 "vaults" = "Vaults";
 "main" = "Main";
 "address" = "Address";
+"vaultDetailsTitle" = "Details";
+"vaultDetailsDescription" = "View your vault details";
 "backup" = "Backup";
 "error" = "Error";
 "backupVault" = "Backup your vault";
