@@ -16,6 +16,7 @@ struct VaultPairDetailCell: View {
     var body: some View {
         HStack(spacing: 15) {
             content
+            Spacer()
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 16)
@@ -31,12 +32,13 @@ struct VaultPairDetailCell: View {
                 .font(.body16MenloBold)
                 .foregroundColor( .neutral0)
             
-            Text(NSLocalizedString(description, comment: ""))
-                .font(.body12Menlo)
-                .foregroundColor(.neutral0)
-                .fixedSize(horizontal: false, vertical: true)
-                .lineLimit(nil)
-            
+            if !description.isEmpty {
+                Text(NSLocalizedString(description, comment: ""))
+                    .font(.body12Menlo)
+                    .foregroundColor(.neutral0)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .lineLimit(nil)
+            }
         }
     }
 }

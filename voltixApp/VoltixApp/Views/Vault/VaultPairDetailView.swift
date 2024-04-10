@@ -60,7 +60,7 @@ struct VaultPairDetailView: View {
                     .frame(maxWidth: .infinity, alignment: .center)
                 
                 ForEach(devicesInfo, id: \.Signer) { device in
-                    VaultPairDetailCell(title: device.Signer, description: device.PubKey)
+                    VaultPairDetailCell(title: device.Signer, description: "")
                 }
             }
         }
