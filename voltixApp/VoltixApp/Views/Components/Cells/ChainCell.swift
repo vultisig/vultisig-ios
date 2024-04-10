@@ -9,55 +9,87 @@ import SwiftUI
 
 struct ChainCell: View {
     let group: GroupedChain
-    let vault: Vault
     
-    @State var isExpanded = false
+    @State var showAlert = false
+    @State var showQRcode = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            main
-            
-            if isExpanded {
-                cells
-            }
+        HStack(alignment: .top, spacing: 8) {
+            logo
+            content
         }
-        .padding(.vertical, 4)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 24)
         .background(Color.blue600)
         .cornerRadius(10)
         .padding(.horizontal, 16)
-        .clipped()
     }
     
-    var main: some View {
-        Button(action: {
-            expandCell()
-        }, label: {
-            card
-        })
-    }
-    
-    var card: some View {
-        ChainHeaderCell(group: group)
-    }
-    
-    var cells: some View {
-        ForEach(group.coins, id: \.self) { coin in
-            VStack(spacing: 0) {
-                Separator()
-                CoinCell(coin: coin, group: group, vault: vault)
-            }
+    var content: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            header
+            address
         }
     }
     
-    private func expandCell() {
-        withAnimation {
-            isExpanded.toggle()
+    var header: some View {
+        HStack(spacing: 8) {
+            title
+            Spacer()
+            quantity
+            balance
         }
+        .lineLimit(1)
+    }
+    
+    var logo: some View {
+        Image(group.logo)
+            .resizable()
+            .frame(width: 32, height: 32)
+            .cornerRadius(50)
+            .padding(.top, 10)
+    }
+    
+    var title: some View {
+        Text(group.name.capitalized)
+            .font(.body20MontserratSemiBold)
+            .foregroundColor(.neutral0)
+    }
+    
+    var address: some View {
+        Text(group.address)
+            .font(.body12Menlo)
+            .foregroundColor(.turquoise600)
+            .lineLimit(1)
+    }
+    
+    var quantity: some View {
+        Text(getQuantity())
+            .font(.body12Menlo)
+            .foregroundColor(.neutral100)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 2)
+            .background(Color.blue400)
+            .cornerRadius(50)
+    }
+    
+    var balance: some View {
+        Text("$12345")
+            .font(.body16MenloBold)
+            .foregroundColor(.neutral100)
+    }
+    
+    private func getQuantity() -> String {
+        guard group.coins.count>1 else {
+            return "1 " + NSLocalizedString("asset", comment: "")
+        }
+        
+        return "\(group.coins.count) \(NSLocalizedString("assets", comment: ""))"
     }
 }
 
 #Preview {
     ScrollView {
-        ChainCell(group: GroupedChain.example, vault: Vault.example)
+        ChainCell(group: GroupedChain.example)
     }
 }
