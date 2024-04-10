@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct CoinCell: View {
-    
     let coin: Coin
     let group: GroupedChain
     let vault: Vault
@@ -18,8 +17,10 @@ struct CoinCell: View {
 	
     var body: some View {
         cell
-            .task {
-                await setData()
+            .onAppear {
+                Task {
+                    await setData()
+                }
             }
     }
     
@@ -48,15 +49,20 @@ struct CoinCell: View {
     }
     
     var quantity: some View {
-        Text(coin.balanceString)
+        let quantity = coinViewModel.coinBalance ?? "0"
+        
+        return Text(quantity)
             .font(.body16Menlo)
             .foregroundColor(.neutral0)
     }
     
     var amount: some View {
-        Text(coin.balanceInFiat)
+        let balance = coinViewModel.balanceFiat
+        
+        return Text(balance ?? "0")
             .font(.body16MenloBold)
             .foregroundColor(.neutral0)
+            .redacted(reason: balance==nil ? .placeholder : [])
     }
     
     var buttons: some View {
@@ -88,10 +94,12 @@ struct CoinCell: View {
     
     var sendButton: some View {
         NavigationLink {
-            SendCryptoView(tx: sendTx,
-                           coinViewModel: coinViewModel,
-                           group: group,
-                           vault: vault)
+            SendCryptoView(
+                tx: sendTx,
+                coinViewModel: coinViewModel,
+                group: group,
+                vault: vault
+            )
         } label: {
             Text(NSLocalizedString("send", comment: "Send button text").uppercased())
                 .font(.body16MenloBold)
