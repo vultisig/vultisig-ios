@@ -1665,7 +1665,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = VoltixApp/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Volitix;
+				INFOPLIST_KEY_CFBundleDisplayName = Voltix;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
 				INFOPLIST_KEY_NSCameraUsageDescription = "We need to scan QR Codes.";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Secure your Vault using Face ID";
@@ -1715,7 +1715,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = VoltixApp/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Volitix;
+				INFOPLIST_KEY_CFBundleDisplayName = Voltix;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
 				INFOPLIST_KEY_NSCameraUsageDescription = "We need to scan QR Codes.";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Secure your Vault using Face ID";
