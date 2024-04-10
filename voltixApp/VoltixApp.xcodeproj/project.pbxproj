@@ -126,6 +126,7 @@
 		A6980C302BC0A11100F452AB /* SettingsCurrencySelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6980C2F2BC0A11100F452AB /* SettingsCurrencySelectionView.swift */; };
 		A6980C322BC0A2F700F452AB /* SettingsFAQView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6980C312BC0A2F700F452AB /* SettingsFAQView.swift */; };
 		A6980C342BC0A30900F452AB /* SettingFAQCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6980C332BC0A30900F452AB /* SettingFAQCell.swift */; };
+		A6BACF1A2BC705DA00084810 /* ChainDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BACF192BC705DA00084810 /* ChainDetailView.swift */; };
 		A6C0D55A2BB3AAA200156689 /* ChainHeaderCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D5592BB3AAA200156689 /* ChainHeaderCell.swift */; };
 		A6C0D55C2BB3AE8600156689 /* TransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D55B2BB3AE8600156689 /* TransactionsView.swift */; };
 		A6C0D55F2BB3B73900156689 /* UTXOTransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C0D55E2BB3B73900156689 /* UTXOTransactionsView.swift */; };
@@ -357,6 +358,7 @@
 		A6980C2F2BC0A11100F452AB /* SettingsCurrencySelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCurrencySelectionView.swift; sourceTree = "<group>"; };
 		A6980C312BC0A2F700F452AB /* SettingsFAQView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsFAQView.swift; sourceTree = "<group>"; };
 		A6980C332BC0A30900F452AB /* SettingFAQCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingFAQCell.swift; sourceTree = "<group>"; };
+		A6BACF192BC705DA00084810 /* ChainDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailView.swift; sourceTree = "<group>"; };
 		A6C0D5592BB3AAA200156689 /* ChainHeaderCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainHeaderCell.swift; sourceTree = "<group>"; };
 		A6C0D55B2BB3AE8600156689 /* TransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsView.swift; sourceTree = "<group>"; };
 		A6C0D55E2BB3B73900156689 /* UTXOTransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionsView.swift; sourceTree = "<group>"; };
@@ -966,6 +968,7 @@
 				A6F2C5482BA001460095C8E3 /* TokenSelectionView.swift */,
 				A66A0BD42BA124D00021A483 /* EditVaultView.swift */,
 				A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */,
+				A6BACF192BC705DA00084810 /* ChainDetailView.swift */,
 			);
 			path = Vault;
 			sourceTree = "<group>";
@@ -1374,6 +1377,7 @@
 				A6C0D55A2BB3AAA200156689 /* ChainHeaderCell.swift in Sources */,
 				DE1572962B70F254009BC7C5 /* TssMessenger.swift in Sources */,
 				46B60BBE2BBA811D0043EBBA /* AvalancheService.swift in Sources */,
+				A6BACF1A2BC705DA00084810 /* ChainDetailView.swift in Sources */,
 				A65649F52B966F3E00E4B329 /* DecodableDefault.swift in Sources */,
 				DE491CEF2B708260007C88D5 /* KeygenView.swift in Sources */,
 				A66A0BDB2BA13B570021A483 /* CoinsGrouped.swift in Sources */,
