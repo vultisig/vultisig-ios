@@ -31,6 +31,8 @@ extension Color {
     
     static let turquoise600 = Color(hex: "33E6BF")
     
+    static let mediumPurple = Color(hex: "9563FF")
+    
     static let destructive = Color(hex: "E45944")
     
     static let loadingBlue = Color(hex: "1DA7FA")
