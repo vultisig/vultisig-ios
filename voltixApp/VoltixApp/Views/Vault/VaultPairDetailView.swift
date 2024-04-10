@@ -8,10 +8,8 @@ import Foundation
 import SwiftUI
 
 struct VaultPairDetailView: View {
-    let vault: Vault
-    
+    let vault: Vault    
     @State var devicesInfo: [DeviceInfo] = []
-    @Environment(\.dismiss) var dismiss
     
     var body: some View {
         ZStack {
@@ -63,9 +61,6 @@ struct VaultPairDetailView: View {
         }
     }
 }
-
-
-
 
 #Preview {
     VaultPairDetailView(vault: Vault.example)
