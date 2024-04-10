@@ -8,6 +8,7 @@
 import SwiftUI
 import BigInt
 import WalletCore
+import Mediator
 
 @MainActor
 class SwapCryptoViewModel: ObservableObject, TransferViewModel {
@@ -61,6 +62,10 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             toAmountLimit: .zero
         )
         return KeysignPayloadFactory().buildSwap(coin: tx.fromCoin, swapPayload: swapPayload)
+    }
+
+    func stopMediator() {
+        Mediator.shared.stop()
     }
 }
 

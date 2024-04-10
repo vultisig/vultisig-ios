@@ -54,6 +54,8 @@ struct SwapCryptoView: View {
                 pairView
             case 4:
                 keysign
+            case 5:
+                doneView
             default:
                 errorView
             }
@@ -83,6 +85,24 @@ struct SwapCryptoView: View {
                 keysignView
             } else {
                 SendCryptoSigningErrorView()
+            }
+        }
+    }
+
+    var doneView: some View {
+        ZStack {
+            if let hash = swapViewModel.hash {
+                SendCryptoDoneView(vault:vault, hash: hash, explorerLink: Endpoint.getExplorerURL(
+                    chainTicker: tx.fromCoin.chain.ticker,
+                    txid: hash
+                ))
+            } else {
+                SendCryptoSigningErrorView()
+            }
+        }.onAppear() {
+            Task {
+                try await Task.sleep(for: .seconds(5))
+                swapViewModel.stopMediator()
             }
         }
     }
