@@ -62,10 +62,20 @@ struct VaultDetailView: View {
         Button {
             showSheet.toggle()
         } label: {
-            FilledButton(title: "chooseTokens", icon: "plus")
+            chooseChainButton
         }
         .padding(16)
         .padding(.bottom, 150)
+    }
+    
+    var chooseChainButton: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "plus")
+            Text(NSLocalizedString("chooseChains", comment: "Choose Chains"))
+            Spacer()
+        }
+        .font(.body16MenloBold)
+        .foregroundColor(.turquoise600)
     }
        
     var scanButton: some View {

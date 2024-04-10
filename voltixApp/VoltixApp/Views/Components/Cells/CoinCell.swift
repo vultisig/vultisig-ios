@@ -54,9 +54,7 @@ struct CoinCell: View {
     }
     
     var amount: some View {
-        let balance = coin.balanceInFiat
-        
-        return Text(balance)
+        Text(coin.balanceInFiat)
             .font(.body16MenloBold)
             .foregroundColor(.neutral0)
     }
