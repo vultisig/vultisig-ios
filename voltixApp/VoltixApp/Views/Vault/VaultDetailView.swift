@@ -36,7 +36,7 @@ struct VaultDetailView: View {
         }
         .sheet(isPresented: $showSheet, content: {
             NavigationView {
-                TokenSelectionView(showTokenSelectionSheet: $showSheet, vault: vault)
+                ChainSelectionView(showTokenSelectionSheet: $showSheet, vault: vault)
             }
         })
     }

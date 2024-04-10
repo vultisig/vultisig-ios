@@ -55,7 +55,16 @@ struct ChainDetailView: View {
     }
     
     var sendButton: some View {
-        getButton(for: "send", with: .turquoise600)
+        NavigationLink {
+//            SendCryptoView(
+//                tx: sendTx,
+//                coinViewModel: coinViewModel,
+//                group: group,
+//                vault: vault
+//            )
+        } label: {
+            getButton(for: "send", with: .turquoise600)
+        }
     }
     
     var swapButton: some View {

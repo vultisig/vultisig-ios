@@ -1,5 +1,5 @@
 //
-//  TokenSelectionView.swift
+//  ChainSelectionView.swift
 //  VoltixApp
 //
 //  Created by Amol Kumar on 2024-03-11.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct TokenSelectionView: View {
+struct ChainSelectionView: View {
     @Binding var showTokenSelectionSheet: Bool
     let vault: Vault
     
@@ -41,7 +41,7 @@ struct TokenSelectionView: View {
         ScrollView {
             VStack(spacing: 24) {
                 ForEach(viewModel.groupedAssets.keys.sorted(), id: \.self) { key in
-                    TokenSelectionSection(title: key, assets: viewModel.groupedAssets[key] ?? [])
+                    ChainSelectionCell(title: key, assets: viewModel.groupedAssets[key] ?? [])
                 }
             }
             .padding(.top, 30)
@@ -59,6 +59,6 @@ struct TokenSelectionView: View {
 }
 
 #Preview {
-    TokenSelectionView(showTokenSelectionSheet: .constant(true), vault: Vault.example)
+    ChainSelectionView(showTokenSelectionSheet: .constant(true), vault: Vault.example)
         .environmentObject(TokenSelectionViewModel())
 }
