@@ -28,7 +28,7 @@ struct VaultPairDetailView: View {
         }
         .onAppear {
             self.devicesInfo = vault.signers.enumerated().map { index, signer in
-                DeviceInfo(Index: index, Signer: signer, PubKey: vault.keyshares[index].pubkey)
+                DeviceInfo(Index: index, Signer: signer)
             }
         }
     }
@@ -45,12 +45,9 @@ struct VaultPairDetailView: View {
                 
                 VaultPairDetailCell(title: NSLocalizedString("vaultName", comment: ""), description: vault.name).frame(maxWidth: .infinity, alignment: .leading)
                 
-                VaultPairDetailCell(title: "Device Name", description: Utils.getLocalDeviceIdentity()).frame(maxWidth: .infinity, alignment: .leading)
+                VaultPairDetailCell(title: NSLocalizedString("ECDSA", comment: ""), description: vault.pubKeyECDSA).frame(maxWidth: .infinity, alignment: .leading)
                 
-                VaultPairDetailCell(title: "ECDSA", description: vault.pubKeyECDSA).frame(maxWidth: .infinity, alignment: .leading)
-                
-                VaultPairDetailCell(title: "EdDSA", description: vault.pubKeyEdDSA).frame(maxWidth: .infinity, alignment: .leading)
-                
+                VaultPairDetailCell(title: NSLocalizedString("EdDSA", comment: ""), description: vault.pubKeyEdDSA).frame(maxWidth: .infinity, alignment: .leading)
                 
                 Text("\(vault.getThreshold() + 1) of \(vault.signers.count) Vault")
                     .font(.body14MontserratMedium)
@@ -59,8 +56,8 @@ struct VaultPairDetailView: View {
                     .padding(.horizontal, 16)
                     .frame(maxWidth: .infinity, alignment: .center)
                 
-                ForEach(devicesInfo, id: \.Signer) { device in
-                    VaultPairDetailCell(title: device.Signer, description: "")
+                ForEach(devicesInfo, id: \.Index) { device in
+                    VaultPairDetailCell(title: device.Signer, description: .empty)
                 }
             }
         }

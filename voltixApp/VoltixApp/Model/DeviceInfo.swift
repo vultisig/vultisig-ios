@@ -11,11 +11,9 @@ import SwiftUI
 struct DeviceInfo {
     var Index: Int
     var Signer: String
-    var PubKey: String
-    
-    init(Index: Int, Signer: String, PubKey: String) {
+
+    init(Index: Int, Signer: String) {
         self.Index = Index
         self.Signer = Signer
-        self.PubKey = PubKey
     }
 }
