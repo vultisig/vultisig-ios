@@ -4,24 +4,24 @@ import SwiftUI
 class SolanaService {
     static let shared = SolanaService()
     private init() {}
-	
+    
     func solBalanceInFiat(balance: String, price: Double?, includeCurrencySymbol: Bool = true) -> String? {
         guard let fiatPrice = price else { return nil }
-		
+        
         let balanceSOL = Decimal(string:balance) ?? 0 / 1_000_000_000
         let balanceFiat = balanceSOL * Decimal(fiatPrice)
-		
+        
         return balanceFiat.formatToFiat()
     }
-	
+    
     func formattedSolBalance(balance: String?) -> String? {
         guard let solAmountInt = balance else {
             return "Balance not available"
         }
-		
+        
         let solAmount = Decimal(string:solAmountInt) ?? 0
         let balanceSOL = solAmount / 1_000_000_000.0 // Adjusted for SOL
-		
+        
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.maximumFractionDigits = 9
@@ -30,10 +30,10 @@ class SolanaService {
         formatter.decimalSeparator = "."
         return formatter.string(from: balanceSOL as NSNumber)
     }
-	
+    
     private let rpcURL = URL(string: Endpoint.solanaServiceAlchemyRpc)!
     private let jsonDecoder = JSONDecoder()
-	
+    
     func sendSolanaTransaction(encodedTransaction: String) async -> String? {
         do {
             let requestBody: [String: Any] = [
@@ -45,13 +45,13 @@ class SolanaService {
             let data = try await postRequest(with: requestBody)
             let response = try jsonDecoder.decode(SolanaRPCResponse<String>.self, from: data)
             return response.result
-			
+            
         } catch {
             print("Error sending transaction: \(error.localizedDescription)")
         }
         return nil
     }
-	
+    
     func getSolanaBalance(coin: Coin) async throws -> (rawBalance: String, priceRate: Double){
         var rawBalance = "0"
         let priceRateFiat = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
@@ -72,7 +72,7 @@ class SolanaService {
         }
         return (rawBalance,priceRateFiat)
     }
-	
+    
     func fetchRecentBlockhash() async throws -> (recentBlockHash: String?, feeInLamports: String) {
         var blockHash: String? = nil
         let feeInLamports = "7000"
@@ -91,7 +91,37 @@ class SolanaService {
         }
         return (blockHash,feeInLamports)
     }
-	
+    
+    func fetchHighPriorityFee(account: String) async throws -> UInt64 {
+        
+        struct PrioritizationFeeResponse: Decodable {
+            let result: [FeeObject]
+        }
+        
+        struct FeeObject: Decodable {
+            let prioritizationFee: Int
+            let slot: Int
+        }
+        let requestBody: [String: Any] = [
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "getRecentPrioritizationFees",
+            "params": [[account]]
+        ]
+        
+        let data = try await postRequest(with: requestBody)
+        let decoder = JSONDecoder()
+        let response = try decoder.decode(PrioritizationFeeResponse.self, from: data)
+        
+        let fees = response.result.map { $0.prioritizationFee }
+        let nonZeroFees = fees.filter { $0 > 0 }
+        
+        // Calculate the high priority fee
+        let highPriorityFee = nonZeroFees.max() ?? 0
+        
+        return UInt64(highPriorityFee)
+    }
+
     private func postRequest(with body: [String: Any]) async throws -> Data {
         var request = URLRequest(url: rpcURL)
         request.httpMethod = "POST"
