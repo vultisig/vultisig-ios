@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import WalletCore
 
 @MainActor
 class SwapTransaction: ObservableObject {
@@ -41,6 +40,8 @@ class SwapTransaction: ObservableObject {
 
     @Published var fromBalance: String = .zero
     @Published var toBalance: String = .zero
+
+    var quote: ThorchainSwapQuote?
 
     var feeString: String {
         return "\(gas) \(fromCoin.feeUnit)"
@@ -91,40 +92,12 @@ private extension SwapTransaction {
         }
 
         toAmount = (expected / Decimal(100_000_000)).description
+
+        self.quote = quote
     }
 
     func fetchBalance(coin: Coin) async throws -> String {
         return try await balanceService.balance(for: coin).coinBalance
-    }
-
-    func swapAsset(for coin: Coin) -> THORChainSwapAsset {
-        return THORChainSwapAsset.with {
-            switch coin.chain {
-            case .thorChain:
-                $0.chain = .thor
-            case .ethereum:
-                $0.chain = .eth
-            case .avalanche:
-                $0.chain = .avax
-            case .bscChain:
-                $0.chain = .bsc
-            case .bitcoin:
-                $0.chain = .btc
-            case .bitcoinCash:
-                $0.chain = .bch
-            case .litecoin:
-                $0.chain = .ltc
-            case .dogecoin:
-                $0.chain = .doge
-            case .gaiaChain:
-                $0.chain = .atom
-            case .solana: break
-            }
-            $0.symbol = coin.ticker
-            if !coin.isNativeToken {
-                $0.tokenID = coin.contractAddress
-            }
-        }
     }
 }
 

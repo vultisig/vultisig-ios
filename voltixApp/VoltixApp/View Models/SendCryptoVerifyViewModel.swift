@@ -43,7 +43,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
         
         if tx.coin.chain.chainType == ChainType.UTXO {
             do{
-                _ = try await utxo.fetchBlockchairData(address: tx.fromAddress, coin: tx.coin)
+                _ = try await utxo.fetchBlockchairData(coin: tx.coin)
             }catch{
                 print("fail to fetch utxo data from blockchair , error:\(error.localizedDescription)")
             }

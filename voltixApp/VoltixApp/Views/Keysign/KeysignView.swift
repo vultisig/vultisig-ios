@@ -13,9 +13,9 @@ struct KeysignView: View {
     let keysignType: KeyType
     let messsageToSign: [String]
     let keysignPayload: KeysignPayload? // need to pass it along to the next view
-    let sendCryptoViewModel: SendCryptoViewModel?
+    let transferViewModel: TransferViewModel?
     let encryptionKeyHex: String
-    
+
     let logger = Logger(subsystem: "keysign", category: "tss")
     
     @StateObject var viewModel = KeysignViewModel()
@@ -51,7 +51,7 @@ struct KeysignView: View {
     
     var keysignFinished: some View {
         ZStack {
-            if sendCryptoViewModel != nil {
+            if transferViewModel != nil {
                 forStartKeysign
             } else {
                 forJoinKeysign
@@ -80,12 +80,12 @@ struct KeysignView: View {
     }
     
     private func movetoDoneView() {
-        guard let sendCryptoViewModel = sendCryptoViewModel, !viewModel.txid.isEmpty else {
+        guard let transferViewModel = transferViewModel, !viewModel.txid.isEmpty else {
             return
         }
         
-        sendCryptoViewModel.moveToNextView()
-        sendCryptoViewModel.hash = viewModel.txid
+        transferViewModel.moveToNextView()
+        transferViewModel.hash = viewModel.txid
     }
 }
 
@@ -98,6 +98,6 @@ struct KeysignView: View {
         keysignType: .ECDSA,
         messsageToSign: ["message"],
         keysignPayload: nil,
-        sendCryptoViewModel: nil,
+        transferViewModel: nil,
         encryptionKeyHex: "")
 }

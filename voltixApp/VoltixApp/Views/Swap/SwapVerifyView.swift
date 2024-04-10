@@ -64,8 +64,8 @@ struct SwapVerifyView: View {
         } label: {
             FilledButton(title: "sign")
         }
-        .disabled(!verifyViewModel.validateForm())
-        .opacity(verifyViewModel.validateForm() ? 1 : 0.5)
+        .disabled(!verifyViewModel.isValidForm)
+        .opacity(verifyViewModel.isValidForm ? 1 : 0.5)
         .padding(40)
     }
 

@@ -8,7 +8,7 @@ import SwiftUI
 struct KeysignDiscoveryView: View {
     let vault: Vault
     let keysignPayload: KeysignPayload
-    @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
+    let transferViewModel: TransferViewModel
     @Binding var keysignView: KeysignView?
     
     @StateObject var participantDiscovery = ParticipantDiscovery()
@@ -170,7 +170,7 @@ struct KeysignDiscoveryView: View {
             isLoading = true
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                keysignView = viewModel.startKeysign(vault: vault, viewModel: sendCryptoViewModel)
+                keysignView = viewModel.startKeysign(vault: vault, viewModel: transferViewModel)
             }
         } label: {
             FilledButton(title: "sign")
@@ -201,5 +201,5 @@ struct KeysignDiscoveryView: View {
 }
 
 #Preview {
-    KeysignDiscoveryView(vault: Vault.example, keysignPayload: KeysignPayload.example, sendCryptoViewModel: SendCryptoViewModel(), keysignView: .constant(nil))
+    KeysignDiscoveryView(vault: Vault.example, keysignPayload: KeysignPayload.example, transferViewModel: SendCryptoViewModel(), keysignView: .constant(nil))
 }

@@ -12,6 +12,8 @@ struct SwapCryptoView: View {
     @StateObject var tx = SwapTransaction()
     @StateObject var swapViewModel = SwapCryptoViewModel()
 
+    @State var keysignView: KeysignView?
+
     let coin: Coin
     let vault: Vault
 
@@ -48,6 +50,10 @@ struct SwapCryptoView: View {
                 detailsView
             case 2:
                 verifyView
+            case 3:
+                pairView
+            case 4:
+                keysign
             default:
                 errorView
             }
@@ -60,6 +66,25 @@ struct SwapCryptoView: View {
 
     var verifyView: some View {
         SwapVerifyView(tx: tx, swapViewModel: swapViewModel)
+    }
+
+    var pairView: some View {
+        KeysignDiscoveryView(
+            vault: vault,
+            keysignPayload: swapViewModel.buildKeysignPayload(tx: tx),
+            transferViewModel: swapViewModel,
+            keysignView: $keysignView
+        )
+    }
+
+    var keysign: some View {
+        ZStack {
+            if let keysignView = keysignView {
+                keysignView
+            } else {
+                SendCryptoSigningErrorView()
+            }
+        }
     }
 
     var errorView: some View {

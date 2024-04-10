@@ -22,6 +22,7 @@ enum BlockChainSpecific: Codable, Hashable {
 }
 
 struct KeysignPayload: Codable, Hashable {
+
     let coin: Coin
     // only toAddress is required , from Address is our own address
     let toAddress: String
@@ -34,7 +35,28 @@ struct KeysignPayload: Codable, Hashable {
     let utxos: [UtxoInfo]
     let memo: String? // optional memo
     let swapPayload: THORChainSwapPayload?
-    
+
+    init(coin: Coin, toAddress: String, toAmount: Int64, chainSpecific: BlockChainSpecific, utxos: [UtxoInfo], memo: String?, swapPayload: THORChainSwapPayload? = nil) {
+        self.coin = coin
+        self.toAddress = toAddress
+        self.toAmount = toAmount
+        self.chainSpecific = chainSpecific
+        self.utxos = utxos
+        self.memo = memo
+        self.swapPayload = swapPayload
+    }
+
+    /// TODO: Swparate SwapPayload
+    init(coin: Coin, swapPayload: THORChainSwapPayload) {
+        self.coin = coin
+        self.swapPayload = swapPayload
+        self.toAddress = .empty
+        self.toAmount = .zero
+        self.chainSpecific = .THORChain(accountNumber: .zero, sequence: .zero)
+        self.utxos = []
+        self.memo = nil
+    }
+
     var toAmountString: String {
         if(coin.chainType == .EVM){
             return "\(Decimal(toAmount) / Decimal(EVMHelper.weiPerGWei)) \(coin.ticker)"
@@ -42,7 +64,7 @@ struct KeysignPayload: Codable, Hashable {
         return "\(Decimal(toAmount) / pow(10, Int(coin.decimals) ?? 0)) \(coin.ticker)"
     }
         
-    func getKeysignMessages(vault:Vault) -> Result<[String], Error> {
+    func getKeysignMessages(vault: Vault) -> Result<[String], Error> {
         // this is a swap
         if swapPayload != nil {
             let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
@@ -88,5 +110,5 @@ struct KeysignPayload: Codable, Hashable {
         }
     }
     
-    static let example = KeysignPayload(coin: Coin.example, toAddress: "toAddress", toAmount: 100, chainSpecific: BlockChainSpecific.UTXO(byteFee: 100), utxos: [], memo: "Memo", swapPayload: nil)
+    static let example = KeysignPayload(coin: Coin.example, toAddress: "toAddress", toAmount: 100, chainSpecific: BlockChainSpecific.UTXO(byteFee: 100), utxos: [], memo: "Memo")
 }

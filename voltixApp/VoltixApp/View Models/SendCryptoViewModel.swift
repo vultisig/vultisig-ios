@@ -12,7 +12,8 @@ import WalletCore
 import Mediator
 
 @MainActor
-class SendCryptoViewModel: ObservableObject {
+class SendCryptoViewModel: ObservableObject, TransferViewModel {
+    
     @Published var isLoading = false
     @Published var isValidAddress = false
     @Published var isValidForm = true
@@ -23,7 +24,6 @@ class SendCryptoViewModel: ObservableObject {
     @Published var coinBalance: String = "0"
     @Published var errorMessage = ""
     @Published var hash: String? = nil
-    
     @Published var thor = ThorchainService.shared
     @Published var sol: SolanaService = SolanaService.shared
     @Published var cryptoPrice = CryptoPriceService.shared
@@ -89,8 +89,7 @@ class SendCryptoViewModel: ObservableObject {
             toAmount: totalSelectedAmount,
             chainSpecific: BlockChainSpecific.UTXO(byteFee: tx.feeInSats),
             utxos: utxoInfo,
-            memo: tx.memo,
-            swapPayload: nil
+            memo: tx.memo
         )
         
         if let vault = ApplicationState.shared.currentVault {
@@ -300,7 +299,11 @@ class SendCryptoViewModel: ObservableObject {
         
         return isValidForm
     }
-    
+
+    func setHash(_ hash: String) {
+        self.hash = hash
+    }
+
     func moveToNextView() {
         currentIndex += 1
         currentTitle = titles[currentIndex-1]
