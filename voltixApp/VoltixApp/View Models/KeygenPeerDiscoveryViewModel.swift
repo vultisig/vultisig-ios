@@ -26,7 +26,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     @Published var sessionID = ""
     @Published var localPartyID = ""
     @Published var selections = Set<String>()
-    @Published var serverAddr = "http://127.0.0.1:8080"
+    @Published var serverAddr = "http://127.0.0.1:18080"
     @Published var vaultDetail = String.empty
     
     private let mediator = Mediator.shared

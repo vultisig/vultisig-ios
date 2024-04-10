@@ -20,7 +20,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
     
     private let mediator = Mediator.shared
     
-    let serverAddr = "http://127.0.0.1:8080"
+    let serverAddr = "http://127.0.0.1:18080"
     @Published var selections = Set<String>()
     @Published var sessionID = ""
     @Published var status = KeysignDiscoveryStatus.WaitingForDevices
