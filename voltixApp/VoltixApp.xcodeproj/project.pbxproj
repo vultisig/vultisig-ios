@@ -193,7 +193,6 @@
 		DE6DCB952B97D88A009A39D5 /* THORChainSwapPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6DCB942B97D88A009A39D5 /* THORChainSwapPayload.swift */; };
 		DE7CE6462B886B6300ED0BFB /* VoltixVaultDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE7CE6452B886B6300ED0BFB /* VoltixVaultDocument.swift */; };
 		DE8AD7402BC649A600339775 /* Tss.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE1572A12B70F873009BC7C5 /* Tss.xcframework */; };
-		DE8AD7412BC649A600339775 /* Tss.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DE1572A12B70F873009BC7C5 /* Tss.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		DE8AD7432BC64A4C00339775 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = DE8AD73F2BC1600800339775 /* PrivacyInfo.xcprivacy */; };
 		DE9EB0EC2BA2CC3C001747D9 /* TssType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0EB2BA2CC3C001747D9 /* TssType.swift */; };
 		DE9EB0EE2BA2CF49001747D9 /* KeygenMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0ED2BA2CF49001747D9 /* KeygenMessage.swift */; };
@@ -236,20 +235,6 @@
 			remoteInfo = voltixApp;
 		};
 /* End PBXContainerItemProxy section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		DE8AD7422BC649A600339775 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				DE8AD7412BC649A600339775 /* Tss.xcframework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		049BBB5D2B71E83D004C231F /* VoltixLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoltixLogo.swift; sourceTree = "<group>"; };
@@ -1168,7 +1153,6 @@
 				DE49A15F2B65F6D9000F3AFB /* Sources */,
 				DE49A1602B65F6D9000F3AFB /* Frameworks */,
 				DE49A1612B65F6D9000F3AFB /* Resources */,
-				DE8AD7422BC649A600339775 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -1246,7 +1230,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */;
+			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -1864,7 +1848,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */ = {
+		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DE49A1882B65F6DB000F3AFB /* Debug */,
