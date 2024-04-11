@@ -50,6 +50,8 @@ class THORChainSwaps {
                 return utxoHelper.getSigningInputData(keysignPayload: keysignPayload, signingInput: output.bitcoin)
             case .eth:
                 return EVMHelper.getEthereumHelper().getPreSignedInputData(signingInput: output.ethereum, keysignPayload: keysignPayload)
+            case .bsc:
+                return EVMHelper.getBSCHelper().getPreSignedInputData(signingInput: output.ethereum, keysignPayload: keysignPayload)
             default:
                 return .failure(HelperError.runtimeError("not support yet"))
             }
