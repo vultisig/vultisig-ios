@@ -18,7 +18,7 @@ public class CryptoPriceService: ObservableObject {
 	}
     
     var defaultCurrency: String {
-        return UserDefaults.standard.string(forKey: "currency") ?? SettingsCurrency.USD.description()
+        return UserPreferencesStore.currency ?? SettingsCurrency.USD.description()
     }
     
     

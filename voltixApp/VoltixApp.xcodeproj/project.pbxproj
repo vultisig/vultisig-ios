@@ -19,6 +19,7 @@
 		465B09A92B7C176700952DD9 /* SendTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09A82B7C176700952DD9 /* SendTransaction.swift */; };
 		465B09B52B7D8E7B00952DD9 /* CryptoPriceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */; };
 		465B09B72B7D909400952DD9 /* CryptoPrice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09B62B7D909400952DD9 /* CryptoPrice.swift */; };
+		468029292BC889DA005A9EEF /* UserPreferencesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 468029282BC889DA005A9EEF /* UserPreferencesStore.swift */; };
 		469ED3942B98E776008D4951 /* ThorchainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED3932B98E776008D4951 /* ThorchainService.swift */; };
 		469ED3992B98E896008D4951 /* CosmosBalanceResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED3982B98E896008D4951 /* CosmosBalanceResponse.swift */; };
 		469ED39B2B98E8B5008D4951 /* CosmosBalance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED39A2B98E8B5008D4951 /* CosmosBalance.swift */; };
@@ -255,6 +256,7 @@
 		465B09A82B7C176700952DD9 /* SendTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendTransaction.swift; sourceTree = "<group>"; };
 		465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoPriceService.swift; sourceTree = "<group>"; };
 		465B09B62B7D909400952DD9 /* CryptoPrice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoPrice.swift; sourceTree = "<group>"; };
+		468029282BC889DA005A9EEF /* UserPreferencesStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserPreferencesStore.swift; sourceTree = "<group>"; };
 		469ED3932B98E776008D4951 /* ThorchainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainService.swift; sourceTree = "<group>"; };
 		469ED3982B98E896008D4951 /* CosmosBalanceResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosBalanceResponse.swift; sourceTree = "<group>"; };
 		469ED39A2B98E8B5008D4951 /* CosmosBalance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosBalance.swift; sourceTree = "<group>"; };
@@ -697,6 +699,7 @@
 				A61BC8182BA2687D00484689 /* TokensStore.swift */,
 				A6966D212BA3E1B000903CA4 /* TextStore.swift */,
 				A6980C292BC0870000F452AB /* SettingsOptionsStore.swift */,
+				468029282BC889DA005A9EEF /* UserPreferencesStore.swift */,
 			);
 			path = Stores;
 			sourceTree = "<group>";
@@ -1253,7 +1256,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */;
+			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -1355,6 +1358,7 @@
 				469ED3942B98E776008D4951 /* ThorchainService.swift in Sources */,
 				A6966D262BA3E2CF00903CA4 /* OnboardingView3.swift in Sources */,
 				DE63AE4D2BB4E94E001BBE5C /* JSONRPCResponse.swift in Sources */,
+				468029292BC889DA005A9EEF /* UserPreferencesStore.swift in Sources */,
 				A65BA98A2BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift in Sources */,
 				46C8CBBF2BA777BF00E68E08 /* BlockchairService.swift in Sources */,
 				DE64A4CC2BA7F97500C342E3 /* KeysignDiscoveryViewModel.swift in Sources */,
@@ -1876,7 +1880,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */ = {
+		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DE49A1882B65F6DB000F3AFB /* Debug */,
