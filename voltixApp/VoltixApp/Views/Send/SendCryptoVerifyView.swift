@@ -120,7 +120,7 @@ struct SendCryptoVerifyView: View {
         HStack {
             Text(
                 NSLocalizedString(title, comment: "")
-                    .replacingOccurrences(of: "Fiat", with: CryptoPriceService.shared.defaultCurrency.uppercased())
+                    .replacingOccurrences(of: "Fiat", with: SettingsCurrency.current.rawValue)
             )
             Spacer()
             Text(value)

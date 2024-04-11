@@ -17,16 +17,11 @@ public class CryptoPriceService: ObservableObject {
 		return elapsedTime <= 3600 // 1 hour in seconds
 	}
     
-    var defaultCurrency: String {
-        return UserDefaults.standard.string(forKey: "currency") ?? SettingsCurrency.USD.description()
-    }
-    
-    
     func getPrice(priceProviderId: String) async -> Double {
-        print("Current currency: \(defaultCurrency)")
+        print("Current currency: \(SettingsCurrency.current.rawValue.lowercased())")
         
         let cryptoPrices = await fetchAllCryptoPrices()
-        return cryptoPrices?.prices[priceProviderId]?[defaultCurrency] ?? Double.zero
+        return cryptoPrices?.prices[priceProviderId]?[SettingsCurrency.current.rawValue.lowercased()] ?? Double.zero
     }
 	
 	func fetchAllCryptoPrices() async -> CryptoPrice? {
@@ -37,7 +32,7 @@ public class CryptoPriceService: ObservableObject {
 		
 		let coins = vault.coins.map { $0.priceProviderId }.joined(separator: ",")
 		
-        return await fetchCryptoPrices(for: coins, for: defaultCurrency)
+        return await fetchCryptoPrices(for: coins, for: SettingsCurrency.current.rawValue.lowercased())
 	}
 	
 	func fetchCryptoPrices(for coin: String = "bitcoin", for fiat: String = "usd") async -> CryptoPrice? {
