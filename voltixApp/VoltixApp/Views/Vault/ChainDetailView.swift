@@ -14,6 +14,8 @@ struct ChainDetailView: View {
     @State var showSheet = false
     @State var tokens: [Coin] = []
     
+    @StateObject var sendTx = SendTransaction()
+    
     @EnvironmentObject var viewModel: TokenSelectionViewModel
     
     var body: some View {
@@ -44,10 +46,14 @@ struct ChainDetailView: View {
             }
         })
         .onAppear {
-            setData()
+            Task {
+                await setData()
+            }
         }
         .onChange(of: vault) {
-            setData()
+            Task {
+                await setData()
+            }
         }
     }
     
@@ -79,14 +85,24 @@ struct ChainDetailView: View {
     
     var sendButton: some View {
         NavigationLink {
-            
+            SendCryptoView(
+                tx: sendTx,
+                group: group,
+                vault: vault
+            )
         } label: {
             getButton(for: "send", with: .turquoise600)
         }
     }
     
     var swapButton: some View {
-        getButton(for: "swap", with: .persianBlue200)
+        NavigationLink {
+            if let coin = group.coins.first {
+                SwapCryptoView(coin: coin, vault: vault)
+            }
+        } label: {
+            getButton(for: "swap", with: .persianBlue200)
+        }
     }
     
     var depositButton: some View {
@@ -132,10 +148,14 @@ struct ChainDetailView: View {
         .foregroundColor(.turquoise600)
     }
     
-    private func setData() {
+    private func setData() async {
         viewModel.setData(for: vault)
         tokens = viewModel.groupedAssets[group.name] ?? []
         tokens.removeFirst()
+        
+        if let coin = group.coins.first {
+            sendTx.reset(coin: coin)
+        }
     }
     
     private func getButton(for title: String, with color: Color) -> some View {

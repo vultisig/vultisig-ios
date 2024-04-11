@@ -17,7 +17,6 @@ enum Field: Hashable {
 struct SendCryptoDetailsView: View {
     @ObservedObject var tx: SendTransaction
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
-    @ObservedObject var coinViewModel: CoinViewModel
     let group: GroupedChain
     
     @State var toAddress = ""
@@ -167,7 +166,6 @@ struct SendCryptoDetailsView: View {
     SendCryptoDetailsView(
         tx: SendTransaction(),
         sendCryptoViewModel: SendCryptoViewModel(),
-        coinViewModel: CoinViewModel(),
         group: GroupedChain.example
     )
 }
