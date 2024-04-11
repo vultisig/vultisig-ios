@@ -9,7 +9,8 @@ import SwiftUI
 
 struct SettingsCurrencySelectionView: View {
     @Environment(\.dismiss) var dismiss
-    
+    @EnvironmentObject var settingsViewModel: SettingsViewModel
+
     var body: some View {
         ZStack {
             Background()
@@ -39,7 +40,7 @@ struct SettingsCurrencySelectionView: View {
                 } label: {
                     SettingSelectionCell(
                         title: currency.rawValue,
-                        isSelected: currency.description() == UserPreferencesStore.currency
+                        isSelected: currency.rawValue == settingsViewModel.selectedCurrency.rawValue
                     )
                 }
             }
@@ -49,7 +50,7 @@ struct SettingsCurrencySelectionView: View {
     }
     
     private func handleSelection(_ currency: SettingsCurrency) {
-        UserPreferencesStore.currency = currency.description()
+        settingsViewModel.selectedCurrency = currency
         dismiss()
     }
 }

@@ -64,7 +64,7 @@ struct SettingsView: View {
         NavigationLink {
             SettingsCurrencySelectionView()
         } label: {
-            SettingCell(title: "currency", icon: "dollarsign.circle", selection: UserPreferencesStore.currency.uppercased())
+            SettingCell(title: "currency", icon: "dollarsign.circle", selection: SettingsCurrency.current.rawValue)
         }
     }
     

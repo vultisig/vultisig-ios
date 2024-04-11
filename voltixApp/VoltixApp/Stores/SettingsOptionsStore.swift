@@ -34,20 +34,24 @@ enum SettingsLanguage: String, CaseIterable {
 }
 
 
+import Foundation
+
 enum SettingsCurrency: String, CaseIterable {
     case USD
     case AUD
     
-    func description() -> String {
-        let value: String
-        
-        switch self {
-        case .USD:
-            value = "usd"
-        case .AUD:
-            value = "aud"
+    static var current: SettingsCurrency {
+        get {
+            if let currencyString = UserDefaults.standard.string(forKey: "currency"),
+               let currency = SettingsCurrency(rawValue: currencyString) {
+                return currency
+            } else {
+                return .USD
+            }
         }
-        return value
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: "currency")
+        }
     }
 }
 

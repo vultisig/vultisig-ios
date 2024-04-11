@@ -16,7 +16,7 @@ extension Double {
         
         if includeCurrencySymbol {
             formatter.numberStyle = .currency
-            formatter.currencyCode = UserPreferencesStore.currency ?? SettingsCurrency.USD.description()
+            formatter.currencyCode = SettingsCurrency.current.rawValue
         } else {
             formatter.numberStyle = .decimal
             formatter.maximumFractionDigits = 2
