@@ -12,6 +12,9 @@ struct ChainDetailView: View {
     let vault: Vault
     
     @State var showSheet = false
+    @State var tokens: [Coin] = []
+    
+    @EnvironmentObject var viewModel: TokenSelectionViewModel
     
     var body: some View {
         ZStack {
@@ -32,9 +35,20 @@ struct ChainDetailView: View {
         }
         .sheet(isPresented: $showSheet, content: {
             NavigationView {
-                TokenSelectionView(showTokenSelectionSheet: $showSheet, vault: vault, group: group)
+                TokenSelectionView(
+                    showTokenSelectionSheet: $showSheet,
+                    vault: vault,
+                    group: group,
+                    tokens: tokens
+                )
             }
         })
+        .onAppear {
+            setData()
+        }
+        .onChange(of: vault) {
+            setData()
+        }
     }
     
     var view: some View {
@@ -42,7 +56,10 @@ struct ChainDetailView: View {
             VStack(spacing: 20) {
                 actions
                 content
-                addButton
+                
+                if tokens.count>0 {
+                    addButton
+                }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 30)
@@ -113,6 +130,12 @@ struct ChainDetailView: View {
         }
         .font(.body16MenloBold)
         .foregroundColor(.turquoise600)
+    }
+    
+    private func setData() {
+        viewModel.setData(for: vault)
+        tokens = viewModel.groupedAssets[group.name] ?? []
+        tokens.removeFirst()
     }
     
     private func getButton(for title: String, with color: Color) -> some View {
