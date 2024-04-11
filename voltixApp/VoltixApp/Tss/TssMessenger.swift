@@ -51,7 +51,7 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
         if let messageID = self.messageID {
             req.setValue(messageID, forHTTPHeaderField: "message_id")
         }
-        guard let encrypedBody = body.aesDecrypt(key: self.encryptionKeyHex) else {
+        guard let encrypedBody = body.aesEncrypt(key: self.encryptionKeyHex) else {
             logger.error("fail to encrypt message body")
             return
         }
