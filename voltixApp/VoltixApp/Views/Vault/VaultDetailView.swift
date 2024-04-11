@@ -36,7 +36,7 @@ struct VaultDetailView: View {
         }
         .sheet(isPresented: $showSheet, content: {
             NavigationView {
-                ChainSelectionView(showTokenSelectionSheet: $showSheet, vault: vault)
+                ChainSelectionView(showChainSelectionSheet: $showSheet, vault: vault)
             }
         })
     }
@@ -53,7 +53,7 @@ struct VaultDetailView: View {
         LazyVStack(spacing: 16) {
             ForEach(viewModel.coinsGroupedByChains, id: \.id) { group in
                 NavigationLink {
-                    ChainDetailView(title: group.name, group: group, vault: vault)
+                    ChainDetailView(group: group, vault: vault)
                 } label: {
                     ChainCell(group: group)
                 }

@@ -1,15 +1,18 @@
 //
-//  ChainSelectionView.swift
+//  TokenSelectionView.swift
 //  VoltixApp
 //
-//  Created by Amol Kumar on 2024-03-11.
+//  Created by Amol Kumar on 2024-04-11.
 //
 
 import SwiftUI
 
-struct ChainSelectionView: View {
-    @Binding var showChainSelectionSheet: Bool
+struct TokenSelectionView: View {
+    @Binding var showTokenSelectionSheet: Bool
     let vault: Vault
+    let group: GroupedChain
+    
+    @State var tokens: [Coin] = []
     
     @EnvironmentObject var viewModel: TokenSelectionViewModel
     
@@ -19,11 +22,11 @@ struct ChainSelectionView: View {
             view
         }
         .navigationBarBackButtonHidden(true)
-        .navigationTitle(NSLocalizedString("chooseChains", comment: "Choose Chains"))
+        .navigationTitle(NSLocalizedString("chooseTokens", comment: "Choose Tokens"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                NavigationBackSheetButton(showSheet: $showChainSelectionSheet)
+                NavigationBackSheetButton(showSheet: $showTokenSelectionSheet)
             }
         }
         .onAppear {
@@ -40,8 +43,8 @@ struct ChainSelectionView: View {
     var view: some View {
         ScrollView {
             VStack(spacing: 24) {
-                ForEach(viewModel.groupedAssets.keys.sorted(), id: \.self) { key in
-                    ChainSelectionCell(title: key, assets: viewModel.groupedAssets[key] ?? [])
+                ForEach(tokens, id: \.self) { token in
+                    TokenSelectionCell(asset: token)
                 }
             }
             .padding(.top, 30)
@@ -51,6 +54,7 @@ struct ChainSelectionView: View {
     
     private func setData() {
         viewModel.setData(for: vault)
+        tokens = viewModel.groupedAssets[group.name] ?? []
     }
     
     private func saveAssets() {
@@ -59,6 +63,6 @@ struct ChainSelectionView: View {
 }
 
 #Preview {
-    ChainSelectionView(showChainSelectionSheet: .constant(true), vault: Vault.example)
+    TokenSelectionView(showTokenSelectionSheet: .constant(true), vault: Vault.example, group: GroupedChain.example)
         .environmentObject(TokenSelectionViewModel())
 }

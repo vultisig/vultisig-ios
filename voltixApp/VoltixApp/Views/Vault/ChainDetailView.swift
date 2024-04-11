@@ -8,9 +8,10 @@
 import SwiftUI
 
 struct ChainDetailView: View {
-    let title: String
     let group: GroupedChain
     let vault: Vault
+    
+    @State var showSheet = false
     
     var body: some View {
         ZStack {
@@ -18,7 +19,7 @@ struct ChainDetailView: View {
             view
         }
         .navigationBarBackButtonHidden(true)
-        .navigationTitle(NSLocalizedString(title, comment: ""))
+        .navigationTitle(NSLocalizedString(group.name, comment: ""))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -29,6 +30,11 @@ struct ChainDetailView: View {
                 NavigationRefreshButton()
             }
         }
+        .sheet(isPresented: $showSheet, content: {
+            NavigationView {
+                TokenSelectionView(showTokenSelectionSheet: $showSheet, vault: vault, group: group)
+            }
+        })
     }
     
     var view: some View {
@@ -36,7 +42,7 @@ struct ChainDetailView: View {
             VStack(spacing: 20) {
                 actions
                 content
-                chooseTokensButton
+                addButton
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 30)
@@ -56,12 +62,7 @@ struct ChainDetailView: View {
     
     var sendButton: some View {
         NavigationLink {
-//            SendCryptoView(
-//                tx: sendTx,
-//                coinViewModel: coinViewModel,
-//                group: group,
-//                vault: vault
-//            )
+            
         } label: {
             getButton(for: "send", with: .turquoise600)
         }
@@ -96,6 +97,14 @@ struct ChainDetailView: View {
         }
     }
     
+    var addButton: some View {
+        Button {
+            showSheet.toggle()
+        } label: {
+            chooseTokensButton
+        }
+    }
+    
     var chooseTokensButton: some View {
         HStack(spacing: 10) {
             Image(systemName: "plus")
@@ -118,5 +127,5 @@ struct ChainDetailView: View {
 }
 
 #Preview {
-    ChainDetailView(title: "Ethereum", group: GroupedChain.example, vault: Vault.example)
+    ChainDetailView(group: GroupedChain.example, vault: Vault.example)
 }
