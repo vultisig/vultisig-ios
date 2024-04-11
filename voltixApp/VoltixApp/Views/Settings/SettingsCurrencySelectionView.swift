@@ -8,8 +8,6 @@
 import SwiftUI
 
 struct SettingsCurrencySelectionView: View {
-    @EnvironmentObject var settingsViewModel: SettingsViewModel
-    
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
@@ -58,5 +56,4 @@ struct SettingsCurrencySelectionView: View {
 
 #Preview {
     SettingsCurrencySelectionView()
-        .environmentObject(SettingsViewModel())
 }
