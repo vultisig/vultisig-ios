@@ -41,7 +41,7 @@ class KeysignViewModel: ObservableObject {
     var messsageToSign: [String]
     var vault: Vault
     var keysignPayload: KeysignPayload?
-    var encryptionKey: String
+    var encryptionKeyHex: String
     
     init() {
         self.keysignCommittee = []
@@ -51,7 +51,7 @@ class KeysignViewModel: ObservableObject {
         self.keysignType = .ECDSA
         self.messsageToSign = []
         self.keysignPayload = nil
-        self.encryptionKey = ""
+        self.encryptionKeyHex = ""
     }
     
     func setData(keysignCommittee: [String],
@@ -61,7 +61,7 @@ class KeysignViewModel: ObservableObject {
                  messagesToSign: [String],
                  vault: Vault,
                  keysignPayload: KeysignPayload?,
-                 encryptionKey: String
+                 encryptionKeyHex: String
     ) {
         self.keysignCommittee = keysignCommittee
         self.mediatorURL = mediatorURL
@@ -70,8 +70,8 @@ class KeysignViewModel: ObservableObject {
         self.messsageToSign = messagesToSign
         self.vault = vault
         self.keysignPayload = keysignPayload
-        self.encryptionKey = encryptionKey
-        self.messagePuller = MessagePuller(encryptionKey: encryptionKey)
+        self.encryptionKeyHex = encryptionKeyHex
+        self.messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex)
     }
     func getTransactionExplorerURL(txid: String) -> String{
         guard let keysignPayload else {
@@ -86,7 +86,10 @@ class KeysignViewModel: ObservableObject {
         for msg in self.messsageToSign {
             logger.info("signing message:\(msg)")
             let msgHash = Utils.getMessageBodyHash(msg: msg)
-            self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: msgHash,encryptionKey: encryptionKey)
+            self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL,
+                                                 sessionID: self.sessionID,
+                                                 messageID: msgHash,
+                                                 encryptionKeyHex: encryptionKeyHex)
             self.stateAccess = LocalStateAccessorImpl(vault: self.vault)
             var err: NSError?
             // keysign doesn't need to recreate preparams

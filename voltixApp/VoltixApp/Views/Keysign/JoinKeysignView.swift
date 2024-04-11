@@ -87,7 +87,7 @@ struct JoinKeysignView: View {
             messsageToSign: viewModel.keysignMessages,
             keysignPayload: viewModel.keysignPayload,
             sendCryptoViewModel: nil,
-            encryptionKey: viewModel.encryptionKey
+            encryptionKeyHex: viewModel.encryptionKeyHex
         )
     }
     

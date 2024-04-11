@@ -7,7 +7,6 @@
 
 import OSLog
 import CommonCrypto
-import Security
 
 extension Data{
     func sha256() -> Data {
@@ -18,13 +17,5 @@ extension Data{
         }
         
         return Data(hash)
-    }
-    func toSecKey(isPublic: Bool) -> SecKey? {
-        let options: [String: Any] = [kSecAttrKeyType as String: kSecAttrKeyTypeRSA,
-                                      kSecAttrKeyClass as String: isPublic ? kSecAttrKeyClassPublic : kSecAttrKeyClassPrivate,
-                                      kSecAttrKeySizeInBits as String: 2048,
-                                      kSecReturnPersistentRef as String: true]
-        let cfdata = self as CFData
-        return SecKeyCreateWithData(cfdata, options as CFDictionary, nil)
     }
 }

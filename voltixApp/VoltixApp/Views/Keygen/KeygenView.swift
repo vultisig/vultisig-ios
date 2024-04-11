@@ -20,7 +20,7 @@ struct KeygenView: View {
     let vaultOldCommittee: [String]
     let mediatorURL: String
     let sessionID: String
-    let encryptionKey: String
+    let encryptionKeyHex: String
     @StateObject var viewModel = KeygenViewModel()
     
     var body: some View {
@@ -69,7 +69,7 @@ struct KeygenView: View {
                               vaultOldCommittee: vaultOldCommittee,
                               mediatorURL: mediatorURL,
                               sessionID: sessionID,
-                              encryptionKey: encryptionKey)
+                              encryptionKeyHex: encryptionKeyHex)
         }
         .task {
             await viewModel.startKeygen(context: context)
@@ -128,5 +128,5 @@ private struct StatusText: View {
                vaultOldCommittee: [],
                mediatorURL: "",
                sessionID: "",
-               encryptionKey: "")
+               encryptionKeyHex: "")
 }

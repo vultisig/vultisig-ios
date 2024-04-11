@@ -21,7 +21,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     var tssType: TssType
     var vault: Vault
     var participantDiscovery: ParticipantDiscovery?
-    var encryptionKey: String?
+    var encryptionKeyHex: String?
     
     @Published var status = PeerDiscoveryStatus.WaitingForDevices
     @Published var serviceName = ""
@@ -39,7 +39,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         self.vault = Vault(name: "New Vault")
         self.status = .WaitingForDevices
         self.participantDiscovery = nil
-        self.encryptionKey = Encryption.getEncryptionKey()
+        self.encryptionKeyHex = Encryption.getEncryptionKey()
     }
     
     func setData(vault: Vault, tssType: TssType, participantDiscovery: ParticipantDiscovery) {
@@ -114,16 +114,16 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     }
     
     func getQrImage(size: CGFloat) -> Image {
-        guard let encryptionKey else {return Image(systemName: "xmark")}
+        guard let encryptionKeyHex else {return Image(systemName: "xmark")}
         do {
             let jsonEncoder = JSONEncoder()
             var data: Data
             switch tssType {
             case .Keygen:
-                let km = keygenMessage(sessionID: sessionID, hexChainCode: vault.hexChainCode, serviceName: serviceName,encryptionKeyHex: encryptionKey)
+                let km = keygenMessage(sessionID: sessionID, hexChainCode: vault.hexChainCode, serviceName: serviceName,encryptionKeyHex: encryptionKeyHex)
                 data = try jsonEncoder.encode(PeerDiscoveryPayload.Keygen(km))
             case .Reshare:
-                let reshareMsg = ReshareMessage(sessionID: sessionID, hexChainCode: vault.hexChainCode, serviceName: serviceName, pubKeyECDSA: vault.pubKeyECDSA, oldParties: vault.signers,encryptionKeyHex: encryptionKey)
+                let reshareMsg = ReshareMessage(sessionID: sessionID, hexChainCode: vault.hexChainCode, serviceName: serviceName, pubKeyECDSA: vault.pubKeyECDSA, oldParties: vault.signers,encryptionKeyHex: encryptionKeyHex)
                 data = try jsonEncoder.encode(PeerDiscoveryPayload.Reshare(reshareMsg))
             }
             return Utils.getQrImage(data: data, size: size)

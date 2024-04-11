@@ -14,7 +14,7 @@ struct KeysignView: View {
     let messsageToSign: [String]
     let keysignPayload: KeysignPayload? // need to pass it along to the next view
     let sendCryptoViewModel: SendCryptoViewModel?
-    let encryptionKey: String
+    let encryptionKeyHex: String
     
     let logger = Logger(subsystem: "keysign", category: "tss")
     
@@ -76,7 +76,7 @@ struct KeysignView: View {
             messagesToSign: self.messsageToSign,
             vault: self.vault,
             keysignPayload: self.keysignPayload,
-            encryptionKey: encryptionKey)
+            encryptionKeyHex: encryptionKeyHex)
     }
     
     private func movetoDoneView() {
@@ -99,5 +99,5 @@ struct KeysignView: View {
         messsageToSign: ["message"],
         keysignPayload: nil,
         sendCryptoViewModel: nil,
-        encryptionKey: "")
+        encryptionKeyHex: "")
 }

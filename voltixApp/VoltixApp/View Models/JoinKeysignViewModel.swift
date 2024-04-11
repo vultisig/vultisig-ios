@@ -31,7 +31,7 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var errorMsg: String = ""
     @Published var keysignPayload: KeysignPayload? = nil
     @Published var serviceName = ""
-    var encryptionKey: String = ""
+    var encryptionKeyHex: String = ""
     
     init() {
         self.vault = Vault(name: "New Vault")
@@ -158,7 +158,7 @@ class JoinKeysignViewModel: ObservableObject {
                     self.sessionID = keysignMsg.sessionID
                     self.keysignPayload = keysignMsg.payload
                     self.serviceName = keysignMsg.serviceName
-                    self.encryptionKey = keysignMsg.encryptionKey
+                    self.encryptionKeyHex = keysignMsg.encryptionKeyHex
                     self.logger.info("QR code scanned successfully. Session ID: \(self.sessionID)")
                     self.prepareKeysignMessages(keysignPayload: keysignMsg.payload)
                 } catch {

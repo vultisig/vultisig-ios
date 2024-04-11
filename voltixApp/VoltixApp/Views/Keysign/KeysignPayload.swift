@@ -9,7 +9,7 @@ struct KeysignMessage: Codable, Hashable {
     let sessionID: String
     let serviceName: String
     let payload: KeysignPayload
-    let encryptionKey: String
+    let encryptionKeyHex: String
 }
 
 enum BlockChainSpecific: Codable, Hashable {

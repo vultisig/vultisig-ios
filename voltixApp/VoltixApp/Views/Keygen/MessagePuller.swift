@@ -9,14 +9,14 @@ import OSLog
 import Tss
 
 class MessagePuller: ObservableObject {
-    let encryptionKey: String
+    let encryptionKeyHex: String
     var cache = NSCache<NSString, AnyObject>()
     private var pollingInboundMessages = true
     private let logger = Logger(subsystem: "message-puller", category: "communication")
     private var currentTask: Task<Void,Error>? = nil
     
-    init(encryptionKey:String){
-        self.encryptionKey = encryptionKey
+    init(encryptionKeyHex:String){
+        self.encryptionKeyHex = encryptionKeyHex
     }
     
     func stop() {
@@ -68,7 +68,7 @@ class MessagePuller: ObservableObject {
                             continue
                         }
                         self.logger.debug("Got message from: \(msg.from), to: \(msg.to), key:\(key)")
-                        let decryptedBody = msg.body.aesDecrypt(key: self.encryptionKey)
+                        let decryptedBody = msg.body.aesDecrypt(key: self.encryptionKeyHex)
                         try tssService.applyData(decryptedBody)
                         self.cache.setObject(NSObject(), forKey: key)
                         Task {

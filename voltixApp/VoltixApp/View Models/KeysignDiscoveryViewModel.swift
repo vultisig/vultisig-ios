@@ -18,7 +18,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
     var vault: Vault
     var keysignPayload: KeysignPayload
     var participantDiscovery: ParticipantDiscovery?
-    var encryptionKey: String?
+    var encryptionKeyHex: String?
     private let mediator = Mediator.shared
     
     let serverAddr = "http://127.0.0.1:18080"
@@ -34,7 +34,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         self.vault = Vault(name: "New Vault")
         self.keysignPayload = KeysignPayload(coin: Coin.example, toAddress: "", toAmount: 0, chainSpecific: BlockChainSpecific.UTXO(byteFee: 0), utxos: [], memo: nil, swapPayload: nil)
         self.participantDiscovery = nil
-        self.encryptionKey = Encryption.getEncryptionKey()
+        self.encryptionKeyHex = Encryption.getEncryptionKey()
     }
     
     func setData(vault: Vault, keysignPayload: KeysignPayload, participantDiscovery: ParticipantDiscovery) {
@@ -88,7 +88,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
             messsageToSign: keysignMessages, // need to figure out all the prekeysign hashes
             keysignPayload: keysignPayload,
             sendCryptoViewModel: viewModel,
-            encryptionKey: encryptionKey!
+            encryptionKeyHex: encryptionKeyHex ?? ""
         )
     }
     
@@ -115,14 +115,14 @@ class KeysignDiscoveryViewModel: ObservableObject {
     }
     
     func getQrImage(size: CGFloat) -> Image {
-        guard let encryptionKey = self.encryptionKey else {
+        guard let encryptionKeyHex = self.encryptionKeyHex else {
             logger.error("encryption key is nil")
             return Image(systemName: "xmark")
         }
         let keysignMsg = KeysignMessage(sessionID: sessionID,
                                         serviceName: serviceName,
                                         payload: keysignPayload,
-                                        encryptionKey: encryptionKey)
+                                        encryptionKeyHex: encryptionKeyHex)
         do {
             let encoder = JSONEncoder()
             let jsonData = try encoder.encode(keysignMsg)

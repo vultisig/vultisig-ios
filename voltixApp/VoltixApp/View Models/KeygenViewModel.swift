@@ -28,7 +28,7 @@ class KeygenViewModel: ObservableObject {
     var vaultOldCommittee: [String]
     var mediatorURL: String
     var sessionID: String
-    var encryptionKey: String
+    var encryptionKeyHex: String
     
     @Published var isLinkActive = false
     @Published var keygenError: String = ""
@@ -46,18 +46,18 @@ class KeygenViewModel: ObservableObject {
         self.vaultOldCommittee = []
         self.mediatorURL = ""
         self.sessionID = ""
-        self.encryptionKey = ""
+        self.encryptionKeyHex = ""
     }
     
-    func setData(vault: Vault, tssType: TssType, keygenCommittee: [String], vaultOldCommittee: [String], mediatorURL: String, sessionID: String, encryptionKey: String) {
+    func setData(vault: Vault, tssType: TssType, keygenCommittee: [String], vaultOldCommittee: [String], mediatorURL: String, sessionID: String, encryptionKeyHex: String) {
         self.vault = vault
         self.tssType = tssType
         self.keygenCommittee = keygenCommittee
         self.vaultOldCommittee = vaultOldCommittee
         self.mediatorURL = mediatorURL
         self.sessionID = sessionID
-        self.encryptionKey = encryptionKey
-        messagePuller = MessagePuller(encryptionKey: encryptionKey)
+        self.encryptionKeyHex = encryptionKeyHex
+        messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex)
     }
     
     func delaySwitchToMain() {
@@ -75,7 +75,10 @@ class KeygenViewModel: ObservableObject {
         do {
             self.vault.signers = self.keygenCommittee
             // Create keygen instance, it takes time to generate the preparams
-            let messengerImp = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: nil,encryptionKey: encryptionKey)
+            let messengerImp = TssMessengerImpl(mediatorUrl: self.mediatorURL, 
+                                                sessionID: self.sessionID,
+                                                messageID: nil,
+                                                encryptionKeyHex: encryptionKeyHex)
             let stateAccessorImp = LocalStateAccessorImpl(vault: self.vault)
             self.tssMessenger = messengerImp
             self.stateAccess = stateAccessorImp
@@ -87,10 +90,10 @@ class KeygenViewModel: ObservableObject {
                 return
             }
             self.messagePuller?.pollMessages(mediatorURL: self.mediatorURL,
-                                            sessionID: self.sessionID,
-                                            localPartyKey: self.vault.localPartyID,
-                                            tssService: tssService,
-                                            messageID: nil)
+                                             sessionID: self.sessionID,
+                                             localPartyKey: self.vault.localPartyID,
+                                             tssService: tssService,
+                                             messageID: nil)
             switch self.tssType {
             case .Keygen:
                 self.status = .KeygenECDSA

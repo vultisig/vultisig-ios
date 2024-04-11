@@ -35,7 +35,7 @@ class JoinKeygenViewModel: ObservableObject {
     @Published var localPartyID: String = ""
     @Published var serviceName = ""
     @Published var errorMessage = ""
-    var encryptionKey: String = ""
+    var encryptionKeyHex: String = ""
     
     init() {
         self.vault = Vault(name: "New Vault")
@@ -150,14 +150,14 @@ class JoinKeygenViewModel: ObservableObject {
                     hexChainCode = keysignMsg.hexChainCode
                     vault.hexChainCode = hexChainCode
                     serviceName = keysignMsg.serviceName
-                    encryptionKey = keysignMsg.encryptionKeyHex
+                    encryptionKeyHex = keysignMsg.encryptionKeyHex
                 case .Reshare(let reshareMsg):
                     tssType = .Reshare
                     oldCommittee = reshareMsg.oldParties
                     sessionID = reshareMsg.sessionID
                     hexChainCode = reshareMsg.hexChainCode
                     serviceName = reshareMsg.serviceName
-                    encryptionKey = reshareMsg.encryptionKeyHex
+                    encryptionKeyHex = reshareMsg.encryptionKeyHex
                     // this means the vault is new , and it join the reshare to become the new committee
                     if vault.pubKeyECDSA.isEmpty {
                         vault.hexChainCode = reshareMsg.hexChainCode
