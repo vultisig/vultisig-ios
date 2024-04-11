@@ -8,7 +8,6 @@
 import Foundation
 
 class BalanceService {
-    
     static let shared = BalanceService()
 
     private let utxo = BlockchairService.shared

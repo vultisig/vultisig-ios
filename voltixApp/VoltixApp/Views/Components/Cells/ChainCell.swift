@@ -101,9 +101,12 @@ struct ChainCell: View {
     }
     
     var balance: some View {
-        Text("$12345")
+        let balance = viewModel.balanceInFiat
+        
+        return Text(balance ?? "$0.00000")
             .font(.body16MenloBold)
             .foregroundColor(.neutral100)
+            .redacted(reason: balance==nil ? .placeholder : [])
     }
     
     private func setData() async {

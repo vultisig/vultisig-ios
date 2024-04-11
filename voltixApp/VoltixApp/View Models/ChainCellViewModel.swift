@@ -9,7 +9,7 @@ import Foundation
 
 @MainActor
 class ChainCellViewModel: ObservableObject {
-    @Published var balance: String? = nil
+    @Published var balanceInFiat: String? = nil
     @Published var quantity: String? = nil
     
     func loadData(for group: GroupedChain) async {
@@ -17,7 +17,7 @@ class ChainCellViewModel: ObservableObject {
             await loadQuantity(for: coin)
         }
         
-        
+        await loadBalance(for: group)
     }
     
     func loadQuantity(for coin: Coin) async {
@@ -37,5 +37,30 @@ class ChainCellViewModel: ObservableObject {
         }
         
         return "\(group.coins.count) \(NSLocalizedString("assets", comment: ""))"
+    }
+    
+    func loadBalance(for group: GroupedChain) async {
+        balanceInFiat = nil
+        var total: Decimal = 0.0
+        
+        for coin in group.coins {
+            let balance = await getCoinBalance(for: coin)
+            print(balance)
+            total += balance
+        }
+        
+        balanceInFiat = total.formatToFiat()
+    }
+    
+    private func getCoinBalance(for coin: Coin) async -> Decimal {
+        do {
+            let balanceService = BalanceService()
+            let balance = try await balanceService.balance(for: coin)
+            return Decimal(string: balance.balanceFiat) ?? 0
+        }
+        catch {
+            print("error fetching data: \(error.localizedDescription)")
+        }
+        return 0
     }
 }
