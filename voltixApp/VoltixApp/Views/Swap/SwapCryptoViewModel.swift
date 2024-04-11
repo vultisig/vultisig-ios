@@ -63,6 +63,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
 
     func buildKeysignPayload(tx: SwapTransaction) -> KeysignPayload {
+        let amount = Decimal(string: tx.fromAmount) ?? 0
         let swapPayload = THORChainSwapPayload(
             fromAddress: tx.fromCoin.address,
             fromAsset: swapAsset(for: tx.fromCoin),
@@ -70,7 +71,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             toAddress: tx.toCoin.address,
             vaultAddress: quote!.inboundAddress,
             routerAddress: nil,
-            fromAmount: tx.fromAmount,
+            fromAmount: (amount * 100_000_000).description,
             toAmountLimit: .zero
         )
         return KeysignPayloadFactory().buildSwap(coin: tx.fromCoin, swapPayload: swapPayload)
