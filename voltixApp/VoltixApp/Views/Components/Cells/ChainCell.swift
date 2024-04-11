@@ -13,6 +13,8 @@ struct ChainCell: View {
     @State var showAlert = false
     @State var showQRcode = false
     
+    @StateObject var viewModel = ChainCellViewModel()
+    
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
             logo
@@ -23,6 +25,16 @@ struct ChainCell: View {
         .background(Color.blue600)
         .cornerRadius(10)
         .padding(.horizontal, 16)
+        .onAppear {
+            Task {
+                await setData()
+            }
+        }
+        .onChange(of: group.coins) { oldValue, newValue in
+            Task {
+                await setData()
+            }
+        }
     }
     
     var content: some View {
@@ -36,7 +48,13 @@ struct ChainCell: View {
         HStack(spacing: 8) {
             title
             Spacer()
-            quantity
+            
+            if group.coins.count>1 {
+                count
+            } else {
+                quantity
+            }
+            
             balance
         }
         .lineLimit(1)
@@ -63,8 +81,8 @@ struct ChainCell: View {
             .lineLimit(1)
     }
     
-    var quantity: some View {
-        Text(getQuantity())
+    var count: some View {
+        Text(viewModel.getGroupCount(group))
             .font(.body12Menlo)
             .foregroundColor(.neutral100)
             .padding(.horizontal, 8)
@@ -73,18 +91,23 @@ struct ChainCell: View {
             .cornerRadius(50)
     }
     
+    var quantity: some View {
+        let quantity = viewModel.quantity
+        
+        return Text(quantity ?? "0.00000")
+            .font(.body12Menlo)
+            .foregroundColor(.neutral100)
+            .redacted(reason: quantity==nil ? .placeholder : [])
+    }
+    
     var balance: some View {
         Text("$12345")
             .font(.body16MenloBold)
             .foregroundColor(.neutral100)
     }
     
-    private func getQuantity() -> String {
-        guard group.coins.count>1 else {
-            return "1 " + NSLocalizedString("asset", comment: "")
-        }
-        
-        return "\(group.coins.count) \(NSLocalizedString("assets", comment: ""))"
+    private func setData() async {
+        await viewModel.loadData(for: group)
     }
 }
 
