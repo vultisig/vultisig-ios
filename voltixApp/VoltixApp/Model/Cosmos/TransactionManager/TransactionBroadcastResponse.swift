@@ -16,16 +16,9 @@ class CosmosTransactionBroadcastResponse: Codable {
 }
 
 class CosmosTransactionBroadcastTx: Codable {
-    var height: String?
     var txhash: String?
-    var codespace: String?
-    var code: Int?
-    var data: String?
-    var rawLog: String?
-    var gasWanted: String?
-    var gasUsed: String?
-    
+    var code: Int?    
     enum CodingKeys: String, CodingKey {
-        case height, txhash, codespace, code, data, rawLog = "raw_log", gasWanted = "gas_wanted", gasUsed = "gas_used"
+        case txhash, code
     }
 }

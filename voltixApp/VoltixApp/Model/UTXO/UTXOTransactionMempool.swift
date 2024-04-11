@@ -34,7 +34,7 @@ class UTXOTransactionMempool: Codable {
             return address
         }
     }
-
+    
     var receivedFrom: [String] {
         guard isReceived else { return [] }
         return vin.compactMap { $0.prevout?.scriptpubkey_address }

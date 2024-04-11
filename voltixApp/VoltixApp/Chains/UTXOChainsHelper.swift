@@ -38,10 +38,6 @@ class UTXOChainsHelper {
         }
     }
     
-    func validateAddress(_ address: String) -> Bool {
-        return coin.validate(address: address)
-    }
-    
     func getCoin() -> Result<Coin, Error> {
         var ticker = "BTC"
         switch coin {
