@@ -188,7 +188,7 @@ struct PeerDiscoveryView: View {
             },
             mediatorURL: viewModel.serverAddr,
             sessionID: viewModel.sessionID,
-            encryptionKeyHex: viewModel.encryptionKey ?? "")
+            encryptionKeyHex: viewModel.encryptionKeyHex ?? "")
     }
     
     var failureText: some View {

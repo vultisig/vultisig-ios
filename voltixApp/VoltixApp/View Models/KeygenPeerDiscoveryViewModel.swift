@@ -7,8 +7,6 @@ import Foundation
 import Mediator
 import OSLog
 import SwiftUI
-import Security
-import CommonCrypto
 
 enum PeerDiscoveryStatus {
     case WaitingForDevices
