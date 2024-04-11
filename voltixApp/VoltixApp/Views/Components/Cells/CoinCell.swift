@@ -43,15 +43,21 @@ struct CoinCell: View {
     }
     
     var quantity: some View {
-        Text(coin.balanceString)
+        let balanceString = coinViewModel.coinBalance
+        
+        return Text(balanceString ?? "1000")
             .font(.body16Menlo)
             .foregroundColor(.neutral0)
+            .redacted(reason: balanceString==nil ? .placeholder : [])
     }
     
     var amount: some View {
-        Text(coin.balanceInFiat)
+        let balanceInFiat = coinViewModel.balanceFiat
+        
+        return Text(balanceInFiat ?? "1000")
             .font(.body16MenloBold)
             .foregroundColor(.neutral0)
+            .redacted(reason: balanceInFiat==nil ? .placeholder : [])
     }
     
     private func setData() async {
