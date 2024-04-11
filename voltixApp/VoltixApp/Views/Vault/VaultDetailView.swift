@@ -43,7 +43,12 @@ struct VaultDetailView: View {
     
     var view: some View {
         ScrollView {
-            list
+            if viewModel.coinsGroupedByChains.count>1 {
+                list
+            } else {
+                emptyList
+            }
+            
             addButton
         }
         .opacity(showVaultsList ? 0 : 1)
@@ -60,6 +65,11 @@ struct VaultDetailView: View {
             }
         }
         .padding(.top, 30)
+    }
+    
+    var emptyList: some View {
+        ErrorMessage(text: "noChainSelected")
+            .padding(.vertical, 50)
     }
     
     var addButton: some View {
