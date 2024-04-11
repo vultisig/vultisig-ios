@@ -31,7 +31,10 @@ struct SwapCryptoView: View {
             }
         }
         .task {
-            swapViewModel.load(tx: tx, fromCoin: coin, coins: vault.coins)
+            await swapViewModel.load(tx: tx, fromCoin: coin, coins: vault.coins)
+        }
+        .alert(isPresented: swapViewModel.showError) {
+            alert
         }
     }
     
@@ -109,6 +112,12 @@ struct SwapCryptoView: View {
 
     var errorView: some View {
         SendCryptoSigningErrorView()
+    }
+
+    var alert: Alert {
+        Alert(title: Text(NSLocalizedString("error", comment: "")),
+              message: Text(swapViewModel.error?.localizedDescription ?? .empty),
+              dismissButton: .default(Text(NSLocalizedString("ok", comment: ""))))
     }
 }
 
