@@ -126,6 +126,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
             self.quote = quote
         } catch {
+            self.quote = nil
             print("Swap quote error: \(error.localizedDescription)")
         }
     }
