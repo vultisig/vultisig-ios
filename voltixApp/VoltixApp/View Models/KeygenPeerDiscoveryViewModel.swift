@@ -7,6 +7,8 @@ import Foundation
 import Mediator
 import OSLog
 import SwiftUI
+import Security
+import CommonCrypto
 
 enum PeerDiscoveryStatus {
     case WaitingForDevices
@@ -19,6 +21,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     var tssType: TssType
     var vault: Vault
     var participantDiscovery: ParticipantDiscovery?
+    var encryptionKey: String? = nil
     
     @Published var status = PeerDiscoveryStatus.WaitingForDevices
     @Published var serviceName = ""
@@ -67,7 +70,9 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             self.vault.localPartyID = self.localPartyID
         }
         self.selections.insert(self.localPartyID)
+        
     }
+    
     
     func startDiscovery() {
         self.mediator.start(name: self.serviceName)
@@ -81,13 +86,13 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         self.status = .Keygen
         self.participantDiscovery?.stop()
     }
-
+    
     func stopMediator() {
         self.logger.info("mediator server stopped")
         self.participantDiscovery?.stop()
         self.mediator.stop()
     }
-
+    
     private func startSession() {
         let urlString = "\(self.serverAddr)/\(self.sessionID)"
         let body = [self.localPartyID]
@@ -108,15 +113,16 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     }
     
     func getQrImage(size: CGFloat) -> Image {
+        guard let encryptionKey = Encryption.getEncryptionKey() else {return Image(systemName: "xmark")}
         do {
             let jsonEncoder = JSONEncoder()
             var data: Data
             switch tssType {
             case .Keygen:
-                let km = keygenMessage(sessionID: sessionID, hexChainCode: vault.hexChainCode, serviceName: serviceName)
+                let km = keygenMessage(sessionID: sessionID, hexChainCode: vault.hexChainCode, serviceName: serviceName,encryptionKeyHex: encryptionKey)
                 data = try jsonEncoder.encode(PeerDiscoveryPayload.Keygen(km))
             case .Reshare:
-                let reshareMsg = ReshareMessage(sessionID: sessionID, hexChainCode: vault.hexChainCode, serviceName: serviceName, pubKeyECDSA: vault.pubKeyECDSA, oldParties: vault.signers)
+                let reshareMsg = ReshareMessage(sessionID: sessionID, hexChainCode: vault.hexChainCode, serviceName: serviceName, pubKeyECDSA: vault.pubKeyECDSA, oldParties: vault.signers,encryptionKeyHex: encryptionKey)
                 data = try jsonEncoder.encode(PeerDiscoveryPayload.Reshare(reshareMsg))
             }
             return Utils.getQrImage(data: data, size: size)
@@ -125,4 +131,6 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             return Image(systemName: "xmark")
         }
     }
+    
+    
 }

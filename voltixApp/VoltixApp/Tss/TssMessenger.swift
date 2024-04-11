@@ -16,12 +16,14 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
     // messageID will be used during keysign , because for UTXO related chains , it usually need to sign multiple UTXOs
     // at the same time , add message id here to avoid messages belongs to differet keysign message messed with each other
     let messageID: String?
+    let encryptionKey: String
 
     var counter: Int64 = 1
-    init(mediatorUrl: String, sessionID: String, messageID: String?) {
+    init(mediatorUrl: String, sessionID: String, messageID: String?,encryptionKey: String) {
         self.mediatorUrl = mediatorUrl
         self.sessionID = sessionID
         self.messageID = messageID
+        self.encryptionKey = encryptionKey
     }
 
     func send(_ fromParty: String?, to: String?, body: String?) throws {
