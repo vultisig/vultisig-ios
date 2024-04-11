@@ -5,32 +5,6 @@ class SolanaService {
     static let shared = SolanaService()
     private init() {}
     
-    func solBalanceInFiat(balance: String, price: Double?, includeCurrencySymbol: Bool = true) -> String? {
-        guard let fiatPrice = price else { return nil }
-        
-        let balanceSOL = Decimal(string:balance) ?? 0 / 1_000_000_000
-        let balanceFiat = balanceSOL * Decimal(fiatPrice)
-        
-        return balanceFiat.formatToFiat()
-    }
-    
-    func formattedSolBalance(balance: String?) -> String? {
-        guard let solAmountInt = balance else {
-            return "Balance not available"
-        }
-        
-        let solAmount = Decimal(string:solAmountInt) ?? 0
-        let balanceSOL = solAmount / 1_000_000_000.0 // Adjusted for SOL
-        
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.maximumFractionDigits = 9
-        formatter.minimumFractionDigits = 0
-        formatter.groupingSeparator = ""
-        formatter.decimalSeparator = "."
-        return formatter.string(from: balanceSOL as NSNumber)
-    }
-    
     private let rpcURL = URL(string: Endpoint.solanaServiceAlchemyRpc)!
     private let jsonDecoder = JSONDecoder()
     

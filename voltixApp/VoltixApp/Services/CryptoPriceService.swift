@@ -37,8 +37,6 @@ public class CryptoPriceService: ObservableObject {
 		
 		let coins = vault.coins.map { $0.priceProviderId }.joined(separator: ",")
 		
-        
-        
         return await fetchCryptoPrices(for: coins, for: defaultCurrency)
 	}
 	

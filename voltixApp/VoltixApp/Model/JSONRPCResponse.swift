@@ -8,8 +8,6 @@
 import Foundation
 
 struct JSONRPCResponse: Decodable {
-    let id: Int
-    let jsonrpc: String
     let result: String?
     let error: JSONRPCError?
 }

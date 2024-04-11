@@ -369,19 +369,4 @@ class KeysignViewModel: ObservableObject {
         }
         
     }
-    
-    func handleBitcoinTransactionError(err: UTXOTransactionError) {
-        switch err {
-        case .invalidURL:
-            print("Invalid URL.")
-        case .httpError(let statusCode):
-            print("HTTP Error with status code: \(statusCode).")
-        case .apiError(let message):
-            print("API Error: \(message)")
-        case .unexpectedResponse:
-            print("Unexpected response from the server.")
-        case .unknown(let unknownError):
-            print("An unknown error occurred: \(unknownError.localizedDescription)")
-        }
-    }
 }

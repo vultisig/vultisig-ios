@@ -13,8 +13,6 @@ struct UTXOTransactionsView: View {
     @State var tx: SendTransaction? = nil
     @StateObject var utxoTransactionsService: UTXOTransactionsService = .init()
     
-    @EnvironmentObject var appState: ApplicationState
-    
     var body: some View {
         view
             .onAppear {
