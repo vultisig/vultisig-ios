@@ -187,8 +187,8 @@ struct PeerDiscoveryView: View {
             vaultOldCommittee: vault.signers.filter { viewModel.selections.contains($0)
             },
             mediatorURL: viewModel.serverAddr,
-            sessionID: viewModel.sessionID
-        )
+            sessionID: viewModel.sessionID,
+            encryptionKey: viewModel.encryptionKey ?? "")
     }
     
     var failureText: some View {

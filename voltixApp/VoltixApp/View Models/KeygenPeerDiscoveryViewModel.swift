@@ -21,7 +21,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     var tssType: TssType
     var vault: Vault
     var participantDiscovery: ParticipantDiscovery?
-    var encryptionKey: String? = nil
+    var encryptionKey: String?
     
     @Published var status = PeerDiscoveryStatus.WaitingForDevices
     @Published var serviceName = ""
@@ -39,6 +39,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         self.vault = Vault(name: "New Vault")
         self.status = .WaitingForDevices
         self.participantDiscovery = nil
+        self.encryptionKey = Encryption.getEncryptionKey()
     }
     
     func setData(vault: Vault, tssType: TssType, participantDiscovery: ParticipantDiscovery) {
@@ -113,7 +114,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     }
     
     func getQrImage(size: CGFloat) -> Image {
-        guard let encryptionKey = Encryption.getEncryptionKey() else {return Image(systemName: "xmark")}
+        guard let encryptionKey else {return Image(systemName: "xmark")}
         do {
             let jsonEncoder = JSONEncoder()
             var data: Data

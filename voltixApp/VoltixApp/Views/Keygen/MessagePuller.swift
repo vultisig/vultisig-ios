@@ -9,10 +9,15 @@ import OSLog
 import Tss
 
 class MessagePuller: ObservableObject {
+    let encryptionKey: String
     var cache = NSCache<NSString, AnyObject>()
     private var pollingInboundMessages = true
     private let logger = Logger(subsystem: "message-puller", category: "communication")
     private var currentTask: Task<Void,Error>? = nil
+    
+    init(encryptionKey:String){
+        self.encryptionKey = encryptionKey
+    }
     
     func stop() {
         pollingInboundMessages = false
@@ -63,7 +68,8 @@ class MessagePuller: ObservableObject {
                             continue
                         }
                         self.logger.debug("Got message from: \(msg.from), to: \(msg.to), key:\(key)")
-                        try tssService.applyData(msg.body)
+                        let decryptedBody = msg.body.aesDecrypt(key: self.encryptionKey)
+                        try tssService.applyData(decryptedBody)
                         self.cache.setObject(NSObject(), forKey: key)
                         Task {
                             // delete it from a task, since we don't really care about the result

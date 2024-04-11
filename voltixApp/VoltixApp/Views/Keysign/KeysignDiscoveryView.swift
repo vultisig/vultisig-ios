@@ -114,7 +114,7 @@ struct KeysignDiscoveryView: View {
                 .font(.body18MenloBold)
                 .multilineTextAlignment(.center)
             
-            getQrImage(size: 100)
+            viewModel.getQrImage(size: 100)
                 .resizable()
                 .scaledToFit()
                 .padding()
@@ -181,21 +181,7 @@ struct KeysignDiscoveryView: View {
         .padding(40)
     }
     
-    private func getQrImage(size: CGFloat) -> Image {
-        let keysignMsg = KeysignMessage(sessionID: viewModel.sessionID, serviceName: viewModel.serviceName, payload: keysignPayload)
-        
-        do {
-            let encoder = JSONEncoder()
-            let jsonData = try encoder.encode(keysignMsg)
-            
-            return Utils.getQrImage(data: jsonData, size: size)
-        } catch {
-            logger.error("fail to encode keysign messages to json,error:\(error)")
-        }
-        
-        return Image(systemName: "xmark")
-    }
-    
+  
     func handleSelection(_ peer: String) {
         isLoading = true
         

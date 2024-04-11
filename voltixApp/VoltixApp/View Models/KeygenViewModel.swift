@@ -28,6 +28,7 @@ class KeygenViewModel: ObservableObject {
     var vaultOldCommittee: [String]
     var mediatorURL: String
     var sessionID: String
+    var encryptionKey: String
     
     @Published var isLinkActive = false
     @Published var keygenError: String = ""
@@ -36,7 +37,7 @@ class KeygenViewModel: ObservableObject {
     private var tssService: TssServiceImpl? = nil
     private var tssMessenger: TssMessengerImpl? = nil
     private var stateAccess: LocalStateAccessorImpl? = nil
-    private var messagePuller = MessagePuller()
+    private var messagePuller: MessagePuller? = nil
     
     init() {
         self.vault = Vault(name: "New Vault")
@@ -45,17 +46,20 @@ class KeygenViewModel: ObservableObject {
         self.vaultOldCommittee = []
         self.mediatorURL = ""
         self.sessionID = ""
+        self.encryptionKey = ""
     }
     
-    func setData(vault: Vault, tssType: TssType, keygenCommittee: [String], vaultOldCommittee: [String], mediatorURL: String, sessionID: String) {
+    func setData(vault: Vault, tssType: TssType, keygenCommittee: [String], vaultOldCommittee: [String], mediatorURL: String, sessionID: String, encryptionKey: String) {
         self.vault = vault
         self.tssType = tssType
         self.keygenCommittee = keygenCommittee
         self.vaultOldCommittee = vaultOldCommittee
         self.mediatorURL = mediatorURL
         self.sessionID = sessionID
+        self.encryptionKey = encryptionKey
+        messagePuller = MessagePuller(encryptionKey: encryptionKey)
     }
-
+    
     func delaySwitchToMain() {
         Task {
             // when user didn't touch it for 5 seconds , automatically goto home screen
@@ -63,15 +67,15 @@ class KeygenViewModel: ObservableObject {
             self.isLinkActive = true
         }
     }
-
+    
     func startKeygen(context: ModelContext) async {
         defer {
-            self.messagePuller.stop()
+            self.messagePuller?.stop()
         }
         do {
             self.vault.signers = self.keygenCommittee
             // Create keygen instance, it takes time to generate the preparams
-            let messengerImp = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: nil)
+            let messengerImp = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: nil,encryptionKey: encryptionKey)
             let stateAccessorImp = LocalStateAccessorImpl(vault: self.vault)
             self.tssMessenger = messengerImp
             self.stateAccess = stateAccessorImp
@@ -82,7 +86,7 @@ class KeygenViewModel: ObservableObject {
                 self.status = .KeygenFailed
                 return
             }
-            self.messagePuller.pollMessages(mediatorURL: self.mediatorURL,
+            self.messagePuller?.pollMessages(mediatorURL: self.mediatorURL,
                                             sessionID: self.sessionID,
                                             localPartyKey: self.vault.localPartyID,
                                             tssService: tssService,
@@ -152,7 +156,7 @@ class KeygenViewModel: ObservableObject {
             return
         }
     }
-
+    
     private func createTssInstance(messenger: TssMessengerProtocol,
                                    localStateAccessor: TssLocalStateAccessorProtocol) async throws -> TssServiceImpl?
     {
