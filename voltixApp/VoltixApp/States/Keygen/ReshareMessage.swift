@@ -11,4 +11,5 @@ struct ReshareMessage: Codable {
     let serviceName: String
     let pubKeyECDSA: String
     let oldParties: [String]
+    let encryptionKeyHex: String
 }
