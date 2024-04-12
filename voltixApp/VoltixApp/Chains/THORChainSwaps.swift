@@ -81,7 +81,10 @@ class THORChainSwaps {
                     let hashes = TransactionCompiler.preImageHashes(coinType: .ethereum, txInputData: inputData)
                     let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
                     return .success([preSigningOutput.dataHash.hexString])
-
+                case .bsc:
+                    let hashes = TransactionCompiler.preImageHashes(coinType: .smartChain, txInputData: inputData)
+                    let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+                    return .success([preSigningOutput.dataHash.hexString])
                 default:
                     return .failure(HelperError.runtimeError("not support yet"))
                 }
