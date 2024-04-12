@@ -75,7 +75,7 @@ class KeygenViewModel: ObservableObject {
         do {
             self.vault.signers = self.keygenCommittee
             // Create keygen instance, it takes time to generate the preparams
-            let messengerImp = TssMessengerImpl(mediatorUrl: self.mediatorURL, 
+            let messengerImp = TssMessengerImpl(mediatorUrl: self.mediatorURL,
                                                 sessionID: self.sessionID,
                                                 messageID: nil,
                                                 encryptionKeyHex: encryptionKeyHex)
@@ -135,23 +135,34 @@ class KeygenViewModel: ObservableObject {
                 let eddsaResp = try await tssReshare(service: tssService, req: reshareReq, keyType: .EdDSA)
                 self.vault.pubKeyEdDSA = eddsaResp.pubKey
             }
-            
-            self.status = .KeygenFinished
-            // save the vault
-            if let stateAccess {
-                self.vault.keyshares = stateAccess.keyshares
-            }
-            switch self.tssType {
-            case .Keygen:
-                context.insert(self.vault)
-            case .Reshare:
-                // if local party is not in the old committee , then he is the new guy , need to add the vault
-                // otherwise , they previously have the vault
-                if !self.vaultOldCommittee.contains(self.vault.localPartyID) {
-                    context.insert(self.vault)
+            // start an additional step to make sure all parties involved in the keygen committee complete successfully
+            // avoid to create a partial vault, meaning some parties finished create the vault successfully, and one still in failed state
+            let keygenVerify = KeygenVerify(serverAddr: self.mediatorURL,
+                                            sessionID: self.sessionID,
+                                            localPartyID: self.vault.localPartyID,
+                                            keygenCommittee: self.keygenCommittee)
+            await keygenVerify.markLocalPartyComplete()
+            let allFinished = await keygenVerify.checkCompletedParties()
+            if allFinished {
+                self.status = .KeygenFinished
+                // save the vault
+                if let stateAccess {
+                    self.vault.keyshares = stateAccess.keyshares
                 }
+                switch self.tssType {
+                case .Keygen:
+                    context.insert(self.vault)
+                case .Reshare:
+                    // if local party is not in the old committee , then he is the new guy , need to add the vault
+                    // otherwise , they previously have the vault
+                    if !self.vaultOldCommittee.contains(self.vault.localPartyID) {
+                        context.insert(self.vault)
+                    }
+                }
+                try context.save()
+            } else {
+                self.status = .KeygenFailed
             }
-            try context.save()
         } catch {
             self.logger.error("Failed to generate key, error: \(error.localizedDescription)")
             self.status = .KeygenFailed
