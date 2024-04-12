@@ -589,25 +589,9 @@
 		465B189E2BA3D7B5001D7407 /* Prices */ = {
 			isa = PBXGroup;
 			children = (
-				465B18A02BA3D7C3001D7407 /* Coinpaprika */,
-				465B189F2BA3D7BD001D7407 /* Coinmarketcap */,
 				465B189D2BA3D7AD001D7407 /* Coingecko */,
 			);
 			path = Prices;
-			sourceTree = "<group>";
-		};
-		465B189F2BA3D7BD001D7407 /* Coinmarketcap */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Coinmarketcap;
-			sourceTree = "<group>";
-		};
-		465B18A02BA3D7C3001D7407 /* Coinpaprika */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Coinpaprika;
 			sourceTree = "<group>";
 		};
 		469ED3952B98E782008D4951 /* Thorchain */ = {
@@ -1265,7 +1249,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */;
+			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -1892,7 +1876,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */ = {
+		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DE49A1882B65F6DB000F3AFB /* Debug */,

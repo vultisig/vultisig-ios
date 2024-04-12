@@ -12,9 +12,7 @@ import SwiftUI
 extension Decimal {
     
     func formatToFiat(includeCurrencySymbol: Bool = true) -> String {
-        
         let formatter = NumberFormatter()
-        
         if includeCurrencySymbol {
             formatter.numberStyle = .currency
             formatter.currencyCode = SettingsCurrency.current.rawValue
@@ -28,7 +26,6 @@ extension Decimal {
         
         // Convert Decimal to NSDecimalNumber before using with NumberFormatter
         let number = NSDecimalNumber(decimal: self)
-        
         return formatter.string(from: number) ?? ""
     }
     

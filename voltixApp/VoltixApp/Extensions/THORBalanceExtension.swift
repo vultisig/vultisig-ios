@@ -31,16 +31,9 @@ extension [CosmosBalance] {
     func formattedRuneBalance() -> String? {
         for balance in self {
             if balance.denom.lowercased() == Chain.thorChain.ticker.lowercased() {
-                guard let runeAmount = Double(balance.amount) else { return "Invalid balance" }
+                guard let runeAmount = Decimal(string:balance.amount) else { return "Invalid balance" }
                 let balanceRune = runeAmount / 100_000_000.0
-                
-                let formatter = NumberFormatter()
-                formatter.numberStyle = .decimal
-                formatter.maximumFractionDigits = 8
-                formatter.minimumFractionDigits = 0
-                formatter.groupingSeparator = ""
-                formatter.decimalSeparator = "."
-                return formatter.string(from: NSNumber(value: balanceRune))
+                return balanceRune.formatToDecimal(digits: 8)
             }
         }
         
@@ -69,16 +62,9 @@ extension [CosmosBalance] {
     func formattedAtomBalance() -> String? {
         for balance in self {
             if balance.denom.lowercased() == Chain.gaiaChain.ticker.lowercased() {
-                guard let atomAmount = Double(balance.amount) else { return "Invalid balance" }
+                guard let atomAmount = Decimal(string:balance.amount) else { return "Invalid balance" }
                 let balanceAtom = atomAmount / 1_000_000.0
-                
-                let formatter = NumberFormatter()
-                formatter.numberStyle = .decimal
-                formatter.maximumFractionDigits = 6
-                formatter.minimumFractionDigits = 0
-                formatter.groupingSeparator = ""
-                formatter.decimalSeparator = "."
-                return formatter.string(from: NSNumber(value: balanceAtom))
+                return balanceAtom.formatToDecimal(digits: 6)
             }
         }
         
