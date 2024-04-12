@@ -9,7 +9,7 @@ import Tss
 import WalletCore
 
 class EVMHelper {
-    static let defaultETHTransferGasUnit:Int64 = 23000 // Increased to 23000 to support swaps
+    static let defaultETHTransferGasUnit:Int64 = 23000 // Increased to 23000 to support swaps and transfers with memo
     static let defaultERC20TransferGasUnit:Int64 = 120000
     static let weiPerGWei: Int64 = 1_000_000_000
     static let wei: Int64 = 1_000_000_000_000_000_000
@@ -91,6 +91,8 @@ class EVMHelper {
         input.gasLimit = Data(hexString: gasLimit.hexString())!
         input.maxFeePerGas = EVMHelper.convertEthereumNumber(input: maxFeePerGasGWei)
         input.maxInclusionFeePerGas = EVMHelper.convertEthereumNumber(input: priorityFeeGWei)
+        input.txMode = .enveloped
+
         do {
             let inputData = try input.serializedData()
             return .success(inputData)
