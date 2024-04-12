@@ -202,6 +202,7 @@
 		DE8AD7432BC64A4C00339775 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = DE8AD73F2BC1600800339775 /* PrivacyInfo.xcprivacy */; };
 		DE8AD7472BC78FA400339775 /* Encryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8AD7462BC78FA400339775 /* Encryption.swift */; };
 		DE8AD74A2BC7A86200339775 /* EncryptionTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8AD7492BC7A86200339775 /* EncryptionTest.swift */; };
+		DE8AD74C2BC8E3FE00339775 /* KeygenVerify.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8AD74B2BC8E3FE00339775 /* KeygenVerify.swift */; };
 		DE9EB0EC2BA2CC3C001747D9 /* TssType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0EB2BA2CC3C001747D9 /* TssType.swift */; };
 		DE9EB0EE2BA2CF49001747D9 /* KeygenMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0ED2BA2CF49001747D9 /* KeygenMessage.swift */; };
 		DE9EB0F02BA2CFB7001747D9 /* ReshareMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0EF2BA2CFB7001747D9 /* ReshareMessage.swift */; };
@@ -448,6 +449,7 @@
 		DE8AD73F2BC1600800339775 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		DE8AD7462BC78FA400339775 /* Encryption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Encryption.swift; sourceTree = "<group>"; };
 		DE8AD7492BC7A86200339775 /* EncryptionTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptionTest.swift; sourceTree = "<group>"; };
+		DE8AD74B2BC8E3FE00339775 /* KeygenVerify.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenVerify.swift; sourceTree = "<group>"; };
 		DE9EB0EB2BA2CC3C001747D9 /* TssType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TssType.swift; sourceTree = "<group>"; };
 		DE9EB0ED2BA2CF49001747D9 /* KeygenMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenMessage.swift; sourceTree = "<group>"; };
 		DE9EB0EF2BA2CFB7001747D9 /* ReshareMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReshareMessage.swift; sourceTree = "<group>"; };
@@ -680,6 +682,7 @@
 				DE491CEE2B708260007C88D5 /* KeygenView.swift */,
 				D9AD8EE52B6730A40009F8D5 /* PeerDiscoveryView.swift */,
 				DE9EB0F32BA309AB001747D9 /* MessagePuller.swift */,
+				DE8AD74B2BC8E3FE00339775 /* KeygenVerify.swift */,
 			);
 			path = Keygen;
 			sourceTree = "<group>";
@@ -1442,6 +1445,7 @@
 				A6966D202BA3DF0C00903CA4 /* OnboardingView1.swift in Sources */,
 				DEBF93972B8D5FEF002868CD /* KeysignPayload.swift in Sources */,
 				DE6DCB932B97D81C009A39D5 /* THORChainSwaps.swift in Sources */,
+				DE8AD74C2BC8E3FE00339775 /* KeygenVerify.swift in Sources */,
 				A60CA7EB2BB1020900FDEB5C /* DetectOrientation.swift in Sources */,
 				D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */,
 				A6980C282BC086BC00F452AB /* SettingsViewModel.swift in Sources */,

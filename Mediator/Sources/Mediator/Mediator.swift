@@ -34,6 +34,9 @@ public final class Mediator {
         self.server.DELETE["/message/:sessionID/:participantKey/:hash"] = self.deleteMessage
         // POST/GET , to notifiy all parties to start keygen/keysign
         self.server["/start/:sessionID"] = self.startKeygenOrKeysign
+        // POST, mark a keygen has been complete
+        self.server["/complete/:sessionID"] = self.keygenFinishSession
+        
     }
     
     // start the server
@@ -159,13 +162,31 @@ public final class Mediator {
     }
 
     private func postSession(req: HttpRequest) -> HttpResponse {
+        return processSession(req: req, keyPrefix: nil)
+    }
+    private func keygenFinishSession(req: HttpRequest) -> HttpResponse {
+        switch req.method {
+        case "POST":
+            return processSession(req: req, keyPrefix: "complete")
+        case "GET":
+            return processGetSession(req: req, keyPrefix: "complete")
+        default:
+            return HttpResponse.notAcceptable
+        }
+    }
+    
+    private func processSession(req: HttpRequest,keyPrefix: String?) -> HttpResponse {
         guard let sessionID = req.params[":sessionID"] else {
             self.logger.error("request session id is empty")
             return HttpResponse.badRequest(.text("sessionID is empty"))
         }
         let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
-        let key = "session-\(cleanSessionID)"
-        // self.logger.debug("request session id is: \(cleanSessionID)")
+        var key = ""
+        if let keyPrefix{
+            key = "\(keyPrefix)-session-\(cleanSessionID)"
+        } else {
+            key = "session-\(cleanSessionID)"
+        }
         do {
             let decoder = JSONDecoder()
             let p = try decoder.decode([String].self, from: Data(req.body))
@@ -207,12 +228,21 @@ public final class Mediator {
     }
     
     private func getSession(req: HttpRequest) -> HttpResponse {
+        return processGetSession(req: req, keyPrefix: nil)
+    }
+    
+    private func processGetSession(req: HttpRequest, keyPrefix: String?) -> HttpResponse{
         guard let sessionID = req.params[":sessionID"] else {
             return HttpResponse.badRequest(.text("sessionID is empty"))
         }
         
         let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
-        let key = "session-\(cleanSessionID)"
+        var key = ""
+        if let keyPrefix{
+            key = "\(keyPrefix)-session-\(cleanSessionID)"
+        } else {
+            key = "session-\(cleanSessionID)"
+        }
         do  {
             if let cachedValue = try self.cache.object(forKey: key) as? Session {
                 // self.logger.debug("session obj : \(cachedValue.SessionID), participants: \(cachedValue.Participants)")
