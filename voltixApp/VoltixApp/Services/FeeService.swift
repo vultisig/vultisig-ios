@@ -8,49 +8,75 @@
 import Foundation
 import BigInt
 
-final class FeeService {
+final class BlockChainService {
 
-    enum Fee {
-        case utxo(BigInt)
-        case evm(gasPrice:String, priorityFee:Int64, nonce:Int64)
-        case thorchain(String)
-        case gaia(String)
-        case solana(String)
+    enum Errors: String, Error, LocalizedError {
+        case failToGetAccountNumber
+        case failToGetSequenceNo
+        case failToGetRecentBlockHash
 
-        var gas: String {
-            switch self {
-            case .evm(let gas, _, _), .gaia(let gas), .solana(let gas), .thorchain(let gas):
-                return gas
-            case .utxo(let sats):
-                return String(sats)
-            }
+        var errorDescription: String? {
+            return String(NSLocalizedString(rawValue, comment: ""))
         }
     }
 
-    static let shared = FeeService()
+    static let shared = BlockChainService()
 
     private let utxo = BlockchairService.shared
     private let sol = SolanaService.shared
+    private let thor = ThorchainService.shared
 
-    func fetchFee(for coin: Coin) async throws -> Fee {
+    func fetchSpecific(for coin: Coin) async throws -> BlockChainSpecific {
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin:
             let sats = try await utxo.fetchSatsPrice(coin: coin)
-            return .utxo(sats)
+            return .UTXO(byteFee: Int64(sats))
 
         case .thorChain:
-            return .thorchain("0.02")
+            let account = try await thor.fetchAccountNumber(coin.address)
+
+            guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
+                throw Errors.failToGetAccountNumber
+            }
+
+            guard let sequence = UInt64(account?.sequence ?? "0") else {
+                throw Errors.failToGetSequenceNo
+            }
+            return .THORChain(accountNumber: accountNumber, sequence: sequence)
+
         case .solana:
-            let (_, feeInLamports) = try await sol.fetchRecentBlockhash()
-            return .solana(feeInLamports)
+            async let recentBlockHashPromise = sol.fetchRecentBlockhash()
+            async let highPriorityFeePromise = sol.fetchHighPriorityFee(account: coin.address)
+
+            let (recentBlockHash, feeInLamports) = try await recentBlockHashPromise
+            let highPriorityFee = try await highPriorityFeePromise
+
+            guard let recentBlockHash else {
+                throw Errors.failToGetRecentBlockHash
+            }
+            return .Solana(recentBlockHash: recentBlockHash, priorityFee: highPriorityFee, feeInLamports: feeInLamports)
 
         case .ethereum, .avalanche, .bscChain:
             let service = try EvmServiceFactory.getService(forChain: coin)
             let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(fromAddress: coin.address)
-            return .evm(gasPrice: gasPrice, priorityFee: priorityFee, nonce: nonce)
+
+            if coin.isNativeToken {
+                return .Ethereum(maxFeePerGasGwei: Int64(gasPrice) ?? 42, priorityFeeGwei: priorityFee, nonce: nonce, gasLimit: EVMHelper.defaultETHTransferGasUnit)
+            } else {
+                return BlockChainSpecific.ERC20(maxFeePerGasGwei: Int64(gasPrice) ?? 42, priorityFeeGwei: priorityFee, nonce: nonce, gasLimit: EVMHelper.defaultERC20TransferGasUnit, contractAddr: coin.contractAddress)
+            }
 
         case .gaiaChain:
-            return .gaia("0.0075")
+            let account = try await thor.fetchAccountNumber(coin.address)
+
+            guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
+                throw Errors.failToGetAccountNumber
+            }
+
+            guard let sequence = UInt64(account?.sequence ?? "0") else {
+                throw Errors.failToGetSequenceNo
+            }
+            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500)
         }
     }
 }

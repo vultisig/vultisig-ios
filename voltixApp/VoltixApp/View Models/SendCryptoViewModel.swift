@@ -89,7 +89,8 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             toAmount: totalSelectedAmount,
             chainSpecific: BlockChainSpecific.UTXO(byteFee: tx.feeInSats),
             utxos: utxoInfo,
-            memo: tx.memo
+            memo: tx.memo,
+            swapPayload: nil
         )
         
         if let vault = ApplicationState.shared.currentVault {

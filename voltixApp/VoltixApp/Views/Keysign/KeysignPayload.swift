@@ -17,8 +17,25 @@ enum BlockChainSpecific: Codable, Hashable {
     case Ethereum(maxFeePerGasGwei: Int64, priorityFeeGwei: Int64, nonce: Int64, gasLimit: Int64) // maxFeePerGasGwei, priorityFeeGwei, nonce , gasLimit
     case ERC20(maxFeePerGasGwei: Int64, priorityFeeGwei: Int64, nonce: Int64, gasLimit: Int64, contractAddr: String)
     case THORChain(accountNumber: UInt64, sequence: UInt64)
-    case Cosmos(accountNumber:UInt64,sequence:UInt64,gas:UInt64)
-    case Solana(recentBlockHash: String,priorityFee:UInt64) // priority fee is in microlamports
+    case Cosmos(accountNumber: UInt64, sequence:UInt64, gas: UInt64)
+    case Solana(recentBlockHash: String, priorityFee: UInt64, feeInLamports: String) // priority fee is in microlamports
+
+    var gas: String {
+        switch self {
+        case .UTXO(let byteFee):
+            return String(byteFee)
+        case .Ethereum(let maxFeePerGasGwei, _, _, _):
+            return String(maxFeePerGasGwei)
+        case .ERC20(let maxFeePerGasGwei, _, _, _, _):
+            return String(maxFeePerGasGwei)
+        case .THORChain:
+            return "0.02"
+        case .Cosmos:
+            return "0.0075"
+        case .Solana(_, _, let feeInLamports):
+            return feeInLamports
+        }
+    }
 }
 
 struct KeysignPayload: Codable, Hashable {
@@ -35,27 +52,6 @@ struct KeysignPayload: Codable, Hashable {
     let utxos: [UtxoInfo]
     let memo: String? // optional memo
     let swapPayload: THORChainSwapPayload?
-
-    init(coin: Coin, toAddress: String, toAmount: Int64, chainSpecific: BlockChainSpecific, utxos: [UtxoInfo], memo: String?, swapPayload: THORChainSwapPayload? = nil) {
-        self.coin = coin
-        self.toAddress = toAddress
-        self.toAmount = toAmount
-        self.chainSpecific = chainSpecific
-        self.utxos = utxos
-        self.memo = memo
-        self.swapPayload = swapPayload
-    }
-
-    /// TODO: Swparate SwapPayload
-    init(coin: Coin, swapPayload: THORChainSwapPayload) {
-        self.coin = coin
-        self.swapPayload = swapPayload
-        self.toAddress = .empty
-        self.toAmount = .zero
-        self.chainSpecific = .THORChain(accountNumber: .zero, sequence: .zero)
-        self.utxos = []
-        self.memo = nil
-    }
 
     var toAmountString: String {
         if(coin.chainType == .EVM){
@@ -110,5 +106,5 @@ struct KeysignPayload: Codable, Hashable {
         }
     }
     
-    static let example = KeysignPayload(coin: Coin.example, toAddress: "toAddress", toAmount: 100, chainSpecific: BlockChainSpecific.UTXO(byteFee: 100), utxos: [], memo: "Memo")
+    static let example = KeysignPayload(coin: Coin.example, toAddress: "toAddress", toAmount: 100, chainSpecific: BlockChainSpecific.UTXO(byteFee: 100), utxos: [], memo: "Memo", swapPayload: nil)
 }

@@ -15,11 +15,12 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
     private let thorchainService = ThorchainService.shared
     private let balanceService = BalanceService.shared
-    private let feeService = FeeService.shared
+    private let blockchainService = BlockChainService.shared
 
     private let titles = ["send", "verify", "pair", "keysign", "done"]
 
     var quote: ThorchainSwapQuote?
+    var keysignPayload: KeysignPayload?
 
     @Published var coins: [Coin] = []
     @Published var currentIndex = 1
@@ -27,6 +28,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     @Published var hash: String?
 
     @Published var error: Error?
+    @Published var isLoading = false
 
     var showError: Binding<Bool> {
         return Binding { self.error != nil } set: { _ in }
@@ -62,8 +64,14 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         currentTitle = titles[currentIndex-1]
     }
 
-    func buildKeysignPayload(tx: SwapTransaction) -> KeysignPayload {
-        let amount = Decimal(string: tx.fromAmount) ?? 0
+    func buildKeysignPayload(tx: SwapTransaction) async -> Bool {
+        isLoading = true
+        defer { isLoading = false }
+
+        let toAddress = quote!.inboundAddress
+        let amount = amount(for: tx.fromCoin, tx: tx)
+
+        let swapAmount = Decimal(string: tx.fromAmount) ?? 0
         let swapPayload = THORChainSwapPayload(
             fromAddress: tx.fromCoin.address,
             fromAsset: swapAsset(for: tx.fromCoin),
@@ -71,10 +79,30 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             toAddress: tx.toCoin.address,
             vaultAddress: quote!.inboundAddress,
             routerAddress: nil,
-            fromAmount: (amount * 100_000_000).description,
+            fromAmount: (swapAmount * 100_000_000).description,
             toAmountLimit: .zero
         )
-        return KeysignPayloadFactory().buildSwap(coin: tx.fromCoin, swapPayload: swapPayload)
+        
+        let keysignFactory = KeysignPayloadFactory()
+
+        do {
+            // TODO: Cache chain specific?
+            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin)
+
+            keysignPayload = try await keysignFactory.buildTransfer(
+                coin: tx.fromCoin,
+                toAddress: toAddress,
+                amount: amount,
+                memo: nil,
+                chainSpecific: chainSpecific
+            )
+
+            return true
+        }
+        catch {
+            self.error = error
+            return false
+        }
     }
 
     func stopMediator() {
@@ -99,8 +127,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
     func updateFee(tx: SwapTransaction) async {
         do {
-            let response = try await feeService.fetchFee(for: tx.fromCoin)
-            tx.gas = response.gas
+            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin)
+            tx.gas = chainSpecific.gas
         } catch {
             self.error = error
         }
@@ -149,6 +177,25 @@ private extension SwapCryptoViewModel {
 }
 
 private extension SwapCryptoViewModel {
+
+    func amount(for coin: Coin, tx: SwapTransaction) -> Int64 {
+        switch coin.chain {
+        case .thorChain:
+            return tx.amountInSats
+        case .ethereum, .avalanche, .bscChain:
+            if coin.isNativeToken {
+                return tx.amountInGwei
+            } else {
+                return tx.amountInTokenWeiInt64
+            }
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin:
+            return tx.amountInSats
+        case .gaiaChain:
+            return tx.amountInCoinDecimal
+        case .solana:
+            return tx.amountInSats
+        }
+    }
 
     func swapAsset(for coin: Coin) -> THORChainSwapAsset {
         return THORChainSwapAsset.with {

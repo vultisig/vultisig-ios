@@ -74,12 +74,18 @@ struct SwapCryptoView: View {
     }
 
     var pairView: some View {
-        KeysignDiscoveryView(
-            vault: vault,
-            keysignPayload: swapViewModel.buildKeysignPayload(tx: tx),
-            transferViewModel: swapViewModel,
-            keysignView: $keysignView
-        )
+        ZStack {
+            if let keysignPayload = swapViewModel.keysignPayload {
+                KeysignDiscoveryView(
+                    vault: vault,
+                    keysignPayload: keysignPayload,
+                    transferViewModel: swapViewModel,
+                    keysignView: $keysignView
+                )
+            } else {
+                SendCryptoVaultErrorView()
+            }
+        }
     }
 
     var keysign: some View {
