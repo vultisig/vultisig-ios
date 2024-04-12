@@ -8,9 +8,10 @@
 import SwiftUI
 
 struct KeyGenSummaryView: View {
+    let numberOfDevices: Int
     
-    @State var numberOfMainDevices = 2
-    @State var numberOfBackupDevices = 2
+    @State var numberOfMainDevices = 0
+    @State var numberOfBackupDevices = 0
     
     var body: some View {
         ZStack {
@@ -24,6 +25,9 @@ struct KeyGenSummaryView: View {
             ToolbarItem(placement: .topBarLeading) {
                 NavigationBackButton()
             }
+        }
+        .onAppear {
+            setData()
         }
     }
     
@@ -42,6 +46,7 @@ struct KeyGenSummaryView: View {
                 disclaimers
             }
             .padding(.top, 30)
+            .padding(.horizontal, 22)
             .foregroundColor(.neutral0)
         }
     }
@@ -49,7 +54,7 @@ struct KeyGenSummaryView: View {
     var header: some View {
         VStack(spacing: 12) {
             title
-            numberOfDevices
+            numberOfDevicesTitle
         }
     }
     
@@ -65,7 +70,7 @@ struct KeyGenSummaryView: View {
             .font(.body12MontserratSemiBold)
     }
     
-    var numberOfDevices: some View {
+    var numberOfDevicesTitle: some View {
         Group {
             Text("\(numberOfMainDevices) ") +
             Text(NSLocalizedString("of", comment: "of")) +
@@ -87,21 +92,32 @@ struct KeyGenSummaryView: View {
     }
     
     var disclaimers: some View {
-        VStack(spacing: 16) {
+        VStack(alignment: .leading, spacing: 16) {
             pairDeviceDisclaimers
             backupDeviceDisclaimers
         }
+        .foregroundColor(.neutral0)
+        .font(.body12Menlo)
+        .multilineTextAlignment(.leading)
     }
     
     var pairDeviceDisclaimers: some View {
         Group {
-            
+            Text(NSLocalizedString("pairDeviceDisclaimersFirst", comment: "")) +
+            Text(" ") +
+            Text(getCountInWords()).bold() +
+            Text(" ") +
+            Text(NSLocalizedString("pairDeviceDisclaimersSecond", comment: ""))
         }
     }
     
     var backupDeviceDisclaimers: some View {
-        Group {
-            
+        ZStack {
+            if numberOfDevices > 2 {
+                Text(NSLocalizedString("backupNotNeededDisclaimer", comment: ""))
+            } else {
+                Text(NSLocalizedString("noBackupDeviceDisclaimer", comment: ""))
+            }
         }
     }
     
@@ -109,8 +125,26 @@ struct KeyGenSummaryView: View {
         FilledButton(title: "continue")
             .padding(40)
     }
+    
+    private func setData() {
+        guard numberOfDevices>2 else {
+            numberOfMainDevices = numberOfDevices
+            numberOfBackupDevices = 0
+            return
+        }
+        
+        let doubleValue = (2*Double(numberOfDevices))/3
+        numberOfMainDevices = Int(ceil(doubleValue))
+        numberOfBackupDevices = numberOfDevices-numberOfMainDevices
+    }
+    
+    private func getCountInWords() -> String {
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = .spellOut
+        return numberFormatter.string(from: NSNumber(value: numberOfMainDevices))?.capitalized ?? "Two"
+    }
 }
 
 #Preview {
-    KeyGenSummaryView()
+    KeyGenSummaryView(numberOfDevices: 20)
 }
