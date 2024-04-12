@@ -80,11 +80,13 @@ struct KeyGenSummaryView: View {
     
     var list: some View {
         var index = 0
+        var pairDevices = numberOfMainDevices
         
         return VStack(spacing: 16) {
             ForEach(Array(viewModel.selections), id: \.self) { selection in
                 index += 1
-                return getCell(index: index, title: selection)
+                pairDevices -= selection==Utils.getLocalDeviceIdentity() ? 0 : 1
+                return getCell(index: index, title: selection, isPairDevice: pairDevices>0)
             }
         }
     }
@@ -128,13 +130,13 @@ struct KeyGenSummaryView: View {
         }
     }
     
-    private func getCell(index: Int, title: String) -> some View {
+    private func getCell(index: Int, title: String, isPairDevice: Bool) -> some View {
         Group {
             Text(String(describing: index)) +
             Text(". ") +
             Text(title) +
             Text(" (") +
-            Text(getDeviceState(for: index)) +
+            Text(getDeviceState(deviceId: title, isPairDevice: isPairDevice)) +
             Text(")")
         }
         .font(.body12Menlo)
@@ -158,12 +160,12 @@ struct KeyGenSummaryView: View {
         return numberFormatter.string(from: NSNumber(value: numberOfMainDevices))?.capitalized ?? "Two"
     }
     
-    private func getDeviceState(for index: Int) -> String {
+    private func getDeviceState(deviceId: String, isPairDevice: Bool) -> String {
         let deviceState: String
         
-        if index == 1 {
+        if deviceId == Utils.getLocalDeviceIdentity() {
             deviceState = "thisDevice"
-        } else if index<numberOfMainDevices {
+        } else if isPairDevice {
             deviceState = "pairDevice"
         } else {
             deviceState = "backupDevice"
