@@ -11,4 +11,5 @@ class StaticURL {
     static let GithubVoltixURL = URL(string: "https://github.com/voltix-vault/voltix")!
     static let XVoltixURL = URL(string: "https://twitter.com/voltixvault")!
     static let AppStoreVoltixURL = URL(string: "https://www.apple.com/")!
+    static let DiscordVoltixURL = URL(string: "https://discord.gg/ngvW8tRRfB")!
 }
