@@ -10,6 +10,7 @@ import SwiftUI
 struct ChainDetailView: View {
     let group: GroupedChain
     let vault: Vault
+    let balanceInFiat: String?
     
     @State var showSheet = false
     @State var tokens: [Coin] = []
@@ -118,7 +119,7 @@ struct ChainDetailView: View {
     }
     
     var header: some View {
-        ChainHeaderCell(group: group)
+        ChainHeaderCell(group: group, balanceInFiat: balanceInFiat)
     }
     
     var cells: some View {
@@ -170,5 +171,5 @@ struct ChainDetailView: View {
 }
 
 #Preview {
-    ChainDetailView(group: GroupedChain.example, vault: Vault.example)
+    ChainDetailView(group: GroupedChain.example, vault: Vault.example, balanceInFiat: "$65,899")
 }

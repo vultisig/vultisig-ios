@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ChainCell: View {
     let group: GroupedChain
+    @Binding var balanceInFiat: String?
     
     @State var showAlert = false
     @State var showQRcode = false
@@ -16,12 +17,12 @@ struct ChainCell: View {
     @StateObject var viewModel = ChainCellViewModel()
     
     var body: some View {
-        HStack(alignment: .top, spacing: 8) {
+        HStack(alignment: .top, spacing: 12) {
             logo
             content
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 24)
+        .padding(.vertical, 12)
         .background(Color.blue600)
         .cornerRadius(10)
         .padding(.horizontal, 16)
@@ -45,7 +46,7 @@ struct ChainCell: View {
     }
     
     var header: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 12) {
             title
             Spacer()
             
@@ -70,7 +71,7 @@ struct ChainCell: View {
     
     var title: some View {
         Text(group.name.capitalized)
-            .font(.body20MontserratSemiBold)
+            .font(.body16MontserratBold)
             .foregroundColor(.neutral0)
     }
     
@@ -79,6 +80,7 @@ struct ChainCell: View {
             .font(.body12Menlo)
             .foregroundColor(.turquoise600)
             .lineLimit(1)
+            .truncationMode(.middle)
     }
     
     var count: some View {
@@ -107,6 +109,9 @@ struct ChainCell: View {
             .font(.body16MenloBold)
             .foregroundColor(.neutral100)
             .redacted(reason: balance==nil ? .placeholder : [])
+            .onChange(of: balance) { oldValue, newValue in
+                balanceInFiat = newValue
+            }
     }
     
     private func setData() async {
@@ -116,6 +121,6 @@ struct ChainCell: View {
 
 #Preview {
     ScrollView {
-        ChainCell(group: GroupedChain.example)
+        ChainCell(group: GroupedChain.example, balanceInFiat: .constant("$65,899"))
     }
 }

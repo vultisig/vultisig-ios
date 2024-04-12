@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ChainHeaderCell: View {
     let group: GroupedChain
+    let balanceInFiat: String?
     
     @State var showAlert = false
     @State var showQRcode = false
@@ -39,6 +40,7 @@ struct ChainHeaderCell: View {
     var content: some View {
         VStack(alignment: .leading, spacing: 12) {
             header
+            fiatBalance
             address
         }
     }
@@ -63,6 +65,13 @@ struct ChainHeaderCell: View {
             showTransactionsButton
             copyButton
         }
+    }
+    
+    var fiatBalance: some View {
+        Text(balanceInFiat ?? "$0.0000")
+            .font(.body20MenloBold)
+            .foregroundColor(.neutral0)
+            .redacted(reason: balanceInFiat==nil ? .placeholder : [])
     }
     
     var copyButton: some View {
@@ -135,5 +144,5 @@ struct ChainHeaderCell: View {
 }
 
 #Preview {
-    ChainHeaderCell(group: GroupedChain.example)
+    ChainHeaderCell(group: GroupedChain.example, balanceInFiat: "$65,899")
 }

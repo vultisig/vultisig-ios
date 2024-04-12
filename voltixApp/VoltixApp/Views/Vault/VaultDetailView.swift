@@ -57,11 +57,7 @@ struct VaultDetailView: View {
     var list: some View {
         LazyVStack(spacing: 16) {
             ForEach(viewModel.coinsGroupedByChains, id: \.id) { group in
-                NavigationLink {
-                    ChainDetailView(group: group, vault: vault)
-                } label: {
-                    ChainCell(group: group)
-                }
+                ChainNavigationCell(group: group, vault: vault)
             }
         }
         .padding(.top, 30)
