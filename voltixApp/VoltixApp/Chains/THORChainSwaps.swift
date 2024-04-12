@@ -125,6 +125,9 @@ class THORChainSwaps {
             case .eth:
                 // TODO what if it is ERC20
                 return EVMHelper.getEthereumHelper().getSignedTransaction(vaultHexPubKey: self.vaultHexPublicKey, vaultHexChainCode: self.vaultHexChainCode, inputData: inputData, signatures: signatures)
+            case .bsc:
+                return EVMHelper.getBSCHelper().getSignedTransaction(vaultHexPubKey: self.vaultHexPublicKey, vaultHexChainCode: self.vaultHexChainCode, inputData: inputData, signatures: signatures)
+
             default:
                 return .failure(HelperError.runtimeError("not support"))
             }
