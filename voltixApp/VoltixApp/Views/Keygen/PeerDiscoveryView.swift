@@ -156,7 +156,6 @@ struct PeerDiscoveryView: View {
         ScrollView{
             LazyVGrid(columns: columns, spacing: 32) {
                 ForEach(participantDiscovery.peersFound, id: \.self) { peer in
-                    
                     Button {
                         handleSelection(peer)
                     } label: {

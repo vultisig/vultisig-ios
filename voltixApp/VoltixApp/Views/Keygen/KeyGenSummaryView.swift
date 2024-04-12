@@ -13,6 +13,8 @@ struct KeyGenSummaryView: View {
     @State var numberOfMainDevices = 0
     @State var numberOfBackupDevices = 0
     
+    @EnvironmentObject var viewModel: KeygenPeerDiscoveryViewModel
+    
     var body: some View {
         ZStack {
             Background()
@@ -86,8 +88,10 @@ struct KeyGenSummaryView: View {
     }
     
     var list: some View {
-        VStack {
-            
+        VStack(spacing: 16) {
+            ForEach(0..<viewModel.selections.count, id: \.self) { index in
+                getCell(index: index, title: viewModel.selections[index])
+            }
         }
     }
     
@@ -126,6 +130,23 @@ struct KeyGenSummaryView: View {
             .padding(40)
     }
     
+    private func getCell(index: Int, title: String) -> some View {
+        Group {
+            Text(String(describing: index)) +
+            Text(". ") +
+            Text(title) +
+            Text(" (") +
+            Text(getDeviceState(for index: index)) +
+            Text(")")
+        }
+        .font(.body12Menlo)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 24)
+        .background(Color.blue600)
+        .cornerRadius(10)
+    }
+    
     private func setData() {
         guard numberOfDevices>2 else {
             numberOfMainDevices = numberOfDevices
@@ -143,8 +164,22 @@ struct KeyGenSummaryView: View {
         numberFormatter.numberStyle = .spellOut
         return numberFormatter.string(from: NSNumber(value: numberOfMainDevices))?.capitalized ?? "Two"
     }
+    
+    private func getDeviceState(for index: Int) -> String {
+        let deviceState: String
+        
+        if index == 0 {
+            deviceState = "thisDevice"
+        } else if index<numberOfMainDevices {
+            deviceState = "pairDevice"
+        } else {
+            deviceState = "backupDevice"
+        }
+        return NSLocalizedString(deviceState, comment: "")
+    }
 }
 
 #Preview {
     KeyGenSummaryView(numberOfDevices: 20)
+        .environmentObject(KeygenPeerDiscoveryViewModel())
 }
