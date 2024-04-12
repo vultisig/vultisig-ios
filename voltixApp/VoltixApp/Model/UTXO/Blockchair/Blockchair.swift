@@ -13,7 +13,6 @@ class BlockchairResponse: Codable {
 
 class Blockchair: Codable {
 	var address: BlockchairAddress?
-	var transactions: [String]?
 	var utxo: [BlockchairUtxo]?
 	
 	func selectUTXOsForPayment(amountNeeded: Int64) -> [BlockchairUtxo] {
@@ -38,7 +37,6 @@ class Blockchair: Codable {
 	}
 	
 	class BlockchairAddress: Codable {
-		var type: String?
 		var scriptHex: String?
 		var balance: Int?
 
@@ -46,13 +44,6 @@ class Blockchair: Codable {
 			formatAsBitcoin(balance ?? 0)
 		}
         
-        func balanceInFiat(balance: Double, price: Double, includeCurrencySymbol: Bool = true) -> String{
-            
-            let balanceUtxo = balance / 100_000_000.0
-            let balanceFiat = balanceUtxo * price
-            
-            return balanceFiat.formatToFiat(includeCurrencySymbol: includeCurrencySymbol)
-        }
 		
 		// Helper function to format an amount in satoshis as Bitcoin
         func formatAsBitcoin(_ satoshis: Int) -> String {
@@ -71,7 +62,6 @@ class Blockchair: Codable {
 	}
 	
 	class BlockchairUtxo: Codable {
-		var blockId: Int?
 		var transactionHash: String?
 		var index: Int?
 		var value: Int?

@@ -148,7 +148,7 @@ struct SendCryptoDetailsView: View {
     private func getTitle(for text: String) -> some View {
         Text(
             NSLocalizedString(text, comment: "")
-                .replacingOccurrences(of: "Fiat", with: CryptoPriceService.shared.defaultCurrency.uppercased())
+                .replacingOccurrences(of: "Fiat", with: SettingsCurrency.current.rawValue)
         )
             .font(.body14MontserratMedium)
             .foregroundColor(.neutral0)

@@ -31,7 +31,7 @@ class KeysignViewModel: ObservableObject {
     private var tssService: TssServiceImpl? = nil
     private var tssMessenger: TssMessengerImpl? = nil
     private var stateAccess: LocalStateAccessorImpl? = nil
-    private var messagePuller = MessagePuller()
+    private var messagePuller: MessagePuller? = nil
     private let bscService = BSCService.shared
     
     var keysignCommittee: [String]
@@ -41,6 +41,7 @@ class KeysignViewModel: ObservableObject {
     var messsageToSign: [String]
     var vault: Vault
     var keysignPayload: KeysignPayload?
+    var encryptionKeyHex: String
     
     init() {
         self.keysignCommittee = []
@@ -50,6 +51,7 @@ class KeysignViewModel: ObservableObject {
         self.keysignType = .ECDSA
         self.messsageToSign = []
         self.keysignPayload = nil
+        self.encryptionKeyHex = ""
     }
     
     func setData(keysignCommittee: [String],
@@ -58,7 +60,9 @@ class KeysignViewModel: ObservableObject {
                  keysignType: KeyType,
                  messagesToSign: [String],
                  vault: Vault,
-                 keysignPayload: KeysignPayload?) {
+                 keysignPayload: KeysignPayload?,
+                 encryptionKeyHex: String
+    ) {
         self.keysignCommittee = keysignCommittee
         self.mediatorURL = mediatorURL
         self.sessionID = sessionID
@@ -66,6 +70,8 @@ class KeysignViewModel: ObservableObject {
         self.messsageToSign = messagesToSign
         self.vault = vault
         self.keysignPayload = keysignPayload
+        self.encryptionKeyHex = encryptionKeyHex
+        self.messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex)
     }
     func getTransactionExplorerURL(txid: String) -> String{
         guard let keysignPayload else {
@@ -75,12 +81,15 @@ class KeysignViewModel: ObservableObject {
     }
     func startKeysign() async {
         defer {
-            self.messagePuller.stop()
+            self.messagePuller?.stop()
         }
         for msg in self.messsageToSign {
             logger.info("signing message:\(msg)")
             let msgHash = Utils.getMessageBodyHash(msg: msg)
-            self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL, sessionID: self.sessionID, messageID: msgHash)
+            self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL,
+                                                 sessionID: self.sessionID,
+                                                 messageID: msgHash,
+                                                 encryptionKeyHex: encryptionKeyHex)
             self.stateAccess = LocalStateAccessorImpl(vault: self.vault)
             var err: NSError?
             // keysign doesn't need to recreate preparams
@@ -97,11 +106,11 @@ class KeysignViewModel: ObservableObject {
                 return
             }
             
-            self.messagePuller.pollMessages(mediatorURL: self.mediatorURL,
-                                            sessionID: self.sessionID,
-                                            localPartyKey: self.vault.localPartyID,
-                                            tssService: service,
-                                            messageID: msgHash)
+            self.messagePuller?.pollMessages(mediatorURL: self.mediatorURL,
+                                             sessionID: self.sessionID,
+                                             localPartyKey: self.vault.localPartyID,
+                                             tssService: service,
+                                             messageID: msgHash)
             
             let keysignReq = TssKeysignRequest()
             keysignReq.localPartyKey = self.vault.localPartyID
@@ -134,7 +143,7 @@ class KeysignViewModel: ObservableObject {
                     let resp = try await tssKeysign(service: service, req: keysignReq, keysignType: keysignType)
                     self.signatures[msg] = resp
                 }
-                self.messagePuller.stop()
+                self.messagePuller?.stop()
                 try await Task.sleep(for: .seconds(1)) // backoff for 1 seconds , so other party can finish appropriately
             } catch {
                 self.logger.error("fail to do keysign,error:\(error.localizedDescription)")
@@ -149,7 +158,7 @@ class KeysignViewModel: ObservableObject {
         
     }
     func stopMessagePuller(){
-        self.messagePuller.stop()
+        self.messagePuller?.stop()
     }
     func tssKeysign(service: TssServiceImpl, req: TssKeysignRequest, keysignType: KeyType) async throws -> TssKeysignResponse {
         let t = Task.detached(priority: .high) {
@@ -368,20 +377,5 @@ class KeysignViewModel: ObservableObject {
             self.keysignError = errMessage
         }
         
-    }
-    
-    func handleBitcoinTransactionError(err: UTXOTransactionError) {
-        switch err {
-        case .invalidURL:
-            print("Invalid URL.")
-        case .httpError(let statusCode):
-            print("HTTP Error with status code: \(statusCode).")
-        case .apiError(let message):
-            print("API Error: \(message)")
-        case .unexpectedResponse:
-            print("Unexpected response from the server.")
-        case .unknown(let unknownError):
-            print("An unknown error occurred: \(unknownError.localizedDescription)")
-        }
     }
 }

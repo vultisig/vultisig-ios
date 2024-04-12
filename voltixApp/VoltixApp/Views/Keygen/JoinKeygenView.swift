@@ -93,8 +93,8 @@ struct JoinKeygenView: View {
             keygenCommittee: self.viewModel.keygenCommittee,
             vaultOldCommittee: self.viewModel.oldCommittee.filter { self.viewModel.keygenCommittee.contains($0) },
             mediatorURL: serviceDelegate.serverURL!,
-            sessionID: self.viewModel.sessionID!
-        )
+            sessionID: self.viewModel.sessionID!,
+            encryptionKeyHex: viewModel.encryptionKeyHex)
     }
     
     var keygenErrorText: some View {

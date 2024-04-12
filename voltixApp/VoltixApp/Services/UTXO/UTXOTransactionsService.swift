@@ -57,11 +57,7 @@ public class UTXOTransactionsService: ObservableObject {
     }
 	
     public static func broadcastTransaction(chain: String, signedTransaction: String, completion: @escaping (Result<String, Error>) -> Void) {
-        guard let url = URL(string: Endpoint.blockchairBroadcast(chain.lowercased())) else {
-            completion(.failure(NSError(domain: "BlockchairServiceError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
-            return
-        }
-		
+        let url = Endpoint.blockchairBroadcast(chain.lowercased())
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")

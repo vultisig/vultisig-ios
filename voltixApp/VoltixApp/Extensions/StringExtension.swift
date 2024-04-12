@@ -66,7 +66,7 @@ extension String {
         
         if includeCurrencySymbol {
             formatter.numberStyle = .currency
-            formatter.currencyCode = UserDefaults.standard.string(forKey: "currency") ?? SettingsCurrency.USD.description()
+            formatter.currencyCode = SettingsCurrency.current.rawValue
         } else {
             formatter.numberStyle = .decimal
             formatter.maximumFractionDigits = 2

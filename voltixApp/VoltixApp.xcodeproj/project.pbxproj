@@ -10,6 +10,9 @@
 		049BBB5E2B71E83D004C231F /* VoltixLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB5D2B71E83D004C231F /* VoltixLogo.swift */; };
 		049BBB682B71E9C5004C231F /* WifiInstruction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049BBB672B71E9C5004C231F /* WifiInstruction.swift */; };
 		4606B3B02B80465E0045094D /* UTXOTransactionsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4606B3AF2B80465E0045094D /* UTXOTransactionsService.swift */; };
+		461AD1B72BC6706500959278 /* VaultPairDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 461AD1B62BC6706500959278 /* VaultPairDetailView.swift */; };
+		461AD1B92BC6858000959278 /* VaultPairDetailCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 461AD1B82BC6858000959278 /* VaultPairDetailCell.swift */; };
+		461AD1BB2BC7239C00959278 /* DeviceInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 461AD1BA2BC7239C00959278 /* DeviceInfo.swift */; };
 		463408662BA9C1D200246248 /* CoinTypeExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 463408652BA9C1D200246248 /* CoinTypeExtension.swift */; };
 		465A8D532B9E689B006E7457 /* SolanaService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465A8D522B9E689B006E7457 /* SolanaService.swift */; };
 		465A8D562B9E6E0B006E7457 /* SolanaRpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465A8D542B9E6E0A006E7457 /* SolanaRpc.swift */; };
@@ -154,7 +157,6 @@
 		A6F9F7ED2B9D1F5700790258 /* CoinViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9F7EC2B9D1F5700790258 /* CoinViewModel.swift */; };
 		D9A22EB72B667C41007281BF /* Mediator in Frameworks */ = {isa = PBXBuildFile; productRef = D9A22EB62B667C41007281BF /* Mediator */; };
 		D9AD8EDA2B6722CC0009F8D5 /* ApplicationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */; };
-		D9AD8EDC2B6723D10009F8D5 /* AppNavigationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8EDB2B6723D10009F8D5 /* AppNavigationState.swift */; };
 		D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */; };
 		D9AD8EE62B6730A40009F8D5 /* PeerDiscoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8EE52B6730A40009F8D5 /* PeerDiscoveryView.swift */; };
 		DE1572962B70F254009BC7C5 /* TssMessenger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1572942B70F254009BC7C5 /* TssMessenger.swift */; };
@@ -163,7 +165,6 @@
 		DE15729E2B70F284009BC7C5 /* JoinKeysignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE15729B2B70F284009BC7C5 /* JoinKeysignView.swift */; };
 		DE15729F2B70F284009BC7C5 /* KeysignDiscoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE15729C2B70F284009BC7C5 /* KeysignDiscoveryView.swift */; };
 		DE1572A02B70F284009BC7C5 /* KeysignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE15729D2B70F284009BC7C5 /* KeysignView.swift */; };
-		DE1572A22B70F873009BC7C5 /* Tss.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE1572A12B70F873009BC7C5 /* Tss.xcframework */; };
 		DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1572AB2B7174D3009BC7C5 /* Utils.swift */; };
 		DE28F5312B7B0FE900E33058 /* WalletCore in Frameworks */ = {isa = PBXBuildFile; productRef = DE28F5302B7B0FE900E33058 /* WalletCore */; };
 		DE28F5332B7B0FED00E33058 /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = DE28F5322B7B0FED00E33058 /* SwiftProtobuf */; };
@@ -197,6 +198,10 @@
 		DE6DCB932B97D81C009A39D5 /* THORChainSwaps.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6DCB922B97D81C009A39D5 /* THORChainSwaps.swift */; };
 		DE6DCB952B97D88A009A39D5 /* THORChainSwapPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6DCB942B97D88A009A39D5 /* THORChainSwapPayload.swift */; };
 		DE7CE6462B886B6300ED0BFB /* VoltixVaultDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE7CE6452B886B6300ED0BFB /* VoltixVaultDocument.swift */; };
+		DE8AD7402BC649A600339775 /* Tss.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE1572A12B70F873009BC7C5 /* Tss.xcframework */; };
+		DE8AD7432BC64A4C00339775 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = DE8AD73F2BC1600800339775 /* PrivacyInfo.xcprivacy */; };
+		DE8AD7472BC78FA400339775 /* Encryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8AD7462BC78FA400339775 /* Encryption.swift */; };
+		DE8AD74A2BC7A86200339775 /* EncryptionTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8AD7492BC7A86200339775 /* EncryptionTest.swift */; };
 		DE9EB0EC2BA2CC3C001747D9 /* TssType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0EB2BA2CC3C001747D9 /* TssType.swift */; };
 		DE9EB0EE2BA2CF49001747D9 /* KeygenMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0ED2BA2CF49001747D9 /* KeygenMessage.swift */; };
 		DE9EB0F02BA2CFB7001747D9 /* ReshareMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0EF2BA2CFB7001747D9 /* ReshareMessage.swift */; };
@@ -244,6 +249,9 @@
 		049BBB672B71E9C5004C231F /* WifiInstruction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WifiInstruction.swift; sourceTree = "<group>"; };
 		4600167D2B71A12D00CE17C7 /* Tss.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
 		4606B3AF2B80465E0045094D /* UTXOTransactionsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionsService.swift; sourceTree = "<group>"; };
+		461AD1B62BC6706500959278 /* VaultPairDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultPairDetailView.swift; sourceTree = "<group>"; };
+		461AD1B82BC6858000959278 /* VaultPairDetailCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultPairDetailCell.swift; sourceTree = "<group>"; };
+		461AD1BA2BC7239C00959278 /* DeviceInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceInfo.swift; sourceTree = "<group>"; };
 		463408652BA9C1D200246248 /* CoinTypeExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinTypeExtension.swift; sourceTree = "<group>"; };
 		465A8D522B9E689B006E7457 /* SolanaService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolanaService.swift; sourceTree = "<group>"; };
 		465A8D542B9E6E0A006E7457 /* SolanaRpc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SolanaRpc.swift; sourceTree = "<group>"; };
@@ -387,7 +395,6 @@
 		A6F9F7EA2B9D1B3700790258 /* VaultDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailViewModel.swift; sourceTree = "<group>"; };
 		A6F9F7EC2B9D1F5700790258 /* CoinViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinViewModel.swift; sourceTree = "<group>"; };
 		D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ApplicationState.swift; path = "VoltixApp/View Models/ApplicationState.swift"; sourceTree = SOURCE_ROOT; };
-		D9AD8EDB2B6723D10009F8D5 /* AppNavigationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppNavigationState.swift; path = VoltixApp/States/AppNavigationState.swift; sourceTree = SOURCE_ROOT; };
 		D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WelcomeView.swift; path = VoltixApp/Views/WelcomeView.swift; sourceTree = SOURCE_ROOT; };
 		D9AD8EE52B6730A40009F8D5 /* PeerDiscoveryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PeerDiscoveryView.swift; path = VoltixApp/Views/Keygen/PeerDiscoveryView.swift; sourceTree = SOURCE_ROOT; };
 		DE1572942B70F254009BC7C5 /* TssMessenger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TssMessenger.swift; sourceTree = "<group>"; };
@@ -434,6 +441,8 @@
 		DE6DCB942B97D88A009A39D5 /* THORChainSwapPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainSwapPayload.swift; sourceTree = "<group>"; };
 		DE7CE6452B886B6300ED0BFB /* VoltixVaultDocument.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VoltixVaultDocument.swift; sourceTree = "<group>"; };
 		DE8AD73F2BC1600800339775 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		DE8AD7462BC78FA400339775 /* Encryption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Encryption.swift; sourceTree = "<group>"; };
+		DE8AD7492BC7A86200339775 /* EncryptionTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptionTest.swift; sourceTree = "<group>"; };
 		DE9EB0EB2BA2CC3C001747D9 /* TssType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TssType.swift; sourceTree = "<group>"; };
 		DE9EB0ED2BA2CF49001747D9 /* KeygenMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenMessage.swift; sourceTree = "<group>"; };
 		DE9EB0EF2BA2CFB7001747D9 /* ReshareMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReshareMessage.swift; sourceTree = "<group>"; };
@@ -465,9 +474,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				DE28F5312B7B0FE900E33058 /* WalletCore in Frameworks */,
-				DE1572A22B70F873009BC7C5 /* Tss.xcframework in Frameworks */,
 				DE49A19A2B660D8D000F3AFB /* Mediator in Frameworks */,
 				DEEDAEE82B8B50A4005170E8 /* BigInt in Frameworks */,
+				DE8AD7402BC649A600339775 /* Tss.xcframework in Frameworks */,
 				D9A22EB72B667C41007281BF /* Mediator in Frameworks */,
 				DE28F5332B7B0FED00E33058 /* SwiftProtobuf in Frameworks */,
 				DE49A1B52B6A1088000F3AFB /* CodeScanner in Frameworks */,
@@ -796,7 +805,6 @@
 			isa = PBXGroup;
 			children = (
 				DE1572982B70F26A009BC7C5 /* KeyType.swift */,
-				D9AD8EDB2B6723D10009F8D5 /* AppNavigationState.swift */,
 				A65649F42B966F3E00E4B329 /* DecodableDefault.swift */,
 				46B106502BA7CAFE00564023 /* ChainType.swift */,
 				A6A793E22BB508C000CC5950 /* Keygen */,
@@ -871,6 +879,7 @@
 				A6980C252BC0848F00F452AB /* SettingCell.swift */,
 				A6980C2D2BC089F900F452AB /* SettingSelectionCell.swift */,
 				A6980C332BC0A30900F452AB /* SettingFAQCell.swift */,
+				461AD1B82BC6858000959278 /* VaultPairDetailCell.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -917,6 +926,7 @@
 				A66A0BDA2BA13B570021A483 /* CoinsGrouped.swift */,
 				DE63AE4C2BB4E94E001BBE5C /* JSONRPCResponse.swift */,
 				DE63AE4E2BB4E96E001BBE5C /* JSONRPCError.swift */,
+				461AD1BA2BC7239C00959278 /* DeviceInfo.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -975,6 +985,7 @@
 				A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */,
 				A6BACF192BC705DA00084810 /* ChainDetailView.swift */,
 				A6BACF1B2BC79B3100084810 /* TokenSelectionView.swift */,
+				461AD1B62BC6706500959278 /* VaultPairDetailView.swift */,
 			);
 			path = Vault;
 			sourceTree = "<group>";
@@ -1014,6 +1025,7 @@
 				A65BA9812BA93A9F00B2D8AA /* DebounceHelper.swift */,
 				A60CA7EA2BB1020900FDEB5C /* DetectOrientation.swift */,
 				A690E00D2BC0ED290006DC0D /* URL.swift */,
+				DE8AD7462BC78FA400339775 /* Encryption.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -1098,6 +1110,7 @@
 		DE49A1792B65F6DB000F3AFB /* voltixAppTests */ = {
 			isa = PBXGroup;
 			children = (
+				DE8AD7482BC7A84100339775 /* Utils */,
 				DEF2E2CE2B9DA41A000737B8 /* Chains */,
 				DE49A17A2B65F6DB000F3AFB /* voltixAppTests.swift */,
 			);
@@ -1143,6 +1156,14 @@
 				DE63AE552BBA788D001BBE5C /* GaiaService.swift */,
 			);
 			path = Cosmos;
+			sourceTree = "<group>";
+		};
+		DE8AD7482BC7A84100339775 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				DE8AD7492BC7A86200339775 /* EncryptionTest.swift */,
+			);
+			path = Utils;
 			sourceTree = "<group>";
 		};
 		DEF2E2CE2B9DA41A000737B8 /* Chains */ = {
@@ -1273,6 +1294,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A633B1212B993BF5003D1738 /* Montserrat-Italic.ttf in Resources */,
+				DE8AD7432BC64A4C00339775 /* PrivacyInfo.xcprivacy in Resources */,
 				DE49A1712B65F6DB000F3AFB /* Preview Assets.xcassets in Resources */,
 				A6564A0B2B96A04D00E4B329 /* Localizable.strings in Resources */,
 				DE49A1942B65F7B6000F3AFB /* Mediator in Resources */,
@@ -1305,6 +1327,7 @@
 				46AAA49D2BC3B4CF00E5BAB4 /* DecimalExtension.swift in Sources */,
 				A564ED422BC350520056FDC0 /* SwapTransaction.swift in Sources */,
 				463408662BA9C1D200246248 /* CoinTypeExtension.swift in Sources */,
+				DE8AD7472BC78FA400339775 /* Encryption.swift in Sources */,
 				DE4DFA7B2B7B1692004F8E73 /* ModelContainerPreview.swift in Sources */,
 				A6F9F7E52B9BB4D100790258 /* NavigationMenuButton.swift in Sources */,
 				049BBB5E2B71E83D004C231F /* VoltixLogo.swift in Sources */,
@@ -1355,12 +1378,12 @@
 				DE15729F2B70F284009BC7C5 /* KeysignDiscoveryView.swift in Sources */,
 				DE64A4C82BA7EBEC00C342E3 /* JoinKeygenViewModel.swift in Sources */,
 				DE63AE4F2BB4E96E001BBE5C /* JSONRPCError.swift in Sources */,
-				D9AD8EDC2B6723D10009F8D5 /* AppNavigationState.swift in Sources */,
 				469ED3992B98E896008D4951 /* CosmosBalanceResponse.swift in Sources */,
 				DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */,
 				46B60BC02BBB20130043EBBA /* RpcEvmService.swift in Sources */,
 				DE9EB0EE2BA2CF49001747D9 /* KeygenMessage.swift in Sources */,
 				A6F9F7ED2B9D1F5700790258 /* CoinViewModel.swift in Sources */,
+				461AD1B72BC6706500959278 /* VaultPairDetailView.swift in Sources */,
 				A6C0D5652BB3BD0F00156689 /* UTXOTransactionCell.swift in Sources */,
 				A65649F82B96701300E4B329 /* UTXOTransactionMempoolPreviousOutput.swift in Sources */,
 				DE7CE6462B886B6300ED0BFB /* VoltixVaultDocument.swift in Sources */,
@@ -1430,6 +1453,7 @@
 				DE9EB0F42BA309AB001747D9 /* MessagePuller.swift in Sources */,
 				A61BC8162BA256C600484689 /* ProgressBar.swift in Sources */,
 				DE63AE0E2BAD2408001BBE5C /* THORBalanceExtension.swift in Sources */,
+				461AD1B92BC6858000959278 /* VaultPairDetailCell.swift in Sources */,
 				A65BA98C2BABD1AA00B2D8AA /* SendCryptoStartErrorView.swift in Sources */,
 				DEF2E2CB2B9AD5EA000737B8 /* UTXOChainsHelper.swift in Sources */,
 				DEFC7BFB2B8D87370090B07A /* erc20.swift in Sources */,
@@ -1485,6 +1509,7 @@
 				A633B1382B997F39003D1738 /* NavigationHelpButton.swift in Sources */,
 				A6F2C5492BA001460095C8E3 /* ChainSelectionView.swift in Sources */,
 				D9AD8EE62B6730A40009F8D5 /* PeerDiscoveryView.swift in Sources */,
+				461AD1BB2BC7239C00959278 /* DeviceInfo.swift in Sources */,
 				A61BC8142BA240FC00484689 /* SendCryptoDetailsView.swift in Sources */,
 				A62758F52B97CE9E00ADE3A6 /* FontStyle.swift in Sources */,
 				A633B1362B997D57003D1738 /* NavigationBackButton.swift in Sources */,
@@ -1506,6 +1531,7 @@
 			files = (
 				DEF2E2D32B9DC685000737B8 /* UTXOChainsHelperTest.swift in Sources */,
 				DEF2E2D02B9DA459000737B8 /* PublicKeyTest.swift in Sources */,
+				DE8AD74A2BC7A86200339775 /* EncryptionTest.swift in Sources */,
 				DE49A17B2B65F6DB000F3AFB /* voltixAppTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1681,7 +1707,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = VoltixApp/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Volitix;
+				INFOPLIST_KEY_CFBundleDisplayName = Voltix;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
 				INFOPLIST_KEY_NSCameraUsageDescription = "We need to scan QR Codes.";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Secure your Vault using Face ID";
@@ -1731,7 +1757,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = VoltixApp/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Volitix;
+				INFOPLIST_KEY_CFBundleDisplayName = Voltix;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
 				INFOPLIST_KEY_NSCameraUsageDescription = "We need to scan QR Codes.";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Secure your Vault using Face ID";

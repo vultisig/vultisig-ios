@@ -80,9 +80,6 @@ class Coin: Codable, Hashable {
         return lhs.ticker == rhs.ticker && lhs.address == rhs.address && lhs.chain.name == rhs.chain.name
     }
     
-    var balance: BigInt? {
-        BigInt(rawBalance, radix: 10)
-    }
     
     var balanceDecimal: Decimal {
         let tokenBalance = Decimal(string: rawBalance) ?? 0.0
@@ -117,15 +114,10 @@ class Coin: Codable, Hashable {
         let tokenDecimals = Int(decimals) ?? 0
         return maxValueDecimal / pow(10, tokenDecimals)
     }
-    
-    func getAmountInFiat(_ amount: Double) -> String {
-        let balanceInFiat = amount * priceRate
-        return String(format: "%.2f", balanceInFiat)
-    }
-    
-    func getAmountInTokens(_ amount: Double) -> String {
-        let tokenAmount = amount / priceRate
-        return String(format: "%.\(Int(decimals) ?? 0)f", tokenAmount)
+
+    var balanceInFiatDecimal: Decimal {
+        let balanceInFiat = balanceDecimal * Decimal(priceRate)
+        return balanceInFiat
     }
     
     func toString() -> String {

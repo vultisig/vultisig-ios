@@ -20,8 +20,9 @@ struct KeygenView: View {
     let vaultOldCommittee: [String]
     let mediatorURL: String
     let sessionID: String
+    let encryptionKeyHex: String
     @StateObject var viewModel = KeygenViewModel()
-
+    
     var body: some View {
         GeometryReader { geometry in
             ScrollView {
@@ -47,7 +48,7 @@ struct KeygenView: View {
                                 .onAppear {
                                     viewModel.delaySwitchToMain()
                                 }
-
+                            
                         case .KeygenFailed:
                             keygenFailedView
                         }
@@ -62,13 +63,19 @@ struct KeygenView: View {
             HomeView()
         }
         .onAppear {
-            viewModel.setData(vault: vault, tssType: tssType, keygenCommittee: keygenCommittee, vaultOldCommittee: vaultOldCommittee, mediatorURL: mediatorURL, sessionID: sessionID)
+            viewModel.setData(vault: vault,
+                              tssType: tssType,
+                              keygenCommittee: keygenCommittee,
+                              vaultOldCommittee: vaultOldCommittee,
+                              mediatorURL: mediatorURL,
+                              sessionID: sessionID,
+                              encryptionKeyHex: encryptionKeyHex)
         }
         .task {
             await viewModel.startKeygen(context: context)
         }
     }
-
+    
     var keygenFailedView: some View {
         switch tssType {
         case .Keygen:
@@ -105,7 +112,7 @@ private struct StatusText: View {
                 .font(.body15MenloBold)
                 .foregroundColor(.neutral0)
                 .multilineTextAlignment(.center)
-
+            
             ProgressView()
                 .progressViewStyle(.circular)
                 .padding(2)
@@ -120,5 +127,6 @@ private struct StatusText: View {
                keygenCommittee: [],
                vaultOldCommittee: [],
                mediatorURL: "",
-               sessionID: "")
+               sessionID: "",
+               encryptionKeyHex: "")
 }

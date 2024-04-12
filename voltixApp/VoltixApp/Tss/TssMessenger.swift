@@ -16,12 +16,14 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
     // messageID will be used during keysign , because for UTXO related chains , it usually need to sign multiple UTXOs
     // at the same time , add message id here to avoid messages belongs to differet keysign message messed with each other
     let messageID: String?
+    let encryptionKeyHex: String
 
     var counter: Int64 = 1
-    init(mediatorUrl: String, sessionID: String, messageID: String?) {
+    init(mediatorUrl: String, sessionID: String, messageID: String?,encryptionKeyHex: String) {
         self.mediatorUrl = mediatorUrl
         self.sessionID = sessionID
         self.messageID = messageID
+        self.encryptionKeyHex = encryptionKeyHex
     }
 
     func send(_ fromParty: String?, to: String?, body: String?) throws {
@@ -49,7 +51,16 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
         if let messageID = self.messageID {
             req.setValue(messageID, forHTTPHeaderField: "message_id")
         }
-        let msg = Message(session_id: sessionID, from: fromParty, to: [to], body: body, hash: Utils.getMessageBodyHash(msg: body), sequenceNo: self.counter)
+        guard let encrypedBody = body.aesEncrypt(key: self.encryptionKeyHex) else {
+            logger.error("fail to encrypt message body")
+            return
+        }
+        let msg = Message(session_id: sessionID, 
+                          from: fromParty,
+                          to: [to],
+                          body: encrypedBody,
+                          hash: Utils.getMessageBodyHash(msg: body),
+                          sequenceNo: self.counter)
         self.counter += 1
         do {
             let jsonEncode = JSONEncoder()

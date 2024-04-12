@@ -88,9 +88,7 @@ struct WelcomeView: View {
 }
 
 // Preview
-struct WelcomeView_Previews: PreviewProvider {
-    static var previews: some View {
+#Preview {
         WelcomeView()
             .environmentObject(AccountViewModel())
-    }
 }

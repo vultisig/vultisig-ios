@@ -9,6 +9,7 @@ import Foundation
 
 class Endpoint {
     
+    static let voltixApiProxy = "https://api.voltix.org"
     static let broadcastTransactionThorchainNineRealms = "https://thornode.ninerealms.com/cosmos/tx/v1beta1/txs"
     
     static func fetchAccountNumberThorchainNineRealms(_ address: String) -> String {
@@ -39,16 +40,16 @@ class Endpoint {
         "https://litecoinspace.org/tx/\(value)"
     }
     
-    static func blockchairStats(_ chainName: String) -> String {
-        "https://api.blockchair.com/\(chainName)/stats?key=A___PLqLolRBKDsYRO9SUi5EzgeXjMt5"
+    static func blockchairStats(_ chainName: String) -> URL {
+        "\(voltixApiProxy)/blockchair/\(chainName)/stats".asUrl
     }
     
-    static func blockchairBroadcast(_ chainName: String) -> String {
-        "https://api.blockchair.com/\(chainName)/push/transaction?key=A___PLqLolRBKDsYRO9SUi5EzgeXjMt5"
+    static func blockchairBroadcast(_ chainName: String) -> URL {
+        "\(voltixApiProxy)/blockchair/\(chainName)/push/transaction".asUrl
     }
-   
-    static func blockchairDashboard(_ address: String, _ coinName: String) -> String {
-        "https://api.blockchair.com/\(coinName)/dashboards/address/\(address)?key=A___PLqLolRBKDsYRO9SUi5EzgeXjMt5"
+    
+    static func blockchairDashboard(_ address: String, _ coinName: String) -> URL {
+        "\(voltixApiProxy)/blockchair/\(coinName)/dashboards/address/\(address)".asUrl
     }
     
     static func ethereumLabelTxHash(_ value: String) -> String {
@@ -160,7 +161,7 @@ class Endpoint {
             return nil
         }
     }
-
+    
 }
 
 fileprivate extension String {

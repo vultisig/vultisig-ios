@@ -38,7 +38,7 @@ class RpcEvmService {
             print("getBalance:: \(error.localizedDescription)")
             throw error
         }
-        return (rawBalance,cryptoPrice ?? 0.0)
+        return (rawBalance,cryptoPrice)
     }
     
     func getGasInfo(fromAddress: String) async throws -> (gasPrice:String,priorityFee:Int64,nonce:Int64){

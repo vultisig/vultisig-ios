@@ -6,6 +6,7 @@
 import Foundation
 import Mediator
 import OSLog
+import SwiftUI
 
 enum KeysignDiscoveryStatus {
     case WaitingForDevices
@@ -17,10 +18,10 @@ class KeysignDiscoveryViewModel: ObservableObject {
     var vault: Vault
     var keysignPayload: KeysignPayload
     var participantDiscovery: ParticipantDiscovery?
-    
+    var encryptionKeyHex: String?
     private let mediator = Mediator.shared
     
-    let serverAddr = "http://127.0.0.1:8080"
+    let serverAddr = "http://127.0.0.1:18080"
     @Published var selections = Set<String>()
     @Published var sessionID = ""
     @Published var status = KeysignDiscoveryStatus.WaitingForDevices
@@ -33,6 +34,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         self.vault = Vault(name: "New Vault")
         self.keysignPayload = KeysignPayload(coin: Coin.example, toAddress: "", toAmount: 0, chainSpecific: BlockChainSpecific.UTXO(byteFee: 0), utxos: [], memo: nil, swapPayload: nil)
         self.participantDiscovery = nil
+        self.encryptionKeyHex = Encryption.getEncryptionKey()
     }
     
     func setData(vault: Vault, keysignPayload: KeysignPayload, participantDiscovery: ParticipantDiscovery) {
@@ -85,7 +87,8 @@ class KeysignDiscoveryViewModel: ObservableObject {
             keysignType: keysignPayload.coin.chain.signingKeyType,
             messsageToSign: keysignMessages, // need to figure out all the prekeysign hashes
             keysignPayload: keysignPayload,
-            sendCryptoViewModel: viewModel
+            sendCryptoViewModel: viewModel,
+            encryptionKeyHex: encryptionKeyHex ?? ""
         )
     }
     
@@ -109,6 +112,27 @@ class KeysignDiscoveryViewModel: ObservableObject {
                 self.logger.info("Failed to start session.")
             }
         }
+    }
+    
+    func getQrImage(size: CGFloat) -> Image {
+        guard let encryptionKeyHex = self.encryptionKeyHex else {
+            logger.error("encryption key is nil")
+            return Image(systemName: "xmark")
+        }
+        let keysignMsg = KeysignMessage(sessionID: sessionID,
+                                        serviceName: serviceName,
+                                        payload: keysignPayload,
+                                        encryptionKeyHex: encryptionKeyHex)
+        do {
+            let encoder = JSONEncoder()
+            let jsonData = try encoder.encode(keysignMsg)
+            
+            return Utils.getQrImage(data: jsonData, size: size)
+        } catch {
+            logger.error("fail to encode keysign messages to json,error:\(error)")
+        }
+        
+        return Image(systemName: "xmark")
     }
     
 }

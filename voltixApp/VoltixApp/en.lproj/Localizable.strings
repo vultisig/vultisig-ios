@@ -23,6 +23,10 @@
 "vaults" = "Vaults";
 "main" = "Main";
 "address" = "Address";
+"vaultDetailsTitle" = "Details";
+"vaultDetailsDescription" = "View your vault details";
+"ECDSA" = "ECDSA";
+"EdDSA" = "EdDSA";
 "backup" = "Backup";
 "error" = "Error";
 "backupVault" = "Backup your vault";
