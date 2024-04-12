@@ -69,9 +69,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         defer { isLoading = false }
 
         let toAddress = quote!.inboundAddress
-        let amount = amount(for: tx.fromCoin, tx: tx)
 
-        let swapAmount = Decimal(string: tx.fromAmount) ?? 0
         let swapPayload = THORChainSwapPayload(
             fromAddress: tx.fromCoin.address,
             fromAsset: swapAsset(for: tx.fromCoin),
@@ -79,7 +77,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             toAddress: tx.toCoin.address,
             vaultAddress: quote!.inboundAddress,
             routerAddress: nil,
-            fromAmount: (swapAmount * 100_000_000).description,
+            fromAmount: swapAmount(for: tx.fromCoin, tx: tx),
             toAmountLimit: .zero
         )
         
@@ -92,7 +90,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             keysignPayload = try await keysignFactory.buildTransfer(
                 coin: tx.fromCoin,
                 toAddress: toAddress,
-                amount: amount,
+                amount: amount(for: tx.fromCoin, tx: tx),
                 memo: nil,
                 chainSpecific: chainSpecific,
                 swapPayload: swapPayload
@@ -195,6 +193,21 @@ private extension SwapCryptoViewModel {
             return tx.amountInCoinDecimal
         case .solana:
             return tx.amountInSats
+        }
+    }
+
+    func swapAmount(for coin: Coin, tx: SwapTransaction) -> String {
+        switch coin.chain {
+        case .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .solana:
+            return String(tx.amountInSats)
+        case .ethereum, .avalanche, .bscChain:
+            if coin.isNativeToken {
+                return String(tx.amountInWei)
+            } else {
+                return String(tx.amountInTokenWeiInt64)
+            }
+        case .gaiaChain:
+            return String(tx.amountInCoinDecimal)
         }
     }
 
