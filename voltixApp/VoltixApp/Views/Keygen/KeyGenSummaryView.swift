@@ -9,6 +9,9 @@ import SwiftUI
 
 struct KeyGenSummaryView: View {
     
+    @State var numberOfMainDevices = 2
+    @State var numberOfBackupDevices = 2
+    
     var body: some View {
         ZStack {
             Background()
@@ -25,10 +28,18 @@ struct KeyGenSummaryView: View {
     }
     
     var view: some View {
+        VStack {
+            content
+            button
+        }
+    }
+    
+    var content: some View {
         ScrollView {
             VStack(spacing: 32) {
                 header
                 devicesList
+                disclaimers
             }
             .padding(.top, 30)
             .foregroundColor(.neutral0)
@@ -56,9 +67,9 @@ struct KeyGenSummaryView: View {
     
     var numberOfDevices: some View {
         Group {
-            Text("2 ") +
+            Text("\(numberOfMainDevices) ") +
             Text(NSLocalizedString("of", comment: "of")) +
-            Text(" 3 ") +
+            Text(" \(numberOfMainDevices+numberOfBackupDevices) ") +
             Text(NSLocalizedString("vaults", comment: "vaults"))
         }
         .font(.body20MontserratSemiBold)
@@ -73,6 +84,30 @@ struct KeyGenSummaryView: View {
         VStack {
             
         }
+    }
+    
+    var disclaimers: some View {
+        VStack(spacing: 16) {
+            pairDeviceDisclaimers
+            backupDeviceDisclaimers
+        }
+    }
+    
+    var pairDeviceDisclaimers: some View {
+        Group {
+            
+        }
+    }
+    
+    var backupDeviceDisclaimers: some View {
+        Group {
+            
+        }
+    }
+    
+    var button: some View {
+        FilledButton(title: "continue")
+            .padding(40)
     }
 }
 
