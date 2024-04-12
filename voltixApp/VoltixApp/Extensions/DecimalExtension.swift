@@ -10,7 +10,6 @@ import Foundation
 import SwiftUI
 
 extension Decimal {
-    
     func formatToFiat(includeCurrencySymbol: Bool = true) -> String {
         let formatter = NumberFormatter()
         if includeCurrencySymbol {

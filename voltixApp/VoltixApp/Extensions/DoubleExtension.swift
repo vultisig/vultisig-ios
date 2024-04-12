@@ -11,7 +11,7 @@ import SwiftUI
 
 extension Double {
     
-    func formatToFiat(includeCurrencySymbol: Bool = true) -> String {
+    func formatToFiatxxx(includeCurrencySymbol: Bool = true) -> String {
         let formatter = NumberFormatter()
         
         if includeCurrencySymbol {

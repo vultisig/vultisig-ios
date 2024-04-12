@@ -117,11 +117,9 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     var gasFeePredictionForEvmFiat: String {
-        
         guard let gasInt = Int64(gas) else {
             return .empty
         }
-        
         guard let gasLimitDefault = Int64(coin.feeDefault) else {
             return .empty
         }
@@ -129,9 +127,8 @@ class SendTransaction: ObservableObject, Hashable {
         let maxFeePerGasWei: BigInt = BigInt(gasInt * EVMHelper.weiPerGWei)
         let gasLimitETHTransfer: BigInt = BigInt(gasLimitDefault)
         let totalCostETHTransferWei = maxFeePerGasWei * gasLimitETHTransfer
-        let totalCostETHTransferETH = Double(totalCostETHTransferWei) / Double(EVMHelper.wei)
-        let totalCostETHTransferFiat = totalCostETHTransferETH * coin.priceRate
-        
+        let totalCostETHTransferETH = totalCostETHTransferWei / BigInt(EVMHelper.wei)
+        let totalCostETHTransferFiat = (Decimal(string: String(totalCostETHTransferETH)) ?? 0.0)  * Decimal(coin.priceRate)
         return totalCostETHTransferFiat.formatToFiat()
     }
     
