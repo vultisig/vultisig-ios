@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   shape-rendering="geometricPrecision"
+   text-rendering="geometricPrecision"
+   image-rendering="optimizeQuality"
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   viewBox="0 0 24.000001 24.000001"
+   version="1.1"
+   id="svg3"
+   sodipodi:docname="DiscordLogo2.svg"
+   width="24"
+   height="24"
+   inkscape:version="1.3.2 (091e20e, 2023-11-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs3" />
+  <sodipodi:namedview
+     id="namedview3"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="2.3653903"
+     inkscape:cx="127.67449"
+     inkscape:cy="148.38989"
+     inkscape:window-width="1728"
+     inkscape:window-height="1051"
+     inkscape:window-x="0"
+     inkscape:window-y="38"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg3" />
+  <path
+     fill="#33e6bf"
+     d="m 4.921875,0 h 14.15625 C 21.7935,0.00726562 23.992734,2.2065 24,4.9216875 V 19.078125 c -0.0073,2.715281 -2.2065,4.914563 -4.921687,4.921781 L 4.921875,24 C 2.206594,23.9927 0.007313,21.793406 9.4e-5,19.078266 L 0,4.921875 C 0.007305,2.2065 2.206594,0.00726562 4.921734,0 Z"
+     id="path1"
+     style="stroke-width:0.046875" />
+  <g
+     data-name="图层 2"
+     id="g3"
+     transform="scale(0.046875)">
+    <g
+       data-name="Discord Logos"
+       id="g2">
+      <path
+         fill="#ffffff"
+         fill-rule="nonzero"
+         d="m 368.896,153.381 a 269.506,269.506 0 0 0 -67.118,-20.637 186.88,186.88 0 0 0 -8.57,17.475 250.337,250.337 0 0 0 -37.247,-2.8 c -12.447,0 -24.955,0.946 -37.25,2.776 -2.511,-5.927 -5.427,-11.804 -8.592,-17.454 a 271.73,271.73 0 0 0 -67.133,20.681 C 100.507,216.263 88.995,277.534 94.751,337.935 a 270.622,270.622 0 0 0 82.308,41.312 c 6.637,-8.959 12.582,-18.497 17.63,-28.423 a 173.808,173.808 0 0 1 -27.772,-13.253 c 2.328,-1.688 4.605,-3.427 6.805,-5.117 25.726,12.083 53.836,18.385 82.277,18.385 28.442,0 56.551,-6.302 82.279,-18.387 2.226,1.817 4.503,3.557 6.805,5.117 a 175.002,175.002 0 0 1 -27.823,13.289 197.847,197.847 0 0 0 17.631,28.4 269.513,269.513 0 0 0 82.363,-41.305 l -0.007,0.007 C 424.001,267.915 405.709,207.207 368.896,153.381 Z M 201.968,300.789 c -16.04,0 -29.292,-14.557 -29.292,-32.465 0,-17.908 12.791,-32.592 29.241,-32.592 16.45,0 29.599,14.684 29.318,32.592 -0.282,17.908 -12.919,32.465 -29.267,32.465 z m 108.062,0 c -16.066,0 -29.267,-14.557 -29.267,-32.465 0,-17.908 12.791,-32.592 29.267,-32.592 16.475,0 29.522,14.684 29.241,32.592 -0.281,17.908 -12.894,32.465 -29.241,32.465 z"
+         data-name="Discord Logo - Large - White"
+         id="path2" />
+    </g>
+  </g>
+</svg>
