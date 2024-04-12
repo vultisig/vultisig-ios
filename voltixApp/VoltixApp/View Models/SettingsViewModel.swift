@@ -9,7 +9,11 @@ import SwiftUI
 
 @MainActor
 class SettingsViewModel: ObservableObject {
-    @Published var selectedLanguage: SettingsLanguage = .English
+    @Published var selectedLanguage: SettingsLanguage {
+        didSet {
+            SettingsLanguage.current = selectedLanguage
+        }
+    }
     
     @Published var selectedCurrency: SettingsCurrency {
         didSet {
@@ -19,6 +23,7 @@ class SettingsViewModel: ObservableObject {
     
     init() {
         self.selectedCurrency = SettingsCurrency.current
+        self.selectedLanguage = SettingsLanguage.current
     }
     
     static let shared = SettingsViewModel()
