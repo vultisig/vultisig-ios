@@ -43,6 +43,7 @@ class KeygenVerify: ObservableObject {
                     let decoder = JSONDecoder()
                     let peers = try decoder.decode([String].self, from: result)
                     if Set(peers).isSubset(of: Set(self.keygenCommittee)) {
+                        self.logger.info("all parties have completed keygen successfully")
                         return true
                     }
                 }
