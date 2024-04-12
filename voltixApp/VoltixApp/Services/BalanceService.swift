@@ -8,7 +8,6 @@
 import Foundation
 
 class BalanceService {
-    
     static let shared = BalanceService()
 
     private let utxo = BlockchairService.shared
@@ -16,7 +15,7 @@ class BalanceService {
     private let sol = SolanaService.shared
     private let gaia = GaiaService.shared
     
-    func balance(for coin: Coin) async throws -> (coinBalance: String, balanceFiat: String) {
+    func balance(for coin: Coin) async throws -> (coinBalance: String, balanceFiat: String, balanceInFiatDecimal: Decimal) {
         
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin:
@@ -25,7 +24,8 @@ class BalanceService {
             coin.priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
             let balanceFiat = coin.balanceInFiat
             let coinBalance = coin.balanceString
-            return (coinBalance, balanceFiat)
+            let balanceInFiatDecimal = coin.balanceInFiatDecimal
+            return (coinBalance, balanceFiat, balanceInFiatDecimal)
             
         case .thorChain:
             let thorBalances = try await thor.fetchBalances(coin.address)
@@ -33,7 +33,8 @@ class BalanceService {
             coin.priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
             let balanceFiat = thorBalances.runeBalanceInFiat(price: coin.priceRate) ?? "$ 0,00"
             let coinBalance = thorBalances.formattedRuneBalance() ?? "0.0"
-            return (coinBalance, balanceFiat)
+            let balanceInFiatDecimal = coin.balanceInFiatDecimal
+            return (coinBalance, balanceFiat, balanceInFiatDecimal)
             
         case .solana:
             let (rawBalance,priceRate) = try await sol.getSolanaBalance(coin: coin)
@@ -41,7 +42,8 @@ class BalanceService {
             coin.priceRate = priceRate
             let balanceFiat = coin.balanceInFiat
             let coinBalance = coin.balanceString
-            return (coinBalance, balanceFiat)
+            let balanceInFiatDecimal = coin.balanceInFiatDecimal
+            return (coinBalance, balanceFiat, balanceInFiatDecimal)
             
         case .ethereum, .avalanche, .bscChain:
             let service = try EvmServiceFactory.getService(forChain: coin)
@@ -50,7 +52,8 @@ class BalanceService {
             coin.priceRate = priceRate
             let balanceFiat = coin.balanceInFiat
             let coinBalance = coin.balanceString
-            return (coinBalance, balanceFiat)
+            let balanceInFiatDecimal = coin.balanceInFiatDecimal
+            return (coinBalance, balanceFiat, balanceInFiatDecimal)
             
         case .gaiaChain:
             let atomBalance =  try await gaia.fetchBalances(address: coin.address)
@@ -58,7 +61,8 @@ class BalanceService {
             balanceFiat = atomBalance.atomBalanceInFiat(price: coin.priceRate) ?? "$ 0,00"
             coin.rawBalance = atomBalance.atomBalance() ?? "0.0"
             let coinBalance = atomBalance.formattedAtomBalance() ?? "0.0"
-            return (coinBalance, balanceFiat)
+            let balanceInFiatDecimal = coin.balanceInFiatDecimal
+            return (coinBalance, balanceFiat, balanceInFiatDecimal)
         }
     }
 }

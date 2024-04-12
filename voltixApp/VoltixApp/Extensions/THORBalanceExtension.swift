@@ -11,10 +11,10 @@ extension [CosmosBalance] {
     func runeBalanceInFiat(price: Double?, includeCurrencySymbol: Bool = true) -> String?{
         guard let price = price,
               let runeBalanceString = runeBalance(),
-              let runeAmount = Double(runeBalanceString) else { return nil }
+              let runeAmount = Decimal(string: runeBalanceString) else { return nil }
         
         let balanceRune = runeAmount / 100_000_000.0
-        let balanceFiat = balanceRune * price
+        let balanceFiat = balanceRune * Decimal(price)
         
         return balanceFiat.formatToFiat()
     }
@@ -31,16 +31,9 @@ extension [CosmosBalance] {
     func formattedRuneBalance() -> String? {
         for balance in self {
             if balance.denom.lowercased() == Chain.thorChain.ticker.lowercased() {
-                guard let runeAmount = Double(balance.amount) else { return "Invalid balance" }
+                guard let runeAmount = Decimal(string: balance.amount) else { return "Invalid balance" }
                 let balanceRune = runeAmount / 100_000_000.0
-                
-                let formatter = NumberFormatter()
-                formatter.numberStyle = .decimal
-                formatter.maximumFractionDigits = 8
-                formatter.minimumFractionDigits = 0
-                formatter.groupingSeparator = ""
-                formatter.decimalSeparator = "."
-                return formatter.string(from: NSNumber(value: balanceRune))
+                return balanceRune.formatToDecimal(digits: 8)
             }
         }
         
@@ -57,28 +50,20 @@ extension [CosmosBalance] {
     
     func atomBalanceInFiat(price: Double?, includeCurrencySymbol: Bool = true) -> String?{
         guard let price = price,
-              let runeBalanceString = atomBalance(),
-              let runeAmount = Double(runeBalanceString) else { return nil }
+              let atomBalanceString = atomBalance(),
+              let atomAmount = Decimal(string: atomBalanceString) else { return nil }
         
-        let balanceAtom = runeAmount / 1000_000.0
-        let balanceFiat = balanceAtom * price
-        
+        let balanceAtom = atomAmount / 1000_000.0
+        let balanceFiat = balanceAtom * Decimal(price)
         return balanceFiat.formatToFiat()
     }
     
     func formattedAtomBalance() -> String? {
         for balance in self {
             if balance.denom.lowercased() == Chain.gaiaChain.ticker.lowercased() {
-                guard let atomAmount = Double(balance.amount) else { return "Invalid balance" }
+                guard let atomAmount = Decimal(string: balance.amount) else { return "Invalid balance" }
                 let balanceAtom = atomAmount / 1_000_000.0
-                
-                let formatter = NumberFormatter()
-                formatter.numberStyle = .decimal
-                formatter.maximumFractionDigits = 6
-                formatter.minimumFractionDigits = 0
-                formatter.groupingSeparator = ""
-                formatter.decimalSeparator = "."
-                return formatter.string(from: NSNumber(value: balanceAtom))
+                return balanceAtom.formatToDecimal(digits: 6)
             }
         }
         

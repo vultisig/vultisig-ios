@@ -9,7 +9,6 @@ import SwiftUI
 
 struct SendCryptoView: View {
     @ObservedObject var tx: SendTransaction
-    @ObservedObject var coinViewModel: CoinViewModel
     let group: GroupedChain
     let vault: Vault
     
@@ -84,7 +83,6 @@ struct SendCryptoView: View {
         SendCryptoDetailsView(
             tx: tx,
             sendCryptoViewModel: sendCryptoViewModel,
-            coinViewModel: coinViewModel,
             group: group
         )
     }
@@ -152,5 +150,9 @@ struct SendCryptoView: View {
 }
 
 #Preview {
-    SendCryptoView(tx: SendTransaction(), coinViewModel:CoinViewModel(),group: GroupedChain.example, vault: Vault.example)
+    SendCryptoView(
+        tx: SendTransaction(),
+        group: GroupedChain.example,
+        vault: Vault.example
+    )
 }

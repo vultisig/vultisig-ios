@@ -7,6 +7,7 @@
 
 import Foundation
 
+@MainActor
 class VaultDetailViewModel: ObservableObject {
     @Published var coins = [Coin]()
     @Published var coinsGroupedByChains = [GroupedChain]()

@@ -127,13 +127,6 @@ public class UTXOTransactionsService: ObservableObject {
     
     func formatAmount(_ amountSatoshis: Int, tx: SendTransaction) -> String {
         let amountBTC = Decimal(amountSatoshis) / 100_000_000 // Convert satoshis to BTC
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.minimumFractionDigits = 0 // Minimum number of digits after the decimal point
-        formatter.maximumFractionDigits = 8 // Maximum number of digits after the decimal point, adjust if needed
-        formatter.decimalSeparator = "." // Use dot for decimal separation
-        formatter.groupingSeparator = "," // Use comma for thousands separation, adjust if needed
-        
-        return (formatter.string(from: amountBTC as NSNumber) ?? "\(amountBTC) \(tx.coin.ticker.uppercased())")
+        return  amountBTC.formatToDecimal(digits: 8)
     }
 }

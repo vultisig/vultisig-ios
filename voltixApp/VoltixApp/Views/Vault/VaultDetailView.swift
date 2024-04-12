@@ -36,14 +36,19 @@ struct VaultDetailView: View {
         }
         .sheet(isPresented: $showSheet, content: {
             NavigationView {
-                TokenSelectionView(showTokenSelectionSheet: $showSheet, vault: vault)
+                ChainSelectionView(showChainSelectionSheet: $showSheet, vault: vault)
             }
         })
     }
     
     var view: some View {
         ScrollView {
-            list
+            if viewModel.coinsGroupedByChains.count>1 {
+                list
+            } else {
+                emptyList
+            }
+            
             addButton
         }
         .opacity(showVaultsList ? 0 : 1)
@@ -52,20 +57,35 @@ struct VaultDetailView: View {
     var list: some View {
         LazyVStack(spacing: 16) {
             ForEach(viewModel.coinsGroupedByChains, id: \.id) { group in
-                ChainCell(group: group, vault: vault)
+                ChainNavigationCell(group: group, vault: vault)
             }
         }
         .padding(.top, 30)
+    }
+    
+    var emptyList: some View {
+        ErrorMessage(text: "noChainSelected")
+            .padding(.vertical, 50)
     }
     
     var addButton: some View {
         Button {
             showSheet.toggle()
         } label: {
-            FilledButton(title: "chooseTokens", icon: "plus")
+            chooseChainButton
         }
         .padding(16)
         .padding(.bottom, 150)
+    }
+    
+    var chooseChainButton: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "plus")
+            Text(NSLocalizedString("chooseChains", comment: "Choose Chains"))
+            Spacer()
+        }
+        .font(.body16MenloBold)
+        .foregroundColor(.turquoise600)
     }
        
     var scanButton: some View {

@@ -86,6 +86,7 @@ struct SettingsView: View {
         HStack(spacing: 32) {
             githubButton
             xButton
+            discordButton
         }
         .padding(.top, 100)
     }
@@ -99,6 +100,12 @@ struct SettingsView: View {
     var xButton: some View {
         Link(destination: StaticURL.XVoltixURL) {
             Image("xLogo")
+        }
+    }
+    
+    var discordButton: some View {
+        Link(destination: StaticURL.DiscordVoltixURL) {
+            Image("DiscordLogo")
         }
     }
     

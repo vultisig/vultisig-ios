@@ -94,7 +94,7 @@ struct UTXOTransactionCell: View {
             }
             
             Separator()
-            getSummaryCell(title: "gas", value: "$4.00")
+            getSummaryCell(title: "fee", value: String(transaction.fee) + " \(tx.coin.feeUnit)")
         }
     }
     

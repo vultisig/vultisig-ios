@@ -91,6 +91,16 @@ class Coin: Codable, Hashable {
         return "\(balanceDecimal)"
     }
     
+    var balanceInFiat: String {
+        let balanceInFiat = balanceDecimal * Decimal(priceRate)
+        return balanceInFiat.formatToFiat()
+    }
+    
+    var swapAsset: String {
+        guard !isNativeToken else { return "\(chain.swapAsset).\(chain.ticker)" }
+        return "\(chain.swapAsset).\(ticker)-\(contractAddress)"
+    }
+    
     func getMaxValue(_ fee: BigInt) -> Decimal {
         
         var totalFeeAdjusted = fee
@@ -108,16 +118,6 @@ class Coin: Codable, Hashable {
     var balanceInFiatDecimal: Decimal {
         let balanceInFiat = balanceDecimal * Decimal(priceRate)
         return balanceInFiat
-    }
-    
-    var balanceInFiat: String {
-        let balanceInFiat = balanceDecimal * Decimal(priceRate)
-        return balanceInFiat.formatToFiat()
-    }
-    
-    var swapAsset: String {
-        guard !isNativeToken else { return "\(chain.swapAsset).\(chain.ticker)" }
-        return "\(chain.swapAsset).\(ticker)-\(contractAddress)"
     }
     
     func toString() -> String {
