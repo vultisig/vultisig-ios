@@ -9,55 +9,118 @@ import SwiftUI
 
 struct ChainCell: View {
     let group: GroupedChain
-    let vault: Vault
+    @Binding var balanceInFiat: String?
     
-    @State var isExpanded = false
+    @State var showAlert = false
+    @State var showQRcode = false
+    
+    @StateObject var viewModel = ChainCellViewModel()
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            main
-            
-            if isExpanded {
-                cells
-            }
+        HStack(alignment: .top, spacing: 12) {
+            logo
+            content
         }
-        .padding(.vertical, 4)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 12)
         .background(Color.blue600)
         .cornerRadius(10)
         .padding(.horizontal, 16)
-        .clipped()
-    }
-    
-    var main: some View {
-        Button(action: {
-            expandCell()
-        }, label: {
-            card
-        })
-    }
-    
-    var card: some View {
-        ChainHeaderCell(group: group)
-    }
-    
-    var cells: some View {
-        ForEach(group.coins, id: \.self) { coin in
-            VStack(spacing: 0) {
-                Separator()
-                CoinCell(coin: coin, group: group, vault: vault)
+        .onAppear {
+            Task {
+                await setData()
+            }
+        }
+        .onChange(of: group.coins) { oldValue, newValue in
+            Task {
+                await setData()
             }
         }
     }
     
-    private func expandCell() {
-        withAnimation {
-            isExpanded.toggle()
+    var content: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            header
+            address
         }
+    }
+    
+    var header: some View {
+        HStack(spacing: 12) {
+            title
+            Spacer()
+            
+            if group.coins.count>1 {
+                count
+            } else {
+                quantity
+            }
+            
+            balance
+        }
+        .lineLimit(1)
+    }
+    
+    var logo: some View {
+        Image(group.logo)
+            .resizable()
+            .frame(width: 32, height: 32)
+            .cornerRadius(50)
+            .padding(.top, 10)
+    }
+    
+    var title: some View {
+        Text(group.name.capitalized)
+            .font(.body16MontserratBold)
+            .foregroundColor(.neutral0)
+    }
+    
+    var address: some View {
+        Text(group.address)
+            .font(.body12Menlo)
+            .foregroundColor(.turquoise600)
+            .lineLimit(1)
+            .truncationMode(.middle)
+    }
+    
+    var count: some View {
+        Text(viewModel.getGroupCount(group))
+            .font(.body12Menlo)
+            .foregroundColor(.neutral100)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 2)
+            .background(Color.blue400)
+            .cornerRadius(50)
+    }
+    
+    var quantity: some View {
+        let quantity = viewModel.quantity
+        
+        return Text(quantity ?? "0.00000")
+            .font(.body12Menlo)
+            .foregroundColor(.neutral100)
+            .redacted(reason: quantity==nil ? .placeholder : [])
+    }
+    
+    var balance: some View {
+        let balance = viewModel.balanceInFiat
+        
+        return Text(balance ?? "$0.00000")
+            .font(.body16MenloBold)
+            .foregroundColor(.neutral100)
+            .redacted(reason: balance==nil ? .placeholder : [])
+            .onChange(of: balance) { oldValue, newValue in
+                balanceInFiat = newValue
+            }
+    }
+    
+    private func setData() async {
+        await viewModel.loadData(for: group)
     }
 }
 
 #Preview {
     ScrollView {
-        ChainCell(group: GroupedChain.example, vault: Vault.example)
+        ChainCell(group: GroupedChain.example, balanceInFiat: .constant("$65,899"))
     }
 }

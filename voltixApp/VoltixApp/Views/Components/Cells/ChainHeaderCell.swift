@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ChainHeaderCell: View {
     let group: GroupedChain
+    let balanceInFiat: String?
     
     @State var showAlert = false
     @State var showQRcode = false
@@ -30,19 +31,16 @@ struct ChainHeaderCell: View {
     }
     
     var cell: some View {
-        HStack(alignment: .top, spacing: 12) {
-            logo
-            content
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 24)
-        .background(Color.blue600)
+        content
+            .padding(.horizontal, 16)
+            .padding(.vertical, 24)
+            .background(Color.blue600)
     }
     
     var content: some View {
         VStack(alignment: .leading, spacing: 12) {
             header
-            quantity
+            fiatBalance
             address
         }
     }
@@ -53,14 +51,6 @@ struct ChainHeaderCell: View {
             Spacer()
             actions
         }
-    }
-    
-    var logo: some View {
-        Image(group.logo)
-            .resizable()
-            .frame(width: 32, height: 32)
-            .cornerRadius(50)
-            .padding(.top, 10)
     }
     
     var title: some View {
@@ -75,6 +65,13 @@ struct ChainHeaderCell: View {
             showTransactionsButton
             copyButton
         }
+    }
+    
+    var fiatBalance: some View {
+        Text(balanceInFiat ?? "$0.0000")
+            .font(.body20MenloBold)
+            .foregroundColor(.neutral0)
+            .redacted(reason: balanceInFiat==nil ? .placeholder : [])
     }
     
     var copyButton: some View {
@@ -97,18 +94,28 @@ struct ChainHeaderCell: View {
         })
     }
     
-    @ViewBuilder
     var showTransactionsButton: some View {
-        
-        if group.name == Chain.bitcoin.name {
-            NavigationLink {
-                TransactionsView(group: group)
-            } label: {
-                Image(systemName: "cube.transparent")
-                    .foregroundColor(.neutral0)
-                    .font(.body18MenloMedium)
+        ZStack {
+            if group.name == Chain.bitcoin.name {
+                transactionsViewLink
+            } else {
+                webLink
             }
-        } else {
+        }
+    }
+    
+    var transactionsViewLink: some View {
+        NavigationLink {
+            TransactionsView(group: group)
+        } label: {
+            Image(systemName: "cube.transparent")
+                .foregroundColor(.neutral0)
+                .font(.body18MenloMedium)
+        }
+    }
+    
+    var webLink: some View {
+        ZStack {
             if let url = Endpoint.getExplorerByAddressURLByGroup(chain: group.coins.first?.chain, address: group.address),
                let linkURL = URL(string: url) {
                 Link(destination: linkURL) {
@@ -117,19 +124,9 @@ struct ChainHeaderCell: View {
                         .font(.body18MenloMedium)
                 }
             } else {
-                EmptyView() 
+                EmptyView()
             }
         }
-    }
-    
-    var quantity: some View {
-        Text(getQuantity())
-            .font(.body12Menlo)
-            .foregroundColor(.neutral100)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 2)
-            .background(Color.blue400)
-            .cornerRadius(50)
     }
     
     var address: some View {
@@ -144,16 +141,8 @@ struct ChainHeaderCell: View {
         let pasteboard = UIPasteboard.general
         pasteboard.string = group.address
     }
-    
-    private func getQuantity() -> String {
-        guard group.coins.count>1 else {
-            return "1 " + NSLocalizedString("asset", comment: "")
-        }
-        
-        return "\(group.coins.count) \(NSLocalizedString("assets", comment: ""))"
-    }
 }
 
 #Preview {
-    ChainHeaderCell(group: GroupedChain.example)
+    ChainHeaderCell(group: GroupedChain.example, balanceInFiat: "$65,899")
 }

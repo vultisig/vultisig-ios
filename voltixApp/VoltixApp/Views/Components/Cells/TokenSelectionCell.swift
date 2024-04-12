@@ -1,5 +1,5 @@
 //
-//  TokenCell.swift
+//  TokenSelectionCell.swift
 //  VoltixApp
 //
 //  Created by Amol Kumar on 2024-03-11.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct TokenCell: View {
+struct TokenSelectionCell: View {
     let asset: Coin
     @State var isSelected = false
     
@@ -72,7 +72,7 @@ struct TokenCell: View {
 
 #Preview {
     ScrollView {
-        TokenCell(asset: Coin.example)
+        TokenSelectionCell(asset: Coin.example)
             .environmentObject(TokenSelectionViewModel())
     }
 }

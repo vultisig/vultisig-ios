@@ -1,5 +1,5 @@
 //
-//  TokenSelectionSection.swift
+//  ChainSelectionCell.swift
 //  VoltixApp
 //
 //  Created by Amol Kumar on 2024-03-13.
@@ -7,14 +7,14 @@
 
 import SwiftUI
 
-struct TokenSelectionSection: View {
+struct ChainSelectionCell: View {
     let title: String
     let assets: [Coin]
     
     var body: some View {
         VStack {
             header
-            cells
+            cell
         }
     }
     
@@ -25,18 +25,17 @@ struct TokenSelectionSection: View {
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
-    var cells: some View {
-        VStack(spacing: 12) {
-            ForEach(assets, id: \.self) { asset in
-                TokenCell(asset: asset)
-            }
-        }
+    var cell: some View {
+        let nativeAsset = assets.first
+        
+        return TokenSelectionCell(asset: nativeAsset ?? Coin.example)
+            .redacted(reason: nativeAsset==nil ? .placeholder : [])
     }
 }
 
 #Preview {
     ZStack {
         Background()
-        TokenSelectionSection(title: "Bitcoin", assets: [])
+        ChainSelectionCell(title: "Bitcoin", assets: [])
     }
 }

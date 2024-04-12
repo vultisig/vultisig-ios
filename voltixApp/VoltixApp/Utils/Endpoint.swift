@@ -51,6 +51,7 @@ class Endpoint {
     static func blockchairDashboard(_ address: String, _ coinName: String) -> URL {
         "\(voltixApiProxy)/blockchair/\(coinName)/dashboards/address/\(address)".asUrl
     }
+    
     static func ethereumLabelTxHash(_ value: String) -> String {
         "https://etherscan.io/tx/\(value)"
     }
