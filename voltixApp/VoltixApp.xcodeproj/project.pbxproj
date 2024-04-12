@@ -27,7 +27,6 @@
 		469ED3A22B98F5CB008D4951 /* ThorchainAccountResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED3A12B98F5CB008D4951 /* ThorchainAccountResult.swift */; };
 		469ED3A42B98F5DE008D4951 /* CosmosAccountValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED3A32B98F5DE008D4951 /* CosmosAccountValue.swift */; };
 		46AAA4972BBF7EBA00E5BAB4 /* EvmServiceFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AAA4962BBF7EBA00E5BAB4 /* EvmServiceFactory.swift */; };
-		46AAA49B2BC3B30D00E5BAB4 /* DoubleExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AAA49A2BC3B30D00E5BAB4 /* DoubleExtension.swift */; };
 		46AAA49D2BC3B4CF00E5BAB4 /* DecimalExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AAA49C2BC3B4CF00E5BAB4 /* DecimalExtension.swift */; };
 		46AC40A82B920061001704E6 /* EtherscanService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AC40A72B920061001704E6 /* EtherscanService.swift */; };
 		46B106512BA7CAFE00564023 /* ChainType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B106502BA7CAFE00564023 /* ChainType.swift */; };
@@ -267,7 +266,6 @@
 		469ED3A12B98F5CB008D4951 /* ThorchainAccountResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainAccountResult.swift; sourceTree = "<group>"; };
 		469ED3A32B98F5DE008D4951 /* CosmosAccountValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosAccountValue.swift; sourceTree = "<group>"; };
 		46AAA4962BBF7EBA00E5BAB4 /* EvmServiceFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvmServiceFactory.swift; sourceTree = "<group>"; };
-		46AAA49A2BC3B30D00E5BAB4 /* DoubleExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoubleExtension.swift; sourceTree = "<group>"; };
 		46AAA49C2BC3B4CF00E5BAB4 /* DecimalExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecimalExtension.swift; sourceTree = "<group>"; };
 		46AC40A72B920061001704E6 /* EtherscanService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EtherscanService.swift; sourceTree = "<group>"; };
 		46B106502BA7CAFE00564023 /* ChainType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainType.swift; sourceTree = "<group>"; };
@@ -589,25 +587,9 @@
 		465B189E2BA3D7B5001D7407 /* Prices */ = {
 			isa = PBXGroup;
 			children = (
-				465B18A02BA3D7C3001D7407 /* Coinpaprika */,
-				465B189F2BA3D7BD001D7407 /* Coinmarketcap */,
 				465B189D2BA3D7AD001D7407 /* Coingecko */,
 			);
 			path = Prices;
-			sourceTree = "<group>";
-		};
-		465B189F2BA3D7BD001D7407 /* Coinmarketcap */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Coinmarketcap;
-			sourceTree = "<group>";
-		};
-		465B18A02BA3D7C3001D7407 /* Coinpaprika */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Coinpaprika;
 			sourceTree = "<group>";
 		};
 		469ED3952B98E782008D4951 /* Thorchain */ = {
@@ -797,7 +779,6 @@
 				DE63AE0D2BAD2408001BBE5C /* THORBalanceExtension.swift */,
 				A60CA7E82BB0F60100FDEB5C /* ViewExtension.swift */,
 				46E98FFB2BAE407300C53D97 /* DecodingErrorExtension.swift */,
-				46AAA49A2BC3B30D00E5BAB4 /* DoubleExtension.swift */,
 				46AAA49C2BC3B4CF00E5BAB4 /* DecimalExtension.swift */,
 			);
 			path = Extensions;
@@ -1265,7 +1246,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */;
+			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -1466,7 +1447,6 @@
 				A60CA7E52BB0D37D00FDEB5C /* ContentView.swift in Sources */,
 				A6C0D55C2BB3AE8600156689 /* TransactionsView.swift in Sources */,
 				4606B3B02B80465E0045094D /* UTXOTransactionsService.swift in Sources */,
-				46AAA49B2BC3B30D00E5BAB4 /* DoubleExtension.swift in Sources */,
 				DEEFF4FD2B9835DE0015692E /* THORChainSwapChainExtension.swift in Sources */,
 				A61BC81B2BA26D9900484689 /* ChainSelectionCell.swift in Sources */,
 				A65649DF2B96602700E4B329 /* DecodableDefaultExtension.swift in Sources */,
@@ -1892,7 +1872,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */ = {
+		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DE49A1882B65F6DB000F3AFB /* Debug */,

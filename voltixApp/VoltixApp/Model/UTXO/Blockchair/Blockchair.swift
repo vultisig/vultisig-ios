@@ -47,17 +47,8 @@ class Blockchair: Codable {
 		
 		// Helper function to format an amount in satoshis as Bitcoin
         func formatAsBitcoin(_ satoshis: Int) -> String {
-			let formatter = NumberFormatter()
-			formatter.numberStyle = .decimal
-			formatter.maximumFractionDigits = 8 // Bitcoin can have up to 8 decimal places
-			formatter.minimumFractionDigits = 1 // Show at least one decimal to indicate it's a decimal value
-			formatter.decimalSeparator = "." // Use dot as the decimal separator
-			
-			// Optionally, set the locale to "en_US_POSIX" for a more standardized formatting
-			formatter.locale = Locale(identifier: "en_US_POSIX")
-			
-			let btcValue = Double(satoshis) / 100_000_000.0 // Convert satoshis to BTC
-			return formatter.string(from: NSNumber(value: btcValue)) ?? "0.0"
+			let btcValue = Decimal(satoshis) / 100_000_000.0 // Convert satoshis to BTC
+            return btcValue.formatToDecimal(digits: 8)
 		}
 	}
 	

@@ -101,11 +101,9 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     var gasFeePredictionForEvm: String {
-        
         guard let gasInt = Int64(gas) else {
             return .empty
         }
-        
         guard let gasLimitDefault = Int64(coin.feeDefault) else {
             return .empty
         }
@@ -113,31 +111,15 @@ class SendTransaction: ObservableObject, Hashable {
         let maxFeePerGasWei: BigInt = BigInt(gasInt * EVMHelper.weiPerGWei)
         let gasLimitETHTransfer: BigInt = BigInt(gasLimitDefault)
         let totalCostETHTransferWei = maxFeePerGasWei * gasLimitETHTransfer
-        let totalCostETHTransferETH = Double(totalCostETHTransferWei) / Double(EVMHelper.wei)
+        let totalCostETHTransferETH = totalCostETHTransferWei / BigInt(EVMHelper.wei)
+        return Decimal(string:String(totalCostETHTransferETH))?.formatToDecimal(digits: Int(coin.decimals) ?? EVMHelper.ethDecimals) ?? "0.0 \(coin.chain.ticker)"
         
-        
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.maximumFractionDigits = Int(coin.decimals) ?? EVMHelper.ethDecimals
-        formatter.minimumFractionDigits = 0
-        formatter.groupingSeparator = ""
-        formatter.decimalSeparator = "."
-        
-        let returnString = formatter.string(from: NSNumber(value: totalCostETHTransferETH))  ?? ""
-        
-        if !returnString.isEmpty {
-            return "\(returnString) \(coin.chain.ticker)"
-        }
-        
-        return .empty
     }
     
     var gasFeePredictionForEvmFiat: String {
-        
         guard let gasInt = Int64(gas) else {
             return .empty
         }
-        
         guard let gasLimitDefault = Int64(coin.feeDefault) else {
             return .empty
         }
@@ -145,9 +127,8 @@ class SendTransaction: ObservableObject, Hashable {
         let maxFeePerGasWei: BigInt = BigInt(gasInt * EVMHelper.weiPerGWei)
         let gasLimitETHTransfer: BigInt = BigInt(gasLimitDefault)
         let totalCostETHTransferWei = maxFeePerGasWei * gasLimitETHTransfer
-        let totalCostETHTransferETH = Double(totalCostETHTransferWei) / Double(EVMHelper.wei)
-        let totalCostETHTransferFiat = totalCostETHTransferETH * coin.priceRate
-        
+        let totalCostETHTransferETH = totalCostETHTransferWei / BigInt(EVMHelper.wei)
+        let totalCostETHTransferFiat = (Decimal(string: String(totalCostETHTransferETH)) ?? 0.0)  * Decimal(coin.priceRate)
         return totalCostETHTransferFiat.formatToFiat()
     }
     
