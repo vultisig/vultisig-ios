@@ -8,12 +8,10 @@
 import SwiftUI
 
 struct KeyGenSummaryView: View {
-    let numberOfDevices: Int
-    
     @State var numberOfMainDevices = 0
     @State var numberOfBackupDevices = 0
     
-    @EnvironmentObject var viewModel: KeygenPeerDiscoveryViewModel
+    @ObservedObject var viewModel: KeygenPeerDiscoveryViewModel
     
     var body: some View {
         ZStack {
@@ -21,13 +19,6 @@ struct KeyGenSummaryView: View {
             view
         }
         .navigationTitle(NSLocalizedString("summary", comment: "Summary"))
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                NavigationBackButton()
-            }
-        }
         .onAppear {
             setData()
         }
@@ -120,7 +111,7 @@ struct KeyGenSummaryView: View {
     
     var backupDeviceDisclaimers: some View {
         ZStack {
-            if numberOfDevices > 2 {
+            if viewModel.selections.count > 2 {
                 Text(NSLocalizedString("backupNotNeededDisclaimer", comment: ""))
             } else {
                 Text(NSLocalizedString("noBackupDeviceDisclaimer", comment: ""))
@@ -130,7 +121,7 @@ struct KeyGenSummaryView: View {
     
     var button: some View {
         Button {
-            
+            viewModel.startKeygen()
         } label: {
             FilledButton(title: "continue")
                 .padding(40)
@@ -155,12 +146,7 @@ struct KeyGenSummaryView: View {
     }
     
     private func setData() {
-//        guard numberOfDevices>2 else {
-//            numberOfMainDevices = numberOfDevices
-//            numberOfBackupDevices = 0
-//            return
-//        }
-        
+        let numberOfDevices = viewModel.selections.count
         let doubleValue = (2*Double(numberOfDevices))/3
         numberOfMainDevices = Int(ceil(doubleValue))
         numberOfBackupDevices = numberOfDevices-numberOfMainDevices
@@ -175,7 +161,7 @@ struct KeyGenSummaryView: View {
     private func getDeviceState(for index: Int) -> String {
         let deviceState: String
         
-        if index == 0 {
+        if index == 1 {
             deviceState = "thisDevice"
         } else if index<numberOfMainDevices {
             deviceState = "pairDevice"
@@ -187,6 +173,6 @@ struct KeyGenSummaryView: View {
 }
 
 #Preview {
-    KeyGenSummaryView(numberOfDevices: 20)
+    KeyGenSummaryView(viewModel: KeygenPeerDiscoveryViewModel())
         .environmentObject(KeygenPeerDiscoveryViewModel())
 }
