@@ -13,28 +13,62 @@ enum SettingsLanguage: String, CaseIterable {
     case Espanol
     case Italiano
     case Hrvatski
+    case Portuguese
     
     func description() -> String {
-        let value: String
-        
         switch self {
         case .English:
-            value = "English (UK)"
+            return NSLocalizedString("EnglishUK", comment: "English (UK)")
         case .Deutsch:
-            value = "German"
+            return NSLocalizedString("German", comment: "German")
         case .Espanol:
-            value = "Spanish"
+            return NSLocalizedString("Spanish", comment: "Spanish")
         case .Italiano:
-            value = "Italian"
+            return NSLocalizedString("Italian", comment: "Italian")
         case .Hrvatski:
-            value = "Croatian"
+            return NSLocalizedString("Croatian", comment: "Croatian")
+        case .Portuguese:
+            return NSLocalizedString("Portuguese", comment: "Portuguese")
         }
-        return value
+    }
+    
+    func appleLanguageCode() -> String {
+        switch self {
+        case .English:
+            return "en" // Assuming UK English; use "en" or "en-US" for American English
+        case .Deutsch:
+            return "de"
+        case .Espanol:
+            return "es"
+        case .Italiano:
+            return "it"
+        case .Hrvatski:
+            return "hr"
+        case .Portuguese:
+            return "pt"
+        }
+    }
+        
+    static var current: SettingsLanguage {
+        get {
+            if let langString = UserDefaults.standard.string(forKey: "lang"),
+               let lang = SettingsLanguage(rawValue: langString) {
+                return lang
+            } else {
+                return .English
+            }
+        }
+        set {
+            // Set the language only for the UI purpose
+            UserDefaults.standard.set(newValue.rawValue, forKey: "lang")
+            
+            // Set the language for the system, must restart the app to have effect
+            let languageCode = newValue.appleLanguageCode()
+            UserDefaults.standard.set([languageCode], forKey: "AppleLanguages")
+            UserDefaults.standard.synchronize()
+        }
     }
 }
-
-
-import Foundation
 
 enum SettingsCurrency: String, CaseIterable {
     case USD

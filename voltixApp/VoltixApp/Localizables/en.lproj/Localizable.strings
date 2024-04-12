@@ -1,10 +1,3 @@
-/*
- Localizable.strings
- VoltixApp
- 
- Created by Amol Kumar on 2024-03-04.
- 
- */
 "secureCryptoVault" = "SECURE CRYPTO VAULT";
 "thisDevice" = "This Device:";
 "homeViewDescription" = "TWO FACTOR AUTHENTICATION\nSECURE, TRUSTED DEVICES\nFULLY SELF-CUSTODIAL\nNO TRACKING, NO REGISTRATION\nFULLY OPEN-SOURCE\nAUDITED";
@@ -117,7 +110,6 @@
 "sameWifiEntendedInstruction" = "Keep devices on the same WiFi Network, choose correct vault and pair devices. Make sure no other devices are running Voltix.";
 "validAddressError" = "Please enter a valid address.";
 "positiveAmountError" = "Amount must be a positive number. Try again.";
-"positiveAmountError" = "Amount must be a positive number. Try again.";
 "nonNegativeFeeError" = "Fee must be a non-negative number. Try again.";
 "walletBalanceExceededError" = "The total amount and fee exceed your wallet's balance. Try again.";
 "mustHaveETHError" = "You must have ETH to pay for gas, before sending a token.";
@@ -157,3 +149,11 @@
 "vaultSecurityFAQQuestion" = "How does the crypto vault app secure my cryptocurrencies?";
 "assetRecoveryFAQQuestion" = "Can I recover my assets if I forget my password?";
 "transactionFeesFAQQuestion" = "Are there any fees for using the crypto vault app?";
+"languageChangeTitle" = "Language changed";
+"restart" = "Please restart the app to apply the new language settings.";
+"EnglishUK" = "English (UK)";
+"German" = "German";
+"Spanish" = "Spanish";
+"Italian" = "Italian";
+"Croatian" = "Croatian";
+"Portuguese" = "Portuguese";
