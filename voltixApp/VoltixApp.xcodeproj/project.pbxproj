@@ -19,6 +19,7 @@
 		465B09A92B7C176700952DD9 /* SendTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09A82B7C176700952DD9 /* SendTransaction.swift */; };
 		465B09B52B7D8E7B00952DD9 /* CryptoPriceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */; };
 		465B09B72B7D909400952DD9 /* CryptoPrice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465B09B62B7D909400952DD9 /* CryptoPrice.swift */; };
+		468029362BC8E4CE005A9EEF /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 468029302BC8E4CE005A9EEF /* Localizable.strings */; };
 		469ED3942B98E776008D4951 /* ThorchainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED3932B98E776008D4951 /* ThorchainService.swift */; };
 		469ED3992B98E896008D4951 /* CosmosBalanceResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED3982B98E896008D4951 /* CosmosBalanceResponse.swift */; };
 		469ED39B2B98E8B5008D4951 /* CosmosBalance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 469ED39A2B98E8B5008D4951 /* CosmosBalance.swift */; };
@@ -93,7 +94,6 @@
 		A65649F22B966A2300E4B329 /* UTXOTransactionStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649F12B966A2300E4B329 /* UTXOTransactionStatus.swift */; };
 		A65649F52B966F3E00E4B329 /* DecodableDefault.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649F42B966F3E00E4B329 /* DecodableDefault.swift */; };
 		A65649F82B96701300E4B329 /* UTXOTransactionMempoolPreviousOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649F72B96701300E4B329 /* UTXOTransactionMempoolPreviousOutput.swift */; };
-		A6564A0B2B96A04D00E4B329 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = A6564A0D2B96A04D00E4B329 /* Localizable.strings */; };
 		A65BA9822BA93A9F00B2D8AA /* DebounceHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9812BA93A9F00B2D8AA /* DebounceHelper.swift */; };
 		A65BA9842BAA07B500B2D8AA /* Background.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9832BAA07B500B2D8AA /* Background.swift */; };
 		A65BA9862BAA0F0D00B2D8AA /* SendCryptoVerifyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65BA9852BAA0F0D00B2D8AA /* SendCryptoVerifyViewModel.swift */; };
@@ -258,6 +258,12 @@
 		465B09A82B7C176700952DD9 /* SendTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendTransaction.swift; sourceTree = "<group>"; };
 		465B09B42B7D8E7B00952DD9 /* CryptoPriceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoPriceService.swift; sourceTree = "<group>"; };
 		465B09B62B7D909400952DD9 /* CryptoPrice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoPrice.swift; sourceTree = "<group>"; };
+		4680292F2BC8E4CE005A9EEF /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		468029512BC8E7DD005A9EEF /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
+		468029522BC8E7F9005A9EEF /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Localizable.strings; sourceTree = "<group>"; };
+		468029532BC8E7FB005A9EEF /* pt */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/Localizable.strings; sourceTree = "<group>"; };
+		468029542BC8E7FE005A9EEF /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
+		468029552BC8F688005A9EEF /* hr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = hr; path = hr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		469ED3932B98E776008D4951 /* ThorchainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainService.swift; sourceTree = "<group>"; };
 		469ED3982B98E896008D4951 /* CosmosBalanceResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosBalanceResponse.swift; sourceTree = "<group>"; };
 		469ED39A2B98E8B5008D4951 /* CosmosBalance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosBalance.swift; sourceTree = "<group>"; };
@@ -332,7 +338,6 @@
 		A65649F12B966A2300E4B329 /* UTXOTransactionStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionStatus.swift; sourceTree = "<group>"; };
 		A65649F42B966F3E00E4B329 /* DecodableDefault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodableDefault.swift; sourceTree = "<group>"; };
 		A65649F72B96701300E4B329 /* UTXOTransactionMempoolPreviousOutput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionMempoolPreviousOutput.swift; sourceTree = "<group>"; };
-		A6564A0C2B96A04D00E4B329 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		A65BA9812BA93A9F00B2D8AA /* DebounceHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebounceHelper.swift; sourceTree = "<group>"; };
 		A65BA9832BAA07B500B2D8AA /* Background.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Background.swift; sourceTree = "<group>"; };
 		A65BA9852BAA0F0D00B2D8AA /* SendCryptoVerifyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVerifyViewModel.swift; sourceTree = "<group>"; };
@@ -590,6 +595,14 @@
 				465B189D2BA3D7AD001D7407 /* Coingecko */,
 			);
 			path = Prices;
+			sourceTree = "<group>";
+		};
+		468029352BC8E4CE005A9EEF /* Localizables */ = {
+			isa = PBXGroup;
+			children = (
+				468029302BC8E4CE005A9EEF /* Localizable.strings */,
+			);
+			path = Localizables;
 			sourceTree = "<group>";
 		};
 		469ED3952B98E782008D4951 /* Thorchain */ = {
@@ -1060,6 +1073,7 @@
 		DE49A1652B65F6D9000F3AFB /* VoltixApp */ = {
 			isa = PBXGroup;
 			children = (
+				468029352BC8E4CE005A9EEF /* Localizables */,
 				DE49A1662B65F6D9000F3AFB /* VoltixApp.swift */,
 				A60CA7E42BB0D37D00FDEB5C /* ContentView.swift */,
 				461BD0962B7EFA8000BFF703 /* Services */,
@@ -1078,7 +1092,6 @@
 				DE49A16C2B65F6DB000F3AFB /* Assets.xcassets */,
 				DE49A16E2B65F6DB000F3AFB /* voltixApp.entitlements */,
 				DE49A1B62B6A1222000F3AFB /* Info.plist */,
-				A6564A0D2B96A04D00E4B329 /* Localizable.strings */,
 			);
 			path = VoltixApp;
 			sourceTree = "<group>";
@@ -1246,13 +1259,18 @@
 					};
 				};
 			};
-			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */;
+			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
+				es,
+				pt,
+				de,
+				it,
+				hr,
 			);
 			mainGroup = DE49A15A2B65F6D9000F3AFB;
 			packageReferences = (
@@ -1280,7 +1298,7 @@
 				A633B1212B993BF5003D1738 /* Montserrat-Italic.ttf in Resources */,
 				DE8AD7432BC64A4C00339775 /* PrivacyInfo.xcprivacy in Resources */,
 				DE49A1712B65F6DB000F3AFB /* Preview Assets.xcassets in Resources */,
-				A6564A0B2B96A04D00E4B329 /* Localizable.strings in Resources */,
+				468029362BC8E4CE005A9EEF /* Localizable.strings in Resources */,
 				DE49A1942B65F7B6000F3AFB /* Mediator in Resources */,
 				A633B1222B993BF5003D1738 /* Montserrat.ttf in Resources */,
 				DE49A16D2B65F6DB000F3AFB /* Assets.xcassets in Resources */,
@@ -1545,10 +1563,15 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		A6564A0D2B96A04D00E4B329 /* Localizable.strings */ = {
+		468029302BC8E4CE005A9EEF /* Localizable.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
-				A6564A0C2B96A04D00E4B329 /* en */,
+				4680292F2BC8E4CE005A9EEF /* en */,
+				468029512BC8E7DD005A9EEF /* de */,
+				468029522BC8E7F9005A9EEF /* it */,
+				468029532BC8E7FB005A9EEF /* pt */,
+				468029542BC8E7FE005A9EEF /* es */,
+				468029552BC8F688005A9EEF /* hr */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -1872,7 +1895,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */ = {
+		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DE49A1882B65F6DB000F3AFB /* Debug */,
