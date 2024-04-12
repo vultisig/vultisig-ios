@@ -45,7 +45,6 @@ class ChainCellViewModel: ObservableObject {
         
         for coin in group.coins {
             let balance = await getCoinBalance(for: coin)
-            print(balance)
             total += balance
         }
         
@@ -56,7 +55,7 @@ class ChainCellViewModel: ObservableObject {
         do {
             let balanceService = BalanceService()
             let balance = try await balanceService.balance(for: coin)
-            return Decimal(string: balance.balanceFiat) ?? 0
+            return balance.balanceInFiatDecimal
         }
         catch {
             print("error fetching data: \(error.localizedDescription)")
