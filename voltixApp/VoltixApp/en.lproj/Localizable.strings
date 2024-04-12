@@ -148,11 +148,16 @@
 "settings" = "Settings";
 "language" = "Language";
 "currency" = "Currency";
+"of" = "of";
 "faq" = "FAQ";
 "other" = "Other";
+"summary" = "Summary";
+"vaults" = "vaults";
 "shareTheApp" = "Share The App";
 "setupVaultFAQQuestion" = "How do I set up my crypto vault?";
 "supportedCryptoFAQQuestion" = "What cryptocurrencies are supported by Voltix?";
 "vaultSecurityFAQQuestion" = "How does the crypto vault app secure my cryptocurrencies?";
 "assetRecoveryFAQQuestion" = "Can I recover my assets if I forget my password?";
 "transactionFeesFAQQuestion" = "Are there any fees for using the crypto vault app?";
+"youAreCreatingA" = "You are creating a";
+"withTheseDevices" = "With these devices";

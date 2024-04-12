@@ -51,6 +51,7 @@
 		A60CA7E72BB0EC6100FDEB5C /* AccountViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60CA7E62BB0EC6100FDEB5C /* AccountViewModel.swift */; };
 		A60CA7E92BB0F60100FDEB5C /* ViewExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60CA7E82BB0F60100FDEB5C /* ViewExtension.swift */; };
 		A60CA7EB2BB1020900FDEB5C /* DetectOrientation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60CA7EA2BB1020900FDEB5C /* DetectOrientation.swift */; };
+		A611735D2BC8D94400D616F9 /* KeyGenSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A611735C2BC8D94400D616F9 /* KeyGenSummaryView.swift */; };
 		A61BC8122BA2407A00484689 /* SendCryptoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61BC8112BA2407A00484689 /* SendCryptoView.swift */; };
 		A61BC8142BA240FC00484689 /* SendCryptoDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61BC8132BA240FC00484689 /* SendCryptoDetailsView.swift */; };
 		A61BC8162BA256C600484689 /* ProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61BC8152BA256C600484689 /* ProgressBar.swift */; };
@@ -287,6 +288,7 @@
 		A60CA7E62BB0EC6100FDEB5C /* AccountViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountViewModel.swift; sourceTree = "<group>"; };
 		A60CA7E82BB0F60100FDEB5C /* ViewExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewExtension.swift; sourceTree = "<group>"; };
 		A60CA7EA2BB1020900FDEB5C /* DetectOrientation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectOrientation.swift; sourceTree = "<group>"; };
+		A611735C2BC8D94400D616F9 /* KeyGenSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyGenSummaryView.swift; sourceTree = "<group>"; };
 		A61BC8112BA2407A00484689 /* SendCryptoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoView.swift; sourceTree = "<group>"; };
 		A61BC8132BA240FC00484689 /* SendCryptoDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDetailsView.swift; sourceTree = "<group>"; };
 		A61BC8152BA256C600484689 /* ProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressBar.swift; sourceTree = "<group>"; };
@@ -678,6 +680,7 @@
 				DE491CEE2B708260007C88D5 /* KeygenView.swift */,
 				D9AD8EE52B6730A40009F8D5 /* PeerDiscoveryView.swift */,
 				DE9EB0F32BA309AB001747D9 /* MessagePuller.swift */,
+				A611735C2BC8D94400D616F9 /* KeyGenSummaryView.swift */,
 			);
 			path = Keygen;
 			sourceTree = "<group>";
@@ -1473,6 +1476,7 @@
 				A65BA9842BAA07B500B2D8AA /* Background.swift in Sources */,
 				A65649F22B966A2300E4B329 /* UTXOTransactionStatus.swift in Sources */,
 				DE64A4CE2BA7FEE100C342E3 /* JoinKeysignViewModel.swift in Sources */,
+				A611735D2BC8D94400D616F9 /* KeyGenSummaryView.swift in Sources */,
 				A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */,
 				DE64A4CA2BA7F90E00C342E3 /* ServiceDelegate.swift in Sources */,
 				A6E52F802BBE430600FD3785 /* TransactionCell.swift in Sources */,
