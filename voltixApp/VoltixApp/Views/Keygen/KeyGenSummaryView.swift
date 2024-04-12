@@ -8,10 +8,10 @@
 import SwiftUI
 
 struct KeyGenSummaryView: View {
+    @ObservedObject var viewModel: KeygenPeerDiscoveryViewModel
+    
     @State var numberOfMainDevices = 0
     @State var numberOfBackupDevices = 0
-    
-    @ObservedObject var viewModel: KeygenPeerDiscoveryViewModel
     
     var body: some View {
         ZStack {
