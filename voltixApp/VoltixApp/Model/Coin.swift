@@ -105,6 +105,11 @@ class Coin: Codable, Hashable {
         return maxValueDecimal / pow(10, tokenDecimals)
     }
 
+    var balanceInFiatDecimal: Decimal {
+        let balanceInFiat = balanceDecimal * Decimal(priceRate)
+        return balanceInFiat
+    }
+    
     var balanceInFiat: String {
         let balanceInFiat = balanceDecimal * Decimal(priceRate)
         return balanceInFiat.formatToFiat()
