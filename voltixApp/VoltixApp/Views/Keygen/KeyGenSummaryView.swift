@@ -88,9 +88,12 @@ struct KeyGenSummaryView: View {
     }
     
     var list: some View {
-        VStack(spacing: 16) {
-            ForEach(0..<viewModel.selections.count, id: \.self) { index in
-                getCell(index: index, title: viewModel.selections[index])
+        var index = 0
+        
+        return VStack(spacing: 16) {
+            ForEach(Array(viewModel.selections), id: \.self) { selection in
+                index += 1
+                return getCell(index: index, title: selection)
             }
         }
     }
@@ -126,8 +129,12 @@ struct KeyGenSummaryView: View {
     }
     
     var button: some View {
-        FilledButton(title: "continue")
-            .padding(40)
+        Button {
+            
+        } label: {
+            FilledButton(title: "continue")
+                .padding(40)
+        }
     }
     
     private func getCell(index: Int, title: String) -> some View {
@@ -136,7 +143,7 @@ struct KeyGenSummaryView: View {
             Text(". ") +
             Text(title) +
             Text(" (") +
-            Text(getDeviceState(for index: index)) +
+            Text(getDeviceState(for: index)) +
             Text(")")
         }
         .font(.body12Menlo)
@@ -148,11 +155,11 @@ struct KeyGenSummaryView: View {
     }
     
     private func setData() {
-        guard numberOfDevices>2 else {
-            numberOfMainDevices = numberOfDevices
-            numberOfBackupDevices = 0
-            return
-        }
+//        guard numberOfDevices>2 else {
+//            numberOfMainDevices = numberOfDevices
+//            numberOfBackupDevices = 0
+//            return
+//        }
         
         let doubleValue = (2*Double(numberOfDevices))/3
         numberOfMainDevices = Int(ceil(doubleValue))
