@@ -94,7 +94,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 toAddress: toAddress,
                 amount: amount,
                 memo: nil,
-                chainSpecific: chainSpecific
+                chainSpecific: chainSpecific,
+                swapPayload: swapPayload
             )
 
             return true
