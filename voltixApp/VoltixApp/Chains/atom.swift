@@ -42,6 +42,35 @@ class ATOMHelper {
         }
         return .success(self.coinType.deriveAddressFromPublicKey(publicKey: publicKey))
     }
+    func getSwapPreSignedInputData(keysignPayload: KeysignPayload,signingInput: CosmosSigningInput) -> Result<Data,Error> {
+        guard case .Cosmos(let accountNumber, let sequence,let gas) = keysignPayload.chainSpecific else {
+            return .failure(HelperError.runtimeError("fail to get account number and sequence"))
+        }
+        guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
+            return .failure(HelperError.runtimeError("invalid hex public key"))
+        }
+        var input = signingInput
+        input.publicKey = pubKeyData
+        input.accountNumber = accountNumber
+        input.sequence = sequence
+        input.mode = .sync
+        
+        input.fee = CosmosFee.with {
+            $0.gas = ATOMHelper.ATOMGasLimit
+            $0.amounts = [CosmosAmount.with {
+                $0.denom = "uatom"
+                $0.amount = String(gas)
+            }]
+        }
+        // memo has been set
+        // deposit message has been set
+        do {
+            let inputData = try input.serializedData()
+            return .success(inputData)
+        } catch {
+            return .failure(HelperError.runtimeError("fail to get plan"))
+        }
+    }
     func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
         guard case .Cosmos(let accountNumber, let sequence , let gas) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get account number and sequence"))

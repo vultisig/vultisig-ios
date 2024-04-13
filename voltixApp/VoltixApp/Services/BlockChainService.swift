@@ -25,6 +25,7 @@ final class BlockChainService {
     private let utxo = BlockchairService.shared
     private let sol = SolanaService.shared
     private let thor = ThorchainService.shared
+    private let atom = GaiaService.shared
 
     func fetchSpecific(for coin: Coin) async throws -> BlockChainSpecific {
         switch coin.chain {
@@ -67,7 +68,7 @@ final class BlockChainService {
             }
 
         case .gaiaChain:
-            let account = try await thor.fetchAccountNumber(coin.address)
+            let account = try await atom.fetchAccountNumber(coin.address)
 
             guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
                 throw Errors.failToGetAccountNumber
