@@ -13,7 +13,7 @@ class SwapCryptoVerifyViewModel: ObservableObject {
     @Published var isAmountCorrect = false
     @Published var isHackedOrPhished = false
 
-    func validateForm() -> Bool {
+    var isValidForm: Bool {
         return isAmountCorrect && isHackedOrPhished
     }
 }

@@ -41,7 +41,7 @@ class RpcEvmService {
         return (rawBalance,cryptoPrice)
     }
     
-    func getGasInfo(fromAddress: String) async throws -> (gasPrice:String,priorityFee:Int64,nonce:Int64){
+    func getGasInfo(fromAddress: String) async throws -> (gasPrice: String, priorityFee: Int64, nonce: Int64) {
         async let gasPrice = fetchGasPrice()
         async let nonce = fetchNonce(address: fromAddress)
         async let priorityFee = fetchMaxPriorityFeePerGas()

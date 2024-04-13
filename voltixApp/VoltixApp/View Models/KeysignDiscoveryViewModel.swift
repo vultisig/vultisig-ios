@@ -74,7 +74,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         self.participantDiscovery?.getParticipants(serverAddr: self.serverAddr, sessionID: self.sessionID,localParty: self.localPartyID)
     }
     
-    @MainActor func startKeysign(vault: Vault, viewModel: SendCryptoViewModel) -> KeysignView {
+    @MainActor func startKeysign(vault: Vault, viewModel: TransferViewModel) -> KeysignView {
         kickoffKeysign(allParticipants: self.selections.map { $0 })
         participantDiscovery?.stop()
         viewModel.moveToNextView()
@@ -87,7 +87,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
             keysignType: keysignPayload.coin.chain.signingKeyType,
             messsageToSign: keysignMessages, // need to figure out all the prekeysign hashes
             keysignPayload: keysignPayload,
-            sendCryptoViewModel: viewModel,
+            transferViewModel: viewModel,
             encryptionKeyHex: encryptionKeyHex ?? ""
         )
     }

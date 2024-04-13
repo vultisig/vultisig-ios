@@ -6,36 +6,14 @@
 //
 
 import Foundation
-import WalletCore
+import BigInt
 
 @MainActor
 class SwapTransaction: ObservableObject {
 
-    private let thorchainService = ThorchainService.shared
-    private let balanceService = BalanceService.shared
-    private let feeService = FeeService.shared
-
-    @Published var fromCoin: Coin = .example {
-        didSet {
-            updateFromBalance()
-            updateQuote()
-            updateFee()
-        }
-    }
-
-    @Published var toCoin: Coin = .example {
-        didSet {
-            updateToBalance()
-            updateQuote()
-        }
-    }
-
-    @Published var fromAmount: String = .empty {
-        didSet {
-            updateQuote()
-        }
-    }
-
+    @Published var fromCoin: Coin = .example
+    @Published var toCoin: Coin = .example
+    @Published var fromAmount: String = .empty
     @Published var toAmount: String = .empty
     @Published var gas: String = .empty
 
@@ -47,84 +25,71 @@ class SwapTransaction: ObservableObject {
     }
 }
 
-private extension SwapTransaction {
+// TODO: Refactor amount conversions
 
-    enum Errors: Error {
-        case swapQuoteParsingFailed
+extension SwapTransaction {
+
+    var amountInWei: BigInt {
+        BigInt(amountDecimal * pow(10, Double(EVMHelper.ethDecimals)))
     }
 
-    func updateFromBalance() {
-        Task { fromBalance = try await fetchBalance(coin: fromCoin) }
+    var amountInGwei: Int64 {
+        Int64(amountDecimal * Double(EVMHelper.weiPerGWei))
     }
 
-    func updateToBalance() {
-        Task { toBalance = try await fetchBalance(coin: toCoin) }
+    var totalEthTransactionCostWei: BigInt {
+        amountInWei + feeInWei
     }
 
-    func updateQuote() {
-        Task { try await fetchQuotes() }
+    var amountInTokenWeiInt64: Int64 {
+        let decimals = Double(fromCoin.decimals) ?? Double(EVMHelper.ethDecimals) // The default is always in WEI unless the token has a different one like UDSC
+
+        return Int64(amountDecimal * pow(10, decimals))
     }
 
-    func updateFee() {
-        Task { try await fetchFee() }
+    var amountInTokenWei: BigInt {
+        let decimals = Double(fromCoin.decimals) ?? Double(EVMHelper.ethDecimals) // The default is always in WEI unless the token has a different one like UDSC
+
+        return BigInt(amountDecimal * pow(10, decimals))
     }
 
-    func fetchFee() async throws {
-        let response = try await feeService.fetchFee(for: fromCoin)
-        gas = response.gas
-    }
+    // The fee comes in GWEI
+    var feeInWei: BigInt {
+        let gasString: String = gas
 
-    func fetchQuotes() async throws {
-        guard let amount = Decimal(string: fromAmount), fromCoin != toCoin else {
-            throw Errors.swapQuoteParsingFailed
+        if let gasGwei = BigInt(gasString) {
+            let gasWei: BigInt = gasGwei * BigInt(EVMHelper.weiPerGWei) // Equivalent to 10^9
+            return gasWei
+        } else {
+            print("Invalid gas value")
         }
 
-        let quote = try await thorchainService.fetchSwapQuotes(
-            address: toCoin.address,
-            fromAsset: fromCoin.swapAsset,
-            toAsset: toCoin.swapAsset,
-            amount: (amount * 100_000_000).description // https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
-        )
-
-        guard let expected = Decimal(string: quote.expectedAmountOut) else {
-            throw Errors.swapQuoteParsingFailed
-        }
-
-        toAmount = (expected / Decimal(100_000_000)).description
+        return 0
     }
 
-    func fetchBalance(coin: Coin) async throws -> String {
-        return try await balanceService.balance(for: coin).coinBalance
+    var amountInLamports: Int64 {
+        Int64(amountDecimal * 1_000_000_000)
     }
 
-    func swapAsset(for coin: Coin) -> THORChainSwapAsset {
-        return THORChainSwapAsset.with {
-            switch coin.chain {
-            case .thorChain:
-                $0.chain = .thor
-            case .ethereum:
-                $0.chain = .eth
-            case .avalanche:
-                $0.chain = .avax
-            case .bscChain:
-                $0.chain = .bsc
-            case .bitcoin:
-                $0.chain = .btc
-            case .bitcoinCash:
-                $0.chain = .bch
-            case .litecoin:
-                $0.chain = .ltc
-            case .dogecoin:
-                $0.chain = .doge
-            case .gaiaChain:
-                $0.chain = .atom
-            case .solana: break
-            }
-            $0.symbol = coin.ticker
-            if !coin.isNativeToken {
-                $0.tokenID = coin.contractAddress
-            }
-        }
+    var amountInSats: Int64 {
+        Int64(amountDecimal * 100_000_000)
+    }
+
+    var feeInSats: Int64 {
+        Int64(gas) ?? Int64(20) // Assuming that the gas is in sats
+    }
+
+    var amountDecimal: Double {
+        let amountString = fromAmount.replacingOccurrences(of: ",", with: ".")
+        return Double(amountString) ?? 0
+    }
+    var amountInCoinDecimal: Int64 {
+        let amountDouble = amountDecimal
+        let decimals = Int(fromCoin.decimals) ?? 8
+        return Int64(amountDouble * pow(10,Double(decimals)))
+    }
+    var gasDecimal: Double {
+        let gasString = gas.replacingOccurrences(of: ",", with: ".")
+        return Double(gasString) ?? 0
     }
 }
-

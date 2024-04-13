@@ -43,13 +43,23 @@ struct SwapCryptoDetailsView: View {
     var fromCoinField: some View {
         VStack(spacing: 8) {
             getTitle(for: "from")
-            TokenSelectorDropdown(coins: $swapViewModel.coins, selected: $tx.fromCoin)
+            TokenSelectorDropdown(coins: $swapViewModel.coins, selected: $tx.fromCoin, onSelect: { _ in
+                Task {
+                    await swapViewModel.updateFromBalance(tx: tx)
+                    await swapViewModel.updateQuotes(tx: tx)
+                    await swapViewModel.updateFee(tx: tx)
+                }
+            })
             getBalance(for: tx.fromBalance)
         }
     }
     
     var fromAmountField: some View {
-        SendCryptoAmountTextField(amount: $tx.fromAmount, onChange: { _ in })
+        SendCryptoAmountTextField(amount: $tx.fromAmount, onChange: { _ in
+            Task {
+                await swapViewModel.updateQuotes(tx: tx)
+            }
+        })
     }
     
     var swapButton: some View {
@@ -65,7 +75,12 @@ struct SwapCryptoDetailsView: View {
     var toCoinField: some View {
         VStack(spacing: 8) {
             getTitle(for: "to")
-            TokenSelectorDropdown(coins: $swapViewModel.coins, selected: $tx.toCoin)
+            TokenSelectorDropdown(coins: $swapViewModel.coins, selected: $tx.toCoin, onSelect: { _ in
+                Task {
+                    await swapViewModel.updateToBalance(tx: tx)
+                    await swapViewModel.updateQuotes(tx: tx)
+                }
+            })
             getBalance(for: tx.toBalance)
         }
     }

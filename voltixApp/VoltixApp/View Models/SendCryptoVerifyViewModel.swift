@@ -43,7 +43,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
         
         if tx.coin.chain.chainType == ChainType.UTXO {
             do{
-                _ = try await utxo.fetchBlockchairData(address: tx.fromAddress, coin: tx.coin)
+                _ = try await utxo.fetchBlockchairData(coin: tx.coin)
             }catch{
                 print("fail to fetch utxo data from blockchair , error:\(error.localizedDescription)")
             }
@@ -210,7 +210,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
                     coin: tx.coin,
                     toAddress: tx.toAddress,
                     toAmount: tx.amountInLamports,
-                    chainSpecific: BlockChainSpecific.Solana(recentBlockHash: recentBlockHash, priorityFee: highPriorityFee),
+                    chainSpecific: BlockChainSpecific.Solana(recentBlockHash: recentBlockHash, priorityFee: highPriorityFee, feeInLamports: feeInLamports),
                     utxos: [],
                     memo: tx.memo, swapPayload: nil
                 )
