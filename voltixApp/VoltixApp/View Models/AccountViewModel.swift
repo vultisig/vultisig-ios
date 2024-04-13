@@ -16,6 +16,7 @@ class AccountViewModel: ObservableObject {
     @Published var isAuthenticated = false
     @Published var showSplashView = true
     @Published var didUserCancelAuthentication = false
+    @Published var canLogin = true
     
     func authenticateUser() {
         let context = LAContext()
@@ -64,13 +65,28 @@ class AccountViewModel: ObservableObject {
         }
     }
     
+    func continueLogin() {
+        guard !isAuthenticated else {
+            return
+        }
+        
+        guard !showOnboarding || isAuthenticationEnabled else {
+            return
+        }
+        
+        canLogin = true
+        showSplashView = false
+        showSplashView = true
+    }
+    
     func resetLogin() {
         guard !showOnboarding || isAuthenticationEnabled else {
             return
         }
         
+        canLogin = false
         isAuthenticated = false
-        showSplashView = true
         didUserCancelAuthentication = false
+        showSplashView = true
     }
 }
