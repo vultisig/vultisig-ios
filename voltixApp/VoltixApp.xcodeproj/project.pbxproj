@@ -15,7 +15,6 @@
 		461AD1BB2BC7239C00959278 /* DeviceInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 461AD1BA2BC7239C00959278 /* DeviceInfo.swift */; };
 		462DCD6C2BCA1229003D542F /* coinpaprika.json in Resources */ = {isa = PBXBuildFile; fileRef = 462DCD6B2BCA1228003D542F /* coinpaprika.json */; };
 		462DCD702BCA14F3003D542F /* CoinPaprikaQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 462DCD6F2BCA14F3003D542F /* CoinPaprikaQuote.swift */; };
-		462DCD722BCA1EA1003D542F /* coinpaprika_coins.json in Resources */ = {isa = PBXBuildFile; fileRef = 462DCD712BCA1EA1003D542F /* coinpaprika_coins.json */; };
 		462DCD742BCA1F45003D542F /* CoinPaprikaCoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 462DCD732BCA1F45003D542F /* CoinPaprikaCoin.swift */; };
 		463408662BA9C1D200246248 /* CoinTypeExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 463408652BA9C1D200246248 /* CoinTypeExtension.swift */; };
 		465A8D532B9E689B006E7457 /* SolanaService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465A8D522B9E689B006E7457 /* SolanaService.swift */; };
@@ -262,7 +261,6 @@
 		461AD1BA2BC7239C00959278 /* DeviceInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceInfo.swift; sourceTree = "<group>"; };
 		462DCD6B2BCA1228003D542F /* coinpaprika.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = coinpaprika.json; sourceTree = "<group>"; };
 		462DCD6F2BCA14F3003D542F /* CoinPaprikaQuote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinPaprikaQuote.swift; sourceTree = "<group>"; };
-		462DCD712BCA1EA1003D542F /* coinpaprika_coins.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = coinpaprika_coins.json; sourceTree = "<group>"; };
 		462DCD732BCA1F45003D542F /* CoinPaprikaCoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinPaprikaCoin.swift; sourceTree = "<group>"; };
 		463408652BA9C1D200246248 /* CoinTypeExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinTypeExtension.swift; sourceTree = "<group>"; };
 		465A8D522B9E689B006E7457 /* SolanaService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolanaService.swift; sourceTree = "<group>"; };
@@ -573,7 +571,6 @@
 		462DCD6A2BCA11AF003D542F /* Price */ = {
 			isa = PBXGroup;
 			children = (
-				462DCD712BCA1EA1003D542F /* coinpaprika_coins.json */,
 				462DCD6B2BCA1228003D542F /* coinpaprika.json */,
 			);
 			path = Price;
@@ -1340,7 +1337,6 @@
 				DE8AD7432BC64A4C00339775 /* PrivacyInfo.xcprivacy in Resources */,
 				DE49A1712B65F6DB000F3AFB /* Preview Assets.xcassets in Resources */,
 				468029362BC8E4CE005A9EEF /* Localizable.strings in Resources */,
-				462DCD722BCA1EA1003D542F /* coinpaprika_coins.json in Resources */,
 				DE49A1942B65F7B6000F3AFB /* Mediator in Resources */,
 				A633B1222B993BF5003D1738 /* Montserrat.ttf in Resources */,
 				DE49A16D2B65F6DB000F3AFB /* Assets.xcassets in Resources */,
