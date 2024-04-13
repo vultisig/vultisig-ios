@@ -36,6 +36,11 @@ struct ContentView: View {
             .onAppear {
                 authenticateUser()
             }
+            .onChange(of: accountViewModel.canLogin) { oldValue, newValue in
+                if newValue {
+                    authenticateUser()
+                }
+            }
     }
     
     var onboardingView: some View {
@@ -51,6 +56,10 @@ struct ContentView: View {
     }
     
     private func authenticateUser() {
+        guard accountViewModel.canLogin else {
+            return
+        }
+        
         guard !accountViewModel.showOnboarding && vaults.count>0 else {
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                 accountViewModel.showSplashView = false
@@ -58,9 +67,7 @@ struct ContentView: View {
             return
         }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            accountViewModel.authenticateUser()
-        }
+        accountViewModel.authenticateUser()
     }
 }
 

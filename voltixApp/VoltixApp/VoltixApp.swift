@@ -32,6 +32,8 @@ struct VoltixApp: App {
         .modelContainer(sharedModelContainer)
         .onChange(of: scenePhase) {
             switch scenePhase {
+            case .active:
+                continueLogin()
             case .inactive, .background:
                 resetLogin()
             default:
@@ -51,6 +53,10 @@ struct VoltixApp: App {
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()
+    
+    private func continueLogin() {
+        accountViewModel.continueLogin()
+    }
     
     private func resetLogin() {
         accountViewModel.resetLogin()
