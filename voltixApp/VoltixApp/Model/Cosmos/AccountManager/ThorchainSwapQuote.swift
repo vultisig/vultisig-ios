@@ -25,6 +25,7 @@ struct ThorchainSwapQuote: Codable {
     let streamingSwapBlocks: Int
     let totalSwapSeconds: Int?
     let warning: String
+    let router: String?
 
     enum CodingKeys: String, CodingKey {
         case dustThreshold = "dust_threshold"
@@ -44,6 +45,7 @@ struct ThorchainSwapQuote: Codable {
         case streamingSwapBlocks = "streaming_swap_blocks"
         case totalSwapSeconds = "total_swap_seconds"
         case warning
+        case router
     }
 }
 
