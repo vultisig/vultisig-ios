@@ -97,7 +97,12 @@ class Coin: Codable, Hashable {
     }
     
     var swapAsset: String {
-        guard !isNativeToken else { return "\(chain.swapAsset).\(chain.ticker)" }
+        guard !isNativeToken else {
+            if chain == .gaiaChain {
+                return "\(chain.swapAsset).ATOM"
+            }
+            return "\(chain.swapAsset).\(chain.ticker)"
+        }
         return "\(chain.swapAsset).\(ticker)-\(contractAddress)"
     }
     

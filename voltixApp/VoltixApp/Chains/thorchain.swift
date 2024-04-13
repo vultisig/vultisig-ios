@@ -45,7 +45,7 @@ enum THORChainHelper {
         input.publicKey = pubKeyData
         input.accountNumber = accountNumber
         input.sequence = sequence
-        input.mode = .block
+        input.mode = .sync
         // THORChain fee is 0.02 RUNE
         input.fee = CosmosFee.with {
             $0.gas = 20000000

@@ -76,9 +76,9 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             toAsset: swapAsset(for: tx.toCoin),
             toAddress: tx.toCoin.address,
             vaultAddress: quote!.inboundAddress,
-            routerAddress: nil,
+            routerAddress: quote!.router,
             fromAmount: swapAmount(for: tx.fromCoin, tx: tx),
-            toAmountLimit: .zero
+            toAmountLimit: quote?.expectedAmountOut ?? .zero
         )
         
         let keysignFactory = KeysignPayloadFactory()
@@ -192,7 +192,7 @@ private extension SwapCryptoViewModel {
         case .gaiaChain:
             return tx.amountInCoinDecimal
         case .solana:
-            return tx.amountInSats
+            return tx.amountInLamports
         }
     }
 
