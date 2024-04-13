@@ -102,7 +102,7 @@ struct SendCryptoView: View {
                 KeysignDiscoveryView(
                     vault: vault,
                     keysignPayload: keysignPayload,
-                    sendCryptoViewModel: sendCryptoViewModel,
+                    transferViewModel: sendCryptoViewModel,
                     keysignView: $keysignView
                 )
             } else {

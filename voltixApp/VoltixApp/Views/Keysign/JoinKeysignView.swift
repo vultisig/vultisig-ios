@@ -86,7 +86,7 @@ struct JoinKeysignView: View {
             keysignType: viewModel.keysignPayload?.coin.chain.signingKeyType ?? .ECDSA,
             messsageToSign: viewModel.keysignMessages,
             keysignPayload: viewModel.keysignPayload,
-            sendCryptoViewModel: nil,
+            transferViewModel: nil,
             encryptionKeyHex: viewModel.encryptionKeyHex
         )
     }

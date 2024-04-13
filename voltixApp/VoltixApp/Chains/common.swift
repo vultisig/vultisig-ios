@@ -8,8 +8,15 @@ import OSLog
 import Tss
 import CommonCrypto
 
-enum HelperError: Error {
+enum HelperError: Error, LocalizedError {
     case runtimeError(String)
+
+    var errorDescription: String? {
+        switch self {
+        case .runtimeError(let string):
+            return string
+        }
+    }
 }
 
 struct SignatureProvider {

@@ -50,6 +50,8 @@ class THORChainSwaps {
                 return utxoHelper.getSigningInputData(keysignPayload: keysignPayload, signingInput: output.bitcoin)
             case .eth:
                 return EVMHelper.getEthereumHelper().getPreSignedInputData(signingInput: output.ethereum, keysignPayload: keysignPayload)
+            case .bsc:
+                return EVMHelper.getBSCHelper().getPreSignedInputData(signingInput: output.ethereum, keysignPayload: keysignPayload)
             default:
                 return .failure(HelperError.runtimeError("not support yet"))
             }
@@ -79,7 +81,10 @@ class THORChainSwaps {
                     let hashes = TransactionCompiler.preImageHashes(coinType: .ethereum, txInputData: inputData)
                     let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
                     return .success([preSigningOutput.dataHash.hexString])
-
+                case .bsc:
+                    let hashes = TransactionCompiler.preImageHashes(coinType: .smartChain, txInputData: inputData)
+                    let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+                    return .success([preSigningOutput.dataHash.hexString])
                 default:
                     return .failure(HelperError.runtimeError("not support yet"))
                 }
@@ -120,6 +125,9 @@ class THORChainSwaps {
             case .eth:
                 // TODO what if it is ERC20
                 return EVMHelper.getEthereumHelper().getSignedTransaction(vaultHexPubKey: self.vaultHexPublicKey, vaultHexChainCode: self.vaultHexChainCode, inputData: inputData, signatures: signatures)
+            case .bsc:
+                return EVMHelper.getBSCHelper().getSignedTransaction(vaultHexPubKey: self.vaultHexPublicKey, vaultHexChainCode: self.vaultHexChainCode, inputData: inputData, signatures: signatures)
+
             default:
                 return .failure(HelperError.runtimeError("not support"))
             }

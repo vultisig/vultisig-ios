@@ -19,7 +19,7 @@ class BalanceService {
         
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin:
-            let blockChairData = try await utxo.fetchBlockchairData(address: coin.address,coin: coin)
+            let blockChairData = try await utxo.fetchBlockchairData(coin: coin)
             coin.rawBalance = blockChairData?.address?.balance?.description ?? "0"
             coin.priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
             let balanceFiat = coin.balanceInFiat

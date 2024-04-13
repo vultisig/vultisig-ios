@@ -9,20 +9,25 @@ import Foundation
 import BigInt
 
 class BlockchairService {
+    
     static let shared = BlockchairService()
-    private init() {}
+
     var blockchairData: [String: Blockchair] = [:]
-    func fetchBlockchairData(address: String, coin: Coin) async throws -> Blockchair? {
+
+    private var cacheFeePrice: [String: (data: BigInt, timestamp: Date)] = [:]
+
+    private init() {}
+
+    func fetchBlockchairData(coin: Coin) async throws -> Blockchair? {
         let coinName = coin.chain.name.lowercased()
-        let key = "\(address)-\(coinName)"
-        let url = Endpoint.blockchairDashboard(address, coinName)
+        let url = Endpoint.blockchairDashboard(coin.address, coinName)
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             let decoder = JSONDecoder()
             decoder.keyDecodingStrategy = .convertFromSnakeCase
             let decodedData = try decoder.decode(BlockchairResponse.self, from: data)
-            if let blockchairData = decodedData.data[coin.address] {
-                self.blockchairData[key] = blockchairData
+            if let blockchairData = decodedData.data[coin .address] {
+                self.blockchairData[coin.blockchairKey] = blockchairData
                 return blockchairData
             }
         } catch {
@@ -32,8 +37,7 @@ class BlockchairService {
         return nil
     }
     
-    private var cacheFeePrice: [String: (data: BigInt, timestamp: Date)] = [:]
-    func fetchSatsPrice(coin:Coin) async throws -> BigInt {
+    func fetchSatsPrice(coin: Coin) async throws -> BigInt {
         let cacheKey = "utxo-\(coin.chain.name.lowercased())-fee-price"
         if let cachedData: BigInt = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheFeePrice, timeInSeconds: 60*5) {
             return cachedData

@@ -17,11 +17,29 @@ enum BlockChainSpecific: Codable, Hashable {
     case Ethereum(maxFeePerGasGwei: Int64, priorityFeeGwei: Int64, nonce: Int64, gasLimit: Int64) // maxFeePerGasGwei, priorityFeeGwei, nonce , gasLimit
     case ERC20(maxFeePerGasGwei: Int64, priorityFeeGwei: Int64, nonce: Int64, gasLimit: Int64, contractAddr: String)
     case THORChain(accountNumber: UInt64, sequence: UInt64)
-    case Cosmos(accountNumber:UInt64,sequence:UInt64,gas:UInt64)
-    case Solana(recentBlockHash: String,priorityFee:UInt64) // priority fee is in microlamports
+    case Cosmos(accountNumber: UInt64, sequence:UInt64, gas: UInt64)
+    case Solana(recentBlockHash: String, priorityFee: UInt64, feeInLamports: String) // priority fee is in microlamports
+
+    var gas: String {
+        switch self {
+        case .UTXO(let byteFee):
+            return String(byteFee)
+        case .Ethereum(let maxFeePerGasGwei, _, _, _):
+            return String(maxFeePerGasGwei)
+        case .ERC20(let maxFeePerGasGwei, _, _, _, _):
+            return String(maxFeePerGasGwei)
+        case .THORChain:
+            return "0.02"
+        case .Cosmos:
+            return "0.0075"
+        case .Solana(_, _, let feeInLamports):
+            return feeInLamports
+        }
+    }
 }
 
 struct KeysignPayload: Codable, Hashable {
+
     let coin: Coin
     // only toAddress is required , from Address is our own address
     let toAddress: String
@@ -34,7 +52,7 @@ struct KeysignPayload: Codable, Hashable {
     let utxos: [UtxoInfo]
     let memo: String? // optional memo
     let swapPayload: THORChainSwapPayload?
-    
+
     var toAmountString: String {
         if(coin.chainType == .EVM){
             return "\(Decimal(toAmount) / Decimal(EVMHelper.weiPerGWei)) \(coin.ticker)"
@@ -42,7 +60,7 @@ struct KeysignPayload: Codable, Hashable {
         return "\(Decimal(toAmount) / pow(10, Int(coin.decimals) ?? 0)) \(coin.ticker)"
     }
         
-    func getKeysignMessages(vault:Vault) -> Result<[String], Error> {
+    func getKeysignMessages(vault: Vault) -> Result<[String], Error> {
         // this is a swap
         if swapPayload != nil {
             let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)

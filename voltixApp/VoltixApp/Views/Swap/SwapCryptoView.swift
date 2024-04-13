@@ -12,6 +12,8 @@ struct SwapCryptoView: View {
     @StateObject var tx = SwapTransaction()
     @StateObject var swapViewModel = SwapCryptoViewModel()
 
+    @State var keysignView: KeysignView?
+
     let coin: Coin
     let vault: Vault
 
@@ -29,7 +31,10 @@ struct SwapCryptoView: View {
             }
         }
         .task {
-            swapViewModel.load(tx: tx, fromCoin: coin, coins: vault.coins)
+            await swapViewModel.load(tx: tx, fromCoin: coin, coins: vault.coins)
+        }
+        .alert(isPresented: swapViewModel.showError) {
+            alert
         }
     }
     
@@ -48,6 +53,12 @@ struct SwapCryptoView: View {
                 detailsView
             case 2:
                 verifyView
+            case 3:
+                pairView
+            case 4:
+                keysign
+            case 5:
+                doneView
             default:
                 errorView
             }
@@ -62,8 +73,57 @@ struct SwapCryptoView: View {
         SwapVerifyView(tx: tx, swapViewModel: swapViewModel)
     }
 
+    var pairView: some View {
+        ZStack {
+            if let keysignPayload = swapViewModel.keysignPayload {
+                KeysignDiscoveryView(
+                    vault: vault,
+                    keysignPayload: keysignPayload,
+                    transferViewModel: swapViewModel,
+                    keysignView: $keysignView
+                )
+            } else {
+                SendCryptoVaultErrorView()
+            }
+        }
+    }
+
+    var keysign: some View {
+        ZStack {
+            if let keysignView = keysignView {
+                keysignView
+            } else {
+                SendCryptoSigningErrorView()
+            }
+        }
+    }
+
+    var doneView: some View {
+        ZStack {
+            if let hash = swapViewModel.hash {
+                SendCryptoDoneView(vault:vault, hash: hash, explorerLink: Endpoint.getExplorerURL(
+                    chainTicker: tx.fromCoin.chain.ticker,
+                    txid: hash
+                ))
+            } else {
+                SendCryptoSigningErrorView()
+            }
+        }.onAppear() {
+            Task {
+                try await Task.sleep(for: .seconds(5))
+                swapViewModel.stopMediator()
+            }
+        }
+    }
+
     var errorView: some View {
         SendCryptoSigningErrorView()
+    }
+
+    var alert: Alert {
+        Alert(title: Text(NSLocalizedString("error", comment: "")),
+              message: Text(swapViewModel.error?.localizedDescription ?? .empty),
+              dismissButton: .default(Text(NSLocalizedString("ok", comment: ""))))
     }
 }
 
