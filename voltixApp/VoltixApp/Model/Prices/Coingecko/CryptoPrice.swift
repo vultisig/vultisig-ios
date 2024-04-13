@@ -4,6 +4,10 @@ import Foundation
 class CryptoPrice: Codable {
     var prices: [String: [String: Double]]
     
+    init(prices: [String: [String: Double]]){
+        self.prices = prices
+    }
+    
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: DynamicCodingKey.self)
         var prices = [String: [String: Double]]()
