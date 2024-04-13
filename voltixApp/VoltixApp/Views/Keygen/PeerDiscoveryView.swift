@@ -55,6 +55,8 @@ struct PeerDiscoveryView: View {
             switch viewModel.status {
             case .WaitingForDevices:
                 waitingForDevices
+            case .Summary:
+                summary
             case .Keygen:
                 keygenView
             case .Failure:
@@ -69,6 +71,10 @@ struct PeerDiscoveryView: View {
             content
             bottomButtons
         }
+    }
+    
+    var summary: some View {
+        KeyGenSummaryView(viewModel: viewModel)
     }
     
     var content: some View {
@@ -156,7 +162,6 @@ struct PeerDiscoveryView: View {
         ScrollView{
             LazyVGrid(columns: columns, spacing: 32) {
                 ForEach(participantDiscovery.peersFound, id: \.self) { peer in
-                    
                     Button {
                         handleSelection(peer)
                     } label: {
@@ -170,7 +175,7 @@ struct PeerDiscoveryView: View {
     
     var bottomButtons: some View {
         Button(action: {
-            viewModel.startKeygen()
+            viewModel.showSummary()
         }) {
             FilledButton(title: "continue")
                 .padding(40)

@@ -157,3 +157,9 @@
 "Italian" = "Italienisch";
 "Croatian" = "Kroatisch";
 "Portuguese" = "Portugiesisch";
+"youAreCreatingA" = "Du erstellst eine";
+"withTheseDevices" = "Mit diesen Geräten";
+"pairDeviceDisclaimersFirst" = "Du kannst nur Transaktionen senden, wenn mindestens";
+"pairDeviceDisclaimersSecond" = "dieser Geräte vorhanden sind.";
+"backupNotNeededDisclaimer" = "Dein Backup-Gerät wird nicht benötigt, es sei denn, du verlierst eines deiner Hauptgeräte.";
+"noBackupDeviceDisclaimer" = "Du hast kein drittes Backup-Gerät - daher solltest du später einen Tresoranteil sicher sichern.";
