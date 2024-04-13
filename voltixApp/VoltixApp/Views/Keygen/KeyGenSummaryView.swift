@@ -85,7 +85,7 @@ struct KeyGenSummaryView: View {
         return VStack(spacing: 16) {
             ForEach(Array(viewModel.selections), id: \.self) { selection in
                 index += 1
-                pairDevices -= selection==Utils.getLocalDeviceIdentity() ? 0 : 1
+                pairDevices -= selection==viewModel.localPartyID ? 0 : 1
                 return getCell(index: index, title: selection, isPairDevice: pairDevices>0)
             }
         }
@@ -163,7 +163,7 @@ struct KeyGenSummaryView: View {
     private func getDeviceState(deviceId: String, isPairDevice: Bool) -> String {
         let deviceState: String
         
-        if deviceId == Utils.getLocalDeviceIdentity() {
+        if deviceId == viewModel.localPartyID {
             deviceState = "thisDevice"
         } else if isPairDevice {
             deviceState = "pairDevice"
