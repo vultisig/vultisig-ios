@@ -12,6 +12,8 @@ struct TokenSelectorDropdown: View {
     @Binding var coins: [Coin]
     @Binding var selected: Coin
 
+    var onSelect: ((Coin) -> Void)?
+
     @State var isExpanded = false
 
     var body: some View {
@@ -105,6 +107,7 @@ struct TokenSelectorDropdown: View {
     private func handleSelection(for coin: Coin) {
         isExpanded = false
         selected = coin
+        onSelect?(coin)
     }
 }
 

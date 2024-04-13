@@ -157,3 +157,9 @@
 "Italian" = "Italiano";
 "Croatian" = "Croata";
 "Portuguese" = "Portugués";
+"youAreCreatingA" = "Estás creando un";
+"withTheseDevices" = "Con estos dispositivos";
+"pairDeviceDisclaimersFirst" = "Solo puedes enviar transacciones con al menos";
+"pairDeviceDisclaimersSecond" = "de estos dispositivos presentes.";
+"backupNotNeededDisclaimer" = "Tu dispositivo de respaldo no es necesario a menos que pierdas uno de tus dispositivos principales.";
+"noBackupDeviceDisclaimer" = "No tienes un tercer dispositivo de respaldo, así que debes hacer una copia de seguridad de una parte del cofre de forma segura más tarde.";

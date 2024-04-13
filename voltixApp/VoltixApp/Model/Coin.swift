@@ -119,7 +119,11 @@ class Coin: Codable, Hashable {
         let balanceInFiat = balanceDecimal * Decimal(priceRate)
         return balanceInFiat
     }
-    
+
+    var blockchairKey: String {
+        return "\(address)-\(chain.name.lowercased())"
+    }
+
     func toString() -> String {
         let properties = [
             "chain: \(chain.name)",

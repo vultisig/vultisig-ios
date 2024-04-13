@@ -19,6 +19,9 @@ struct SwapVerifyView: View {
             Background()
             view
         }
+        .onDisappear {
+            swapViewModel.isLoading = false
+        }
     }
 
     var view: some View {
@@ -26,6 +29,7 @@ struct SwapVerifyView: View {
             fields
             button
         }
+        .blur(radius: swapViewModel.isLoading ? 1 : 0)
     }
 
     var fields: some View {
@@ -60,12 +64,16 @@ struct SwapVerifyView: View {
 
     var button: some View {
         Button {
-            swapViewModel.moveToNextView()
+            Task {
+                if await swapViewModel.buildKeysignPayload(tx: tx) {
+                    swapViewModel.moveToNextView()
+                }
+            }
         } label: {
             FilledButton(title: "sign")
         }
-        .disabled(!verifyViewModel.validateForm())
-        .opacity(verifyViewModel.validateForm() ? 1 : 0.5)
+        .disabled(!verifyViewModel.isValidForm)
+        .opacity(verifyViewModel.isValidForm ? 1 : 0.5)
         .padding(40)
     }
 

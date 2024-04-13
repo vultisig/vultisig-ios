@@ -157,3 +157,9 @@
 "Italian" = "Italiano";
 "Croatian" = "Croato";
 "Portuguese" = "Portoghese";
+"youAreCreatingA" = "Stai creando un";
+"withTheseDevices" = "Con questi dispositivi";
+"pairDeviceDisclaimersFirst" = "Puoi inviare solo transazioni con almeno";
+"pairDeviceDisclaimersSecond" = "di questi dispositivi presenti.";
+"backupNotNeededDisclaimer" = "Il tuo dispositivo di backup non è necessario a meno che non perdi uno dei tuoi dispositivi principali.";
+"noBackupDeviceDisclaimer" = "Non hai un terzo dispositivo di backup, quindi dovresti fare il backup di una parte del vault in modo sicuro in seguito.";

@@ -43,8 +43,17 @@ class ThorchainService {
     func fetchSwapQuotes(address: String, fromAsset: String, toAsset: String, amount: String) async throws -> ThorchainSwapQuote {
         let url = Endpoint.fetchSwaoQuoteThorchainNineRealms(address: address, fromAsset: fromAsset, toAsset: toAsset, amount: amount)
         let (data, _) = try await URLSession.shared.data(for: get9RRequest(url: url))
-        let response = try JSONDecoder().decode(ThorchainSwapQuote.self, from: data)
-        return response
+        do {
+            let response = try JSONDecoder().decode(ThorchainSwapQuote.self, from: data)
+            return response
+        } catch {
+            struct CustomError: Codable, Error, LocalizedError {
+                let error: String
+                var errorDescription: String? { return error }
+            }
+            let error = try JSONDecoder().decode(CustomError.self, from: data)
+            throw error
+        }
     }
 
     private func cacheBalances(_ balances: [CosmosBalance], forAddress address: String) {

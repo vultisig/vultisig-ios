@@ -140,8 +140,14 @@
 "settings" = "Settings";
 "language" = "Language";
 "currency" = "Currency";
+"of" = "of";
 "faq" = "FAQ";
 "other" = "Other";
+"summary" = "Summary";
+"vaults" = "vaults";
+"thisDevice" = "This Device";
+"pairDevice" = "Pair Device";
+"backupDevice" = "Backup Device";
 "shareTheApp" = "Share The App";
 "noChainSelected" = "No Chain Selected";
 "setupVaultFAQQuestion" = "How do I set up my crypto vault?";
@@ -157,3 +163,9 @@
 "Italian" = "Italian";
 "Croatian" = "Croatian";
 "Portuguese" = "Portuguese";
+"youAreCreatingA" = "You are creating a";
+"withTheseDevices" = "With these devices";
+"pairDeviceDisclaimersFirst" = "You can only send transactions with";
+"pairDeviceDisclaimersSecond" = "of these devices present.";
+"backupNotNeededDisclaimer" = "Your backup device is not needed unless you lose one of your main devices.";
+"noBackupDeviceDisclaimer" = "You do not have a 3rd backup device - so you should backup one vault share securely later.";
