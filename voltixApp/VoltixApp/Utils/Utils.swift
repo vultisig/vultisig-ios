@@ -13,7 +13,7 @@ import UIKit
 
 enum Utils {
     static let logger = Logger(subsystem: "util", category: "network")
-    public static func sendRequest<T: Codable>(urlString: String, method: String, body: T?, completion: @escaping (Bool) -> Void) {
+    public static func sendRequest<T: Codable>(urlString: String, method: String,headers: [String: String], body: T?, completion: @escaping (Bool) -> Void) {
         logger.debug("url:\(urlString)")
         guard let url = URL(string: urlString) else {
             logger.error("URL can't be constructed from: \(urlString)")
@@ -24,7 +24,9 @@ enum Utils {
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        
+        for item in headers {
+            request.setValue(item.value, forHTTPHeaderField: item.key)
+        }
         if let body = body {
             do {
                 let jsonData = try JSONEncoder().encode(body)

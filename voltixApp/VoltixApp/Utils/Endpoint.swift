@@ -10,7 +10,7 @@ import Foundation
 class Endpoint {
     
     static let voltixApiProxy = "https://api.voltix.org"
-    static let voltixRouter = "http://192.168.35:9090/"
+    static let voltixRouter = "http://192.168.1.35:9090"
     static let broadcastTransactionThorchainNineRealms = "https://thornode.ninerealms.com/cosmos/tx/v1beta1/txs"
     
     static func fetchAccountNumberThorchainNineRealms(_ address: String) -> String {

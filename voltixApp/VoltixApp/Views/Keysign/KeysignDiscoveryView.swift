@@ -11,7 +11,7 @@ struct KeysignDiscoveryView: View {
     let transferViewModel: TransferViewModel
     @Binding var keysignView: KeysignView?
     
-    @StateObject var participantDiscovery = ParticipantDiscovery()
+    @StateObject var participantDiscovery = ParticipantDiscovery(isKeygen: false)
     @StateObject var viewModel = KeysignDiscoveryViewModel()
     
     @State var isLoading = false

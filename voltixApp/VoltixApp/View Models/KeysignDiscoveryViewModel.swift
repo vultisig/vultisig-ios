@@ -71,7 +71,10 @@ class KeysignDiscoveryViewModel: ObservableObject {
         self.mediator.start(name: self.serviceName)
         self.logger.info("mediator server started")
         self.startKeysignSession()
-        self.participantDiscovery?.getParticipants(serverAddr: self.serverAddr, sessionID: self.sessionID,localParty: self.localPartyID)
+        self.participantDiscovery?.getParticipants(serverAddr: self.serverAddr, 
+                                                   sessionID: self.sessionID,
+                                                   localParty: self.localPartyID,
+                                                   pubKeyECDSA: vault.pubKeyECDSA)
     }
     
     @MainActor func startKeysign(vault: Vault, viewModel: TransferViewModel) -> KeysignView {
@@ -94,7 +97,10 @@ class KeysignDiscoveryViewModel: ObservableObject {
     
     func kickoffKeysign(allParticipants: [String]) {
         let urlString = "\(self.serverAddr)/start/\(self.sessionID)"
-        Utils.sendRequest(urlString: urlString, method: "POST", body: allParticipants) { _ in
+        Utils.sendRequest(urlString: urlString,
+                          method: "POST",
+                          headers: TssHelper.getKeysignRequestHeader(pubKey: vault.pubKeyECDSA),
+                          body: allParticipants) { _ in
             self.logger.info("kicked off keysign successfully")
         }
     }
@@ -105,7 +111,10 @@ class KeysignDiscoveryViewModel: ObservableObject {
     private func startKeysignSession() {
         let urlString = "\(self.serverAddr)/\(self.sessionID)"
         let body = [self.localPartyID]
-        Utils.sendRequest(urlString: urlString, method: "POST", body: body) { success in
+        Utils.sendRequest(urlString: urlString, 
+                          method: "POST",
+                          headers: TssHelper.getKeysignRequestHeader(pubKey: vault.pubKeyECDSA),
+                          body: body) { success in
             if success {
                 self.logger.info("Started session successfully.")
             } else {

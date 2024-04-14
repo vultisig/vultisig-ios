@@ -75,7 +75,7 @@ class JoinKeygenViewModel: ObservableObject {
         
         let urlString = "\(serverURL)/\(sessionID)"
         let body = [localPartyID]
-        Utils.sendRequest(urlString: urlString, method: "POST", body: body) { success in
+        Utils.sendRequest(urlString: urlString, method: "POST",headers: TssHelper.getKeygenRequestHeader(), body: body) { success in
             if success {
                 self.logger.info("Successfully joined the key generation committee.")
                 DispatchQueue.main.async {
