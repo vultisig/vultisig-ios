@@ -52,6 +52,8 @@ class MessagePuller: ObservableObject {
     }
     func getHeaders(messageID: String?) -> [String:String]{
         var header = [String: String]()
+        // for keygen message id will be nil
+        // only keysign will pass message id
         if let messageID {
             header = TssHelper.getKeysignRequestHeader(pubKey: vaultPubKey)
             header["message_id"] = messageID
@@ -67,6 +69,7 @@ class MessagePuller: ObservableObject {
             switch result {
             case .success(let data):
                 do {
+                    print("Response: \(String(data:data,encoding: .utf8) ?? "")")
                     let decoder = JSONDecoder()
                     let msgs = try decoder.decode([Message].self, from: data)
                     for msg in msgs.sorted(by: { $0.sequenceNo < $1.sequenceNo }) {

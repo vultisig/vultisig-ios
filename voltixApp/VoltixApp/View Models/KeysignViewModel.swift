@@ -97,7 +97,8 @@ class KeysignViewModel: ObservableObject {
                                                  sessionID: self.sessionID,
                                                  messageID: msgHash,
                                                  encryptionKeyHex: encryptionKeyHex,
-                                                 vaultPubKey: pubkey)
+                                                 vaultPubKey: pubkey,
+                                                 isKeygen: false)
             self.stateAccess = LocalStateAccessorImpl(vault: self.vault)
             var err: NSError?
             // keysign doesn't need to recreate preparams

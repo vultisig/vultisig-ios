@@ -17,17 +17,19 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
     // at the same time , add message id here to avoid messages belongs to differet keysign message messed with each other
     let messageID: String?
     let encryptionKeyHex: String
+    let isKeygen: Bool
     var vaultPubKey = ""
-    let isKeygen = false
+    
     
 
     var counter: Int64 = 1
-    init(mediatorUrl: String, sessionID: String, messageID: String?,encryptionKeyHex: String,vaultPubKey: String) {
+    init(mediatorUrl: String, sessionID: String, messageID: String?,encryptionKeyHex: String,vaultPubKey: String,isKeygen:Bool) {
         self.mediatorUrl = mediatorUrl
         self.sessionID = sessionID
         self.messageID = messageID
         self.encryptionKeyHex = encryptionKeyHex
         self.vaultPubKey = vaultPubKey
+        self.isKeygen = isKeygen
     }
 
     func send(_ fromParty: String?, to: String?, body: String?) throws {

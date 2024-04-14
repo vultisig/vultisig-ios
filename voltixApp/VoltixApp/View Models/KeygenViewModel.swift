@@ -79,7 +79,8 @@ class KeygenViewModel: ObservableObject {
                                                 sessionID: self.sessionID,
                                                 messageID: nil,
                                                 encryptionKeyHex: encryptionKeyHex,
-                                                vaultPubKey: "")
+                                                vaultPubKey: "",
+                                                isKeygen: true)
             let stateAccessorImp = LocalStateAccessorImpl(vault: self.vault)
             self.tssMessenger = messengerImp
             self.stateAccess = stateAccessorImp
