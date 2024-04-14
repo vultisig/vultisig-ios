@@ -10,6 +10,7 @@ struct KeysignMessage: Codable, Hashable {
     let serviceName: String
     let payload: KeysignPayload
     let encryptionKeyHex: String
+    let isPremium: Bool
 }
 
 enum BlockChainSpecific: Codable, Hashable {

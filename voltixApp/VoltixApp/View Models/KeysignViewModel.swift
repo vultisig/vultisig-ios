@@ -189,8 +189,6 @@ class KeysignViewModel: ObservableObject {
 
         switch keysignPayload.coin.chain.chainType {
         case .UTXO:
-            let chainName = keysignPayload.coin.chain.name.lowercased()
-
             guard let coinType = keysignPayload.coin.getCoinType() else {
                 return .failure(HelperError.runtimeError("Coin type not found on Wallet Core"))
             }

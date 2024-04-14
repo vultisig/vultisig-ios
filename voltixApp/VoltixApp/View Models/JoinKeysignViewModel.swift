@@ -31,6 +31,7 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var errorMsg: String = ""
     @Published var keysignPayload: KeysignPayload? = nil
     @Published var serviceName = ""
+    @Published var serverAddress: String? = nil
     var encryptionKeyHex: String = ""
     
     init() {
@@ -62,7 +63,7 @@ class JoinKeysignViewModel: ObservableObject {
     }
     
     func joinKeysignCommittee() {
-        guard let serverURL = serviceDelegate?.serverURL else {
+        guard let serverURL = serverAddress else {
             self.logger.error("Server URL could not be found. Please ensure you're connected to the correct network.")
             return
         }
@@ -114,7 +115,7 @@ class JoinKeysignViewModel: ObservableObject {
     }
     
     private func checkKeysignStarted() {
-        guard let serverURL = serviceDelegate?.serverURL else {
+        guard let serverURL = serverAddress else {
             self.logger.error("Server URL could not be found. Please ensure you're connected to the correct network.")
             return
         }

@@ -68,14 +68,17 @@ class JoinKeygenViewModel: ObservableObject {
     }
     
     func joinKeygenCommittee() {
-        guard let serverURL = serviceDelegate?.serverURL, let sessionID = sessionID else {
+        guard let serverURL = serverAddress, let sessionID = sessionID else {
             logger.error("Required information for joining key generation committee is missing.")
             return
         }
         
         let urlString = "\(serverURL)/\(sessionID)"
         let body = [localPartyID]
-        Utils.sendRequest(urlString: urlString, method: "POST",headers: TssHelper.getKeygenRequestHeader(), body: body) { success in
+        Utils.sendRequest(urlString: urlString, 
+                          method: "POST",
+                          headers: TssHelper.getKeygenRequestHeader(),
+                          body: body) { success in
             if success {
                 self.logger.info("Successfully joined the key generation committee.")
                 DispatchQueue.main.async {
@@ -103,7 +106,7 @@ class JoinKeygenViewModel: ObservableObject {
         }
     }
     private func checkKeygenStarted() {
-        guard let serverURL = serviceDelegate?.serverURL, let sessionID = sessionID else {
+        guard let serverURL = serverAddress, let sessionID = sessionID else {
             logger.error("Required information for checking key generation start is missing.")
             return
         }

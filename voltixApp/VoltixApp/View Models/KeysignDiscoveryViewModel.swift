@@ -21,7 +21,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
     var encryptionKeyHex: String?
     private let mediator = Mediator.shared
     
-    let serverAddr = "http://127.0.0.1:18080"
+    @Published var serverAddr = "http://127.0.0.1:18080"
     @Published var selections = Set<String>()
     @Published var sessionID = ""
     @Published var status = KeysignDiscoveryStatus.WaitingForDevices
@@ -35,6 +35,9 @@ class KeysignDiscoveryViewModel: ObservableObject {
         self.keysignPayload = KeysignPayload(coin: Coin.example, toAddress: "", toAmount: 0, chainSpecific: BlockChainSpecific.UTXO(byteFee: 0), utxos: [], memo: nil, swapPayload: nil)
         self.participantDiscovery = nil
         self.encryptionKeyHex = Encryption.getEncryptionKey()
+        if VoltixPremium.IsPremiumEnabled {
+            serverAddr = Endpoint.voltixRouter
+        }
     }
     
     func setData(vault: Vault, keysignPayload: KeysignPayload, participantDiscovery: ParticipantDiscovery) {
@@ -131,7 +134,8 @@ class KeysignDiscoveryViewModel: ObservableObject {
         let keysignMsg = KeysignMessage(sessionID: sessionID,
                                         serviceName: serviceName,
                                         payload: keysignPayload,
-                                        encryptionKeyHex: encryptionKeyHex)
+                                        encryptionKeyHex: encryptionKeyHex,
+                                        isPremium: VoltixPremium.IsPremiumEnabled)
         do {
             let encoder = JSONEncoder()
             let jsonData = try encoder.encode(keysignMsg)
