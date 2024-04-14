@@ -71,7 +71,7 @@ class KeysignViewModel: ObservableObject {
         self.vault = vault
         self.keysignPayload = keysignPayload
         self.encryptionKeyHex = encryptionKeyHex
-        self.messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex)
+        self.messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex,pubKey: vault.pubKeyECDSA)
     }
     func getTransactionExplorerURL(txid: String) -> String{
         guard let keysignPayload else {

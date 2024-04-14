@@ -112,7 +112,9 @@ class JoinKeygenViewModel: ObservableObject {
         }
         
         let urlString = "\(serverURL)/start/\(sessionID)"
-        Utils.getRequest(urlString: urlString, headers: [String: String](), completion: { result in
+        Utils.getRequest(urlString: urlString,
+                         headers: TssHelper.getKeygenRequestHeader(),
+                         completion: { result in
             switch result {
             case .success(let data):
                 do {

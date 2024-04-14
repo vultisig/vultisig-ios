@@ -57,7 +57,7 @@ class KeygenViewModel: ObservableObject {
         self.mediatorURL = mediatorURL
         self.sessionID = sessionID
         self.encryptionKeyHex = encryptionKeyHex
-        messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex)
+        messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex,pubKey: vault.pubKeyECDSA)
     }
     
     func delaySwitchToMain() {

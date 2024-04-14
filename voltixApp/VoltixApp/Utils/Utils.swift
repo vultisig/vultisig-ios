@@ -55,7 +55,7 @@ enum Utils {
         }.resume()
     }
     
-    public static func deleteFromServer(urlString: String, messageID: String?) {
+    public static func deleteFromServer(urlString: String, headers: [String: String]) {
         guard let url = URL(string: urlString) else {
             logger.error("URL can't be constructed from: \(urlString)")
             return
@@ -63,9 +63,10 @@ enum Utils {
         
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
-        if let messageID {
-            request.addValue(messageID, forHTTPHeaderField: "message_id")
+        for item in headers {
+            request.setValue(item.value, forHTTPHeaderField: item.key)
         }
+        
         URLSession.shared.dataTask(with: request) { _, response, error in
             if let error = error {
                 self.logger.error("Failed to send request, error: \(error)")
