@@ -8,9 +8,17 @@
 import Foundation
 
 class VoltixPremium {
-    var IsPremiumEnabled: Bool {
+    static var IsPremiumEnabled: Bool {
         get {
             return true
+        }
+    }
+    static var VoltixApiKey: String{
+        get{
+            return UserDefaults.standard.string(forKey: "voltix_apikey") ?? ""
+        }
+        set{
+            UserDefaults.standard.set(newValue, forKey: "voltix_apikey")
         }
     }
 }

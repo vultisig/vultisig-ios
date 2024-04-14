@@ -86,10 +86,18 @@ class KeysignViewModel: ObservableObject {
         for msg in self.messsageToSign {
             logger.info("signing message:\(msg)")
             let msgHash = Utils.getMessageBodyHash(msg: msg)
+            var pubkey = ""
+            switch self.keysignType {
+            case .ECDSA:
+                pubkey = vault.pubKeyECDSA
+            case .EdDSA:
+                pubkey = vault.pubKeyEdDSA
+            }
             self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL,
                                                  sessionID: self.sessionID,
                                                  messageID: msgHash,
-                                                 encryptionKeyHex: encryptionKeyHex)
+                                                 encryptionKeyHex: encryptionKeyHex,
+                                                 vaultPubKey: pubkey)
             self.stateAccess = LocalStateAccessorImpl(vault: self.vault)
             var err: NSError?
             // keysign doesn't need to recreate preparams

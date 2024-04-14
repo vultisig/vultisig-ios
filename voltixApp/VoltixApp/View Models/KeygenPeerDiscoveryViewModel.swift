@@ -39,6 +39,9 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         self.status = .WaitingForDevices
         self.participantDiscovery = nil
         self.encryptionKeyHex = Encryption.getEncryptionKey()
+        if VoltixPremium.IsPremiumEnabled {
+            serverAddr = Endpoint.voltixRouter
+        }
     }
     
     func setData(vault: Vault, tssType: TssType, participantDiscovery: ParticipantDiscovery) {
@@ -123,7 +126,11 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             var data: Data
             switch tssType {
             case .Keygen:
-                let km = keygenMessage(sessionID: sessionID, hexChainCode: vault.hexChainCode, serviceName: serviceName,encryptionKeyHex: encryptionKeyHex)
+                let km = keygenMessage(sessionID: sessionID,
+                                       hexChainCode: vault.hexChainCode,
+                                       serviceName: serviceName,
+                                       encryptionKeyHex: encryptionKeyHex,
+                                       isPremium: VoltixPremium.IsPremiumEnabled)
                 data = try jsonEncoder.encode(PeerDiscoveryPayload.Keygen(km))
             case .Reshare:
                 let reshareMsg = ReshareMessage(sessionID: sessionID, hexChainCode: vault.hexChainCode, serviceName: serviceName, pubKeyECDSA: vault.pubKeyECDSA, oldParties: vault.signers,encryptionKeyHex: encryptionKeyHex)
