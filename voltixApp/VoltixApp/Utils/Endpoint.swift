@@ -24,6 +24,10 @@ class Endpoint {
         "https://thornode.ninerealms.com/thorchain/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)".asUrl
     }
     
+    static func fetchCoinPaprikaQuotes(_ quotes: String) -> String {
+        "https://api.coinpaprika.com/v1/tickers?quotes=\(quotes)"
+    }
+    
     static let avalancheServiceRpcService = "https://avalanche-c-chain-rpc.publicnode.com"
     
     static let bscServiceRpcService = "https://bsc-rpc.publicnode.com"
