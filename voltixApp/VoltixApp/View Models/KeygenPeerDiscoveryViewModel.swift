@@ -39,7 +39,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         self.status = .WaitingForDevices
         self.participantDiscovery = nil
         self.encryptionKeyHex = Encryption.getEncryptionKey()
-        if VoltixPremium.IsPremiumEnabled {
+        if VoltixRouter.IsRouterEnabled {
             serverAddr = Endpoint.voltixRouter
         }
     }
@@ -136,7 +136,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                        hexChainCode: vault.hexChainCode,
                                        serviceName: serviceName,
                                        encryptionKeyHex: encryptionKeyHex,
-                                       isPremium: VoltixPremium.IsPremiumEnabled)
+                                       isPremium: VoltixRouter.IsRouterEnabled)
                 data = try jsonEncoder.encode(PeerDiscoveryPayload.Keygen(km))
             case .Reshare:
                 let reshareMsg = ReshareMessage(sessionID: sessionID,
@@ -145,7 +145,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                                 pubKeyECDSA: vault.pubKeyECDSA,
                                                 oldParties: vault.signers,
                                                 encryptionKeyHex: encryptionKeyHex,
-                                                isPremium: VoltixPremium.IsPremiumEnabled)
+                                                isPremium: VoltixRouter.IsRouterEnabled)
                 data = try jsonEncoder.encode(PeerDiscoveryPayload.Reshare(reshareMsg))
             }
             return Utils.getQrImage(data: data, size: size)

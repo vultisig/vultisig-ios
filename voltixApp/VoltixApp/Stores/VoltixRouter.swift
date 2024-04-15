@@ -7,8 +7,8 @@
 
 import Foundation
 
-class VoltixPremium {
-    static var IsPremiumEnabled: Bool {
+class VoltixRouter {
+    static var IsRouterEnabled: Bool {
         get {
             return UserDefaults.standard.bool(forKey: "use_voltix_router")
         }

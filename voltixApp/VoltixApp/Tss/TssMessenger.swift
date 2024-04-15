@@ -61,12 +61,12 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
             req.setValue("voltix", forHTTPHeaderField: "keygen")
         }
         // apply basic authentication
-        if VoltixPremium.IsPremiumEnabled {
+        if VoltixRouter.IsRouterEnabled {
             var authentication = Data()
             if isKeygen {
                 authentication = "x:x".data(using: .utf8)!
             } else {
-                authentication = "\(VoltixPremium.VoltixApiKey):\(self.vaultPubKey)".data(using: .utf8)!
+                authentication = "\(VoltixRouter.VoltixApiKey):\(self.vaultPubKey)".data(using: .utf8)!
             }
             req.setValue("Basic \(authentication.base64EncodedString())", forHTTPHeaderField: "Authorization")
         }

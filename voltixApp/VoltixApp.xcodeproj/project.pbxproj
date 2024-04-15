@@ -232,7 +232,7 @@
 		DEF2E2D32B9DC685000737B8 /* UTXOChainsHelperTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF2E2D22B9DC685000737B8 /* UTXOChainsHelperTest.swift */; };
 		DEFC7BFB2B8D87370090B07A /* erc20.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC7BFA2B8D87370090B07A /* erc20.swift */; };
 		DEFC7BFF2B8EC95E0090B07A /* thorchain.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC7BFE2B8EC95E0090B07A /* thorchain.swift */; };
-		DEFF58F22BCBACDA005DFDF9 /* VoltixPremium.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF58F12BCBACDA005DFDF9 /* VoltixPremium.swift */; };
+		DEFF58F22BCBACDA005DFDF9 /* VoltixRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF58F12BCBACDA005DFDF9 /* VoltixRouter.swift */; };
 		DEFF58F42BCBF65D005DFDF9 /* TssHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF58F32BCBF65D005DFDF9 /* TssHelper.swift */; };
 		DEFF58F62BCCB573005DFDF9 /* RegisterVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF58F52BCCB573005DFDF9 /* RegisterVault.swift */; };
 /* End PBXBuildFile section */
@@ -488,7 +488,7 @@
 		DEF2E2D22B9DC685000737B8 /* UTXOChainsHelperTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOChainsHelperTest.swift; sourceTree = "<group>"; };
 		DEFC7BFA2B8D87370090B07A /* erc20.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = erc20.swift; sourceTree = "<group>"; };
 		DEFC7BFE2B8EC95E0090B07A /* thorchain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = thorchain.swift; sourceTree = "<group>"; };
-		DEFF58F12BCBACDA005DFDF9 /* VoltixPremium.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoltixPremium.swift; sourceTree = "<group>"; };
+		DEFF58F12BCBACDA005DFDF9 /* VoltixRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoltixRouter.swift; sourceTree = "<group>"; };
 		DEFF58F32BCBF65D005DFDF9 /* TssHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TssHelper.swift; sourceTree = "<group>"; };
 		DEFF58F52BCCB573005DFDF9 /* RegisterVault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterVault.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -741,7 +741,7 @@
 				A61BC8182BA2687D00484689 /* TokensStore.swift */,
 				A6966D212BA3E1B000903CA4 /* TextStore.swift */,
 				A6980C292BC0870000F452AB /* SettingsOptionsStore.swift */,
-				DEFF58F12BCBACDA005DFDF9 /* VoltixPremium.swift */,
+				DEFF58F12BCBACDA005DFDF9 /* VoltixRouter.swift */,
 			);
 			path = Stores;
 			sourceTree = "<group>";
@@ -1440,7 +1440,7 @@
 				A65649F82B96701300E4B329 /* UTXOTransactionMempoolPreviousOutput.swift in Sources */,
 				DE7CE6462B886B6300ED0BFB /* VoltixVaultDocument.swift in Sources */,
 				46F8F7212B99FDB70099454E /* TransactionBroadcastResponse.swift in Sources */,
-				DEFF58F22BCBACDA005DFDF9 /* VoltixPremium.swift in Sources */,
+				DEFF58F22BCBACDA005DFDF9 /* VoltixRouter.swift in Sources */,
 				A6980C2A2BC0870000F452AB /* SettingsOptionsStore.swift in Sources */,
 				A6966D242BA3E2A500903CA4 /* OnboardingView2.swift in Sources */,
 				A65649E62B96602700E4B329 /* TssExtension.swift in Sources */,
