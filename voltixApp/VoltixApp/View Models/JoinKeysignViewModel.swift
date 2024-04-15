@@ -53,14 +53,6 @@ class JoinKeysignViewModel: ObservableObject {
     func startScan() {
         self.isShowingScanner = true
     }
-    func getKeysignRequestHeader()->[String:String] {
-        var header = [String:String]()
-        if VoltixPremium.IsPremiumEnabled {
-            let basicAuthentication = "\(VoltixPremium.VoltixApiKey):\(self.vault.pubKeyECDSA)".data(using: .utf8)!
-            header["Authorization"] = "Basic \(basicAuthentication.base64EncodedString())"
-        }
-        return header
-    }
     
     func joinKeysignCommittee() {
         guard let serverURL = serverAddress else {
@@ -75,7 +67,10 @@ class JoinKeysignViewModel: ObservableObject {
         let urlString = "\(serverURL)/\(sessionID)"
         let body = [self.localPartyID]
         
-        Utils.sendRequest(urlString: urlString, method: "POST",headers:getKeysignRequestHeader(), body: body) { success in
+        Utils.sendRequest(urlString: urlString,
+                          method: "POST",
+                          headers:TssHelper.getKeysignRequestHeader(pubKey: vault.pubKeyECDSA),
+                          body: body) { success in
             DispatchQueue.main.async{
                 if success {
                     self.logger.info("Successfully joined the keysign committee.")
