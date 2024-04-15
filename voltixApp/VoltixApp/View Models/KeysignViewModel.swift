@@ -228,6 +228,10 @@ class KeysignViewModel: ObservableObject {
             let result = SolanaHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyEdDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
             return result
 
+        case .Ton:
+            let result = TONHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyEdDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+            return result
+            
         case .Cosmos:
             let result = ATOMHelper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
             return result
@@ -284,6 +288,8 @@ class KeysignViewModel: ObservableObject {
                     }
                 case .solana:
                     self.txid = await SolanaService.shared.sendSolanaTransaction(encodedTransaction: tx) ?? ""
+                case .ton:
+                    self.txid = ""
                 }
             case .failure(let error):
                 handleHelperError(err: error)

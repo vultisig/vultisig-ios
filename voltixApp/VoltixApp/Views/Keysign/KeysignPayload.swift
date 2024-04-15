@@ -19,7 +19,8 @@ enum BlockChainSpecific: Codable, Hashable {
     case THORChain(accountNumber: UInt64, sequence: UInt64)
     case Cosmos(accountNumber: UInt64, sequence:UInt64, gas: UInt64)
     case Solana(recentBlockHash: String, priorityFee: UInt64, feeInLamports: String) // priority fee is in microlamports
-
+    case Ton(sequence: UInt32)
+    
     var gas: String {
         switch self {
         case .UTXO(let byteFee):
@@ -34,12 +35,14 @@ enum BlockChainSpecific: Codable, Hashable {
             return "0.0075"
         case .Solana(_, _, let feeInLamports):
             return feeInLamports
+        case .Ton(_):
+            return ""
         }
     }
 }
 
 struct KeysignPayload: Codable, Hashable {
-
+    
     let coin: Coin
     // only toAddress is required , from Address is our own address
     let toAddress: String
@@ -52,14 +55,14 @@ struct KeysignPayload: Codable, Hashable {
     let utxos: [UtxoInfo]
     let memo: String? // optional memo
     let swapPayload: THORChainSwapPayload?
-
+    
     var toAmountString: String {
         if(coin.chainType == .EVM){
             return "\(Decimal(toAmount) / Decimal(EVMHelper.weiPerGWei)) \(coin.ticker)"
         }
         return "\(Decimal(toAmount) / pow(10, Int(coin.decimals) ?? 0)) \(coin.ticker)"
     }
-        
+    
     func getKeysignMessages(vault: Vault) -> Result<[String], Error> {
         // this is a swap
         if swapPayload != nil {
@@ -103,6 +106,8 @@ struct KeysignPayload: Codable, Hashable {
             return SolanaHelper.getPreSignedImageHash(keysignPayload: self)
         case .gaiaChain:
             return ATOMHelper().getPreSignedImageHash(keysignPayload: self)
+        case .ton:
+            return TONHelper.getPreSignedImageHash(keysignPayload: self)
         }
     }
     

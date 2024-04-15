@@ -16,6 +16,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case litecoin
     case dogecoin
     case gaiaChain
+    case ton
 
     enum MigrationKeys: String, CodingKey {
         case ticker
@@ -52,6 +53,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .litecoin: return "Litecoin"
         case .dogecoin: return "Dogecoin"
         case .gaiaChain: return "Gaia"
+        case .ton: return "Ton"
         }
     }
 
@@ -67,6 +69,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .litecoin: return "LTC"
         case .dogecoin: return "DOGE"
         case .gaiaChain: return "UATOM"
+        case .ton: return "TON"
         }
     }
 
@@ -82,6 +85,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .dogecoin: return "DOGE"
         case .gaiaChain: return "GAIA"
         case .solana: return "SOL"
+        case .ton: return "TON"
         }
     }
 
@@ -89,7 +93,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         switch self {
         case .thorChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .gaiaChain:
             return true
-        case .solana:
+        case .solana, .ton:
             return false
         }
     }
@@ -98,7 +102,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         switch self {
         case .thorChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .gaiaChain:
             return .ECDSA
-        case .solana:
+        case .solana,.ton:
             return .EdDSA
         }
     }
@@ -115,6 +119,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return .UTXO
         case .gaiaChain:
             return .Cosmos
+        case .ton:
+            return .Ton
         }
     }
 }

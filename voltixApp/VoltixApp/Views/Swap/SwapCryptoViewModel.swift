@@ -191,14 +191,14 @@ private extension SwapCryptoViewModel {
             return tx.amountInSats
         case .gaiaChain:
             return tx.amountInCoinDecimal
-        case .solana:
+        case .solana, .ton:
             return tx.amountInLamports
         }
     }
 
     func swapAmount(for coin: Coin, tx: SwapTransaction) -> String {
         switch coin.chain {
-        case .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .solana:
+        case .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin:
             return String(tx.amountInSats)
         case .ethereum, .avalanche, .bscChain:
             if coin.isNativeToken {
@@ -208,6 +208,8 @@ private extension SwapCryptoViewModel {
             }
         case .gaiaChain:
             return String(tx.amountInCoinDecimal)
+        case .solana, .ton:
+            return String(tx.amountInLamports)
         }
     }
 
@@ -232,7 +234,7 @@ private extension SwapCryptoViewModel {
                 $0.chain = .doge
             case .gaiaChain:
                 $0.chain = .atom
-            case .solana: break
+            case .solana, .ton: break
             }
             $0.symbol = coin.ticker
             if !coin.isNativeToken {

@@ -63,6 +63,8 @@ class BalanceService {
             let coinBalance = atomBalance.formattedAtomBalance() ?? "0.0"
             let balanceInFiatDecimal = coin.balanceInFiatDecimal
             return (coinBalance, balanceFiat, balanceInFiatDecimal)
+        case .ton:
+            return (.empty, .empty, Decimal.zero)
         }
     }
 }

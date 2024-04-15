@@ -78,6 +78,9 @@ final class BlockChainService {
                 throw Errors.failToGetSequenceNo
             }
             return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500)
+            
+        case .ton:
+            return .Ton(sequence: 0)
         }
     }
 }

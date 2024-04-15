@@ -39,6 +39,8 @@ class TokensStore {
         Coin(chain: Chain.bscChain, ticker: "USDT", logo: "usdt", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "tether", contractAddress: "0x55d398326f99059fF775485246999027B3197955", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
 
         Coin(chain: Chain.gaiaChain, ticker: "ATOM", logo: "atom", address: "", priceRate: 0.0, chainType: ChainType.Cosmos, decimals: "6", hexPublicKey: "", feeUnit: "uatom", priceProviderId: "cosmos", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "200000"),
+        
+        Coin(chain: Chain.ton, ticker: "TON", logo: "ton", address: "", priceRate: 0.0, chainType: ChainType.Ton, decimals: "9", hexPublicKey: "", feeUnit: "nanoton", priceProviderId: "ton", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "50000000"), // 0.05 TON
     ]
     
     static func getCoin(_ ticker: String) -> Coin? {
