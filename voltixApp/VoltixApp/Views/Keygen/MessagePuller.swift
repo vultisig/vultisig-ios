@@ -50,6 +50,7 @@ class MessagePuller: ObservableObject {
             } while self.pollingInboundMessages
         }
     }
+    
     func getHeaders(messageID: String?) -> [String:String]{
         var header = [String: String]()
         // for keygen message id will be nil
@@ -72,7 +73,7 @@ class MessagePuller: ObservableObject {
                     print("Response: \(String(data:data,encoding: .utf8) ?? "")")
                     let decoder = JSONDecoder()
                     let msgs = try decoder.decode([Message].self, from: data)
-                    for msg in msgs.sorted(by: { $0.sequenceNo < $1.sequenceNo }) {
+                    for msg in msgs.sorted(by: { $0.sequence_no < $1.sequence_no }) {
                         var key = "\(sessionID)-\(localPartyKey)-\(msg.hash)" as NSString
                         if let messageID {
                             key = "\(sessionID)-\(localPartyKey)-\(messageID)-\(msg.hash)" as NSString
