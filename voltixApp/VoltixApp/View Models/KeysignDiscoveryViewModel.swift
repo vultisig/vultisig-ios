@@ -21,7 +21,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
     var encryptionKeyHex: String?
     private let mediator = Mediator.shared
     
-    let serverAddr = "http://127.0.0.1:18080"
+    @Published var serverAddr = "http://127.0.0.1:18080"
     @Published var selections = Set<String>()
     @Published var sessionID = ""
     @Published var status = KeysignDiscoveryStatus.WaitingForDevices
@@ -35,6 +35,9 @@ class KeysignDiscoveryViewModel: ObservableObject {
         self.keysignPayload = KeysignPayload(coin: Coin.example, toAddress: "", toAmount: 0, chainSpecific: BlockChainSpecific.UTXO(byteFee: 0), utxos: [], memo: nil, swapPayload: nil)
         self.participantDiscovery = nil
         self.encryptionKeyHex = Encryption.getEncryptionKey()
+        if VoltixRouter.IsRouterEnabled {
+            serverAddr = Endpoint.voltixRouter
+        }
     }
     
     func setData(vault: Vault, keysignPayload: KeysignPayload, participantDiscovery: ParticipantDiscovery) {
@@ -65,13 +68,17 @@ class KeysignDiscoveryViewModel: ObservableObject {
             self.logger.error("Failed to get preSignedImageHash: \(err)")
             self.status = .FailToStart
         }
+        
     }
     
-    func startDiscovery() {
+    func startDiscovery() async {
         self.mediator.start(name: self.serviceName)
         self.logger.info("mediator server started")
         self.startKeysignSession()
-        self.participantDiscovery?.getParticipants(serverAddr: self.serverAddr, sessionID: self.sessionID,localParty: self.localPartyID)
+        self.participantDiscovery?.getParticipants(serverAddr: self.serverAddr, 
+                                                   sessionID: self.sessionID,
+                                                   localParty: self.localPartyID,
+                                                   pubKeyECDSA: vault.pubKeyECDSA)
     }
     
     @MainActor func startKeysign(vault: Vault, viewModel: TransferViewModel) -> KeysignView {
@@ -94,7 +101,10 @@ class KeysignDiscoveryViewModel: ObservableObject {
     
     func kickoffKeysign(allParticipants: [String]) {
         let urlString = "\(self.serverAddr)/start/\(self.sessionID)"
-        Utils.sendRequest(urlString: urlString, method: "POST", body: allParticipants) { _ in
+        Utils.sendRequest(urlString: urlString,
+                          method: "POST",
+                          headers: TssHelper.getKeysignRequestHeader(pubKey: vault.pubKeyECDSA),
+                          body: allParticipants) { _ in
             self.logger.info("kicked off keysign successfully")
         }
     }
@@ -105,7 +115,10 @@ class KeysignDiscoveryViewModel: ObservableObject {
     private func startKeysignSession() {
         let urlString = "\(self.serverAddr)/\(self.sessionID)"
         let body = [self.localPartyID]
-        Utils.sendRequest(urlString: urlString, method: "POST", body: body) { success in
+        Utils.sendRequest(urlString: urlString, 
+                          method: "POST",
+                          headers: TssHelper.getKeysignRequestHeader(pubKey: vault.pubKeyECDSA),
+                          body: body) { success in
             if success {
                 self.logger.info("Started session successfully.")
             } else {
@@ -122,7 +135,8 @@ class KeysignDiscoveryViewModel: ObservableObject {
         let keysignMsg = KeysignMessage(sessionID: sessionID,
                                         serviceName: serviceName,
                                         payload: keysignPayload,
-                                        encryptionKeyHex: encryptionKeyHex)
+                                        encryptionKeyHex: encryptionKeyHex,
+                                        useVoltixRouter: VoltixRouter.IsRouterEnabled)
         do {
             let encoder = JSONEncoder()
             let jsonData = try encoder.encode(keysignMsg)

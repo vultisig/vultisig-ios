@@ -37,6 +37,7 @@ struct KeysignDiscoverServiceView: View {
             } else {
                 Image(systemName: "checkmark")
                     .onAppear {
+                        viewModel.serverAddress = self.serviceDelegate.serverURL
                         viewModel.setStatus(status: .JoinKeysign)
                     }
             }

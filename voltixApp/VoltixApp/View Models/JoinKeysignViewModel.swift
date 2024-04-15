@@ -31,6 +31,7 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var errorMsg: String = ""
     @Published var keysignPayload: KeysignPayload? = nil
     @Published var serviceName = ""
+    @Published var serverAddress: String? = nil
     var encryptionKeyHex: String = ""
     
     init() {
@@ -54,7 +55,7 @@ class JoinKeysignViewModel: ObservableObject {
     }
     
     func joinKeysignCommittee() {
-        guard let serverURL = serviceDelegate?.serverURL else {
+        guard let serverURL = serverAddress else {
             self.logger.error("Server URL could not be found. Please ensure you're connected to the correct network.")
             return
         }
@@ -66,7 +67,10 @@ class JoinKeysignViewModel: ObservableObject {
         let urlString = "\(serverURL)/\(sessionID)"
         let body = [self.localPartyID]
         
-        Utils.sendRequest(urlString: urlString, method: "POST", body: body) { success in
+        Utils.sendRequest(urlString: urlString,
+                          method: "POST",
+                          headers:TssHelper.getKeysignRequestHeader(pubKey: vault.pubKeyECDSA),
+                          body: body) { success in
             DispatchQueue.main.async{
                 if success {
                     self.logger.info("Successfully joined the keysign committee.")
@@ -106,7 +110,7 @@ class JoinKeysignViewModel: ObservableObject {
     }
     
     private func checkKeysignStarted() {
-        guard let serverURL = serviceDelegate?.serverURL else {
+        guard let serverURL = serverAddress else {
             self.logger.error("Server URL could not be found. Please ensure you're connected to the correct network.")
             return
         }
@@ -116,7 +120,9 @@ class JoinKeysignViewModel: ObservableObject {
         }
         
         let urlString = "\(serverURL)/start/\(sessionID)"
-        Utils.getRequest(urlString: urlString, headers: [String: String](), completion: { result in
+        Utils.getRequest(urlString: urlString,
+                         headers: TssHelper.getKeysignRequestHeader(pubKey: vault.pubKeyECDSA),
+                         completion: { result in
             switch result {
             case .success(let data):
                 DispatchQueue.main.async {
@@ -148,6 +154,7 @@ class JoinKeysignViewModel: ObservableObject {
         defer {
             self.isShowingScanner = false
         }
+        var useVoltixRouter = false
         switch result {
         case .success(let result):
             let qrCodeResult = result.string
@@ -161,6 +168,7 @@ class JoinKeysignViewModel: ObservableObject {
                     self.encryptionKeyHex = keysignMsg.encryptionKeyHex
                     self.logger.info("QR code scanned successfully. Session ID: \(self.sessionID)")
                     self.prepareKeysignMessages(keysignPayload: keysignMsg.payload)
+                    useVoltixRouter = keysignMsg.useVoltixRouter
                 } catch {
                     self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"
                     self.status = .FailedToStart
@@ -170,7 +178,12 @@ class JoinKeysignViewModel: ObservableObject {
             self.errorMsg = "QR code scanning failed: \(err.localizedDescription)"
             self.status = .FailedToStart
         }
-        self.status = .DiscoverService
+        if useVoltixRouter {
+            self.serverAddress = Endpoint.voltixRouter
+            self.status = .JoinKeysign
+        }else {
+            self.status = .DiscoverService
+        }
     }
     
     func prepareKeysignMessages(keysignPayload: KeysignPayload) {

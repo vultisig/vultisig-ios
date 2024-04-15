@@ -65,7 +65,7 @@ struct JoinKeysignView: View {
     
     var keysignStartedView: some View {
         ZStack {
-            if serviceDelegate.serverURL != nil && !viewModel.sessionID.isEmpty {
+            if viewModel.serverAddress != nil && !viewModel.sessionID.isEmpty {
                 keysignView
             } else {
                 Text(NSLocalizedString("unableToStartKeysignProcess", comment: ""))
@@ -81,7 +81,7 @@ struct JoinKeysignView: View {
         KeysignView(
             vault: vault,
             keysignCommittee: viewModel.keysignCommittee,
-            mediatorURL: serviceDelegate.serverURL ?? "",
+            mediatorURL: viewModel.serverAddress ?? "",
             sessionID: viewModel.sessionID,
             keysignType: viewModel.keysignPayload?.coin.chain.signingKeyType ?? .ECDSA,
             messsageToSign: viewModel.keysignMessages,

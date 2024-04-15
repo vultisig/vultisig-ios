@@ -20,7 +20,7 @@ public struct Message: Codable {
     public let to: [String]
     public let body: String
     public let hash: String
-    public let sequenceNo: Int64
+    public let sequence_no: Int64
     
     public init(session_id: String, from: String, to: [String], body: String,hash: String,sequenceNo: Int64) {
         self.session_id = session_id
@@ -28,6 +28,6 @@ public struct Message: Codable {
         self.to = to
         self.body = body
         self.hash = hash
-        self.sequenceNo = sequenceNo
+        self.sequence_no = sequenceNo
     }
 }

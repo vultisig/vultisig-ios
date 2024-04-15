@@ -35,6 +35,7 @@ class JoinKeygenViewModel: ObservableObject {
     @Published var localPartyID: String = ""
     @Published var serviceName = ""
     @Published var errorMessage = ""
+    @Published var serverAddress: String? = nil
     var encryptionKeyHex: String = ""
     
     init() {
@@ -67,14 +68,17 @@ class JoinKeygenViewModel: ObservableObject {
     }
     
     func joinKeygenCommittee() {
-        guard let serverURL = serviceDelegate?.serverURL, let sessionID = sessionID else {
+        guard let serverURL = serverAddress, let sessionID = sessionID else {
             logger.error("Required information for joining key generation committee is missing.")
             return
         }
         
         let urlString = "\(serverURL)/\(sessionID)"
         let body = [localPartyID]
-        Utils.sendRequest(urlString: urlString, method: "POST", body: body) { success in
+        Utils.sendRequest(urlString: urlString, 
+                          method: "POST",
+                          headers: TssHelper.getKeygenRequestHeader(),
+                          body: body) { success in
             if success {
                 self.logger.info("Successfully joined the key generation committee.")
                 DispatchQueue.main.async {
@@ -102,13 +106,15 @@ class JoinKeygenViewModel: ObservableObject {
         }
     }
     private func checkKeygenStarted() {
-        guard let serverURL = serviceDelegate?.serverURL, let sessionID = sessionID else {
+        guard let serverURL = serverAddress, let sessionID = sessionID else {
             logger.error("Required information for checking key generation start is missing.")
             return
         }
         
         let urlString = "\(serverURL)/start/\(sessionID)"
-        Utils.getRequest(urlString: urlString, headers: [String: String](), completion: { result in
+        Utils.getRequest(urlString: urlString,
+                         headers: TssHelper.getKeygenRequestHeader(),
+                         completion: { result in
             switch result {
             case .success(let data):
                 do {
@@ -133,6 +139,7 @@ class JoinKeygenViewModel: ObservableObject {
         defer {
             isShowingScanner = false
         }
+        var useVoltixRouter = false
         switch result {
         case .success(let result):
             guard let scanData = result.string.data(using: .utf8) else {
@@ -144,13 +151,14 @@ class JoinKeygenViewModel: ObservableObject {
                 let decoder = JSONDecoder()
                 let result = try decoder.decode(PeerDiscoveryPayload.self, from: scanData)
                 switch result {
-                case .Keygen(let keysignMsg):
+                case .Keygen(let keygenMsg):
                     tssType = .Keygen
-                    sessionID = keysignMsg.sessionID
-                    hexChainCode = keysignMsg.hexChainCode
+                    sessionID = keygenMsg.sessionID
+                    hexChainCode = keygenMsg.hexChainCode
                     vault.hexChainCode = hexChainCode
-                    serviceName = keysignMsg.serviceName
-                    encryptionKeyHex = keysignMsg.encryptionKeyHex
+                    serviceName = keygenMsg.serviceName
+                    encryptionKeyHex = keygenMsg.encryptionKeyHex
+                    useVoltixRouter = keygenMsg.useVoltixRouter
                 case .Reshare(let reshareMsg):
                     tssType = .Reshare
                     oldCommittee = reshareMsg.oldParties
@@ -158,6 +166,7 @@ class JoinKeygenViewModel: ObservableObject {
                     hexChainCode = reshareMsg.hexChainCode
                     serviceName = reshareMsg.serviceName
                     encryptionKeyHex = reshareMsg.encryptionKeyHex
+                    useVoltixRouter = reshareMsg.useVoltixRouter
                     // this means the vault is new , and it join the reshare to become the new committee
                     if vault.pubKeyECDSA.isEmpty {
                         vault.hexChainCode = reshareMsg.hexChainCode
@@ -176,7 +185,12 @@ class JoinKeygenViewModel: ObservableObject {
                 status = .FailToStart
                 return
             }
-            status = .DiscoverService
+            if useVoltixRouter {
+                self.serverAddress = Endpoint.voltixRouter
+                status = .JoinKeygen
+            } else {
+                status = .DiscoverService
+            }
         case .failure(let error):
             errorMessage = "Failed to scan QR code: \(error.localizedDescription)"
             status = .FailToStart
