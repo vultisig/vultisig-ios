@@ -136,7 +136,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
                                         serviceName: serviceName,
                                         payload: keysignPayload,
                                         encryptionKeyHex: encryptionKeyHex,
-                                        isPremium: VoltixRouter.IsRouterEnabled)
+                                        useVoltixRouter: VoltixRouter.IsRouterEnabled)
         do {
             let encoder = JSONEncoder()
             let jsonData = try encoder.encode(keysignMsg)

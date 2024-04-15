@@ -154,7 +154,7 @@ class JoinKeysignViewModel: ObservableObject {
         defer {
             self.isShowingScanner = false
         }
-        var isPremium = false
+        var useVoltixRouter = false
         switch result {
         case .success(let result):
             let qrCodeResult = result.string
@@ -168,7 +168,7 @@ class JoinKeysignViewModel: ObservableObject {
                     self.encryptionKeyHex = keysignMsg.encryptionKeyHex
                     self.logger.info("QR code scanned successfully. Session ID: \(self.sessionID)")
                     self.prepareKeysignMessages(keysignPayload: keysignMsg.payload)
-                    isPremium = keysignMsg.isPremium
+                    useVoltixRouter = keysignMsg.useVoltixRouter
                 } catch {
                     self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"
                     self.status = .FailedToStart
@@ -178,7 +178,7 @@ class JoinKeysignViewModel: ObservableObject {
             self.errorMsg = "QR code scanning failed: \(err.localizedDescription)"
             self.status = .FailedToStart
         }
-        if isPremium {
+        if useVoltixRouter {
             self.serverAddress = Endpoint.voltixRouter
             self.status = .JoinKeysign
         }else {
