@@ -10,7 +10,10 @@ import Foundation
 class VoltixPremium {
     static var IsPremiumEnabled: Bool {
         get {
-            return false
+            return UserDefaults.standard.bool(forKey: "use_voltix_router")
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "use_voltix_router")
         }
     }
     static var VoltixApiKey: String{
