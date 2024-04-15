@@ -40,6 +40,8 @@ struct THORChainSwapPayload: Codable, Hashable {
     let routerAddress: String?
     let fromAmount: String
     let toAmountLimit: String
+    let streamingInterval: String
+    let streamingQuantity: String
 
     init(fromAddress: String,
          fromAsset: THORChainSwapAsset,
@@ -48,7 +50,9 @@ struct THORChainSwapPayload: Codable, Hashable {
          vaultAddress: String,
          routerAddress: String?,
          fromAmount: String,
-         toAmountLimit: String)
+         toAmountLimit: String,
+         streamingInterval: String,
+         streamingQuantity: String)
     {
         self.fromAddress = fromAddress
         self.fromAsset = fromAsset
@@ -58,5 +62,7 @@ struct THORChainSwapPayload: Codable, Hashable {
         self.routerAddress = routerAddress
         self.fromAmount = fromAmount
         self.toAmountLimit = toAmountLimit
+        self.streamingInterval = streamingInterval
+        self.streamingQuantity = streamingQuantity
     }
 }

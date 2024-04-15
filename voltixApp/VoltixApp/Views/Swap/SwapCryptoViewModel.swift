@@ -78,7 +78,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             vaultAddress: quote!.inboundAddress,
             routerAddress: quote!.router,
             fromAmount: swapAmount(for: tx.fromCoin, tx: tx),
-            toAmountLimit: quote?.expectedAmountOut ?? .zero
+            toAmountLimit: "0", streamingInterval: "1", streamingQuantity: "0"
         )
         
         let keysignFactory = KeysignPayloadFactory()
