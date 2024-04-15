@@ -10,13 +10,12 @@ import Foundation
 class VoltixPremium {
     static var IsPremiumEnabled: Bool {
         get {
-            return true
+            return false
         }
     }
     static var VoltixApiKey: String{
         get{
-            return "codligon1e454ui590c0"
-            //return UserDefaults.standard.string(forKey: "voltix_apikey") ?? ""
+            return UserDefaults.standard.string(forKey: "voltix_apikey") ?? ""
         }
         set{
             UserDefaults.standard.set(newValue, forKey: "voltix_apikey")
