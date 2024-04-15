@@ -15,7 +15,8 @@ class VoltixPremium {
     }
     static var VoltixApiKey: String{
         get{
-            return UserDefaults.standard.string(forKey: "voltix_apikey") ?? ""
+            return "codligon1e454ui590c0"
+            //return UserDefaults.standard.string(forKey: "voltix_apikey") ?? ""
         }
         set{
             UserDefaults.standard.set(newValue, forKey: "voltix_apikey")

@@ -68,9 +68,11 @@ class KeysignDiscoveryViewModel: ObservableObject {
             self.logger.error("Failed to get preSignedImageHash: \(err)")
             self.status = .FailToStart
         }
+        
     }
     
-    func startDiscovery() {
+    func startDiscovery() async {
+        await self.registerVaultForPremium()
         self.mediator.start(name: self.serviceName)
         self.logger.info("mediator server started")
         self.startKeysignSession()
@@ -148,4 +150,17 @@ class KeysignDiscoveryViewModel: ObservableObject {
         return Image(systemName: "xmark")
     }
     
+    func registerVaultForPremium() async {
+        let registerVault = RegisterVault(pub_key_ecdsa: vault.pubKeyECDSA, pub_key_eddsa: vault.pubKeyEdDSA)
+        let urlString = "\(self.serverAddr)/register/vault"
+        do{
+            let body = try JSONEncoder().encode(registerVault)
+            _ = try await Utils.asyncPostRequest(urlString: urlString,
+                                                      headers: TssHelper.getKeysignRequestHeader(pubKey: vault.pubKeyECDSA),
+                                                      body: body)
+        }
+        catch{
+            logger.error("fail to encode registerVault to json,error:\(error)")
+        }
+    }
 }

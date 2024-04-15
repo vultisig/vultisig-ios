@@ -38,7 +38,7 @@ struct KeysignDiscoveryView: View {
             viewModel.setData(vault: vault, keysignPayload: keysignPayload, participantDiscovery: participantDiscovery)
         }
         .task {
-            viewModel.startDiscovery()
+            await viewModel.startDiscovery()
         }
         .onDisappear {
             viewModel.stopDiscovery()
