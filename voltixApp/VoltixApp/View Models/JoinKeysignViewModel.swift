@@ -125,7 +125,9 @@ class JoinKeysignViewModel: ObservableObject {
         }
         
         let urlString = "\(serverURL)/start/\(sessionID)"
-        Utils.getRequest(urlString: urlString, headers: [String: String](), completion: { result in
+        Utils.getRequest(urlString: urlString,
+                         headers: TssHelper.getKeysignRequestHeader(pubKey: vault.pubKeyECDSA),
+                         completion: { result in
             switch result {
             case .success(let data):
                 DispatchQueue.main.async {
@@ -182,6 +184,7 @@ class JoinKeysignViewModel: ObservableObject {
             self.status = .FailedToStart
         }
         if isPremium {
+            self.serverAddress = Endpoint.voltixRouter
             self.status = .JoinKeysign
         }else {
             self.status = .DiscoverService
