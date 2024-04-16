@@ -48,7 +48,7 @@ struct KeysignPayloadFactory {
                     amount: Int64($0.value ?? 0),
                     index: UInt32($0.index ?? -1)
                 )
-            }), !utxos.isEmpty else {
+            }), !info.isEmpty else {
                 throw Errors.notEnoughBalanceError
             }
             utxos = info

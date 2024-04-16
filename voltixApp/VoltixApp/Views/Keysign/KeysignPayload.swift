@@ -11,6 +11,7 @@ struct KeysignMessage: Codable, Hashable {
     let serviceName: String
     let payload: KeysignPayload
     let encryptionKeyHex: String
+    let useVoltixRouter: Bool
 }
 
 enum BlockChainSpecific: Codable, Hashable {

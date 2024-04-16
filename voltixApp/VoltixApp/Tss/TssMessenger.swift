@@ -17,13 +17,19 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
     // at the same time , add message id here to avoid messages belongs to differet keysign message messed with each other
     let messageID: String?
     let encryptionKeyHex: String
+    let isKeygen: Bool
+    var vaultPubKey = ""
+    
+    
 
     var counter: Int64 = 1
-    init(mediatorUrl: String, sessionID: String, messageID: String?,encryptionKeyHex: String) {
+    init(mediatorUrl: String, sessionID: String, messageID: String?,encryptionKeyHex: String,vaultPubKey: String,isKeygen:Bool) {
         self.mediatorUrl = mediatorUrl
         self.sessionID = sessionID
         self.messageID = messageID
         self.encryptionKeyHex = encryptionKeyHex
+        self.vaultPubKey = vaultPubKey
+        self.isKeygen = isKeygen
     }
 
     func send(_ fromParty: String?, to: String?, body: String?) throws {
@@ -51,6 +57,20 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
         if let messageID = self.messageID {
             req.setValue(messageID, forHTTPHeaderField: "message_id")
         }
+        if isKeygen {
+            req.setValue("voltix", forHTTPHeaderField: "keygen")
+        }
+        // apply basic authentication
+        if VoltixRouter.IsRouterEnabled {
+            var authentication = Data()
+            if isKeygen {
+                authentication = "x:x".data(using: .utf8)!
+            } else {
+                authentication = "\(VoltixRouter.VoltixApiKey):\(self.vaultPubKey)".data(using: .utf8)!
+            }
+            req.setValue("Basic \(authentication.base64EncodedString())", forHTTPHeaderField: "Authorization")
+        }
+        
         guard let encrypedBody = body.aesEncrypt(key: self.encryptionKeyHex) else {
             logger.error("fail to encrypt message body")
             return

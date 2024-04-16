@@ -77,7 +77,7 @@ struct JoinKeygenView: View {
     
     var keygenStarted: some View {
         HStack {
-            if serviceDelegate.serverURL != nil && self.viewModel.sessionID != nil {
+            if viewModel.serverAddress != nil && self.viewModel.sessionID != nil {
                 keygenView
             } else {
                 keygenErrorText
@@ -92,7 +92,7 @@ struct JoinKeygenView: View {
             tssType: self.viewModel.tssType,
             keygenCommittee: self.viewModel.keygenCommittee,
             vaultOldCommittee: self.viewModel.oldCommittee.filter { self.viewModel.keygenCommittee.contains($0) },
-            mediatorURL: serviceDelegate.serverURL!,
+            mediatorURL: viewModel.serverAddress!,
             sessionID: self.viewModel.sessionID!,
             encryptionKeyHex: viewModel.encryptionKeyHex)
     }
@@ -134,6 +134,7 @@ struct JoinKeygenView: View {
                 } else {
                     Image(systemName: "checkmark")
                         .onAppear {
+                            viewModel.serverAddress = serviceDelegate.serverURL!
                             viewModel.setStatus(status: .JoinKeygen)
                         }
                 }

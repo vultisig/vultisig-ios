@@ -57,7 +57,7 @@ class KeygenViewModel: ObservableObject {
         self.mediatorURL = mediatorURL
         self.sessionID = sessionID
         self.encryptionKeyHex = encryptionKeyHex
-        messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex)
+        messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex,pubKey: vault.pubKeyECDSA)
     }
     
     func delaySwitchToMain() {
@@ -78,7 +78,9 @@ class KeygenViewModel: ObservableObject {
             let messengerImp = TssMessengerImpl(mediatorUrl: self.mediatorURL,
                                                 sessionID: self.sessionID,
                                                 messageID: nil,
-                                                encryptionKeyHex: encryptionKeyHex)
+                                                encryptionKeyHex: encryptionKeyHex,
+                                                vaultPubKey: "",
+                                                isKeygen: true)
             let stateAccessorImp = LocalStateAccessorImpl(vault: self.vault)
             self.tssMessenger = messengerImp
             self.stateAccess = stateAccessorImp

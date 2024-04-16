@@ -39,6 +39,9 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         self.status = .WaitingForDevices
         self.participantDiscovery = nil
         self.encryptionKeyHex = Encryption.getEncryptionKey()
+        if VoltixRouter.IsRouterEnabled {
+            serverAddr = Endpoint.voltixRouter
+        }
     }
     
     func setData(vault: Vault, tssType: TssType, participantDiscovery: ParticipantDiscovery) {
@@ -78,7 +81,10 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         self.mediator.start(name: self.serviceName)
         self.logger.info("mediator server started")
         self.startSession()
-        self.participantDiscovery?.getParticipants(serverAddr: self.serverAddr, sessionID: self.sessionID, localParty: self.localPartyID)
+        self.participantDiscovery?.getParticipants(serverAddr: self.serverAddr, 
+                                                   sessionID: self.sessionID,
+                                                   localParty: self.localPartyID,
+                                                   pubKeyECDSA: vault.pubKeyECDSA)
     }
     
     func showSummary() {
@@ -97,10 +103,12 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         self.mediator.stop()
     }
     
+   
     private func startSession() {
         let urlString = "\(self.serverAddr)/\(self.sessionID)"
         let body = [self.localPartyID]
-        Utils.sendRequest(urlString: urlString, method: "POST", body: body) { success in
+        
+        Utils.sendRequest(urlString: urlString, method: "POST",headers:TssHelper.getKeygenRequestHeader(), body: body) { success in
             if success {
                 self.logger.info("Started session successfully.")
             } else {
@@ -111,7 +119,8 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     
     private func startKeygen(allParticipants: [String]) {
         let urlString = "\(self.serverAddr)/start/\(self.sessionID)"
-        Utils.sendRequest(urlString: urlString, method: "POST", body: allParticipants) { _ in
+        
+        Utils.sendRequest(urlString: urlString, method: "POST",headers:TssHelper.getKeygenRequestHeader(), body: allParticipants) { _ in
             self.logger.info("kicked off keygen successfully")
         }
     }
@@ -123,10 +132,20 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             var data: Data
             switch tssType {
             case .Keygen:
-                let km = keygenMessage(sessionID: sessionID, hexChainCode: vault.hexChainCode, serviceName: serviceName,encryptionKeyHex: encryptionKeyHex)
+                let km = keygenMessage(sessionID: sessionID,
+                                       hexChainCode: vault.hexChainCode,
+                                       serviceName: serviceName,
+                                       encryptionKeyHex: encryptionKeyHex,
+                                       useVoltixRouter: VoltixRouter.IsRouterEnabled)
                 data = try jsonEncoder.encode(PeerDiscoveryPayload.Keygen(km))
             case .Reshare:
-                let reshareMsg = ReshareMessage(sessionID: sessionID, hexChainCode: vault.hexChainCode, serviceName: serviceName, pubKeyECDSA: vault.pubKeyECDSA, oldParties: vault.signers,encryptionKeyHex: encryptionKeyHex)
+                let reshareMsg = ReshareMessage(sessionID: sessionID,
+                                                hexChainCode: vault.hexChainCode,
+                                                serviceName: serviceName,
+                                                pubKeyECDSA: vault.pubKeyECDSA,
+                                                oldParties: vault.signers,
+                                                encryptionKeyHex: encryptionKeyHex,
+                                                useVoltixRouter: VoltixRouter.IsRouterEnabled)
                 data = try jsonEncoder.encode(PeerDiscoveryPayload.Reshare(reshareMsg))
             }
             return Utils.getQrImage(data: data, size: size)

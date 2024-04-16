@@ -27,6 +27,10 @@ class THORChainSwaps {
             $0.routerAddress = swapPayload.routerAddress ?? ""
             $0.fromAmount = swapPayload.fromAmount
             $0.toAmountLimit = swapPayload.toAmountLimit
+            $0.streamParams = .with {
+                $0.interval = swapPayload.streamingInterval
+                $0.quantity = swapPayload.streamingQuantity
+            }
             $0.affiliateFeeAddress = THORChainSwaps.affiliateFeeAddress
             $0.affiliateFeeRateBp = "70"
         }
