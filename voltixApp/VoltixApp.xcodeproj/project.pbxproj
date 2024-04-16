@@ -117,6 +117,8 @@
 		A66A0BD72BA125C50021A483 /* EditVaultCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD62BA125C50021A483 /* EditVaultCell.swift */; };
 		A66A0BD92BA12DF50021A483 /* RenameVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */; };
 		A66A0BDB2BA13B570021A483 /* CoinsGrouped.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BDA2BA13B570021A483 /* CoinsGrouped.swift */; };
+		A69069A12BCDEFD400F28A8B /* ProgressRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69069A02BCDEFD400F28A8B /* ProgressRing.swift */; };
+		A69069A32BCE2FD300F28A8B /* KeygenStatusText.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69069A22BCE2FD300F28A8B /* KeygenStatusText.swift */; };
 		A690E00E2BC0ED290006DC0D /* URL.swift in Sources */ = {isa = PBXBuildFile; fileRef = A690E00D2BC0ED290006DC0D /* URL.swift */; };
 		A6966D1E2BA3DDAD00903CA4 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D1D2BA3DDAD00903CA4 /* OnboardingView.swift */; };
 		A6966D202BA3DF0C00903CA4 /* OnboardingView1.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D1F2BA3DF0C00903CA4 /* OnboardingView1.swift */; };
@@ -372,6 +374,8 @@
 		A66A0BD62BA125C50021A483 /* EditVaultCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditVaultCell.swift; sourceTree = "<group>"; };
 		A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenameVaultView.swift; sourceTree = "<group>"; };
 		A66A0BDA2BA13B570021A483 /* CoinsGrouped.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinsGrouped.swift; sourceTree = "<group>"; };
+		A69069A02BCDEFD400F28A8B /* ProgressRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressRing.swift; sourceTree = "<group>"; };
+		A69069A22BCE2FD300F28A8B /* KeygenStatusText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenStatusText.swift; sourceTree = "<group>"; };
 		A690E00D2BC0ED290006DC0D /* URL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URL.swift; sourceTree = "<group>"; };
 		A6966D1D2BA3DDAD00903CA4 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		A6966D1F2BA3DF0C00903CA4 /* OnboardingView1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView1.swift; sourceTree = "<group>"; };
@@ -540,10 +544,12 @@
 				A63953AF2BA7BEDA000802EC /* Checkbox.swift */,
 				A65BA9832BAA07B500B2D8AA /* Background.swift */,
 				A65BA98D2BAD311200B2D8AA /* Loader.swift */,
+				A69069A02BCDEFD400F28A8B /* ProgressRing.swift */,
 				A6F9F7D92B9BA2CF00790258 /* Cells */,
 				A633B1232B993FCC003D1738 /* Buttons */,
 				A6966D272BA4009B00903CA4 /* TextFields */,
 				A633B1342B997D35003D1738 /* Navigation Items */,
+				A69069A22BCE2FD300F28A8B /* KeygenStatusText.swift */,
 				A5CBA32B2BCD747C00088CC3 /* TappableTextFieldStyle.swift */,
 			);
 			path = Components;
@@ -1528,6 +1534,7 @@
 				469ED39B2B98E8B5008D4951 /* CosmosBalance.swift in Sources */,
 				A57A03CB2BC47D4F00F6F3DF /* BlockChainService.swift in Sources */,
 				DE5FA58A2BAD1EF2008FD910 /* CosmosBalanceCacheEntry.swift in Sources */,
+				A69069A32BCE2FD300F28A8B /* KeygenStatusText.swift in Sources */,
 				DEEDAEE32B8AF8B1005170E8 /* publickey.swift in Sources */,
 				A65C754D2BBF5A250076F30A /* PeerCell.swift in Sources */,
 				A633B11C2B99273A003D1738 /* ColorExtensions.swift in Sources */,
@@ -1553,6 +1560,7 @@
 				A55BCEBB2BC59E8100D35917 /* KeysignPayloadFactory.swift in Sources */,
 				A564ED442BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift in Sources */,
 				A6BACF1C2BC79B3100084810 /* TokenSelectionView.swift in Sources */,
+				A69069A12BCDEFD400F28A8B /* ProgressRing.swift in Sources */,
 				A6980C2C2BC0896C00F452AB /* SettingsLanguageSelectionView.swift in Sources */,
 				A65649EE2B9669DD00E4B329 /* UTXOTransactionMempoolInput.swift in Sources */,
 				A6966D2D2BA402A900903CA4 /* TokenSelectorDropdown.swift in Sources */,
