@@ -54,8 +54,8 @@ class ChainCellViewModel: ObservableObject {
     private func getCoinBalance(for coin: Coin) async -> Decimal {
         do {
             let balanceService = BalanceService.shared
-            let balance = try await balanceService.balance(for: coin)
-            return balance.balanceInFiatDecimal
+            let (coinBalance, balanceFiat, balanceInFiatDecimal) = try await balanceService.balance(for: coin)            
+            return balanceInFiatDecimal
         }
         catch {
             print("ChainCellViewModel > getCoinBalance: \(coin.ticker) \(error.localizedDescription)")
