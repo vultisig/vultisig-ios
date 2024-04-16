@@ -85,6 +85,14 @@ class Endpoint {
     
     static let broadcastCosmosTransaction = "https://cosmos-rest.publicnode.com/cosmos/tx/v1beta1/txs"
     
+    static func fetchTonAccountBalance(address: String) -> String{
+        "https://toncenter.com/api/v2/getAddressBalance?address=\(address)"
+    }
+    
+    static let broadcastTonTransaction = "https://api.ton.org/api/v2/sendBocReturnHash"
+    
+    static let fetchTonFee = "https://toncenter.com/api/v2/estimateFee"
+    
     static func getExplorerURL(chainTicker: String, txid: String) -> String{
         switch chainTicker {
         case "BTC":

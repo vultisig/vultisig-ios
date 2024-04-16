@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import BigInt
 
 struct KeysignMessage: Codable, Hashable {
     let sessionID: String
@@ -19,7 +20,7 @@ enum BlockChainSpecific: Codable, Hashable {
     case THORChain(accountNumber: UInt64, sequence: UInt64)
     case Cosmos(accountNumber: UInt64, sequence:UInt64, gas: UInt64)
     case Solana(recentBlockHash: String, priorityFee: UInt64, feeInLamports: String) // priority fee is in microlamports
-    case Ton(sequence: UInt32)
+    case Ton
     
     var gas: String {
         switch self {
@@ -35,8 +36,8 @@ enum BlockChainSpecific: Codable, Hashable {
             return "0.0075"
         case .Solana(_, _, let feeInLamports):
             return feeInLamports
-        case .Ton(_):
-            return ""
+        case .Ton:
+            return "0.05"
         }
     }
 }
@@ -46,7 +47,7 @@ struct KeysignPayload: Codable, Hashable {
     let coin: Coin
     // only toAddress is required , from Address is our own address
     let toAddress: String
-    let toAmount: Int64
+    let toAmount: BigInt
     let chainSpecific: BlockChainSpecific
     
     // for UTXO chains , often it need to sign multiple UTXOs at the same time
@@ -57,10 +58,14 @@ struct KeysignPayload: Codable, Hashable {
     let swapPayload: THORChainSwapPayload?
     
     var toAmountString: String {
-        if(coin.chainType == .EVM){
-            return "\(Decimal(toAmount) / Decimal(EVMHelper.weiPerGWei)) \(coin.ticker)"
+        let decimalAmount = Decimal(string: toAmount.description) ?? Decimal(0)
+        
+        if coin.chainType == .EVM {
+            let divisor = Decimal(EVMHelper.weiPerGWei)
+            return "\(decimalAmount / divisor) \(coin.ticker)"
         }
-        return "\(Decimal(toAmount) / pow(10, Int(coin.decimals) ?? 0)) \(coin.ticker)"
+        let power = Decimal(sign: .plus, exponent: -(Int(coin.decimals) ?? 0), significand: 1)
+        return "\(decimalAmount * power) \(coin.ticker)"
     }
     
     func getKeysignMessages(vault: Vault) -> Result<[String], Error> {

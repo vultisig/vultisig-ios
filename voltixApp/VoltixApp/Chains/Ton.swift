@@ -25,14 +25,9 @@ enum TONHelper {
             return .failure(HelperError.runtimeError("coin is not TON"))
         }
         
-        guard case .Ton(let sequence) = keysignPayload.chainSpecific else {
-            return .failure(HelperError.runtimeError("fail to get the sequence"))
-        }
-        
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .ton) else {
             return .failure(HelperError.runtimeError("fail to get to address"))
         }
-        
         
         let input = TheOpenNetworkSigningInput.with {
             $0.transfer = TheOpenNetworkTransfer.with {
@@ -41,7 +36,6 @@ enum TONHelper {
                 $0.comment = keysignPayload.memo ?? ""
                 $0.walletVersion = .walletV3R2
                 $0.bounceable = true
-                $0.sequenceNumber = sequence  // Update this based on your use case
             }
         }
         

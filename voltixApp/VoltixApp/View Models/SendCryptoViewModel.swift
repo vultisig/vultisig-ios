@@ -28,6 +28,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     @Published var sol: SolanaService = SolanaService.shared
     @Published var cryptoPrice = CryptoPriceService.shared
     @Published var utxo = BlockchairService.shared
+    @Published var ton = TonService.shared
     
     private let mediator = Mediator.shared
     
@@ -56,6 +57,8 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             } else if tx.coin.chain == .solana {
                 let (_,feeInLamports) = try await sol.fetchRecentBlockhash()
                 tx.gas = String(feeInLamports)
+            } else if tx.coin.chain == .ton {
+                tx.gas = tx.coin.feeDefault
             }
             
         } catch {
@@ -65,7 +68,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                     print(desc)
                 }
             }
-            print("error fetching data: \(error.localizedDescription)")
+            print("SendCryptoViewModel > loadGasInfoForSending: \(error.localizedDescription)")
         }
     }
     
@@ -86,7 +89,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         let keysignPayload = KeysignPayload(
             coin: tx.coin,
             toAddress: tx.toAddress,
-            toAmount: totalSelectedAmount,
+            toAmount: BigInt(totalSelectedAmount),
             chainSpecific: BlockChainSpecific.UTXO(byteFee: tx.feeInSats),
             utxos: utxoInfo,
             memo: tx.memo,
@@ -186,6 +189,20 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 
                 isLoading = false
             }
+        }else if tx.coin.chain == .ton{
+            Task{
+                do{
+                    let (rawBalance,priceRate) = try await self.ton.getBalance(coin: tx.coin)
+                    tx.coin.rawBalance = rawBalance
+                    tx.coin.priceRate = priceRate
+                    tx.amount = "\(tx.coin.getMaxValue(tx.coin.feeDefault.toBigInt()))"
+                    await convertToFiat(newValue: tx.amount, tx: tx)
+                } catch {
+                    print("fail to load solana balances,error:\(error.localizedDescription)")
+                }
+                
+                isLoading = false
+            }
         }
     }
     
@@ -259,7 +276,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         
         if  tx.coin.chain.chainType == ChainType.UTXO {
             let walletBalanceInSats = utxo.blockchairData[key]?.address?.balance ?? 0
-            let totalTransactionCostInSats = tx.amountInSats + tx.feeInSats
+            let totalTransactionCostInSats = tx.amountInSats + BigInt(tx.feeInSats)
             print("Total transaction cost: \(totalTransactionCostInSats)")
             
             if totalTransactionCostInSats > walletBalanceInSats {
@@ -300,11 +317,11 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         
         return isValidForm
     }
-
+    
     func setHash(_ hash: String) {
         self.hash = hash
     }
-
+    
     func moveToNextView() {
         currentIndex += 1
         currentTitle = titles[currentIndex-1]

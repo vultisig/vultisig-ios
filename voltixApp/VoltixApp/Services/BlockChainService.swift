@@ -80,7 +80,7 @@ final class BlockChainService {
             return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500)
             
         case .ton:
-            return .Ton(sequence: 0)
+            return .Ton
         }
     }
 }

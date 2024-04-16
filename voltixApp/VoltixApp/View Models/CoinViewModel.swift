@@ -15,7 +15,7 @@ class CoinViewModel: ObservableObject {
     @Published var balanceFiat: String? = nil
     @Published var coinBalance: String? = nil
     
-    private let balanceService = BalanceService()
+    private let balanceService = BalanceService.shared
 
     func loadData(coin: Coin) async {
         isLoading = true
@@ -26,7 +26,7 @@ class CoinViewModel: ObservableObject {
             balanceFiat = balance.balanceFiat
         }
         catch {
-            print("error fetching data: \(error.localizedDescription)")
+            print("CoinViewModel > loadData: \(error.localizedDescription)")
         }
 
         isLoading = false

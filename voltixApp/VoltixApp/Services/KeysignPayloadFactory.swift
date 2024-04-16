@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import BigInt
 
 struct KeysignPayloadFactory {
 
@@ -56,7 +57,7 @@ struct KeysignPayloadFactory {
         return KeysignPayload(
             coin: coin,
             toAddress: toAddress,
-            toAmount: amount,
+            toAmount: BigInt(amount),
             chainSpecific: chainSpecific,
             utxos: utxos,
             memo: memo,

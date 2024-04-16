@@ -24,6 +24,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
     @Published var utxo = BlockchairService.shared
     @Published var eth = EthService.shared
     var gaia = GaiaService.shared
+    var ton = TonService.shared
     
     var THORChainAccount: THORChainAccountValue? = nil
     var CosmosChainAccount: CosmosAccountValue? = nil
@@ -50,7 +51,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
             let coinName = tx.coin.chain.name.lowercased()
             let key: String = "\(tx.fromAddress)-\(coinName)"
             
-            let totalAmountNeeded = tx.amountInSats + tx.feeInSats
+            let totalAmountNeeded = tx.amountInSats + BigInt(tx.feeInSats)
             
             guard let utxoInfo = utxo.blockchairData[key]?.selectUTXOsForPayment(amountNeeded: Int64(totalAmountNeeded)).map({
                 UtxoInfo(
@@ -222,8 +223,26 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 isLoading = false
                 return nil
             }
-            
-            
+        }else if tx.coin.chain == .ton {
+            do {
+                tx.gas = tx.coin.feeDefault
+                let keysignPayload = KeysignPayload(
+                    coin: tx.coin,
+                    toAddress: tx.toAddress,
+                    toAmount: tx.amountInLamports,
+                    chainSpecific: BlockChainSpecific.Ton,
+                    utxos: [],
+                    memo: tx.memo,
+                    swapPayload: nil
+                )
+                return keysignPayload
+            } catch {
+                print("fail to get recent blockhash, error:\(error.localizedDescription)")
+                self.errorMessage = "Fail to keysing the payload of Ton"
+                showAlert = true
+                isLoading = false
+                return nil
+            }
         }
         return nil
     }

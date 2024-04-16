@@ -289,7 +289,7 @@ class KeysignViewModel: ObservableObject {
                 case .solana:
                     self.txid = await SolanaService.shared.sendSolanaTransaction(encodedTransaction: tx) ?? ""
                 case .ton:
-                    self.txid = ""
+                    self.txid = try await TonService.shared.sendTransaction(encodedTransaction: tx) ?? .empty
                 }
             case .failure(let error):
                 handleHelperError(err: error)
