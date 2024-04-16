@@ -52,6 +52,6 @@ extension AngularGradient {
         gradient: Gradient(colors: [Color(hex: "0439C7"), Color(hex: "33E6BF")]),
         center: .center,
         startAngle: .degrees(360),
-        endAngle: .degrees(-3)
+        endAngle: .degrees(-5)
     )
 }
