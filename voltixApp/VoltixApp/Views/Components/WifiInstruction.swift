@@ -18,7 +18,6 @@ struct WifiInstruction: View {
                 .frame(maxWidth: 250)
                 .multilineTextAlignment(.center)
         }
-        .frame(maxHeight: .infinity)
     }
 }
 
