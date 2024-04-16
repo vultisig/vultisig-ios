@@ -149,6 +149,6 @@ public class CryptoPriceService: ObservableObject {
     private func isCacheValid(for key: String) -> Bool {
         guard let cacheEntry = cache[key] else { return false }
         let elapsedTime = Date().timeIntervalSince(cacheEntry.timestamp)
-        return elapsedTime <= 3600 // 1 hour in seconds
+        return elapsedTime <= 120 // 1 hour in seconds
     }
 }

@@ -62,7 +62,7 @@ class Endpoint {
     }
     
     static func fetchCryptoPrices(coin: String, fiat: String) -> String {
-        "https://api.coingecko.com/api/v3/simple/price?ids=\(coin)&vs_currencies=\(fiat)"
+        "\(voltixApiProxy)/coingeicko/api/v3/simple/price?ids=\(coin)&vs_currencies=\(fiat)"
     }
     
     static func fetchBitcoinTransactions(_ userAddress: String) -> String {

@@ -46,3 +46,12 @@ extension LinearGradient {
     static let primaryGradient = LinearGradient(colors: [Color(hex: "33E6BF"), Color(hex: "0439C7")], startPoint: .topLeading, endPoint: .bottomTrailing)
     static let progressGradient = LinearGradient(colors: [Color(hex: "0439C7"), Color(hex: "33E6BF")], startPoint: .leading, endPoint: .trailing)
 }
+
+extension AngularGradient {
+    static let progressGradient = AngularGradient(
+        gradient: Gradient(colors: [Color(hex: "0439C7"), Color(hex: "33E6BF")]),
+        center: .center,
+        startAngle: .degrees(360),
+        endAngle: .degrees(-5)
+    )
+}
