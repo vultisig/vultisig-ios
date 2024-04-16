@@ -13,6 +13,10 @@ struct ProgressRing: View {
     var fromSize: CGFloat = 300
     var toSize: CGFloat = 100
     var title: String = "done"
+    
+    let animation = Animation.interpolatingSpring(stiffness: 50, damping: 5, initialVelocity: 0).delay(0.3)
+    
+    @State var pulseIcon = false
  
     var body: some View {
         ZStack {
@@ -30,7 +34,7 @@ struct ProgressRing: View {
             }
             .rotationEffect(.degrees(-90))
             .frame(width: progress>=0.99 ? toSize : fromSize)
-            .animation(.easeInOut(duration: 1), value: progress)
+            .animation(.easeInOut(duration: progress>=0.99 ? 0.6 : 1), value: progress)
     }
     
     var progressRing: some View {
@@ -48,8 +52,8 @@ struct ProgressRing: View {
             doneTitle
         }
         .offset(y: 16)
-        .opacity(progress>=0.99 ? 1 : 0)
-        .animation(.easeInOut(duration: 1).delay(0.5), value: progress)
+        .scaleEffect(progress>=0.99 ? 1 : 0)
+        .animation(.spring(duration: 1), value: progress)
     }
     
     var logo: some View {
@@ -57,10 +61,18 @@ struct ProgressRing: View {
             Circle()
                 .foregroundColor(.loadingGreen)
             
-            Image(systemName: "checkmark")
-                .font(.title40MontserratSemiBold)
-                .foregroundColor(.neutral0)
+            if progress>=0.99 {
+                Image(systemName: "checkmark")
+                    .font(.title40MontserratSemiBold)
+                    .foregroundColor(.neutral0)
+                    .scaleEffect(pulseIcon ? 1.1 : 0)
+                    .animation(animation, value: pulseIcon)
+                    .onAppear {
+                        pulseIcon = true
+                    }
+            }
         }
+        .opacity(progress>=0.99 ? 1 : 0)
         .frame(width: toSize*1.2)
         .zIndex(1)
     }
@@ -71,6 +83,8 @@ struct ProgressRing: View {
             .foregroundColor(.neutral0)
             .offset(y: progress>=0.99 ? 0 : -50)
             .zIndex(0)
+            .opacity(progress>=0.99 ? 1 : 0)
+            .animation(.spring(duration: 1).delay(0.5), value: progress)
     }
 }
 
