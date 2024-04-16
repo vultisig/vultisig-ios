@@ -11,7 +11,7 @@ struct PeerDiscoveryView: View {
     let vault: Vault
     
     @StateObject var viewModel = KeygenPeerDiscoveryViewModel()
-    @StateObject var participantDiscovery = ParticipantDiscovery()
+    @StateObject var participantDiscovery = ParticipantDiscovery(isKeygen: true)
     
     @State private var orientation = UIDevice.current.orientation
     

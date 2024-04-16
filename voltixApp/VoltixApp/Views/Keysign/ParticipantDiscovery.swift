@@ -9,19 +9,26 @@ import Foundation
 import OSLog
 
 class ParticipantDiscovery: ObservableObject {
+    let isKeygen: Bool
     private let logger = Logger(subsystem: "participant-discovery", category: "communication")
     @Published var peersFound = [String]()
     var discoverying = true
     
+    init(isKeygen: Bool) {
+        self.isKeygen = isKeygen
+    }
+    
     func stop() {
         self.discoverying = false
     }
-    
-    func getParticipants(serverAddr: String, sessionID: String, localParty: String) {
+
+    func getParticipants(serverAddr: String, sessionID: String, localParty: String,pubKeyECDSA: String) {
         let urlString = "\(serverAddr)/\(sessionID)"
+        let headers =  isKeygen ? TssHelper.getKeygenRequestHeader() : TssHelper.getKeysignRequestHeader(pubKey: pubKeyECDSA)
+        
         Task.detached {
             repeat {
-                Utils.getRequest(urlString: urlString, headers: [String: String](), completion: { result in
+                Utils.getRequest(urlString: urlString, headers: headers, completion: { result in
                     switch result {
                     case .success(let data):
                         if data.isEmpty {

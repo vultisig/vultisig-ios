@@ -4,9 +4,9 @@
 
 Voltix use the following third party services to access price , blockchain node RPC
 - [coingecko](https://www.coingecko.com/) for price
-- [blockchair] (https://blockchair.com/) for UTXO chains (BTC, BCH, LTC, DOGE)
-- [Public Node] (https://publicnode.com/) for EVM chains (BSC, AVAX, ETH) and SOL, ATOM
-- [Ninerealms] (https://thornode.ninerealms.com) for THORChain
+- [blockchair](https://blockchair.com/) for UTXO chains (BTC, BCH, LTC, DOGE)
+- [Public Node](https://publicnode.com/) for EVM chains (BSC, AVAX, ETH) and SOL, ATOM
+- [Ninerealms](https://thornode.ninerealms.com) for THORChain
 
 ## Block Explorer
 

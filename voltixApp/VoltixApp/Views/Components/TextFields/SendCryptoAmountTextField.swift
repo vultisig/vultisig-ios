@@ -40,7 +40,8 @@ struct SendCryptoAmountTextField: View {
 				.keyboardType(.decimalPad)
 				.textContentType(.oneTimeCode)
 				.disableAutocorrection(true)
-				
+                .textFieldStyle(TappableTextFieldStyle())
+
 				if showButton {
 					maxButton
 				}
