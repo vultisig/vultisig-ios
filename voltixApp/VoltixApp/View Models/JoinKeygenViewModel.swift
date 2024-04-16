@@ -139,7 +139,7 @@ class JoinKeygenViewModel: ObservableObject {
         defer {
             isShowingScanner = false
         }
-        var useVoltixRouter = false
+        var useVoltixRelay = false
         switch result {
         case .success(let result):
             guard let scanData = result.string.data(using: .utf8) else {
@@ -158,7 +158,7 @@ class JoinKeygenViewModel: ObservableObject {
                     vault.hexChainCode = hexChainCode
                     serviceName = keygenMsg.serviceName
                     encryptionKeyHex = keygenMsg.encryptionKeyHex
-                    useVoltixRouter = keygenMsg.useVoltixRouter
+                    useVoltixRelay = keygenMsg.useVoltixRelay
                 case .Reshare(let reshareMsg):
                     tssType = .Reshare
                     oldCommittee = reshareMsg.oldParties
@@ -166,7 +166,7 @@ class JoinKeygenViewModel: ObservableObject {
                     hexChainCode = reshareMsg.hexChainCode
                     serviceName = reshareMsg.serviceName
                     encryptionKeyHex = reshareMsg.encryptionKeyHex
-                    useVoltixRouter = reshareMsg.useVoltixRouter
+                    useVoltixRelay = reshareMsg.useVoltixRelay
                     // this means the vault is new , and it join the reshare to become the new committee
                     if vault.pubKeyECDSA.isEmpty {
                         vault.hexChainCode = reshareMsg.hexChainCode
@@ -185,8 +185,8 @@ class JoinKeygenViewModel: ObservableObject {
                 status = .FailToStart
                 return
             }
-            if useVoltixRouter {
-                self.serverAddress = Endpoint.voltixRouter
+            if useVoltixRelay {
+                self.serverAddress = Endpoint.voltixRelay
                 status = .JoinKeygen
             } else {
                 status = .DiscoverService

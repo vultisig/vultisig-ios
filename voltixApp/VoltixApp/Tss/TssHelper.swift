@@ -10,8 +10,8 @@ import Foundation
 class TssHelper {
     static func getKeysignRequestHeader(pubKey: String)->[String:String] {
         var header = [String:String]()
-        if VoltixRouter.IsRouterEnabled {
-            let basicAuthentication = "\(VoltixRouter.VoltixApiKey):\(pubKey)".data(using: .utf8)!
+        if VoltixRelay.IsRelayEnabled {
+            let basicAuthentication = "\(VoltixRelay.VoltixApiKey):\(pubKey)".data(using: .utf8)!
             header["Authorization"] = "Basic \(basicAuthentication.base64EncodedString())"
         }
         return header
@@ -19,7 +19,7 @@ class TssHelper {
     
     static func getKeygenRequestHeader()->[String:String] {
         var header = [String:String]()
-        if VoltixRouter.IsRouterEnabled {
+        if VoltixRelay.IsRelayEnabled {
             header["keygen"] = "voltix"
             let basicAuthentication = "x:x".data(using: .utf8)!
             header["Authorization"] = "Basic \(basicAuthentication.base64EncodedString())"

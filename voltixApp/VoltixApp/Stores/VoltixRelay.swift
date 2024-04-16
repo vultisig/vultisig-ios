@@ -1,5 +1,5 @@
 //
-//  VoltixRouter.swift
+//  VoltixRelay.swift
 //  VoltixApp
 //
 //  Created by Johnny Luo on 14/4/2024.
@@ -7,13 +7,13 @@
 
 import Foundation
 
-class VoltixRouter {
-    static var IsRouterEnabled: Bool {
+class VoltixRelay {
+    static var IsRelayEnabled: Bool {
         get {
-            return UserDefaults.standard.bool(forKey: "use_voltix_router")
+            return UserDefaults.standard.bool(forKey: "use_voltix_relay")
         }
         set {
-            UserDefaults.standard.set(newValue, forKey: "use_voltix_router")
+            UserDefaults.standard.set(newValue, forKey: "use_voltix_relay")
         }
     }
     static var VoltixApiKey: String{
