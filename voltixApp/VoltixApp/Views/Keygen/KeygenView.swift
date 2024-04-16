@@ -23,9 +23,9 @@ struct KeygenView: View {
     let encryptionKeyHex: String
     @StateObject var viewModel = KeygenViewModel()
     
-    let progressTotalCount = 4
+    let progressTotalCount: Double = 4
     
-    @State var progressCounter = 0
+    @State var progressCounter: Double = 0
     @State var showProgressRing = true
     
     var body: some View {
@@ -83,8 +83,7 @@ struct KeygenView: View {
     }
     
     var progress: some View {
-        let value = Double(progressCounter/progressTotalCount)
-        return ProgressRing(progress: value)
+        ProgressRing(progress: Double(progressCounter/progressTotalCount))
     }
     
     var instructions: some View {
@@ -93,33 +92,47 @@ struct KeygenView: View {
     }
     
     var preparingVaultText: some View {
-        progressCounter += 1
-        return KeygenStatusText(status: NSLocalizedString("preparingVault", comment: "PREPARING VAULT..."))
+        KeygenStatusText(status: NSLocalizedString("preparingVault", comment: "PREPARING VAULT..."))
+            .onAppear {
+                progressCounter += 1
+            }
     }
     
     var generatingECDSAText: some View {
-        progressCounter += 1
-        return KeygenStatusText(status: NSLocalizedString("generatingECDSA", comment: "GENERATING ECDSA KEY"))
+        KeygenStatusText(status: NSLocalizedString("generatingECDSA", comment: "GENERATING ECDSA KEY"))
+            .onAppear {
+                progressCounter += 1
+            }
     }
     
     var generatingEdDSAText: some View {
-        progressCounter += 1
-        return KeygenStatusText(status: NSLocalizedString("generatingEdDSA", comment: "GENERATING EdDSA KEY"))
+        KeygenStatusText(status: NSLocalizedString("generatingEdDSA", comment: "GENERATING EdDSA KEY"))
+            .onAppear {
+                progressCounter += 1
+            }
     }
     
     var reshareECDSAText: some View {
-        showProgressRing = false
-        return KeygenStatusText(status: NSLocalizedString("reshareECDSA", comment: "Resharing ECDSA KEY"))
+        KeygenStatusText(status: NSLocalizedString("reshareECDSA", comment: "Resharing ECDSA KEY"))
+            .onAppear {
+                showProgressRing = false
+            }
     }
     
     var reshareEdDSAText: some View {
-        showProgressRing = false
-        return KeygenStatusText(status: NSLocalizedString("reshareEdDSA", comment: "Resharing EdDSA KEY"))
+        KeygenStatusText(status: NSLocalizedString("reshareEdDSA", comment: "Resharing EdDSA KEY"))
+            .onAppear {
+                showProgressRing = false
+            }
     }
     
     var doneText: some View {
-        progressCounter += 1
-        return EmptyView()
+        Text("DONE")
+            .foregroundColor(.backgroundBlue)
+            .onAppear {
+                progressCounter += 1
+                viewModel.delaySwitchToMain()
+            }
     }
     
     var keygenFailedView: some View {
@@ -131,11 +144,13 @@ struct KeygenView: View {
                 keygenReshareFailedText
             }
         }
+        .onAppear {
+            showProgressRing = false
+        }
     }
     
     var keygenFailedText: some View {
-        showProgressRing = false
-        return VStack(spacing: 18) {
+        VStack(spacing: 18) {
             Text(NSLocalizedString("keygenFailed", comment: "key generation failed"))
                 .font(.body15MenloBold)
                 .foregroundColor(.neutral0)
@@ -148,8 +163,7 @@ struct KeygenView: View {
     }
     
     var keygenReshareFailedText: some View {
-        showProgressRing = false
-        return VStack(spacing: 18) {
+        VStack(spacing: 18) {
             Text(NSLocalizedString("reshareFailed", comment: "Resharing key failed"))
                 .font(.body15MenloBold)
                 .foregroundColor(.neutral0)
