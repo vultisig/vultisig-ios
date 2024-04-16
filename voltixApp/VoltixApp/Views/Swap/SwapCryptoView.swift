@@ -33,7 +33,7 @@ struct SwapCryptoView: View {
         .task {
             await swapViewModel.load(tx: tx, fromCoin: coin, coins: vault.coins)
         }
-        .alert(isPresented: swapViewModel.showError) {
+        .alert(isPresented: Binding { swapViewModel.error != nil } set: { _ in swapViewModel.error = nil }) {
             alert
         }
     }

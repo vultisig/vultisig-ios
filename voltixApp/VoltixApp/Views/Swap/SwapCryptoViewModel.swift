@@ -30,10 +30,6 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     @Published var error: Error?
     @Published var isLoading = false
 
-    var showError: Binding<Bool> {
-        return Binding { self.error != nil } set: { _ in }
-    }
-
     func load(tx: SwapTransaction, fromCoin: Coin, coins: [Coin]) async {
         self.coins = coins.filter { $0.chain.isSwapSupported }
         tx.toCoin = coins.first!
@@ -155,7 +151,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             self.quote = quote
         } catch {
             self.quote = nil
-            print("Swap quote error: \(error.localizedDescription)")
+            self.error = error
+            tx.toAmount = .empty
         }
     }
 }

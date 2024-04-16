@@ -49,7 +49,7 @@ class ThorchainService {
         } catch {
             struct CustomError: Codable, Error, LocalizedError {
                 let error: String
-                var errorDescription: String? { return error }
+                var errorDescription: String? { return error.capitalized }
             }
             let error = try JSONDecoder().decode(CustomError.self, from: data)
             throw error
