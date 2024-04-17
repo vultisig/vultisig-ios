@@ -33,7 +33,9 @@ struct SwapCryptoDetailsView: View {
                 fromAmountField
                 swapButton
                 toCoinField
-                toAmountField
+                if swapViewModel.showToAmount(tx: tx) {
+                    toAmountField
+                }
                 summary
             }
             .padding(.horizontal, 16)

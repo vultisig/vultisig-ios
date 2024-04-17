@@ -51,6 +51,10 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         return tx.duration != .zero
     }
 
+    func showToAmount(tx: SwapTransaction) -> Bool {
+        return tx.toAmount != .empty
+    }
+
     func feeString(tx: SwapTransaction) -> String {
         return "\(tx.inboundFee) \(tx.toCoin.ticker)"
     }
@@ -143,6 +147,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
 
     func updateQuotes(tx: SwapTransaction) async {
+        guard !tx.fromAmount.isEmpty else { return clear(tx: tx) }
+
         do {
             guard let amount = Decimal(string: tx.fromAmount), tx.fromCoin != tx.toCoin else {
                 throw Errors.swapQuoteParsingFailed
@@ -170,11 +176,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
             self.quote = quote
         } catch {
-            self.quote = nil
             self.error = error
-            tx.toAmount = .empty
-            tx.inboundFee = .empty
-            tx.duration = .zero
+            clear(tx: tx)
         }
     }
 }
@@ -195,6 +198,13 @@ private extension SwapCryptoViewModel {
 }
 
 private extension SwapCryptoViewModel {
+
+    func clear(tx: SwapTransaction) {
+        quote = nil
+        tx.toAmount = .empty
+        tx.inboundFee = .empty
+        tx.duration = .zero
+    }
 
     func amount(for coin: Coin, tx: SwapTransaction) -> Int64 {
         switch coin.chain {
