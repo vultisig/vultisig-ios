@@ -37,6 +37,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         
         await updateFromBalance(tx: tx)
         await updateToBalance(tx: tx)
+        await updateFee(tx: tx)
     }
     
     var progress: Double {
@@ -56,7 +57,11 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func feeString(tx: SwapTransaction) -> String {
-        return "\(tx.inboundFee) \(tx.toCoin.ticker)"
+        guard !tx.inboundFee.isEmpty, let inbound = Double(tx.inboundFee) else { return .empty }
+        guard !tx.gas.isEmpty, let gas = Double(tx.gas) else { return .empty }
+
+        let fee = inbound * tx.toCoin.priceRate + gas * tx.fromCoin.priceRate
+        return "\(fee) \(SettingsCurrency.current.rawValue)"
     }
     
     func durationString(tx: SwapTransaction) -> String {
@@ -129,7 +134,16 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     func stopMediator() {
         Mediator.shared.stop()
     }
-    
+
+    func updateFee(tx: SwapTransaction) async {
+        do {
+            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin)
+            tx.gas = chainSpecific.gas
+        } catch {
+            self.error = error
+        }
+    }
+
     func updateFromBalance(tx: SwapTransaction) async {
         do {
             tx.fromBalance = try await fetchBalance(coin: tx.fromCoin)

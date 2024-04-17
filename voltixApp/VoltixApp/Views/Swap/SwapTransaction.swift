@@ -16,6 +16,7 @@ class SwapTransaction: ObservableObject {
     @Published var fromAmount: String = .empty
     @Published var toAmount: String = .empty
     @Published var inboundFee: String = .empty
+    @Published var gas: String = .empty
     @Published var duration: Int = .zero
 
     @Published var fromBalance: String = .zero
