@@ -12,22 +12,25 @@ class ParticipantDiscovery: ObservableObject {
     let isKeygen: Bool
     private let logger = Logger(subsystem: "participant-discovery", category: "communication")
     @Published var peersFound = [String]()
-    var discoverying = true
+    var task: Task<Void,Error>? = nil
     
     init(isKeygen: Bool) {
         self.isKeygen = isKeygen
     }
     
     func stop() {
-        self.discoverying = false
+        self.task?.cancel()
     }
 
     func getParticipants(serverAddr: String, sessionID: String, localParty: String,pubKeyECDSA: String) {
         let urlString = "\(serverAddr)/\(sessionID)"
         let headers =  isKeygen ? TssHelper.getKeygenRequestHeader() : TssHelper.getKeysignRequestHeader(pubKey: pubKeyECDSA)
         
-        Task.detached {
+        self.task = Task.detached {
             repeat {
+                if Task.isCancelled {
+                    break
+                }
                 Utils.getRequest(urlString: urlString, headers: headers, completion: { result in
                     switch result {
                     case .success(let data):
@@ -56,7 +59,7 @@ class ParticipantDiscovery: ObservableObject {
                     }
                 })
                 try await Task.sleep(for: .seconds(1)) // wait for a second to continue
-            } while self.discoverying
+            } while !Task.isCancelled
         }
     }
 }
