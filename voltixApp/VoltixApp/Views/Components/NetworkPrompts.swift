@@ -80,6 +80,12 @@ struct NetworkPrompts: View {
         withAnimation {
             viewModel.selectedNetwork = network
         }
+        
+        if network == .Cellular {
+            VoltixRelay.IsRelayEnabled = true
+        } else {
+            VoltixRelay.IsRelayEnabled = false
+        }
     }
 }
 
