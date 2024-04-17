@@ -182,6 +182,8 @@ class Endpoint {
             return "https://blockchair.com/dash/address/\(address)"
         case .mayaChain:
             return "https://www.mayascan.org/address/\(address)"
+        case .none:
+            return nil
         }
     }
     

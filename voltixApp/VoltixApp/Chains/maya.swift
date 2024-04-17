@@ -87,7 +87,7 @@ enum MayaChainHelper {
         let input = CosmosSigningInput.with {
             $0.publicKey = pubKeyData
             $0.signingMode = .protobuf
-            $0.chainID = coin.chainId
+            $0.chainID = "mayachain-mainnet-v1"
             $0.accountNumber = accountNumber
             $0.sequence = sequence
             $0.mode = .sync
