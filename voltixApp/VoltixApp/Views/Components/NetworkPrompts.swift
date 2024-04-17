@@ -63,6 +63,7 @@ struct NetworkPrompts: View {
         } else {
             VoltixRelay.IsRelayEnabled = false
         }
+        viewModel.restartParticipantDiscovery()
     }
 }
 
