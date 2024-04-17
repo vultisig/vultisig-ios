@@ -112,7 +112,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             keysignPayload = try await keysignFactory.buildTransfer(
                 coin: tx.fromCoin,
                 toAddress: toAddress,
-                amount: amount(for: tx.fromCoin, tx: tx),
+                amount: BigInt(amount(for: tx.fromCoin, tx: tx)),
                 memo: nil,
                 chainSpecific: chainSpecific,
                 swapPayload: swapPayload

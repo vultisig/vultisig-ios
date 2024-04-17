@@ -1,6 +1,15 @@
 {
   "pins" : [
     {
+      "identity" : "cache",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/hyperoslo/Cache",
+      "state" : {
+        "revision" : "ad6abdf2a3a866288a7dad2c4e13379406002a81",
+        "version" : "6.2.0"
+      }
+    },
+    {
       "identity" : "swifter",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/httpswift/swifter",

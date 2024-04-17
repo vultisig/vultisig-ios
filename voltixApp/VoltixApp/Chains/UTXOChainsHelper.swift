@@ -149,7 +149,7 @@ class UTXOChainsHelper {
         
         var input = BitcoinSigningInput.with {
             $0.hashType = BitcoinScript.hashTypeForCoin(coinType: self.coin)
-            $0.amount = keysignPayload.toAmount
+            $0.amount = Int64(keysignPayload.toAmount)
             $0.useMaxAmount = false
             $0.toAddress = keysignPayload.toAddress
             $0.changeAddress = keysignPayload.coin.address
