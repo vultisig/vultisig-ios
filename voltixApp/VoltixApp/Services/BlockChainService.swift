@@ -26,6 +26,7 @@ final class BlockChainService {
     private let sol = SolanaService.shared
     private let thor = ThorchainService.shared
     private let atom = GaiaService.shared
+    private let maya = MayachainService.shared
 
     func fetchSpecific(for coin: Coin) async throws -> BlockChainSpecific {
         switch coin.chain {
@@ -45,7 +46,7 @@ final class BlockChainService {
             }
             return .THORChain(accountNumber: accountNumber, sequence: sequence)
         case .mayaChain:
-            let account = try await thor.fetchAccountNumber(coin.address)
+            let account = try await maya.fetchAccountNumber(coin.address)
             
             guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
                 throw Errors.failToGetAccountNumber

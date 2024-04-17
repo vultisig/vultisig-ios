@@ -69,11 +69,11 @@ enum MayaChainHelper {
     
     static func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
        
-        guard let fromAddr = AnyAddress(string: keysignPayload.coin.address, coin: .thorchain) else {
+        guard let fromAddr = AnyAddress(string: keysignPayload.coin.address, coin: .thorchain,hrp: "maya") else {
             return .failure(HelperError.runtimeError("\(keysignPayload.coin.address) is invalid"))
         }
         
-        guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .thorchain) else {
+        guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .thorchain,hrp: "maya") else {
             return .failure(HelperError.runtimeError("\(keysignPayload.toAddress) is invalid"))
         }
         guard case .THORChain(let accountNumber, let sequence) = keysignPayload.chainSpecific else {
