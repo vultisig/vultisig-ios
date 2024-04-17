@@ -15,6 +15,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case bitcoinCash
     case litecoin
     case dogecoin
+    case dash
     case gaiaChain
 
     enum MigrationKeys: String, CodingKey {
@@ -52,6 +53,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .litecoin: return "Litecoin"
         case .dogecoin: return "Dogecoin"
         case .gaiaChain: return "Gaia"
+        case .dash: return "Dash"
         }
     }
 
@@ -67,6 +69,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .litecoin: return "LTC"
         case .dogecoin: return "DOGE"
         case .gaiaChain: return "UATOM"
+        case .dash: return "DASH"
         }
     }
 
@@ -82,12 +85,13 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .dogecoin: return "DOGE"
         case .gaiaChain: return "GAIA"
         case .solana: return "SOL"
+        case .dash: return "DASH"
         }
     }
 
     var isSwapSupported: Bool {
         switch self {
-        case .thorChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .gaiaChain:
+        case .thorChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dash, .dogecoin, .gaiaChain:
             return true
         case .solana:
             return false
@@ -96,7 +100,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
 
     var signingKeyType: KeyType {
         switch self {
-        case .thorChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .gaiaChain:
+        case .thorChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin,.dash, .dogecoin, .gaiaChain:
             return .ECDSA
         case .solana:
             return .EdDSA
@@ -111,7 +115,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return .THORChain
         case .solana:
             return .Solana
-        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin:
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             return .UTXO
         case .gaiaChain:
             return .Cosmos

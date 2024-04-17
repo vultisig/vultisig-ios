@@ -12,53 +12,53 @@ import Mediator
 
 @MainActor
 class SwapCryptoViewModel: ObservableObject, TransferViewModel {
-
+    
     private let thorchainService = ThorchainService.shared
     private let balanceService = BalanceService.shared
     private let blockchainService = BlockChainService.shared
-
+    
     private let titles = ["send", "verify", "pair", "keysign", "done"]
-
+    
     var quote: ThorchainSwapQuote?
     var keysignPayload: KeysignPayload?
-
+    
     @Published var coins: [Coin] = []
     @Published var currentIndex = 1
     @Published var currentTitle = "send"
     @Published var hash: String?
-
+    
     @Published var error: Error?
     @Published var isLoading = false
-
+    
     func load(tx: SwapTransaction, fromCoin: Coin, coins: [Coin]) async {
         self.coins = coins.filter { $0.chain.isSwapSupported }
         tx.toCoin = coins.first!
         tx.fromCoin = fromCoin
-
+        
         await updateFromBalance(tx: tx)
         await updateToBalance(tx: tx)
     }
-
+    
     var progress: Double {
         return Double(currentIndex) / Double(titles.count)
     }
-
+    
     func showFees(tx: SwapTransaction) -> Bool {
         return tx.inboundFee != .empty
     }
-
+    
     func showDuration(tx: SwapTransaction) -> Bool {
         return tx.duration != .zero
     }
-
+    
     func showToAmount(tx: SwapTransaction) -> Bool {
         return tx.toAmount != .empty
     }
-
+    
     func feeString(tx: SwapTransaction) -> String {
         return "\(tx.inboundFee) \(tx.toCoin.ticker)"
     }
-
+    
     func durationString(tx: SwapTransaction) -> String {
         guard let duration = quote?.totalSwapSeconds else { return .empty }
         let formatter = DateComponentsFormatter()
@@ -71,27 +71,27 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         let toDate = Date(timeIntervalSince1970: TimeInterval(duration))
         return formatter.string(from: fromDate, to: toDate) ?? .empty
     }
-
+    
     func validateForm(tx: SwapTransaction) -> Bool {
         return tx.fromCoin != tx.toCoin
-            && tx.fromCoin != .example
-            && tx.toCoin != .example
-            && !tx.fromAmount.isEmpty
-            && !tx.toAmount.isEmpty
-            && quote != nil
+        && tx.fromCoin != .example
+        && tx.toCoin != .example
+        && !tx.fromAmount.isEmpty
+        && !tx.toAmount.isEmpty
+        && quote != nil
     }
-
+    
     func moveToNextView() {
         currentIndex += 1
         currentTitle = titles[currentIndex-1]
     }
-
+    
     func buildKeysignPayload(tx: SwapTransaction) async -> Bool {
         isLoading = true
         defer { isLoading = false }
-
+        
         let toAddress = quote!.inboundAddress
-
+        
         let swapPayload = THORChainSwapPayload(
             fromAddress: tx.fromCoin.address,
             fromAsset: swapAsset(for: tx.fromCoin),
@@ -104,11 +104,11 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         )
         
         let keysignFactory = KeysignPayloadFactory()
-
+        
         do {
             // TODO: Cache chain specific?
             let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin)
-
+            
             keysignPayload = try await keysignFactory.buildTransfer(
                 coin: tx.fromCoin,
                 toAddress: toAddress,
@@ -117,7 +117,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 chainSpecific: chainSpecific,
                 swapPayload: swapPayload
             )
-
+            
             return true
         }
         catch {
@@ -125,11 +125,11 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             return false
         }
     }
-
+    
     func stopMediator() {
         Mediator.shared.stop()
     }
-
+    
     func updateFromBalance(tx: SwapTransaction) async {
         do {
             tx.fromBalance = try await fetchBalance(coin: tx.fromCoin)
@@ -137,7 +137,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             self.error = error
         }
     }
-
+    
     func updateToBalance(tx: SwapTransaction) async {
         do {
             tx.toBalance = try await fetchBalance(coin: tx.toCoin)
@@ -145,15 +145,15 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             self.error = error
         }
     }
-
+    
     func updateQuotes(tx: SwapTransaction) async {
         guard !tx.fromAmount.isEmpty else { return clear(tx: tx) }
-
+        
         do {
             guard let amount = Decimal(string: tx.fromAmount), tx.fromCoin != tx.toCoin else {
                 throw Errors.swapQuoteParsingFailed
             }
-
+            
             let quote = try await thorchainService.fetchSwapQuotes(
                 address: tx.toCoin.address,
                 fromAsset: tx.fromCoin.swapAsset,
@@ -161,19 +161,19 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 amount: (amount * 100_000_000).description, // https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
                 interval: "1"
             )
-
+            
             guard let expected = Decimal(string: quote.expectedAmountOut) else {
                 throw Errors.swapQuoteParsingFailed
             }
-
+            
             guard let fees = Decimal(string: quote.fees.total) else {
                 throw Errors.swapQuoteParsingFailed
             }
-
+            
             tx.toAmount = (expected / Decimal(100_000_000)).description
             tx.inboundFee = (fees / Decimal(100_000_000)).description
             tx.duration = quote.totalSwapSeconds ?? 0
-
+            
             self.quote = quote
         } catch {
             self.error = error
@@ -183,29 +183,29 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 }
 
 private extension SwapCryptoViewModel {
-
+    
     enum Errors: String, Error, LocalizedError {
         case swapQuoteParsingFailed
-
+        
         var errorDescription: String? {
             return String(NSLocalizedString(rawValue, comment: ""))
         }
     }
-
+    
     func fetchBalance(coin: Coin) async throws -> String {
         return try await balanceService.balance(for: coin).coinBalance
     }
 }
 
 private extension SwapCryptoViewModel {
-
+    
     func clear(tx: SwapTransaction) {
         quote = nil
         tx.toAmount = .empty
         tx.inboundFee = .empty
         tx.duration = .zero
     }
-
+    
     func amount(for coin: Coin, tx: SwapTransaction) -> Int64 {
         switch coin.chain {
         case .thorChain:
@@ -216,7 +216,7 @@ private extension SwapCryptoViewModel {
             } else {
                 return tx.amountInTokenWeiInt64
             }
-        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin:
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             return tx.amountInSats
         case .gaiaChain:
             return tx.amountInCoinDecimal
@@ -224,10 +224,10 @@ private extension SwapCryptoViewModel {
             return tx.amountInLamports
         }
     }
-
+    
     func swapAmount(for coin: Coin, tx: SwapTransaction) -> String {
         switch coin.chain {
-        case .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .solana:
+        case .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             return String(tx.amountInSats)
         case .ethereum, .avalanche, .bscChain:
             if coin.isNativeToken {
@@ -237,9 +237,11 @@ private extension SwapCryptoViewModel {
             }
         case .gaiaChain:
             return String(tx.amountInCoinDecimal)
+        case .solana:
+            return String(tx.amountInLamports)
         }
     }
-
+    
     func swapAsset(for coin: Coin) -> THORChainSwapAsset {
         return THORChainSwapAsset.with {
             switch coin.chain {
@@ -261,7 +263,7 @@ private extension SwapCryptoViewModel {
                 $0.chain = .doge
             case .gaiaChain:
                 $0.chain = .atom
-            case .solana: break
+            case .solana, .dash: break
             }
             $0.symbol = coin.ticker
             if !coin.isNativeToken {
