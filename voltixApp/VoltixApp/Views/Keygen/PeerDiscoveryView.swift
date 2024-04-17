@@ -89,7 +89,7 @@ struct PeerDiscoveryView: View {
     
     var landscapeContent: some View {
         HStack {
-            paringBarcode
+            qrCode
                 .padding(60)
             VStack{
                 list
@@ -102,7 +102,7 @@ struct PeerDiscoveryView: View {
     var portraitContent: some View {
         VStack {
             vaultDetail
-            paringBarcode
+            qrCode
             list
         }
     }
@@ -161,15 +161,24 @@ struct PeerDiscoveryView: View {
     var deviceList: some View {
         ScrollView{
             LazyVGrid(columns: columns, spacing: 32) {
-                ForEach(participantDiscovery.peersFound, id: \.self) { peer in
-                    Button {
-                        handleSelection(peer)
-                    } label: {
-                        PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
-                    }
-                }
+                networkPrompts
+                devices
             }
             .padding(20)
+        }
+    }
+    
+    var networkPrompts: some View {
+        NetworkPrompts(viewModel: viewModel)
+    }
+    
+    var devices: some View {
+        ForEach(participantDiscovery.peersFound, id: \.self) { peer in
+            Button {
+                handleSelection(peer)
+            } label: {
+                PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
+            }
         }
     }
     

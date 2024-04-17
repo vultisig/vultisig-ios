@@ -41,6 +41,7 @@ extension Font {
     
     // Bold
     static let body13MenloBold = Font.custom("Menlo", size: 13).bold()
+    static let body14MenloBold = Font.custom("Menlo", size: 14).bold()
     static let body15MenloBold = Font.custom("Menlo", size: 15).bold()
     static let body16MenloBold = Font.custom("Menlo", size: 16).bold()
     static let body18MenloBold = Font.custom("Menlo", size: 18).bold()

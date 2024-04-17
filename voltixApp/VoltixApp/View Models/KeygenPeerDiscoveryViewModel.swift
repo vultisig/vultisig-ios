@@ -30,6 +30,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     @Published var selections = Set<String>()
     @Published var serverAddr = "http://127.0.0.1:18080"
     @Published var vaultDetail = String.empty
+    @Published var selectedNetwork = NetworkPromptType.WiFi
     
     private let mediator = Mediator.shared
     
