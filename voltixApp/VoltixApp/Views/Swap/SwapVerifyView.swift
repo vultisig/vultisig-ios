@@ -48,7 +48,9 @@ struct SwapVerifyView: View {
             Separator()
             getValueCell(for: "to", with: getToAmount())
             Separator()
-            getDetailsCell(for: "gas", with: getGasAmount())
+            getDetailsCell(for: "Estimated Time", with: swapViewModel.durationString(tx: tx))
+            Separator()
+            getDetailsCell(for: "Estimated Fees", with: swapViewModel.feeString(tx: tx))
         }
         .padding(16)
         .background(Color.blue600)
@@ -83,10 +85,6 @@ struct SwapVerifyView: View {
 
     func getToAmount() -> String {
         return "\(tx.toAmount) \(tx.toCoin.ticker)"
-    }
-
-    private func getGasAmount() -> String {
-        return tx.feeString
     }
 
     func getValueCell(for title: String, with value: String) -> some View {

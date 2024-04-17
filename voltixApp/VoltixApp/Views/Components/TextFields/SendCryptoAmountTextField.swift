@@ -14,6 +14,8 @@ struct SendCryptoAmountTextField: View {
     var onChange: (String) async -> Void
     var onMaxPressed: (() -> Void)?
 
+    @Environment(\.isEnabled) private var isEnabled
+
 	var body: some View {
 		ZStack(alignment: .trailing) {
 			if amount.isEmpty {
@@ -41,6 +43,7 @@ struct SendCryptoAmountTextField: View {
 				.textContentType(.oneTimeCode)
 				.disableAutocorrection(true)
                 .textFieldStyle(TappableTextFieldStyle())
+                .foregroundColor(isEnabled ? .neutral0 : .neutral300)
 
 				if showButton {
 					maxButton

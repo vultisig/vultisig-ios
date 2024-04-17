@@ -33,7 +33,9 @@ struct SwapCryptoDetailsView: View {
                 fromAmountField
                 swapButton
                 toCoinField
-                toAmountField
+                if swapViewModel.showToAmount(tx: tx) {
+                    toAmountField
+                }
                 summary
             }
             .padding(.horizontal, 16)
@@ -47,7 +49,6 @@ struct SwapCryptoDetailsView: View {
                 Task {
                     await swapViewModel.updateFromBalance(tx: tx)
                     await swapViewModel.updateQuotes(tx: tx)
-                    await swapViewModel.updateFee(tx: tx)
                 }
             })
             getBalance(for: tx.fromBalance)
@@ -91,8 +92,13 @@ struct SwapCryptoDetailsView: View {
     }
     
     var summary: some View {
-        VStack(spacing: 8) {
-            getSummaryCell(leadingText: "gas(auto)", trailingText: tx.feeString)
+        VStack(spacing: 16) {
+            if swapViewModel.showFees(tx: tx) {
+                getSummaryCell(leadingText: "Estimated Fees", trailingText: swapViewModel.feeString(tx: tx))
+            }
+            if swapViewModel.showDuration(tx: tx) {
+                getSummaryCell(leadingText: "Estimated Time", trailingText: swapViewModel.durationString(tx: tx))
+            }
         }
     }
     
