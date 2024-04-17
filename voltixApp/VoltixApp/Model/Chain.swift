@@ -17,11 +17,11 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case dogecoin
     case dash
     case gaiaChain
-
+    
     enum MigrationKeys: String, CodingKey {
         case ticker
     }
-
+    
     // TODO: Remove later after team have migrated
     init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -31,16 +31,16 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         } else {
             let container = try decoder.container(keyedBy: MigrationKeys.self)
             let ticker = try container.decode(String.self, forKey: .ticker)
-
+            
             for chain in Chain.allCases where chain.ticker == ticker  {
                 self = chain
                 return
             }
         }
-
+        
         fatalError("Migration failed")
     }
-
+    
     var name: String {
         switch self {
         case .thorChain: return "THORChain"
@@ -56,7 +56,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .dash: return "Dash"
         }
     }
-
+    
     var ticker: String {
         switch self {
         case .thorChain: return "RUNE"
@@ -72,7 +72,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .dash: return "DASH"
         }
     }
-
+    
     var swapAsset: String {
         switch self {
         case .thorChain: return "THOR"
@@ -88,25 +88,25 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .dash: return "DASH"
         }
     }
-
+    
     var isSwapSupported: Bool {
         switch self {
-        case .thorChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dash, .dogecoin, .gaiaChain:
+        case .thorChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .gaiaChain:
             return true
-        case .solana:
+        case .solana, .dash:
             return false
         }
     }
-
+    
     var signingKeyType: KeyType {
         switch self {
-        case .thorChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin,.dash, .dogecoin, .gaiaChain:
+        case .thorChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dash, .dogecoin, .gaiaChain:
             return .ECDSA
         case .solana:
             return .EdDSA
         }
     }
-
+    
     var chainType: ChainType {
         switch self {
         case .ethereum, .avalanche, .bscChain:
