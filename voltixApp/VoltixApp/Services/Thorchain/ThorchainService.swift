@@ -40,8 +40,8 @@ class ThorchainService {
         req.addValue("voltix", forHTTPHeaderField: "X-Client-ID")
         return req
     }
-    func fetchSwapQuotes(address: String, fromAsset: String, toAsset: String, amount: String) async throws -> ThorchainSwapQuote {
-        let url = Endpoint.fetchSwaoQuoteThorchainNineRealms(address: address, fromAsset: fromAsset, toAsset: toAsset, amount: amount)
+    func fetchSwapQuotes(address: String, fromAsset: String, toAsset: String, amount: String, interval: String) async throws -> ThorchainSwapQuote {
+        let url = Endpoint.fetchSwaoQuoteThorchainNineRealms(address: address, fromAsset: fromAsset, toAsset: toAsset, amount: amount, interval: interval)
         let (data, _) = try await URLSession.shared.data(for: get9RRequest(url: url))
         do {
             let response = try JSONDecoder().decode(ThorchainSwapQuote.self, from: data)

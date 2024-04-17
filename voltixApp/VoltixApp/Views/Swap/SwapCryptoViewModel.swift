@@ -139,7 +139,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 address: tx.toCoin.address,
                 fromAsset: tx.fromCoin.swapAsset,
                 toAsset: tx.toCoin.swapAsset,
-                amount: (amount * 100_000_000).description // https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
+                amount: (amount * 100_000_000).description, // https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
+                interval: "1"
             )
 
             guard let expected = Decimal(string: quote.expectedAmountOut) else {
