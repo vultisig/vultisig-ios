@@ -262,6 +262,8 @@ class KeysignViewModel: ObservableObject {
                     case .failure(let error):
                         self.handleBroadcastError(err: error)
                     }
+                case .mayaChain:
+                    let broadcastResult = await MayachainService.shared
                 case .ethereum:
                     self.txid = try await etherScanService.broadcastTransaction(hex: tx)
         

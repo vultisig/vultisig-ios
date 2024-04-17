@@ -49,9 +49,12 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 tx.nonce = Int64(nonce)
                 tx.priorityFeeGwei = Int64(priorityFee)
                 
-            }else if tx.coin.chain == .thorChain {
+            } else if tx.coin.chain == .thorChain {
                 tx.gas = "0.02"
-            } else if tx.coin.chain == .gaiaChain {
+            } else if tx.coin.chain == .mayaChain {
+                tx.gas = "0.02"
+            }
+            else if tx.coin.chain == .gaiaChain {
                 tx.gas = "0.0075"
             } else if tx.coin.chain == .solana {
                 let (_,feeInLamports) = try await sol.fetchRecentBlockhash()
@@ -218,7 +221,10 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             print("Coin type not found on Wallet Core")
             return
         }
-        
+        if tx.coin.chain == .mayaChain {
+            isValidAddress = AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya")
+            return
+        }
         isValidAddress = coinType.validate(address: address)
     }
     

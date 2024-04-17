@@ -14,6 +14,7 @@ class BalanceService {
     private let thor = ThorchainService.shared
     private let sol = SolanaService.shared
     private let gaia = GaiaService.shared
+    private let maya = MayachainService.shared
     
     func balance(for coin: Coin) async throws -> (coinBalance: String, balanceFiat: String, balanceInFiatDecimal: Decimal) {
         
@@ -35,7 +36,14 @@ class BalanceService {
             let coinBalance = thorBalances.formattedRuneBalance() ?? "0.0"
             let balanceInFiatDecimal = coin.balanceInFiatDecimal
             return (coinBalance, balanceFiat, balanceInFiatDecimal)
-            
+        case .mayaChain:
+            let mayaBalances = try await maya.fetchBalances(coin.address)
+            coin.rawBalance = mayaBalances.cacaoBalance() ?? "0.0"
+            coin.priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
+            let balanceFiat = mayaBalances.cacaoBalanceInFiat(price: coin.priceRate) ?? "$ 0,00"
+            let coinBalance = mayaBalances.formattedCacaoBalance() ?? "0.0"
+            let balanceInFiatDecimal = coin.balanceInFiatDecimal
+            return (coinBalance, balanceFiat, balanceInFiatDecimal)
         case .solana:
             let (rawBalance,priceRate) = try await sol.getSolanaBalance(coin: coin)
             coin.rawBalance = rawBalance

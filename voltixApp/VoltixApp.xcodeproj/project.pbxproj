@@ -245,6 +245,7 @@
 		DEFF58F62BCCB573005DFDF9 /* RegisterVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF58F52BCCB573005DFDF9 /* RegisterVault.swift */; };
 		DEFF58F82BCF4E11005DFDF9 /* BackupVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF58F72BCF4E11005DFDF9 /* BackupVault.swift */; };
 		DEFF58FA2BCF85FA005DFDF9 /* maya.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF58F92BCF85FA005DFDF9 /* maya.swift */; };
+		DEFF58FC2BCFB384005DFDF9 /* MayaChainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF58FB2BCFB384005DFDF9 /* MayaChainService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -511,6 +512,7 @@
 		DEFF58F52BCCB573005DFDF9 /* RegisterVault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterVault.swift; sourceTree = "<group>"; };
 		DEFF58F72BCF4E11005DFDF9 /* BackupVault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupVault.swift; sourceTree = "<group>"; };
 		DEFF58F92BCF85FA005DFDF9 /* maya.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = maya.swift; sourceTree = "<group>"; };
+		DEFF58FB2BCFB384005DFDF9 /* MayaChainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaChainService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -674,6 +676,7 @@
 			children = (
 				469ED3932B98E776008D4951 /* ThorchainService.swift */,
 				46F8F7272B9A011B0099454E /* ThorchainBroadcastTransactionService.swift */,
+				DEFF58FB2BCFB384005DFDF9 /* MayaChainService.swift */,
 			);
 			path = Thorchain;
 			sourceTree = "<group>";
@@ -1524,6 +1527,7 @@
 				A6966D2F2BA4045C00903CA4 /* SwapCryptoView.swift in Sources */,
 				46F8F7282B9A011B0099454E /* ThorchainBroadcastTransactionService.swift in Sources */,
 				A65649E12B96602700E4B329 /* Int64Extension.swift in Sources */,
+				DEFF58FC2BCFB384005DFDF9 /* MayaChainService.swift in Sources */,
 				DE63AE562BBA788D001BBE5C /* GaiaService.swift in Sources */,
 				A6966D202BA3DF0C00903CA4 /* OnboardingView1.swift in Sources */,
 				DEBF93972B8D5FEF002868CD /* KeysignPayload.swift in Sources */,

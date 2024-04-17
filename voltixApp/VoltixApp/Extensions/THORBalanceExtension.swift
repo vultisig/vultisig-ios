@@ -19,9 +19,29 @@ extension [CosmosBalance] {
         return balanceFiat.formatToFiat()
     }
     
+    func cacaoBalanceInFiat(price: Double?, includeCurrencySymbol: Bool = true) -> String?{
+        guard let price = price,
+              let cacaoBalanceString = cacaoBalance(),
+              let cacaoAmount = Decimal(string: cacaoBalanceString) else { return nil }
+        
+        let balanceCacao = cacaoAmount / 100_000_00000.0
+        let balanceFiat = balanceCacao * Decimal(price)
+        
+        return balanceFiat.formatToFiat()
+    }
+    
     func runeBalance() -> String? {
         for balance in self {
             if balance.denom.lowercased() == Chain.thorChain.ticker.lowercased() {
+                return balance.amount
+            }
+        }
+        return nil
+    }
+    
+    func cacaoBalance() -> String? {
+        for balance in self {
+            if balance.denom.lowercased() == Chain.mayaChain.ticker.lowercased() {
                 return balance.amount
             }
         }
@@ -34,6 +54,17 @@ extension [CosmosBalance] {
                 guard let runeAmount = Decimal(string: balance.amount) else { return "Invalid balance" }
                 let balanceRune = runeAmount / 100_000_000.0
                 return balanceRune.formatToDecimal(digits: 8)
+            }
+        }
+        
+        return "Balance not available"
+    }
+    func formattedCacaoBalance() -> String? {
+        for balance in self {
+            if balance.denom.lowercased() == Chain.mayaChain.ticker.lowercased() {
+                guard let runeAmount = Decimal(string: balance.amount) else { return "Invalid balance" }
+                let balanceCacao = runeAmount / 100_000_00000.0
+                return balanceCacao.formatToDecimal(digits: 10)
             }
         }
         

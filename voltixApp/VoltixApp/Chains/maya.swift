@@ -33,8 +33,8 @@ enum MayaChainHelper {
         guard let pubKeyData = Data(hexString: derivePubKey), let publicKey = PublicKey(data: pubKeyData, type: .secp256k1) else {
             return .failure(HelperError.runtimeError("public key: \(derivePubKey) is invalid"))
         }
-        
-        return .success(CoinType.thorchain.deriveAddressFromPublicKey(publicKey: publicKey))
+        let mayaAddress = AnyAddress(publicKey: publicKey, coin: .thorchain, hrp: "maya")
+        return .success(mayaAddress.description)
     }
     
     static func getSwapPreSignedInputData(keysignPayload: KeysignPayload, signingInput: CosmosSigningInput) -> Result<Data, Error> {
@@ -53,8 +53,8 @@ enum MayaChainHelper {
         input.fee = CosmosFee.with {
             $0.gas = 20000000
             $0.amounts = [CosmosAmount.with {
-                $0.denom = "rune"
-                $0.amount = "2000000"
+                $0.denom = "cacao"
+                $0.amount = "2000000000"
             }]
         }
         // memo has been set
@@ -68,9 +68,7 @@ enum MayaChainHelper {
     }
     
     static func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
-        guard keysignPayload.coin.chain.ticker == "RUNE" else {
-            return .failure(HelperError.runtimeError("coin is not RUNE"))
-        }
+       
         guard let fromAddr = AnyAddress(string: keysignPayload.coin.address, coin: .thorchain) else {
             return .failure(HelperError.runtimeError("\(keysignPayload.coin.address) is invalid"))
         }
@@ -100,7 +98,7 @@ enum MayaChainHelper {
                 $0.thorchainSendMessage = CosmosMessage.THORChainSend.with {
                     $0.fromAddress = fromAddr.data
                     $0.amounts = [CosmosAmount.with {
-                        $0.denom = "rune"
+                        $0.denom = "cacao"
                         $0.amount = String(keysignPayload.toAmount)
                     }]
                     $0.toAddress = toAddress.data
@@ -108,9 +106,9 @@ enum MayaChainHelper {
             }]
             // THORChain fee is 0.02 RUNE
             $0.fee = CosmosFee.with {
-                $0.gas = THORChainGas
+                $0.gas = MayaChainGas
                 $0.amounts = [CosmosAmount.with {
-                    $0.denom = "rune"
+                    $0.denom = "cacao"
                     $0.amount = "2000000"
                 }]
             }

@@ -34,6 +34,8 @@ extension Coin {
             return CoinType.cosmos
         case .dash:
             return CoinType.dash
+        case .mayaChain:
+            return CoinType.thorchain
         }
     }
 }
