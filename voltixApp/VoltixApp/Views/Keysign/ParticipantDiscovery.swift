@@ -29,7 +29,7 @@ class ParticipantDiscovery: ObservableObject {
         self.task = Task.detached {
             repeat {
                 if Task.isCancelled {
-                    break
+                    return
                 }
                 Utils.getRequest(urlString: urlString, headers: headers, completion: { result in
                     switch result {
