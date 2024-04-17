@@ -243,6 +243,7 @@
 		DEFF58F42BCBF65D005DFDF9 /* TssHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF58F32BCBF65D005DFDF9 /* TssHelper.swift */; };
 		DEFF58F62BCCB573005DFDF9 /* RegisterVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF58F52BCCB573005DFDF9 /* RegisterVault.swift */; };
 		DEFF58F82BCF4E11005DFDF9 /* BackupVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF58F72BCF4E11005DFDF9 /* BackupVault.swift */; };
+		DEFF58FA2BCF85FA005DFDF9 /* maya.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF58F92BCF85FA005DFDF9 /* maya.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -507,6 +508,7 @@
 		DEFF58F32BCBF65D005DFDF9 /* TssHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TssHelper.swift; sourceTree = "<group>"; };
 		DEFF58F52BCCB573005DFDF9 /* RegisterVault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterVault.swift; sourceTree = "<group>"; };
 		DEFF58F72BCF4E11005DFDF9 /* BackupVault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupVault.swift; sourceTree = "<group>"; };
+		DEFF58F92BCF85FA005DFDF9 /* maya.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = maya.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1109,6 +1111,7 @@
 				DE6DCB922B97D81C009A39D5 /* THORChainSwaps.swift */,
 				DEF2E2CA2B9AD5EA000737B8 /* UTXOChainsHelper.swift */,
 				DE63AE522BBA627B001BBE5C /* atom.swift */,
+				DEFF58F92BCF85FA005DFDF9 /* maya.swift */,
 			);
 			path = Chains;
 			sourceTree = "<group>";
@@ -1329,7 +1332,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */;
+			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -1410,6 +1413,7 @@
 				A65324282BA51E8700DDE6EB /* QRCodeScannerView.swift in Sources */,
 				DE1572992B70F26A009BC7C5 /* KeyType.swift in Sources */,
 				46E98FFC2BAE407300C53D97 /* DecodingErrorExtension.swift in Sources */,
+				DEFF58FA2BCF85FA005DFDF9 /* maya.swift in Sources */,
 				A633B13A2B9A5A22003D1738 /* ImportWalletView.swift in Sources */,
 				DE63AE4B2BB4D87F001BBE5C /* BscService.swift in Sources */,
 				DE9EB0FC2BA463F7001747D9 /* KeygenViewModel.swift in Sources */,
@@ -1983,7 +1987,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */ = {
+		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DE49A1882B65F6DB000F3AFB /* Debug */,
