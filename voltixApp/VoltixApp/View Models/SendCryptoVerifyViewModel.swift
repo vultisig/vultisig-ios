@@ -33,7 +33,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
         return isAddressCorrect && isAmountCorrect && isHackedOrPhished
     }
     
-    func amount(for coin: Coin, tx: SendTransaction) -> Int64 {
+    func amount(for coin: Coin, tx: SendTransaction) -> BigInt {
         switch coin.chain {
         case .thorChain:
             return tx.amountInSats

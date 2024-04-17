@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import BigInt
 
 struct KeysignMessage: Codable, Hashable {
     let sessionID: String
@@ -40,11 +41,11 @@ enum BlockChainSpecific: Codable, Hashable {
 }
 
 struct KeysignPayload: Codable, Hashable {
-
+    
     let coin: Coin
     // only toAddress is required , from Address is our own address
     let toAddress: String
-    let toAmount: Int64
+    let toAmount: BigInt
     let chainSpecific: BlockChainSpecific
     
     // for UTXO chains , often it need to sign multiple UTXOs at the same time
@@ -53,14 +54,18 @@ struct KeysignPayload: Codable, Hashable {
     let utxos: [UtxoInfo]
     let memo: String? // optional memo
     let swapPayload: THORChainSwapPayload?
-
+    
     var toAmountString: String {
-        if(coin.chainType == .EVM){
-            return "\(Decimal(toAmount) / Decimal(EVMHelper.weiPerGWei)) \(coin.ticker)"
-        }
-        return "\(Decimal(toAmount) / pow(10, Int(coin.decimals) ?? 0)) \(coin.ticker)"
-    }
+        let decimalAmount = Decimal(string: toAmount.description) ?? Decimal(0)
         
+        if coin.chainType == .EVM {
+            let divisor = Decimal(EVMHelper.weiPerGWei)
+            return "\(decimalAmount / divisor) \(coin.ticker)"
+        }
+        let power = Decimal(sign: .plus, exponent: -(Int(coin.decimals) ?? 0), significand: 1)
+        return "\(decimalAmount * power) \(coin.ticker)"
+    }
+    
     func getKeysignMessages(vault: Vault) -> Result<[String], Error> {
         if swapPayload != nil {
             let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)

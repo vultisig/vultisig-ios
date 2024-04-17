@@ -44,14 +44,14 @@ class ERC20Helper {
             $0.chainID = Data(hexString: intChainID.hexString())!
             $0.nonce = Data(hexString: nonce.hexString())!
             $0.gasLimit = Data(hexString: gasLimit.hexString())!
-            $0.maxFeePerGas = EVMHelper.convertEthereumNumber(input: maxFeePerGasGWei)
-            $0.maxInclusionFeePerGas = EVMHelper.convertEthereumNumber(input: priorityFeeGWei)
+            $0.maxFeePerGas = EVMHelper.convertEthereumNumber(input: BigInt(maxFeePerGasGWei))
+            $0.maxInclusionFeePerGas = EVMHelper.convertEthereumNumber(input: BigInt(priorityFeeGWei))
             $0.toAddress = contractAddr
             $0.txMode = .enveloped
             $0.transaction = EthereumTransaction.with {
                 $0.erc20Transfer = EthereumTransaction.ERC20Transfer.with {
                     $0.to = keysignPayload.toAddress
-                    $0.amount = Data(hexString: String(format: "%016llx", keysignPayload.toAmount))! // The amount was wrong with that old hexString() function
+                    $0.amount = keysignPayload.toAmount.serializeForEvm()
                 }
             }
         }
