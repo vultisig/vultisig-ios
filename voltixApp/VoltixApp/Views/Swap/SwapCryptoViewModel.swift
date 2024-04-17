@@ -37,13 +37,35 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
         await updateFromBalance(tx: tx)
         await updateToBalance(tx: tx)
-        await updateFee(tx: tx)
     }
-
-    // MARK: Progress
 
     var progress: Double {
         return Double(currentIndex) / Double(titles.count)
+    }
+
+    func showFees(tx: SwapTransaction) -> Bool {
+        return tx.inboundFee != .empty
+    }
+
+    func showDuration(tx: SwapTransaction) -> Bool {
+        return tx.duration != .zero
+    }
+
+    func feeString(tx: SwapTransaction) -> String {
+        return "\(tx.inboundFee) \(tx.toCoin.ticker)"
+    }
+
+    func durationString(tx: SwapTransaction) -> String {
+        guard let duration = quote?.totalSwapSeconds else { return .empty }
+        let formatter = DateComponentsFormatter()
+        formatter.unitsStyle = .full
+        formatter.includesApproximationPhrase = false
+        formatter.includesTimeRemainingPhrase = false
+        formatter.allowedUnits = [.day, .hour, .minute, .second]
+        formatter.maximumUnitCount = 1
+        let fromDate = Date(timeIntervalSince1970: 0)
+        let toDate = Date(timeIntervalSince1970: TimeInterval(duration))
+        return formatter.string(from: fromDate, to: toDate) ?? .empty
     }
 
     func validateForm(tx: SwapTransaction) -> Bool {
@@ -120,15 +142,6 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         }
     }
 
-    func updateFee(tx: SwapTransaction) async {
-        do {
-            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin)
-            tx.gas = chainSpecific.gas
-        } catch {
-            self.error = error
-        }
-    }
-
     func updateQuotes(tx: SwapTransaction) async {
         do {
             guard let amount = Decimal(string: tx.fromAmount), tx.fromCoin != tx.toCoin else {
@@ -147,13 +160,21 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 throw Errors.swapQuoteParsingFailed
             }
 
+            guard let fees = Decimal(string: quote.fees.total) else {
+                throw Errors.swapQuoteParsingFailed
+            }
+
             tx.toAmount = (expected / Decimal(100_000_000)).description
+            tx.inboundFee = (fees / Decimal(100_000_000)).description
+            tx.duration = quote.totalSwapSeconds ?? 0
 
             self.quote = quote
         } catch {
             self.quote = nil
             self.error = error
             tx.toAmount = .empty
+            tx.inboundFee = .empty
+            tx.duration = .zero
         }
     }
 }
