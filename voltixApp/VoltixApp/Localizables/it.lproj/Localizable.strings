@@ -164,3 +164,6 @@
 "backupNotNeededDisclaimer" = "Il tuo dispositivo di backup non è necessario a meno che non perdi uno dei tuoi dispositivi principali.";
 "noBackupDeviceDisclaimer" = "Non hai un terzo dispositivo di backup, quindi dovresti fare il backup di una parte del vault in modo sicuro in seguito.";
 "vaultNameExists" = "Il nome del deposito %s esiste già";
+"devicesOnSameWifiNoHotel" = "Tieni tutti i dispositivi nello stesso WiFi con l'app Voltix aperta. (Potrebbe non funzionare con WiFi di hotel/aeroporto).";
+"devicesOnSameHotspot" = "Collega tutti i dispositivi allo stesso hotspot personale con l'app Voltix aperta.";
+"devicesOnSameCellular" = "Collega tutti i dispositivi a internet con l'app Voltix aperta.";

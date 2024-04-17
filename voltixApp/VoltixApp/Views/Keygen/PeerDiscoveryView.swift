@@ -89,7 +89,7 @@ struct PeerDiscoveryView: View {
     
     var landscapeContent: some View {
         HStack {
-            paringBarcode
+            qrCode
                 .padding(60)
             VStack{
                 list
@@ -102,7 +102,7 @@ struct PeerDiscoveryView: View {
     var portraitContent: some View {
         VStack {
             vaultDetail
-            paringBarcode
+            qrCode
             list
         }
     }
@@ -112,6 +112,14 @@ struct PeerDiscoveryView: View {
     }
     
     var list: some View {
+        VStack {
+            networkPrompts
+            deviceContent
+            instructions
+        }
+    }
+    
+    var deviceContent: some View {
         ZStack {
             if participantDiscovery.peersFound.count == 0 {
                 lookingForDevices
@@ -161,16 +169,28 @@ struct PeerDiscoveryView: View {
     var deviceList: some View {
         ScrollView{
             LazyVGrid(columns: columns, spacing: 32) {
-                ForEach(participantDiscovery.peersFound, id: \.self) { peer in
-                    Button {
-                        handleSelection(peer)
-                    } label: {
-                        PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
-                    }
-                }
+                devices
             }
             .padding(20)
         }
+    }
+    
+    var networkPrompts: some View {
+        NetworkPrompts(viewModel: viewModel)
+    }
+    
+    var devices: some View {
+        ForEach(participantDiscovery.peersFound, id: \.self) { peer in
+            Button {
+                handleSelection(peer)
+            } label: {
+                PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
+            }
+        }
+    }
+    
+    var instructions: some View {
+        InstructionPrompt(networkType: viewModel.selectedNetwork)
     }
     
     var bottomButtons: some View {
