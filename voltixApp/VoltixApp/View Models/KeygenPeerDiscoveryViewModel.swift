@@ -42,6 +42,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         self.encryptionKeyHex = Encryption.getEncryptionKey()
         if VoltixRelay.IsRelayEnabled {
             serverAddr = Endpoint.voltixRelay
+            selectedNetwork = .Cellular
         }
     }
     
@@ -83,6 +84,21 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         self.logger.info("mediator server started")
         self.startSession()
         self.participantDiscovery?.getParticipants(serverAddr: self.serverAddr, 
+                                                   sessionID: self.sessionID,
+                                                   localParty: self.localPartyID,
+                                                   pubKeyECDSA: vault.pubKeyECDSA)
+    }
+    
+    func restartParticipantDiscovery(){
+        self.participantDiscovery?.stop()
+        if VoltixRelay.IsRelayEnabled {
+            serverAddr = Endpoint.voltixRelay
+        } else {
+            serverAddr = "http://127.0.0.1:18080"
+        }
+        self.participantDiscovery?.peersFound = [String]()
+        self.startSession()
+        self.participantDiscovery?.getParticipants(serverAddr: self.serverAddr,
                                                    sessionID: self.sessionID,
                                                    localParty: self.localPartyID,
                                                    pubKeyECDSA: vault.pubKeyECDSA)

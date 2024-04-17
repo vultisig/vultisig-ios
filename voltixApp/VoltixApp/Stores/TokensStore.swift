@@ -10,6 +10,8 @@ class TokensStore {
 
         Coin(chain: Chain.dogecoin, ticker: "DOGE", logo: "doge", address: "", priceRate: 0.0, chainType: ChainType.UTXO, decimals: "8", hexPublicKey: "", feeUnit: "Doges/vbyte", priceProviderId: "dogecoin", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "1000000"),
 
+        Coin(chain: Chain.dash, ticker: "DASH", logo: "dash", address: "", priceRate: 0.0, chainType: ChainType.UTXO, decimals: "8", hexPublicKey: "", feeUnit: "Sats/vbyte", priceProviderId: "dash", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "20"),
+
         Coin(chain: Chain.thorChain, ticker: "RUNE", logo: "rune", address: "", priceRate: 0.0, chainType: ChainType.THORChain, decimals: "8", hexPublicKey: "", feeUnit: "Rune", priceProviderId: "thorchain", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "0.02"),
 
         Coin(chain: Chain.ethereum, ticker: "ETH", logo: "eth", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "ethereum", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "21000"),

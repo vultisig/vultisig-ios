@@ -40,18 +40,18 @@ class SendTransaction: ObservableObject, Hashable {
         BigInt(amountDecimal * pow(10, Double(EVMHelper.ethDecimals)))
     }
     
-    var amountInGwei: Int64 {
-        Int64(amountDecimal * Double(EVMHelper.weiPerGWei))
+    var amountInGwei: BigInt {
+        BigInt(amountDecimal * Double(EVMHelper.weiPerGWei))
     }
     
     var totalEthTransactionCostWei: BigInt {
         amountInWei + feeInWei
     }
     
-    var amountInTokenWeiInt64: Int64 {
+    var amountInTokenWeiInt64: BigInt {
         let decimals = Double(coin.decimals) ?? Double(EVMHelper.ethDecimals) // The default is always in WEI unless the token has a different one like UDSC
         
-        return Int64(amountDecimal * pow(10, decimals))
+        return BigInt(amountDecimal * pow(10, decimals))
     }
     
     var amountInTokenWei: BigInt {
@@ -74,12 +74,12 @@ class SendTransaction: ObservableObject, Hashable {
         return 0
     }
     
-    var amountInLamports: Int64 {
-        Int64(amountDecimal * 1_000_000_000)
+    var amountInLamports: BigInt {
+        BigInt(amountDecimal * 1_000_000_000)
     }
     
-    var amountInSats: Int64 {
-        Int64(amountDecimal * 100_000_000)
+    var amountInSats: BigInt {
+        BigInt(amountDecimal * 100_000_000)
     }
     
     var feeInSats: Int64 {
@@ -90,10 +90,10 @@ class SendTransaction: ObservableObject, Hashable {
         let amountString = amount.replacingOccurrences(of: ",", with: ".")
         return Double(amountString) ?? 0
     }
-    var amountInCoinDecimal: Int64 {
+    var amountInCoinDecimal: BigInt {
         let amountDouble = amountDecimal
         let decimals = Int(coin.decimals) ?? 8
-        return Int64(amountDouble * pow(10,Double(decimals)))
+        return BigInt(amountDouble * pow(10,Double(decimals)))
     }
     var gasDecimal: Double {
         let gasString = gas.replacingOccurrences(of: ",", with: ".")

@@ -271,7 +271,7 @@ class KeysignViewModel: ObservableObject {
                 case .bscChain:
                     self.txid = try await bscService.broadcastTransaction(hex: tx)
 
-                case .bitcoin, .bitcoinCash, .litecoin, .dogecoin:
+                case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
                     let chainName = keysignPayload.coin.chain.name.lowercased()
                     UTXOTransactionsService.broadcastTransaction(chain: chainName, signedTransaction: tx) { result in
                         switch result {

@@ -24,15 +24,12 @@ class UTXOChainsHelper {
     }
     
     static func getHelper(vault: Vault, coin: Coin) -> UTXOChainsHelper? {
-        switch coin.chain {
-        case .bitcoin:
-            return UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-        case .bitcoinCash:
-            return UTXOChainsHelper(coin: .bitcoinCash, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-        case .litecoin:
-            return UTXOChainsHelper(coin: .litecoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-        case .dogecoin:
-            return UTXOChainsHelper(coin: .dogecoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+        switch coin.chainType {
+        case .UTXO:
+            guard let coinType = CoinType.from(string: coin.chain.name) else {
+                return nil
+            }
+            return UTXOChainsHelper(coin: coinType, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
         default:
             return nil
         }
@@ -49,6 +46,8 @@ class UTXOChainsHelper {
             ticker = "LTC"
         case .dogecoin:
             ticker = "DOGE"
+        case .dash:
+            ticker = "DASH"
         default:
             return .failure(HelperError.runtimeError("doesn't support coin \(coin)"))
         }
@@ -110,7 +109,7 @@ class UTXOChainsHelper {
                 }
                 let redeemScript = BitcoinScript.buildPayToWitnessPubkeyHash(hash: keyHash)
                 input.scripts[keyHash.hexString] = redeemScript.data
-            case CoinType.bitcoinCash, CoinType.dogecoin:
+            case CoinType.bitcoinCash, CoinType.dogecoin, CoinType.dash:
                 let keyHash = lockScript.matchPayToPubkeyHash()
                 guard let keyHash else {
                     return .failure(HelperError.runtimeError("fail to get key hash from lock script"))
@@ -150,7 +149,7 @@ class UTXOChainsHelper {
         
         var input = BitcoinSigningInput.with {
             $0.hashType = BitcoinScript.hashTypeForCoin(coinType: self.coin)
-            $0.amount = keysignPayload.toAmount
+            $0.amount = Int64(keysignPayload.toAmount)
             $0.useMaxAmount = false
             $0.toAddress = keysignPayload.toAddress
             $0.changeAddress = keysignPayload.coin.address
@@ -171,7 +170,7 @@ class UTXOChainsHelper {
                 }
                 let redeemScript = BitcoinScript.buildPayToWitnessPubkeyHash(hash: keyHash)
                 input.scripts[keyHash.hexString] = redeemScript.data
-            case CoinType.bitcoinCash, CoinType.dogecoin:
+            case CoinType.bitcoinCash, CoinType.dogecoin, CoinType.dash:
                 let keyHash = lockScript.matchPayToPubkeyHash()
                 guard let keyHash else {
                     return .failure(HelperError.runtimeError("fail to get key hash from lock script"))

@@ -86,7 +86,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         let keysignPayload = KeysignPayload(
             coin: tx.coin,
             toAddress: tx.toAddress,
-            toAmount: totalSelectedAmount,
+            toAmount: BigInt(totalSelectedAmount),
             chainSpecific: BlockChainSpecific.UTXO(byteFee: tx.feeInSats),
             utxos: utxoInfo,
             memo: tx.memo,
@@ -259,7 +259,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         
         if  tx.coin.chain.chainType == ChainType.UTXO {
             let walletBalanceInSats = utxo.blockchairData[key]?.address?.balance ?? 0
-            let totalTransactionCostInSats = tx.amountInSats + tx.feeInSats
+            let totalTransactionCostInSats = tx.amountInSats + BigInt(tx.feeInSats)
             print("Total transaction cost: \(totalTransactionCostInSats)")
             
             if totalTransactionCostInSats > walletBalanceInSats {
@@ -300,11 +300,11 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         
         return isValidForm
     }
-
+    
     func setHash(_ hash: String) {
         self.hash = hash
     }
-
+    
     func moveToNextView() {
         currentIndex += 1
         currentTitle = titles[currentIndex-1]

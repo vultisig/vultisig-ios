@@ -6,11 +6,12 @@
 //
 
 import SwiftUI
+import BigInt
 
 // MARK: - String Extensions for Padding and Hex Processing
 
 extension String {
-
+    
     func paddingLeft(toLength: Int, withPad character: String) -> String {
         let toPad = toLength - self.count
         
@@ -38,19 +39,19 @@ extension String {
 // MARK: - String constants
 
 extension String {
-
+    
     static var empty: String {
         return ""
     }
-
+    
     static var newline: String {
         return "\n"
     }
-
+    
     static var space: String {
         return " "
     }
-
+    
     static var zero: String {
         return "0"
     }
@@ -91,5 +92,12 @@ extension String {
         
         let number = NSDecimalNumber(decimal: decimalValue)
         return formatter.string(from: number) ?? ""
+    }
+    
+    func toBigInt() -> BigInt {
+        guard let valueBigInt = BigInt(self) else {
+            return BigInt.zero
+        }
+        return valueBigInt
     }
 }

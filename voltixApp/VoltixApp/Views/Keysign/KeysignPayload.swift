@@ -4,6 +4,8 @@
 //
 
 import Foundation
+import BigInt
+import WalletCore
 
 struct KeysignMessage: Codable, Hashable {
     let sessionID: String
@@ -20,7 +22,7 @@ enum BlockChainSpecific: Codable, Hashable {
     case THORChain(accountNumber: UInt64, sequence: UInt64)
     case Cosmos(accountNumber: UInt64, sequence:UInt64, gas: UInt64)
     case Solana(recentBlockHash: String, priorityFee: UInt64, feeInLamports: String) // priority fee is in microlamports
-
+    
     var gas: String {
         switch self {
         case .UTXO(let byteFee):
@@ -40,11 +42,11 @@ enum BlockChainSpecific: Codable, Hashable {
 }
 
 struct KeysignPayload: Codable, Hashable {
-
+    
     let coin: Coin
     // only toAddress is required , from Address is our own address
     let toAddress: String
-    let toAmount: Int64
+    let toAmount: BigInt
     let chainSpecific: BlockChainSpecific
     
     // for UTXO chains , often it need to sign multiple UTXOs at the same time
@@ -53,31 +55,30 @@ struct KeysignPayload: Codable, Hashable {
     let utxos: [UtxoInfo]
     let memo: String? // optional memo
     let swapPayload: THORChainSwapPayload?
-
+    
     var toAmountString: String {
-        if(coin.chainType == .EVM){
-            return "\(Decimal(toAmount) / Decimal(EVMHelper.weiPerGWei)) \(coin.ticker)"
-        }
-        return "\(Decimal(toAmount) / pow(10, Int(coin.decimals) ?? 0)) \(coin.ticker)"
-    }
+        let decimalAmount = Decimal(string: toAmount.description) ?? Decimal(0)
         
+        if coin.chainType == .EVM {
+            let divisor = Decimal(EVMHelper.weiPerGWei)
+            return "\(decimalAmount / divisor) \(coin.ticker)"
+        }
+        let power = Decimal(sign: .plus, exponent: -(Int(coin.decimals) ?? 0), significand: 1)
+        return "\(decimalAmount * power) \(coin.ticker)"
+    }
+    
     func getKeysignMessages(vault: Vault) -> Result<[String], Error> {
         if swapPayload != nil {
             let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
             return swaps.getPreSignedImageHash(keysignPayload: self)
         }
         switch coin.chain {
-        case .bitcoin:
-            let utxoHelper = UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-            return utxoHelper.getPreSignedImageHash(keysignPayload: self)
-        case .bitcoinCash:
-            let utxoHelper = UTXOChainsHelper(coin: .bitcoinCash, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-            return utxoHelper.getPreSignedImageHash(keysignPayload: self)
-        case .litecoin:
-            let utxoHelper = UTXOChainsHelper(coin: .litecoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-            return utxoHelper.getPreSignedImageHash(keysignPayload: self)
-        case .dogecoin:
-            let utxoHelper = UTXOChainsHelper(coin: .dogecoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
+            guard let coinType = CoinType.from(string: coin.chain.name.replacingOccurrences(of: "-", with: "")) else {
+                print("Coin type not found on Wallet Core")
+                return .failure("Coin type not found on Wallet Core" as! Error)
+            }
+            let utxoHelper = UTXOChainsHelper(coin: coinType, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
             return utxoHelper.getPreSignedImageHash(keysignPayload: self)
         case .ethereum:
             if coin.isNativeToken {

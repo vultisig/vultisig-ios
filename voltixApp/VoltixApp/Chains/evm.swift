@@ -68,8 +68,8 @@ class EVMHelper {
     }
     
     // this method convert GWei to Wei, and in little endian encoded Data
-    static func convertEthereumNumber(input: Int64) -> Data {
-        let inputInt = BigInt(input * EVMHelper.weiPerGWei).magnitude.serialize()
+    static func convertEthereumNumber(input: BigInt) -> Data {
+        let inputInt = (input * BigInt(EVMHelper.weiPerGWei)).magnitude.serialize()
         return inputInt
     }
     
@@ -89,8 +89,8 @@ class EVMHelper {
         input.chainID = Data(hexString: Int64(intChainID).hexString())!
         input.nonce = Data(hexString: nonce.hexString())!
         input.gasLimit = Data(hexString: gasLimit.hexString())!
-        input.maxFeePerGas = EVMHelper.convertEthereumNumber(input: maxFeePerGasGWei)
-        input.maxInclusionFeePerGas = EVMHelper.convertEthereumNumber(input: priorityFeeGWei)
+        input.maxFeePerGas = EVMHelper.convertEthereumNumber(input: BigInt(maxFeePerGasGWei))
+        input.maxInclusionFeePerGas = EVMHelper.convertEthereumNumber(input: BigInt(priorityFeeGWei))
         input.txMode = .enveloped
 
         do {
@@ -117,8 +117,8 @@ class EVMHelper {
             $0.chainID = Data(hexString: Int64(intChainID).hexString())!
             $0.nonce = Data(hexString: nonce.hexString())!
             $0.gasLimit = Data(hexString: gasLimit.hexString())!
-            $0.maxFeePerGas = EVMHelper.convertEthereumNumber(input: maxFeePerGasGWei)
-            $0.maxInclusionFeePerGas = EVMHelper.convertEthereumNumber(input: priorityFeeGWei)
+            $0.maxFeePerGas = EVMHelper.convertEthereumNumber(input: BigInt(maxFeePerGasGWei))
+            $0.maxInclusionFeePerGas = EVMHelper.convertEthereumNumber(input: BigInt(priorityFeeGWei))
             $0.toAddress = keysignPayload.toAddress
             $0.txMode = .enveloped
             $0.transaction = EthereumTransaction.with {
