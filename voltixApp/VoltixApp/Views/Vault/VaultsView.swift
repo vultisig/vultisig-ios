@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct VaultsView: View {
-    @Binding var selectedVault: Vault?
+    @ObservedObject var viewModel: HomeViewModel
     @Binding var showVaultsList: Bool
     
     @Query var vaults: [Vault]
@@ -42,7 +42,7 @@ struct VaultsView: View {
                 ForEach(vaults, id: \.self) { vault in
                     VaultCell(vault: vault)
                         .onTapGesture {
-                            selectedVault = vault
+                            viewModel.setSelectedVault(vault)
                             showVaultsList = false
                         }
                 }
@@ -66,6 +66,6 @@ struct VaultsView: View {
 #Preview {
     ZStack {
         Background()
-        VaultsView(selectedVault: .constant(Vault.example), showVaultsList: .constant(false))
+        VaultsView(viewModel: HomeViewModel(), showVaultsList: .constant(false))
     }
 }
