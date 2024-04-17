@@ -15,12 +15,11 @@ class HomeViewModel: ObservableObject {
     
     func loadSelectedVault(for vaults: [Vault]) {
         guard let data = getSelectedVault() else {
-            selectedVault = vaults.first
-            setSelectedVault(selectedVault)
+            setSelectedVault(vaults.first)
             return
         }
         
-        selectedVault = data
+        setSelectedVault(data)
     }
     
     func setSelectedVault(_ vault: Vault?) {
