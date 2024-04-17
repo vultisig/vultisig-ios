@@ -238,6 +238,7 @@
 		DEFF58F22BCBACDA005DFDF9 /* VoltixRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF58F12BCBACDA005DFDF9 /* VoltixRouter.swift */; };
 		DEFF58F42BCBF65D005DFDF9 /* TssHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF58F32BCBF65D005DFDF9 /* TssHelper.swift */; };
 		DEFF58F62BCCB573005DFDF9 /* RegisterVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF58F52BCCB573005DFDF9 /* RegisterVault.swift */; };
+		DEFF58F82BCF4E11005DFDF9 /* BackupVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF58F72BCF4E11005DFDF9 /* BackupVault.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -497,6 +498,7 @@
 		DEFF58F12BCBACDA005DFDF9 /* VoltixRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoltixRouter.swift; sourceTree = "<group>"; };
 		DEFF58F32BCBF65D005DFDF9 /* TssHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TssHelper.swift; sourceTree = "<group>"; };
 		DEFF58F52BCCB573005DFDF9 /* RegisterVault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterVault.swift; sourceTree = "<group>"; };
+		DEFF58F72BCF4E11005DFDF9 /* BackupVault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupVault.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1037,6 +1039,7 @@
 				A6BACF192BC705DA00084810 /* ChainDetailView.swift */,
 				A6BACF1B2BC79B3100084810 /* TokenSelectionView.swift */,
 				461AD1B62BC6706500959278 /* VaultPairDetailView.swift */,
+				DEFF58F72BCF4E11005DFDF9 /* BackupVault.swift */,
 			);
 			path = Vault;
 			sourceTree = "<group>";
@@ -1562,6 +1565,7 @@
 				A6BACF1C2BC79B3100084810 /* TokenSelectionView.swift in Sources */,
 				A69069A12BCDEFD400F28A8B /* ProgressRing.swift in Sources */,
 				A6980C2C2BC0896C00F452AB /* SettingsLanguageSelectionView.swift in Sources */,
+				DEFF58F82BCF4E11005DFDF9 /* BackupVault.swift in Sources */,
 				A65649EE2B9669DD00E4B329 /* UTXOTransactionMempoolInput.swift in Sources */,
 				A6966D2D2BA402A900903CA4 /* TokenSelectorDropdown.swift in Sources */,
 				A6F2C5452B9FE3A00095C8E3 /* HomeView.swift in Sources */,

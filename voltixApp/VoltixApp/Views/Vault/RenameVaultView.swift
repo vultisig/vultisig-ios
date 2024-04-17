@@ -6,12 +6,15 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct RenameVaultView: View {
     let vault: Vault
-    
+    @Query var vaults: [Vault]
     @State var name = ""
     @Environment(\.dismiss) var dismiss
+    @State var showAlert: Bool = false
+    @State var errorMessage: String = ""
     
     var body: some View {
         ZStack {
@@ -28,6 +31,13 @@ struct RenameVaultView: View {
         }
         .onAppear {
             setData()
+        }
+        .alert(isPresented: $showAlert) {
+            Alert(
+                title: Text(NSLocalizedString("error", comment: "")),
+                message: Text(errorMessage),
+                dismissButton: .default(Text("ok"))
+            )
         }
     }
     
@@ -75,6 +85,14 @@ struct RenameVaultView: View {
     }
     
     private func rename() {
+        // make sure the same vault name has not been occupied
+        if vaults.contains(where: { $0.name == name && $0.pubKeyECDSA != vault.pubKeyECDSA && $0.pubKeyEdDSA != vault.pubKeyEdDSA}) {
+            errorMessage = NSLocalizedString("vaultNameExists", comment: "").replacingOccurrences(of: "%s", with: name)
+            name = vault.name
+            showAlert = true
+            return
+        }
+        
         vault.name = name
         dismiss()
     }

@@ -169,3 +169,4 @@
 "pairDeviceDisclaimersSecond" = "of these devices present.";
 "backupNotNeededDisclaimer" = "Your backup device is not needed unless you lose one of your main devices.";
 "noBackupDeviceDisclaimer" = "You do not have a 3rd backup device - so you should backup one vault share securely later.";
+"vaultNameExists" = "Vault name %s already exists";
