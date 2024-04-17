@@ -15,9 +15,9 @@ struct CoinCell: View {
     @StateObject var coinViewModel = CoinViewModel()
 	
     var body: some View {
-        VStack(alignment: .leading, spacing: 15) {
-            header
-            amount
+        HStack(spacing: 12) {
+            logo
+            content
         }
         .padding(16)
         .background(Color.blue600)
@@ -25,6 +25,20 @@ struct CoinCell: View {
             Task {
                 await setData()
             }
+        }
+    }
+    
+    var logo: some View {
+        Image(coin.logo)
+            .resizable()
+            .frame(width: 32, height: 32)
+            .cornerRadius(50)
+    }
+    
+    var content: some View {
+        VStack(alignment: .leading, spacing: 15) {
+            header
+            amount
         }
     }
     
