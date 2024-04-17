@@ -40,6 +40,7 @@ extension Font {
     static let body20MontserratSemiBold = Font.custom("Montserrat", size: 20).weight(.semibold)
     
     // Bold
+    static let body10MenloBold = Font.custom("Menlo", size: 10).bold()
     static let body13MenloBold = Font.custom("Menlo", size: 13).bold()
     static let body14MenloBold = Font.custom("Menlo", size: 14).bold()
     static let body15MenloBold = Font.custom("Menlo", size: 15).bold()

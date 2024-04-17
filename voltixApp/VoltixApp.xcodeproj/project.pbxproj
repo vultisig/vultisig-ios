@@ -118,6 +118,7 @@
 		A66A0BD92BA12DF50021A483 /* RenameVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */; };
 		A66A0BDB2BA13B570021A483 /* CoinsGrouped.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BDA2BA13B570021A483 /* CoinsGrouped.swift */; };
 		A683EDEB2BCF635E00BB706E /* InstructionPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = A683EDEA2BCF635E00BB706E /* InstructionPrompt.swift */; };
+		A683EDED2BCF67D100BB706E /* NetworkPromptCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A683EDEC2BCF67D100BB706E /* NetworkPromptCell.swift */; };
 		A69069A12BCDEFD400F28A8B /* ProgressRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69069A02BCDEFD400F28A8B /* ProgressRing.swift */; };
 		A69069A32BCE2FD300F28A8B /* KeygenStatusText.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69069A22BCE2FD300F28A8B /* KeygenStatusText.swift */; };
 		A69069B52BCF538000F28A8B /* NetworkPrompts.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69069B42BCF538000F28A8B /* NetworkPrompts.swift */; };
@@ -379,6 +380,7 @@
 		A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenameVaultView.swift; sourceTree = "<group>"; };
 		A66A0BDA2BA13B570021A483 /* CoinsGrouped.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinsGrouped.swift; sourceTree = "<group>"; };
 		A683EDEA2BCF635E00BB706E /* InstructionPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstructionPrompt.swift; sourceTree = "<group>"; };
+		A683EDEC2BCF67D100BB706E /* NetworkPromptCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPromptCell.swift; sourceTree = "<group>"; };
 		A69069A02BCDEFD400F28A8B /* ProgressRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressRing.swift; sourceTree = "<group>"; };
 		A69069A22BCE2FD300F28A8B /* KeygenStatusText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenStatusText.swift; sourceTree = "<group>"; };
 		A69069B42BCF538000F28A8B /* NetworkPrompts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPrompts.swift; sourceTree = "<group>"; };
@@ -941,6 +943,7 @@
 				A6980C332BC0A30900F452AB /* SettingFAQCell.swift */,
 				461AD1B82BC6858000959278 /* VaultPairDetailCell.swift */,
 				A611735A2BC8B7AB00D616F9 /* ChainNavigationCell.swift */,
+				A683EDEC2BCF67D100BB706E /* NetworkPromptCell.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -1411,6 +1414,7 @@
 				DE63AE4B2BB4D87F001BBE5C /* BscService.swift in Sources */,
 				DE9EB0FC2BA463F7001747D9 /* KeygenViewModel.swift in Sources */,
 				DEFF58F42BCBF65D005DFDF9 /* TssHelper.swift in Sources */,
+				A683EDED2BCF67D100BB706E /* NetworkPromptCell.swift in Sources */,
 				A6F2C54B2BA003E10095C8E3 /* TokenSelectionCell.swift in Sources */,
 				46AAA4972BBF7EBA00E5BAB4 /* EvmServiceFactory.swift in Sources */,
 				DE9EB0F02BA2CFB7001747D9 /* ReshareMessage.swift in Sources */,

@@ -49,31 +49,8 @@ struct NetworkPrompts: View {
         Button {
             handleSelection(for: network)
         } label: {
-            getCell(network, isSelected: isSelected)
+            NetworkPromptCell(network: network, isSelected: isSelected)
         }
-
-    }
-    
-    private func getCell(_ network: NetworkPromptType, isSelected: Bool) -> some View {
-        HStack(spacing: 8) {
-            network.getImage()
-                .font(.body20Menlo)
-                .foregroundColor(.turquoise600)
-            
-            Text(NSLocalizedString(network.rawValue, comment: ""))
-                .font(.body14MenloBold)
-                .foregroundColor(.neutral0)
-                .frame(width: 70)
-        }
-        .padding(.horizontal, 24)
-        .padding(.vertical, 12)
-        .background(isSelected ? Color.blue200 : Color.blue400)
-        .cornerRadius(20)
-        .overlay (
-            RoundedRectangle(cornerRadius: 20)
-                .stroke(Color.neutral0, lineWidth: 2)
-                .opacity(isSelected ? 1 : 0)
-        )
     }
     
     private func handleSelection(for network: NetworkPromptType) {
