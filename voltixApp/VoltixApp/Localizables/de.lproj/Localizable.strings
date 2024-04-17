@@ -163,3 +163,4 @@
 "pairDeviceDisclaimersSecond" = "dieser Geräte vorhanden sind.";
 "backupNotNeededDisclaimer" = "Dein Backup-Gerät wird nicht benötigt, es sei denn, du verlierst eines deiner Hauptgeräte.";
 "noBackupDeviceDisclaimer" = "Du hast kein drittes Backup-Gerät - daher solltest du später einen Tresoranteil sicher sichern.";
+"vaultNameExists" = "Tresorname %s existiert bereits";

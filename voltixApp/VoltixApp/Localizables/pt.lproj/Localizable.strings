@@ -163,3 +163,4 @@
 "pairDeviceDisclaimersSecond" = "destes dispositivos presentes.";
 "backupNotNeededDisclaimer" = "Seu dispositivo de backup não é necessário a menos que você perca um dos seus dispositivos principais.";
 "noBackupDeviceDisclaimer" = "Você não tem um terceiro dispositivo de backup, então deve fazer o backup de uma parte do cofre com segurança mais tarde.";
+"vaultNameExists" = "O nome do cofre %s já existe";

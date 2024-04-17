@@ -13,9 +13,9 @@ struct VoltixDocument: FileDocument {
         case customError(String)
     }
     static var readableContentTypes: [UTType] { [.data] }
-    var vault: Vault?
-    init(vault: Vault? = nil) {
-        self.vault = vault
+    var backupVault: BackupVault?
+    init(vault: BackupVault? = nil) {
+        self.backupVault = vault
     }
     
     init(configuration: ReadConfiguration) throws {
@@ -26,11 +26,11 @@ struct VoltixDocument: FileDocument {
             throw VoltixDocumentError.customError("Could not convert data to string")
         }
         let decodedData = Data(hexString: hexString)
-        vault = try JSONDecoder().decode(Vault.self, from: decodedData!)
+        backupVault = try JSONDecoder().decode(BackupVault.self, from: decodedData!)
     }
     
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
-        guard let vault = vault else {
+        guard let vault = backupVault else {
             throw VoltixDocumentError.customError("No vault to save")
         }
         let data = try JSONEncoder().encode(vault)

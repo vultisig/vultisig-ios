@@ -163,3 +163,4 @@
 "pairDeviceDisclaimersSecond" = "od ovih uređaja prisutnih.";
 "backupNotNeededDisclaimer" = "Vaš rezervni uređaj nije potreban osim ako ne izgubite jedan od svojih glavnih uređaja.";
 "noBackupDeviceDisclaimer" = "Nemate treći rezervni uređaj, pa biste trebali sigurno sačuvati jedan dio trezora kasnije.";
+"vaultNameExists" = "Naziv trezora %s već postoji";

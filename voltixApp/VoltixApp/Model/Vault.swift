@@ -11,8 +11,8 @@ final class Vault: ObservableObject, Codable {
     @Attribute(.unique) var name: String
     var signers: [String] = []
     var createdAt: Date = Date.now
-    var pubKeyECDSA: String = ""
-    var pubKeyEdDSA: String = ""
+    @Attribute(.unique) var pubKeyECDSA: String = ""
+    @Attribute(.unique) var pubKeyEdDSA: String = ""
     var hexChainCode: String = ""
     
     var keyshares = [KeyShare]()
