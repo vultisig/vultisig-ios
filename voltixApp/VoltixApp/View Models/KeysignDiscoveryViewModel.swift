@@ -35,8 +35,8 @@ class KeysignDiscoveryViewModel: ObservableObject {
         self.keysignPayload = KeysignPayload(coin: Coin.example, toAddress: "", toAmount: 0, chainSpecific: BlockChainSpecific.UTXO(byteFee: 0), utxos: [], memo: nil, swapPayload: nil)
         self.participantDiscovery = nil
         self.encryptionKeyHex = Encryption.getEncryptionKey()
-        if VoltixRouter.IsRouterEnabled {
-            serverAddr = Endpoint.voltixRouter
+        if VoltixRelay.IsRelayEnabled {
+            serverAddr = Endpoint.voltixRelay
         }
     }
     
@@ -136,7 +136,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
                                         serviceName: serviceName,
                                         payload: keysignPayload,
                                         encryptionKeyHex: encryptionKeyHex,
-                                        useVoltixRouter: VoltixRouter.IsRouterEnabled)
+                                        useVoltixRelay: VoltixRelay.IsRelayEnabled)
         do {
             let encoder = JSONEncoder()
             let jsonData = try encoder.encode(keysignMsg)
