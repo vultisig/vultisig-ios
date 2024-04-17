@@ -31,10 +31,18 @@ struct ChainHeaderCell: View {
     }
     
     var cell: some View {
-        content
-            .padding(.horizontal, 16)
-            .padding(.vertical, 24)
-            .background(Color.blue600)
+        HStack(alignment: .top, spacing: 12) {
+            logo
+            content
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 24)
+        .background(Color.blue600)
+    }
+    
+    var logo: some View {
+        Image(group.logo)
+            .offset(y: 14)
     }
     
     var content: some View {
