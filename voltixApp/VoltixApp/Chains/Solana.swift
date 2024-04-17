@@ -64,6 +64,7 @@ enum SolanaHelper {
         switch result {
         case .success(let inputData):
             do {
+                
                 let hashes = TransactionCompiler.preImageHashes(coinType: .solana, txInputData: inputData)
                 let preSigningOutput = try SolanaPreSigningOutput(serializedData: hashes)
                 print("hash:\(preSigningOutput.data.hexString)")

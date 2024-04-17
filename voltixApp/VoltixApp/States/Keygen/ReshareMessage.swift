@@ -12,5 +12,5 @@ struct ReshareMessage: Codable {
     let pubKeyECDSA: String
     let oldParties: [String]
     let encryptionKeyHex: String
-    let useVoltixRouter: Bool
+    let useVoltixRelay: Bool
 }
