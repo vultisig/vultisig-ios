@@ -96,6 +96,8 @@ class Endpoint {
             return "https://blockchair.com/litecoin/transaction/\(txid)"
         case "DOGE":
             return "https://blockchair.com/dogecoin/transaction/\(txid)"
+        case "DASH":
+            return "https://blockchair.com/dash/transaction/\(txid)"
         case "RUNE":
             return "https://runescan.io/tx/\(txid)"
         case "SOL":
@@ -123,6 +125,8 @@ class Endpoint {
             return "https://blockchair.com/litecoin/address/\(address)"
         case "DOGE":
             return "https://blockchair.com/dogecoin/address/\(address)"
+        case "DASH":
+            return "https://blockchair.com/dash/address/\(address)"
         case "RUNE":
             return "https://runescan.io/address/\(address)"
         case "SOL":
@@ -162,6 +166,8 @@ class Endpoint {
             return "https://blockchair.com/litecoin/address/\(address)"
         case .dogecoin:
             return "https://blockchair.com/dogecoin/address/\(address)"
+        case .dash:
+            return "https://blockchair.com/dash/address/\(address)"
         default:
             return nil
         }
