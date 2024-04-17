@@ -18,7 +18,7 @@ class BalanceService {
     func balance(for coin: Coin) async throws -> (coinBalance: String, balanceFiat: String, balanceInFiatDecimal: Decimal) {
         
         switch coin.chain {
-        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin:
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             let blockChairData = try await utxo.fetchBlockchairData(coin: coin)
             coin.rawBalance = blockChairData?.address?.balance?.description ?? "0"
             coin.priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)

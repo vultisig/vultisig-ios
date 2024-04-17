@@ -5,6 +5,7 @@
 
 import Foundation
 import BigInt
+import WalletCore
 
 struct KeysignMessage: Codable, Hashable {
     let sessionID: String
@@ -21,7 +22,7 @@ enum BlockChainSpecific: Codable, Hashable {
     case THORChain(accountNumber: UInt64, sequence: UInt64)
     case Cosmos(accountNumber: UInt64, sequence:UInt64, gas: UInt64)
     case Solana(recentBlockHash: String, priorityFee: UInt64, feeInLamports: String) // priority fee is in microlamports
-
+    
     var gas: String {
         switch self {
         case .UTXO(let byteFee):
@@ -72,17 +73,12 @@ struct KeysignPayload: Codable, Hashable {
             return swaps.getPreSignedImageHash(keysignPayload: self)
         }
         switch coin.chain {
-        case .bitcoin:
-            let utxoHelper = UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-            return utxoHelper.getPreSignedImageHash(keysignPayload: self)
-        case .bitcoinCash:
-            let utxoHelper = UTXOChainsHelper(coin: .bitcoinCash, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-            return utxoHelper.getPreSignedImageHash(keysignPayload: self)
-        case .litecoin:
-            let utxoHelper = UTXOChainsHelper(coin: .litecoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-            return utxoHelper.getPreSignedImageHash(keysignPayload: self)
-        case .dogecoin:
-            let utxoHelper = UTXOChainsHelper(coin: .dogecoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
+            guard let coinType = CoinType.from(string: coin.chain.name.replacingOccurrences(of: "-", with: "")) else {
+                print("Coin type not found on Wallet Core")
+                return .failure("Coin type not found on Wallet Core" as! Error)
+            }
+            let utxoHelper = UTXOChainsHelper(coin: coinType, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
             return utxoHelper.getPreSignedImageHash(keysignPayload: self)
         case .ethereum:
             if coin.isNativeToken {

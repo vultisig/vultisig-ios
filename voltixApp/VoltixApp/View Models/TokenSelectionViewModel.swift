@@ -95,7 +95,7 @@ class TokenSelectionViewModel: ObservableObject {
                 logger.info("fail to get ethereum address, error: \(error.localizedDescription)")
             }
             
-        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin:
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             guard let coinType = CoinType.from(string: asset.chain.name.replacingOccurrences(of: "-", with: "")) else {
                 print("Coin type not found on Wallet Core")
                 return

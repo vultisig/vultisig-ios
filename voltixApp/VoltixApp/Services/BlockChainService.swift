@@ -29,7 +29,7 @@ final class BlockChainService {
 
     func fetchSpecific(for coin: Coin) async throws -> BlockChainSpecific {
         switch coin.chain {
-        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin:
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             let sats = try await utxo.fetchSatsPrice(coin: coin)
             return .UTXO(byteFee: Int64(sats))
 
