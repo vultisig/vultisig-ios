@@ -62,7 +62,6 @@ struct KeysignPayload: Codable, Hashable {
     }
         
     func getKeysignMessages(vault: Vault) -> Result<[String], Error> {
-        // this is a swap
         if swapPayload != nil {
             let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
             return swaps.getPreSignedImageHash(keysignPayload: self)
