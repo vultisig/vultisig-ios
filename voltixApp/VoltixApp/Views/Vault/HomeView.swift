@@ -63,7 +63,7 @@ struct HomeView: View {
     
     var title: some View {
         VStack(spacing: 0) {
-            Text(NSLocalizedString("main", comment: "Home view title"))
+            Text(NSLocalizedString("vaults", comment: "Vaults"))
                 .font(.body)
                 .bold()
                 .foregroundColor(.neutral0)
