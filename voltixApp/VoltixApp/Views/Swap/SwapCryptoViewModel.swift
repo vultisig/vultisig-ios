@@ -58,10 +58,10 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     
     func feeString(tx: SwapTransaction) -> String {
         guard !tx.inboundFee.isEmpty, let inbound = Double(tx.inboundFee) else { return .empty }
-        guard !tx.gas.isEmpty, let gas = Double(tx.gas) else { return .empty }
+        guard !tx.gas.isEmpty else { return .empty }
 
-        let fee = inbound * tx.toCoin.priceRate + gas * tx.fromCoin.priceRate
-        return "\(fee) \(SettingsCurrency.current.rawValue)"
+        let fee = inbound * tx.toCoin.priceRate + Double(tx.gasInCoinDecimal) * tx.fromCoin.priceRate
+        return Decimal(fee).formatToFiat(includeCurrencySymbol: true)
     }
     
     func durationString(tx: SwapTransaction) -> String {
@@ -95,22 +95,30 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         isLoading = true
         defer { isLoading = false }
         
-        let toAddress = quote!.inboundAddress
-        
-        let swapPayload = THORChainSwapPayload(
-            fromAddress: tx.fromCoin.address,
-            fromAsset: swapAsset(for: tx.fromCoin),
-            toAsset: swapAsset(for: tx.toCoin),
-            toAddress: tx.toCoin.address,
-            vaultAddress: quote!.inboundAddress,
-            routerAddress: quote!.router,
-            fromAmount: swapAmount(for: tx.fromCoin, tx: tx),
-            toAmountLimit: "0", streamingInterval: "1", streamingQuantity: "0"
-        )
-        
-        let keysignFactory = KeysignPayloadFactory()
-        
         do {
+            guard let quote else {
+                throw Errors.swapQuoteNotFound
+            }
+
+            guard quote.inboundAddress != nil || tx.fromCoin.chain == .thorChain else {
+                throw Errors.swapQuoteInboundAddressNotFound
+            }
+
+            let toAddress = quote.inboundAddress ?? tx.fromCoin.address
+
+            let swapPayload = THORChainSwapPayload(
+                fromAddress: tx.fromCoin.address,
+                fromAsset: swapAsset(for: tx.fromCoin),
+                toAsset: swapAsset(for: tx.toCoin),
+                toAddress: tx.toCoin.address,
+                vaultAddress: toAddress,
+                routerAddress: quote.router,
+                fromAmount: swapAmount(for: tx.fromCoin, tx: tx),
+                toAmountLimit: "0", streamingInterval: "1", streamingQuantity: "0"
+            )
+
+            let keysignFactory = KeysignPayloadFactory()
+
             // TODO: Cache chain specific?
             let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin)
             
@@ -146,7 +154,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
     func updateFromBalance(tx: SwapTransaction) async {
         do {
-            tx.fromBalance = try await fetchBalance(coin: tx.fromCoin)
+            tx.fromBalance = try await balanceService.balance(for: tx.fromCoin).coinBalance
         } catch {
             self.error = error
         }
@@ -154,7 +162,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     
     func updateToBalance(tx: SwapTransaction) async {
         do {
-            tx.toBalance = try await fetchBalance(coin: tx.toCoin)
+            tx.toBalance = try await balanceService.balance(for: tx.toCoin).coinBalance
         } catch {
             self.error = error
         }
@@ -200,14 +208,12 @@ private extension SwapCryptoViewModel {
     
     enum Errors: String, Error, LocalizedError {
         case swapQuoteParsingFailed
-        
+        case swapQuoteNotFound
+        case swapQuoteInboundAddressNotFound
+
         var errorDescription: String? {
             return String(NSLocalizedString(rawValue, comment: ""))
         }
-    }
-    
-    func fetchBalance(coin: Coin) async throws -> String {
-        return try await balanceService.balance(for: coin).coinBalance
     }
 }
 

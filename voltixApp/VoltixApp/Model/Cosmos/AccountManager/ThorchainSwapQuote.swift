@@ -12,7 +12,7 @@ struct ThorchainSwapQuote: Codable {
     let expectedAmountOut: String
     let expiry: Int
     let fees: Fees
-    let inboundAddress: String
+    let inboundAddress: String?
     let inboundConfirmationBlocks: Int?
     let inboundConfirmationSeconds: Int?
     let maxStreamingQuantity: Int
