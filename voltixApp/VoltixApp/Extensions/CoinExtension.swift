@@ -32,6 +32,8 @@ extension Coin {
             return CoinType.avalancheCChain
         case .gaiaChain:
             return CoinType.cosmos
+        case .dash:
+            return CoinType.dash
         }
     }
 }
