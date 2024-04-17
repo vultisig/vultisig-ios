@@ -163,3 +163,7 @@
 "pairDeviceDisclaimersSecond" = "destes dispositivos presentes.";
 "backupNotNeededDisclaimer" = "Seu dispositivo de backup não é necessário a menos que você perca um dos seus dispositivos principais.";
 "noBackupDeviceDisclaimer" = "Você não tem um terceiro dispositivo de backup, então deve fazer o backup de uma parte do cofre com segurança mais tarde.";
+"vaultNameExists" = "O nome do cofre %s já existe";
+"devicesOnSameWifiNoHotel" = "Mantenha todos os dispositivos na mesma rede Wi-Fi com o aplicativo Voltix aberto. (Pode não funcionar em Wi-Fi de hotel/aeroporto).";
+"devicesOnSameHotspot" = "Conecte todos os dispositivos ao mesmo hotspot pessoal com o aplicativo Voltix aberto.";
+"devicesOnSameCellular" = "Conecte todos os dispositivos à internet com o aplicativo Voltix aberto.";

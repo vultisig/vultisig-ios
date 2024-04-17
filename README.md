@@ -12,13 +12,13 @@ Voltix use the following third party services to access price , blockchain node 
 
 |CHAIN|Explorer|
 |-----|--------|
-|BTC|[Blockchair](https://blockchair.com/)|
-|BCH|[Blockchair](https://blockchair.com/)|
-|LTC|[Blockchair](https://blockchair.com/)|
-|DOGE|[Blockchair](https://blockchair.com/)|
+|BTC|[Blockchair](https://blockchair.com/bitcoin)|
+|BCH|[Blockchair](https://blockchair.com/bitcoin-cash)|
+|LTC|[Blockchair](https://blockchair.com/litecoin)|
+|DOGE|[Blockchair](https://blockchair.com/dogecoin)|
 |ETH|[Etherscan](https://etherscan.io/)|
 |BSC|[BscScan](https://bscscan.com/)|
 |SOL|[Solana Explorer](https://explorer.solana.com/)|
-|ATOM|[Cosmos Explorer](https://www.mintscan.io/cosmos)|
-|AvAX|[Snowtrace](https://snowtrace.io)
+|ATOM|[MintScan](https://www.mintscan.io/cosmos)|
+|AVAX|[Snowtrace](https://snowtrace.io)
 |RUNE|[Runescan](https://runescan.io)

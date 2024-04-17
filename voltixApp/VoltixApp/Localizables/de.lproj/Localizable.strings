@@ -163,3 +163,7 @@
 "pairDeviceDisclaimersSecond" = "dieser Geräte vorhanden sind.";
 "backupNotNeededDisclaimer" = "Dein Backup-Gerät wird nicht benötigt, es sei denn, du verlierst eines deiner Hauptgeräte.";
 "noBackupDeviceDisclaimer" = "Du hast kein drittes Backup-Gerät - daher solltest du später einen Tresoranteil sicher sichern.";
+"vaultNameExists" = "Tresorname %s existiert bereits";
+"devicesOnSameWifiNoHotel" = "Halte alle Geräte mit geöffneter Voltix-App im selben WLAN-Netzwerk. (Funktioniert möglicherweise nicht bei Hotel-/Flughafen-WLAN).";
+"devicesOnSameHotspot" = "Verbinde alle Geräte mit demselben persönlichen Hotspot und öffne die Voltix-App.";
+"devicesOnSameCellular" = "Verbinde alle Geräte mit dem Internet und öffne die Voltix-App.";

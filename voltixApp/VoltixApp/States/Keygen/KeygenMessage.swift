@@ -8,5 +8,5 @@ struct keygenMessage: Codable {
     let hexChainCode: String
     let serviceName: String
     let encryptionKeyHex: String
-    let useVoltixRouter: Bool
+    let useVoltixRelay: Bool
 }

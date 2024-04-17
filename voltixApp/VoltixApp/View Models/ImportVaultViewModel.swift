@@ -74,15 +74,26 @@ class ImportVaultViewModel: ObservableObject {
         let decoder = JSONDecoder()
         
         do {
-            let vault = try decoder.decode(Vault.self,
+            let backupVault = try decoder.decode(BackupVault.self,
                                            from: vaultData)
-            modelContext.insert(vault)
+            // if version get updated , then we can process the migration here
+            modelContext.insert(backupVault.vault)
             isLinkActive = true
-        } catch {
-            logger.error("fail to restore vault: \(error.localizedDescription)")
-            errorMessage = "fail to restore vault: \(error.localizedDescription)"
-            showAlert = true
-            isLinkActive = false
+        }  catch {
+            print("failed to import with new format , fallback to the old format instead. \(error.localizedDescription)")
+            // fallback
+            do{
+                let vault = try decoder.decode(Vault.self,
+                                               from: vaultData)
+                // if version get updated , then we can process the migration here
+                modelContext.insert(vault)
+                isLinkActive = true
+            } catch {
+                logger.error("fail to restore vault: \(error.localizedDescription)")
+                errorMessage = "fail to restore vault: \(error.localizedDescription)"
+                showAlert = true
+                isLinkActive = false
+            }
         }
     }
 }

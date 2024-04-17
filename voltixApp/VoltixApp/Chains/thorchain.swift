@@ -31,6 +31,7 @@ enum THORChainHelper {
         guard let pubKeyData = Data(hexString: derivePubKey), let publicKey = PublicKey(data: pubKeyData, type: .secp256k1) else {
             return .failure(HelperError.runtimeError("public key: \(derivePubKey) is invalid"))
         }
+        
         return .success(CoinType.thorchain.deriveAddressFromPublicKey(publicKey: publicKey))
     }
     

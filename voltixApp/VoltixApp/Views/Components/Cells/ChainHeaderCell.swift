@@ -37,6 +37,13 @@ struct ChainHeaderCell: View {
             .background(Color.blue600)
     }
     
+    var logo: some View {
+        Image(group.logo)
+            .resizable()
+            .frame(width: 32, height: 32)
+            .cornerRadius(50)
+    }
+    
     var content: some View {
         VStack(alignment: .leading, spacing: 12) {
             header
@@ -47,6 +54,7 @@ struct ChainHeaderCell: View {
     
     var header: some View {
         HStack(spacing: 12) {
+            logo
             title
             Spacer()
             actions

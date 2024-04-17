@@ -30,6 +30,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     @Published var selections = Set<String>()
     @Published var serverAddr = "http://127.0.0.1:18080"
     @Published var vaultDetail = String.empty
+    @Published var selectedNetwork = NetworkPromptType.WiFi
     
     private let mediator = Mediator.shared
     
@@ -39,8 +40,9 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         self.status = .WaitingForDevices
         self.participantDiscovery = nil
         self.encryptionKeyHex = Encryption.getEncryptionKey()
-        if VoltixRouter.IsRouterEnabled {
-            serverAddr = Endpoint.voltixRouter
+        if VoltixRelay.IsRelayEnabled {
+            serverAddr = Endpoint.voltixRelay
+            selectedNetwork = .Cellular
         }
     }
     
@@ -82,6 +84,21 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         self.logger.info("mediator server started")
         self.startSession()
         self.participantDiscovery?.getParticipants(serverAddr: self.serverAddr, 
+                                                   sessionID: self.sessionID,
+                                                   localParty: self.localPartyID,
+                                                   pubKeyECDSA: vault.pubKeyECDSA)
+    }
+    
+    func restartParticipantDiscovery(){
+        self.participantDiscovery?.stop()
+        if VoltixRelay.IsRelayEnabled {
+            serverAddr = Endpoint.voltixRelay
+        } else {
+            serverAddr = "http://127.0.0.1:18080"
+        }
+        self.participantDiscovery?.peersFound = [String]()
+        self.startSession()
+        self.participantDiscovery?.getParticipants(serverAddr: self.serverAddr,
                                                    sessionID: self.sessionID,
                                                    localParty: self.localPartyID,
                                                    pubKeyECDSA: vault.pubKeyECDSA)
@@ -136,7 +153,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                        hexChainCode: vault.hexChainCode,
                                        serviceName: serviceName,
                                        encryptionKeyHex: encryptionKeyHex,
-                                       useVoltixRouter: VoltixRouter.IsRouterEnabled)
+                                       useVoltixRelay: VoltixRelay.IsRelayEnabled)
                 data = try jsonEncoder.encode(PeerDiscoveryPayload.Keygen(km))
             case .Reshare:
                 let reshareMsg = ReshareMessage(sessionID: sessionID,
@@ -145,7 +162,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                                 pubKeyECDSA: vault.pubKeyECDSA,
                                                 oldParties: vault.signers,
                                                 encryptionKeyHex: encryptionKeyHex,
-                                                useVoltixRouter: VoltixRouter.IsRouterEnabled)
+                                                useVoltixRelay: VoltixRelay.IsRelayEnabled)
                 data = try jsonEncoder.encode(PeerDiscoveryPayload.Reshare(reshareMsg))
             }
             return Utils.getQrImage(data: data, size: size)

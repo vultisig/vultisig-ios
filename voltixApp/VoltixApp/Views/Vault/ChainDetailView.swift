@@ -172,4 +172,5 @@ struct ChainDetailView: View {
 
 #Preview {
     ChainDetailView(group: GroupedChain.example, vault: Vault.example, balanceInFiat: "$65,899")
+        .environmentObject(TokenSelectionViewModel())
 }

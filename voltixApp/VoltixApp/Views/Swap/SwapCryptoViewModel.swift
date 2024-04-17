@@ -30,10 +30,6 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     @Published var error: Error?
     @Published var isLoading = false
 
-    var showError: Binding<Bool> {
-        return Binding { self.error != nil } set: { _ in }
-    }
-
     func load(tx: SwapTransaction, fromCoin: Coin, coins: [Coin]) async {
         self.coins = coins.filter { $0.chain.isSwapSupported }
         tx.toCoin = coins.first!
@@ -41,13 +37,39 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
         await updateFromBalance(tx: tx)
         await updateToBalance(tx: tx)
-        await updateFee(tx: tx)
     }
-
-    // MARK: Progress
 
     var progress: Double {
         return Double(currentIndex) / Double(titles.count)
+    }
+
+    func showFees(tx: SwapTransaction) -> Bool {
+        return tx.inboundFee != .empty
+    }
+
+    func showDuration(tx: SwapTransaction) -> Bool {
+        return tx.duration != .zero
+    }
+
+    func showToAmount(tx: SwapTransaction) -> Bool {
+        return tx.toAmount != .empty
+    }
+
+    func feeString(tx: SwapTransaction) -> String {
+        return "\(tx.inboundFee) \(tx.toCoin.ticker)"
+    }
+
+    func durationString(tx: SwapTransaction) -> String {
+        guard let duration = quote?.totalSwapSeconds else { return .empty }
+        let formatter = DateComponentsFormatter()
+        formatter.unitsStyle = .full
+        formatter.includesApproximationPhrase = false
+        formatter.includesTimeRemainingPhrase = false
+        formatter.allowedUnits = [.day, .hour, .minute, .second]
+        formatter.maximumUnitCount = 1
+        let fromDate = Date(timeIntervalSince1970: 0)
+        let toDate = Date(timeIntervalSince1970: TimeInterval(duration))
+        return formatter.string(from: fromDate, to: toDate) ?? .empty
     }
 
     func validateForm(tx: SwapTransaction) -> Bool {
@@ -124,16 +146,9 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         }
     }
 
-    func updateFee(tx: SwapTransaction) async {
-        do {
-            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin)
-            tx.gas = chainSpecific.gas
-        } catch {
-            self.error = error
-        }
-    }
-
     func updateQuotes(tx: SwapTransaction) async {
+        guard !tx.fromAmount.isEmpty else { return clear(tx: tx) }
+
         do {
             guard let amount = Decimal(string: tx.fromAmount), tx.fromCoin != tx.toCoin else {
                 throw Errors.swapQuoteParsingFailed
@@ -143,19 +158,26 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 address: tx.toCoin.address,
                 fromAsset: tx.fromCoin.swapAsset,
                 toAsset: tx.toCoin.swapAsset,
-                amount: (amount * 100_000_000).description // https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
+                amount: (amount * 100_000_000).description, // https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
+                interval: "1"
             )
 
             guard let expected = Decimal(string: quote.expectedAmountOut) else {
                 throw Errors.swapQuoteParsingFailed
             }
 
+            guard let fees = Decimal(string: quote.fees.total) else {
+                throw Errors.swapQuoteParsingFailed
+            }
+
             tx.toAmount = (expected / Decimal(100_000_000)).description
+            tx.inboundFee = (fees / Decimal(100_000_000)).description
+            tx.duration = quote.totalSwapSeconds ?? 0
 
             self.quote = quote
         } catch {
-            self.quote = nil
-            print("Swap quote error: \(error.localizedDescription)")
+            self.error = error
+            clear(tx: tx)
         }
     }
 }
@@ -176,6 +198,13 @@ private extension SwapCryptoViewModel {
 }
 
 private extension SwapCryptoViewModel {
+
+    func clear(tx: SwapTransaction) {
+        quote = nil
+        tx.toAmount = .empty
+        tx.inboundFee = .empty
+        tx.duration = .zero
+    }
 
     func amount(for coin: Coin, tx: SwapTransaction) -> Int64 {
         switch coin.chain {

@@ -10,7 +10,7 @@ import Foundation
 class Endpoint {
     
     static let voltixApiProxy = "https://api.voltix.org"
-    static let voltixRouter = "https://api.voltix.org/router"
+    static let voltixRelay = "https://api.voltix.org/router"
     static let broadcastTransactionThorchainNineRealms = "https://thornode.ninerealms.com/cosmos/tx/v1beta1/txs"
     
     static func fetchAccountNumberThorchainNineRealms(_ address: String) -> String {
@@ -21,8 +21,8 @@ class Endpoint {
         "https://thornode.ninerealms.com/cosmos/bank/v1beta1/balances/\(address)"
     }
     
-    static func fetchSwaoQuoteThorchainNineRealms(address: String, fromAsset: String, toAsset: String, amount: String) -> URL {
-        "https://thornode.ninerealms.com/thorchain/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)".asUrl
+    static func fetchSwaoQuoteThorchainNineRealms(address: String, fromAsset: String, toAsset: String, amount: String, interval: String) -> URL {
+        "https://thornode.ninerealms.com/thorchain/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)&streaming_interval=\(interval)".asUrl
     }
     
     static func fetchCoinPaprikaQuotes(_ quotes: String) -> String {

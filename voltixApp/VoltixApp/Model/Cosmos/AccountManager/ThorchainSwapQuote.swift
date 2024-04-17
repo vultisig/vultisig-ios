@@ -53,4 +53,5 @@ struct Fees: Codable {
     let affiliate: String
     let asset: String
     let outbound: String
+    let total: String
 }
