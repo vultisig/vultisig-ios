@@ -228,9 +228,15 @@ class KeysignViewModel: ObservableObject {
                 }
             }
         case .THORChain:
-            let result = THORChainHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
-            return result
-
+            if keysignPayload.coin.chain == .thorChain {
+                let result = THORChainHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                return result
+            }
+            if keysignPayload.coin.chain == .mayaChain {
+                let result = MayaChainHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                return result
+            }
+        
         case .Solana:
             let result = SolanaHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyEdDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
             return result
@@ -263,7 +269,14 @@ class KeysignViewModel: ObservableObject {
                         self.handleBroadcastError(err: error)
                     }
                 case .mayaChain:
-                    let broadcastResult = await MayachainService.shared
+                    let broadcastResult = await MayachainService.shared.broadcastTransaction(jsonString: tx)
+                    switch broadcastResult {
+                    case .success(let txHash):
+                        self.txid = txHash
+                        print("Transaction successful, hash: \(txHash)")
+                    case .failure(let error):
+                        self.handleBroadcastError(err: error)
+                    }
                 case .ethereum:
                     self.txid = try await etherScanService.broadcastTransaction(hex: tx)
         

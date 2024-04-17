@@ -118,6 +118,8 @@ class Endpoint {
             return "https://snowtrace.io/tx/\(txid)"
         case "BNB":
             return "https://bscscan.com/tx/\(txid)"
+        case "CACAO":
+            return "https://www.mayascan.org/tx/\(txid)"
         default:
             return ""
         }
@@ -147,6 +149,8 @@ class Endpoint {
             return "https://snowtrace.io/address/\(address)"
         case "BNB":
             return "https://bscscan.com/address/\(address)"
+        case "CACAO":
+            return "https://www.mayascan.org/address/\(address)"
         default:
             return nil
         }
@@ -176,8 +180,8 @@ class Endpoint {
             return "https://blockchair.com/dogecoin/address/\(address)"
         case .dash:
             return "https://blockchair.com/dash/address/\(address)"
-        default:
-            return nil
+        case .mayaChain:
+            return "https://www.mayascan.org/address/\(address)"
         }
     }
     
