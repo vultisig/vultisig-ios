@@ -167,3 +167,5 @@
 "devicesOnSameWifiNoHotel" = "Mantén todos los dispositivos en el mismo WiFi con la aplicación Voltix abierta. (Puede que no funcione en WiFi de hotel/aeropuerto).";
 "devicesOnSameHotspot" = "Conecta todos los dispositivos al mismo hotspot personal con la aplicación Voltix abierta.";
 "devicesOnSameCellular" = "Conecta todos los dispositivos a internet con la aplicación Voltix abierta.";
+"balanceNotAvailable" = "Saldo no disponible";
+"invalidBalance" = "Saldo no válido";

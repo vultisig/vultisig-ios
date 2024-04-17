@@ -11,7 +11,8 @@ import WalletCore
 
 enum MayaChainHelper {
     static let MayaChainGas: UInt64 = 2000000
-    static func getMayaCoin(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
+    
+    static func getMayaCoin(hexPubKey: String, hexChainCode: String, coinTicker: String) -> Result<Coin, Error> {
         let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
                                                             hexChainCode: hexChainCode,
                                                             derivePath: CoinType.thorchain.derivationPath())
@@ -19,7 +20,7 @@ enum MayaChainHelper {
             return .failure(HelperError.runtimeError("derived public key is empty"))
         }
         return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).flatMap { addr -> Result<Coin, Error> in
-            TokensStore.createNewCoinInstance(ticker: "CACAO", address: addr, hexPublicKey: derivePubKey)
+            TokensStore.createNewCoinInstance(ticker: coinTicker, address: addr, hexPublicKey: derivePubKey)
         }
     }
     
@@ -82,7 +83,6 @@ enum MayaChainHelper {
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
             return .failure(HelperError.runtimeError("invalid hex public key"))
         }
-        let coin = CoinType.thorchain
         
         let input = CosmosSigningInput.with {
             $0.publicKey = pubKeyData
@@ -98,13 +98,13 @@ enum MayaChainHelper {
                 $0.thorchainSendMessage = CosmosMessage.THORChainSend.with {
                     $0.fromAddress = fromAddr.data
                     $0.amounts = [CosmosAmount.with {
-                        $0.denom = "cacao"
+                        $0.denom = keysignPayload.coin.ticker.lowercased()
                         $0.amount = String(keysignPayload.toAmount)
                     }]
                     $0.toAddress = toAddress.data
                 }
             }]
-            // THORChain fee is 0.02 RUNE
+            // MAYAChain fee is 0.02 Cacao
             $0.fee = CosmosFee.with {
                 $0.gas = MayaChainGas
                 $0.amounts = [CosmosAmount.with {

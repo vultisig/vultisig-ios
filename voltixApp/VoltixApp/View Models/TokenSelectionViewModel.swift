@@ -67,7 +67,9 @@ class TokenSelectionViewModel: ObservableObject {
                 logger.info("fail to get thorchain address,error:\(error.localizedDescription)")
             }
         case .mayaChain:
-            let cacaoCoinResult = MayaChainHelper.getMayaCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
+            let cacaoCoinResult = MayaChainHelper.getMayaCoin(hexPubKey: vault.pubKeyECDSA, 
+                                                              hexChainCode: vault.hexChainCode,
+                                                              coinTicker: asset.ticker)
             switch cacaoCoinResult {
             case .success(let coin):
                 coin.priceProviderId = asset.priceProviderId

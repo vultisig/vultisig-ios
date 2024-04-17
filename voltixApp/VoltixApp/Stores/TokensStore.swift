@@ -16,7 +16,7 @@ class TokensStore {
         
         Coin(chain: Chain.mayaChain, ticker: "CACAO", logo: "cacao", address: "", priceRate: 0.0, chainType: ChainType.THORChain, decimals: "10", hexPublicKey: "", feeUnit: "cacao", priceProviderId: "cacao", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "0.02"),
         
-//        Coin(chain: Chain.mayaChain, ticker: "MAYA", logo: "maya", address: "", priceRate: 0.0, chainType: ChainType.THORChain, decimals: "4", hexPublicKey: "", feeUnit: "cacao", priceProviderId: "maya", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "0.02"),
+        Coin(chain: Chain.mayaChain, ticker: "MAYA", logo: "maya", address: "", priceRate: 0.0, chainType: ChainType.THORChain, decimals: "4", hexPublicKey: "", feeUnit: "cacao", priceProviderId: "maya", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "0.02"),
 
         Coin(chain: Chain.ethereum, ticker: "ETH", logo: "eth", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "ethereum", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "21000"),
 
