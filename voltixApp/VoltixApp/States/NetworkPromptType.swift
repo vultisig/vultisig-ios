@@ -26,4 +26,19 @@ enum NetworkPromptType: String, CaseIterable {
         
         return Image(systemName: name)
     }
+    
+    func getInstruction() -> String {
+        let title: String
+        
+        switch self {
+        case .WiFi:
+            title = "devicesOnSameWifiNoHotel"
+        case .Hotspot:
+            title = "devicesOnSameHotspot"
+        case .Cellular:
+            title = "devicesOnSameCellular"
+        }
+        
+        return NSLocalizedString(title, comment: "")
+    }
 }
