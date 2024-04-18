@@ -252,6 +252,7 @@
 		DEFF58F82BCF4E11005DFDF9 /* BackupVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF58F72BCF4E11005DFDF9 /* BackupVault.swift */; };
 		DEFF58FA2BCF85FA005DFDF9 /* maya.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF58F92BCF85FA005DFDF9 /* maya.swift */; };
 		DEFF58FC2BCFB384005DFDF9 /* MayaChainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF58FB2BCFB384005DFDF9 /* MayaChainService.swift */; };
+		DEFF58FE2BD13E5D005DFDF9 /* ThreadSafeDictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF58FD2BD13E5D005DFDF9 /* ThreadSafeDictionary.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -525,6 +526,7 @@
 		DEFF58F72BCF4E11005DFDF9 /* BackupVault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupVault.swift; sourceTree = "<group>"; };
 		DEFF58F92BCF85FA005DFDF9 /* maya.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = maya.swift; sourceTree = "<group>"; };
 		DEFF58FB2BCFB384005DFDF9 /* MayaChainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MayaChainService.swift; sourceTree = "<group>"; };
+		DEFF58FD2BD13E5D005DFDF9 /* ThreadSafeDictionary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreadSafeDictionary.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1116,6 +1118,7 @@
 				A690E00D2BC0ED290006DC0D /* URL.swift */,
 				DE8AD7462BC78FA400339775 /* Encryption.swift */,
 				A62758F32B97CE7E00ADE3A6 /* Styles */,
+				DEFF58FD2BD13E5D005DFDF9 /* ThreadSafeDictionary.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -1356,7 +1359,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */;
+			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -1473,6 +1476,7 @@
 				DE63AE4D2BB4E94E001BBE5C /* JSONRPCResponse.swift in Sources */,
 				A65BA98A2BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift in Sources */,
 				46C8CBBF2BA777BF00E68E08 /* BlockchairService.swift in Sources */,
+				DEFF58FE2BD13E5D005DFDF9 /* ThreadSafeDictionary.swift in Sources */,
 				DE64A4CC2BA7F97500C342E3 /* KeysignDiscoveryViewModel.swift in Sources */,
 				A653242C2BA52E2200DDE6EB /* SendCryptoQRScannerView.swift in Sources */,
 				A62758F72B97DF4A00ADE3A6 /* ColorStyle.swift in Sources */,
@@ -2019,7 +2023,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */ = {
+		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DE49A1882B65F6DB000F3AFB /* Debug */,

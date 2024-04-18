@@ -12,7 +12,7 @@ class BlockchairService {
     
     static let shared = BlockchairService()
 
-    var blockchairData: [String: Blockchair] = [:]
+    var blockchairData: ThreadSafeDictionary<String,Blockchair> = ThreadSafeDictionary()
 
     private var cacheFeePrice: [String: (data: BigInt, timestamp: Date)] = [:]
 
@@ -26,9 +26,9 @@ class BlockchairService {
             let decoder = JSONDecoder()
             decoder.keyDecodingStrategy = .convertFromSnakeCase
             let decodedData = try decoder.decode(BlockchairResponse.self, from: data)
-            if let blockchairData = decodedData.data[coin .address] {
-                self.blockchairData[coin.blockchairKey] = blockchairData
-                return blockchairData
+            if let d = decodedData.data[coin .address] {
+                self.blockchairData.set(coin.blockchairKey, d)
+                return d
             }
         } catch {
             print("Error: \(error.localizedDescription)")
