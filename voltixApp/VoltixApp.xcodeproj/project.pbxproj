@@ -41,6 +41,7 @@
 		46C8CBBF2BA777BF00E68E08 /* BlockchairService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46C8CBBE2BA777BF00E68E08 /* BlockchairService.swift */; };
 		46DE088C2BD087D800AE8BDE /* kujira.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46DE088B2BD087D800AE8BDE /* kujira.swift */; };
 		46DE088E2BD08C9900AE8BDE /* KujiraService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46DE088D2BD08C9900AE8BDE /* KujiraService.swift */; };
+		46DE08902BD0D03E00AE8BDE /* CosmosService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46DE088F2BD0D03E00AE8BDE /* CosmosService.swift */; };
 		46E98FFC2BAE407300C53D97 /* DecodingErrorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46E98FFB2BAE407300C53D97 /* DecodingErrorExtension.swift */; };
 		46F47CBB2B870EE900D964EA /* UTXOTransactionMempool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F47CBA2B870EE900D964EA /* UTXOTransactionMempool.swift */; };
 		46F8F7212B99FDB70099454E /* TransactionBroadcastResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46F8F7202B99FDB70099454E /* TransactionBroadcastResponse.swift */; };
@@ -311,6 +312,7 @@
 		46C8CBBE2BA777BF00E68E08 /* BlockchairService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockchairService.swift; sourceTree = "<group>"; };
 		46DE088B2BD087D800AE8BDE /* kujira.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = kujira.swift; sourceTree = "<group>"; };
 		46DE088D2BD08C9900AE8BDE /* KujiraService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KujiraService.swift; sourceTree = "<group>"; };
+		46DE088F2BD0D03E00AE8BDE /* CosmosService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosService.swift; sourceTree = "<group>"; };
 		46E98FFB2BAE407300C53D97 /* DecodingErrorExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecodingErrorExtension.swift; sourceTree = "<group>"; };
 		46F47CBA2B870EE900D964EA /* UTXOTransactionMempool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionMempool.swift; sourceTree = "<group>"; };
 		46F8F7202B99FDB70099454E /* TransactionBroadcastResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionBroadcastResponse.swift; sourceTree = "<group>"; };
@@ -1245,6 +1247,7 @@
 			children = (
 				DE63AE552BBA788D001BBE5C /* GaiaService.swift */,
 				46DE088D2BD08C9900AE8BDE /* KujiraService.swift */,
+				46DE088F2BD0D03E00AE8BDE /* CosmosService.swift */,
 			);
 			path = Cosmos;
 			sourceTree = "<group>";
@@ -1353,7 +1356,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */;
+			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -1623,6 +1626,7 @@
 				A65649F02B966A1200E4B329 /* UTXOTransactionMempoolOutput.swift in Sources */,
 				A653242A2BA52A4700DDE6EB /* SendCryptoViewModel.swift in Sources */,
 				A54BBCFF2BC6E11600645C06 /* TransferViewModel.swift in Sources */,
+				46DE08902BD0D03E00AE8BDE /* CosmosService.swift in Sources */,
 				465B09A92B7C176700952DD9 /* SendTransaction.swift in Sources */,
 				A633B12D2B994E92003D1738 /* CreateVaultView.swift in Sources */,
 				A63953B02BA7BEDA000802EC /* Checkbox.swift in Sources */,
@@ -2015,7 +2019,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */ = {
+		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DE49A1882B65F6DB000F3AFB /* Debug */,
