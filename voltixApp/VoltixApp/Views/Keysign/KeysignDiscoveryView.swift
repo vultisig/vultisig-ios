@@ -36,6 +36,9 @@ struct KeysignDiscoveryView: View {
         }
         .detectOrientation($orientation)
         .onAppear {
+            if VoltixRelay.IsRelayEnabled {
+                self.selectedNetwork = .Cellular
+            }
             viewModel.setData(vault: vault, keysignPayload: keysignPayload, participantDiscovery: participantDiscovery)
         }
         .task {
@@ -101,17 +104,19 @@ struct KeysignDiscoveryView: View {
     
     var list: some View {
         ZStack {
-            if participantDiscovery.peersFound.count == 0 {
-                lookingForDevices
-            } else {
-                deviceContent
+            VStack{
+                networkPrompts
+                if participantDiscovery.peersFound.count == 0 {
+                    lookingForDevices
+                } else {
+                    deviceContent
+                }
             }
         }
     }
     
     var deviceContent: some View {
         VStack {
-            networkPrompts
             deviceList
             instructions
         }

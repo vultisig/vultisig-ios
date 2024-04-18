@@ -9,9 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct HomeView: View {
-    var selectedVault: Vault? = nil
     @State var showVaultsList = false
-    
     @Query var vaults: [Vault]
     @StateObject var viewModel = HomeViewModel()
     
@@ -98,11 +96,6 @@ struct HomeView: View {
     }
     
     private func setData() {
-        if let vault = selectedVault {
-            viewModel.setSelectedVault(vault)
-            return
-        }
-        
         viewModel.loadSelectedVault(for: vaults)
     }
     
