@@ -98,7 +98,7 @@ struct JoinKeysignDoneView: View {
     
     var continueButton: some View {
         NavigationLink {
-            HomeView(selectedVault: viewModel.vault,showVaultsList: false)
+            HomeView(selectedVault: viewModel.vault, showVaultsList: false)
         } label: {
             FilledButton(title: "DONE")
                 .padding(20)

@@ -31,25 +31,8 @@ struct VaultCell: View {
     
     var actions: some View {
         HStack(spacing: 8) {
-            editOption
             selectOption
         }
-    }
-    
-    var editOption: some View {
-        NavigationLink {
-            EditVaultView(vault: vault)
-        } label: {
-            editImage
-        }
-    }
-    
-    var editImage: some View {
-        Image(systemName: "square.and.pencil")
-            .font(.body16MontserratBold)
-            .foregroundColor(.neutral100)
-            .offset(y: -2)
-            .frame(width: 48, height: 48)
     }
     
     var selectOption: some View {

@@ -91,7 +91,7 @@ struct SendCryptoDoneView: View {
     
     var continueButton: some View {
         NavigationLink {
-            HomeView(selectedVault: vault,showVaultsList: false)
+            HomeView(selectedVault: vault, showVaultsList: false)
         } label: {
             FilledButton(title: "complete")
         }
