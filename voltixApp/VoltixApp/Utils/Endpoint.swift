@@ -123,8 +123,8 @@ class Endpoint {
             return "https://etherscan.io/tx/\(txid)"
         case "UATOM":
             return "https://www.mintscan.io/cosmos/tx/\(txid)"
-        case "KUJI":
-            return "https://www.mintscan.io/kujira/tx/\(txid)"
+        case "UKUJI":
+            return "https://finder.kujira.network/kaiyo-1/tx/\(txid)"
         case "AVAX":
             return "https://snowtrace.io/tx/\(txid)"
         case "BNB":
@@ -156,8 +156,8 @@ class Endpoint {
             return "https://etherscan.io/address/\(address)"
         case "UATOM":
             return "https://www.mintscan.io/cosmos/address/\(address)"
-        case "KUJI":
-            return "https://www.mintscan.io/kujira/address/\(address)"
+        case "UKUJI":
+            return "https://finder.kujira.network/kaiyo-1/address/\(address)"
         case "AVAX":
             return "https://snowtrace.io/address/\(address)"
         case "BNB":
@@ -180,7 +180,7 @@ class Endpoint {
         case .gaiaChain:
             return "https://www.mintscan.io/cosmos/address/\(address)"
         case .kujira:
-            return "https://www.mintscan.io/kujira/address/\(address)"
+            return "https://finder.kujira.network/kaiyo-1/address/\(address)"
         case .avalanche:
             return "https://snowtrace.io/address/\(address)"
         case .bscChain:
