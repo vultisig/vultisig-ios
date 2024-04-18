@@ -77,7 +77,7 @@ class TokenSelectionViewModel: ObservableObject {
             case .failure(let error):
                 logger.info("fail to get thorchain address,error:\(error.localizedDescription)")
             }
-        case .ethereum:
+        case .ethereum, .arbitrum, .base, .optimism, .polygon:
             let coinResult = EVMHelper.getEthereumHelper().getCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
             switch coinResult {
             case .success(let coin):

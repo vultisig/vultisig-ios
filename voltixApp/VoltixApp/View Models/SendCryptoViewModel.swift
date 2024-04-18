@@ -45,7 +45,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             case .bitcoin,.bitcoinCash,.dogecoin,.dash,.litecoin:
                 let sats = try await utxo.fetchSatsPrice(coin: tx.coin)
                 tx.gas = String(sats)
-            case .ethereum,.bscChain,.avalanche:
+            case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon:
                 let service = try EvmServiceFactory.getService(forChain: tx.coin)
                 let (gasPrice,priorityFee,nonce) = try await service.getGasInfo(fromAddress: tx.fromAddress)
                 
@@ -125,7 +125,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 await convertToFiat(newValue: tx.amount, tx: tx)
                 isLoading = false
             }
-        case .ethereum,.bscChain,.avalanche:
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon:
             Task {
                 do {
                     let service = try EvmServiceFactory.getService(forChain: tx.coin)

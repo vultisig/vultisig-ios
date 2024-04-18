@@ -24,15 +24,12 @@ class KeysignViewModel: ObservableObject {
     @Published var status: KeysignStatus = .CreatingInstance
     @Published var keysignError: String = ""
     @Published var signatures = [String: TssKeysignResponse]()
-    @Published var etherScanService = EthService.shared
-    @Published var avaxScanService = AvalancheService.shared
     @Published var txid: String = ""
     
     private var tssService: TssServiceImpl? = nil
     private var tssMessenger: TssMessengerImpl? = nil
     private var stateAccess: LocalStateAccessorImpl? = nil
     private var messagePuller: MessagePuller? = nil
-    private let bscService = BSCService.shared
     
     var keysignCommittee: [String]
     var mediatorURL: String
@@ -281,15 +278,9 @@ class KeysignViewModel: ObservableObject {
                     case .failure(let error):
                         self.handleBroadcastError(err: error)
                     }
-                case .ethereum:
-                    self.txid = try await etherScanService.broadcastTransaction(hex: tx)
-                    
-                case .avalanche:
-                    self.txid = try await avaxScanService.broadcastTransaction(hex: tx)
-                    
-                case .bscChain:
-                    self.txid = try await bscService.broadcastTransaction(hex: tx)
-                    
+                case .ethereum, .avalanche,.arbitrum, .bscChain, .base, .optimism, .polygon:
+                    let service = try EvmServiceFactory.getService(forChain: keysignPayload.coin)
+                    self.txid = try await service.broadcastTransaction(hex: tx)
                 case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
                     let chainName = keysignPayload.coin.chain.name.lowercased()
                     UTXOTransactionsService.broadcastTransaction(chain: chainName, signedTransaction: tx) { result in
