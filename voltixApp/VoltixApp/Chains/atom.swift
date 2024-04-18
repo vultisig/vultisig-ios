@@ -16,7 +16,7 @@ class ATOMHelper {
         self.coinType = CoinType.cosmos
     }
     
-    static let kujiraGasLimit:UInt64 = 200000
+    static let ATOMGasLimit:UInt64 = 200000
     
     func getATOMCoin(hexPubKey: String,hexChainCode: String) -> Result<Coin,Error> {
         let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
@@ -56,7 +56,7 @@ class ATOMHelper {
         input.mode = .sync
         
         input.fee = CosmosFee.with {
-            $0.gas = ATOMHelper.kujiraGasLimit
+            $0.gas = ATOMHelper.ATOMGasLimit
             $0.amounts = [CosmosAmount.with {
                 $0.denom = "uatom"
                 $0.amount = String(gas)
@@ -102,7 +102,7 @@ class ATOMHelper {
             }]
             
             $0.fee = CosmosFee.with {
-                $0.gas = ATOMHelper.kujiraGasLimit // gas limit
+                $0.gas = ATOMHelper.ATOMGasLimit // gas limit
                 $0.amounts = [CosmosAmount.with {
                     $0.denom = "uatom"
                     $0.amount = String(gas)
