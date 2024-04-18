@@ -17,6 +17,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case dogecoin
     case dash
     case gaiaChain
+    case kujira
     case mayaChain
     
     enum MigrationKeys: String, CodingKey {
@@ -54,6 +55,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .litecoin: return "Litecoin"
         case .dogecoin: return "Dogecoin"
         case .gaiaChain: return "Gaia"
+        case .kujira: return "Kujira"
         case .dash: return "Dash"
         case .mayaChain: return "MayaChain"
         }
@@ -71,6 +73,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .litecoin: return "LTC"
         case .dogecoin: return "DOGE"
         case .gaiaChain: return "UATOM"
+        case .kujira: return "UKUJI"
         case .dash: return "DASH"
         case .mayaChain: return "CACAO"
         }
@@ -87,6 +90,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .litecoin: return "LTC"
         case .dogecoin: return "DOGE"
         case .gaiaChain: return "GAIA"
+        case .kujira: return "KUJI"
         case .solana: return "SOL"
         case .dash: return "DASH"
         case .mayaChain: return "CACAO"
@@ -97,14 +101,14 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         switch self {
         case .thorChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .gaiaChain:
             return true
-        case .solana, .dash,.mayaChain:
+        case .solana, .dash, .kujira, .mayaChain:
             return false
         }
     }
     
     var signingKeyType: KeyType {
         switch self {
-        case .thorChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dash, .dogecoin, .gaiaChain,.mayaChain:
+        case .thorChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dash, .dogecoin, .gaiaChain, .kujira, .mayaChain:
             return .ECDSA
         case .solana:
             return .EdDSA
@@ -121,7 +125,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return .Solana
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             return .UTXO
-        case .gaiaChain:
+        case .gaiaChain, .kujira:
             return .Cosmos
         }
     }

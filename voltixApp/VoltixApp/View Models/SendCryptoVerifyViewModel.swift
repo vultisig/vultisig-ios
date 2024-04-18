@@ -47,7 +47,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
             }
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             return tx.amountInSats
-        case .gaiaChain:
+        case .gaiaChain, .kujira:
             return tx.amountInCoinDecimal
         case .solana:
             return tx.amountInLamports

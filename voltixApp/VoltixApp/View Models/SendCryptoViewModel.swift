@@ -30,6 +30,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     @Published var utxo = BlockchairService.shared
     let maya = MayachainService.shared
     let atom = GaiaService.shared
+    let kujira = KujiraService.shared
     
     private let mediator = Mediator.shared
     
@@ -51,7 +52,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 tx.gas = gasPrice
                 tx.nonce = Int64(nonce)
                 tx.priorityFeeGwei = Int64(priorityFee)
-            case .thorChain,.mayaChain:
+            case .thorChain,.mayaChain, .kujira:
                 tx.gas = "0.02"
             case .gaiaChain:
                 tx.gas = "0.0075"
@@ -110,7 +111,6 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         return nil
     }
     
-    
     func setMaxValues(tx: SendTransaction)  {
         let coinName = tx.coin.chain.name.lowercased()
         let key: String = "\(tx.fromAddress)-\(coinName)"
@@ -154,32 +154,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 await convertToFiat(newValue: tx.amount, tx: tx)
                 isLoading = false
             }
-        case .thorChain:
-            Task {
-                do{
-                    let thorBalances = try await self.thor.fetchBalances(tx.fromAddress)
-                    tx.coin.priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
-                    tx.coin.rawBalance = thorBalances.coinBalance(ticker: tx.coin.ticker.lowercased()) ?? "0"
-                    tx.amount = "\(tx.coin.getMaxValue(BigInt(tx.gasDecimal)))"
-                    await convertToFiat(newValue: tx.amount, tx: tx)
-                } catch {
-                    print("fail to get THORChain balance,error:\(error.localizedDescription)")
-                }
-                isLoading = false
-            }
-        case .mayaChain:
-            Task {
-                do{
-                    let mayaBalances = try await self.maya.fetchBalances(tx.fromAddress)
-                    tx.coin.priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
-                    tx.coin.rawBalance = mayaBalances.coinBalance(ticker: tx.coin.ticker.lowercased()) ?? "0"
-                    tx.amount = "\(tx.coin.getMaxValue(BigInt(tx.gasDecimal)))"
-                    await convertToFiat(newValue: tx.amount, tx: tx)
-                } catch {
-                    print("fail to get Maya balance,error:\(error.localizedDescription)")
-                }
-                isLoading = false
-            }
+            
         case .solana:
             Task{
                 do{
@@ -200,12 +175,11 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 
                 isLoading = false
             }
-        case .gaiaChain:
+            
+        case .kujira, .gaiaChain, .mayaChain, .thorChain:
             Task {
                 do{
-                    let atomBalances = try await self.atom.fetchBalances(address: tx.fromAddress)
-                    tx.coin.priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
-                    tx.coin.rawBalance = atomBalances.coinBalance(ticker: tx.coin.ticker.lowercased()) ?? "0"
+                    let (_, _, _) = try await BalanceService.shared.balance(for: tx.coin)
                     tx.amount = "\(tx.coin.getMaxValue(BigInt(tx.gasDecimal)))"
                     await convertToFiat(newValue: tx.amount, tx: tx)
                 } catch {
@@ -214,7 +188,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 isLoading = false
             }
         }
-       
+        
     }
     
     func convertFiatToCoin(newValue: String, tx: SendTransaction) async {
