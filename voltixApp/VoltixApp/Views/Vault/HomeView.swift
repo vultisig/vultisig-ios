@@ -6,10 +6,14 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct HomeView: View {
-    @State var selectedVault: Vault? = nil
-    @State var showVaultsList = true
+    var selectedVault: Vault? = nil
+    @State var showVaultsList = false
+    
+    @Query var vaults: [Vault]
+    @StateObject var viewModel = HomeViewModel()
     
     var body: some View {
         ZStack {
@@ -27,18 +31,21 @@ struct HomeView: View {
             }
 
             ToolbarItem(placement: .topBarTrailing) {
-                NavigationRefreshButton()
+                editButton
             }
+        }
+        .onAppear {
+            setData()
         }
     }
     
     var view: some View {
         ZStack {
-            if let vault = selectedVault {
+            if let vault = viewModel.selectedVault {
                 VaultDetailView(showVaultsList: $showVaultsList, vault: vault)
             }
             
-            VaultsView(selectedVault: $selectedVault, showVaultsList: $showVaultsList)
+            VaultsView(viewModel: viewModel, showVaultsList: $showVaultsList)
         }
     }
     
@@ -47,7 +54,7 @@ struct HomeView: View {
             HStack {
                 title
                 
-                if selectedVault != nil {
+                if viewModel.selectedVault != nil {
                     Image(systemName: "chevron.up")
                         .font(.body8Menlo)
                         .bold()
@@ -63,12 +70,12 @@ struct HomeView: View {
     
     var title: some View {
         VStack(spacing: 0) {
-            Text(NSLocalizedString("main", comment: "Home view title"))
+            Text(NSLocalizedString("vaults", comment: "Vaults"))
                 .font(.body)
                 .bold()
                 .foregroundColor(.neutral0)
             
-            Text(selectedVault?.name ?? NSLocalizedString("vault", comment: "Home view title"))
+            Text(viewModel.selectedVault?.name ?? NSLocalizedString("vault", comment: "Home view title"))
                 .font(.body)
                 .bold()
                 .foregroundColor(.neutral0)
@@ -86,8 +93,21 @@ struct HomeView: View {
         }
     }
     
+    var editButton: some View {
+        NavigationHomeEditButton(showVaultsList: showVaultsList, vault: viewModel.selectedVault)
+    }
+    
+    private func setData() {
+        if let vault = selectedVault {
+            viewModel.setSelectedVault(vault)
+            return
+        }
+        
+        viewModel.loadSelectedVault(for: vaults)
+    }
+    
     private func switchView() {
-        guard selectedVault != nil else {
+        guard viewModel.selectedVault != nil else {
             return
         }
         

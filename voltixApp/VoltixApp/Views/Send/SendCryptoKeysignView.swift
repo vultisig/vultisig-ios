@@ -95,7 +95,7 @@ struct SendCryptoKeysignView: View {
     
     var tryAgainButton: some View {
         NavigationLink {
-            HomeView(selectedVault: vault,showVaultsList: false)
+            HomeView(selectedVault: vault, showVaultsList: false)
         } label: {
             FilledButton(title: "tryAgain")
         }
