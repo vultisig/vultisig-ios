@@ -5,43 +5,34 @@
 //  Created by Amol Kumar on 2024-04-17.
 //
 
-import Foundation
+import SwiftUI
 
 @MainActor
 class HomeViewModel: ObservableObject {
+    @AppStorage("vaultName") var vaultName: String = ""
+    @AppStorage("selectedPubKeyECDSA") var selectedPubKeyECDSA: String = ""
+    
     @Published var selectedVault: Vault? = nil
     
-    let selectedVaultKey = "selectedVault"
-    
     func loadSelectedVault(for vaults: [Vault]) {
-        guard let data = getSelectedVault() else {
+        if vaultName.isEmpty || selectedPubKeyECDSA.isEmpty {
             setSelectedVault(vaults.first)
             return
         }
         
-        setSelectedVault(data)
+        for vault in vaults {
+            if vaultName==vault.name && selectedPubKeyECDSA==vault.pubKeyECDSA {
+                setSelectedVault(vault)
+                return
+            }
+        }
+        
+        setSelectedVault(vaults.first)
     }
     
     func setSelectedVault(_ vault: Vault?) {
-        do {
-            let encodedData = try JSONEncoder().encode(vault)
-            UserDefaults.standard.set(encodedData, forKey: selectedVaultKey)
-            selectedVault = vault
-        } catch {
-            print("Error encoding person:", error)
-        }
-    }
-    
-    func getSelectedVault() -> Vault? {
-        if let savedData = UserDefaults.standard.data(forKey: selectedVaultKey) {
-            do {
-                let vault = try JSONDecoder().decode(Vault.self, from: savedData)
-                return vault
-            } catch {
-                print("Error decoding person:", error)
-                return nil
-            }
-        }
-        return nil
+        selectedVault = vault
+        vaultName = vault?.name ?? ""
+        selectedPubKeyECDSA = vault?.pubKeyECDSA ?? ""
     }
 }
