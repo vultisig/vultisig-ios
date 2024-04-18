@@ -37,6 +37,8 @@ class SendCryptoVerifyViewModel: ObservableObject {
         switch coin.chain {
         case .thorChain:
             return tx.amountInSats
+        case .mayaChain:
+            return tx.amountInCoinDecimal
         case .ethereum, .avalanche, .bscChain:
             if coin.isNativeToken {
                 return tx.amountInGwei

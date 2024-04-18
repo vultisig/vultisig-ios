@@ -36,6 +36,8 @@ extension Coin {
             return CoinType.kujira
         case .dash:
             return CoinType.dash
+        case .mayaChain:
+            return CoinType.thorchain
         }
     }
 }
