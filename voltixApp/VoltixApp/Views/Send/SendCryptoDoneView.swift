@@ -13,7 +13,7 @@ struct SendCryptoDoneView: View {
     let explorerLink: String
     @Environment(\.openURL) var openURL
     @State var showAlert = false
-    
+    @Environment(\.dismiss) var dismiss
     var body: some View {
         ZStack {
             Background()
@@ -90,11 +90,11 @@ struct SendCryptoDoneView: View {
     }
     
     var continueButton: some View {
-        NavigationLink {
-            HomeView()
-        } label: {
+        Button(action: {
+            dismiss()
+        }, label: {
             FilledButton(title: "complete")
-        }
+        })
         .padding(40)
     }
     
