@@ -327,10 +327,16 @@ class KeysignViewModel: ObservableObject {
         }
     }
     func handleBroadcastError(err: Error){
-        var errMessage: String
+        var errMessage: String = ""
         switch err{
         case HelperError.runtimeError(let errDetail):
             errMessage = "Failed to broadcast transaction,\(errDetail)"
+        case RpcEvmServiceError.rpcError(let code, let message):
+            if message == "already known"{
+                print("the transaction already broadcast,code:\(code)")
+                self.txid = ""
+                return
+            }
         default:
             errMessage = "Failed to broadcast transaction,error:\(err.localizedDescription)"
         }
