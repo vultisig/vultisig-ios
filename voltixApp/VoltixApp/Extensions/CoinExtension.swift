@@ -9,7 +9,7 @@ import Foundation
 import WalletCore
 
 extension Coin {
-
+    
     func getCoinType() -> CoinType? {
         switch chain {
         case .bitcoin:
@@ -32,6 +32,8 @@ extension Coin {
             return CoinType.avalancheCChain
         case .gaiaChain:
             return CoinType.cosmos
+        case .kujira:
+            return CoinType.kujira
         case .dash:
             return CoinType.dash
         }

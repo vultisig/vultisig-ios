@@ -104,6 +104,8 @@ struct KeysignPayload: Codable, Hashable {
             return SolanaHelper.getPreSignedImageHash(keysignPayload: self)
         case .gaiaChain:
             return ATOMHelper().getPreSignedImageHash(keysignPayload: self)
+        case .kujira:
+            return KujiraHelper().getPreSignedImageHash(keysignPayload: self)
         }
     }
     

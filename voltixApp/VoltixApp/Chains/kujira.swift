@@ -1,24 +1,24 @@
 //
-//  atom.swift
+//  kujira.swift
 //  VoltixApp
 //
-//  Created by Johnny Luo on 1/4/2024.
+//  Created by Enrique Souza Soares on 17/04/2024.
 //
 
 import Foundation
 import WalletCore
 import Tss
 
-class ATOMHelper {
+class KujiraHelper {
     let coinType: CoinType
     
     init(){
-        self.coinType = CoinType.cosmos
+        self.coinType = CoinType.kujira
     }
     
     static let kujiraGasLimit:UInt64 = 200000
     
-    func getATOMCoin(hexPubKey: String,hexChainCode: String) -> Result<Coin,Error> {
+    func getCoin(hexPubKey: String,hexChainCode: String) -> Result<Coin,Error> {
         let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
                                                             hexChainCode: hexChainCode,
                                                             derivePath: self.coinType.derivationPath())
@@ -26,7 +26,7 @@ class ATOMHelper {
             return .failure(HelperError.runtimeError("derived public key is empty"))
         }
         return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).flatMap { addr -> Result<Coin, Error> in
-            TokensStore.createNewCoinInstance(ticker: "ATOM", address: addr, hexPublicKey: derivePubKey)
+            TokensStore.createNewCoinInstance(ticker: "KUJI", address: addr, hexPublicKey: derivePubKey)
         }
     }
     
@@ -56,9 +56,9 @@ class ATOMHelper {
         input.mode = .sync
         
         input.fee = CosmosFee.with {
-            $0.gas = ATOMHelper.kujiraGasLimit
+            $0.gas = KujiraHelper.kujiraGasLimit
             $0.amounts = [CosmosAmount.with {
-                $0.denom = "uatom"
+                $0.denom = "ukuji"
                 $0.amount = String(gas)
             }]
         }
@@ -94,7 +94,7 @@ class ATOMHelper {
                 $0.sendCoinsMessage = CosmosMessage.Send.with{
                     $0.fromAddress = keysignPayload.coin.address
                     $0.amounts = [CosmosAmount.with {
-                        $0.denom = "uatom"
+                        $0.denom = "ukuji"
                         $0.amount = String(keysignPayload.toAmount)
                     }]
                     $0.toAddress = keysignPayload.toAddress
@@ -102,9 +102,9 @@ class ATOMHelper {
             }]
             
             $0.fee = CosmosFee.with {
-                $0.gas = ATOMHelper.kujiraGasLimit // gas limit
+                $0.gas = KujiraHelper.kujiraGasLimit // gas limit
                 $0.amounts = [CosmosAmount.with {
-                    $0.denom = "uatom"
+                    $0.denom = "ukuji"
                     $0.amount = String(gas)
                 }]
             }
@@ -134,9 +134,9 @@ class ATOMHelper {
     }
     
     func getSignedTransaction(vaultHexPubKey: String,
-                                     vaultHexChainCode: String,
-                                     keysignPayload: KeysignPayload,
-                                     signatures: [String: TssKeysignResponse]) -> Result<String, Error>
+                              vaultHexChainCode: String,
+                              keysignPayload: KeysignPayload,
+                              signatures: [String: TssKeysignResponse]) -> Result<String, Error>
     {
         let result = getPreSignedInputData(keysignPayload: keysignPayload)
         switch result {
@@ -149,9 +149,9 @@ class ATOMHelper {
     }
     
     func getSignedTransaction(vaultHexPubKey: String,
-                                     vaultHexChainCode: String,
-                                     inputData: Data,
-                                     signatures: [String: TssKeysignResponse]) -> Result<String, Error>
+                              vaultHexChainCode: String,
+                              inputData: Data,
+                              signatures: [String: TssKeysignResponse]) -> Result<String, Error>
     {
         let cosmosPublicKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: vaultHexPubKey, hexChainCode: vaultHexChainCode, derivePath: self.coinType.derivationPath())
         guard let pubkeyData = Data(hexString: cosmosPublicKey),

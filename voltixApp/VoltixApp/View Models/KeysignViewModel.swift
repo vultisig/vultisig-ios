@@ -289,6 +289,14 @@ class KeysignViewModel: ObservableObject {
                     case .failure(let err):
                         self.handleBroadcastError(err: err)
                     }
+                case .kujira:
+                    let broadcastResult = await KujiraService.shared.broadcastTransaction(jsonString: tx)
+                    switch broadcastResult {
+                    case .success(let hash):
+                        self.txid = hash
+                    case .failure(let err):
+                        self.handleBroadcastError(err: err)
+                    }
                 case .solana:
                     self.txid = await SolanaService.shared.sendSolanaTransaction(encodedTransaction: tx) ?? ""
                 }

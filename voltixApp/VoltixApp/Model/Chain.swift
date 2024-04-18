@@ -17,6 +17,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case dogecoin
     case dash
     case gaiaChain
+    case kujira
     
     enum MigrationKeys: String, CodingKey {
         case ticker
@@ -53,6 +54,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .litecoin: return "Litecoin"
         case .dogecoin: return "Dogecoin"
         case .gaiaChain: return "Gaia"
+        case .kujira: return "Kujira"
         case .dash: return "Dash"
         }
     }
@@ -69,6 +71,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .litecoin: return "LTC"
         case .dogecoin: return "DOGE"
         case .gaiaChain: return "UATOM"
+        case .kujira: return "UKUJI"
         case .dash: return "DASH"
         }
     }
@@ -84,6 +87,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .litecoin: return "LTC"
         case .dogecoin: return "DOGE"
         case .gaiaChain: return "GAIA"
+        case .kujira: return "KUJI"
         case .solana: return "SOL"
         case .dash: return "DASH"
         }
@@ -93,14 +97,14 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         switch self {
         case .thorChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .gaiaChain:
             return true
-        case .solana, .dash:
+        case .solana, .dash, .kujira:
             return false
         }
     }
     
     var signingKeyType: KeyType {
         switch self {
-        case .thorChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dash, .dogecoin, .gaiaChain:
+        case .thorChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dash, .dogecoin, .gaiaChain, .kujira:
             return .ECDSA
         case .solana:
             return .EdDSA
@@ -117,7 +121,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return .Solana
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             return .UTXO
-        case .gaiaChain:
+        case .gaiaChain, .kujira:
             return .Cosmos
         }
     }

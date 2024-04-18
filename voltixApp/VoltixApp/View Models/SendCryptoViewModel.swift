@@ -158,7 +158,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 do{
                     let thorBalances = try await self.thor.fetchBalances(tx.fromAddress)
                     tx.coin.priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
-                    tx.coin.rawBalance = thorBalances.runeBalance() ?? "0"
+                    tx.coin.rawBalance = thorBalances.balance(denom: Chain.thorChain.ticker.lowercased())
                     tx.amount = "\(tx.coin.getMaxValue(BigInt(THORChainHelper.THORChainGas)))"
                     await convertToFiat(newValue: tx.amount, tx: tx)
                 } catch {

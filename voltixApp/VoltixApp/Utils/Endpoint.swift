@@ -86,6 +86,15 @@ class Endpoint {
     
     static let broadcastCosmosTransaction = "https://cosmos-rest.publicnode.com/cosmos/tx/v1beta1/txs"
     
+    static func fetchKujiraAccountBalance(address: String) -> String{
+        "https://kujira-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
+    }
+    static func fetchKujiraAccountNumber(_ address: String) -> String {
+        "https://kujira-rest.publicnode.com/cosmos/auth/v1beta1/accounts/\(address)"
+    }
+    
+    static let broadcastKujiraTransaction = "https://kujira-rest.publicnode.com/cosmos/tx/v1beta1/txs"
+    
     static func getExplorerURL(chainTicker: String, txid: String) -> String{
         switch chainTicker {
         case "BTC":
@@ -106,6 +115,8 @@ class Endpoint {
             return "https://etherscan.io/tx/\(txid)"
         case "UATOM":
             return "https://www.mintscan.io/cosmos/tx/\(txid)"
+        case "KUJI":
+            return "https://www.mintscan.io/kujira/tx/\(txid)"
         case "AVAX":
             return "https://snowtrace.io/tx/\(txid)"
         case "BNB":
@@ -135,6 +146,8 @@ class Endpoint {
             return "https://etherscan.io/address/\(address)"
         case "UATOM":
             return "https://www.mintscan.io/cosmos/address/\(address)"
+        case "KUJI":
+            return "https://www.mintscan.io/kujira/address/\(address)"
         case "AVAX":
             return "https://snowtrace.io/address/\(address)"
         case "BNB":
@@ -154,6 +167,8 @@ class Endpoint {
             return "https://etherscan.io/address/\(address)"
         case .gaiaChain:
             return "https://www.mintscan.io/cosmos/address/\(address)"
+        case .kujira:
+            return "https://www.mintscan.io/kujira/address/\(address)"
         case .avalanche:
             return "https://snowtrace.io/address/\(address)"
         case .bscChain:
