@@ -176,7 +176,10 @@ struct PeerDiscoveryView: View {
     }
     
     var networkPrompts: some View {
-        NetworkPrompts(viewModel: viewModel)
+        NetworkPrompts(selectedNetwork: $viewModel.selectedNetwork)
+            .onChange(of: viewModel.selectedNetwork) {
+                viewModel.restartParticipantDiscovery()
+            }
     }
     
     var devices: some View {

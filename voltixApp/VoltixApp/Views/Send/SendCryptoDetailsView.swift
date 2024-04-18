@@ -130,7 +130,7 @@ struct SendCryptoDetailsView: View {
         HStack {
             Text(NSLocalizedString("gas(auto)", comment: ""))
             Spacer()
-			Text("\(tx.gas) \(tx.coin.feeUnit )")
+            Text(formattedFee())
         }
         .font(.body16Menlo)
         .foregroundColor(.neutral0)
@@ -150,15 +150,33 @@ struct SendCryptoDetailsView: View {
             NSLocalizedString(text, comment: "")
                 .replacingOccurrences(of: "Fiat", with: SettingsCurrency.current.rawValue)
         )
-            .font(.body14MontserratMedium)
-            .foregroundColor(.neutral0)
-            .frame(maxWidth: .infinity, alignment: .leading)
+        .font(.body14MontserratMedium)
+        .foregroundColor(.neutral0)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     private func validateForm() {
         if sendCryptoViewModel.validateForm(tx: tx) {
             sendCryptoViewModel.moveToNextView()
         }
+    }
+    
+    private func formattedFee() -> String{
+        
+        if tx.coin.chainType == .EVM {
+            
+            var fee: Decimal = Decimal.zero
+            if let gasPriceDecimal = Decimal(string: tx.gas),
+               let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description) {
+                fee = gasPriceDecimal / weiPerGWeiDecimal
+                print(fee)
+                
+                
+                return "\(fee.description) \(tx.coin.feeUnit )"
+            }
+        }
+        
+        return "\(tx.gas) \(tx.coin.feeUnit )"
     }
 }
 

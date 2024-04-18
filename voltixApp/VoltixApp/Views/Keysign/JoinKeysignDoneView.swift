@@ -9,6 +9,7 @@ import SwiftUI
 
 struct JoinKeysignDoneView: View {
     @Environment(\.openURL) var openURL
+    @Environment(\.dismiss) var dismiss
     @ObservedObject var viewModel: KeysignViewModel
     @State var showAlert = false
     
@@ -97,8 +98,8 @@ struct JoinKeysignDoneView: View {
     }
     
     var continueButton: some View {
-        NavigationLink {
-            HomeView(selectedVault: viewModel.vault,showVaultsList: false)
+        Button {
+            dismiss()
         } label: {
             FilledButton(title: "DONE")
                 .padding(20)

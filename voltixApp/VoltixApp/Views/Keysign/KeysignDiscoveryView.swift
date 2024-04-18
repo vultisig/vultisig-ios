@@ -15,6 +15,7 @@ struct KeysignDiscoveryView: View {
     @StateObject var viewModel = KeysignDiscoveryViewModel()
     
     @State var isLoading = false
+    @State var selectedNetwork = NetworkPromptType.WiFi
     @State private var orientation = UIDevice.current.orientation
     
     let columns = [
@@ -35,6 +36,9 @@ struct KeysignDiscoveryView: View {
         }
         .detectOrientation($orientation)
         .onAppear {
+            if VoltixRelay.IsRelayEnabled {
+                self.selectedNetwork = .Cellular
+            }
             viewModel.setData(vault: vault, keysignPayload: keysignPayload, participantDiscovery: participantDiscovery)
         }
         .task {
@@ -100,11 +104,21 @@ struct KeysignDiscoveryView: View {
     
     var list: some View {
         ZStack {
-            if participantDiscovery.peersFound.count == 0 {
-                lookingForDevices
-            } else {
-                deviceList
+            VStack{
+                networkPrompts
+                if participantDiscovery.peersFound.count == 0 {
+                    lookingForDevices
+                } else {
+                    deviceContent
+                }
             }
+        }
+    }
+    
+    var deviceContent: some View {
+        VStack {
+            deviceList
+            instructions
         }
     }
     
@@ -161,6 +175,14 @@ struct KeysignDiscoveryView: View {
             }
             .padding(20)
         }
+    }
+    
+    var networkPrompts: some View {
+        NetworkPrompts(selectedNetwork: $selectedNetwork)
+    }
+    
+    var instructions: some View {
+        InstructionPrompt(networkType: selectedNetwork)
     }
     
     var bottomButtons: some View {
