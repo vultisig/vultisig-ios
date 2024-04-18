@@ -74,7 +74,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     
     private func getTransactionPlan(tx: SendTransaction, key:String) -> TW_Bitcoin_Proto_TransactionPlan? {
         
-        guard let utxoInfo = utxo.blockchairData[key]?.selectUTXOsForPayment(amountNeeded: Int64(tx.amountInSats)).map({
+        guard let utxoInfo = utxo.blockchairData.get(key)?.selectUTXOsForPayment(amountNeeded: Int64(tx.amountInSats)).map({
             UtxoInfo(
                 hash: $0.transactionHash ?? "",
                 amount: Int64($0.value ?? 0),
@@ -117,9 +117,9 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         isLoading = true
         switch tx.coin.chain {
         case .bitcoin,.dogecoin,.litecoin,.bitcoinCash,.dash:
-            tx.amount = utxo.blockchairData[key]?.address?.balanceInBTC ?? "0.0"
+            tx.amount = utxo.blockchairData.get(key)?.address?.balanceInBTC ?? "0.0"
             if let plan = getTransactionPlan(tx: tx, key: key), plan.amount > 0 {
-                tx.amount = utxo.blockchairData[key]?.address?.formatAsBitcoin(Int(plan.amount)) ?? "0.0"
+                tx.amount = utxo.blockchairData.get(key)?.address?.formatAsBitcoin(Int(plan.amount)) ?? "0.0"
             }
             Task{
                 await convertToFiat(newValue: tx.amount, tx: tx)
@@ -263,7 +263,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         let key: String = "\(tx.fromAddress)-\(coinName)"
         
         if  tx.coin.chain.chainType == ChainType.UTXO {
-            let walletBalanceInSats = utxo.blockchairData[key]?.address?.balance ?? 0
+            let walletBalanceInSats = utxo.blockchairData.get(key)?.address?.balance ?? 0
             let totalTransactionCostInSats = tx.amountInSats + BigInt(tx.feeInSats)
             print("Total transaction cost: \(totalTransactionCostInSats)")
             
