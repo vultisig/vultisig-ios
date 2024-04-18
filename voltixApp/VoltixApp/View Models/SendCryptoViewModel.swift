@@ -40,25 +40,22 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     
     func loadGasInfoForSending(tx: SendTransaction) async{
         do {
-            if tx.coin.chain.chainType == .UTXO {
+            switch tx.coin.chain {
+            case .bitcoin,.bitcoinCash,.dogecoin,.dash,.litecoin:
                 let sats = try await utxo.fetchSatsPrice(coin: tx.coin)
                 tx.gas = String(sats)
-            } else if tx.coin.chain.chainType == .EVM {
+            case .ethereum,.bscChain,.avalanche:
                 let service = try EvmServiceFactory.getService(forChain: tx.coin)
                 let (gasPrice,priorityFee,nonce) = try await service.getGasInfo(fromAddress: tx.fromAddress)
                 
                 tx.gas = gasPrice
                 tx.nonce = Int64(nonce)
                 tx.priorityFeeGwei = Int64(priorityFee)
-                
-            } else if tx.coin.chain == .thorChain {
+            case .thorChain,.mayaChain:
                 tx.gas = "0.02"
-            } else if tx.coin.chain == .mayaChain {
-                tx.gas = "0.02"
-            }
-            else if tx.coin.chain == .gaiaChain {
+            case .gaiaChain:
                 tx.gas = "0.0075"
-            } else if tx.coin.chain == .solana {
+            case .solana:
                 let (_,feeInLamports) = try await sol.fetchRecentBlockhash()
                 tx.gas = String(feeInLamports)
             }

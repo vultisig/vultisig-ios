@@ -88,7 +88,7 @@ class Coin: Codable, Hashable {
     }
     
     var balanceString: String {
-        return "\(balanceDecimal)"
+        return balanceDecimal.formatToDecimal(digits: 4)
     }
     
     var balanceInFiat: String {
