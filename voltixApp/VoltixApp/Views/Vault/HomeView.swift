@@ -31,7 +31,7 @@ struct HomeView: View {
             }
 
             ToolbarItem(placement: .topBarTrailing) {
-                NavigationRefreshButton()
+                editButton
             }
         }
         .onAppear {
@@ -91,6 +91,10 @@ struct HomeView: View {
         } label: {
             NavigationMenuButton()
         }
+    }
+    
+    var editButton: some View {
+        NavigationHomeEditButton(showVaultsList: showVaultsList, vault: viewModel.selectedVault)
     }
     
     private func setData() {
