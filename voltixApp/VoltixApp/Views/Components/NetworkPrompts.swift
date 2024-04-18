@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct NetworkPrompts: View {
-    @ObservedObject var viewModel: KeygenPeerDiscoveryViewModel
+    @Binding var selectedNetwork: NetworkPromptType
     
     private let gridRows = [
             GridItem(.adaptive(minimum: 150))
@@ -41,7 +41,7 @@ struct NetworkPrompts: View {
     
     var cells: some View {
         ForEach(NetworkPromptType.allCases, id: \.self) { network in
-            getButton(network, isSelected: network==viewModel.selectedNetwork)
+            getButton(network, isSelected: network==selectedNetwork)
         }
     }
     
@@ -55,7 +55,7 @@ struct NetworkPrompts: View {
     
     private func handleSelection(for network: NetworkPromptType) {
         withAnimation {
-            viewModel.selectedNetwork = network
+            selectedNetwork = network
         }
         
         if network == .Cellular {
@@ -63,13 +63,12 @@ struct NetworkPrompts: View {
         } else {
             VoltixRelay.IsRelayEnabled = false
         }
-        viewModel.restartParticipantDiscovery()
     }
 }
 
 #Preview {
     ZStack {
         Background()
-        NetworkPrompts(viewModel: KeygenPeerDiscoveryViewModel())
+        NetworkPrompts(selectedNetwork: .constant(.WiFi))
     }
 }

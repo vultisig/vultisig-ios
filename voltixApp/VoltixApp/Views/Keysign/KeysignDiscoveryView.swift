@@ -15,6 +15,7 @@ struct KeysignDiscoveryView: View {
     @StateObject var viewModel = KeysignDiscoveryViewModel()
     
     @State var isLoading = false
+    @State var selectedNetwork = NetworkPromptType.WiFi
     @State private var orientation = UIDevice.current.orientation
     
     let columns = [
@@ -103,8 +104,16 @@ struct KeysignDiscoveryView: View {
             if participantDiscovery.peersFound.count == 0 {
                 lookingForDevices
             } else {
-                deviceList
+                deviceContent
             }
+        }
+    }
+    
+    var deviceContent: some View {
+        VStack {
+            networkPrompts
+            deviceList
+            instructions
         }
     }
     
@@ -161,6 +170,14 @@ struct KeysignDiscoveryView: View {
             }
             .padding(20)
         }
+    }
+    
+    var networkPrompts: some View {
+        NetworkPrompts(selectedNetwork: $selectedNetwork)
+    }
+    
+    var instructions: some View {
+        InstructionPrompt(networkType: selectedNetwork)
     }
     
     var bottomButtons: some View {
