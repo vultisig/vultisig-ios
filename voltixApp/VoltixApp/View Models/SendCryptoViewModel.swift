@@ -51,7 +51,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 
                 tx.gas = gasPrice
                 tx.nonce = Int64(nonce)
-                tx.priorityFeeGwei = Int64(priorityFee)
+                tx.priorityFeeWei = Int64(priorityFee)
             case .thorChain,.mayaChain, .kujira:
                 tx.gas = "0.02"
             case .gaiaChain:
@@ -136,13 +136,11 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                         return
                     }
                     
-                    guard let gasPriceBigInt = BigInt(gasPrice) else {
+                    guard let gasPriceWei = BigInt(gasPrice) else {
                         print("Invalid gas price")
                         return
                     }
                     
-                    let gasPriceGwei: BigInt = gasPriceBigInt
-                    let gasPriceWei: BigInt = gasPriceGwei * BigInt(EVMHelper.weiPerGWei)
                     let totalFeeWei: BigInt = gasLimitBigInt * gasPriceWei
                     
                     tx.amount = "\(tx.coin.getMaxValue(totalFeeWei))"

@@ -17,8 +17,8 @@ struct KeysignMessage: Codable, Hashable {
 
 enum BlockChainSpecific: Codable, Hashable {
     case UTXO(byteFee: Int64) // byteFee
-    case Ethereum(maxFeePerGasWei: Int64, priorityFeeGwei: Int64, nonce: Int64, gasLimit: Int64) // maxFeePerGasWei, priorityFeeGwei, nonce , gasLimit
-    case ERC20(maxFeePerGasWei: Int64, priorityFeeGwei: Int64, nonce: Int64, gasLimit: Int64, contractAddr: String)
+    case Ethereum(maxFeePerGasWei: Int64, priorityFeeWei: Int64, nonce: Int64, gasLimit: Int64) // maxFeePerGasWei, priorityFeeWei, nonce , gasLimit
+    case ERC20(maxFeePerGasWei: Int64, priorityFeeWei: Int64, nonce: Int64, gasLimit: Int64, contractAddr: String)
     case THORChain(accountNumber: UInt64, sequence: UInt64)
     case Cosmos(accountNumber: UInt64, sequence:UInt64, gas: UInt64)
     case Solana(recentBlockHash: String, priorityFee: UInt64, feeInLamports: String) // priority fee is in microlamports
@@ -80,24 +80,25 @@ struct KeysignPayload: Codable, Hashable {
             }
             let utxoHelper = UTXOChainsHelper(coin: coinType, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
             return utxoHelper.getPreSignedImageHash(keysignPayload: self)
-        case .ethereum, .arbitrum, .base, .optimism, .polygon:
+        case .ethereum, .arbitrum, .base, .optimism, .polygon, .avalanche, .bscChain:
             if coin.isNativeToken {
-                return EVMHelper.getEthereumHelper().getPreSignedImageHash(keysignPayload: self)
+                return EVMHelper.getEvmHelper(coin: tx.coin)?.getPreSignedImageHash(keysignPayload: self)
             }else{
+                //TODO: change it so it can be compatible with Avax and BSC
                 return ERC20Helper.getEthereumERC20Helper().getPreSignedImageHash(keysignPayload: self)
             }
-        case .avalanche:
-            if coin.isNativeToken {
-                return EVMHelper.getAvaxHelper().getPreSignedImageHash(keysignPayload: self)
-            } else {
-                return ERC20Helper.getAvaxERC20Helper().getPreSignedImageHash(keysignPayload: self)
-            }
-        case .bscChain:
-            if coin.isNativeToken {
-                return EVMHelper.getBSCHelper().getPreSignedImageHash(keysignPayload: self)
-            } else {
-                return ERC20Helper.getBSCBEP20Helper().getPreSignedImageHash(keysignPayload: self)
-            }
+//        case .avalanche:
+//            if coin.isNativeToken {
+//                return EVMHelper.getAvaxHelper().getPreSignedImageHash(keysignPayload: self)
+//            } else {
+//                return ERC20Helper.getAvaxERC20Helper().getPreSignedImageHash(keysignPayload: self)
+//            }
+//        case .bscChain:
+//            if coin.isNativeToken {
+//                return EVMHelper.getBSCHelper().getPreSignedImageHash(keysignPayload: self)
+//            } else {
+//                return ERC20Helper.getBSCBEP20Helper().getPreSignedImageHash(keysignPayload: self)
+//            }
         case .thorChain:
             return THORChainHelper.getPreSignedImageHash(keysignPayload: self)
         case .mayaChain:

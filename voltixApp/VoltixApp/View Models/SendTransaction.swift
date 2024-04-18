@@ -13,7 +13,7 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var memo: String = .empty
     @Published var gas: String = .empty
     @Published var nonce: Int64 = 0
-    var priorityFeeGwei: Int64 = 0
+    var priorityFeeWei: Int64 = 0
     
     @Published var coin: Coin = Coin(
         chain: Chain.bitcoin,
@@ -214,7 +214,7 @@ class SendTransaction: ObservableObject, Hashable {
             "memo: \(memo)",
             "gas: \(gas)",
             "nonce: \(nonce)",
-            "priorityFeeGwei: \(priorityFeeGwei)",
+            "priorityFeeWei: \(priorityFeeWei)",
             "coin: \(coin.toString())",
             "fromAddress: \(fromAddress)",
             "amountInWei: \(amountInWei)",

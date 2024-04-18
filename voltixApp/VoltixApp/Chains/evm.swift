@@ -21,15 +21,14 @@ class EVMHelper {
         self.coinType = coinType
     }
     
-    static func getEthereumHelper() -> EVMHelper{
-        return EVMHelper(coinType: CoinType.ethereum)
+    static func getEvmHelper(coin: Coin) -> EVMHelper? {
+        guard let coinType = coin.getCoinType() else {
+            print("Coin type not found on Wallet Core")
+            return nil
+        }
+        return EVMHelper(coinType: coinType)
     }
-    static func getAvaxHelper() -> EVMHelper{
-        return EVMHelper(coinType: CoinType.avalancheCChain)
-    }
-    static func getBSCHelper() -> EVMHelper{
-        return EVMHelper(coinType: CoinType.smartChain)
-    }
+    
     func getCoin(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
         let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
                                                             hexChainCode: hexChainCode,
@@ -78,7 +77,7 @@ class EVMHelper {
             return .failure(HelperError.runtimeError("fail to get chainID"))
         }
         guard case .Ethereum(let maxFeePerGasWei,
-                             let priorityFeeGWei,
+                             let priorityFeeWei,
                              let nonce,
                              let gasLimit) = keysignPayload.chainSpecific
         else {
@@ -89,9 +88,9 @@ class EVMHelper {
         input.nonce = Data(hexString: nonce.hexString())!
         input.gasLimit = Data(hexString: gasLimit.hexString())!
         input.maxFeePerGas = EVMHelper.convertEthereumNumber(input: BigInt(maxFeePerGasWei))
-        input.maxInclusionFeePerGas = EVMHelper.convertEthereumNumber(input: BigInt(priorityFeeGWei))
+        input.maxInclusionFeePerGas = EVMHelper.convertEthereumNumber(input: BigInt(priorityFeeWei))
         input.txMode = .enveloped
-
+        
         do {
             let inputData = try input.serializedData()
             return .success(inputData)
@@ -106,7 +105,7 @@ class EVMHelper {
             return .failure(HelperError.runtimeError("fail to get chainID"))
         }
         guard case .Ethereum(let maxFeePerGasWei,
-                             let priorityFeeGWei,
+                             let priorityFeeWei,
                              let nonce,
                              let gasLimit) = keysignPayload.chainSpecific
         else {
@@ -117,7 +116,7 @@ class EVMHelper {
             $0.nonce = Data(hexString: nonce.hexString())!
             $0.gasLimit = Data(hexString: gasLimit.hexString())!
             $0.maxFeePerGas = EVMHelper.convertEthereumNumber(input: BigInt(maxFeePerGasWei))
-            $0.maxInclusionFeePerGas = EVMHelper.convertEthereumNumber(input: BigInt(priorityFeeGWei))
+            $0.maxInclusionFeePerGas = EVMHelper.convertEthereumNumber(input: BigInt(priorityFeeWei))
             $0.toAddress = keysignPayload.toAddress
             $0.txMode = .enveloped
             $0.transaction = EthereumTransaction.with {

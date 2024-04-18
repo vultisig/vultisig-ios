@@ -23,8 +23,8 @@ struct KeysignPayloadFactory {
 
     enum TransferPayload {
         case utxo(amountInSats: Int64, feeInSats: Int64)
-        case evmTransfer(amountInGwei: Int64, gas: String, priorityFeeGwei: Int64, nonce: Int64)
-        case evmERC20(tokenAmountInWei: Int64, gas: String, priorityFeeGwei: Int64, nonce: Int64)
+        case evmTransfer(amountInGwei: Int64, gas: String, priorityFeeWei: Int64, nonce: Int64)
+        case evmERC20(tokenAmountInWei: Int64, gas: String, priorityFeeWei: Int64, nonce: Int64)
         case thorchain(amountInSats: Int64, memo: String)
         case gaiachain(amountInCoinDecimal: Int64, memo: String)
         case solana(amountInLamports: Int64, memo: String)
