@@ -8,66 +8,45 @@
 import Foundation
 
 extension [CosmosBalance] {
-    func runeBalanceInFiat(price: Double?, includeCurrencySymbol: Bool = true) -> String?{
+    
+    func coinBalanceInFiat(price: Double?, includeCurrencySymbol: Bool = true, coin: Coin) -> String?{
         guard let price = price,
-              let runeBalanceString = runeBalance(),
-              let runeAmount = Decimal(string: runeBalanceString) else { return nil }
-        
-        let balanceRune = runeAmount / 100_000_000.0
-        let balanceFiat = balanceRune * Decimal(price)
-        
+              let coinBalanceString = coinBalance(ticker: coin.ticker),
+              let coinAmount = Decimal(string: coinBalanceString) else { return nil }
+        let decimals = Int(coin.decimals)
+        // decimals should have been specified in tokenstore when we define the coin , otherwise this should return nil
+        guard let decimals else {
+            return nil
+        }
+        let balanceCoin = coinAmount / pow(10,decimals)
+        let balanceFiat = balanceCoin * Decimal(price)
         return balanceFiat.formatToFiat()
     }
     
-    func runeBalance() -> String? {
+    func coinBalance(ticker: String) -> String? {
         for balance in self {
-            if balance.denom.lowercased() == Chain.thorChain.ticker.lowercased() {
+            if balance.denom.lowercased() == ticker.lowercased() {
                 return balance.amount
             }
         }
         return nil
     }
     
-    func formattedRuneBalance() -> String? {
+    func formattedCoinBalance(coin: Coin) -> String? {
         for balance in self {
-            if balance.denom.lowercased() == Chain.thorChain.ticker.lowercased() {
-                guard let runeAmount = Decimal(string: balance.amount) else { return "Invalid balance" }
-                let balanceRune = runeAmount / 100_000_000.0
-                return balanceRune.formatToDecimal(digits: 8)
+            if balance.denom.lowercased() == coin.ticker.lowercased() {
+                guard let coinAmount = Decimal(string: balance.amount) else {
+                    return NSLocalizedString("invalidBalance", comment: "Invalid Balance")
+                }
+                guard let decimals = Int(coin.decimals) else {
+                    return NSLocalizedString("invalidBalance", comment: "Invalid Balance")
+                }
+                let balanceCoin = coinAmount / pow(10,decimals)
+                // Let's keep 4 decimals for coin balance , more than 4 is not meaningful
+                return balanceCoin.formatToDecimal(digits: 4)
             }
         }
         
-        return "Balance not available"
+        return NSLocalizedString("balanceNotAvailable", comment: "Balance not available")
     }
-    func atomBalance() -> String? {
-        for balance in self {
-            if balance.denom.lowercased() == Chain.gaiaChain.ticker.lowercased() {
-                return balance.amount
-            }
-        }
-        return nil
-    }
-    
-    func atomBalanceInFiat(price: Double?, includeCurrencySymbol: Bool = true) -> String?{
-        guard let price = price,
-              let atomBalanceString = atomBalance(),
-              let atomAmount = Decimal(string: atomBalanceString) else { return nil }
-        
-        let balanceAtom = atomAmount / 1000_000.0
-        let balanceFiat = balanceAtom * Decimal(price)
-        return balanceFiat.formatToFiat()
-    }
-    
-    func formattedAtomBalance() -> String? {
-        for balance in self {
-            if balance.denom.lowercased() == Chain.gaiaChain.ticker.lowercased() {
-                guard let atomAmount = Decimal(string: balance.amount) else { return "Invalid balance" }
-                let balanceAtom = atomAmount / 1_000_000.0
-                return balanceAtom.formatToDecimal(digits: 6)
-            }
-        }
-        
-        return "Balance not available"
-    }
-    
 }

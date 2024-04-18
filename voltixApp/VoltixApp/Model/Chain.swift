@@ -17,6 +17,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case dogecoin
     case dash
     case gaiaChain
+    case mayaChain
     
     enum MigrationKeys: String, CodingKey {
         case ticker
@@ -54,6 +55,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .dogecoin: return "Dogecoin"
         case .gaiaChain: return "Gaia"
         case .dash: return "Dash"
+        case .mayaChain: return "MayaChain"
         }
     }
     
@@ -70,6 +72,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .dogecoin: return "DOGE"
         case .gaiaChain: return "UATOM"
         case .dash: return "DASH"
+        case .mayaChain: return "CACAO"
         }
     }
     
@@ -86,6 +89,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .gaiaChain: return "GAIA"
         case .solana: return "SOL"
         case .dash: return "DASH"
+        case .mayaChain: return "CACAO"
         }
     }
     
@@ -93,14 +97,14 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         switch self {
         case .thorChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .gaiaChain:
             return true
-        case .solana, .dash:
+        case .solana, .dash,.mayaChain:
             return false
         }
     }
     
     var signingKeyType: KeyType {
         switch self {
-        case .thorChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dash, .dogecoin, .gaiaChain:
+        case .thorChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dash, .dogecoin, .gaiaChain,.mayaChain:
             return .ECDSA
         case .solana:
             return .EdDSA
@@ -111,7 +115,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         switch self {
         case .ethereum, .avalanche, .bscChain:
             return .EVM
-        case .thorChain:
+        case .thorChain,.mayaChain:
             return .THORChain
         case .solana:
             return .Solana

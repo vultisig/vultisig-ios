@@ -28,6 +28,8 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     @Published var sol: SolanaService = SolanaService.shared
     @Published var cryptoPrice = CryptoPriceService.shared
     @Published var utxo = BlockchairService.shared
+    let maya = MayachainService.shared
+    let atom = GaiaService.shared
     
     private let mediator = Mediator.shared
     
@@ -38,22 +40,22 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     
     func loadGasInfoForSending(tx: SendTransaction) async{
         do {
-            if tx.coin.chain.chainType == .UTXO {
+            switch tx.coin.chain {
+            case .bitcoin,.bitcoinCash,.dogecoin,.dash,.litecoin:
                 let sats = try await utxo.fetchSatsPrice(coin: tx.coin)
                 tx.gas = String(sats)
-            } else if tx.coin.chain.chainType == .EVM {
+            case .ethereum,.bscChain,.avalanche:
                 let service = try EvmServiceFactory.getService(forChain: tx.coin)
                 let (gasPrice,priorityFee,nonce) = try await service.getGasInfo(fromAddress: tx.fromAddress)
                 
                 tx.gas = gasPrice
                 tx.nonce = Int64(nonce)
                 tx.priorityFeeGwei = Int64(priorityFee)
-                
-            }else if tx.coin.chain == .thorChain {
+            case .thorChain,.mayaChain:
                 tx.gas = "0.02"
-            } else if tx.coin.chain == .gaiaChain {
+            case .gaiaChain:
                 tx.gas = "0.0075"
-            } else if tx.coin.chain == .solana {
+            case .solana:
                 let (_,feeInLamports) = try await sol.fetchRecentBlockhash()
                 tx.gas = String(feeInLamports)
             }
@@ -113,10 +115,9 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         let coinName = tx.coin.chain.name.lowercased()
         let key: String = "\(tx.fromAddress)-\(coinName)"
         isLoading = true
-        
-        if  tx.coin.chain.chainType == .UTXO {
+        switch tx.coin.chain {
+        case .bitcoin,.dogecoin,.litecoin,.bitcoinCash,.dash:
             tx.amount = utxo.blockchairData[key]?.address?.balanceInBTC ?? "0.0"
-            
             if let plan = getTransactionPlan(tx: tx, key: key), plan.amount > 0 {
                 tx.amount = utxo.blockchairData[key]?.address?.formatAsBitcoin(Int(plan.amount)) ?? "0.0"
             }
@@ -124,7 +125,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 await convertToFiat(newValue: tx.amount, tx: tx)
                 isLoading = false
             }
-        } else if tx.coin.chain.chainType == .EVM  {
+        case .ethereum,.bscChain,.avalanche:
             Task {
                 do {
                     let service = try EvmServiceFactory.getService(forChain: tx.coin)
@@ -153,20 +154,33 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 await convertToFiat(newValue: tx.amount, tx: tx)
                 isLoading = false
             }
-        } else if tx.coin.chain == .thorChain {
+        case .thorChain:
             Task {
                 do{
                     let thorBalances = try await self.thor.fetchBalances(tx.fromAddress)
                     tx.coin.priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
-                    tx.coin.rawBalance = thorBalances.runeBalance() ?? "0"
-                    tx.amount = "\(tx.coin.getMaxValue(BigInt(THORChainHelper.THORChainGas)))"
+                    tx.coin.rawBalance = thorBalances.coinBalance(ticker: tx.coin.ticker.lowercased()) ?? "0"
+                    tx.amount = "\(tx.coin.getMaxValue(BigInt(tx.gasDecimal)))"
                     await convertToFiat(newValue: tx.amount, tx: tx)
                 } catch {
                     print("fail to get THORChain balance,error:\(error.localizedDescription)")
                 }
                 isLoading = false
             }
-        } else if tx.coin.chain == .solana{
+        case .mayaChain:
+            Task {
+                do{
+                    let mayaBalances = try await self.maya.fetchBalances(tx.fromAddress)
+                    tx.coin.priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
+                    tx.coin.rawBalance = mayaBalances.coinBalance(ticker: tx.coin.ticker.lowercased()) ?? "0"
+                    tx.amount = "\(tx.coin.getMaxValue(BigInt(tx.gasDecimal)))"
+                    await convertToFiat(newValue: tx.amount, tx: tx)
+                } catch {
+                    print("fail to get Maya balance,error:\(error.localizedDescription)")
+                }
+                isLoading = false
+            }
+        case .solana:
             Task{
                 do{
                     let (rawBalance,priceRate) = try await sol.getSolanaBalance(coin: tx.coin)
@@ -186,7 +200,21 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 
                 isLoading = false
             }
+        case .gaiaChain:
+            Task {
+                do{
+                    let atomBalances = try await self.atom.fetchBalances(address: tx.fromAddress)
+                    tx.coin.priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
+                    tx.coin.rawBalance = atomBalances.coinBalance(ticker: tx.coin.ticker.lowercased()) ?? "0"
+                    tx.amount = "\(tx.coin.getMaxValue(BigInt(tx.gasDecimal)))"
+                    await convertToFiat(newValue: tx.amount, tx: tx)
+                } catch {
+                    print("fail to get Maya balance,error:\(error.localizedDescription)")
+                }
+                isLoading = false
+            }
         }
+       
     }
     
     func convertFiatToCoin(newValue: String, tx: SendTransaction) async {
@@ -218,7 +246,10 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             print("Coin type not found on Wallet Core")
             return
         }
-        
+        if tx.coin.chain == .mayaChain {
+            isValidAddress = AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya")
+            return
+        }
         isValidAddress = coinType.validate(address: address)
     }
     
