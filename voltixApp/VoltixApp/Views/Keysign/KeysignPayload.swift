@@ -100,10 +100,14 @@ struct KeysignPayload: Codable, Hashable {
             }
         case .thorChain:
             return THORChainHelper.getPreSignedImageHash(keysignPayload: self)
+        case .mayaChain:
+            return MayaChainHelper.getPreSignedImageHash(keysignPayload: self)
         case .solana:
             return SolanaHelper.getPreSignedImageHash(keysignPayload: self)
         case .gaiaChain:
             return ATOMHelper().getPreSignedImageHash(keysignPayload: self)
+        case .kujira:
+            return KujiraHelper().getPreSignedImageHash(keysignPayload: self)
         }
     }
     

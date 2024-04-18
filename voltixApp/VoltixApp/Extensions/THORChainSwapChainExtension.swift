@@ -9,7 +9,7 @@ import WalletCore
 extension THORChainSwapChain {
     func getCoinType() -> CoinType? {
         switch self {
-        case.atom:
+        case .atom:
             return CoinType.cosmos
         case .thor:
             return CoinType.thorchain

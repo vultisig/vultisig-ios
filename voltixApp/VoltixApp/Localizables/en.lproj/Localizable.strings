@@ -172,3 +172,5 @@
 "devicesOnSameWifiNoHotel" = "Keep all devices on same WiFi with Voltix App open. (May not work on hotel/airport wifi).";
 "devicesOnSameHotspot" = "Connect all devices to the same Personal Hotspot with Voltix App open.";
 "devicesOnSameCellular" = "Connect all devices to the internet with the Voltix App open.";
+"balanceNotAvailable" = "Balance not available";
+"invalidBalance" = "Invalid balance";

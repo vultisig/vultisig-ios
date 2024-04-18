@@ -167,3 +167,5 @@
 "devicesOnSameWifiNoHotel" = "Halte alle Geräte mit geöffneter Voltix-App im selben WLAN-Netzwerk. (Funktioniert möglicherweise nicht bei Hotel-/Flughafen-WLAN).";
 "devicesOnSameHotspot" = "Verbinde alle Geräte mit demselben persönlichen Hotspot und öffne die Voltix-App.";
 "devicesOnSameCellular" = "Verbinde alle Geräte mit dem Internet und öffne die Voltix-App.";
+"balanceNotAvailable" = "Guthaben nicht verfügbar";
+"invalidBalance" = "Ungültiges Guthaben";

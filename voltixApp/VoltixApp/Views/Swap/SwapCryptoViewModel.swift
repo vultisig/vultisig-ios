@@ -210,6 +210,8 @@ private extension SwapCryptoViewModel {
         switch coin.chain {
         case .thorChain:
             return tx.amountInSats
+        case .mayaChain:
+            return tx.amountInCoinDecimal
         case .ethereum, .avalanche, .bscChain:
             if coin.isNativeToken {
                 return tx.amountInGwei
@@ -218,7 +220,7 @@ private extension SwapCryptoViewModel {
             }
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             return tx.amountInSats
-        case .gaiaChain:
+        case .gaiaChain, .kujira:
             return tx.amountInCoinDecimal
         case .solana:
             return tx.amountInLamports
@@ -229,13 +231,15 @@ private extension SwapCryptoViewModel {
         switch coin.chain {
         case .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             return String(tx.amountInSats)
+        case .mayaChain:
+            return String(tx.amountInCoinDecimal)
         case .ethereum, .avalanche, .bscChain:
             if coin.isNativeToken {
                 return String(tx.amountInWei)
             } else {
                 return String(tx.amountInTokenWeiInt64)
             }
-        case .gaiaChain:
+        case .gaiaChain, .kujira:
             return String(tx.amountInCoinDecimal)
         case .solana:
             return String(tx.amountInLamports)
@@ -263,7 +267,7 @@ private extension SwapCryptoViewModel {
                 $0.chain = .doge
             case .gaiaChain:
                 $0.chain = .atom
-            case .solana, .dash: break
+            case .solana, .dash, .kujira, .mayaChain: break
             }
             $0.symbol = coin.ticker
             if !coin.isNativeToken {

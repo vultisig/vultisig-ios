@@ -12,15 +12,23 @@ class Endpoint {
     static let voltixApiProxy = "https://api.voltix.org"
     static let voltixRelay = "https://api.voltix.org/router"
     static let broadcastTransactionThorchainNineRealms = "https://thornode.ninerealms.com/cosmos/tx/v1beta1/txs"
+    static let broadcastTransactionMayachain = "https://mayanode.mayachain.info/cosmos/tx/v1beta1/txs"
     
     static func fetchAccountNumberThorchainNineRealms(_ address: String) -> String {
         "https://thornode.ninerealms.com/auth/accounts/\(address)"
     }
-    
+    static func fetchAccountNumberMayachain(_ address: String) -> String {
+        "https://mayanode.mayachain.info/auth/accounts/\(address)"
+    }
     static func fetchAccountBalanceThorchainNineRealms(address: String) -> String {
         "https://thornode.ninerealms.com/cosmos/bank/v1beta1/balances/\(address)"
     }
-    
+    static func fetchAccountBalanceMayachain(address: String) -> String {
+        "https://mayanode.mayachain.info/cosmos/bank/v1beta1/balances/\(address)"
+    }
+    static func fetchSwaoQuoteMayachain(address: String, fromAsset: String, toAsset: String, amount: String, interval: String) -> URL {
+        "https://mayanode.mayachain.info/mayachain/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)&streaming_interval=\(interval)".asUrl
+    }
     static func fetchSwaoQuoteThorchainNineRealms(address: String, fromAsset: String, toAsset: String, amount: String, interval: String) -> URL {
         "https://thornode.ninerealms.com/thorchain/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)&streaming_interval=\(interval)".asUrl
     }
@@ -86,6 +94,15 @@ class Endpoint {
     
     static let broadcastCosmosTransaction = "https://cosmos-rest.publicnode.com/cosmos/tx/v1beta1/txs"
     
+    static func fetchKujiraAccountBalance(address: String) -> String{
+        "https://kujira-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
+    }
+    static func fetchKujiraAccountNumber(_ address: String) -> String {
+        "https://kujira-rest.publicnode.com/cosmos/auth/v1beta1/accounts/\(address)"
+    }
+    
+    static let broadcastKujiraTransaction = "https://kujira-rest.publicnode.com/cosmos/tx/v1beta1/txs"
+    
     static func getExplorerURL(chainTicker: String, txid: String) -> String{
         switch chainTicker {
         case "BTC":
@@ -106,10 +123,14 @@ class Endpoint {
             return "https://etherscan.io/tx/\(txid)"
         case "UATOM":
             return "https://www.mintscan.io/cosmos/tx/\(txid)"
+        case "UKUJI":
+            return "https://finder.kujira.network/kaiyo-1/tx/\(txid)"
         case "AVAX":
             return "https://snowtrace.io/tx/\(txid)"
         case "BNB":
             return "https://bscscan.com/tx/\(txid)"
+        case "CACAO":
+            return "https://www.mayascan.org/tx/\(txid)"
         default:
             return ""
         }
@@ -135,10 +156,14 @@ class Endpoint {
             return "https://etherscan.io/address/\(address)"
         case "UATOM":
             return "https://www.mintscan.io/cosmos/address/\(address)"
+        case "UKUJI":
+            return "https://finder.kujira.network/kaiyo-1/address/\(address)"
         case "AVAX":
             return "https://snowtrace.io/address/\(address)"
         case "BNB":
             return "https://bscscan.com/address/\(address)"
+        case "CACAO":
+            return "https://www.mayascan.org/address/\(address)"
         default:
             return nil
         }
@@ -154,6 +179,8 @@ class Endpoint {
             return "https://etherscan.io/address/\(address)"
         case .gaiaChain:
             return "https://www.mintscan.io/cosmos/address/\(address)"
+        case .kujira:
+            return "https://finder.kujira.network/kaiyo-1/address/\(address)"
         case .avalanche:
             return "https://snowtrace.io/address/\(address)"
         case .bscChain:
@@ -168,7 +195,9 @@ class Endpoint {
             return "https://blockchair.com/dogecoin/address/\(address)"
         case .dash:
             return "https://blockchair.com/dash/address/\(address)"
-        default:
+        case .mayaChain:
+            return "https://www.mayascan.org/address/\(address)"
+        case .none:
             return nil
         }
     }

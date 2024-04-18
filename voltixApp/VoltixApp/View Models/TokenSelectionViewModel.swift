@@ -66,6 +66,17 @@ class TokenSelectionViewModel: ObservableObject {
             case .failure(let error):
                 logger.info("fail to get thorchain address,error:\(error.localizedDescription)")
             }
+        case .mayaChain:
+            let cacaoCoinResult = MayaChainHelper.getMayaCoin(hexPubKey: vault.pubKeyECDSA, 
+                                                              hexChainCode: vault.hexChainCode,
+                                                              coinTicker: asset.ticker)
+            switch cacaoCoinResult {
+            case .success(let coin):
+                coin.priceProviderId = asset.priceProviderId
+                vault.coins.append(coin)
+            case .failure(let error):
+                logger.info("fail to get thorchain address,error:\(error.localizedDescription)")
+            }
         case .ethereum:
             let coinResult = EVMHelper.getEthereumHelper().getCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
             switch coinResult {
@@ -119,6 +130,15 @@ class TokenSelectionViewModel: ObservableObject {
             }
         case .gaiaChain:
             let coinResult = ATOMHelper().getATOMCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
+            switch coinResult {
+            case .success(let atom):
+                atom.priceProviderId = asset.priceProviderId
+                vault.coins.append(atom)
+            case .failure(let err):
+                logger.info("fail to get solana address,error:\(err.localizedDescription)")
+            }
+        case .kujira:
+            let coinResult = KujiraHelper().getCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
             switch coinResult {
             case .success(let atom):
                 atom.priceProviderId = asset.priceProviderId

@@ -167,3 +167,5 @@
 "devicesOnSameWifiNoHotel" = "Držite sve uređaje na istom WiFi-ju s otvorenom Voltix aplikacijom. (Možda neće raditi na hotel/airport wifi).";
 "devicesOnSameHotspot" = "Povežite sve uređaje na istu osobnu vruću točku s otvorenom Voltix aplikacijom.";
 "devicesOnSameCellular" = "Povežite sve uređaje s internetom s otvorenom Voltix aplikacijom.";
+"balanceNotAvailable" = "Saldo nije dostupan";
+"invalidBalance" = "Nevažeći saldo";
