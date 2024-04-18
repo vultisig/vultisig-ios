@@ -74,9 +74,9 @@ final class BlockChainService {
             let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(fromAddress: coin.address)
 
             if coin.isNativeToken {
-                return .Ethereum(maxFeePerGasGwei: Int64(gasPrice) ?? 42, priorityFeeGwei: priorityFee, nonce: nonce, gasLimit: EVMHelper.defaultETHTransferGasUnit)
+                return .Ethereum(maxFeePerGasWei: Int64(gasPrice) ?? 0, priorityFeeGwei: priorityFee, nonce: nonce, gasLimit: EVMHelper.defaultETHTransferGasUnit)
             } else {
-                return BlockChainSpecific.ERC20(maxFeePerGasGwei: Int64(gasPrice) ?? 42, priorityFeeGwei: priorityFee, nonce: nonce, gasLimit: EVMHelper.defaultERC20TransferGasUnit, contractAddr: coin.contractAddress)
+                return BlockChainSpecific.ERC20(maxFeePerGasWei: Int64(gasPrice) ?? 0, priorityFeeGwei: priorityFee, nonce: nonce, gasLimit: EVMHelper.defaultERC20TransferGasUnit, contractAddr: coin.contractAddress)
             }
 
         case .gaiaChain:

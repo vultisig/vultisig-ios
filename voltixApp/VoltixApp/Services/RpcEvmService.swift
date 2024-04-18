@@ -45,7 +45,7 @@ class RpcEvmService {
         async let gasPrice = fetchGasPrice()
         async let nonce = fetchNonce(address: fromAddress)
         async let priorityFee = fetchMaxPriorityFeePerGas()
-        return (String(try await gasPrice / BigInt(EVMHelper.weiPerGWei)),Int64(try await priorityFee),Int64(try await nonce))
+        return (String(try await gasPrice),Int64(try await priorityFee),Int64(try await nonce))
     }
     
     func broadcastTransaction(hex: String) async throws -> String {

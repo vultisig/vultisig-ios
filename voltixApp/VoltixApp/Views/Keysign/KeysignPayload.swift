@@ -17,8 +17,8 @@ struct KeysignMessage: Codable, Hashable {
 
 enum BlockChainSpecific: Codable, Hashable {
     case UTXO(byteFee: Int64) // byteFee
-    case Ethereum(maxFeePerGasGwei: Int64, priorityFeeGwei: Int64, nonce: Int64, gasLimit: Int64) // maxFeePerGasGwei, priorityFeeGwei, nonce , gasLimit
-    case ERC20(maxFeePerGasGwei: Int64, priorityFeeGwei: Int64, nonce: Int64, gasLimit: Int64, contractAddr: String)
+    case Ethereum(maxFeePerGasWei: Int64, priorityFeeGwei: Int64, nonce: Int64, gasLimit: Int64) // maxFeePerGasWei, priorityFeeGwei, nonce , gasLimit
+    case ERC20(maxFeePerGasWei: Int64, priorityFeeGwei: Int64, nonce: Int64, gasLimit: Int64, contractAddr: String)
     case THORChain(accountNumber: UInt64, sequence: UInt64)
     case Cosmos(accountNumber: UInt64, sequence:UInt64, gas: UInt64)
     case Solana(recentBlockHash: String, priorityFee: UInt64, feeInLamports: String) // priority fee is in microlamports
@@ -27,10 +27,10 @@ enum BlockChainSpecific: Codable, Hashable {
         switch self {
         case .UTXO(let byteFee):
             return String(byteFee)
-        case .Ethereum(let maxFeePerGasGwei, _, _, _):
-            return String(maxFeePerGasGwei)
-        case .ERC20(let maxFeePerGasGwei, _, _, _, _):
-            return String(maxFeePerGasGwei)
+        case .Ethereum(let maxFeePerGasWei, _, _, _):
+            return String(maxFeePerGasWei)
+        case .ERC20(let maxFeePerGasWei, _, _, _, _):
+            return String(maxFeePerGasWei)
         case .THORChain:
             return "0.02"
         case .Cosmos:

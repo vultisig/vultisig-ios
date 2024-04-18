@@ -100,37 +100,37 @@ class SendTransaction: ObservableObject, Hashable {
         return Double(gasString) ?? 0
     }
     
-    var gasFeePredictionForEvm: String {
-        guard let gasInt = Int64(gas) else {
-            return .empty
-        }
-        guard let gasLimitDefault = Int64(coin.feeDefault) else {
-            return .empty
-        }
-        
-        let maxFeePerGasWei: BigInt = BigInt(gasInt * EVMHelper.weiPerGWei)
-        let gasLimitETHTransfer: BigInt = BigInt(gasLimitDefault)
-        let totalCostETHTransferWei = maxFeePerGasWei * gasLimitETHTransfer
-        let totalCostETHTransferETH = totalCostETHTransferWei / BigInt(EVMHelper.wei)
-        return Decimal(string:String(totalCostETHTransferETH))?.formatToDecimal(digits: Int(coin.decimals) ?? EVMHelper.ethDecimals) ?? "0.0 \(coin.chain.ticker)"
-        
-    }
-    
-    var gasFeePredictionForEvmFiat: String {
-        guard let gasInt = Int64(gas) else {
-            return .empty
-        }
-        guard let gasLimitDefault = Int64(coin.feeDefault) else {
-            return .empty
-        }
-        
-        let maxFeePerGasWei: BigInt = BigInt(gasInt * EVMHelper.weiPerGWei)
-        let gasLimitETHTransfer: BigInt = BigInt(gasLimitDefault)
-        let totalCostETHTransferWei = maxFeePerGasWei * gasLimitETHTransfer
-        let totalCostETHTransferETH = totalCostETHTransferWei / BigInt(EVMHelper.wei)
-        let totalCostETHTransferFiat = (Decimal(string: String(totalCostETHTransferETH)) ?? 0.0)  * Decimal(coin.priceRate)
-        return totalCostETHTransferFiat.formatToFiat()
-    }
+//    var gasFeePredictionForEvm: String {
+//        guard let gasInt = Int64(gas) else {
+//            return .empty
+//        }
+//        guard let gasLimitDefault = Int64(coin.feeDefault) else {
+//            return .empty
+//        }
+//        
+//        let maxFeePerGasWei: BigInt = BigInt(gasInt * EVMHelper.weiPerGWei)
+//        let gasLimitETHTransfer: BigInt = BigInt(gasLimitDefault)
+//        let totalCostETHTransferWei = maxFeePerGasWei * gasLimitETHTransfer
+//        let totalCostETHTransferETH = totalCostETHTransferWei / BigInt(EVMHelper.wei)
+//        return Decimal(string:String(totalCostETHTransferETH))?.formatToDecimal(digits: Int(coin.decimals) ?? EVMHelper.ethDecimals) ?? "0.0 \(coin.chain.ticker)"
+//        
+//    }
+//    
+//    var gasFeePredictionForEvmFiat: String {
+//        guard let gasInt = Int64(gas) else {
+//            return .empty
+//        }
+//        guard let gasLimitDefault = Int64(coin.feeDefault) else {
+//            return .empty
+//        }
+//        
+//        let maxFeePerGasWei: BigInt = BigInt(gasInt * EVMHelper.weiPerGWei)
+//        let gasLimitETHTransfer: BigInt = BigInt(gasLimitDefault)
+//        let totalCostETHTransferWei = maxFeePerGasWei * gasLimitETHTransfer
+//        let totalCostETHTransferETH = totalCostETHTransferWei / BigInt(EVMHelper.wei)
+//        let totalCostETHTransferFiat = (Decimal(string: String(totalCostETHTransferETH)) ?? 0.0)  * Decimal(coin.priceRate)
+//        return totalCostETHTransferFiat.formatToFiat()
+//    }
     
     init() {
         self.toAddress = .empty
@@ -229,8 +229,8 @@ class SendTransaction: ObservableObject, Hashable {
             "amountDecimal: \(amountDecimal)",
             "amountInCoinDecimal: \(amountInCoinDecimal)",
             "gasDecimal: \(gasDecimal)",
-            "gasFeePredictionForEvm: \(gasFeePredictionForEvm)",
-            "gasFeePredictionForEvmFiat: \(gasFeePredictionForEvmFiat)"
+//            "gasFeePredictionForEvm: \(gasFeePredictionForEvm)",
+//            "gasFeePredictionForEvmFiat: \(gasFeePredictionForEvmFiat)"
         ]
         return properties.joined(separator: ",\n")
     }

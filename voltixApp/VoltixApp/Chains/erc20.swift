@@ -31,7 +31,7 @@ class ERC20Helper {
         guard let intChainID = Int64(coin.chainId) else {
             return .failure(HelperError.runtimeError("fail to get chainID"))
         }
-        guard case .ERC20(let maxFeePerGasGWei,
+        guard case .ERC20(let maxFeePerGasWei,
                           let priorityFeeGWei,
                           let nonce,
                           let gasLimit,
@@ -44,7 +44,7 @@ class ERC20Helper {
             $0.chainID = Data(hexString: intChainID.hexString())!
             $0.nonce = Data(hexString: nonce.hexString())!
             $0.gasLimit = Data(hexString: gasLimit.hexString())!
-            $0.maxFeePerGas = EVMHelper.convertEthereumNumber(input: BigInt(maxFeePerGasGWei))
+            $0.maxFeePerGas = EVMHelper.convertEthereumNumber(input: BigInt(maxFeePerGasWei))
             $0.maxInclusionFeePerGas = EVMHelper.convertEthereumNumber(input: BigInt(priorityFeeGWei))
             $0.toAddress = contractAddr
             $0.txMode = .enveloped

@@ -23,11 +23,6 @@ class PolygonService: RpcEvmService {
     static let shared = PolygonService(rpcEndpoint)
 }
 
-class BlastService: RpcEvmService {
-    static let rpcEndpoint = Endpoint.polygonServiceRpcService
-    static let shared = BlastService(rpcEndpoint)
-}
-
 class OptimismService: RpcEvmService {
     static let rpcEndpoint = Endpoint.optimismServiceRpcService
     static let shared = OptimismService(rpcEndpoint)

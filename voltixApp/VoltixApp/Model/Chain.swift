@@ -85,7 +85,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .dash: return "DASH"
         case .mayaChain: return "CACAO"
         case .arbitrum: return "ARB"
-        case .base: return "BASE" //Base does not have a coin
+        case .base: return "ETH" //Base does not have a coin
         case .optimism: return "OP"
         case .polygon: return "MATIC"
         }
@@ -107,7 +107,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .dash: return "DASH"
         case .mayaChain: return "CACAO"
         case .arbitrum: return "ARB"
-        case .base: return "BASE"
+        case .base: return "ETH"
         case .optimism: return "OP"
         case .polygon: return "MATIC"
         }
