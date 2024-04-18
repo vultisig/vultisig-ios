@@ -41,6 +41,12 @@ class Endpoint {
     
     static let bscServiceRpcService = "https://bsc-rpc.publicnode.com"
     
+    static let baseServiceRpcService = "https://base-rpc.publicnode.com"
+    
+    static let arbitrumOneServiceRpcService = "https://arbitrum-one-rpc.publicnode.com"
+    
+    static let polygonServiceRpcService = "https://polygon-bor-rpc.publicnode.com"
+    
     static let ethServiceRpcService = "https://ethereum-rpc.publicnode.com"
     
     static let solanaServiceAlchemyRpc = "https://solana-rpc.publicnode.com"

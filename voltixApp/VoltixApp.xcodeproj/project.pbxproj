@@ -588,6 +588,7 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				46DE08912BD0DA1F00AE8BDE /* Base */,
 				46B60BBC2BBA810C0043EBBA /* Avalanche */,
 				DE63AE542BBA7878001BBE5C /* Cosmos */,
 				DE63AE492BB4D86A001BBE5C /* BSC */,
@@ -755,6 +756,14 @@
 				DE8AD74B2BC8E3FE00339775 /* KeygenVerify.swift */,
 			);
 			path = Keygen;
+			sourceTree = "<group>";
+		};
+		46DE08912BD0DA1F00AE8BDE /* Base */ = {
+			isa = PBXGroup;
+			children = (
+				46DE08922BD0DA3300AE8BDE /* BaseService.swift */,
+			);
+			path = Base;
 			sourceTree = "<group>";
 		};
 		46F8F71F2B99FDAC0099454E /* TransactionManager */ = {
@@ -1426,6 +1435,7 @@
 				DE1572992B70F26A009BC7C5 /* KeyType.swift in Sources */,
 				46E98FFC2BAE407300C53D97 /* DecodingErrorExtension.swift in Sources */,
 				DEFF58FA2BCF85FA005DFDF9 /* maya.swift in Sources */,
+				46DE08932BD0DA3300AE8BDE /* BaseService.swift in Sources */,
 				A633B13A2B9A5A22003D1738 /* ImportWalletView.swift in Sources */,
 				DE63AE4B2BB4D87F001BBE5C /* BscService.swift in Sources */,
 				DE9EB0FC2BA463F7001747D9 /* KeygenViewModel.swift in Sources */,
