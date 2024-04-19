@@ -68,7 +68,6 @@ class EVMHelper {
         return .success(coinType.deriveAddressFromPublicKey(publicKey: publicKey))
     }
     
-    // this method convert GWei to Wei, and in little endian encoded Data
     static func convertEthereumNumber(input: BigInt) -> Data {
         return input.magnitude.serialize()
     }
@@ -123,7 +122,8 @@ class EVMHelper {
             $0.txMode = .enveloped
             $0.transaction = EthereumTransaction.with {
                 $0.transfer = EthereumTransaction.Transfer.with {
-                    $0.amount = EVMHelper.convertEthereumNumber(input: keysignPayload.toAmount)
+                    print("EVM transfer AMOUNT: \(keysignPayload.toAmount.description)")
+                    $0.amount = keysignPayload.toAmount.serializeForEvm()
                     if let memo = keysignPayload.memo {
                         $0.data = Data(memo.utf8)
                     }

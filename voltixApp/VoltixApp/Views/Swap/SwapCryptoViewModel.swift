@@ -214,9 +214,9 @@ private extension SwapCryptoViewModel {
             return tx.amountInCoinDecimal
         case .ethereum, .avalanche,.arbitrum, .bscChain, .base, .optimism, .polygon:
             if coin.isNativeToken {
-                return tx.amountInGwei
+                return Int64(tx.amountInWei)
             } else {
-                return tx.amountInTokenWeiInt64
+                return Int64(tx.amountInTokenWei)
             }
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             return tx.amountInSats
@@ -237,7 +237,7 @@ private extension SwapCryptoViewModel {
             if coin.isNativeToken {
                 return String(tx.amountInWei)
             } else {
-                return String(tx.amountInTokenWeiInt64)
+                return String(tx.amountInTokenWei)
             }
         case .gaiaChain, .kujira:
             return String(tx.amountInCoinDecimal)

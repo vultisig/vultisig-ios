@@ -39,21 +39,11 @@ class SendTransaction: ObservableObject, Hashable {
     var amountInWei: BigInt {
         BigInt(amountDecimal * pow(10, Double(EVMHelper.ethDecimals)))
     }
-    
-    var amountInGwei: BigInt {
-        BigInt(amountDecimal * Double(EVMHelper.weiPerGWei))
-    }
-    
+        
     var totalEthTransactionCostWei: BigInt {
         amountInWei + feeInWei
     }
-    
-    var amountInTokenWeiInt64: BigInt {
-        let decimals = Double(coin.decimals) ?? Double(EVMHelper.ethDecimals) // The default is always in WEI unless the token has a different one like UDSC
         
-        return BigInt(amountDecimal * pow(10, decimals))
-    }
-    
     var amountInTokenWei: BigInt {
         let decimals = Double(coin.decimals) ?? Double(EVMHelper.ethDecimals) // The default is always in WEI unless the token has a different one like UDSC
         
@@ -218,9 +208,7 @@ class SendTransaction: ObservableObject, Hashable {
             "coin: \(coin.toString())",
             "fromAddress: \(fromAddress)",
             "amountInWei: \(amountInWei)",
-            "amountInGwei: \(amountInGwei)",
             "totalEthTransactionCostWei: \(totalEthTransactionCostWei)",
-            "amountInTokenWeiInt64: \(amountInTokenWeiInt64)",
             "amountInTokenWei: \(amountInTokenWei)",
             "feeInWei: \(feeInWei)",
             "amountInLamports: \(amountInLamports)",
