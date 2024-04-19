@@ -99,20 +99,12 @@ struct SendCryptoDoneView: View {
     }
     
     private func copyHash() {
-        // legitimate hash should not have space in it
-        if hash.contains(" ") {
-            return
-        }
         showAlert = true
         let pasteboard = UIPasteboard.general
         pasteboard.string = hash
     }
     
     private func shareLink() {
-        // legitimate hash should not have space in it
-        if hash.contains(" ") {
-            return
-        }
         if !explorerLink.isEmpty, let u = URL(string:explorerLink) {
             openURL(u)
         }

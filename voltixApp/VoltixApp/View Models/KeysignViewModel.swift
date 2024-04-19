@@ -258,7 +258,6 @@ class KeysignViewModel: ObservableObject {
         let result = getSignedTransaction(keysignPayload: keysignPayload)
         switch result {
         case .success(let tx):
-            print("tx:\(tx.rawTransaction),hash:\(tx.transactionHash)")
             do {
                 switch keysignPayload.coin.chain {
                 case .thorChain:
