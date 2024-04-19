@@ -84,32 +84,28 @@ class TokenSelectionViewModel: ObservableObject {
                 return
             }
             
-            let tickers: [String] = ["Ethereum", "AVAX", "BNB", "MATIC"]
-            
             let coinResult = evmHelper.getCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
             switch coinResult {
             case .success(let coin):
-                if  tickers.contains(where: { $0 == coin.ticker}) {
-                    vault.coins.append(coin)
-                } else {
-                    let newCoin = Coin(chain: asset.chain,
-                                       ticker: asset.ticker,
-                                       logo: asset.logo,
-                                       address: coin.address,
-                                       priceRate: 0.0,
-                                       chainType: coin.chainType,
-                                       decimals: asset.decimals, // Assuming 18 for Ethereum-based tokens
-                                       hexPublicKey: coin.hexPublicKey,
-                                       feeUnit: asset.feeUnit,
-                                       priceProviderId: asset.priceProviderId ,
-                                       contractAddress: asset.contractAddress , // Assuming asset has a contractAddress field
-                                       rawBalance: "0",
-                                       isNativeToken: asset.isNativeToken,
-                                       feeDefault: "120000"
-                                       
-                    )
-                    vault.coins.append(newCoin)
-                }
+                
+                let newCoin = Coin(chain: asset.chain,
+                                   ticker: asset.ticker,
+                                   logo: asset.logo,
+                                   address: coin.address,
+                                   priceRate: 0.0,
+                                   chainType: coin.chainType,
+                                   decimals: asset.decimals, // Assuming 18 for Ethereum-based tokens
+                                   hexPublicKey: coin.hexPublicKey,
+                                   feeUnit: asset.feeUnit,
+                                   priceProviderId: asset.priceProviderId ,
+                                   contractAddress: asset.contractAddress , // Assuming asset has a contractAddress field
+                                   rawBalance: "0",
+                                   isNativeToken: asset.isNativeToken,
+                                   feeDefault: asset.feeDefault
+                                   
+                )
+                vault.coins.append(newCoin)
+                
             case .failure(let error):
                 logger.info("fail to get ethereum address, error: \(error.localizedDescription)")
             }
