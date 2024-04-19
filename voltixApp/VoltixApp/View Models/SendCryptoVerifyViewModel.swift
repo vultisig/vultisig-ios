@@ -39,11 +39,11 @@ class SendCryptoVerifyViewModel: ObservableObject {
             return tx.amountInSats
         case .mayaChain:
             return tx.amountInCoinDecimal
-        case .ethereum, .avalanche, .bscChain:
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon:
             if coin.isNativeToken {
-                return tx.amountInGwei
+                return tx.amountInWei
             } else {
-                return tx.amountInTokenWeiInt64
+                return tx.amountInTokenWei
             }
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             return tx.amountInSats

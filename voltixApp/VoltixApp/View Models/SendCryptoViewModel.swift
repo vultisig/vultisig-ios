@@ -45,13 +45,13 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             case .bitcoin,.bitcoinCash,.dogecoin,.dash,.litecoin:
                 let sats = try await utxo.fetchSatsPrice(coin: tx.coin)
                 tx.gas = String(sats)
-            case .ethereum,.bscChain,.avalanche:
+            case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon:
                 let service = try EvmServiceFactory.getService(forChain: tx.coin)
                 let (gasPrice,priorityFee,nonce) = try await service.getGasInfo(fromAddress: tx.fromAddress)
                 
                 tx.gas = gasPrice
                 tx.nonce = Int64(nonce)
-                tx.priorityFeeGwei = Int64(priorityFee)
+                tx.priorityFeeWei = Int64(priorityFee)
             case .thorChain,.mayaChain, .kujira:
                 tx.gas = "0.02"
             case .gaiaChain:
@@ -125,27 +125,29 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 await convertToFiat(newValue: tx.amount, tx: tx)
                 isLoading = false
             }
-        case .ethereum,.bscChain,.avalanche:
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon:
             Task {
                 do {
-                    let service = try EvmServiceFactory.getService(forChain: tx.coin)
-                    let (gasPrice,_,_) = try await service.getGasInfo(fromAddress: tx.fromAddress)
-                    
-                    guard let gasLimitBigInt = BigInt(tx.coin.feeDefault) else {
-                        print("Invalid gas limit")
-                        return
+                    if tx.coin.isNativeToken {
+                        let service = try EvmServiceFactory.getService(forChain: tx.coin)
+                        let (gasPrice,_,_) = try await service.getGasInfo(fromAddress: tx.fromAddress)
+                        
+                        guard let gasLimitBigInt = BigInt(tx.coin.feeDefault) else {
+                            print("Invalid gas limit")
+                            return
+                        }
+                        
+                        guard let gasPriceWei = BigInt(gasPrice) else {
+                            print("Invalid gas price")
+                            return
+                        }
+                        
+                        let totalFeeWei: BigInt = gasLimitBigInt * gasPriceWei
+                        
+                        tx.amount = "\(tx.coin.getMaxValue(totalFeeWei))"
+                    } else {
+                        tx.amount = tx.coin.balanceString
                     }
-                    
-                    guard let gasPriceBigInt = BigInt(gasPrice) else {
-                        print("Invalid gas price")
-                        return
-                    }
-                    
-                    let gasPriceGwei: BigInt = gasPriceBigInt
-                    let gasPriceWei: BigInt = gasPriceGwei * BigInt(EVMHelper.weiPerGWei)
-                    let totalFeeWei: BigInt = gasLimitBigInt * gasPriceWei
-                    
-                    tx.amount = "\(tx.coin.getMaxValue(totalFeeWei))"
                 } catch {
                     tx.amount = tx.coin.balanceString
                     print("Failed to get EVM balance, error: \(error.localizedDescription)")

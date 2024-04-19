@@ -130,7 +130,7 @@ struct SendCryptoDetailsView: View {
         HStack {
             Text(NSLocalizedString("gas(auto)", comment: ""))
             Spacer()
-			Text("\(tx.gas) \(tx.coin.feeUnit )")
+            Text(tx.gas.toGwei(tx: tx))
         }
         .font(.body16Menlo)
         .foregroundColor(.neutral0)
@@ -150,9 +150,9 @@ struct SendCryptoDetailsView: View {
             NSLocalizedString(text, comment: "")
                 .replacingOccurrences(of: "Fiat", with: SettingsCurrency.current.rawValue)
         )
-            .font(.body14MontserratMedium)
-            .foregroundColor(.neutral0)
-            .frame(maxWidth: .infinity, alignment: .leading)
+        .font(.body14MontserratMedium)
+        .foregroundColor(.neutral0)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     private func validateForm() {

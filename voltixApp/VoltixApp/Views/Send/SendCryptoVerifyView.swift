@@ -148,7 +148,7 @@ struct SendCryptoVerifyView: View {
     }
     
     private func getGasAmount() -> String {
-        tx.gas + " " + tx.coin.feeUnit
+        tx.gas.toGwei(tx: tx)
     }
 }
 

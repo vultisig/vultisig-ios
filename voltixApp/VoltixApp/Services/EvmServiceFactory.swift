@@ -16,6 +16,14 @@ class EvmServiceFactory {
             return BSCService.shared
         case .avalanche:
             return AvalancheService.shared
+        case .base:
+            return BaseService.shared
+        case .arbitrum:
+            return ArbitrumService.shared
+        case .polygon:
+            return PolygonService.shared
+        case .optimism:
+            return OptimismService.shared
         default:
             throw RpcEvmServiceError.rpcError(code: 500, message: "EVM service not found")
         }

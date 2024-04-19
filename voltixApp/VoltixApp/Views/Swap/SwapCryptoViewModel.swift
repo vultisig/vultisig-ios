@@ -212,11 +212,11 @@ private extension SwapCryptoViewModel {
             return tx.amountInSats
         case .mayaChain:
             return tx.amountInCoinDecimal
-        case .ethereum, .avalanche, .bscChain:
+        case .ethereum, .avalanche,.arbitrum, .bscChain, .base, .optimism, .polygon:
             if coin.isNativeToken {
-                return tx.amountInGwei
+                return Int64(tx.amountInWei)
             } else {
-                return tx.amountInTokenWeiInt64
+                return Int64(tx.amountInTokenWei)
             }
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             return tx.amountInSats
@@ -233,11 +233,11 @@ private extension SwapCryptoViewModel {
             return String(tx.amountInSats)
         case .mayaChain:
             return String(tx.amountInCoinDecimal)
-        case .ethereum, .avalanche, .bscChain:
+        case .ethereum, .avalanche,.arbitrum, .bscChain, .base, .optimism, .polygon:
             if coin.isNativeToken {
                 return String(tx.amountInWei)
             } else {
-                return String(tx.amountInTokenWeiInt64)
+                return String(tx.amountInTokenWei)
             }
         case .gaiaChain, .kujira:
             return String(tx.amountInCoinDecimal)
@@ -267,7 +267,7 @@ private extension SwapCryptoViewModel {
                 $0.chain = .doge
             case .gaiaChain:
                 $0.chain = .atom
-            case .solana, .dash, .kujira, .mayaChain: break
+            case .solana, .dash, .kujira, .mayaChain, .arbitrum, .base, .optimism, .polygon: break
             }
             $0.symbol = coin.ticker
             if !coin.isNativeToken {

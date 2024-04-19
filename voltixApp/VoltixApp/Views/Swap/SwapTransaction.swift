@@ -30,16 +30,6 @@ extension SwapTransaction {
         BigInt(amountDecimal * pow(10, Double(EVMHelper.ethDecimals)))
     }
 
-    var amountInGwei: Int64 {
-        Int64(amountDecimal * Double(EVMHelper.weiPerGWei))
-    }
-
-    var amountInTokenWeiInt64: Int64 {
-        let decimals = Double(fromCoin.decimals) ?? Double(EVMHelper.ethDecimals) // The default is always in WEI unless the token has a different one like UDSC
-
-        return Int64(amountDecimal * pow(10, decimals))
-    }
-
     var amountInTokenWei: BigInt {
         let decimals = Double(fromCoin.decimals) ?? Double(EVMHelper.ethDecimals) // The default is always in WEI unless the token has a different one like UDSC
 

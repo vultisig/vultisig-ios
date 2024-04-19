@@ -69,14 +69,14 @@ final class BlockChainService {
             }
             return .Solana(recentBlockHash: recentBlockHash, priorityFee: highPriorityFee, feeInLamports: feeInLamports)
 
-        case .ethereum, .avalanche, .bscChain:
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon:
             let service = try EvmServiceFactory.getService(forChain: coin)
             let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(fromAddress: coin.address)
 
             if coin.isNativeToken {
-                return .Ethereum(maxFeePerGasGwei: Int64(gasPrice) ?? 42, priorityFeeGwei: priorityFee, nonce: nonce, gasLimit: EVMHelper.defaultETHTransferGasUnit)
+                return .Ethereum(maxFeePerGasWei: Int64(gasPrice) ?? 0, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: Int64(coin.feeDefault) ?? 0)
             } else {
-                return BlockChainSpecific.ERC20(maxFeePerGasGwei: Int64(gasPrice) ?? 42, priorityFeeGwei: priorityFee, nonce: nonce, gasLimit: EVMHelper.defaultERC20TransferGasUnit, contractAddr: coin.contractAddress)
+                return BlockChainSpecific.ERC20(maxFeePerGasWei: Int64(gasPrice) ?? 0, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: Int64(coin.feeDefault) ?? 0, contractAddr: coin.contractAddress)
             }
 
         case .gaiaChain:

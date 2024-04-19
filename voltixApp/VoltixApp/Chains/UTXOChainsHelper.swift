@@ -54,7 +54,7 @@ class UTXOChainsHelper {
         
         return getAddressFromPubKey()
             .flatMap { addr -> Result<Coin, Error> in
-                TokensStore.createNewCoinInstance(ticker: ticker, address: addr, hexPublicKey: self.getDerivedPubKey())
+                TokensStore.createNewCoinInstance(ticker: ticker, address: addr, hexPublicKey: self.getDerivedPubKey(), coinType: self.coin)
             }
     }
     

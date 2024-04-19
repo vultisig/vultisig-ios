@@ -24,15 +24,12 @@ class KeysignViewModel: ObservableObject {
     @Published var status: KeysignStatus = .CreatingInstance
     @Published var keysignError: String = ""
     @Published var signatures = [String: TssKeysignResponse]()
-    @Published var etherScanService = EthService.shared
-    @Published var avaxScanService = AvalancheService.shared
     @Published var txid: String = ""
     
     private var tssService: TssServiceImpl? = nil
     private var tssMessenger: TssMessengerImpl? = nil
     private var stateAccess: LocalStateAccessorImpl? = nil
     private var messagePuller: MessagePuller? = nil
-    private let bscService = BSCService.shared
     
     var keysignCommittee: [String]
     var mediatorURL: String
@@ -199,34 +196,20 @@ class KeysignViewModel: ObservableObject {
             return result
             
         case .EVM:
-            if keysignPayload.coin.chain.name == Chain.ethereum.name {
-                if keysignPayload.coin.isNativeToken {
-                    let result = EVMHelper.getEthereumHelper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
-                    return result
-                } else {
-                    // It should work for all ERC20
-                    let result = ERC20Helper.getEthereumERC20Helper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
-                    return result
+            if keysignPayload.coin.isNativeToken {
+                guard let helper = EVMHelper.getHelper(coin: keysignPayload.coin) else {
+                    return .failure(HelperError.runtimeError("Coin type not found on EVM helper"))
                 }
-            } else if keysignPayload.coin.chain.name == Chain.bscChain.name {
-                if keysignPayload.coin.isNativeToken {
-                    let result = EVMHelper.getBSCHelper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
-                    return result
-                } else {
-                    // It should work for all BEP20
-                    let result = ERC20Helper.getBSCBEP20Helper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
-                    return result
+                
+                return helper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+            } else {
+                guard let helper = ERC20Helper.getHelper(coin: keysignPayload.coin) else {
+                    return .failure(HelperError.runtimeError("Coin type not found on EVM ERC20 helper"))
                 }
-            } else if keysignPayload.coin.chain.name == Chain.avalanche.name {
-                if keysignPayload.coin.isNativeToken {
-                    let result = EVMHelper.getAvaxHelper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
-                    return result
-                } else {
-                    // It should work for all ERC20
-                    let result = ERC20Helper.getAvaxERC20Helper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
-                    return result
-                }
+                
+                return helper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
             }
+            
         case .THORChain:
             if keysignPayload.coin.chain == .thorChain {
                 let result = THORChainHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
@@ -278,15 +261,9 @@ class KeysignViewModel: ObservableObject {
                     case .failure(let error):
                         throw error
                     }
-                case .ethereum:
-                    self.txid = try await etherScanService.broadcastTransaction(hex: tx.rawTransaction)
-                    
-                case .avalanche:
-                    self.txid = try await avaxScanService.broadcastTransaction(hex: tx.rawTransaction)
-                    
-                case .bscChain:
-                    self.txid = try await bscService.broadcastTransaction(hex: tx.rawTransaction)
-                    
+                case .ethereum, .avalanche,.arbitrum, .bscChain, .base, .optimism, .polygon:
+                    let service = try EvmServiceFactory.getService(forChain: keysignPayload.coin)
+                    self.txid = try await service.broadcastTransaction(hex: tx.rawTransaction)
                 case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
                     let chainName = keysignPayload.coin.chain.name.lowercased()
                     UTXOTransactionsService.broadcastTransaction(chain: chainName, signedTransaction: tx.rawTransaction) { result in
