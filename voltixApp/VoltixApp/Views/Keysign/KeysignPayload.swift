@@ -57,12 +57,7 @@ struct KeysignPayload: Codable, Hashable {
     let swapPayload: THORChainSwapPayload?
     
     var toAmountString: String {
-        let decimalAmount = Decimal(string: toAmount.description) ?? Decimal(0)
-        
-        if coin.chainType == .EVM {
-            let divisor = Decimal(EVMHelper.weiPerGWei)
-            return "\(decimalAmount / divisor) \(coin.ticker)"
-        }
+        let decimalAmount = Decimal(string: toAmount.description) ?? Decimal.zero
         let power = Decimal(sign: .plus, exponent: -(Int(coin.decimals) ?? 0), significand: 1)
         return "\(decimalAmount * power) \(coin.ticker)"
     }

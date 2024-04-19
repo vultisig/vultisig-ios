@@ -263,7 +263,7 @@ class KeysignViewModel: ObservableObject {
                     }
                 case .ethereum, .avalanche,.arbitrum, .bscChain, .base, .optimism, .polygon:
                     let service = try EvmServiceFactory.getService(forChain: keysignPayload.coin)
-                    self.txid = try await service.broadcastTransaction(hex: tx)
+                    self.txid = try await service.broadcastTransaction(hex: tx.rawTransaction)
                 case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
                     let chainName = keysignPayload.coin.chain.name.lowercased()
                     UTXOTransactionsService.broadcastTransaction(chain: chainName, signedTransaction: tx.rawTransaction) { result in

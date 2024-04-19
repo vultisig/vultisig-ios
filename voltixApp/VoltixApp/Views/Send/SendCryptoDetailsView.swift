@@ -130,7 +130,7 @@ struct SendCryptoDetailsView: View {
         HStack {
             Text(NSLocalizedString("gas(auto)", comment: ""))
             Spacer()
-            Text(formattedFee())
+            Text(tx.gas.toGwei(tx: tx))
         }
         .font(.body16Menlo)
         .foregroundColor(.neutral0)
@@ -159,24 +159,6 @@ struct SendCryptoDetailsView: View {
         if sendCryptoViewModel.validateForm(tx: tx) {
             sendCryptoViewModel.moveToNextView()
         }
-    }
-    
-    private func formattedFee() -> String{
-        
-        if tx.coin.chainType == .EVM {
-            
-            var fee: Decimal = Decimal.zero
-            if let gasPriceDecimal = Decimal(string: tx.gas),
-               let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description) {
-                fee = gasPriceDecimal / weiPerGWeiDecimal
-                print(fee)
-                
-                
-                return "\(fee.description) \(tx.coin.feeUnit )"
-            }
-        }
-        
-        return "\(tx.gas) \(tx.coin.feeUnit )"
     }
 }
 
