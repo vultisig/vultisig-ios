@@ -332,7 +332,7 @@ class KeysignViewModel: ObservableObject {
         case HelperError.runtimeError(let errDetail):
             errMessage = "Failed to broadcast transaction,\(errDetail)"
         case RpcEvmServiceError.rpcError(let code, let message):
-            if message == "already known"{
+            if message == "already known" || message == "replacement transaction underpriced" {
                 print("the transaction already broadcast,code:\(code)")
                 self.txid = ""
                 return

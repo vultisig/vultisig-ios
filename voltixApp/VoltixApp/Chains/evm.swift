@@ -200,6 +200,7 @@ class EVMHelper {
                                                                                  signatures: allSignatures,
                                                                                  publicKeys: publicKeys)
             let output = try EthereumSigningOutput(serializedData: compileWithSignature)
+            
             return .success(output.encoded.hexString)
         } catch {
             return .failure(HelperError.runtimeError("fail to get signed ethereum transaction,error:\(error.localizedDescription)"))

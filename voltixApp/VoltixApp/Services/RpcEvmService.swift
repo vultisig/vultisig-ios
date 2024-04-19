@@ -172,7 +172,7 @@ class RpcEvmService {
         } catch {
             print(payload)
             print(error.localizedDescription)
-            throw RpcEvmServiceError.rpcError(code: 500, message: error.localizedDescription)
+            throw error
         }
 
     }
