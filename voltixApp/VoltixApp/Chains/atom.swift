@@ -180,7 +180,8 @@ class ATOMHelper {
                                                                                  publicKeys: publicKeys)
             let output = try CosmosSigningOutput(serializedData: compileWithSignature)
             let serializedData = output.serialized
-            let result = SignedTransactionResult(rawTransaction: serializedData, transactionHash: serializedData.sha256())
+            let sig = try JSONDecoder().decode(CosmosSignature.self, from: serializedData.data(using: .utf8) ?? Data())
+            let result = SignedTransactionResult(rawTransaction: serializedData, transactionHash:sig.getTransactionHash())
             return .success(result)
         } catch {
             return .failure(HelperError.runtimeError("fail to get signed transaction,error:\(error.localizedDescription)"))
