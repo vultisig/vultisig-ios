@@ -128,22 +128,26 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon:
             Task {
                 do {
-                    let service = try EvmServiceFactory.getService(forChain: tx.coin)
-                    let (gasPrice,_,_) = try await service.getGasInfo(fromAddress: tx.fromAddress)
-                    
-                    guard let gasLimitBigInt = BigInt(tx.coin.feeDefault) else {
-                        print("Invalid gas limit")
-                        return
+                    if tx.coin.isNativeToken {
+                        let service = try EvmServiceFactory.getService(forChain: tx.coin)
+                        let (gasPrice,_,_) = try await service.getGasInfo(fromAddress: tx.fromAddress)
+                        
+                        guard let gasLimitBigInt = BigInt(tx.coin.feeDefault) else {
+                            print("Invalid gas limit")
+                            return
+                        }
+                        
+                        guard let gasPriceWei = BigInt(gasPrice) else {
+                            print("Invalid gas price")
+                            return
+                        }
+                        
+                        let totalFeeWei: BigInt = gasLimitBigInt * gasPriceWei
+                        
+                        tx.amount = "\(tx.coin.getMaxValue(totalFeeWei))"
+                    } else {
+                        tx.amount = tx.coin.balanceString
                     }
-                    
-                    guard let gasPriceWei = BigInt(gasPrice) else {
-                        print("Invalid gas price")
-                        return
-                    }
-                    
-                    let totalFeeWei: BigInt = gasLimitBigInt * gasPriceWei
-                    
-                    tx.amount = "\(tx.coin.getMaxValue(totalFeeWei))"
                 } catch {
                     tx.amount = tx.coin.balanceString
                     print("Failed to get EVM balance, error: \(error.localizedDescription)")
