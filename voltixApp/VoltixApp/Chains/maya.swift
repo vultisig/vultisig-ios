@@ -8,6 +8,7 @@
 import Foundation
 import Tss
 import WalletCore
+import CryptoSwift
 
 enum MayaChainHelper {
     static let MayaChainGas: UInt64 = 2000000
@@ -141,7 +142,7 @@ enum MayaChainHelper {
     static func getSignedTransaction(vaultHexPubKey: String,
                                      vaultHexChainCode: String,
                                      keysignPayload: KeysignPayload,
-                                     signatures: [String: TssKeysignResponse]) -> Result<String, Error>
+                                     signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error>
     {
         let result = getPreSignedInputData(keysignPayload: keysignPayload)
         switch result {
@@ -156,7 +157,7 @@ enum MayaChainHelper {
     static func getSignedTransaction(vaultHexPubKey: String,
                                      vaultHexChainCode: String,
                                      inputData: Data,
-                                     signatures: [String: TssKeysignResponse]) -> Result<String, Error>
+                                     signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error>
     {
         let thorPublicKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: vaultHexPubKey, hexChainCode: vaultHexChainCode, derivePath: CoinType.thorchain.derivationPath())
         guard let pubkeyData = Data(hexString: thorPublicKey),
@@ -184,8 +185,9 @@ enum MayaChainHelper {
                                                                                  publicKeys: publicKeys)
             let output = try CosmosSigningOutput(serializedData: compileWithSignature)
             let serializedData = output.serialized
-            print(serializedData)
-            return .success(serializedData)
+            let hash = serializedData.sha256()
+            let result = SignedTransactionResult(rawTransaction: serializedData, transactionHash:hash)
+            return .success(result)
         } catch {
             return .failure(HelperError.runtimeError("fail to get signed ethereum transaction,error:\(error.localizedDescription)"))
         }
