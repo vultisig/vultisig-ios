@@ -21,7 +21,7 @@ class EVMHelper {
         self.coinType = coinType
     }
     
-    static func getEvmHelper(coin: Coin) -> EVMHelper? {
+    static func getHelper(coin: Coin) -> EVMHelper? {
         guard let coinType = coin.getCoinType() else {
             print("Coin type not found on Wallet Core")
             return nil

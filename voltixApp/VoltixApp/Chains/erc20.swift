@@ -15,14 +15,12 @@ class ERC20Helper {
         self.coinType = coinType
     }
     
-    static func getEthereumERC20Helper() -> ERC20Helper{
-        return ERC20Helper(coinType: CoinType.ethereum)
-    }
-    static func getAvaxERC20Helper() -> ERC20Helper{
-        return ERC20Helper(coinType: CoinType.avalancheCChain)
-    }
-    static func getBSCBEP20Helper() -> ERC20Helper{
-        return ERC20Helper(coinType: CoinType.smartChain)
+    static func getHelper(coin: Coin) -> ERC20Helper? {
+        guard let coinType = coin.getCoinType() else {
+            print("Coin type not found on Wallet Core")
+            return nil
+        }
+        return ERC20Helper(coinType: coinType)
     }
     
     func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {

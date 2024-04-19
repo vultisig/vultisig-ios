@@ -79,7 +79,7 @@ class TokenSelectionViewModel: ObservableObject {
             }
         case .ethereum, .arbitrum, .base, .optimism, .polygon, .bscChain, .avalanche:
             
-            guard let evmHelper = EVMHelper.getEvmHelper(coin: asset) else {
+            guard let evmHelper = EVMHelper.getHelper(coin: asset) else {
                 logger.info("Coin type not found on EVM helper")
                 return
             }

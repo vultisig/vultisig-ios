@@ -82,29 +82,20 @@ struct KeysignPayload: Codable, Hashable {
             return utxoHelper.getPreSignedImageHash(keysignPayload: self)
         case .ethereum, .arbitrum, .base, .optimism, .polygon, .avalanche, .bscChain:
             if coin.isNativeToken {
-                let evmHelper = EVMHelper.getEvmHelper(coin: coin)?.getPreSignedImageHash(keysignPayload: self)
-                
-                guard let evmTx = evmHelper else {
+                let helper = EVMHelper.getHelper(coin: coin)?.getPreSignedImageHash(keysignPayload: self)
+                guard let preSignedImageHash = helper else {
                     return .failure("Error to get getPreSignedImageHash on EVM" as! Error)
                 }
-                return evmTx
+                return preSignedImageHash
                 
             }else{
-                //TODO: change it so it can be compatible with Avax and BSC
-                return ERC20Helper.getEthereumERC20Helper().getPreSignedImageHash(keysignPayload: self)
+                let helper = ERC20Helper.getHelper(coin: coin)?.getPreSignedImageHash(keysignPayload: self)
+                guard let preSignedImageHash = helper else {
+                    return .failure("Error to get getPreSignedImageHash on EVM" as! Error)
+                }
+                return preSignedImageHash
+                
             }
-//        case .avalanche:
-//            if coin.isNativeToken {
-//                return EVMHelper.getAvaxHelper().getPreSignedImageHash(keysignPayload: self)
-//            } else {
-//                return ERC20Helper.getAvaxERC20Helper().getPreSignedImageHash(keysignPayload: self)
-//            }
-//        case .bscChain:
-//            if coin.isNativeToken {
-//                return EVMHelper.getBSCHelper().getPreSignedImageHash(keysignPayload: self)
-//            } else {
-//                return ERC20Helper.getBSCBEP20Helper().getPreSignedImageHash(keysignPayload: self)
-//            }
         case .thorChain:
             return THORChainHelper.getPreSignedImageHash(keysignPayload: self)
         case .mayaChain:

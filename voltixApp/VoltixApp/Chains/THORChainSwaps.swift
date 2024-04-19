@@ -54,7 +54,7 @@ class THORChainSwaps {
                 let utxoHelper = UTXOChainsHelper(coin: .dogecoin, vaultHexPublicKey: self.vaultHexPublicKey, vaultHexChainCode: self.vaultHexChainCode)
                 return utxoHelper.getSigningInputData(keysignPayload: keysignPayload, signingInput: output.bitcoin)
             case .eth, .bsc, .avax:
-                let evmHelper = EVMHelper.getEvmHelper(coin: keysignPayload.coin)?.getPreSignedInputData(signingInput: output.ethereum, keysignPayload: keysignPayload)
+                let evmHelper = EVMHelper.getHelper(coin: keysignPayload.coin)?.getPreSignedInputData(signingInput: output.ethereum, keysignPayload: keysignPayload)
             
                 guard let signedEvmTx = evmHelper else {
                     return .failure("Fail to sign the tx for EVM." as! Error)
@@ -155,7 +155,7 @@ class THORChainSwaps {
                 let utxoHelper = UTXOChainsHelper(coin: .dogecoin, vaultHexPublicKey: self.vaultHexPublicKey, vaultHexChainCode: self.vaultHexChainCode)
                 return utxoHelper.getSignedTransaction(inputData: inputData, signatures: signatures)
             case .eth, .bsc, .avax:
-                let evmHelper = EVMHelper.getEvmHelper(coin: keysignPayload.coin)?.getSignedTransaction(vaultHexPubKey: self.vaultHexPublicKey, vaultHexChainCode: self.vaultHexChainCode, inputData: inputData, signatures: signatures)
+                let evmHelper = EVMHelper.getHelper(coin: keysignPayload.coin)?.getSignedTransaction(vaultHexPubKey: self.vaultHexPublicKey, vaultHexChainCode: self.vaultHexChainCode, inputData: inputData, signatures: signatures)
                 
                 guard let signedEvmTx = evmHelper else {
                     return .failure("Fail to sign the tx for EVM." as! Error)

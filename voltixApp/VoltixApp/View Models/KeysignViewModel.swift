@@ -196,18 +196,18 @@ class KeysignViewModel: ObservableObject {
             return result
             
         case .EVM:
-            guard let evmHelper = EVMHelper.getEvmHelper(coin: keysignPayload.coin) else {
-                return .failure(HelperError.runtimeError("Coin type not found on EVM helper"))
-            }
-            
             if keysignPayload.coin.isNativeToken {
-                let result = evmHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
-                return result
+                guard let helper = EVMHelper.getHelper(coin: keysignPayload.coin) else {
+                    return .failure(HelperError.runtimeError("Coin type not found on EVM helper"))
+                }
+                
+                return helper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
             } else {
-                // It should work for all ERC20
-                //TODO: remove ERC20Helper
-                let result = ERC20Helper.getEthereumERC20Helper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
-                return result
+                guard let helper = ERC20Helper.getHelper(coin: keysignPayload.coin) else {
+                    return .failure(HelperError.runtimeError("Coin type not found on EVM ERC20 helper"))
+                }
+                
+                return helper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
             }
             
         case .THORChain:
