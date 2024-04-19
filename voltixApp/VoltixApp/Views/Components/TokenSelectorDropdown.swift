@@ -45,11 +45,11 @@ struct TokenSelectorDropdown: View {
             image
             Text("\(selected.ticker)")
             Spacer()
+            
+            Text(selected.balanceString)
 
             if isActive {
                 Image(systemName: "chevron.down")
-            } else {
-                Text(selected.balanceString.isEmpty ? "0.00000" : selected.balanceString)
             }
         }
         .redacted(reason: selected.balanceString.isEmpty ? .placeholder : [])
