@@ -105,8 +105,7 @@ class RpcEvmService {
     }
     
     func fetchMaxPriorityFeePerGas() async throws -> BigInt {
-        let feeInWei = try await intRpcCall(method: "eth_maxPriorityFeePerGas", params: [])
-        return feeInWei
+        return try await intRpcCall(method: "eth_maxPriorityFeePerGas", params: []) //WEI
     }
 
     private func fetchNonce(address: String) async throws -> BigInt {

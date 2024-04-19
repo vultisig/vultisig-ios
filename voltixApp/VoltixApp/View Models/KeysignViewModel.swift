@@ -196,22 +196,20 @@ class KeysignViewModel: ObservableObject {
             return result
             
         case .EVM:
-            if keysignPayload.coin.chain.name == Chain.ethereum.name {
-                
-                guard let evmHelper = EVMHelper.getEvmHelper(coin: keysignPayload.coin) else {
-                    return .failure(HelperError.runtimeError("Coin type not found on EVM helper"))
-                }
-                
-                if keysignPayload.coin.isNativeToken {
-                    let result = evmHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
-                    return result
-                } else {
-                    // It should work for all ERC20
-                    //TODO: remove ERC20Helper
-                    let result = ERC20Helper.getEthereumERC20Helper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
-                    return result
-                }
+            guard let evmHelper = EVMHelper.getEvmHelper(coin: keysignPayload.coin) else {
+                return .failure(HelperError.runtimeError("Coin type not found on EVM helper"))
             }
+            
+            if keysignPayload.coin.isNativeToken {
+                let result = evmHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                return result
+            } else {
+                // It should work for all ERC20
+                //TODO: remove ERC20Helper
+                let result = ERC20Helper.getEthereumERC20Helper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                return result
+            }
+            
         case .THORChain:
             if keysignPayload.coin.chain == .thorChain {
                 let result = THORChainHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
