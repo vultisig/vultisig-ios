@@ -164,9 +164,7 @@ class SendTransaction: ObservableObject, Hashable {
             "feeInSats: \(feeInSats)",
             "amountDecimal: \(amountDecimal)",
             "amountInCoinDecimal: \(amountInCoinDecimal)",
-            "gasDecimal: \(gasDecimal)",
-//            "gasFeePredictionForEvm: \(gasFeePredictionForEvm)",
-//            "gasFeePredictionForEvmFiat: \(gasFeePredictionForEvmFiat)"
+            "gasDecimal: \(gasDecimal)"
         ]
         return properties.joined(separator: ",\n")
     }
