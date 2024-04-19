@@ -67,7 +67,7 @@ class TokenSelectionViewModel: ObservableObject {
                 logger.info("fail to get thorchain address,error:\(error.localizedDescription)")
             }
         case .mayaChain:
-            let cacaoCoinResult = MayaChainHelper.getMayaCoin(hexPubKey: vault.pubKeyECDSA, 
+            let cacaoCoinResult = MayaChainHelper.getMayaCoin(hexPubKey: vault.pubKeyECDSA,
                                                               hexChainCode: vault.hexChainCode,
                                                               coinTicker: asset.ticker)
             switch cacaoCoinResult {
@@ -77,11 +77,19 @@ class TokenSelectionViewModel: ObservableObject {
             case .failure(let error):
                 logger.info("fail to get thorchain address,error:\(error.localizedDescription)")
             }
-        case .ethereum, .arbitrum, .base, .optimism, .polygon:
-            let coinResult = EVMHelper.getEthereumHelper().getCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
+        case .ethereum, .arbitrum, .base, .optimism, .polygon, .bscChain, .avalanche:
+            
+            guard let evmHelper = EVMHelper.getEvmHelper(coin: asset) else {
+                logger.info("Coin type not found on EVM helper")
+                return
+            }
+            
+            let tickers: [String] = ["Ethereum", "AVAX", "BNB", "ARB", "MATIC", "OP"]
+            
+            let coinResult = evmHelper.getCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
             switch coinResult {
             case .success(let coin):
-                if coin.ticker == "Ethereum" {
+                if  tickers.contains(where: { $0 == coin.ticker}) {
                     vault.coins.append(coin)
                 } else {
                     let newCoin = Coin(chain: asset.chain,
@@ -145,63 +153,6 @@ class TokenSelectionViewModel: ObservableObject {
                 vault.coins.append(atom)
             case .failure(let err):
                 logger.info("fail to get solana address,error:\(err.localizedDescription)")
-            }
-        case .avalanche:
-            let coinResult = EVMHelper.getAvaxHelper().getCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
-            switch coinResult {
-            case .success(let coin):
-                if asset.ticker == "AVAX" {
-                    vault.coins.append(coin)
-                } else {
-                    let newCoin = Coin(chain: asset.chain,
-                                       ticker: asset.ticker,
-                                       logo: asset.logo,
-                                       address: coin.address,
-                                       priceRate: 0.0,
-                                       chainType: coin.chainType,
-                                       decimals: asset.decimals, // Assuming 18 for Ethereum-based tokens
-                                       hexPublicKey: coin.hexPublicKey,
-                                       feeUnit: asset.feeUnit,
-                                       priceProviderId: asset.priceProviderId ,
-                                       contractAddress: asset.contractAddress , // Assuming asset has a contractAddress field
-                                       rawBalance: "0",
-                                       isNativeToken: asset.isNativeToken,
-                                       feeDefault: "120000"
-                                       
-                    )
-                    vault.coins.append(newCoin)
-                }
-            case .failure(let error):
-                logger.info("fail to get avalanche address, error: \(error.localizedDescription)")
-            }
-        case .bscChain:
-            let coinResult = EVMHelper.getBSCHelper().getCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
-            switch coinResult {
-            case .success(let coin):
-                if asset.ticker == "BNB" {
-                    vault.coins.append(coin)
-                } else {
-                    // BRC20 tokens
-                    let newCoin = Coin(chain: asset.chain,
-                                       ticker: asset.ticker,
-                                       logo: asset.logo,
-                                       address: coin.address,
-                                       priceRate: 0.0,
-                                       chainType: coin.chainType,
-                                       decimals: asset.decimals, // Assuming 18 for Ethereum-based tokens
-                                       hexPublicKey: coin.hexPublicKey,
-                                       feeUnit: asset.feeUnit,
-                                       priceProviderId: asset.priceProviderId ,
-                                       contractAddress: asset.contractAddress , // Assuming asset has a contractAddress field
-                                       rawBalance: "0",
-                                       isNativeToken: asset.isNativeToken,
-                                       feeDefault: "120000"
-                                       
-                    )
-                    vault.coins.append(newCoin)
-                }
-            case .failure(let error):
-                logger.info("fail to get avalanche address, error: \(error.localizedDescription)")
             }
         }
     }

@@ -197,30 +197,18 @@ class KeysignViewModel: ObservableObject {
             
         case .EVM:
             if keysignPayload.coin.chain.name == Chain.ethereum.name {
+                
+                guard let evmHelper = EVMHelper.getEvmHelper(coin: keysignPayload.coin) else {
+                    return .failure(HelperError.runtimeError("Coin type not found on EVM helper"))
+                }
+                
                 if keysignPayload.coin.isNativeToken {
-                    let result = EVMHelper.getEthereumHelper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                    let result = evmHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
                     return result
                 } else {
                     // It should work for all ERC20
+                    //TODO: remove ERC20Helper
                     let result = ERC20Helper.getEthereumERC20Helper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
-                    return result
-                }
-            } else if keysignPayload.coin.chain.name == Chain.bscChain.name {
-                if keysignPayload.coin.isNativeToken {
-                    let result = EVMHelper.getBSCHelper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
-                    return result
-                } else {
-                    // It should work for all BEP20
-                    let result = ERC20Helper.getBSCBEP20Helper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
-                    return result
-                }
-            } else if keysignPayload.coin.chain.name == Chain.avalanche.name {
-                if keysignPayload.coin.isNativeToken {
-                    let result = EVMHelper.getAvaxHelper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
-                    return result
-                } else {
-                    // It should work for all ERC20
-                    let result = ERC20Helper.getAvaxERC20Helper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
                     return result
                 }
             }

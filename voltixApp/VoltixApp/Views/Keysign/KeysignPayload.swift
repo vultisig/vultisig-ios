@@ -82,7 +82,13 @@ struct KeysignPayload: Codable, Hashable {
             return utxoHelper.getPreSignedImageHash(keysignPayload: self)
         case .ethereum, .arbitrum, .base, .optimism, .polygon, .avalanche, .bscChain:
             if coin.isNativeToken {
-                return EVMHelper.getEvmHelper(coin: tx.coin)?.getPreSignedImageHash(keysignPayload: self)
+                let evmHelper = EVMHelper.getEvmHelper(coin: coin)?.getPreSignedImageHash(keysignPayload: self)
+                
+                guard let evmTx = evmHelper else {
+                    return .failure("Error to get getPreSignedImageHash on EVM" as! Error)
+                }
+                return evmTx
+                
             }else{
                 //TODO: change it so it can be compatible with Avax and BSC
                 return ERC20Helper.getEthereumERC20Helper().getPreSignedImageHash(keysignPayload: self)
