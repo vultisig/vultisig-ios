@@ -26,7 +26,7 @@ class ATOMHelper {
             return .failure(HelperError.runtimeError("derived public key is empty"))
         }
         return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).flatMap { addr -> Result<Coin, Error> in
-            TokensStore.createNewCoinInstance(ticker: "ATOM", address: addr, hexPublicKey: derivePubKey)
+            TokensStore.createNewCoinInstance(ticker: "ATOM", address: addr, hexPublicKey: derivePubKey, coinType: self.coinType)
         }
     }
     

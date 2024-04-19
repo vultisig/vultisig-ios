@@ -10,7 +10,7 @@ import WalletCore
 enum SolanaHelper {
     static func getSolana(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
         return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).flatMap { addr -> Result<Coin, Error> in
-            TokensStore.createNewCoinInstance(ticker: "SOL", address: addr, hexPublicKey: hexPubKey)
+            TokensStore.createNewCoinInstance(ticker: "SOL", address: addr, hexPublicKey: hexPubKey, coinType: .solana)
         }
     }
     

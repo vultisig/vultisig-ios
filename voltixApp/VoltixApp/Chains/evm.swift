@@ -40,8 +40,10 @@ class EVMHelper {
         return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).flatMap { addr -> Result<Coin, Error> in
             var ticker = ""
             switch self.coinType{
-            case .ethereum, .base:
+            case .ethereum, .base, .optimism, .arbitrum:
                 ticker = "ETH"
+            case .polygon:
+                ticker = "MATIC"
             case .avalancheCChain:
                 ticker = "AVAX"
             case .smartChain:
@@ -49,7 +51,7 @@ class EVMHelper {
             default:
                 ticker = ""
             }
-            return TokensStore.createNewCoinInstance(ticker:ticker, address: addr, hexPublicKey: derivePubKey)
+            return TokensStore.createNewCoinInstance(ticker:ticker, address: addr, hexPublicKey: derivePubKey, coinType: self.coinType)
         }
     }
     

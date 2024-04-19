@@ -84,7 +84,7 @@ class TokenSelectionViewModel: ObservableObject {
                 return
             }
             
-            let tickers: [String] = ["Ethereum", "AVAX", "BNB", "ARB", "MATIC", "OP"]
+            let tickers: [String] = ["Ethereum", "AVAX", "BNB", "MATIC"]
             
             let coinResult = evmHelper.getCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
             switch coinResult {
