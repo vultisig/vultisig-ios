@@ -9,7 +9,7 @@ import Foundation
 
 extension ThorchainService {
     
-    func broadcastTransaction(jsonString: String) async -> Result<String,Error> {
+func broadcastTransaction(jsonString: String) async -> Result<String,Error> {
         let url = URL(string: Endpoint.broadcastTransactionThorchainNineRealms)!
         
         guard let jsonData = jsonString.data(using: .utf8) else {

@@ -228,7 +228,7 @@ class UTXOChainsHelper {
     
     func getSignedTransaction(
         keysignPayload: KeysignPayload,
-        signatures: [String: TssKeysignResponse]) -> Result<String, Error>
+        signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error>
     {
         let result = getBitcoinPreSigningInputData(keysignPayload: keysignPayload)
         switch result {
@@ -243,7 +243,7 @@ class UTXOChainsHelper {
     
     func getSignedTransaction(
         inputData: Data,
-        signatures: [String: TssKeysignResponse]) -> Result<String, Error>
+        signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error>
     {
         let bitcoinPubKey = getDerivedPubKey()
         guard let pubkeyData = Data(hexString: bitcoinPubKey),
@@ -269,7 +269,8 @@ class UTXOChainsHelper {
             }
             let compileWithSignatures = TransactionCompiler.compileWithSignatures(coinType: coin, txInputData: inputData, signatures: allSignatures, publicKeys: publicKeys)
             let output = try BitcoinSigningOutput(serializedData: compileWithSignatures)
-            return .success(output.encoded.hexString)
+            let result = SignedTransactionResult(rawTransaction: output.encoded.hexString, transactionHash: output.transactionID)
+            return .success(result)
         } catch {
             return .failure(HelperError.runtimeError("fail to construct raw transaction,error: \(error.localizedDescription)"))
         }

@@ -181,7 +181,7 @@ class KeysignViewModel: ObservableObject {
         return try await t.value
     }
     
-    func getSignedTransaction(keysignPayload: KeysignPayload) -> Result<String, Error> {
+    func getSignedTransaction(keysignPayload: KeysignPayload) -> Result<SignedTransactionResult, Error> {
         if keysignPayload.swapPayload != nil {
             let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
             let result = swaps.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
@@ -255,82 +255,87 @@ class KeysignViewModel: ObservableObject {
     
     func broadcastTransaction() async {
         guard let keysignPayload else { return }
-        
         let result = getSignedTransaction(keysignPayload: keysignPayload)
-        
-        do {
-            switch result {
-            case .success(let tx):
-                
+        switch result {
+        case .success(let tx):
+            do {
                 switch keysignPayload.coin.chain {
                 case .thorChain:
-                    let broadcastResult = await ThorchainService.shared.broadcastTransaction(jsonString: tx)
+                    let broadcastResult = await ThorchainService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
                     switch broadcastResult {
                     case .success(let txHash):
                         self.txid = txHash
                         print("Transaction successful, hash: \(txHash)")
                     case .failure(let error):
-                        self.handleBroadcastError(err: error)
+                        throw error
                     }
                 case .mayaChain:
-                    let broadcastResult = await MayachainService.shared.broadcastTransaction(jsonString: tx)
+                    let broadcastResult = await MayachainService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
                     switch broadcastResult {
                     case .success(let txHash):
                         self.txid = txHash
                         print("Transaction successful, hash: \(txHash)")
                     case .failure(let error):
-                        self.handleBroadcastError(err: error)
+                        throw error
                     }
                 case .ethereum:
-                    self.txid = try await etherScanService.broadcastTransaction(hex: tx)
+                    self.txid = try await etherScanService.broadcastTransaction(hex: tx.rawTransaction)
                     
                 case .avalanche:
-                    self.txid = try await avaxScanService.broadcastTransaction(hex: tx)
+                    self.txid = try await avaxScanService.broadcastTransaction(hex: tx.rawTransaction)
                     
                 case .bscChain:
-                    self.txid = try await bscService.broadcastTransaction(hex: tx)
+                    self.txid = try await bscService.broadcastTransaction(hex: tx.rawTransaction)
                     
                 case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
                     let chainName = keysignPayload.coin.chain.name.lowercased()
-                    UTXOTransactionsService.broadcastTransaction(chain: chainName, signedTransaction: tx) { result in
+                    UTXOTransactionsService.broadcastTransaction(chain: chainName, signedTransaction: tx.rawTransaction) { result in
                         switch result {
                         case .success(let transactionHash):
                             self.txid = transactionHash
                         case .failure(let error):
-                            self.handleBroadcastError(err: error)
+                            self.handleBroadcastError(err: error,tx:tx)
                         }
                     }
                 case .gaiaChain:
-                    let broadcastResult = await GaiaService.shared.broadcastTransaction(jsonString: tx)
+                    let broadcastResult = await GaiaService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
                     switch broadcastResult {
                     case .success(let hash):
                         self.txid = hash
                     case .failure(let err):
-                        self.handleBroadcastError(err: err)
+                        throw err
                     }
                 case .kujira:
-                    let broadcastResult = await KujiraService.shared.broadcastTransaction(jsonString: tx)
+                    let broadcastResult = await KujiraService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
                     switch broadcastResult {
                     case .success(let hash):
                         self.txid = hash
                     case .failure(let err):
-                        self.handleBroadcastError(err: err)
+                        throw err
                     }
                 case .solana:
-                    self.txid = await SolanaService.shared.sendSolanaTransaction(encodedTransaction: tx) ?? ""
+                    self.txid = await SolanaService.shared.sendSolanaTransaction(encodedTransaction: tx.rawTransaction) ?? ""
                 }
-            case .failure(let error):
-                handleHelperError(err: error)
+            } catch {
+                handleBroadcastError(err: error,tx: tx)
             }
-        } catch {
-            handleBroadcastError(err: error)
+        case .failure(let error):
+            handleHelperError(err: error)
         }
+        
     }
-    func handleBroadcastError(err: Error){
-        var errMessage: String
+    func handleBroadcastError(err: Error,tx: SignedTransactionResult){
+        var errMessage: String = ""
         switch err{
         case HelperError.runtimeError(let errDetail):
             errMessage = "Failed to broadcast transaction,\(errDetail)"
+        case RpcEvmServiceError.rpcError(let code, let message):
+            print("code:\(code), message:\(message)")
+            if message == "already known" || message == "replacement transaction underpriced" {
+                print("the transaction already broadcast,code:\(code)")
+                self.txid = tx.transactionHash
+                return
+            }
         default:
             errMessage = "Failed to broadcast transaction,error:\(err.localizedDescription)"
         }
