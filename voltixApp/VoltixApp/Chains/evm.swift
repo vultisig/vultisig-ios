@@ -7,6 +7,7 @@ import BigInt
 import Foundation
 import Tss
 import WalletCore
+import CryptoSwift
 
 class EVMHelper {
     static let defaultETHTransferGasUnit:Int64 = 23000 // Increased to 23000 to support swaps and transfers with memo
@@ -157,7 +158,7 @@ class EVMHelper {
     func getSignedTransaction(vaultHexPubKey: String,
                               vaultHexChainCode: String,
                               keysignPayload: KeysignPayload,
-                              signatures: [String: TssKeysignResponse]) -> Result<String, Error>
+                              signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error>
     {
         let result = getPreSignedInputData(keysignPayload: keysignPayload)
         switch result {
@@ -171,7 +172,7 @@ class EVMHelper {
     func getSignedTransaction(vaultHexPubKey: String,
                               vaultHexChainCode: String,
                               inputData: Data,
-                              signatures: [String: TssKeysignResponse]) -> Result<String, Error>
+                              signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error>
     {
         let ethPublicKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: vaultHexPubKey, hexChainCode: vaultHexChainCode, derivePath: self.coinType.derivationPath())
         guard let pubkeyData = Data(hexString: ethPublicKey),
@@ -200,9 +201,12 @@ class EVMHelper {
                                                                                  signatures: allSignatures,
                                                                                  publicKeys: publicKeys)
             let output = try EthereumSigningOutput(serializedData: compileWithSignature)
-            return .success(output.encoded.hexString)
+            let result = SignedTransactionResult(rawTransaction: output.encoded.hexString,
+                                                 transactionHash: "0x"+output.encoded.sha3(.keccak256).toHexString())
+            return .success(result)
         } catch {
             return .failure(HelperError.runtimeError("fail to get signed ethereum transaction,error:\(error.localizedDescription)"))
         }
     }
+    
 }

@@ -8,6 +8,7 @@
 import Foundation
 import WalletCore
 import Tss
+import CryptoSwift
 
 class ATOMHelper {
     let coinType: CoinType
@@ -136,7 +137,7 @@ class ATOMHelper {
     func getSignedTransaction(vaultHexPubKey: String,
                                      vaultHexChainCode: String,
                                      keysignPayload: KeysignPayload,
-                                     signatures: [String: TssKeysignResponse]) -> Result<String, Error>
+                                     signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error>
     {
         let result = getPreSignedInputData(keysignPayload: keysignPayload)
         switch result {
@@ -151,7 +152,7 @@ class ATOMHelper {
     func getSignedTransaction(vaultHexPubKey: String,
                                      vaultHexChainCode: String,
                                      inputData: Data,
-                                     signatures: [String: TssKeysignResponse]) -> Result<String, Error>
+                                     signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error>
     {
         let cosmosPublicKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: vaultHexPubKey, hexChainCode: vaultHexChainCode, derivePath: self.coinType.derivationPath())
         guard let pubkeyData = Data(hexString: cosmosPublicKey),
@@ -179,8 +180,9 @@ class ATOMHelper {
                                                                                  publicKeys: publicKeys)
             let output = try CosmosSigningOutput(serializedData: compileWithSignature)
             let serializedData = output.serialized
-            print(serializedData)
-            return .success(serializedData)
+            let sig = try JSONDecoder().decode(CosmosSignature.self, from: serializedData.data(using: .utf8) ?? Data())
+            let result = SignedTransactionResult(rawTransaction: serializedData, transactionHash:sig.getTransactionHash())
+            return .success(result)
         } catch {
             return .failure(HelperError.runtimeError("fail to get signed transaction,error:\(error.localizedDescription)"))
         }

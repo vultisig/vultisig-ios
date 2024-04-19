@@ -130,7 +130,7 @@ class THORChainSwaps {
     }
     
     func getSignedTransaction(keysignPayload: KeysignPayload,
-                              signatures: [String: TssKeysignResponse]) -> Result<String, Error>
+                              signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error>
     {
         guard let swapPayload = keysignPayload.swapPayload else {
             return .failure(HelperError.runtimeError("no swap payload"))

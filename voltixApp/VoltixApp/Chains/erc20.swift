@@ -7,6 +7,7 @@ import Foundation
 import Tss
 import WalletCore
 import BigInt
+import CryptoSwift
 
 class ERC20Helper {
     let coinType: CoinType
@@ -81,7 +82,7 @@ class ERC20Helper {
     func getSignedTransaction(vaultHexPubKey: String,
                                      vaultHexChainCode: String,
                                      keysignPayload: KeysignPayload,
-                                     signatures: [String: TssKeysignResponse]) -> Result<String, Error>
+                                     signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error>
     {
         let ethPublicKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: vaultHexPubKey, hexChainCode: vaultHexChainCode, derivePath: self.coinType.derivationPath())
         guard let pubkeyData = Data(hexString: ethPublicKey),
@@ -113,7 +114,9 @@ class ERC20Helper {
                                                                                      signatures: allSignatures,
                                                                                      publicKeys: publicKeys)
                 let output = try EthereumSigningOutput(serializedData: compileWithSignature)
-                return .success(output.encoded.hexString)
+                let result = SignedTransactionResult(rawTransaction: output.encoded.hexString,
+                                                     transactionHash: output.encoded.sha3(.keccak256).toHexString())
+                return .success(result)
             } catch {
                 return .failure(HelperError.runtimeError("fail to get signed ethereum transaction,error:\(error.localizedDescription)"))
             }
@@ -121,4 +124,5 @@ class ERC20Helper {
             return .failure(err)
         }
     }
+    
 }
