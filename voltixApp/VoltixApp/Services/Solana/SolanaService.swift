@@ -47,9 +47,8 @@ class SolanaService {
         return (rawBalance,priceRateFiat)
     }
     
-    func fetchRecentBlockhash() async throws -> (recentBlockHash: String?, feeInLamports: String) {
+    func fetchRecentBlockhash() async throws -> String? {
         var blockHash: String? = nil
-        let feeInLamports = "7000"
         let requestBody: [String: Any] = [
             "jsonrpc": "2.0",
             "id": 1,
@@ -63,7 +62,7 @@ class SolanaService {
             print("Error fetching recent blockhash: \(error.localizedDescription)")
             throw error
         }
-        return (blockHash,feeInLamports)
+        return blockHash
     }
     
     func fetchHighPriorityFee(account: String) async throws -> UInt64 {

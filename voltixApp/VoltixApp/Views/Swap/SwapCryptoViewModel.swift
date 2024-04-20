@@ -45,7 +45,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func showFees(tx: SwapTransaction) -> Bool {
-        return tx.inboundFee != .empty
+        return tx.inboundFee != .zero
     }
     
     func showDuration(tx: SwapTransaction) -> Bool {
@@ -57,13 +57,13 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func feeString(tx: SwapTransaction) -> String {
-        guard !tx.inboundFee.isEmpty, let inbound = Double(tx.inboundFee) else { return .empty }
-        guard !tx.gas.isEmpty else { return .empty }
+        guard !tx.inboundFee.isZero else { return .empty }
+        guard !tx.gas.isZero else { return .empty }
 
-        let fee = inbound * tx.toCoin.priceRate + Double(tx.gasInCoinDecimal) * tx.fromCoin.priceRate
-        return Decimal(fee).formatToFiat(includeCurrencySymbol: true)
+        let fee = tx.toCoin.fiat(for: tx.inboundFee) + tx.fromCoin.fiat(for: tx.gas)
+        return fee.formatToFiat(includeCurrencySymbol: true)
     }
-    
+
     func durationString(tx: SwapTransaction) -> String {
         guard let duration = quote?.totalSwapSeconds else { return .empty }
         let formatter = DateComponentsFormatter()
@@ -170,12 +170,12 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     
     func updateQuotes(tx: SwapTransaction) async {
         guard !tx.fromAmount.isEmpty else { return clear(tx: tx) }
-        
+
         do {
             guard let amount = Decimal(string: tx.fromAmount), tx.fromCoin != tx.toCoin else {
                 throw Errors.swapQuoteParsingFailed
             }
-            
+
             let quote = try await thorchainService.fetchSwapQuotes(
                 address: tx.toCoin.address,
                 fromAsset: tx.fromCoin.swapAsset,
@@ -183,19 +183,19 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 amount: (amount * 100_000_000).description, // https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
                 interval: "1"
             )
-            
+
             guard let expected = Decimal(string: quote.expectedAmountOut) else {
                 throw Errors.swapQuoteParsingFailed
             }
-            
-            guard let fees = Decimal(string: quote.fees.total) else {
+
+            guard let fees = BigInt(quote.fees.total) else {
                 throw Errors.swapQuoteParsingFailed
             }
-            
+
             tx.toAmount = (expected / Decimal(100_000_000)).description
-            tx.inboundFee = (fees / Decimal(100_000_000)).description
+            tx.inboundFee = fees
             tx.duration = quote.totalSwapSeconds ?? 0
-            
+
             self.quote = quote
         } catch {
             self.error = error
@@ -222,7 +222,7 @@ private extension SwapCryptoViewModel {
     func clear(tx: SwapTransaction) {
         quote = nil
         tx.toAmount = .empty
-        tx.inboundFee = .empty
+        tx.inboundFee = .zero
         tx.duration = .zero
     }
     
