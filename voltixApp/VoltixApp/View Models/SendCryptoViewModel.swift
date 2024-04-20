@@ -31,6 +31,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     let maya = MayachainService.shared
     let atom = GaiaService.shared
     let kujira = KujiraService.shared
+    let blockchainService = BlockChainService.shared
     
     private let mediator = Mediator.shared
     
@@ -41,33 +42,9 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     
     func loadGasInfoForSending(tx: SendTransaction) async{
         do {
-            switch tx.coin.chain {
-            case .bitcoin,.bitcoinCash,.dogecoin,.dash,.litecoin:
-                let sats = try await utxo.fetchSatsPrice(coin: tx.coin)
-                tx.gas = String(sats)
-            case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon:
-                let service = try EvmServiceFactory.getService(forChain: tx.coin)
-                let (gasPrice,priorityFee,nonce) = try await service.getGasInfo(fromAddress: tx.fromAddress)
-                
-                tx.gas = gasPrice
-                tx.nonce = Int64(nonce)
-                tx.priorityFeeWei = Int64(priorityFee)
-            case .thorChain,.mayaChain, .kujira:
-                tx.gas = "0.02"
-            case .gaiaChain:
-                tx.gas = "0.0075"
-            case .solana:
-                let (_,feeInLamports) = try await sol.fetchRecentBlockhash()
-                tx.gas = String(feeInLamports)
-            }
-            
+            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.coin)
+            tx.gas = chainSpecific.gas
         } catch {
-            if let err =  error as? HelperError {
-                switch err{
-                case HelperError.runtimeError(let desc):
-                    print(desc)
-                }
-            }
             print("error fetching data: \(error.localizedDescription)")
         }
     }
@@ -182,7 +159,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             Task {
                 do{
                     let (_, _, _) = try await BalanceService.shared.balance(for: tx.coin)
-                    tx.amount = "\(tx.coin.getMaxValue(BigInt(tx.gasDecimal)))"
+                    tx.amount = "\(tx.coin.getMaxValue(BigInt(tx.gasDecimal.description,radix:10) ?? 0 ))"
                     await convertToFiat(newValue: tx.amount, tx: tx)
                 } catch {
                     print("fail to get Maya balance,error:\(error.localizedDescription)")

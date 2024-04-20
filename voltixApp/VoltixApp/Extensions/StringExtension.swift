@@ -100,22 +100,4 @@ extension String {
         }
         return valueBigInt
     }
-    
-    func toGwei(tx: SendTransaction) -> String{
-        
-        if tx.coin.chainType == .EVM {
-            
-            var fee: Decimal = Decimal.zero
-            if let gasPriceDecimal = Decimal(string: tx.gas),
-               let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description) {
-                fee = gasPriceDecimal / weiPerGWeiDecimal
-                print(fee)
-                
-                
-                return "\(fee.description) \(tx.coin.feeUnit )"
-            }
-        }
-        
-        return "\(tx.gas) \(tx.coin.feeUnit )"
-    }
 }

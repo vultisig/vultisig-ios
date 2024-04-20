@@ -32,9 +32,9 @@ enum BlockChainSpecific: Codable, Hashable {
         case .ERC20(let maxFeePerGasWei, _, _, _, _):
             return String(maxFeePerGasWei)
         case .THORChain:
-            return "0.02"
+            return "2000000"
         case .Cosmos:
-            return "0.0075"
+            return "7500"
         case .Solana(_, _, let feeInLamports):
             return feeInLamports
         }

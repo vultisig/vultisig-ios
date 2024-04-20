@@ -130,7 +130,7 @@ struct SendCryptoDetailsView: View {
         HStack {
             Text(NSLocalizedString("gas(auto)", comment: ""))
             Spacer()
-            Text(tx.gas.toGwei(tx: tx))
+            Text(tx.gasInReadable)
         }
         .font(.body16Menlo)
         .foregroundColor(.neutral0)
