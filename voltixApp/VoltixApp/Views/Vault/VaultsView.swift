@@ -86,11 +86,27 @@ struct VaultsView: View {
     }
     
     func move(from: IndexSet, to: Int) {
-//        orderedVaults.move(fromOffsets: from, toOffset: to)
-        print(from.startIndex.self)
-        print(from.endIndex.self)
-        print(to)
-//        vaults[from.].order = to
+        let fromIndex = from.first ?? 0
+        
+        if fromIndex<to {
+            moveDown(fromIndex: fromIndex, toIndex: to-1)
+        } else {
+            moveUp(fromIndex: fromIndex, toIndex: to)
+        }
+    }
+    
+    private func moveDown(fromIndex: Int, toIndex: Int) {
+        for index in fromIndex...toIndex {
+            vaults[index].order = vaults[index].order-1
+        }
+        vaults[fromIndex].order = toIndex
+    }
+    
+    private func moveUp(fromIndex: Int, toIndex: Int) {
+        vaults[fromIndex].order = toIndex
+        for index in toIndex...fromIndex {
+            vaults[index].order = vaults[index].order+1
+        }
     }
 }
 
