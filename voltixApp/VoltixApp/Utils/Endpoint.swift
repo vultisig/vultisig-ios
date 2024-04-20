@@ -49,6 +49,10 @@ class Endpoint {
     
     static let optimismServiceRpcService = "https://optimism-rpc.publicnode.com"
     
+    static let cronosServiceRpcService = "https://cronos-evm-rpc.publicnode.com"
+    
+    static let blastServiceRpcService = "https://rpc.ankr.com/blast"
+    
     static let ethServiceRpcService = "https://ethereum-rpc.publicnode.com"
     
     static let solanaServiceAlchemyRpc = "https://solana-rpc.publicnode.com"
@@ -147,6 +151,10 @@ class Endpoint {
             return "https://optimistic.etherscan.io/tx/\(txid)"
         case "MATIC":
             return "https://polygonscan.com/tx/\(txid)"
+        case "BLAST":
+            return "https://blastscan.io/tx/\(txid)"
+        case "CRO":
+            return "https://cronoscan.com/tx/\(txid)"
         default:
             return ""
         }
@@ -188,6 +196,10 @@ class Endpoint {
             return "https://optimistic.etherscan.io/address/\(address)"
         case "MATIC":
             return "https://polygonscan.com/address/\(address)"
+        case "BLAST":
+            return "https://blastscan.io/address/\(address)"
+        case "CRO":
+            return "https://cronoscan.com/address/\(address)"
         default:
             return nil
         }
@@ -229,6 +241,10 @@ class Endpoint {
             return "https://optimistic.etherscan.io/address/\(address)"
         case .polygon:
             return "https://polygonscan.com/address/\(address)"
+        case .blast:
+            return "https://blastscan.io/address/\(address)"
+        case .cronosChain:
+            return "https://cronoscan.com/address/\(address)"
         case .none:
             return nil
         }

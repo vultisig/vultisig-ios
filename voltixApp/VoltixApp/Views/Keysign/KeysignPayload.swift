@@ -75,7 +75,7 @@ struct KeysignPayload: Codable, Hashable {
             }
             let utxoHelper = UTXOChainsHelper(coin: coinType, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
             return utxoHelper.getPreSignedImageHash(keysignPayload: self)
-        case .ethereum, .arbitrum, .base, .optimism, .polygon, .avalanche, .bscChain:
+        case .ethereum, .arbitrum, .base, .optimism, .polygon, .avalanche, .bscChain, .blast, .cronosChain:
             if coin.isNativeToken {
                 let helper = EVMHelper.getHelper(coin: coin)?.getPreSignedImageHash(keysignPayload: self)
                 guard let preSignedImageHash = helper else {

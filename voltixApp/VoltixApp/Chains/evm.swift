@@ -41,8 +41,10 @@ class EVMHelper {
         return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).flatMap { addr -> Result<Coin, Error> in
             var ticker = ""
             switch self.coinType{
-            case .ethereum, .base, .optimism, .arbitrum:
+            case .ethereum, .base, .optimism, .arbitrum, .blast:
                 ticker = "ETH"
+            case .cronosChain:
+                ticker = "CRO"
             case .polygon:
                 ticker = "MATIC"
             case .avalancheCChain:

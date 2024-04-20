@@ -11,6 +11,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case ethereum
     case avalanche
     case base
+    case blast
     case arbitrum
     case polygon
     case optimism
@@ -23,6 +24,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case gaiaChain
     case kujira
     case mayaChain
+    case cronosChain
     
     enum MigrationKeys: String, CodingKey {
         case ticker
@@ -66,6 +68,9 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .base: return "Base"
         case .optimism: return "Optimism"
         case .polygon: return "Polygon"
+        case .blast: return "Blast"
+        case .cronosChain: return "CronosChain"
+            
         }
     }
     
@@ -88,6 +93,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .base: return "BASE" //Base does not have a coin
         case .optimism: return "OP"
         case .polygon: return "MATIC"
+        case .blast: return "BLAST"
+        case .cronosChain: return "CRO"
         }
     }
     
@@ -110,6 +117,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .base: return "BASE"
         case .optimism: return "OP"
         case .polygon: return "MATIC"
+        case .blast: return "BLAST"
+        case .cronosChain: return "CRO"
         }
     }
     
@@ -117,7 +126,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         switch self {
         case .thorChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .gaiaChain:
             return true
-        case .solana, .dash, .kujira, .mayaChain,.arbitrum, .base, .optimism, .polygon:
+        case .solana, .dash, .kujira, .mayaChain,.arbitrum, .base, .optimism, .polygon, .blast, .cronosChain:
             return false
         }
     }
@@ -133,7 +142,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     
     var chainType: ChainType {
         switch self {
-        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon:
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain:
             return .EVM
         case .thorChain,.mayaChain:
             return .THORChain

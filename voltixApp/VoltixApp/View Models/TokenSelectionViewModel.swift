@@ -77,7 +77,7 @@ class TokenSelectionViewModel: ObservableObject {
             case .failure(let error):
                 logger.info("fail to get thorchain address,error:\(error.localizedDescription)")
             }
-        case .ethereum, .arbitrum, .base, .optimism, .polygon, .bscChain, .avalanche:
+        case .ethereum, .arbitrum, .base, .optimism, .polygon, .bscChain, .avalanche, .blast, .cronosChain:
             
             guard let evmHelper = EVMHelper.getHelper(coin: asset) else {
                 logger.info("Coin type not found on EVM helper")
