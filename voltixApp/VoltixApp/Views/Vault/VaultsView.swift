@@ -14,6 +14,9 @@ struct VaultsView: View {
     
     @Query var vaults: [Vault]
     
+    @State var orderedVaults = [Vault]()
+    @State private var isEditing = false
+    
     var body: some View {
         VStack {
             ZStack {
@@ -26,6 +29,9 @@ struct VaultsView: View {
             Spacer()
         }
         .allowsHitTesting(showVaultsList)
+        .onAppear {
+            orderedVaults = vaults
+        }
     }
     
     var view: some View {
@@ -37,18 +43,14 @@ struct VaultsView: View {
     }
     
     var list: some View {
-        ScrollView {
-            LazyVStack {
-                ForEach(vaults, id: \.self) { vault in
-                    VaultCell(vault: vault)
-                        .onTapGesture {
-                            viewModel.setSelectedVault(vault)
-                            showVaultsList = false
-                        }
-                }
+        List {
+            ForEach(orderedVaults, id: \.self) { vault in
+                getButton(for: vault)
             }
-            .padding(.top, 30)
+            .onMove(perform: isEditing ? move: nil)
+            .background(Color.backgroundBlue)
         }
+        .listStyle(PlainListStyle())
     }
     
     var addVaultButton: some View {
@@ -60,6 +62,26 @@ struct VaultsView: View {
         }
         .scaleEffect(showVaultsList ? 1 : 0)
         .opacity(showVaultsList ? 1 : 0)
+    }
+    
+    private func getButton(for vault: Vault) -> some View {
+        Button {
+            handleSelection(for: vault)
+        } label: {
+            VaultCell(vault: vault)
+        }
+        .listRowInsets(EdgeInsets())
+        .listRowSeparator(.hidden)
+        .padding(.vertical, 8)
+    }
+    
+    private func handleSelection(for vault: Vault) {
+        viewModel.setSelectedVault(vault)
+        showVaultsList = false
+    }
+    
+    func move(from: IndexSet, to: Int) {
+        orderedVaults.move(fromOffsets: from, toOffset: to)
     }
 }
 
