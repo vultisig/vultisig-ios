@@ -188,12 +188,15 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 throw Errors.swapQuoteParsingFailed
             }
 
-            guard let fees = BigInt(quote.fees.total) else {
+            guard let fees = Decimal(string: quote.fees.total) else {
                 throw Errors.swapQuoteParsingFailed
             }
 
+            let toDecimals = Int(tx.toCoin.decimals) ?? 0
+            let inboundFeeDecimal = fees * pow(10, max(0, toDecimals - 8))
+
             tx.toAmount = (expected / Decimal(100_000_000)).description
-            tx.inboundFee = fees
+            tx.inboundFee = BigInt(stringLiteral: inboundFeeDecimal.description)
             tx.duration = quote.totalSwapSeconds ?? 0
 
             self.quote = quote
