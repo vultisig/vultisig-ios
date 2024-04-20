@@ -11,9 +11,12 @@ struct SendCryptoDoneView: View {
     let vault: Vault
     let hash: String
     let explorerLink: String
-    @Environment(\.openURL) var openURL
+    
     @State var showAlert = false
+    
+    @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
+    
     var body: some View {
         ZStack {
             Background()
@@ -90,11 +93,12 @@ struct SendCryptoDoneView: View {
     }
     
     var continueButton: some View {
-        Button(action: {
-            dismiss()
+        NavigationLink(destination: {
+            HomeView(selectedVault: vault)
         }, label: {
             FilledButton(title: "complete")
         })
+        .id(UUID())
         .padding(40)
     }
     
@@ -112,6 +116,10 @@ struct SendCryptoDoneView: View {
 }
 
 #Preview {
-    SendCryptoDoneView(vault:Vault.example,hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w", explorerLink: "https://blockstream.info/tx/")
-        .previewDevice("iPhone 13 Pro")
+    SendCryptoDoneView(
+        vault:Vault.example,
+        hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
+        explorerLink: "https://blockstream.info/tx/"
+    )
+    .previewDevice("iPhone 13 Pro")
 }
