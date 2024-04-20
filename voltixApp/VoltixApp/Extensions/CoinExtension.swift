@@ -46,6 +46,10 @@ extension Coin {
             return CoinType.base
         case .optimism:
             return CoinType.optimism
+        case .blast:
+            return CoinType.blast
+        case .cronosChain:
+            return CoinType.cronosChain
             
         }
     }
