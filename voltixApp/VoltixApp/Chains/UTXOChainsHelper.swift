@@ -95,7 +95,7 @@ class UTXOChainsHelper {
             return .failure(HelperError.runtimeError("fail to get UTXO chain specific byte fee"))
         }
         var input = signingInput
-        input.byteFee = byteFee
+        input.byteFee = Int64(byteFee)
         input.hashType = BitcoinScript.hashTypeForCoin(coinType: coin)
         input.useMaxAmount = false
         for inputUtxo in keysignPayload.utxos {
@@ -153,7 +153,7 @@ class UTXOChainsHelper {
             $0.useMaxAmount = false
             $0.toAddress = keysignPayload.toAddress
             $0.changeAddress = keysignPayload.coin.address
-            $0.byteFee = byteFee
+            $0.byteFee = Int64(byteFee)
             $0.coinType = coin.rawValue
             if let memoData = keysignPayload.memo?.data(using: .utf8) {
                 $0.outputOpReturn = memoData

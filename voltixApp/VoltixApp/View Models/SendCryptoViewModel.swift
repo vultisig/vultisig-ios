@@ -47,18 +47,14 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 tx.gas = String(sats)
             case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain:
                 let service = try EvmServiceFactory.getService(forChain: tx.coin)
-                let (gasPrice,priorityFee,nonce) = try await service.getGasInfo(fromAddress: tx.fromAddress)
-                
-                tx.gas = gasPrice
-                tx.nonce = Int64(nonce)
-                tx.priorityFeeWei = Int64(priorityFee)
+                let (gasPrice, _, _) = try await service.getGasInfo(fromAddress: tx.fromAddress)
+                tx.gas = String(gasPrice)
             case .thorChain,.mayaChain, .kujira:
                 tx.gas = "0.02"
             case .gaiaChain:
                 tx.gas = "0.0075"
             case .solana:
-                let (_,feeInLamports) = try await sol.fetchRecentBlockhash()
-                tx.gas = String(feeInLamports)
+                tx.gas = String(SolanaHelper.defaultFeeInLamports)
             }
             
         } catch {
@@ -90,7 +86,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             coin: tx.coin,
             toAddress: tx.toAddress,
             toAmount: BigInt(totalSelectedAmount),
-            chainSpecific: BlockChainSpecific.UTXO(byteFee: tx.feeInSats),
+            chainSpecific: BlockChainSpecific.UTXO(byteFee: BigInt(tx.feeInSats)),
             utxos: utxoInfo,
             memo: tx.memo,
             swapPayload: nil
@@ -137,11 +133,8 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                             return
                         }
                         
-                        guard let gasPriceWei = BigInt(gasPrice) else {
-                            print("Invalid gas price")
-                            return
-                        }
-                        
+                        let gasPriceWei = BigInt(gasPrice)
+
                         let totalFeeWei: BigInt = gasLimitBigInt * gasPriceWei
                         
                         tx.amount = "\(tx.coin.getMaxValue(totalFeeWei))"
@@ -161,15 +154,9 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             Task{
                 do{
                     let (rawBalance,priceRate) = try await sol.getSolanaBalance(coin: tx.coin)
-                    let (_,feeLamportsStr) = try await sol.fetchRecentBlockhash()
-                    guard
-                        let feeInLamports = BigInt(feeLamportsStr) else {
-                        print("Invalid fee In Lamports")
-                        return
-                    }
                     tx.coin.rawBalance = rawBalance
                     tx.coin.priceRate = priceRate
-                    tx.amount = "\(tx.coin.getMaxValue(feeInLamports))"
+                    tx.amount = "\(tx.coin.getMaxValue(SolanaHelper.defaultFeeInLamports))"
                     await convertToFiat(newValue: tx.amount, tx: tx)
                 } catch {
                     print("fail to load solana balances,error:\(error.localizedDescription)")

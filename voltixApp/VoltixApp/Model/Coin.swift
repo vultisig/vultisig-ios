@@ -96,6 +96,17 @@ class Coin: Codable, Hashable {
         return balanceInFiat.formatToFiat()
     }
     
+    func decimal(for value: BigInt) -> Decimal {
+        let decimals = Int(decimals) ?? 0
+        let decimalValue = Decimal(string: String(value)) ?? 0
+        return decimalValue / pow(Decimal(10), decimals)
+    }
+    
+    func fiat(for value: BigInt) -> Decimal {
+        let decimal = decimal(for: value)
+        return decimal * Decimal(priceRate)
+    }
+
     var swapAsset: String {
         guard !isNativeToken else {
             if chain == .gaiaChain {
