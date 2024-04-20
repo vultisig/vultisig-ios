@@ -10,7 +10,7 @@ import WalletCore
 enum SolanaHelper {
     static func getSolana(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
         return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).flatMap { addr -> Result<Coin, Error> in
-            TokensStore.createNewCoinInstance(ticker: "SOL", address: addr, hexPublicKey: hexPubKey)
+            TokensStore.createNewCoinInstance(ticker: "SOL", address: addr, hexPublicKey: hexPubKey, coinType: .solana)
         }
     }
     
@@ -80,7 +80,7 @@ enum SolanaHelper {
     static func getSignedTransaction(vaultHexPubKey: String,
                                      vaultHexChainCode: String,
                                      keysignPayload: KeysignPayload,
-                                     signatures: [String: TssKeysignResponse]) -> Result<String, Error>
+                                     signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error>
     {
         guard let pubkeyData = Data(hexString: vaultHexPubKey) else {
             return .failure(HelperError.runtimeError("public key \(vaultHexPubKey) is invalid"))
@@ -110,12 +110,18 @@ enum SolanaHelper {
                                                                                      signatures: allSignatures,
                                                                                      publicKeys: publicKeys)
                 let output = try SolanaSigningOutput(serializedData: compileWithSignature)
-                return .success(output.encoded)
+                let result = SignedTransactionResult(rawTransaction: output.encoded, 
+                                                     transactionHash: getHashFromRawTransaction(tx:output.encoded))
+                return .success(result)
             } catch {
                 return .failure(HelperError.runtimeError("fail to get signed solana transaction,error:\(error.localizedDescription)"))
             }
         case .failure(let err):
             return .failure(err)
         }
+    }
+    static func getHashFromRawTransaction(tx: String) -> String {
+        let sig =  Data(tx.prefix(64).utf8)
+        return sig.base64EncodedString()
     }
 }

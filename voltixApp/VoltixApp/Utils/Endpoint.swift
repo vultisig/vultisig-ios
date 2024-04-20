@@ -41,6 +41,14 @@ class Endpoint {
     
     static let bscServiceRpcService = "https://bsc-rpc.publicnode.com"
     
+    static let baseServiceRpcService = "https://base-rpc.publicnode.com"
+    
+    static let arbitrumOneServiceRpcService = "https://arbitrum-one-rpc.publicnode.com"
+    
+    static let polygonServiceRpcService = "https://polygon-bor-rpc.publicnode.com"
+    
+    static let optimismServiceRpcService = "https://optimism-rpc.publicnode.com"
+    
     static let ethServiceRpcService = "https://ethereum-rpc.publicnode.com"
     
     static let solanaServiceAlchemyRpc = "https://solana-rpc.publicnode.com"
@@ -131,6 +139,14 @@ class Endpoint {
             return "https://bscscan.com/tx/\(txid)"
         case "CACAO":
             return "https://www.mayascan.org/tx/\(txid)"
+        case "ARB":
+            return "https://arbiscan.io/tx/\(txid)"
+        case "BASE":
+            return "https://basescan.org/tx/\(txid)"
+        case "OP":
+            return "https://optimistic.etherscan.io/tx/\(txid)"
+        case "MATIC":
+            return "https://polygonscan.com/tx/\(txid)"
         default:
             return ""
         }
@@ -164,6 +180,14 @@ class Endpoint {
             return "https://bscscan.com/address/\(address)"
         case "CACAO":
             return "https://www.mayascan.org/address/\(address)"
+        case "ARB":
+            return "https://arbiscan.io/address/\(address)"
+        case "BASE":
+            return "https://basescan.org/address/\(address)"
+        case "OP":
+            return "https://optimistic.etherscan.io/address/\(address)"
+        case "MATIC":
+            return "https://polygonscan.com/address/\(address)"
         default:
             return nil
         }
@@ -197,6 +221,14 @@ class Endpoint {
             return "https://blockchair.com/dash/address/\(address)"
         case .mayaChain:
             return "https://www.mayascan.org/address/\(address)"
+        case .arbitrum:
+            return "https://arbiscan.io/address/\(address)"
+        case .base:
+            return "https://basescan.org/address/\(address)" // Hypothetical URL
+        case .optimism:
+            return "https://optimistic.etherscan.io/address/\(address)"
+        case .polygon:
+            return "https://polygonscan.com/address/\(address)"
         case .none:
             return nil
         }

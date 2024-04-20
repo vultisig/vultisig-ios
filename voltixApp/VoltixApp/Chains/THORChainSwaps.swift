@@ -53,12 +53,15 @@ class THORChainSwaps {
             case .doge:
                 let utxoHelper = UTXOChainsHelper(coin: .dogecoin, vaultHexPublicKey: self.vaultHexPublicKey, vaultHexChainCode: self.vaultHexChainCode)
                 return utxoHelper.getSigningInputData(keysignPayload: keysignPayload, signingInput: output.bitcoin)
-            case .eth:
-                return EVMHelper.getEthereumHelper().getPreSignedInputData(signingInput: output.ethereum, keysignPayload: keysignPayload)
-            case .bsc:
-                return EVMHelper.getBSCHelper().getPreSignedInputData(signingInput: output.ethereum, keysignPayload: keysignPayload)
-            case .avax:
-                return EVMHelper.getAvaxHelper().getPreSignedInputData(signingInput: output.ethereum, keysignPayload: keysignPayload)
+            case .eth, .bsc, .avax:
+                let evmHelper = EVMHelper.getHelper(coin: keysignPayload.coin)?.getPreSignedInputData(signingInput: output.ethereum, keysignPayload: keysignPayload)
+            
+                guard let signedEvmTx = evmHelper else {
+                    return .failure("Fail to sign the tx for EVM." as! Error)
+                }
+                
+                return signedEvmTx
+            
             case .atom:
                 return ATOMHelper().getSwapPreSignedInputData(keysignPayload:keysignPayload, signingInput: output.cosmos)
             default:
@@ -127,7 +130,7 @@ class THORChainSwaps {
     }
     
     func getSignedTransaction(keysignPayload: KeysignPayload,
-                              signatures: [String: TssKeysignResponse]) -> Result<String, Error>
+                              signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error>
     {
         guard let swapPayload = keysignPayload.swapPayload else {
             return .failure(HelperError.runtimeError("no swap payload"))
@@ -151,12 +154,15 @@ class THORChainSwaps {
             case .doge:
                 let utxoHelper = UTXOChainsHelper(coin: .dogecoin, vaultHexPublicKey: self.vaultHexPublicKey, vaultHexChainCode: self.vaultHexChainCode)
                 return utxoHelper.getSignedTransaction(inputData: inputData, signatures: signatures)
-            case .eth:
-                return EVMHelper.getEthereumHelper().getSignedTransaction(vaultHexPubKey: self.vaultHexPublicKey, vaultHexChainCode: self.vaultHexChainCode, inputData: inputData, signatures: signatures)
-            case .bsc:
-                return EVMHelper.getBSCHelper().getSignedTransaction(vaultHexPubKey: self.vaultHexPublicKey, vaultHexChainCode: self.vaultHexChainCode, inputData: inputData, signatures: signatures)
-            case .avax:
-                return EVMHelper.getAvaxHelper().getSignedTransaction(vaultHexPubKey: self.vaultHexPublicKey, vaultHexChainCode: self.vaultHexChainCode, inputData: inputData, signatures: signatures)
+            case .eth, .bsc, .avax:
+                let evmHelper = EVMHelper.getHelper(coin: keysignPayload.coin)?.getSignedTransaction(vaultHexPubKey: self.vaultHexPublicKey, vaultHexChainCode: self.vaultHexChainCode, inputData: inputData, signatures: signatures)
+                
+                guard let signedEvmTx = evmHelper else {
+                    return .failure("Fail to sign the tx for EVM." as! Error)
+                }
+                
+                return signedEvmTx
+                
             case .atom:
                 return ATOMHelper().getSignedTransaction(vaultHexPubKey: self.vaultHexPublicKey, vaultHexChainCode: self.vaultHexChainCode, inputData: inputData, signatures: signatures)
             default:

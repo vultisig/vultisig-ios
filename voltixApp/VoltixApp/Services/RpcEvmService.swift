@@ -45,7 +45,7 @@ class RpcEvmService {
         async let gasPrice = fetchGasPrice()
         async let nonce = fetchNonce(address: fromAddress)
         async let priorityFee = fetchMaxPriorityFeePerGas()
-        return (String(try await gasPrice / BigInt(EVMHelper.weiPerGWei)),Int64(try await priorityFee),Int64(try await nonce))
+        return (String(try await gasPrice),Int64(try await priorityFee),Int64(try await nonce))
     }
     
     func broadcastTransaction(hex: String) async throws -> String {
@@ -105,11 +105,7 @@ class RpcEvmService {
     }
     
     func fetchMaxPriorityFeePerGas() async throws -> BigInt {
-        let feeInWei = try await intRpcCall(method: "eth_maxPriorityFeePerGas", params: [])
-        let feeInGwei = feeInWei / BigInt(10).power(9)
-        let adjustedFeeInGwei = max(feeInGwei, BigInt(1))
-        return adjustedFeeInGwei
-        
+        return try await intRpcCall(method: "eth_maxPriorityFeePerGas", params: []) //WEI
     }
 
     private func fetchNonce(address: String) async throws -> BigInt {
@@ -172,7 +168,7 @@ class RpcEvmService {
         } catch {
             print(payload)
             print(error.localizedDescription)
-            throw RpcEvmServiceError.rpcError(code: 500, message: error.localizedDescription)
+            throw error
         }
 
     }

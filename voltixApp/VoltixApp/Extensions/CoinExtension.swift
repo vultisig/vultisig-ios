@@ -38,6 +38,15 @@ extension Coin {
             return CoinType.dash
         case .mayaChain:
             return CoinType.thorchain
+        case .arbitrum:
+            return CoinType.arbitrum
+        case .polygon:
+            return CoinType.polygon
+        case .base:
+            return CoinType.base
+        case .optimism:
+            return CoinType.optimism
+            
         }
     }
 }

@@ -17,8 +17,8 @@ struct KeysignMessage: Codable, Hashable {
 
 enum BlockChainSpecific: Codable, Hashable {
     case UTXO(byteFee: Int64) // byteFee
-    case Ethereum(maxFeePerGasGwei: Int64, priorityFeeGwei: Int64, nonce: Int64, gasLimit: Int64) // maxFeePerGasGwei, priorityFeeGwei, nonce , gasLimit
-    case ERC20(maxFeePerGasGwei: Int64, priorityFeeGwei: Int64, nonce: Int64, gasLimit: Int64, contractAddr: String)
+    case Ethereum(maxFeePerGasWei: Int64, priorityFeeWei: Int64, nonce: Int64, gasLimit: Int64) // maxFeePerGasWei, priorityFeeWei, nonce , gasLimit
+    case ERC20(maxFeePerGasWei: Int64, priorityFeeWei: Int64, nonce: Int64, gasLimit: Int64, contractAddr: String)
     case THORChain(accountNumber: UInt64, sequence: UInt64)
     case Cosmos(accountNumber: UInt64, sequence:UInt64, gas: UInt64)
     case Solana(recentBlockHash: String, priorityFee: UInt64, feeInLamports: String) // priority fee is in microlamports
@@ -27,10 +27,10 @@ enum BlockChainSpecific: Codable, Hashable {
         switch self {
         case .UTXO(let byteFee):
             return String(byteFee)
-        case .Ethereum(let maxFeePerGasGwei, _, _, _):
-            return String(maxFeePerGasGwei)
-        case .ERC20(let maxFeePerGasGwei, _, _, _, _):
-            return String(maxFeePerGasGwei)
+        case .Ethereum(let maxFeePerGasWei, _, _, _):
+            return String(maxFeePerGasWei)
+        case .ERC20(let maxFeePerGasWei, _, _, _, _):
+            return String(maxFeePerGasWei)
         case .THORChain:
             return "0.02"
         case .Cosmos:
@@ -57,12 +57,7 @@ struct KeysignPayload: Codable, Hashable {
     let swapPayload: THORChainSwapPayload?
     
     var toAmountString: String {
-        let decimalAmount = Decimal(string: toAmount.description) ?? Decimal(0)
-        
-        if coin.chainType == .EVM {
-            let divisor = Decimal(EVMHelper.weiPerGWei)
-            return "\(decimalAmount / divisor) \(coin.ticker)"
-        }
+        let decimalAmount = Decimal(string: toAmount.description) ?? Decimal.zero
         let power = Decimal(sign: .plus, exponent: -(Int(coin.decimals) ?? 0), significand: 1)
         return "\(decimalAmount * power) \(coin.ticker)"
     }
@@ -80,23 +75,21 @@ struct KeysignPayload: Codable, Hashable {
             }
             let utxoHelper = UTXOChainsHelper(coin: coinType, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
             return utxoHelper.getPreSignedImageHash(keysignPayload: self)
-        case .ethereum:
+        case .ethereum, .arbitrum, .base, .optimism, .polygon, .avalanche, .bscChain:
             if coin.isNativeToken {
-                return EVMHelper.getEthereumHelper().getPreSignedImageHash(keysignPayload: self)
+                let helper = EVMHelper.getHelper(coin: coin)?.getPreSignedImageHash(keysignPayload: self)
+                guard let preSignedImageHash = helper else {
+                    return .failure("Error to get getPreSignedImageHash on EVM" as! Error)
+                }
+                return preSignedImageHash
+                
             }else{
-                return ERC20Helper.getEthereumERC20Helper().getPreSignedImageHash(keysignPayload: self)
-            }
-        case .avalanche:
-            if coin.isNativeToken {
-                return EVMHelper.getAvaxHelper().getPreSignedImageHash(keysignPayload: self)
-            } else {
-                return ERC20Helper.getAvaxERC20Helper().getPreSignedImageHash(keysignPayload: self)
-            }
-        case .bscChain:
-            if coin.isNativeToken {
-                return EVMHelper.getBSCHelper().getPreSignedImageHash(keysignPayload: self)
-            } else {
-                return ERC20Helper.getBSCBEP20Helper().getPreSignedImageHash(keysignPayload: self)
+                let helper = ERC20Helper.getHelper(coin: coin)?.getPreSignedImageHash(keysignPayload: self)
+                guard let preSignedImageHash = helper else {
+                    return .failure("Error to get getPreSignedImageHash on EVM" as! Error)
+                }
+                return preSignedImageHash
+                
             }
         case .thorChain:
             return THORChainHelper.getPreSignedImageHash(keysignPayload: self)

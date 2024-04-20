@@ -7,6 +7,7 @@ import Foundation
 import Tss
 import WalletCore
 import BigInt
+import CryptoSwift
 
 class ERC20Helper {
     let coinType: CoinType
@@ -15,14 +16,12 @@ class ERC20Helper {
         self.coinType = coinType
     }
     
-    static func getEthereumERC20Helper() -> ERC20Helper{
-        return ERC20Helper(coinType: CoinType.ethereum)
-    }
-    static func getAvaxERC20Helper() -> ERC20Helper{
-        return ERC20Helper(coinType: CoinType.avalancheCChain)
-    }
-    static func getBSCBEP20Helper() -> ERC20Helper{
-        return ERC20Helper(coinType: CoinType.smartChain)
+    static func getHelper(coin: Coin) -> ERC20Helper? {
+        guard let coinType = coin.getCoinType() else {
+            print("Coin type not found on Wallet Core")
+            return nil
+        }
+        return ERC20Helper(coinType: coinType)
     }
     
     func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
@@ -31,8 +30,8 @@ class ERC20Helper {
         guard let intChainID = Int64(coin.chainId) else {
             return .failure(HelperError.runtimeError("fail to get chainID"))
         }
-        guard case .ERC20(let maxFeePerGasGWei,
-                          let priorityFeeGWei,
+        guard case .ERC20(let maxFeePerGasWei,
+                          let priorityFeeWei,
                           let nonce,
                           let gasLimit,
                           let contractAddr) = keysignPayload.chainSpecific
@@ -44,8 +43,8 @@ class ERC20Helper {
             $0.chainID = Data(hexString: intChainID.hexString())!
             $0.nonce = Data(hexString: nonce.hexString())!
             $0.gasLimit = Data(hexString: gasLimit.hexString())!
-            $0.maxFeePerGas = EVMHelper.convertEthereumNumber(input: BigInt(maxFeePerGasGWei))
-            $0.maxInclusionFeePerGas = EVMHelper.convertEthereumNumber(input: BigInt(priorityFeeGWei))
+            $0.maxFeePerGas = EVMHelper.convertEthereumNumber(input: BigInt(maxFeePerGasWei))
+            $0.maxInclusionFeePerGas = EVMHelper.convertEthereumNumber(input: BigInt(priorityFeeWei))
             $0.toAddress = contractAddr
             $0.txMode = .enveloped
             $0.transaction = EthereumTransaction.with {
@@ -83,7 +82,7 @@ class ERC20Helper {
     func getSignedTransaction(vaultHexPubKey: String,
                                      vaultHexChainCode: String,
                                      keysignPayload: KeysignPayload,
-                                     signatures: [String: TssKeysignResponse]) -> Result<String, Error>
+                                     signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error>
     {
         let ethPublicKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: vaultHexPubKey, hexChainCode: vaultHexChainCode, derivePath: self.coinType.derivationPath())
         guard let pubkeyData = Data(hexString: ethPublicKey),
@@ -115,7 +114,9 @@ class ERC20Helper {
                                                                                      signatures: allSignatures,
                                                                                      publicKeys: publicKeys)
                 let output = try EthereumSigningOutput(serializedData: compileWithSignature)
-                return .success(output.encoded.hexString)
+                let result = SignedTransactionResult(rawTransaction: output.encoded.hexString,
+                                                     transactionHash: output.encoded.sha3(.keccak256).toHexString())
+                return .success(result)
             } catch {
                 return .failure(HelperError.runtimeError("fail to get signed ethereum transaction,error:\(error.localizedDescription)"))
             }
@@ -123,4 +124,5 @@ class ERC20Helper {
             return .failure(err)
         }
     }
+    
 }

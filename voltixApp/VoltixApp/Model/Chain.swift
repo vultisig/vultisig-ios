@@ -10,6 +10,10 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case solana
     case ethereum
     case avalanche
+    case base
+    case arbitrum
+    case polygon
+    case optimism
     case bscChain
     case bitcoin
     case bitcoinCash
@@ -58,6 +62,10 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .kujira: return "Kujira"
         case .dash: return "Dash"
         case .mayaChain: return "MayaChain"
+        case .arbitrum: return "Arbitrum"
+        case .base: return "Base"
+        case .optimism: return "Optimism"
+        case .polygon: return "Polygon"
         }
     }
     
@@ -76,6 +84,10 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .kujira: return "UKUJI"
         case .dash: return "DASH"
         case .mayaChain: return "CACAO"
+        case .arbitrum: return "ARB"
+        case .base: return "BASE" //Base does not have a coin
+        case .optimism: return "OP"
+        case .polygon: return "MATIC"
         }
     }
     
@@ -94,6 +106,10 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .solana: return "SOL"
         case .dash: return "DASH"
         case .mayaChain: return "CACAO"
+        case .arbitrum: return "ARB"
+        case .base: return "BASE"
+        case .optimism: return "OP"
+        case .polygon: return "MATIC"
         }
     }
     
@@ -101,23 +117,23 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         switch self {
         case .thorChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .gaiaChain:
             return true
-        case .solana, .dash, .kujira, .mayaChain:
+        case .solana, .dash, .kujira, .mayaChain,.arbitrum, .base, .optimism, .polygon:
             return false
         }
     }
     
     var signingKeyType: KeyType {
-        switch self {
-        case .thorChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dash, .dogecoin, .gaiaChain, .kujira, .mayaChain:
+        switch self.chainType {
+        case .Cosmos, .EVM, .THORChain, .UTXO:
             return .ECDSA
-        case .solana:
+        case .Solana:
             return .EdDSA
         }
     }
     
     var chainType: ChainType {
         switch self {
-        case .ethereum, .avalanche, .bscChain:
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon:
             return .EVM
         case .thorChain,.mayaChain:
             return .THORChain
