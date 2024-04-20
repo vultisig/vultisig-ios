@@ -98,12 +98,13 @@ struct JoinKeysignDoneView: View {
     }
     
     var continueButton: some View {
-        Button {
-            dismiss()
-        } label: {
+        NavigationLink(destination: {
+            HomeView()
+        }, label: {
             FilledButton(title: "DONE")
-                .padding(20)
-        }
+        })
+        .id(UUID())
+        .padding(20)
     }
     
     var header: some View {
