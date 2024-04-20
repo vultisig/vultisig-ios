@@ -13,9 +13,7 @@ struct VaultsView: View {
     @Binding var showVaultsList: Bool
     @Binding var isEditingVaults: Bool
     
-    @Query var vaults: [Vault]
-    
-    @State var orderedVaults = [Vault]()
+    @Query(sort: \Vault.order) var vaults: [Vault]
     
     var body: some View {
         VStack {
@@ -30,7 +28,7 @@ struct VaultsView: View {
         }
         .allowsHitTesting(showVaultsList)
         .onAppear {
-            orderedVaults = vaults
+            setData()
         }
     }
     
@@ -44,7 +42,7 @@ struct VaultsView: View {
     
     var list: some View {
         List {
-            ForEach(orderedVaults, id: \.self) { vault in
+            ForEach(vaults, id: \.self) { vault in
                 getButton(for: vault)
             }
             .onMove(perform: isEditingVaults ? move: nil)
@@ -76,13 +74,23 @@ struct VaultsView: View {
         .disabled(isEditingVaults ? true : false)
     }
     
+    private func setData() {
+        for index in 0..<vaults.count {
+            vaults[index].setOrder(index)
+        }
+    }
+    
     private func handleSelection(for vault: Vault) {
         viewModel.setSelectedVault(vault)
         showVaultsList = false
     }
     
     func move(from: IndexSet, to: Int) {
-        orderedVaults.move(fromOffsets: from, toOffset: to)
+//        orderedVaults.move(fromOffsets: from, toOffset: to)
+        print(from.startIndex.self)
+        print(from.endIndex.self)
+        print(to)
+//        vaults[from.].order = to
     }
 }
 

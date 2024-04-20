@@ -22,9 +22,13 @@ struct NavigationHomeEditButton: View {
     
     var vaultsListEditButton: some View {
         Button {
-            
+            isEditingVaults.toggle()
         } label: {
-            editButton
+            if isEditingVaults {
+                doneButton
+            } else {
+                editButton
+            }
         }
     }
     
@@ -37,16 +41,7 @@ struct NavigationHomeEditButton: View {
     }
     
     var editButton: some View {
-        ZStack {
-            if isEditingVaults {
-                doneButton
-            } else {
-                NavigationEditButton()
-            }
-        }
-        .onTapGesture {
-            isEditingVaults.toggle()
-        }
+        NavigationEditButton()
     }
     
     var doneButton: some View {

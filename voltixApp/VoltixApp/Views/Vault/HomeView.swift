@@ -96,7 +96,11 @@ struct HomeView: View {
     }
     
     var editButton: some View {
-        NavigationHomeEditButton(vault: viewModel.selectedVault, showVaultsList: showVaultsList, isEditingVaults: $isEditingVaults)
+        NavigationHomeEditButton(
+            vault: viewModel.selectedVault,
+            showVaultsList: showVaultsList,
+            isEditingVaults: $isEditingVaults
+        )
     }
     
     private func setData() {
