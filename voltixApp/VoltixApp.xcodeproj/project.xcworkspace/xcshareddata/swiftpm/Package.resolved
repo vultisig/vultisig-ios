@@ -14,8 +14,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/hyperoslo/Cache",
       "state" : {
-        "revision" : "d048bf404a5c8362c6cf840c2096d5777975cd27",
-        "version" : "6.1.0"
+        "revision" : "ad6abdf2a3a866288a7dad2c4e13379406002a81",
+        "version" : "6.2.0"
       }
     },
     {
@@ -23,8 +23,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/twostraws/CodeScanner",
       "state" : {
-        "revision" : "bf5d7087015620b250ee6c865b3c9039fc159d1a",
-        "version" : "2.3.3"
+        "revision" : "944a6a1ca030dbd890e647a678e718fc2115d35c",
+        "version" : "2.4.1"
       }
     },
     {

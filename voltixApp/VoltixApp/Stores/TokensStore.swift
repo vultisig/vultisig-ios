@@ -19,7 +19,7 @@ class TokensStore {
         
         Coin(chain: Chain.mayaChain, ticker: "MAYA", logo: "maya", address: "", priceRate: 0.0, chainType: ChainType.THORChain, decimals: "4", hexPublicKey: "", feeUnit: "cacao", priceProviderId: "maya", contractAddress: "", rawBalance: "0", isNativeToken: false, feeDefault: "0.02"),
         
-        Coin(chain: Chain.ethereum, ticker: "ETH", logo: "eth", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "ethereum", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "21000"),
+        Coin(chain: Chain.ethereum, ticker: "ETH", logo: "eth", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "ethereum", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "23000"),
         
         Coin(chain: Chain.ethereum, ticker: "USDC", logo: "usdc", address: "", priceRate: 1.0, chainType: ChainType.EVM, decimals: "6", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "usd-coin", contractAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
         
@@ -37,11 +37,11 @@ class TokensStore {
         
         Coin(chain: Chain.solana, ticker: "SOL", logo: "solana", address: "", priceRate: 0.0, chainType: ChainType.Solana, decimals: "9", hexPublicKey: "", feeUnit: "Lamports", priceProviderId: "solana", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "7000"),
         
-        Coin(chain: Chain.avalanche, ticker: "AVAX", logo: "avax", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "avalanche-2", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "21000"),
+        Coin(chain: Chain.avalanche, ticker: "AVAX", logo: "avax", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "avalanche-2", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "23000"),
         
         Coin(chain: Chain.avalanche, ticker: "USDC", logo: "usdc", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "6", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "usd-coin", contractAddress: "0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
         
-        Coin(chain: Chain.bscChain, ticker: "BNB", logo: "bsc", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "binancecoin", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "21000"),
+        Coin(chain: Chain.bscChain, ticker: "BNB", logo: "bsc", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "binancecoin", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "23000"),
         
         Coin(chain: Chain.bscChain, ticker: "USDT", logo: "usdt", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "tether", contractAddress: "0x55d398326f99059fF775485246999027B3197955", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
         
@@ -49,7 +49,7 @@ class TokensStore {
         
         Coin(chain: Chain.kujira, ticker: "KUJI", logo: "kuji", address: "", priceRate: 0.0, chainType: ChainType.Cosmos, decimals: "6", hexPublicKey: "", feeUnit: "ukuji", priceProviderId: "kujira", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "200000"),
         
-        Coin(chain: Chain.base, ticker: "ETH", logo: "eth", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "ethereum", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "21000"),
+        Coin(chain: Chain.base, ticker: "ETH", logo: "eth", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "ethereum", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "23000"),
         
         Coin(chain: Chain.base, ticker: "USDC", logo: "usdc", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "6", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "usd-coin", contractAddress: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
         
@@ -57,13 +57,19 @@ class TokensStore {
         
         Coin(chain: Chain.arbitrum, ticker: "ARB", logo: "arbitrum", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "arbitrum", contractAddress: "0x912CE59144191C1204E64559FE8253a0e49E6548", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
         
-        Coin(chain: Chain.optimism, ticker: "ETH", logo: "eth", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "ethereum", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "21000"),
+        Coin(chain: Chain.optimism, ticker: "ETH", logo: "eth", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "ethereum", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "23000"),
         
         Coin(chain: Chain.optimism, ticker: "OP", logo: "optimism", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "optimism", contractAddress: "0x4200000000000000000000000000000000000042", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
         
-        Coin(chain: Chain.polygon, ticker: "MATIC", logo: "polygon", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "matic-network", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "21000"),
+        Coin(chain: Chain.polygon, ticker: "MATIC", logo: "polygon", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "matic-network", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "23000"),
         
         Coin(chain: Chain.polygon, ticker: "WETH", logo: "wETH", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "ethereum", contractAddress: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
+        
+        Coin(chain: Chain.blast, ticker: "ETH", logo: "eth", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "ethereum", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "23000"),
+        
+        Coin(chain: Chain.blast, ticker: "WETH", logo: "wETH", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "ethereum", contractAddress: "0x4300000000000000000000000000000000000004", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
+        
+        Coin(chain: Chain.cronosChain, ticker: "CRO", logo: "cro", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "crypto-com-chain", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "23000"),
         
     ]
     
