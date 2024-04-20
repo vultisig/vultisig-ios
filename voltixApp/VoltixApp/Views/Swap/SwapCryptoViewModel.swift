@@ -64,6 +64,15 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         return fee.formatToFiat(includeCurrencySymbol: true)
     }
 
+    func isSufficientBalance(tx: SwapTransaction) -> Bool {
+        let fromFee = tx.fromCoin.decimal(for: tx.gas)
+        let toFee = tx.toCoin.decimal(for: tx.inboundFee)
+        let fromBalance = Decimal(string: tx.fromBalance) ?? -1
+        let toBalance = Decimal(string: tx.toBalance) ?? -1
+        let amount = Decimal(string: tx.fromAmount) ?? 0
+        return fromFee + amount <= fromBalance && toFee <= toBalance
+    }
+
     func durationString(tx: SwapTransaction) -> String {
         guard let duration = quote?.totalSwapSeconds else { return .empty }
         let formatter = DateComponentsFormatter()
@@ -84,6 +93,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         && !tx.fromAmount.isEmpty
         && !tx.toAmount.isEmpty
         && quote != nil
+        && isSufficientBalance(tx: tx)
     }
     
     func moveToNextView() {
