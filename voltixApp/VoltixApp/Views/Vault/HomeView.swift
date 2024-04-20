@@ -10,9 +10,12 @@ import SwiftData
 
 struct HomeView: View {
     var selectedVault: Vault? = nil
-    @State var showVaultsList = false
+    
     @Query var vaults: [Vault]
     @StateObject var viewModel = HomeViewModel()
+    
+    @State var showVaultsList = false
+    @State var isEditingVaults = false
     
     var body: some View {
         ZStack {
@@ -44,7 +47,7 @@ struct HomeView: View {
                 VaultDetailView(showVaultsList: $showVaultsList, vault: vault)
             }
             
-            VaultsView(viewModel: viewModel, showVaultsList: $showVaultsList)
+            VaultsView(viewModel: viewModel, showVaultsList: $showVaultsList, isEditingVaults: $isEditingVaults)
         }
     }
     
@@ -93,7 +96,7 @@ struct HomeView: View {
     }
     
     var editButton: some View {
-        NavigationHomeEditButton(showVaultsList: showVaultsList, vault: viewModel.selectedVault)
+        NavigationHomeEditButton(vault: viewModel.selectedVault, showVaultsList: showVaultsList, isEditingVaults: $isEditingVaults)
     }
     
     private func setData() {

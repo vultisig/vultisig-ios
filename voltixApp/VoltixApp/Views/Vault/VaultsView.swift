@@ -11,11 +11,11 @@ import SwiftData
 struct VaultsView: View {
     @ObservedObject var viewModel: HomeViewModel
     @Binding var showVaultsList: Bool
+    @Binding var isEditingVaults: Bool
     
     @Query var vaults: [Vault]
     
     @State var orderedVaults = [Vault]()
-    @State private var isEditing = false
     
     var body: some View {
         VStack {
@@ -47,7 +47,7 @@ struct VaultsView: View {
             ForEach(orderedVaults, id: \.self) { vault in
                 getButton(for: vault)
             }
-            .onMove(perform: isEditing ? move: nil)
+            .onMove(perform: isEditingVaults ? move: nil)
             .background(Color.backgroundBlue)
         }
         .listStyle(PlainListStyle())
@@ -68,11 +68,12 @@ struct VaultsView: View {
         Button {
             handleSelection(for: vault)
         } label: {
-            VaultCell(vault: vault)
+            VaultCell(vault: vault, isEditing: isEditingVaults)
         }
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
         .padding(.vertical, 8)
+        .disabled(isEditingVaults ? true : false)
     }
     
     private func handleSelection(for vault: Vault) {
@@ -88,6 +89,6 @@ struct VaultsView: View {
 #Preview {
     ZStack {
         Background()
-        VaultsView(viewModel: HomeViewModel(), showVaultsList: .constant(false))
+        VaultsView(viewModel: HomeViewModel(), showVaultsList: .constant(false), isEditingVaults: .constant(true))
     }
 }
