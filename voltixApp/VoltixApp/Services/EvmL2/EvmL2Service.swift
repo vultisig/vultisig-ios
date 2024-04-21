@@ -28,3 +28,12 @@ class OptimismService: RpcEvmService {
     static let shared = OptimismService(rpcEndpoint)
 }
 
+class CronosService: RpcEvmService {
+    static let rpcEndpoint = Endpoint.cronosServiceRpcService
+    static let shared = CronosService(rpcEndpoint)
+}
+
+class BlastService: RpcEvmService {
+    static let rpcEndpoint = Endpoint.blastServiceRpcService
+    static let shared = BlastService(rpcEndpoint)
+}

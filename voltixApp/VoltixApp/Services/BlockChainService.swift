@@ -33,7 +33,7 @@ final class BlockChainService {
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             let sats = try await utxo.fetchSatsPrice(coin: coin)
-            return .UTXO(byteFee: Int64(sats))
+            return .UTXO(byteFee: sats)
 
         case .thorChain:
             let account = try await thor.fetchAccountNumber(coin.address)
@@ -61,22 +61,22 @@ final class BlockChainService {
             async let recentBlockHashPromise = sol.fetchRecentBlockhash()
             async let highPriorityFeePromise = sol.fetchHighPriorityFee(account: coin.address)
 
-            let (recentBlockHash, feeInLamports) = try await recentBlockHashPromise
+            let recentBlockHash = try await recentBlockHashPromise
             let highPriorityFee = try await highPriorityFeePromise
 
             guard let recentBlockHash else {
                 throw Errors.failToGetRecentBlockHash
             }
-            return .Solana(recentBlockHash: recentBlockHash, priorityFee: highPriorityFee, feeInLamports: feeInLamports)
+            return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(highPriorityFee))
 
-        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon:
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain:
             let service = try EvmServiceFactory.getService(forChain: coin)
             let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(fromAddress: coin.address)
 
             if coin.isNativeToken {
-                return .Ethereum(maxFeePerGasWei: Int64(gasPrice) ?? 0, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: Int64(coin.feeDefault) ?? 0)
+                return .Ethereum(maxFeePerGasWei: gasPrice, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: BigInt(coin.feeDefault) ?? 0)
             } else {
-                return BlockChainSpecific.ERC20(maxFeePerGasWei: Int64(gasPrice) ?? 0, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: Int64(coin.feeDefault) ?? 0, contractAddr: coin.contractAddress)
+                return BlockChainSpecific.ERC20(maxFeePerGasWei: gasPrice, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: BigInt(coin.feeDefault) ?? 0, contractAddr: coin.contractAddress)
             }
 
         case .gaiaChain:

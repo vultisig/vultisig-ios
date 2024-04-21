@@ -24,6 +24,10 @@ class EvmServiceFactory {
             return PolygonService.shared
         case .optimism:
             return OptimismService.shared
+        case .blast:
+            return BlastService.shared
+        case .cronosChain:
+            return CronosService.shared
         default:
             throw RpcEvmServiceError.rpcError(code: 500, message: "EVM service not found")
         }

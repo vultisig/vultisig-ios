@@ -6,8 +6,12 @@
 import Foundation
 import Tss
 import WalletCore
+import BigInt
 
 enum SolanaHelper {
+
+    static let defaultFeeInLamports: BigInt = 7000
+
     static func getSolana(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
         return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).flatMap { addr -> Result<Coin, Error> in
             TokensStore.createNewCoinInstance(ticker: "SOL", address: addr, hexPublicKey: hexPubKey, coinType: .solana)
@@ -29,7 +33,7 @@ enum SolanaHelper {
         guard keysignPayload.coin.chain.ticker == "SOL" else {
             return .failure(HelperError.runtimeError("coin is not SOL"))
         }
-        guard case .Solana(let recentBlockHash,let priorityFee, _) = keysignPayload.chainSpecific else {
+        guard case .Solana(let recentBlockHash, let priorityFee) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get to address"))
         }
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .solana) else {
@@ -47,7 +51,7 @@ enum SolanaHelper {
             $0.recentBlockhash = recentBlockHash
             $0.sender = keysignPayload.coin.address
             $0.priorityFeePrice = SolanaPriorityFeePrice.with{
-                $0.price = priorityFee
+                $0.price = UInt64(priorityFee)
             }
         }
         

@@ -16,27 +16,27 @@ struct KeysignMessage: Codable, Hashable {
 }
 
 enum BlockChainSpecific: Codable, Hashable {
-    case UTXO(byteFee: Int64) // byteFee
-    case Ethereum(maxFeePerGasWei: Int64, priorityFeeWei: Int64, nonce: Int64, gasLimit: Int64) // maxFeePerGasWei, priorityFeeWei, nonce , gasLimit
-    case ERC20(maxFeePerGasWei: Int64, priorityFeeWei: Int64, nonce: Int64, gasLimit: Int64, contractAddr: String)
+    case UTXO(byteFee: BigInt) // byteFee
+    case Ethereum(maxFeePerGasWei: BigInt, priorityFeeWei: BigInt, nonce: Int64, gasLimit: BigInt) // maxFeePerGasWei, priorityFeeWei, nonce , gasLimit
+    case ERC20(maxFeePerGasWei: BigInt, priorityFeeWei: BigInt, nonce: Int64, gasLimit: BigInt, contractAddr: String)
     case THORChain(accountNumber: UInt64, sequence: UInt64)
-    case Cosmos(accountNumber: UInt64, sequence:UInt64, gas: UInt64)
-    case Solana(recentBlockHash: String, priorityFee: UInt64, feeInLamports: String) // priority fee is in microlamports
-    
-    var gas: String {
+    case Cosmos(accountNumber: UInt64, sequence: UInt64, gas: UInt64)
+    case Solana(recentBlockHash: String, priorityFee: BigInt) // priority fee is in microlamports
+
+    var gas: BigInt {
         switch self {
         case .UTXO(let byteFee):
-            return String(byteFee)
-        case .Ethereum(let maxFeePerGasWei, _, _, _):
-            return String(maxFeePerGasWei)
-        case .ERC20(let maxFeePerGasWei, _, _, _, _):
-            return String(maxFeePerGasWei)
+            return byteFee
+        case .Ethereum(let maxFeePerGas, _, _, _):
+            return maxFeePerGas
+        case .ERC20(let maxFeePerGas, _, _, _, _):
+            return maxFeePerGas
         case .THORChain:
-            return "2000000"
+            return 2_000_000
         case .Cosmos:
-            return "7500"
-        case .Solana(_, _, let feeInLamports):
-            return feeInLamports
+            return 7500
+        case .Solana:
+            return SolanaHelper.defaultFeeInLamports
         }
     }
 }
@@ -75,7 +75,7 @@ struct KeysignPayload: Codable, Hashable {
             }
             let utxoHelper = UTXOChainsHelper(coin: coinType, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
             return utxoHelper.getPreSignedImageHash(keysignPayload: self)
-        case .ethereum, .arbitrum, .base, .optimism, .polygon, .avalanche, .bscChain:
+        case .ethereum, .arbitrum, .base, .optimism, .polygon, .avalanche, .bscChain, .blast, .cronosChain:
             if coin.isNativeToken {
                 let helper = EVMHelper.getHelper(coin: coin)?.getPreSignedImageHash(keysignPayload: self)
                 guard let preSignedImageHash = helper else {

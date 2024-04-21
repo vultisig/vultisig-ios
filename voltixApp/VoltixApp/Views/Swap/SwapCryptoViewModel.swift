@@ -37,6 +37,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         
         await updateFromBalance(tx: tx)
         await updateToBalance(tx: tx)
+        await updateFee(tx: tx)
     }
     
     var progress: Double {
@@ -44,7 +45,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func showFees(tx: SwapTransaction) -> Bool {
-        return tx.inboundFee != .empty
+        return tx.inboundFee != .zero
     }
     
     func showDuration(tx: SwapTransaction) -> Bool {
@@ -56,9 +57,22 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func feeString(tx: SwapTransaction) -> String {
-        return "\(tx.inboundFee) \(tx.toCoin.ticker)"
+        guard !tx.inboundFee.isZero else { return .empty }
+        guard !tx.gas.isZero else { return .empty }
+
+        let fee = tx.toCoin.fiat(for: tx.inboundFee) + tx.fromCoin.fiat(for: tx.gas)
+        return fee.formatToFiat(includeCurrencySymbol: true)
     }
-    
+
+    func isSufficientBalance(tx: SwapTransaction) -> Bool {
+        let fromFee = tx.fromCoin.decimal(for: tx.gas)
+        let toFee = tx.toCoin.decimal(for: tx.inboundFee)
+        let fromBalance = Decimal(string: tx.fromBalance) ?? -1
+        let toBalance = Decimal(string: tx.toBalance) ?? -1
+        let amount = Decimal(string: tx.fromAmount) ?? 0
+        return fromFee + amount <= fromBalance && toFee <= toBalance
+    }
+
     func durationString(tx: SwapTransaction) -> String {
         guard let duration = quote?.totalSwapSeconds else { return .empty }
         let formatter = DateComponentsFormatter()
@@ -79,6 +93,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         && !tx.fromAmount.isEmpty
         && !tx.toAmount.isEmpty
         && quote != nil
+        && isSufficientBalance(tx: tx)
     }
     
     func moveToNextView() {
@@ -90,22 +105,30 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         isLoading = true
         defer { isLoading = false }
         
-        let toAddress = quote!.inboundAddress
-        
-        let swapPayload = THORChainSwapPayload(
-            fromAddress: tx.fromCoin.address,
-            fromAsset: swapAsset(for: tx.fromCoin),
-            toAsset: swapAsset(for: tx.toCoin),
-            toAddress: tx.toCoin.address,
-            vaultAddress: quote!.inboundAddress,
-            routerAddress: quote!.router,
-            fromAmount: swapAmount(for: tx.fromCoin, tx: tx),
-            toAmountLimit: "0", streamingInterval: "1", streamingQuantity: "0"
-        )
-        
-        let keysignFactory = KeysignPayloadFactory()
-        
         do {
+            guard let quote else {
+                throw Errors.swapQuoteNotFound
+            }
+
+            guard quote.inboundAddress != nil || tx.fromCoin.chain == .thorChain else {
+                throw Errors.swapQuoteInboundAddressNotFound
+            }
+
+            let toAddress = quote.inboundAddress ?? tx.fromCoin.address
+
+            let swapPayload = THORChainSwapPayload(
+                fromAddress: tx.fromCoin.address,
+                fromAsset: swapAsset(for: tx.fromCoin),
+                toAsset: swapAsset(for: tx.toCoin),
+                toAddress: tx.toCoin.address,
+                vaultAddress: toAddress,
+                routerAddress: quote.router,
+                fromAmount: swapAmount(for: tx.fromCoin, tx: tx),
+                toAmountLimit: "0", streamingInterval: "1", streamingQuantity: "0"
+            )
+
+            let keysignFactory = KeysignPayloadFactory()
+
             // TODO: Cache chain specific?
             let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin)
             
@@ -129,10 +152,19 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     func stopMediator() {
         Mediator.shared.stop()
     }
-    
+
+    func updateFee(tx: SwapTransaction) async {
+        do {
+            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin)
+            tx.gas = chainSpecific.gas
+        } catch {
+            self.error = error
+        }
+    }
+
     func updateFromBalance(tx: SwapTransaction) async {
         do {
-            tx.fromBalance = try await fetchBalance(coin: tx.fromCoin)
+            tx.fromBalance = try await balanceService.balance(for: tx.fromCoin).coinBalance
         } catch {
             self.error = error
         }
@@ -140,7 +172,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     
     func updateToBalance(tx: SwapTransaction) async {
         do {
-            tx.toBalance = try await fetchBalance(coin: tx.toCoin)
+            tx.toBalance = try await balanceService.balance(for: tx.toCoin).coinBalance
         } catch {
             self.error = error
         }
@@ -148,12 +180,12 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     
     func updateQuotes(tx: SwapTransaction) async {
         guard !tx.fromAmount.isEmpty else { return clear(tx: tx) }
-        
+
         do {
             guard let amount = Decimal(string: tx.fromAmount), tx.fromCoin != tx.toCoin else {
                 throw Errors.swapQuoteParsingFailed
             }
-            
+
             let quote = try await thorchainService.fetchSwapQuotes(
                 address: tx.toCoin.address,
                 fromAsset: tx.fromCoin.swapAsset,
@@ -161,19 +193,22 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 amount: (amount * 100_000_000).description, // https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
                 interval: "1"
             )
-            
+
             guard let expected = Decimal(string: quote.expectedAmountOut) else {
                 throw Errors.swapQuoteParsingFailed
             }
-            
+
             guard let fees = Decimal(string: quote.fees.total) else {
                 throw Errors.swapQuoteParsingFailed
             }
-            
+
+            let toDecimals = Int(tx.toCoin.decimals) ?? 0
+            let inboundFeeDecimal = fees * pow(10, max(0, toDecimals - 8))
+
             tx.toAmount = (expected / Decimal(100_000_000)).description
-            tx.inboundFee = (fees / Decimal(100_000_000)).description
+            tx.inboundFee = BigInt(stringLiteral: inboundFeeDecimal.description)
             tx.duration = quote.totalSwapSeconds ?? 0
-            
+
             self.quote = quote
         } catch {
             self.error = error
@@ -186,14 +221,12 @@ private extension SwapCryptoViewModel {
     
     enum Errors: String, Error, LocalizedError {
         case swapQuoteParsingFailed
-        
+        case swapQuoteNotFound
+        case swapQuoteInboundAddressNotFound
+
         var errorDescription: String? {
             return String(NSLocalizedString(rawValue, comment: ""))
         }
-    }
-    
-    func fetchBalance(coin: Coin) async throws -> String {
-        return try await balanceService.balance(for: coin).coinBalance
     }
 }
 
@@ -202,7 +235,7 @@ private extension SwapCryptoViewModel {
     func clear(tx: SwapTransaction) {
         quote = nil
         tx.toAmount = .empty
-        tx.inboundFee = .empty
+        tx.inboundFee = .zero
         tx.duration = .zero
     }
     
@@ -212,7 +245,7 @@ private extension SwapCryptoViewModel {
             return tx.amountInSats
         case .mayaChain:
             return tx.amountInCoinDecimal
-        case .ethereum, .avalanche,.arbitrum, .bscChain, .base, .optimism, .polygon:
+        case .ethereum, .avalanche,.arbitrum, .bscChain, .base, .optimism, .polygon, .blast, .cronosChain:
             if coin.isNativeToken {
                 return Int64(tx.amountInWei)
             } else {
@@ -233,7 +266,7 @@ private extension SwapCryptoViewModel {
             return String(tx.amountInSats)
         case .mayaChain:
             return String(tx.amountInCoinDecimal)
-        case .ethereum, .avalanche,.arbitrum, .bscChain, .base, .optimism, .polygon:
+        case .ethereum, .avalanche,.arbitrum, .bscChain, .base, .optimism, .polygon, .blast, .cronosChain:
             if coin.isNativeToken {
                 return String(tx.amountInWei)
             } else {
@@ -267,7 +300,7 @@ private extension SwapCryptoViewModel {
                 $0.chain = .doge
             case .gaiaChain:
                 $0.chain = .atom
-            case .solana, .dash, .kujira, .mayaChain, .arbitrum, .base, .optimism, .polygon: break
+            case .solana, .dash, .kujira, .mayaChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain: break
             }
             $0.symbol = coin.ticker
             if !coin.isNativeToken {

@@ -67,7 +67,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             coin: tx.coin,
             toAddress: tx.toAddress,
             toAmount: BigInt(totalSelectedAmount),
-            chainSpecific: BlockChainSpecific.UTXO(byteFee: tx.feeInSats),
+            chainSpecific: BlockChainSpecific.UTXO(byteFee: BigInt(tx.feeInSats)),
             utxos: utxoInfo,
             memo: tx.memo,
             swapPayload: nil
@@ -102,7 +102,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 await convertToFiat(newValue: tx.amount, tx: tx)
                 isLoading = false
             }
-        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon:
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain:
             Task {
                 do {
                     if tx.coin.isNativeToken {
@@ -114,11 +114,8 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                             return
                         }
                         
-                        guard let gasPriceWei = BigInt(gasPrice) else {
-                            print("Invalid gas price")
-                            return
-                        }
-                        
+                        let gasPriceWei = BigInt(gasPrice)
+
                         let totalFeeWei: BigInt = gasLimitBigInt * gasPriceWei
                         
                         tx.amount = "\(tx.coin.getMaxValue(totalFeeWei))"
@@ -138,15 +135,9 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             Task{
                 do{
                     let (rawBalance,priceRate) = try await sol.getSolanaBalance(coin: tx.coin)
-                    let (_,feeLamportsStr) = try await sol.fetchRecentBlockhash()
-                    guard
-                        let feeInLamports = BigInt(feeLamportsStr) else {
-                        print("Invalid fee In Lamports")
-                        return
-                    }
                     tx.coin.rawBalance = rawBalance
                     tx.coin.priceRate = priceRate
-                    tx.amount = "\(tx.coin.getMaxValue(feeInLamports))"
+                    tx.amount = "\(tx.coin.getMaxValue(SolanaHelper.defaultFeeInLamports))"
                     await convertToFiat(newValue: tx.amount, tx: tx)
                 } catch {
                     print("fail to load solana balances,error:\(error.localizedDescription)")
