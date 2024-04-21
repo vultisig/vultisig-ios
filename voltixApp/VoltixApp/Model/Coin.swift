@@ -118,7 +118,6 @@ class Coin: Codable, Hashable {
     }
     
     func getMaxValue(_ fee: BigInt) -> Decimal {
-        
         var totalFeeAdjusted = fee
         if chain.chainType == .EVM {
             let adjustmentFactor = BigInt(10).power(EVMHelper.ethDecimals - (Int(decimals) ?? 0))

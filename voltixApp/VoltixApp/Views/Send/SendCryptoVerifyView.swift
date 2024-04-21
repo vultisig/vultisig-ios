@@ -69,7 +69,7 @@ struct SendCryptoVerifyView: View {
             }
             
             Separator()
-            getDetailsCell(for: "gas", with: getGasAmount())
+            getDetailsCell(for: "gas", with: tx.gasInReadable)
         }
         .padding(16)
         .background(Color.blue600)
@@ -145,10 +145,6 @@ struct SendCryptoVerifyView: View {
     
     private func getFiatAmount() -> String {
         tx.amountInFiat.formatToFiat()
-    }
-    
-    private func getGasAmount() -> String {
-        tx.gas.toGwei(tx: tx)
     }
 }
 
