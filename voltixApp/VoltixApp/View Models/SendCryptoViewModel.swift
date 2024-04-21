@@ -43,14 +43,13 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     func loadGasInfoForSending(tx: SendTransaction) async{
         do {
             let chainSpecific = try await blockchainService.fetchSpecific(for: tx.coin)
-            tx.gas = chainSpecific.gas
+            tx.gas = chainSpecific.gas.description
         } catch {
             print("error fetching data: \(error.localizedDescription)")
         }
     }
     
     private func getTransactionPlan(tx: SendTransaction, key:String) -> TW_Bitcoin_Proto_TransactionPlan? {
-        
         guard let utxoInfo = utxo.blockchairData.get(key)?.selectUTXOsForPayment(amountNeeded: Int64(tx.amountInSats)).map({
             UtxoInfo(
                 hash: $0.transactionHash ?? "",
