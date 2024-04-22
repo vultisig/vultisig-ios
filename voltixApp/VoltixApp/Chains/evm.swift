@@ -22,12 +22,8 @@ class EVMHelper {
         self.coinType = coinType
     }
     
-    static func getHelper(coin: Coin) -> EVMHelper? {
-        guard let coinType = coin.getCoinType() else {
-            print("Coin type not found on Wallet Core")
-            return nil
-        }
-        return EVMHelper(coinType: coinType)
+    static func getHelper(coin: Coin) -> EVMHelper {
+        return EVMHelper(coinType: coin.coinType)
     }
     
     func getCoin(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
@@ -87,6 +83,7 @@ class EVMHelper {
         else {
             return .failure(HelperError.runtimeError("fail to get Ethereum chain specific"))
         }
+
         var input = signingInput
         input.chainID = Data(hexString: Int64(intChainID).hexString())!
         input.nonce = Data(hexString: nonce.hexString())!

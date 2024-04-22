@@ -61,7 +61,11 @@ struct KeysignPayload: Codable, Hashable {
         let power = Decimal(sign: .plus, exponent: -(Int(coin.decimals) ?? 0), significand: 1)
         return "\(decimalAmount * power) \(coin.ticker)"
     }
-    
+
+    var shouldApprove: Bool {
+        return coin.chain.chainType == .EVM && !coin.isNativeToken
+    }
+
     func getKeysignMessages(vault: Vault) -> Result<[String], Error> {
         if swapPayload != nil {
             let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
@@ -77,19 +81,11 @@ struct KeysignPayload: Codable, Hashable {
             return utxoHelper.getPreSignedImageHash(keysignPayload: self)
         case .ethereum, .arbitrum, .base, .optimism, .polygon, .avalanche, .bscChain, .blast, .cronosChain:
             if coin.isNativeToken {
-                let helper = EVMHelper.getHelper(coin: coin)?.getPreSignedImageHash(keysignPayload: self)
-                guard let preSignedImageHash = helper else {
-                    return .failure("Error to get getPreSignedImageHash on EVM" as! Error)
-                }
-                return preSignedImageHash
-                
-            }else{
-                let helper = ERC20Helper.getHelper(coin: coin)?.getPreSignedImageHash(keysignPayload: self)
-                guard let preSignedImageHash = helper else {
-                    return .failure("Error to get getPreSignedImageHash on EVM" as! Error)
-                }
-                return preSignedImageHash
-                
+                let helper = EVMHelper.getHelper(coin: coin)
+                return helper.getPreSignedImageHash(keysignPayload: self)
+            } else {
+                let helper = ERC20Helper.getHelper(coin: coin)
+                return helper.getPreSignedImageHash(keysignPayload: self)
             }
         case .thorChain:
             return THORChainHelper.getPreSignedImageHash(keysignPayload: self)

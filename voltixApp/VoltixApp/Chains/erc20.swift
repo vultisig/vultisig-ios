@@ -16,12 +16,8 @@ class ERC20Helper {
         self.coinType = coinType
     }
     
-    static func getHelper(coin: Coin) -> ERC20Helper? {
-        guard let coinType = coin.getCoinType() else {
-            print("Coin type not found on Wallet Core")
-            return nil
-        }
-        return ERC20Helper(coinType: coinType)
+    static func getHelper(coin: Coin) -> ERC20Helper {
+        return ERC20Helper(coinType: coin.coinType)
     }
     
     func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {

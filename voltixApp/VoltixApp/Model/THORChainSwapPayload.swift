@@ -5,6 +5,7 @@
 
 import Foundation
 import WalletCore
+import BigInt
 
 extension THORChainSwapChain: Codable {}
 
@@ -42,6 +43,10 @@ struct THORChainSwapPayload: Codable, Hashable {
     let toAmountLimit: String
     let streamingInterval: String
     let streamingQuantity: String
+
+    var fromAmountValue: BigInt {
+        return BigInt(stringLiteral: fromAmount)
+    }
 
     init(fromAddress: String,
          fromAsset: THORChainSwapAsset,
