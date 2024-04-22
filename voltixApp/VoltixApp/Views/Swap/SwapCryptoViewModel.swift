@@ -245,7 +245,7 @@ private extension SwapCryptoViewModel {
             return tx.amountInSats
         case .mayaChain:
             return tx.amountInCoinDecimal
-        case .ethereum, .avalanche,.arbitrum, .bscChain, .base, .optimism, .polygon, .blast, .cronosChain:
+        case .ethereum, .avalanche,.arbitrum, .bscChain, .base, .optimism, .polygon, .blast, .cronosChain, .merlin:
             if coin.isNativeToken {
                 return Int64(tx.amountInWei)
             } else {
@@ -266,7 +266,7 @@ private extension SwapCryptoViewModel {
             return String(tx.amountInSats)
         case .mayaChain:
             return String(tx.amountInCoinDecimal)
-        case .ethereum, .avalanche,.arbitrum, .bscChain, .base, .optimism, .polygon, .blast, .cronosChain:
+        case .ethereum, .avalanche,.arbitrum, .bscChain, .base, .optimism, .polygon, .blast, .cronosChain, .merlin:
             if coin.isNativeToken {
                 return String(tx.amountInWei)
             } else {
@@ -300,7 +300,7 @@ private extension SwapCryptoViewModel {
                 $0.chain = .doge
             case .gaiaChain:
                 $0.chain = .atom
-            case .solana, .dash, .kujira, .mayaChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain: break
+            case .solana, .dash, .kujira, .mayaChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain, .merlin: break
             }
             $0.symbol = coin.ticker
             if !coin.isNativeToken {

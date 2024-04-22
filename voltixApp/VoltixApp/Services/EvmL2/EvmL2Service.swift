@@ -37,3 +37,8 @@ class BlastService: RpcEvmService {
     static let rpcEndpoint = Endpoint.blastServiceRpcService
     static let shared = BlastService(rpcEndpoint)
 }
+
+class MerlinService: RpcEvmService {
+    static let rpcEndpoint = Endpoint.merlinServiceRpcService
+    static let shared = MerlinService(rpcEndpoint)
+}

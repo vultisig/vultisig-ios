@@ -71,6 +71,10 @@ class TokensStore {
         
         Coin(chain: Chain.cronosChain, ticker: "CRO", logo: "cro", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "crypto-com-chain", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "23000"),
         
+        // Coin(chain: Chain.merlin, ticker: "BTC", logo: "btc", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "merlin-chain", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "23000"),
+        
+        // Coin(chain: Chain.merlin, ticker: "MERL", logo: "merlin", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "merlin-chain", contractAddress: "0x5c46bFF4B38dc1EAE09C5BAc65872a1D8bc87378", rawBalance: "0", isNativeToken: false, feeDefault: "23000"),
+        
     ]
     
     static func getCoin(_ ticker: String, coinType: CoinType) -> Coin? {

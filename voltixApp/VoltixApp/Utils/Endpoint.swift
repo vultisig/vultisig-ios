@@ -53,6 +53,8 @@ class Endpoint {
     
     static let blastServiceRpcService = "https://rpc.ankr.com/blast"
     
+    static let merlinServiceRpcService = "https://rpc.merlinchain.io"
+    
     static let ethServiceRpcService = "https://ethereum-rpc.publicnode.com"
     
     static let solanaServiceAlchemyRpc = "https://solana-rpc.publicnode.com"
@@ -155,6 +157,8 @@ class Endpoint {
             return "https://blastscan.io/tx/\(txid)"
         case "CRO":
             return "https://cronoscan.com/tx/\(txid)"
+        case "MERL":
+            return "https://scan.merlinchain.io/address/tx/\(txid)"
         default:
             return ""
         }
@@ -200,6 +204,8 @@ class Endpoint {
             return "https://blastscan.io/address/\(address)"
         case "CRO":
             return "https://cronoscan.com/address/\(address)"
+        case "MERL":
+            return "https://scan.merlinchain.io/address/\(address)"
         default:
             return nil
         }
@@ -245,6 +251,8 @@ class Endpoint {
             return "https://blastscan.io/address/\(address)"
         case .cronosChain:
             return "https://cronoscan.com/address/\(address)"
+        case .merlin:
+            return "https://scan.merlinchain.io/address/\(address)"
         case .none:
             return nil
         }

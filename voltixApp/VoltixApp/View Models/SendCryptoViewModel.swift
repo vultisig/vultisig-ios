@@ -101,7 +101,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 await convertToFiat(newValue: tx.amount, tx: tx)
                 isLoading = false
             }
-        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain:
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain, .merlin:
             Task {
                 do {
                     if tx.coin.isNativeToken {

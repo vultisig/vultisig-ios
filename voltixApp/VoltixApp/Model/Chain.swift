@@ -25,6 +25,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case kujira
     case mayaChain
     case cronosChain
+    case merlin
     
     enum MigrationKeys: String, CodingKey {
         case ticker
@@ -70,6 +71,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .polygon: return "Polygon"
         case .blast: return "Blast"
         case .cronosChain: return "CronosChain"
+        case .merlin: return "MerlinChain"
             
         }
     }
@@ -95,6 +97,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .polygon: return "MATIC"
         case .blast: return "BLAST"
         case .cronosChain: return "CRO"
+        case .merlin: return "MERL"
         }
     }
     
@@ -119,6 +122,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .polygon: return "MATIC"
         case .blast: return "BLAST"
         case .cronosChain: return "CRO"
+        case .merlin: return "MERL"
         }
     }
     
@@ -126,7 +130,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         switch self {
         case .thorChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .gaiaChain:
             return true
-        case .solana, .dash, .kujira, .mayaChain,.arbitrum, .base, .optimism, .polygon, .blast, .cronosChain:
+        case .solana, .dash, .kujira, .mayaChain,.arbitrum, .base, .optimism, .polygon, .blast, .cronosChain, .merlin:
             return false
         }
     }
@@ -142,7 +146,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     
     var chainType: ChainType {
         switch self {
-        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain:
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain, .merlin:
             return .EVM
         case .thorChain,.mayaChain:
             return .THORChain
