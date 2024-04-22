@@ -53,6 +53,8 @@ class Endpoint {
     
     static let blastServiceRpcService = "https://rpc.ankr.com/blast"
     
+    static let pulseChainServiceRpcService = "https://pulsechain-rpc.publicnode.com"
+    
     static let ethServiceRpcService = "https://ethereum-rpc.publicnode.com"
     
     static let solanaServiceAlchemyRpc = "https://solana-rpc.publicnode.com"
@@ -155,6 +157,8 @@ class Endpoint {
             return "https://blastscan.io/tx/\(txid)"
         case "CRO":
             return "https://cronoscan.com/tx/\(txid)"
+        case "PLS":
+            return "https://scan.mypinata.cloud/ipfs/bafybeih3olry3is4e4lzm7rus5l3h6zrphcal5a7ayfkhzm5oivjro2cp4/#/tx/\(txid)"
         default:
             return ""
         }
@@ -200,6 +204,8 @@ class Endpoint {
             return "https://blastscan.io/address/\(address)"
         case "CRO":
             return "https://cronoscan.com/address/\(address)"
+        case "PLS":
+            return "https://scan.mypinata.cloud/ipfs/bafybeih3olry3is4e4lzm7rus5l3h6zrphcal5a7ayfkhzm5oivjro2cp4/#/address/\(address)"
         default:
             return nil
         }
@@ -245,6 +251,8 @@ class Endpoint {
             return "https://blastscan.io/address/\(address)"
         case .cronosChain:
             return "https://cronoscan.com/address/\(address)"
+        case .pulseChain:
+            return "https://scan.mypinata.cloud/ipfs/bafybeih3olry3is4e4lzm7rus5l3h6zrphcal5a7ayfkhzm5oivjro2cp4/#/address/\(address)"
         case .none:
             return nil
         }

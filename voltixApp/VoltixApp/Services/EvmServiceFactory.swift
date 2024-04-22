@@ -28,6 +28,8 @@ class EvmServiceFactory {
             return BlastService.shared
         case .cronosChain:
             return CronosService.shared
+        case .pulseChain:
+            PulseChainService.shared
         default:
             throw RpcEvmServiceError.rpcError(code: 500, message: "EVM service not found")
         }

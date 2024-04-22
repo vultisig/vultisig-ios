@@ -50,6 +50,8 @@ extension Coin {
             return CoinType.blast
         case .cronosChain:
             return CoinType.cronosChain
+        case .pulseChain:
+            return CoinType. //NOT SUPPORTED
             
         }
     }

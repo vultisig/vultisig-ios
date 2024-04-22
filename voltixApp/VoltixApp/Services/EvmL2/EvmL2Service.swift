@@ -37,3 +37,10 @@ class BlastService: RpcEvmService {
     static let rpcEndpoint = Endpoint.blastServiceRpcService
     static let shared = BlastService(rpcEndpoint)
 }
+
+class PulseChainService: RpcEvmService {
+    static let rpcEndpoint = Endpoint.pulseChainServiceRpcService
+    static let shared = PulseChainService(rpcEndpoint)
+}
+
+

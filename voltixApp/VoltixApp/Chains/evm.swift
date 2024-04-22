@@ -45,6 +45,8 @@ class EVMHelper {
                 ticker = "ETH"
             case .cronosChain:
                 ticker = "CRO"
+            case .pulseChain
+                ticker = "PLS"
             case .polygon:
                 ticker = "MATIC"
             case .avalancheCChain:

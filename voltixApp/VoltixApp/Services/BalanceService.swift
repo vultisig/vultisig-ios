@@ -31,7 +31,7 @@ class BalanceService {
             let (rawBalance,priceRate) = try await sol.getSolanaBalance(coin: coin)
             coin.rawBalance = rawBalance
             coin.priceRate = priceRate
-        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain:
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain, .pulseChain:
             let service = try EvmServiceFactory.getService(forChain: coin)
             let (rawBalance,priceRate) = try await service.getBalance(coin: coin)
             coin.rawBalance = rawBalance

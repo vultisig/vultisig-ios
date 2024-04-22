@@ -69,7 +69,7 @@ final class BlockChainService {
             }
             return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(highPriorityFee))
 
-        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain:
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain, .pulseChain:
             let service = try EvmServiceFactory.getService(forChain: coin)
             let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(fromAddress: coin.address)
 
