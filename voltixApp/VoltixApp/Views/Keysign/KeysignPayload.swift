@@ -55,7 +55,19 @@ struct KeysignPayload: Codable, Hashable {
     let utxos: [UtxoInfo]
     let memo: String? // optional memo
     let swapPayload: THORChainSwapPayload?
-    
+    let approvePayload: ERC20ApprovePayload?
+
+    init(coin: Coin, toAddress: String, toAmount: BigInt, chainSpecific: BlockChainSpecific, utxos: [UtxoInfo], memo: String?, swapPayload: THORChainSwapPayload?, approvePayload: ERC20ApprovePayload? = nil) {
+        self.coin = coin
+        self.toAddress = toAddress
+        self.toAmount = toAmount
+        self.chainSpecific = chainSpecific
+        self.utxos = utxos
+        self.memo = memo
+        self.swapPayload = swapPayload
+        self.approvePayload = approvePayload
+    }
+
     var toAmountString: String {
         let decimalAmount = Decimal(string: toAmount.description) ?? Decimal.zero
         let power = Decimal(sign: .plus, exponent: -(Int(coin.decimals) ?? 0), significand: 1)
@@ -71,6 +83,12 @@ struct KeysignPayload: Codable, Hashable {
             let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
             return swaps.getPreSignedImageHash(keysignPayload: self)
         }
+        
+        if let approvePayload {
+            let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+            return swaps.getPreSignedApproveImageHash(approvePayload: approvePayload, keysignPayload: self)
+        }
+
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             guard let coinType = CoinType.from(string: coin.chain.name.replacingOccurrences(of: "-", with: "")) else {

@@ -70,6 +70,7 @@ class THORChainSwaps {
         guard let swapPayload = keysignPayload.swapPayload else {
             return .failure(HelperError.runtimeError("no swap payload"))
         }
+
         let result = getPreSignedInputData(swapPayload: swapPayload, keysignPayload: keysignPayload)
         
         do {
@@ -124,25 +125,33 @@ class THORChainSwaps {
         }
     }
 
-    func getPreSignedApproveInputData(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload) -> Result<Data, Error> {
-        guard let routerAddress = swapPayload.routerAddress else {
-            return .failure(HelperError.runtimeError("not router address"))
-        }
+    func getPreSignedApproveImageHash(approvePayload: ERC20ApprovePayload, keysignPayload: KeysignPayload) -> Result<[String], Error> {
         let approveInput = EthereumSigningInput.with {
             $0.transaction = .with {
                 $0.erc20Approve = .with {
-                    $0.amount = swapPayload.fromAmountValue.magnitude.serialize()
-                    $0.spender = routerAddress
+                    $0.amount = approvePayload.amount.magnitude.serialize()
+                    $0.spender = approvePayload.spender
                 }
             }
         }
         let result = EVMHelper.getHelper(coin: keysignPayload.coin).getPreSignedInputData(
             signingInput: approveInput,
-            keysignPayload: keysignPayload,
-            incrementNonce: true
+            keysignPayload: keysignPayload
         )
-        return result
+        do {
+            switch result {
+            case .success(let inputData):
+                let hashes = TransactionCompiler.preImageHashes(coinType: keysignPayload.coin.coinType, txInputData: inputData)
+                let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+                return .success([preSigningOutput.dataHash.hexString])
+            case .failure(let error):
+                return .failure(error)
+            }
+        } catch {
+            return .failure(error)
+        }
     }
+
 
     func getSignedTransaction(keysignPayload: KeysignPayload,
                               signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error>

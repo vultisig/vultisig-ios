@@ -76,27 +76,36 @@ class EVMHelper {
         guard let intChainID = Int(coin.chainId) else {
             return .failure(HelperError.runtimeError("fail to get chainID"))
         }
-        guard case .Ethereum(let maxFeePerGasWei,
-                             let priorityFeeWei,
-                             let nonce,
-                             let gasLimit) = keysignPayload.chainSpecific
-        else {
-            return .failure(HelperError.runtimeError("fail to get Ethereum chain specific"))
-        }
 
-        var input = signingInput
-        input.chainID = Data(hexString: Int64(intChainID).hexString())!
-        input.nonce = Data(hexString: nonce.hexString())!
-        input.gasLimit = gasLimit.magnitude.serialize()
-        input.maxFeePerGas = maxFeePerGasWei.magnitude.serialize()
-        input.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
-        input.txMode = .enveloped
-        
-        do {
-            let inputData = try input.serializedData()
-            return .success(inputData)
-        } catch {
-            return .failure(HelperError.runtimeError("fail to get plan"))
+        switch keysignPayload.chainSpecific {
+        case .Ethereum(
+            let maxFeePerGasWei,
+            let priorityFeeWei,
+            let nonce,
+            let gasLimit
+        ), .ERC20(
+            let maxFeePerGasWei,
+            let priorityFeeWei,
+            let nonce,
+            let gasLimit, _
+        ):
+            var input = signingInput
+            input.chainID = Data(hexString: Int64(intChainID).hexString())!
+            input.nonce = Data(hexString: nonce.hexString())!
+            input.gasLimit = gasLimit.magnitude.serialize()
+            input.maxFeePerGas = maxFeePerGasWei.magnitude.serialize()
+            input.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
+            input.txMode = .enveloped
+
+            do {
+                let inputData = try input.serializedData()
+                return .success(inputData)
+            } catch {
+                return .failure(HelperError.runtimeError("fail to get plan"))
+            }
+
+        default:
+            return .failure(HelperError.runtimeError("fail to get Ethereum chain specific"))
         }
     }
     

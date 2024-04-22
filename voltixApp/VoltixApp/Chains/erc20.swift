@@ -120,5 +120,4 @@ class ERC20Helper {
             return .failure(err)
         }
     }
-    
 }

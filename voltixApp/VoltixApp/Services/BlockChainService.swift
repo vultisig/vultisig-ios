@@ -76,7 +76,7 @@ final class BlockChainService {
             if coin.isNativeToken {
                 return .Ethereum(maxFeePerGasWei: gasPrice, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: BigInt(coin.feeDefault) ?? 0)
             } else {
-                return BlockChainSpecific.ERC20(maxFeePerGasWei: gasPrice, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: BigInt(coin.feeDefault) ?? 0, contractAddr: coin.contractAddress)
+                return .ERC20(maxFeePerGasWei: gasPrice, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: BigInt(coin.feeDefault) ?? 0, contractAddr: coin.contractAddress)
             }
 
         case .gaiaChain:
