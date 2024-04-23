@@ -20,6 +20,32 @@ struct SendCryptoView: View {
     @State var keysignView: KeysignView? = nil
     
     var body: some View {
+        content
+            .navigationBarBackButtonHidden(true)
+            .navigationTitle(NSLocalizedString(sendCryptoViewModel.currentTitle, comment: "SendCryptoView title"))
+            .navigationBarTitleDisplayMode(.inline)
+            .ignoresSafeArea(.keyboard)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    NavigationBackButton()
+                }
+            }
+            .onAppear {
+                Task {
+                    await setData()
+                }
+            }
+            .onChange(of: tx.coin) {
+                Task {
+                    await setData()
+                }
+            }
+            .onDisappear(){
+                sendCryptoViewModel.stopMediator()
+            }
+    }
+    
+    var content: some View {
         ZStack {
             Background()
             view
@@ -28,25 +54,8 @@ struct SendCryptoView: View {
                 loader
             }
         }
-        .navigationBarBackButtonHidden(true)
-        .navigationTitle(NSLocalizedString(sendCryptoViewModel.currentTitle, comment: "SendCryptoView title"))
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                NavigationBackButton()
-            }
-        }
-        .onAppear {
-            Task {
-                await setData()
-            }
-        }
-        .onChange(of: tx.coin) {
-            Task {
-                await setData()
-            }
-        }.onDisappear(){
-            sendCryptoViewModel.stopMediator()
+        .onTapGesture {
+            hideKeyboard()
         }
     }
     
