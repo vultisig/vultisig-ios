@@ -169,3 +169,5 @@
 "devicesOnSameCellular" = "Conecte todos os dispositivos à internet com o aplicativo Voltix aberto.";
 "balanceNotAvailable" = "Saldo não disponível";
 "invalidBalance" = "Saldo inválido";
+"cannotDisableChain" = "Não é possível desativar a cadeia";
+"needToRemoveTokens" = "Todos os tokens dentro desta cadeia precisam ser removidos antes de prosseguir.";
