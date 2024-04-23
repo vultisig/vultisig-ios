@@ -9,9 +9,11 @@ import SwiftUI
 
 struct VaultCell: View {
     let vault: Vault
+    let isEditing: Bool
     
     var body: some View {
         HStack(spacing: 12) {
+            rearrange
             title
             Spacer()
             actions
@@ -21,6 +23,15 @@ struct VaultCell: View {
         .background(Color.blue600)
         .cornerRadius(10)
         .padding(.horizontal, 16)
+        .animation(.easeInOut, value: isEditing)
+    }
+    
+    var rearrange: some View {
+        Image(systemName: "line.3.horizontal")
+            .font(.body14MontserratMedium)
+            .foregroundColor(.neutral100)
+            .frame(maxWidth: isEditing ? nil : 0)
+            .clipped()
     }
     
     var title: some View {
@@ -43,5 +54,8 @@ struct VaultCell: View {
 }
 
 #Preview {
-    VaultCell(vault: Vault.example)
+    VStack {
+        VaultCell(vault: Vault.example, isEditing: true)
+        VaultCell(vault: Vault.example, isEditing: false)
+    }
 }

@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct SwapCryptoDetailsView: View {
-
     @ObservedObject var tx: SwapTransaction
     @ObservedObject var swapViewModel: SwapCryptoViewModel
 
@@ -23,6 +22,17 @@ struct SwapCryptoDetailsView: View {
         VStack {
             fields
             continueButton
+        }
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                
+                Button {
+                    hideKeyboard()
+                } label: {
+                    Text(NSLocalizedString("done", comment: "Done"))
+                }
+            }
         }
     }
     

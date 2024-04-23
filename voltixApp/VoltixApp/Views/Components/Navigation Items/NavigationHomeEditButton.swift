@@ -8,8 +8,9 @@
 import SwiftUI
 
 struct NavigationHomeEditButton: View {
-    let showVaultsList: Bool
     let vault: Vault?
+    let showVaultsList: Bool
+    @Binding var isEditingVaults: Bool
     
     var body: some View {
         if showVaultsList {
@@ -21,9 +22,13 @@ struct NavigationHomeEditButton: View {
     
     var vaultsListEditButton: some View {
         Button {
-            
+            isEditingVaults.toggle()
         } label: {
-            editButton
+            if isEditingVaults {
+                doneButton
+            } else {
+                editButton
+            }
         }
     }
     
@@ -38,8 +43,20 @@ struct NavigationHomeEditButton: View {
     var editButton: some View {
         NavigationEditButton()
     }
+    
+    var doneButton: some View {
+        Text(NSLocalizedString("done", comment: ""))
+            .font(.body18MenloBold)
+            .foregroundColor(.neutral0)
+    }
 }
 
 #Preview {
-    NavigationHomeEditButton(showVaultsList: true, vault: Vault.example)
+    ZStack {
+        Background()
+        VStack {
+            NavigationHomeEditButton(vault: Vault.example, showVaultsList: true, isEditingVaults: .constant(true))
+            NavigationHomeEditButton(vault: Vault.example, showVaultsList: true, isEditingVaults: .constant(false))
+        }
+    }
 }
