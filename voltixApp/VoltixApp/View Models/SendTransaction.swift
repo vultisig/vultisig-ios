@@ -12,8 +12,6 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var amountInFiat: String = .empty
     @Published var memo: String = .empty
     @Published var gas: String = .empty
-    @Published var nonce: Int64 = 0
-    var priorityFeeWei: Int64 = 0
     
     @Published var coin: Coin = Coin(
         chain: Chain.bitcoin,
@@ -67,9 +65,23 @@ class SendTransaction: ObservableObject, Hashable {
         let decimals = Int(coin.decimals) ?? 8
         return BigInt(amountDouble * pow(10,Double(decimals)))
     }
-    var gasDecimal: Double {
+    var gasDecimal: Decimal {
         let gasString = gas.replacingOccurrences(of: ",", with: ".")
-        return Double(gasString) ?? 0
+        return Decimal(string:gasString) ?? 0
+    }
+    
+    var gasInReadable: String {
+        guard let decimals = Int(coin.decimals) else {
+            return .empty
+        }
+        if coin.chain.chainType == .EVM {
+            // convert to Gwei , show as Gwei for EVM chain only
+            guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description) else {
+                return .empty
+            }
+            return "\(gasDecimal / weiPerGWeiDecimal) \(coin.feeUnit)"
+        }
+        return "\((gasDecimal / pow(10,decimals)).formatToDecimal(digits: decimals).description) \(coin.feeUnit)"
     }
     
     init() {
@@ -153,8 +165,6 @@ class SendTransaction: ObservableObject, Hashable {
             "amountInFiat: \(amountInFiat)",
             "memo: \(memo)",
             "gas: \(gas)",
-            "nonce: \(nonce)",
-            "priorityFeeWei: \(priorityFeeWei)",
             "coin: \(coin.toString())",
             "fromAddress: \(fromAddress)",
             "amountInWei: \(amountInWei)",

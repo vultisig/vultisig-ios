@@ -90,9 +90,9 @@ class EVMHelper {
         var input = signingInput
         input.chainID = Data(hexString: Int64(intChainID).hexString())!
         input.nonce = Data(hexString: nonce.hexString())!
-        input.gasLimit = Data(hexString: gasLimit.hexString())!
-        input.maxFeePerGas = EVMHelper.convertEthereumNumber(input: BigInt(maxFeePerGasWei))
-        input.maxInclusionFeePerGas = EVMHelper.convertEthereumNumber(input: BigInt(priorityFeeWei))
+        input.gasLimit = gasLimit.magnitude.serialize()
+        input.maxFeePerGas = maxFeePerGasWei.magnitude.serialize()
+        input.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
         input.txMode = .enveloped
         
         do {
@@ -118,9 +118,9 @@ class EVMHelper {
         let input = EthereumSigningInput.with {
             $0.chainID = Data(hexString: Int64(intChainID).hexString())!
             $0.nonce = Data(hexString: nonce.hexString())!
-            $0.gasLimit = Data(hexString: gasLimit.hexString())!
-            $0.maxFeePerGas = EVMHelper.convertEthereumNumber(input: BigInt(maxFeePerGasWei))
-            $0.maxInclusionFeePerGas = EVMHelper.convertEthereumNumber(input: BigInt(priorityFeeWei))
+            $0.gasLimit = gasLimit.magnitude.serialize()
+            $0.maxFeePerGas = maxFeePerGasWei.magnitude.serialize()
+            $0.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
             $0.toAddress = keysignPayload.toAddress
             $0.txMode = .enveloped
             $0.transaction = EthereumTransaction.with {

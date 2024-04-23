@@ -59,6 +59,7 @@ struct SwapCryptoDetailsView: View {
                 Task {
                     await swapViewModel.updateFromBalance(tx: tx)
                     await swapViewModel.updateQuotes(tx: tx)
+                    await swapViewModel.updateFee(tx: tx)
                 }
             })
             getBalance(for: tx.fromBalance)
