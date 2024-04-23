@@ -183,13 +183,9 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
         do {
             guard let amount = Decimal(string: tx.fromAmount), tx.fromCoin != tx.toCoin else {
-                // throw Errors.swapQuoteParsingFailed
-                clear(tx:tx)
-                return
+                throw Errors.swapQuoteParsingFailed
             }
-            guard amount > 0 else {
-                return
-            }
+
             let quote = try await thorchainService.fetchSwapQuotes(
                 address: tx.toCoin.address,
                 fromAsset: tx.fromCoin.swapAsset,
