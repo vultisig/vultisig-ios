@@ -31,8 +31,6 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     private let balanceService = BalanceService.shared
     private let blockchainService = BlockChainService.shared
     
-    private let titles = ["send", "verify", "pair", "keysign", "done"]
-    
     var quote: ThorchainSwapQuote?
     var keysignPayload: KeysignPayload?
     
@@ -57,7 +55,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     var progress: Double {
-        return Double(currentIndex) / Double(titles.count)
+        return Double(currentIndex) / Double(flow.titles.count)
     }
 
     var spender: String {
@@ -123,7 +121,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     
     func moveToNextView() {
         currentIndex += 1
-        currentTitle = titles[currentIndex-1]
+        currentTitle = flow.titles[currentIndex-1]
     }
     
     func buildSwapKeysignPayload(tx: SwapTransaction) async -> Bool {
@@ -189,7 +187,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 spender: router
             )
             let chainSpecific = try await blockchainService.fetchSpecific(
-                for: tx.fromCoin
+                for: tx.fromCoin,
+                action: .approve
             )
             keysignPayload = try await KeysignPayloadFactory().buildTransfer(
                 coin: tx.fromCoin,

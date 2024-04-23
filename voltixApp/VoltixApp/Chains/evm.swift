@@ -72,40 +72,32 @@ class EVMHelper {
     }
     
     func getPreSignedInputData(signingInput: EthereumSigningInput, keysignPayload: KeysignPayload) -> Result<Data, Error> {
-        let coin = self.coinType
-        guard let intChainID = Int(coin.chainId) else {
+        guard let intChainID = Int(coinType.chainId) else {
             return .failure(HelperError.runtimeError("fail to get chainID"))
         }
 
-        switch keysignPayload.chainSpecific {
-        case .Ethereum(
+        guard case .Ethereum(
             let maxFeePerGasWei,
             let priorityFeeWei,
             let nonce,
             let gasLimit
-        ), .ERC20(
-            let maxFeePerGasWei,
-            let priorityFeeWei,
-            let nonce,
-            let gasLimit, _
-        ):
-            var input = signingInput
-            input.chainID = Data(hexString: Int64(intChainID).hexString())!
-            input.nonce = Data(hexString: nonce.hexString())!
-            input.gasLimit = gasLimit.magnitude.serialize()
-            input.maxFeePerGas = maxFeePerGasWei.magnitude.serialize()
-            input.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
-            input.txMode = .enveloped
-
-            do {
-                let inputData = try input.serializedData()
-                return .success(inputData)
-            } catch {
-                return .failure(HelperError.runtimeError("fail to get plan"))
-            }
-
-        default:
+        ) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get Ethereum chain specific"))
+        }
+
+        var input = signingInput
+        input.chainID = Data(hexString: Int64(intChainID).hexString())!
+        input.nonce = Data(hexString: nonce.hexString())!
+        input.gasLimit = gasLimit.magnitude.serialize()
+        input.maxFeePerGas = maxFeePerGasWei.magnitude.serialize()
+        input.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
+        input.txMode = .enveloped
+
+        do {
+            let inputData = try input.serializedData()
+            return .success(inputData)
+        } catch {
+            return .failure(HelperError.runtimeError("fail to get plan"))
         }
     }
     

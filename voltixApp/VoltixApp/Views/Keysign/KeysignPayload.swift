@@ -74,14 +74,10 @@ struct KeysignPayload: Codable, Hashable {
         return "\(decimalAmount * power) \(coin.ticker)"
     }
 
-    var shouldApprove: Bool {
-        return coin.chain.chainType == .EVM && !coin.isNativeToken
-    }
-
     func getKeysignMessages(vault: Vault) -> Result<[String], Error> {
-        if swapPayload != nil {
+        if let swapPayload {
             let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-            return swaps.getPreSignedImageHash(keysignPayload: self)
+            return swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: self)
         }
         
         if let approvePayload {

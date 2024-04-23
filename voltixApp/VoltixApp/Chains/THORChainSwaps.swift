@@ -66,11 +66,7 @@ class THORChainSwaps {
         }
     }
     
-    func getPreSignedImageHash(keysignPayload: KeysignPayload) -> Result<[String], Error> {
-        guard let swapPayload = keysignPayload.swapPayload else {
-            return .failure(HelperError.runtimeError("no swap payload"))
-        }
-
+    func getPreSignedImageHash(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload) -> Result<[String], Error> {
         let result = getPreSignedInputData(swapPayload: swapPayload, keysignPayload: keysignPayload)
         
         do {
@@ -125,7 +121,7 @@ class THORChainSwaps {
         }
     }
 
-    func getPreSignedApproveImageHash(approvePayload: ERC20ApprovePayload, keysignPayload: KeysignPayload) -> Result<[String], Error> {
+    func getPreSignedApproveInputData(approvePayload: ERC20ApprovePayload, keysignPayload: KeysignPayload) -> Result<Data, Error> {
         let approveInput = EthereumSigningInput.with {
             $0.transaction = .with {
                 $0.erc20Approve = .with {
@@ -137,6 +133,14 @@ class THORChainSwaps {
         }
         let result = EVMHelper.getHelper(coin: keysignPayload.coin).getPreSignedInputData(
             signingInput: approveInput,
+            keysignPayload: keysignPayload
+        )
+        return result
+    }
+
+    func getPreSignedApproveImageHash(approvePayload: ERC20ApprovePayload, keysignPayload: KeysignPayload) -> Result<[String], Error> {
+        let result = getPreSignedApproveInputData(
+            approvePayload: approvePayload,
             keysignPayload: keysignPayload
         )
         do {
@@ -153,15 +157,23 @@ class THORChainSwaps {
         }
     }
 
+    func getSignedApproveTransaction(approvePayload: ERC20ApprovePayload, keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error> {
 
-    func getSignedTransaction(keysignPayload: KeysignPayload,
-                              signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error>
-    {
-        guard let swapPayload = keysignPayload.swapPayload else {
-            return .failure(HelperError.runtimeError("no swap payload"))
+        let result = getPreSignedApproveInputData(approvePayload: approvePayload, keysignPayload: keysignPayload)
+
+        switch result {
+        case .success(let inputData):
+            let signedEvmTx = EVMHelper.getHelper(coin: keysignPayload.coin).getSignedTransaction(vaultHexPubKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
+            return signedEvmTx
+        case .failure(let error):
+            return .failure(error)
         }
-        
-        let result = self.getPreSignedInputData(swapPayload: swapPayload, keysignPayload: keysignPayload)
+    }
+
+    func getSignedTransaction(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error> {
+
+        let result = getPreSignedInputData(swapPayload: swapPayload, keysignPayload: keysignPayload)
+
         switch result {
         case .success(let inputData):
             switch swapPayload.fromAsset.chain {
@@ -182,7 +194,6 @@ class THORChainSwaps {
             case .eth, .bsc, .avax:
                 let signedEvmTx = EVMHelper.getHelper(coin: keysignPayload.coin).getSignedTransaction(vaultHexPubKey: self.vaultHexPublicKey, vaultHexChainCode: self.vaultHexChainCode, inputData: inputData, signatures: signatures)
                 return signedEvmTx
-                
             case .atom:
                 return ATOMHelper().getSignedTransaction(vaultHexPubKey: self.vaultHexPublicKey, vaultHexChainCode: self.vaultHexChainCode, inputData: inputData, signatures: signatures)
             default:
