@@ -8,7 +8,7 @@
 import OSLog
 import SwiftUI
 
-enum Field: Hashable {
+enum Field: Int, Hashable {
     case toAddress
     case amount
     case amountInFiat
@@ -30,6 +30,17 @@ struct SendCryptoDetailsView: View {
             view
         }
         .gesture(DragGesture())
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                
+                Button {
+                    hideKeyboard()
+                } label: {
+                    Text(NSLocalizedString("done", comment: "Done"))
+                }
+            }
+        }
         .alert(isPresented: $sendCryptoViewModel.showAlert) {
             alert
         }
@@ -92,6 +103,9 @@ struct SendCryptoDetailsView: View {
             getTitle(for: "to")
             SendCryptoAddressTextField(tx: tx, sendCryptoViewModel: sendCryptoViewModel)
                 .focused($focusedField, equals: .toAddress)
+                .onSubmit {
+                    focusNextField($focusedField)
+                }
         }
     }
     
