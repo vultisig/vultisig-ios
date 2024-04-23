@@ -18,23 +18,31 @@ struct SwapCryptoView: View {
     let vault: Vault
 
     var body: some View {
+        content
+            .navigationBarBackButtonHidden(true)
+            .navigationTitle(NSLocalizedString("swap", comment: "SendCryptoView title"))
+            .navigationBarTitleDisplayMode(.inline)
+            .ignoresSafeArea(.keyboard)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    NavigationBackButton()
+                }
+            }
+            .task {
+                await swapViewModel.load(tx: tx, fromCoin: coin, coins: vault.coins)
+            }
+            .alert(isPresented: Binding { swapViewModel.error != nil } set: { _ in swapViewModel.error = nil }) {
+                alert
+            }
+    }
+    
+    var content: some View {
         ZStack {
             Background()
             view
         }
-        .navigationBarBackButtonHidden(true)
-        .navigationTitle(NSLocalizedString("swap", comment: "SendCryptoView title"))
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                NavigationBackButton()
-            }
-        }
-        .task {
-            await swapViewModel.load(tx: tx, fromCoin: coin, coins: vault.coins)
-        }
-        .alert(isPresented: Binding { swapViewModel.error != nil } set: { _ in swapViewModel.error = nil }) {
-            alert
+        .onTapGesture {
+            hideKeyboard()
         }
     }
     

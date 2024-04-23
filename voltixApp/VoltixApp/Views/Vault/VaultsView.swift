@@ -11,8 +11,9 @@ import SwiftData
 struct VaultsView: View {
     @ObservedObject var viewModel: HomeViewModel
     @Binding var showVaultsList: Bool
+    @Binding var isEditingVaults: Bool
     
-    @Query var vaults: [Vault]
+    @Query(sort: \Vault.order) var vaults: [Vault]
     
     var body: some View {
         VStack {
@@ -26,6 +27,9 @@ struct VaultsView: View {
             Spacer()
         }
         .allowsHitTesting(showVaultsList)
+        .onAppear {
+            setData()
+        }
     }
     
     var view: some View {
@@ -37,18 +41,14 @@ struct VaultsView: View {
     }
     
     var list: some View {
-        ScrollView {
-            LazyVStack {
-                ForEach(vaults, id: \.self) { vault in
-                    VaultCell(vault: vault)
-                        .onTapGesture {
-                            viewModel.setSelectedVault(vault)
-                            showVaultsList = false
-                        }
-                }
+        List {
+            ForEach(vaults, id: \.self) { vault in
+                getButton(for: vault)
             }
-            .padding(.top, 30)
+            .onMove(perform: isEditingVaults ? move: nil)
+            .background(Color.backgroundBlue)
         }
+        .listStyle(PlainListStyle())
     }
     
     var addVaultButton: some View {
@@ -61,11 +61,58 @@ struct VaultsView: View {
         .scaleEffect(showVaultsList ? 1 : 0)
         .opacity(showVaultsList ? 1 : 0)
     }
+    
+    private func getButton(for vault: Vault) -> some View {
+        Button {
+            handleSelection(for: vault)
+        } label: {
+            VaultCell(vault: vault, isEditing: isEditingVaults)
+        }
+        .listRowInsets(EdgeInsets())
+        .listRowSeparator(.hidden)
+        .padding(.vertical, 8)
+        .disabled(isEditingVaults ? true : false)
+    }
+    
+    private func setData() {
+        for index in 0..<vaults.count {
+            vaults[index].setOrder(index)
+        }
+    }
+    
+    private func handleSelection(for vault: Vault) {
+        viewModel.setSelectedVault(vault)
+        showVaultsList = false
+    }
+    
+    func move(from: IndexSet, to: Int) {
+        let fromIndex = from.first ?? 0
+        
+        if fromIndex<to {
+            moveDown(fromIndex: fromIndex, toIndex: to-1)
+        } else {
+            moveUp(fromIndex: fromIndex, toIndex: to)
+        }
+    }
+    
+    private func moveDown(fromIndex: Int, toIndex: Int) {
+        for index in fromIndex...toIndex {
+            vaults[index].order = vaults[index].order-1
+        }
+        vaults[fromIndex].order = toIndex
+    }
+    
+    private func moveUp(fromIndex: Int, toIndex: Int) {
+        vaults[fromIndex].order = toIndex
+        for index in toIndex...fromIndex {
+            vaults[index].order = vaults[index].order+1
+        }
+    }
 }
 
 #Preview {
     ZStack {
         Background()
-        VaultsView(viewModel: HomeViewModel(), showVaultsList: .constant(false))
+        VaultsView(viewModel: HomeViewModel(), showVaultsList: .constant(false), isEditingVaults: .constant(true))
     }
 }

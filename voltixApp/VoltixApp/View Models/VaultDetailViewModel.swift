@@ -19,6 +19,8 @@ class VaultDetailViewModel: ObservableObject {
             for chain in defaultChains {
                 var result: Result<Coin,Error>
                 switch chain {
+                case .bscChain:
+                    result = EVMHelper(coinType: .smartChain).getCoin(hexPubKey: vault.pubKeyEdDSA, hexChainCode: vault.hexChainCode)
                 case .bitcoin:
                     result = UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode).getCoin()
                 case .ethereum:

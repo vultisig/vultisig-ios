@@ -20,6 +20,7 @@ final class Vault: ObservableObject, Codable {
     // thus , when user change their device name , or if they lost the original device , and restore the keyshare to a new device , keysign can still work
     var localPartyID: String = ""
     var resharePrefix: String? = nil
+    var order: Int = 0
     
     var coins = [Coin]()
     
@@ -80,6 +81,10 @@ final class Vault: ObservableObject, Codable {
     func addKeyshare(pubkey: String, keyshare: String) {
         let share = KeyShare(pubkey: pubkey, keyshare: keyshare)
         keyshares.append(share)
+    }
+    
+    func setOrder(_ index: Int) {
+        order = index
     }
     
     func getThreshold() -> Int {
