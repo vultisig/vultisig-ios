@@ -8,34 +8,86 @@
 import SwiftUI
 
 struct ChainSelectionCell: View {
-    let title: String
     let assets: [Coin]
     
+    @State var showAlert = false
+    @State var isSelected = false
+    @State var asset: Coin? = nil
+    
+    @EnvironmentObject var tokenSelectionViewModel: TokenSelectionViewModel
+    
     var body: some View {
-        VStack {
-            header
-            cell
+        HStack(spacing: 16) {
+            image
+            text
+            Spacer()
+            toggle
+        }
+        .frame(height: 72)
+        .padding(.horizontal, 16)
+        .background(Color.blue600)
+        .cornerRadius(10)
+        .redacted(reason: asset==nil ? .placeholder : [])
+        .onAppear {
+            setData()
+        }
+        .onChange(of: isSelected) { _, newValue in
+            handleSelection(newValue)
         }
     }
     
-    var header: some View {
-        Text(title)
-            .font(.body16Menlo)
-            .foregroundColor(.neutral0)
-            .frame(maxWidth: .infinity, alignment: .leading)
+    var image: some View {
+        Image(asset?.logo ?? "Logo")
+            .resizable()
+            .frame(width: 32, height: 32)
+            .cornerRadius(100)
     }
     
-    var cell: some View {
-        let nativeAsset = assets.first
+    var text: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(asset?.ticker ?? "Ticker")
+                .font(.body16MontserratBold)
+                .foregroundColor(.neutral0)
+            
+            Text(asset?.chain.name ?? "Name")
+                .font(.body12MontserratSemiBold)
+                .foregroundColor(.neutral0)
+        }
+    }
+    
+    var toggle: some View {
+        Toggle("Is selected", isOn: $isSelected)
+            .labelsHidden()
+            .scaleEffect(0.6)
+    }
+    
+    private func setData() {
+        asset = assets.first ?? Coin.example
         
-        return TokenSelectionCell(asset: nativeAsset ?? Coin.example)
-            .redacted(reason: nativeAsset==nil ? .placeholder : [])
+        guard let asset else {
+            return
+        }
+        
+        if tokenSelectionViewModel.selection.contains(asset) {
+            isSelected = true
+        } else {
+            isSelected = false
+        }
+    }
+    
+    private func handleSelection(_ isSelected: Bool) {
+        guard let asset else {
+            return
+        }
+        
+        tokenSelectionViewModel.handleSelection(isSelected: isSelected, asset: asset)
     }
 }
 
 #Preview {
     ZStack {
         Background()
-        ChainSelectionCell(title: "Bitcoin", assets: [])
+        ChainSelectionCell(assets: [])
     }
+    .environmentObject(TokenSelectionViewModel())
 }

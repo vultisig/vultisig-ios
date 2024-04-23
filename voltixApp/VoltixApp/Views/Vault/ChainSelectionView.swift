@@ -41,7 +41,7 @@ struct ChainSelectionView: View {
         ScrollView {
             VStack(spacing: 24) {
                 ForEach(viewModel.groupedAssets.keys.sorted(), id: \.self) { key in
-                    ChainSelectionCell(title: key, assets: viewModel.groupedAssets[key] ?? [])
+                    ChainSelectionCell(assets: viewModel.groupedAssets[key] ?? [])
                 }
             }
             .padding(.top, 30)
