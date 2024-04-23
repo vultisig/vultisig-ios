@@ -11,6 +11,7 @@ public final class Mediator {
     let server = HttpServer()
     let cache = MemoryStorage<String, Any>(config: MemoryConfig())
     private var service: NetService
+    private let lock = NSLock()
     
     // Singleton
     public static let shared = Mediator()
@@ -72,10 +73,7 @@ public final class Mediator {
                 do {
                     let decoder = JSONDecoder()
                     let p = try decoder.decode([String].self, from: Data(req.body))
-                    if self.cache.objectExists(forKey: key) {
-                        self.cache.removeObject(forKey: key)
-                    }
-                    self.cache.setObject(Session(SessionID: cleanSessionID, Participants: p), forKey: key)
+                    setObject(Session(SessionID: cleanSessionID, Participants: p), forKey: key)
                 } catch {
                     self.logger.error("fail to start keygen/keysign,error:\(error.localizedDescription)")
                     return HttpResponse.badRequest(.none)
@@ -118,10 +116,7 @@ public final class Mediator {
                 logger.info("received message \(key) from \(message.from) to \(recipient)")
                 // sometimes this might fail because the object with the same key already exist , probably because of client side retry
                 // thus if the object exist already , remove it first , and then add it back
-                if self.cache.objectExists(forKey: key) {
-                    self.cache.removeObject(forKey: key)
-                }
-                self.cache.setObject(message, forKey: key)
+                setObject(message, forKey: key)
             }
         } catch {
             self.logger.error("fail to decode message payload,error:\(error)")
@@ -197,15 +192,12 @@ public final class Mediator {
                             cachedValue.Participants.append(newParticipant)
                         }
                     }
-                    if self.cache.objectExists(forKey: key) {
-                        self.cache.removeObject(forKey: key)
-                    }
-                    self.cache.setObject(cachedValue, forKey: key)
+                    setObject(cachedValue, forKey: key)
                 }
             }
             else {
                 let session = Session(SessionID: cleanSessionID, Participants: p)
-                self.cache.setObject(session, forKey: key)
+                setObject(session, forKey: key)
             }
             
         } catch {
@@ -221,9 +213,9 @@ public final class Mediator {
         }
         let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
         let key = "session-\(cleanSessionID)"
-        self.cache.removeObject(forKey: key)
+        self.removeObject(key: key)
         let keyStart = "\(key)-start"
-        self.cache.removeObject(forKey: keyStart)
+        self.removeObject(key: keyStart)
         return HttpResponse.ok(.text(""))
     }
     
@@ -275,10 +267,28 @@ public final class Mediator {
             key = "\(cleanSessionID)-\(cleanParticipantKey)-\(messageID)-\(msgHash)"
         }
         logger.info("message with key:\(key) deleted")
-        self.cache.removeObject(forKey: key)
+        self.removeObject(key: key)
         return HttpResponse.ok(.text(""))
     }
-
+    
+    func setObject(_ obj: Any, forKey key: String){
+        self.lock.lock()
+        defer {
+            self.lock.unlock()
+        }
+        if self.cache.objectExists(forKey: key) {
+            self.cache.removeObject(forKey: key)
+        }
+        self.cache.setObject(obj, forKey: key)
+    }
+    
+    func removeObject(key: String) {
+        self.lock.lock()
+        defer {
+            self.lock.unlock()
+        }
+        self.cache.removeObject(forKey: key)
+    }
     deinit {
         self.cache.removeAll() // clean up cache
     }
