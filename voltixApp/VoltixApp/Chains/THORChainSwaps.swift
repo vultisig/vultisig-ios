@@ -133,6 +133,7 @@ class THORChainSwaps {
                     $0.spender = approvePayload.spender
                 }
             }
+            $0.toAddress = keysignPayload.toAddress
         }
         let result = EVMHelper.getHelper(coin: keysignPayload.coin).getPreSignedInputData(
             signingInput: approveInput,
