@@ -93,6 +93,9 @@ class EVMHelper {
         input.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
         input.txMode = .enveloped
 
+        print("Ethereum input")
+        print(input)
+
         do {
             let inputData = try input.serializedData()
             return .success(inputData)
@@ -208,5 +211,4 @@ class EVMHelper {
             return .failure(HelperError.runtimeError("fail to get signed ethereum transaction,error:\(error.localizedDescription)"))
         }
     }
-    
 }

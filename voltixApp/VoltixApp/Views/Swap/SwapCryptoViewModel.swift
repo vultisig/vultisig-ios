@@ -137,14 +137,15 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 throw Errors.swapQuoteInboundAddressNotFound
             }
 
-            let toAddress = quote.inboundAddress ?? tx.fromCoin.address
+            let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
+            let vaultAddress = quote.inboundAddress ?? tx.fromCoin.address
 
             let swapPayload = THORChainSwapPayload(
                 fromAddress: tx.fromCoin.address,
                 fromAsset: swapAsset(for: tx.fromCoin),
                 toAsset: swapAsset(for: tx.toCoin),
                 toAddress: tx.toCoin.address,
-                vaultAddress: toAddress,
+                vaultAddress: vaultAddress,
                 routerAddress: quote.router,
                 fromAmount: String(swapAmount(for: tx.fromCoin, tx: tx)),
                 toAmountLimit: "0", streamingInterval: "1", streamingQuantity: "0"
@@ -152,7 +153,6 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
             let keysignFactory = KeysignPayloadFactory()
 
-            // TODO: Cache chain specific?
             let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin)
             
             keysignPayload = try await keysignFactory.buildTransfer(

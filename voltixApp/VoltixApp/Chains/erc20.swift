@@ -26,11 +26,10 @@ class ERC20Helper {
         guard let intChainID = Int64(coin.chainId) else {
             return .failure(HelperError.runtimeError("fail to get chainID"))
         }
-        guard case .ERC20(let maxFeePerGasWei,
+        guard case .Ethereum(let maxFeePerGasWei,
                           let priorityFeeWei,
                           let nonce,
-                          let gasLimit,
-                          let contractAddr) = keysignPayload.chainSpecific
+                          let gasLimit) = keysignPayload.chainSpecific
         else {
             return .failure(HelperError.runtimeError("fail to get Ethereum chain specific"))
         }
@@ -41,7 +40,7 @@ class ERC20Helper {
             $0.gasLimit = gasLimit.magnitude.serialize()
             $0.maxFeePerGas = maxFeePerGasWei.magnitude.serialize()
             $0.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
-            $0.toAddress = contractAddr
+            $0.toAddress = keysignPayload.coin.contractAddress
             $0.txMode = .enveloped
             $0.transaction = EthereumTransaction.with {
                 $0.erc20Transfer = EthereumTransaction.ERC20Transfer.with {

@@ -18,7 +18,6 @@ struct KeysignMessage: Codable, Hashable {
 enum BlockChainSpecific: Codable, Hashable {
     case UTXO(byteFee: BigInt) // byteFee
     case Ethereum(maxFeePerGasWei: BigInt, priorityFeeWei: BigInt, nonce: Int64, gasLimit: BigInt) // maxFeePerGasWei, priorityFeeWei, nonce , gasLimit
-    case ERC20(maxFeePerGasWei: BigInt, priorityFeeWei: BigInt, nonce: Int64, gasLimit: BigInt, contractAddr: String)
     case THORChain(accountNumber: UInt64, sequence: UInt64)
     case Cosmos(accountNumber: UInt64, sequence: UInt64, gas: UInt64)
     case Solana(recentBlockHash: String, priorityFee: BigInt) // priority fee is in microlamports
@@ -28,8 +27,6 @@ enum BlockChainSpecific: Codable, Hashable {
         case .UTXO(let byteFee):
             return byteFee
         case .Ethereum(let maxFeePerGas, _, _, _):
-            return maxFeePerGas
-        case .ERC20(let maxFeePerGas, _, _, _, _):
             return maxFeePerGas
         case .THORChain:
             return 2_000_000

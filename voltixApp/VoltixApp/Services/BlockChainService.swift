@@ -81,11 +81,7 @@ final class BlockChainService {
 
             switch action {
             case .transfer:
-                if coin.isNativeToken {
-                    return .Ethereum(maxFeePerGasWei: gasPrice, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: gasLimit)
-                } else {
-                    return .ERC20(maxFeePerGasWei: gasPrice, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: gasLimit, contractAddr: coin.contractAddress)
-                }
+                return .Ethereum(maxFeePerGasWei: gasPrice, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: gasLimit)
             case .approve:
                 return .Ethereum(maxFeePerGasWei: gasPrice, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: gasLimit)
             }

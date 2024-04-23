@@ -34,9 +34,21 @@ class THORChainSwaps {
             $0.affiliateFeeAddress = THORChainSwaps.affiliateFeeAddress
             $0.affiliateFeeRateBp = "70"
         }
+
+        print("SwapInput")
+        print(input)
+
+
+        print("SwapPayload")
+        print(swapPayload)
+
         do {
             let inputData = try input.serializedData()
             let outputData = THORChainSwap.buildSwap(input: inputData)
+
+            print("SwapOutputData")
+            print(outputData.hexString)
+
             let output = try THORChainSwapSwapOutput(serializedData: outputData)
             switch swapPayload.fromAsset.chain {
             case .thor:
