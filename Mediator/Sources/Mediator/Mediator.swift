@@ -38,7 +38,7 @@ public final class Mediator {
         // POST, mark a keygen has been complete
         self.server["/complete/:sessionID"] = self.keygenFinishSession
         // coordinate keysign finish
-        self.server["keysign/:seesionID"] = self.keysignFinish
+        self.server["/complete/keysign/:seesionID"] = self.keysignFinish
         
     }
     
@@ -289,8 +289,9 @@ public final class Mediator {
         do{
             switch req.method {
             case "POST":
-                logger.debug("keysign finish: \(req.body)")
-                setObject(req.body, forKey: key)
+                let body = String(data:Data(req.body),encoding:.utf8) ?? ""
+                logger.debug("keysign finish: \(body)")
+                setObject(body, forKey: key)
                 return HttpResponse.ok(.text(""))
             case "GET":
                 if !self.cache.objectExists(forKey: key) {

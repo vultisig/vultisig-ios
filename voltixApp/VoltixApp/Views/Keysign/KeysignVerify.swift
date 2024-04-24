@@ -18,10 +18,11 @@ class KeysignVerify: ObservableObject {
     init(serverAddr: String, sessionID: String) {
         self.serverAddr = serverAddr
         self.sessionID = sessionID
-        self.urlString = "\(self.serverAddr)/keysign/\(self.sessionID)"
+        self.urlString = "\(self.serverAddr)/complete/keysign/\(self.sessionID)"
     }
     
     func markLocalPartyKeysignComplete(message: String, sig: TssKeysignResponse) async {
+        print(self.urlString)
         do {
             let jsonData = try sig.getJson()
             let header = ["message_id" : message]
@@ -32,6 +33,7 @@ class KeysignVerify: ObservableObject {
     }
     
     func checkKeySignComplete(message: String) async -> TssKeysignResponse? {
+        print(self.urlString)
         do {
             let result = try await Utils.asyncGetRequest(urlString: urlString, headers: ["message_id":message])
             if !result.isEmpty {
