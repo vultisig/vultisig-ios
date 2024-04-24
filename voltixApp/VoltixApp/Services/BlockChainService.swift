@@ -10,6 +10,11 @@ import BigInt
 
 final class BlockChainService {
 
+    enum Action {
+        case transfer
+        case approve
+    }
+
     enum Errors: String, Error, LocalizedError {
         case failToGetAccountNumber
         case failToGetSequenceNo
@@ -29,7 +34,7 @@ final class BlockChainService {
     private let maya = MayachainService.shared
     private let kuji = KujiraService.shared
 
-    func fetchSpecific(for coin: Coin) async throws -> BlockChainSpecific {
+    func fetchSpecific(for coin: Coin, action: Action = .transfer) async throws -> BlockChainSpecific {
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             let sats = try await utxo.fetchSatsPrice(coin: coin)
@@ -72,11 +77,13 @@ final class BlockChainService {
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain:
             let service = try EvmServiceFactory.getService(forChain: coin)
             let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(fromAddress: coin.address)
+            let gasLimit = BigInt(coin.feeDefault) ?? 0
 
-            if coin.isNativeToken {
-                return .Ethereum(maxFeePerGasWei: gasPrice, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: BigInt(coin.feeDefault) ?? 0)
-            } else {
-                return BlockChainSpecific.ERC20(maxFeePerGasWei: gasPrice, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: BigInt(coin.feeDefault) ?? 0, contractAddr: coin.contractAddress)
+            switch action {
+            case .transfer:
+                return .Ethereum(maxFeePerGasWei: gasPrice, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: gasLimit)
+            case .approve:
+                return .Ethereum(maxFeePerGasWei: gasPrice, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: gasLimit)
             }
 
         case .gaiaChain:

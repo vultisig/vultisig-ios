@@ -191,7 +191,4 @@ enum THORChainHelper {
             return .failure(HelperError.runtimeError("fail to get signed ethereum transaction,error:\(error.localizedDescription)"))
         }
     }
-    
-    
-    
 }
