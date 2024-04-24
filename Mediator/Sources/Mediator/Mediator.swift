@@ -38,7 +38,7 @@ public final class Mediator {
         // POST, mark a keygen has been complete
         self.server["/complete/:sessionID"] = self.keygenFinishSession
         // coordinate keysign finish
-        self.server["/complete/keysign/:seesionID"] = self.keysignFinish
+        self.server["/complete/:seesionID/keysign"] = self.keysignFinish
         
     }
     
@@ -299,6 +299,7 @@ public final class Mediator {
                 }
                 let sig = try self.cache.object(forKey: key) as? String
                 if let sig {
+                    logger.debug("response: \(sig)")
                     return HttpResponse.ok(.json(sig))
                 }
                 return HttpResponse.notAcceptable
