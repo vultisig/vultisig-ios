@@ -22,7 +22,6 @@ class KeysignVerify: ObservableObject {
     }
     
     func markLocalPartyKeysignComplete(message: String, sig: TssKeysignResponse) async {
-        print(self.urlString)
         do {
             let jsonData = try sig.getJson()
             let header = ["message_id" : message]
@@ -33,16 +32,12 @@ class KeysignVerify: ObservableObject {
     }
     
     func checkKeySignComplete(message: String) async -> TssKeysignResponse? {
-        print(self.urlString)
         do {
             let result = try await Utils.asyncGetRequest(urlString: urlString, headers: ["message_id":message])
             if !result.isEmpty {
                 print("res: \( String(data:result,encoding: .utf8) ?? "")")
-                let rawData = try JSONDecoder().decode(String.self, from: result)
-                if let jsonData = rawData.data(using: .utf8) {
-                    let resp = try TssKeysignResponse().fromJson(json: jsonData)
-                    return resp
-                }
+                let resp = try TssKeysignResponse().fromJson(json: result)
+                return resp
             }
         } catch {
             self.logger.error("Failed to decode response to JSON: \(error)")

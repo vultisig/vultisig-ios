@@ -33,12 +33,16 @@ public final class Mediator {
         self.server.GET["/message/:sessionID/:participantKey"] = self.getMessages
         // DELETE a message , client indicate it already received it
         self.server.DELETE["/message/:sessionID/:participantKey/:hash"] = self.deleteMessage
+        // coordinate keysign finish
+        self.server.POST["/complete/:seesionID/keysign"] = self.keysignFinish
+        self.server.GET["/complete/:seesionID/keysign"] = self.keysignFinish
+        
         // POST/GET , to notifiy all parties to start keygen/keysign
         self.server["/start/:sessionID"] = self.startKeygenOrKeysign
+        
         // POST, mark a keygen has been complete
         self.server["/complete/:sessionID"] = self.keygenFinishSession
-        // coordinate keysign finish
-        self.server["/complete/:seesionID/keysign"] = self.keysignFinish
+        
         
     }
     
@@ -300,7 +304,7 @@ public final class Mediator {
                 let sig = try self.cache.object(forKey: key) as? String
                 if let sig {
                     logger.debug("response: \(sig)")
-                    return HttpResponse.ok(.json(sig))
+                    return HttpResponse.ok(.text(sig))
                 }
                 return HttpResponse.notAcceptable
             default:
