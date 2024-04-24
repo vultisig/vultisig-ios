@@ -135,12 +135,7 @@ class KeysignViewModel: ObservableObject {
         keysignReq.localPartyKey = self.vault.localPartyID
         keysignReq.keysignCommitteeKeys = self.keysignCommittee.joined(separator: ",")
         if let keysignPayload {
-            let coinType = keysignPayload.coin.getCoinType()
-            if let coinType {
-                keysignReq.derivePath = coinType.derivationPath()
-            } else {
-                throw HelperError.runtimeError("don't support this coin type: \(keysignPayload.coin.ticker)")
-            }
+            keysignReq.derivePath = keysignPayload.coin.coinType.derivationPath()
         }
         // sign messages one by one , since the msg is in hex format , so we need convert it to base64
         // and then pass it to TSS for keysign
@@ -206,13 +201,13 @@ class KeysignViewModel: ObservableObject {
             let result = swaps.getSignedTransaction(swapPayload: swapPayload, keysignPayload: keysignPayload, signatures: signatures)
             return result
         }
-
+        
         if let approvePayload = keysignPayload.approvePayload {
             let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
             let result = swaps.getSignedApproveTransaction(approvePayload: approvePayload, keysignPayload: keysignPayload, signatures: signatures)
             return result
         }
-
+        
         switch keysignPayload.coin.chain.chainType {
         case .UTXO:
             let utxoHelper = UTXOChainsHelper(coin: keysignPayload.coin.coinType, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
