@@ -16,19 +16,30 @@ enum SuiHelper {
     
     static func getSui(hexPubKey: String) -> Result<Coin, Error> {
         return getAddressFromPublicKey(hexPubKey: hexPubKey).flatMap { addr -> Result<Coin, Error> in
-            TokensStore.createNewCoinInstance(ticker: "SUI", address: addr, hexPublicKey: hexPubKey, coinType: .sui)
+            
+            guard let address = AnyAddress(string: addr, coin: .sui) else {
+                return .failure(HelperError.runtimeError("fail to get to address"))
+            }
+            
+            return TokensStore.createNewCoinInstance(ticker: "SUI", address: address.description, hexPublicKey: hexPubKey, coinType: .sui)
         }
     }
     
+    static func deriveSuiAddress(publicKeyBytes: Data) -> String {
+        let flagByte = Data([0x00])  // Assuming Ed25519 signature scheme
+        let fullBytes = flagByte + publicKeyBytes
+
+        // Using the library's BLAKE2b function with a 256-bit output size
+        let hash = Hash.blake2b(data: fullBytes, size: 32)
+        return hash.toHexString()
+    }
+
     static func getAddressFromPublicKey(hexPubKey: String) -> Result<String, Error> {
-        // Sui also uses EdDSA, similar to Solana
         guard let pubKeyData = Data(hexString: hexPubKey) else {
             return .failure(HelperError.runtimeError("public key: \(hexPubKey) is invalid"))
         }
-        guard let publicKey = PublicKey(data: pubKeyData, type: .ed25519) else {
-            return .failure(HelperError.runtimeError("public key: \(hexPubKey) is invalid"))
-        }
-        return .success(CoinType.sui.deriveAddressFromPublicKey(publicKey: publicKey))
+        let address = deriveSuiAddress(publicKeyBytes: pubKeyData)
+        return .success(address)
     }
     
     static func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
@@ -51,6 +62,7 @@ enum SuiHelper {
             $0.gasBudget = 3000000
             $0.referenceGasPrice = UInt64(referenceGasPrice)
             
+            //TODO: we need this object to be passed dynamically
             var obj = TW_Sui_Proto_ObjectRef()
             obj.objectID = "0xb178412541421f7197c920acae730442733945b0bbc6f0140d724984574d5892"
             obj.objectDigest = "HdVG12bPkRc3fPPLtRZmakW6EqN6mhCCFict9ivAGExy"
