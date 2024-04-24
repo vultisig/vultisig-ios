@@ -108,7 +108,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         let toDate = Date(timeIntervalSince1970: TimeInterval(duration))
         return formatter.string(from: fromDate, to: toDate) ?? .empty
     }
-    
+
     func validateForm(tx: SwapTransaction) -> Bool {
         return tx.fromCoin != tx.toCoin
         && tx.fromCoin != .example
@@ -277,6 +277,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             tx.duration = quote.totalSwapSeconds ?? 0
 
             self.quote = quote
+
+            try await updateFlow(tx: tx, spender: spender)
         } catch {
             self.error = error
             clear(tx: tx)
@@ -299,7 +301,20 @@ private extension SwapCryptoViewModel {
 }
 
 private extension SwapCryptoViewModel {
-    
+
+    func updateFlow(tx: SwapTransaction, spender: String) async throws {
+        guard tx.fromCoin.shouldApprove else {
+            return flow = .normal
+        }
+        let service = try EvmServiceFactory.getService(forChain: tx.fromCoin)
+        let allowance = try await service.fetchAllowance(
+            contractAddress: tx.fromCoin.contractAddress,
+            owner: tx.fromCoin.address,
+            spender: spender
+        )
+        flow = (swapAmount(for: tx.fromCoin, tx: tx) < allowance) ? .erc20 : .normal
+    }
+
     func clear(tx: SwapTransaction) {
         quote = nil
         tx.toAmount = .empty
