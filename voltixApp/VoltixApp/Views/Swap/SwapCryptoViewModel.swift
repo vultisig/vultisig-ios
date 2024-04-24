@@ -139,6 +139,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
             let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
             let vaultAddress = quote.inboundAddress ?? tx.fromCoin.address
+            let expirationTime = Date().addingTimeInterval(60 * 15) // 15 mins
 
             let swapPayload = THORChainSwapPayload(
                 fromAddress: tx.fromCoin.address,
@@ -148,7 +149,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 vaultAddress: vaultAddress,
                 routerAddress: quote.router,
                 fromAmount: String(swapAmount(for: tx.fromCoin, tx: tx)),
-                toAmountLimit: "0", streamingInterval: "1", streamingQuantity: "0"
+                toAmountLimit: "0", streamingInterval: "1", streamingQuantity: "0", 
+                expirationTime: UInt64(expirationTime.timeIntervalSince1970)
             )
 
             let keysignFactory = KeysignPayloadFactory()

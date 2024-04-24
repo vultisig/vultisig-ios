@@ -43,31 +43,9 @@ struct THORChainSwapPayload: Codable, Hashable {
     let toAmountLimit: String
     let streamingInterval: String
     let streamingQuantity: String
+    let expirationTime: UInt64
 
     var fromAmountValue: BigInt {
         return BigInt(stringLiteral: fromAmount)
-    }
-
-    init(fromAddress: String,
-         fromAsset: THORChainSwapAsset,
-         toAsset: THORChainSwapAsset,
-         toAddress: String,
-         vaultAddress: String,
-         routerAddress: String?,
-         fromAmount: String,
-         toAmountLimit: String,
-         streamingInterval: String,
-         streamingQuantity: String)
-    {
-        self.fromAddress = fromAddress
-        self.fromAsset = fromAsset
-        self.toAsset = toAsset
-        self.toAddress = toAddress
-        self.vaultAddress = vaultAddress
-        self.routerAddress = routerAddress
-        self.fromAmount = fromAmount
-        self.toAmountLimit = toAmountLimit
-        self.streamingInterval = streamingInterval
-        self.streamingQuantity = streamingQuantity
     }
 }

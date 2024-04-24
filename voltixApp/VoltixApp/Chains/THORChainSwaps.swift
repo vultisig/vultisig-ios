@@ -27,6 +27,7 @@ class THORChainSwaps {
             $0.routerAddress = swapPayload.routerAddress ?? ""
             $0.fromAmount = swapPayload.fromAmount
             $0.toAmountLimit = swapPayload.toAmountLimit
+            $0.expirationTime = swapPayload.expirationTime
             $0.streamParams = .with {
                 $0.interval = swapPayload.streamingInterval
                 $0.quantity = swapPayload.streamingQuantity
