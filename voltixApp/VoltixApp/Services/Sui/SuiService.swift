@@ -75,10 +75,7 @@ class SuiService {
         
         do {
             let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getAllCoins", params:  [coin.address])
-            
             if let coins: [SuiCoin] = Utils.extractResultFromJson(fromData: data, path: "result.data", type: [SuiCoin].self) {
-                
-                
                 let allCoins = coins.map{
                     var coin = TW_Sui_Proto_ObjectRef()
                     coin.objectID = $0.coinObjectId
@@ -86,18 +83,11 @@ class SuiService {
                     coin.objectDigest = $0.digest
                     return coin
                 }
-                
                 self.cacheAllCoins[cacheKey] = (data: allCoins, timestamp: Date())
-                
                 return allCoins
-                
             } else {
                 print("Failed to decode coins")
             }
-
-            
-            
-            
         } catch {
             print("Error fetching balance: \(error.localizedDescription)")
             throw error
@@ -106,7 +96,6 @@ class SuiService {
     }
 
     func executeTransactionBlock(encodedTransaction: String) async throws -> String{
-        
         do {
             let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "sui_executeTransactionBlock", params:  [encodedTransaction])
             
