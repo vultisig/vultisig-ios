@@ -55,8 +55,10 @@ class Endpoint {
     
     static let ethServiceRpcService = "https://ethereum-rpc.publicnode.com"
     
-    static let solanaServiceAlchemyRpc = "https://solana-rpc.publicnode.com"
+    static let solanaServiceRpc = "https://solana-rpc.publicnode.com"
     
+    static let suiServiceRpc = "https://sui-rpc.publicnode.com"
+        
     static func bitcoinLabelTxHash(_ value: String) -> String {
         "https://mempool.space/tx/\(value)"
     }
@@ -112,7 +114,7 @@ class Endpoint {
     static func fetchKujiraAccountNumber(_ address: String) -> String {
         "https://kujira-rest.publicnode.com/cosmos/auth/v1beta1/accounts/\(address)"
     }
-    
+        
     static let broadcastKujiraTransaction = "https://kujira-rest.publicnode.com/cosmos/tx/v1beta1/txs"
     
     static func getExplorerURL(chainTicker: String, txid: String) -> String{

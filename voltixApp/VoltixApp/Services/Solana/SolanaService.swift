@@ -5,7 +5,7 @@ class SolanaService {
     static let shared = SolanaService()
     private init() {}
     
-    private let rpcURL = URL(string: Endpoint.solanaServiceAlchemyRpc)!
+    private let rpcURL = URL(string: Endpoint.solanaServiceRpc)!
     private let jsonDecoder = JSONDecoder()
     
     func sendSolanaTransaction(encodedTransaction: String) async -> String? {

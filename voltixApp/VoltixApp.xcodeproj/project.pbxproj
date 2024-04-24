@@ -178,7 +178,7 @@
 		A6FB96B12BD086AD00D56F68 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6FB96B02BD086AD00D56F68 /* HomeViewModel.swift */; };
 		A6FB96B32BD0CDA900D56F68 /* NavigationEditButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6FB96B22BD0CDA900D56F68 /* NavigationEditButton.swift */; };
 		A6FB96B52BD0CE6700D56F68 /* NavigationHomeEditButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6FB96B42BD0CE6700D56F68 /* NavigationHomeEditButton.swift */; };
-		B52A72312BD814D200F2AE63 /* Sui.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52A72302BD814D200F2AE63 /* Sui.swift */; };
+		B5A51B552BD8C69300791D78 /* Sui.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A51B542BD8C69300791D78 /* Sui.swift */; };
 		D9A22EB72B667C41007281BF /* Mediator in Frameworks */ = {isa = PBXBuildFile; productRef = D9A22EB62B667C41007281BF /* Mediator */; };
 		D9AD8EDA2B6722CC0009F8D5 /* ApplicationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */; };
 		D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */; };
@@ -457,7 +457,7 @@
 		A6FB96B02BD086AD00D56F68 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		A6FB96B22BD0CDA900D56F68 /* NavigationEditButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationEditButton.swift; sourceTree = "<group>"; };
 		A6FB96B42BD0CE6700D56F68 /* NavigationHomeEditButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationHomeEditButton.swift; sourceTree = "<group>"; };
-		B52A72302BD814D200F2AE63 /* Sui.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sui.swift; sourceTree = "<group>"; };
+		B5A51B542BD8C69300791D78 /* Sui.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sui.swift; sourceTree = "<group>"; };
 		D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ApplicationState.swift; path = "VoltixApp/View Models/ApplicationState.swift"; sourceTree = SOURCE_ROOT; };
 		D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WelcomeView.swift; path = VoltixApp/Views/WelcomeView.swift; sourceTree = SOURCE_ROOT; };
 		D9AD8EE52B6730A40009F8D5 /* PeerDiscoveryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PeerDiscoveryView.swift; path = VoltixApp/Views/Keygen/PeerDiscoveryView.swift; sourceTree = SOURCE_ROOT; };
@@ -612,6 +612,7 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				B5A51B532BD8C68B00791D78 /* Sui */,
 				46DE08912BD0DA1F00AE8BDE /* EvmL2 */,
 				46B60BBC2BBA810C0043EBBA /* Avalanche */,
 				DE63AE542BBA7878001BBE5C /* Cosmos */,
@@ -995,6 +996,14 @@
 				A683EDEC2BCF67D100BB706E /* NetworkPromptCell.swift */,
 			);
 			path = Cells;
+			sourceTree = "<group>";
+		};
+		B5A51B532BD8C68B00791D78 /* Sui */ = {
+			isa = PBXGroup;
+			children = (
+				B5A51B542BD8C69300791D78 /* Sui.swift */,
+			);
+			path = Sui;
 			sourceTree = "<group>";
 		};
 		D7347C222B74717F00887E57 /* Recovered References */ = {
@@ -1678,6 +1687,7 @@
 				A61BC8142BA240FC00484689 /* SendCryptoDetailsView.swift in Sources */,
 				A62758F52B97CE9E00ADE3A6 /* FontStyle.swift in Sources */,
 				DEFF58F62BCCB573005DFDF9 /* RegisterVault.swift in Sources */,
+				B5A51B552BD8C69300791D78 /* Sui.swift in Sources */,
 				A633B1362B997D57003D1738 /* NavigationBackButton.swift in Sources */,
 				DE49A19E2B671416000F3AFB /* Coin.swift in Sources */,
 				A65649E42B96602700E4B329 /* StringExtension.swift in Sources */,

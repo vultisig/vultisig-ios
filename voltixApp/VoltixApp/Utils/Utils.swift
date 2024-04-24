@@ -316,4 +316,21 @@ enum Utils {
             return nil
         }
     }
+    
+    static func PostRequestRpc(rpcURL: URL, method: String, params: [Any?]) async throws -> Data {
+        var request = URLRequest(url: rpcURL)
+        request.httpMethod = "POST"
+        
+        let requestBody: [String: Any] = [
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": method,
+            "params": params
+        ]
+        
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: requestBody, options: [])
+        let (data, _) = try await URLSession.shared.data(for: request)
+        return data
+    }
 }
