@@ -12,12 +12,24 @@ import Mediator
 
 @MainActor
 class SwapCryptoViewModel: ObservableObject, TransferViewModel {
-    
+
+    enum Flow {
+        case normal
+        case erc20
+
+        var titles: [String] {
+            switch self {
+            case .normal:
+                return ["send", "verify", "pair", "keysign", "done"]
+            case .erc20:
+                return ["send", "verifyApprove", "pair", "keysign", "verifySwap", "pair", "keysign", "done"]
+            }
+        }
+    }
+
     private let thorchainService = ThorchainService.shared
     private let balanceService = BalanceService.shared
     private let blockchainService = BlockChainService.shared
-    
-    private let titles = ["send", "verify", "pair", "keysign", "done"]
     
     var quote: ThorchainSwapQuote?
     var keysignPayload: KeysignPayload?
@@ -26,7 +38,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     @Published var currentIndex = 1
     @Published var currentTitle = "send"
     @Published var hash: String?
-    
+    @Published var flow: Flow = .normal
+
     @Published var error: Error?
     @Published var isLoading = false
     
@@ -34,16 +47,21 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         self.coins = coins.filter { $0.chain.isSwapSupported }
         tx.toCoin = coins.first!
         tx.fromCoin = fromCoin
-        
+
+        await updateFlow(tx: tx)
         await updateFromBalance(tx: tx)
         await updateToBalance(tx: tx)
         await updateFee(tx: tx)
     }
     
     var progress: Double {
-        return Double(currentIndex) / Double(titles.count)
+        return Double(currentIndex) / Double(flow.titles.count)
     }
-    
+
+    var spender: String {
+        return quote?.router ?? .empty
+    }
+
     func showFees(tx: SwapTransaction) -> Bool {
         return tx.inboundFee != .zero
     }
@@ -61,6 +79,11 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         guard !tx.gas.isZero else { return .empty }
 
         let fee = tx.toCoin.fiat(for: tx.inboundFee) + tx.fromCoin.fiat(for: tx.gas)
+        return fee.formatToFiat(includeCurrencySymbol: true)
+    }
+
+    func gasString(tx: SwapTransaction) -> String {
+        let fee = tx.fromCoin.fiat(for: tx.gas)
         return fee.formatToFiat(includeCurrencySymbol: true)
     }
 
@@ -98,10 +121,10 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     
     func moveToNextView() {
         currentIndex += 1
-        currentTitle = titles[currentIndex-1]
+        currentTitle = flow.titles[currentIndex-1]
     }
     
-    func buildKeysignPayload(tx: SwapTransaction) async -> Bool {
+    func buildSwapKeysignPayload(tx: SwapTransaction) async -> Bool {
         isLoading = true
         defer { isLoading = false }
         
@@ -114,22 +137,24 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 throw Errors.swapQuoteInboundAddressNotFound
             }
 
-            let toAddress = quote.inboundAddress ?? tx.fromCoin.address
+            let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
+            let vaultAddress = quote.inboundAddress ?? tx.fromCoin.address
+            let expirationTime = Date().addingTimeInterval(60 * 15) // 15 mins
 
             let swapPayload = THORChainSwapPayload(
                 fromAddress: tx.fromCoin.address,
                 fromAsset: swapAsset(for: tx.fromCoin),
                 toAsset: swapAsset(for: tx.toCoin),
                 toAddress: tx.toCoin.address,
-                vaultAddress: toAddress,
+                vaultAddress: vaultAddress,
                 routerAddress: quote.router,
-                fromAmount: swapAmount(for: tx.fromCoin, tx: tx),
-                toAmountLimit: "0", streamingInterval: "1", streamingQuantity: "0"
+                fromAmount: String(swapAmount(for: tx.fromCoin, tx: tx)),
+                toAmountLimit: "0", streamingInterval: "1", streamingQuantity: "0", 
+                expirationTime: UInt64(expirationTime.timeIntervalSince1970)
             )
 
             let keysignFactory = KeysignPayloadFactory()
 
-            // TODO: Cache chain specific?
             let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin)
             
             keysignPayload = try await keysignFactory.buildTransfer(
@@ -148,7 +173,42 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             return false
         }
     }
-    
+
+    func buildApproveKeysignPayload(tx: SwapTransaction) async -> Bool {
+        isLoading = true
+        defer { isLoading = false }
+        do {
+            guard let quote else {
+                throw Errors.swapQuoteNotFound
+            }
+            guard let router = quote.router else {
+                throw Errors.swapQuoteRouterNotFound
+            }
+            let approvePayload = ERC20ApprovePayload(
+                amount: swapAmount(for: tx.fromCoin, tx: tx),
+                spender: router
+            )
+            let chainSpecific = try await blockchainService.fetchSpecific(
+                for: tx.fromCoin,
+                action: .approve
+            )
+            keysignPayload = try await KeysignPayloadFactory().buildTransfer(
+                coin: tx.fromCoin,
+                toAddress: tx.fromCoin.contractAddress,
+                amount: 0,
+                memo: nil,
+                chainSpecific: chainSpecific,
+                swapPayload: nil,
+                approvePayload: approvePayload
+            )
+            return true
+        }
+        catch {
+            self.error = error
+            return false
+        }
+    }
+
     func stopMediator() {
         Mediator.shared.stop()
     }
@@ -160,6 +220,13 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         } catch {
             self.error = error
         }
+    }
+
+    func updateFlow(tx: SwapTransaction) async {
+        guard tx.fromCoin.chain.chainType == .EVM else {
+            return flow = .normal
+        }
+        flow = tx.fromCoin.isNativeToken ? .normal : .erc20
     }
 
     func updateFromBalance(tx: SwapTransaction) async {
@@ -223,6 +290,7 @@ private extension SwapCryptoViewModel {
         case swapQuoteParsingFailed
         case swapQuoteNotFound
         case swapQuoteInboundAddressNotFound
+        case swapQuoteRouterNotFound
 
         var errorDescription: String? {
             return String(NSLocalizedString(rawValue, comment: ""))
@@ -260,22 +328,22 @@ private extension SwapCryptoViewModel {
         }
     }
     
-    func swapAmount(for coin: Coin, tx: SwapTransaction) -> String {
+    func swapAmount(for coin: Coin, tx: SwapTransaction) -> BigInt {
         switch coin.chain {
         case .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
-            return String(tx.amountInSats)
+            return BigInt(tx.amountInSats)
         case .mayaChain:
-            return String(tx.amountInCoinDecimal)
+            return BigInt(tx.amountInCoinDecimal)
         case .ethereum, .avalanche,.arbitrum, .bscChain, .base, .optimism, .polygon, .blast, .cronosChain:
             if coin.isNativeToken {
-                return String(tx.amountInWei)
+                return BigInt(tx.amountInWei)
             } else {
-                return String(tx.amountInTokenWei)
+                return BigInt(tx.amountInTokenWei)
             }
         case .gaiaChain, .kujira:
-            return String(tx.amountInCoinDecimal)
+            return BigInt(tx.amountInCoinDecimal)
         case .solana:
-            return String(tx.amountInLamports)
+            return BigInt(tx.amountInLamports)
         }
     }
     

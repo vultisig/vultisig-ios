@@ -22,12 +22,8 @@ class EVMHelper {
         self.coinType = coinType
     }
     
-    static func getHelper(coin: Coin) -> EVMHelper? {
-        guard let coinType = coin.getCoinType() else {
-            print("Coin type not found on Wallet Core")
-            return nil
-        }
-        return EVMHelper(coinType: coinType)
+    static func getHelper(coin: Coin) -> EVMHelper {
+        return EVMHelper(coinType: coin.coinType)
     }
     
     func getCoin(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
@@ -76,17 +72,19 @@ class EVMHelper {
     }
     
     func getPreSignedInputData(signingInput: EthereumSigningInput, keysignPayload: KeysignPayload) -> Result<Data, Error> {
-        let coin = self.coinType
-        guard let intChainID = Int(coin.chainId) else {
+        guard let intChainID = Int(coinType.chainId) else {
             return .failure(HelperError.runtimeError("fail to get chainID"))
         }
-        guard case .Ethereum(let maxFeePerGasWei,
-                             let priorityFeeWei,
-                             let nonce,
-                             let gasLimit) = keysignPayload.chainSpecific
-        else {
+
+        guard case .Ethereum(
+            let maxFeePerGasWei,
+            let priorityFeeWei,
+            let nonce,
+            let gasLimit
+        ) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get Ethereum chain specific"))
         }
+
         var input = signingInput
         input.chainID = Data(hexString: Int64(intChainID).hexString())!
         input.nonce = Data(hexString: nonce.hexString())!
@@ -94,7 +92,7 @@ class EVMHelper {
         input.maxFeePerGas = maxFeePerGasWei.magnitude.serialize()
         input.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
         input.txMode = .enveloped
-        
+
         do {
             let inputData = try input.serializedData()
             return .success(inputData)
@@ -210,5 +208,4 @@ class EVMHelper {
             return .failure(HelperError.runtimeError("fail to get signed ethereum transaction,error:\(error.localizedDescription)"))
         }
     }
-    
 }

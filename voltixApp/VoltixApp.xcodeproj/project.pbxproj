@@ -57,6 +57,8 @@
 		A57495822BBC3FCA00D5F172 /* SwapCryptoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57495812BBC3FCA00D5F172 /* SwapCryptoViewModel.swift */; };
 		A57A03CB2BC47D4F00F6F3DF /* BlockChainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57A03CA2BC47D4F00F6F3DF /* BlockChainService.swift */; };
 		A5CBA32C2BCD747C00088CC3 /* TappableTextFieldStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5CBA32B2BCD747C00088CC3 /* TappableTextFieldStyle.swift */; };
+		A5D00E412BD65CE7009E025F /* ERC20ApprovePayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D00E402BD65CE7009E025F /* ERC20ApprovePayload.swift */; };
+		A5D00E432BD68B66009E025F /* SwapApproveVerifyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D00E422BD68B66009E025F /* SwapApproveVerifyView.swift */; };
 		A5F97C8E2BBF0BCF000C30DF /* BalanceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F97C8D2BBF0BCF000C30DF /* BalanceService.swift */; };
 		A60CA7E52BB0D37D00FDEB5C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60CA7E42BB0D37D00FDEB5C /* ContentView.swift */; };
 		A60CA7E72BB0EC6100FDEB5C /* AccountViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60CA7E62BB0EC6100FDEB5C /* AccountViewModel.swift */; };
@@ -334,6 +336,8 @@
 		A57495812BBC3FCA00D5F172 /* SwapCryptoViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoViewModel.swift; sourceTree = "<group>"; };
 		A57A03CA2BC47D4F00F6F3DF /* BlockChainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockChainService.swift; sourceTree = "<group>"; };
 		A5CBA32B2BCD747C00088CC3 /* TappableTextFieldStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TappableTextFieldStyle.swift; sourceTree = "<group>"; };
+		A5D00E402BD65CE7009E025F /* ERC20ApprovePayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ERC20ApprovePayload.swift; sourceTree = "<group>"; };
+		A5D00E422BD68B66009E025F /* SwapApproveVerifyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapApproveVerifyView.swift; sourceTree = "<group>"; };
 		A5F97C8D2BBF0BCF000C30DF /* BalanceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BalanceService.swift; sourceTree = "<group>"; };
 		A60CA7E42BB0D37D00FDEB5C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A60CA7E62BB0EC6100FDEB5C /* AccountViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountViewModel.swift; sourceTree = "<group>"; };
@@ -1032,6 +1036,7 @@
 				DE49A19D2B671416000F3AFB /* Coin.swift */,
 				A65649F72B96701300E4B329 /* UTXOTransactionMempoolPreviousOutput.swift */,
 				DE6DCB942B97D88A009A39D5 /* THORChainSwapPayload.swift */,
+				A5D00E402BD65CE7009E025F /* ERC20ApprovePayload.swift */,
 				A66A0BDA2BA13B570021A483 /* CoinsGrouped.swift */,
 				DE63AE4C2BB4E94E001BBE5C /* JSONRPCResponse.swift */,
 				DE63AE4E2BB4E96E001BBE5C /* JSONRPCError.swift */,
@@ -1074,6 +1079,7 @@
 			children = (
 				A6966D2E2BA4045C00903CA4 /* SwapCryptoView.swift */,
 				A564ED412BC350520056FDC0 /* SwapTransaction.swift */,
+				A5D00E422BD68B66009E025F /* SwapApproveVerifyView.swift */,
 				A564ED3F2BC34B690056FDC0 /* SwapVerifyView.swift */,
 				A564ED432BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift */,
 				A57495812BBC3FCA00D5F172 /* SwapCryptoViewModel.swift */,
@@ -1650,6 +1656,8 @@
 				A6980C2C2BC0896C00F452AB /* SettingsLanguageSelectionView.swift in Sources */,
 				DEFF58F82BCF4E11005DFDF9 /* BackupVault.swift in Sources */,
 				A65649EE2B9669DD00E4B329 /* UTXOTransactionMempoolInput.swift in Sources */,
+				A5D00E432BD68B66009E025F /* SwapApproveVerifyView.swift in Sources */,
+				A5D00E412BD65CE7009E025F /* ERC20ApprovePayload.swift in Sources */,
 				A6966D2D2BA402A900903CA4 /* TokenSelectorDropdown.swift in Sources */,
 				A6F2C5452B9FE3A00095C8E3 /* HomeView.swift in Sources */,
 				A66A0BD72BA125C50021A483 /* EditVaultCell.swift in Sources */,

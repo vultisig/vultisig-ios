@@ -74,7 +74,7 @@ class TokensStore {
     ]
     
     static func getCoin(_ ticker: String, coinType: CoinType) -> Coin? {
-        return TokenSelectionAssets.first(where: { $0.ticker == ticker && $0.getCoinType() == coinType}) ?? nil
+        return TokenSelectionAssets.first(where: { $0.ticker == ticker && $0.coinType == coinType}) ?? nil
     }
     
     static func createNewCoinInstance(ticker: String, address: String, hexPublicKey: String, coinType: CoinType) -> Result<Coin, Error> {
