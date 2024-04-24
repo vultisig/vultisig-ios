@@ -34,9 +34,10 @@ class SuiService {
         do {
             let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getBalance", params:  [coin.address])
             
-            let totalBalance = Utils.extractResultFromJson(fromData: data, path: "result.totalBalance") as! String
+            if let totalBalance = Utils.extractResultFromJson(fromData: data, path: "result.totalBalance") as? String {
+                rawBalance = totalBalance
+            }
             
-            rawBalance = totalBalance.description
         } catch {
             print("Error fetching balance: \(error.localizedDescription)")
             throw error
@@ -94,7 +95,7 @@ class SuiService {
         }
         return []
     }
-
+    
     func executeTransactionBlock(encodedTransaction: String) async throws -> String{
         do {
             let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "sui_executeTransactionBlock", params:  [encodedTransaction])
