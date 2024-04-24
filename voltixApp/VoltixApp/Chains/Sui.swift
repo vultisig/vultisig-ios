@@ -43,6 +43,8 @@ enum SuiHelper {
         let input = SuiSigningInput.with {
             $0.paySui.amounts = [UInt64(keysignPayload.toAmount)]
             $0.paySui.recipients = [toAddress.description]
+            $0.gasBudget = 3000000
+            $0.referenceGasPrice = 750
         }
         
         do {
