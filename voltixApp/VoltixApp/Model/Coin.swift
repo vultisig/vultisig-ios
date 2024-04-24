@@ -95,7 +95,7 @@ class Coin: Codable, Hashable {
         let balanceInFiat = balanceDecimal * Decimal(priceRate)
         return balanceInFiat.formatToFiat()
     }
-    
+
     func decimal(for value: BigInt) -> Decimal {
         let decimals = Int(decimals) ?? 0
         let decimalValue = Decimal(string: String(value)) ?? 0
@@ -137,6 +137,10 @@ class Coin: Codable, Hashable {
 
     var blockchairKey: String {
         return "\(address)-\(chain.name.lowercased())"
+    }
+
+    var shouldApprove: Bool {
+        return !isNativeToken && chain.chainType == .EVM
     }
 
     func toString() -> String {

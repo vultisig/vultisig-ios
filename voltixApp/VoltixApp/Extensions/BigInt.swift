@@ -25,5 +25,10 @@ extension BigInt {
         
         return data
     }
+
+    static var maxAllowance: BigInt {
+        let stringLiteral = String(repeating: "f", count: 64)
+        return BigInt(stringLiteral, radix: 16)!
+    }
 }
 
