@@ -282,21 +282,15 @@ public final class Mediator {
         guard let messageID = req.headers["message_id"] else {
             return HttpResponse.badRequest(.text("message_id is empty"))
         }
-    
+        
         let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
         let key = "keysign-\(cleanSessionID)-\(messageID)-complete"
         self.logger.debug("keysign complete, key:\(key)")
         do{
             switch req.method {
             case "POST":
-                do {
-                    let decoder = JSONDecoder()
-                    let p = try decoder.decode(String.self, from: Data(req.body))
-                    setObject(p, forKey: key)
-                } catch {
-                    self.logger.error("fail to process keysign complete,error:\(error.localizedDescription)")
-                    return HttpResponse.internalServerError
-                }
+                logger.debug("keysign finish: \(req.body)")
+                setObject(req.body, forKey: key)
                 return HttpResponse.ok(.text(""))
             case "GET":
                 if !self.cache.objectExists(forKey: key) {
