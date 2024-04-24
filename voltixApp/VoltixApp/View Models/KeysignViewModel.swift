@@ -76,96 +76,118 @@ class KeysignViewModel: ObservableObject {
         }
         return Endpoint.getExplorerURL(chainTicker: keysignPayload.coin.chain.ticker, txid: txid)
     }
+    
     func startKeysign() async {
         defer {
             self.messagePuller?.stop()
         }
         for msg in self.messsageToSign {
-            logger.info("signing message:\(msg)")
-            let msgHash = Utils.getMessageBodyHash(msg: msg)
-            var pubkey = ""
-            switch self.keysignType {
-            case .ECDSA:
-                pubkey = vault.pubKeyECDSA
-            case .EdDSA:
-                pubkey = vault.pubKeyEdDSA
-            }
-            self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL,
-                                                 sessionID: self.sessionID,
-                                                 messageID: msgHash,
-                                                 encryptionKeyHex: encryptionKeyHex,
-                                                 vaultPubKey: pubkey,
-                                                 isKeygen: false)
-            self.stateAccess = LocalStateAccessorImpl(vault: self.vault)
-            var err: NSError?
-            // keysign doesn't need to recreate preparams
-            self.tssService = TssNewService(self.tssMessenger, self.stateAccess, false, &err)
-            if let err {
-                self.logger.error("Failed to create TSS instance, error: \(err.localizedDescription)")
-                self.keysignError = err.localizedDescription
-                self.status = .KeysignFailed
-                return
-            }
-            guard let service = self.tssService else {
-                self.logger.error("tss service instance is nil")
-                self.status = .KeysignFailed
-                return
-            }
-            
-            self.messagePuller?.pollMessages(mediatorURL: self.mediatorURL,
-                                             sessionID: self.sessionID,
-                                             localPartyKey: self.vault.localPartyID,
-                                             tssService: service,
-                                             messageID: msgHash)
-            
-            let keysignReq = TssKeysignRequest()
-            keysignReq.localPartyKey = self.vault.localPartyID
-            keysignReq.keysignCommitteeKeys = self.keysignCommittee.joined(separator: ",")
-            if let keysignPayload {
-                let coinType = keysignPayload.coin.getCoinType()
-                if let coinType {
-                    keysignReq.derivePath = coinType.derivationPath()
-                } else {
-                    self.logger.error("don't support this coin type")
-                    self.status = .KeysignFailed
-                }
-            }
-            // sign messages one by one , since the msg is in hex format , so we need convert it to base64
-            // and then pass it to TSS for keysign
-            if let msgToSign = Data(hexString: msg)?.base64EncodedString() {
-                keysignReq.messageToSign = msgToSign
-            }
-            
             do {
-                switch self.keysignType {
-                case .ECDSA:
-                    keysignReq.pubKey = self.vault.pubKeyECDSA
-                    self.status = .KeysignECDSA
-                case .EdDSA:
-                    keysignReq.pubKey = self.vault.pubKeyEdDSA
-                    self.status = .KeysignEdDSA
-                }
-                if let service = self.tssService {
-                    let resp = try await tssKeysign(service: service, req: keysignReq, keysignType: keysignType)
-                    self.signatures[msg] = resp
-                }
-                self.messagePuller?.stop()
-                try await Task.sleep(for: .seconds(1)) // backoff for 1 seconds , so other party can finish appropriately
-            } catch {
-                self.logger.error("fail to do keysign,error:\(error.localizedDescription)")
+                try await keysignOneMessageWithRetry(msg: msg,attempt: 1)
+            }catch{
+                self.logger.error("TSS keysign failed, error: \(error.localizedDescription)")
                 self.keysignError = error.localizedDescription
                 self.status = .KeysignFailed
                 return
             }
-            
         }
         await self.broadcastTransaction()
         self.status = .KeysignFinished
         
     }
+    // Return value bool indicate whether keysign should be retried
+    func keysignOneMessageWithRetry(msg: String,attempt: UInt8) async throws {
+        logger.info("signing message:\(msg)")
+        let msgHash = Utils.getMessageBodyHash(msg: msg)
+        let keySignVerify = KeysignVerify(serverAddr: self.mediatorURL,
+                                          sessionID: self.sessionID)
+        var pubkey = ""
+        switch self.keysignType {
+        case .ECDSA:
+            pubkey = vault.pubKeyECDSA
+        case .EdDSA:
+            pubkey = vault.pubKeyEdDSA
+        }
+        self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL,
+                                             sessionID: self.sessionID,
+                                             messageID: msgHash,
+                                             encryptionKeyHex: encryptionKeyHex,
+                                             vaultPubKey: pubkey,
+                                             isKeygen: false)
+        self.stateAccess = LocalStateAccessorImpl(vault: self.vault)
+        var err: NSError?
+        // keysign doesn't need to recreate preparams
+        self.tssService = TssNewService(self.tssMessenger, self.stateAccess, false, &err)
+        if let err {
+            throw err
+        }
+        guard let service = self.tssService else {
+            throw HelperError.runtimeError("TSS service instance is nil")
+        }
+        
+        self.messagePuller?.pollMessages(mediatorURL: self.mediatorURL,
+                                         sessionID: self.sessionID,
+                                         localPartyKey: self.vault.localPartyID,
+                                         tssService: service,
+                                         messageID: msgHash)
+        
+        let keysignReq = TssKeysignRequest()
+        keysignReq.localPartyKey = self.vault.localPartyID
+        keysignReq.keysignCommitteeKeys = self.keysignCommittee.joined(separator: ",")
+        if let keysignPayload {
+            let coinType = keysignPayload.coin.getCoinType()
+            if let coinType {
+                keysignReq.derivePath = coinType.derivationPath()
+            } else {
+                throw HelperError.runtimeError("don't support this coin type: \(keysignPayload.coin.ticker)")
+            }
+        }
+        // sign messages one by one , since the msg is in hex format , so we need convert it to base64
+        // and then pass it to TSS for keysign
+        if let msgToSign = Data(hexString: msg)?.base64EncodedString() {
+            keysignReq.messageToSign = msgToSign
+        }
+        
+        do {
+            switch self.keysignType {
+            case .ECDSA:
+                keysignReq.pubKey = self.vault.pubKeyECDSA
+                self.status = .KeysignECDSA
+            case .EdDSA:
+                keysignReq.pubKey = self.vault.pubKeyEdDSA
+                self.status = .KeysignEdDSA
+            }
+            if let service = self.tssService {
+                let resp = try await tssKeysign(service: service, req: keysignReq, keysignType: keysignType)
+                self.signatures[msg] = resp
+                await keySignVerify.markLocalPartyKeysignComplete(message: msgHash, sig:resp)
+            }
+            
+            self.messagePuller?.stop()
+            try await Task.sleep(for: .seconds(1)) // backoff for 1 seconds , so other party can finish appropriately
+        } catch {
+            self.messagePuller?.stop()
+            // Check whether the other party already have the signature
+            logger.error("keysign failed, error:\(error.localizedDescription) , attempt:\(attempt)")
+            let resp = await keySignVerify.checkKeySignComplete(message: msgHash)
+            if resp != nil {
+                self.signatures[msg] = resp
+                return
+            }
+            
+            if attempt < 3 {
+                logger.info("retry keysign")
+                try await keysignOneMessageWithRetry(msg: msg, attempt: attempt + 1)
+            } else {
+                throw error
+            }
+        }
+    }
+    
     func stopMessagePuller(){
         self.messagePuller?.stop()
     }
+    
     func tssKeysign(service: TssServiceImpl, req: TssKeysignRequest, keysignType: KeyType) async throws -> TssKeysignResponse {
         let t = Task.detached(priority: .high) {
             switch keysignType {

@@ -187,6 +187,7 @@
 		DE15729F2B70F284009BC7C5 /* KeysignDiscoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE15729C2B70F284009BC7C5 /* KeysignDiscoveryView.swift */; };
 		DE1572A02B70F284009BC7C5 /* KeysignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE15729D2B70F284009BC7C5 /* KeysignView.swift */; };
 		DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1572AB2B7174D3009BC7C5 /* Utils.swift */; };
+		DE1905232BD8C0190043577E /* KeysignVerify.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1905222BD8C0190043577E /* KeysignVerify.swift */; };
 		DE28F5312B7B0FE900E33058 /* WalletCore in Frameworks */ = {isa = PBXBuildFile; productRef = DE28F5302B7B0FE900E33058 /* WalletCore */; };
 		DE28F5332B7B0FED00E33058 /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = DE28F5322B7B0FED00E33058 /* SwiftProtobuf */; };
 		DE3D44AD2BD2445100BD64CD /* CryptoSwift in Frameworks */ = {isa = PBXBuildFile; productRef = DE3D44AC2BD2445100BD64CD /* CryptoSwift */; };
@@ -463,6 +464,7 @@
 		DE15729D2B70F284009BC7C5 /* KeysignView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeysignView.swift; sourceTree = "<group>"; };
 		DE1572A12B70F873009BC7C5 /* Tss.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
 		DE1572AB2B7174D3009BC7C5 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		DE1905222BD8C0190043577E /* KeysignVerify.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignVerify.swift; sourceTree = "<group>"; };
 		DE28F52B2B7B0D6500E33058 /* WalletCore */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = WalletCore; path = ../WalletCore; sourceTree = "<group>"; };
 		DE3D44AE2BD2487900BD64CD /* CosmosSignature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosSignature.swift; sourceTree = "<group>"; };
 		DE491CEE2B708260007C88D5 /* KeygenView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeygenView.swift; sourceTree = "<group>"; };
@@ -1122,6 +1124,7 @@
 				A65BA9912BAD439900B2D8AA /* KeysignDiscoverServiceView.swift */,
 				A65BA9952BAD460600B2D8AA /* KeysignStartView.swift */,
 				A65BA9972BAD479C00B2D8AA /* JoinKeysignDoneView.swift */,
+				DE1905222BD8C0190043577E /* KeysignVerify.swift */,
 			);
 			path = Keysign;
 			sourceTree = "<group>";
@@ -1379,7 +1382,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */;
+			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -1479,6 +1482,7 @@
 				A65BA9982BAD479C00B2D8AA /* JoinKeysignDoneView.swift in Sources */,
 				A6980C242BC0836300F452AB /* SettingsView.swift in Sources */,
 				A6F9F7DF2B9BAA9F00790258 /* Separator.swift in Sources */,
+				DE1905232BD8C0190043577E /* KeysignVerify.swift in Sources */,
 				A6966D222BA3E1B000903CA4 /* TextStore.swift in Sources */,
 				A6F9F7DB2B9BA2DE00790258 /* ChainCell.swift in Sources */,
 				049BBB682B71E9C5004C231F /* WifiInstruction.swift in Sources */,
@@ -2049,7 +2053,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */ = {
+		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DE49A1882B65F6DB000F3AFB /* Debug */,
