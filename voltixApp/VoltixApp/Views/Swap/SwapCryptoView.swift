@@ -44,6 +44,9 @@ struct SwapCryptoView: View {
         .onTapGesture {
             hideKeyboard()
         }
+        .onDisappear {
+            swapViewModel.stopMediator()
+        }
     }
     
     var view: some View {
