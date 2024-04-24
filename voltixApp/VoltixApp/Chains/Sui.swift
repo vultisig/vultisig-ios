@@ -36,15 +36,26 @@ enum SuiHelper {
             return .failure(HelperError.runtimeError("coin is not SUI"))
         }
         
+        guard case .Sui(let referenceGasPrice, let coins) = keysignPayload.chainSpecific else {
+            return .failure(HelperError.runtimeError("fail to get to address"))
+        }
+        
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .sui) else {
             return .failure(HelperError.runtimeError("fail to get to address"))
         }
         
         let input = SuiSigningInput.with {
-            $0.paySui.amounts = [UInt64(keysignPayload.toAmount)]
+            $0.signer = keysignPayload.coin.address
             $0.paySui.recipients = [toAddress.description]
+            $0.paySui.amounts = [UInt64(keysignPayload.toAmount)]
             $0.gasBudget = 3000000
-            $0.referenceGasPrice = 750
+            $0.referenceGasPrice = UInt64(referenceGasPrice)
+            
+            var obj = TW_Sui_Proto_ObjectRef()
+            obj.objectID = "0xb178412541421f7197c920acae730442733945b0bbc6f0140d724984574d5892"
+            obj.objectDigest = "HdVG12bPkRc3fPPLtRZmakW6EqN6mhCCFict9ivAGExy"
+            obj.version = 96116690
+            $0.paySui.inputCoins.append(obj)
         }
         
         do {
@@ -62,8 +73,9 @@ enum SuiHelper {
             do {
                 
                 let hashes = TransactionCompiler.preImageHashes(coinType: .sui, txInputData: inputData)
+                print(hashes.hexString)
                 let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
-                print("hash:\(preSigningOutput.data.hexString)")
+                print("Sui getPreSignedImageHash hash:\(preSigningOutput.debugDescription)")
                 return .success([preSigningOutput.data.hexString])
             } catch {
                 return .failure(HelperError.runtimeError("fail to get preSignedImageHash,error:\(error.localizedDescription)"))

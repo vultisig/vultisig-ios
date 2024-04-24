@@ -180,6 +180,7 @@
 		A6FB96B52BD0CE6700D56F68 /* NavigationHomeEditButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6FB96B42BD0CE6700D56F68 /* NavigationHomeEditButton.swift */; };
 		B5F758182BD8E65D0097B5B9 /* Sui.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F758172BD8E65D0097B5B9 /* Sui.swift */; };
 		B5F7581A2BD8E7230097B5B9 /* SuiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F758192BD8E7230097B5B9 /* SuiService.swift */; };
+		B5F7581D2BD8FDA20097B5B9 /* SuiCoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F7581C2BD8FDA20097B5B9 /* SuiCoin.swift */; };
 		D9A22EB72B667C41007281BF /* Mediator in Frameworks */ = {isa = PBXBuildFile; productRef = D9A22EB62B667C41007281BF /* Mediator */; };
 		D9AD8EDA2B6722CC0009F8D5 /* ApplicationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */; };
 		D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */; };
@@ -460,6 +461,7 @@
 		A6FB96B42BD0CE6700D56F68 /* NavigationHomeEditButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationHomeEditButton.swift; sourceTree = "<group>"; };
 		B5F758172BD8E65D0097B5B9 /* Sui.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Sui.swift; sourceTree = "<group>"; };
 		B5F758192BD8E7230097B5B9 /* SuiService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SuiService.swift; sourceTree = "<group>"; };
+		B5F7581C2BD8FDA20097B5B9 /* SuiCoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuiCoin.swift; sourceTree = "<group>"; };
 		D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ApplicationState.swift; path = "VoltixApp/View Models/ApplicationState.swift"; sourceTree = SOURCE_ROOT; };
 		D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WelcomeView.swift; path = VoltixApp/Views/WelcomeView.swift; sourceTree = SOURCE_ROOT; };
 		D9AD8EE52B6730A40009F8D5 /* PeerDiscoveryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PeerDiscoveryView.swift; path = VoltixApp/Views/Keygen/PeerDiscoveryView.swift; sourceTree = SOURCE_ROOT; };
@@ -1008,6 +1010,14 @@
 			path = Sui;
 			sourceTree = "<group>";
 		};
+		B5F7581B2BD8FD970097B5B9 /* Sui */ = {
+			isa = PBXGroup;
+			children = (
+				B5F7581C2BD8FDA20097B5B9 /* SuiCoin.swift */,
+			);
+			path = Sui;
+			sourceTree = "<group>";
+		};
 		D7347C222B74717F00887E57 /* Recovered References */ = {
 			isa = PBXGroup;
 			children = (
@@ -1037,6 +1047,7 @@
 		D9AD8ED82B6722AC0009F8D5 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				B5F7581B2BD8FD970097B5B9 /* Sui */,
 				465B189E2BA3D7B5001D7407 /* Prices */,
 				465B189C2BA3D786001D7407 /* UTXO */,
 				465A8D552B9E6E0A006E7457 /* Solana */,
@@ -1625,6 +1636,7 @@
 				A61BC8122BA2407A00484689 /* SendCryptoView.swift in Sources */,
 				DED05FE42BBB824D00E0496C /* ThorchainAccountValue.swift in Sources */,
 				A60CA7E52BB0D37D00FDEB5C /* ContentView.swift in Sources */,
+				B5F7581D2BD8FDA20097B5B9 /* SuiCoin.swift in Sources */,
 				A6C0D55C2BB3AE8600156689 /* TransactionsView.swift in Sources */,
 				4606B3B02B80465E0045094D /* UTXOTransactionsService.swift in Sources */,
 				DEEFF4FD2B9835DE0015692E /* THORChainSwapChainExtension.swift in Sources */,

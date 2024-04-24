@@ -21,7 +21,7 @@ enum BlockChainSpecific: Codable, Hashable {
     case THORChain(accountNumber: UInt64, sequence: UInt64)
     case Cosmos(accountNumber: UInt64, sequence: UInt64, gas: UInt64)
     case Solana(recentBlockHash: String, priorityFee: BigInt) // priority fee is in microlamports
-    case Sui(nonce: Int64, referenceGasPrice: BigInt) // priority fee is in microlamports
+    case Sui(referenceGasPrice: BigInt, coins: [String])
 
     
     var gas: BigInt {
@@ -36,7 +36,7 @@ enum BlockChainSpecific: Codable, Hashable {
             return 7500
         case .Solana:
             return SolanaHelper.defaultFeeInLamports
-        case .Sui(_, let referenceGasPrice):
+        case .Sui(let referenceGasPrice, _):
             return referenceGasPrice
         }
     }

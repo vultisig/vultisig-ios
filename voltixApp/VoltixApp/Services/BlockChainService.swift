@@ -76,9 +76,8 @@ final class BlockChainService {
             return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(highPriorityFee))
 
         case .sui:
-            let (referenceGasPrice, nonce) = try await sui.getGasInfo(coin: coin)
-
-            return .Sui(nonce: nonce, referenceGasPrice: referenceGasPrice)
+            let (referenceGasPrice) = try await sui.getGasInfo(coin: coin)
+            return .Sui(referenceGasPrice: referenceGasPrice, coins: [])
             
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain:
             let service = try EvmServiceFactory.getService(forChain: coin)

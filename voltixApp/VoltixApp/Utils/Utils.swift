@@ -271,7 +271,19 @@ enum Utils {
         return bytes.map { String(format: "%02x", $0) }.joined()
     }
     
-    
+    public static func extractResultFromJson<T: Decodable>(fromData data: Data, path: String, type: T.Type) -> T? {
+        do {
+            let json = try JSONSerialization.jsonObject(with: data, options: []) as? NSDictionary
+            if let result = getValueFromJson(for: path, in: json) {
+                let resultData = try JSONSerialization.data(withJSONObject: result)
+                return try JSONDecoder().decode(T.self, from: resultData)
+            }
+        } catch {
+            print("Error processing JSON: \(error)")
+        }
+        return nil
+    }
+
     public static func extractResultFromJson(fromData data: Data, path: String) -> Any? {
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: []) as? NSDictionary

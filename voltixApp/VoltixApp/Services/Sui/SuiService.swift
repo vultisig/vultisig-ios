@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import BigInt
+import WalletCore
 
 class SuiService {
     static let shared = SuiService()
@@ -15,13 +16,15 @@ class SuiService {
     
     private var cacheFeePrice: [String: (data: BigInt, timestamp: Date)] = [:]
     private var cacheLatestCheckpointSequenceNumber: [String: (data: Int64, timestamp: Date)] = [:]
+    private var cacheAllCoins: [String: (data: [TW_Sui_Proto_ObjectRef], timestamp: Date)] = [:]
+    
+    
     private let rpcURL = URL(string: Endpoint.suiServiceRpc)!
     private let jsonDecoder = JSONDecoder()
     
-    func getGasInfo(coin: Coin) async throws -> (gasPrice: BigInt, nonce: Int64) {
+    func getGasInfo(coin: Coin) async throws -> BigInt {
         async let gasPrice = getReferenceGasPrice(coin: coin)
-        async let nonce = getLatestCheckpointSequenceNumber(coin: coin)
-        return (try await gasPrice, Int64(try await nonce))
+        return (try await gasPrice)
     }
     
     func getBalance(coin: Coin) async throws -> (rawBalance: String, priceRate: Double){
@@ -49,10 +52,9 @@ class SuiService {
         
         do {
             let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getReferenceGasPrice", params:  [])
-            
             if let result = Utils.extractResultFromJson(fromData: data, path: "result"),
-               let resultNumber = result as? NSNumber {
-                let intResult = BigInt(resultNumber.intValue)
+               let resultString = result as? String {
+                let intResult = resultString.toBigInt()
                 self.cacheFeePrice[cacheKey] = (data: intResult, timestamp: Date())
                 return intResult
             } else {
@@ -65,30 +67,44 @@ class SuiService {
         return BigInt.zero
     }
     
-    func getLatestCheckpointSequenceNumber(coin: Coin) async throws -> Int64{
-        let cacheKey = "\(coin.chain.name.lowercased())-getLatestCheckpointSequenceNumber"
-        if let cachedData: Int64 = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheLatestCheckpointSequenceNumber, timeInSeconds: 60*5) {
+    func getAllCoins(coin: Coin) async throws -> [TW_Sui_Proto_ObjectRef]{
+        let cacheKey = "\(coin.chain.name.lowercased())-\(coin.address)-suix_getAllCoins"
+        if let cachedData: [TW_Sui_Proto_ObjectRef] = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheAllCoins, timeInSeconds: 60*5) {
             return cachedData
         }
         
         do {
-            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getLatestCheckpointSequenceNumber", params:  [])
+            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getAllCoins", params:  [coin.address])
             
-            if let result = Utils.extractResultFromJson(fromData: data, path: "result"),
-               let resultNumber = result as? NSNumber {
-                let intResult = Int64(resultNumber.intValue)
-                self.cacheLatestCheckpointSequenceNumber[cacheKey] = (data: intResult, timestamp: Date())
-                return intResult
+            if let coins: [SuiCoin] = Utils.extractResultFromJson(fromData: data, path: "result.data", type: [SuiCoin].self) {
+                
+                
+                let allCoins = coins.map{
+                    var coin = TW_Sui_Proto_ObjectRef()
+                    coin.objectID = $0.coinObjectId
+                    coin.version = UInt64($0.version) ?? UInt64.zero
+                    coin.objectDigest = $0.digest
+                    return coin
+                }
+                
+                self.cacheAllCoins[cacheKey] = (data: allCoins, timestamp: Date())
+                
+                return allCoins
+                
             } else {
-                print("JSON decoding error")
+                print("Failed to decode coins")
             }
+
+            
+            
+            
         } catch {
             print("Error fetching balance: \(error.localizedDescription)")
             throw error
         }
-        return Int64.zero
+        return []
     }
-    
+
     func executeTransactionBlock(encodedTransaction: String) async throws -> String{
         
         do {
