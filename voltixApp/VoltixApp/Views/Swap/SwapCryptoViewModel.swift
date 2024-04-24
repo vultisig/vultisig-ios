@@ -111,12 +111,12 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
     func validateForm(tx: SwapTransaction) -> Bool {
         return tx.fromCoin != tx.toCoin
-        && tx.fromCoin != .example
-        && tx.toCoin != .example
-        && !tx.fromAmount.isEmpty
-        && !tx.toAmount.isEmpty
-        && quote != nil
-        && isSufficientBalance(tx: tx)
+            && tx.fromCoin != .example
+            && tx.toCoin != .example
+            && !tx.fromAmount.isEmpty
+            && !tx.toAmount.isEmpty
+            && quote != nil
+            && isSufficientBalance(tx: tx)
     }
     
     func moveToNextView() {
@@ -185,7 +185,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 throw Errors.swapQuoteRouterNotFound
             }
             let approvePayload = ERC20ApprovePayload(
-                amount: swapAmount(for: tx.fromCoin, tx: tx),
+                amount: .maxAllowance,
                 spender: router
             )
             let chainSpecific = try await blockchainService.fetchSpecific(
@@ -312,7 +312,8 @@ private extension SwapCryptoViewModel {
             owner: tx.fromCoin.address,
             spender: spender
         )
-        flow = (swapAmount(for: tx.fromCoin, tx: tx) < allowance) ? .erc20 : .normal
+        let amount = swapAmount(for: tx.fromCoin, tx: tx)
+        flow = amount > allowance ? .erc20 : .normal
     }
 
     func clear(tx: SwapTransaction) {

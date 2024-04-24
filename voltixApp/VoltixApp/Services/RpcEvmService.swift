@@ -101,8 +101,8 @@ class RpcEvmService {
     }
 
     func fetchAllowance(contractAddress: String, owner: String, spender: String) async throws -> BigInt {
-        let paddedOwner = String(contractAddress.dropFirst(2)).paddingLeft(toLength: 64, withPad: "0")
-        let paddedSpender = String(contractAddress.dropFirst(2)).paddingLeft(toLength: 64, withPad: "0")
+        let paddedOwner = String(owner.dropFirst(2)).paddingLeft(toLength: 64, withPad: "0")
+        let paddedSpender = String(spender.dropFirst(2)).paddingLeft(toLength: 64, withPad: "0")
         
         let data = "0xdd62ed3e" + paddedOwner + paddedSpender
         let params: [Any] = [["to": contractAddress, "data": data], "latest"]
