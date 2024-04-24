@@ -1,13 +1,13 @@
 //
-//  SwapVerifyView.swift
+//  SwapApproveVerifyView.swift
 //  VoltixApp
 //
-//  Created by Artur Guseinov on 08.04.2024.
+//  Created by Artur Guseinov on 22.04.2024.
 //
 
 import SwiftUI
 
-struct SwapVerifyView: View {
+struct SwapApproveVerifyView: View {
 
     @StateObject var verifyViewModel = SwapCryptoVerifyViewModel()
 
@@ -44,17 +44,11 @@ struct SwapVerifyView: View {
 
     var summary: some View {
         VStack(spacing: 16) {
-            getValueCell(for: "from", with: getFromAmount())
+            getValueCell(for: "Amount to approve", with: getAmount())
             Separator()
-            getValueCell(for: "to", with: getToAmount())
-            if swapViewModel.showFees(tx: tx) {
-                Separator()
-                getDetailsCell(for: "Estimated Time", with: swapViewModel.durationString(tx: tx))
-            }
-            if swapViewModel.showDuration(tx: tx) {
-                Separator()
-                getDetailsCell(for: "Estimated Fees", with: swapViewModel.feeString(tx: tx))
-            }
+            getValueCell(for: "Spender", with: getSpender())
+            Separator()
+            getDetailsCell(for: "Estimated Fees", with: swapViewModel.gasString(tx: tx))
         }
         .padding(16)
         .background(Color.blue600)
@@ -71,7 +65,7 @@ struct SwapVerifyView: View {
     var button: some View {
         Button {
             Task {
-                if await swapViewModel.buildSwapKeysignPayload(tx: tx) {
+                if await swapViewModel.buildApproveKeysignPayload(tx: tx) {
                     swapViewModel.moveToNextView()
                 }
             }
@@ -83,12 +77,12 @@ struct SwapVerifyView: View {
         .padding(40)
     }
 
-    func getFromAmount() -> String {
+    func getAmount() -> String {
         return "\(tx.fromAmount) \(tx.fromCoin.ticker)"
     }
 
-    func getToAmount() -> String {
-        return "\(tx.toAmount) \(tx.toCoin.ticker)"
+    func getSpender() -> String {
+        return swapViewModel.spender
     }
 
     func getValueCell(for title: String, with value: String) -> some View {

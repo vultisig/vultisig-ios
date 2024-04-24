@@ -174,3 +174,5 @@
 "devicesOnSameCellular" = "Connect all devices to the internet with the Voltix App open.";
 "balanceNotAvailable" = "Balance not available";
 "invalidBalance" = "Invalid balance";
+"cannotDisableChain" = "Cannot Disable Chain";
+"needToRemoveTokens" = "All the tokens within this chain needs to be removed before proceeding.";

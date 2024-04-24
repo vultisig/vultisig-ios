@@ -169,3 +169,5 @@
 "devicesOnSameCellular" = "Povežite sve uređaje s internetom s otvorenom Voltix aplikacijom.";
 "balanceNotAvailable" = "Saldo nije dostupan";
 "invalidBalance" = "Nevažeći saldo";
+"cannotDisableChain" = "Ne mogu onemogućiti lanac";
+"needToRemoveTokens" = "Svi tokeni unutar ovog lanca moraju biti uklonjeni prije nastavka.";

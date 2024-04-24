@@ -233,7 +233,7 @@ enum Utils {
     public static func getLocalDeviceIdentity() -> String {
         let identifierForVendor = UIDevice.current.identifierForVendor?.uuidString
         let parts = identifierForVendor?.components(separatedBy: "-")
-        return "\(UIDevice.current.name)-\(parts?.last ?? "N/A")"
+        return "\(UIDevice.current.name)-\(parts?.last?.suffix(3) ?? "N/A")"
     }
     
     public static func handleJsonDecodingError(_ error: Error) -> String {

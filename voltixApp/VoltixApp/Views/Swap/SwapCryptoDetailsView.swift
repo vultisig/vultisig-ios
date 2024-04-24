@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct SwapCryptoDetailsView: View {
-
     @ObservedObject var tx: SwapTransaction
     @ObservedObject var swapViewModel: SwapCryptoViewModel
 
@@ -23,6 +22,17 @@ struct SwapCryptoDetailsView: View {
         VStack {
             fields
             continueButton
+        }
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                
+                Button {
+                    hideKeyboard()
+                } label: {
+                    Text(NSLocalizedString("done", comment: "Done"))
+                }
+            }
         }
     }
     
@@ -47,6 +57,7 @@ struct SwapCryptoDetailsView: View {
             getTitle(for: "from")
             TokenSelectorDropdown(coins: $swapViewModel.coins, selected: $tx.fromCoin, onSelect: { _ in
                 Task {
+                    await swapViewModel.updateFlow(tx: tx)
                     await swapViewModel.updateFromBalance(tx: tx)
                     await swapViewModel.updateQuotes(tx: tx)
                     await swapViewModel.updateFee(tx: tx)

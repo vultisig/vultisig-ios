@@ -169,3 +169,5 @@
 "devicesOnSameCellular" = "Verbinde alle Geräte mit dem Internet und öffne die Voltix-App.";
 "balanceNotAvailable" = "Guthaben nicht verfügbar";
 "invalidBalance" = "Ungültiges Guthaben";
+"cannotDisableChain" = "Kette kann nicht deaktiviert werden";
+"needToRemoveTokens" = "Alle Token innerhalb dieser Kette müssen entfernt werden, bevor Sie fortfahren können.";

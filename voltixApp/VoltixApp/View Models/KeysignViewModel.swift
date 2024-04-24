@@ -122,13 +122,7 @@ class KeysignViewModel: ObservableObject {
             keysignReq.localPartyKey = self.vault.localPartyID
             keysignReq.keysignCommitteeKeys = self.keysignCommittee.joined(separator: ",")
             if let keysignPayload {
-                let coinType = keysignPayload.coin.getCoinType()
-                if let coinType {
-                    keysignReq.derivePath = coinType.derivationPath()
-                } else {
-                    self.logger.error("don't support this coin type")
-                    self.status = .KeysignFailed
-                }
+                keysignReq.derivePath = keysignPayload.coin.coinType.derivationPath()
             }
             // sign messages one by one , since the msg is in hex format , so we need convert it to base64
             // and then pass it to TSS for keysign
@@ -179,35 +173,31 @@ class KeysignViewModel: ObservableObject {
     }
     
     func getSignedTransaction(keysignPayload: KeysignPayload) -> Result<SignedTransactionResult, Error> {
-        if keysignPayload.swapPayload != nil {
+        if let swapPayload = keysignPayload.swapPayload {
             let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-            let result = swaps.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
+            let result = swaps.getSignedTransaction(swapPayload: swapPayload, keysignPayload: keysignPayload, signatures: signatures)
             return result
         }
-        
+
+        if let approvePayload = keysignPayload.approvePayload {
+            let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+            let result = swaps.getSignedApproveTransaction(approvePayload: approvePayload, keysignPayload: keysignPayload, signatures: signatures)
+            return result
+        }
+
         switch keysignPayload.coin.chain.chainType {
         case .UTXO:
-            guard let coinType = keysignPayload.coin.getCoinType() else {
-                return .failure(HelperError.runtimeError("Coin type not found on Wallet Core"))
-            }
-            
-            let utxoHelper = UTXOChainsHelper(coin: coinType, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+            let utxoHelper = UTXOChainsHelper(coin: keysignPayload.coin.coinType, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
             let result = utxoHelper.getSignedTransaction(keysignPayload: keysignPayload, signatures: signatures)
             return result
             
         case .EVM:
             if keysignPayload.coin.isNativeToken {
-                guard let helper = EVMHelper.getHelper(coin: keysignPayload.coin) else {
-                    return .failure(HelperError.runtimeError("Coin type not found on EVM helper"))
-                }
-                
-                return helper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
+                return helper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
             } else {
-                guard let helper = ERC20Helper.getHelper(coin: keysignPayload.coin) else {
-                    return .failure(HelperError.runtimeError("Coin type not found on EVM ERC20 helper"))
-                }
-                
-                return helper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                let helper = ERC20Helper.getHelper(coin: keysignPayload.coin)
+                return helper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
             }
             
         case .THORChain:
