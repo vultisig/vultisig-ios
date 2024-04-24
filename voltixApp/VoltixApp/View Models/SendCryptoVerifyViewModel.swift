@@ -49,8 +49,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
             return tx.amountInSats
         case .gaiaChain, .kujira:
             return tx.amountInCoinDecimal
-        case .solana:
+        case .solana, .sui:
             return tx.amountInLamports
+            
         }
     }
     func validateForm(tx: SendTransaction) async -> KeysignPayload? {

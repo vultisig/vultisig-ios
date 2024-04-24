@@ -11,6 +11,7 @@ enum ChainType: Codable, CustomStringConvertible {
     case UTXO
     case EVM
     case Solana
+    case Sui
     case THORChain
     case Cosmos
     
@@ -22,6 +23,8 @@ enum ChainType: Codable, CustomStringConvertible {
             return "Ethereum Virtual Machine"
         case .Solana:
             return "Solana"
+        case .Sui:
+            return "Sui"
         case .THORChain:
             return "THORChain"
         case .Cosmos:

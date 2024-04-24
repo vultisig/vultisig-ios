@@ -7,15 +7,22 @@
 
 import Foundation
 import SwiftUI
+import BigInt
 
 class SuiService {
     static let shared = SuiService()
     private init() {}
     
-    private var cacheFeePrice: [String: (data: Int64, timestamp: Date)] = [:]
+    private var cacheFeePrice: [String: (data: BigInt, timestamp: Date)] = [:]
     private var cacheLatestCheckpointSequenceNumber: [String: (data: Int64, timestamp: Date)] = [:]
     private let rpcURL = URL(string: Endpoint.suiServiceRpc)!
     private let jsonDecoder = JSONDecoder()
+    
+    func getGasInfo(coin: Coin) async throws -> (gasPrice: BigInt, nonce: Int64) {
+        async let gasPrice = getReferenceGasPrice(coin: coin)
+        async let nonce = getLatestCheckpointSequenceNumber(coin: coin)
+        return (try await gasPrice, Int64(try await nonce))
+    }
     
     func getBalance(coin: Coin) async throws -> (rawBalance: String, priceRate: Double){
         var rawBalance = "0"
@@ -34,9 +41,9 @@ class SuiService {
         return (rawBalance,priceRateFiat)
     }
     
-    func getReferenceFee(coin: Coin) async throws -> Int64{
-        let cacheKey = "\(coin.chain.name.lowercased())-fee-price"
-        if let cachedData: Int64 = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheFeePrice, timeInSeconds: 60*5) {
+    func getReferenceGasPrice(coin: Coin) async throws -> BigInt{
+        let cacheKey = "\(coin.chain.name.lowercased())-getReferenceGasPrice"
+        if let cachedData: BigInt = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheFeePrice, timeInSeconds: 60*5) {
             return cachedData
         }
         
@@ -45,7 +52,7 @@ class SuiService {
             
             if let result = Utils.extractResultFromJson(fromData: data, path: "result"),
                let resultNumber = result as? NSNumber {
-                let intResult = Int64(resultNumber.intValue)
+                let intResult = BigInt(resultNumber.intValue)
                 self.cacheFeePrice[cacheKey] = (data: intResult, timestamp: Date())
                 return intResult
             } else {
@@ -55,7 +62,7 @@ class SuiService {
             print("Error fetching balance: \(error.localizedDescription)")
             throw error
         }
-        return Int64.zero
+        return BigInt.zero
     }
     
     func getLatestCheckpointSequenceNumber(coin: Coin) async throws -> Int64{
@@ -65,7 +72,7 @@ class SuiService {
         }
         
         do {
-            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getReferenceGasPrice", params:  [])
+            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getLatestCheckpointSequenceNumber", params:  [])
             
             if let result = Utils.extractResultFromJson(fromData: data, path: "result"),
                let resultNumber = result as? NSNumber {
@@ -82,10 +89,10 @@ class SuiService {
         return Int64.zero
     }
     
-    func executeTransactionBlock(coin: Coin) async throws -> String{
+    func executeTransactionBlock(encodedTransaction: String) async throws -> String{
         
         do {
-            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "sui_executeTransactionBlock", params:  [])
+            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "sui_executeTransactionBlock", params:  [encodedTransaction])
             
             if let result = Utils.extractResultFromJson(fromData: data, path: "result.digest"),
                let resultString = result as? NSString {

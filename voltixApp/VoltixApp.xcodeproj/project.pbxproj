@@ -178,7 +178,8 @@
 		A6FB96B12BD086AD00D56F68 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6FB96B02BD086AD00D56F68 /* HomeViewModel.swift */; };
 		A6FB96B32BD0CDA900D56F68 /* NavigationEditButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6FB96B22BD0CDA900D56F68 /* NavigationEditButton.swift */; };
 		A6FB96B52BD0CE6700D56F68 /* NavigationHomeEditButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6FB96B42BD0CE6700D56F68 /* NavigationHomeEditButton.swift */; };
-		B5A51B552BD8C69300791D78 /* Sui.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A51B542BD8C69300791D78 /* Sui.swift */; };
+		B5F758182BD8E65D0097B5B9 /* Sui.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F758172BD8E65D0097B5B9 /* Sui.swift */; };
+		B5F7581A2BD8E7230097B5B9 /* SuiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F758192BD8E7230097B5B9 /* SuiService.swift */; };
 		D9A22EB72B667C41007281BF /* Mediator in Frameworks */ = {isa = PBXBuildFile; productRef = D9A22EB62B667C41007281BF /* Mediator */; };
 		D9AD8EDA2B6722CC0009F8D5 /* ApplicationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */; };
 		D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */; };
@@ -457,7 +458,8 @@
 		A6FB96B02BD086AD00D56F68 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		A6FB96B22BD0CDA900D56F68 /* NavigationEditButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationEditButton.swift; sourceTree = "<group>"; };
 		A6FB96B42BD0CE6700D56F68 /* NavigationHomeEditButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationHomeEditButton.swift; sourceTree = "<group>"; };
-		B5A51B542BD8C69300791D78 /* Sui.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sui.swift; sourceTree = "<group>"; };
+		B5F758172BD8E65D0097B5B9 /* Sui.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Sui.swift; sourceTree = "<group>"; };
+		B5F758192BD8E7230097B5B9 /* SuiService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SuiService.swift; sourceTree = "<group>"; };
 		D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ApplicationState.swift; path = "VoltixApp/View Models/ApplicationState.swift"; sourceTree = SOURCE_ROOT; };
 		D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WelcomeView.swift; path = VoltixApp/Views/WelcomeView.swift; sourceTree = SOURCE_ROOT; };
 		D9AD8EE52B6730A40009F8D5 /* PeerDiscoveryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PeerDiscoveryView.swift; path = VoltixApp/Views/Keygen/PeerDiscoveryView.swift; sourceTree = SOURCE_ROOT; };
@@ -1001,7 +1003,7 @@
 		B5A51B532BD8C68B00791D78 /* Sui */ = {
 			isa = PBXGroup;
 			children = (
-				B5A51B542BD8C69300791D78 /* Sui.swift */,
+				B5F758192BD8E7230097B5B9 /* SuiService.swift */,
 			);
 			path = Sui;
 			sourceTree = "<group>";
@@ -1161,6 +1163,7 @@
 		DE28F52C2B7B0E6200E33058 /* Chains */ = {
 			isa = PBXGroup;
 			children = (
+				B5F758172BD8E65D0097B5B9 /* Sui.swift */,
 				DEEADCF62B916676007978DE /* Solana.swift */,
 				DEFC7BFE2B8EC95E0090B07A /* thorchain.swift */,
 				DEEDAEE02B8AF7EF005170E8 /* evm.swift */,
@@ -1173,7 +1176,6 @@
 				46DE088B2BD087D800AE8BDE /* kujira.swift */,
 				DEFF58F92BCF85FA005DFDF9 /* maya.swift */,
 				DEFF59002BD238CF005DFDF9 /* SignedTransactionResult.swift */,
-				B52A72302BD814D200F2AE63 /* Sui.swift */,
 			);
 			path = Chains;
 			sourceTree = "<group>";
@@ -1525,7 +1527,6 @@
 				A65649E32B96602700E4B329 /* BitcoinTransactionExtension.swift in Sources */,
 				A65BA9822BA93A9F00B2D8AA /* DebounceHelper.swift in Sources */,
 				A690E00E2BC0ED290006DC0D /* URL.swift in Sources */,
-				B52A72312BD814D200F2AE63 /* Sui.swift in Sources */,
 				DE1572972B70F254009BC7C5 /* LocalStateAccessorImp.swift in Sources */,
 				A65BA9962BAD460600B2D8AA /* KeysignStartView.swift in Sources */,
 				DE15729F2B70F284009BC7C5 /* KeysignDiscoveryView.swift in Sources */,
@@ -1672,6 +1673,7 @@
 				A66A0BD72BA125C50021A483 /* EditVaultCell.swift in Sources */,
 				A63953B42BA7F120000802EC /* SendCryptoDoneView.swift in Sources */,
 				DE49A1A02B67143B000F3AFB /* Chain.swift in Sources */,
+				B5F7581A2BD8E7230097B5B9 /* SuiService.swift in Sources */,
 				A65649F02B966A1200E4B329 /* UTXOTransactionMempoolOutput.swift in Sources */,
 				A653242A2BA52A4700DDE6EB /* SendCryptoViewModel.swift in Sources */,
 				A54BBCFF2BC6E11600645C06 /* TransferViewModel.swift in Sources */,
@@ -1687,7 +1689,7 @@
 				A61BC8142BA240FC00484689 /* SendCryptoDetailsView.swift in Sources */,
 				A62758F52B97CE9E00ADE3A6 /* FontStyle.swift in Sources */,
 				DEFF58F62BCCB573005DFDF9 /* RegisterVault.swift in Sources */,
-				B5A51B552BD8C69300791D78 /* Sui.swift in Sources */,
+				B5F758182BD8E65D0097B5B9 /* Sui.swift in Sources */,
 				A633B1362B997D57003D1738 /* NavigationBackButton.swift in Sources */,
 				DE49A19E2B671416000F3AFB /* Coin.swift in Sources */,
 				A65649E42B96602700E4B329 /* StringExtension.swift in Sources */,

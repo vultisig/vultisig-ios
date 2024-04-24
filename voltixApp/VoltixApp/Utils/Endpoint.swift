@@ -157,6 +157,8 @@ class Endpoint {
             return "https://blastscan.io/tx/\(txid)"
         case "CRO":
             return "https://cronoscan.com/tx/\(txid)"
+        case "SUI":
+            return "https://suiscan.xyz/mainnet/tx/\(txid)"
         default:
             return ""
         }
@@ -202,6 +204,8 @@ class Endpoint {
             return "https://blastscan.io/address/\(address)"
         case "CRO":
             return "https://cronoscan.com/address/\(address)"
+        case "SUI":
+            return "https://suiscan.xyz/mainnet/address/\(address)"
         default:
             return nil
         }
@@ -247,6 +251,8 @@ class Endpoint {
             return "https://blastscan.io/address/\(address)"
         case .cronosChain:
             return "https://cronoscan.com/address/\(address)"
+        case .sui:
+            return "https://suiscan.xyz/mainnet/address/\(address)"
         case .none:
             return nil
         }

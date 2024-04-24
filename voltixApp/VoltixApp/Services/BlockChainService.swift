@@ -29,6 +29,7 @@ final class BlockChainService {
 
     private let utxo = BlockchairService.shared
     private let sol = SolanaService.shared
+    private let sui = SuiService.shared
     private let thor = ThorchainService.shared
     private let atom = GaiaService.shared
     private let maya = MayachainService.shared
@@ -74,6 +75,11 @@ final class BlockChainService {
             }
             return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(highPriorityFee))
 
+        case .sui:
+            let (referenceGasPrice, nonce) = try await sui.getGasInfo(coin: coin)
+
+            return .Sui(nonce: nonce, referenceGasPrice: referenceGasPrice)
+            
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain:
             let service = try EvmServiceFactory.getService(forChain: coin)
             let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(fromAddress: coin.address)

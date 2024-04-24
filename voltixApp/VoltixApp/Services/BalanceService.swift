@@ -13,6 +13,7 @@ class BalanceService {
     private let utxo = BlockchairService.shared
     private let thor = ThorchainService.shared
     private let sol = SolanaService.shared
+    private let sui = SuiService.shared
     private let gaia = GaiaService.shared
     private let kuji = KujiraService.shared
     private let maya = MayachainService.shared
@@ -29,6 +30,10 @@ class BalanceService {
             coin.priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
         case .solana:
             let (rawBalance,priceRate) = try await sol.getSolanaBalance(coin: coin)
+            coin.rawBalance = rawBalance
+            coin.priceRate = priceRate
+        case .sui:
+            let (rawBalance,priceRate) = try await sui.getBalance(coin: coin)
             coin.rawBalance = rawBalance
             coin.priceRate = priceRate
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain:
