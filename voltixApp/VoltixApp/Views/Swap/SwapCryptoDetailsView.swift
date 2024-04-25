@@ -56,12 +56,7 @@ struct SwapCryptoDetailsView: View {
         VStack(spacing: 8) {
             getTitle(for: "from")
             TokenSelectorDropdown(coins: $swapViewModel.coins, selected: $tx.fromCoin, onSelect: { _ in
-                Task {
-                    await swapViewModel.updateFlow(tx: tx)
-                    await swapViewModel.updateFromBalance(tx: tx)
-                    await swapViewModel.updateQuotes(tx: tx)
-                    await swapViewModel.updateFee(tx: tx)
-                }
+                swapViewModel.updateFromAmount(tx: tx)
             })
             getBalance(for: tx.fromBalance)
         }
@@ -69,30 +64,29 @@ struct SwapCryptoDetailsView: View {
     
     var fromAmountField: some View {
         SendCryptoAmountTextField(amount: $tx.fromAmount, onChange: { _ in
-            Task {
-                await swapViewModel.updateQuotes(tx: tx)
-            }
+            swapViewModel.updateFromAmount(tx: tx)
         })
     }
     
     var swapButton: some View {
-        Image(systemName: "arrow.up.arrow.down")
-            .font(.body20MontserratMedium)
-            .foregroundColor(.neutral0)
-            .frame(width: 50, height: 50)
-            .background(Color.persianBlue400)
-            .cornerRadius(50)
-            .padding(10)
+        Button {
+            swapViewModel.switchCoins(tx: tx)
+        } label: {
+            Image(systemName: "arrow.up.arrow.down")
+                .font(.body20MontserratMedium)
+                .foregroundColor(.neutral0)
+                .frame(width: 50, height: 50)
+                .background(Color.persianBlue400)
+                .cornerRadius(50)
+                .padding(10)
+        }
     }
     
     var toCoinField: some View {
         VStack(spacing: 8) {
             getTitle(for: "to")
             TokenSelectorDropdown(coins: $swapViewModel.coins, selected: $tx.toCoin, onSelect: { _ in
-                Task {
-                    await swapViewModel.updateToBalance(tx: tx)
-                    await swapViewModel.updateQuotes(tx: tx)
-                }
+                swapViewModel.updateToCoin(tx: tx)
             })
             getBalance(for: tx.toBalance)
         }
