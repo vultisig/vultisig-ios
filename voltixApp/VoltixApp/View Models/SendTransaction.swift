@@ -37,6 +37,31 @@ class SendTransaction: ObservableObject, Hashable {
     var amountInWei: BigInt {
         BigInt(amountDecimal * pow(10, Double(EVMHelper.ethDecimals)))
     }
+    
+    var isAmountExceeded: Bool {
+        
+        let totalBalance = BigInt(coin.rawBalance) ?? BigInt.zero
+        
+        var gasInt = BigInt(gas) ?? BigInt.zero
+        
+        if coin.chainType == .EVM {
+            if let gasLimitBigInt = BigInt(coin.feeDefault) {
+                gasInt = gasInt * gasLimitBigInt
+            }
+        }
+        
+        let totalTransactionCost = amountInRaw + gasInt
+        
+        return totalTransactionCost > totalBalance
+        
+    }
+    
+    var amountInRaw: BigInt {
+        if let decimals = Double(coin.decimals) {
+            return BigInt(amountDecimal * pow(10, decimals))
+        }
+        return BigInt.zero
+    }
                 
     var amountInTokenWei: BigInt {
         let decimals = Double(coin.decimals) ?? Double(EVMHelper.ethDecimals) // The default is always in WEI unless the token has a different one like UDSC
@@ -44,14 +69,17 @@ class SendTransaction: ObservableObject, Hashable {
         return BigInt(amountDecimal * pow(10, decimals))
     }
     
+    //TODO: Remove and only use the RAW BigInt
     var amountInLamports: BigInt {
         BigInt(amountDecimal * 1_000_000_000)
     }
     
+    //TODO: Remove and only use the RAW BigInt
     var amountInSats: BigInt {
         BigInt(amountDecimal * 100_000_000)
     }
     
+    //TODO: Remove and only use the RAW fee
     var feeInSats: Int64 {
         Int64(gas) ?? Int64(20) // Assuming that the gas is in sats
     }
@@ -60,11 +88,13 @@ class SendTransaction: ObservableObject, Hashable {
         let amountString = amount.replacingOccurrences(of: ",", with: ".")
         return Double(amountString) ?? 0
     }
+    
     var amountInCoinDecimal: BigInt {
         let amountDouble = amountDecimal
         let decimals = Int(coin.decimals) ?? 8
         return BigInt(amountDouble * pow(10,Double(decimals)))
     }
+    
     var gasDecimal: Decimal {
         let gasString = gas.replacingOccurrences(of: ",", with: ".")
         return Decimal(string:gasString) ?? 0

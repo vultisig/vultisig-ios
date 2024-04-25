@@ -114,7 +114,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                         }
                         
                         let gasPriceWei = BigInt(gasPrice)
-
+                        
                         let totalFeeWei: BigInt = gasLimitBigInt * gasPriceWei
                         
                         tx.amount = "\(tx.coin.getMaxValue(totalFeeWei))"
@@ -224,48 +224,13 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             return isValidForm
         }
         
-        let coinName = tx.coin.chain.name.lowercased()
-        let key: String = "\(tx.fromAddress)-\(coinName)"
-        
-        if  tx.coin.chain.chainType == ChainType.UTXO {
-            let walletBalanceInSats = utxo.blockchairData.get(key)?.address?.balance ?? 0
-            let totalTransactionCostInSats = tx.amountInSats + BigInt(tx.feeInSats)
-            print("Total transaction cost: \(totalTransactionCostInSats)")
+        if tx.isAmountExceeded && tx.coin.isNativeToken {
             
-            if totalTransactionCostInSats > walletBalanceInSats {
-                errorMessage = "walletBalanceExceededError"
-                showAlert = true
-                logger.log("Total transaction cost exceeds wallet balance.")
-                isValidForm = false
-            }
-        } else if tx.coin.chain == .solana {
-            let walletBalanceInLamports = tx.coin.rawBalance
-            let optionalGas: String? = tx.gas
-            guard let feeStr = optionalGas, let feeInLamports = Decimal(string: feeStr) else {
-                errorMessage = "invalidGasFeeError"
-                showAlert = true
-                logger.log("Invalid gas fee for Solana.")
-                isValidForm = false
-                return isValidForm
-            }
+            errorMessage = "walletBalanceExceededError"
+            showAlert = true
+            logger.log("Total transaction cost exceeds wallet balance.")
+            isValidForm = false
             
-            guard let amountInSOL = Decimal(string: tx.amount) else {
-                errorMessage = "invalidTransactionAmountError"
-                showAlert = true
-                logger.log("Invalid transaction amount for Solana.")
-                isValidForm = false
-                return isValidForm
-            }
-            
-            let amountInLamports = amountInSOL * Decimal(1_000_000_000)
-            
-            let totalCostInLamports = amountInLamports + feeInLamports
-            if totalCostInLamports > (Decimal(string: walletBalanceInLamports) ?? 0) {
-                errorMessage = "walletBalanceExceededSolanaError"
-                showAlert = true
-                logger.log("Total transaction cost exceeds wallet balance for Solana.")
-                isValidForm = false
-            }
         }
         
         return isValidForm
