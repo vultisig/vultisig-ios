@@ -57,31 +57,46 @@ class SendTransaction: ObservableObject, Hashable {
         return totalTransactionCost > totalBalance
         
     }
-    
-    var hasEnoughNativeTokensToPayTheFees: Bool {
-        var gasInt = BigInt(gas) ?? BigInt.zero
         
-        if coin.chainType == .EVM {
-            
-            if let gasLimitBigInt = BigInt(coin.feeDefault) {
-                gasInt = gasInt * gasLimitBigInt
-                
-                // ERC20
-                if !coin.isNativeToken {
-                    if let vault = ApplicationState.shared.currentVault {
-                        let nativeToken = vault.coins.first( where: { $0.isNativeToken == true && $0.chain.name == coin.chain.name })
-                        let nativeTokenBalance = BigInt(nativeToken?.rawBalance ?? .zero) ?? BigInt.zero
+    func hasEnoughNativeTokensToPayTheFees() async -> Bool {
+        guard !coin.isNativeToken else { return true }  // Assuming native tokens always have sufficient balance
+
+        var gasPriceBigInt = BigInt(gas) ?? BigInt.zero
+        if let gasLimitBigInt = BigInt(coin.feeDefault) {
+            if coin.chainType == .EVM {
+                gasPriceBigInt *= gasLimitBigInt
+            } 
+            if let vault = ApplicationState.shared.currentVault {
+                if let nativeToken = vault.coins.first(where: { $0.isNativeToken && $0.chain.name == coin.chain.name }) {
+                    
+                    do
+                    {
+                        let (coinBalance, balanceFiat, balanceInFiatDecimal) = try await BalanceService.shared.balance(for: nativeToken)
                         
-                        return gasLimitBigInt > nativeTokenBalance
+                        let nativeTokenBalance = BigInt(nativeToken.rawBalance) ?? BigInt.zero
+                        
+                        if gasPriceBigInt > nativeTokenBalance {
+                            print("Insufficient \(nativeToken.ticker) balance for fees: needed \(gasPriceBigInt), available \(nativeTokenBalance)")
+                            return false
+                        }
+                    } catch {
+                        print("Error to get the balance for a Native Coin")
+                        return false
                     }
+                    return true
+                } else {
+                    print("No native token found for chain \(coin.chain.name)")
+                    return false
                 }
             }
+            print("Failed to access current vault")
+        } else {
+            print("Failed to convert \(coin.feeDefault) to BigInt")
         }
-        
-        return true
-        
+        return false
     }
-    
+
+
     var amountInRaw: BigInt {
         if let decimals = Double(coin.decimals) {
             return BigInt(amountDecimal * pow(10, decimals))
