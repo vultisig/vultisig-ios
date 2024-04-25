@@ -116,7 +116,7 @@ class KeygenViewModel: ObservableObject {
                 }
                 try context.save()
             } else {
-                self.status = .KeygenFailed
+                throw HelperError.runtimeError("partial vault created, not all parties finished successfully")
             }
         } catch {
             self.logger.error("Failed to generate key, error: \(error.localizedDescription)")
