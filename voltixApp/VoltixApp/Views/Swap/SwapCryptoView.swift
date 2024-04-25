@@ -31,9 +31,6 @@ struct SwapCryptoView: View {
             .task {
                 await swapViewModel.load(tx: tx, fromCoin: coin, coins: vault.coins)
             }
-            .alert(isPresented: Binding { swapViewModel.error != nil } set: { _ in swapViewModel.error = nil }) {
-                alert
-            }
     }
     
     var content: some View {
@@ -168,12 +165,6 @@ struct SwapCryptoView: View {
 
     var errorView: some View {
         SendCryptoSigningErrorView()
-    }
-
-    var alert: Alert {
-        Alert(title: Text(NSLocalizedString("error", comment: "")),
-              message: Text(swapViewModel.error?.localizedDescription ?? .empty),
-              dismissButton: .default(Text(NSLocalizedString("ok", comment: ""))))
     }
 }
 
