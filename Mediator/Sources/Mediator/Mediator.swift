@@ -294,7 +294,6 @@ public final class Mediator {
             switch req.method {
             case "POST":
                 let body = String(data:Data(req.body),encoding:.utf8) ?? ""
-                logger.debug("keysign finish: \(body)")
                 setObject(body, forKey: key)
                 return HttpResponse.ok(.text(""))
             case "GET":
@@ -303,7 +302,6 @@ public final class Mediator {
                 }
                 let sig = try self.cache.object(forKey: key) as? String
                 if let sig {
-                    logger.debug("response: \(sig)")
                     return HttpResponse.ok(.text(sig))
                 }
                 return HttpResponse.notAcceptable

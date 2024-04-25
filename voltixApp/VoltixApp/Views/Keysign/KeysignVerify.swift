@@ -35,7 +35,6 @@ class KeysignVerify: ObservableObject {
         do {
             let result = try await Utils.asyncGetRequest(urlString: urlString, headers: ["message_id":message])
             if !result.isEmpty {
-                print("res: \( String(data:result,encoding: .utf8) ?? "")")
                 let resp = try TssKeysignResponse().fromJson(json: result)
                 return resp
             }
