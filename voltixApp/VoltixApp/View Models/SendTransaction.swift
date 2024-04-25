@@ -42,11 +42,13 @@ class SendTransaction: ObservableObject, Hashable {
         
         let totalBalance = BigInt(coin.rawBalance) ?? BigInt.zero
         
-        var gasInt = BigInt(gas) ?? BigInt.zero
-        
-        if coin.chainType == .EVM {
-            if let gasLimitBigInt = BigInt(coin.feeDefault) {
-                gasInt = gasInt * gasLimitBigInt
+        var gasInt = BigInt.zero
+        if coin.isNativeToken {
+            gasInt = BigInt(gas) ?? BigInt.zero
+            if coin.chainType == .EVM {
+                if let gasLimitBigInt = BigInt(coin.feeDefault) {
+                    gasInt = gasInt * gasLimitBigInt
+                }
             }
         }
         
@@ -56,13 +58,37 @@ class SendTransaction: ObservableObject, Hashable {
         
     }
     
+    var hasEnoughNativeTokensToPayTheFees: Bool {
+        var gasInt = BigInt(gas) ?? BigInt.zero
+        
+        if coin.chainType == .EVM {
+            
+            if let gasLimitBigInt = BigInt(coin.feeDefault) {
+                gasInt = gasInt * gasLimitBigInt
+                
+                // ERC20
+                if !coin.isNativeToken {
+                    if let vault = ApplicationState.shared.currentVault {
+                        let nativeToken = vault.coins.first( where: { $0.isNativeToken == true && $0.chain.name == coin.chain.name })
+                        let nativeTokenBalance = BigInt(nativeToken?.rawBalance ?? .zero) ?? BigInt.zero
+                        
+                        return gasLimitBigInt > nativeTokenBalance
+                    }
+                }
+            }
+        }
+        
+        return true
+        
+    }
+    
     var amountInRaw: BigInt {
         if let decimals = Double(coin.decimals) {
             return BigInt(amountDecimal * pow(10, decimals))
         }
         return BigInt.zero
     }
-                
+    
     var amountInTokenWei: BigInt {
         let decimals = Double(coin.decimals) ?? Double(EVMHelper.ethDecimals) // The default is always in WEI unless the token has a different one like UDSC
         

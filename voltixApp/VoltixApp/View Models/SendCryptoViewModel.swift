@@ -224,11 +224,20 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             return isValidForm
         }
         
-        if tx.isAmountExceeded && tx.coin.isNativeToken {
+        if tx.isAmountExceeded {
             
             errorMessage = "walletBalanceExceededError"
             showAlert = true
             logger.log("Total transaction cost exceeds wallet balance.")
+            isValidForm = false
+            
+        }
+        
+        if !tx.hasEnoughNativeTokensToPayTheFees {
+            
+            errorMessage = "walletBalanceExceededError"
+            showAlert = true
+            logger.log("You must have enough Native Tokens (Eg. ETH) to pay the fees.")
             isValidForm = false
             
         }
