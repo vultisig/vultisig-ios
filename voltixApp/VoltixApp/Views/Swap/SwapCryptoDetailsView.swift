@@ -105,6 +105,10 @@ struct SwapCryptoDetailsView: View {
             if swapViewModel.showDuration(tx: tx) {
                 getSummaryCell(leadingText: "Estimated Time", trailingText: swapViewModel.durationString(tx: tx))
             }
+            if let error = swapViewModel.error {
+                Separator()
+                getErrorCell(text: error.localizedDescription)
+            }
         }
     }
     
@@ -142,6 +146,18 @@ struct SwapCryptoDetailsView: View {
         }
         .font(.body16Menlo)
         .foregroundColor(.neutral0)
+    }
+
+    private func getErrorCell(text: String) -> some View {
+        HStack() {
+            Text(text)
+                .foregroundColor(.destructive)
+                .font(.body12Menlo)
+                .multilineTextAlignment(.leading)
+                .lineSpacing(4)
+
+            Spacer()
+        }
     }
 }
 
