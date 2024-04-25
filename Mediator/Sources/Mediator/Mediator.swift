@@ -33,10 +33,16 @@ public final class Mediator {
         self.server.GET["/message/:sessionID/:participantKey"] = self.getMessages
         // DELETE a message , client indicate it already received it
         self.server.DELETE["/message/:sessionID/:participantKey/:hash"] = self.deleteMessage
+        // coordinate keysign finish
+        self.server.POST["/complete/:seesionID/keysign"] = self.keysignFinish
+        self.server.GET["/complete/:seesionID/keysign"] = self.keysignFinish
+        
         // POST/GET , to notifiy all parties to start keygen/keysign
         self.server["/start/:sessionID"] = self.startKeygenOrKeysign
+        
         // POST, mark a keygen has been complete
         self.server["/complete/:sessionID"] = self.keygenFinishSession
+        
         
     }
     
@@ -155,10 +161,11 @@ public final class Mediator {
             return HttpResponse.internalServerError
         }
     }
-
+    
     private func postSession(req: HttpRequest) -> HttpResponse {
         return processSession(req: req, keyPrefix: nil)
     }
+    
     private func keygenFinishSession(req: HttpRequest) -> HttpResponse {
         switch req.method {
         case "POST":
@@ -249,6 +256,7 @@ public final class Mediator {
         }
         return HttpResponse.notFound
     }
+    
     private func deleteMessage(req: HttpRequest) -> HttpResponse {
         guard let sessionID = req.params[":sessionID"] else {
             return HttpResponse.badRequest(.text("sessionID is empty"))
@@ -269,6 +277,41 @@ public final class Mediator {
         logger.info("message with key:\(key) deleted")
         self.removeObject(key: key)
         return HttpResponse.ok(.text(""))
+    }
+    
+    func keysignFinish(req: HttpRequest) -> HttpResponse {
+        guard let sessionID = req.params[":sessionID"] else {
+            return HttpResponse.badRequest(.text("sessionID is empty"))
+        }
+        guard let messageID = req.headers["message_id"] else {
+            return HttpResponse.badRequest(.text("message_id is empty"))
+        }
+        
+        let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
+        let key = "keysign-\(cleanSessionID)-\(messageID)-complete"
+        self.logger.debug("keysign complete, key:\(key)")
+        do{
+            switch req.method {
+            case "POST":
+                let body = String(data:Data(req.body),encoding:.utf8) ?? ""
+                setObject(body, forKey: key)
+                return HttpResponse.ok(.text(""))
+            case "GET":
+                if !self.cache.objectExists(forKey: key) {
+                    return HttpResponse.notFound
+                }
+                let sig = try self.cache.object(forKey: key) as? String
+                if let sig {
+                    return HttpResponse.ok(.text(sig))
+                }
+                return HttpResponse.notAcceptable
+            default:
+                return HttpResponse.notFound
+            }
+        }catch{
+            logger.error("fail to process request to start keygen/keysign,error:\(error.localizedDescription)")
+            return HttpResponse.internalServerError
+        }
     }
     
     func setObject(_ obj: Any, forKey key: String){
