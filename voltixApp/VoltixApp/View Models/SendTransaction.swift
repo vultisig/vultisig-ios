@@ -71,7 +71,7 @@ class SendTransaction: ObservableObject, Hashable {
                     
                     do
                     {
-                        let (coinBalance, balanceFiat, balanceInFiatDecimal) = try await BalanceService.shared.balance(for: nativeToken)
+                        let (_, _, _) = try await BalanceService.shared.balance(for: nativeToken)
                         
                         let nativeTokenBalance = BigInt(nativeToken.rawBalance) ?? BigInt.zero
                         
