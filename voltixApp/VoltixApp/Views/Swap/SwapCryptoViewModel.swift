@@ -10,7 +10,6 @@ import BigInt
 import WalletCore
 import Mediator
 
-@MainActor
 class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
     enum Flow {
@@ -34,24 +33,21 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     var quote: ThorchainSwapQuote?
     var keysignPayload: KeysignPayload?
     
-    @Published var coins: [Coin] = []
-    @Published var currentIndex = 1
-    @Published var currentTitle = "send"
-    @Published var hash: String?
-    @Published var flow: Flow = .normal
+    @MainActor @Published var coins: [Coin] = []
+    @MainActor @Published var currentIndex = 1
+    @MainActor @Published var currentTitle = "send"
+    @MainActor @Published var hash: String?
+    @MainActor @Published var flow: Flow = .normal
 
-    @Published var error: Error?
-    @Published var isLoading = false
-    
+    @MainActor @Published var error: Error?
+    @MainActor @Published var isLoading = false
+
     func load(tx: SwapTransaction, fromCoin: Coin, coins: [Coin]) async {
         self.coins = coins.filter { $0.chain.isSwapSupported }
         tx.toCoin = coins.first!
         tx.fromCoin = fromCoin
 
-        await updateFlow(tx: tx)
-        await updateFromBalance(tx: tx)
-        await updateToBalance(tx: tx)
-        await updateFee(tx: tx)
+        updateInitial(tx: tx)
     }
     
     var progress: Double {
@@ -123,18 +119,18 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         currentIndex += 1
         currentTitle = flow.titles[currentIndex-1]
     }
-    
+
     func buildSwapKeysignPayload(tx: SwapTransaction) async -> Bool {
         isLoading = true
         defer { isLoading = false }
         
         do {
             guard let quote else {
-                throw Errors.swapQuoteNotFound
+                throw Errors.unexpectedError
             }
 
             guard quote.inboundAddress != nil || tx.fromCoin.chain == .thorChain else {
-                throw Errors.swapQuoteInboundAddressNotFound
+                throw Errors.unexpectedError
             }
 
             let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
@@ -155,8 +151,11 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
             let keysignFactory = KeysignPayloadFactory()
 
-            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin)
-            
+            let chainSpecific = try await blockchainService.fetchSpecific(
+                for: tx.fromCoin,
+                action: .swap
+            )
+
             keysignPayload = try await keysignFactory.buildTransfer(
                 coin: tx.fromCoin,
                 toAddress: toAddress,
@@ -178,19 +177,15 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         isLoading = true
         defer { isLoading = false }
         do {
-            guard let quote else {
-                throw Errors.swapQuoteNotFound
-            }
-            guard let router = quote.router else {
-                throw Errors.swapQuoteRouterNotFound
+            guard let quote, let router = quote.router else {
+                throw Errors.unexpectedError
             }
             let approvePayload = ERC20ApprovePayload(
                 amount: .maxAllowance,
                 spender: router
             )
             let chainSpecific = try await blockchainService.fetchSpecific(
-                for: tx.fromCoin,
-                action: .approve
+                for: tx.fromCoin
             )
             keysignPayload = try await KeysignPayloadFactory().buildTransfer(
                 coin: tx.fromCoin,
@@ -213,20 +208,88 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         Mediator.shared.stop()
     }
 
+
+    func switchCoins(tx: SwapTransaction) {
+        defer { clear(tx: tx) }
+
+        let fromCoin = tx.fromCoin
+        let toCoin = tx.toCoin
+
+        tx.fromCoin = toCoin
+        tx.toCoin = fromCoin
+
+        Task {
+            async let fromBalance: () = updateFromBalance(tx: tx)
+            async let toBalance: () = updateToBalance(tx: tx)
+            async let quote: () = updateQuotes(tx: tx)
+            async let fee: () = updateFee(tx: tx)
+
+            _ = await [quote, fromBalance, toBalance, fee]
+        }
+    }
+
+    func updateInitial(tx: SwapTransaction) {
+        Task {
+            async let fromBalance: () = updateFromBalance(tx: tx)
+            async let toBalance: () = updateToBalance(tx: tx)
+            async let fee: () = updateFee(tx: tx)
+
+            _ = await [fromBalance, toBalance, fee]
+        }
+    }
+
+    func updateFromAmount(tx: SwapTransaction) {
+        Task {
+            await updateQuotes(tx: tx)
+        }
+    }
+
+    func updateFromCoin(tx: SwapTransaction) {
+        Task {
+            async let fromBalance: () = updateFromBalance(tx: tx)
+            async let quote: () = updateQuotes(tx: tx)
+            async let fee: () = updateFee(tx: tx)
+
+            _ = await [fromBalance, quote, fee]
+        }
+    }
+
+    func updateToCoin(tx: SwapTransaction) {
+        Task {
+            async let toBalance: () = updateToBalance(tx: tx)
+            async let quote: () = updateQuotes(tx: tx)
+
+            _ = await [toBalance, quote]
+        }
+    }
+}
+
+private extension SwapCryptoViewModel {
+
+    enum Errors: String, Error, LocalizedError {
+        case swapAmountTooSmall
+        case unexpectedError
+        case insufficientFunds
+
+        var errorDescription: String? {
+            switch self {
+            case .swapAmountTooSmall:
+                return "Swap amount too small"
+            case .unexpectedError:
+                return "Unexpected swap error"
+            case .insufficientFunds:
+                return "Insufficient funds"
+            }
+        }
+    }
+
     func updateFee(tx: SwapTransaction) async {
         do {
-            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin)
+            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin, action: .swap)
             tx.gas = chainSpecific.gas
         } catch {
             self.error = error
         }
-    }
-
-    func updateFlow(tx: SwapTransaction) async {
-        guard tx.fromCoin.chain.chainType == .EVM else {
-            return flow = .normal
-        }
-        flow = tx.fromCoin.isNativeToken ? .normal : .erc20
     }
 
     func updateFromBalance(tx: SwapTransaction) async {
@@ -236,7 +299,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             self.error = error
         }
     }
-    
+
     func updateToBalance(tx: SwapTransaction) async {
         do {
             tx.toBalance = try await balanceService.balance(for: tx.toCoin).coinBalance
@@ -244,29 +307,37 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             self.error = error
         }
     }
-    
+
     func updateQuotes(tx: SwapTransaction) async {
         guard !tx.fromAmount.isEmpty else { return clear(tx: tx) }
 
+        error = nil
+
         do {
-            guard let amount = Decimal(string: tx.fromAmount), tx.fromCoin != tx.toCoin else {
-                throw Errors.swapQuoteParsingFailed
+            guard let amount = Decimal(string: tx.fromAmount), !amount.isZero, tx.fromCoin != tx.toCoin else {
+                return
             }
 
-            let quote = try await thorchainService.fetchSwapQuotes(
+            if !isSufficientBalance(tx: tx) {
+                throw Errors.insufficientFunds
+            }
+
+            guard let quote = try? await thorchainService.fetchSwapQuotes(
                 address: tx.toCoin.address,
                 fromAsset: tx.fromCoin.swapAsset,
                 toAsset: tx.toCoin.swapAsset,
                 amount: (amount * 100_000_000).description, // https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
-                interval: "1"
-            )
+                interval: "1") 
+            else {
+                throw Errors.swapAmountTooSmall
+            }
 
-            guard let expected = Decimal(string: quote.expectedAmountOut) else {
-                throw Errors.swapQuoteParsingFailed
+            guard let expected = Decimal(string: quote.expectedAmountOut), !expected.isZero else {
+                throw Errors.swapAmountTooSmall
             }
 
             guard let fees = Decimal(string: quote.fees.total) else {
-                throw Errors.swapQuoteParsingFailed
+                throw Errors.unexpectedError
             }
 
             let toDecimals = Int(tx.toCoin.decimals) ?? 0
@@ -276,6 +347,10 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             tx.inboundFee = BigInt(stringLiteral: inboundFeeDecimal.description)
             tx.duration = quote.totalSwapSeconds ?? 0
 
+            if !isSufficientBalance(tx: tx) {
+                throw Errors.insufficientFunds
+            }
+
             self.quote = quote
 
             try await updateFlow(tx: tx, spender: spender)
@@ -284,23 +359,6 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             clear(tx: tx)
         }
     }
-}
-
-private extension SwapCryptoViewModel {
-    
-    enum Errors: String, Error, LocalizedError {
-        case swapQuoteParsingFailed
-        case swapQuoteNotFound
-        case swapQuoteInboundAddressNotFound
-        case swapQuoteRouterNotFound
-
-        var errorDescription: String? {
-            return String(NSLocalizedString(rawValue, comment: ""))
-        }
-    }
-}
-
-private extension SwapCryptoViewModel {
 
     func updateFlow(tx: SwapTransaction, spender: String) async throws {
         guard tx.fromCoin.shouldApprove else {
