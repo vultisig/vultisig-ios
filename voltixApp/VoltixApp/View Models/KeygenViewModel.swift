@@ -87,56 +87,9 @@ class KeygenViewModel: ObservableObject {
             self.tssService = try await self.createTssInstance(messenger: messengerImp,
                                                                localStateAccessor: stateAccessorImp)
             guard let tssService = self.tssService else {
-                self.keygenError = "TSS instance is nil"
-                self.status = .KeygenFailed
-                return
+                throw HelperError.runtimeError("TSS instance is nil")
             }
-            self.messagePuller?.pollMessages(mediatorURL: self.mediatorURL,
-                                             sessionID: self.sessionID,
-                                             localPartyKey: self.vault.localPartyID,
-                                             tssService: tssService,
-                                             messageID: nil)
-            switch self.tssType {
-            case .Keygen:
-                self.status = .KeygenECDSA
-                let keygenReq = TssKeygenRequest()
-                keygenReq.localPartyID = self.vault.localPartyID
-                keygenReq.allParties = self.keygenCommittee.joined(separator: ",")
-                keygenReq.chainCodeHex = self.vault.hexChainCode
-                self.logger.info("chaincode:\(self.vault.hexChainCode)")
-                
-                let ecdsaResp = try await tssKeygen(service: tssService, req: keygenReq, keyType: .ECDSA)
-                self.vault.pubKeyECDSA = ecdsaResp.pubKey
-                
-                // continue to generate EdDSA Keys
-                self.status = .KeygenEdDSA
-                try await Task.sleep(for: .seconds(1)) // Sleep one sec to allow other parties to get in the same step
-                
-                let eddsaResp = try await tssKeygen(service: tssService, req: keygenReq, keyType: .EdDSA)
-                self.vault.pubKeyEdDSA = eddsaResp.pubKey
-            case .Reshare:
-                self.status = .ReshareECDSA
-                let reshareReq = TssReshareRequest()
-                reshareReq.localPartyID = self.vault.localPartyID
-                reshareReq.pubKey = self.vault.pubKeyECDSA
-                reshareReq.oldParties = self.vaultOldCommittee.joined(separator: ",")
-                reshareReq.newParties = self.keygenCommittee.joined(separator: ",")
-                reshareReq.resharePrefix = self.vault.resharePrefix ?? ""
-                reshareReq.chainCodeHex = self.vault.hexChainCode
-                self.logger.info("chaincode:\(self.vault.hexChainCode)")
-                
-                let ecdsaResp = try await tssReshare(service: tssService, req: reshareReq, keyType: .ECDSA)
-                self.vault.pubKeyECDSA = ecdsaResp.pubKey
-                self.vault.resharePrefix = ecdsaResp.resharePrefix
-                
-                // continue to generate EdDSA Keys
-                self.status = .ReshareEdDSA
-                try await Task.sleep(for: .seconds(1)) // Sleep one sec to allow other parties to get in the same step
-                reshareReq.pubKey = self.vault.pubKeyEdDSA
-                reshareReq.newResharePrefix = ecdsaResp.resharePrefix
-                let eddsaResp = try await tssReshare(service: tssService, req: reshareReq, keyType: .EdDSA)
-                self.vault.pubKeyEdDSA = eddsaResp.pubKey
-            }
+            try await keygenWithRetry(tssIns: tssService, attempt: 1)
             // start an additional step to make sure all parties involved in the keygen committee complete successfully
             // avoid to create a partial vault, meaning some parties finished create the vault successfully, and one still in failed state
             let keygenVerify = KeygenVerify(serverAddr: self.mediatorURL,
@@ -163,7 +116,7 @@ class KeygenViewModel: ObservableObject {
                 }
                 try context.save()
             } else {
-                self.status = .KeygenFailed
+                throw HelperError.runtimeError("partial vault created, not all parties finished successfully")
             }
         } catch {
             self.logger.error("Failed to generate key, error: \(error.localizedDescription)")
@@ -173,6 +126,66 @@ class KeygenViewModel: ObservableObject {
         }
     }
     
+    func keygenWithRetry(tssIns: TssServiceImpl,attempt: UInt8) async throws {
+        do{
+            self.messagePuller?.pollMessages(mediatorURL: self.mediatorURL,
+                                             sessionID: self.sessionID,
+                                             localPartyKey: self.vault.localPartyID,
+                                             tssService: tssIns,
+                                             messageID: nil)
+            switch self.tssType {
+            case .Keygen:
+                self.status = .KeygenECDSA
+                let keygenReq = TssKeygenRequest()
+                keygenReq.localPartyID = self.vault.localPartyID
+                keygenReq.allParties = self.keygenCommittee.joined(separator: ",")
+                keygenReq.chainCodeHex = self.vault.hexChainCode
+                self.logger.info("chaincode:\(self.vault.hexChainCode)")
+                
+                let ecdsaResp = try await tssKeygen(service: tssIns, req: keygenReq, keyType: .ECDSA)
+                self.vault.pubKeyECDSA = ecdsaResp.pubKey
+                
+                // continue to generate EdDSA Keys
+                self.status = .KeygenEdDSA
+                try await Task.sleep(for: .seconds(1)) // Sleep one sec to allow other parties to get in the same step
+                
+                let eddsaResp = try await tssKeygen(service: tssIns, req: keygenReq, keyType: .EdDSA)
+                self.vault.pubKeyEdDSA = eddsaResp.pubKey
+            case .Reshare:
+                self.status = .ReshareECDSA
+                let reshareReq = TssReshareRequest()
+                reshareReq.localPartyID = self.vault.localPartyID
+                reshareReq.pubKey = self.vault.pubKeyECDSA
+                reshareReq.oldParties = self.vaultOldCommittee.joined(separator: ",")
+                reshareReq.newParties = self.keygenCommittee.joined(separator: ",")
+                reshareReq.resharePrefix = self.vault.resharePrefix ?? ""
+                reshareReq.chainCodeHex = self.vault.hexChainCode
+                self.logger.info("chaincode:\(self.vault.hexChainCode)")
+                
+                let ecdsaResp = try await tssReshare(service: tssIns, req: reshareReq, keyType: .ECDSA)
+                self.vault.pubKeyECDSA = ecdsaResp.pubKey
+                self.vault.resharePrefix = ecdsaResp.resharePrefix
+                
+                // continue to generate EdDSA Keys
+                self.status = .ReshareEdDSA
+                try await Task.sleep(for: .seconds(1)) // Sleep one sec to allow other parties to get in the same step
+                reshareReq.pubKey = self.vault.pubKeyEdDSA
+                reshareReq.newResharePrefix = ecdsaResp.resharePrefix
+                let eddsaResp = try await tssReshare(service: tssIns, req: reshareReq, keyType: .EdDSA)
+                self.vault.pubKeyEdDSA = eddsaResp.pubKey
+            }
+        } catch {
+            self.messagePuller?.stop()
+            self.logger.error("Failed to generate key, error: \(error.localizedDescription)")
+            if attempt < 3 { // let's retry
+                logger.info("keygen/reshare retry, attemp: \(attempt)")
+                try await keygenWithRetry(tssIns: tssIns,  attempt: attempt + 1)
+            } else {
+                throw error
+            }
+        }
+        
+    }
     private func createTssInstance(messenger: TssMessengerProtocol,
                                    localStateAccessor: TssLocalStateAccessorProtocol) async throws -> TssServiceImpl?
     {

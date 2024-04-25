@@ -17,10 +17,18 @@ class SolanaService {
                 "params": [encodedTransaction]
             ]
             let data = try await postRequest(with: requestBody)
+            
+            if let errorMessage = Utils.extractResultFromJson(fromData: data, path: "error.message") as? String {
+                return errorMessage
+            }
+            
             let response = try jsonDecoder.decode(SolanaRPCResponse<String>.self, from: data)
             return response.result
             
         } catch {
+            
+            
+            
             print("Error sending transaction: \(error.localizedDescription)")
         }
         return nil

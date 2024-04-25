@@ -185,15 +185,11 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func validateAddress(tx: SendTransaction, address: String) {
-        guard let coinType = tx.coin.getCoinType() else {
-            print("Coin type not found on Wallet Core")
-            return
-        }
         if tx.coin.chain == .mayaChain {
             isValidAddress = AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya")
             return
         }
-        isValidAddress = coinType.validate(address: address)
+        isValidAddress = tx.coin.coinType.validate(address: address)
     }
     
     func validateForm(tx: SendTransaction) -> Bool {

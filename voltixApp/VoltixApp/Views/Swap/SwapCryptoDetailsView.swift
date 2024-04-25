@@ -56,11 +56,7 @@ struct SwapCryptoDetailsView: View {
         VStack(spacing: 8) {
             getTitle(for: "from")
             TokenSelectorDropdown(coins: $swapViewModel.coins, selected: $tx.fromCoin, onSelect: { _ in
-                Task {
-                    await swapViewModel.updateFromBalance(tx: tx)
-                    await swapViewModel.updateQuotes(tx: tx)
-                    await swapViewModel.updateFee(tx: tx)
-                }
+                swapViewModel.updateFromAmount(tx: tx)
             })
             getBalance(for: tx.fromBalance)
         }
@@ -68,30 +64,29 @@ struct SwapCryptoDetailsView: View {
     
     var fromAmountField: some View {
         SendCryptoAmountTextField(amount: $tx.fromAmount, onChange: { _ in
-            Task {
-                await swapViewModel.updateQuotes(tx: tx)
-            }
+            swapViewModel.updateFromAmount(tx: tx)
         })
     }
     
     var swapButton: some View {
-        Image(systemName: "arrow.up.arrow.down")
-            .font(.body20MontserratMedium)
-            .foregroundColor(.neutral0)
-            .frame(width: 50, height: 50)
-            .background(Color.persianBlue400)
-            .cornerRadius(50)
-            .padding(10)
+        Button {
+            swapViewModel.switchCoins(tx: tx)
+        } label: {
+            Image(systemName: "arrow.up.arrow.down")
+                .font(.body20MontserratMedium)
+                .foregroundColor(.neutral0)
+                .frame(width: 50, height: 50)
+                .background(Color.persianBlue400)
+                .cornerRadius(50)
+                .padding(10)
+        }
     }
     
     var toCoinField: some View {
         VStack(spacing: 8) {
             getTitle(for: "to")
             TokenSelectorDropdown(coins: $swapViewModel.coins, selected: $tx.toCoin, onSelect: { _ in
-                Task {
-                    await swapViewModel.updateToBalance(tx: tx)
-                    await swapViewModel.updateQuotes(tx: tx)
-                }
+                swapViewModel.updateToCoin(tx: tx)
             })
             getBalance(for: tx.toBalance)
         }
@@ -109,6 +104,10 @@ struct SwapCryptoDetailsView: View {
             }
             if swapViewModel.showDuration(tx: tx) {
                 getSummaryCell(leadingText: "Estimated Time", trailingText: swapViewModel.durationString(tx: tx))
+            }
+            if let error = swapViewModel.error {
+                Separator()
+                getErrorCell(text: error.localizedDescription)
             }
         }
     }
@@ -147,6 +146,18 @@ struct SwapCryptoDetailsView: View {
         }
         .font(.body16Menlo)
         .foregroundColor(.neutral0)
+    }
+
+    private func getErrorCell(text: String) -> some View {
+        HStack() {
+            Text(text)
+                .foregroundColor(.destructive)
+                .font(.body12Menlo)
+                .multilineTextAlignment(.leading)
+                .lineSpacing(4)
+
+            Spacer()
+        }
     }
 }
 
