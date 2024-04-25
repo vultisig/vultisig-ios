@@ -44,7 +44,7 @@ struct SwapApproveVerifyView: View {
 
     var summary: some View {
         VStack(spacing: 16) {
-            getValueCell(for: "Amount to approve", with: getAmount())
+            getValueCell(for: "Amount to approve", with: "UNLIMITED")
             Separator()
             getValueCell(for: "Spender", with: getSpender())
             Separator()
