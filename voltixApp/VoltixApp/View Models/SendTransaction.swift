@@ -59,7 +59,7 @@ class SendTransaction: ObservableObject, Hashable {
     }
         
     func hasEnoughNativeTokensToPayTheFees() async -> Bool {
-        guard !coin.isNativeToken else { return true }  // Assuming native tokens always have sufficient balance
+        guard !coin.isNativeToken else { return true } 
 
         var gasPriceBigInt = BigInt(gas) ?? BigInt.zero
         if let gasLimitBigInt = BigInt(coin.feeDefault) {
