@@ -151,8 +151,11 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
             let keysignFactory = KeysignPayloadFactory()
 
-            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin)
-            
+            let chainSpecific = try await blockchainService.fetchSpecific(
+                for: tx.fromCoin,
+                action: .swap
+            )
+
             keysignPayload = try await keysignFactory.buildTransfer(
                 coin: tx.fromCoin,
                 toAddress: toAddress,
@@ -182,8 +185,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 spender: router
             )
             let chainSpecific = try await blockchainService.fetchSpecific(
-                for: tx.fromCoin,
-                action: .approve
+                for: tx.fromCoin
             )
             keysignPayload = try await KeysignPayloadFactory().buildTransfer(
                 coin: tx.fromCoin,
@@ -283,7 +285,7 @@ private extension SwapCryptoViewModel {
 
     func updateFee(tx: SwapTransaction) async {
         do {
-            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin)
+            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin, action: .swap)
             tx.gas = chainSpecific.gas
         } catch {
             self.error = error
