@@ -117,6 +117,7 @@ class SendTransaction: ObservableObject, Hashable {
     init() {
         self.toAddress = .empty
         self.amount = .empty
+        self.amountInFiat = .empty
         self.memo = .empty
         self.gas = .empty
     }
@@ -159,6 +160,7 @@ class SendTransaction: ObservableObject, Hashable {
     func reset(coin: Coin) {
         self.toAddress = .empty
         self.amount = .empty
+        self.amountInFiat = .empty
         self.memo = .empty
         self.gas = .empty
         self.coin = coin
