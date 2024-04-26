@@ -11,7 +11,9 @@ struct SendCryptoDoneView: View {
     let vault: Vault
     let hash: String
     let explorerLink: String
-    
+
+    var progressLink: String? = nil
+
     @State var showAlert = false
     
     @Environment(\.openURL) var openURL
@@ -51,6 +53,13 @@ struct SendCryptoDoneView: View {
             Text(hash)
                 .font(.body13Menlo)
                 .foregroundColor(.turquoise600)
+
+            if progressLink != nil {
+                HStack {
+                    Spacer()
+                    progressbutton
+                }
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
@@ -89,9 +98,18 @@ struct SendCryptoDoneView: View {
                 .font(.body18Menlo)
                 .foregroundColor(.neutral0)
         }
-        
     }
-    
+
+    var progressbutton: some View {
+        Button {
+            checkProgressLink()
+        } label: {
+            Text(NSLocalizedString("Swap progress", comment: ""))
+                .font(.body14Menlo)
+                .foregroundColor(.neutral0)
+        }
+    }
+
     var continueButton: some View {
         NavigationLink(destination: {
             HomeView(selectedVault: vault)
@@ -109,8 +127,14 @@ struct SendCryptoDoneView: View {
     }
     
     private func shareLink() {
-        if !explorerLink.isEmpty, let u = URL(string:explorerLink) {
+        if !explorerLink.isEmpty, let u = URL(string: explorerLink) {
             openURL(u)
+        }
+    }
+
+    private func checkProgressLink() {
+        if let progressLink, let url = URL(string: progressLink) {
+            openURL(url)
         }
     }
 }
@@ -119,7 +143,8 @@ struct SendCryptoDoneView: View {
     SendCryptoDoneView(
         vault:Vault.example,
         hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
-        explorerLink: "https://blockstream.info/tx/"
+        explorerLink: "https://blockstream.info/tx/",
+        progressLink: "https://blockstream.info/tx/"
     )
     .previewDevice("iPhone 13 Pro")
 }
