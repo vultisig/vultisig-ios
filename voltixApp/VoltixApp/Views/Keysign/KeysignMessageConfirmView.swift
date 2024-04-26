@@ -32,8 +32,13 @@ struct KeysignMessageConfirmView: View {
                 Separator()
                 toField
                 Separator()
-                amountField
-                
+
+                if viewModel.keysignPayload?.swapPayload != nil {
+                    swapAmountField
+                } else {
+                    amountField
+                }
+
                 if let memo = viewModel.keysignPayload?.memo, !memo.isEmpty {
                     Separator()
                     getSummaryCell(title: "memo", value: memo)
@@ -60,7 +65,11 @@ struct KeysignMessageConfirmView: View {
     var amountField: some View {
         getSummaryCell(title: "amount", value: viewModel.keysignPayload?.toAmountString ?? "")
     }
-        
+
+    var swapAmountField: some View {
+        getSummaryCell(title: "swap", value: viewModel.keysignPayload?.toAmountString ?? "")
+    }
+
     var gasField: some View {
         getSummaryCell(title: "gas", value: "$4.00")
     }
