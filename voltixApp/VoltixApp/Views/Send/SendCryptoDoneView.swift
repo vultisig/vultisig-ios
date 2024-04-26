@@ -54,7 +54,7 @@ struct SendCryptoDoneView: View {
                 .font(.body13Menlo)
                 .foregroundColor(.turquoise600)
 
-            if progressLink != nil {
+            if showProgress {
                 HStack {
                     Spacer()
                     progressbutton
@@ -119,7 +119,11 @@ struct SendCryptoDoneView: View {
         .id(UUID())
         .padding(40)
     }
-    
+
+    var showProgress: Bool {
+        return progressLink != nil && progressLink != explorerLink
+    }
+
     private func copyHash() {
         showAlert = true
         let pasteboard = UIPasteboard.general
