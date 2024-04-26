@@ -56,6 +56,8 @@ struct JoinKeysignView: View {
                 keysignStartedView
             case .FailedToStart:
                 keysignFailedText
+            case .VaultMismatch:
+                KeysignVaultMismatchErrorView()
             }
         }
         .padding()

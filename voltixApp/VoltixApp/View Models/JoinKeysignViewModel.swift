@@ -14,6 +14,7 @@ enum JoinKeysignStatus {
     case WaitingForKeysignToStart
     case KeysignStarted
     case FailedToStart
+    case VaultMismatch
 }
 @MainActor
 class JoinKeysignViewModel: ObservableObject {
@@ -178,10 +179,16 @@ class JoinKeysignViewModel: ObservableObject {
             self.errorMsg = "QR code scanning failed: \(err.localizedDescription)"
             self.status = .FailedToStart
         }
+        
+        if vault.pubKeyECDSA != keysignPayload?.vaultPubKeyECDSA {
+            self.status = .VaultMismatch
+            return
+        }
+        
         if useVoltixRelay {
             self.serverAddress = Endpoint.voltixRelay
             self.status = .JoinKeysign
-        }else {
+        } else {
             self.status = .DiscoverService
         }
     }
