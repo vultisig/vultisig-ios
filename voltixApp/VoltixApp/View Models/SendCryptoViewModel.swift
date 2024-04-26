@@ -192,7 +192,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         isValidAddress = tx.coin.coinType.validate(address: address)
     }
     
-    func validateForm(tx: SendTransaction) -> Bool {
+    func validateForm(tx: SendTransaction) async -> Bool {
         // Reset validation state at the beginning
         errorMessage = ""
         isValidForm = true
@@ -224,11 +224,21 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             return isValidForm
         }
         
-        if tx.isAmountExceeded && tx.coin.isNativeToken {
+        if tx.isAmountExceeded {
             
             errorMessage = "walletBalanceExceededError"
             showAlert = true
             logger.log("Total transaction cost exceeds wallet balance.")
+            isValidForm = false
+            
+        }
+        
+        let hasEnoughNativeTokensToPayTheFees = await tx.hasEnoughNativeTokensToPayTheFees()
+        if !hasEnoughNativeTokensToPayTheFees {
+            
+            errorMessage = "walletBalanceExceededError"
+            showAlert = true
+            logger.log("You must have enough Native Tokens (Eg. ETH) to pay the fees.")
             isValidForm = false
             
         }
