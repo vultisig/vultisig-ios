@@ -120,7 +120,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         currentTitle = flow.titles[currentIndex-1]
     }
 
-    func buildSwapKeysignPayload(tx: SwapTransaction) async -> Bool {
+    func buildSwapKeysignPayload(tx: SwapTransaction, vault: Vault) async -> Bool {
         isLoading = true
         defer { isLoading = false }
         
@@ -162,7 +162,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 amount: BigInt(amount(for: tx.fromCoin, tx: tx)),
                 memo: nil,
                 chainSpecific: chainSpecific,
-                swapPayload: swapPayload
+                swapPayload: swapPayload, 
+                vault: vault
             )
             
             return true
@@ -173,7 +174,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         }
     }
 
-    func buildApproveKeysignPayload(tx: SwapTransaction) async -> Bool {
+    func buildApproveKeysignPayload(tx: SwapTransaction, vault: Vault) async -> Bool {
         isLoading = true
         defer { isLoading = false }
         do {
@@ -194,7 +195,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 memo: nil,
                 chainSpecific: chainSpecific,
                 swapPayload: nil,
-                approvePayload: approvePayload
+                approvePayload: approvePayload,
+                vault: vault
             )
             return true
         }

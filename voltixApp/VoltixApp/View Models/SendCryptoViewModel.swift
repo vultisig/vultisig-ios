@@ -62,6 +62,10 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         
         let totalSelectedAmount = utxoInfo.reduce(0) { $0 + $1.amount }
         
+        guard let vault = ApplicationState.shared.currentVault else {
+            return nil
+        }
+        
         let keysignPayload = KeysignPayload(
             coin: tx.coin,
             toAddress: tx.toAddress,
@@ -69,21 +73,21 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             chainSpecific: BlockChainSpecific.UTXO(byteFee: BigInt(tx.feeInSats)),
             utxos: utxoInfo,
             memo: tx.memo,
-            swapPayload: nil
+            swapPayload: nil, 
+            vaultPubKeyECDSA: vault.pubKeyECDSA
         )
         
-        if let vault = ApplicationState.shared.currentVault {
-            if let helper = UTXOChainsHelper.getHelper(vault: vault, coin: tx.coin) {
-                let transactionPlanResult = helper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
-                switch transactionPlanResult {
-                case .success(let plan):
-                    return plan
-                case .failure(let error):
-                    print("Error generating transaction plan: \(error.localizedDescription)")
-                    return nil
-                }
+        if let helper = UTXOChainsHelper.getHelper(vault: vault, coin: tx.coin) {
+            let transactionPlanResult = helper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
+            switch transactionPlanResult {
+            case .success(let plan):
+                return plan
+            case .failure(let error):
+                print("Error generating transaction plan: \(error.localizedDescription)")
+                return nil
             }
         }
+        
         return nil
     }
     
