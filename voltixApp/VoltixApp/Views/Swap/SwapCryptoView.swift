@@ -18,23 +18,31 @@ struct SwapCryptoView: View {
     let vault: Vault
 
     var body: some View {
+        content
+            .navigationBarBackButtonHidden(true)
+            .navigationTitle(NSLocalizedString("swap", comment: "SendCryptoView title"))
+            .navigationBarTitleDisplayMode(.inline)
+            .ignoresSafeArea(.keyboard)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    NavigationBackButton()
+                }
+            }
+            .task {
+                await swapViewModel.load(tx: tx, fromCoin: coin, coins: vault.coins)
+            }
+    }
+    
+    var content: some View {
         ZStack {
             Background()
             view
         }
-        .navigationBarBackButtonHidden(true)
-        .navigationTitle(NSLocalizedString("swap", comment: "SendCryptoView title"))
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                NavigationBackButton()
-            }
+        .onTapGesture {
+            hideKeyboard()
         }
-        .task {
-            await swapViewModel.load(tx: tx, fromCoin: coin, coins: vault.coins)
-        }
-        .alert(isPresented: Binding { swapViewModel.error != nil } set: { _ in swapViewModel.error = nil }) {
-            alert
+        .onDisappear {
+            swapViewModel.stopMediator()
         }
     }
     
@@ -46,7 +54,17 @@ struct SwapCryptoView: View {
         }
     }
 
+    @ViewBuilder
     var tabView: some View {
+        switch swapViewModel.flow {
+        case .normal:
+            normalFlow
+        case .erc20:
+            erc20Flow
+        }
+    }
+
+    var normalFlow: some View {
         ZStack {
             switch swapViewModel.currentIndex {
             case 1:
@@ -65,12 +83,41 @@ struct SwapCryptoView: View {
         }
     }
 
+    var erc20Flow: some View {
+        ZStack {
+            switch swapViewModel.currentIndex {
+            case 1:
+                detailsView
+            case 2:
+                approveVerifyView
+            case 3:
+                pairView
+            case 4:
+                keysign
+            case 5:
+                verifyView
+            case 6:
+                pairView
+            case 7:
+                keysign
+            case 8:
+                doneView
+            default:
+                errorView
+            }
+        }
+    }
+
     var detailsView: some View {
         SwapCryptoDetailsView(tx: tx, swapViewModel: swapViewModel)
     }
 
     var verifyView: some View {
         SwapVerifyView(tx: tx, swapViewModel: swapViewModel)
+    }
+
+    var approveVerifyView: some View {
+        SwapApproveVerifyView(tx: tx, swapViewModel: swapViewModel)
     }
 
     var pairView: some View {
@@ -118,12 +165,6 @@ struct SwapCryptoView: View {
 
     var errorView: some View {
         SendCryptoSigningErrorView()
-    }
-
-    var alert: Alert {
-        Alert(title: Text(NSLocalizedString("error", comment: "")),
-              message: Text(swapViewModel.error?.localizedDescription ?? .empty),
-              dismissButton: .default(Text(NSLocalizedString("ok", comment: ""))))
     }
 }
 

@@ -10,7 +10,7 @@ import WalletCore
 
 extension Coin {
     
-    func getCoinType() -> CoinType? {
+    var coinType: CoinType {
         switch chain {
         case .bitcoin:
             return CoinType.bitcoin
@@ -50,7 +50,6 @@ extension Coin {
             return CoinType.blast
         case .cronosChain:
             return CoinType.cronosChain
-            
         }
     }
 }
