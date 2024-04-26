@@ -49,7 +49,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         }
     }
     
-    private func getTransactionPlan(tx: SendTransaction, key:String, vault: Vault) -> TW_Bitcoin_Proto_TransactionPlan? {
+    private func getTransactionPlan(tx: SendTransaction, key:String) -> TW_Bitcoin_Proto_TransactionPlan? {
         guard let utxoInfo = utxo.blockchairData.get(key)?.selectUTXOsForPayment(amountNeeded: Int64(tx.amountInSats)).map({
             UtxoInfo(
                 hash: $0.transactionHash ?? "",
@@ -62,6 +62,10 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         
         let totalSelectedAmount = utxoInfo.reduce(0) { $0 + $1.amount }
         
+        guard let vault = ApplicationState.shared.currentVault else {
+            return nil
+        }
+        
         let keysignPayload = KeysignPayload(
             coin: tx.coin,
             toAddress: tx.toAddress,
@@ -73,29 +77,28 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             vaultPubKeyECDSA: vault.pubKeyECDSA
         )
         
-        if let vault = ApplicationState.shared.currentVault {
-            if let helper = UTXOChainsHelper.getHelper(vault: vault, coin: tx.coin) {
-                let transactionPlanResult = helper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
-                switch transactionPlanResult {
-                case .success(let plan):
-                    return plan
-                case .failure(let error):
-                    print("Error generating transaction plan: \(error.localizedDescription)")
-                    return nil
-                }
+        if let helper = UTXOChainsHelper.getHelper(vault: vault, coin: tx.coin) {
+            let transactionPlanResult = helper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
+            switch transactionPlanResult {
+            case .success(let plan):
+                return plan
+            case .failure(let error):
+                print("Error generating transaction plan: \(error.localizedDescription)")
+                return nil
             }
         }
+        
         return nil
     }
     
-    func setMaxValues(tx: SendTransaction, vault: Vault)  {
+    func setMaxValues(tx: SendTransaction)  {
         let coinName = tx.coin.chain.name.lowercased()
         let key: String = "\(tx.fromAddress)-\(coinName)"
         isLoading = true
         switch tx.coin.chain {
         case .bitcoin,.dogecoin,.litecoin,.bitcoinCash,.dash:
             tx.amount = utxo.blockchairData.get(key)?.address?.balanceInBTC ?? "0.0"
-            if let plan = getTransactionPlan(tx: tx, key: key, vault: vault), plan.amount > 0 {
+            if let plan = getTransactionPlan(tx: tx, key: key), plan.amount > 0 {
                 tx.amount = utxo.blockchairData.get(key)?.address?.formatAsBitcoin(Int(plan.amount)) ?? "0.0"
             }
             Task{

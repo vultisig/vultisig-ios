@@ -18,7 +18,6 @@ struct SendCryptoDetailsView: View {
     @ObservedObject var tx: SendTransaction
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     let group: GroupedChain
-    let vault: Vault
     
     @State var toAddress = ""
     @State var amount = ""
@@ -121,7 +120,7 @@ struct SendCryptoDetailsView: View {
         SendCryptoAmountTextField(
             amount: $tx.amount,
             onChange: { await sendCryptoViewModel.convertToFiat(newValue: $0, tx: tx) },
-            onMaxPressed: { sendCryptoViewModel.setMaxValues(tx: tx, vault: vault) }
+            onMaxPressed: { sendCryptoViewModel.setMaxValues(tx: tx) }
         )
         .focused($focusedField, equals: .amount)
     }
@@ -183,7 +182,6 @@ struct SendCryptoDetailsView: View {
     SendCryptoDetailsView(
         tx: SendTransaction(),
         sendCryptoViewModel: SendCryptoViewModel(),
-        group: GroupedChain.example, 
-        vault: Vault.example
+        group: GroupedChain.example
     )
 }
