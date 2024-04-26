@@ -70,7 +70,7 @@ struct KeysignView: View {
     }
     
     private func setData() {
-        guard let keysignPayload else {
+        guard let keysignPayload, keysignPayload.vaultPubKeyECDSA == vault.pubKeyECDSA else {
             viewModel.status = .KeysignVaultMismatch
             return
         }
@@ -82,7 +82,7 @@ struct KeysignView: View {
             keysignType: self.keysignType,
             messagesToSign: self.messsageToSign,
             vault: self.vault,
-            keysignPayload: self.keysignPayload,
+            keysignPayload: keysignPayload,
             encryptionKeyHex: encryptionKeyHex)
     }
     
