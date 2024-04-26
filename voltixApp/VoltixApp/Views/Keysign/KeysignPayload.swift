@@ -53,8 +53,9 @@ struct KeysignPayload: Codable, Hashable {
     let memo: String? // optional memo
     let swapPayload: THORChainSwapPayload?
     let approvePayload: ERC20ApprovePayload?
+    let vaultPubKeyECDSA: String
 
-    init(coin: Coin, toAddress: String, toAmount: BigInt, chainSpecific: BlockChainSpecific, utxos: [UtxoInfo], memo: String?, swapPayload: THORChainSwapPayload?, approvePayload: ERC20ApprovePayload? = nil) {
+    init(coin: Coin, toAddress: String, toAmount: BigInt, chainSpecific: BlockChainSpecific, utxos: [UtxoInfo], memo: String?, swapPayload: THORChainSwapPayload?, approvePayload: ERC20ApprovePayload? = nil, vaultPubKeyECDSA: String) {
         self.coin = coin
         self.toAddress = toAddress
         self.toAmount = toAmount
@@ -63,6 +64,7 @@ struct KeysignPayload: Codable, Hashable {
         self.memo = memo
         self.swapPayload = swapPayload
         self.approvePayload = approvePayload
+        self.vaultPubKeyECDSA = vaultPubKeyECDSA
     }
 
     var toAmountString: String {
@@ -111,5 +113,5 @@ struct KeysignPayload: Codable, Hashable {
         }
     }
     
-    static let example = KeysignPayload(coin: Coin.example, toAddress: "toAddress", toAmount: 100, chainSpecific: BlockChainSpecific.UTXO(byteFee: 100), utxos: [], memo: "Memo", swapPayload: nil)
+    static let example = KeysignPayload(coin: Coin.example, toAddress: "toAddress", toAmount: 100, chainSpecific: BlockChainSpecific.UTXO(byteFee: 100), utxos: [], memo: "Memo", swapPayload: nil, vaultPubKeyECDSA: "12345")
 }

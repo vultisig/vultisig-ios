@@ -1,13 +1,14 @@
 //
-//  SendCryptoVaultErrorView.swift
+//  KeysignVaultMismatchErrorView.swift
 //  VoltixApp
 //
-//  Created by Amol Kumar on 2024-03-20.
+//  Created by Amol Kumar on 2024-04-26.
 //
 
 import SwiftUI
 
-struct SendCryptoVaultErrorView: View {
+struct KeysignVaultMismatchErrorView: View {
+    @Environment(\.dismiss) var dismiss
     
     var body: some View {
         VStack(spacing: 22) {
@@ -23,18 +24,19 @@ struct SendCryptoVaultErrorView: View {
     }
     
     var tryAgainButton: some View {
-        NavigationLink {
-            HomeView()
+        Button {
+            dismiss()
         } label: {
             FilledButton(title: "changeVault")
+                .padding(40)
         }
-        .padding(40)
+
     }
 }
 
 #Preview {
     ZStack {
         Background()
-        SendCryptoVaultErrorView()
+        KeysignVaultMismatchErrorView()
     }
 }

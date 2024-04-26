@@ -13,6 +13,7 @@ struct SwapVerifyView: View {
 
     @ObservedObject var tx: SwapTransaction
     @ObservedObject var swapViewModel: SwapCryptoViewModel
+    let vault: Vault
 
     var body: some View {
         ZStack {
@@ -74,7 +75,7 @@ struct SwapVerifyView: View {
     var button: some View {
         Button {
             Task {
-                if await swapViewModel.buildSwapKeysignPayload(tx: tx) {
+                if await swapViewModel.buildSwapKeysignPayload(tx: tx, vault: vault) {
                     swapViewModel.moveToNextView()
                 }
             }
