@@ -55,7 +55,7 @@ struct KeysignPayload: Codable, Hashable {
     let approvePayload: ERC20ApprovePayload?
     let vaultPubKeyECDSA: String
 
-    init(coin: Coin, toAddress: String, toAmount: BigInt, chainSpecific: BlockChainSpecific, utxos: [UtxoInfo], memo: String?, swapPayload: THORChainSwapPayload?, approvePayload: ERC20ApprovePayload? = nil, vaultPubKeyECDSA: String = "") {
+    init(coin: Coin, toAddress: String, toAmount: BigInt, chainSpecific: BlockChainSpecific, utxos: [UtxoInfo], memo: String?, swapPayload: THORChainSwapPayload?, approvePayload: ERC20ApprovePayload? = nil, vaultPubKeyECDSA: String) {
         self.coin = coin
         self.toAddress = toAddress
         self.toAmount = toAmount

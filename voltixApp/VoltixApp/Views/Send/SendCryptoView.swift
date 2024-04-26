@@ -92,7 +92,8 @@ struct SendCryptoView: View {
         SendCryptoDetailsView(
             tx: tx,
             sendCryptoViewModel: sendCryptoViewModel,
-            group: group
+            group: group, 
+            vault: vault
         )
     }
     

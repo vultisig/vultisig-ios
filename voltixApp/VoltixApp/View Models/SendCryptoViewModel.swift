@@ -49,7 +49,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         }
     }
     
-    private func getTransactionPlan(tx: SendTransaction, key:String) -> TW_Bitcoin_Proto_TransactionPlan? {
+    private func getTransactionPlan(tx: SendTransaction, key:String, vault: Vault) -> TW_Bitcoin_Proto_TransactionPlan? {
         guard let utxoInfo = utxo.blockchairData.get(key)?.selectUTXOsForPayment(amountNeeded: Int64(tx.amountInSats)).map({
             UtxoInfo(
                 hash: $0.transactionHash ?? "",
@@ -69,7 +69,8 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             chainSpecific: BlockChainSpecific.UTXO(byteFee: BigInt(tx.feeInSats)),
             utxos: utxoInfo,
             memo: tx.memo,
-            swapPayload: nil
+            swapPayload: nil, 
+            vaultPubKeyECDSA: vault.pubKeyECDSA
         )
         
         if let vault = ApplicationState.shared.currentVault {
@@ -87,14 +88,14 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         return nil
     }
     
-    func setMaxValues(tx: SendTransaction)  {
+    func setMaxValues(tx: SendTransaction, vault: Vault)  {
         let coinName = tx.coin.chain.name.lowercased()
         let key: String = "\(tx.fromAddress)-\(coinName)"
         isLoading = true
         switch tx.coin.chain {
         case .bitcoin,.dogecoin,.litecoin,.bitcoinCash,.dash:
             tx.amount = utxo.blockchairData.get(key)?.address?.balanceInBTC ?? "0.0"
-            if let plan = getTransactionPlan(tx: tx, key: key), plan.amount > 0 {
+            if let plan = getTransactionPlan(tx: tx, key: key, vault: vault), plan.amount > 0 {
                 tx.amount = utxo.blockchairData.get(key)?.address?.formatAsBitcoin(Int(plan.amount)) ?? "0.0"
             }
             Task{
