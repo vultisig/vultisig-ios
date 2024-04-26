@@ -113,11 +113,11 @@ struct SwapCryptoView: View {
     }
 
     var verifyView: some View {
-        SwapVerifyView(tx: tx, swapViewModel: swapViewModel)
+        SwapVerifyView(tx: tx, swapViewModel: swapViewModel, vault: vault)
     }
 
     var approveVerifyView: some View {
-        SwapApproveVerifyView(tx: tx, swapViewModel: swapViewModel)
+        SwapApproveVerifyView(tx: tx, swapViewModel: swapViewModel, vault: vault)
     }
 
     var pairView: some View {

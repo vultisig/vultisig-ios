@@ -102,7 +102,8 @@ struct SendCryptoView: View {
             keysignPayload: $keysignPayload,
             sendCryptoViewModel: sendCryptoViewModel,
             sendCryptoVerifyViewModel: sendCryptoVerifyViewModel,
-            tx: tx
+            tx: tx, 
+            vault: vault
         )
     }
     
