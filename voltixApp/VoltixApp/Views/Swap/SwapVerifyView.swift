@@ -47,13 +47,13 @@ struct SwapVerifyView: View {
             getValueCell(for: "from", with: getFromAmount())
             Separator()
             getValueCell(for: "to", with: getToAmount())
-            if swapViewModel.showFees(tx: tx) {
-                Separator()
-                getDetailsCell(for: "Estimated Time", with: swapViewModel.durationString(tx: tx))
-            }
             if swapViewModel.showDuration(tx: tx) {
                 Separator()
                 getDetailsCell(for: "Estimated Fees", with: swapViewModel.feeString(tx: tx))
+            }
+            if swapViewModel.showFees(tx: tx) {
+                Separator()
+                getDetailsCell(for: "Estimated Time", with: swapViewModel.durationString(tx: tx))
             }
         }
         .padding(16)
