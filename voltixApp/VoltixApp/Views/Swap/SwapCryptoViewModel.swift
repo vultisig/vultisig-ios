@@ -41,6 +41,9 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
     @MainActor @Published var error: Error?
     @MainActor @Published var isLoading = false
+    @MainActor @Published var quoteLoading = false
+    @MainActor @Published var fromBalanceLoading = false
+    @MainActor @Published var toBalanceLoading = false
 
     func load(tx: SwapTransaction, fromCoin: Coin, coins: [Coin]) async {
         self.coins = coins.filter { $0.chain.isSwapSupported }
@@ -63,7 +66,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func showDuration(tx: SwapTransaction) -> Bool {
-        return tx.duration != .zero
+        return showFees(tx: tx)
     }
     
     func showToAmount(tx: SwapTransaction) -> Bool {
@@ -93,7 +96,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
 
     func durationString(tx: SwapTransaction) -> String {
-        guard let duration = quote?.totalSwapSeconds else { return .empty }
+        guard let duration = quote?.totalSwapSeconds else { return "Instant" }
         let formatter = DateComponentsFormatter()
         formatter.unitsStyle = .full
         formatter.includesApproximationPhrase = false
@@ -113,6 +116,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             && !tx.toAmount.isEmpty
             && quote != nil
             && isSufficientBalance(tx: tx)
+            && !quoteLoading
     }
     
     func moveToNextView() {
@@ -295,6 +299,8 @@ private extension SwapCryptoViewModel {
     }
 
     func updateFromBalance(tx: SwapTransaction) async {
+        fromBalanceLoading = true
+        defer { fromBalanceLoading = false }
         do {
             tx.fromBalance = try await balanceService.balance(for: tx.fromCoin).coinBalance
         } catch {
@@ -303,6 +309,8 @@ private extension SwapCryptoViewModel {
     }
 
     func updateToBalance(tx: SwapTransaction) async {
+        toBalanceLoading = true
+        defer { toBalanceLoading = false }
         do {
             tx.toBalance = try await balanceService.balance(for: tx.toCoin).coinBalance
         } catch {
@@ -311,6 +319,9 @@ private extension SwapCryptoViewModel {
     }
 
     func updateQuotes(tx: SwapTransaction) async {
+        quoteLoading = true
+        defer { quoteLoading = false }
+
         guard !tx.fromAmount.isEmpty else { return clear(tx: tx) }
 
         error = nil
@@ -347,7 +358,6 @@ private extension SwapCryptoViewModel {
 
             tx.toAmount = (expected / Decimal(100_000_000)).description
             tx.inboundFee = BigInt(stringLiteral: inboundFeeDecimal.description)
-            tx.duration = quote.totalSwapSeconds ?? 0
 
             if !isSufficientBalance(tx: tx) {
                 throw Errors.insufficientFunds
@@ -380,7 +390,6 @@ private extension SwapCryptoViewModel {
         quote = nil
         tx.toAmount = .empty
         tx.inboundFee = .zero
-        tx.duration = .zero
     }
     
     func amount(for coin: Coin, tx: SwapTransaction) -> Int64 {

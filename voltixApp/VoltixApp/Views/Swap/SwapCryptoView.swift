@@ -148,10 +148,11 @@ struct SwapCryptoView: View {
     var doneView: some View {
         ZStack {
             if let hash = swapViewModel.hash {
-                SendCryptoDoneView(vault:vault, hash: hash, explorerLink: Endpoint.getExplorerURL(
-                    chainTicker: tx.fromCoin.chain.ticker,
-                    txid: hash
-                ))
+                SendCryptoDoneView(
+                    vault: vault, hash: hash, 
+                    explorerLink: Endpoint.getExplorerURL(chainTicker: tx.fromCoin.chain.ticker, txid: hash),
+                    progressLink: Endpoint.getSwapProgressURL(txid: hash)
+                )
             } else {
                 SendCryptoSigningErrorView()
             }

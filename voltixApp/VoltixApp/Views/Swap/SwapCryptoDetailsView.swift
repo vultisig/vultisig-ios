@@ -56,9 +56,10 @@ struct SwapCryptoDetailsView: View {
         VStack(spacing: 8) {
             getTitle(for: "from")
             TokenSelectorDropdown(coins: $swapViewModel.coins, selected: $tx.fromCoin, onSelect: { _ in
-                swapViewModel.updateFromAmount(tx: tx)
+                swapViewModel.updateFromCoin(tx: tx)
             })
             getBalance(for: tx.fromBalance)
+                .redacted(reason: swapViewModel.fromBalanceLoading ? .placeholder : [])
         }
     }
     
@@ -89,6 +90,7 @@ struct SwapCryptoDetailsView: View {
                 swapViewModel.updateToCoin(tx: tx)
             })
             getBalance(for: tx.toBalance)
+                .redacted(reason: swapViewModel.toBalanceLoading ? .placeholder : [])
         }
     }
     
