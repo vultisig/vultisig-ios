@@ -150,6 +150,8 @@ class JoinKeysignViewModel: ObservableObject {
             }
         })
     }
+    
+    // Scan the QR code and strip the data
     func handleScan(result: Result<ScanResult, ScanError>) {
         defer {
             self.isShowingScanner = false
@@ -158,6 +160,7 @@ class JoinKeysignViewModel: ObservableObject {
         switch result {
         case .success(let result):
             let qrCodeResult = result.string
+            
             let decoder = JSONDecoder()
             if let data = qrCodeResult.data(using: .utf8) {
                 do {

@@ -150,6 +150,7 @@ class JoinKeygenViewModel: ObservableObject {
             do {
                 let decoder = JSONDecoder()
                 let result = try decoder.decode(PeerDiscoveryPayload.self, from: scanData)
+                // Create vault, scan QR and strip the data
                 switch result {
                 case .Keygen(let keygenMsg):
                     tssType = .Keygen

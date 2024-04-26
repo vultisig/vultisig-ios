@@ -127,6 +127,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         }
     }
     
+    // Generate QR code
     func getQrImage(size: CGFloat) -> Image {
         guard let encryptionKeyHex = self.encryptionKeyHex else {
             logger.error("encryption key is nil")
@@ -140,6 +141,8 @@ class KeysignDiscoveryViewModel: ObservableObject {
         do {
             let encoder = JSONEncoder()
             let jsonData = try encoder.encode(keysignMsg)
+            
+            //Add URLSCheme here
             
             return Utils.getQrImage(data: jsonData, size: size)
         } catch {

@@ -155,6 +155,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                        encryptionKeyHex: encryptionKeyHex,
                                        useVoltixRelay: VoltixRelay.IsRelayEnabled)
                 data = try jsonEncoder.encode(PeerDiscoveryPayload.Keygen(km))
+                // Create a vault
             case .Reshare:
                 let reshareMsg = ReshareMessage(sessionID: sessionID,
                                                 hexChainCode: vault.hexChainCode,
@@ -164,6 +165,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                                 encryptionKeyHex: encryptionKeyHex,
                                                 useVoltixRelay: VoltixRelay.IsRelayEnabled)
                 data = try jsonEncoder.encode(PeerDiscoveryPayload.Reshare(reshareMsg))
+                // Edit number of tiotal devices, kick out devices or add new one
             }
             return Utils.getQrImage(data: data, size: size)
         } catch {
