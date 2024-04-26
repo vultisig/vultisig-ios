@@ -37,21 +37,90 @@ class SendTransaction: ObservableObject, Hashable {
     var amountInWei: BigInt {
         BigInt(amountDecimal * pow(10, Double(EVMHelper.ethDecimals)))
     }
-                
+    
+    var isAmountExceeded: Bool {
+        
+        let totalBalance = BigInt(coin.rawBalance) ?? BigInt.zero
+        
+        var gasInt = BigInt.zero
+        if coin.isNativeToken {
+            gasInt = BigInt(gas) ?? BigInt.zero
+            if coin.chainType == .EVM {
+                if let gasLimitBigInt = BigInt(coin.feeDefault) {
+                    gasInt = gasInt * gasLimitBigInt
+                }
+            }
+        }
+        
+        let totalTransactionCost = amountInRaw + gasInt
+        
+        return totalTransactionCost > totalBalance
+        
+    }
+        
+    func hasEnoughNativeTokensToPayTheFees() async -> Bool {
+        guard !coin.isNativeToken else { return true } 
+
+        var gasPriceBigInt = BigInt(gas) ?? BigInt.zero
+        if let gasLimitBigInt = BigInt(coin.feeDefault) {
+            if coin.chainType == .EVM {
+                gasPriceBigInt *= gasLimitBigInt
+            } 
+            if let vault = ApplicationState.shared.currentVault {
+                if let nativeToken = vault.coins.first(where: { $0.isNativeToken && $0.chain.name == coin.chain.name }) {
+                    
+                    do
+                    {
+                        let (_, _, _) = try await BalanceService.shared.balance(for: nativeToken)
+                        
+                        let nativeTokenBalance = BigInt(nativeToken.rawBalance) ?? BigInt.zero
+                        
+                        if gasPriceBigInt > nativeTokenBalance {
+                            print("Insufficient \(nativeToken.ticker) balance for fees: needed \(gasPriceBigInt), available \(nativeTokenBalance)")
+                            return false
+                        }
+                    } catch {
+                        print("Error to get the balance for a Native Coin")
+                        return false
+                    }
+                    return true
+                } else {
+                    print("No native token found for chain \(coin.chain.name)")
+                    return false
+                }
+            }
+            print("Failed to access current vault")
+        } else {
+            print("Failed to convert \(coin.feeDefault) to BigInt")
+        }
+        return false
+    }
+
+
+    var amountInRaw: BigInt {
+        if let decimals = Double(coin.decimals) {
+            return BigInt(amountDecimal * pow(10, decimals))
+        }
+        return BigInt.zero
+    }
+    
     var amountInTokenWei: BigInt {
         let decimals = Double(coin.decimals) ?? Double(EVMHelper.ethDecimals) // The default is always in WEI unless the token has a different one like UDSC
         
         return BigInt(amountDecimal * pow(10, decimals))
     }
     
+    //TODO: Remove and only use the RAW BigInt
     var amountInLamports: BigInt {
         BigInt(amountDecimal * 1_000_000_000)
     }
     
+    //TODO: Remove and only use the RAW BigInt
     var amountInSats: BigInt {
         BigInt(amountDecimal * 100_000_000)
     }
     
+    //TODO: Remove and only use the RAW fee
     var feeInSats: Int64 {
         Int64(gas) ?? Int64(20) // Assuming that the gas is in sats
     }
@@ -60,11 +129,13 @@ class SendTransaction: ObservableObject, Hashable {
         let amountString = amount.replacingOccurrences(of: ",", with: ".")
         return Double(amountString) ?? 0
     }
+    
     var amountInCoinDecimal: BigInt {
         let amountDouble = amountDecimal
         let decimals = Int(coin.decimals) ?? 8
         return BigInt(amountDouble * pow(10,Double(decimals)))
     }
+    
     var gasDecimal: Decimal {
         let gasString = gas.replacingOccurrences(of: ",", with: ".")
         return Decimal(string:gasString) ?? 0
@@ -87,6 +158,7 @@ class SendTransaction: ObservableObject, Hashable {
     init() {
         self.toAddress = .empty
         self.amount = .empty
+        self.amountInFiat = .empty
         self.memo = .empty
         self.gas = .empty
     }
@@ -129,6 +201,7 @@ class SendTransaction: ObservableObject, Hashable {
     func reset(coin: Coin) {
         self.toAddress = .empty
         self.amount = .empty
+        self.amountInFiat = .empty
         self.memo = .empty
         self.gas = .empty
         self.coin = coin

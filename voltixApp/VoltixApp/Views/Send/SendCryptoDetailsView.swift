@@ -152,7 +152,9 @@ struct SendCryptoDetailsView: View {
     
     var button: some View {
         Button {
-            validateForm()
+            Task{
+                await validateForm()
+            }
         } label: {
             FilledButton(title: "continue")
         }
@@ -169,8 +171,8 @@ struct SendCryptoDetailsView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
     
-    private func validateForm() {
-        if sendCryptoViewModel.validateForm(tx: tx) {
+    private func validateForm() async {
+        if await sendCryptoViewModel.validateForm(tx: tx) {
             sendCryptoViewModel.moveToNextView()
         }
     }
