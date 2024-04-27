@@ -56,7 +56,7 @@
 "enterPreviousVault" = "Inserisci la tua cassaforte creata in precedenza";
 "uploadFile" = "Carica file, testo o immagine";
 "devicesOnSameWifi" = "Mantieni i dispositivi sulla stessa rete WiFi con VOLTIX aperto";
-"need3Devices" = "Hai bisogno di 3 dispositivi";
+"need3Devices" = "Hai bisogno di almeno 2 dispositivi";
 "chooseTokens" = "Scegli Token";
 "chooseChains" = "Scegli Catene";
 "enterAddress" = "Inserisci Indirizzo";
