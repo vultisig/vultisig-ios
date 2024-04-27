@@ -132,7 +132,7 @@ class Endpoint {
         case "DASH":
             return "https://blockchair.com/dash/transaction/\(txid)"
         case "RUNE":
-            return "https://runescan.io/tx/\(txid)"
+            return "https://runescan.io/tx/\(txid.stripHexPrefix())"
         case "SOL":
             return "https://explorer.solana.com/tx/\(txid)"
         case "ETH":
