@@ -18,8 +18,13 @@ class SwapTransaction: ObservableObject {
     @Published var inboundFee: BigInt = .zero
     @Published var gas: BigInt = .zero
 
-    @Published var fromBalance: String = .zero
-    @Published var toBalance: String = .zero
+    var fromBalance: String {
+        return fromCoin.balanceString
+    }
+
+    var toBalance: String {
+        return toCoin.balanceString
+    }
 }
 
 // TODO: Refactor amount conversions

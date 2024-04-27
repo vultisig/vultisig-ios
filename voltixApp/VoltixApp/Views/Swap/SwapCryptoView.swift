@@ -15,6 +15,7 @@ struct SwapCryptoView: View {
     @State var keysignView: KeysignView?
 
     let coin: Coin
+    let coins: [Coin]
     let vault: Vault
 
     var body: some View {
@@ -170,5 +171,5 @@ struct SwapCryptoView: View {
 }
 
 #Preview {
-    SwapCryptoView(coin: .example, vault: .example)
+    SwapCryptoView(coin: .example, coins: Vault.example.coins, vault: .example)
 }

@@ -15,7 +15,11 @@ class TokenSelectionViewModel: ObservableObject {
     @Published var selection = Set<Coin>()
     
     private let logger = Logger(subsystem: "assets-list", category: "view")
-    
+
+    var allCoins: [Coin] {
+        return groupedAssets.values.reduce([], +)
+    }
+
     func setData(for vault: Vault) {
         groupAssets()
         checkSelected(for: vault)

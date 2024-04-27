@@ -59,7 +59,7 @@ struct SwapCryptoDetailsView: View {
                 swapViewModel.updateFromCoin(tx: tx)
             })
             getBalance(for: tx.fromBalance)
-                .redacted(reason: swapViewModel.fromBalanceLoading ? .placeholder : [])
+                .redacted(reason: swapViewModel.coinViewModel.isLoading ? .placeholder : [])
         }
     }
     
@@ -90,7 +90,7 @@ struct SwapCryptoDetailsView: View {
                 swapViewModel.updateToCoin(tx: tx)
             })
             getBalance(for: tx.toBalance)
-                .redacted(reason: swapViewModel.toBalanceLoading ? .placeholder : [])
+                .redacted(reason: swapViewModel.coinViewModel.isLoading ? .placeholder : [])
         }
     }
     

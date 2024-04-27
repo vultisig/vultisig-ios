@@ -27,7 +27,6 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
 
     private let thorchainService = ThorchainService.shared
-    private let balanceService = BalanceService.shared
     private let blockchainService = BlockChainService.shared
     
     var quote: ThorchainSwapQuote?
@@ -42,8 +41,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     @MainActor @Published var error: Error?
     @MainActor @Published var isLoading = false
     @MainActor @Published var quoteLoading = false
-    @MainActor @Published var fromBalanceLoading = false
-    @MainActor @Published var toBalanceLoading = false
+
+    @MainActor @Published var coinViewModel = CoinViewModel()
 
     func load(tx: SwapTransaction, fromCoin: Coin, coins: [Coin]) async {
         self.coins = coins.filter { $0.chain.isSwapSupported }
@@ -51,6 +50,14 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         tx.fromCoin = fromCoin
 
         updateInitial(tx: tx)
+
+        await withTaskGroup(of: Void.self) { group in
+            for coin in coins {
+                group.addTask {
+                    await self.coinViewModel.loadData(coin: coin)
+                }
+            }
+        }
     }
     
     var progress: Double {
@@ -225,22 +232,16 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         tx.toCoin = fromCoin
 
         Task {
-            async let fromBalance: () = updateFromBalance(tx: tx)
-            async let toBalance: () = updateToBalance(tx: tx)
             async let quote: () = updateQuotes(tx: tx)
             async let fee: () = updateFee(tx: tx)
 
-            _ = await [quote, fromBalance, toBalance, fee]
+            _ = await [quote, fee]
         }
     }
 
     func updateInitial(tx: SwapTransaction) {
         Task {
-            async let fromBalance: () = updateFromBalance(tx: tx)
-            async let toBalance: () = updateToBalance(tx: tx)
-            async let fee: () = updateFee(tx: tx)
-
-            _ = await [fromBalance, toBalance, fee]
+            await updateFee(tx: tx)
         }
     }
 
@@ -252,20 +253,16 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
     func updateFromCoin(tx: SwapTransaction) {
         Task {
-            async let fromBalance: () = updateFromBalance(tx: tx)
             async let quote: () = updateQuotes(tx: tx)
             async let fee: () = updateFee(tx: tx)
 
-            _ = await [fromBalance, quote, fee]
+            _ = await [quote, fee]
         }
     }
 
     func updateToCoin(tx: SwapTransaction) {
         Task {
-            async let toBalance: () = updateToBalance(tx: tx)
-            async let quote: () = updateQuotes(tx: tx)
-
-            _ = await [toBalance, quote]
+            await updateQuotes(tx: tx)
         }
     }
 }
@@ -293,26 +290,6 @@ private extension SwapCryptoViewModel {
         do {
             let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin, action: .swap)
             tx.gas = chainSpecific.gas
-        } catch {
-            self.error = error
-        }
-    }
-
-    func updateFromBalance(tx: SwapTransaction) async {
-        fromBalanceLoading = true
-        defer { fromBalanceLoading = false }
-        do {
-            tx.fromBalance = try await balanceService.balance(for: tx.fromCoin).coinBalance
-        } catch {
-            self.error = error
-        }
-    }
-
-    func updateToBalance(tx: SwapTransaction) async {
-        toBalanceLoading = true
-        defer { toBalanceLoading = false }
-        do {
-            tx.toBalance = try await balanceService.balance(for: tx.toCoin).coinBalance
         } catch {
             self.error = error
         }
