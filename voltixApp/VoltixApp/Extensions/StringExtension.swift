@@ -23,9 +23,8 @@ extension String {
     }
     
     func stripHexPrefix() -> String {
-        
-        if self.hasPrefix("0x") {
-            return String(self.dropFirst(2))
+        if hasPrefix("0x") {
+            return String(dropFirst(2))
         }
         
         return self
