@@ -417,10 +417,11 @@ private extension SwapCryptoViewModel {
                 $0.chain = .atom
             case .solana, .dash, .kujira, .mayaChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain: break
             }
-            if coin.isNativeToken {
-                $0.symbol = coin.ticker
-            } else {
-                $0.symbol = "\(coin.ticker)-\(coin.contractAddress)"
+            
+            $0.symbol = coin.ticker
+            
+            if !coin.isNativeToken {
+                $0.tokenID = coin.contractAddress
             }
         }
     }
