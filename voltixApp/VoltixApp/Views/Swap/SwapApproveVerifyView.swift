@@ -86,7 +86,7 @@ struct SwapApproveVerifyView: View {
     }
 
     func getSpender() -> String {
-        return swapViewModel.spender
+        return tx.router ?? .empty
     }
 
     func getValueCell(for title: String, with value: String) -> some View {

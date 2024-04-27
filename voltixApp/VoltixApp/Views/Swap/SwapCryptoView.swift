@@ -11,6 +11,7 @@ struct SwapCryptoView: View {
 
     @StateObject var tx = SwapTransaction()
     @StateObject var swapViewModel = SwapCryptoViewModel()
+    @StateObject var coinViewModel = CoinViewModel()
 
     @State var keysignView: KeysignView?
 
@@ -30,7 +31,7 @@ struct SwapCryptoView: View {
                 }
             }
             .task {
-                await swapViewModel.load(tx: tx, fromCoin: coin, coins: vault.coins)
+                await swapViewModel.load(tx: tx, fromCoin: coin, coins: vault.coins, coinViewModel: coinViewModel)
             }
     }
     
@@ -110,7 +111,7 @@ struct SwapCryptoView: View {
     }
 
     var detailsView: some View {
-        SwapCryptoDetailsView(tx: tx, swapViewModel: swapViewModel)
+        SwapCryptoDetailsView(tx: tx, swapViewModel: swapViewModel, coinViewModel: coinViewModel)
     }
 
     var verifyView: some View {
