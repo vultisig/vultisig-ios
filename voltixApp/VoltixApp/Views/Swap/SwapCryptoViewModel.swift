@@ -90,18 +90,16 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     func isSufficientBalance(tx: SwapTransaction) -> Bool {
         let feeCoin = feeCoin(tx: tx)
         let fromFee = feeCoin.decimal(for: tx.gas)
-        let toFee = tx.toCoin.decimal(for: tx.inboundFee ?? 0)
 
         let fromBalance = tx.fromCoin.balanceDecimal
         let feeCoinBalance = feeCoin.balanceDecimal
-        let toBalance = tx.toCoin.balanceDecimal
 
         let amount = Decimal(string: tx.fromAmount) ?? 0
 
         if feeCoin == tx.fromCoin {
-            return fromFee + amount <= fromBalance && toFee <= toBalance
+            return fromFee + amount <= fromBalance
         } else {
-            return fromFee <= feeCoinBalance && amount <= fromBalance && toFee <= toBalance
+            return fromFee <= feeCoinBalance && amount <= fromBalance
         }
     }
 
@@ -311,10 +309,6 @@ private extension SwapCryptoViewModel {
                 return
             }
 
-            if !isSufficientBalance(tx: tx) {
-                throw Errors.insufficientFunds
-            }
-
             guard let quote = try? await thorchainService.fetchSwapQuotes(
                 address: tx.toCoin.address,
                 fromAsset: tx.fromCoin.swapAsset,
@@ -423,9 +417,10 @@ private extension SwapCryptoViewModel {
                 $0.chain = .atom
             case .solana, .dash, .kujira, .mayaChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain: break
             }
-            $0.symbol = coin.ticker
-            if !coin.isNativeToken {
-                $0.tokenID = coin.contractAddress
+            if coin.isNativeToken {
+                $0.symbol = coin.ticker
+            } else {
+                $0.symbol = "\(coin.ticker)-\(coin.contractAddress)"
             }
         }
     }
