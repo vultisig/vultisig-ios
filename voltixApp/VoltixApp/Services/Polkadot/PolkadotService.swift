@@ -16,7 +16,7 @@ class PolkadotService: RpcService {
     
     private func fetchBalance(address: String) async throws -> BigInt {
         let cacheKey = "polkadot-\(address)-balance"
-        if let cachedData: BigInt = await Utils.getCachedData(cacheKey: cacheKey, cache: cachePolkadotBalance, timeInSeconds: 60*5) {
+        if let cachedData: BigInt = await Utils.getCachedData(cacheKey: cacheKey, cache: cachePolkadotBalance, timeInSeconds: 60*1) {
             return cachedData
         }
         

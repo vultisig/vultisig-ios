@@ -49,8 +49,11 @@ class RpcService {
             }
             
             if let error = response["error"] as? [String: Any], let message = error["message"] as? String {
-                //print("ERROR sendRPCRequest \(message)")
-                //throw RpcServiceError.rpcError(code: error["code"] as? Int ?? 500, message: message)
+                
+                if message.contains("known") || message.contains("already known") || message.contains("Transaction is temporarily banned") {
+                    return try decode("Transaction already broadcasted.")
+                }
+                
                 return try decode(message)
             } else if let result = response["result"] {
                 return try decode(result)
@@ -64,7 +67,7 @@ class RpcService {
         }
         
     }
-        
+    
     func intRpcCall(method: String, params: [Any]) async throws -> BigInt {
         return try await sendRPCRequest(method: method, params: params) { result in
             
@@ -76,11 +79,11 @@ class RpcService {
                let bigIntResult = BigInt(resultString.stripHexPrefix(), radix: 16) {
                 return bigIntResult
             }
-
+            
             throw RpcServiceError.rpcError(code: 500, message: "Error to convert the RPC result to BigInt")
         }
     }
-
+    
     
     func strRpcCall(method: String, params: [Any]) async throws -> String {
         return try await sendRPCRequest(method: method, params: params) { result in
