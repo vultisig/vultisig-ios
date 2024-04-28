@@ -66,7 +66,7 @@ class PolkadotService: RpcService {
     
     func broadcastTransaction(hex: String) async throws -> String {
         let hexWithPrefix = hex.hasPrefix("0x") ? hex : "0x\(hex)"
-        return try await strRpcCall(method: "eth_sendRawTransaction", params: [hexWithPrefix])
+        return try await strRpcCall(method: "author_submitExtrinsic", params: [hexWithPrefix])
     }
     
     func getBalance(coin: Coin) async throws ->(rawBalance: String,priceRate: Double){

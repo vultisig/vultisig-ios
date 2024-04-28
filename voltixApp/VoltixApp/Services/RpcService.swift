@@ -49,8 +49,9 @@ class RpcService {
             }
             
             if let error = response["error"] as? [String: Any], let message = error["message"] as? String {
-                print("ERROR sendRPCRequest \(message)")
-                throw RpcServiceError.rpcError(code: error["code"] as? Int ?? 500, message: message)
+                //print("ERROR sendRPCRequest \(message)")
+                //throw RpcServiceError.rpcError(code: error["code"] as? Int ?? 500, message: message)
+                return try decode(message)
             } else if let result = response["result"] {
                 return try decode(result)
             } else {
@@ -83,6 +84,9 @@ class RpcService {
     
     func strRpcCall(method: String, params: [Any]) async throws -> String {
         return try await sendRPCRequest(method: method, params: params) { result in
+            
+            print(result)
+            
             guard let resultString = result as? String else {
                 throw RpcServiceError.rpcError(code: 500, message: "Error to convert the RPC result to String")
             }

@@ -311,7 +311,7 @@ class KeysignViewModel: ObservableObject {
                 case .solana:
                     self.txid = await SolanaService.shared.sendSolanaTransaction(encodedTransaction: tx.rawTransaction) ?? ""
                 case .polkadot:
-                    self.txid = try await PolygonService.shared.broadcastTransaction(hex: tx.rawTransaction)
+                    self.txid = try await PolkadotService.shared.broadcastTransaction(hex: tx.rawTransaction)
                 }
             } catch {
                 handleBroadcastError(err: error,tx: tx)
