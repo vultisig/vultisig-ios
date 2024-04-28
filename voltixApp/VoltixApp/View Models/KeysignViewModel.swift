@@ -237,6 +237,10 @@ class KeysignViewModel: ObservableObject {
             let result = SolanaHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyEdDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
             return result
             
+        case .Polkadot:
+            let result = PolkadotHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyEdDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+            return result
+            
         case .Cosmos:
             if keysignPayload.coin.chain == .gaiaChain {
                 let result = ATOMHelper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
@@ -306,6 +310,8 @@ class KeysignViewModel: ObservableObject {
                     }
                 case .solana:
                     self.txid = await SolanaService.shared.sendSolanaTransaction(encodedTransaction: tx.rawTransaction) ?? ""
+                case .polkadot:
+                    self.txid = try await PolygonService.shared.broadcastTransaction(hex: tx.rawTransaction)
                 }
             } catch {
                 handleBroadcastError(err: error,tx: tx)

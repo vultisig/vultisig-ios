@@ -33,7 +33,7 @@ enum PolkadotHelper {
         guard keysignPayload.coin.chain.ticker == "DOT" else {
             return .failure(HelperError.runtimeError("coin is not DOT"))
         }
-        guard case .Polkadot(let recentBlockHash, let nonce, let priorityFee) = keysignPayload.chainSpecific else {
+        guard case .Polkadot(let recentBlockHash, let nonce, let currentBlockNumber) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get to address"))
         }
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .polkadot) else {

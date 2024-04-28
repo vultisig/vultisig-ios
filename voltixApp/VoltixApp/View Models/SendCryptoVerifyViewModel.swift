@@ -37,7 +37,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
         switch coin.chain {
         case .thorChain:
             return tx.amountInSats
-        case .mayaChain:
+        case .mayaChain, .polkadot, .gaiaChain, .kujira:
             return tx.amountInCoinDecimal
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain:
             if coin.isNativeToken {
@@ -47,8 +47,6 @@ class SendCryptoVerifyViewModel: ObservableObject {
             }
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             return tx.amountInSats
-        case .gaiaChain, .kujira:
-            return tx.amountInCoinDecimal
         case .solana:
             return tx.amountInLamports
         }

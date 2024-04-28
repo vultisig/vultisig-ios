@@ -57,6 +57,8 @@ class Endpoint {
     
     static let solanaServiceAlchemyRpc = "https://solana-rpc.publicnode.com"
     
+    static let polkadotServiceRpc = "https://polkadot-rpc.publicnode.com"
+    
     static func bitcoinLabelTxHash(_ value: String) -> String {
         "https://mempool.space/tx/\(value)"
     }
@@ -159,6 +161,8 @@ class Endpoint {
             return "https://blastscan.io/tx/\(txid)"
         case "CRO":
             return "https://cronoscan.com/tx/\(txid)"
+        case "DOT":
+            return "https://polkadot.subscan.io/extrinsic/\(txid)"
         default:
             return ""
         }
@@ -204,6 +208,8 @@ class Endpoint {
             return "https://blastscan.io/address/\(address)"
         case "CRO":
             return "https://cronoscan.com/address/\(address)"
+        case "DOT":
+            return "https://polkadot.subscan.io/account/\(address)"
         default:
             return nil
         }
@@ -249,6 +255,8 @@ class Endpoint {
             return "https://blastscan.io/address/\(address)"
         case .cronosChain:
             return "https://cronoscan.com/address/\(address)"
+        case .polkadot:
+            return "https://polkadot.subscan.io/account/\(address)"
         case .none:
             return nil
         }

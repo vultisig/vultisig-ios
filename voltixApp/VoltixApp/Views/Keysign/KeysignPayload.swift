@@ -21,7 +21,7 @@ enum BlockChainSpecific: Codable, Hashable {
     case THORChain(accountNumber: UInt64, sequence: UInt64)
     case Cosmos(accountNumber: UInt64, sequence: UInt64, gas: UInt64)
     case Solana(recentBlockHash: String, priorityFee: BigInt) // priority fee is in microlamports
-    case Polkadot(recentBlockHash: String, nonce: UInt64, priorityFee: BigInt)
+    case Polkadot(recentBlockHash: String, nonce: UInt64, currentBlockNumber: BigInt)
 
     var gas: BigInt {
         switch self {
@@ -113,6 +113,8 @@ struct KeysignPayload: Codable, Hashable {
             return ATOMHelper().getPreSignedImageHash(keysignPayload: self)
         case .kujira:
             return KujiraHelper().getPreSignedImageHash(keysignPayload: self)
+        case .polkadot:
+            return PolkadotHelper.getPreSignedImageHash(keysignPayload: self)
         }
     }
     
