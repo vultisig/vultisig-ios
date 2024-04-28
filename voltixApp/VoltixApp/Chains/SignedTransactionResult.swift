@@ -10,4 +10,5 @@ import Foundation
 struct SignedTransactionResult {
     let rawTransaction: String
     let transactionHash: String
+    var signature: String?
 }

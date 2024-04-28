@@ -55,7 +55,13 @@ class Endpoint {
     
     static let ethServiceRpcService = "https://ethereum-rpc.publicnode.com"
     
-    static let solanaServiceAlchemyRpc = "https://solana-rpc.publicnode.com"
+    static let solanaServiceRpc = "https://solana-rpc.publicnode.com"
+    
+    static let suiServiceRpc = "https://sui-rpc.publicnode.com"
+        
+    static let polkadotServiceRpc = "https://polkadot-rpc.publicnode.com"
+    
+    static let polkadotServiceBalance = "https://polkadot.api.subscan.io/api/v2/scan/search"
     
     static func bitcoinLabelTxHash(_ value: String) -> String {
         "https://mempool.space/tx/\(value)"
@@ -112,7 +118,7 @@ class Endpoint {
     static func fetchKujiraAccountNumber(_ address: String) -> String {
         "https://kujira-rest.publicnode.com/cosmos/auth/v1beta1/accounts/\(address)"
     }
-    
+        
     static let broadcastKujiraTransaction = "https://kujira-rest.publicnode.com/cosmos/tx/v1beta1/txs"
 
     static func getSwapProgressURL(txid: String) -> String {
@@ -159,6 +165,10 @@ class Endpoint {
             return "https://blastscan.io/tx/\(txid)"
         case "CRO":
             return "https://cronoscan.com/tx/\(txid)"
+        case "SUI":
+            return "https://suiscan.xyz/mainnet/tx/\(txid)"
+        case "DOT":
+            return "https://polkadot.subscan.io/extrinsic/\(txid)"
         default:
             return ""
         }
@@ -204,6 +214,10 @@ class Endpoint {
             return "https://blastscan.io/address/\(address)"
         case "CRO":
             return "https://cronoscan.com/address/\(address)"
+        case "SUI":
+            return "https://suiscan.xyz/mainnet/address/\(address)"
+        case "DOT":
+            return "https://polkadot.subscan.io/account/\(address)"
         default:
             return nil
         }
@@ -249,6 +263,10 @@ class Endpoint {
             return "https://blastscan.io/address/\(address)"
         case .cronosChain:
             return "https://cronoscan.com/address/\(address)"
+        case .sui:
+            return "https://suiscan.xyz/mainnet/address/\(address)"
+        case .polkadot:
+            return "https://polkadot.subscan.io/account/\(address)"
         case .none:
             return nil
         }

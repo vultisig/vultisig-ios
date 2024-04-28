@@ -11,8 +11,10 @@ enum ChainType: Codable, CustomStringConvertible {
     case UTXO
     case EVM
     case Solana
+    case Sui
     case THORChain
     case Cosmos
+    case Polkadot
     
     var description: String {
         switch self {
@@ -22,10 +24,14 @@ enum ChainType: Codable, CustomStringConvertible {
             return "Ethereum Virtual Machine"
         case .Solana:
             return "Solana"
+        case .Sui:
+            return "Sui"
         case .THORChain:
             return "THORChain"
         case .Cosmos:
             return "Cosmos"
+        case .Polkadot:
+            return "Polkadot"
         }
     }
 }

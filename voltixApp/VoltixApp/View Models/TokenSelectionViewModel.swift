@@ -132,6 +132,24 @@ class TokenSelectionViewModel: ObservableObject {
             case .failure(let err):
                 logger.info("fail to get solana address,error:\(err.localizedDescription)")
             }
+        case .sui:
+            let coinResult = SuiHelper.getSui(hexPubKey: vault.pubKeyEdDSA, hexChainCode: vault.hexChainCode)
+            switch coinResult {
+            case .success(let sui):
+                sui.priceProviderId = asset.priceProviderId
+                vault.coins.append(sui)
+            case .failure(let err):
+                logger.info("fail to get sui address,error:\(err.localizedDescription)")
+            }
+        case .polkadot:
+            let coinResult = PolkadotHelper.getPolkadot(hexPubKey: vault.pubKeyEdDSA, hexChainCode: vault.hexChainCode)
+            switch coinResult {
+            case .success(let dot):
+                dot.priceProviderId = asset.priceProviderId
+                vault.coins.append(dot)
+            case .failure(let err):
+                logger.info("fail to get polkadot address,error:\(err.localizedDescription)")
+            }
         case .gaiaChain:
             let coinResult = ATOMHelper().getATOMCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
             switch coinResult {

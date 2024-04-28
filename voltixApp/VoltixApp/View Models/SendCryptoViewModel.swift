@@ -26,6 +26,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     @Published var hash: String? = nil
     @Published var thor = ThorchainService.shared
     @Published var sol: SolanaService = SolanaService.shared
+    @Published var sui: SuiService = SuiService.shared
     @Published var cryptoPrice = CryptoPriceService.shared
     @Published var utxo = BlockchairService.shared
     let maya = MayachainService.shared
@@ -148,8 +149,22 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 
                 isLoading = false
             }
-            
-        case .kujira, .gaiaChain, .mayaChain, .thorChain:
+        case .sui:
+            Task{
+                do{
+                    let (rawBalance,priceRate) = try await sui.getBalance(coin: tx.coin)
+                    tx.coin.rawBalance = rawBalance
+                    tx.coin.priceRate = priceRate
+                    
+                    tx.amount = "\(tx.coin.getMaxValue(tx.coin.feeDefault.toBigInt()))"
+                    await convertToFiat(newValue: tx.amount, tx: tx)
+                } catch {
+                    print("fail to load solana balances,error:\(error.localizedDescription)")
+                }
+                
+                isLoading = false
+            }
+        case .kujira, .gaiaChain, .mayaChain, .thorChain, .polkadot:
             Task {
                 do{
                     let (_, _, _) = try await BalanceService.shared.balance(for: tx.coin)

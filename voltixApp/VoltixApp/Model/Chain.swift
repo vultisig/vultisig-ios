@@ -25,6 +25,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case kujira
     case mayaChain
     case cronosChain
+    case sui
+    case polkadot
     
     enum MigrationKeys: String, CodingKey {
         case ticker
@@ -70,6 +72,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .polygon: return "Polygon"
         case .blast: return "Blast"
         case .cronosChain: return "CronosChain"
+        case .sui: return "Sui"
+        case .polkadot: return "Polkadot"
             
         }
     }
@@ -95,6 +99,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .polygon: return "MATIC"
         case .blast: return "BLAST"
         case .cronosChain: return "CRO"
+        case .sui: return "SUI"
+        case .polkadot: return "DOT"
         }
     }
     
@@ -119,6 +125,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .polygon: return "MATIC"
         case .blast: return "BLAST"
         case .cronosChain: return "CRO"
+        case .sui: return "SUI"
+        case .polkadot: return "DOT"
         }
     }
     
@@ -126,7 +134,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         switch self {
         case .thorChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .gaiaChain:
             return true
-        case .solana, .dash, .kujira, .mayaChain,.arbitrum, .base, .optimism, .polygon, .blast, .cronosChain:
+        case .solana, .dash, .kujira, .mayaChain,.arbitrum, .base, .optimism, .polygon, .blast, .cronosChain, .polkadot, .sui:
             return false
         }
     }
@@ -135,7 +143,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         switch self.chainType {
         case .Cosmos, .EVM, .THORChain, .UTXO:
             return .ECDSA
-        case .Solana:
+        case .Solana, .Polkadot, .Sui:
             return .EdDSA
         }
     }
@@ -148,10 +156,14 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return .THORChain
         case .solana:
             return .Solana
+        case .sui:
+            return .Sui
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             return .UTXO
         case .gaiaChain, .kujira:
             return .Cosmos
+        case .polkadot:
+            return .Polkadot
         }
     }
 }

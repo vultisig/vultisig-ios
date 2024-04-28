@@ -12,17 +12,7 @@ enum RpcEvmServiceError: Error {
     }
 }
 
-class RpcEvmService {
-    
-    private let session = URLSession.shared
-    internal let rpcEndpoint: String // Modificado para `internal` para permitir acesso pela subclass
-
-    init(_ rpcEndpoint: String) {
-        self.rpcEndpoint = rpcEndpoint
-        guard URL(string: rpcEndpoint) != nil else {
-            fatalError("Invalid RPC endpoint URL")
-        }
-    }
+class RpcEvmService: RpcService {
     
     func getBalance(coin: Coin) async throws ->(rawBalance: String,priceRate: Double){
         // Start fetching all information concurrently
@@ -143,64 +133,4 @@ class RpcEvmService {
         return data
     }
     
-    func sendRPCRequest<T>(method: String, params: [Any], decode: (Any) throws -> T) async throws -> T {
-        let payload: [String: Any] = [
-            "jsonrpc": "2.0",
-            "method": method,
-            "params": params,
-            "id": 1
-        ]
-        
-        guard let url = URL(string: rpcEndpoint) else {
-            throw RpcEvmServiceError.rpcError(code: 404, message: "We didn't find the URL \(rpcEndpoint)")
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONSerialization.data(withJSONObject: payload, options: [])
-        
-        do {
-            let (data, _) = try await URLSession.shared.data(for: request)
-            
-            guard let response = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-                throw RpcEvmServiceError.rpcError(code: 500, message: "Error to decode the JSON response")
-            }
-            
-            if let error = response["error"] as? [String: Any], let message = error["message"] as? String {
-                print("ERROR sendRPCRequest \(message)")
-                throw RpcEvmServiceError.rpcError(code: error["code"] as? Int ?? 500, message: message)
-            } else if let result = response["result"] {
-                return try decode(result)
-            } else {
-                throw RpcEvmServiceError.rpcError(code: 500, message: "Unknown error")
-            }
-        } catch {
-            print(payload)
-            print(error.localizedDescription)
-            throw error
-        }
-
-    }
-    
-    func intRpcCall(method: String, params: [Any]) async throws -> BigInt {
-        return try await sendRPCRequest(method: method, params: params) { result in
-            guard let resultString = result as? String,
-                  let bigIntResult = BigInt(resultString.stripHexPrefix(), radix: 16) else {
-                throw RpcEvmServiceError.rpcError(code: 500, message: "Error to convert the RPC result to BigInt")
-            }
-            return bigIntResult
-        }
-        
-    }
-    
-    func strRpcCall(method: String, params: [Any]) async throws -> String {
-        return try await sendRPCRequest(method: method, params: params) { result in
-            guard let resultString = result as? String else {
-                throw RpcEvmServiceError.rpcError(code: 500, message: "Error to convert the RPC result to String")
-            }
-            return resultString
-        }
-        
-    }
 }

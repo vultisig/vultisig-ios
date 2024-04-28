@@ -13,9 +13,11 @@ class BalanceService {
     private let utxo = BlockchairService.shared
     private let thor = ThorchainService.shared
     private let sol = SolanaService.shared
+    private let sui = SuiService.shared
     private let gaia = GaiaService.shared
     private let kuji = KujiraService.shared
     private let maya = MayachainService.shared
+    private let dot = PolkadotService.shared
     
     func balance(for coin: Coin) async throws -> (coinBalance: String, balanceFiat: String, balanceInFiatDecimal: Decimal) {
         switch coin.chain {
@@ -29,6 +31,10 @@ class BalanceService {
             coin.priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
         case .solana:
             let (rawBalance,priceRate) = try await sol.getSolanaBalance(coin: coin)
+            coin.rawBalance = rawBalance
+            coin.priceRate = priceRate
+        case .sui:
+            let (rawBalance,priceRate) = try await sui.getBalance(coin: coin)
             coin.rawBalance = rawBalance
             coin.priceRate = priceRate
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain:
@@ -48,6 +54,11 @@ class BalanceService {
             let mayaBalance = try await maya.fetchBalances(coin.address)
             coin.rawBalance = mayaBalance.balance(denom: coin.ticker.lowercased())
             coin.priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
+            
+        case .polkadot:
+            let (rawBalance,priceRate) = try await dot.getBalance(coin: coin)
+            coin.rawBalance = rawBalance
+            coin.priceRate = priceRate
         }
         let balanceFiat = coin.balanceInFiat
         let coinBalance = coin.balanceString
