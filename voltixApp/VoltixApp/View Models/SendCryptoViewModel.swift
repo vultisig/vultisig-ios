@@ -63,6 +63,10 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         
         let totalSelectedAmount = utxoInfo.reduce(0) { $0 + $1.amount }
         
+        guard let vault = ApplicationState.shared.currentVault else {
+            return nil
+        }
+        
         let keysignPayload = KeysignPayload(
             coin: tx.coin,
             toAddress: tx.toAddress,
@@ -70,21 +74,21 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             chainSpecific: BlockChainSpecific.UTXO(byteFee: BigInt(tx.feeInSats)),
             utxos: utxoInfo,
             memo: tx.memo,
-            swapPayload: nil
+            swapPayload: nil, 
+            vaultPubKeyECDSA: vault.pubKeyECDSA
         )
         
-        if let vault = ApplicationState.shared.currentVault {
-            if let helper = UTXOChainsHelper.getHelper(vault: vault, coin: tx.coin) {
-                let transactionPlanResult = helper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
-                switch transactionPlanResult {
-                case .success(let plan):
-                    return plan
-                case .failure(let error):
-                    print("Error generating transaction plan: \(error.localizedDescription)")
-                    return nil
-                }
+        if let helper = UTXOChainsHelper.getHelper(vault: vault, coin: tx.coin) {
+            let transactionPlanResult = helper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
+            switch transactionPlanResult {
+            case .success(let plan):
+                return plan
+            case .failure(let error):
+                print("Error generating transaction plan: \(error.localizedDescription)")
+                return nil
             }
         }
+        
         return nil
     }
     
@@ -115,7 +119,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                         }
                         
                         let gasPriceWei = BigInt(gasPrice)
-
+                        
                         let totalFeeWei: BigInt = gasLimitBigInt * gasPriceWei
                         
                         tx.amount = "\(tx.coin.getMaxValue(totalFeeWei))"
@@ -207,7 +211,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         isValidAddress = tx.coin.coinType.validate(address: address)
     }
     
-    func validateForm(tx: SendTransaction) -> Bool {
+    func validateForm(tx: SendTransaction) async -> Bool {
         // Reset validation state at the beginning
         errorMessage = ""
         isValidForm = true
@@ -239,48 +243,23 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             return isValidForm
         }
         
-        let coinName = tx.coin.chain.name.lowercased()
-        let key: String = "\(tx.fromAddress)-\(coinName)"
+        if tx.isAmountExceeded {
+            
+            errorMessage = "walletBalanceExceededError"
+            showAlert = true
+            logger.log("Total transaction cost exceeds wallet balance.")
+            isValidForm = false
+            
+        }
         
-        if  tx.coin.chain.chainType == ChainType.UTXO {
-            let walletBalanceInSats = utxo.blockchairData.get(key)?.address?.balance ?? 0
-            let totalTransactionCostInSats = tx.amountInSats + BigInt(tx.feeInSats)
-            print("Total transaction cost: \(totalTransactionCostInSats)")
+        let hasEnoughNativeTokensToPayTheFees = await tx.hasEnoughNativeTokensToPayTheFees()
+        if !hasEnoughNativeTokensToPayTheFees {
             
-            if totalTransactionCostInSats > walletBalanceInSats {
-                errorMessage = "walletBalanceExceededError"
-                showAlert = true
-                logger.log("Total transaction cost exceeds wallet balance.")
-                isValidForm = false
-            }
-        } else if tx.coin.chain == .solana {
-            let walletBalanceInLamports = tx.coin.rawBalance
-            let optionalGas: String? = tx.gas
-            guard let feeStr = optionalGas, let feeInLamports = Decimal(string: feeStr) else {
-                errorMessage = "invalidGasFeeError"
-                showAlert = true
-                logger.log("Invalid gas fee for Solana.")
-                isValidForm = false
-                return isValidForm
-            }
+            errorMessage = "walletBalanceExceededError"
+            showAlert = true
+            logger.log("You must have enough Native Tokens (Eg. ETH) to pay the fees.")
+            isValidForm = false
             
-            guard let amountInSOL = Decimal(string: tx.amount) else {
-                errorMessage = "invalidTransactionAmountError"
-                showAlert = true
-                logger.log("Invalid transaction amount for Solana.")
-                isValidForm = false
-                return isValidForm
-            }
-            
-            let amountInLamports = amountInSOL * Decimal(1_000_000_000)
-            
-            let totalCostInLamports = amountInLamports + feeInLamports
-            if totalCostInLamports > (Decimal(string: walletBalanceInLamports) ?? 0) {
-                errorMessage = "walletBalanceExceededSolanaError"
-                showAlert = true
-                logger.log("Total transaction cost exceeds wallet balance for Solana.")
-                isValidForm = false
-            }
         }
         
         return isValidForm

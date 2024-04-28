@@ -56,7 +56,7 @@
 "enterPreviousVault" = "Unesite prethodno stvoreni udio sefa";
 "uploadFile" = "Prenesite datoteku, tekst ili sliku";
 "devicesOnSameWifi" = "Držite uređaje na istoj WiFi mreži s VOLTIX otvorenim";
-"need3Devices" = "Potrebna su 3 uređaja";
+"need3Devices" = "Potrebna su vam najmanje 2 uređaja";
 "chooseTokens" = "Odaberite tokene";
 "chooseChains" = "Odaberite lance";
 "enterAddress" = "Unesite adresu";

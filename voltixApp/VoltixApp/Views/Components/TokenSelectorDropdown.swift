@@ -88,7 +88,13 @@ struct TokenSelectorDropdown: View {
             Text(coin.ticker)
                 .font(.body16Menlo)
                 .foregroundColor(.neutral0)
-            
+
+            if let schema = coin.tokenSchema {
+                Text("(\(schema))")
+                    .font(.body16Menlo)
+                    .foregroundColor(.neutral0)
+            }
+
             Spacer()
             
             if selected == coin {

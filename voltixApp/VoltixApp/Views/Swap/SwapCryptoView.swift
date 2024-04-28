@@ -11,10 +11,12 @@ struct SwapCryptoView: View {
 
     @StateObject var tx = SwapTransaction()
     @StateObject var swapViewModel = SwapCryptoViewModel()
+    @StateObject var coinViewModel = CoinViewModel()
 
     @State var keysignView: KeysignView?
 
     let coin: Coin
+    let coins: [Coin]
     let vault: Vault
 
     var body: some View {
@@ -29,10 +31,7 @@ struct SwapCryptoView: View {
                 }
             }
             .task {
-                await swapViewModel.load(tx: tx, fromCoin: coin, coins: vault.coins)
-            }
-            .alert(isPresented: Binding { swapViewModel.error != nil } set: { _ in swapViewModel.error = nil }) {
-                alert
+                await swapViewModel.load(tx: tx, fromCoin: coin, coins: vault.coins, coinViewModel: coinViewModel)
             }
     }
     
@@ -112,15 +111,15 @@ struct SwapCryptoView: View {
     }
 
     var detailsView: some View {
-        SwapCryptoDetailsView(tx: tx, swapViewModel: swapViewModel)
+        SwapCryptoDetailsView(tx: tx, swapViewModel: swapViewModel, coinViewModel: coinViewModel)
     }
 
     var verifyView: some View {
-        SwapVerifyView(tx: tx, swapViewModel: swapViewModel)
+        SwapVerifyView(tx: tx, swapViewModel: swapViewModel, vault: vault)
     }
 
     var approveVerifyView: some View {
-        SwapApproveVerifyView(tx: tx, swapViewModel: swapViewModel)
+        SwapApproveVerifyView(tx: tx, swapViewModel: swapViewModel, vault: vault)
     }
 
     var pairView: some View {
@@ -151,10 +150,11 @@ struct SwapCryptoView: View {
     var doneView: some View {
         ZStack {
             if let hash = swapViewModel.hash {
-                SendCryptoDoneView(vault:vault, hash: hash, explorerLink: Endpoint.getExplorerURL(
-                    chainTicker: tx.fromCoin.chain.ticker,
-                    txid: hash
-                ))
+                SendCryptoDoneView(
+                    vault: vault, hash: hash, 
+                    explorerLink: Endpoint.getExplorerURL(chainTicker: tx.fromCoin.chain.ticker, txid: hash),
+                    progressLink: Endpoint.getSwapProgressURL(txid: hash)
+                )
             } else {
                 SendCryptoSigningErrorView()
             }
@@ -169,14 +169,8 @@ struct SwapCryptoView: View {
     var errorView: some View {
         SendCryptoSigningErrorView()
     }
-
-    var alert: Alert {
-        Alert(title: Text(NSLocalizedString("error", comment: "")),
-              message: Text(swapViewModel.error?.localizedDescription ?? .empty),
-              dismissButton: .default(Text(NSLocalizedString("ok", comment: ""))))
-    }
 }
 
 #Preview {
-    SwapCryptoView(coin: .example, vault: .example)
+    SwapCryptoView(coin: .example, coins: Vault.example.coins, vault: .example)
 }

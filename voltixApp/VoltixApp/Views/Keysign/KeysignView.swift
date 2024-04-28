@@ -33,6 +33,8 @@ struct KeysignView: View {
                 keysignFinished
             case .KeysignFailed:
                 SendCryptoKeysignView(vault:vault,title: "Sorry keysign failed, you can retry it,error: \(viewModel.keysignError)", showError: true)
+            case .KeysignVaultMismatch:
+                KeysignVaultMismatchErrorView()
             }
         }
         .onAppear {
@@ -68,6 +70,11 @@ struct KeysignView: View {
     }
     
     private func setData() {
+        guard let keysignPayload, keysignPayload.vaultPubKeyECDSA == vault.pubKeyECDSA else {
+            viewModel.status = .KeysignVaultMismatch
+            return
+        }
+        
         viewModel.setData(
             keysignCommittee: self.keysignCommittee,
             mediatorURL: self.mediatorURL,
@@ -75,7 +82,7 @@ struct KeysignView: View {
             keysignType: self.keysignType,
             messagesToSign: self.messsageToSign,
             vault: self.vault,
-            keysignPayload: self.keysignPayload,
+            keysignPayload: keysignPayload,
             encryptionKeyHex: encryptionKeyHex)
     }
     

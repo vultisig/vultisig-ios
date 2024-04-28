@@ -56,7 +56,7 @@
 "enterPreviousVault" = "Geben Sie Ihren zuvor erstellten Tresor ein";
 "uploadFile" = "Datei, Text oder Bild hochladen";
 "devicesOnSameWifi" = "Halten Sie Geräte im selben WLAN mit VOLTIX geöffnet";
-"need3Devices" = "Sie benötigen 3 Geräte";
+"need3Devices" = "Sie benötigen mindestens 2 Geräte";
 "chooseTokens" = "Tokens wählen";
 "chooseChains" = "Ketten wählen";
 "enterAddress" = "Adresse eingeben";

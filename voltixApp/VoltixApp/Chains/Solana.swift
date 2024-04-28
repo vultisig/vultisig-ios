@@ -10,7 +10,7 @@ import BigInt
 
 enum SolanaHelper {
 
-    static let defaultFeeInLamports: BigInt = 7000
+    static let defaultFeeInLamports: BigInt = 1000000 //0.001
 
     static func getSolana(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
         return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).flatMap { addr -> Result<Coin, Error> in

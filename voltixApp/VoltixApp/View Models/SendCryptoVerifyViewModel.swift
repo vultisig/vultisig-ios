@@ -54,7 +54,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
             
         }
     }
-    func validateForm(tx: SendTransaction) async -> KeysignPayload? {
+    func validateForm(tx: SendTransaction, vault: Vault) async -> KeysignPayload? {
         
         if !isValidForm {
             self.errorMessage = "mustAgreeTermsError"
@@ -77,7 +77,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
                                                                            toAddress: tx.toAddress,
                                                                            amount: amount(for:tx.coin,tx:tx),
                                                                            memo: tx.memo,
-                                                                           chainSpecific: chainSpecific)
+                                                                           chainSpecific: chainSpecific, vault: vault)
         } catch {
             switch error {
             case KeysignPayloadFactory.Errors.notEnoughBalanceError:

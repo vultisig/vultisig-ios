@@ -13,11 +13,16 @@ struct SwapApproveVerifyView: View {
 
     @ObservedObject var tx: SwapTransaction
     @ObservedObject var swapViewModel: SwapCryptoViewModel
+    let vault: Vault
 
     var body: some View {
         ZStack {
             Background()
             view
+
+            if swapViewModel.isLoading {
+                Loader()
+            }
         }
         .onDisappear {
             swapViewModel.isLoading = false
@@ -29,7 +34,6 @@ struct SwapApproveVerifyView: View {
             fields
             button
         }
-        .blur(radius: swapViewModel.isLoading ? 1 : 0)
     }
 
     var fields: some View {
@@ -65,7 +69,7 @@ struct SwapApproveVerifyView: View {
     var button: some View {
         Button {
             Task {
-                if await swapViewModel.buildApproveKeysignPayload(tx: tx) {
+                if await swapViewModel.buildApproveKeysignPayload(tx: tx, vault: vault) {
                     swapViewModel.moveToNextView()
                 }
             }
@@ -82,7 +86,7 @@ struct SwapApproveVerifyView: View {
     }
 
     func getSpender() -> String {
-        return swapViewModel.spender
+        return tx.router ?? .empty
     }
 
     func getValueCell(for title: String, with value: String) -> some View {

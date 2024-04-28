@@ -16,6 +16,7 @@ enum KeysignStatus {
     case KeysignEdDSA
     case KeysignFinished
     case KeysignFailed
+    case KeysignVaultMismatch
 }
 
 @MainActor

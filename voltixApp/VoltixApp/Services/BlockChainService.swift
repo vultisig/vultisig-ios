@@ -12,7 +12,7 @@ final class BlockChainService {
 
     enum Action {
         case transfer
-        case approve
+        case swap
     }
 
     enum Errors: String, Error, LocalizedError {
@@ -39,7 +39,8 @@ final class BlockChainService {
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             let sats = try await utxo.fetchSatsPrice(coin: coin)
-            return .UTXO(byteFee: sats)
+            let normalized = normalize(sats, action: action)
+            return .UTXO(byteFee: normalized)
 
         case .thorChain:
             let account = try await thor.fetchAccountNumber(coin.address)
@@ -83,13 +84,9 @@ final class BlockChainService {
             let service = try EvmServiceFactory.getService(forChain: coin)
             let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(fromAddress: coin.address)
             let gasLimit = BigInt(coin.feeDefault) ?? 0
+            let normalizedGasPrice = normalize(gasPrice, action: action)
 
-            switch action {
-            case .transfer:
-                return .Ethereum(maxFeePerGasWei: gasPrice, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: gasLimit)
-            case .approve:
-                return .Ethereum(maxFeePerGasWei: gasPrice, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: gasLimit)
-            }
+            return .Ethereum(maxFeePerGasWei: normalizedGasPrice, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: gasLimit)
 
         case .gaiaChain:
             let account = try await atom.fetchAccountNumber(coin.address)
@@ -113,6 +110,15 @@ final class BlockChainService {
                 throw Errors.failToGetSequenceNo
             }
             return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500)
+        }
+    }
+
+    func normalize(_ value: BigInt, action: Action) -> BigInt {
+        switch action {
+        case .transfer:
+            return value
+        case .swap:
+            return value + value / 2 // x1.5 fee for swaps
         }
     }
 }

@@ -143,6 +143,18 @@ class Coin: Codable, Hashable {
         return !isNativeToken && chain.chainType == .EVM
     }
 
+    var tokenSchema: String? {
+        guard !isNativeToken else { return nil }
+        switch chain {
+        case .ethereum:
+            return "ERC20"
+        case .bscChain:
+            return "BEP20"
+        default:
+            return nil
+        }
+    }
+
     func toString() -> String {
         let properties = [
             "chain: \(chain.name)",

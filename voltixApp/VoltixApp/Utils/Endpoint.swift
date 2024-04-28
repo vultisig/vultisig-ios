@@ -116,8 +116,12 @@ class Endpoint {
     }
         
     static let broadcastKujiraTransaction = "https://kujira-rest.publicnode.com/cosmos/tx/v1beta1/txs"
-    
-    static func getExplorerURL(chainTicker: String, txid: String) -> String{
+
+    static func getSwapProgressURL(txid: String) -> String {
+        return "https://runescan.io/tx/\(txid.stripHexPrefix())"
+    }
+
+    static func getExplorerURL(chainTicker: String, txid: String) -> String {
         switch chainTicker {
         case "BTC":
             return "https://blockchair.com/bitcoin/transaction/\(txid)"
@@ -130,7 +134,7 @@ class Endpoint {
         case "DASH":
             return "https://blockchair.com/dash/transaction/\(txid)"
         case "RUNE":
-            return "https://runescan.io/tx/\(txid)"
+            return "https://runescan.io/tx/\(txid.stripHexPrefix())"
         case "SOL":
             return "https://explorer.solana.com/tx/\(txid)"
         case "ETH":

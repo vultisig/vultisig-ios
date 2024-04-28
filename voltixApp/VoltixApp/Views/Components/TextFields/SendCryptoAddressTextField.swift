@@ -80,11 +80,12 @@ struct SendCryptoAddressTextField: View {
     
     private func handleScan(result: Result<ScanResult, ScanError>) {
         switch result {
-            case .success(let result):
-                let qrCodeResult = result.string
-                tx.parseCryptoURI(qrCodeResult)
-                showScanner = false
-            case .failure(let err):
+        case .success(let result):
+            let qrCodeResult = result.string
+            tx.parseCryptoURI(qrCodeResult)
+            validateAddress(tx.toAddress)
+            showScanner = false
+        case .failure(let err):
             sendCryptoViewModel.logger.error("fail to scan QR code,error:\(err.localizedDescription)")
         }
     }
