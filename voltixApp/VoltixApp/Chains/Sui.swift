@@ -36,14 +36,13 @@ enum SuiHelper {
         }
         
         guard case .Sui(let referenceGasPrice, let coins) = keysignPayload.chainSpecific else {
-            return .failure(HelperError.runtimeError("fail to get to address"))
+            return .failure(HelperError.runtimeError("getPreSignedInputData fail to get SUI transaction information from RPC"))
         }
         
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .sui) else {
             return .failure(HelperError.runtimeError("fail to get to address"))
         }
         
-        //TODO: we need this object to be passed dynamically
         let suiCoins = coins.map{
             var obj = SuiObjectRef()
             obj.objectID = $0["objectID"] ?? .empty
@@ -64,8 +63,6 @@ enum SuiHelper {
             $0.referenceGasPrice = UInt64(referenceGasPrice)
         }
         
-        print(input.debugDescription)
-        
         do {
             let inputData = try input.serializedData()
             return .success(inputData)
@@ -82,7 +79,6 @@ enum SuiHelper {
             do {
                 let hashes = TransactionCompiler.preImageHashes(coinType: .sui, txInputData: inputData)
                 let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
-                print("ERROR preSigningOutput SUI \(preSigningOutput.errorMessage)")
                 return .success([Hash.blake2b(data: preSigningOutput.data, size: 32).hexString])
             } catch {
                 return .failure(HelperError.runtimeError("fail to get preSignedImageHash,error:\(error.localizedDescription)"))
@@ -110,14 +106,14 @@ enum SuiHelper {
             do {
                 let hashes = TransactionCompiler.preImageHashes(coinType: .sui, txInputData: inputData)
                 let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
-                print("ERROR preSigningOutput SUI \(preSigningOutput.errorMessage)")
+                let preSigningOutputDataBlake2b = Hash.blake2b(data: preSigningOutput.data, size: 32)
                 let allSignatures = DataVector()
                 let publicKeys = DataVector()
                 let signatureProvider = SignatureProvider(signatures: signatures)
-                let signature = signatureProvider.getSignature(preHash: Hash.blake2b(data: preSigningOutput.data, size: 32))
-                guard publicKey.verify(signature: signature, message: Hash.blake2b(data: preSigningOutput.data, size: 32)) else {
+                let signature = signatureProvider.getSignature(preHash: preSigningOutputDataBlake2b)
+                guard publicKey.verify(signature: signature, message: preSigningOutputDataBlake2b) else {
                     print("SUI signature verification failed")
-                    return .failure(HelperError.runtimeError("fail to verify signature"))
+                    return .failure(HelperError.runtimeError("SUI signature verification failed"))
                 }
                 
                 allSignatures.add(data: signature)
@@ -127,9 +123,6 @@ enum SuiHelper {
                                                                                      signatures: allSignatures,
                                                                                      publicKeys: publicKeys)
                 let output = try SuiSigningOutput(serializedData: compileWithSignature)
-                
-                print("ERROR output SUI \(output.errorMessage)")
-                
                 let result = SignedTransactionResult(rawTransaction: output.unsignedTx, transactionHash: .empty, signature: output.signature)
                 return .success(result)
             } catch {
@@ -139,5 +132,4 @@ enum SuiHelper {
             return .failure(err)
         }
     }
-    
 }

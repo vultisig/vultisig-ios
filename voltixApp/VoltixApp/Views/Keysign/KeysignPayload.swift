@@ -22,9 +22,8 @@ enum BlockChainSpecific: Codable, Hashable {
     case Cosmos(accountNumber: UInt64, sequence: UInt64, gas: UInt64)
     case Solana(recentBlockHash: String, priorityFee: BigInt) // priority fee is in microlamports
     case Sui(referenceGasPrice: BigInt, coins: [[String:String]])
-
-        case Polkadot(recentBlockHash: String, nonce: UInt64, currentBlockNumber: BigInt, specVersion: UInt32, transactionVersion: UInt32)
-
+    case Polkadot(recentBlockHash: String, nonce: UInt64, currentBlockNumber: BigInt, specVersion: UInt32, transactionVersion: UInt32, genesisHash: String)
+    
     var gas: BigInt {
         switch self {
         case .UTXO(let byteFee):
@@ -61,7 +60,7 @@ struct KeysignPayload: Codable, Hashable {
     let swapPayload: THORChainSwapPayload?
     let approvePayload: ERC20ApprovePayload?
     let vaultPubKeyECDSA: String
-
+    
     init(coin: Coin, toAddress: String, toAmount: BigInt, chainSpecific: BlockChainSpecific, utxos: [UtxoInfo], memo: String?, swapPayload: THORChainSwapPayload?, approvePayload: ERC20ApprovePayload? = nil, vaultPubKeyECDSA: String) {
         self.coin = coin
         self.toAddress = toAddress
@@ -73,13 +72,13 @@ struct KeysignPayload: Codable, Hashable {
         self.approvePayload = approvePayload
         self.vaultPubKeyECDSA = vaultPubKeyECDSA
     }
-
+    
     var toAmountString: String {
         let decimalAmount = Decimal(string: toAmount.description) ?? Decimal.zero
         let power = Decimal(sign: .plus, exponent: -(Int(coin.decimals) ?? 0), significand: 1)
         return "\(decimalAmount * power) \(coin.ticker)"
     }
-
+    
     func getKeysignMessages(vault: Vault) -> Result<[String], Error> {
         if let swapPayload {
             let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
@@ -90,7 +89,7 @@ struct KeysignPayload: Codable, Hashable {
             let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
             return swaps.getPreSignedApproveImageHash(approvePayload: approvePayload, keysignPayload: self)
         }
-
+        
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             guard let coinType = CoinType.from(string: coin.chain.name.replacingOccurrences(of: "-", with: "")) else {

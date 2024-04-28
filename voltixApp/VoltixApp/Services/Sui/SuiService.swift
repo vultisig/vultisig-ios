@@ -14,10 +14,9 @@ class SuiService {
     static let shared = SuiService()
     private init() {}
     
-    private var cacheFeePrice: [String: (data: BigInt, timestamp: Date)] = [:]
-    private var cacheLatestCheckpointSequenceNumber: [String: (data: Int64, timestamp: Date)] = [:]
-    private var cacheAllCoins: [String: (data: [[String:String]], timestamp: Date)] = [:]
-    
+    private var cacheFeePrice: ThreadSafeDictionary<String, (data: BigInt, timestamp: Date)> = ThreadSafeDictionary()
+    private var cacheLatestCheckpointSequenceNumber: ThreadSafeDictionary<String, (data: Int64, timestamp: Date)> = ThreadSafeDictionary()
+    private var cacheAllCoins: ThreadSafeDictionary<String, (data: [[String:String]], timestamp: Date)> = ThreadSafeDictionary()
     
     private let rpcURL = URL(string: Endpoint.suiServiceRpc)!
     private let jsonDecoder = JSONDecoder()
@@ -57,7 +56,7 @@ class SuiService {
             if let result = Utils.extractResultFromJson(fromData: data, path: "result"),
                let resultString = result as? String {
                 let intResult = resultString.toBigInt()
-                self.cacheFeePrice[cacheKey] = (data: intResult, timestamp: Date())
+                self.cacheFeePrice.set(cacheKey, (data: intResult, timestamp: Date()))
                 return intResult
             } else {
                 print("JSON decoding error")
@@ -78,7 +77,6 @@ class SuiService {
         }
         
         do {
-            // Make a PostRequestRpc call and handle the data
             let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getAllCoins", params: [coin.address])
             if let coins: [SuiCoin] = Utils.extractResultFromJson(fromData: data, path: "result.data", type: [SuiCoin].self) {
                 let allCoins = coins.map { coin in
@@ -89,7 +87,7 @@ class SuiService {
                     return coinDict
                 }
                 // Caching the transformed data instead of the raw data
-                self.cacheAllCoins[cacheKey] = (data: allCoins, timestamp: Date())
+                self.cacheAllCoins.set(cacheKey, (data: allCoins, timestamp: Date()))
                 return allCoins
             } else {
                 print("Failed to decode coins")
@@ -101,11 +99,8 @@ class SuiService {
         return []
     }
     
-    
     func executeTransactionBlock(unsignedTransaction: String, signature: String) async throws -> String{
         do {
-            print([unsignedTransaction, signature, "WaitForLocalExecution"])
-            
             let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "sui_executeTransactionBlock", params:  [unsignedTransaction, [signature]])
             
             if let error = Utils.extractResultFromJson(fromData: data, path: "error.message") as? String {

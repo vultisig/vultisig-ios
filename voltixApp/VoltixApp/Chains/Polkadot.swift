@@ -34,17 +34,16 @@ enum PolkadotHelper {
             return .failure(HelperError.runtimeError("coin is not DOT"))
         }
         
-        guard case .Polkadot(let recentBlockHash, let nonce, let currentBlockNumber, let specVersion, let transactionVersion) = keysignPayload.chainSpecific else {
-            return .failure(HelperError.runtimeError("fail to get to address"))
+        guard case .Polkadot(let recentBlockHash, let nonce, let currentBlockNumber, let specVersion, let transactionVersion, let genesisHash) = keysignPayload.chainSpecific else {
+            return .failure(HelperError.runtimeError("getPreSignedInputData fail to get DOT transaction information from RPC"))
         }
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .polkadot) else {
             return .failure(HelperError.runtimeError("fail to get to address"))
         }
         
-        let genesisHash = Data(hexString: "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3")!
-        
+        let genesisHashData = Data(hexString: genesisHash)!
         let input = PolkadotSigningInput.with {
-            $0.genesisHash = genesisHash
+            $0.genesisHash = genesisHashData
             $0.blockHash = Data(hexString: recentBlockHash)!
             $0.nonce = nonce
             $0.specVersion = specVersion

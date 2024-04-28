@@ -283,7 +283,7 @@ enum Utils {
         }
         return nil
     }
-
+    
     public static func extractResultFromJson(fromData data: Data, path: String) -> Any? {
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: []) as? NSDictionary
@@ -313,7 +313,7 @@ enum Utils {
             return dictionary[path]
         }
     }
-
+    
     
     public static func isCacheValid<T>(for key: String, in cache: [String: (data: T, timestamp: Date)], timeInSeconds: Double) -> Bool {
         guard let cacheEntry = cache[key] else { return false }
@@ -321,12 +321,25 @@ enum Utils {
         return elapsedTime <= timeInSeconds
     }
     
-    static func getCachedData<T>(cacheKey: String, cache: [String: (data: T, timestamp: Date)], timeInSeconds: TimeInterval) async  -> T? {
+    public static func getCachedData<T>(cacheKey: String, cache: [String: (data: T, timestamp: Date)], timeInSeconds: TimeInterval) async  -> T? {
         if let cacheEntry = cache[cacheKey], isCacheValid(for: cacheKey, in: cache, timeInSeconds: timeInSeconds) {
             return cacheEntry.data
         } else {
             return nil
         }
+    }
+    
+    public static func getCachedData<T>(cacheKey: String, cache: ThreadSafeDictionary<String, (data: T, timestamp: Date)>, timeInSeconds: TimeInterval) async -> T? {
+        if let cacheEntry = cache.get(cacheKey), isCacheValid(for: cacheKey, entry: cacheEntry, timeInSeconds: timeInSeconds) {
+            return cacheEntry.data
+        } else {
+            return nil
+        }
+    }
+    
+    public static func isCacheValid<T>(for cacheKey: String, entry: (data: T, timestamp: Date), timeInSeconds: TimeInterval) -> Bool {
+        let elapsedTime = Date().timeIntervalSince(entry.timestamp)
+        return elapsedTime < timeInSeconds
     }
     
     static func PostRequestRpc(rpcURL: URL, method: String, params: [Any?]) async throws -> Data {
