@@ -63,17 +63,23 @@ class RpcService {
         }
         
     }
-    
+        
     func intRpcCall(method: String, params: [Any]) async throws -> BigInt {
         return try await sendRPCRequest(method: method, params: params) { result in
-            guard let resultString = result as? String,
-                  let bigIntResult = BigInt(resultString.stripHexPrefix(), radix: 16) else {
-                throw RpcServiceError.rpcError(code: 500, message: "Error to convert the RPC result to BigInt")
+            
+            if let intValue = result as? Int64 {
+                return BigInt(intValue)
             }
-            return bigIntResult
+            
+            if let resultString = result as? String,
+               let bigIntResult = BigInt(resultString.stripHexPrefix(), radix: 16) {
+                return bigIntResult
+            }
+
+            throw RpcServiceError.rpcError(code: 500, message: "Error to convert the RPC result to BigInt")
         }
-        
     }
+
     
     func strRpcCall(method: String, params: [Any]) async throws -> String {
         return try await sendRPCRequest(method: method, params: params) { result in

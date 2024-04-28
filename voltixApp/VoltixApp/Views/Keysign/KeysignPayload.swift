@@ -36,7 +36,7 @@ enum BlockChainSpecific: Codable, Hashable {
         case .Solana:
             return SolanaHelper.defaultFeeInLamports
         case .Polkadot:
-            return PolkadotHelper.defaultFeeInPlancks //Plancks
+            return PolkadotHelper.defaultFeeInPlancks
         }
     }
 }

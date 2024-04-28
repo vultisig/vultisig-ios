@@ -10,7 +10,7 @@ import BigInt
 
 enum PolkadotHelper {
     
-    static let defaultFeeInPlancks: BigInt = 1000000 //0.001
+    static let defaultFeeInPlancks: BigInt = 200000000 //0.02
     
     static func getPolkadot(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
         return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).flatMap { addr -> Result<Coin, Error> in

@@ -15,9 +15,6 @@ class PolkadotService: RpcService {
     private var cachePolkadotBalance: [String: (data: BigInt, timestamp: Date)] = [:]
     
     private func fetchBalance(address: String) async throws -> BigInt {
-        //let storageKey = generateStorageKey(for: accountAddress)
-        //return try await intRpcCall(method: "state_getStorage", params: [address])
-        
         let cacheKey = "polkadot-\(address)-balance"
         if let cachedData: BigInt = await Utils.getCachedData(cacheKey: cacheKey, cache: cachePolkadotBalance, timeInSeconds: 60*5) {
             return cachedData
@@ -51,7 +48,20 @@ class PolkadotService: RpcService {
     }
     
     private func fetchBlockHeader() async throws -> BigInt {
-        return try await intRpcCall(method: "chain_getHeader", params: [])
+        return try await sendRPCRequest(method: "chain_getHeader", params: []) { result in
+            guard let resultDict = result as? [String: Any] else {
+                throw RpcServiceError.rpcError(code: 500, message: "Error to convert the RPC result to Dictionary")
+            }
+
+            guard let numberString = resultDict["number"] as? String else {
+                throw RpcServiceError.rpcError(code: 404, message: "Block number not found in the response")
+            }
+
+            guard let bigIntNumber = BigInt(numberString.stripHexPrefix(), radix: 16) else {
+                throw RpcServiceError.rpcError(code: 500, message: "Error to convert block number to BigInt")
+            }
+            return bigIntNumber
+        }
     }
     
     func broadcastTransaction(hex: String) async throws -> String {
@@ -83,49 +93,3 @@ class PolkadotService: RpcService {
         return (try await recentBlockHash, try await currentBlockNumber, Int64(try await nonce))
     }
 }
-
-/*
- {
- "code": 0,
- "message": "Success",
- "generated_at": 1714289374,
- "data": {
- "account": {
- "address": "133aNPNmMZjKJNyKmueFpQoDwmyW72gtSjSpNZ1yJhRPQjfe",
- "balance": "1.084781797",
- "lock": "0",
- "balance_lock": "0",
- "is_evm_contract": false,
- "account_display": {
- "address": "133aNPNmMZjKJNyKmueFpQoDwmyW72gtSjSpNZ1yJhRPQjfe"
- },
- "substrate_account": null,
- "evm_account": "",
- "registrar_info": null,
- "count_extrinsic": 0,
- "reserved": "0",
- "bonded": "0",
- "unbonding": "0",
- "democracy_lock": "0",
- "conviction_lock": "0",
- "election_lock": "0",
- "staking_info": null,
- "nonce": 0,
- "role": "",
- "stash": "",
- "is_council_member": false,
- "is_techcomm_member": false,
- "is_registrar": false,
- "is_fellowship_member": false,
- "is_module_account": false,
- "assets_tag": null,
- "is_erc20": false,
- "is_erc721": false,
- "vesting": null,
- "proxy": {},
- "multisig": {},
- "delegate": null
- }
- }
- }
- */

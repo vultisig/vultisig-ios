@@ -78,6 +78,9 @@ final class BlockChainService {
             
         case .polkadot:
             let gasInfo = try await dot.getGasInfo(fromAddress: coin.address)
+            
+            print(gasInfo)
+            
             return .Polkadot(recentBlockHash: gasInfo.recentBlockHash, nonce: UInt64(gasInfo.nonce), currentBlockNumber: gasInfo.currentBlockNumber)
             
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain:
