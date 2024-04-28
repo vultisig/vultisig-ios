@@ -34,7 +34,7 @@ enum PolkadotHelper {
             return .failure(HelperError.runtimeError("coin is not DOT"))
         }
         
-        guard case .Polkadot(let recentBlockHash, let nonce, let currentBlockNumber) = keysignPayload.chainSpecific else {
+        guard case .Polkadot(let recentBlockHash, let nonce, let currentBlockNumber, let specVersion, let transactionVersion) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get to address"))
         }
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .polkadot) else {
@@ -47,21 +47,37 @@ enum PolkadotHelper {
             $0.genesisHash = genesisHash
             $0.blockHash = Data(hexString: recentBlockHash)!
             $0.nonce = nonce
-            $0.specVersion = 28
+            $0.specVersion = specVersion
             $0.network = CoinType.polkadot.ss58Prefix
-            $0.transactionVersion = 6
+            $0.transactionVersion = transactionVersion
             $0.era = PolkadotEra.with {
                 $0.blockNumber = UInt64(currentBlockNumber)
-                $0.period = 256
+                $0.period = 64
             }
             $0.balanceCall.transfer = PolkadotBalance.Transfer.with {
                 $0.toAddress = toAddress.description
-                $0.value = keysignPayload.toAmount.serializeForEvm()
+                //$0.value = keysignPayload.toAmount.serializeForEvm()
+                $0.value = Data(hexString: "0x02540be400")! // 1 DOT
                 if let memo = keysignPayload.memo {
                     $0.memo = memo
                 }
             }
         }
+        
+        print("Genesis Hash:", genesisHash.map { String(format: "%02x", $0) }.joined())
+        print("Block Hash:", recentBlockHash)
+        print("Nonce:", nonce)
+        print("Spec Version:", input.specVersion)
+        print("Network:", input.network.description)
+        print("Transaction Version:", input.transactionVersion)
+        print("Era Block Number:", input.era.blockNumber)
+        print("Era Period:", input.era.period)
+        print("To Address:", toAddress)
+        print("Value in DOT:", "1 DOT (Hex: 0x02540be400)")
+        print("Memo:", keysignPayload.memo ?? "No memo")
+        print("Serialized toAmount for EVM:", keysignPayload.toAmount.serializeForEvm().map { String(format: "%02x", $0) }.joined())
+        print("Original BigInt toAmount:", keysignPayload.toAmount)
+        print("Complete PolkadotSigningInput:", input.debugDescription)
         
         do {
             let inputData = try input.serializedData()
@@ -80,6 +96,7 @@ enum PolkadotHelper {
                 let hashes = TransactionCompiler.preImageHashes(coinType: .polkadot, txInputData: inputData)
                 let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
                 print("hash:\(preSigningOutput.data.hexString)")
+                print("error presing POLKADOT:\(preSigningOutput.errorMessage)")
                 return .success([preSigningOutput.data.hexString])
             } catch {
                 return .failure(HelperError.runtimeError("fail to get preSignedImageHash,error:\(error.localizedDescription)"))
@@ -107,6 +124,7 @@ enum PolkadotHelper {
             do {
                 let hashes = TransactionCompiler.preImageHashes(coinType: .polkadot, txInputData: inputData)
                 let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+                print("error presing POLKADOT:\(preSigningOutput.errorMessage)")
                 let allSignatures = DataVector()
                 let publicKeys = DataVector()
                 let signatureProvider = SignatureProvider(signatures: signatures)
@@ -122,10 +140,19 @@ enum PolkadotHelper {
                                                                                      signatures: allSignatures,
                                                                                      publicKeys: publicKeys)
                 let output = try PolkadotSigningOutput(serializedData: compileWithSignature)
+                
+                
+                print("getSignedTransaction > output", output.debugDescription)
+                print("getSignedTransaction > output.errorMessage", output.errorMessage)
+                
                 let transactionHash = Hash.blake2b(data: output.encoded, size: 32).toHexString()
+                
+                print("getSignedTransaction > transactionHash", transactionHash)
+                print("getSignedTransaction > output.encoded.hexString", output.encoded.hexString)
+                
                 let result = SignedTransactionResult(rawTransaction: output.encoded.hexString,
                                                      transactionHash: transactionHash)
-                                
+                
                 return .success(result)
             } catch {
                 return .failure(HelperError.runtimeError("fail to get signed polkadot transaction,error:\(error.localizedDescription)"))

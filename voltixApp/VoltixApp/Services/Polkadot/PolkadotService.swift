@@ -47,6 +47,24 @@ class PolkadotService: RpcService {
         return try await strRpcCall(method: "chain_getBlockHash", params: [])
     }
     
+    private func fetchRuntimeVersion() async throws -> (specVersion: UInt32, transactionVersion: UInt32) {
+        return try await sendRPCRequest(method: "state_getRuntimeVersion", params: []) { result in
+            guard let resultDict = result as? [String: Any] else {
+                throw RpcServiceError.rpcError(code: 500, message: "Error to convert the RPC result to Dictionary")
+            }
+
+            guard let specVersion = resultDict["specVersion"] as? UInt32 else {
+                throw RpcServiceError.rpcError(code: 404, message: "specVersion not found in the response")
+            }
+            
+            guard let transactionVersion = resultDict["transactionVersion"] as? UInt32 else {
+                throw RpcServiceError.rpcError(code: 404, message: "transactionVersion not found in the response")
+            }
+
+            return (specVersion, transactionVersion)
+        }
+    }
+    
     private func fetchBlockHeader() async throws -> BigInt {
         return try await sendRPCRequest(method: "chain_getHeader", params: []) { result in
             guard let resultDict = result as? [String: Any] else {
@@ -86,10 +104,11 @@ class PolkadotService: RpcService {
         return (rawBalance,cryptoPrice)
     }
     
-    func getGasInfo(fromAddress: String) async throws -> (recentBlockHash: String, currentBlockNumber: BigInt, nonce: Int64) {
+    func getGasInfo(fromAddress: String) async throws -> (recentBlockHash: String, currentBlockNumber: BigInt, nonce: Int64, specVersion: UInt32, transactionVersion: UInt32) {
         async let recentBlockHash = fetchBlockHash()
         async let nonce = fetchNonce(address: fromAddress)
         async let currentBlockNumber = fetchBlockHeader()
-        return (try await recentBlockHash, try await currentBlockNumber, Int64(try await nonce))
+        async let runtime = fetchRuntimeVersion()
+        return await (try recentBlockHash, try currentBlockNumber, Int64(try nonce), try runtime.specVersion, try runtime.transactionVersion)
     }
 }
