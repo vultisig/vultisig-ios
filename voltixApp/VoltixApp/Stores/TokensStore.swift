@@ -73,6 +73,8 @@ class TokensStore {
         
         Coin(chain: Chain.sui, ticker: "SUI", logo: "sui", address: "", priceRate: 0.0, chainType: ChainType.Sui, decimals: "9", hexPublicKey: "", feeUnit: "MIST", priceProviderId: "sui", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "500000000"), //0.5 SUI limit
         
+        Coin(chain: Chain.polkadot, ticker: "DOT", logo: "dot", address: "", priceRate: 0.0, chainType: ChainType.Polkadot, decimals: "10", hexPublicKey: "", feeUnit: "Plancks", priceProviderId: "polkadot", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "200000000"), //find the default fee per unit
+        
     ]
     
     static func getCoin(_ ticker: String, coinType: CoinType) -> Coin? {

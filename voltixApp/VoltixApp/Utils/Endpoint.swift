@@ -59,6 +59,10 @@ class Endpoint {
     
     static let suiServiceRpc = "https://sui-rpc.publicnode.com"
         
+    static let polkadotServiceRpc = "https://polkadot-rpc.publicnode.com"
+    
+    static let polkadotServiceBalance = "https://polkadot.api.subscan.io/api/v2/scan/search"
+    
     static func bitcoinLabelTxHash(_ value: String) -> String {
         "https://mempool.space/tx/\(value)"
     }
@@ -163,6 +167,8 @@ class Endpoint {
             return "https://cronoscan.com/tx/\(txid)"
         case "SUI":
             return "https://suiscan.xyz/mainnet/tx/\(txid)"
+        case "DOT":
+            return "https://polkadot.subscan.io/extrinsic/\(txid)"
         default:
             return ""
         }
@@ -210,6 +216,8 @@ class Endpoint {
             return "https://cronoscan.com/address/\(address)"
         case "SUI":
             return "https://suiscan.xyz/mainnet/address/\(address)"
+        case "DOT":
+            return "https://polkadot.subscan.io/account/\(address)"
         default:
             return nil
         }
@@ -257,6 +265,8 @@ class Endpoint {
             return "https://cronoscan.com/address/\(address)"
         case .sui:
             return "https://suiscan.xyz/mainnet/address/\(address)"
+        case .polkadot:
+            return "https://polkadot.subscan.io/account/\(address)"
         case .none:
             return nil
         }

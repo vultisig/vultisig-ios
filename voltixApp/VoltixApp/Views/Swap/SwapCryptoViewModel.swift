@@ -358,7 +358,7 @@ private extension SwapCryptoViewModel {
         switch coin.chain {
         case .thorChain:
             return tx.amountInSats
-        case .mayaChain:
+        case .mayaChain, .polkadot:
             return tx.amountInCoinDecimal
         case .ethereum, .avalanche,.arbitrum, .bscChain, .base, .optimism, .polygon, .blast, .cronosChain:
             if coin.isNativeToken {
@@ -379,7 +379,7 @@ private extension SwapCryptoViewModel {
         switch coin.chain {
         case .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             return BigInt(tx.amountInSats)
-        case .mayaChain:
+        case .mayaChain, .polkadot:
             return BigInt(tx.amountInCoinDecimal)
         case .ethereum, .avalanche,.arbitrum, .bscChain, .base, .optimism, .polygon, .blast, .cronosChain:
             if coin.isNativeToken {
@@ -415,7 +415,7 @@ private extension SwapCryptoViewModel {
                 $0.chain = .doge
             case .gaiaChain:
                 $0.chain = .atom
-            case .solana, .sui, .dash, .kujira, .mayaChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain: break
+            case .solana, .sui, .dash, .kujira, .mayaChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain, .polkadot: break
             }
             
             $0.symbol = coin.ticker
@@ -428,7 +428,7 @@ private extension SwapCryptoViewModel {
 
     func feeCoin(tx: SwapTransaction) -> Coin {
         switch tx.fromCoin.chainType {
-        case .UTXO, .Solana, .THORChain, .Cosmos, .none:
+        case .UTXO, .Solana, .THORChain, .Cosmos, .none, .Polkadot, .Sui:
             return tx.fromCoin
         case .EVM:
             guard !tx.fromCoin.isNativeToken else { return tx.fromCoin }

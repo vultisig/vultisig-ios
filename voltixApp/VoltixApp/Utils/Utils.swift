@@ -345,4 +345,8 @@ enum Utils {
         let (data, _) = try await URLSession.shared.data(for: request)
         return data
     }
+    //RPC
+    
+    
+    
 }

@@ -17,6 +17,7 @@ class BalanceService {
     private let gaia = GaiaService.shared
     private let kuji = KujiraService.shared
     private let maya = MayachainService.shared
+    private let dot = PolkadotService.shared
     
     func balance(for coin: Coin) async throws -> (coinBalance: String, balanceFiat: String, balanceInFiatDecimal: Decimal) {
         switch coin.chain {
@@ -53,6 +54,11 @@ class BalanceService {
             let mayaBalance = try await maya.fetchBalances(coin.address)
             coin.rawBalance = mayaBalance.balance(denom: coin.ticker.lowercased())
             coin.priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
+            
+        case .polkadot:
+            let (rawBalance,priceRate) = try await dot.getBalance(coin: coin)
+            coin.rawBalance = rawBalance
+            coin.priceRate = priceRate
         }
         let balanceFiat = coin.balanceInFiat
         let coinBalance = coin.balanceString

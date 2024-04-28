@@ -16,15 +16,16 @@ class SuiService {
     
     private var cacheFeePrice: [String: (data: BigInt, timestamp: Date)] = [:]
     private var cacheLatestCheckpointSequenceNumber: [String: (data: Int64, timestamp: Date)] = [:]
-    private var cacheAllCoins: [String: (data: [TW_Sui_Proto_ObjectRef], timestamp: Date)] = [:]
+    private var cacheAllCoins: [String: (data: [[String:String]], timestamp: Date)] = [:]
     
     
     private let rpcURL = URL(string: Endpoint.suiServiceRpc)!
     private let jsonDecoder = JSONDecoder()
     
-    func getGasInfo(coin: Coin) async throws -> BigInt {
+    func getGasInfo(coin: Coin) async throws -> (BigInt, [[String:String]]) {
         async let gasPrice = getReferenceGasPrice(coin: coin)
-        return (try await gasPrice)
+        async let allCoins = getAllCoins(coin: coin)
+        return await (try gasPrice, try allCoins)
     }
     
     func getBalance(coin: Coin) async throws -> (rawBalance: String, priceRate: Double){
@@ -68,22 +69,26 @@ class SuiService {
         return BigInt.zero
     }
     
-    func getAllCoins(coin: Coin) async throws -> [TW_Sui_Proto_ObjectRef]{
+    func getAllCoins(coin: Coin) async throws -> [[String:String]] {
         let cacheKey = "\(coin.chain.name.lowercased())-\(coin.address)-suix_getAllCoins"
-        if let cachedData: [TW_Sui_Proto_ObjectRef] = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheAllCoins, timeInSeconds: 60*5) {
+        
+        // Attempt to fetch cached data
+        if let cachedData = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheAllCoins, timeInSeconds: 60*5) {
             return cachedData
         }
         
         do {
-            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getAllCoins", params:  [coin.address])
+            // Make a PostRequestRpc call and handle the data
+            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getAllCoins", params: [coin.address])
             if let coins: [SuiCoin] = Utils.extractResultFromJson(fromData: data, path: "result.data", type: [SuiCoin].self) {
-                let allCoins = coins.map{
-                    var coin = TW_Sui_Proto_ObjectRef()
-                    coin.objectID = $0.coinObjectId
-                    coin.version = UInt64($0.version) ?? UInt64.zero
-                    coin.objectDigest = $0.digest
-                    return coin
+                let allCoins = coins.map { coin in
+                    var coinDict = [String: String]()
+                    coinDict["objectID"] = coin.coinObjectId.description
+                    coinDict["version"] = String(coin.version) // Converted version to String directly
+                    coinDict["objectDigest"] = coin.digest
+                    return coinDict
                 }
+                // Caching the transformed data instead of the raw data
                 self.cacheAllCoins[cacheKey] = (data: allCoins, timestamp: Date())
                 return allCoins
             } else {
@@ -96,20 +101,22 @@ class SuiService {
         return []
     }
     
-    func executeTransactionBlock(encodedTransaction: String) async throws -> String{
+    
+    func executeTransactionBlock(unsignedTransaction: String, signature: String) async throws -> String{
         do {
-            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "sui_executeTransactionBlock", params:  [encodedTransaction])
+            print([unsignedTransaction, signature, "WaitForLocalExecution"])
             
-            if let result = Utils.extractResultFromJson(fromData: data, path: "result.digest"),
-               let resultString = result as? NSString {
-                let StringResult = resultString.description
-                return StringResult
-            } else {
-                print("JSON decoding error")
+            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "sui_executeTransactionBlock", params:  [unsignedTransaction, signature, "WaitForLocalExecution"])
+            
+            if let error = Utils.extractResultFromJson(fromData: data, path: "error.message") as? String {
+                return error.description
+            }
+            
+            if let result = Utils.extractResultFromJson(fromData: data, path: "result.digest") as? String {
+                return result.description
             }
         } catch {
-            print("Error fetching balance: \(error.localizedDescription)")
-            throw error
+            return error.localizedDescription
         }
         return .empty
     }

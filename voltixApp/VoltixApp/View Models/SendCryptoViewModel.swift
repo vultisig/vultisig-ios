@@ -164,7 +164,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 
                 isLoading = false
             }
-        case .kujira, .gaiaChain, .mayaChain, .thorChain:
+        case .kujira, .gaiaChain, .mayaChain, .thorChain, .polkadot:
             Task {
                 do{
                     let (_, _, _) = try await BalanceService.shared.balance(for: tx.coin)

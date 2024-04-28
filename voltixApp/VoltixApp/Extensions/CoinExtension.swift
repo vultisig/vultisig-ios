@@ -52,6 +52,8 @@ extension Coin {
             return CoinType.cronosChain
         case .sui:
             return CoinType.sui
+        case .polkadot:
+            return CoinType.polkadot
         }
     }
 }
