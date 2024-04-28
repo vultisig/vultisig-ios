@@ -106,7 +106,7 @@ class SuiService {
         do {
             print([unsignedTransaction, signature, "WaitForLocalExecution"])
             
-            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "sui_executeTransactionBlock", params:  [unsignedTransaction, signature, "WaitForLocalExecution"])
+            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "sui_executeTransactionBlock", params:  [unsignedTransaction, [signature]])
             
             if let error = Utils.extractResultFromJson(fromData: data, path: "error.message") as? String {
                 return error.description
