@@ -8,8 +8,10 @@
 import SwiftUI
 
 struct SwapCryptoDetailsView: View {
+
     @ObservedObject var tx: SwapTransaction
     @ObservedObject var swapViewModel: SwapCryptoViewModel
+    @ObservedObject var coinViewModel: CoinViewModel
 
     var body: some View {
         ZStack {
@@ -59,7 +61,7 @@ struct SwapCryptoDetailsView: View {
                 swapViewModel.updateFromCoin(tx: tx)
             })
             getBalance(for: tx.fromBalance)
-                .redacted(reason: swapViewModel.fromBalanceLoading ? .placeholder : [])
+                .redacted(reason: coinViewModel.isLoading ? .placeholder : [])
         }
     }
     
@@ -90,12 +92,12 @@ struct SwapCryptoDetailsView: View {
                 swapViewModel.updateToCoin(tx: tx)
             })
             getBalance(for: tx.toBalance)
-                .redacted(reason: swapViewModel.toBalanceLoading ? .placeholder : [])
+                .redacted(reason: coinViewModel.isLoading ? .placeholder : [])
         }
     }
     
     var toAmountField: some View {
-        SendCryptoAmountTextField(amount: $tx.toAmount, onChange: { _ in })
+        SendCryptoAmountTextField(amount: .constant(tx.toAmount), onChange: { _ in })
             .disabled(true)
     }
     
@@ -164,5 +166,5 @@ struct SwapCryptoDetailsView: View {
 }
 
 #Preview {
-    SwapCryptoDetailsView(tx: SwapTransaction(), swapViewModel: SwapCryptoViewModel())
+    SwapCryptoDetailsView(tx: SwapTransaction(), swapViewModel: SwapCryptoViewModel(), coinViewModel: CoinViewModel())
 }

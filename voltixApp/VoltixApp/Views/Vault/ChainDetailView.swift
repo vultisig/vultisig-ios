@@ -99,7 +99,7 @@ struct ChainDetailView: View {
     var swapButton: some View {
         NavigationLink {
             if let coin = group.coins.first {
-                SwapCryptoView(coin: coin, vault: vault)
+                SwapCryptoView(coin: coin, coins: viewModel.allCoins, vault: vault)
             }
         } label: {
             getButton(for: "swap", with: .persianBlue200)
