@@ -59,6 +59,8 @@ class Endpoint {
     
     static let polkadotServiceRpc = "https://polkadot-rpc.publicnode.com"
     
+    static let polkadotServiceBalance = "https://polkadot.api.subscan.io/api/v2/scan/search"
+    
     static func bitcoinLabelTxHash(_ value: String) -> String {
         "https://mempool.space/tx/\(value)"
     }

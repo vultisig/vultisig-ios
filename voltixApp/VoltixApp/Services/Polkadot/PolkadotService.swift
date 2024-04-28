@@ -12,8 +12,34 @@ class PolkadotService: RpcService {
     static let rpcEndpoint = Endpoint.polkadotServiceRpc
     static let shared = PolkadotService(rpcEndpoint)
     
+    private var cachePolkadotBalance: [String: (data: BigInt, timestamp: Date)] = [:]
+    
     private func fetchBalance(address: String) async throws -> BigInt {
-        return try await intRpcCall(method: "eth_getBalance", params: [address, "latest"])
+        //let storageKey = generateStorageKey(for: accountAddress)
+        //return try await intRpcCall(method: "state_getStorage", params: [address])
+        
+        let cacheKey = "polkadot-\(address)-balance"
+        if let cachedData: BigInt = await Utils.getCachedData(cacheKey: cacheKey, cache: cachePolkadotBalance, timeInSeconds: 60*5) {
+            return cachedData
+        }
+        
+        let body = ["key": address]
+        do {
+            let requestBody = try JSONEncoder().encode(body)
+            let responseBodyData = try await Utils.asyncPostRequest(urlString: Endpoint.polkadotServiceBalance, headers: [:], body: requestBody)
+            
+            if let balance = Utils.extractResultFromJson(fromData: responseBodyData, path: "data.account.balance") as? String {
+                let decimalBalance = (Decimal(string: balance) ?? Decimal.zero) * pow(10, 10)
+                let bigIntResult = decimalBalance.description.toBigInt()
+                self.cachePolkadotBalance[cacheKey] = (data: bigIntResult, timestamp: Date())
+                return bigIntResult
+            }
+        } catch {
+            print("PolkadotService > fetchBalance > Error encoding JSON: \(error)")
+            return BigInt.zero
+        }
+        
+        return BigInt.zero
     }
     
     private func fetchNonce(address: String) async throws -> BigInt {
@@ -57,3 +83,49 @@ class PolkadotService: RpcService {
         return (try await recentBlockHash, try await currentBlockNumber, Int64(try await nonce))
     }
 }
+
+/*
+ {
+ "code": 0,
+ "message": "Success",
+ "generated_at": 1714289374,
+ "data": {
+ "account": {
+ "address": "133aNPNmMZjKJNyKmueFpQoDwmyW72gtSjSpNZ1yJhRPQjfe",
+ "balance": "1.084781797",
+ "lock": "0",
+ "balance_lock": "0",
+ "is_evm_contract": false,
+ "account_display": {
+ "address": "133aNPNmMZjKJNyKmueFpQoDwmyW72gtSjSpNZ1yJhRPQjfe"
+ },
+ "substrate_account": null,
+ "evm_account": "",
+ "registrar_info": null,
+ "count_extrinsic": 0,
+ "reserved": "0",
+ "bonded": "0",
+ "unbonding": "0",
+ "democracy_lock": "0",
+ "conviction_lock": "0",
+ "election_lock": "0",
+ "staking_info": null,
+ "nonce": 0,
+ "role": "",
+ "stash": "",
+ "is_council_member": false,
+ "is_techcomm_member": false,
+ "is_registrar": false,
+ "is_fellowship_member": false,
+ "is_module_account": false,
+ "assets_tag": null,
+ "is_erc20": false,
+ "is_erc721": false,
+ "vesting": null,
+ "proxy": {},
+ "multisig": {},
+ "delegate": null
+ }
+ }
+ }
+ */

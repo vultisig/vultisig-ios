@@ -33,6 +33,7 @@ enum PolkadotHelper {
         guard keysignPayload.coin.chain.ticker == "DOT" else {
             return .failure(HelperError.runtimeError("coin is not DOT"))
         }
+        
         guard case .Polkadot(let recentBlockHash, let nonce, let currentBlockNumber) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get to address"))
         }
@@ -50,8 +51,8 @@ enum PolkadotHelper {
             $0.network = CoinType.polkadot.ss58Prefix
             $0.transactionVersion = 6
             $0.era = PolkadotEra.with {
-                $0.blockNumber = 3910736
-                $0.period = 64
+                $0.blockNumber = UInt64(currentBlockNumber)
+                $0.period = 256
             }
             $0.balanceCall.transfer = PolkadotBalance.Transfer.with {
                 $0.toAddress = toAddress.description
