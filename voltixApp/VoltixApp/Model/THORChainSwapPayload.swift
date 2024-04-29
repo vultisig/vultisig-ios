@@ -50,17 +50,17 @@ struct THORChainSwapPayload: Codable, Hashable {
     }
 
     var fromAsset: THORChainSwapAsset {
-        return swapAsset(for: fromCoin)
+        return swapAsset(for: fromCoin, source: true)
     }
 
     var toAsset: THORChainSwapAsset {
-        return swapAsset(for: toCoin)
+        return swapAsset(for: toCoin, source: false)
     }
 }
 
 private extension THORChainSwapPayload {
 
-    func swapAsset(for coin: Coin) -> THORChainSwapAsset {
+    func swapAsset(for coin: Coin, source: Bool) -> THORChainSwapAsset {
         return THORChainSwapAsset.with {
             switch coin.chain {
             case .thorChain:
@@ -87,7 +87,11 @@ private extension THORChainSwapPayload {
             $0.symbol = coin.ticker
 
             if !coin.isNativeToken {
-                $0.tokenID = coin.contractAddress
+                if source {
+                    $0.tokenID = coin.contractAddress
+                } else {
+                    $0.tokenID = "\(coin.ticker)-\(coin.contractAddress)"
+                }
             }
         }
     }
