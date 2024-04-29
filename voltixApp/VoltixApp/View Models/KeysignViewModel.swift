@@ -71,13 +71,21 @@ class KeysignViewModel: ObservableObject {
         self.encryptionKeyHex = encryptionKeyHex
         self.messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex,pubKey: vault.pubKeyECDSA)
     }
-    func getTransactionExplorerURL(txid: String) -> String{
-        guard let keysignPayload else {
-            return ""
-        }
+    
+    func getTransactionExplorerURL(txid: String) -> String {
+        guard let keysignPayload else { return .empty }
         return Endpoint.getExplorerURL(chainTicker: keysignPayload.coin.chain.ticker, txid: txid)
     }
-    
+
+    func getSwapProgressURL(txid: String) -> String {
+        guard keysignPayload?.swapPayload != nil else { return .empty }
+        return Endpoint.getSwapProgressURL(txid: txid)
+    }
+
+    var showSwapProgress: Bool {
+        return keysignPayload?.swapPayload != nil
+    }
+
     func startKeysign() async {
         defer {
             self.messagePuller?.stop()
