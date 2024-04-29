@@ -151,13 +151,13 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
             let swapPayload = THORChainSwapPayload(
                 fromAddress: tx.fromCoin.address,
-                fromAsset: swapAsset(for: tx.fromCoin),
-                toAsset: swapAsset(for: tx.toCoin),
-                toAddress: tx.toCoin.address,
+                fromCoin: tx.fromCoin,
+                toCoin: tx.toCoin,
                 vaultAddress: vaultAddress,
                 routerAddress: quote.router,
-                fromAmount: String(swapAmount(for: tx.fromCoin, tx: tx)),
-                toAmountLimit: "0", streamingInterval: "1", streamingQuantity: "0", 
+                fromAmount: swapFromAmount(tx: tx), 
+                toAmountDecimal: swapToAmountDecimal(quote: quote),
+                toAmountLimit: "0", streamingInterval: "1", streamingQuantity: "0",
                 expirationTime: UInt64(expirationTime.timeIntervalSince1970)
             )
 
@@ -346,8 +346,7 @@ private extension SwapCryptoViewModel {
             owner: tx.fromCoin.address,
             spender: spender
         )
-        let amount = swapAmount(for: tx.fromCoin, tx: tx)
-        flow = amount > allowance ? .erc20 : .normal
+        flow = swapFromAmount(tx: tx) > allowance ? .erc20 : .normal
     }
 
     func clear(tx: SwapTransaction) {
@@ -375,14 +374,14 @@ private extension SwapCryptoViewModel {
         }
     }
     
-    func swapAmount(for coin: Coin, tx: SwapTransaction) -> BigInt {
-        switch coin.chain {
+    func swapFromAmount(tx: SwapTransaction) -> BigInt {
+        switch tx.fromCoin.chain {
         case .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             return BigInt(tx.amountInSats)
         case .mayaChain, .polkadot:
             return BigInt(tx.amountInCoinDecimal)
         case .ethereum, .avalanche,.arbitrum, .bscChain, .base, .optimism, .polygon, .blast, .cronosChain:
-            if coin.isNativeToken {
+            if tx.fromCoin.isNativeToken {
                 return BigInt(tx.amountInWei)
             } else {
                 return BigInt(tx.amountInTokenWei)
@@ -393,37 +392,12 @@ private extension SwapCryptoViewModel {
             return BigInt(tx.amountInLamports)
         }
     }
-    
-    func swapAsset(for coin: Coin) -> THORChainSwapAsset {
-        return THORChainSwapAsset.with {
-            switch coin.chain {
-            case .thorChain:
-                $0.chain = .thor
-            case .ethereum:
-                $0.chain = .eth
-            case .avalanche:
-                $0.chain = .avax
-            case .bscChain:
-                $0.chain = .bsc
-            case .bitcoin:
-                $0.chain = .btc
-            case .bitcoinCash:
-                $0.chain = .bch
-            case .litecoin:
-                $0.chain = .ltc
-            case .dogecoin:
-                $0.chain = .doge
-            case .gaiaChain:
-                $0.chain = .atom
-            case .solana, .sui, .dash, .kujira, .mayaChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain, .polkadot: break
-            }
-            
-            $0.symbol = coin.ticker
-            
-            if !coin.isNativeToken {
-                $0.tokenID = coin.contractAddress
-            }
+
+    func swapToAmountDecimal(quote: ThorchainSwapQuote) -> Decimal {
+        guard let expected = Decimal(string: quote.expectedAmountOut) else {
+            return .zero
         }
+        return expected / Decimal(100_000_000)
     }
 
     func feeCoin(tx: SwapTransaction) -> Coin {
