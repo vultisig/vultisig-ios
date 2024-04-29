@@ -16,6 +16,7 @@ enum KeysignStatus {
     case KeysignEdDSA
     case KeysignFinished
     case KeysignFailed
+    case KeysignVaultMismatch
 }
 
 @MainActor
@@ -70,13 +71,21 @@ class KeysignViewModel: ObservableObject {
         self.encryptionKeyHex = encryptionKeyHex
         self.messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex,pubKey: vault.pubKeyECDSA)
     }
-    func getTransactionExplorerURL(txid: String) -> String{
-        guard let keysignPayload else {
-            return ""
-        }
+    
+    func getTransactionExplorerURL(txid: String) -> String {
+        guard let keysignPayload else { return .empty }
         return Endpoint.getExplorerURL(chainTicker: keysignPayload.coin.chain.ticker, txid: txid)
     }
-    
+
+    func getSwapProgressURL(txid: String) -> String {
+        guard keysignPayload?.swapPayload != nil else { return .empty }
+        return Endpoint.getSwapProgressURL(txid: txid)
+    }
+
+    var showSwapProgress: Bool {
+        return keysignPayload?.swapPayload != nil
+    }
+
     func startKeysign() async {
         defer {
             self.messagePuller?.stop()
@@ -235,6 +244,14 @@ class KeysignViewModel: ObservableObject {
         case .Solana:
             let result = SolanaHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyEdDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
             return result
+
+        case .Sui:
+            let result = SuiHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyEdDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+            return result
+            
+        case .Polkadot:
+            let result = PolkadotHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyEdDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+            return result
             
         case .Cosmos:
             if keysignPayload.coin.chain == .gaiaChain {
@@ -304,7 +321,11 @@ class KeysignViewModel: ObservableObject {
                         throw err
                     }
                 case .solana:
-                    self.txid = await SolanaService.shared.sendSolanaTransaction(encodedTransaction: tx.rawTransaction) ?? ""
+                    self.txid = await SolanaService.shared.sendSolanaTransaction(encodedTransaction: tx.rawTransaction) ?? .empty
+                case .sui:
+                    self.txid = try await SuiService.shared.executeTransactionBlock(unsignedTransaction: tx.rawTransaction, signature: tx.signature ?? .empty)
+                case .polkadot:
+                    self.txid = try await PolkadotService.shared.broadcastTransaction(hex: tx.rawTransaction)
                 }
             } catch {
                 handleBroadcastError(err: error,tx: tx)

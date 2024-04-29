@@ -34,18 +34,65 @@ extension THORChainSwapAsset: Codable {
 
 struct THORChainSwapPayload: Codable, Hashable {
     let fromAddress: String
-    let fromAsset: THORChainSwapAsset
-    let toAsset: THORChainSwapAsset
-    let toAddress: String
+    let fromCoin: Coin
+    let toCoin: Coin
     let vaultAddress: String
     let routerAddress: String?
-    let fromAmount: String
+    let fromAmount: BigInt // fromCoin raw amount
+    let toAmountDecimal: Decimal // toCoin decimal amount
     let toAmountLimit: String
     let streamingInterval: String
     let streamingQuantity: String
     let expirationTime: UInt64
 
-    var fromAmountValue: BigInt {
-        return BigInt(stringLiteral: fromAmount)
+    var toAddress: String {
+        return toCoin.address
+    }
+
+    var fromAsset: THORChainSwapAsset {
+        return swapAsset(for: fromCoin, source: true)
+    }
+
+    var toAsset: THORChainSwapAsset {
+        return swapAsset(for: toCoin, source: false)
+    }
+}
+
+private extension THORChainSwapPayload {
+
+    func swapAsset(for coin: Coin, source: Bool) -> THORChainSwapAsset {
+        return THORChainSwapAsset.with {
+            switch coin.chain {
+            case .thorChain:
+                $0.chain = .thor
+            case .ethereum:
+                $0.chain = .eth
+            case .avalanche:
+                $0.chain = .avax
+            case .bscChain:
+                $0.chain = .bsc
+            case .bitcoin:
+                $0.chain = .btc
+            case .bitcoinCash:
+                $0.chain = .bch
+            case .litecoin:
+                $0.chain = .ltc
+            case .dogecoin:
+                $0.chain = .doge
+            case .gaiaChain:
+                $0.chain = .atom
+            case .solana, .sui, .dash, .kujira, .mayaChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain, .polkadot: break
+            }
+
+            $0.symbol = coin.ticker
+
+            if !coin.isNativeToken {
+                if source {
+                    $0.tokenID = coin.contractAddress
+                } else {
+                    $0.tokenID = "\(coin.ticker)-\(coin.contractAddress)"
+                }
+            }
+        }
     }
 }

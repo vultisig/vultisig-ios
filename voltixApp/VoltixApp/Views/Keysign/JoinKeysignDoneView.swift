@@ -50,6 +50,13 @@ struct JoinKeysignDoneView: View {
             Text(viewModel.txid)
                 .font(.body13Menlo)
                 .foregroundColor(.turquoise600)
+
+            if viewModel.showSwapProgress {
+                HStack {
+                    Spacer()
+                    progressbutton
+                }
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
@@ -96,7 +103,17 @@ struct JoinKeysignDoneView: View {
         }
         
     }
-    
+
+    var progressbutton: some View {
+        Button {
+            progressLink()
+        } label: {
+            Text(NSLocalizedString("Swap progress", comment: ""))
+                .font(.body14Menlo)
+                .foregroundColor(.neutral0)
+        }
+    }
+
     var continueButton: some View {
         NavigationLink(destination: {
             HomeView()
@@ -122,8 +139,15 @@ struct JoinKeysignDoneView: View {
     
     private func shareLink() {
         let urlStr = viewModel.getTransactionExplorerURL(txid: viewModel.txid)
-        if !urlStr.isEmpty, let u = URL(string:urlStr) {
-            openURL(u)
+        if !urlStr.isEmpty, let url = URL(string:urlStr) {
+            openURL(url)
+        }
+    }
+
+    private func progressLink() {
+        let urlStr = viewModel.getSwapProgressURL(txid: viewModel.txid)
+        if !urlStr.isEmpty, let url = URL(string:urlStr) {
+            openURL(url)
         }
     }
 }

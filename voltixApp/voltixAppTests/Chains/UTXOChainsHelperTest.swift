@@ -70,7 +70,7 @@ final class UTXOChainsHelperTest: XCTestCase {
                                                                                      toAmount: 10000000,
                                                                                      chainSpecific: BlockChainSpecific.UTXO(byteFee: 20),
                                                                                      utxos: [UtxoInfo(hash: "631fad872ac6bea810cf6073f02e6cbd121cac83193b79f381f711ce93b531f0", amount: 193796, index: 1)],
-                                                                                     memo: "voltix", swapPayload: nil))
+                                                                                     memo: "voltix", swapPayload: nil, vaultPubKeyECDSA: "ECDSAKey"))
         switch result {
         case .success(let preSignImage):
             XCTAssertNotNil(preSignImage)
@@ -89,7 +89,7 @@ final class UTXOChainsHelperTest: XCTestCase {
                                                                                      toAmount: 1000000,
                                                                                      chainSpecific: BlockChainSpecific.UTXO(byteFee: 20),
                                                                                      utxos: [UtxoInfo(hash: "71787a90556de944fcea8d8ff7478e535092638a68491b60b5661dfd871c40e4", amount: 10000000, index: 0)],
-                                                                                     memo: "voltix", swapPayload: nil))
+                                                                                     memo: "voltix", swapPayload: nil, vaultPubKeyECDSA: "ECDSAKey"))
         switch result {
         case .success(let preSignImage):
             XCTAssertNotNil(preSignImage)
@@ -107,11 +107,11 @@ final class UTXOChainsHelperTest: XCTestCase {
                                                                                             chainSpecific: BlockChainSpecific.UTXO(byteFee: 20),
                                                                                             utxos: [UtxoInfo(hash: "71787a90556de944fcea8d8ff7478e535092638a68491b60b5661dfd871c40e4", amount: 10000000, index: 0)],
                                                                                             memo: "voltix",
-                                                                                            swapPayload: nil),
+                                                                                            swapPayload: nil, vaultPubKeyECDSA: "ECDSAKey"),
                                                              signatures: signature)
         switch signedTxResult {
         case .success(let tx):
-            XCTAssertEqual(tx, "0100000001e4401c87fd1d66b5601b49688a639250538e47f78f8deafc44e96d55907a7871000000006a473044022058355128efd16e9d71dfb351203d65268ea479ee3c214c2f1bc99b749c938b38022036c25424f83265ef93eb1f179444c528368b8efc62280297c4cc6d24407c2a9141210333bda0119776bd3f22b5dc6b1083bd3f5993b4d4b10b26db2dc55b919a5bb587ffffffff0340420f00000000001976a9140d2c4ebcaa506663e027423b6771b857b8cd342088acf03f8900000000001976a914d382a4abeebdfd1a3c4e1874b4478a9471a98bc088ac0000000000000000086a06766f6c74697800000000")
+            XCTAssertEqual(tx.rawTransaction, "0100000001e4401c87fd1d66b5601b49688a639250538e47f78f8deafc44e96d55907a7871000000006a473044022058355128efd16e9d71dfb351203d65268ea479ee3c214c2f1bc99b749c938b38022036c25424f83265ef93eb1f179444c528368b8efc62280297c4cc6d24407c2a9141210333bda0119776bd3f22b5dc6b1083bd3f5993b4d4b10b26db2dc55b919a5bb587ffffffff0340420f00000000001976a9140d2c4ebcaa506663e027423b6771b857b8cd342088acf03f8900000000001976a914d382a4abeebdfd1a3c4e1874b4478a9471a98bc088ac0000000000000000086a06766f6c74697800000000")
         case .failure(let err):
             XCTFail("Expected success, but got error: \(err)")
         }

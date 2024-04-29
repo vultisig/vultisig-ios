@@ -33,7 +33,7 @@ struct KeysignMessageConfirmView: View {
                 toField
                 Separator()
                 amountField
-                
+
                 if let memo = viewModel.keysignPayload?.memo, !memo.isEmpty {
                     Separator()
                     getSummaryCell(title: "memo", value: memo)
@@ -60,7 +60,7 @@ struct KeysignMessageConfirmView: View {
     var amountField: some View {
         getSummaryCell(title: "amount", value: viewModel.keysignPayload?.toAmountString ?? "")
     }
-        
+
     var gasField: some View {
         getSummaryCell(title: "gas", value: "$4.00")
     }

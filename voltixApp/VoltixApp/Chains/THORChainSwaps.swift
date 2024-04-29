@@ -25,7 +25,7 @@ class THORChainSwaps {
             $0.toAddress = swapPayload.toAddress
             $0.vaultAddress = swapPayload.vaultAddress
             $0.routerAddress = swapPayload.routerAddress ?? ""
-            $0.fromAmount = swapPayload.fromAmount
+            $0.fromAmount = String(swapPayload.fromAmount)
             $0.toAmountLimit = swapPayload.toAmountLimit
             $0.expirationTime = swapPayload.expirationTime
             $0.streamParams = .with {

@@ -12,6 +12,7 @@ struct SendCryptoVerifyView: View {
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @ObservedObject var sendCryptoVerifyViewModel: SendCryptoVerifyViewModel
     @ObservedObject var tx: SendTransaction
+    let vault: Vault
     
     var body: some View {
         ZStack {
@@ -131,7 +132,8 @@ struct SendCryptoVerifyView: View {
     
     private func validateForm() async {
         keysignPayload = await sendCryptoVerifyViewModel.validateForm(
-            tx: tx
+            tx: tx, 
+            vault: vault
         )
         
         if keysignPayload != nil {
@@ -153,6 +155,7 @@ struct SendCryptoVerifyView: View {
         keysignPayload: .constant(nil),
         sendCryptoViewModel: SendCryptoViewModel(),
         sendCryptoVerifyViewModel: SendCryptoVerifyViewModel(),
-        tx: SendTransaction()
+        tx: SendTransaction(),
+        vault: Vault.example
     )
 }

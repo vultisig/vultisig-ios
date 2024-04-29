@@ -56,7 +56,7 @@
 "enterPreviousVault" = "Insira seu cofre criado anteriormente";
 "uploadFile" = "Carregar arquivo, texto ou imagem";
 "devicesOnSameWifi" = "Mantenha dispositivos na mesma Rede WiFi com VOLTIX aberto";
-"need3Devices" = "Você precisa de 3 dispositivos";
+"need3Devices" = "Você precisa de pelo menos 2 dispositivos";
 "chooseTokens" = "Escolher Tokens";
 "chooseChains" = "Escolher Cadeias";
 "enterAddress" = "Inserir Endereço";
