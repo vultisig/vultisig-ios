@@ -104,8 +104,13 @@ struct JoinKeysignView: View {
         .padding(.horizontal, 30)
     }
     
+    @ViewBuilder
     var keysignMessageConfirm: some View {
-        KeysignMessageConfirmView(viewModel: viewModel)
+        if viewModel.keysignPayload?.swapPayload != nil {
+            KeysignSwapConfirmView(viewModel: viewModel)
+        } else {
+            KeysignMessageConfirmView(viewModel: viewModel)
+        }
     }
 
     var waitingForKeySignStart: some View {
