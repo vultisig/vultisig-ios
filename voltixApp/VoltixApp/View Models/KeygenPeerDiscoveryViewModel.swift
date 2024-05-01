@@ -157,7 +157,8 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                        encryptionKeyHex: encryptionKeyHex,
                                        useVoltixRelay: VoltixRelay.IsRelayEnabled)
                 data = try jsonEncoder.encode(PeerDiscoveryPayload.Keygen(km))
-                jsonData = "voltix:?type=NewVault&tssType=Keygen&jsonData=\(data)"
+                let json = String(decoding: data, as: UTF8.self)
+                jsonData = "voltix:?type=NewVault&tssType=Keygen&jsonData=\(json)"
             case .Reshare:
                 let reshareMsg = ReshareMessage(sessionID: sessionID,
                                                 hexChainCode: vault.hexChainCode,

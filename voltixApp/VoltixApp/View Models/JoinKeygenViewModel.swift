@@ -143,28 +143,17 @@ class JoinKeygenViewModel: ObservableObject {
         var useVoltixRelay = false
         switch result {
         case .success(let result):
-            print(result)
-//            guard let scanData = result.string.data(using: .utf8) else {
-//                errorMessage = "Failed to process scan data."
-//                status = .FailToStart
-//                return
-//            }
-            
             guard let json = DeeplinkViewModel.getJsonData(URL(string: result.string)) else {
                 errorMessage = "Failed to process scan data."
                 status = .FailToStart
                 return
             }
             
-            print(json)
-            
             guard let jsonData = json.data(using: .utf8) else {
                 errorMessage = "Failed to process scan data."
                 status = .FailToStart
                 return
             }
-            
-            print(String(data: jsonData, encoding: .utf8)!)
             
             do {
                 let decoder = JSONDecoder()
@@ -199,7 +188,6 @@ class JoinKeygenViewModel: ObservableObject {
                         }
                     }
                 }
-                
             } catch {
                 errorMessage = "Failed to decode peer discovery message: \(error.localizedDescription)"
                 status = .FailToStart

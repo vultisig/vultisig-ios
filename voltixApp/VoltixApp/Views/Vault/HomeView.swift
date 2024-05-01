@@ -12,6 +12,7 @@ struct HomeView: View {
     var selectedVault: Vault? = nil
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
+    @Environment(\.presentationMode) var presentationMode
     
     @Query var vaults: [Vault]
     @StateObject var viewModel = HomeViewModel()
@@ -119,6 +120,8 @@ struct HomeView: View {
     }
     
     private func presetValuesForDeeplink() {
+        presentationMode.wrappedValue.dismiss()
+        
         guard let type = deeplinkViewModel.type else {
             return
         }
