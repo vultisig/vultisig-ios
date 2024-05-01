@@ -75,6 +75,7 @@ class TokensStore {
         
         Coin(chain: Chain.polkadot, ticker: "DOT", logo: "dot", address: "", priceRate: 0.0, chainType: ChainType.Polkadot, decimals: "10", hexPublicKey: "", feeUnit: "Plancks", priceProviderId: "polkadot", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "200000000"), //find the default fee per unit
         
+        Coin(chain: Chain.ethereum, ticker: "TRX", logo: "tron", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "6", hexPublicKey: "", feeUnit: "SUN", priceProviderId: "tron", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "23000"),
     ]
     
     static func getCoin(_ ticker: String, coinType: CoinType) -> Coin? {

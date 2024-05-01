@@ -63,6 +63,8 @@ class Endpoint {
     
     static let polkadotServiceBalance = "https://polkadot.api.subscan.io/api/v2/scan/search"
     
+    static let tronEvmServiceBalance = "https://tron-rpc.publicnode.com"
+        
     static func bitcoinLabelTxHash(_ value: String) -> String {
         "https://mempool.space/tx/\(value)"
     }
