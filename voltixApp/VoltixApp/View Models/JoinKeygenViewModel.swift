@@ -18,6 +18,7 @@ enum JoinKeygenStatus {
     case FailToStart
 }
 
+@MainActor
 class JoinKeygenViewModel: ObservableObject {
     private let logger = Logger(subsystem: "join-keygen", category: "viewmodel")
     var vault: Vault
@@ -142,14 +143,32 @@ class JoinKeygenViewModel: ObservableObject {
         var useVoltixRelay = false
         switch result {
         case .success(let result):
-            guard let scanData = result.string.data(using: .utf8) else {
+            print(result)
+//            guard let scanData = result.string.data(using: .utf8) else {
+//                errorMessage = "Failed to process scan data."
+//                status = .FailToStart
+//                return
+//            }
+            
+            guard let json = DeeplinkViewModel.getJsonData(URL(string: result.string)) else {
                 errorMessage = "Failed to process scan data."
                 status = .FailToStart
                 return
             }
+            
+            print(json)
+            
+            guard let jsonData = json.data(using: .utf8) else {
+                errorMessage = "Failed to process scan data."
+                status = .FailToStart
+                return
+            }
+            
+            print(String(data: jsonData, encoding: .utf8)!)
+            
             do {
                 let decoder = JSONDecoder()
-                let result = try decoder.decode(PeerDiscoveryPayload.self, from: scanData)
+                let result = try decoder.decode(PeerDiscoveryPayload.self, from: jsonData)
                 // Create vault, scan QR and strip the data
                 switch result {
                 case .Keygen(let keygenMsg):

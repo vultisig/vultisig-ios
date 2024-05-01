@@ -160,7 +160,9 @@ class JoinKeysignViewModel: ObservableObject {
         var useVoltixRelay = false
         switch result {
         case .success(let result):
-            let qrCodeResult = result.string
+            guard let qrCodeResult = DeeplinkViewModel.getJsonData(URL(string: result.string)) else {
+                return
+            }
             
             let decoder = JSONDecoder()
             if let data = qrCodeResult.data(using: .utf8) {
