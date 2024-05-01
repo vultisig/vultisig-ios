@@ -42,7 +42,7 @@ struct HomeView: View {
             setData()
         }
         .navigationDestination(isPresented: $deeplinkViewModel.joinVaultActive) {
-            SetupVaultView(tssType: .Keygen)
+            SetupVaultView(tssType: deeplinkViewModel.tssType ?? .Keygen)
         }
     }
     

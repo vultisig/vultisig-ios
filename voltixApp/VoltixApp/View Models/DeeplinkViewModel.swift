@@ -18,15 +18,20 @@ class DeeplinkViewModel: ObservableObject {
     @Published var type: DeeplinkFlowType? = nil
     @Published var selectedVault: Vault? = nil
     @Published var joinVaultActive: Bool = false
+    @Published var tssType: TssType? = nil
     
     func extractParameters(_ url: URL, vaults: [Vault]) {
         resetData()
         print("App was opened via URL: \(url)")
         let queryItems = URLComponents(string: url.absoluteString)?.queryItems
         
-        //Type
+        //Flow Type
         let typeData = queryItems?.first(where: { $0.name == "type" })?.value
         type = getFlowType(typeData)
+        
+        //Tss Type
+        let tssData = queryItems?.first(where: { $0.name == "tssType" })?.value
+        tssType = getTssType(tssData)
         
         //Vault
         let vaultPubKey = queryItems?.first(where: { $0.name == "vault" })?.value
@@ -38,6 +43,7 @@ class DeeplinkViewModel: ObservableObject {
     
     private func resetData() {
         type = nil
+        tssType = nil
         selectedVault = nil
         joinVaultActive = false
     }
@@ -50,6 +56,15 @@ class DeeplinkViewModel: ObservableObject {
             return .SignTransaction
         default:
             return .Unknown
+        }
+    }
+    
+    private func getTssType(_ type: String?) -> TssType {
+        switch type {
+        case "Reshare":
+            return .Reshare
+        default:
+            return .Keygen
         }
     }
     
