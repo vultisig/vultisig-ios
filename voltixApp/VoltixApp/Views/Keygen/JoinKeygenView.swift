@@ -184,7 +184,6 @@ struct JoinKeygenView: View {
     
     var filePicker: some View {
         Button {
-            print("Toggling file importer")
             showFileImporter.toggle()
         } label: {
             Image(systemName: "photo.on.rectangle.angled")
