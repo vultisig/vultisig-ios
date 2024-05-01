@@ -208,18 +208,21 @@ enum Utils {
         input.utf8.map { String(format: "%02x", $0) }.joined()
     }
     
-    public static func generateQRCode(from string: String) -> UIImage {
+    public static func generateQRCodeImage(from string: String) -> Image {
         let context = CIContext()
         let filter = CIFilter.qrCodeGenerator()
         filter.message = Data(string.utf8)
 
         if let outputImage = filter.outputImage {
             if let cgImage = context.createCGImage(outputImage, from: outputImage.extent) {
-                return UIImage(cgImage: cgImage)
+                return Image(uiImage: UIImage(cgImage: cgImage))
+                    .interpolation(.none)
             }
         }
 
-        return UIImage(systemName: "xmark.circle") ?? UIImage()
+        let image = UIImage(systemName: "xmark.circle") ?? UIImage()
+        return Image(uiImage: image)
+            .interpolation(.none)
     }
     
     public static func getQrImage(data: Any?, size: CGFloat) -> Image {

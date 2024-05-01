@@ -29,6 +29,13 @@ struct ContentView: View {
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarTitleTextColor(.neutral0)
         }
+        .onOpenURL { incomingURL in
+            print("App was opened via URL: \(incomingURL)")
+            
+            let queryItems = URLComponents(string: incomingURL.absoluteString)?.queryItems
+            let jsonData = queryItems?.first(where: { $0.name == "jsonData" })?.value
+            print(String(describing: jsonData))
+        }
     }
     
     var splashView: some View {
