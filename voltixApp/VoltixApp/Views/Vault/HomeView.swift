@@ -18,14 +18,12 @@ struct HomeView: View {
     
     @State var showVaultsList = false
     @State var isEditingVaults = false
-    @State var id = UUID()
     
     var body: some View {
         ZStack {
             Background()
             view
         }
-        .id(id)
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -121,8 +119,6 @@ struct HomeView: View {
     }
     
     private func presetValuesForDeeplink() {
-        id = UUID()
-        
         guard let type = deeplinkViewModel.type else {
             return
         }

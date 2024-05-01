@@ -20,10 +20,12 @@ class DeeplinkViewModel: ObservableObject {
     @Published var joinVaultActive: Bool = false
     @Published var tssType: TssType? = nil
     @Published var jsonData: String? = nil
+    @Published var viewID = UUID()
     
     func extractParameters(_ url: URL, vaults: [Vault]) {
         resetData()
-        print("App was opened via URL: \(url)")
+        viewID = UUID()
+        
         let queryItems = URLComponents(string: url.absoluteString)?.queryItems
         
         //Flow Type
