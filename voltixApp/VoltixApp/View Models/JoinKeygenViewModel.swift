@@ -143,13 +143,7 @@ class JoinKeygenViewModel: ObservableObject {
         var useVoltixRelay = false
         switch result {
         case .success(let result):
-            guard let json = DeeplinkViewModel.getJsonData(URL(string: result.string)) else {
-                errorMessage = "Failed to process scan data."
-                status = .FailToStart
-                return
-            }
-            
-            guard let jsonData = json.data(using: .utf8) else {
+            guard let json = DeeplinkViewModel.getJsonData(URL(string: result.string)), let jsonData = json.data(using: .utf8) else {
                 errorMessage = "Failed to process scan data."
                 status = .FailToStart
                 return
@@ -176,7 +170,7 @@ class JoinKeygenViewModel: ObservableObject {
                     serviceName = reshareMsg.serviceName
                     encryptionKeyHex = reshareMsg.encryptionKeyHex
                     useVoltixRelay = reshareMsg.useVoltixRelay
-                    // this means the vault is new , and it join the reshare to become the new committee
+                    
                     if vault.pubKeyECDSA.isEmpty {
                         vault.hexChainCode = reshareMsg.hexChainCode
                     } else {

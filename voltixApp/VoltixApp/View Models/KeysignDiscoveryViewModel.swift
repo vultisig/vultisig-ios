@@ -127,7 +127,6 @@ class KeysignDiscoveryViewModel: ObservableObject {
         }
     }
     
-    // Generate QR code
     func getQrImage(size: CGFloat) -> Image {
         guard let encryptionKeyHex = self.encryptionKeyHex else {
             logger.error("encryption key is nil")
@@ -141,8 +140,8 @@ class KeysignDiscoveryViewModel: ObservableObject {
         do {
             let encoder = JSONEncoder()
             let jsonData = try encoder.encode(keysignMsg)
-            
-            let data = "voltix:?type=SignTransaction&vault=\(vault.pubKeyECDSA)&jsonData=\(jsonData)"
+            let json = String(decoding: jsonData, as: UTF8.self)
+            let data = "voltix:?type=SignTransaction&vault=\(vault.pubKeyECDSA)&jsonData=\(json)"
             
             return Utils.generateQRCodeImage(from: data)
         } catch {
