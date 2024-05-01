@@ -11,6 +11,7 @@ import SwiftData
 struct ContentView: View {
     @Query var vaults: [Vault]
     
+    @StateObject var deeplinkViewModel = DeeplinkViewModel()
     @EnvironmentObject var accountViewModel: AccountViewModel
     
     var body: some View {
@@ -30,11 +31,7 @@ struct ContentView: View {
             .navigationBarTitleTextColor(.neutral0)
         }
         .onOpenURL { incomingURL in
-            print("App was opened via URL: \(incomingURL)")
-            
-            let queryItems = URLComponents(string: incomingURL.absoluteString)?.queryItems
-            let jsonData = queryItems?.first(where: { $0.name == "jsonData" })?.value
-            print(String(describing: jsonData))
+            deeplinkViewModel.extractParameters(incomingURL, vaults: vaults)
         }
     }
     
