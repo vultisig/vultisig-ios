@@ -10,6 +10,7 @@ import Foundation
 class Endpoint {
     
     static let voltixApiProxy = "https://api.voltix.org"
+    static let supportDocumentLink = "https://docs.voltix.org/user-actions/creating-a-vault"
     static let voltixRelay = "https://api.voltix.org/router"
     static let broadcastTransactionThorchainNineRealms = "https://thornode.ninerealms.com/cosmos/tx/v1beta1/txs"
     static let broadcastTransactionMayachain = "https://mayanode.mayachain.info/cosmos/tx/v1beta1/txs"
