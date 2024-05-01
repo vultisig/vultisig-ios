@@ -59,12 +59,26 @@ struct SendCryptoAddressTextField: View {
             .keyboardType(.default)
             .textContentType(.oneTimeCode)
             
+            pasteButton
             scanButton
         }
     }
     
-    var codeScanner: some View {
-        QRCodeScannerView(showScanner: $showScanner, handleScan: handleScan)
+   var codeScanner: some View {
+       QRCodeScannerView(showScanner: $showScanner, handleScan: handleScan)
+   }
+    
+    var pasteButton: some View {
+        Button {
+            if let clipboardContent = UIPasteboard.general.string {
+                tx.toAddress = clipboardContent
+            }
+        } label: {
+            Image(systemName: "doc.on.clipboard")
+                .font(.body16Menlo)
+                .foregroundColor(.neutral0)
+                .frame(width: 40, height: 40)
+        }
     }
     
     var scanButton: some View {
