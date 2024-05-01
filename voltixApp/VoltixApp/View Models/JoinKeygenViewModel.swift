@@ -9,6 +9,10 @@ import Foundation
 import OSLog
 import CodeScanner
 
+import UIKit
+import CoreImage
+import Vision
+
 enum JoinKeygenStatus {
     case DiscoverSessionID
     case DiscoverService
@@ -139,62 +143,74 @@ class JoinKeygenViewModel: ObservableObject {
         defer {
             isShowingScanner = false
         }
-        var useVoltixRelay = false
+        
         switch result {
         case .success(let result):
+            
             guard let scanData = result.string.data(using: .utf8) else {
                 errorMessage = "Failed to process scan data."
                 status = .FailToStart
                 return
             }
-            do {
-                let decoder = JSONDecoder()
-                let result = try decoder.decode(PeerDiscoveryPayload.self, from: scanData)
-                switch result {
-                case .Keygen(let keygenMsg):
-                    tssType = .Keygen
-                    sessionID = keygenMsg.sessionID
-                    hexChainCode = keygenMsg.hexChainCode
-                    vault.hexChainCode = hexChainCode
-                    serviceName = keygenMsg.serviceName
-                    encryptionKeyHex = keygenMsg.encryptionKeyHex
-                    useVoltixRelay = keygenMsg.useVoltixRelay
-                case .Reshare(let reshareMsg):
-                    tssType = .Reshare
-                    oldCommittee = reshareMsg.oldParties
-                    sessionID = reshareMsg.sessionID
-                    hexChainCode = reshareMsg.hexChainCode
-                    serviceName = reshareMsg.serviceName
-                    encryptionKeyHex = reshareMsg.encryptionKeyHex
-                    useVoltixRelay = reshareMsg.useVoltixRelay
-                    // this means the vault is new , and it join the reshare to become the new committee
-                    if vault.pubKeyECDSA.isEmpty {
-                        vault.hexChainCode = reshareMsg.hexChainCode
-                    } else {
-                        if vault.pubKeyECDSA != reshareMsg.pubKeyECDSA {
-                            errorMessage = "You choose the wrong vault"
-                            logger.error("The vault's public key doesn't match the reshare message's public key")
-                            status = .FailToStart
-                            return
-                        }
-                    }
-                }
-                
-            } catch {
-                errorMessage = "Failed to decode peer discovery message: \(error.localizedDescription)"
-                status = .FailToStart
-                return
-            }
-            if useVoltixRelay {
-                self.serverAddress = Endpoint.voltixRelay
-                status = .JoinKeygen
-            } else {
-                status = .DiscoverService
-            }
+            
+            handleQrCodeSuccessResult(scanData: scanData)
+            
         case .failure(let error):
-            errorMessage = "Failed to scan QR code: \(error.localizedDescription)"
+            errorMessage = "Unable to scan the QR code. Please import an image using the button below."
             status = .FailToStart
             return
         }
+    }
+    
+    func handleQrCodeSuccessResult(scanData: Data) {
+        var useVoltixRelay = false
+        do {
+            let decoder = JSONDecoder()
+            let result = try decoder.decode(PeerDiscoveryPayload.self, from: scanData)
+            switch result {
+            case .Keygen(let keygenMsg):
+                tssType = .Keygen
+                sessionID = keygenMsg.sessionID
+                hexChainCode = keygenMsg.hexChainCode
+                vault.hexChainCode = hexChainCode
+                serviceName = keygenMsg.serviceName
+                encryptionKeyHex = keygenMsg.encryptionKeyHex
+                useVoltixRelay = keygenMsg.useVoltixRelay
+            case .Reshare(let reshareMsg):
+                tssType = .Reshare
+                oldCommittee = reshareMsg.oldParties
+                sessionID = reshareMsg.sessionID
+                hexChainCode = reshareMsg.hexChainCode
+                serviceName = reshareMsg.serviceName
+                encryptionKeyHex = reshareMsg.encryptionKeyHex
+                useVoltixRelay = reshareMsg.useVoltixRelay
+                // this means the vault is new , and it join the reshare to become the new committee
+                if vault.pubKeyECDSA.isEmpty {
+                    vault.hexChainCode = reshareMsg.hexChainCode
+                } else {
+                    if vault.pubKeyECDSA != reshareMsg.pubKeyECDSA {
+                        errorMessage = "You choose the wrong vault"
+                        logger.error("The vault's public key doesn't match the reshare message's public key")
+                        status = .FailToStart
+                        return
+                    }
+                }
+            }
+            
+        } catch {
+            errorMessage = "Failed to decode peer discovery message: \(error.localizedDescription)"
+            status = .FailToStart
+            return
+        }
+        if useVoltixRelay {
+            self.serverAddress = Endpoint.voltixRelay
+            status = .JoinKeygen
+        } else {
+            status = .DiscoverService
+        }
+    }
+
+    func handleQrCodeFromImage(result: Result<[URL], Error>) {
+        handleQrCodeSuccessResult(scanData: Utils.handleQrCodeFromImage(result: result))
     }
 }
