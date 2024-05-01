@@ -11,7 +11,7 @@ import SwiftData
 struct HomeView: View {
     var selectedVault: Vault? = nil
     
-    @EnvironmentObject var deeplinkViewwModel: DeeplinkViewModel
+    @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     
     @Query var vaults: [Vault]
     @StateObject var viewModel = HomeViewModel()
@@ -40,6 +40,9 @@ struct HomeView: View {
         }
         .onAppear {
             setData()
+        }
+        .navigationDestination(isPresented: $deeplinkViewModel.joinVaultActive) {
+            SetupVaultView(tssType: .Keygen)
         }
     }
     
@@ -116,7 +119,27 @@ struct HomeView: View {
     }
     
     private func presetValuesForDeeplink() {
-        guard let vault = deeplinkViewwModel.selectedVault else {
+        guard let type = deeplinkViewModel.type else {
+            return
+        }
+        
+        switch type {
+        case .NewVault:
+            moveToCreateVaultView()
+        case .SignTransaction:
+            moveToVaultsView()
+        case .Unknown:
+            return
+        }
+    }
+    
+    private func moveToCreateVaultView() {
+        showVaultsList = true
+        deeplinkViewModel.joinVaultActive = true
+    }
+    
+    private func moveToVaultsView() {
+        guard let vault = deeplinkViewModel.selectedVault else {
             return
         }
         

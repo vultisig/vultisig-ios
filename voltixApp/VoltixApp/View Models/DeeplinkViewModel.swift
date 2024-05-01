@@ -17,8 +17,10 @@ enum DeeplinkFlowType {
 class DeeplinkViewModel: ObservableObject {
     @Published var type: DeeplinkFlowType? = nil
     @Published var selectedVault: Vault? = nil
+    @Published var joinVaultActive: Bool = false
     
     func extractParameters(_ url: URL, vaults: [Vault]) {
+        resetData()
         print("App was opened via URL: \(url)")
         let queryItems = URLComponents(string: url.absoluteString)?.queryItems
         
@@ -32,6 +34,12 @@ class DeeplinkViewModel: ObservableObject {
         
         let jsonData = queryItems?.first(where: { $0.name == "jsonData" })?.value
         print(String(describing: jsonData))
+    }
+    
+    private func resetData() {
+        type = nil
+        selectedVault = nil
+        joinVaultActive = false
     }
     
     private func getFlowType(_ type: String?) -> DeeplinkFlowType {

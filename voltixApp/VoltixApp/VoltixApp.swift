@@ -9,6 +9,7 @@ import SwiftUI
 import WalletCore
 
 @main
+
 struct VoltixApp: App {
     @Environment(\.scenePhase) private var scenePhase
     
