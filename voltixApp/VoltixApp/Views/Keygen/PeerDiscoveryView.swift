@@ -5,6 +5,7 @@
 
 import OSLog
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct PeerDiscoveryView: View {
     let tssType: TssType
@@ -12,8 +13,8 @@ struct PeerDiscoveryView: View {
     
     @StateObject var viewModel = KeygenPeerDiscoveryViewModel()
     @StateObject var participantDiscovery = ParticipantDiscovery(isKeygen: true)
-    
     @State private var orientation = UIDevice.current.orientation
+    @State var showFileImporter = false
     
     let columns = [
         GridItem(.adaptive(minimum: 160)),
@@ -37,6 +38,37 @@ struct PeerDiscoveryView: View {
             }
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationHelpButton()
+            }
+        }
+        .fileImporter(
+            isPresented: $showFileImporter,
+            allowedContentTypes: [UTType.data],
+            allowsMultipleSelection: false
+        ) { result in
+            
+            switch result {
+            case .success(let urls):
+                guard let url = urls.first else { return }
+                print(url)
+                let filename = url.lastPathComponent
+                
+                
+                let success = url.startAccessingSecurityScopedResource()
+                defer { url.stopAccessingSecurityScopedResource() }
+                
+                guard success else {
+                    return
+                }
+                
+                do {
+                    let fileContent = try String(contentsOf: url, encoding: .utf8)
+                } catch {
+                    print("Failed to read file: \(error.localizedDescription)")
+                }
+                
+                
+            case .failure(let error):
+                print("Error selecting file: \(error.localizedDescription)")
             }
         }
         .task {
@@ -220,10 +252,26 @@ struct PeerDiscoveryView: View {
     }
     
     var failureText: some View {
-        Text(self.viewModel.errorMessage)
-            .font(.body15MenloBold)
-            .multilineTextAlignment(.center)
-            .foregroundColor(.red)
+        VStack{
+            Text(self.viewModel.errorMessage)
+                .font(.body15MenloBold)
+                .multilineTextAlignment(.center)
+                .foregroundColor(.red)
+            
+            filePicker
+        }
+    }
+    
+    var filePicker: some View {
+        Button {
+            print("Toggling file importer")
+            showFileImporter.toggle()
+        } label: {
+            Image(systemName: "photo.on.rectangle.angled")
+                .font(.body16Menlo)
+                .foregroundColor(.neutral0)
+                .frame(width: 40, height: 40)
+        }
     }
     
     var vaultDetail: some View {
