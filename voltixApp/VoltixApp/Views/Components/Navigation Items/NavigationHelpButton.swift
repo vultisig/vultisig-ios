@@ -11,13 +11,15 @@ struct NavigationHelpButton: View {
     var tint: Color = Color.neutral0
     
     var body: some View {
-        Button(action: {
-            
-        }) {
-            Image(systemName: "questionmark.circle")
-                .font(.body18MenloBold)
-                .foregroundColor(tint)
+        Link(destination: URL(string: Endpoint.supportDocumentLink)!) {
+            image
         }
+    }
+    
+    var image: some View {
+        Image(systemName: "questionmark.circle")
+            .font(.body18MenloBold)
+            .foregroundColor(tint)
     }
 }
 

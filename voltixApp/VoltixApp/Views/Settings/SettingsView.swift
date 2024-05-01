@@ -111,11 +111,15 @@ struct SettingsView: View {
     
     var appVersion: some View {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
         
-        return Text("VOLTIX APP V\(version ?? "1")")
-            .textCase(.uppercase)
-            .font(.body14Menlo)
-            .foregroundColor(.turquoise600)
+        return VStack {
+            Text("VOLTIX APP V\(version ?? "1")")
+            Text("(Build \(build ?? "1"))")
+        }
+        .textCase(.uppercase)
+        .font(.body14Menlo)
+        .foregroundColor(.turquoise600)
     }
     
     private func getTitle(_ title: String) -> some View {
