@@ -11,6 +11,8 @@ import SwiftData
 struct HomeView: View {
     var selectedVault: Vault? = nil
     
+    @EnvironmentObject var deeplinkViewwModel: DeeplinkViewModel
+    
     @Query var vaults: [Vault]
     @StateObject var viewModel = HomeViewModel()
     
@@ -110,6 +112,16 @@ struct HomeView: View {
         }
         
         viewModel.loadSelectedVault(for: vaults)
+        presetValuesForDeeplink()
+    }
+    
+    private func presetValuesForDeeplink() {
+        guard let vault = deeplinkViewwModel.selectedVault else {
+            return
+        }
+        
+        viewModel.setSelectedVault(vault)
+        showVaultsList = false
     }
     
     private func switchView() {
@@ -125,4 +137,5 @@ struct HomeView: View {
 
 #Preview {
     HomeView()
+        .environmentObject(DeeplinkViewModel())
 }

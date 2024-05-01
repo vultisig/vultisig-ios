@@ -11,7 +11,7 @@ import SwiftData
 struct ContentView: View {
     @Query var vaults: [Vault]
     
-    @StateObject var deeplinkViewModel = DeeplinkViewModel()
+    @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var accountViewModel: AccountViewModel
     
     var body: some View {
@@ -78,4 +78,5 @@ struct ContentView: View {
 #Preview {
     ContentView()
         .environmentObject(AccountViewModel())
+        .environmentObject(DeeplinkViewModel())
 }

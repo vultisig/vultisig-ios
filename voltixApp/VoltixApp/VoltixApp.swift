@@ -17,6 +17,7 @@ struct VoltixApp: App {
     @StateObject var vaultDetailViewModel = VaultDetailViewModel()
     @StateObject var tokenSelectionViewModel = TokenSelectionViewModel()
     @StateObject var accountViewModel = AccountViewModel()
+    @StateObject var deeplinkViewModel = DeeplinkViewModel()
     @StateObject var settingsViewModel = SettingsViewModel.shared
 
     var body: some Scene {
@@ -27,6 +28,7 @@ struct VoltixApp: App {
                 .environmentObject(vaultDetailViewModel)
                 .environmentObject(tokenSelectionViewModel)
                 .environmentObject(accountViewModel)
+                .environmentObject(deeplinkViewModel)
                 .environmentObject(settingsViewModel)
         }
         .modelContainer(sharedModelContainer)
