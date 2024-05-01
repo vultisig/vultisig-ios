@@ -8,6 +8,10 @@ import OSLog
 import SwiftUI
 import UniformTypeIdentifiers
 
+import UIKit
+import CoreImage
+import Vision
+
 struct JoinKeygenView: View {
     let vault: Vault
     
@@ -34,30 +38,34 @@ struct JoinKeygenView: View {
         }
         .fileImporter(
             isPresented: $showFileImporter,
-            allowedContentTypes: [UTType.data],
+            allowedContentTypes: [UTType.image], // Ensure only images can be picked
             allowsMultipleSelection: false
         ) { result in
-            
             switch result {
             case .success(let urls):
                 guard let url = urls.first else { return }
-                print(url)
-                let filename = url.lastPathComponent
-                
-                
                 let success = url.startAccessingSecurityScopedResource()
                 defer { url.stopAccessingSecurityScopedResource() }
                 
                 guard success else {
+                    print("Failed to access URL")
                     return
                 }
                 
-                do {
-                    let fileContent = try String(contentsOf: url, encoding: .utf8)
-                } catch {
-                    print("Failed to read file: \(error.localizedDescription)")
+                // Attempt to create a UIImage from the contents of the URL
+                if let imageData = try? Data(contentsOf: url),
+                   let selectedImage = UIImage(data: imageData) {
+                    let qrStrings = detectQRCode(selectedImage)
+                    if qrStrings.isEmpty {
+                        print("No QR codes detected.")
+                    } else {
+                        for qrString in qrStrings {
+                            print("Detected QR code with data: \(qrString)")
+                        }
+                    }
+                } else {
+                    print("Failed to load image from URL")
                 }
-                
                 
             case .failure(let error):
                 print("Error selecting file: \(error.localizedDescription)")
@@ -143,7 +151,7 @@ struct JoinKeygenView: View {
                 .font(.body15MenloBold)
                 .multilineTextAlignment(.center)
                 .padding(.vertical, 30)
-         
+            
             filePicker
         }
     }
@@ -238,6 +246,26 @@ struct JoinKeygenView: View {
             await viewModel.waitForKeygenStart()
         }
     }
+    
+    func detectQRCode(_ image: UIImage?) -> [String] {
+        var detectedStrings = [String]()
+        guard let image = image, let ciImage = CIImage(image: image) else { return detectedStrings }
+        
+        let context = CIContext()
+        let options = [CIDetectorAccuracy: CIDetectorAccuracyHigh]
+        let qrDetector = CIDetector(ofType: CIDetectorTypeQRCode, context: context, options: options)
+        
+        if let features = qrDetector?.features(in: ciImage) {
+            for feature in features as! [CIQRCodeFeature] {
+                if let decodedString = feature.messageString {
+                    detectedStrings.append(decodedString)
+                }
+            }
+        }
+        
+        return detectedStrings
+    }
+    
 }
 
 struct JoinKeygenView_Previews: PreviewProvider {
