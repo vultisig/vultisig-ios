@@ -6,12 +6,14 @@ import CodeScanner
 import Network
 import OSLog
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct JoinKeygenView: View {
     let vault: Vault
     
     @StateObject var viewModel = JoinKeygenViewModel()
     @StateObject var serviceDelegate = ServiceDelegate()
+    @State var showFileImporter = false
     
     let logger = Logger(subsystem: "join-keygen", category: "communication")
     
@@ -28,6 +30,37 @@ struct JoinKeygenView: View {
             }
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationHelpButton()
+            }
+        }
+        .fileImporter(
+            isPresented: $showFileImporter,
+            allowedContentTypes: [UTType.data],
+            allowsMultipleSelection: false
+        ) { result in
+            
+            switch result {
+            case .success(let urls):
+                guard let url = urls.first else { return }
+                print(url)
+                let filename = url.lastPathComponent
+                
+                
+                let success = url.startAccessingSecurityScopedResource()
+                defer { url.stopAccessingSecurityScopedResource() }
+                
+                guard success else {
+                    return
+                }
+                
+                do {
+                    let fileContent = try String(contentsOf: url, encoding: .utf8)
+                } catch {
+                    print("Failed to read file: \(error.localizedDescription)")
+                }
+                
+                
+            case .failure(let error):
+                print("Error selecting file: \(error.localizedDescription)")
             }
         }
         .sheet(isPresented: $viewModel.isShowingScanner, content: {
@@ -105,10 +138,14 @@ struct JoinKeygenView: View {
     }
     
     var failToStartKeygen: some View {
-        Text(viewModel.errorMessage)
-            .font(.body15MenloBold)
-            .multilineTextAlignment(.center)
-            .padding(.vertical, 30)
+        VStack{
+            Text(viewModel.errorMessage)
+                .font(.body15MenloBold)
+                .multilineTextAlignment(.center)
+                .padding(.vertical, 30)
+         
+            filePicker
+        }
     }
     
     var discoveringSessionID: some View {
@@ -167,6 +204,18 @@ struct JoinKeygenView: View {
         .font(.body15MenloBold)
         .multilineTextAlignment(.center)
         .padding(.vertical, 30)
+    }
+    
+    var filePicker: some View {
+        Button {
+            print("Toggling file importer")
+            showFileImporter.toggle()
+        } label: {
+            Image(systemName: "photo.on.rectangle.angled")
+                .font(.body16Menlo)
+                .foregroundColor(.neutral0)
+                .frame(width: 40, height: 40)
+        }
     }
     
     var waitingForKeygenStart: some View {
