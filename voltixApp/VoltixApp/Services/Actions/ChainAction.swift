@@ -10,9 +10,7 @@ import SwiftUI
 enum CoinAction: String, Codable {
     case send
     case swap
-    case bond
-    case unbond
-    case leave
+    case deposit
     case custom
 
     var title: String {
@@ -25,7 +23,7 @@ enum CoinAction: String, Codable {
             return .turquoise600
         case .swap:
             return .persianBlue200
-        case .bond, .unbond, .leave, .custom:
+        case .deposit, .custom:
             return .mediumPurple
         }
     }

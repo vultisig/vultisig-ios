@@ -14,7 +14,7 @@ extension Chain {
         case .thorChain:
             return [.send, .swap]
         case .solana:
-            return [.send, .swap, .bond]
+            return [.send]
         case .ethereum:
             return [.send, .swap]
         case .avalanche:
