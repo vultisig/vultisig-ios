@@ -188,6 +188,11 @@ struct PeerDiscoveryView: View {
             } label: {
                 PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
             }
+            .onAppear {
+                if participantDiscovery.peersFound.count == 1 && participantDiscovery.peersFound.first == peer {
+                    handleSelection(peer)
+                }
+            }
         }
     }
     
