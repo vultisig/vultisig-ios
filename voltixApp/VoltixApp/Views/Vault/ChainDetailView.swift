@@ -83,7 +83,7 @@ struct ChainDetailView: View {
                     sendButton
                 case .swap:
                     swapButton
-                case .bond, .unbond, .leave, .custom:
+                case .deposit, .custom:
                     getButton(for: action.title, with: action.color)
                 }
             }
