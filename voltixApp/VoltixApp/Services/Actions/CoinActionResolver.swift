@@ -7,20 +7,17 @@
 
 import Foundation
 
-struct CoinActionResolver {
+final class CoinActionResolver {
 
-    let json = """
-    {
-        "disabled": {
-            "solana": ["swap", "bond"]
-        }
+    private var config: Config?
+
+    init() {
+        _ = try? fetchConfig()
     }
-    """
 
     func resolveActions(for chain: Chain) async -> [CoinAction] {
-        let jsonData = Data(json.utf8)
-        
-        guard let config = try? JSONDecoder().decode(Config.self, from: jsonData) else {
+
+        guard let config = try? await getConfig(for: chain) else {
             return chain.defaultActions
         }
 
@@ -36,5 +33,20 @@ private extension CoinActionResolver {
 
     struct Config: Codable {
         let disabled: [String: [CoinAction]]
+    }
+
+    private func getConfig(for chain: Chain) async throws -> Config {
+        if let config {
+            return config
+        }
+        return try fetchConfig()
+    }
+
+    private func fetchConfig() throws -> Config {
+        let url = URL(string: "https://api.voltix.org/actions/default.json")!
+        let jsonData = try Data(contentsOf: url)
+        let config = try JSONDecoder().decode(Config.self, from: jsonData)
+        self.config = config
+        return config
     }
 }

@@ -15,6 +15,8 @@ class TokenSelectionViewModel: ObservableObject {
     @Published var groupedAssets: [String: [Coin]] = [:]
     @Published var selection = Set<Coin>()
 
+    let actionResolver = CoinActionResolver()
+
     private let logger = Logger(subsystem: "assets-list", category: "view")
 
     var allCoins: [Coin] {

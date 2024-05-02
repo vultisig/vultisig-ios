@@ -88,6 +88,7 @@ struct ChainDetailView: View {
                 }
             }
         }
+        .frame(height: 28)
     }
 
     var sendButton: some View {
@@ -156,7 +157,7 @@ struct ChainDetailView: View {
         tokens = viewModel.groupedAssets[group.name] ?? []
         tokens.removeFirst()
 
-        actions = await CoinActionResolver().resolveActions(for: group.chain)
+        actions = await viewModel.actionResolver.resolveActions(for: group.chain)
 
         if let coin = group.coins.first {
             sendTx.reset(coin: coin)
