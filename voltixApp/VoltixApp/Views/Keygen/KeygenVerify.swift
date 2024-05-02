@@ -34,7 +34,7 @@ class KeygenVerify: ObservableObject {
     }
     
     func checkCompletedParties() async -> Bool {
-        let urlString = "\(serverAddr)/\(sessionID)"
+        let urlString = "\(serverAddr)/complete/\(sessionID)"
         let start = Date()
         repeat{
             do {
