@@ -140,8 +140,10 @@ class KeysignDiscoveryViewModel: ObservableObject {
         do {
             let encoder = JSONEncoder()
             let jsonData = try encoder.encode(keysignMsg)
+            let json = String(decoding: jsonData, as: UTF8.self)
+            let data = "voltix:?type=SignTransaction&vault=\(vault.pubKeyECDSA)&jsonData=\(json)"
             
-            return Utils.getQrImage(data: jsonData, size: size)
+            return Utils.generateQRCodeImage(from: data)
         } catch {
             logger.error("fail to encode keysign messages to json,error:\(error)")
         }

@@ -22,6 +22,7 @@ enum JoinKeygenStatus {
     case FailToStart
 }
 
+@MainActor
 class JoinKeygenViewModel: ObservableObject {
     private let logger = Logger(subsystem: "join-keygen", category: "viewmodel")
     var vault: Vault
@@ -147,13 +148,11 @@ class JoinKeygenViewModel: ObservableObject {
         switch result {
         case .success(let result):
             
-            guard let scanData = result.string.data(using: .utf8) else {
-                errorMessage = "Failed to process scan data."
+            guard let json = DeeplinkViewModel.getJsonData(URL(string: result.string)), let jsonData = json.data(using: .utf8) else {
                 status = .FailToStart
                 return
             }
-            
-            handleQrCodeSuccessResult(scanData: scanData)
+            handleQrCodeSuccessResult(scanData: jsonData)
             
         case .failure(let error):
             errorMessage = "Unable to scan the QR code. Please import an image using the button below."
