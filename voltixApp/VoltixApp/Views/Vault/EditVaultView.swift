@@ -67,6 +67,7 @@ struct EditVaultView: View {
     var view: some View {
         ScrollView {
             VStack(spacing: 16) {
+                deviceName
                 vaultDetails
                 backupVault
                 editVault
@@ -74,6 +75,10 @@ struct EditVaultView: View {
                 deleteVault
             }
         }
+    }
+    
+    var deviceName: some View {
+        Text(Utils.getLocalDeviceIdentity()).padding(.top, 30)
     }
     
     var vaultDetails: some View {
