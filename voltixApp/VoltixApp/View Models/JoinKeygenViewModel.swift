@@ -148,57 +148,11 @@ class JoinKeygenViewModel: ObservableObject {
         switch result {
         case .success(let result):
             
-            guard let scanData = result.string.data(using: .utf8) else {
+            guard let json = DeeplinkViewModel.getJsonData(URL(string: result.string)), let jsonData = json.data(using: .utf8) else {
                 status = .FailToStart
                 return
             }
-            
-            do {
-                let decoder = JSONDecoder()
-                let result = try decoder.decode(PeerDiscoveryPayload.self, from: jsonData)
-                // Create vault, scan QR and strip the data
-                switch result {
-                case .Keygen(let keygenMsg):
-                    tssType = .Keygen
-                    sessionID = keygenMsg.sessionID
-                    hexChainCode = keygenMsg.hexChainCode
-                    vault.hexChainCode = hexChainCode
-                    serviceName = keygenMsg.serviceName
-                    encryptionKeyHex = keygenMsg.encryptionKeyHex
-                    useVoltixRelay = keygenMsg.useVoltixRelay
-                case .Reshare(let reshareMsg):
-                    tssType = .Reshare
-                    oldCommittee = reshareMsg.oldParties
-                    sessionID = reshareMsg.sessionID
-                    hexChainCode = reshareMsg.hexChainCode
-                    serviceName = reshareMsg.serviceName
-                    encryptionKeyHex = reshareMsg.encryptionKeyHex
-                    useVoltixRelay = reshareMsg.useVoltixRelay
-                    
-                    if vault.pubKeyECDSA.isEmpty {
-                        vault.hexChainCode = reshareMsg.hexChainCode
-                    } else {
-                        if vault.pubKeyECDSA != reshareMsg.pubKeyECDSA {
-                            errorMessage = "You choose the wrong vault"
-                            logger.error("The vault's public key doesn't match the reshare message's public key")
-                            status = .FailToStart
-                            return
-                        }
-                    }
-                }
-            } catch {
-                errorMessage = "Failed to decode peer discovery message: \(error.localizedDescription)"
-                status = .FailToStart
-                return
-            }
-            if useVoltixRelay {
-                self.serverAddress = Endpoint.voltixRelay
-                status = .JoinKeygen
-            } else {
-                status = .DiscoverService
-            }
-            
-            handleQrCodeSuccessResult(scanData: scanData)
+            handleQrCodeSuccessResult(scanData: jsonData)
             
         case .failure(let error):
             errorMessage = "Unable to scan the QR code. Please import an image using the button below."
