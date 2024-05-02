@@ -12,7 +12,6 @@ struct PeerDiscoveryView: View {
     
     @StateObject var viewModel = KeygenPeerDiscoveryViewModel()
     @StateObject var participantDiscovery = ParticipantDiscovery(isKeygen: true)
-    
     @State private var orientation = UIDevice.current.orientation
     
     let columns = [
@@ -220,10 +219,12 @@ struct PeerDiscoveryView: View {
     }
     
     var failureText: some View {
-        Text(self.viewModel.errorMessage)
-            .font(.body15MenloBold)
-            .multilineTextAlignment(.center)
-            .foregroundColor(.red)
+        VStack{
+            Text(self.viewModel.errorMessage)
+                .font(.body15MenloBold)
+                .multilineTextAlignment(.center)
+                .foregroundColor(.red)
+        }
     }
     
     var vaultDetail: some View {

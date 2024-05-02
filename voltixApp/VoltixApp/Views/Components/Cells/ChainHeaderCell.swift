@@ -116,7 +116,7 @@ struct ChainHeaderCell: View {
         NavigationLink {
             TransactionsView(group: group)
         } label: {
-            Image(systemName: "square.and.arrow.up")
+            Image(systemName: "cube")
                 .foregroundColor(.neutral0)
                 .font(.body18MenloMedium)
         }
@@ -127,7 +127,7 @@ struct ChainHeaderCell: View {
             if let url = Endpoint.getExplorerByAddressURLByGroup(chain: group.coins.first?.chain, address: group.address),
                let linkURL = URL(string: url) {
                 Link(destination: linkURL) {
-                    Image(systemName: "square.and.arrow.up")
+                    Image(systemName: "cube")
                         .foregroundColor(.neutral0)
                         .font(.body18MenloMedium)
                 }

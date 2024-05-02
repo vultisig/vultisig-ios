@@ -6,12 +6,14 @@ import CodeScanner
 import Network
 import OSLog
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct JoinKeygenView: View {
     let vault: Vault
     
     @StateObject var viewModel = JoinKeygenViewModel()
     @StateObject var serviceDelegate = ServiceDelegate()
+    @State var showFileImporter = false
     
     let logger = Logger(subsystem: "join-keygen", category: "communication")
     
@@ -29,6 +31,13 @@ struct JoinKeygenView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationHelpButton()
             }
+        }
+        .fileImporter(
+            isPresented: $showFileImporter,
+            allowedContentTypes: [UTType.image], // Ensure only images can be picked
+            allowsMultipleSelection: false
+        ) { result in
+            viewModel.handleQrCodeFromImage(result: result)
         }
         .sheet(isPresented: $viewModel.isShowingScanner, content: {
             CodeScannerView(codeTypes: [.qr], completion: self.viewModel.handleScan)
@@ -105,10 +114,14 @@ struct JoinKeygenView: View {
     }
     
     var failToStartKeygen: some View {
-        Text(viewModel.errorMessage)
-            .font(.body15MenloBold)
-            .multilineTextAlignment(.center)
-            .padding(.vertical, 30)
+        VStack{
+            Text(viewModel.errorMessage)
+                .font(.body15MenloBold)
+                .multilineTextAlignment(.center)
+                .padding(.vertical, 30)
+            
+            filePicker
+        }
     }
     
     var discoveringSessionID: some View {
@@ -169,6 +182,17 @@ struct JoinKeygenView: View {
         .padding(.vertical, 30)
     }
     
+    var filePicker: some View {
+        Button {
+            showFileImporter.toggle()
+        } label: {
+            Image(systemName: "photo.on.rectangle.angled")
+                .font(.body16Menlo)
+                .foregroundColor(.neutral0)
+                .frame(width: 40, height: 40)
+        }
+    }
+    
     var waitingForKeygenStart: some View {
         VStack {
             HStack {
@@ -189,6 +213,7 @@ struct JoinKeygenView: View {
             await viewModel.waitForKeygenStart()
         }
     }
+    
 }
 
 struct JoinKeygenView_Previews: PreviewProvider {

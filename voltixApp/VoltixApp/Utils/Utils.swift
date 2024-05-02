@@ -243,6 +243,57 @@ enum Utils {
         return Image(cgImage, scale: 1.0, orientation: .up, label: Text("QRCode"))
     }
     
+    public static func handleQrCodeFromImage(result: Result<[URL], Error>) -> Data{
+        switch result {
+        case .success(let urls):
+            guard let url = urls.first else { return Data() }
+            let success = url.startAccessingSecurityScopedResource()
+            defer { url.stopAccessingSecurityScopedResource() }
+            
+            guard success else {
+                print("Failed to access URL")
+                return Data()
+            }
+            
+            if let imageData = try? Data(contentsOf: url),
+               let selectedImage = UIImage(data: imageData) {
+                let qrStrings = Utils.detectQRCode(selectedImage)
+                if qrStrings.isEmpty {
+                    print("No QR codes detected.")
+                } else {
+                    for qrString in qrStrings {
+                        return qrString.data(using: .utf8) ?? Data()
+                    }
+                }
+            } else {
+                print("Failed to load image from URL")
+            }
+            
+        case .failure(let error):
+            print("Error selecting file: \(error.localizedDescription)")
+        }
+        return Data()
+    }
+    
+    public static func detectQRCode(_ image: UIImage?) -> [String] {
+        var detectedStrings = [String]()
+        guard let image = image, let ciImage = CIImage(image: image) else { return detectedStrings }
+        
+        let context = CIContext()
+        let options = [CIDetectorAccuracy: CIDetectorAccuracyHigh]
+        let qrDetector = CIDetector(ofType: CIDetectorTypeQRCode, context: context, options: options)
+        
+        if let features = qrDetector?.features(in: ciImage) {
+            for feature in features as! [CIQRCodeFeature] {
+                if let decodedString = feature.messageString {
+                    detectedStrings.append(decodedString)
+                }
+            }
+        }
+        
+        return detectedStrings
+    }
+    
     public static func isIOS() -> Bool {
         return true
     }
