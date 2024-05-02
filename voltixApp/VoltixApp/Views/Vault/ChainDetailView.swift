@@ -14,7 +14,8 @@ struct ChainDetailView: View {
     
     @State var showSheet = false
     @State var tokens: [Coin] = []
-    
+    @State var actions: [CoinAction] = []
+
     @StateObject var sendTx = SendTransaction()
     
     @EnvironmentObject var viewModel: TokenSelectionViewModel
@@ -61,7 +62,7 @@ struct ChainDetailView: View {
     var view: some View {
         ScrollView {
             VStack(spacing: 20) {
-                actions
+                actionButtons
                 content
                 
                 if tokens.count>0 {
@@ -72,18 +73,23 @@ struct ChainDetailView: View {
             .padding(.vertical, 30)
         }
     }
-    
-    var actions: some View {
+
+    @ViewBuilder
+    var actionButtons: some View {
         HStack(spacing: 12) {
-            sendButton
-            swapButton
-            
-            if group.name == "THORChain" {
-                depositButton
+            ForEach(actions, id: \.rawValue) { action in
+                switch action {
+                case .send:
+                    sendButton
+                case .swap:
+                    swapButton
+                case .bond, .unbond, .leave, .custom:
+                    getButton(for: action.title, with: action.color)
+                }
             }
         }
     }
-    
+
     var sendButton: some View {
         NavigationLink {
             SendCryptoView(
@@ -104,10 +110,6 @@ struct ChainDetailView: View {
         } label: {
             getButton(for: "swap", with: .persianBlue200)
         }
-    }
-    
-    var depositButton: some View {
-        getButton(for: "deposit", with: .mediumPurple)
     }
     
     var content: some View {
@@ -153,7 +155,9 @@ struct ChainDetailView: View {
         viewModel.setData(for: vault)
         tokens = viewModel.groupedAssets[group.name] ?? []
         tokens.removeFirst()
-        
+
+        actions = await CoinActionResolver().resolveActions(for: group.chain)
+
         if let coin = group.coins.first {
             sendTx.reset(coin: coin)
         }
