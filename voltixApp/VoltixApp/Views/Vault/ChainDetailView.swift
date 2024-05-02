@@ -92,7 +92,7 @@ struct ChainDetailView: View {
                 vault: vault
             )
         } label: {
-            getButton(for: "send", with: .turquoise600)
+            ActionButton(title: "send", fontColor: .turquoise600)
         }
     }
     
@@ -102,12 +102,12 @@ struct ChainDetailView: View {
                 SwapCryptoView(coin: coin, coins: viewModel.allCoins, vault: vault)
             }
         } label: {
-            getButton(for: "swap", with: .persianBlue200)
+            ActionButton(title: "swap", fontColor: .persianBlue200)
         }
     }
     
     var depositButton: some View {
-        getButton(for: "deposit", with: .mediumPurple)
+        ActionButton(title: "deposit", fontColor: .mediumPurple)
     }
     
     var content: some View {
@@ -157,16 +157,6 @@ struct ChainDetailView: View {
         if let coin = group.coins.first {
             sendTx.reset(coin: coin)
         }
-    }
-    
-    private func getButton(for title: String, with color: Color) -> some View {
-        Text(NSLocalizedString(title, comment: "").uppercased())
-            .font(.body16MenloBold)
-            .foregroundColor(color)
-            .padding(.vertical, 5)
-            .frame(maxWidth: .infinity)
-            .background(Color.blue400)
-            .cornerRadius(50)
     }
 }
 
