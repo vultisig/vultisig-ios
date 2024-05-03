@@ -10,6 +10,7 @@ import SwiftUI
 struct ChainNavigationCell: View {
     let group: GroupedChain
     let vault: Vault
+    @Binding var isEditingChains: Bool
     
     @State var balanceInFiat: String? = nil
     
@@ -17,11 +18,14 @@ struct ChainNavigationCell: View {
         NavigationLink {
             ChainDetailView(group: group, vault: vault, balanceInFiat: balanceInFiat)
         } label: {
-            ChainCell(group: group, balanceInFiat: $balanceInFiat)
+            ChainCell(group: group, balanceInFiat: $balanceInFiat, isEditingChains: $isEditingChains)
         }
+        .disabled(isEditingChains ? true : false)
+        .listRowInsets(EdgeInsets())
+        .listRowSeparator(.hidden)
     }
 }
 
 #Preview {
-    ChainNavigationCell(group: GroupedChain.example, vault: Vault.example)
+    ChainNavigationCell(group: GroupedChain.example, vault: Vault.example, isEditingChains: .constant(true))
 }

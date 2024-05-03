@@ -10,6 +10,7 @@ import SwiftUI
 
 struct VaultDetailView: View {
     @Binding var showVaultsList: Bool
+    @Binding var isEditingChains: Bool
     let vault: Vault
     
     @EnvironmentObject var appState: ApplicationState
@@ -42,30 +43,40 @@ struct VaultDetailView: View {
     }
     
     var view: some View {
-        ScrollView {
+        ZStack {
             if viewModel.coinsGroupedByChains.count>1 {
                 list
             } else {
                 emptyList
             }
-            
-            addButton
         }
         .opacity(showVaultsList ? 0 : 1)
     }
     
     var list: some View {
-        LazyVStack(spacing: 16) {
-            ForEach(viewModel.coinsGroupedByChains, id: \.id) { group in
-                ChainNavigationCell(group: group, vault: vault)
+        List {
+            ForEach(viewModel.coinsGroupedByChains.sorted(by: {
+                $0.order < $1.order
+            }), id: \.id) { group in
+                ChainNavigationCell(group: group, vault: vault, isEditingChains: $isEditingChains)
             }
+            .onMove(perform: isEditingChains ? move : nil)
+            .background(Color.backgroundBlue)
+            
+            addButton
         }
+        .listStyle(PlainListStyle())
         .padding(.top, 30)
+        .background(Color.backgroundBlue)
     }
     
     var emptyList: some View {
-        ErrorMessage(text: "noChainSelected")
-            .padding(.vertical, 50)
+        VStack {
+            ErrorMessage(text: "noChainSelected")
+                .padding(.vertical, 50)
+            
+            addButton
+        }
     }
     
     var addButton: some View {
@@ -76,6 +87,9 @@ struct VaultDetailView: View {
         }
         .padding(16)
         .padding(.bottom, 150)
+        .listRowInsets(EdgeInsets())
+        .listRowSeparator(.hidden)
+        .background(Color.backgroundBlue)
     }
     
     var chooseChainButton: some View {
@@ -94,6 +108,9 @@ struct VaultDetailView: View {
             EditVaultView(vault: vault)
         } label: {
             NavigationSettingButton(tint: .turquoise600)
+                .listRowInsets(EdgeInsets())
+                .listRowSeparator(.hidden)
+                .background(Color.backgroundBlue)
         }
     }
        
@@ -121,11 +138,47 @@ struct VaultDetailView: View {
     
     private func setData() {
         viewModel.fetchCoins(for: vault)
+        setOrder()
+    }
+    
+    private func setOrder() {
+        for index in 0..<viewModel.coinsGroupedByChains.count {
+            viewModel.coinsGroupedByChains[index].setOrder(index)
+        }
+    }
+    
+    private func move(from: IndexSet, to: Int) {
+        let fromIndex = from.first ?? 0
+        
+        if fromIndex<to {
+            moveDown(fromIndex: fromIndex, toIndex: to-1)
+        } else {
+            moveUp(fromIndex: fromIndex, toIndex: to)
+        }
+    }
+    
+    private func moveDown(fromIndex: Int, toIndex: Int) {
+        let groups = viewModel.coinsGroupedByChains
+        
+        for index in fromIndex...toIndex {
+            groups[index].order = groups[index].order-1
+        }
+        groups[fromIndex].order = toIndex
+    }
+    
+    private func moveUp(fromIndex: Int, toIndex: Int) {
+        let groups = viewModel.coinsGroupedByChains
+        
+        groups[fromIndex].order = toIndex
+        
+        for index in toIndex...fromIndex {
+            groups[index].order = groups[index].order+1
+        }
     }
 }
 
 #Preview {
-    VaultDetailView(showVaultsList: .constant(false), vault: Vault.example)
+    VaultDetailView(showVaultsList: .constant(false), isEditingChains: .constant(false), vault: Vault.example)
         .environmentObject(VaultDetailViewModel())
         .environmentObject(ApplicationState.shared)
 }

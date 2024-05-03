@@ -10,6 +10,7 @@ import SwiftUI
 struct ChainCell: View {
     let group: GroupedChain
     @Binding var balanceInFiat: String?
+    @Binding var isEditingChains: Bool
     
     @State var showAlert = false
     @State var showQRcode = false
@@ -17,7 +18,8 @@ struct ChainCell: View {
     @StateObject var viewModel = ChainCellViewModel()
     
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .center, spacing: 12) {
+            rearrange
             logo
             content
         }
@@ -26,6 +28,7 @@ struct ChainCell: View {
         .background(Color.blue600)
         .cornerRadius(10)
         .padding(.horizontal, 16)
+        .animation(.easeInOut, value: isEditingChains)
         .onAppear {
             Task {
                 await setData()
@@ -43,6 +46,14 @@ struct ChainCell: View {
             header
             address
         }
+    }
+    
+    var rearrange: some View {
+        Image(systemName: "line.3.horizontal")
+            .font(.body14MontserratMedium)
+            .foregroundColor(.neutral100)
+            .frame(maxWidth: isEditingChains ? nil : 0)
+            .clipped()
     }
     
     var header: some View {
@@ -66,7 +77,6 @@ struct ChainCell: View {
             .resizable()
             .frame(width: 32, height: 32)
             .cornerRadius(50)
-            .padding(.top, 10)
     }
     
     var title: some View {
@@ -121,6 +131,6 @@ struct ChainCell: View {
 
 #Preview {
     ScrollView {
-        ChainCell(group: GroupedChain.example, balanceInFiat: .constant("$65,899"))
+        ChainCell(group: GroupedChain.example, balanceInFiat: .constant("$65,899"), isEditingChains: .constant(true))
     }
 }
