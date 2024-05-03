@@ -67,6 +67,7 @@ struct EditVaultView: View {
     var view: some View {
         ScrollView {
             VStack(spacing: 16) {
+                deviceName
                 vaultDetails
                 backupVault
                 editVault
@@ -74,6 +75,12 @@ struct EditVaultView: View {
                 deleteVault
             }
         }
+    }
+    
+    var deviceName: some View {
+        Text(vault.localPartyID).padding(.top, 30)                
+            .font(.body16MenloBold)
+            .foregroundColor(.neutral0)
     }
     
     var vaultDetails: some View {
