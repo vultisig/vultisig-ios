@@ -70,9 +70,7 @@ struct SendCryptoAddressTextField: View {
     
     var pasteButton: some View {
         Button {
-            if let clipboardContent = UIPasteboard.general.string {
-                tx.toAddress = clipboardContent
-            }
+            pasteAddress()
         } label: {
             Image(systemName: "doc.on.clipboard")
                 .font(.body16Menlo)
@@ -106,6 +104,16 @@ struct SendCryptoAddressTextField: View {
     
     private func validateAddress(_ newValue: String) {
         sendCryptoViewModel.validateAddress(tx: tx, address: newValue)
+    }
+    
+    private func pasteAddress() {
+        if let clipboardContent = UIPasteboard.general.string {
+            tx.toAddress = clipboardContent
+            
+            DebounceHelper.shared.debounce {
+                validateAddress(clipboardContent)
+            }
+        }
     }
 }
 

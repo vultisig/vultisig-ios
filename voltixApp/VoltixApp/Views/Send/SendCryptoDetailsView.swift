@@ -19,7 +19,6 @@ struct SendCryptoDetailsView: View {
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     let group: GroupedChain
     
-    @State var toAddress = ""
     @State var amount = ""
     
     @FocusState private var focusedField: Field?
