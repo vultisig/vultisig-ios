@@ -66,7 +66,7 @@ struct PeerDiscoveryView: View {
     }
     
     var waitingForDevices: some View {
-        VStack {
+        ZStack(alignment: .bottom) {
             content
             bottomButtons
         }
@@ -99,7 +99,7 @@ struct PeerDiscoveryView: View {
     }
     
     var portraitContent: some View {
-        VStack {
+        ScrollView {
             vaultDetail
             qrCode
             list
@@ -143,6 +143,7 @@ struct PeerDiscoveryView: View {
         .padding()
         .cornerRadius(10)
         .shadow(radius: 5)
+        .padding(.vertical, 80)
     }
     
     var paringBarcode: some View {
@@ -155,6 +156,7 @@ struct PeerDiscoveryView: View {
                 .resizable()
                 .scaledToFit()
                 .padding()
+                .frame(maxWidth: 512)
             
             Text(NSLocalizedString("scanQrCode", comment: "Scan QR Code"))
                 .font(.body13Menlo)
@@ -198,6 +200,7 @@ struct PeerDiscoveryView: View {
     
     var instructions: some View {
         InstructionPrompt(networkType: viewModel.selectedNetwork)
+            .padding(.bottom, 150)
     }
     
     var bottomButtons: some View {
@@ -209,6 +212,8 @@ struct PeerDiscoveryView: View {
         }
         .disabled(viewModel.selections.count < 2)
         .opacity(viewModel.selections.count < 2 ? 0.8 : 1)
+        .background(Color.backgroundBlue.opacity(0.95))
+        .edgesIgnoringSafeArea(.bottom)
     }
     
     var keygenView: some View {
