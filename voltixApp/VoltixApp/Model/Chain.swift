@@ -32,25 +32,6 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case ticker
     }
     
-    // TODO: Remove later after team have migrated
-    init(from decoder: any Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if let value = try? container.decode(String.self) {
-            self = Chain(rawValue: value)!
-            return
-        } else {
-            let container = try decoder.container(keyedBy: MigrationKeys.self)
-            let ticker = try container.decode(String.self, forKey: .ticker)
-            
-            for chain in Chain.allCases where chain.ticker == ticker  {
-                self = chain
-                return
-            }
-        }
-        
-        fatalError("Migration failed")
-    }
-    
     var name: String {
         switch self {
         case .thorChain: return "THORChain"

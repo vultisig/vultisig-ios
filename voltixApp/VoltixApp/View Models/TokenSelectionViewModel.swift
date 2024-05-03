@@ -11,9 +11,12 @@ import WalletCore
 
 @MainActor
 class TokenSelectionViewModel: ObservableObject {
+    
     @Published var groupedAssets: [String: [Coin]] = [:]
     @Published var selection = Set<Coin>()
-    
+
+    let actionResolver = CoinActionResolver()
+
     private let logger = Logger(subsystem: "assets-list", category: "view")
 
     var allCoins: [Coin] {
@@ -46,7 +49,7 @@ class TokenSelectionViewModel: ObservableObject {
             selection.remove(asset)
         }
     }
-    
+
     func saveAssets(for vault: Vault) {
         vault.coins = vault.coins.filter { coin in
             selection.contains(where: { $0.ticker == coin.ticker && $0.chain == coin.chain})

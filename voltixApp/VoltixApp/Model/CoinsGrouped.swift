@@ -9,20 +9,24 @@ import Foundation
 
 class GroupedChain {
     let id: String
-    let name: String
+    let chain: Chain
     let address: String
     var logo: String
     var count: Int
     var coins: [Coin]
-    
-    init(name: String, address: String, logo: String, count: Int = 0, coins: [Coin]) {
-        self.id = name + "-" + address
-        self.name = name
+
+    var name: String {
+        return chain.name
+    }
+
+    init(chain: Chain, address: String, logo: String, count: Int = 0, coins: [Coin]) {
+        self.id = chain.name + "-" + address
+        self.chain = chain
         self.address = address
         self.logo = logo
         self.count = count
         self.coins = coins
     }
     
-    static var example = GroupedChain(name: "Ethereum", address: "bc1psrjtwm7682v6nhx2...uwfgcfelrennd7pcvq", logo: "btc", count: 3, coins: [Coin.example])
+    static var example = GroupedChain(chain: .ethereum, address: "bc1psrjtwm7682v6nhx2...uwfgcfelrennd7pcvq", logo: "btc", count: 3, coins: [Coin.example])
 }
