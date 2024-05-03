@@ -47,10 +47,12 @@ class KeygenVerify: ObservableObject {
                         return true
                     }
                 }
+                try await Task.sleep(for: .seconds(1)) // backoff for 1 second
             } catch {
                 self.logger.error("Failed to decode response to JSON: \(error)")
             }
-        } while (Date().timeIntervalSince(start) < 120) // set timeout to 2 minutes
+            
+        } while (Date().timeIntervalSince(start) < 60) // set timeout to 1 minutes
         return false
     }
 }
