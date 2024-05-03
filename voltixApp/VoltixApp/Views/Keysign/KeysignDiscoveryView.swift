@@ -70,7 +70,7 @@ struct KeysignDiscoveryView: View {
     }
     
     var waitingForDevices: some View {
-        VStack {
+        ZStack(alignment: .bottom) {
             content
             bottomButtons
         }
@@ -96,7 +96,7 @@ struct KeysignDiscoveryView: View {
     }
     
     var portraitContent: some View {
-        VStack {
+        ScrollView {
             paringQRCode
             list
         }
@@ -109,16 +109,10 @@ struct KeysignDiscoveryView: View {
                 if participantDiscovery.peersFound.count == 0 {
                     lookingForDevices
                 } else {
-                    deviceContent
+                    deviceList
                 }
+                instructions
             }
-        }
-    }
-    
-    var deviceContent: some View {
-        VStack {
-            deviceList
-            instructions
         }
     }
     
@@ -132,6 +126,7 @@ struct KeysignDiscoveryView: View {
                 .resizable()
                 .scaledToFit()
                 .padding()
+                .frame(maxWidth: 512)
             
             Text(NSLocalizedString("scanQrCode", comment: "Scan QR Code"))
                 .font(.body13Menlo)
@@ -160,26 +155,25 @@ struct KeysignDiscoveryView: View {
         .cornerRadius(10)
         .shadow(radius: 5)
         .padding()
+        .padding(.vertical, 50)
     }
     
     var deviceList: some View {
-        ScrollView{
-            LazyVGrid(columns: columns, spacing: 32) {
-                ForEach(participantDiscovery.peersFound, id: \.self) { peer in
-                    Button {
+        LazyVGrid(columns: columns, spacing: 32) {
+            ForEach(participantDiscovery.peersFound, id: \.self) { peer in
+                Button {
+                    handleSelection(peer)
+                } label: {
+                    PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
+                }
+                .onAppear {
+                    if participantDiscovery.peersFound.count == 1 && participantDiscovery.peersFound.first == peer {
                         handleSelection(peer)
-                    } label: {
-                        PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
-                    }
-                    .onAppear {
-                        if participantDiscovery.peersFound.count == 1 && participantDiscovery.peersFound.first == peer {
-                            handleSelection(peer)
-                        }
                     }
                 }
             }
-            .padding(20)
         }
+        .padding(20)
     }
     
     var networkPrompts: some View {
@@ -188,6 +182,7 @@ struct KeysignDiscoveryView: View {
     
     var instructions: some View {
         InstructionPrompt(networkType: selectedNetwork)
+            .padding(.bottom, 150)
     }
     
     var bottomButtons: some View {
@@ -206,6 +201,8 @@ struct KeysignDiscoveryView: View {
         .opacity(isDisabled ? 0.8 : 1)
         .grayscale(isDisabled ? 1 : 0)
         .padding(40)
+        .background(Color.backgroundBlue.opacity(0.95))
+        .edgesIgnoringSafeArea(.bottom)
     }
     
   
