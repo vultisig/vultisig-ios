@@ -16,7 +16,7 @@ struct NavigationHomeEditButton: View {
         if showVaultsList {
             vaultsListEditButton
         } else {
-            vaultDetailEditButton
+            vaultDetailSettingButton
         }
     }
     
@@ -27,21 +27,21 @@ struct NavigationHomeEditButton: View {
             if isEditingVaults {
                 doneButton
             } else {
-                editButton
+                settingButton
             }
         }
     }
     
-    var vaultDetailEditButton: some View {
+    var vaultDetailSettingButton: some View {
         NavigationLink {
             EditVaultView(vault: vault ?? Vault.example)
         } label: {
-            editButton
+            settingButton
         }
     }
     
-    var editButton: some View {
-        NavigationEditButton()
+    var settingButton: some View {
+        NavigationSettingButton()
     }
     
     var doneButton: some View {
