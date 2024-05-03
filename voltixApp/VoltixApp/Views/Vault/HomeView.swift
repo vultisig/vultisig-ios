@@ -18,6 +18,7 @@ struct HomeView: View {
     
     @State var showVaultsList = false
     @State var isEditingVaults = false
+    @State var isEditingChains = false
     @State var showMenu = false
     
     var body: some View {
@@ -111,7 +112,8 @@ struct HomeView: View {
         NavigationHomeEditButton(
             vault: viewModel.selectedVault,
             showVaultsList: showVaultsList,
-            isEditingVaults: $isEditingVaults
+            isEditingVaults: $isEditingVaults, 
+            isEditingChains: $isEditingChains
         )
     }
     
