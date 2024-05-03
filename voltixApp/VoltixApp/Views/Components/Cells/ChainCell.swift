@@ -10,6 +10,7 @@ import SwiftUI
 struct ChainCell: View {
     let group: GroupedChain
     @Binding var balanceInFiat: String?
+    @Binding var balanceInDecimal: Decimal?
     
     @State var showAlert = false
     @State var showQRcode = false
@@ -104,6 +105,7 @@ struct ChainCell: View {
     
     var balance: some View {
         let balance = viewModel.balanceInFiat
+        let decimalBalance = viewModel.balanceInDecimal
         
         return Text(balance ?? "$0.00000")
             .font(.body16MenloBold)
@@ -111,6 +113,9 @@ struct ChainCell: View {
             .redacted(reason: balance==nil ? .placeholder : [])
             .onChange(of: balance) { oldValue, newValue in
                 balanceInFiat = newValue
+            }
+            .onChange(of: decimalBalance) { oldValue, newValue in
+                balanceInDecimal = newValue
             }
     }
     
@@ -121,6 +126,6 @@ struct ChainCell: View {
 
 #Preview {
     ScrollView {
-        ChainCell(group: GroupedChain.example, balanceInFiat: .constant("$65,899"))
+        ChainCell(group: GroupedChain.example, balanceInFiat: .constant("$65,899"), balanceInDecimal: .constant(65899))
     }
 }
