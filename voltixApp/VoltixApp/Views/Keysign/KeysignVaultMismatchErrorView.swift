@@ -24,13 +24,12 @@ struct KeysignVaultMismatchErrorView: View {
     }
     
     var tryAgainButton: some View {
-        Button {
-            dismiss()
+        NavigationLink {
+            HomeView(showVaultsList: true)
         } label: {
             FilledButton(title: "changeVault")
-                .padding(40)
         }
-
+        .padding(40)
     }
 }
 
