@@ -18,13 +18,28 @@ struct HomeView: View {
     
     @State var showVaultsList = false
     @State var isEditingVaults = false
+    @State var showMenu = false
     
     var body: some View {
         ZStack {
             Background()
-            view
+            
+            if showMenu {
+                SettingsView(showMenu: $showMenu)
+            } else {
+                view
+            }
         }
-        .navigationBarBackButtonHidden(true)
+    }
+    
+    var view: some View {
+        ZStack {
+            if let vault = viewModel.selectedVault {
+                VaultDetailView(showVaultsList: $showVaultsList, vault: vault)
+            }
+            
+            VaultsView(viewModel: viewModel, showVaultsList: $showVaultsList, isEditingVaults: $isEditingVaults)
+        }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 menuButton
@@ -38,21 +53,12 @@ struct HomeView: View {
                 editButton
             }
         }
+        .navigationBarBackButtonHidden(true)
         .onAppear {
             setData()
         }
         .navigationDestination(isPresented: $deeplinkViewModel.joinVaultActive) {
             SetupVaultView(tssType: deeplinkViewModel.tssType ?? .Keygen)
-        }
-    }
-    
-    var view: some View {
-        ZStack {
-            if let vault = viewModel.selectedVault {
-                VaultDetailView(showVaultsList: $showVaultsList, vault: vault)
-            }
-            
-            VaultsView(viewModel: viewModel, showVaultsList: $showVaultsList, isEditingVaults: $isEditingVaults)
         }
     }
     
@@ -93,11 +99,12 @@ struct HomeView: View {
     }
     
     var menuButton: some View {
-        NavigationLink {
-            SettingsView()
+        Button {
+            showMenu.toggle()
         } label: {
             NavigationMenuButton()
         }
+
     }
     
     var editButton: some View {

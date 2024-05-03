@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @Binding var showMenu: Bool
+    
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     
     var body: some View {
@@ -20,7 +22,7 @@ struct SettingsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                NavigationBackButton()
+                NavigationBackSheetButton(showSheet: $showMenu)
             }
         }
     }
@@ -131,6 +133,6 @@ struct SettingsView: View {
 }
 
 #Preview {
-    SettingsView()
+    SettingsView(showMenu: .constant(true))
         .environmentObject(SettingsViewModel())
 }
