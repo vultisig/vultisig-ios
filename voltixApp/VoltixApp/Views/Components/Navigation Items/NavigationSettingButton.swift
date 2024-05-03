@@ -1,17 +1,17 @@
 //
-//  NavigationEditButton.swift
+//  NavigationSettingButton.swift
 //  VoltixApp
 //
-//  Created by Amol Kumar on 2024-04-17.
+//  Created by Amol Kumar on 2024-05-02.
 //
 
 import SwiftUI
 
-struct NavigationEditButton: View {
+struct NavigationSettingButton: View {
     var tint: Color = Color.neutral0
     
     var body: some View {
-        Image(systemName: "square.and.pencil")
+        Image(systemName: "gear")
             .font(.body18MenloBold)
             .foregroundColor(tint)
     }
@@ -20,6 +20,6 @@ struct NavigationEditButton: View {
 #Preview {
     ZStack {
         Background()
-        NavigationEditButton()
+        NavigationSettingButton()
     }
 }
