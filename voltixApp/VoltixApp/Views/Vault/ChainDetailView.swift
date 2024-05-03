@@ -83,7 +83,7 @@ struct ChainDetailView: View {
                     sendButton
                 case .swap:
                     swapButton
-                case .deposit, .custom:
+                case .deposit, .bridge:
                     ActionButton(title: action.title, fontColor: action.color)
                 }
             }

@@ -12,7 +12,9 @@ final class CoinActionResolver {
     private var config: Config?
 
     init() {
-        _ = try? fetchConfig()
+        Task {
+            _ = try? await fetchConfig()
+        }
     }
 
     func resolveActions(for chain: Chain) async -> [CoinAction] {
@@ -39,11 +41,14 @@ private extension CoinActionResolver {
         if let config {
             return config
         }
-        return try fetchConfig()
+        return try await fetchConfig()
     }
 
-    private func fetchConfig() throws -> Config {
+    private func fetchConfig() async throws -> Config {
         let url = URL(string: "https://api.voltix.org/actions/default.json")!
+
+        let (data, _) = try await URLSession.shared.data(from: url)
+
         let jsonData = try Data(contentsOf: url)
         let config = try JSONDecoder().decode(Config.self, from: jsonData)
         self.config = config
