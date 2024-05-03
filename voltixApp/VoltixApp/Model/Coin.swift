@@ -155,6 +155,11 @@ class Coin: Codable, Hashable {
         }
     }
 
+    var tokenChainLogo: String? {
+        guard !isNativeToken else { return nil }
+        return chain.logo
+    }
+
     func toString() -> String {
         let properties = [
             "chain: \(chain.name)",
