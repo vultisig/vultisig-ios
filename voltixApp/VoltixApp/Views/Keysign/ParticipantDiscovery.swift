@@ -22,7 +22,7 @@ class ParticipantDiscovery: ObservableObject {
         self.task?.cancel()
     }
 
-    func getParticipants(serverAddr: String, sessionID: String, localParty: String,pubKeyECDSA: String) {
+    func getParticipants(serverAddr: String, sessionID: String, localParty: String, pubKeyECDSA: String) {
         let urlString = "\(serverAddr)/\(sessionID)"
         let headers =  isKeygen ? TssHelper.getKeygenRequestHeader() : TssHelper.getKeysignRequestHeader(pubKey: pubKeyECDSA)
         

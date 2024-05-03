@@ -55,7 +55,11 @@ struct VaultPairDetailView: View {
                     .frame(maxWidth: .infinity, alignment: .center)
                 
                 ForEach(devicesInfo, id: \.Index) { device in
-                    VaultPairDetailCell(title: device.Signer, description: .empty)
+                    if device.Signer == vault.localPartyID {
+                        VaultPairDetailCell(title: device.Signer + " (This device)", description: .empty)
+                    } else {
+                        VaultPairDetailCell(title: device.Signer, description: .empty)
+                    }
                 }
             }
         }

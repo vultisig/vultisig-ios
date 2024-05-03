@@ -11,7 +11,7 @@ struct NavigationEditButton: View {
     var tint: Color = Color.neutral0
     
     var body: some View {
-        Image(systemName: "square.and.pencil")
+        Image(systemName: "gear")
             .font(.body18MenloBold)
             .foregroundColor(tint)
     }

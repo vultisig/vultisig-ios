@@ -15,6 +15,8 @@ struct VaultsView: View {
     
     @Query(sort: \Vault.order) var vaults: [Vault]
     
+    @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
+    
     var body: some View {
         VStack {
             ZStack {
@@ -33,6 +35,10 @@ struct VaultsView: View {
     }
     
     var view: some View {
+        content
+    }
+    
+    var content: some View {
         VStack {
             list
             Spacer()
@@ -114,5 +120,6 @@ struct VaultsView: View {
     ZStack {
         Background()
         VaultsView(viewModel: HomeViewModel(), showVaultsList: .constant(false), isEditingVaults: .constant(true))
+            .environmentObject(DeeplinkViewModel())
     }
 }

@@ -144,6 +144,8 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     
     func getQrImage(size: CGFloat) -> Image {
         guard let encryptionKeyHex else {return Image(systemName: "xmark")}
+        let jsonData: String
+        
         do {
             let jsonEncoder = JSONEncoder()
             var data: Data
@@ -155,6 +157,8 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                        encryptionKeyHex: encryptionKeyHex,
                                        useVoltixRelay: VoltixRelay.IsRelayEnabled)
                 data = try jsonEncoder.encode(PeerDiscoveryPayload.Keygen(km))
+                let json = String(decoding: data, as: UTF8.self)
+                jsonData = "voltix:?type=NewVault&tssType=Keygen&jsonData=\(json)"
             case .Reshare:
                 let reshareMsg = ReshareMessage(sessionID: sessionID,
                                                 hexChainCode: vault.hexChainCode,
@@ -164,8 +168,9 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                                 encryptionKeyHex: encryptionKeyHex,
                                                 useVoltixRelay: VoltixRelay.IsRelayEnabled)
                 data = try jsonEncoder.encode(PeerDiscoveryPayload.Reshare(reshareMsg))
+                jsonData = "voltix:?type=NewVault&tssType=Reshare&jsonData=\(data)"
             }
-            return Utils.getQrImage(data: data, size: size)
+            return Utils.generateQRCodeImage(from: jsonData)
         } catch {
             logger.error("fail to encode keygen message to json,error:\(error.localizedDescription)")
             return Image(systemName: "xmark")

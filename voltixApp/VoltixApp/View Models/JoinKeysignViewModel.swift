@@ -151,6 +151,8 @@ class JoinKeysignViewModel: ObservableObject {
             }
         })
     }
+    
+    // Scan the QR code and strip the data
     func handleScan(result: Result<ScanResult, ScanError>) {
         defer {
             self.isShowingScanner = false
@@ -158,11 +160,14 @@ class JoinKeysignViewModel: ObservableObject {
         var useVoltixRelay = false
         switch result {
         case .success(let result):
-            let qrCodeResult = result.string
+            guard let json = DeeplinkViewModel.getJsonData(URL(string: result.string)) else {
+                return
+            }
+            
             let decoder = JSONDecoder()
-            if let data = qrCodeResult.data(using: .utf8) {
+            if let jsonData = json.data(using: .utf8) {
                 do {
-                    let keysignMsg = try decoder.decode(KeysignMessage.self, from: data)
+                    let keysignMsg = try decoder.decode(KeysignMessage.self, from: jsonData)
                     self.sessionID = keysignMsg.sessionID
                     self.keysignPayload = keysignMsg.payload
                     self.serviceName = keysignMsg.serviceName

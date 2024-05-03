@@ -11,6 +11,7 @@ import SwiftData
 struct ContentView: View {
     @Query var vaults: [Vault]
     
+    @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var accountViewModel: AccountViewModel
     
     var body: some View {
@@ -28,6 +29,10 @@ struct ContentView: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarTitleTextColor(.neutral0)
+        }
+        .id(deeplinkViewModel.viewID)
+        .onOpenURL { incomingURL in
+            deeplinkViewModel.extractParameters(incomingURL, vaults: vaults)
         }
     }
     
@@ -74,4 +79,5 @@ struct ContentView: View {
 #Preview {
     ContentView()
         .environmentObject(AccountViewModel())
+        .environmentObject(DeeplinkViewModel())
 }

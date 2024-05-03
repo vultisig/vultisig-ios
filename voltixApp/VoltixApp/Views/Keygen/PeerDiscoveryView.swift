@@ -12,7 +12,6 @@ struct PeerDiscoveryView: View {
     
     @StateObject var viewModel = KeygenPeerDiscoveryViewModel()
     @StateObject var participantDiscovery = ParticipantDiscovery(isKeygen: true)
-    
     @State private var orientation = UIDevice.current.orientation
     
     let columns = [
@@ -67,7 +66,7 @@ struct PeerDiscoveryView: View {
     }
     
     var waitingForDevices: some View {
-        VStack {
+        ZStack(alignment: .bottom) {
             content
             bottomButtons
         }
@@ -100,7 +99,7 @@ struct PeerDiscoveryView: View {
     }
     
     var portraitContent: some View {
-        VStack {
+        ScrollView {
             vaultDetail
             qrCode
             list
@@ -144,6 +143,7 @@ struct PeerDiscoveryView: View {
         .padding()
         .cornerRadius(10)
         .shadow(radius: 5)
+        .padding(.vertical, 80)
     }
     
     var paringBarcode: some View {
@@ -156,6 +156,7 @@ struct PeerDiscoveryView: View {
                 .resizable()
                 .scaledToFit()
                 .padding()
+                .frame(maxWidth: 512)
             
             Text(NSLocalizedString("scanQrCode", comment: "Scan QR Code"))
                 .font(.body13Menlo)
@@ -167,12 +168,10 @@ struct PeerDiscoveryView: View {
     }
     
     var deviceList: some View {
-        ScrollView{
-            LazyVGrid(columns: columns, spacing: 32) {
-                devices
-            }
-            .padding(20)
+        LazyVGrid(columns: columns, spacing: 32) {
+            devices
         }
+        .padding(20)
     }
     
     var networkPrompts: some View {
@@ -189,11 +188,17 @@ struct PeerDiscoveryView: View {
             } label: {
                 PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
             }
+            .onAppear {
+                if participantDiscovery.peersFound.count == 1 && participantDiscovery.peersFound.first == peer {
+                    handleSelection(peer)
+                }
+            }
         }
     }
     
     var instructions: some View {
         InstructionPrompt(networkType: viewModel.selectedNetwork)
+            .padding(.bottom, 150)
     }
     
     var bottomButtons: some View {
@@ -205,6 +210,8 @@ struct PeerDiscoveryView: View {
         }
         .disabled(viewModel.selections.count < 2)
         .opacity(viewModel.selections.count < 2 ? 0.8 : 1)
+        .background(Color.backgroundBlue.opacity(0.95))
+        .edgesIgnoringSafeArea(.bottom)
     }
     
     var keygenView: some View {
@@ -220,10 +227,12 @@ struct PeerDiscoveryView: View {
     }
     
     var failureText: some View {
-        Text(self.viewModel.errorMessage)
-            .font(.body15MenloBold)
-            .multilineTextAlignment(.center)
-            .foregroundColor(.red)
+        VStack{
+            Text(self.viewModel.errorMessage)
+                .font(.body15MenloBold)
+                .multilineTextAlignment(.center)
+                .foregroundColor(.red)
+        }
     }
     
     var vaultDetail: some View {
