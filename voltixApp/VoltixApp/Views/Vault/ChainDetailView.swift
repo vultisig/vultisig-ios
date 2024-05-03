@@ -84,7 +84,7 @@ struct ChainDetailView: View {
                 case .swap:
                     swapButton
                 case .deposit, .custom:
-                    getButton(for: action.title, with: action.color)
+                    ActionButton(title: action.title, fontColor: action.color)
                 }
             }
         }
@@ -111,10 +111,6 @@ struct ChainDetailView: View {
         } label: {
             ActionButton(title: "swap", fontColor: .persianBlue200)
         }
-    }
-    
-    var depositButton: some View {
-        ActionButton(title: "deposit", fontColor: .mediumPurple)
     }
     
     var content: some View {
