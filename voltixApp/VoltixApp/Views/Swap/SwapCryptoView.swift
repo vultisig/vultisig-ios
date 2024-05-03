@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct SwapCryptoView: View {
-
     @StateObject var tx = SwapTransaction()
     @StateObject var swapViewModel = SwapCryptoViewModel()
     @StateObject var coinViewModel = CoinViewModel()

@@ -78,7 +78,8 @@ struct EditVaultView: View {
     }
     
     var deviceName: some View {
-        Text(vault.localPartyID).padding(.top, 30)                
+        Text(vault.localPartyID)
+            .padding(.top, 30)
             .font(.body16MenloBold)
             .foregroundColor(.neutral0)
     }
@@ -89,7 +90,6 @@ struct EditVaultView: View {
         } label: {
             EditVaultCell(title: "vaultDetailsTitle", description: "vaultDetailsDescription", icon: "info")
         }
-        .padding(.top, 30)
     }
     
     var backupVault: some View {

@@ -24,7 +24,7 @@ struct SendCryptoVaultErrorView: View {
     
     var tryAgainButton: some View {
         NavigationLink {
-            HomeView()
+            HomeView(showVaultsList: true)
         } label: {
             FilledButton(title: "changeVault")
         }
