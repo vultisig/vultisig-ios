@@ -78,7 +78,9 @@ struct EditVaultView: View {
     }
     
     var deviceName: some View {
-        Text(Utils.getLocalDeviceIdentity()).padding(.top, 30)
+        Text(vault.localPartyID).padding(.top, 30)                
+            .font(.body16MenloBold)
+            .foregroundColor(.neutral0)
     }
     
     var vaultDetails: some View {
