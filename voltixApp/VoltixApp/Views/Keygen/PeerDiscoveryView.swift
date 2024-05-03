@@ -168,12 +168,10 @@ struct PeerDiscoveryView: View {
     }
     
     var deviceList: some View {
-        ScrollView{
-            LazyVGrid(columns: columns, spacing: 32) {
-                devices
-            }
-            .padding(20)
+        LazyVGrid(columns: columns, spacing: 32) {
+            devices
         }
+        .padding(20)
     }
     
     var networkPrompts: some View {
