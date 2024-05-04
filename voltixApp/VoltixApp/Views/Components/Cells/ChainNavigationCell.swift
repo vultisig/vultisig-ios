@@ -19,10 +19,13 @@ struct ChainNavigationCell: View {
             ChainDetailView(group: group, vault: vault, balanceInFiat: balanceInFiat)
         } label: {
             ChainCell(group: group, balanceInFiat: $balanceInFiat, isEditingChains: $isEditingChains)
+                .listRowInsets(EdgeInsets())
+                .listRowSeparator(.hidden)
         }
-        .disabled(isEditingChains ? true : false)
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
+        .disabled(isEditingChains ? true : false)
+        .padding(.vertical, 8)
     }
 }
 
