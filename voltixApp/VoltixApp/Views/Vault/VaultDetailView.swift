@@ -64,8 +64,14 @@ struct VaultDetailView: View {
             ForEach(viewModel.coinsGroupedByChains.sorted(by: {
                 $0.order < $1.order
             }), id: \.id) { group in
-                ChainNavigationCell(group: group, vault: vault, isEditingChains: $isEditingChains)
-                    .listRowInsets(EdgeInsets())
+                ChainNavigationCell(
+                    group: group,
+                    vault: vault,
+                    isEditingChains: $isEditingChains,
+                    totalBalance: $totalBalance,
+                    totalUpdateCount: $totalUpdateCount
+                )
+                .listRowInsets(EdgeInsets())
             }
             .onMove(perform: isEditingChains ? move : nil)
             .background(Color.backgroundBlue)
@@ -93,7 +99,8 @@ struct VaultDetailView: View {
         ForEach(viewModel.coinsGroupedByChains, id: \.id) { group in
             ChainNavigationCell(
                 group: group,
-                vault: vault,
+                vault: vault, 
+                isEditingChains: $isEditingChains,
                 totalBalance: $totalBalance,
                 totalUpdateCount: $totalUpdateCount
             )

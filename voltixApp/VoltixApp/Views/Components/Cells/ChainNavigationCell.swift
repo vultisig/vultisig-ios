@@ -21,7 +21,7 @@ struct ChainNavigationCell: View {
         NavigationLink {
             ChainDetailView(group: group, vault: vault, balanceInFiat: balanceInFiat)
         } label: {
-            ChainCell(group: group, balanceInFiat: $balanceInFiat, isEditingChains: $isEditingChains)
+            ChainCell(group: group, balanceInFiat: $balanceInFiat, isEditingChains: $isEditingChains, balanceInDecimal: $balanceInDecimal)
                 .listRowInsets(EdgeInsets())
                 .listRowSeparator(.hidden)
         }
@@ -46,13 +46,10 @@ struct ChainNavigationCell: View {
 }
 
 #Preview {
-    ChainNavigationCell(group: GroupedChain.example, vault: Vault.example, isEditingChains: .constant(true))
-    
     ChainNavigationCell(
         group: GroupedChain.example,
         vault: Vault.example,
-        totalBalance: .constant(0),
-        totalUpdateCount: .constant(0), 
-        isEditingChains: .constant(true)
+        isEditingChains: .constant(true), totalBalance: .constant(0),
+        totalUpdateCount: .constant(0)
     )
 }
