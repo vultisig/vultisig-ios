@@ -18,12 +18,9 @@ struct ChainNavigationCell: View {
     @State var balanceInDecimal: Decimal? = nil
     
     var body: some View {
-        NavigationLink {
-            ChainDetailView(group: group, vault: vault, balanceInFiat: balanceInFiat)
-        } label: {
-            ChainCell(group: group, balanceInFiat: $balanceInFiat, isEditingChains: $isEditingChains, balanceInDecimal: $balanceInDecimal)
-                .listRowInsets(EdgeInsets())
-                .listRowSeparator(.hidden)
+        ZStack {
+            navigationCell.opacity(0)
+            cell
         }
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
@@ -31,6 +28,18 @@ struct ChainNavigationCell: View {
         .padding(.vertical, 8)
         .onChange(of: balanceInDecimal) { oldValue, newValue in
             updateTotal(newValue)
+        }
+    }
+    
+    var cell: some View {
+        ChainCell(group: group, balanceInFiat: $balanceInFiat, isEditingChains: $isEditingChains, balanceInDecimal: $balanceInDecimal)
+    }
+    
+    var navigationCell: some View {
+        NavigationLink {
+            ChainDetailView(group: group, vault: vault, balanceInFiat: balanceInFiat)
+        } label: {
+            ChainCell(group: group, balanceInFiat: $balanceInFiat, isEditingChains: $isEditingChains, balanceInDecimal: $balanceInDecimal)
         }
     }
     

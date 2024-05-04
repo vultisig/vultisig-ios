@@ -71,16 +71,14 @@ struct VaultDetailView: View {
                     totalBalance: $totalBalance,
                     totalUpdateCount: $totalUpdateCount
                 )
-                .listRowInsets(EdgeInsets())
             }
             .onMove(perform: isEditingChains ? move : nil)
             .background(Color.backgroundBlue)
-            .listRowInsets(EdgeInsets())
         }
         .listStyle(PlainListStyle())
         .frame(height: getListHeight())
-        .padding(.top, 30)
         .background(Color.backgroundBlue)
+        .scrollDisabled(true)
     }
     
     var emptyList: some View {
@@ -93,6 +91,7 @@ struct VaultDetailView: View {
             .font(.body16MenloBold)
             .foregroundColor(.neutral0)
             .redacted(reason: totalUpdateCount>=viewModel.coinsGroupedByChains.count ? [] : .placeholder)
+            .padding(.top, 30)
     }
     
     var chainList: some View {
@@ -116,7 +115,6 @@ struct VaultDetailView: View {
         .padding(16)
         .padding(.bottom, 150)
         .background(Color.backgroundBlue)
-        .listRowInsets(EdgeInsets())
     }
     
     var chooseChainButton: some View {
@@ -127,11 +125,9 @@ struct VaultDetailView: View {
                 Image(systemName: "plus")
                 Text(NSLocalizedString("chooseChains", comment: "Choose Chains"))
             }
-            .listRowInsets(EdgeInsets())
         }
         .font(.body16MenloBold)
         .foregroundColor(.turquoise600)
-        .listRowInsets(EdgeInsets())
     }
     
     var settingsButton: some View {
@@ -141,7 +137,6 @@ struct VaultDetailView: View {
             NavigationSettingButton(tint: .turquoise600)
         }
         .frame(width: 30, height: 30)
-        .listRowInsets(EdgeInsets())
     }
        
     var scanButton: some View {
@@ -209,7 +204,7 @@ struct VaultDetailView: View {
     }
     
     private func getListHeight() -> CGFloat {
-        CGFloat(30+(viewModel.coinsGroupedByChains.count*80))
+        CGFloat(30+(viewModel.coinsGroupedByChains.count*85))
     }
 }
 
