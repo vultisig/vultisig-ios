@@ -204,7 +204,7 @@ struct VaultDetailView: View {
     }
     
     private func getListHeight() -> CGFloat {
-        CGFloat(30+(viewModel.coinsGroupedByChains.count*85))
+        CGFloat(viewModel.coinsGroupedByChains.count*85)
     }
 }
 
