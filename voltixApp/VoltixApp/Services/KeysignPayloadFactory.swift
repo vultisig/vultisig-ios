@@ -22,7 +22,7 @@ struct KeysignPayloadFactory {
     }
 
     enum TransferPayload {
-        case utxo(amountInSats: Int64, feeInSats: Int64)
+        case utxo(amountInSats: Int64, feeInSats: Int64, sendMaxAmount: Bool)
         case evmTransfer(amountInWei: BigInt, gas: String, priorityFeeWei: Int64, nonce: Int64)
         case evmERC20(tokenAmountInWei: BigInt, gas: String, priorityFeeWei: Int64, nonce: Int64)
         case thorchain(amountInSats: Int64, memo: String)
@@ -39,7 +39,7 @@ struct KeysignPayloadFactory {
 
         var utxos: [UtxoInfo] = []
 
-        if case let .UTXO(byteFee) = chainSpecific {
+        if case let .UTXO(byteFee, sendMaxAmount) = chainSpecific {
             let totalAmountNeeded = amount + BigInt(byteFee)
 
             guard let info = utxo.blockchairData.get(coin.blockchairKey)?.selectUTXOsForPayment(amountNeeded: Int64(totalAmountNeeded)).map({

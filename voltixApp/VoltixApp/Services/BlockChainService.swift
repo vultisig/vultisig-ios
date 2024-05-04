@@ -36,12 +36,12 @@ final class BlockChainService {
     private let maya = MayachainService.shared
     private let kuji = KujiraService.shared
     
-    func fetchSpecific(for coin: Coin, action: Action = .transfer) async throws -> BlockChainSpecific {
+    func fetchSpecific(for coin: Coin, action: Action = .transfer, sendMaxAmount: Bool) async throws -> BlockChainSpecific {
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             let sats = try await utxo.fetchSatsPrice(coin: coin)
             let normalized = normalize(sats, action: action)
-            return .UTXO(byteFee: normalized)
+            return .UTXO(byteFee: normalized, sendMaxAmount: sendMaxAmount)
             
         case .thorChain:
             let account = try await thor.fetchAccountNumber(coin.address)

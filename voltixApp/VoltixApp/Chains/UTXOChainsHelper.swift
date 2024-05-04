@@ -91,13 +91,13 @@ class UTXOChainsHelper {
     }
     
     func getSigningInputData(keysignPayload: KeysignPayload, signingInput: BitcoinSigningInput) -> Result<Data, Error> {
-        guard case .UTXO(let byteFee) = keysignPayload.chainSpecific else {
+        guard case .UTXO(let byteFee, let sendMaxAmount) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get UTXO chain specific byte fee"))
         }
         var input = signingInput
         input.byteFee = Int64(byteFee)
         input.hashType = BitcoinScript.hashTypeForCoin(coinType: coin)
-        input.useMaxAmount = false
+        input.useMaxAmount = sendMaxAmount
         for inputUtxo in keysignPayload.utxos {
             let lockScript = BitcoinScript.lockScriptForAddress(address: keysignPayload.coin.address, coin: coin)
             
@@ -143,14 +143,14 @@ class UTXOChainsHelper {
     }
     
     func getBitcoinSigningInput(keysignPayload: KeysignPayload) -> Result<BitcoinSigningInput, Error> {
-        guard case .UTXO(let byteFee) = keysignPayload.chainSpecific else {
+        guard case .UTXO(let byteFee, let sendMaxAmount) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get UTXO chain specific byte fee"))
         }
         
         var input = BitcoinSigningInput.with {
             $0.hashType = BitcoinScript.hashTypeForCoin(coinType: self.coin)
             $0.amount = Int64(keysignPayload.toAmount)
-            $0.useMaxAmount = false
+            $0.useMaxAmount = sendMaxAmount
             $0.toAddress = keysignPayload.toAddress
             $0.changeAddress = keysignPayload.coin.address
             $0.byteFee = Int64(byteFee)

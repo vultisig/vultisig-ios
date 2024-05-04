@@ -43,53 +43,11 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     
     func loadGasInfoForSending(tx: SendTransaction) async{
         do {
-            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.coin)
+            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: false)
             tx.gas = chainSpecific.gas.description
         } catch {
             print("error fetching data: \(error.localizedDescription)")
         }
-    }
-    
-    private func getTransactionPlan(tx: SendTransaction, key:String) -> TW_Bitcoin_Proto_TransactionPlan? {
-        guard let utxoInfo = utxo.blockchairData.get(key)?.selectUTXOsForPayment(amountNeeded: Int64(tx.amountInSats)).map({
-            UtxoInfo(
-                hash: $0.transactionHash ?? "",
-                amount: Int64($0.value ?? 0),
-                index: UInt32($0.index ?? -1)
-            )
-        }), !utxoInfo.isEmpty else {
-            return nil
-        }
-        
-        let totalSelectedAmount = utxoInfo.reduce(0) { $0 + $1.amount }
-        
-        guard let vault = ApplicationState.shared.currentVault else {
-            return nil
-        }
-        
-        let keysignPayload = KeysignPayload(
-            coin: tx.coin,
-            toAddress: tx.toAddress,
-            toAmount: BigInt(totalSelectedAmount),
-            chainSpecific: BlockChainSpecific.UTXO(byteFee: BigInt(tx.feeInSats)),
-            utxos: utxoInfo,
-            memo: tx.memo,
-            swapPayload: nil, 
-            vaultPubKeyECDSA: vault.pubKeyECDSA
-        )
-        
-        if let helper = UTXOChainsHelper.getHelper(vault: vault, coin: tx.coin) {
-            let transactionPlanResult = helper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
-            switch transactionPlanResult {
-            case .success(let plan):
-                return plan
-            case .failure(let error):
-                print("Error generating transaction plan: \(error.localizedDescription)")
-                return nil
-            }
-        }
-        
-        return nil
     }
     
     func setMaxValues(tx: SendTransaction)  {
@@ -98,12 +56,14 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         isLoading = true
         switch tx.coin.chain {
         case .bitcoin,.dogecoin,.litecoin,.bitcoinCash,.dash:
+            tx.sendMaxAmount = true
             tx.amount = utxo.blockchairData.get(key)?.address?.balanceInBTC ?? "0.0"
             if let plan = getTransactionPlan(tx: tx, key: key), plan.amount > 0 {
                 tx.amount = utxo.blockchairData.get(key)?.address?.formatAsBitcoin(Int(plan.amount)) ?? "0.0"
+                tx.gas = plan.fee.description
             }
             Task{
-                await convertToFiat(newValue: tx.amount, tx: tx)
+                await convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: true)
                 isLoading = false
             }
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain:
@@ -185,18 +145,20 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         if let newValueDouble = Double(newValue) {
             let newValueCoin = newValueDouble / priceRateFiat
             tx.amount = String(format: "%.9f", newValueCoin)
+            tx.sendMaxAmount = false
         } else {
             tx.amount = ""
         }
         
     }
     
-    func convertToFiat(newValue: String, tx: SendTransaction) async {
+    func convertToFiat(newValue: String, tx: SendTransaction, setMaxValue: Bool = false) async {
         
         let priceRateFiat = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
         if let newValueDouble = Double(newValue) {
             let newValueFiat = String(format: "%.2f", newValueDouble * priceRateFiat)
             tx.amountInFiat = newValueFiat.isEmpty ? "" : newValueFiat
+            tx.sendMaxAmount = setMaxValue
         } else {
             tx.amountInFiat = ""
         }
@@ -281,5 +243,47 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     func stopMediator() {
         self.mediator.stop()
         logger.info("mediator server stopped.")
+    }
+    
+    private func getTransactionPlan(tx: SendTransaction, key:String) -> TW_Bitcoin_Proto_TransactionPlan? {
+        guard let utxoInfo = utxo.blockchairData.get(key)?.selectUTXOsForPayment(amountNeeded: Int64(tx.amountInSats)).map({
+            UtxoInfo(
+                hash: $0.transactionHash ?? "",
+                amount: Int64($0.value ?? 0),
+                index: UInt32($0.index ?? -1)
+            )
+        }), !utxoInfo.isEmpty else {
+            return nil
+        }
+        
+        let totalSelectedAmount = utxoInfo.reduce(0) { $0 + $1.amount }
+        
+        guard let vault = ApplicationState.shared.currentVault else {
+            return nil
+        }
+        
+        let keysignPayload = KeysignPayload(
+            coin: tx.coin,
+            toAddress: tx.toAddress,
+            toAmount: BigInt(totalSelectedAmount),
+            chainSpecific: BlockChainSpecific.UTXO(byteFee: BigInt(tx.feeInSats), sendMaxAmount: tx.sendMaxAmount),
+            utxos: utxoInfo,
+            memo: tx.memo,
+            swapPayload: nil,
+            vaultPubKeyECDSA: vault.pubKeyECDSA
+        )
+        
+        if let helper = UTXOChainsHelper.getHelper(vault: vault, coin: tx.coin) {
+            let transactionPlanResult = helper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
+            switch transactionPlanResult {
+            case .success(let plan):
+                return plan
+            case .failure(let error):
+                print("Error generating transaction plan: \(error.localizedDescription)")
+                return nil
+            }
+        }
+        
+        return nil
     }
 }
