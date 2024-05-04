@@ -10,6 +10,7 @@ import Foundation
 @MainActor
 class ChainCellViewModel: ObservableObject {
     @Published var balanceInFiat: String? = nil
+    @Published var balanceInDecimal: Decimal? = nil
     @Published var quantity: String? = nil
     
     func loadData(for group: GroupedChain) async {
@@ -41,6 +42,7 @@ class ChainCellViewModel: ObservableObject {
     
     func loadBalance(for group: GroupedChain) async {
         balanceInFiat = nil
+        balanceInDecimal = nil
         var total: Decimal = 0.0
         
         for coin in group.coins {
@@ -48,6 +50,7 @@ class ChainCellViewModel: ObservableObject {
             total += balance
         }
         
+        balanceInDecimal = total
         balanceInFiat = total.formatToFiat()
     }
     

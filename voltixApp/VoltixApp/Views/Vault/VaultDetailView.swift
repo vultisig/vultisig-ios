@@ -17,6 +17,8 @@ struct VaultDetailView: View {
     @EnvironmentObject var viewModel: VaultDetailViewModel
     
     @State var showSheet = false
+    @State var totalBalance: Decimal = 0
+    @State var totalUpdateCount: Int = 0
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -45,6 +47,7 @@ struct VaultDetailView: View {
     var view: some View {
         ScrollView {
             if viewModel.coinsGroupedByChains.count>1 {
+                balanceContent
                 list
             } else {
                 emptyList
@@ -77,6 +80,24 @@ struct VaultDetailView: View {
     var emptyList: some View {
         ErrorMessage(text: "noChainSelected")
             .padding(.vertical, 50)
+    }
+    
+    var balanceContent: some View {
+        Text(totalBalance.formatToFiat())
+            .font(.body16MenloBold)
+            .foregroundColor(.neutral0)
+            .redacted(reason: totalUpdateCount>=viewModel.coinsGroupedByChains.count ? [] : .placeholder)
+    }
+    
+    var chainList: some View {
+        ForEach(viewModel.coinsGroupedByChains, id: \.id) { group in
+            ChainNavigationCell(
+                group: group,
+                vault: vault,
+                totalBalance: $totalBalance,
+                totalUpdateCount: $totalUpdateCount
+            )
+        }
     }
     
     var addButton: some View {
@@ -139,6 +160,8 @@ struct VaultDetailView: View {
     }
     
     private func setData() {
+        totalBalance = 0
+        totalUpdateCount = 0
         viewModel.fetchCoins(for: vault)
         setOrder()
     }

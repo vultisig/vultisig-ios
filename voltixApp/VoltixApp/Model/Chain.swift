@@ -147,4 +147,51 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return .Polkadot
         }
     }
+
+    var logo: String {
+        switch self {
+        case .thorChain:
+            return "rune"
+        case .solana:
+            return "solana"
+        case .ethereum:
+            return "eth"
+        case .avalanche:
+            return "avax"
+        case .base:
+            return "eth_base"
+        case .blast:
+            return "eth_blast"
+        case .arbitrum:
+            return "arbitrum"
+        case .polygon:
+            return "polygon"
+        case .optimism:
+            return "optimism"
+        case .bscChain:
+            return "bsc"
+        case .bitcoin:
+            return "btc"
+        case .bitcoinCash:
+            return "bch"
+        case .litecoin:
+            return "ltc"
+        case .dogecoin:
+            return "doge"
+        case .dash:
+            return "dash"
+        case .gaiaChain:
+            return "atom"
+        case .kujira:
+            return "kuji"
+        case .mayaChain:
+            return "maya"
+        case .cronosChain:
+            return "cro"
+        case .sui:
+            return "sui"
+        case .polkadot:
+            return "polkadot"
+        }
+    }
 }

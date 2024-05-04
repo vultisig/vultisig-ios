@@ -5,8 +5,8 @@ class TokensStore {
     static var TokenSelectionAssets = [
         Coin(chain: Chain.bitcoin, ticker: "BTC", logo: "btc", address: "", priceRate: 0.0, chainType: ChainType.UTXO, decimals: "8", hexPublicKey: "", feeUnit: "Sats/vbyte", priceProviderId: "bitcoin", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "20"),
         
-        Coin(chain: Chain.bitcoinCash, ticker: "BCH", logo: "bch", address: "", priceRate: 0.0, chainType: ChainType.UTXO, decimals: "8", hexPublicKey: "", feeUnit: "Sats/vbyte", priceProviderId: "bitcoin-cash", contractAddress: "", rawBalance: "0", isNativeToken: false, feeDefault: "20"),
-        
+        Coin(chain: Chain.bitcoinCash, ticker: "BCH", logo: "bch", address: "", priceRate: 0.0, chainType: ChainType.UTXO, decimals: "8", hexPublicKey: "", feeUnit: "Sats/vbyte", priceProviderId: "bitcoin-cash", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "20"),
+
         Coin(chain: Chain.litecoin, ticker: "LTC", logo: "ltc", address: "", priceRate: 0.0, chainType: ChainType.UTXO, decimals: "8", hexPublicKey: "", feeUnit: "Lits/vbyte", priceProviderId: "litecoin", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "1000"),
         
         Coin(chain: Chain.dogecoin, ticker: "DOGE", logo: "doge", address: "", priceRate: 0.0, chainType: ChainType.UTXO, decimals: "8", hexPublicKey: "", feeUnit: "Doges/vbyte", priceProviderId: "dogecoin", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "1000000"),

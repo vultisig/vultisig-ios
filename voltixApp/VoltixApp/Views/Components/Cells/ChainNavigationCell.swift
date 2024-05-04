@@ -11,8 +11,11 @@ struct ChainNavigationCell: View {
     let group: GroupedChain
     let vault: Vault
     @Binding var isEditingChains: Bool
+    @Binding var totalBalance: Decimal
+    @Binding var totalUpdateCount: Int
     
     @State var balanceInFiat: String? = nil
+    @State var balanceInDecimal: Decimal? = nil
     
     var body: some View {
         NavigationLink {
@@ -26,9 +29,30 @@ struct ChainNavigationCell: View {
         .listRowSeparator(.hidden)
         .disabled(isEditingChains ? true : false)
         .padding(.vertical, 8)
+        .onChange(of: balanceInDecimal) { oldValue, newValue in
+            updateTotal(newValue)
+        }
+    }
+    
+    private func updateTotal(_ value: Decimal?) {
+        totalUpdateCount += 1
+        
+        guard let value, value>0 else {
+            return
+        }
+        
+        totalBalance += value
     }
 }
 
 #Preview {
     ChainNavigationCell(group: GroupedChain.example, vault: Vault.example, isEditingChains: .constant(true))
+    
+    ChainNavigationCell(
+        group: GroupedChain.example,
+        vault: Vault.example,
+        totalBalance: .constant(0),
+        totalUpdateCount: .constant(0), 
+        isEditingChains: .constant(true)
+    )
 }
