@@ -12,7 +12,7 @@ struct NavigationSettingButton: View {
     
     var body: some View {
         Image(systemName: "gear")
-            .font(.body14MenloBold)
+            .font(.body18MenloBold)
             .foregroundColor(tint)
     }
 }

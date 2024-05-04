@@ -74,7 +74,6 @@ struct ChainDetailView: View {
         }
     }
 
-    @ViewBuilder
     var actionButtons: some View {
         HStack(spacing: 12) {
             ForEach(actions, id: \.rawValue) { action in
