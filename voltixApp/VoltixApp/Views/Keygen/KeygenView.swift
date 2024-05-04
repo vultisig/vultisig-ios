@@ -37,7 +37,7 @@ struct KeygenView: View {
         }
         .navigationBarBackButtonHidden()
         .navigationDestination(isPresented: $viewModel.isLinkActive) {
-            HomeView()
+            HomeView(selectedVault: vault, showVaultsList: false)
         }
         .onAppear {
             setData()

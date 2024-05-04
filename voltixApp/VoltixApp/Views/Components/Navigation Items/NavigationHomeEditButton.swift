@@ -11,6 +11,7 @@ struct NavigationHomeEditButton: View {
     let vault: Vault?
     let showVaultsList: Bool
     @Binding var isEditingVaults: Bool
+    @Binding var isEditingChains: Bool
     
     var body: some View {
         if showVaultsList {
@@ -27,21 +28,25 @@ struct NavigationHomeEditButton: View {
             if isEditingVaults {
                 doneButton
             } else {
-                settingButton
+                editButton
             }
         }
     }
     
     var vaultDetailSettingButton: some View {
-        NavigationLink {
-            EditVaultView(vault: vault ?? Vault.example)
+        Button {
+            isEditingChains.toggle()
         } label: {
-            settingButton
+            if isEditingChains {
+                doneButton
+            } else {
+                editButton
+            }
         }
     }
     
-    var settingButton: some View {
-        NavigationSettingButton()
+    var editButton: some View {
+        NavigationEditButton()
     }
     
     var doneButton: some View {
@@ -55,8 +60,8 @@ struct NavigationHomeEditButton: View {
     ZStack {
         Background()
         VStack {
-            NavigationHomeEditButton(vault: Vault.example, showVaultsList: true, isEditingVaults: .constant(true))
-            NavigationHomeEditButton(vault: Vault.example, showVaultsList: true, isEditingVaults: .constant(false))
+            NavigationHomeEditButton(vault: Vault.example, showVaultsList: true, isEditingVaults: .constant(true), isEditingChains: .constant(true))
+            NavigationHomeEditButton(vault: Vault.example, showVaultsList: true, isEditingVaults: .constant(false), isEditingChains: .constant(false))
         }
     }
 }

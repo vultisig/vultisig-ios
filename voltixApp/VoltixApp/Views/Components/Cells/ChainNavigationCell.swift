@@ -10,6 +10,7 @@ import SwiftUI
 struct ChainNavigationCell: View {
     let group: GroupedChain
     let vault: Vault
+    @Binding var isEditingChains: Bool
     @Binding var totalBalance: Decimal
     @Binding var totalUpdateCount: Int
     
@@ -17,16 +18,28 @@ struct ChainNavigationCell: View {
     @State var balanceInDecimal: Decimal? = nil
     
     var body: some View {
+        ZStack {
+            navigationCell.opacity(0)
+            cell
+        }
+        .listRowInsets(EdgeInsets())
+        .listRowSeparator(.hidden)
+        .disabled(isEditingChains ? true : false)
+        .padding(.vertical, 8)
+        .onChange(of: balanceInDecimal) { oldValue, newValue in
+            updateTotal(newValue)
+        }
+    }
+    
+    var cell: some View {
+        ChainCell(group: group, balanceInFiat: $balanceInFiat, isEditingChains: $isEditingChains, balanceInDecimal: $balanceInDecimal)
+    }
+    
+    var navigationCell: some View {
         NavigationLink {
             ChainDetailView(group: group, vault: vault, balanceInFiat: balanceInFiat)
         } label: {
-            ChainCell(group: group, balanceInFiat: $balanceInFiat, balanceInDecimal: $balanceInDecimal)
-        }
-//        .onAppear {
-//            updateTotal(0)
-//        }
-        .onChange(of: balanceInDecimal) { oldValue, newValue in
-            updateTotal(newValue)
+            ChainCell(group: group, balanceInFiat: $balanceInFiat, isEditingChains: $isEditingChains, balanceInDecimal: $balanceInDecimal)
         }
     }
     
@@ -45,6 +58,7 @@ struct ChainNavigationCell: View {
     ChainNavigationCell(
         group: GroupedChain.example,
         vault: Vault.example,
-        totalBalance: .constant(0),
-        totalUpdateCount: .constant(0))
+        isEditingChains: .constant(true), totalBalance: .constant(0),
+        totalUpdateCount: .constant(0)
+    )
 }
