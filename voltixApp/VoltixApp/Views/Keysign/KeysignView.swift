@@ -66,7 +66,7 @@ struct KeysignView: View {
     }
     
     var forJoinKeysign: some View {
-        JoinKeysignDoneView(viewModel: viewModel)
+        JoinKeysignDoneView(vault: vault, viewModel: viewModel)
     }
     
     private func setData() {
