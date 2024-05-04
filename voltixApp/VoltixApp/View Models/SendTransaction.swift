@@ -12,6 +12,7 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var amountInFiat: String = .empty
     @Published var memo: String = .empty
     @Published var gas: String = .empty
+    @Published var sendMaxAmount: Bool = false
     
     @Published var coin: Coin = Coin(
         chain: Chain.bitcoin,
@@ -161,6 +162,7 @@ class SendTransaction: ObservableObject, Hashable {
         self.amountInFiat = .empty
         self.memo = .empty
         self.gas = .empty
+        self.sendMaxAmount = false
     }
     
     init(coin: Coin) {
@@ -172,6 +174,7 @@ class SendTransaction: ObservableObject, Hashable {
         self.amount = amount
         self.memo = memo
         self.gas = gas
+        self.sendMaxAmount = false
     }
     
     init(toAddress: String, amount: String, memo: String, gas: String, coin: Coin) {
@@ -180,6 +183,7 @@ class SendTransaction: ObservableObject, Hashable {
         self.memo = memo
         self.gas = gas
         self.coin = coin
+        self.sendMaxAmount = false
     }
     
     static func == (lhs: SendTransaction, rhs: SendTransaction) -> Bool {
@@ -187,7 +191,8 @@ class SendTransaction: ObservableObject, Hashable {
         lhs.toAddress == rhs.toAddress &&
         lhs.amount == rhs.amount &&
         lhs.memo == rhs.memo &&
-        lhs.gas == rhs.gas
+        lhs.gas == rhs.gas &&
+        lhs.sendMaxAmount == rhs.sendMaxAmount
     }
     
     func hash(into hasher: inout Hasher) {
@@ -196,6 +201,7 @@ class SendTransaction: ObservableObject, Hashable {
         hasher.combine(amount)
         hasher.combine(memo)
         hasher.combine(gas)
+        hasher.combine(sendMaxAmount)
     }
     
     func reset(coin: Coin) {
@@ -205,6 +211,7 @@ class SendTransaction: ObservableObject, Hashable {
         self.memo = .empty
         self.gas = .empty
         self.coin = coin
+        self.sendMaxAmount = false
     }
     
     func parseCryptoURI(_ uri: String) {

@@ -16,7 +16,7 @@ struct KeysignMessage: Codable, Hashable {
 }
 
 enum BlockChainSpecific: Codable, Hashable {
-    case UTXO(byteFee: BigInt) // byteFee
+    case UTXO(byteFee: BigInt, sendMaxAmount: Bool) // byteFee
     case Ethereum(maxFeePerGasWei: BigInt, priorityFeeWei: BigInt, nonce: Int64, gasLimit: BigInt) // maxFeePerGasWei, priorityFeeWei, nonce , gasLimit
     case THORChain(accountNumber: UInt64, sequence: UInt64)
     case Cosmos(accountNumber: UInt64, sequence: UInt64, gas: UInt64)
@@ -26,7 +26,7 @@ enum BlockChainSpecific: Codable, Hashable {
     
     var gas: BigInt {
         switch self {
-        case .UTXO(let byteFee):
+        case .UTXO(let byteFee, _):
             return byteFee
         case .Ethereum(let maxFeePerGas, _, _, _):
             return maxFeePerGas
@@ -123,5 +123,5 @@ struct KeysignPayload: Codable, Hashable {
         }
     }
     
-    static let example = KeysignPayload(coin: Coin.example, toAddress: "toAddress", toAmount: 100, chainSpecific: BlockChainSpecific.UTXO(byteFee: 100), utxos: [], memo: "Memo", swapPayload: nil, vaultPubKeyECDSA: "12345")
+    static let example = KeysignPayload(coin: Coin.example, toAddress: "toAddress", toAmount: 100, chainSpecific: BlockChainSpecific.UTXO(byteFee: 100, sendMaxAmount: false), utxos: [], memo: "Memo", swapPayload: nil, vaultPubKeyECDSA: "12345")
 }
