@@ -80,11 +80,21 @@ struct TokenSelectorDropdown: View {
     
     private func getCell(for coin: Coin) -> some View {
         HStack(spacing: 12) {
-            Image(coin.logo)
-                .resizable()
-                .frame(width: 32, height: 32)
-                .cornerRadius(50)
-            
+            ZStack {
+                Image(coin.logo)
+                    .resizable()
+                    .frame(width: 32, height: 32)
+                    .cornerRadius(50)
+
+                if let chainIcon = coin.tokenChainLogo {
+                    Image(chainIcon)
+                        .resizable()
+                        .frame(width: 16, height: 16)
+                        .cornerRadius(16)
+                        .offset(x: 12, y: 12)
+                }
+            }
+
             Text(coin.ticker)
                 .font(.body16Menlo)
                 .foregroundColor(.neutral0)
