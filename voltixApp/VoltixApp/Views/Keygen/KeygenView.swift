@@ -94,21 +94,21 @@ struct KeygenView: View {
     var preparingVaultText: some View {
         KeygenStatusText(status: NSLocalizedString("preparingVault", comment: "PREPARING VAULT..."))
             .onAppear {
-                progressCounter += 1
+                progressCounter = 1
             }
     }
     
     var generatingECDSAText: some View {
         KeygenStatusText(status: NSLocalizedString("generatingECDSA", comment: "GENERATING ECDSA KEY"))
             .onAppear {
-                progressCounter += 1
+                progressCounter = 2
             }
     }
     
     var generatingEdDSAText: some View {
         KeygenStatusText(status: NSLocalizedString("generatingEdDSA", comment: "GENERATING EdDSA KEY"))
             .onAppear {
-                progressCounter += 1
+                progressCounter = 3
             }
     }
     
@@ -130,7 +130,7 @@ struct KeygenView: View {
         Text("DONE")
             .foregroundColor(.backgroundBlue)
             .onAppear {
-                progressCounter += 1
+                progressCounter = 4
                 viewModel.delaySwitchToMain()
             }
     }
