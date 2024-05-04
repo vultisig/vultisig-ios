@@ -15,7 +15,7 @@ struct ChainDetailView: View {
     @State var showSheet = false
     @State var tokens: [Coin] = []
     @State var actions: [CoinAction] = []
-
+    @State var isLoading = false
     @StateObject var sendTx = SendTransaction()
     
     @EnvironmentObject var viewModel: TokenSelectionViewModel
@@ -24,6 +24,10 @@ struct ChainDetailView: View {
         ZStack {
             Background()
             view
+            
+            if isLoading {
+                loader
+            }
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString(group.name, comment: ""))
@@ -34,7 +38,14 @@ struct ChainDetailView: View {
             }
             
             ToolbarItem(placement: .topBarTrailing) {
-                NavigationRefreshButton()
+                NavigationRefreshButton(){
+                    Task {
+                        isLoading = true
+                        let (_, _, _) = try await BalanceService.shared.balance(for: sendTx.coin)
+                        await setData()
+                        isLoading = false
+                    }
+                }
             }
         }
         .sheet(isPresented: $showSheet, content: {
@@ -57,6 +68,10 @@ struct ChainDetailView: View {
                 await setData()
             }
         }
+    }
+    
+    var loader: some View {
+        Loader()
     }
     
     var view: some View {
