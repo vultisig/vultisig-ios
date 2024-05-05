@@ -16,7 +16,7 @@ public final class Mediator {
     // Singleton
     public static let shared = Mediator()
     private init() {
-        self.service = NetService(domain: "local.", type: "_http._tcp", name: "VoltixApp", port: Int32(self.port))
+        self.service = NetService(domain: "local.", type: "_http._tcp", name: "VultisigApp", port: Int32(self.port))
         self.setupRoute()
     }
     
