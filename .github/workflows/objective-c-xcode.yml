@@ -26,7 +26,7 @@ jobs:
           echo $default | cat >default
           echo Using default scheme: $default
       - name: Build
-        working-directory: voltixApp
+        working-directory: VultisigApp
         env:
           scheme: ${{ 'default' }}
         run: |
