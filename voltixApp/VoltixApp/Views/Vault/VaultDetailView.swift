@@ -46,7 +46,7 @@ struct VaultDetailView: View {
     
     var view: some View {
         ScrollView {
-            if viewModel.coinsGroupedByChains.count>1 {
+            if viewModel.coinsGroupedByChains.count>=1 {
                 balanceContent
                 list
             } else {

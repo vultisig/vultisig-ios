@@ -10,7 +10,7 @@ import BigInt
 
 enum PolkadotHelper {
     
-    static let defaultFeeInPlancks: BigInt = 200000000 //0.02
+    static let defaultFeeInPlancks: BigInt = 10_000_000_000 //1 DOT, polkadot deletes your account if less than 1 DOT and you lose your dust.
     
     static func getPolkadot(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
         return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).flatMap { addr -> Result<Coin, Error> in
