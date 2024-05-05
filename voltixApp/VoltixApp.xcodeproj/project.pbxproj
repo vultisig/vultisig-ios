@@ -1462,7 +1462,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */;
+			buildConfigurationList = DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -1966,7 +1966,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = VoltixApp/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Voltix;
+				INFOPLIST_KEY_CFBundleDisplayName = Vultisig;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
 				INFOPLIST_KEY_NSCameraUsageDescription = "We need to scan QR Codes.";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Secure your Vault using Face ID";
@@ -2017,7 +2017,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = VoltixApp/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Voltix;
+				INFOPLIST_KEY_CFBundleDisplayName = Vultisig;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
 				INFOPLIST_KEY_NSCameraUsageDescription = "We need to scan QR Codes.";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Secure your Vault using Face ID";
@@ -2149,7 +2149,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "VoltixApp" */ = {
+		DE49A15E2B65F6D9000F3AFB /* Build configuration list for PBXProject "voltixApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DE49A1882B65F6DB000F3AFB /* Debug */,
