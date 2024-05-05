@@ -13,7 +13,7 @@
 			<string>com.voltix.wallet</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>Voltix</string>
+				<string>vultisig</string>
 			</array>
 		</dict>
 	</array>

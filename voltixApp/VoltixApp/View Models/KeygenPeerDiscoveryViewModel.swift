@@ -158,7 +158,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                        useVoltixRelay: VoltixRelay.IsRelayEnabled)
                 data = try jsonEncoder.encode(PeerDiscoveryPayload.Keygen(km))
                 let json = String(decoding: data, as: UTF8.self)
-                jsonData = "voltix:?type=NewVault&tssType=Keygen&jsonData=\(json)"
+                jsonData = "vultisig://vultisig.com?type=NewVault&tssType=Keygen&jsonData=\(json)"
             case .Reshare:
                 let reshareMsg = ReshareMessage(sessionID: sessionID,
                                                 hexChainCode: vault.hexChainCode,
@@ -169,7 +169,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                                 useVoltixRelay: VoltixRelay.IsRelayEnabled)
                 data = try jsonEncoder.encode(PeerDiscoveryPayload.Reshare(reshareMsg))
                 let json = String(decoding: data, as: UTF8.self)
-                jsonData = "voltix:?type=NewVault&tssType=Reshare&jsonData=\(json)"
+                jsonData = "vultisig://vultisig.com?type=NewVault&tssType=Reshare&jsonData=\(json)"
             }
             return Utils.generateQRCodeImage(from: jsonData)
         } catch {
