@@ -13,7 +13,6 @@ import Mediator
 
 @MainActor
 class SendCryptoViewModel: ObservableObject, TransferViewModel {
-    
     @Published var isLoading = false
     @Published var isValidAddress = false
     @Published var isValidForm = true
@@ -285,5 +284,9 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         }
         
         return nil
+    }
+    
+    func handleBackTap() {
+        currentIndex-=1
     }
 }
