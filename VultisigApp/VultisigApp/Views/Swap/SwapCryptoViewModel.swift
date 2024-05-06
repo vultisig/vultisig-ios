@@ -267,6 +267,10 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             await updateQuotes(tx: tx)
         }
     }
+    
+    func handleBackTap() {
+        currentIndex-=1
+    }
 }
 
 private extension SwapCryptoViewModel {
