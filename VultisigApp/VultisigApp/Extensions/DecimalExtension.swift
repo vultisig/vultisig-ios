@@ -8,6 +8,7 @@
 import Foundation
 import Foundation
 import SwiftUI
+import BigInt
 
 extension Decimal {
     func formatToFiat(includeCurrencySymbol: Bool = true) -> String {
@@ -40,6 +41,10 @@ extension Decimal {
         let number = NSDecimalNumber(decimal: self)
         
         return formatter.string(from: number) ?? ""
+    }
+
+    init(_ bigInt: BigInt) {
+        self = .init(string: bigInt.description) ?? 0
     }
 }
 

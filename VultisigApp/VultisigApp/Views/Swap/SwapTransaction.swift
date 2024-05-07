@@ -15,7 +15,7 @@ class SwapTransaction: ObservableObject {
     @Published var toCoin: Coin = .example
     @Published var fromAmount: String = .empty
     @Published var gas: BigInt = .zero
-    @Published var quote: ThorchainSwapQuote?
+    @Published var quote: SwapQuote?
 
     var fromBalance: String {
         return fromCoin.balanceString
@@ -26,10 +26,10 @@ class SwapTransaction: ObservableObject {
     }
 
     var toAmount: String {
-        guard let quote, let expected = Decimal(string: quote.expectedAmountOut) else {
+        guard let amount = quote?.toAmount else {
             return .zero
         }
-        return (expected / Decimal(100_000_000)).description
+        return amount.description
     }
 
     var router: String? {
@@ -37,20 +37,7 @@ class SwapTransaction: ObservableObject {
     }
 
     var inboundFee: BigInt? {
-        guard let quote = quote, let fees = Decimal(string: quote.fees.total) else {
-            return nil
-        }
-        let toDecimals = Int(toCoin.decimals) ?? 0
-        let powerBy = toDecimals - 8
-        let inboundFeeDecimal: Decimal
-        
-        if powerBy >= 0 {
-            inboundFeeDecimal = fees * pow(10, abs(powerBy))
-        } else {
-            inboundFeeDecimal = fees / pow(10, abs(powerBy))
-        }
-
-        return BigInt(stringLiteral: inboundFeeDecimal.description)
+        return quote?.inboundFee(toCoin: toCoin)
     }
 }
 

@@ -156,7 +156,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 vaultAddress: vaultAddress,
                 routerAddress: quote.router,
                 fromAmount: swapFromAmount(tx: tx), 
-                toAmountDecimal: swapToAmountDecimal(quote: quote),
+                toAmountDecimal: Decimal(quote.toAmount),
                 toAmountLimit: "0", streamingInterval: "1", streamingQuantity: "0",
                 expirationTime: UInt64(expirationTime.timeIntervalSince1970)
             )
@@ -332,7 +332,7 @@ private extension SwapCryptoViewModel {
                 throw Errors.insufficientFunds
             }
 
-            tx.quote = quote
+            tx.quote = .thorchain(quote)
 
             try await updateFlow(tx: tx)
         } catch {
@@ -362,13 +362,6 @@ private extension SwapCryptoViewModel {
         
         return BigInt(tx.amountInCoinDecimal)
         
-    }
-
-    func swapToAmountDecimal(quote: ThorchainSwapQuote) -> Decimal {
-        guard let expected = Decimal(string: quote.expectedAmountOut) else {
-            return .zero
-        }
-        return expected / Decimal(100_000_000)
     }
 
     func feeCoin(tx: SwapTransaction) -> Coin {
