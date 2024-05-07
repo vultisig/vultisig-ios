@@ -47,35 +47,14 @@ class SwapTransaction: ObservableObject {
     }
 }
 
-// TODO: Refactor amount conversions
-
 extension SwapTransaction {
-
-    var amountInWei: BigInt {
-        BigInt(amountDecimal * pow(10, Double(EVMHelper.ethDecimals)))
-    }
-
-    var amountInTokenWei: BigInt {
-        let decimals = Double(fromCoin.decimals) ?? Double(EVMHelper.ethDecimals) // The default is always in WEI unless the token has a different one like UDSC
-
-        return BigInt(amountDecimal * pow(10, decimals))
-    }
-
-    var amountInLamports: Int64 {
-        Int64(amountDecimal * 1_000_000_000)
-    }
-
-    var amountInSats: Int64 {
-        Int64(amountDecimal * 100_000_000)
-    }
-
     var amountDecimal: Double {
         let amountString = fromAmount.replacingOccurrences(of: ",", with: ".")
-        return Double(amountString) ?? 0
+        return Double(amountString) ?? .zero
     }
     var amountInCoinDecimal: Int64 {
         let amountDouble = amountDecimal
-        let decimals = Int(fromCoin.decimals) ?? 8
+        let decimals = Int(fromCoin.decimals) ?? .zero
         return Int64(amountDouble * pow(10,Double(decimals)))
     }
 }

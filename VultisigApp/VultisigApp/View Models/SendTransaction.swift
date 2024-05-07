@@ -35,10 +35,6 @@ class SendTransaction: ObservableObject, Hashable {
         coin.address
     }
     
-    var amountInWei: BigInt {
-        BigInt(amountDecimal * pow(10, Double(EVMHelper.ethDecimals)))
-    }
-    
     var isAmountExceeded: Bool {
         
         let totalBalance = BigInt(coin.rawBalance) ?? BigInt.zero
@@ -153,6 +149,7 @@ class SendTransaction: ObservableObject, Hashable {
             }
             return "\(gasDecimal / weiPerGWeiDecimal) \(coin.feeUnit)"
         }
+        
         return "\((gasDecimal / pow(10,decimals)).formatToDecimal(digits: decimals).description) \(coin.feeUnit)"
     }
     
@@ -247,10 +244,6 @@ class SendTransaction: ObservableObject, Hashable {
             "gas: \(gas)",
             "coin: \(coin.toString())",
             "fromAddress: \(fromAddress)",
-            "amountInWei: \(amountInWei)",
-            "amountInTokenWei: \(amountInTokenWei)",
-            "amountInLamports: \(amountInLamports)",
-            "amountInSats: \(amountInSats)",
             "feeInSats: \(feeInSats)",
             "amountDecimal: \(amountDecimal)",
             "amountInCoinDecimal: \(amountInCoinDecimal)",

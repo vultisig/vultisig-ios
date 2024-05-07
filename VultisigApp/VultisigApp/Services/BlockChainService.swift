@@ -64,7 +64,7 @@ final class BlockChainService {
             guard let sequence = UInt64(account?.sequence ?? "0") else {
                 throw Errors.failToGetSequenceNo
             }
-            return .THORChain(accountNumber: accountNumber, sequence: sequence)
+            return .MayaChain(accountNumber: accountNumber, sequence: sequence)
         case .solana:
             async let recentBlockHashPromise = sol.fetchRecentBlockhash()
             async let highPriorityFeePromise = sol.fetchHighPriorityFee(account: coin.address)
