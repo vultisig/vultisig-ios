@@ -75,7 +75,7 @@ extension TssKeysignResponse {
     
     func fromJson(json: Data) throws -> TssKeysignResponse {
         let resp = try JSONDecoder().decode(KeysignSignature.self,from: json)
-        var tssKeysignResp =  TssKeysignResponse()
+        let tssKeysignResp =  TssKeysignResponse()
         tssKeysignResp.msg = resp.msg
         tssKeysignResp.r = resp.r
         tssKeysignResp.s = resp.s

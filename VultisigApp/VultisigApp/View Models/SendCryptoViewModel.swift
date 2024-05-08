@@ -246,7 +246,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     private func getTransactionPlan(tx: SendTransaction, key:String) -> TW_Bitcoin_Proto_TransactionPlan? {
-        guard let utxoInfo = utxo.blockchairData.get(key)?.selectUTXOsForPayment(amountNeeded: Int64(tx.amountInSats)).map({
+        guard let utxoInfo = utxo.blockchairData.get(key)?.selectUTXOsForPayment(amountNeeded: Int64(tx.amountInCoinDecimal)).map({
             UtxoInfo(
                 hash: $0.transactionHash ?? "",
                 amount: Int64($0.value ?? 0),
@@ -266,7 +266,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             coin: tx.coin,
             toAddress: tx.toAddress,
             toAmount: BigInt(totalSelectedAmount),
-            chainSpecific: BlockChainSpecific.UTXO(byteFee: BigInt(tx.feeInSats), sendMaxAmount: tx.sendMaxAmount),
+            chainSpecific: BlockChainSpecific.UTXO(byteFee: tx.gas.toBigInt(), sendMaxAmount: tx.sendMaxAmount),
             utxos: utxoInfo,
             memo: tx.memo,
             swapPayload: nil,

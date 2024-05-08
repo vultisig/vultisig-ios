@@ -100,28 +100,7 @@ class SendTransaction: ObservableObject, Hashable {
         }
         return BigInt.zero
     }
-    
-    var amountInTokenWei: BigInt {
-        let decimals = Double(coin.decimals) ?? Double(EVMHelper.ethDecimals) // The default is always in WEI unless the token has a different one like UDSC
         
-        return BigInt(amountDecimal * pow(10, decimals))
-    }
-    
-    //TODO: Remove and only use the RAW BigInt
-    var amountInLamports: BigInt {
-        BigInt(amountDecimal * 1_000_000_000)
-    }
-    
-    //TODO: Remove and only use the RAW BigInt
-    var amountInSats: BigInt {
-        BigInt(amountDecimal * 100_000_000)
-    }
-    
-    //TODO: Remove and only use the RAW fee
-    var feeInSats: Int64 {
-        Int64(gas) ?? Int64(20) // Assuming that the gas is in sats
-    }
-    
     var amountDecimal: Double {
         let amountString = amount.replacingOccurrences(of: ",", with: ".")
         return Double(amountString) ?? 0
@@ -253,7 +232,6 @@ class SendTransaction: ObservableObject, Hashable {
             "gas: \(gas)",
             "coin: \(coin.toString())",
             "fromAddress: \(fromAddress)",
-            "feeInSats: \(feeInSats)",
             "amountDecimal: \(amountDecimal)",
             "amountInCoinDecimal: \(amountInCoinDecimal)",
             "gasDecimal: \(gasDecimal)"
