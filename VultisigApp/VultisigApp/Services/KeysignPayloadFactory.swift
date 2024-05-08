@@ -39,7 +39,7 @@ struct KeysignPayloadFactory {
 
         var utxos: [UtxoInfo] = []
 
-        if case let .UTXO(byteFee, sendMaxAmount) = chainSpecific {
+        if case let .UTXO(byteFee, _) = chainSpecific {
             let totalAmountNeeded = amount + BigInt(byteFee)
 
             guard let info = utxo.blockchairData.get(coin.blockchairKey)?.selectUTXOsForPayment(amountNeeded: Int64(totalAmountNeeded)).map({

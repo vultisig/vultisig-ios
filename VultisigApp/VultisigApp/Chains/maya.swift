@@ -11,7 +11,7 @@ import WalletCore
 import CryptoSwift
 
 enum MayaChainHelper {
-    static let MayaChainGas: UInt64 = 2000000
+    static let MayaChainGas: UInt64 = 2000000000
     
     static func getMayaCoin(hexPubKey: String, hexChainCode: String, coinTicker: String) -> Result<Coin, Error> {
         let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
@@ -40,7 +40,7 @@ enum MayaChainHelper {
     }
     
     static func getSwapPreSignedInputData(keysignPayload: KeysignPayload, signingInput: CosmosSigningInput) -> Result<Data, Error> {
-        guard case .THORChain(let accountNumber, let sequence) = keysignPayload.chainSpecific else {
+        guard case .MayaChain(let accountNumber, let sequence) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get account number and sequence"))
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
@@ -53,12 +53,13 @@ enum MayaChainHelper {
         input.mode = .sync
         // THORChain fee is 0.02 RUNE
         input.fee = CosmosFee.with {
-            $0.gas = 20000000
+            $0.gas = MayaChainGas
             $0.amounts = [CosmosAmount.with {
                 $0.denom = "cacao"
-                $0.amount = "2000000000"
+                $0.amount = MayaChainGas.description
             }]
         }
+        print(input.debugDescription)
         // memo has been set
         // deposit message has been set
         do {
@@ -78,7 +79,7 @@ enum MayaChainHelper {
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .thorchain,hrp: "maya") else {
             return .failure(HelperError.runtimeError("\(keysignPayload.toAddress) is invalid"))
         }
-        guard case .THORChain(let accountNumber, let sequence) = keysignPayload.chainSpecific else {
+        guard case .MayaChain(let accountNumber, let sequence) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get account number and sequence"))
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
@@ -110,10 +111,12 @@ enum MayaChainHelper {
                 $0.gas = MayaChainGas
                 $0.amounts = [CosmosAmount.with {
                     $0.denom = "cacao"
-                    $0.amount = "2000000"
+                    $0.amount = MayaChainGas.description
                 }]
             }
         }
+        
+        print(input.debugDescription)
         
         do {
             let inputData = try input.serializedData()

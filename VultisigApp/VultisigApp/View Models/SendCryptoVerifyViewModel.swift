@@ -34,23 +34,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
     }
     
     func amount(for coin: Coin, tx: SendTransaction) -> BigInt {
-        switch coin.chain {
-        case .thorChain:
-            return tx.amountInSats
-        case .mayaChain, .polkadot, .gaiaChain, .kujira:
-            return tx.amountInCoinDecimal
-        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain:
-            if coin.isNativeToken {
-                return tx.amountInWei
-            } else {
-                return tx.amountInTokenWei
-            }
-        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
-            return tx.amountInSats
-        case .solana, .sui:
-            return tx.amountInLamports
-            
-        }
+
+        return tx.amountInCoinDecimal
+
     }
     func validateForm(tx: SendTransaction, vault: Vault) async -> KeysignPayload? {
         
