@@ -35,7 +35,7 @@ enum SwapQuote {
         switch self {
         case .thorchain(let quote):
             return quote.totalSwapSeconds
-        case .oneinch(let quote):
+        case .oneinch:
             return nil
         }
     }
@@ -67,7 +67,7 @@ enum SwapQuote {
 
             return BigInt(stringLiteral: inboundFeeDecimal.description)
 
-        case .oneinch(let quote):
+        case .oneinch:
             return .zero
         }
     }
