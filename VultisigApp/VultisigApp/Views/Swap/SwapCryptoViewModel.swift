@@ -26,7 +26,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         }
     }
 
-    private let thorchainService = ThorchainService.shared
+    private let swapService = SwapService.shared
     private let blockchainService = BlockChainService.shared
 
     var keysignPayload: KeysignPayload?
@@ -276,14 +276,11 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 private extension SwapCryptoViewModel {
 
     enum Errors: String, Error, LocalizedError {
-        case swapAmountTooSmall
         case unexpectedError
         case insufficientFunds
 
         var errorDescription: String? {
             switch self {
-            case .swapAmountTooSmall:
-                return "Swap amount too small"
             case .unexpectedError:
                 return "Unexpected swap error"
             case .insufficientFunds:
@@ -314,25 +311,13 @@ private extension SwapCryptoViewModel {
                 return
             }
 
-            guard let quote = try? await thorchainService.fetchSwapQuotes(
-                address: tx.toCoin.address,
-                fromAsset: tx.fromCoin.swapAsset,
-                toAsset: tx.toCoin.swapAsset,
-                amount: (amount * 100_000_000).description, // https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
-                interval: "1") 
-            else {
-                throw Errors.swapAmountTooSmall
-            }
-
-            guard let expected = Decimal(string: quote.expectedAmountOut), !expected.isZero else {
-                throw Errors.swapAmountTooSmall
-            }
+            let quote = try await swapService.fetchQuote(amount: amount, fromCoin: tx.fromCoin, toCoin: tx.toCoin)
 
             if !isSufficientBalance(tx: tx) {
                 throw Errors.insufficientFunds
             }
 
-            tx.quote = .thorchain(quote)
+            tx.quote = quote
 
             try await updateFlow(tx: tx)
         } catch {

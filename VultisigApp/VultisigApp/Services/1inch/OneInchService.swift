@@ -10,12 +10,14 @@ import BigInt
 
 struct OneInchService {
 
-    func fetchQuotes(chain: String, source: String, destination: String, amount: BigInt) async throws -> OneInchQuote {
+    static let shared = OneInchService()
+
+    func fetchQuotes(chain: String, source: String, destination: String, amount: String) async throws -> OneInchQuote {
         let url = Endpoint.fetch1InchSwapQuote(
             chain: chain,
             source: source,
             destination: destination,
-            amount: String(amount)
+            amount: amount
         )
         let request = URLRequest(url: url)
         let (data, _) = try await URLSession.shared.data(for: request)
