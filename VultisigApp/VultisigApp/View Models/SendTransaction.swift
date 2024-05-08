@@ -54,15 +54,15 @@ class SendTransaction: ObservableObject, Hashable {
         return totalTransactionCost > totalBalance
         
     }
-        
+    
     func hasEnoughNativeTokensToPayTheFees() async -> Bool {
-        guard !coin.isNativeToken else { return true } 
-
+        guard !coin.isNativeToken else { return true }
+        
         var gasPriceBigInt = BigInt(gas) ?? BigInt.zero
         if let gasLimitBigInt = BigInt(coin.feeDefault) {
             if coin.chainType == .EVM {
                 gasPriceBigInt *= gasLimitBigInt
-            } 
+            }
             if let vault = ApplicationState.shared.currentVault {
                 if let nativeToken = vault.coins.first(where: { $0.isNativeToken && $0.chain.name == coin.chain.name }) {
                     
@@ -92,8 +92,8 @@ class SendTransaction: ObservableObject, Hashable {
         }
         return false
     }
-
-
+    
+    
     var amountInRaw: BigInt {
         if let decimals = Double(coin.decimals) {
             return BigInt(amountDecimal * pow(10, decimals))
@@ -139,7 +139,7 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     var gasInReadable: String {
-        guard let decimals = Int(coin.decimals) else {
+        guard var decimals = Int(coin.decimals) else {
             return .empty
         }
         if coin.chain.chainType == .EVM {
@@ -148,6 +148,15 @@ class SendTransaction: ObservableObject, Hashable {
                 return .empty
             }
             return "\(gasDecimal / weiPerGWeiDecimal) \(coin.feeUnit)"
+        }
+        
+        // If not a native token we need to get the decimals from the native token
+        if !coin.isNativeToken {
+            if let vault = ApplicationState.shared.currentVault {
+                if let nativeToken = vault.coins.first(where: { $0.isNativeToken && $0.chain.name == coin.chain.name }) {
+                    decimals = Int(nativeToken.decimals) ?? .zero
+                }
+            }
         }
         
         return "\((gasDecimal / pow(10,decimals)).formatToDecimal(digits: decimals).description) \(coin.feeUnit)"
