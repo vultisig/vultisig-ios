@@ -8,15 +8,17 @@
 import SwiftUI
 
 struct SwapCryptoView: View {
+    let coin: Coin
+    let coins: [Coin]
+    let vault: Vault
+    
     @StateObject var tx = SwapTransaction()
     @StateObject var swapViewModel = SwapCryptoViewModel()
     @StateObject var coinViewModel = CoinViewModel()
 
     @State var keysignView: KeysignView?
-
-    let coin: Coin
-    let coins: [Coin]
-    let vault: Vault
+    
+    @Environment(\.dismiss) var dismiss
 
     var body: some View {
         content
@@ -26,7 +28,11 @@ struct SwapCryptoView: View {
             .ignoresSafeArea(.keyboard)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    NavigationBackButton()
+                    Button {
+                        handleBackTap()
+                    } label: {
+                        NavigationBlankBackButton()
+                    }
                 }
             }
             .task {
@@ -167,6 +173,15 @@ struct SwapCryptoView: View {
 
     var errorView: some View {
         SendCryptoSigningErrorView()
+    }
+    
+    private func handleBackTap() {
+        guard swapViewModel.currentIndex>1 else {
+            dismiss()
+            return
+        }
+        
+        swapViewModel.handleBackTap()
     }
 }
 
