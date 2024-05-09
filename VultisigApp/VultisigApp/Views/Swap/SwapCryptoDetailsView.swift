@@ -99,7 +99,7 @@ struct SwapCryptoDetailsView: View {
     }
     
     var toAmountField: some View {
-        SendCryptoAmountTextField(amount: .constant(tx.toAmount), onChange: { _ in })
+        SendCryptoAmountTextField(amount: .constant(tx.toAmountDecimal.description), onChange: { _ in })
             .disabled(true)
     }
     

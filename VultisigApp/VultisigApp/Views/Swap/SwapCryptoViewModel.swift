@@ -71,7 +71,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func showToAmount(tx: SwapTransaction) -> Bool {
-        return tx.toAmount != .empty
+        return tx.toAmountDecimal != 0
     }
     
     func feeString(tx: SwapTransaction) -> String {
@@ -121,7 +121,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             && tx.fromCoin != .example
             && tx.toCoin != .example
             && !tx.fromAmount.isEmpty
-            && !tx.toAmount.isEmpty
+            && !tx.toAmountDecimal.isZero
             && tx.quote != nil
             && isSufficientBalance(tx: tx)
             && !quoteLoading
@@ -156,7 +156,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 vaultAddress: vaultAddress,
                 routerAddress: quote.router,
                 fromAmount: swapFromAmount(tx: tx), 
-                toAmountDecimal: Decimal(quote.toAmount),
+                toAmountDecimal: tx.toAmountDecimal,
                 toAmountLimit: "0", streamingInterval: "1", streamingQuantity: "0",
                 expirationTime: UInt64(expirationTime.timeIntervalSince1970)
             )

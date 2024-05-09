@@ -55,11 +55,13 @@ private extension SwapService {
     }
 
     func fetchOneInchQuote(chain: Int, amount: Decimal, fromCoin: Coin, toCoin: Coin) async throws -> SwapQuote {
+        let rawAmount = fromCoin.raw(for: amount)
         let quote = try await oneInchService.fetchQuotes(
             chain: String(chain),
             source: fromCoin.contractAddress,
             destination: toCoin.contractAddress,
-            amount: amount.description
+            amount: String(rawAmount),
+            from: fromCoin.address
         )
         return .oneinch(quote)
     }

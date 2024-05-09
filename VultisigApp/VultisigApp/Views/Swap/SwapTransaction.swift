@@ -25,11 +25,30 @@ class SwapTransaction: ObservableObject {
         return toCoin.balanceString
     }
 
-    var toAmount: String {
-        guard let amount = quote?.toAmount else {
+    var toAmountDecimal: Decimal {
+        guard let quote else {
             return .zero
         }
-        return amount.description
+        switch quote {
+        case .thorchain(let quote):
+            let expected = Decimal(string: quote.expectedAmountOut) ?? 0
+            return expected / Decimal(100_000_000)
+        case .oneinch(let quote):
+            let amount = BigInt(stringLiteral: quote.dstAmount)
+            return toCoin.decimal(for: amount)
+        }
+    }
+
+    var toAmountRaw: BigInt {
+        guard let quote else {
+            return .zero
+        }
+        switch quote {
+        case .thorchain:
+            return toCoin.raw(for: toAmountDecimal)
+        case .oneinch(let quote):
+            return BigInt(stringLiteral: quote.dstAmount)
+        }
     }
 
     var router: String? {

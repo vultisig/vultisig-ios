@@ -12,16 +12,6 @@ enum SwapQuote {
     case thorchain(ThorchainSwapQuote)
     case oneinch(OneInchQuote)
 
-    var toAmount: BigInt {
-        switch self {
-        case .thorchain(let quote):
-            let expected = BigInt(stringLiteral: quote.expectedAmountOut)
-            return expected / 100_000_000
-        case .oneinch(let quote):
-            return BigInt(stringLiteral: quote.toAmount)
-        }
-    }
-
     var router: String? {
         switch self {
         case .thorchain(let quote):

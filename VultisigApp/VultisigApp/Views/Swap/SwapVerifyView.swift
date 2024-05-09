@@ -92,7 +92,7 @@ struct SwapVerifyView: View {
     }
 
     func getToAmount() -> String {
-        return "\(tx.toAmount) \(tx.toCoin.ticker)"
+        return "\(tx.toAmountDecimal.description) \(tx.toCoin.ticker)"
     }
 
     func getValueCell(for title: String, with value: String) -> some View {
