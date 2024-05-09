@@ -35,10 +35,6 @@ class SendTransaction: ObservableObject, Hashable {
         coin.address
     }
     
-    var amountInWei: BigInt {
-        BigInt(amountDecimal * pow(10, Double(EVMHelper.ethDecimals)))
-    }
-    
     var isAmountExceeded: Bool {
         
         let totalBalance = BigInt(coin.rawBalance) ?? BigInt.zero
@@ -58,15 +54,15 @@ class SendTransaction: ObservableObject, Hashable {
         return totalTransactionCost > totalBalance
         
     }
-        
+    
     func hasEnoughNativeTokensToPayTheFees() async -> Bool {
-        guard !coin.isNativeToken else { return true } 
-
+        guard !coin.isNativeToken else { return true }
+        
         var gasPriceBigInt = BigInt(gas) ?? BigInt.zero
         if let gasLimitBigInt = BigInt(coin.feeDefault) {
             if coin.chainType == .EVM {
                 gasPriceBigInt *= gasLimitBigInt
-            } 
+            }
             if let vault = ApplicationState.shared.currentVault {
                 if let nativeToken = vault.coins.first(where: { $0.isNativeToken && $0.chain.name == coin.chain.name }) {
                     
@@ -96,36 +92,15 @@ class SendTransaction: ObservableObject, Hashable {
         }
         return false
     }
-
-
+    
+    
     var amountInRaw: BigInt {
         if let decimals = Double(coin.decimals) {
             return BigInt(amountDecimal * pow(10, decimals))
         }
         return BigInt.zero
     }
-    
-    var amountInTokenWei: BigInt {
-        let decimals = Double(coin.decimals) ?? Double(EVMHelper.ethDecimals) // The default is always in WEI unless the token has a different one like UDSC
         
-        return BigInt(amountDecimal * pow(10, decimals))
-    }
-    
-    //TODO: Remove and only use the RAW BigInt
-    var amountInLamports: BigInt {
-        BigInt(amountDecimal * 1_000_000_000)
-    }
-    
-    //TODO: Remove and only use the RAW BigInt
-    var amountInSats: BigInt {
-        BigInt(amountDecimal * 100_000_000)
-    }
-    
-    //TODO: Remove and only use the RAW fee
-    var feeInSats: Int64 {
-        Int64(gas) ?? Int64(20) // Assuming that the gas is in sats
-    }
-    
     var amountDecimal: Double {
         let amountString = amount.replacingOccurrences(of: ",", with: ".")
         return Double(amountString) ?? 0
@@ -143,7 +118,7 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     var gasInReadable: String {
-        guard let decimals = Int(coin.decimals) else {
+        guard var decimals = Int(coin.decimals) else {
             return .empty
         }
         if coin.chain.chainType == .EVM {
@@ -153,6 +128,16 @@ class SendTransaction: ObservableObject, Hashable {
             }
             return "\(gasDecimal / weiPerGWeiDecimal) \(coin.feeUnit)"
         }
+        
+        // If not a native token we need to get the decimals from the native token
+        if !coin.isNativeToken {
+            if let vault = ApplicationState.shared.currentVault {
+                if let nativeToken = vault.coins.first(where: { $0.isNativeToken && $0.chain.name == coin.chain.name }) {
+                    decimals = Int(nativeToken.decimals) ?? .zero
+                }
+            }
+        }
+        
         return "\((gasDecimal / pow(10,decimals)).formatToDecimal(digits: decimals).description) \(coin.feeUnit)"
     }
     
@@ -247,11 +232,6 @@ class SendTransaction: ObservableObject, Hashable {
             "gas: \(gas)",
             "coin: \(coin.toString())",
             "fromAddress: \(fromAddress)",
-            "amountInWei: \(amountInWei)",
-            "amountInTokenWei: \(amountInTokenWei)",
-            "amountInLamports: \(amountInLamports)",
-            "amountInSats: \(amountInSats)",
-            "feeInSats: \(feeInSats)",
             "amountDecimal: \(amountDecimal)",
             "amountInCoinDecimal: \(amountInCoinDecimal)",
             "gasDecimal: \(gasDecimal)"

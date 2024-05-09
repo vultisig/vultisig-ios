@@ -3,21 +3,21 @@ import WalletCore
 
 class TokensStore {
     static var TokenSelectionAssets = [
-        Coin(chain: Chain.bitcoin, ticker: "BTC", logo: "btc", address: "", priceRate: 0.0, chainType: ChainType.UTXO, decimals: "8", hexPublicKey: "", feeUnit: "Sats/vbyte", priceProviderId: "bitcoin", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "20"),
+        Coin(chain: Chain.bitcoin, ticker: "BTC", logo: "btc", address: "", priceRate: 0.0, chainType: ChainType.UTXO, decimals: "8", hexPublicKey: "", feeUnit: "BTC/vbyte", priceProviderId: "bitcoin", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "20"),
         
-        Coin(chain: Chain.bitcoinCash, ticker: "BCH", logo: "bch", address: "", priceRate: 0.0, chainType: ChainType.UTXO, decimals: "8", hexPublicKey: "", feeUnit: "Sats/vbyte", priceProviderId: "bitcoin-cash", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "20"),
-
-        Coin(chain: Chain.litecoin, ticker: "LTC", logo: "ltc", address: "", priceRate: 0.0, chainType: ChainType.UTXO, decimals: "8", hexPublicKey: "", feeUnit: "Lits/vbyte", priceProviderId: "litecoin", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "1000"),
+        Coin(chain: Chain.bitcoinCash, ticker: "BCH", logo: "bch", address: "", priceRate: 0.0, chainType: ChainType.UTXO, decimals: "8", hexPublicKey: "", feeUnit: "BCH/vbyte", priceProviderId: "bitcoin-cash", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "20"),
         
-        Coin(chain: Chain.dogecoin, ticker: "DOGE", logo: "doge", address: "", priceRate: 0.0, chainType: ChainType.UTXO, decimals: "8", hexPublicKey: "", feeUnit: "Doges/vbyte", priceProviderId: "dogecoin", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "1000000"),
+        Coin(chain: Chain.litecoin, ticker: "LTC", logo: "ltc", address: "", priceRate: 0.0, chainType: ChainType.UTXO, decimals: "8", hexPublicKey: "", feeUnit: "LTC/vbyte", priceProviderId: "litecoin", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "1000"),
         
-        Coin(chain: Chain.dash, ticker: "DASH", logo: "dash", address: "", priceRate: 0.0, chainType: ChainType.UTXO, decimals: "8", hexPublicKey: "", feeUnit: "Sats/vbyte", priceProviderId: "dash", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "20"),
+        Coin(chain: Chain.dogecoin, ticker: "DOGE", logo: "doge", address: "", priceRate: 0.0, chainType: ChainType.UTXO, decimals: "8", hexPublicKey: "", feeUnit: "DOGE/vbyte", priceProviderId: "dogecoin", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "1000000"),
+        
+        Coin(chain: Chain.dash, ticker: "DASH", logo: "dash", address: "", priceRate: 0.0, chainType: ChainType.UTXO, decimals: "8", hexPublicKey: "", feeUnit: "DASH/vbyte", priceProviderId: "dash", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "20"),
         
         Coin(chain: Chain.thorChain, ticker: "RUNE", logo: "rune", address: "", priceRate: 0.0, chainType: ChainType.THORChain, decimals: "8", hexPublicKey: "", feeUnit: "Rune", priceProviderId: "thorchain", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "0.02"),
         
-        Coin(chain: Chain.mayaChain, ticker: "CACAO", logo: "cacao", address: "", priceRate: 0.0, chainType: ChainType.THORChain, decimals: "10", hexPublicKey: "", feeUnit: "cacao", priceProviderId: "cacao", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "0.02"),
+        Coin(chain: Chain.mayaChain, ticker: "CACAO", logo: "cacao", address: "", priceRate: 0.0, chainType: ChainType.THORChain, decimals: "10", hexPublicKey: "", feeUnit: "cacao", priceProviderId: "cacao", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "2000000000"),
         
-        Coin(chain: Chain.mayaChain, ticker: "MAYA", logo: "maya", address: "", priceRate: 0.0, chainType: ChainType.THORChain, decimals: "4", hexPublicKey: "", feeUnit: "cacao", priceProviderId: "maya", contractAddress: "", rawBalance: "0", isNativeToken: false, feeDefault: "0.02"),
+        Coin(chain: Chain.mayaChain, ticker: "MAYA", logo: "maya", address: "", priceRate: 0.0, chainType: ChainType.THORChain, decimals: "4", hexPublicKey: "", feeUnit: "cacao", priceProviderId: "maya", contractAddress: "", rawBalance: "0", isNativeToken: false, feeDefault: "2000000000"),
         
         Coin(chain: Chain.ethereum, ticker: "ETH", logo: "eth", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "ethereum", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "23000"),
         
@@ -35,7 +35,7 @@ class TokensStore {
         
         Coin(chain: Chain.ethereum, ticker: "FLIP", logo: "flip", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "chainflip", contractAddress: "0x826180541412d574cf1336d22c0c0a287822678a", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
         
-        Coin(chain: Chain.solana, ticker: "SOL", logo: "solana", address: "", priceRate: 0.0, chainType: ChainType.Solana, decimals: "9", hexPublicKey: "", feeUnit: "Lamports", priceProviderId: "solana", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "7000"),
+        Coin(chain: Chain.solana, ticker: "SOL", logo: "solana", address: "", priceRate: 0.0, chainType: ChainType.Solana, decimals: "9", hexPublicKey: "", feeUnit: "SOL", priceProviderId: "solana", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "7000"),
         
         Coin(chain: Chain.avalanche, ticker: "AVAX", logo: "avax", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "avalanche-2", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "23000"),
         
@@ -71,11 +71,21 @@ class TokensStore {
         
         Coin(chain: Chain.cronosChain, ticker: "CRO", logo: "cro", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "crypto-com-chain", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "23000"),
         
-        Coin(chain: Chain.sui, ticker: "SUI", logo: "sui", address: "", priceRate: 0.0, chainType: ChainType.Sui, decimals: "9", hexPublicKey: "", feeUnit: "MIST", priceProviderId: "sui", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "500000000"), //0.5 SUI limit
+        Coin(chain: Chain.sui, ticker: "SUI", logo: "sui", address: "", priceRate: 0.0, chainType: ChainType.Sui, decimals: "9", hexPublicKey: "", feeUnit: "SUI", priceProviderId: "sui", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "500000000"), //0.5 SUI limit
         
         Coin(chain: Chain.polkadot, ticker: "DOT", logo: "dot", address: "", priceRate: 0.0, chainType: ChainType.Polkadot, decimals: "10", hexPublicKey: "", feeUnit: "DOT", priceProviderId: "polkadot", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "10000000000"), //find the default fee per unit
         
     ]
+    
+    static func getNativeToken(coin: Coin) throws -> Coin {
+        if coin.isNativeToken {
+            return coin
+        }
+        guard let nativeToken = TokenSelectionAssets.first(where: { $0.isNativeToken && $0.chain == coin.chain }) else {
+            throw TokenSelectionAssetError.error(message: "We could not find the native/parent token for the token \(coin.ticker)")
+        }
+        return nativeToken
+    }
     
     static func getCoin(_ ticker: String, coinType: CoinType) -> Coin? {
         return TokenSelectionAssets.first(where: { $0.ticker == ticker && $0.coinType == coinType}) ?? nil
@@ -89,5 +99,16 @@ class TokensStore {
         clonedCoin.address = address
         clonedCoin.hexPublicKey = hexPublicKey
         return .success(clonedCoin)
+    }
+    
+    enum TokenSelectionAssetError: Error {
+        case error(message: String)
+        
+        var localizedDescription: String {
+            switch self {
+            case let .error(message):
+                return "Error: \(message)"
+            }
+        }
     }
 }

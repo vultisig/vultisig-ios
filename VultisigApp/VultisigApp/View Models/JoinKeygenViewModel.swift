@@ -154,7 +154,7 @@ class JoinKeygenViewModel: ObservableObject {
             }
             handleQrCodeSuccessResult(scanData: jsonData)
             
-        case .failure(let error):
+        case .failure(_):
             errorMessage = "Unable to scan the QR code. Please import an image using the button below."
             status = .FailToStart
             return

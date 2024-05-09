@@ -47,9 +47,7 @@ private extension CoinActionResolver {
     private func fetchConfig() async throws -> Config {
         let url = URL(string: "https://api.voltix.org/actions/default.json")!
 
-        let (data, _) = try await URLSession.shared.data(from: url)
-
-        let jsonData = try Data(contentsOf: url)
+        let (jsonData, _) = try await URLSession.shared.data(from: url)
         let config = try JSONDecoder().decode(Config.self, from: jsonData)
         self.config = config
         return config

@@ -359,43 +359,13 @@ private extension SwapCryptoViewModel {
     }
     
     func amount(for coin: Coin, tx: SwapTransaction) -> Int64 {
-        switch coin.chain {
-        case .thorChain:
-            return tx.amountInSats
-        case .mayaChain, .polkadot:
-            return tx.amountInCoinDecimal
-        case .ethereum, .avalanche,.arbitrum, .bscChain, .base, .optimism, .polygon, .blast, .cronosChain:
-            if coin.isNativeToken {
-                return Int64(tx.amountInWei)
-            } else {
-                return Int64(tx.amountInTokenWei)
-            }
-        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
-            return tx.amountInSats
-        case .gaiaChain, .kujira:
-            return tx.amountInCoinDecimal
-        case .solana, .sui:
-            return tx.amountInLamports
-        }
+        return tx.amountInCoinDecimal
     }
     
     func swapFromAmount(tx: SwapTransaction) -> BigInt {
-        switch tx.fromCoin.chain {
-        case .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
-            return BigInt(tx.amountInSats)
-        case .mayaChain, .polkadot:
-            return BigInt(tx.amountInCoinDecimal)
-        case .ethereum, .avalanche,.arbitrum, .bscChain, .base, .optimism, .polygon, .blast, .cronosChain:
-            if tx.fromCoin.isNativeToken {
-                return BigInt(tx.amountInWei)
-            } else {
-                return BigInt(tx.amountInTokenWei)
-            }
-        case .gaiaChain, .kujira:
-            return BigInt(tx.amountInCoinDecimal)
-        case .solana, .sui:
-            return BigInt(tx.amountInLamports)
-        }
+        
+        return BigInt(tx.amountInCoinDecimal)
+        
     }
 
     func swapToAmountDecimal(quote: ThorchainSwapQuote) -> Decimal {
