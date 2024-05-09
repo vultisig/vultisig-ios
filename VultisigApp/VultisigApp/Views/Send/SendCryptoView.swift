@@ -15,9 +15,10 @@ struct SendCryptoView: View {
     @StateObject var sendCryptoViewModel = SendCryptoViewModel()
     @StateObject var sendCryptoVerifyViewModel = SendCryptoVerifyViewModel()
     
-    
     @State var keysignPayload: KeysignPayload? = nil
     @State var keysignView: KeysignView? = nil
+    
+    @Environment(\.dismiss) var dismiss
     
     var body: some View {
         content
@@ -27,7 +28,11 @@ struct SendCryptoView: View {
             .ignoresSafeArea(.keyboard)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    NavigationBackButton()
+                    Button {
+                        handleBackTap()
+                    } label: {
+                        NavigationBlankBackButton()
+                    }
                 }
             }
             .onAppear {
@@ -156,6 +161,15 @@ struct SendCryptoView: View {
     
     private func setData() async {
         await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
+    }
+    
+    private func handleBackTap() {
+        guard sendCryptoViewModel.currentIndex>1 else {
+            dismiss()
+            return
+        }
+        
+        sendCryptoViewModel.handleBackTap()
     }
 }
 
