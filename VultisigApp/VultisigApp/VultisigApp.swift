@@ -34,11 +34,13 @@ struct VultisigApp: App {
         }
         .modelContainer(sharedModelContainer)
         .onChange(of: scenePhase) {
+            print(scenePhase)
             switch scenePhase {
             case .active:
                 continueLogin()
             case .inactive, .background:
                 resetLogin()
+                deeplinkViewModel.viewID = UUID()
             default:
                 break
             }
