@@ -7,8 +7,8 @@
 
 import Foundation
 
-struct OneInchQuote: Codable {
-    struct Transaction: Codable {
+struct OneInchQuote: Codable, Hashable {
+    struct Transaction: Codable, Hashable {
         let from: String
         let to: String
         let data: String

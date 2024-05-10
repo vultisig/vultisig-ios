@@ -71,7 +71,13 @@ class EVMHelper {
         return input.magnitude.serialize()
     }
     
-    func getPreSignedInputData(signingInput: EthereumSigningInput, keysignPayload: KeysignPayload) -> Result<Data, Error> {
+    func getPreSignedInputData(
+        signingInput: EthereumSigningInput,
+        keysignPayload: KeysignPayload,
+        gas: BigUInt? = nil,
+        gasPrice: BigUInt? = nil) -> Result<Data, Error>
+    {
+
         guard let intChainID = Int(coinType.chainId) else {
             return .failure(HelperError.runtimeError("fail to get chainID"))
         }
@@ -88,10 +94,17 @@ class EVMHelper {
         var input = signingInput
         input.chainID = Data(hexString: Int64(intChainID).hexString())!
         input.nonce = Data(hexString: nonce.hexString())!
-        input.gasLimit = gasLimit.magnitude.serialize()
-        input.maxFeePerGas = maxFeePerGasWei.magnitude.serialize()
-        input.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
-        input.txMode = .enveloped
+
+        if let gas, let gasPrice {
+            input.gasLimit = gas.serialize()
+            input.gasPrice = gasPrice.serialize()
+            input.txMode = .legacy
+        } else {
+            input.gasLimit = gasLimit.magnitude.serialize()
+            input.maxFeePerGas = maxFeePerGasWei.magnitude.serialize()
+            input.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
+            input.txMode = .enveloped
+        }
 
         do {
             let inputData = try input.serializedData()

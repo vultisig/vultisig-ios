@@ -60,11 +60,11 @@ struct KeysignPayload: Codable, Hashable {
     // it is up to the signing device to get the presign keyhash , and sign it with the main device
     let utxos: [UtxoInfo]
     let memo: String? // optional memo
-    let swapPayload: THORChainSwapPayload?
+    let swapPayload: SwapPayload?
     let approvePayload: ERC20ApprovePayload?
     let vaultPubKeyECDSA: String
     
-    init(coin: Coin, toAddress: String, toAmount: BigInt, chainSpecific: BlockChainSpecific, utxos: [UtxoInfo], memo: String?, swapPayload: THORChainSwapPayload?, approvePayload: ERC20ApprovePayload? = nil, vaultPubKeyECDSA: String) {
+    init(coin: Coin, toAddress: String, toAmount: BigInt, chainSpecific: BlockChainSpecific, utxos: [UtxoInfo], memo: String?, swapPayload: SwapPayload?, approvePayload: ERC20ApprovePayload? = nil, vaultPubKeyECDSA: String) {
         self.coin = coin
         self.toAddress = toAddress
         self.toAmount = toAmount
@@ -84,8 +84,14 @@ struct KeysignPayload: Codable, Hashable {
     
     func getKeysignMessages(vault: Vault) -> Result<[String], Error> {
         if let swapPayload {
-            let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-            return swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: self)
+            switch swapPayload {
+            case .thorchain(let payload):
+                let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                return swaps.getPreSignedImageHash(swapPayload: payload, keysignPayload: self)
+            case .oneInch(let payload):
+                let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                return swaps.getPreSignedImageHash(payload: payload, keysignPayload: self)
+            }
         }
         
         if let approvePayload {
