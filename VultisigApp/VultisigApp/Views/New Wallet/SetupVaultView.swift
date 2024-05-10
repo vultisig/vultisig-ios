@@ -13,6 +13,8 @@ struct SetupVaultView: View {
     @State var vault: Vault? = nil
     @Query var vaults: [Vault]
     
+    @State var selectedTab: SetupVaultState = .TwoOfTwoVaults
+    
     var body: some View {
         ZStack {
             Background()
@@ -38,31 +40,22 @@ struct SetupVaultView: View {
     
     var view: some View {
         VStack {
-            title
             image
             messageModal
             buttons
         }
-        .padding(.top, 30)
     }
     
     var image: some View {
-        Image("SetupDevicesImage")
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .padding(30)
+        SetupVaultTabView(selectedTab: $selectedTab)
             .frame(maxHeight: .infinity)
-    }
-    
-    var title: some View {
-        Text(NSLocalizedString("need3Devices", comment: "Same Wifi instructions"))
-            .font(.body16Menlo)
-            .foregroundColor(.neutral0)
+            .padding(.top, 30)
     }
     
     var messageModal: some View {
         WifiInstruction()
             .frame(maxHeight: 80)
+            .offset(y: -20)
     }
     
     var buttons: some View {
@@ -71,11 +64,12 @@ struct SetupVaultView: View {
             joinButton
         }
         .padding(40)
+        .offset(y: -40)
     }
     
     var startButton: some View {
         NavigationLink {
-            PeerDiscoveryView(tssType: tssType, vault: vault ?? Vault(name: "New Vault"))
+            PeerDiscoveryView(tssType: tssType, vault: vault ?? Vault(name: "New Vault"), selectedTab: selectedTab)
         } label: {
             FilledButton(title: "start")
         }

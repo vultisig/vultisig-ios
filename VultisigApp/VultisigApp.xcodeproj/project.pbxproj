@@ -174,6 +174,10 @@
 		A6F2C5492BA001460095C8E3 /* ChainSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5482BA001460095C8E3 /* ChainSelectionView.swift */; };
 		A6F2C54B2BA003E10095C8E3 /* TokenSelectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C54A2BA003E10095C8E3 /* TokenSelectionCell.swift */; };
 		A6F2C54F2BA009420095C8E3 /* TokenSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C54E2BA009420095C8E3 /* TokenSelectionViewModel.swift */; };
+		A6F9E7A52BED6BC800BA36E1 /* SetupVaultTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9E7A42BED6BC800BA36E1 /* SetupVaultTabView.swift */; };
+		A6F9E7A72BED6BD100BA36E1 /* SetupVaultTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9E7A62BED6BD100BA36E1 /* SetupVaultTab.swift */; };
+		A6F9E7A92BED6BDB00BA36E1 /* SetupVaultImageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9E7A82BED6BDB00BA36E1 /* SetupVaultImageManager.swift */; };
+		A6F9E7AB2BED6CCC00BA36E1 /* SetupVaultState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9E7AA2BED6CCC00BA36E1 /* SetupVaultState.swift */; };
 		A6F9F7DB2B9BA2DE00790258 /* ChainCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9F7DA2B9BA2DD00790258 /* ChainCell.swift */; };
 		A6F9F7DD2B9BA5F000790258 /* CoinCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9F7DC2B9BA5F000790258 /* CoinCell.swift */; };
 		A6F9F7DF2B9BAA9F00790258 /* Separator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9F7DE2B9BAA9F00790258 /* Separator.swift */; };
@@ -469,6 +473,10 @@
 		A6F2C5482BA001460095C8E3 /* ChainSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainSelectionView.swift; sourceTree = "<group>"; };
 		A6F2C54A2BA003E10095C8E3 /* TokenSelectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionCell.swift; sourceTree = "<group>"; };
 		A6F2C54E2BA009420095C8E3 /* TokenSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionViewModel.swift; sourceTree = "<group>"; };
+		A6F9E7A42BED6BC800BA36E1 /* SetupVaultTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultTabView.swift; sourceTree = "<group>"; };
+		A6F9E7A62BED6BD100BA36E1 /* SetupVaultTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultTab.swift; sourceTree = "<group>"; };
+		A6F9E7A82BED6BDB00BA36E1 /* SetupVaultImageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultImageManager.swift; sourceTree = "<group>"; };
+		A6F9E7AA2BED6CCC00BA36E1 /* SetupVaultState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultState.swift; sourceTree = "<group>"; };
 		A6F9F7DA2B9BA2DD00790258 /* ChainCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainCell.swift; sourceTree = "<group>"; };
 		A6F9F7DC2B9BA5F000790258 /* CoinCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinCell.swift; sourceTree = "<group>"; };
 		A6F9F7DE2B9BAA9F00790258 /* Separator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Separator.swift; sourceTree = "<group>"; };
@@ -610,6 +618,11 @@
 		049BBB4E2B71E37B004C231F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				A6F9F7D92B9BA2CF00790258 /* Cells */,
+				A633B1232B993FCC003D1738 /* Buttons */,
+				A6966D272BA4009B00903CA4 /* TextFields */,
+				A633B1342B997D35003D1738 /* Navigation Items */,
+				A6F9E7A32BED6BA200BA36E1 /* New Wallet */,
 				049BBB5D2B71E83D004C231F /* VultisigLogo.swift */,
 				049BBB672B71E9C5004C231F /* WifiInstruction.swift */,
 				A6F9F7DE2B9BAA9F00790258 /* Separator.swift */,
@@ -621,10 +634,6 @@
 				A65BA9832BAA07B500B2D8AA /* Background.swift */,
 				A65BA98D2BAD311200B2D8AA /* Loader.swift */,
 				A69069A02BCDEFD400F28A8B /* ProgressRing.swift */,
-				A6F9F7D92B9BA2CF00790258 /* Cells */,
-				A633B1232B993FCC003D1738 /* Buttons */,
-				A6966D272BA4009B00903CA4 /* TextFields */,
-				A633B1342B997D35003D1738 /* Navigation Items */,
 				A69069A22BCE2FD300F28A8B /* KeygenStatusText.swift */,
 				A5CBA32B2BCD747C00088CC3 /* TappableTextFieldStyle.swift */,
 				A69069B42BCF538000F28A8B /* NetworkPrompts.swift */,
@@ -969,6 +978,7 @@
 				46B106502BA7CAFE00564023 /* ChainType.swift */,
 				A6A793E22BB508C000CC5950 /* Keygen */,
 				A69069B62BCF53B600F28A8B /* NetworkPromptType.swift */,
+				A6F9E7AA2BED6CCC00BA36E1 /* SetupVaultState.swift */,
 			);
 			path = States;
 			sourceTree = "<group>";
@@ -1022,6 +1032,15 @@
 				A6C0D55E2BB3B73900156689 /* UTXOTransactionsView.swift */,
 			);
 			path = Transactions;
+			sourceTree = "<group>";
+		};
+		A6F9E7A32BED6BA200BA36E1 /* New Wallet */ = {
+			isa = PBXGroup;
+			children = (
+				A6F9E7A62BED6BD100BA36E1 /* SetupVaultTab.swift */,
+				A6F9E7A82BED6BDB00BA36E1 /* SetupVaultImageManager.swift */,
+			);
+			path = "New Wallet";
 			sourceTree = "<group>";
 		};
 		A6F9F7D92B9BA2CF00790258 /* Cells */ = {
@@ -1127,6 +1146,7 @@
 				A633B12C2B994E92003D1738 /* CreateVaultView.swift */,
 				A633B1392B9A5A22003D1738 /* ImportWalletView.swift */,
 				A633B13B2B9A6564003D1738 /* SetupVaultView.swift */,
+				A6F9E7A42BED6BC800BA36E1 /* SetupVaultTabView.swift */,
 			);
 			path = "New Wallet";
 			sourceTree = "<group>";
@@ -1542,6 +1562,7 @@
 				463408662BA9C1D200246248 /* CoinTypeExtension.swift in Sources */,
 				DE8AD7472BC78FA400339775 /* Encryption.swift in Sources */,
 				DE4DFA7B2B7B1692004F8E73 /* ModelContainerPreview.swift in Sources */,
+				A6F9E7A72BED6BD100BA36E1 /* SetupVaultTab.swift in Sources */,
 				A6F9F7E52B9BB4D100790258 /* NavigationMenuButton.swift in Sources */,
 				049BBB5E2B71E83D004C231F /* VultisigLogo.swift in Sources */,
 				DE1572A02B70F284009BC7C5 /* KeysignView.swift in Sources */,
@@ -1635,6 +1656,7 @@
 				A633B1252B993FE7003D1738 /* FilledButton.swift in Sources */,
 				46F47CBB2B870EE900D964EA /* UTXOTransactionMempool.swift in Sources */,
 				A5D49F5A2BE26C87001766C8 /* Coin+ChainAction.swift in Sources */,
+				A6F9E7A92BED6BDB00BA36E1 /* SetupVaultImageManager.swift in Sources */,
 				D9AD8EDA2B6722CC0009F8D5 /* ApplicationState.swift in Sources */,
 				A6C0D55A2BB3AAA200156689 /* ChainHeaderCell.swift in Sources */,
 				B5E95E092BED84D9003778F0 /* ImagePicker.swift in Sources */,
@@ -1739,6 +1761,7 @@
 				A65BA9902BAD402A00B2D8AA /* KeysignMessageConfirmView.swift in Sources */,
 				A66A0BD52BA124D00021A483 /* EditVaultView.swift in Sources */,
 				DE49A19C2B67133D000F3AFB /* Vault.swift in Sources */,
+				A6F9E7AB2BED6CCC00BA36E1 /* SetupVaultState.swift in Sources */,
 				A55BCEBB2BC59E8100D35917 /* KeysignPayloadFactory.swift in Sources */,
 				A564ED442BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift in Sources */,
 				A6BACF1C2BC79B3100084810 /* TokenSelectionView.swift in Sources */,
@@ -1784,6 +1807,7 @@
 				A5199AF02BBD8C0400AA0A39 /* ThorchainSwapQuote.swift in Sources */,
 				DE49A1672B65F6D9000F3AFB /* VultisigApp.swift in Sources */,
 				A60CA7E72BB0EC6100FDEB5C /* AccountViewModel.swift in Sources */,
+				A6F9E7A52BED6BC800BA36E1 /* SetupVaultTabView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

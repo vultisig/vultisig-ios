@@ -176,3 +176,12 @@
 "invalidBalance" = "Invalid balance";
 "cannotDisableChain" = "Cannot Disable Chain";
 "needToRemoveTokens" = "All the tokens within this chain needs to be removed before proceeding.";
+"2Of2Vault" = "2 of 2 Vault";
+"2Of3Vault" = "2 of 3 Vault";
+"MOfNVault" = "M of N Vault";
+"youNeedAtLeast" = "You need at least";
+"devices" = "Devices";
+"startFromOneDevice" = "START from one device";
+"pairFromThe" = "PAIR from the";
+"second" = "Second";
+"secondAndThird" = "Second and Third";
