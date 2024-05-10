@@ -5,15 +5,18 @@
 //  Created by Amol Kumar on 2024-03-15.
 //
 
-import OSLog
 import SwiftUI
+import OSLog
 import CodeScanner
+import UniformTypeIdentifiers
 
 struct SendCryptoAddressTextField: View {
     @ObservedObject var tx: SendTransaction
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     
     @State var showScanner = false
+    @State var showImagePicker = false  // State for showing the ImagePicker
+    @State var selectedImage: UIImage?  // Store the selected image
     
     var body: some View {
         ZStack(alignment: .trailing) {
@@ -30,9 +33,12 @@ struct SendCryptoAddressTextField: View {
         .padding(.horizontal, 12)
         .background(Color.blue600)
         .cornerRadius(10)
-        .sheet(isPresented: $showScanner, content: {
+        .sheet(isPresented: $showScanner) {
             codeScanner
-        })
+        }
+        .sheet(isPresented: $showImagePicker, onDismiss: processImage) {
+            ImagePicker(selectedImage: $selectedImage)
+        }
     }
     
     var placeholder: some View {
@@ -61,12 +67,13 @@ struct SendCryptoAddressTextField: View {
             
             pasteButton
             scanButton
+            fileButton
         }
     }
     
-   var codeScanner: some View {
-       QRCodeScannerView(showScanner: $showScanner, handleScan: handleScan)
-   }
+    var codeScanner: some View {
+        QRCodeScannerView(showScanner: $showScanner, handleScan: handleScan)
+    }
     
     var pasteButton: some View {
         Button {
@@ -88,6 +95,24 @@ struct SendCryptoAddressTextField: View {
                 .foregroundColor(.neutral0)
                 .frame(width: 40, height: 40)
         }
+    }
+    
+    var fileButton: some View {
+        Button {
+            showImagePicker.toggle()
+        } label: {
+            Image(systemName: "photo.badge.plus")
+                .font(.body16Menlo)
+                .foregroundColor(.neutral0)
+                .frame(width: 40, height: 40)
+        }
+    }
+    
+    private func processImage() {
+        guard let selectedImage = selectedImage else { return }
+        
+        
+        handleImageQrCode(image: selectedImage)
     }
     
     private func handleScan(result: Result<ScanResult, ScanError>) {
@@ -115,8 +140,30 @@ struct SendCryptoAddressTextField: View {
             }
         }
     }
+    
+    private func handleImageQrCode(image: UIImage) {
+        
+        let qrCodeFromImage = Utils.handleQrCodeFromImage(image: image)
+        let (address, amount, message) = Utils.parseCryptoURI(String(data: qrCodeFromImage, encoding: .utf8) ?? .empty)
+        
+        tx.toAddress = address
+        tx.amount = amount
+        tx.memo = message
+        
+        DebounceHelper.shared.debounce {
+            validateAddress(address)
+        }
+        
+        Task{
+            if !amount.isEmpty {
+                await sendCryptoViewModel.convertToFiat(newValue: amount, tx: tx)
+            }
+        }
+        
+    }
 }
 
 #Preview {
     SendCryptoAddressTextField(tx: SendTransaction(), sendCryptoViewModel: SendCryptoViewModel())
 }
+
