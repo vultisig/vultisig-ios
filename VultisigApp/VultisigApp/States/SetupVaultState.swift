@@ -12,7 +12,11 @@ enum SetupVaultState: String, CaseIterable {
     case TwoOfThreeVaults = "2Of3Vault"
     case MOfNVaults = "MOfNVault"
     
-    func getTitle() -> String {
+    func getDescription() -> String {
+        getTitle() + getFirstDescription() + getSecondDescription()
+    }
+    
+    private func getTitle() -> String {
         let title: String
         
         switch self {
@@ -24,14 +28,14 @@ enum SetupVaultState: String, CaseIterable {
             title = NSLocalizedString("MOfNVault", comment: "")
         }
         
-        return title
+        return title + "\n"
     }
     
-    func getFirstDescription() -> String {
-        "1. " + NSLocalizedString("startFromOneDevice", comment: "")
+    private func getFirstDescription() -> String {
+        "1. " + NSLocalizedString("startFromOneDevice", comment: "") + "\n"
     }
     
-    func getSecondDescription() -> String {
+    private func getSecondDescription() -> String {
         let description: String
         
         switch self {
@@ -43,6 +47,6 @@ enum SetupVaultState: String, CaseIterable {
             description = NSLocalizedString("other", comment: "")
         }
         
-        return "2. " + NSLocalizedString("pairFromThe", comment: "") + description + NSLocalizedString("devices", comment: "")
+        return "2. " + NSLocalizedString("pairFromThe", comment: "") + " \(description) " + NSLocalizedString("device", comment: "")
     }
 }

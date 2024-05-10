@@ -11,9 +11,19 @@ struct SetupVaultTabView: View {
     @State var selectedTab: SetupVaultState = .TwoOfTwoVaults
     
     var body: some View {
+        ZStack {
+            Background()
+            content
+        }
+    }
+    
+    var content: some View {
         VStack {
             SetupVaultTab(selectedTab: $selectedTab)
+            SetupVaultImageManager(selectedTab: $selectedTab)
+            Spacer()
         }
+        .padding(16)
     }
 }
 

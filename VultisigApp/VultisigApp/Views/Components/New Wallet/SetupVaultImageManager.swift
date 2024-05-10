@@ -8,11 +8,27 @@
 import SwiftUI
 
 struct SetupVaultImageManager: View {
+    @Binding var selectedTab: SetupVaultState
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        VStack {
+            text
+        }
+        .padding(24)
+    }
+    
+    var text: some View {
+        Text(selectedTab.getDescription())
+            .font(.body12MontserratSemiBold)
+            .foregroundColor(.neutral0)
+            .lineSpacing(8)
+            .multilineTextAlignment(.center)
     }
 }
 
 #Preview {
-    SetupVaultImageManager()
+    ZStack {
+        Background()
+        SetupVaultImageManager(selectedTab: .constant(.TwoOfTwoVaults))
+    }
 }
