@@ -48,13 +48,13 @@ class SwapTransaction: ObservableObject {
 }
 
 extension SwapTransaction {
-    var amountDecimal: Double {
+    
+    var amountDecimal: Decimal {
         let amountString = fromAmount.replacingOccurrences(of: ",", with: ".")
-        return Double(amountString) ?? .zero
+        return Decimal(string: amountString) ?? .zero
     }
-    var amountInCoinDecimal: Int64 {
-        let amountDouble = amountDecimal
-        let decimals = Int(fromCoin.decimals) ?? .zero
-        return Int64(amountDouble * pow(10,Double(decimals)))
+    
+    var amountInCoinDecimal: BigInt {
+        return fromCoin.raw(for: amountDecimal)
     }
 }

@@ -172,7 +172,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             keysignPayload = try await keysignFactory.buildTransfer(
                 coin: tx.fromCoin,
                 toAddress: toAddress,
-                amount: BigInt(amount(for: tx.fromCoin, tx: tx)),
+                amount: tx.amountInCoinDecimal,
                 memo: nil,
                 chainSpecific: chainSpecific,
                 swapPayload: swapPayload, 
@@ -356,10 +356,6 @@ private extension SwapCryptoViewModel {
 
     func clear(tx: SwapTransaction) {
         tx.quote = nil
-    }
-    
-    func amount(for coin: Coin, tx: SwapTransaction) -> Int64 {
-        return tx.amountInCoinDecimal
     }
     
     func swapFromAmount(tx: SwapTransaction) -> BigInt {
