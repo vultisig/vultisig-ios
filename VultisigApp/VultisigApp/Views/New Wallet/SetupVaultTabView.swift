@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SetupVaultTabView: View {
-    @State var selectedTab: SetupVaultState = .TwoOfTwoVaults
+    @Binding var selectedTab: SetupVaultState
     
     var body: some View {
         ZStack {
@@ -29,6 +29,6 @@ struct SetupVaultTabView: View {
 #Preview {
     ZStack {
         Background()
-        SetupVaultTabView()
+        SetupVaultTabView(selectedTab: .constant(.TwoOfTwoVaults))
     }
 }

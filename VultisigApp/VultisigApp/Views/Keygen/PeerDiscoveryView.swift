@@ -9,6 +9,7 @@ import SwiftUI
 struct PeerDiscoveryView: View {
     let tssType: TssType
     let vault: Vault
+    let selectedTab: SetupVaultState
     
     @StateObject var viewModel = KeygenPeerDiscoveryViewModel()
     @StateObject var participantDiscovery = ParticipantDiscovery(isKeygen: true)
@@ -189,9 +190,7 @@ struct PeerDiscoveryView: View {
                 PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
             }
             .onAppear {
-                if participantDiscovery.peersFound.count == 1 && participantDiscovery.peersFound.first == peer {
-                    handleSelection(peer)
-                }
+                handleAutoSelection()
             }
         }
     }
@@ -240,6 +239,7 @@ struct PeerDiscoveryView: View {
             .font(.body15MenloBold)
             .multilineTextAlignment(.center)
     }
+    
     private func handleSelection(_ peer: String) {
         if viewModel.selections.contains(peer) {
             if peer != viewModel.localPartyID {
@@ -249,13 +249,30 @@ struct PeerDiscoveryView: View {
             viewModel.selections.insert(peer)
         }
         let totalSigners = viewModel.selections.count
+        
         if totalSigners >= 2 {
             let threshold = Int(ceil(Double(totalSigners) * 2.0 / 3.0))
             viewModel.vaultDetail = "\(threshold)of\(totalSigners) Vault"
         }
     }
+    
+    private func handleAutoSelection() {
+        if selectedTab == .TwoOfTwoVaults {
+            if participantDiscovery.peersFound.count == 1 {
+                handleSelection(participantDiscovery.peersFound[0])
+                viewModel.showSummary()
+            }
+        } else if selectedTab == .TwoOfThreeVaults {
+            if participantDiscovery.peersFound.count == 1 {
+                handleSelection(participantDiscovery.peersFound[0])
+            } else if participantDiscovery.peersFound.count == 2 {
+                handleSelection(participantDiscovery.peersFound[1])
+                viewModel.showSummary()
+            }
+        }
+    }
 }
 
 #Preview {
-    PeerDiscoveryView(tssType: .Keygen, vault: Vault.example)
+    PeerDiscoveryView(tssType: .Keygen, vault: Vault.example, selectedTab: .TwoOfTwoVaults)
 }

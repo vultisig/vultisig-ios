@@ -13,6 +13,8 @@ struct SetupVaultView: View {
     @State var vault: Vault? = nil
     @Query var vaults: [Vault]
     
+    @State var selectedTab: SetupVaultState = .TwoOfTwoVaults
+    
     var body: some View {
         ZStack {
             Background()
@@ -45,7 +47,7 @@ struct SetupVaultView: View {
     }
     
     var image: some View {
-        SetupVaultTabView()
+        SetupVaultTabView(selectedTab: $selectedTab)
             .frame(maxHeight: .infinity)
             .padding(.top, 30)
     }
@@ -67,7 +69,7 @@ struct SetupVaultView: View {
     
     var startButton: some View {
         NavigationLink {
-            PeerDiscoveryView(tssType: tssType, vault: vault ?? Vault(name: "New Vault"))
+            PeerDiscoveryView(tssType: tssType, vault: vault ?? Vault(name: "New Vault"), selectedTab: selectedTab)
         } label: {
             FilledButton(title: "start")
         }
