@@ -16,6 +16,7 @@ struct SetupVaultTab: View {
                 getCell(for: type)
             }
         }
+        .padding(.top, 30)
     }
     
     private func getCell(for state: SetupVaultState) -> some View {

@@ -21,7 +21,6 @@ struct SetupVaultTabView: View {
         VStack {
             SetupVaultTab(selectedTab: $selectedTab)
             SetupVaultImageManager(selectedTab: $selectedTab)
-            Spacer()
         }
         .padding(16)
     }

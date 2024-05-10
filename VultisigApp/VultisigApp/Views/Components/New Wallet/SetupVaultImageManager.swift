@@ -11,10 +11,12 @@ struct SetupVaultImageManager: View {
     @Binding var selectedTab: SetupVaultState
     
     var body: some View {
-        VStack {
+        VStack(spacing: 12) {
             text
+            image
         }
         .padding(24)
+        .clipped()
     }
     
     var text: some View {
@@ -24,11 +26,18 @@ struct SetupVaultImageManager: View {
             .lineSpacing(8)
             .multilineTextAlignment(.center)
     }
+    
+    var image: some View {
+        Image(selectedTab.getImage())
+            .resizable()
+            .aspectRatio(contentMode: .fill)
+            .frame(maxWidth: .infinity)
+    }
 }
 
 #Preview {
     ZStack {
         Background()
-        SetupVaultImageManager(selectedTab: .constant(.TwoOfTwoVaults))
+        SetupVaultImageManager(selectedTab: .constant(.MOfNVaults))
     }
 }

@@ -16,6 +16,20 @@ enum SetupVaultState: String, CaseIterable {
         getTitle() + getFirstDescription() + getSecondDescription()
     }
     
+    func getImage() -> String {
+        let image: String
+        
+        switch self {
+        case .TwoOfTwoVaults:
+            image = "SetupVaultImage1"
+        case .TwoOfThreeVaults:
+            image = "SetupVaultImage2"
+        case .MOfNVaults:
+            image = "SetupVaultImage3"
+        }
+        return image
+    }
+    
     private func getTitle() -> String {
         let title: String
         
