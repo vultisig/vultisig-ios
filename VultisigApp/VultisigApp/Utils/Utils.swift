@@ -212,14 +212,14 @@ enum Utils {
         let context = CIContext()
         let filter = CIFilter.qrCodeGenerator()
         filter.message = Data(string.utf8)
-
+        
         if let outputImage = filter.outputImage {
             if let cgImage = context.createCGImage(outputImage, from: outputImage.extent) {
                 return Image(uiImage: UIImage(cgImage: cgImage))
                     .interpolation(.none)
             }
         }
-
+        
         let image = UIImage(systemName: "xmark.circle") ?? UIImage()
         return Image(uiImage: image)
             .interpolation(.none)
@@ -241,6 +241,34 @@ enum Utils {
         }
         
         return Image(cgImage, scale: 1.0, orientation: .up, label: Text("QRCode"))
+    }
+    
+    public static func parseCryptoURI(_ uri: String) -> (address: String, amount: String, message: String){
+        
+        var address: String = .empty
+        var amount: String = .empty
+        var message: String = .empty
+        
+        guard let url = URLComponents(string: uri) else {
+            print("Invalid URI")
+            return (.empty, .empty, .empty)
+        }
+        
+        address = url.host ?? url.path
+        
+        url.queryItems?.forEach { item in
+            switch item.name {
+            case "amount":
+                amount = item.value ?? ""
+            case "label", "message":
+                if let value = item.value, !value.isEmpty {
+                    message += (message.isEmpty ? "" : " ") + value
+                }
+            default:
+                print("Unknown query item: \(item.name)")
+            }
+        }
+        return (address, amount, message)
     }
     
     public static func handleQrCodeFromImage(result: Result<[URL], Error>) -> Data{
@@ -271,6 +299,21 @@ enum Utils {
             
         case .failure(let error):
             print("Error selecting file: \(error.localizedDescription)")
+        }
+        return Data()
+    }
+    
+    public static func handleQrCodeFromImage(image: UIImage) -> Data {
+        let qrStrings = detectQRCode(image)
+        if qrStrings.isEmpty {
+            print("No QR codes detected.")
+            return Data()
+        } else {
+            for qrString in qrStrings {
+                if let data = qrString.data(using: .utf8) {
+                    return data
+                }
+            }
         }
         return Data()
     }
