@@ -14,6 +14,7 @@ struct SetupVaultImageManager: View {
         VStack(spacing: 12) {
             text
             image
+            Spacer()
         }
         .padding(24)
         .clipped()
