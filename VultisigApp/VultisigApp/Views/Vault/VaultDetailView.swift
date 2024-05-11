@@ -37,6 +37,9 @@ struct VaultDetailView: View {
         .onChange(of: vault.coins) {
             setData()
         }
+        .onDisappear {
+            resetTotal()
+        }
         .sheet(isPresented: $showSheet, content: {
             NavigationView {
                 ChainSelectionView(showChainSelectionSheet: $showSheet, vault: vault)
@@ -162,10 +165,14 @@ struct VaultDetailView: View {
     }
     
     private func setData() {
-        totalBalance = 0
-        totalUpdateCount = 0
+        resetTotal()
         viewModel.fetchCoins(for: vault)
         setOrder()
+    }
+    
+    private func resetTotal() {
+        totalBalance = 0
+        totalUpdateCount = 0
     }
     
     private func setOrder() {

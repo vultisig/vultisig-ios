@@ -17,6 +17,8 @@ struct ChainNavigationCell: View {
     @State var balanceInFiat: String? = nil
     @State var balanceInDecimal: Decimal? = nil
     
+    @EnvironmentObject var viewModel: VaultDetailViewModel
+    
     var body: some View {
         ZStack {
             navigationCell.opacity(0)
@@ -44,12 +46,11 @@ struct ChainNavigationCell: View {
     }
     
     private func updateTotal(_ value: Decimal?) {
-        totalUpdateCount += 1
-        
-        guard let value, value>0 else {
+        guard let value, totalUpdateCount <= viewModel.coinsGroupedByChains.count else {
             return
         }
         
+        totalUpdateCount += 1
         totalBalance += value
     }
 }
@@ -61,4 +62,5 @@ struct ChainNavigationCell: View {
         isEditingChains: .constant(true), totalBalance: .constant(0),
         totalUpdateCount: .constant(0)
     )
+    .environmentObject(VaultDetailViewModel())
 }
