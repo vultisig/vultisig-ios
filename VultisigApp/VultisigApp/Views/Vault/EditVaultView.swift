@@ -6,15 +6,19 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct EditVaultView: View {
     let vault: Vault
     
     @State var showVaultExporter = false
     @State var showAlert = false
+    @State var navigateBackToHome = false
     
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) private var modelContext
+    
+    @Query var vaults: [Vault]
     
     var body: some View {
         exporter
@@ -46,6 +50,9 @@ struct EditVaultView: View {
                 Button(NSLocalizedString("cancel", comment: ""), role: .cancel) {}
             } message: {
                 Text(NSLocalizedString("deleteVaultDescription", comment: ""))
+            }
+            .navigationDestination(isPresented: $navigateBackToHome) {
+                HomeView(selectedVault: vaults.first, showVaultsList: true)
             }
     }
     
@@ -136,7 +143,7 @@ struct EditVaultView: View {
         } catch {
             print("Error: \(error)")
         }
-        dismiss()
+        navigateBackToHome = true
     }
 }
 
