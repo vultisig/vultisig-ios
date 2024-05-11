@@ -31,7 +31,7 @@ struct SetupVaultImageManager: View {
     var image: some View {
         Image(selectedTab.getImage())
             .resizable()
-            .aspectRatio(contentMode: .fill)
+            .aspectRatio(contentMode: .fit)
             .frame(maxWidth: .infinity)
     }
 }
