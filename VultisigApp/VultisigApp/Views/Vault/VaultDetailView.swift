@@ -141,7 +141,8 @@ struct VaultDetailView: View {
        
     var scanButton: some View {
         NavigationLink {
-            JoinKeysignView(vault: vault)
+            //JoinKeysignView(vault: vault)
+            CameraView()
         } label: {
             ZStack {
                 Circle()
@@ -153,7 +154,7 @@ struct VaultDetailView: View {
                     .foregroundColor(.turquoise600)
                     .frame(width: 60, height: 60)
                 
-                Image(systemName: "camera")
+                Image(systemName: "qr")
                     .font(.title30MenloUltraLight)
                     .foregroundColor(.blue600)
             }

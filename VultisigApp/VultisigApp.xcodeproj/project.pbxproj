@@ -194,6 +194,8 @@
 		B54B01972BDCEB8E00FDA472 /* Polkadot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54B01962BDCEB8E00FDA472 /* Polkadot.swift */; };
 		B54B019A2BDE0A1D00FDA472 /* PolkadotService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54B01992BDE0A1D00FDA472 /* PolkadotService.swift */; };
 		B54B019C2BDE135C00FDA472 /* RpcService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54B019B2BDE135C00FDA472 /* RpcService.swift */; };
+		B5C9F9CC2BEEDEF600A59827 /* Camera.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C9F9CB2BEEDEF600A59827 /* Camera.swift */; };
+		B5C9F9CF2BEEE03E00A59827 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C9F9CE2BEEE03E00A59827 /* CameraView.swift */; };
 		B5E95E092BED84D9003778F0 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E95E082BED84D9003778F0 /* ImagePicker.swift */; };
 		B5F758182BD8E65D0097B5B9 /* Sui.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F758172BD8E65D0097B5B9 /* Sui.swift */; };
 		B5F7581A2BD8E7230097B5B9 /* SuiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F758192BD8E7230097B5B9 /* SuiService.swift */; };
@@ -493,6 +495,8 @@
 		B54B01962BDCEB8E00FDA472 /* Polkadot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Polkadot.swift; sourceTree = "<group>"; };
 		B54B01992BDE0A1D00FDA472 /* PolkadotService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolkadotService.swift; sourceTree = "<group>"; };
 		B54B019B2BDE135C00FDA472 /* RpcService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RpcService.swift; sourceTree = "<group>"; };
+		B5C9F9CB2BEEDEF600A59827 /* Camera.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Camera.swift; sourceTree = "<group>"; };
+		B5C9F9CE2BEEE03E00A59827 /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
 		B5E95E082BED84D9003778F0 /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
 		B5F758172BD8E65D0097B5B9 /* Sui.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Sui.swift; sourceTree = "<group>"; };
 		B5F758192BD8E7230097B5B9 /* SuiService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SuiService.swift; sourceTree = "<group>"; };
@@ -1082,6 +1086,14 @@
 			path = Sui;
 			sourceTree = "<group>";
 		};
+		B5C9F9CD2BEEE03000A59827 /* Camera */ = {
+			isa = PBXGroup;
+			children = (
+				B5C9F9CE2BEEE03E00A59827 /* CameraView.swift */,
+			);
+			path = Camera;
+			sourceTree = "<group>";
+		};
 		B5F7581B2BD8FD970097B5B9 /* Sui */ = {
 			isa = PBXGroup;
 			children = (
@@ -1101,6 +1113,7 @@
 		D9AD8ED72B67225F0009F8D5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				B5C9F9CD2BEEE03000A59827 /* Camera */,
 				D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */,
 				46D067E42B8852B70052F535 /* Keygen */,
 				049BBB4E2B71E37B004C231F /* Components */,
@@ -1244,6 +1257,7 @@
 				A62758F32B97CE7E00ADE3A6 /* Styles */,
 				DEFF58FD2BD13E5D005DFDF9 /* ThreadSafeDictionary.swift */,
 				B5E95E082BED84D9003778F0 /* ImagePicker.swift */,
+				B5C9F9CB2BEEDEF600A59827 /* Camera.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -1575,6 +1589,7 @@
 				46E98FFC2BAE407300C53D97 /* DecodingErrorExtension.swift in Sources */,
 				DEFF58FA2BCF85FA005DFDF9 /* maya.swift in Sources */,
 				A633B13A2B9A5A22003D1738 /* ImportWalletView.swift in Sources */,
+				B5C9F9CF2BEEE03E00A59827 /* CameraView.swift in Sources */,
 				DE63AE4B2BB4D87F001BBE5C /* BscService.swift in Sources */,
 				DE9EB0FC2BA463F7001747D9 /* KeygenViewModel.swift in Sources */,
 				DEFF58F42BCBF65D005DFDF9 /* TssHelper.swift in Sources */,
@@ -1605,6 +1620,7 @@
 				469ED3942B98E776008D4951 /* ThorchainService.swift in Sources */,
 				462DCD702BCA14F3003D542F /* CoinPaprikaQuote.swift in Sources */,
 				A6966D262BA3E2CF00903CA4 /* OnboardingView3.swift in Sources */,
+				B5C9F9CC2BEEDEF600A59827 /* Camera.swift in Sources */,
 				DE63AE4D2BB4E94E001BBE5C /* JSONRPCResponse.swift in Sources */,
 				46DE08952BD0DCA200AE8BDE /* EvmL2Service.swift in Sources */,
 				A65BA98A2BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift in Sources */,
