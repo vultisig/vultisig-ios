@@ -13,7 +13,7 @@ struct VaultsView: View {
     @Binding var showVaultsList: Bool
     @Binding var isEditingVaults: Bool
     
-    @Query(sort: \Vault.createdAt, order: .reverse) var vaults: [Vault]
+    @Query(sort: \Vault.order, order: .forward) var vaults: [Vault]
         
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     
