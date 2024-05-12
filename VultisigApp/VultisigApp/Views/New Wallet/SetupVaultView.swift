@@ -79,7 +79,7 @@ struct SetupVaultView: View {
         NavigationLink {
             JoinKeygenView(vault: vault ?? Vault(name: "New Vault"))
         } label: {
-            OutlineButton(title: "join")
+            OutlineButton(title: "pair")
         }
     }
 }

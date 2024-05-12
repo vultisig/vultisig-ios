@@ -68,7 +68,7 @@ struct KeyGenSummaryView: View {
             Text("\(numberOfMainDevices) ") +
             Text(NSLocalizedString("of", comment: "of")) +
             Text(" \(numberOfMainDevices+numberOfBackupDevices) ") +
-            Text(NSLocalizedString("vaults", comment: "vaults"))
+            Text(NSLocalizedString("vault", comment: "vault"))
         }
         .font(.body20MontserratSemiBold)
     }
