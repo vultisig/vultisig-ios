@@ -11,10 +11,7 @@ struct SetupVaultTabView: View {
     @Binding var selectedTab: SetupVaultState
     
     var body: some View {
-        ZStack {
-            Background()
-            content
-        }
+        content
     }
     
     var content: some View {
@@ -22,7 +19,7 @@ struct SetupVaultTabView: View {
             SetupVaultTab(selectedTab: $selectedTab)
             SetupVaultImageManager(selectedTab: $selectedTab)
         }
-        .padding(16)
+        .padding(.horizontal, 16)
     }
 }
 
