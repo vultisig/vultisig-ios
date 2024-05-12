@@ -56,7 +56,7 @@ class Endpoint {
     
     static let ethServiceRpcService = "https://ethereum-rpc.publicnode.com"
     
-    static let solanaServiceRpc = "https://solana-rpc.publicnode.com"
+    static let solanaServiceRpc = "https://api.mainnet-beta.solana.com"
     
     static let suiServiceRpc = "https://sui-rpc.publicnode.com"
         
