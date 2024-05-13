@@ -48,7 +48,7 @@ struct SettingFAQCell: View {
     }
     
     var description: some View {
-        Text(NSLocalizedString(question, comment: "Question"))
+        Text(NSLocalizedString(answer, comment: "Answer"))
             .font(.body12Menlo)
             .foregroundColor(.neutral300)
     }
