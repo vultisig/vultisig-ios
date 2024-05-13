@@ -13,6 +13,8 @@ struct SwapCryptoDetailsView: View {
     @ObservedObject var swapViewModel: SwapCryptoViewModel
     @ObservedObject var coinViewModel: CoinViewModel
 
+    let vault: Vault
+
     var body: some View {
         ZStack {
             Background()
@@ -58,7 +60,7 @@ struct SwapCryptoDetailsView: View {
         VStack(spacing: 8) {
             getTitle(for: "from")
             TokenSelectorDropdown(coins: $swapViewModel.coins, selected: $tx.fromCoin, onSelect: { _ in
-                swapViewModel.updateFromCoin(tx: tx)
+                swapViewModel.updateFromCoin(tx: tx, vault: vault)
             })
             getBalance(for: tx.fromBalance)
                 .redacted(reason: coinViewModel.isLoading ? .placeholder : [])
@@ -73,7 +75,7 @@ struct SwapCryptoDetailsView: View {
     
     var swapButton: some View {
         Button {
-            swapViewModel.switchCoins(tx: tx)
+            swapViewModel.switchCoins(tx: tx, vault: vault)
         } label: {
             Image(systemName: "arrow.up.arrow.down")
                 .font(.body20MontserratMedium)
@@ -166,5 +168,5 @@ struct SwapCryptoDetailsView: View {
 }
 
 #Preview {
-    SwapCryptoDetailsView(tx: SwapTransaction(), swapViewModel: SwapCryptoViewModel(), coinViewModel: CoinViewModel())
+    SwapCryptoDetailsView(tx: SwapTransaction(), swapViewModel: SwapCryptoViewModel(), coinViewModel: CoinViewModel(), vault: .example)
 }
