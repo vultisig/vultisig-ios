@@ -40,7 +40,7 @@ class KeygenViewModel: ObservableObject {
     private var messagePuller: MessagePuller? = nil
     
     init() {
-        self.vault = Vault(name: "New Vault")
+        self.vault = Vault(name: "Main Vault")
         self.tssType = .Keygen
         self.keygenCommittee = []
         self.vaultOldCommittee = []

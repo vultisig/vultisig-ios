@@ -8,6 +8,9 @@
 import SwiftUI
 
 struct NewWalletNameView: View {
+    let tssType: TssType
+    let vault: Vault?
+    let selectedTab: SetupVaultState
     @State var name = ""
     
     var body: some View {
@@ -56,15 +59,16 @@ struct NewWalletNameView: View {
     }
     
     var button: some View {
-        Button {
-            
+        NavigationLink {
+            let vaultName = name.isEmpty ? "Main Vault" : name
+            PeerDiscoveryView(tssType: tssType, vault: Vault(name: vaultName), selectedTab: selectedTab)
         } label: {
-            FilledButton(title: "next")
+            FilledButton(title: "continue")
         }
         .padding(40)
     }
 }
 
 #Preview {
-    NewWalletNameView()
+    NewWalletNameView(tssType: .Keygen, vault: nil, selectedTab: .TwoOfTwoVaults)
 }

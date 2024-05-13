@@ -30,7 +30,6 @@ struct ContentView: View {
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarTitleTextColor(.neutral0)
         }
-        .id(deeplinkViewModel.viewID)
         .onOpenURL { incomingURL in
             deeplinkViewModel.extractParameters(incomingURL, vaults: vaults)
         }

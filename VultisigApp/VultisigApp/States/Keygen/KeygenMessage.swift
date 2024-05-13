@@ -9,4 +9,5 @@ struct keygenMessage: Codable {
     let serviceName: String
     let encryptionKeyHex: String
     let useVultisigRelay: Bool
+    let vaultName: String
 }
