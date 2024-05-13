@@ -87,6 +87,7 @@
 "sign" = "Firma";
 "amount" = "Quantità";
 "amount(inFiat)" = "Quantità (in Fiat)";
+"balanceNativeToken" = "Saldo Token Nativi";
 "memo" = "Memo";
 "gas" = "Gas";
 "signing" = "Firmando";
