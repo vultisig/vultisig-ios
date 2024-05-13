@@ -87,6 +87,7 @@
 "sign" = "Sign";
 "amount" = "Amount";
 "amount(inFiat)" = "Amount (in Fiat)";
+"balanceNativeToken" = "Native Token Balance";
 "memo" = "Memo";
 "gas" = "Gas";
 "signing" = "Signing";

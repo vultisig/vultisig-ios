@@ -87,6 +87,7 @@
 "sign" = "Potpiši";
 "amount" = "Iznos";
 "amount(inFiat)" = "Iznos (u Fiatu)";
+"balanceNativeToken" = "Saldo izvorne kovanice";
 "memo" = "Bilješka";
 "gas" = "Plin";
 "signing" = "Potpisivanje";
