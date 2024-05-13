@@ -41,12 +41,12 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     @MainActor @Published var isLoading = false
     @MainActor @Published var quoteLoading = false
 
-    func load(tx: SwapTransaction, fromCoin: Coin, coins: [Coin], coinViewModel: CoinViewModel) async {
+    func load(tx: SwapTransaction, fromCoin: Coin, coins: [Coin], coinViewModel: CoinViewModel, vault: Vault) async {
         self.coins = coins.filter { $0.chain.isSwapSupported }
         tx.toCoin = coins.first!
         tx.fromCoin = fromCoin
 
-        updateInitial(tx: tx)
+        updateInitial(tx: tx, vault: vault)
 
         await withTaskGroup(of: Void.self) { group in
             for coin in coins {
@@ -224,7 +224,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
 
 
-    func switchCoins(tx: SwapTransaction) {
+    func switchCoins(tx: SwapTransaction, vault: Vault) {
         defer { clear(tx: tx) }
 
         let fromCoin = tx.fromCoin
@@ -235,15 +235,15 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
         Task {
             async let quote: () = updateQuotes(tx: tx)
-            async let fee: () = updateFee(tx: tx)
+            async let fee: () = updateFee(tx: tx, vault: vault)
 
             _ = await [quote, fee]
         }
     }
 
-    func updateInitial(tx: SwapTransaction) {
+    func updateInitial(tx: SwapTransaction, vault: Vault) {
         Task {
-            await updateFee(tx: tx)
+            await updateFee(tx: tx, vault: vault)
         }
     }
 
@@ -253,10 +253,10 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         }
     }
 
-    func updateFromCoin(tx: SwapTransaction) {
+    func updateFromCoin(tx: SwapTransaction, vault: Vault) {
         Task {
             async let quote: () = updateQuotes(tx: tx)
-            async let fee: () = updateFee(tx: tx)
+            async let fee: () = updateFee(tx: tx, vault: vault)
 
             _ = await [quote, fee]
         }
@@ -292,10 +292,10 @@ private extension SwapCryptoViewModel {
         }
     }
 
-    func updateFee(tx: SwapTransaction) async {
+    func updateFee(tx: SwapTransaction, vault: Vault) async {
         do {
             let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin, action: .swap, sendMaxAmount: false)
-            tx.gas = chainSpecific.gas
+            tx.gas = try await fee(for: chainSpecific, tx: tx, vault: vault)
         } catch {
             self.error = error
         }
@@ -378,6 +378,43 @@ private extension SwapCryptoViewModel {
         case .EVM:
             guard !tx.fromCoin.isNativeToken else { return tx.fromCoin }
             return coins.first(where: { $0.chain == tx.fromCoin.chain && $0.isNativeToken }) ?? tx.fromCoin
+        }
+    }
+
+    func fee(for chainSpecific: BlockChainSpecific, tx: SwapTransaction, vault: Vault) async throws -> BigInt {
+        switch chainSpecific {
+        case .Ethereum(let maxFeePerGas, let priorityFee, _, let gasLimit):
+            return (maxFeePerGas + priorityFee) * gasLimit
+        case .UTXO(let byteFee, _):
+            let keysignFactory = KeysignPayloadFactory()
+
+            let keysignPayload = try await keysignFactory.buildTransfer(
+                coin: tx.fromCoin,
+                toAddress: tx.fromCoin.address,
+                amount: tx.amountInCoinDecimal,
+                memo: nil,
+                chainSpecific: chainSpecific,
+                swapPayload: nil,
+                vault: vault
+            )
+
+            let utxo = UTXOChainsHelper(
+                coin: tx.fromCoin.coinType,
+                vaultHexPublicKey: vault.pubKeyECDSA,
+                vaultHexChainCode: vault.hexChainCode
+            )
+
+            let result = utxo.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
+
+            switch result {
+            case .success(let plan):
+                return BigInt(plan.fee)
+            case .failure(let error):
+                throw error
+            }
+
+        case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui:
+            return chainSpecific.gas
         }
     }
 }
