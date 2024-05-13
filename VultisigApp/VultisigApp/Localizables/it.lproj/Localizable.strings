@@ -179,3 +179,5 @@
 "invalidBalance" = "Saldo non valido";
 "cannotDisableChain" = "Impossibile disabilitare la catena";
 "needToRemoveTokens" = "Tutti i token all'interno di questa catena devono essere rimossi prima di procedere.";
+"typeHere" = "Digita qui";
+"nameYourVault" = "Nomina il tuo Vault";
