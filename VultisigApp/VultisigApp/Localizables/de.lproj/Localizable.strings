@@ -14,6 +14,7 @@
 "send" = "Senden";
 "tokens" = "Tokens";
 "vaults" = "Tresore";
+"vault" = "Tresore";
 "main" = "Haupt";
 "address" = "Adresse";
 "vaultDetailsTitle" = "Details";
@@ -55,7 +56,7 @@
 "gas(auto)" = "Gas (auto)";
 "enterPreviousVault" = "Geben Sie Ihren zuvor erstellten Tresor ein";
 "uploadFile" = "Datei, Text oder Bild hochladen";
-"devicesOnSameWifi" = "Halten Sie Geräte im selben WLAN mit Vultisig geöffnet";
+"devicesOnSameWifi" = "Halten Sie Geräte im gleichen Netzwerk mit Vultisig geöffnet";
 "need3Devices" = "Sie benötigen mindestens 2 Geräte";
 "chooseTokens" = "Tokens wählen";
 "chooseChains" = "Ketten wählen";
@@ -145,10 +146,17 @@
 "shareTheApp" = "Die App teilen";
 "noChainSelected" = "Keine Kette ausgewählt";
 "setupVaultFAQQuestion" = "Wie richte ich meinen Krypto-Tresor ein?";
+"setupVaultFAQAnswer" = "Versammeln Sie zwei oder mehr Ihrer Geräte und verbinden Sie diese mit Ihrem lokalen WLAN, Hotspot oder Internet. Koppeln Sie sie dann einfach per QR-Code und erstellen Sie einen neuen Tresor. Danach können Sie Gelder senden.";
 "supportedCryptoFAQQuestion" = "Welche Kryptowährungen werden von Vultisig unterstützt?";
-"vaultSecurityFAQQuestion" = "Wie schützt die Krypto-Tresor-App meine Kryptowährungen?";
-"assetRecoveryFAQQuestion" = "Kann ich meine Vermögenswerte wiederherstellen, wenn ich mein Passwort vergesse?";
-"transactionFeesFAQQuestion" = "Gibt es Gebühren für die Nutzung der Krypto-Tresor-App?";
+"supportedCryptoFAQAnswer" = "Alle von Trust Wallet Core unterstützten Assets werden in Vultisig unterstützt.";
+"vaultSecurityFAQQuestion" = "Wie sichert die Krypto-Tresor-App meine Kryptowährungen?";
+"vaultSecurityFAQAnswer" = "Vultisig ist geprüft, Open-Source und verwendet eine sehr bewährte TSS-Bibliothek.";
+"moneyFAQQuestion" = "Wie verdient Vultisig Geld?";
+"moneyFAQAnswer" = "Vultisig berechnet nur eine Pauschalgebühr für Tausch und Brückenschlag. Es gibt keine anderen versteckten Gebühren.";
+"assetRecoveryFAQQuestion" = "Kann ich meine Vermögenswerte wiederherstellen, wenn ich ein Gerät verliere?";
+"assetRecoveryFAQAnswer" = "Sie können Ihren Tresor sichern, indem Sie die Tresoranteile exportieren.";
+"registerFAQQuestion" = "Muss ich mich registrieren?";
+"registerFAQAnswer" = "Nein, es gibt keine Registrierungsanforderungen.";
 "languageChangeTitle" = "Sprache geändert";
 "restart" = "Bitte starten Sie die App neu, um die neuen Spracheinstellungen zu übernehmen.";
 "EnglishUK" = "Englisch (UK)";
@@ -164,7 +172,7 @@
 "backupNotNeededDisclaimer" = "Dein Backup-Gerät wird nicht benötigt, es sei denn, du verlierst eines deiner Hauptgeräte.";
 "noBackupDeviceDisclaimer" = "Du hast kein drittes Backup-Gerät - daher solltest du später einen Tresoranteil sicher sichern.";
 "vaultNameExists" = "Tresorname %s existiert bereits";
-"devicesOnSameWifiNoHotel" = "Halte alle Geräte mit geöffneter Vultisig im selben WLAN-Netzwerk. (Funktioniert möglicherweise nicht bei Hotel-/Flughafen-WLAN).";
+"devicesOnSameWifiNoHotel" = "Halten Sie alle Geräte im gleichen Netzwerk mit der Vultisig App offen. (Funktioniert möglicherweise nicht auf Hotel-/Flughafen-WLAN).";
 "devicesOnSameHotspot" = "Verbinde alle Geräte mit demselben persönlichen Hotspot und öffne die Vultisig.";
 "devicesOnSameCellular" = "Verbinde alle Geräte mit dem Internet und öffne die Vultisig.";
 "balanceNotAvailable" = "Guthaben nicht verfügbar";

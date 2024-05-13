@@ -9,9 +9,9 @@ import Foundation
 
 class Endpoint {
     
-    static let vultisigApiProxy = "https://api.voltix.org"
+    static let vultisigApiProxy = "https://api.vultisig.com"
     static let supportDocumentLink = "https://docs.voltix.org/user-actions/creating-a-vault"
-    static let vultisigRelay = "https://api.voltix.org/router"
+    static let vultisigRelay = "https://api.vultisig.com/router"
     static let broadcastTransactionThorchainNineRealms = "https://thornode.ninerealms.com/cosmos/tx/v1beta1/txs"
     static let broadcastTransactionMayachain = "https://mayanode.mayachain.info/cosmos/tx/v1beta1/txs"
     
@@ -56,7 +56,7 @@ class Endpoint {
     
     static let ethServiceRpcService = "https://ethereum-rpc.publicnode.com"
     
-    static let solanaServiceRpc = "https://solana-rpc.publicnode.com"
+    static let solanaServiceRpc = "https://api.mainnet-beta.solana.com"
     
     static let suiServiceRpc = "https://sui-rpc.publicnode.com"
         

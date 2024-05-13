@@ -14,6 +14,7 @@
 "send" = "Send";
 "tokens" = "Tokens";
 "vaults" = "Vaults";
+"vault" = "Vault";
 "main" = "Main";
 "address" = "Address";
 "vaultDetailsTitle" = "Details";
@@ -55,7 +56,7 @@
 "gas(auto)" = "Gas (auto)";
 "enterPreviousVault" = "Enter your previously created vault share";
 "uploadFile" = "Upload file, text or image";
-"devicesOnSameWifi" = "Keep devices on the same WiFi Network with Vultisig open";
+"devicesOnSameWifi" = "Keep devices on the same Network with Vultisig open";
 "need3Devices" = "You need at least 2 devices";
 "chooseTokens" = "Choose Tokens";
 "chooseChains" = "Choose Chains";
@@ -150,10 +151,17 @@
 "shareTheApp" = "Share The App";
 "noChainSelected" = "No Chain Selected";
 "setupVaultFAQQuestion" = "How do I set up my crypto vault?";
+"setupVaultFAQAnswer" = "Get 2 or more of your devices together and connected to your local WiFi, Hotspot or internet. Then simply pair them via QR code and create a new vault. You can then send funds in.";
 "supportedCryptoFAQQuestion" = "What cryptocurrencies are supported by Vultisig?";
+"supportedCryptoFAQAnswer" = "All assets supported by Trust Wallet Core are supported in Vultisig.";
 "vaultSecurityFAQQuestion" = "How does the crypto vault app secure my cryptocurrencies?";
-"assetRecoveryFAQQuestion" = "Can I recover my assets if I forget my password?";
-"transactionFeesFAQQuestion" = "Are there any fees for using the crypto vault app?";
+"vaultSecurityFAQAnswer" = "Vultisig is audited, open-source and uses a very well-proven TSS libarary.";
+"moneyFAQQuestion" = "How does Vultisig make money?";
+"moneyFAQAnswer" = "Vultisig only charges a flat fee on swap and bridging. There are no other hidden fees.";
+"assetRecoveryFAQQuestion" = "Can I recover my assets if I lose a device?";
+"assetRecoveryFAQAnswer" = "You can back-up your vault by exporting the vault shares.";
+"registerFAQQuestion" = "Do I need to register?";
+"registerFAQAnswer" = "No, there are no registration requirements.";
 "languageChangeTitle" = "Language changed";
 "restart" = "Please restart the app to apply the new language settings.";
 "EnglishUK" = "English (UK)";
@@ -169,7 +177,7 @@
 "backupNotNeededDisclaimer" = "Your backup device is not needed unless you lose one of your main devices.";
 "noBackupDeviceDisclaimer" = "You do not have a 3rd backup device - so you should backup one vault share securely later.";
 "vaultNameExists" = "Vault name %s already exists";
-"devicesOnSameWifiNoHotel" = "Keep all devices on same WiFi with Vultisig App open. (May not work on hotel/airport wifi).";
+"devicesOnSameWifiNoHotel" = "Keep all devices on same network with Vultisig App open. (May not work on hotel/airport wifi).";
 "devicesOnSameHotspot" = "Connect all devices to the same Personal Hotspot with Vultisig App open.";
 "devicesOnSameCellular" = "Connect all devices to the internet with the Vultisig App open.";
 "balanceNotAvailable" = "Balance not available";

@@ -169,6 +169,7 @@ struct KeysignDiscoveryView: View {
                 .onAppear {
                     if participantDiscovery.peersFound.count == 1 && participantDiscovery.peersFound.first == peer {
                         handleSelection(peer)
+                        startKeysign()
                     }
                 }
             }
@@ -190,10 +191,7 @@ struct KeysignDiscoveryView: View {
         
         return Button {
             isLoading = true
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                keysignView = viewModel.startKeysign(vault: vault, viewModel: transferViewModel)
-            }
+            startKeysign()
         } label: {
             FilledButton(title: "sign")
         }
@@ -205,7 +203,16 @@ struct KeysignDiscoveryView: View {
         .edgesIgnoringSafeArea(.bottom)
     }
     
-  
+    func startKeysign(){
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            let isDisabled = viewModel.selections.count < (vault.getThreshold() + 1)
+            if !isDisabled {
+                keysignView = viewModel.startKeysign(vault: vault, viewModel: transferViewModel)
+            }
+        }
+    }
+    
+    
     func handleSelection(_ peer: String) {
         isLoading = true
         

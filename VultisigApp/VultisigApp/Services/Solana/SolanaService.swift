@@ -38,16 +38,12 @@ class SolanaService {
         var rawBalance = "0"
         let priceRateFiat = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
         
-        let requestBody: [String: Any] = [
-            "jsonrpc": "2.0",
-            "id": 1,
-            "method": "getBalance",
-            "params": [coin.address]
-        ]
         do {
-            let data = try await postRequest(with: requestBody)
-            let response = try jsonDecoder.decode(SolanaRPCResponse<SolanaBalanceResponse>.self, from: data)
-            rawBalance = "\(response.result.value)"
+            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "getBalance", params:  [coin.address])
+            
+            if let totalBalance = Utils.extractResultFromJson(fromData: data, path: "result.value") as? Int64 {
+                rawBalance = totalBalance.description
+            }            
         } catch {
             print("Error fetching balance: \(error.localizedDescription)")
             throw error

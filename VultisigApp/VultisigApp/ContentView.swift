@@ -30,6 +30,8 @@ struct ContentView: View {
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarTitleTextColor(.neutral0)
         }
+        //This fixes the issue of pasting the address when sending a transaction
+        //.id(deeplinkViewModel.viewID)
         .onOpenURL { incomingURL in
             deeplinkViewModel.extractParameters(incomingURL, vaults: vaults)
         }

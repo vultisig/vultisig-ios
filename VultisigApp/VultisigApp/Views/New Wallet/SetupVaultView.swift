@@ -42,20 +42,19 @@ struct SetupVaultView: View {
         VStack {
             image
             messageModal
+            Spacer()
             buttons
         }
     }
     
     var image: some View {
         SetupVaultTabView(selectedTab: $selectedTab)
-            .frame(maxHeight: .infinity)
-            .padding(.top, 30)
+//            .padding(.top, 30)
     }
     
     var messageModal: some View {
         WifiInstruction()
             .frame(maxHeight: 80)
-            .offset(y: -20)
     }
     
     var buttons: some View {
@@ -64,7 +63,6 @@ struct SetupVaultView: View {
             joinButton
         }
         .padding(40)
-        .offset(y: -40)
     }
     
     var startButton: some View {
@@ -79,7 +77,7 @@ struct SetupVaultView: View {
         NavigationLink {
             JoinKeygenView(vault: vault ?? Vault(name: "Main Vault"))
         } label: {
-            OutlineButton(title: "join")
+            OutlineButton(title: "pair")
         }
     }
 }
