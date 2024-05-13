@@ -36,7 +36,7 @@ class JoinKeysignViewModel: ObservableObject {
     var encryptionKeyHex: String = ""
     
     init() {
-        self.vault = Vault(name: "New Vault")
+        self.vault = Vault(name: "Main Vault")
         self.isShowingScanner = false
     }
     

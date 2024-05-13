@@ -36,7 +36,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     
     init() {
         self.tssType = .Keygen
-        self.vault = Vault(name: "New Vault")
+        self.vault = Vault(name: "Main Vault")
         self.status = .WaitingForDevices
         self.participantDiscovery = nil
         self.encryptionKeyHex = Encryption.getEncryptionKey()
@@ -151,11 +151,14 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             var data: Data
             switch tssType {
             case .Keygen:
-                let km = keygenMessage(sessionID: sessionID,
-                                       hexChainCode: vault.hexChainCode,
-                                       serviceName: serviceName,
-                                       encryptionKeyHex: encryptionKeyHex,
-                                       useVultisigRelay: VultisigRelay.IsRelayEnabled)
+                let km = keygenMessage(
+                    sessionID: sessionID,
+                    hexChainCode: vault.hexChainCode,
+                    serviceName: serviceName,
+                    encryptionKeyHex: encryptionKeyHex,
+                    useVultisigRelay: VultisigRelay.IsRelayEnabled,
+                    vaultName: vault.name
+                )
                 data = try jsonEncoder.encode(PeerDiscoveryPayload.Keygen(km))
                 let json = String(decoding: data, as: UTF8.self)
                 jsonData = "vultisig://vultisig.com?type=NewVault&tssType=Keygen&jsonData=\(json)"

@@ -44,7 +44,7 @@ class JoinKeygenViewModel: ObservableObject {
     var encryptionKeyHex: String = ""
     
     init() {
-        self.vault = Vault(name: "New Vault")
+        self.vault = Vault(name: "Main Vault")
     }
     
     func setData(vault: Vault, serviceDelegate: ServiceDelegate) {
@@ -175,6 +175,7 @@ class JoinKeygenViewModel: ObservableObject {
                 serviceName = keygenMsg.serviceName
                 encryptionKeyHex = keygenMsg.encryptionKeyHex
                 useVultisigRelay = keygenMsg.useVultisigRelay
+                vault.name = keygenMsg.vaultName
             case .Reshare(let reshareMsg):
                 tssType = .Reshare
                 oldCommittee = reshareMsg.oldParties

@@ -180,3 +180,5 @@
 "invalidBalance" = "Nevažeći saldo";
 "cannotDisableChain" = "Ne mogu onemogućiti lanac";
 "needToRemoveTokens" = "Svi tokeni unutar ovog lanca moraju biti uklonjeni prije nastavka.";
+"typeHere" = "Ovdje upišite";
+"nameYourVault" = "Imenujte svoj trezor";

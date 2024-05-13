@@ -67,7 +67,7 @@ struct SetupVaultView: View {
     
     var startButton: some View {
         NavigationLink {
-            PeerDiscoveryView(tssType: tssType, vault: vault ?? Vault(name: "New Vault"), selectedTab: selectedTab)
+            NewWalletNameView(tssType: tssType, vault: vault, selectedTab: selectedTab)
         } label: {
             FilledButton(title: "start")
         }
@@ -75,7 +75,7 @@ struct SetupVaultView: View {
     
     var joinButton: some View {
         NavigationLink {
-            JoinKeygenView(vault: vault ?? Vault(name: "New Vault"))
+            JoinKeygenView(vault: vault ?? Vault(name: "Main Vault"))
         } label: {
             OutlineButton(title: "pair")
         }

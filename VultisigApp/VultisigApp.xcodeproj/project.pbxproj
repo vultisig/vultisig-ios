@@ -76,6 +76,7 @@
 		A61BC8162BA256C600484689 /* ProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61BC8152BA256C600484689 /* ProgressBar.swift */; };
 		A61BC8192BA2687E00484689 /* TokensStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61BC8182BA2687D00484689 /* TokensStore.swift */; };
 		A61BC81B2BA26D9900484689 /* ChainSelectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61BC81A2BA26D9900484689 /* ChainSelectionCell.swift */; };
+		A623A09F2BF09FEE00AA2F8D /* NewWalletNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A623A09E2BF09FEE00AA2F8D /* NewWalletNameView.swift */; };
 		A62758F22B97B10600ADE3A6 /* Endpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62758F12B97B10600ADE3A6 /* Endpoint.swift */; };
 		A62758F52B97CE9E00ADE3A6 /* FontStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62758F42B97CE9E00ADE3A6 /* FontStyle.swift */; };
 		A62758F72B97DF4A00ADE3A6 /* ColorStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62758F62B97DF4A00ADE3A6 /* ColorStyle.swift */; };
@@ -375,6 +376,7 @@
 		A61BC8152BA256C600484689 /* ProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressBar.swift; sourceTree = "<group>"; };
 		A61BC8182BA2687D00484689 /* TokensStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokensStore.swift; sourceTree = "<group>"; };
 		A61BC81A2BA26D9900484689 /* ChainSelectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainSelectionCell.swift; sourceTree = "<group>"; };
+		A623A09E2BF09FEE00AA2F8D /* NewWalletNameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewWalletNameView.swift; sourceTree = "<group>"; };
 		A62758F12B97B10600ADE3A6 /* Endpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endpoint.swift; sourceTree = "<group>"; };
 		A62758F42B97CE9E00ADE3A6 /* FontStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontStyle.swift; sourceTree = "<group>"; };
 		A62758F62B97DF4A00ADE3A6 /* ColorStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorStyle.swift; sourceTree = "<group>"; };
@@ -1147,6 +1149,7 @@
 				A633B1392B9A5A22003D1738 /* ImportWalletView.swift */,
 				A633B13B2B9A6564003D1738 /* SetupVaultView.swift */,
 				A6F9E7A42BED6BC800BA36E1 /* SetupVaultTabView.swift */,
+				A623A09E2BF09FEE00AA2F8D /* NewWalletNameView.swift */,
 			);
 			path = "New Wallet";
 			sourceTree = "<group>";
@@ -1634,6 +1637,7 @@
 				461AD1B72BC6706500959278 /* VaultPairDetailView.swift in Sources */,
 				A6FB96B32BD0CDA900D56F68 /* NavigationEditButton.swift in Sources */,
 				DE3D44AF2BD2487900BD64CD /* CosmosSignature.swift in Sources */,
+				A623A09F2BF09FEE00AA2F8D /* NewWalletNameView.swift in Sources */,
 				A6C0D5652BB3BD0F00156689 /* UTXOTransactionCell.swift in Sources */,
 				A65649F82B96701300E4B329 /* UTXOTransactionMempoolPreviousOutput.swift in Sources */,
 				DE7CE6462B886B6300ED0BFB /* VoltixVaultDocument.swift in Sources */,

@@ -31,7 +31,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
     @Published var errorMessage = ""
     
     init() {
-        self.vault = Vault(name: "New Vault")
+        self.vault = Vault(name: "Main Vault")
         self.keysignPayload = KeysignPayload(coin: Coin.example, toAddress: "", toAmount: 0, chainSpecific: BlockChainSpecific.UTXO(byteFee: 0, sendMaxAmount: false), utxos: [], memo: nil, swapPayload: nil, vaultPubKeyECDSA: vault.pubKeyECDSA)
         self.participantDiscovery = nil
         self.encryptionKeyHex = Encryption.getEncryptionKey()

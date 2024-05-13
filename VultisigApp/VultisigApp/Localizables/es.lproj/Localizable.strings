@@ -180,3 +180,5 @@
 "invalidBalance" = "Saldo no válido";
 "cannotDisableChain" = "No se puede desactivar la cadena";
 "needToRemoveTokens" = "Todos los tokens dentro de esta cadena deben ser eliminados antes de continuar.";
+"typeHere" = "Escribe aquí";
+"nameYourVault" = "Nombrar tu Vault";
