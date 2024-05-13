@@ -205,11 +205,14 @@ struct KeysignDiscoveryView: View {
     
     func startKeysign(){
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            keysignView = viewModel.startKeysign(vault: vault, viewModel: transferViewModel)
+            let isDisabled = viewModel.selections.count < (vault.getThreshold() + 1)
+            if !isDisabled {
+                keysignView = viewModel.startKeysign(vault: vault, viewModel: transferViewModel)
+            }
         }
     }
     
-  
+    
     func handleSelection(_ peer: String) {
         isLoading = true
         
