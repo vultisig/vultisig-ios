@@ -20,6 +20,7 @@ struct SendCryptoDetailsView: View {
     let group: GroupedChain
     
     @State var amount = ""
+    @State var nativeTokenBalance = ""
     
     @FocusState private var focusedField: Field?
     
@@ -68,6 +69,11 @@ struct SendCryptoDetailsView: View {
                 toField
                 amountField
                 amountFiatField
+                
+                if !tx.coin.isNativeToken {
+                    balanceNativeTokenField
+                }
+                
                 gasField
             }
             .padding(.horizontal, 16)
@@ -122,6 +128,22 @@ struct SendCryptoDetailsView: View {
             onMaxPressed: { sendCryptoViewModel.setMaxValues(tx: tx) }
         )
         .focused($focusedField, equals: .amount)
+    }
+    
+    var balanceNativeTokenField: some View {
+        HStack {
+            Text(NSLocalizedString("balanceNativeToken", comment: ""))
+            Spacer()
+            Text(nativeTokenBalance)
+        }
+        .font(.body16Menlo)
+        .foregroundColor(.neutral0)
+        .onAppear{
+            Task {
+                let balanceInt = await tx.getNativeTokenBalance()
+                nativeTokenBalance = balanceInt.description
+            }
+        }
     }
     
     var amountFiatField: some View {

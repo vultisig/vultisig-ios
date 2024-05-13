@@ -94,13 +94,45 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     
+    func getNativeTokenBalance() async -> String {
+        guard !coin.isNativeToken else { return .zero }
+        
+        if let vault = ApplicationState.shared.currentVault {
+            if let nativeToken = vault.coins.first(where: { $0.isNativeToken && $0.chain.name == coin.chain.name }) {
+                do
+                {
+                    let (_, _, _) = try await BalanceService.shared.balance(for: nativeToken)
+                    let nativeTokenRawBalance = Decimal(string: nativeToken.rawBalance) ?? .zero
+                    
+                    guard let nativeDecimals = Int(nativeToken.decimals) else {
+                        return .zero
+                    }
+                    
+                    let nativeTokenBalance = nativeTokenRawBalance / pow(10, nativeDecimals)
+                    
+                    let nativeTokenBalanceDecimal = nativeTokenBalance.description.formatToDecimal(digits: 8)
+                    
+                    return "\(nativeTokenBalanceDecimal) \(nativeToken.ticker)"
+                } catch {
+                    print("Error to get the balance for a Native Coin")
+                    return .zero
+                }
+            } else {
+                print("No native token found for chain \(coin.chain.name)")
+                return .zero
+            }
+        }
+        print("Failed to access current vault")
+        return .zero
+    }
+    
     var amountInRaw: BigInt {
         if let decimals = Double(coin.decimals) {
             return BigInt(amountDecimal * pow(10, decimals))
         }
         return BigInt.zero
     }
-        
+    
     var amountDecimal: Double {
         let amountString = amount.replacingOccurrences(of: ",", with: ".")
         return Double(amountString) ?? 0
