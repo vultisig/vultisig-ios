@@ -10,6 +10,8 @@ import SwiftUI
 struct SetupVaultImageManager: View {
     @Binding var selectedTab: SetupVaultState
     
+    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+    
     var body: some View {
         VStack(spacing: 12) {
             text
@@ -28,10 +30,17 @@ struct SetupVaultImageManager: View {
             .multilineTextAlignment(.center)
     }
     
+    var imageContent: some View {
+        Image(selectedTab.getImage())
+            .resizable()
+            .frame(maxWidth: .infinity)
+            .aspectRatio(contentMode: idiom == .phone ? .fit : .fill)
+    }
+    
     var image: some View {
         Image(selectedTab.getImage())
             .resizable()
-            .aspectRatio(contentMode: .fill)
+            .aspectRatio(contentMode: .fit)
             .frame(maxWidth: .infinity)
     }
 }
