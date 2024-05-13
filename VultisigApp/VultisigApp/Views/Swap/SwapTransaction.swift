@@ -41,7 +41,14 @@ class SwapTransaction: ObservableObject {
             return nil
         }
         let toDecimals = Int(toCoin.decimals) ?? 0
-        let inboundFeeDecimal = fees * pow(10, max(0, toDecimals - 8))
+        let powerBy = toDecimals - 8
+        let inboundFeeDecimal: Decimal
+        
+        if powerBy >= 0 {
+            inboundFeeDecimal = fees * pow(10, abs(powerBy))
+        } else {
+            inboundFeeDecimal = fees / pow(10, abs(powerBy))
+        }
 
         return BigInt(stringLiteral: inboundFeeDecimal.description)
     }
