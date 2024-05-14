@@ -130,10 +130,12 @@ class Coin: Codable, Hashable {
             totalFeeAdjusted = fee / adjustmentFactor
         }
         
-        let maxValue = (BigInt(rawBalance, radix: 10) ?? 0) - totalFeeAdjusted
-        let maxValueDecimal = Decimal(string: String(maxValue)) ?? 0.0
-        let tokenDecimals = Int(decimals) ?? 0
-        return maxValueDecimal / pow(10, tokenDecimals)
+        let maxValue = (BigInt(rawBalance, radix: 10) ?? .zero) - totalFeeAdjusted
+        let maxValueDecimal = Decimal(string: String(maxValue)) ?? .zero
+        let tokenDecimals = Int(decimals) ?? .zero
+        let maxValueCalculated = maxValueDecimal / pow(10, tokenDecimals)
+        
+        return maxValueCalculated < .zero ? 0 : maxValueCalculated
     }
 
     var balanceInFiatDecimal: Decimal {
