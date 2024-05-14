@@ -33,7 +33,11 @@ class Endpoint {
     static func fetchSwaoQuoteThorchainNineRealms(address: String, fromAsset: String, toAsset: String, amount: String, interval: String) -> URL {
         "https://thornode.ninerealms.com/thorchain/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)&streaming_interval=\(interval)".asUrl
     }
-    
+
+    static func fetch1InchSwapQuote(chain: String, source: String, destination: String, amount: String, from: String, slippage: String) -> URL {
+        "https://api.1inch.dev/swap/v6.0/\(chain)/swap?src=\(source)&dst=\(destination)&amount=\(amount)&from=\(from)&slippage=\(slippage)".asUrl
+    }
+
     static func fetchCoinPaprikaQuotes(_ quotes: String) -> String {
         "https://api.coinpaprika.com/v1/tickers?quotes=\(quotes)"
     }

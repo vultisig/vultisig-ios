@@ -165,9 +165,10 @@ class JoinKeysignViewModel: ObservableObject {
             }
             
             let decoder = JSONDecoder()
-            if let jsonData = json.data(using: .utf8) {
+            if let jsonData = Data(base64Encoded: json) {
                 do {
-                    let keysignMsg = try decoder.decode(KeysignMessage.self, from: jsonData)
+                    let decodedJsonData: Data = try (jsonData as NSData).decompressed(using: .zlib) as Data
+                    let keysignMsg = try decoder.decode(KeysignMessage.self, from: decodedJsonData)
                     self.sessionID = keysignMsg.sessionID
                     self.keysignPayload = keysignMsg.payload
                     self.serviceName = keysignMsg.serviceName

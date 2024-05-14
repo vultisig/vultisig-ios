@@ -26,7 +26,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         }
     }
 
-    private let thorchainService = ThorchainService.shared
+    private let swapService = SwapService.shared
     private let blockchainService = BlockChainService.shared
 
     var keysignPayload: KeysignPayload?
@@ -71,7 +71,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func showToAmount(tx: SwapTransaction) -> Bool {
-        return tx.toAmount != .empty
+        return tx.toAmountDecimal != 0
     }
     
     func feeString(tx: SwapTransaction) -> String {
@@ -121,7 +121,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             && tx.fromCoin != .example
             && tx.toCoin != .example
             && !tx.fromAmount.isEmpty
-            && !tx.toAmount.isEmpty
+            && !tx.toAmountDecimal.isZero
             && tx.quote != nil
             && isSufficientBalance(tx: tx)
             && !quoteLoading
@@ -141,45 +141,68 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 throw Errors.unexpectedError
             }
 
-            guard quote.inboundAddress != nil || tx.fromCoin.chain == .thorChain else {
-                throw Errors.unexpectedError
-            }
-
-            let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
-            let vaultAddress = quote.inboundAddress ?? tx.fromCoin.address
-            let expirationTime = Date().addingTimeInterval(60 * 15) // 15 mins
-
-            let swapPayload = THORChainSwapPayload(
-                fromAddress: tx.fromCoin.address,
-                fromCoin: tx.fromCoin,
-                toCoin: tx.toCoin,
-                vaultAddress: vaultAddress,
-                routerAddress: quote.router,
-                fromAmount: swapFromAmount(tx: tx), 
-                toAmountDecimal: swapToAmountDecimal(quote: quote),
-                toAmountLimit: "0", streamingInterval: "1", streamingQuantity: "0",
-                expirationTime: UInt64(expirationTime.timeIntervalSince1970)
-            )
-
-            let keysignFactory = KeysignPayloadFactory()
-
             let chainSpecific = try await blockchainService.fetchSpecific(
                 for: tx.fromCoin,
                 action: .swap,
                 sendMaxAmount: false
             )
 
-            keysignPayload = try await keysignFactory.buildTransfer(
-                coin: tx.fromCoin,
-                toAddress: toAddress,
-                amount: tx.amountInCoinDecimal,
-                memo: nil,
-                chainSpecific: chainSpecific,
-                swapPayload: swapPayload, 
-                vault: vault
-            )
-            
-            return true
+            switch quote {
+            case .thorchain(let quote):
+
+                guard quote.inboundAddress != nil || tx.fromCoin.chain == .thorChain else {
+                    throw Errors.unexpectedError
+                }
+
+                let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
+                let vaultAddress = quote.inboundAddress ?? tx.fromCoin.address
+                let expirationTime = Date().addingTimeInterval(60 * 15) // 15 mins
+                let keysignFactory = KeysignPayloadFactory()
+
+                let swapPayload = THORChainSwapPayload(
+                    fromAddress: tx.fromCoin.address,
+                    fromCoin: tx.fromCoin,
+                    toCoin: tx.toCoin,
+                    vaultAddress: vaultAddress,
+                    routerAddress: quote.router,
+                    fromAmount: swapFromAmount(tx: tx),
+                    toAmountDecimal: tx.toAmountDecimal,
+                    toAmountLimit: "0", streamingInterval: "1", streamingQuantity: "0",
+                    expirationTime: UInt64(expirationTime.timeIntervalSince1970)
+                )
+                keysignPayload = try await keysignFactory.buildTransfer(
+                    coin: tx.fromCoin,
+                    toAddress: toAddress,
+                    amount: tx.amountInCoinDecimal,
+                    memo: nil,
+                    chainSpecific: chainSpecific,
+                    swapPayload: .thorchain(swapPayload),
+                    vault: vault
+                )
+
+                return true
+
+            case .oneinch(let quote):
+                let keysignFactory = KeysignPayloadFactory()
+                let payload = OneInchSwapPayload(
+                    fromCoin: tx.fromCoin,
+                    toCoin: tx.toCoin,
+                    fromAmount: swapFromAmount(tx: tx),
+                    toAmountDecimal: tx.toAmountDecimal,
+                    quote: quote
+                )
+                keysignPayload = try await keysignFactory.buildTransfer(
+                    coin: tx.fromCoin,
+                    toAddress: quote.tx.to,
+                    amount: tx.amountInCoinDecimal,
+                    memo: nil,
+                    chainSpecific: chainSpecific,
+                    swapPayload: .oneInch(payload),
+                    vault: vault
+                )
+
+                return true
+            }
         }
         catch {
             self.error = error
@@ -276,14 +299,11 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 private extension SwapCryptoViewModel {
 
     enum Errors: String, Error, LocalizedError {
-        case swapAmountTooSmall
         case unexpectedError
         case insufficientFunds
 
         var errorDescription: String? {
             switch self {
-            case .swapAmountTooSmall:
-                return "Swap amount too small"
             case .unexpectedError:
                 return "Unexpected swap error"
             case .insufficientFunds:
@@ -314,19 +334,7 @@ private extension SwapCryptoViewModel {
                 return
             }
 
-            guard let quote = try? await thorchainService.fetchSwapQuotes(
-                address: tx.toCoin.address,
-                fromAsset: tx.fromCoin.swapAsset,
-                toAsset: tx.toCoin.swapAsset,
-                amount: (amount * 100_000_000).description, // https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
-                interval: "1") 
-            else {
-                throw Errors.swapAmountTooSmall
-            }
-
-            guard let expected = Decimal(string: quote.expectedAmountOut), !expected.isZero else {
-                throw Errors.swapAmountTooSmall
-            }
+            let quote = try await swapService.fetchQuote(amount: amount, fromCoin: tx.fromCoin, toCoin: tx.toCoin)
 
             if !isSufficientBalance(tx: tx) {
                 throw Errors.insufficientFunds
@@ -359,16 +367,7 @@ private extension SwapCryptoViewModel {
     }
     
     func swapFromAmount(tx: SwapTransaction) -> BigInt {
-        
         return BigInt(tx.amountInCoinDecimal)
-        
-    }
-
-    func swapToAmountDecimal(quote: ThorchainSwapQuote) -> Decimal {
-        guard let expected = Decimal(string: quote.expectedAmountOut) else {
-            return .zero
-        }
-        return expected / Decimal(100_000_000)
     }
 
     func feeCoin(tx: SwapTransaction) -> Coin {

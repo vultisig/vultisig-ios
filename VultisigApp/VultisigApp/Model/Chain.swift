@@ -194,4 +194,29 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return "polkadot"
         }
     }
+
+    var chainID: Int? {
+        switch self {
+        case .ethereum:
+            return 1
+        case .avalanche:
+            return 43114
+        case .base:
+            return 8453
+        case .blast:
+            return 238
+        case .arbitrum:
+            return 42161
+        case .polygon:
+            return 137
+        case .optimism:
+            return 10
+        case .bscChain:
+            return 56
+        case .cronosChain:
+            return 25
+        case .solana, .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .sui, .polkadot:
+            return nil
+        }
+    }
 }

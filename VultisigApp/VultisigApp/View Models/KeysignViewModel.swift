@@ -206,9 +206,16 @@ class KeysignViewModel: ObservableObject {
     
     func getSignedTransaction(keysignPayload: KeysignPayload) -> Result<SignedTransactionResult, Error> {
         if let swapPayload = keysignPayload.swapPayload {
-            let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-            let result = swaps.getSignedTransaction(swapPayload: swapPayload, keysignPayload: keysignPayload, signatures: signatures)
-            return result
+            switch swapPayload {
+            case .thorchain(let payload):
+                let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                let result = swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures)
+                return result
+            case .oneInch(let payload):
+                let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                let result = swaps.getSignedTransaction(payload: payload, keysignPayload: keysignPayload, signatures: signatures)
+                return result
+            }
         }
         
         if let approvePayload = keysignPayload.approvePayload {
