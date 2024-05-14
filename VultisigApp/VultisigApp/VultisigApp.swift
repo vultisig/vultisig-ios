@@ -39,7 +39,6 @@ struct VultisigApp: App {
                 continueLogin()
             case .inactive, .background:
                 resetLogin()
-                deeplinkViewModel.viewID = UUID()
             default:
                 break
             }
