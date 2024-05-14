@@ -76,7 +76,12 @@ class ImportVaultViewModel: ObservableObject {
             let backupVault = try decoder.decode(BackupVault.self,
                                                  from: vaultData)
             // if version get updated , then we can process the migration here
-            ensureVaultUnique(backupVault: backupVault.vault,vaults:vaults)
+            if !isVaultUnique(backupVault: backupVault.vault,vaults:vaults){
+                errorMessage = "Vault already exists"
+                showAlert = true
+                isLinkActive = false
+                return
+            }
             modelContext.insert(backupVault.vault)
             isLinkActive = true
         }  catch {
@@ -86,7 +91,12 @@ class ImportVaultViewModel: ObservableObject {
                 let vault = try decoder.decode(Vault.self,
                                                from: vaultData)
                 // if version get updated , then we can process the migration here
-                ensureVaultUnique(backupVault: vault,vaults:vaults)
+                if !isVaultUnique(backupVault: vault,vaults:vaults){
+                    errorMessage = "Vault already exists"
+                    showAlert = true
+                    isLinkActive = false
+                    return
+                }
                 modelContext.insert(vault)
                 isLinkActive = true
             } catch {
@@ -98,16 +108,14 @@ class ImportVaultViewModel: ObservableObject {
         }
     }
     
-    func ensureVaultUnique(backupVault: Vault,vaults: [Vault]){
+    func isVaultUnique(backupVault: Vault,vaults: [Vault]) -> Bool {
         for vault in vaults{
             if vault.pubKeyECDSA == backupVault.pubKeyECDSA &&
                 vault.pubKeyEdDSA == backupVault.pubKeyEdDSA {
-                errorMessage = "Vault already exists"
-                showAlert = true
-                isLinkActive = false
-                return
+                return false
             }
             
         }
+        return true
     }
 }
