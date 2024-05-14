@@ -22,16 +22,16 @@ class ImportVaultViewModel: ObservableObject {
     
     func readFile(for result: Result<[URL], Error>) {
         switch result {
-            case .success(let urls):
-                guard let selectedFileURL = urls.first else { return }
-                
-                print(selectedFileURL)
-                isFileUploaded = true
-                filename = selectedFileURL.lastPathComponent
-                readContent(of: selectedFileURL)
-            case .failure(let error):
-                // Handle the error
-                print("Error selecting file: \(error.localizedDescription)")
+        case .success(let urls):
+            guard let selectedFileURL = urls.first else { return }
+            
+            print(selectedFileURL)
+            isFileUploaded = true
+            filename = selectedFileURL.lastPathComponent
+            readContent(of: selectedFileURL)
+        case .failure(let error):
+            // Handle the error
+            print("Error selecting file: \(error.localizedDescription)")
         }
     }
     
@@ -61,8 +61,8 @@ class ImportVaultViewModel: ObservableObject {
             showAlert = true
         }
     }
-
-    func restoreVault(modelContext: ModelContext) {
+    
+    func restoreVault(modelContext: ModelContext,vaults: [Vault]) {
         
         guard let vaultText = vaultText, let vaultData = Data(hexString: vaultText) else {
             errorMessage = "invalid vault data"
@@ -72,11 +72,16 @@ class ImportVaultViewModel: ObservableObject {
         }
         
         let decoder = JSONDecoder()
-        
         do {
             let backupVault = try decoder.decode(BackupVault.self,
-                                           from: vaultData)
+                                                 from: vaultData)
             // if version get updated , then we can process the migration here
+            if !isVaultUnique(backupVault: backupVault.vault,vaults:vaults){
+                errorMessage = "Vault already exists"
+                showAlert = true
+                isLinkActive = false
+                return
+            }
             modelContext.insert(backupVault.vault)
             isLinkActive = true
         }  catch {
@@ -86,6 +91,12 @@ class ImportVaultViewModel: ObservableObject {
                 let vault = try decoder.decode(Vault.self,
                                                from: vaultData)
                 // if version get updated , then we can process the migration here
+                if !isVaultUnique(backupVault: vault,vaults:vaults){
+                    errorMessage = "Vault already exists"
+                    showAlert = true
+                    isLinkActive = false
+                    return
+                }
                 modelContext.insert(vault)
                 isLinkActive = true
             } catch {
@@ -95,5 +106,16 @@ class ImportVaultViewModel: ObservableObject {
                 isLinkActive = false
             }
         }
+    }
+    
+    func isVaultUnique(backupVault: Vault,vaults: [Vault]) -> Bool {
+        for vault in vaults{
+            if vault.pubKeyECDSA == backupVault.pubKeyECDSA &&
+                vault.pubKeyEdDSA == backupVault.pubKeyEdDSA {
+                return false
+            }
+            
+        }
+        return true
     }
 }

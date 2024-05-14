@@ -6,12 +6,14 @@
 //
 
 import SwiftUI
+import SwiftData
 import UniformTypeIdentifiers
 
 struct ImportWalletView: View {
     @Environment(\.modelContext) private var context
     @StateObject var viewModel = ImportVaultViewModel()
     @State var showFileImporter = false
+    @Query var vaults: [Vault]
     
     var body: some View {
         ZStack {
@@ -80,7 +82,7 @@ struct ImportWalletView: View {
     
     var continueButton: some View {
         Button {
-            viewModel.restoreVault(modelContext: context)
+            viewModel.restoreVault(modelContext: context,vaults: vaults)
         } label: {
             FilledButton(title: "continue")
                 .disabled(!viewModel.isFileUploaded)
