@@ -115,14 +115,14 @@ struct KeygenView: View {
     var reshareECDSAText: some View {
         KeygenStatusText(status: NSLocalizedString("reshareECDSA", comment: "Resharing ECDSA KEY"))
             .onAppear {
-                showProgressRing = false
+                progressCounter = 2
             }
     }
     
     var reshareEdDSAText: some View {
         KeygenStatusText(status: NSLocalizedString("reshareEdDSA", comment: "Resharing EdDSA KEY"))
             .onAppear {
-                showProgressRing = false
+                progressCounter = 3
             }
     }
     
