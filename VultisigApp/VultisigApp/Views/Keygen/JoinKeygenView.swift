@@ -14,6 +14,7 @@ struct JoinKeygenView: View {
     @StateObject var viewModel = JoinKeygenViewModel()
     @StateObject var serviceDelegate = ServiceDelegate()
     @State var showFileImporter = false
+    @State var isGalleryPresented = false
     
     let logger = Logger(subsystem: "join-keygen", category: "communication")
     
@@ -40,7 +41,7 @@ struct JoinKeygenView: View {
             viewModel.handleQrCodeFromImage(result: result)
         }
         .sheet(isPresented: $viewModel.isShowingScanner, content: {
-            CodeScannerView(codeTypes: [.qr], completion: self.viewModel.handleScan)
+            codeScanner
         })
         .onAppear {
             viewModel.setData(vault: vault, serviceDelegate: self.serviceDelegate)
@@ -214,6 +215,21 @@ struct JoinKeygenView: View {
         }
     }
     
+    var codeScanner: some View {
+        ZStack(alignment: .bottom) {
+            CodeScannerView(codeTypes: [.qr], isGalleryPresented: $isGalleryPresented, completion: self.viewModel.handleScan)
+            galleryButton
+        }
+    }
+    
+    var galleryButton: some View {
+        Button {
+            isGalleryPresented.toggle()
+        } label: {
+            OpenGalleryButton()
+        }
+        .padding(.bottom, 50)
+    }
 }
 
 struct JoinKeygenView_Previews: PreviewProvider {

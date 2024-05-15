@@ -138,6 +138,7 @@
 		A66A0BD92BA12DF50021A483 /* RenameVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */; };
 		A66A0BDB2BA13B570021A483 /* CoinsGrouped.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BDA2BA13B570021A483 /* CoinsGrouped.swift */; };
 		A67F4C5F2BE313220086ED09 /* ActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67F4C5E2BE313220086ED09 /* ActionButton.swift */; };
+		A680BAC52BF47AA9006E611D /* OpenGalleryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A680BAC42BF47AA9006E611D /* OpenGalleryButton.swift */; };
 		A683EDEB2BCF635E00BB706E /* InstructionPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = A683EDEA2BCF635E00BB706E /* InstructionPrompt.swift */; };
 		A683EDED2BCF67D100BB706E /* NetworkPromptCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A683EDEC2BCF67D100BB706E /* NetworkPromptCell.swift */; };
 		A69069A12BCDEFD400F28A8B /* ProgressRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69069A02BCDEFD400F28A8B /* ProgressRing.swift */; };
@@ -445,6 +446,7 @@
 		A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenameVaultView.swift; sourceTree = "<group>"; };
 		A66A0BDA2BA13B570021A483 /* CoinsGrouped.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinsGrouped.swift; sourceTree = "<group>"; };
 		A67F4C5E2BE313220086ED09 /* ActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionButton.swift; sourceTree = "<group>"; };
+		A680BAC42BF47AA9006E611D /* OpenGalleryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenGalleryButton.swift; sourceTree = "<group>"; };
 		A683EDEA2BCF635E00BB706E /* InstructionPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstructionPrompt.swift; sourceTree = "<group>"; };
 		A683EDEC2BCF67D100BB706E /* NetworkPromptCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPromptCell.swift; sourceTree = "<group>"; };
 		A69069A02BCDEFD400F28A8B /* ProgressRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressRing.swift; sourceTree = "<group>"; };
@@ -934,6 +936,7 @@
 				A633B1242B993FE7003D1738 /* FilledButton.swift */,
 				A633B12E2B9952D8003D1738 /* OutlineButton.swift */,
 				A67F4C5E2BE313220086ED09 /* ActionButton.swift */,
+				A680BAC42BF47AA9006E611D /* OpenGalleryButton.swift */,
 			);
 			path = Buttons;
 			sourceTree = "<group>";
@@ -1753,6 +1756,7 @@
 				DE9EB0F22BA2D97B001747D9 /* PeerDiscoveryPayload.swift in Sources */,
 				A6980C2E2BC089F900F452AB /* SettingSelectionCell.swift in Sources */,
 				A65324302BA540ED00DDE6EB /* SendCryptoVerifyView.swift in Sources */,
+				A680BAC52BF47AA9006E611D /* OpenGalleryButton.swift in Sources */,
 				A65649E52B96602700E4B329 /* VaultExtension.swift in Sources */,
 				DE9EB0F82BA43388001747D9 /* KeysignViewModel.swift in Sources */,
 				DE9EB0F42BA309AB001747D9 /* MessagePuller.swift in Sources */,
