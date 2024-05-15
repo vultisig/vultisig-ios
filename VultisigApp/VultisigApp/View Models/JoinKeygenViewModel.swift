@@ -201,7 +201,6 @@ class JoinKeygenViewModel: ObservableObject {
                             self.localPartyID = reshareVault.localPartyID
                         }
                     }
-                    vault.hexChainCode = reshareMsg.hexChainCode
                 } else {
                     if vault.pubKeyECDSA != reshareMsg.pubKeyECDSA {
                         errorMessage = "You choose the wrong vault"

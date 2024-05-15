@@ -99,7 +99,7 @@ struct JoinKeygenView: View {
     
     var keygenView: some View {
         KeygenView(
-            vault: vault,
+            vault: self.viewModel.vault,
             tssType: self.viewModel.tssType,
             keygenCommittee: self.viewModel.keygenCommittee,
             vaultOldCommittee: self.viewModel.oldCommittee.filter { self.viewModel.keygenCommittee.contains($0) },
