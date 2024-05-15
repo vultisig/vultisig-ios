@@ -384,7 +384,7 @@ private extension SwapCryptoViewModel {
         switch chainSpecific {
         case .Ethereum(let maxFeePerGas, let priorityFee, _, let gasLimit):
             return (maxFeePerGas + priorityFee) * gasLimit
-        case .UTXO(let byteFee, _):
+        case .UTXO(_, _):
             let keysignFactory = KeysignPayloadFactory()
 
             let keysignPayload = try await keysignFactory.buildTransfer(
