@@ -22,7 +22,7 @@ struct OpenGalleryButton: View {
                 .font(.body16Menlo)
                 .foregroundColor(.blue600)
             
-            Text(NSLocalizedString("openGallery", comment: ""))
+            Text(NSLocalizedString("uploadFromGallery", comment: ""))
                 .font(.body16MontserratBold)
                 .foregroundColor(.blue600)
         }
