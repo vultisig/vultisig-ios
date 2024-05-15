@@ -72,7 +72,8 @@ struct SettingsView: View {
     
     var faqCell: some View {
         NavigationLink {
-            SettingsFAQView()
+            //SettingsFAQView()
+            TransactionMemoView()
         } label: {
             SettingCell(title: "faq", icon: "questionmark.circle")
         }

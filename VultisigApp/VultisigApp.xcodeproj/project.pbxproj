@@ -202,14 +202,15 @@
 		B54B01972BDCEB8E00FDA472 /* Polkadot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54B01962BDCEB8E00FDA472 /* Polkadot.swift */; };
 		B54B019A2BDE0A1D00FDA472 /* PolkadotService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54B01992BDE0A1D00FDA472 /* PolkadotService.swift */; };
 		B54B019C2BDE135C00FDA472 /* RpcService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54B019B2BDE135C00FDA472 /* RpcService.swift */; };
-		B5A97CED2BF41573007574D7 /* DepositView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CEC2BF41573007574D7 /* DepositView.swift */; };
+		B5A97CED2BF41573007574D7 /* TransactionMemoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CEC2BF41573007574D7 /* TransactionMemoView.swift */; };
 		B5A97CEF2BF41779007574D7 /* DepositViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CEE2BF41779007574D7 /* DepositViewModel.swift */; };
 		B5A97CF12BF41903007574D7 /* DepositVerifyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CF02BF41903007574D7 /* DepositVerifyViewModel.swift */; };
 		B5A97CF32BF426D4007574D7 /* DepositDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CF22BF426D4007574D7 /* DepositDetailView.swift */; };
 		B5A97CF52BF4287A007574D7 /* SelectorDropdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CF42BF4287A007574D7 /* SelectorDropdown.swift */; };
 		B5A97CF72BF42BE1007574D7 /* DepositVerifyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CF62BF42BE1007574D7 /* DepositVerifyView.swift */; };
 		B5A97CF92BF42E72007574D7 /* AddressTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CF82BF42E72007574D7 /* AddressTextField.swift */; };
-		B5A97CFC2BF4365E007574D7 /* Deposit.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CFB2BF4365E007574D7 /* Deposit.swift */; };
+		B5A97CFC2BF4365E007574D7 /* TransactionMemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CFB2BF4365E007574D7 /* TransactionMemo.swift */; };
+		B5A97CFF2BF442D1007574D7 /* DynamicFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CFE2BF442D1007574D7 /* DynamicFormView.swift */; };
 		B5E95E092BED84D9003778F0 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E95E082BED84D9003778F0 /* ImagePicker.swift */; };
 		B5F758182BD8E65D0097B5B9 /* Sui.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F758172BD8E65D0097B5B9 /* Sui.swift */; };
 		B5F7581A2BD8E7230097B5B9 /* SuiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5F758192BD8E7230097B5B9 /* SuiService.swift */; };
@@ -517,14 +518,15 @@
 		B54B01962BDCEB8E00FDA472 /* Polkadot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Polkadot.swift; sourceTree = "<group>"; };
 		B54B01992BDE0A1D00FDA472 /* PolkadotService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolkadotService.swift; sourceTree = "<group>"; };
 		B54B019B2BDE135C00FDA472 /* RpcService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RpcService.swift; sourceTree = "<group>"; };
-		B5A97CEC2BF41573007574D7 /* DepositView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepositView.swift; sourceTree = "<group>"; };
+		B5A97CEC2BF41573007574D7 /* TransactionMemoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoView.swift; sourceTree = "<group>"; };
 		B5A97CEE2BF41779007574D7 /* DepositViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepositViewModel.swift; sourceTree = "<group>"; };
 		B5A97CF02BF41903007574D7 /* DepositVerifyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepositVerifyViewModel.swift; sourceTree = "<group>"; };
 		B5A97CF22BF426D4007574D7 /* DepositDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepositDetailView.swift; sourceTree = "<group>"; };
 		B5A97CF42BF4287A007574D7 /* SelectorDropdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectorDropdown.swift; sourceTree = "<group>"; };
 		B5A97CF62BF42BE1007574D7 /* DepositVerifyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepositVerifyView.swift; sourceTree = "<group>"; };
 		B5A97CF82BF42E72007574D7 /* AddressTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressTextField.swift; sourceTree = "<group>"; };
-		B5A97CFB2BF4365E007574D7 /* Deposit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Deposit.swift; sourceTree = "<group>"; };
+		B5A97CFB2BF4365E007574D7 /* TransactionMemo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemo.swift; sourceTree = "<group>"; };
+		B5A97CFE2BF442D1007574D7 /* DynamicFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicFormView.swift; sourceTree = "<group>"; };
 		B5E95E082BED84D9003778F0 /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
 		B5F758172BD8E65D0097B5B9 /* Sui.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Sui.swift; sourceTree = "<group>"; };
 		B5F758192BD8E7230097B5B9 /* SuiService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SuiService.swift; sourceTree = "<group>"; };
@@ -1137,22 +1139,30 @@
 			path = Sui;
 			sourceTree = "<group>";
 		};
-		B5A97CEB2BF41554007574D7 /* Deposit */ = {
+		B5A97CEB2BF41554007574D7 /* TransactionMemo */ = {
 			isa = PBXGroup;
 			children = (
-				B5A97CEC2BF41573007574D7 /* DepositView.swift */,
+				B5A97CEC2BF41573007574D7 /* TransactionMemoView.swift */,
 				B5A97CF22BF426D4007574D7 /* DepositDetailView.swift */,
 				B5A97CF62BF42BE1007574D7 /* DepositVerifyView.swift */,
 			);
-			path = Deposit;
+			path = TransactionMemo;
 			sourceTree = "<group>";
 		};
-		B5A97CFA2BF43653007574D7 /* Deposit */ = {
+		B5A97CFA2BF43653007574D7 /* TransactionMemo */ = {
 			isa = PBXGroup;
 			children = (
-				B5A97CFB2BF4365E007574D7 /* Deposit.swift */,
+				B5A97CFB2BF4365E007574D7 /* TransactionMemo.swift */,
 			);
-			path = Deposit;
+			path = TransactionMemo;
+			sourceTree = "<group>";
+		};
+		B5A97CFD2BF442BB007574D7 /* DynamicFormView */ = {
+			isa = PBXGroup;
+			children = (
+				B5A97CFE2BF442D1007574D7 /* DynamicFormView.swift */,
+			);
+			path = DynamicFormView;
 			sourceTree = "<group>";
 		};
 		B5F7581B2BD8FD970097B5B9 /* Sui */ = {
@@ -1174,7 +1184,8 @@
 		D9AD8ED72B67225F0009F8D5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				B5A97CEB2BF41554007574D7 /* Deposit */,
+				B5A97CFD2BF442BB007574D7 /* DynamicFormView */,
+				B5A97CEB2BF41554007574D7 /* TransactionMemo */,
 				D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */,
 				46D067E42B8852B70052F535 /* Keygen */,
 				049BBB4E2B71E37B004C231F /* Components */,
@@ -1193,7 +1204,7 @@
 		D9AD8ED82B6722AC0009F8D5 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				B5A97CFA2BF43653007574D7 /* Deposit */,
+				B5A97CFA2BF43653007574D7 /* TransactionMemo */,
 				B5F7581B2BD8FD970097B5B9 /* Sui */,
 				465B189E2BA3D7B5001D7407 /* Prices */,
 				465B189C2BA3D786001D7407 /* UTXO */,
@@ -1733,7 +1744,7 @@
 				DE6DCB952B97D88A009A39D5 /* THORChainSwapPayload.swift in Sources */,
 				A6966D2B2BA4018600903CA4 /* SendCryptoAmountTextField.swift in Sources */,
 				DEFF59012BD238CF005DFDF9 /* SignedTransactionResult.swift in Sources */,
-				B5A97CFC2BF4365E007574D7 /* Deposit.swift in Sources */,
+				B5A97CFC2BF4365E007574D7 /* TransactionMemo.swift in Sources */,
 				46AC40A82B920061001704E6 /* EtherscanService.swift in Sources */,
 				A62758F22B97B10600ADE3A6 /* Endpoint.swift in Sources */,
 				465A8D532B9E689B006E7457 /* SolanaService.swift in Sources */,
@@ -1841,7 +1852,7 @@
 				A5D0C9372BEE778F0022D421 /* OneInchSwaps.swift in Sources */,
 				DE64A4CE2BA7FEE100C342E3 /* JoinKeysignViewModel.swift in Sources */,
 				A6C9D5C12BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift in Sources */,
-				B5A97CED2BF41573007574D7 /* DepositView.swift in Sources */,
+				B5A97CED2BF41573007574D7 /* TransactionMemoView.swift in Sources */,
 				A611735D2BC8D94400D616F9 /* KeyGenSummaryView.swift in Sources */,
 				A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */,
 				DE64A4CA2BA7F90E00C342E3 /* ServiceDelegate.swift in Sources */,
@@ -1897,6 +1908,7 @@
 				A6F9F7E92B9BBFD500790258 /* AddressQRCodeView.swift in Sources */,
 				A6C0D5692BB3C6D400156689 /* ErrorMessage.swift in Sources */,
 				46C8CBBD2BA7753900E68E08 /* Blockchair.swift in Sources */,
+				B5A97CFF2BF442D1007574D7 /* DynamicFormView.swift in Sources */,
 				469ED3A42B98F5DE008D4951 /* CosmosAccountValue.swift in Sources */,
 				A5199AF02BBD8C0400AA0A39 /* ThorchainSwapQuote.swift in Sources */,
 				A5125F072BEBBFAB008A79AA /* OneInchQuote.swift in Sources */,
