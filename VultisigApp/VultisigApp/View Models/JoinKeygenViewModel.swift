@@ -42,13 +42,15 @@ class JoinKeygenViewModel: ObservableObject {
     @Published var errorMessage = ""
     @Published var serverAddress: String? = nil
     var encryptionKeyHex: String = ""
+    var vaults: [Vault] = []
     
     init() {
         self.vault = Vault(name: "Main Vault")
     }
     
-    func setData(vault: Vault, serviceDelegate: ServiceDelegate) {
+    func setData(vault: Vault, serviceDelegate: ServiceDelegate,vaults: [Vault]) {
         self.vault = vault
+        self.vaults = vaults
         self.serviceDelegate = serviceDelegate
         if !vault.localPartyID.isEmpty {
             self.localPartyID = vault.localPartyID
@@ -186,6 +188,12 @@ class JoinKeygenViewModel: ObservableObject {
                 useVultisigRelay = reshareMsg.useVultisigRelay
                 // this means the vault is new , and it join the reshare to become the new committee
                 if vault.pubKeyECDSA.isEmpty {
+                    if !reshareMsg.pubKeyECDSA.isEmpty {
+                        if let reshareVault = vaults.first(where: { $0.pubKeyECDSA == reshareMsg.pubKeyECDSA }) {
+                            self.vault = reshareVault
+                            self.localPartyID = reshareVault.localPartyID
+                        }
+                    }
                     vault.hexChainCode = reshareMsg.hexChainCode
                 } else {
                     if vault.pubKeyECDSA != reshareMsg.pubKeyECDSA {
@@ -209,7 +217,7 @@ class JoinKeygenViewModel: ObservableObject {
             status = .DiscoverService
         }
     }
-
+    
     func handleQrCodeFromImage(result: Result<[URL], Error>) {
         handleQrCodeSuccessResult(scanData: Utils.handleQrCodeFromImage(result: result))
     }
