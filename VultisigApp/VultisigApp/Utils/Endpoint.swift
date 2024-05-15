@@ -35,7 +35,7 @@ class Endpoint {
     }
 
     static func fetch1InchSwapQuote(chain: String, source: String, destination: String, amount: String, from: String, slippage: String) -> URL {
-        "https://api.1inch.dev/swap/v6.0/\(chain)/swap?src=\(source)&dst=\(destination)&amount=\(amount)&from=\(from)&slippage=\(slippage)".asUrl
+        "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/swap?src=\(source)&dst=\(destination)&amount=\(amount)&from=\(from)&slippage=\(slippage)".asUrl
     }
 
     static func fetchCoinPaprikaQuotes(_ quotes: String) -> String {
