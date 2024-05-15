@@ -182,3 +182,4 @@
 "needToRemoveTokens" = "Todos los tokens dentro de esta cadena deben ser eliminados antes de continuar.";
 "typeHere" = "Escribe aquí";
 "nameYourVault" = "Nombrar tu Vault";
+"uploadFromGallery" = "Subir desde la galería";

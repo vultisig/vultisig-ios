@@ -11,6 +11,7 @@ struct JoinKeysignView: View {
        
     @StateObject private var serviceDelegate = ServiceDelegate()
     @StateObject var viewModel = JoinKeysignViewModel()
+    @State var isGalleryPresented = false
     
     let logger = Logger(subsystem: "join-keysign", category: "communication")
 
@@ -31,7 +32,7 @@ struct JoinKeysignView: View {
             }
         }
         .sheet(isPresented: $viewModel.isShowingScanner, content: {
-            CodeScannerView(codeTypes: [.qr], completion: viewModel.handleScan)
+            codeScanner
         })
         .onAppear {
             viewModel.setData(vault: vault, serviceDelegate: serviceDelegate)
@@ -126,6 +127,22 @@ struct JoinKeysignView: View {
     
     var discoverService: some View {
         KeysignDiscoverServiceView(viewModel: viewModel, serviceDelegate: serviceDelegate)
+    }
+    
+    var codeScanner: some View {
+        ZStack(alignment: .bottom) {
+            CodeScannerView(codeTypes: [.qr], isGalleryPresented: $isGalleryPresented, completion: viewModel.handleScan)
+            galleryButton
+        }
+    }
+    
+    var galleryButton: some View {
+        Button {
+            isGalleryPresented.toggle()
+        } label: {
+            OpenGalleryButton()
+        }
+        .padding(.bottom, 50)
     }
 }
 
