@@ -166,6 +166,10 @@ class JoinKeygenViewModel: ObservableObject {
         do {
             let decoder = JSONDecoder()
             let result = try decoder.decode(PeerDiscoveryPayload.self, from: scanData)
+            
+            print("---")
+            print(String(data: scanData, encoding: .utf8)!)
+            
             switch result {
             case .Keygen(let keygenMsg):
                 tssType = .Keygen
@@ -185,6 +189,9 @@ class JoinKeygenViewModel: ObservableObject {
                 encryptionKeyHex = reshareMsg.encryptionKeyHex
                 useVultisigRelay = reshareMsg.useVultisigRelay
                 // this means the vault is new , and it join the reshare to become the new committee
+                
+                print()
+                
                 if vault.pubKeyECDSA.isEmpty {
                     vault.hexChainCode = reshareMsg.hexChainCode
                 } else {
