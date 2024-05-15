@@ -15,6 +15,7 @@ struct JoinKeygenView: View {
     @StateObject var serviceDelegate = ServiceDelegate()
     @State var showFileImporter = false
     @State var isGalleryPresented = false
+    @State var isGalleryButtonEnabled = true
     
     let logger = Logger(subsystem: "join-keygen", category: "communication")
     
