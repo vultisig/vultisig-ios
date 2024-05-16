@@ -42,7 +42,7 @@ struct TransactionMemoContractSelectorDropDown: View {
     
     var cell: some View {
         HStack(spacing: 12) {
-            Text(formatRawValue(selected.rawValue))
+            Text(selected.rawValue.toFormattedTitleCase())
             Spacer()
             
             if isActive {
@@ -70,7 +70,7 @@ struct TransactionMemoContractSelectorDropDown: View {
     
     private func getCell(for item: TransactionMemoContractType) -> some View {
         HStack(spacing: 12) {
-            Text(formatRawValue(item.rawValue))
+            Text(item.rawValue.toFormattedTitleCase())
                 .font(.body16Menlo)
                 .foregroundColor(.neutral0)
             
@@ -93,20 +93,5 @@ struct TransactionMemoContractSelectorDropDown: View {
         isExpanded = false
         selected = item
         onSelect?(item)
-    }
-    
-    private func formatRawValue(_ rawValue: String) -> String {
-        let formattedString = rawValue
-            .enumerated()
-            .map { index, character in
-                if index > 0 && character.isUppercase {
-                    return " \(character)"
-                } else {
-                    return String(character)
-                }
-            }
-            .joined()
-            .capitalized
-        return formattedString
     }
 }

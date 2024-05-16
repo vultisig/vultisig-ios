@@ -33,7 +33,7 @@ extension String {
     func formatCurrency() -> String {
         return self.replacingOccurrences(of: ",", with: ".")
     }
-
+    
     var isZero: Bool {
         return self == .zero
     }
@@ -42,7 +42,7 @@ extension String {
 // MARK: - String constants
 
 extension String {
-
+    
     static var empty: String {
         return ""
     }
@@ -102,5 +102,22 @@ extension String {
             return BigInt.zero
         }
         return valueBigInt
+    }
+}
+
+extension String {
+    func toFormattedTitleCase() -> String {
+        let formattedString = self
+            .enumerated()
+            .map { index, character in
+                if index > 0 && character.isUppercase {
+                    return " \(character)"
+                } else {
+                    return String(character)
+                }
+            }
+            .joined()
+            .capitalized
+        return formattedString
     }
 }

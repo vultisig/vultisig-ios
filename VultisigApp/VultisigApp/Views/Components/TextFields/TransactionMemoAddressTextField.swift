@@ -15,15 +15,24 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
     @ObservedObject var memo: MemoType
     var addressKey: String
     
+    @State var isValid = true
     @State var showScanner = false
     @State var showImagePicker = false
     @State var selectedImage: UIImage?
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(NSLocalizedString("enterAddress", comment: ""))
-                .font(.body14MontserratMedium)
-                .foregroundColor(.neutral0)
+            HStack{
+                Text(addressKey.toFormattedTitleCase())
+                    .font(.body14MontserratMedium)
+                    .foregroundColor(.neutral0)
+                
+                if !isValid {
+                    Text("*")
+                        .font(.body14MontserratMedium)
+                        .foregroundColor(.red)
+                }
+            }
             
             ZStack(alignment: .trailing) {
                 if memo.addressFields[addressKey]?.isEmpty ?? true {
@@ -49,14 +58,14 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
     }
     
     var placeholder: some View {
-        Text(NSLocalizedString("enterAddress", comment: ""))
+        Text(addressKey.toFormattedTitleCase())
             .foregroundColor(Color.neutral0)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     var field: some View {
         HStack(spacing: 0) {
-            TextField(NSLocalizedString("enterAddress", comment: "").capitalized, text: Binding<String>(
+            TextField(addressKey.toFormattedTitleCase(), text: Binding<String>(
                 get: { memo.addressFields[addressKey] ?? "" },
                 set: { newValue in
                     memo.addressFields[addressKey] = newValue
@@ -84,7 +93,7 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
     
     var pasteButton: some View {
         Button {
-            _ = try? pasteAddress()
+            pasteAddress()
         } label: {
             Image(systemName: "doc.on.clipboard")
                 .font(.body16Menlo)
@@ -134,21 +143,20 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
     }
     
     private func validateAddress(_ newValue: String) {
-        // Implement address validation
+        isValid = CoinType.thorchain.validate(address: newValue)
     }
     
-    private func pasteAddress() throws -> String {
+    private func pasteAddress() {
         if let clipboardContent = UIPasteboard.general.string {
-            // Implement address validation
-            return clipboardContent
+            memo.addressFields[addressKey] = clipboardContent
+            validateAddress(memo.addressFields[addressKey] ?? "")
         }
-        return ""
     }
     
-    private func handleImageQrCode(image: UIImage) -> String {
+    private func handleImageQrCode(image: UIImage) {
         let qrCodeFromImage = Utils.handleQrCodeFromImage(image: image)
         let address = String(data: qrCodeFromImage, encoding: .utf8) ?? ""
         memo.addressFields[addressKey] = address
-        return address
+        validateAddress(memo.addressFields[addressKey] ?? "")
     }
 }
