@@ -34,6 +34,13 @@ class TransactionMemoDonateReserve: TransactionMemoAddressable, ObservableObject
         return "DONATE:\(pool)"
     }
     
+    func toDictionary() -> ThreadSafeDictionary<String, String> {
+        let dict = ThreadSafeDictionary<String, String>()
+        dict.set("pool", "\(self.pool)")
+        dict.set("string_value", self.toString())
+        return dict
+    }
+    
     func getView() -> AnyView {
         AnyView(VStack {
             StyledTextField(placeholder: "Pool", text: Binding(

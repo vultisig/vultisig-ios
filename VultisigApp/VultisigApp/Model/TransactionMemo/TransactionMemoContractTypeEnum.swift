@@ -10,7 +10,6 @@ import Foundation
 import Combine
 
 enum TransactionMemoContractType: String, CaseIterable, Identifiable {
-    case thorChainMessageDeposit    
+    case thorChainMessageDeposit
     var id: String { self.rawValue }
 }
-

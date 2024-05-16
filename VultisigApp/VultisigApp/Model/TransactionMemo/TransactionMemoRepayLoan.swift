@@ -32,7 +32,16 @@ class TransactionMemoRepayLoan: TransactionMemoAddressable, ObservableObject {
     }
     
     func toString() -> String {
-        "LOAN-:\(self.asset):\(self.destinationAddress):\(self.minOut)"
+        return "LOAN-:\(self.asset):\(self.destinationAddress):\(self.minOut)"
+    }
+    
+    func toDictionary() -> ThreadSafeDictionary<String, String> {
+        let dict = ThreadSafeDictionary<String, String>()
+        dict.set("asset", "\(self.asset)")
+        dict.set("destinationAddress", "\(self.destinationAddress)")
+        dict.set("minOut", "\(self.minOut)")
+        dict.set("string_value", self.toString())
+        return dict
     }
     
     func getView() -> AnyView {

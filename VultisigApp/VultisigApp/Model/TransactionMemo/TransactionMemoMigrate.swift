@@ -28,7 +28,14 @@ class TransactionMemoMigrate: TransactionMemoAddressable, ObservableObject {
     }
     
     func toString() -> String {
-        "MIGRATE:\(self.blockHeight)"
+        return "MIGRATE:\(self.blockHeight)"
+    }
+    
+    func toDictionary() -> ThreadSafeDictionary<String, String> {
+        let dict = ThreadSafeDictionary<String, String>()
+        dict.set("blockHeight", "\(self.blockHeight)")
+        dict.set("string_value", self.toString())
+        return dict
     }
     
     func getView() -> AnyView {

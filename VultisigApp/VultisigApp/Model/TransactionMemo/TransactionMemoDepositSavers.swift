@@ -39,6 +39,15 @@ class TransactionMemoDepositSavers: TransactionMemoAddressable, ObservableObject
         return memo
     }
     
+    func toDictionary() -> ThreadSafeDictionary<String, String> {
+        let dict = ThreadSafeDictionary<String, String>()
+        dict.set("pool", "\(self.pool)")
+        dict.set("affiliate", "\(self.affiliate)")
+        dict.set("fee", "\(self.fee)")
+        dict.set("string_value", self.toString())
+        return dict
+    }
+    
     func getView() -> AnyView {
         AnyView(VStack {
             StyledTextField(placeholder: "Pool", text: Binding(

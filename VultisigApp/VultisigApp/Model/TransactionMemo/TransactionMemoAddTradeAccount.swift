@@ -28,7 +28,14 @@ class TransactionMemoAddTradeAccount: TransactionMemoAddressable, ObservableObje
     }
     
     func toString() -> String {
-        "TRADE+:\(self.address)"
+        return "TRADE+:\(self.address)"
+    }
+    
+    func toDictionary() -> ThreadSafeDictionary<String, String> {
+        let dict = ThreadSafeDictionary<String, String>()
+        dict.set("address", "\(self.address)")
+        dict.set("string_value", self.toString())
+        return dict
     }
     
     func getView() -> AnyView {

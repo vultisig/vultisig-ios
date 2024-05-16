@@ -53,6 +53,19 @@ class TransactionMemoSwap: TransactionMemoAddressable, ObservableObject {
         return memo
     }
     
+    func toDictionary() -> ThreadSafeDictionary<String, String> {
+        let dict = ThreadSafeDictionary<String, String>()
+        dict.set("asset", "\(self.asset)")
+        dict.set("destinationAddress", "\(self.destinationAddress)")
+        dict.set("limit", "\(self.limit)")
+        dict.set("interval", "\(self.interval)")
+        dict.set("quantity", "\(self.quantity)")
+        dict.set("affiliate", "\(self.affiliate)")
+        dict.set("fee", "\(self.fee)")
+        dict.set("string_value", self.toString())
+        return dict
+    }
+    
     func getView() -> AnyView {
         AnyView(VStack {
             StyledTextField(placeholder: "Asset", text: Binding(

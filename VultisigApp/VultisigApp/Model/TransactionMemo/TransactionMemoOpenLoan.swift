@@ -43,6 +43,17 @@ class TransactionMemoOpenLoan: TransactionMemoAddressable, ObservableObject {
         return memo
     }
     
+    func toDictionary() -> ThreadSafeDictionary<String, String> {
+        let dict = ThreadSafeDictionary<String, String>()
+        dict.set("asset", "\(self.asset)")
+        dict.set("destinationAddress", "\(self.destinationAddress)")
+        dict.set("minOut", "\(self.minOut)")
+        dict.set("affiliate", "\(self.affiliate)")
+        dict.set("fee", "\(self.fee)")
+        dict.set("string_value", self.toString())
+        return dict
+    }
+    
     func getView() -> AnyView {
         AnyView(VStack {
             StyledTextField(placeholder: "Asset", text: Binding(

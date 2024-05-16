@@ -30,7 +30,15 @@ class TransactionMemoWithdrawSavers: TransactionMemoAddressable, ObservableObjec
     }
     
     func toString() -> String {
-        "WITHDRAW:\(self.pool):\(self.basisPoints)"
+        return "WITHDRAW:\(self.pool):\(self.basisPoints)"
+    }
+    
+    func toDictionary() -> ThreadSafeDictionary<String, String> {
+        let dict = ThreadSafeDictionary<String, String>()
+        dict.set("pool", "\(self.pool)")
+        dict.set("basisPoints", "\(self.basisPoints)")
+        dict.set("string_value", self.toString())
+        return dict
     }
     
     func getView() -> AnyView {

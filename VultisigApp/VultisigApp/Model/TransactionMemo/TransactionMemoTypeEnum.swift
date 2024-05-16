@@ -10,7 +10,18 @@ import Foundation
 import Combine
 
 enum TransactionMemoType: String, CaseIterable, Identifiable {
-    case swap, depositSavers, withdrawSavers, openLoan, repayLoan, addLiquidity, withdrawLiquidity, addTradeAccount, withdrawTradeAccount, nodeMaintenance, donateReserve, migrate
+    case swap,
+         depositSavers,
+         withdrawSavers,
+         openLoan,
+         repayLoan,
+         addLiquidity,
+         withdrawLiquidity,
+         addTradeAccount,
+         withdrawTradeAccount,
+         nodeMaintenance,
+         donateReserve,
+         migrate
     
     var id: String { self.rawValue }
 }

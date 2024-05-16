@@ -69,6 +69,17 @@ class TransactionMemoNodeMaintenance: TransactionMemoAddressable, ObservableObje
         return memo
     }
     
+    func toDictionary() -> ThreadSafeDictionary<String, String> {
+        let dict = ThreadSafeDictionary<String, String>()
+        dict.set("nodeAddress", "\(self.nodeAddress)")
+        dict.set("provider", "\(self.provider)")
+        dict.set("fee", "\(self.fee)")
+        dict.set("amount", "\(self.amount)")
+        dict.set("action", "\(self.action.rawValue)")
+        dict.set("string_value", self.toString())
+        return dict
+    }
+    
     func getView() -> AnyView {
         AnyView(VStack {
             TransactionMemoAddressTextField(memo: self, addressKey: "nodeAddress")
