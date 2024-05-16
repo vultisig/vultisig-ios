@@ -34,8 +34,8 @@ class Endpoint {
         "https://thornode.ninerealms.com/thorchain/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)&streaming_interval=\(interval)".asUrl
     }
 
-    static func fetch1InchSwapQuote(chain: String, source: String, destination: String, amount: String, from: String, slippage: String) -> URL {
-        "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/swap?src=\(source)&dst=\(destination)&amount=\(amount)&from=\(from)&slippage=\(slippage)".asUrl
+    static func fetch1InchSwapQuote(chain: String, source: String, destination: String, amount: String, from: String, slippage: String, referrer: String, fee: Double) -> URL {
+        "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/swap?src=\(source)&dst=\(destination)&amount=\(amount)&from=\(from)&slippage=\(slippage)&referrer=\(referrer)&fee=\(fee)&disableEstimate=true&includeGas=true".asUrl
     }
 
     static func fetchCoinPaprikaQuotes(_ quotes: String) -> String {

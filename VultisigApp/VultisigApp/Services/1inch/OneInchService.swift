@@ -16,10 +16,14 @@ struct OneInchService {
         return "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
     }
 
+    private var referrerAddress: String {
+        return "0xa4a4f610e89488eb4ecc6c63069f241a54485269"
+    }
+
     func fetchQuotes(chain: String, source: String, destination: String, amount: String, from: String) async throws -> OneInchQuote {
 
         let sourceAddress = source.isEmpty ? nullAddress : source
-        let destinationAddress = sourceAddress.isEmpty ? nullAddress : destination
+        let destinationAddress = destination.isEmpty ? nullAddress : destination
 
         let url = Endpoint.fetch1InchSwapQuote(
             chain: chain,
@@ -27,7 +31,9 @@ struct OneInchService {
             destination: destinationAddress,
             amount: amount,
             from: from,
-            slippage: "0.5"
+            slippage: "0.5",
+            referrer: referrerAddress,
+            fee: 0.7
         )
 
         var request = URLRequest(url: url)
