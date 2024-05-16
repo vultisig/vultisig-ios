@@ -61,9 +61,22 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         return Double(currentIndex) / Double(flow.titles.count)
     }
 
+    func explorerLink(tx: SwapTransaction, hash: String) -> String {
+        return Endpoint.getExplorerURL(chainTicker: tx.fromCoin.chain.ticker, txid: hash)
+    }
+
+    func progressLink(tx: SwapTransaction, hash: String) -> String? {
+        switch tx.quote {
+        case .thorchain:
+            return Endpoint.getSwapProgressURL(txid: hash)
+        case .oneinch, .none:
+            return nil
+        }
+    }
+
     func showFees(tx: SwapTransaction) -> Bool {
-        guard let inboundFee = tx.inboundFee else { return false }
-        return inboundFee != .zero
+        let fee = feeString(tx: tx)
+        return !fee.isEmpty && !fee.isZero
     }
     
     func showDuration(tx: SwapTransaction) -> Bool {
@@ -75,10 +88,10 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func feeString(tx: SwapTransaction) -> String {
-        guard let inboundFee = tx.inboundFee, !inboundFee.isZero else { return .empty }
-        guard !tx.gas.isZero else { return .empty }
+        guard let inboundFee = tx.inboundFee else { return .empty }
 
-        let fee = tx.toCoin.fiat(for: inboundFee) + tx.fromCoin.fiat(for: tx.gas)
+        let fromCoin = feeCoin(tx: tx)
+        let fee = tx.toCoin.fiat(for: inboundFee) + fromCoin.fiat(for: tx.gas)
         return fee.formatToFiat(includeCurrencySymbol: true)
     }
 
@@ -314,8 +327,13 @@ private extension SwapCryptoViewModel {
 
     func updateFee(tx: SwapTransaction, vault: Vault) async {
         do {
-            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin, action: .swap, sendMaxAmount: false)
-            tx.gas = try await fee(for: chainSpecific, tx: tx, vault: vault)
+            switch tx.quote {
+            case .thorchain, .none:
+                let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin, action: .swap, sendMaxAmount: false)
+                tx.gas = try await thorchainFee(for: chainSpecific, tx: tx, vault: vault)
+            case .oneinch(let quote):
+                tx.gas = oneInchFee(quote: quote)
+            }
         } catch {
             self.error = error
         }
@@ -341,6 +359,10 @@ private extension SwapCryptoViewModel {
             }
 
             tx.quote = quote
+
+            if case SwapQuote.oneinch(let quote) = quote {
+                tx.gas = oneInchFee(quote: quote)
+            }
 
             try await updateFlow(tx: tx)
         } catch {
@@ -380,11 +402,11 @@ private extension SwapCryptoViewModel {
         }
     }
 
-    func fee(for chainSpecific: BlockChainSpecific, tx: SwapTransaction, vault: Vault) async throws -> BigInt {
+    func thorchainFee(for chainSpecific: BlockChainSpecific, tx: SwapTransaction, vault: Vault) async throws -> BigInt {
         switch chainSpecific {
         case .Ethereum(let maxFeePerGas, let priorityFee, _, let gasLimit):
             return (maxFeePerGas + priorityFee) * gasLimit
-        case .UTXO(let byteFee, _):
+        case .UTXO:
             let keysignFactory = KeysignPayloadFactory()
 
             let keysignPayload = try await keysignFactory.buildTransfer(
@@ -415,5 +437,10 @@ private extension SwapCryptoViewModel {
         case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui:
             return chainSpecific.gas
         }
+    }
+
+    func oneInchFee(quote: OneInchQuote) -> BigInt {
+        let gasPrice = BigInt(stringLiteral: quote.tx.gasPrice)
+        return gasPrice * BigInt(EVMHelper.defaultETHSwapGasUnit)
     }
 }

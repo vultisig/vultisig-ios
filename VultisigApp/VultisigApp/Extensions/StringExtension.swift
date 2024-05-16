@@ -33,12 +33,16 @@ extension String {
     func formatCurrency() -> String {
         return self.replacingOccurrences(of: ",", with: ".")
     }
+
+    var isZero: Bool {
+        return self == .zero
+    }
 }
 
 // MARK: - String constants
 
 extension String {
-    
+
     static var empty: String {
         return ""
     }
