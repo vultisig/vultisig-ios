@@ -61,6 +61,19 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         return Double(currentIndex) / Double(flow.titles.count)
     }
 
+    func explorerLink(tx: SwapTransaction, hash: String) -> String {
+        return Endpoint.getExplorerURL(chainTicker: tx.fromCoin.chain.ticker, txid: hash)
+    }
+
+    func progressLink(tx: SwapTransaction, hash: String) -> String? {
+        switch tx.quote {
+        case .thorchain:
+            return Endpoint.getSwapProgressURL(txid: hash)
+        case .oneinch, .none:
+            return nil
+        }
+    }
+
     func showFees(tx: SwapTransaction) -> Bool {
         guard let inboundFee = tx.inboundFee else { return false }
         return inboundFee != .zero
