@@ -33,7 +33,6 @@ struct OneInchService {
         var request = URLRequest(url: url)
         request.allHTTPHeaderFields = [
             "accept": "application/json",
-            "Authorization": "Bearer A2sTzxpUJdX0ArFmysreAsLw6RzsGSMR"
         ]
 
         let (data, _) = try await URLSession.shared.data(for: request)

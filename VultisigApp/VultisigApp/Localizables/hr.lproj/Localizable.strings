@@ -182,3 +182,4 @@
 "needToRemoveTokens" = "Svi tokeni unutar ovog lanca moraju biti uklonjeni prije nastavka.";
 "typeHere" = "Ovdje upišite";
 "nameYourVault" = "Imenujte svoj trezor";
+"uploadFromGallery" = "Prenesi iz galerije";

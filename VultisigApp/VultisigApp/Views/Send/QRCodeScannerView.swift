@@ -12,6 +12,8 @@ struct QRCodeScannerView: View {
     @Binding var showScanner: Bool
     let handleScan: (Result<ScanResult, ScanError>) -> Void
     
+    @State var isGalleryPresented = false
+    
     var body: some View {
         VStack(spacing: 0) {
             topBar
@@ -43,7 +45,7 @@ struct QRCodeScannerView: View {
     
     var view: some View {
         ZStack {
-            CodeScannerView(codeTypes: [.qr], completion: handleScan)
+            codeScanner
             outline
                 .allowsHitTesting(false)
         }
@@ -52,5 +54,21 @@ struct QRCodeScannerView: View {
     var outline: some View {
         Image("QRScannerOutline")
             .offset(y: -50)
+    }
+    
+    var codeScanner: some View {
+        ZStack(alignment: .bottom) {
+            CodeScannerView(codeTypes: [.qr], isGalleryPresented: $isGalleryPresented, completion: handleScan)
+            galleryButton
+        }
+    }
+    
+    var galleryButton: some View {
+        Button {
+            isGalleryPresented.toggle()
+        } label: {
+            OpenGalleryButton()
+        }
+        .padding(.bottom, 50)
     }
 }

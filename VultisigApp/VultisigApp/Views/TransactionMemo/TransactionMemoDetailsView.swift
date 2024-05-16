@@ -10,7 +10,7 @@ struct TransactionMemoDetailsView: View {
     @State var amount = ""
     @State var nativeTokenBalance = ""
     @State private var selectedFunctionMemoType: TransactionMemoType = .swap
-    @State private var selectedContractMemoType: TransactionContractType = .thorChainMessageDeposit
+    @State private var selectedContractMemoType: TransactionMemoContractType = .thorChainMessageDeposit
     
     @State private var txMemoInstance: TransactionMemoInstance = .swap(TransactionMemoSwap())
     
@@ -95,7 +95,7 @@ struct TransactionMemoDetailsView: View {
     }
     
     var contractSelector: some View {
-        TransactionMemoContractSelectorDropDown(items: .constant(TransactionContractType.allCases), selected: $selectedContractMemoType)
+        TransactionMemoContractSelectorDropDown(items: .constant(TransactionMemoContractType.allCases), selected: $selectedContractMemoType)
     }
     
     var fromField: some View {

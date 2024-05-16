@@ -10,10 +10,10 @@ import SwiftUI
 
 struct TransactionMemoContractSelectorDropDown: View {
     
-    @Binding var items: [TransactionContractType]
-    @Binding var selected: TransactionContractType
+    @Binding var items: [TransactionMemoContractType]
+    @Binding var selected: TransactionMemoContractType
     
-    var onSelect: ((TransactionContractType) -> Void)?
+    var onSelect: ((TransactionMemoContractType) -> Void)?
     
     @State private var isExpanded = false
     
@@ -69,7 +69,7 @@ struct TransactionMemoContractSelectorDropDown: View {
         }
     }
     
-    private func getCell(for item: TransactionContractType) -> some View {
+    private func getCell(for item: TransactionMemoContractType) -> some View {
         HStack(spacing: 12) {
             Text(item.rawValue)
                 .font(.body16Menlo)
@@ -90,7 +90,7 @@ struct TransactionMemoContractSelectorDropDown: View {
         return items.count > 1
     }
     
-    private func handleSelection(for item: TransactionContractType) {
+    private func handleSelection(for item: TransactionMemoContractType) {
         isExpanded = false
         selected = item
         onSelect?(item)

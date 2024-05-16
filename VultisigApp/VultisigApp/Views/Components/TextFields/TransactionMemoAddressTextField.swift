@@ -11,7 +11,7 @@ import CodeScanner
 import UniformTypeIdentifiers
 import WalletCore
 
-struct TransactionMemoAddressTextField<MemoType: Addressable>: View {
+struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: View {
     @ObservedObject var memo: MemoType
     var addressKey: String
     
