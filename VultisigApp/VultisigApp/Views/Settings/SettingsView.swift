@@ -73,7 +73,8 @@ struct SettingsView: View {
     var faqCell: some View {
         NavigationLink {
             //SettingsFAQView()
-            TransactionMemoView()
+            
+            TransactionMemoView(tx: SendTransaction(), group: GroupedChain.example)
         } label: {
             SettingCell(title: "faq", icon: "questionmark.circle")
         }

@@ -11,7 +11,7 @@ import BigInt
 import WalletCore
 
 @MainActor
-class DepositVerifyViewModel: ObservableObject {
+class TransactionMemoVerifyViewModel: ObservableObject {
     
     @Published var isAddressCorrect = false
     @Published var isAmountCorrect = false

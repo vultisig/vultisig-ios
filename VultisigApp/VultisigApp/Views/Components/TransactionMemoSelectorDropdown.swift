@@ -4,19 +4,18 @@
 //
 //  Created by Enrique Souza Soares on 14/05/24.
 //
-
 import Foundation
 import SwiftUI
 
-struct SelectorDropdown: View {
-
-    @Binding var items: [String]
-    @Binding var selected: String
-
-    var onSelect: ((Any) -> Void)?
-
-    @State var isExpanded = false
-
+struct TransactionMemoSelectorDropdown: View {
+    
+    @Binding var items: [TransactionMemoType]
+    @Binding var selected: TransactionMemoType
+    
+    var onSelect: ((TransactionMemoType) -> Void)?
+    
+    @State private var isExpanded = false
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             selectedCell
@@ -43,23 +42,21 @@ struct SelectorDropdown: View {
     
     var cell: some View {
         HStack(spacing: 12) {
-            Text("\(selected)")
+            Text("\(selected.rawValue)")
             Spacer()
             
-            Text(selected.description)
-
             if isActive {
                 Image(systemName: "chevron.down")
             }
         }
-        .redacted(reason: selected.isEmpty ? .placeholder : [])
+        .redacted(reason: selected.rawValue.isEmpty ? .placeholder : [])
         .font(.body16Menlo)
         .foregroundColor(.neutral0)
         .frame(height: 48)
     }
-        
+    
     var cells: some View {
-        ForEach(items, id: \.self) { item in
+        ForEach(items, id: \.id) { item in
             Button {
                 handleSelection(for: item)
             } label: {
@@ -71,12 +68,12 @@ struct SelectorDropdown: View {
         }
     }
     
-    private func getCell(for item: String) -> some View {
+    private func getCell(for item: TransactionMemoType) -> some View {
         HStack(spacing: 12) {
-            Text(item)
+            Text(item.rawValue)
                 .font(.body16Menlo)
                 .foregroundColor(.neutral0)
-
+            
             Spacer()
             
             if selected == item {
@@ -87,18 +84,14 @@ struct SelectorDropdown: View {
         }
         .frame(height: 48)
     }
-
+    
     var isActive: Bool {
         return items.count > 1
     }
-
-    private func handleSelection(for item: String) {
+    
+    private func handleSelection(for item: TransactionMemoType) {
         isExpanded = false
         selected = item
         onSelect?(item)
     }
-}
-
-#Preview {
-    SelectorDropdown(items: .constant([]), selected: .constant(.empty))
 }

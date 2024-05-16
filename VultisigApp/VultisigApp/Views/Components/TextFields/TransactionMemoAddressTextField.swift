@@ -4,7 +4,6 @@
 //
 //  Created by Enrique Souza Soares on 14/05/24.
 //
-
 import Foundation
 import SwiftUI
 import OSLog
@@ -12,17 +11,17 @@ import CodeScanner
 import UniformTypeIdentifiers
 import WalletCore
 
-struct AddressTextField: View {
-    @ObservedObject var tx: SendTransaction
-    @ObservedObject var depositViewModel: DepositViewModel
+struct TransactionMemoAddressTextField<MemoType: Addressable>: View {
+    @ObservedObject var memo: MemoType
+    var addressKey: String
     
     @State var showScanner = false
-    @State var showImagePicker = false  // State for showing the ImagePicker
-    @State var selectedImage: UIImage?  // Store the selected image
+    @State var showImagePicker = false
+    @State var selectedImage: UIImage?
     
     var body: some View {
         ZStack(alignment: .trailing) {
-            if tx.toAddress.isEmpty {
+            if memo.addressFields[addressKey]?.isEmpty ?? true {
                 placeholder
             }
             
@@ -52,9 +51,9 @@ struct AddressTextField: View {
     var field: some View {
         HStack(spacing: 0) {
             TextField(NSLocalizedString("enterAddress", comment: "").capitalized, text: Binding<String>(
-                get: { tx.toAddress },
+                get: { memo.addressFields[addressKey] ?? "" },
                 set: { newValue in
-                    tx.toAddress = newValue
+                    memo.addressFields[addressKey] = newValue
                     DebounceHelper.shared.debounce {
                         validateAddress(newValue)
                     }
@@ -79,7 +78,7 @@ struct AddressTextField: View {
     
     var pasteButton: some View {
         Button {
-            pasteAddress()
+            _ = try? pasteAddress()
         } label: {
             Image(systemName: "doc.on.clipboard")
                 .font(.body16Menlo)
@@ -112,8 +111,6 @@ struct AddressTextField: View {
     
     private func processImage() {
         guard let selectedImage = selectedImage else { return }
-        
-        
         handleImageQrCode(image: selectedImage)
     }
     
@@ -121,45 +118,31 @@ struct AddressTextField: View {
         switch result {
         case .success(let result):
             let qrCodeResult = result.string
-            tx.parseCryptoURI(qrCodeResult)
-            validateAddress(tx.toAddress)
+            memo.addressFields[addressKey] = qrCodeResult
+            validateAddress(memo.addressFields[addressKey] ?? "")
             showScanner = false
         case .failure(let err):
-            depositViewModel.logger.error("fail to scan QR code,error:\(err.localizedDescription)")
+            // Log the error using the depositViewModel.logger or handle it appropriately
+            print("Failed to scan QR code, error: \(err.localizedDescription)")
         }
     }
     
     private func validateAddress(_ newValue: String) {
-        CoinType.thorchain.validate(address: newValue)
+        // Implement address validation
     }
     
-    private func pasteAddress() {
+    private func pasteAddress() throws -> String {
         if let clipboardContent = UIPasteboard.general.string {
-            tx.toAddress = clipboardContent
-            
-            DebounceHelper.shared.debounce {
-                validateAddress(clipboardContent)
-            }
+            // Implement address validation
+            return clipboardContent
         }
+        return ""
     }
     
-    private func handleImageQrCode(image: UIImage) {
-        
+    private func handleImageQrCode(image: UIImage) -> String {
         let qrCodeFromImage = Utils.handleQrCodeFromImage(image: image)
-        let (address, amount, message) = Utils.parseCryptoURI(String(data: qrCodeFromImage, encoding: .utf8) ?? .empty)
-        
-        tx.toAddress = address
-        
-        DebounceHelper.shared.debounce {
-            validateAddress(address)
-        }
-        
-        
-        
+        let address = String(data: qrCodeFromImage, encoding: .utf8) ?? ""
+        memo.addressFields[addressKey] = address
+        return address
     }
 }
-
-#Preview {
-    SendCryptoAddressTextField(tx: SendTransaction(), sendCryptoViewModel: SendCryptoViewModel())
-}
-

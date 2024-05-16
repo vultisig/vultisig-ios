@@ -8,10 +8,10 @@
 import Foundation
 import SwiftUI
 
-struct DepositVerifyView: View {
+struct TransactionMemoVerifyView: View {
     @Binding var keysignPayload: KeysignPayload?
-    @ObservedObject var depositViewModel: DepositViewModel
-    @ObservedObject var depositVerifyViewModel: DepositVerifyViewModel
+    @ObservedObject var depositViewModel: TransactionMemoViewModel
+    @ObservedObject var depositVerifyViewModel: TransactionMemoVerifyViewModel
     @ObservedObject var tx: SendTransaction
     let vault: Vault
     
@@ -143,10 +143,10 @@ struct DepositVerifyView: View {
 }
 
 #Preview {
-    DepositVerifyView(
+    TransactionMemoVerifyView(
         keysignPayload: .constant(nil),
-        depositViewModel: DepositViewModel(),
-        depositVerifyViewModel: DepositVerifyViewModel(),
+        depositViewModel: TransactionMemoViewModel(),
+        depositVerifyViewModel: TransactionMemoVerifyViewModel(),
         tx: SendTransaction(),
         vault: Vault.example
     )

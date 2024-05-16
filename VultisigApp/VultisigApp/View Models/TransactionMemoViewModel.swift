@@ -13,7 +13,7 @@ import WalletCore
 import Mediator
 
 @MainActor
-class DepositViewModel: ObservableObject, TransferViewModel {
+class TransactionMemoViewModel: ObservableObject, TransferViewModel {
     @Published var isLoading = false
     @Published var isValidAddress = false
     @Published var isValidForm = true
