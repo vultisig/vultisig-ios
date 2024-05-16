@@ -28,11 +28,7 @@ struct SendCryptoView: View {
             .ignoresSafeArea(.keyboard)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        handleBackTap()
-                    } label: {
-                        NavigationBlankBackButton()
-                    }
+                    backButton
                 }
             }
             .onAppear {
@@ -157,6 +153,18 @@ struct SendCryptoView: View {
     
     var loader: some View {
         Loader()
+    }
+    
+    var backButton: some View {
+        let isDone = sendCryptoViewModel.currentIndex==5
+        
+        return Button {
+            handleBackTap()
+        } label: {
+            NavigationBlankBackButton()
+        }
+        .opacity(isDone ? 0 : 1)
+        .disabled(isDone)
     }
     
     private func setData() async {

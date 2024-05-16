@@ -28,11 +28,7 @@ struct SwapCryptoView: View {
             .ignoresSafeArea(.keyboard)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        handleBackTap()
-                    } label: {
-                        NavigationBlankBackButton()
-                    }
+                    backButton
                 }
             }
             .task {
@@ -173,6 +169,18 @@ struct SwapCryptoView: View {
 
     var errorView: some View {
         SendCryptoSigningErrorView()
+    }
+    
+    var backButton: some View {
+        let isDone = swapViewModel.currentIndex==5
+        
+        return Button {
+            handleBackTap()
+        } label: {
+            NavigationBlankBackButton()
+        }
+        .opacity(isDone ? 0 : 1)
+        .disabled(isDone)
     }
     
     private func handleBackTap() {
