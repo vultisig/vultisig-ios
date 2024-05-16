@@ -11,7 +11,7 @@ import CryptoSwift
 
 class EVMHelper {
     static let defaultETHTransferGasUnit:Int64 = 23000 // Increased to 23000 to support swaps and transfers with memo
-    static let defaultETHSwapGasUnit:Int64 = 30000
+    static let defaultETHSwapGasUnit:Int64 = 600000
     static let defaultERC20TransferGasUnit:Int64 = 120000
     static let weiPerGWei: Int64 = 1_000_000_000
     static let wei: Int64 = 1_000_000_000_000_000_000
