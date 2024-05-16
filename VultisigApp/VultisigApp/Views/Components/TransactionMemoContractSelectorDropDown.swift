@@ -4,7 +4,6 @@
 //
 //  Created by Enrique Souza Soares on 15/05/24.
 //
-
 import Foundation
 import SwiftUI
 
@@ -43,7 +42,7 @@ struct TransactionMemoContractSelectorDropDown: View {
     
     var cell: some View {
         HStack(spacing: 12) {
-            Text("\(selected.rawValue)")
+            Text(formatRawValue(selected.rawValue))
             Spacer()
             
             if isActive {
@@ -71,7 +70,7 @@ struct TransactionMemoContractSelectorDropDown: View {
     
     private func getCell(for item: TransactionMemoContractType) -> some View {
         HStack(spacing: 12) {
-            Text(item.rawValue)
+            Text(formatRawValue(item.rawValue))
                 .font(.body16Menlo)
                 .foregroundColor(.neutral0)
             
@@ -94,5 +93,20 @@ struct TransactionMemoContractSelectorDropDown: View {
         isExpanded = false
         selected = item
         onSelect?(item)
+    }
+    
+    private func formatRawValue(_ rawValue: String) -> String {
+        let formattedString = rawValue
+            .enumerated()
+            .map { index, character in
+                if index > 0 && character.isUppercase {
+                    return " \(character)"
+                } else {
+                    return String(character)
+                }
+            }
+            .joined()
+            .capitalized
+        return formattedString
     }
 }

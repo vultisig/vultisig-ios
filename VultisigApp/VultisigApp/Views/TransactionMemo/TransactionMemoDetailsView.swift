@@ -34,8 +34,8 @@ struct TransactionMemoDetailsView: View {
         .alert(isPresented: $depositViewModel.showAlert) {
             alert
         }
-        .onChange(of: selectedFunctionMemoType) { newValue in
-            switch newValue {
+        .onChange(of: selectedFunctionMemoType) {
+            switch selectedFunctionMemoType {
             case .swap:
                 txMemoInstance = .swap(TransactionMemoSwap())
             case .depositSavers:
@@ -117,19 +117,6 @@ struct TransactionMemoDetailsView: View {
             .lineLimit(1)
     }
     
-    var toField: some View {
-        VStack(spacing: 8) {
-            getTitle(for: "to")
-            //TransactionMemoAddressTextField(tx: tx, depositViewModel: depositViewModel)
-        }
-    }
-    
-    var amountField: some View {
-        VStack(spacing: 8) {
-            getTitle(for: "amount")
-        }
-    }
-    
     var button: some View {
         Button {
             Task {
@@ -144,7 +131,7 @@ struct TransactionMemoDetailsView: View {
     
     private func getTitle(for text: String) -> some View {
         Text(
-            NSLocalizedString(text, comment: "")
+            NSLocalizedString(text, comment: .empty)
                 .replacingOccurrences(of: "Fiat", with: SettingsCurrency.current.rawValue)
         )
         .font(.body14MontserratMedium)
@@ -155,7 +142,7 @@ struct TransactionMemoDetailsView: View {
     private func getDetailsCell(for title: String, with value: String) -> some View {
         HStack {
             Text(
-                NSLocalizedString(title, comment: "")
+                NSLocalizedString(title, comment: .empty)
             )
             Spacer()
             Text(value)

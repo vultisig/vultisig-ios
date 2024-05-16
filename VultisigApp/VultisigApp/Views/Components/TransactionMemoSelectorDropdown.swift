@@ -1,9 +1,3 @@
-//
-//  SelectorDropdown.swift
-//  VultisigApp
-//
-//  Created by Enrique Souza Soares on 14/05/24.
-//
 import Foundation
 import SwiftUI
 
@@ -20,14 +14,13 @@ struct TransactionMemoSelectorDropdown: View {
         VStack(alignment: .leading, spacing: 0) {
             selectedCell
             
-            if isActive && isExpanded {
+            if isExpanded {
                 cells
             }
         }
         .padding(.horizontal, 12)
         .background(Color.blue600)
         .cornerRadius(10)
-        .disabled(!isActive)
     }
     
     var selectedCell: some View {
@@ -42,12 +35,10 @@ struct TransactionMemoSelectorDropdown: View {
     
     var cell: some View {
         HStack(spacing: 12) {
-            Text("\(selected.rawValue)")
+            Text(formatRawValue(selected.rawValue))
             Spacer()
             
-            if isActive {
-                Image(systemName: "chevron.down")
-            }
+            Image(systemName: "chevron.down")
         }
         .redacted(reason: selected.rawValue.isEmpty ? .placeholder : [])
         .font(.body16Menlo)
@@ -70,7 +61,7 @@ struct TransactionMemoSelectorDropdown: View {
     
     private func getCell(for item: TransactionMemoType) -> some View {
         HStack(spacing: 12) {
-            Text(item.rawValue)
+            Text(formatRawValue(item.rawValue))
                 .font(.body16Menlo)
                 .foregroundColor(.neutral0)
             
@@ -85,13 +76,24 @@ struct TransactionMemoSelectorDropdown: View {
         .frame(height: 48)
     }
     
-    var isActive: Bool {
-        return items.count > 1
-    }
-    
     private func handleSelection(for item: TransactionMemoType) {
         isExpanded = false
         selected = item
         onSelect?(item)
+    }
+    
+    func formatRawValue(_ rawValue: String) -> String {
+        let formattedString = rawValue
+            .enumerated()
+            .map { index, character in
+                if index > 0 && character.isUppercase {
+                    return " \(character)"
+                } else {
+                    return String(character)
+                }
+            }
+            .joined()
+            .capitalized
+        return formattedString
     }
 }

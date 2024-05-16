@@ -20,25 +20,31 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
     @State var selectedImage: UIImage?
     
     var body: some View {
-        ZStack(alignment: .trailing) {
-            if memo.addressFields[addressKey]?.isEmpty ?? true {
-                placeholder
-            }
+        VStack(alignment: .leading, spacing: 12) {
+            Text(NSLocalizedString("enterAddress", comment: ""))
+                .font(.body14MontserratMedium)
+                .foregroundColor(.neutral0)
             
-            field
-        }
-        .font(.body12Menlo)
-        .foregroundColor(.neutral0)
-        .frame(height: 48)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 12)
-        .background(Color.blue600)
-        .cornerRadius(10)
-        .sheet(isPresented: $showScanner) {
-            codeScanner
-        }
-        .sheet(isPresented: $showImagePicker, onDismiss: processImage) {
-            ImagePicker(selectedImage: $selectedImage)
+            ZStack(alignment: .trailing) {
+                if memo.addressFields[addressKey]?.isEmpty ?? true {
+                    placeholder
+                }
+                
+                field
+            }
+            .font(.body12Menlo)
+            .foregroundColor(.neutral0)
+            .frame(height: 48)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 12)
+            .background(Color.blue600)
+            .cornerRadius(10)
+            .sheet(isPresented: $showScanner) {
+                codeScanner
+            }
+            .sheet(isPresented: $showImagePicker, onDismiss: processImage) {
+                ImagePicker(selectedImage: $selectedImage)
+            }
         }
     }
     
