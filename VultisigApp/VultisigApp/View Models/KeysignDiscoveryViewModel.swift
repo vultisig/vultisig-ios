@@ -32,7 +32,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
     
     init() {
         self.vault = Vault(name: "Main Vault")
-        self.keysignPayload = KeysignPayload(coin: Coin.example, toAddress: "", toAmount: 0, chainSpecific: BlockChainSpecific.UTXO(byteFee: 0, sendMaxAmount: false), utxos: [], memo: nil, swapPayload: nil, vaultPubKeyECDSA: vault.pubKeyECDSA)
+        self.keysignPayload = KeysignPayload(coin: Coin.example, toAddress: "", toAmount: 0, chainSpecific: BlockChainSpecific.UTXO(byteFee: 0, sendMaxAmount: false), utxos: [], memo: nil, swapPayload: nil, vaultPubKeyECDSA: vault.pubKeyECDSA, localPartyID: vault.localPartyID)
         self.participantDiscovery = nil
         self.encryptionKeyHex = Encryption.getEncryptionKey()
         if VultisigRelay.IsRelayEnabled {
