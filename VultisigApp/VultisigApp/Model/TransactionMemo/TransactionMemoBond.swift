@@ -1,0 +1,81 @@
+//
+//  TransactionMemoBond.swift
+//  VultisigApp
+//
+//  Created by Enrique Souza Soares on 17/05/24.
+//
+
+import SwiftUI
+import Foundation
+import Combine
+
+class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
+    @Published var nodeAddress: String = ""
+    @Published var provider: String = ""
+    @Published var fee: Double = 0.0
+
+    var addressFields: [String: String] {
+        get {
+            var fields = ["nodeAddress": nodeAddress]
+            if !provider.isEmpty {
+                fields["provider"] = provider
+            }
+            return fields
+        }
+        set {
+            if let value = newValue["nodeAddress"] {
+                nodeAddress = value
+            }
+            if let value = newValue["provider"] {
+                provider = value
+            }
+        }
+    }
+
+    required init() {}
+
+    init(nodeAddress: String, provider: String = "", fee: Double = 0.0) {
+        self.nodeAddress = nodeAddress
+        self.provider = provider
+        self.fee = fee
+    }
+
+    var description: String {
+        return toString()
+    }
+
+    func toString() -> String {
+        var memo = "BOND:\(self.nodeAddress)"
+        if !self.provider.isEmpty {
+            memo += ":\(self.provider)"
+        }
+        if self.fee != 0.0 {
+            if self.provider.isEmpty {
+                memo += "::\(self.fee)"
+            } else {
+                memo += ":\(self.fee)"
+            }
+        }
+        return memo
+    }
+
+    func toDictionary() -> ThreadSafeDictionary<String, String> {
+        let dict = ThreadSafeDictionary<String, String>()
+        dict.set("nodeAddress", self.nodeAddress)
+        dict.set("provider", self.provider)
+        dict.set("fee", "\(self.fee)")
+        dict.set("memo", self.toString())
+        return dict
+    }
+
+    func getView() -> AnyView {
+        AnyView(VStack {
+            TransactionMemoAddressTextField(memo: self, addressKey: "nodeAddress")
+            TransactionMemoAddressTextField(memo: self, addressKey: "provider")
+            StyledFloatingPointField(placeholder: "Fee", value: Binding(
+                get: { self.fee },
+                set: { self.fee = $0 }
+            ), format: .number)
+        })
+    }
+}

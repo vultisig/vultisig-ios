@@ -10,7 +10,10 @@ import Foundation
 import Combine
 
 enum TransactionMemoType: String, CaseIterable, Identifiable {
-    case swap,
+    case bond,
+         unbond,
+         leave,
+         swap,
          depositSavers,
          withdrawSavers,
          openLoan,
@@ -19,7 +22,6 @@ enum TransactionMemoType: String, CaseIterable, Identifiable {
          withdrawLiquidity,
          addTradeAccount,
          withdrawTradeAccount,
-         nodeMaintenance,
          donateReserve,
          migrate
     

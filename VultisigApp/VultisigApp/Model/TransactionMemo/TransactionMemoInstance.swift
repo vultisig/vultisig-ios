@@ -10,6 +10,9 @@ import Foundation
 import Combine
 
 enum TransactionMemoInstance {
+    case bond(TransactionMemoBond)
+    case unbond(TransactionMemoUnbond)
+    case leave(TransactionMemoLeave)
     case swap(TransactionMemoSwap)
     case depositSavers(TransactionMemoDepositSavers)
     case withdrawSavers(TransactionMemoWithdrawSavers)
@@ -19,12 +22,17 @@ enum TransactionMemoInstance {
     case withdrawLiquidity(TransactionMemoWithdrawLiquidity)
     case addTradeAccount(TransactionMemoAddTradeAccount)
     case withdrawTradeAccount(TransactionMemoWithdrawTradeAccount)
-    case nodeMaintenance(TransactionMemoNodeMaintenance)
     case donateReserve(TransactionMemoDonateReserve)
     case migrate(TransactionMemoMigrate)
     
     var view: AnyView {
         switch self {
+        case .bond(let memo):
+            return memo.getView()
+        case .unbond(let memo):
+            return memo.getView()
+        case .leave(let memo):
+            return memo.getView()
         case .swap(let memo):
             return memo.getView()
         case .depositSavers(let memo):
@@ -42,8 +50,6 @@ enum TransactionMemoInstance {
         case .addTradeAccount(let memo):
             return memo.getView()
         case .withdrawTradeAccount(let memo):
-            return memo.getView()
-        case .nodeMaintenance(let memo):
             return memo.getView()
         case .donateReserve(let memo):
             return memo.getView()
@@ -54,6 +60,12 @@ enum TransactionMemoInstance {
     
     var description: String {
         switch self {
+        case .bond(let memo):
+            return memo.description
+        case .unbond(let memo):
+            return memo.description
+        case .leave(let memo):
+            return memo.description
         case .swap(let memo):
             return memo.description
         case .depositSavers(let memo):
@@ -71,8 +83,6 @@ enum TransactionMemoInstance {
         case .addTradeAccount(let memo):
             return memo.description
         case .withdrawTradeAccount(let memo):
-            return memo.description
-        case .nodeMaintenance(let memo):
             return memo.description
         case .donateReserve(let memo):
             return memo.description
@@ -83,6 +93,12 @@ enum TransactionMemoInstance {
     
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         switch self {
+        case .bond(let memo):
+            return memo.toDictionary()
+        case .unbond(let memo):
+            return memo.toDictionary()
+        case .leave(let memo):
+            return memo.toDictionary()
         case .swap(let memo):
             return memo.toDictionary()
         case .depositSavers(let memo):
@@ -100,8 +116,6 @@ enum TransactionMemoInstance {
         case .addTradeAccount(let memo):
             return memo.toDictionary()
         case .withdrawTradeAccount(let memo):
-            return memo.toDictionary()
-        case .nodeMaintenance(let memo):
             return memo.toDictionary()
         case .donateReserve(let memo):
             return memo.toDictionary()

@@ -9,9 +9,9 @@ struct TransactionMemoDetailsView: View {
     
     @State var amount = ""
     @State var nativeTokenBalance = ""
-    @State private var selectedFunctionMemoType: TransactionMemoType = .swap
+    @State private var selectedFunctionMemoType: TransactionMemoType = .bond
     @State private var selectedContractMemoType: TransactionMemoContractType = .thorChainMessageDeposit
-    @State private var txMemoInstance: TransactionMemoInstance = .swap(TransactionMemoSwap())
+    @State private var txMemoInstance: TransactionMemoInstance = .bond(TransactionMemoBond())
     
     var body: some View {
         ZStack {
@@ -35,6 +35,12 @@ struct TransactionMemoDetailsView: View {
         }
         .onChange(of: selectedFunctionMemoType) {
             switch selectedFunctionMemoType {
+            case .bond:
+                txMemoInstance = .bond(TransactionMemoBond())
+            case .unbond:
+                txMemoInstance = .unbond(TransactionMemoUnbond())
+            case .leave:
+                txMemoInstance = .leave(TransactionMemoLeave())
             case .swap:
                 txMemoInstance = .swap(TransactionMemoSwap())
             case .depositSavers:
@@ -53,8 +59,6 @@ struct TransactionMemoDetailsView: View {
                 txMemoInstance = .addTradeAccount(TransactionMemoAddTradeAccount())
             case .withdrawTradeAccount:
                 txMemoInstance = .withdrawTradeAccount(TransactionMemoWithdrawTradeAccount())
-            case .nodeMaintenance:
-                txMemoInstance = .nodeMaintenance(TransactionMemoNodeMaintenance())
             case .donateReserve:
                 txMemoInstance = .donateReserve(TransactionMemoDonateReserve())
             case .migrate:
