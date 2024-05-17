@@ -7,6 +7,7 @@ import Network
 import OSLog
 import SwiftUI
 import UniformTypeIdentifiers
+import SwiftData
 
 struct JoinKeygenView: View {
     let vault: Vault
@@ -15,6 +16,7 @@ struct JoinKeygenView: View {
     @StateObject var serviceDelegate = ServiceDelegate()
     @State var showFileImporter = false
     @State var isGalleryPresented = false
+    @Query var vaults: [Vault]
     
     let logger = Logger(subsystem: "join-keygen", category: "communication")
     
@@ -44,7 +46,7 @@ struct JoinKeygenView: View {
             codeScanner
         })
         .onAppear {
-            viewModel.setData(vault: vault, serviceDelegate: self.serviceDelegate)
+            viewModel.setData(vault: vault, serviceDelegate: self.serviceDelegate, vaults: vaults)
         }
         .onDisappear {
             viewModel.stopJoinKeygen()
@@ -98,7 +100,7 @@ struct JoinKeygenView: View {
     
     var keygenView: some View {
         KeygenView(
-            vault: vault,
+            vault: self.viewModel.vault,
             tssType: self.viewModel.tssType,
             keygenCommittee: self.viewModel.keygenCommittee,
             vaultOldCommittee: self.viewModel.oldCommittee.filter { self.viewModel.keygenCommittee.contains($0) },

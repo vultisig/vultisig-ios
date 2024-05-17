@@ -61,4 +61,18 @@ enum SwapQuote {
             return .zero
         }
     }
+
+    var minSwapAmountDecimal: Decimal? {
+        switch self {
+        case .thorchain(let quote):
+            guard let recommendedMinAmountIn = Decimal(string: quote.recommendedMinAmountIn) else {
+                return nil
+            }
+            let minSwapAmountDecimal = recommendedMinAmountIn / 1e8
+            return minSwapAmountDecimal.isZero ? nil : minSwapAmountDecimal
+
+        case .oneinch(let oneInchQuote):
+            return nil
+        }
+    }
 }

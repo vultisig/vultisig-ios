@@ -67,7 +67,19 @@ struct SetupVaultView: View {
     
     var startButton: some View {
         NavigationLink {
-            NewWalletNameView(tssType: tssType, vault: vault, selectedTab: selectedTab)
+            if tssType == .Keygen {
+                NewWalletNameView(
+                    tssType: tssType,
+                    vault: vault,
+                    selectedTab: selectedTab
+                )
+            } else {
+                PeerDiscoveryView(
+                    tssType: tssType,
+                    vault: vault ?? Vault(name: "Main Vault"),
+                    selectedTab: selectedTab
+                )
+            }
         } label: {
             FilledButton(title: "start")
         }

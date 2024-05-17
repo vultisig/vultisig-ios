@@ -15,6 +15,7 @@ enum JoinKeysignStatus {
     case KeysignStarted
     case FailedToStart
     case VaultMismatch
+    case KeysignSameDeviceShare
 }
 @MainActor
 class JoinKeysignViewModel: ObservableObject {
@@ -188,6 +189,11 @@ class JoinKeysignViewModel: ObservableObject {
         
         if vault.pubKeyECDSA != keysignPayload?.vaultPubKeyECDSA {
             self.status = .VaultMismatch
+            return
+        }
+        
+        if vault.localPartyID == keysignPayload?.vaultLocalPartyID {
+            self.status = .KeysignSameDeviceShare
             return
         }
         
