@@ -41,18 +41,30 @@ class TransactionMemoSwap: TransactionMemoAddressable, ObservableObject {
     
     func toString() -> String {
         var memo = "SWAP:\(self.asset):\(self.destinationAddress)"
+        
+        // Adding limit with default check
         if self.limit != 0.0 {
             memo += ":\(self.limit)"
-            if self.interval != 0 && self.quantity != 0 {
-                memo += "/\(self.interval)/\(self.quantity)"
+        }
+        
+        // Adding interval and quantity with default check
+        if self.interval != 0 || self.quantity != 0 {
+            memo += "/\(self.interval)/\(self.quantity)"
+        }
+        
+        // Adding affiliate and fee with default check
+        if !self.affiliate.isEmpty {
+            memo += ":\(self.affiliate)"
+            if self.fee != 0.0 {
+                memo += ":\(self.fee)"
             }
+        } else if self.fee != 0.0 {
+            memo += "::\(self.fee)"
         }
-        if !self.affiliate.isEmpty && self.fee != 0.0 {
-            memo += ":\(affiliate):\(fee)"
-        }
+        
         return memo
     }
-    
+
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("asset", "\(self.asset)")
@@ -62,7 +74,7 @@ class TransactionMemoSwap: TransactionMemoAddressable, ObservableObject {
         dict.set("quantity", "\(self.quantity)")
         dict.set("affiliate", "\(self.affiliate)")
         dict.set("fee", "\(self.fee)")
-        dict.set("string_value", self.toString())
+        dict.set("memo", self.toString())
         return dict
     }
     

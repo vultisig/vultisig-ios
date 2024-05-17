@@ -32,7 +32,13 @@ class TransactionMemoRepayLoan: TransactionMemoAddressable, ObservableObject {
     }
     
     func toString() -> String {
-        return "LOAN-:\(self.asset):\(self.destinationAddress):\(self.minOut)"
+        var memo = "LOAN-:\(self.asset):\(self.destinationAddress)"
+        
+        if self.minOut != 0.0 {
+            memo += ":\(self.minOut)"
+        }
+        
+        return memo
     }
     
     func toDictionary() -> ThreadSafeDictionary<String, String> {
@@ -40,7 +46,7 @@ class TransactionMemoRepayLoan: TransactionMemoAddressable, ObservableObject {
         dict.set("asset", "\(self.asset)")
         dict.set("destinationAddress", "\(self.destinationAddress)")
         dict.set("minOut", "\(self.minOut)")
-        dict.set("string_value", self.toString())
+        dict.set("memo", self.toString())
         return dict
     }
     

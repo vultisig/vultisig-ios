@@ -35,12 +35,20 @@ class TransactionMemoAddLiquidity: TransactionMemoAddressable, ObservableObject 
     
     func toString() -> String {
         var memo = "ADD:\(self.pool)"
+        
         if !self.pairedAddress.isEmpty {
-            memo += ":\(pairedAddress)"
+            memo += ":\(self.pairedAddress)"
         }
-        if !self.affiliate.isEmpty && self.fee != 0.0 {
-            memo += ":\(affiliate):\(fee)"
+        
+        if !self.affiliate.isEmpty {
+            memo += ":\(self.affiliate)"
+            if self.fee != 0.0 {
+                memo += ":\(self.fee)"
+            }
+        } else if self.fee != 0.0 {
+            memo += "::\(self.fee)"
         }
+        
         return memo
     }
     
@@ -50,7 +58,7 @@ class TransactionMemoAddLiquidity: TransactionMemoAddressable, ObservableObject 
         dict.set("pairedAddress", "\(self.pairedAddress)")
         dict.set("affiliate", "\(self.affiliate)")
         dict.set("fee", "\(self.fee)")
-        dict.set("string_value", self.toString())
+        dict.set("memo", self.toString())
         return dict
     }
     

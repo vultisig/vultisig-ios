@@ -4,14 +4,13 @@ import SwiftUI
 
 struct TransactionMemoDetailsView: View {
     @ObservedObject var tx: SendTransaction
-    @ObservedObject var depositViewModel: TransactionMemoViewModel
+    @ObservedObject var transactionMemoViewModel: TransactionMemoViewModel
     let group: GroupedChain
     
     @State var amount = ""
     @State var nativeTokenBalance = ""
     @State private var selectedFunctionMemoType: TransactionMemoType = .swap
     @State private var selectedContractMemoType: TransactionMemoContractType = .thorChainMessageDeposit
-    
     @State private var txMemoInstance: TransactionMemoInstance = .swap(TransactionMemoSwap())
     
     var body: some View {
@@ -31,7 +30,7 @@ struct TransactionMemoDetailsView: View {
                 }
             }
         }
-        .alert(isPresented: $depositViewModel.showAlert) {
+        .alert(isPresented: $transactionMemoViewModel.showAlert) {
             alert
         }
         .onChange(of: selectedFunctionMemoType) {
@@ -74,7 +73,7 @@ struct TransactionMemoDetailsView: View {
     var alert: Alert {
         Alert(
             title: Text(NSLocalizedString("error", comment: "")),
-            message: Text(NSLocalizedString(depositViewModel.errorMessage, comment: "")),
+            message: Text(NSLocalizedString(transactionMemoViewModel.errorMessage, comment: "")),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }
@@ -101,27 +100,30 @@ struct TransactionMemoDetailsView: View {
     var fromField: some View {
         VStack(spacing: 8) {
             getTitle(for: "from")
-            fromTextField
+            //            fromTextField
         }
     }
     
-    var fromTextField: some View {
-        Text(tx.fromAddress)
-            .font(.body12Menlo)
-            .foregroundColor(.neutral0)
-            .frame(height: 48)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 12)
-            .background(Color.blue600)
-            .cornerRadius(10)
-            .lineLimit(1)
-    }
+    //    var fromTextField: some View {
+    //        Text(tx.fromAddress)
+    //            .font(.body12Menlo)
+    //            .foregroundColor(.neutral0)
+    //            .frame(height: 48)
+    //            .frame(maxWidth: .infinity, alignment: .leading)
+    //            .padding(.horizontal, 12)
+    //            .background(Color.blue600)
+    //            .cornerRadius(10)
+    //            .lineLimit(1)
+    //    }
     
     var button: some View {
         Button {
             Task {
-                print(txMemoInstance.description)
-                //await validateForm()
+                tx.amount = "0"
+                tx.memo = txMemoInstance.description
+                tx.memoFunctionDictionary = txMemoInstance.toDictionary()
+                print(tx.memo)
+                transactionMemoViewModel.moveToNextView()
             }
         } label: {
             FilledButton(title: "continue")
@@ -150,18 +152,12 @@ struct TransactionMemoDetailsView: View {
         .font(.body16MenloBold)
         .foregroundColor(.neutral100)
     }
-    
-    private func validateForm() async {
-        if await depositViewModel.validateForm(tx: tx) {
-            depositViewModel.moveToNextView()
-        }
-    }
 }
 
 #Preview {
     TransactionMemoDetailsView(
         tx: SendTransaction(),
-        depositViewModel: TransactionMemoViewModel(),
+        transactionMemoViewModel: TransactionMemoViewModel(),
         group: GroupedChain.example
     )
 }

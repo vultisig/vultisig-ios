@@ -37,7 +37,7 @@ class TransactionMemoDonateReserve: TransactionMemoAddressable, ObservableObject
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("pool", "\(self.pool)")
-        dict.set("string_value", self.toString())
+        dict.set("memo", self.toString())
         return dict
     }
     

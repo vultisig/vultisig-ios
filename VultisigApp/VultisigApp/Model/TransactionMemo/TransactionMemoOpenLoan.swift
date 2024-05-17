@@ -36,12 +36,29 @@ class TransactionMemoOpenLoan: TransactionMemoAddressable, ObservableObject {
     }
     
     func toString() -> String {
-        var memo = "LOAN+:\(self.asset):\(self.destinationAddress):\(self.minOut)"
-        if !self.affiliate.isEmpty && self.fee != 0.0 {
-            memo += ":\(affiliate):\(fee)"
+        var memo = "LOAN+:\(self.asset):\(self.destinationAddress)"
+        
+        if self.minOut != 0.0 {
+            memo += ":\(self.minOut)"
+        } else {
+            memo += ":"
         }
+        
+        if !self.affiliate.isEmpty {
+            memo += ":\(self.affiliate)"
+        }
+        
+        if self.fee != 0.0 {
+            if self.affiliate.isEmpty {
+                memo += "::\(self.fee)"
+            } else {
+                memo += ":\(self.fee)"
+            }
+        }
+        
         return memo
     }
+    
     
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
@@ -50,7 +67,7 @@ class TransactionMemoOpenLoan: TransactionMemoAddressable, ObservableObject {
         dict.set("minOut", "\(self.minOut)")
         dict.set("affiliate", "\(self.affiliate)")
         dict.set("fee", "\(self.fee)")
-        dict.set("string_value", self.toString())
+        dict.set("memo", self.toString())
         return dict
     }
     

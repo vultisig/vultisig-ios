@@ -63,9 +63,19 @@ class TransactionMemoNodeMaintenance: TransactionMemoAddressable, ObservableObje
         case .leave:
             memo = "LEAVE:\(self.nodeAddress)"
         }
-        if !self.provider.isEmpty && self.fee != 0.0 {
-            memo += ":\(provider):\(fee)"
+        
+        if !self.provider.isEmpty {
+            memo += ":\(self.provider)"
         }
+        
+        if self.fee != 0.0 {
+            if self.provider.isEmpty {
+                memo += "::\(self.fee)"
+            } else {
+                memo += ":\(self.fee)"
+            }
+        }
+        
         return memo
     }
     
@@ -76,7 +86,7 @@ class TransactionMemoNodeMaintenance: TransactionMemoAddressable, ObservableObje
         dict.set("fee", "\(self.fee)")
         dict.set("amount", "\(self.amount)")
         dict.set("action", "\(self.action.rawValue)")
-        dict.set("string_value", self.toString())
+        dict.set("memo", self.toString())
         return dict
     }
     

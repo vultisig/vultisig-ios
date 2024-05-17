@@ -3,7 +3,7 @@ import SwiftUI
 struct TransactionMemoView: View {
     @ObservedObject var tx: SendTransaction
     let group: GroupedChain
-    let vault = ApplicationState.shared.currentVault ?? Vault(name: "default")
+    let vault: Vault
     
     @StateObject var transactionMemoViewModel = TransactionMemoViewModel()
     @StateObject var transactionMemoVerifyViewModel = TransactionMemoVerifyViewModel()
@@ -89,7 +89,7 @@ struct TransactionMemoView: View {
     var detailsView: some View {
         TransactionMemoDetailsView(
             tx: tx,
-            depositViewModel: transactionMemoViewModel,
+            transactionMemoViewModel: transactionMemoViewModel,
             group: group
         )
     }
@@ -164,11 +164,4 @@ struct TransactionMemoView: View {
         
         transactionMemoViewModel.handleBackTap()
     }
-}
-
-#Preview {
-    TransactionMemoView(
-        tx: SendTransaction(),
-        group: GroupedChain.example
-    )
 }

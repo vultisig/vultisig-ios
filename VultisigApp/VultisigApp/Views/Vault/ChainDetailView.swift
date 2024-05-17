@@ -97,6 +97,8 @@ struct ChainDetailView: View {
                     sendButton
                 case .swap:
                     swapButton
+                case .memo:
+                    memoButton
                 case .deposit, .bridge:
                     ActionButton(title: action.title, fontColor: action.color)
                 }
@@ -105,6 +107,18 @@ struct ChainDetailView: View {
         .frame(height: 28)
     }
 
+    var memoButton: some View {
+        NavigationLink {
+            TransactionMemoView(
+                tx: sendTx,
+                group: group,
+                vault: vault
+            )
+        } label: {
+            ActionButton(title: "Memos", fontColor: .turquoise600)
+        }
+    }
+    
     var sendButton: some View {
         NavigationLink {
             SendCryptoView(

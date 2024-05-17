@@ -34,7 +34,7 @@ class TransactionMemoMigrate: TransactionMemoAddressable, ObservableObject {
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("blockHeight", "\(self.blockHeight)")
-        dict.set("string_value", self.toString())
+        dict.set("memo", self.toString())
         return dict
     }
     

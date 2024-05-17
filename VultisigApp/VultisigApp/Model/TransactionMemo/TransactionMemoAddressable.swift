@@ -12,4 +12,5 @@ import Combine
 protocol TransactionMemoAddressable: ObservableObject {
     var addressFields: [String: String] { get set }
     func getView() -> AnyView
+    func toDictionary() -> ThreadSafeDictionary<String, String>
 }

@@ -20,47 +20,18 @@ class TransactionMemoVerifyViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage = ""
     
-    @Published var thor = ThorchainService.shared
-    @Published var sol: SolanaService = SolanaService.shared
-    @Published var utxo = BlockchairService.shared
-    @Published var eth = EthService.shared
-    var gaia = GaiaService.shared
     let blockChainService = BlockChainService.shared
     
-    var THORChainAccount: THORChainAccountValue? = nil
-    var CosmosChainAccount: CosmosAccountValue? = nil
-    
-    private var isValidForm: Bool {
-        return isAddressCorrect && isAmountCorrect && isHackedOrPhished
-    }
-    
-    func amount(for coin: Coin, tx: SendTransaction) -> BigInt {
-
-        return tx.amountInCoinDecimal
-
-    }
-    func validateForm(tx: SendTransaction, vault: Vault) async -> KeysignPayload? {
+    func createKeysignPayload(tx: SendTransaction, vault: Vault) async -> KeysignPayload? {
         
-        if !isValidForm {
-            self.errorMessage = "mustAgreeTermsError"
-            showAlert = true
-            isLoading = false
-            return nil
-        }
         var keysignPayload: KeysignPayload?
-        if tx.coin.chain.chainType == ChainType.UTXO {
-            do{
-                _ = try await utxo.fetchBlockchairData(coin: tx.coin)
-            }catch{
-                print("fail to fetch utxo data from blockchair , error:\(error.localizedDescription)")
-            }
-        }
+        
         do{
             let chainSpecific = try await blockChainService.fetchSpecific(for: tx.coin, sendMaxAmount: tx.sendMaxAmount)
             let keysignPayloadFactory = KeysignPayloadFactory()
             keysignPayload = try await keysignPayloadFactory.buildTransfer(coin: tx.coin,
                                                                            toAddress: tx.toAddress,
-                                                                           amount: amount(for:tx.coin,tx:tx),
+                                                                           amount: BigInt.zero,
                                                                            memo: tx.memo,
                                                                            chainSpecific: chainSpecific, vault: vault)
         } catch {

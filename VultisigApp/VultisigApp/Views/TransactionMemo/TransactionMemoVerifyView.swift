@@ -59,20 +59,15 @@ struct TransactionMemoVerifyView: View {
         VStack(spacing: 16) {
             getAddressCell(for: "from", with: tx.fromAddress)
             Separator()
-            getAddressCell(for: "to", with: tx.toAddress)
-            Separator()
-            getDetailsCell(for: "amount", with: getAmount())
-            Separator()
-            getDetailsCell(for: "amount(inFiat)", with: getFiatAmount())
+            getAddressCell(for: "to", with: tx.fromAddress)
             
-            if !tx.memo.isEmpty {
-                Separator()
-                getDetailsCell(for: "memo", with: tx.memo)
-            }
-            
-            if tx.sendMaxAmount {
-                Separator()
-                getDetailsCell(for: "Max Amount", with: tx.sendMaxAmount.description)
+            VStack {
+                ForEach(Array(tx.memoFunctionDictionary.allKeysInOrder()), id: \.self) { key in
+                    if let value = tx.memoFunctionDictionary.get(key) {
+                        Separator()
+                        getAddressCell(for: key.toFormattedTitleCase(), with: value)
+                    }
+                }
             }
             
             Separator()

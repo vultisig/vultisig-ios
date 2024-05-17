@@ -33,18 +33,21 @@ class TransactionMemoWithdrawLiquidity: TransactionMemoAddressable, ObservableOb
     
     func toString() -> String {
         var memo = "WITHDRAW:\(self.pool):\(self.basisPoints)"
+        
         if !self.asset.isEmpty {
-            memo += ":\(asset)"
+            memo += ":\(self.asset)"
         }
+        
         return memo
     }
+    
     
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("pool", "\(self.pool)")
         dict.set("basisPoints", "\(self.basisPoints)")
         dict.set("asset", "\(self.asset)")
-        dict.set("string_value", self.toString())
+        dict.set("memo", self.toString())
         return dict
     }
     

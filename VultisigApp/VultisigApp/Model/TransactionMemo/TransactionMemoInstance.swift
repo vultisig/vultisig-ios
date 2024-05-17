@@ -80,4 +80,33 @@ enum TransactionMemoInstance {
             return memo.description
         }
     }
+    
+    func toDictionary() -> ThreadSafeDictionary<String, String> {
+        switch self {
+        case .swap(let memo):
+            return memo.toDictionary()
+        case .depositSavers(let memo):
+            return memo.toDictionary()
+        case .withdrawSavers(let memo):
+            return memo.toDictionary()
+        case .openLoan(let memo):
+            return memo.toDictionary()
+        case .repayLoan(let memo):
+            return memo.toDictionary()
+        case .addLiquidity(let memo):
+            return memo.toDictionary()
+        case .withdrawLiquidity(let memo):
+            return memo.toDictionary()
+        case .addTradeAccount(let memo):
+            return memo.toDictionary()
+        case .withdrawTradeAccount(let memo):
+            return memo.toDictionary()
+        case .nodeMaintenance(let memo):
+            return memo.toDictionary()
+        case .donateReserve(let memo):
+            return memo.toDictionary()
+        case .migrate(let memo):
+            return memo.toDictionary()
+        }
+    }
 }

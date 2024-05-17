@@ -1,14 +1,8 @@
-//
-//  ThreadSafeDictionary.swift
-//  VultisigApp
-//
-//  Created by Johnny Luo on 18/4/2024.
-//
-
 import Foundation
 
 class ThreadSafeDictionary<Key: Hashable, Value> {
     private var dictionary: [Key: Value] = [:]
+    private var orderedKeys: [Key] = []
     private let lock = NSLock()
     
     func get(_ key: Key) -> Value? {
@@ -20,6 +14,21 @@ class ThreadSafeDictionary<Key: Hashable, Value> {
     func set(_ key: Key, _ value: Value) {
         lock.lock()
         defer { lock.unlock() }
+        if dictionary[key] == nil {
+            orderedKeys.append(key)
+        }
         dictionary[key] = value
+    }
+    
+    func allItems() -> [Key: Value] {
+        lock.lock()
+        defer { lock.unlock() }
+        return dictionary
+    }
+    
+    func allKeysInOrder() -> [Key] {
+        lock.lock()
+        defer { lock.unlock() }
+        return orderedKeys
     }
 }
