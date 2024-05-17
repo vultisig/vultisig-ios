@@ -49,7 +49,7 @@ struct TransactionMemoVerifyView: View {
         ScrollView {
             VStack(spacing: 30) {
                 summary
-                checkboxes
+                //checkboxes
             }
             .padding(.horizontal, 16)
         }
@@ -78,13 +78,13 @@ struct TransactionMemoVerifyView: View {
         .cornerRadius(10)
     }
     
-    var checkboxes: some View {
-        VStack(spacing: 16) {
-            Checkbox(isChecked: $depositVerifyViewModel.isAddressCorrect, text: "sendingRightAddressCheck")
-            Checkbox(isChecked: $depositVerifyViewModel.isAmountCorrect, text: "correctAmountCheck")
-            Checkbox(isChecked: $depositVerifyViewModel.isHackedOrPhished, text: "notHackedCheck")
-        }
-    }
+//    var checkboxes: some View {
+//        VStack(spacing: 16) {
+//            Checkbox(isChecked: $depositVerifyViewModel.isAddressCorrect, text: "sendingRightAddressCheck")
+//            Checkbox(isChecked: $depositVerifyViewModel.isAmountCorrect, text: "correctAmountCheck")
+//            Checkbox(isChecked: $depositVerifyViewModel.isHackedOrPhished, text: "notHackedCheck")
+//        }
+//    }
     
     var button: some View {
         Button {
