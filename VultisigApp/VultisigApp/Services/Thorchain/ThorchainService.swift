@@ -35,11 +35,13 @@ class ThorchainService {
         let accountResponse = try JSONDecoder().decode(THORChainAccountNumberResponse.self, from: data)
         return accountResponse.result.value
     }
+
     func get9RRequest(url: URL) -> URLRequest{
         var req = URLRequest(url:url)
         req.addValue("vultisig", forHTTPHeaderField: "X-Client-ID")
         return req
     }
+    
     func fetchSwapQuotes(address: String, fromAsset: String, toAsset: String, amount: String, interval: String) async throws -> ThorchainSwapQuote {
         let url = Endpoint.fetchSwaoQuoteThorchainNineRealms(address: address, fromAsset: fromAsset, toAsset: toAsset, amount: amount, interval: interval)
         let (data, _) = try await URLSession.shared.data(for: get9RRequest(url: url))
@@ -47,11 +49,7 @@ class ThorchainService {
             let response = try JSONDecoder().decode(ThorchainSwapQuote.self, from: data)
             return response
         } catch {
-            struct CustomError: Codable, Error, LocalizedError {
-                let error: String
-                var errorDescription: String? { return error.capitalized }
-            }
-            let error = try JSONDecoder().decode(CustomError.self, from: data)
+            let error = try JSONDecoder().decode(ThorchainSwapError.self, from: data)
             throw error
         }
     }

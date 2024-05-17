@@ -37,21 +37,27 @@ private extension SwapService {
     }
 
     func fetchThorchainQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin) async throws -> SwapQuote {
-        guard let quote = try? await thorchainService.fetchSwapQuotes(
-            address: toCoin.address,
-            fromAsset: fromCoin.swapAsset,
-            toAsset: toCoin.swapAsset,
-            amount: (amount * 100_000_000).description, // https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
-            interval: "1")
-        else {
+        do {
+            let quote = try await thorchainService.fetchSwapQuotes(
+                address: toCoin.address,
+                fromAsset: fromCoin.swapAsset,
+                toAsset: toCoin.swapAsset,
+                amount: (amount * 100_000_000).description, // https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
+                interval: "1"
+            )
+
+            guard let expected = Decimal(string: quote.expectedAmountOut), !expected.isZero else {
+                throw Errors.swapAmountTooSmall
+            }
+
+            return .thorchain(quote)
+        }
+        catch let error as ThorchainSwapError {
+            throw error
+        }
+        catch {
             throw Errors.swapAmountTooSmall
         }
-
-        guard let expected = Decimal(string: quote.expectedAmountOut), !expected.isZero else {
-            throw Errors.swapAmountTooSmall
-        }
-
-        return .thorchain(quote)
     }
 
     func fetchOneInchQuote(chain: Int, amount: Decimal, fromCoin: Coin, toCoin: Coin) async throws -> SwapQuote {

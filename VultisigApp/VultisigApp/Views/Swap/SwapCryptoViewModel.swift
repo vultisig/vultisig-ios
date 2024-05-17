@@ -314,6 +314,7 @@ private extension SwapCryptoViewModel {
     enum Errors: String, Error, LocalizedError {
         case unexpectedError
         case insufficientFunds
+        case swapAmountTooSmall
 
         var errorDescription: String? {
             switch self {
@@ -321,6 +322,8 @@ private extension SwapCryptoViewModel {
                 return "Unexpected swap error"
             case .insufficientFunds:
                 return "Insufficient funds"
+            case .swapAmountTooSmall:
+                return "Swap amount too small"
             }
         }
     }
@@ -356,6 +359,10 @@ private extension SwapCryptoViewModel {
 
             if !isSufficientBalance(tx: tx) {
                 throw Errors.insufficientFunds
+            }
+
+            if let minSwapAmountDecimal = quote.minSwapAmountDecimal, amount < minSwapAmountDecimal {
+                throw Errors.swapAmountTooSmall
             }
 
             tx.quote = quote
