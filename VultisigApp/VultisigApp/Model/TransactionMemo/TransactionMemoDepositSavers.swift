@@ -15,8 +15,10 @@ class TransactionMemoDepositSavers: TransactionMemoAddressable, ObservableObject
     @Published var fee: Double = 0.0
     
     var addressFields: [String: String] {
-        get { [:] }
-        set { }
+        get { ["affiliate": affiliate] }
+        set {
+            if let value = newValue["affiliate"] { affiliate = value }
+        }
     }
     
     required init() {}
@@ -65,10 +67,7 @@ class TransactionMemoDepositSavers: TransactionMemoAddressable, ObservableObject
                 get: { self.pool },
                 set: { self.pool = $0 }
             ))
-            StyledTextField(placeholder: "Affiliate", text: Binding(
-                get: { self.affiliate },
-                set: { self.affiliate = $0 }
-            ))
+            TransactionMemoAddressTextField(memo: self, addressKey: "affiliate")
             StyledFloatingPointField(placeholder: "Fee", value: Binding(
                 get: { self.fee },
                 set: { self.fee = $0 }

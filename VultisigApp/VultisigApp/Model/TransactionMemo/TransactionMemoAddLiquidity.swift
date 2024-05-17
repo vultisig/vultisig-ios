@@ -16,8 +16,11 @@ class TransactionMemoAddLiquidity: TransactionMemoAddressable, ObservableObject 
     @Published var fee: Double = 0.0
     
     var addressFields: [String: String] {
-        get { ["pairedAddress": pairedAddress] }
-        set { if let value = newValue["pairedAddress"] { pairedAddress = value } }
+        get { ["pairedAddress": pairedAddress, "affiliate": affiliate] }
+        set {
+            if let value = newValue["pairedAddress"] { pairedAddress = value }
+            if let value = newValue["affiliate"] { affiliate = value }
+        }
     }
     
     required init() {}
@@ -69,10 +72,7 @@ class TransactionMemoAddLiquidity: TransactionMemoAddressable, ObservableObject 
                 set: { self.pool = $0 }
             ))
             TransactionMemoAddressTextField(memo: self, addressKey: "pairedAddress")
-            StyledTextField(placeholder: "Affiliate", text: Binding(
-                get: { self.affiliate },
-                set: { self.affiliate = $0 }
-            ))
+            TransactionMemoAddressTextField(memo: self, addressKey: "affiliate")
             StyledFloatingPointField(placeholder: "Fee", value: Binding(
                 get: { self.fee },
                 set: { self.fee = $0 }

@@ -17,8 +17,11 @@ class TransactionMemoOpenLoan: TransactionMemoAddressable, ObservableObject {
     @Published var fee: Double = 0.0
     
     var addressFields: [String: String] {
-        get { ["destinationAddress": destinationAddress] }
-        set { if let value = newValue["destinationAddress"] { destinationAddress = value } }
+        get { ["destinationAddress": destinationAddress, "affiliate": affiliate] }
+        set {
+            if let value = newValue["destinationAddress"] { destinationAddress = value }
+            if let value = newValue["affiliate"] { affiliate = value }
+        }
     }
     
     required init() {}
@@ -59,7 +62,6 @@ class TransactionMemoOpenLoan: TransactionMemoAddressable, ObservableObject {
         return memo
     }
     
-    
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("asset", "\(self.asset)")
@@ -82,10 +84,7 @@ class TransactionMemoOpenLoan: TransactionMemoAddressable, ObservableObject {
                 get: { self.minOut },
                 set: { self.minOut = $0 }
             ), format: .number)
-            StyledTextField(placeholder: "Affiliate", text: Binding(
-                get: { self.affiliate },
-                set: { self.affiliate = $0 }
-            ))
+            TransactionMemoAddressTextField(memo: self, addressKey: "affiliate")
             StyledFloatingPointField(placeholder: "Fee", value: Binding(
                 get: { self.fee },
                 set: { self.fee = $0 }
