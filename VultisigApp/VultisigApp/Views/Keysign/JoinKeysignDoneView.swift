@@ -54,10 +54,10 @@ struct JoinKeysignDoneView: View {
                 .font(.body13Menlo)
                 .foregroundColor(.turquoise600)
 
-            if viewModel.showSwapProgress {
+            if let link = viewModel.getSwapProgressURL(txid: viewModel.txid) {
                 HStack {
                     Spacer()
-                    progressbutton
+                    progressButton(link: link)
                 }
             }
         }
@@ -107,9 +107,9 @@ struct JoinKeysignDoneView: View {
         
     }
 
-    var progressbutton: some View {
+    func progressButton(link: String) -> some View {
         Button {
-            progressLink()
+            progressLink(link: link)
         } label: {
             Text(NSLocalizedString("Swap progress", comment: ""))
                 .font(.body14Menlo)
@@ -147,9 +147,8 @@ struct JoinKeysignDoneView: View {
         }
     }
 
-    private func progressLink() {
-        let urlStr = viewModel.getSwapProgressURL(txid: viewModel.txid)
-        if !urlStr.isEmpty, let url = URL(string:urlStr) {
+    private func progressLink(link: String) {
+        if !link.isEmpty, let url = URL(string: link) {
             openURL(url)
         }
     }

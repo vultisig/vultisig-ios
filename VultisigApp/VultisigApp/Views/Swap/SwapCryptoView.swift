@@ -153,8 +153,8 @@ struct SwapCryptoView: View {
             if let hash = swapViewModel.hash {
                 SendCryptoDoneView(
                     vault: vault, hash: hash, 
-                    explorerLink: Endpoint.getExplorerURL(chainTicker: tx.fromCoin.chain.ticker, txid: hash),
-                    progressLink: Endpoint.getSwapProgressURL(txid: hash)
+                    explorerLink: swapViewModel.explorerLink(tx: tx, hash: hash),
+                    progressLink: swapViewModel.progressLink(tx: tx, hash: hash)
                 )
             } else {
                 SendCryptoSigningErrorView()

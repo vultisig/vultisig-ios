@@ -78,13 +78,13 @@ class KeysignViewModel: ObservableObject {
         return Endpoint.getExplorerURL(chainTicker: keysignPayload.coin.chain.ticker, txid: txid)
     }
 
-    func getSwapProgressURL(txid: String) -> String {
-        guard keysignPayload?.swapPayload != nil else { return .empty }
-        return Endpoint.getSwapProgressURL(txid: txid)
-    }
-
-    var showSwapProgress: Bool {
-        return keysignPayload?.swapPayload != nil
+    func getSwapProgressURL(txid: String) -> String? {
+        switch keysignPayload?.swapPayload {
+        case .thorchain:
+            return Endpoint.getSwapProgressURL(txid: txid)
+        case .oneInch, .none:
+            return nil
+        }
     }
 
     func startKeysign() async {
