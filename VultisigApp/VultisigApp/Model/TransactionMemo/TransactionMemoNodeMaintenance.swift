@@ -102,14 +102,16 @@ class TransactionMemoNodeMaintenance: TransactionMemoAddressable, ObservableObje
                 get: { self.amount },
                 set: { self.amount = $0 }
             ), format: .number)
-            Picker("Action", selection: Binding(
+            
+            Picker(selection: Binding(
                 get: { self.action },
                 set: { self.action = $0 }
-            )) {
-                Text("Bond").tag(NodeAction.bond)
-                Text("Unbond").tag(NodeAction.unbond)
-                Text("Leave").tag(NodeAction.leave)
+            ), label: Text(self.action.rawValue)) {
+                Text(NodeAction.bond.rawValue).tag(NodeAction.bond)
+                Text(NodeAction.unbond.rawValue).tag(NodeAction.unbond)
+                Text(NodeAction.leave.rawValue).tag(NodeAction.leave)
             }
+            
         })
     }
 }

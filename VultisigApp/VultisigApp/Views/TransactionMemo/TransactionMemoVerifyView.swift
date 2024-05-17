@@ -58,14 +58,14 @@ struct TransactionMemoVerifyView: View {
     var summary: some View {
         VStack(spacing: 16) {
             getAddressCell(for: "from", with: tx.fromAddress)
-            Separator()
-            getAddressCell(for: "to", with: tx.fromAddress)
             
             VStack {
                 ForEach(Array(tx.memoFunctionDictionary.allKeysInOrder()), id: \.self) { key in
                     if let value = tx.memoFunctionDictionary.get(key) {
-                        Separator()
-                        getAddressCell(for: key.toFormattedTitleCase(), with: value)
+                        if !value.isEmpty && value != "0" && value != "0.0" {
+                            Separator()
+                            getAddressCell(for: key.toFormattedTitleCase(), with: value)
+                        }
                     }
                 }
             }
