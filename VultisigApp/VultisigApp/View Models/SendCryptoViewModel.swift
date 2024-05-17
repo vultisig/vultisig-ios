@@ -269,7 +269,8 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             utxos: utxoInfo,
             memo: tx.memo,
             swapPayload: nil,
-            vaultPubKeyECDSA: vault.pubKeyECDSA
+            vaultPubKeyECDSA: vault.pubKeyECDSA, 
+            vaultLocalPartyID: vault.localPartyID
         )
         
         if let helper = UTXOChainsHelper.getHelper(vault: vault, coin: tx.coin) {

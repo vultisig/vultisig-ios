@@ -257,6 +257,10 @@ struct PeerDiscoveryView: View {
     }
     
     private func handleAutoSelection() {
+        guard tssType == .Keygen else {
+            return
+        }
+        
         if selectedTab == .TwoOfTwoVaults {
             if participantDiscovery.peersFound.count == 1 {
                 handleSelection(participantDiscovery.peersFound[0])

@@ -35,6 +35,8 @@ struct KeysignView: View {
                 SendCryptoKeysignView(vault:vault,title: "Sorry keysign failed, you can retry it,error: \(viewModel.keysignError)", showError: true)
             case .KeysignVaultMismatch:
                 KeysignVaultMismatchErrorView()
+            case .KeysignSameDeviceShare:
+                KeysignSameDeviceShareErrorView()
             }
         }
         .onAppear {
@@ -72,6 +74,11 @@ struct KeysignView: View {
     private func setData() {
         guard let keysignPayload, keysignPayload.vaultPubKeyECDSA == vault.pubKeyECDSA else {
             viewModel.status = .KeysignVaultMismatch
+            return
+        }
+        
+        guard keysignPayload.vaultLocalPartyID != vault.localPartyID else {
+            viewModel.status = .KeysignSameDeviceShare
             return
         }
         

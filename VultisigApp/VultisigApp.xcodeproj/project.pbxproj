@@ -136,6 +136,7 @@
 		A66A0BD72BA125C50021A483 /* EditVaultCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD62BA125C50021A483 /* EditVaultCell.swift */; };
 		A66A0BD92BA12DF50021A483 /* RenameVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */; };
 		A66A0BDB2BA13B570021A483 /* CoinsGrouped.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BDA2BA13B570021A483 /* CoinsGrouped.swift */; };
+		A67E2CBB2BF5D178000C8ED3 /* KeysignSameDeviceShareErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67E2CBA2BF5D178000C8ED3 /* KeysignSameDeviceShareErrorView.swift */; };
 		A67F4C5F2BE313220086ED09 /* ActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67F4C5E2BE313220086ED09 /* ActionButton.swift */; };
 		A680BAC52BF47AA9006E611D /* OpenGalleryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A680BAC42BF47AA9006E611D /* OpenGalleryButton.swift */; };
 		A683EDEB2BCF635E00BB706E /* InstructionPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = A683EDEA2BCF635E00BB706E /* InstructionPrompt.swift */; };
@@ -443,6 +444,7 @@
 		A66A0BD62BA125C50021A483 /* EditVaultCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditVaultCell.swift; sourceTree = "<group>"; };
 		A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenameVaultView.swift; sourceTree = "<group>"; };
 		A66A0BDA2BA13B570021A483 /* CoinsGrouped.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinsGrouped.swift; sourceTree = "<group>"; };
+		A67E2CBA2BF5D178000C8ED3 /* KeysignSameDeviceShareErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignSameDeviceShareErrorView.swift; sourceTree = "<group>"; };
 		A67F4C5E2BE313220086ED09 /* ActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionButton.swift; sourceTree = "<group>"; };
 		A680BAC42BF47AA9006E611D /* OpenGalleryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenGalleryButton.swift; sourceTree = "<group>"; };
 		A683EDEA2BCF635E00BB706E /* InstructionPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstructionPrompt.swift; sourceTree = "<group>"; };
@@ -1267,6 +1269,7 @@
 				A65BA9952BAD460600B2D8AA /* KeysignStartView.swift */,
 				A65BA9972BAD479C00B2D8AA /* JoinKeysignDoneView.swift */,
 				A6C9D5C02BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift */,
+				A67E2CBA2BF5D178000C8ED3 /* KeysignSameDeviceShareErrorView.swift */,
 			);
 			path = Keysign;
 			sourceTree = "<group>";
@@ -1769,6 +1772,7 @@
 				A6C0D55C2BB3AE8600156689 /* TransactionsView.swift in Sources */,
 				4606B3B02B80465E0045094D /* UTXOTransactionsService.swift in Sources */,
 				DEEFF4FD2B9835DE0015692E /* THORChainSwapChainExtension.swift in Sources */,
+				A67E2CBB2BF5D178000C8ED3 /* KeysignSameDeviceShareErrorView.swift in Sources */,
 				A61BC81B2BA26D9900484689 /* ChainSelectionCell.swift in Sources */,
 				A65649DF2B96602700E4B329 /* DecodableDefaultExtension.swift in Sources */,
 				A633B13E2B9A9E30003D1738 /* VaultDetailView.swift in Sources */,

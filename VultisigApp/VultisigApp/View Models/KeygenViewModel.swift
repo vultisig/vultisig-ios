@@ -73,7 +73,7 @@ class KeygenViewModel: ObservableObject {
             self.messagePuller?.stop()
         }
         do {
-            self.vault.signers = self.keygenCommittee
+            
             // Create keygen instance, it takes time to generate the preparams
             let messengerImp = TssMessengerImpl(mediatorUrl: self.mediatorURL,
                                                 sessionID: self.sessionID,
@@ -92,6 +92,7 @@ class KeygenViewModel: ObservableObject {
             try await keygenWithRetry(tssIns: tssService, attempt: 1)
             // if keygenWithRetry return without exception, it means keygen finished successfully
             self.status = .KeygenFinished
+            self.vault.signers = self.keygenCommittee
             // save the vault
             if let stateAccess {
                 self.vault.keyshares = stateAccess.keyshares
