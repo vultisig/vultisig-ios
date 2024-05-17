@@ -77,7 +77,7 @@ struct KeysignView: View {
             return
         }
         
-        guard keysignPayload.localPartyID != vault.localPartyID else {
+        guard keysignPayload.vaultLocalPartyID != vault.localPartyID else {
             viewModel.status = .KeysignSameDeviceShare
             return
         }
