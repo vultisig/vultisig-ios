@@ -15,24 +15,33 @@ struct ContentView: View {
     @EnvironmentObject var accountViewModel: AccountViewModel
     
     var body: some View {
-        NavigationStack {
-            ZStack {
-                if accountViewModel.showSplashView {
-                    splashView
-                } else if accountViewModel.showOnboarding {
-                    onboardingView
-                } else if vaults.count>0 {
-                    homeView
-                } else {
-                    createVaultView
+        ZStack {
+            NavigationStack {
+                ZStack {
+                    if accountViewModel.showSplashView {
+                        splashView
+                    } else if accountViewModel.showCover {
+                        coverView
+                    } else if accountViewModel.showOnboarding {
+                        onboardingView
+                    } else if vaults.count>0 {
+                        homeView
+                    } else {
+                        createVaultView
+                    }
                 }
+                .navigationBarTitleDisplayMode(.inline)
+                .navigationBarTitleTextColor(.neutral0)
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarTitleTextColor(.neutral0)
+            .onOpenURL { incomingURL in
+                deeplinkViewModel.extractParameters(incomingURL, vaults: vaults)
+            }
+            
+            if accountViewModel.showCover {
+                CoverView()
+            }
         }
-        .onOpenURL { incomingURL in
-            deeplinkViewModel.extractParameters(incomingURL, vaults: vaults)
-        }
+        .id(accountViewModel.referenceID)
     }
     
     var splashView: some View {
@@ -45,6 +54,10 @@ struct ContentView: View {
                     authenticateUser()
                 }
             }
+    }
+    
+    var coverView: some View {
+        CoverView()
     }
     
     var onboardingView: some View {

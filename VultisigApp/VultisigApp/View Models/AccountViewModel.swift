@@ -11,12 +11,15 @@ import LocalAuthentication
 @MainActor
 class AccountViewModel: ObservableObject {
     @AppStorage("showOnboarding") var showOnboarding: Bool = true
+    @AppStorage("showCover") var showCover: Bool = true
     @AppStorage("isAuthenticationEnabled") var isAuthenticationEnabled: Bool = true
+    @AppStorage("lastRecordedTime") var lastRecordedTime: String = ""
     
     @Published var isAuthenticated = false
     @Published var showSplashView = true
     @Published var didUserCancelAuthentication = false
     @Published var canLogin = true
+    @Published var referenceID = UUID()
     
     func authenticateUser() {
         let context = LAContext()
@@ -65,7 +68,27 @@ class AccountViewModel: ObservableObject {
         }
     }
     
-    func continueLogin() {
+    func revokeAuth() {
+        showCover = true
+        let formatter = ISO8601DateFormatter()
+        lastRecordedTime = formatter.string(from: Date())
+        print(lastRecordedTime)
+    }
+    
+    func enableAuth() {
+        showCover = false
+        let formatter = ISO8601DateFormatter()
+        let date = formatter.date(from: lastRecordedTime) ?? Date()
+        let interval = Date().timeIntervalSince(date)
+        lastRecordedTime = formatter.string(from: Date())
+        
+        if interval>60*5 {
+            resetLogin()
+            continueLogin()
+        }
+    }
+    
+    private func continueLogin() {
         guard !isAuthenticated else {
             return
         }
@@ -79,7 +102,8 @@ class AccountViewModel: ObservableObject {
         showSplashView = true
     }
     
-    func resetLogin() {
+    private func resetLogin() {
+        referenceID = UUID()
         guard !showOnboarding || isAuthenticationEnabled else {
             return
         }
