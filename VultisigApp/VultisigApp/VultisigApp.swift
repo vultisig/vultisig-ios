@@ -37,7 +37,7 @@ struct VultisigApp: App {
             switch scenePhase {
             case .active:
                 continueLogin()
-            case .inactive, .background:
+            case .background:
                 resetLogin()
             default:
                 break
@@ -58,10 +58,10 @@ struct VultisigApp: App {
     }()
     
     private func continueLogin() {
-        accountViewModel.continueLogin()
+        accountViewModel.enableAuth()
     }
     
     private func resetLogin() {
-        accountViewModel.resetLogin()
+        accountViewModel.revokeAuth()
     }
 }
