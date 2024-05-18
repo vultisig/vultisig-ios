@@ -3,7 +3,7 @@ import SwiftUI
 struct ChainDetailView: View {
     let group: GroupedChain
     let vault: Vault
-    let balanceInFiat: String?
+    @State var balanceInFiat: String?
     
     @State var showSheet = false
     @State var tokens: [Coin] = []
@@ -42,6 +42,7 @@ struct ChainDetailView: View {
                             }
                         }
                         
+                        await calculateTotalBalanceInFiat()
                         isLoading = false
                     }
                 }
@@ -89,7 +90,7 @@ struct ChainDetailView: View {
             .padding(.vertical, 30)
         }
     }
-
+    
     var actionButtons: some View {
         HStack(spacing: 12) {
             ForEach(actions, id: \.rawValue) { action in
@@ -105,7 +106,7 @@ struct ChainDetailView: View {
         }
         .frame(height: 28)
     }
-
+    
     var sendButton: some View {
         NavigationLink {
             SendCryptoView(
@@ -173,9 +174,9 @@ struct ChainDetailView: View {
         viewModel.setData(for: vault)
         tokens = viewModel.groupedAssets[group.name] ?? []
         tokens.removeFirst()
-
+        
         actions = await viewModel.actionResolver.resolveActions(for: group.chain)
-
+        
         if let coin = group.coins.first {
             sendTx.reset(coin: coin)
         }
@@ -187,6 +188,18 @@ struct ChainDetailView: View {
                 coinViewModels[coin.ticker] = CoinViewModel()
             }
         }
+    }
+    
+    private func calculateTotalBalanceInFiat() async {
+        var totalBalance: Decimal = 0.0
+        for coin in group.coins {
+            if let viewModel = coinViewModels[coin.ticker],
+               let balanceFiat = viewModel.balanceFiat?.fiatToDecimal()
+            {
+                totalBalance += balanceFiat
+            }
+        }
+        balanceInFiat = totalBalance.formatToFiat(includeCurrencySymbol: true)
     }
 }
 
