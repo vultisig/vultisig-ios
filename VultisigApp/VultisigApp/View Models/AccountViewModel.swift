@@ -72,7 +72,6 @@ class AccountViewModel: ObservableObject {
         showCover = true
         let formatter = ISO8601DateFormatter()
         lastRecordedTime = formatter.string(from: Date())
-        print(lastRecordedTime)
     }
     
     func enableAuth() {
