@@ -2,7 +2,7 @@
 //  KeysignSameDeviceShareErrorView.swift
 //  VultisigApp
 //
-//  Created by Amol Kumar on 2024-05-16.
+//  Created by Amol Kumar on 2024-05-18.
 //
 
 import SwiftUI
