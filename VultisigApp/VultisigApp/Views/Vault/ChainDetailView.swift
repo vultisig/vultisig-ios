@@ -1,10 +1,3 @@
-//
-//  ChainDetailView.swift
-//  VultisigApp
-//
-//  Created by Amol Kumar on 2024-04-10.
-//
-
 import SwiftUI
 
 struct ChainDetailView: View {
@@ -17,6 +10,7 @@ struct ChainDetailView: View {
     @State var actions: [CoinAction] = []
     @State var isLoading = false
     @StateObject var sendTx = SendTransaction()
+    @State var coinViewModels: [String: CoinViewModel] = [:]
     
     @EnvironmentObject var viewModel: TokenSelectionViewModel
     
@@ -38,11 +32,16 @@ struct ChainDetailView: View {
             }
             
             ToolbarItem(placement: .topBarTrailing) {
-                NavigationRefreshButton(){
+                NavigationRefreshButton() {
                     Task {
                         isLoading = true
-                        let (_, _, _) = try await BalanceService.shared.balance(for: sendTx.coin)
-                        await setData()
+                        
+                        for coin in group.coins {
+                            if let viewModel = coinViewModels[coin.ticker] {
+                                await viewModel.loadData(coin: coin)
+                            }
+                        }
+                        
                         isLoading = false
                     }
                 }
@@ -61,11 +60,13 @@ struct ChainDetailView: View {
         .onAppear {
             Task {
                 await setData()
+                initializeViewModels()
             }
         }
         .onChange(of: vault) {
             Task {
                 await setData()
+                initializeViewModels()
             }
         }
     }
@@ -80,7 +81,7 @@ struct ChainDetailView: View {
                 actionButtons
                 content
                 
-                if tokens.count>0 {
+                if tokens.count > 0 {
                     addButton
                 }
             }
@@ -143,7 +144,9 @@ struct ChainDetailView: View {
         ForEach(group.coins, id: \.self) { coin in
             VStack(spacing: 0) {
                 Separator()
-                CoinCell(coin: coin, group: group, vault: vault)
+                if let viewModel = coinViewModels[coin.ticker] {
+                    CoinCell(coin: coin, group: group, vault: vault, coinViewModel: viewModel)
+                }
             }
         }
     }
@@ -175,6 +178,14 @@ struct ChainDetailView: View {
 
         if let coin = group.coins.first {
             sendTx.reset(coin: coin)
+        }
+    }
+    
+    private func initializeViewModels() {
+        for coin in group.coins {
+            if coinViewModels[coin.ticker] == nil {
+                coinViewModels[coin.ticker] = CoinViewModel()
+            }
         }
     }
 }
