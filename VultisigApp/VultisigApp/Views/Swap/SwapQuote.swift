@@ -71,7 +71,7 @@ enum SwapQuote {
             let minSwapAmountDecimal = recommendedMinAmountIn / 1e8
             return minSwapAmountDecimal.isZero ? nil : minSwapAmountDecimal
 
-        case .oneinch(let oneInchQuote):
+        case .oneinch:
             return nil
         }
     }
