@@ -107,6 +107,8 @@
 		A653242E2BA53D0900DDE6EB /* SendCryptoPairView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A653242D2BA53D0900DDE6EB /* SendCryptoPairView.swift */; };
 		A65324302BA540ED00DDE6EB /* SendCryptoVerifyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A653242F2BA540ED00DDE6EB /* SendCryptoVerifyView.swift */; };
 		A654FB022BE480B800C54547 /* NavigationSettingButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A654FB012BE480B800C54547 /* NavigationSettingButton.swift */; };
+		A65518032BF849FC006BB924 /* CoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65518022BF849FC006BB924 /* CoverView.swift */; };
+		A65518052BF867CF006BB924 /* KeysignSameDeviceShareErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65518042BF867CF006BB924 /* KeysignSameDeviceShareErrorView.swift */; };
 		A65649DF2B96602700E4B329 /* DecodableDefaultExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */; };
 		A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D82B96602700E4B329 /* BigUIntExtension.swift */; };
 		A65649E12B96602700E4B329 /* Int64Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D92B96602700E4B329 /* Int64Extension.swift */; };
@@ -137,7 +139,6 @@
 		A66A0BD72BA125C50021A483 /* EditVaultCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD62BA125C50021A483 /* EditVaultCell.swift */; };
 		A66A0BD92BA12DF50021A483 /* RenameVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */; };
 		A66A0BDB2BA13B570021A483 /* CoinsGrouped.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BDA2BA13B570021A483 /* CoinsGrouped.swift */; };
-		A67E2CBB2BF5D178000C8ED3 /* KeysignSameDeviceShareErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67E2CBA2BF5D178000C8ED3 /* KeysignSameDeviceShareErrorView.swift */; };
 		A67F4C5F2BE313220086ED09 /* ActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67F4C5E2BE313220086ED09 /* ActionButton.swift */; };
 		A680BAC52BF47AA9006E611D /* OpenGalleryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A680BAC42BF47AA9006E611D /* OpenGalleryButton.swift */; };
 		A683EDEB2BCF635E00BB706E /* InstructionPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = A683EDEA2BCF635E00BB706E /* InstructionPrompt.swift */; };
@@ -445,6 +446,8 @@
 		A653242D2BA53D0900DDE6EB /* SendCryptoPairView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoPairView.swift; sourceTree = "<group>"; };
 		A653242F2BA540ED00DDE6EB /* SendCryptoVerifyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoVerifyView.swift; sourceTree = "<group>"; };
 		A654FB012BE480B800C54547 /* NavigationSettingButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationSettingButton.swift; sourceTree = "<group>"; };
+		A65518022BF849FC006BB924 /* CoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverView.swift; sourceTree = "<group>"; };
+		A65518042BF867CF006BB924 /* KeysignSameDeviceShareErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignSameDeviceShareErrorView.swift; sourceTree = "<group>"; };
 		A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DecodableDefaultExtension.swift; sourceTree = "<group>"; };
 		A65649D82B96602700E4B329 /* BigUIntExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BigUIntExtension.swift; sourceTree = "<group>"; };
 		A65649D92B96602700E4B329 /* Int64Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Int64Extension.swift; sourceTree = "<group>"; };
@@ -475,7 +478,6 @@
 		A66A0BD62BA125C50021A483 /* EditVaultCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditVaultCell.swift; sourceTree = "<group>"; };
 		A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenameVaultView.swift; sourceTree = "<group>"; };
 		A66A0BDA2BA13B570021A483 /* CoinsGrouped.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinsGrouped.swift; sourceTree = "<group>"; };
-		A67E2CBA2BF5D178000C8ED3 /* KeysignSameDeviceShareErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignSameDeviceShareErrorView.swift; sourceTree = "<group>"; };
 		A67F4C5E2BE313220086ED09 /* ActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionButton.swift; sourceTree = "<group>"; };
 		A680BAC42BF47AA9006E611D /* OpenGalleryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenGalleryButton.swift; sourceTree = "<group>"; };
 		A683EDEA2BCF635E00BB706E /* InstructionPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstructionPrompt.swift; sourceTree = "<group>"; };
@@ -1255,6 +1257,7 @@
 				A6C0D55D2BB3B71300156689 /* Transactions */,
 				A6980C222BC0834E00F452AB /* Settings */,
 				A6966D1C2BA3DD9900903CA4 /* Onboarding */,
+				A65518022BF849FC006BB924 /* CoverView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1375,7 +1378,7 @@
 				A65BA9952BAD460600B2D8AA /* KeysignStartView.swift */,
 				A65BA9972BAD479C00B2D8AA /* JoinKeysignDoneView.swift */,
 				A6C9D5C02BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift */,
-				A67E2CBA2BF5D178000C8ED3 /* KeysignSameDeviceShareErrorView.swift */,
+				A65518042BF867CF006BB924 /* KeysignSameDeviceShareErrorView.swift */,
 			);
 			path = Keysign;
 			sourceTree = "<group>";
@@ -1800,6 +1803,7 @@
 				B54E31912BF5A82900D4FC0A /* TransactionMemoWithdrawLiquidity.swift in Sources */,
 				46F8F7212B99FDB70099454E /* TransactionBroadcastResponse.swift in Sources */,
 				DEFF58F22BCBACDA005DFDF9 /* VultisigRelay.swift in Sources */,
+				A65518052BF867CF006BB924 /* KeysignSameDeviceShareErrorView.swift in Sources */,
 				A6980C2A2BC0870000F452AB /* SettingsOptionsStore.swift in Sources */,
 				A6966D242BA3E2A500903CA4 /* OnboardingView2.swift in Sources */,
 				A65649E62B96602700E4B329 /* TssExtension.swift in Sources */,
@@ -1898,7 +1902,6 @@
 				A6C0D55C2BB3AE8600156689 /* TransactionsView.swift in Sources */,
 				4606B3B02B80465E0045094D /* UTXOTransactionsService.swift in Sources */,
 				DEEFF4FD2B9835DE0015692E /* THORChainSwapChainExtension.swift in Sources */,
-				A67E2CBB2BF5D178000C8ED3 /* KeysignSameDeviceShareErrorView.swift in Sources */,
 				A61BC81B2BA26D9900484689 /* ChainSelectionCell.swift in Sources */,
 				A65649DF2B96602700E4B329 /* DecodableDefaultExtension.swift in Sources */,
 				B54E318F2BF5A81100D4FC0A /* TransactionMemoAddLiquidity.swift in Sources */,
@@ -1926,6 +1929,7 @@
 				A6BEF5C02BE2B11C007A84A1 /* DeeplinkViewModel.swift in Sources */,
 				A5D0C9372BEE778F0022D421 /* OneInchSwaps.swift in Sources */,
 				DE64A4CE2BA7FEE100C342E3 /* JoinKeysignViewModel.swift in Sources */,
+				A65518032BF849FC006BB924 /* CoverView.swift in Sources */,
 				A6C9D5C12BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift in Sources */,
 				B5A97CED2BF41573007574D7 /* TransactionMemoView.swift in Sources */,
 				A611735D2BC8D94400D616F9 /* KeyGenSummaryView.swift in Sources */,
@@ -2179,7 +2183,7 @@
 				CODE_SIGN_ENTITLEMENTS = VultisigApp/VultisigApp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 25;
+				CURRENT_PROJECT_VERSION = 27;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
@@ -2230,7 +2234,7 @@
 				CODE_SIGN_ENTITLEMENTS = VultisigApp/VultisigApp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 25;
+				CURRENT_PROJECT_VERSION = 27;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
@@ -2279,7 +2283,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 20;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2305,7 +2309,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 20;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
@@ -2329,7 +2333,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 20;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
@@ -2351,7 +2355,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 20;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;

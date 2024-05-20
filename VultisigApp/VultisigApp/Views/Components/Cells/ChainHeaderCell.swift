@@ -76,10 +76,10 @@ struct ChainHeaderCell: View {
     }
     
     var fiatBalance: some View {
-        Text(balanceInFiat ?? "$0.0000")
+        Text(balanceInFiat ?? "$0.00")
             .font(.body20MenloBold)
             .foregroundColor(.neutral0)
-            .redacted(reason: balanceInFiat==nil ? .placeholder : [])
+            .redacted(reason: balanceInFiat == nil ? .placeholder : [])
     }
     
     var copyButton: some View {

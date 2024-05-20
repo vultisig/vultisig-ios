@@ -63,6 +63,20 @@ extension String {
 
 extension String {
     
+    func fiatToDecimal() -> Decimal? {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = SettingsCurrency.current.rawValue
+        
+        let cleanString = self
+            .replacingOccurrences(of: formatter.currencySymbol, with: "")
+            .replacingOccurrences(of: formatter.groupingSeparator, with: "")
+            .replacingOccurrences(of: formatter.decimalSeparator, with: ".")
+            .trimmingCharacters(in: .whitespaces)
+        
+        return Decimal(string: cleanString)
+    }
+    
     func formatToFiat(includeCurrencySymbol: Bool = true) -> String {
         guard let decimalValue = Decimal(string: self) else { return "" }
         
