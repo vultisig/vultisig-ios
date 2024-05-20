@@ -1,13 +1,13 @@
 //
-//  KeysignSwapConfirmView.swift
+//  KeysignApproveConfirmView.swift
 //  VultisigApp
 //
-//  Created by Artur Guseinov on 29.04.2024.
+//  Created by Artur Guseinov on 20.05.2024.
 //
 
 import SwiftUI
 
-struct KeysignSwapConfirmView: View {
+struct KeysignApproveConfirmView: View {
 
     @ObservedObject var viewModel: JoinKeysignViewModel
 
@@ -30,9 +30,9 @@ struct KeysignSwapConfirmView: View {
         VStack(spacing: 16) {
             getValueCell(for: "Action", with: getAction())
             Separator()
-            getValueCell(for: "Swap from", with: getFromAmount())
+            getValueCell(for: "Spender", with: getSpender())
             Separator()
-            getValueCell(for: "to", with: getToAmount())
+            getValueCell(for: "Amount", with: getAmount())
         }
         .padding(16)
         .background(Color.blue600)
@@ -49,19 +49,15 @@ struct KeysignSwapConfirmView: View {
     }
 
     func getAction() -> String {
-        return NSLocalizedString("Swap", comment: "")
+        return NSLocalizedString("Approve", comment: "")
     }
 
-    func getFromAmount() -> String {
-        guard let payload = viewModel.keysignPayload?.swapPayload else { return .empty }
-        let amount = payload.fromCoin.decimal(for: payload.fromAmount)
-        return "\(amount) \(payload.fromCoin.ticker)"
+    func getSpender() -> String {
+        return viewModel.keysignPayload?.approvePayload?.spender ?? .empty
     }
 
-    func getToAmount() -> String {
-        guard let payload = viewModel.keysignPayload?.swapPayload else { return .empty }
-        let amount = payload.toAmountDecimal
-        return "\(amount) \(payload.toCoin.ticker)"
+    func getAmount() -> String {
+        return "UNLIMITED"
     }
 
     func getValueCell(for title: String, with value: String) -> some View {
@@ -75,18 +71,5 @@ struct KeysignSwapConfirmView: View {
                 .foregroundColor(.turquoise600)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private func getDetailsCell(for title: String, with value: String) -> some View {
-        HStack {
-            Text(
-                NSLocalizedString(title, comment: "")
-                    .replacingOccurrences(of: "Fiat", with: SettingsCurrency.current.rawValue)
-            )
-            Spacer()
-            Text(value)
-        }
-        .font(.body16MenloBold)
-        .foregroundColor(.neutral100)
     }
 }

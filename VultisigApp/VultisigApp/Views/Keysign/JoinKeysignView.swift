@@ -111,6 +111,8 @@ struct JoinKeysignView: View {
     var keysignMessageConfirm: some View {
         if viewModel.keysignPayload?.swapPayload != nil {
             KeysignSwapConfirmView(viewModel: viewModel)
+        } else if viewModel.keysignPayload?.approvePayload != nil {
+            KeysignApproveConfirmView(viewModel: viewModel)
         } else {
             KeysignMessageConfirmView(viewModel: viewModel)
         }
