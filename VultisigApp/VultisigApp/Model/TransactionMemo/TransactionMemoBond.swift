@@ -10,6 +10,7 @@ import Foundation
 import Combine
 
 class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
+    @Published var amount: Double = 0.0
     @Published var nodeAddress: String = ""
     @Published var provider: String = ""
     @Published var fee: Double = 0.0
@@ -70,6 +71,10 @@ class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
 
     func getView() -> AnyView {
         AnyView(VStack {
+            StyledFloatingPointField(placeholder: "Amount", value: Binding(
+                get: { self.amount },
+                set: { self.amount = $0 }
+            ), format: .number)
             TransactionMemoAddressTextField(memo: self, addressKey: "nodeAddress")
             TransactionMemoAddressTextField(memo: self, addressKey: "provider")
             StyledFloatingPointField(placeholder: "Fee", value: Binding(

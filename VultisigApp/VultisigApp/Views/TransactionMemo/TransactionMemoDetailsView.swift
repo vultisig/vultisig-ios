@@ -123,7 +123,7 @@ struct TransactionMemoDetailsView: View {
     var button: some View {
         Button {
             Task {
-                tx.amount = "0"
+                tx.amount = txMemoInstance.amount.description
                 tx.memo = txMemoInstance.description
                 tx.memoFunctionDictionary = txMemoInstance.toDictionary()
                 print(tx.memo)

@@ -226,6 +226,7 @@
 		B54E31952BF5A87600D4FC0A /* TransactionMemoWithdrawTradeAccount.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54E31942BF5A87600D4FC0A /* TransactionMemoWithdrawTradeAccount.swift */; };
 		B54E31992BF5A8D500D4FC0A /* TransactionMemoDonateReserve.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54E31982BF5A8D500D4FC0A /* TransactionMemoDonateReserve.swift */; };
 		B54E319B2BF5A90B00D4FC0A /* TransactionMemoMigrate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54E319A2BF5A90B00D4FC0A /* TransactionMemoMigrate.swift */; };
+		B58768702BFB0C43001AAEA5 /* DepositStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B587686F2BFB0C43001AAEA5 /* DepositStore.swift */; };
 		B5A97CED2BF41573007574D7 /* TransactionMemoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CEC2BF41573007574D7 /* TransactionMemoView.swift */; };
 		B5A97CEF2BF41779007574D7 /* TransactionMemoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CEE2BF41779007574D7 /* TransactionMemoViewModel.swift */; };
 		B5A97CF12BF41903007574D7 /* TransactionMemoVerifyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CF02BF41903007574D7 /* TransactionMemoVerifyViewModel.swift */; };
@@ -565,6 +566,7 @@
 		B54E31942BF5A87600D4FC0A /* TransactionMemoWithdrawTradeAccount.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoWithdrawTradeAccount.swift; sourceTree = "<group>"; };
 		B54E31982BF5A8D500D4FC0A /* TransactionMemoDonateReserve.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoDonateReserve.swift; sourceTree = "<group>"; };
 		B54E319A2BF5A90B00D4FC0A /* TransactionMemoMigrate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoMigrate.swift; sourceTree = "<group>"; };
+		B587686F2BFB0C43001AAEA5 /* DepositStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepositStore.swift; sourceTree = "<group>"; };
 		B5A97CEC2BF41573007574D7 /* TransactionMemoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoView.swift; sourceTree = "<group>"; };
 		B5A97CEE2BF41779007574D7 /* TransactionMemoViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoViewModel.swift; sourceTree = "<group>"; };
 		B5A97CF02BF41903007574D7 /* TransactionMemoVerifyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoVerifyViewModel.swift; sourceTree = "<group>"; };
@@ -965,6 +967,7 @@
 				A6966D212BA3E1B000903CA4 /* TextStore.swift */,
 				A6980C292BC0870000F452AB /* SettingsOptionsStore.swift */,
 				DEFF58F12BCBACDA005DFDF9 /* VultisigRelay.swift */,
+				B587686F2BFB0C43001AAEA5 /* DepositStore.swift */,
 			);
 			path = Stores;
 			sourceTree = "<group>";
@@ -1851,6 +1854,7 @@
 				DE49A1B22B6A0F77000F3AFB /* JoinKeygenView.swift in Sources */,
 				DE9EB0F62BA3F9C2001747D9 /* ParticipantDiscovery.swift in Sources */,
 				B54E31992BF5A8D500D4FC0A /* TransactionMemoDonateReserve.swift in Sources */,
+				B58768702BFB0C43001AAEA5 /* DepositStore.swift in Sources */,
 				A6980C322BC0A2F700F452AB /* SettingsFAQView.swift in Sources */,
 				A67F4C5F2BE313220086ED09 /* ActionButton.swift in Sources */,
 				A6F9F7DD2B9BA5F000790258 /* CoinCell.swift in Sources */,

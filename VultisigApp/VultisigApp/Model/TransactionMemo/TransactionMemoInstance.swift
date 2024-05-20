@@ -91,6 +91,40 @@ enum TransactionMemoInstance {
         }
     }
     
+    //TODO: Check if others need amount if not keep it as zero
+    var amount: Double {
+        switch self {
+        case .bond(let memo):
+            return memo.amount
+        case .unbond(let memo):
+            return memo.amount
+        case .leave(let memo):
+            return .zero
+        case .swap(let memo):
+            return .zero
+        case .depositSavers(let memo):
+            return .zero
+        case .withdrawSavers(let memo):
+            return .zero
+        case .openLoan(let memo):
+            return .zero
+        case .repayLoan(let memo):
+            return .zero
+        case .addLiquidity(let memo):
+            return .zero
+        case .withdrawLiquidity(let memo):
+            return .zero
+        case .addTradeAccount(let memo):
+            return .zero
+        case .withdrawTradeAccount(let memo):
+            return .zero
+        case .donateReserve(let memo):
+            return .zero
+        case .migrate(let memo):
+            return .zero
+        }
+    }
+    
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         switch self {
         case .bond(let memo):

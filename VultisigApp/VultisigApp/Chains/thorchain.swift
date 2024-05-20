@@ -84,33 +84,82 @@ enum THORChainHelper {
         }
         let coin = CoinType.thorchain
         
-        let input = CosmosSigningInput.with {
-            $0.publicKey = pubKeyData
-            $0.signingMode = .protobuf
-            $0.chainID = coin.chainId
-            $0.accountNumber = accountNumber
-            $0.sequence = sequence
-            $0.mode = .sync
-            if let memo = keysignPayload.memo {
-                $0.memo = memo
+        var input: WalletCore.TW_Cosmos_Proto_SigningInput = TW_Cosmos_Proto_SigningInput()
+        
+        var isDeposit: Bool = false
+        if let memo = keysignPayload.memo, !memo.isEmpty {
+            if DepositStore.PREFIXES.contains(where: { memo.hasPrefix($0) }) {
+                isDeposit = true
             }
-            $0.messages = [CosmosMessage.with {
-                $0.thorchainSendMessage = CosmosMessage.THORChainSend.with {
-                    $0.fromAddress = fromAddr.data
+        }
+        
+        if isDeposit {
+            let thorChainCoin = TW_Cosmos_Proto_THORChainCoin.with {
+                $0.asset = TW_Cosmos_Proto_THORChainAsset.with {
+                    $0.chain = "THOR"
+                    $0.symbol = "RUNE"
+                    $0.ticker = "RUNE"
+                    $0.synth = false
+                }
+                $0.amount = String(keysignPayload.toAmount)
+                $0.decimals = 8
+            }
+            
+            input = CosmosSigningInput.with {
+                $0.publicKey = pubKeyData
+                $0.signingMode = .protobuf
+                $0.chainID = coin.chainId
+                $0.accountNumber = accountNumber
+                $0.sequence = sequence
+                $0.mode = .sync
+                if let memo = keysignPayload.memo {
+                    $0.memo = memo
+                }
+                $0.messages = [CosmosMessage.with {
+                    $0.thorchainDepositMessage = CosmosMessage.THORChainDeposit.with {
+                        $0.signer = fromAddr.data
+                        $0.memo = keysignPayload.memo ?? ""
+                        $0.coins = [thorChainCoin]
+                    }
+                }]
+                // THORChain fee is 0.02 RUNE
+                $0.fee = CosmosFee.with {
+                    $0.gas = THORChainGas
                     $0.amounts = [CosmosAmount.with {
                         $0.denom = "rune"
-                        $0.amount = String(keysignPayload.toAmount)
+                        $0.amount = "2000000"
                     }]
-                    $0.toAddress = toAddress.data
                 }
-            }]
-            // THORChain fee is 0.02 RUNE
-            $0.fee = CosmosFee.with {
-                $0.gas = THORChainGas
-                $0.amounts = [CosmosAmount.with {
-                    $0.denom = "rune"
-                    $0.amount = "2000000"
+            }
+        } else {
+            input = CosmosSigningInput.with {
+                $0.publicKey = pubKeyData
+                $0.signingMode = .protobuf
+                $0.chainID = coin.chainId
+                $0.accountNumber = accountNumber
+                $0.sequence = sequence
+                $0.mode = .sync
+                if let memo = keysignPayload.memo {
+                    $0.memo = memo
+                }
+                $0.messages = [CosmosMessage.with {
+                    $0.thorchainSendMessage = CosmosMessage.THORChainSend.with {
+                        $0.fromAddress = fromAddr.data
+                        $0.amounts = [CosmosAmount.with {
+                            $0.denom = "rune"
+                            $0.amount = String(keysignPayload.toAmount)
+                        }]
+                        $0.toAddress = toAddress.data
+                    }
                 }]
+                // THORChain fee is 0.02 RUNE
+                $0.fee = CosmosFee.with {
+                    $0.gas = THORChainGas
+                    $0.amounts = [CosmosAmount.with {
+                        $0.denom = "rune"
+                        $0.amount = "2000000"
+                    }]
+                }
             }
         }
         
