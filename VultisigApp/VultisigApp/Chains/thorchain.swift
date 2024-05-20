@@ -73,9 +73,6 @@ enum THORChainHelper {
             return .failure(HelperError.runtimeError("\(keysignPayload.coin.address) is invalid"))
         }
         
-        guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .thorchain) else {
-            return .failure(HelperError.runtimeError("\(keysignPayload.toAddress) is invalid"))
-        }
         guard case .THORChain(let accountNumber, let sequence) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get account number and sequence"))
         }
@@ -132,6 +129,10 @@ enum THORChainHelper {
                 }
             }
         } else {
+            guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .thorchain) else {
+                return .failure(HelperError.runtimeError("\(keysignPayload.toAddress) is invalid"))
+            }
+            
             input = CosmosSigningInput.with {
                 $0.publicKey = pubKeyData
                 $0.signingMode = .protobuf
