@@ -11,7 +11,7 @@ class THORChainSwaps {
 
     static var affiliateFeeRateBp: String {
 #if DEBUG
-        return "1"
+        return "0"
 #else
         return "70"
 #endif

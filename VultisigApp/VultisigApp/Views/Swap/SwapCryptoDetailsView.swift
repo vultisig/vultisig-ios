@@ -106,7 +106,7 @@ struct SwapCryptoDetailsView: View {
     var summary: some View {
         VStack(spacing: 16) {
             if swapViewModel.showFees(tx: tx) {
-                getSummaryCell(leadingText: "Estimated Fees", trailingText: swapViewModel.feeString(tx: tx))
+                getSummaryCell(leadingText: "Estimated Fees", trailingText: swapViewModel.swapFeeString(tx: tx))
             }
             if swapViewModel.showDuration(tx: tx) {
                 getSummaryCell(leadingText: "Estimated Time", trailingText: swapViewModel.durationString(tx: tx))

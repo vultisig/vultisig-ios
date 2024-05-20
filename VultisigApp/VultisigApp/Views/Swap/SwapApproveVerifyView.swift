@@ -52,7 +52,7 @@ struct SwapApproveVerifyView: View {
             Separator()
             getValueCell(for: "Spender", with: getSpender())
             Separator()
-            getDetailsCell(for: "Estimated Fees", with: swapViewModel.gasString(tx: tx))
+            getDetailsCell(for: "Estimated Fees", with: swapViewModel.approveFeeString(tx: tx))
         }
         .padding(16)
         .background(Color.blue600)
