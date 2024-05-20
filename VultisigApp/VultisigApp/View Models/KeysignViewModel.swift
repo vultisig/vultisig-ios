@@ -88,21 +88,23 @@ class KeysignViewModel: ObservableObject {
     
     func startKeysign() async {
         defer {
-            self.messagePuller?.stop()
+            messagePuller?.stop()
         }
-        for msg in self.messsageToSign {
+        for msg in messsageToSign {
             do {
+                try await verifyAllowance()
                 try await keysignOneMessageWithRetry(msg: msg,attempt: 1)
-            }catch{
-                self.logger.error("TSS keysign failed, error: \(error.localizedDescription)")
-                self.keysignError = error.localizedDescription
-                self.status = .KeysignFailed
+            } catch {
+                logger.error("TSS keysign failed, error: \(error.localizedDescription)")
+                keysignError = error.localizedDescription
+                status = .KeysignFailed
                 return
             }
         }
-        await self.broadcastTransaction()
-        self.status = .KeysignFinished
-        
+       
+        await broadcastTransaction()
+
+        status = .KeysignFinished
     }
     // Return value bool indicate whether keysign should be retried
     func keysignOneMessageWithRetry(msg: String,attempt: UInt8) async throws {
@@ -189,9 +191,30 @@ class KeysignViewModel: ObservableObject {
     }
     
     func stopMessagePuller(){
-        self.messagePuller?.stop()
+        messagePuller?.stop()
     }
-    
+
+    func verifyAllowance() async throws {
+        guard let approvePayload = keysignPayload?.approvePayload, let fromCoin = keysignPayload?.coin else {
+            return
+        }
+
+        do {
+            let service = try EvmServiceFactory.getService(forChain: fromCoin)
+            let allowance = try await service.fetchAllowance(
+                contractAddress: fromCoin.contractAddress,
+                owner: fromCoin.address,
+                spender: approvePayload.spender
+            )
+
+            guard allowance >= approvePayload.amount else {
+                throw KeysignError.noErc20Allowance
+            }
+        } catch {
+            throw KeysignError.networkError
+        }
+    }
+
     func tssKeysign(service: TssServiceImpl, req: TssKeysignRequest, keysignType: KeyType) async throws -> TssKeysignResponse {
         let t = Task.detached(priority: .high) {
             switch keysignType {
@@ -380,6 +403,22 @@ class KeysignViewModel: ObservableObject {
             self.status = .KeysignFailed
             self.keysignError = errMessage
         }
-        
+    }
+}
+
+private extension KeysignViewModel {
+
+    enum KeysignError: Error, LocalizedError {
+        case noErc20Allowance
+        case networkError
+
+        var errorDescription: String? {
+            switch self {
+            case .noErc20Allowance:
+                return "ERC20 approve transaction is unconfirmed. Please wait a bit and try again leter"
+            case .networkError:
+                return " Unable to connect. Please check your internet connection and try again."
+            }
+        }
     }
 }
