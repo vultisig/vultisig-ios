@@ -80,17 +80,29 @@ struct TransactionMemoVerifyView: View {
         .cornerRadius(10)
     }
     
-//    var checkboxes: some View {
-//        VStack(spacing: 16) {
-//            Checkbox(isChecked: $depositVerifyViewModel.isAddressCorrect, text: "sendingRightAddressCheck")
-//            Checkbox(isChecked: $depositVerifyViewModel.isAmountCorrect, text: "correctAmountCheck")
-//            Checkbox(isChecked: $depositVerifyViewModel.isHackedOrPhished, text: "notHackedCheck")
-//        }
-//    }
+    //    var checkboxes: some View {
+    //        VStack(spacing: 16) {
+    //            Checkbox(isChecked: $depositVerifyViewModel.isAddressCorrect, text: "sendingRightAddressCheck")
+    //            Checkbox(isChecked: $depositVerifyViewModel.isAmountCorrect, text: "correctAmountCheck")
+    //            Checkbox(isChecked: $depositVerifyViewModel.isHackedOrPhished, text: "notHackedCheck")
+    //        }
+    //    }
     
     var button: some View {
         Button {
-            //$depositVerifyViewModel.isLoading = true
+            depositVerifyViewModel.isLoading = true
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                Task {
+                    
+                    keysignPayload = await depositVerifyViewModel.createKeysignPayload(tx: tx, vault: vault)
+                    
+                    if keysignPayload != nil {
+                        depositViewModel.moveToNextView()
+                    }
+                    
+                }
+            }
             
         } label: {
             FilledButton(title: "sign")

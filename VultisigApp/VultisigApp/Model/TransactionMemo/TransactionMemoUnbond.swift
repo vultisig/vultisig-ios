@@ -44,8 +44,13 @@ class TransactionMemoUnbond: TransactionMemoAddressable, ObservableObject {
         return toString()
     }
     
+    var amountInUnits: String {
+        let amountInSats = Int64(self.amount * pow(10, 8))
+        return amountInSats.description
+    }
+    
     func toString() -> String {
-        var memo = "UNBOND:\(self.nodeAddress):\(self.amount)"
+        var memo = "UNBOND:\(self.nodeAddress):\(amountInUnits)"
         if !self.provider.isEmpty {
             memo += ":\(self.provider)"
         }

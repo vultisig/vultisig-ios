@@ -31,7 +31,7 @@ class TransactionMemoVerifyViewModel: ObservableObject {
             let keysignPayloadFactory = KeysignPayloadFactory()
             keysignPayload = try await keysignPayloadFactory.buildTransfer(coin: tx.coin,
                                                                            toAddress: tx.toAddress,
-                                                                           amount: BigInt.zero,
+                                                                           amount: tx.amountInCoinDecimal,
                                                                            memo: tx.memo,
                                                                            chainSpecific: chainSpecific, vault: vault)
         } catch {
