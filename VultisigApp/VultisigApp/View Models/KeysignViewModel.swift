@@ -195,19 +195,19 @@ class KeysignViewModel: ObservableObject {
     }
 
     func verifyAllowance() async throws {
-        guard let approvePayload = keysignPayload?.approvePayload, let fromCoin = keysignPayload?.coin else {
-            return
-        }
+        guard let swapPayload = keysignPayload?.swapPayload,
+              let spender = swapPayload.router, 
+              let fromCoin = keysignPayload?.coin else { return }
 
         do {
             let service = try EvmServiceFactory.getService(forChain: fromCoin)
             let allowance = try await service.fetchAllowance(
                 contractAddress: fromCoin.contractAddress,
                 owner: fromCoin.address,
-                spender: approvePayload.spender
+                spender: spender
             )
 
-            guard allowance >= approvePayload.amount else {
+            guard allowance >= swapPayload.fromAmount else {
                 throw KeysignError.noErc20Allowance
             }
         } catch {
