@@ -1,22 +1,16 @@
-//
-//  ChainDetailView.swift
-//  VultisigApp
-//
-//  Created by Amol Kumar on 2024-04-10.
-//
-
 import SwiftUI
 
 struct ChainDetailView: View {
     let group: GroupedChain
     let vault: Vault
-    let balanceInFiat: String?
+    @State var balanceInFiat: String?
     
     @State var showSheet = false
     @State var tokens: [Coin] = []
     @State var actions: [CoinAction] = []
     @State var isLoading = false
     @StateObject var sendTx = SendTransaction()
+    @State var coinViewModels: [String: CoinViewModel] = [:]
     
     @EnvironmentObject var viewModel: TokenSelectionViewModel
     
@@ -38,11 +32,17 @@ struct ChainDetailView: View {
             }
             
             ToolbarItem(placement: .topBarTrailing) {
-                NavigationRefreshButton(){
+                NavigationRefreshButton() {
                     Task {
                         isLoading = true
-                        let (_, _, _) = try await BalanceService.shared.balance(for: sendTx.coin)
-                        await setData()
+                        
+                        for coin in group.coins {
+                            if let viewModel = coinViewModels[coin.ticker] {
+                                await viewModel.loadData(coin: coin)
+                            }
+                        }
+                        
+                        await calculateTotalBalanceInFiat()
                         isLoading = false
                     }
                 }
@@ -61,11 +61,13 @@ struct ChainDetailView: View {
         .onAppear {
             Task {
                 await setData()
+                initializeViewModels()
             }
         }
         .onChange(of: vault) {
             Task {
                 await setData()
+                initializeViewModels()
             }
         }
     }
@@ -80,7 +82,7 @@ struct ChainDetailView: View {
                 actionButtons
                 content
                 
-                if tokens.count>0 {
+                if tokens.count > 0 {
                     addButton
                 }
             }
@@ -88,7 +90,7 @@ struct ChainDetailView: View {
             .padding(.vertical, 30)
         }
     }
-
+    
     var actionButtons: some View {
         HStack(spacing: 12) {
             ForEach(actions, id: \.rawValue) { action in
@@ -104,7 +106,7 @@ struct ChainDetailView: View {
         }
         .frame(height: 28)
     }
-
+    
     var sendButton: some View {
         NavigationLink {
             SendCryptoView(
@@ -143,7 +145,9 @@ struct ChainDetailView: View {
         ForEach(group.coins, id: \.self) { coin in
             VStack(spacing: 0) {
                 Separator()
-                CoinCell(coin: coin, group: group, vault: vault)
+                if let viewModel = coinViewModels[coin.ticker] {
+                    CoinCell(coin: coin, group: group, vault: vault, coinViewModel: viewModel)
+                }
             }
         }
     }
@@ -170,12 +174,32 @@ struct ChainDetailView: View {
         viewModel.setData(for: vault)
         tokens = viewModel.groupedAssets[group.name] ?? []
         tokens.removeFirst()
-
+        
         actions = await viewModel.actionResolver.resolveActions(for: group.chain)
-
+        
         if let coin = group.coins.first {
             sendTx.reset(coin: coin)
         }
+    }
+    
+    private func initializeViewModels() {
+        for coin in group.coins {
+            if coinViewModels[coin.ticker] == nil {
+                coinViewModels[coin.ticker] = CoinViewModel()
+            }
+        }
+    }
+    
+    private func calculateTotalBalanceInFiat() async {
+        var totalBalance: Decimal = 0.0
+        for coin in group.coins {
+            if let viewModel = coinViewModels[coin.ticker],
+               let balanceFiat = viewModel.balanceFiat?.fiatToDecimal()
+            {
+                totalBalance += balanceFiat
+            }
+        }
+        balanceInFiat = totalBalance.formatToFiat(includeCurrencySymbol: true)
     }
 }
 
