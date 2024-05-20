@@ -62,7 +62,6 @@ struct SwapApproveVerifyView: View {
     var checkboxes: some View {
         VStack(spacing: 16) {
             Checkbox(isChecked: $verifyViewModel.isAmountCorrect, text: "correctAmountCheck")
-            Checkbox(isChecked: $verifyViewModel.isHackedOrPhished, text: "notHackedCheck")
         }
     }
 

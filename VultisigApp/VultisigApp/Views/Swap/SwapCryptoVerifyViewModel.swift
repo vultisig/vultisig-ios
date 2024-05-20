@@ -11,9 +11,8 @@ import SwiftUI
 class SwapCryptoVerifyViewModel: ObservableObject {
 
     @Published var isAmountCorrect = false
-    @Published var isHackedOrPhished = false
 
     var isValidForm: Bool {
-        return isAmountCorrect && isHackedOrPhished
+        return isAmountCorrect
     }
 }
