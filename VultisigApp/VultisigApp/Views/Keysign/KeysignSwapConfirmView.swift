@@ -30,6 +30,8 @@ struct KeysignSwapConfirmView: View {
         VStack(spacing: 16) {
             getValueCell(for: "Action", with: getAction())
             Separator()
+            getValueCell(for: "Provider", with: getProvider())
+            Separator()
             getValueCell(for: "Swap from", with: getFromAmount())
             Separator()
             getValueCell(for: "to", with: getToAmount())
@@ -50,6 +52,17 @@ struct KeysignSwapConfirmView: View {
 
     func getAction() -> String {
         return NSLocalizedString("Swap", comment: "")
+    }
+
+    func getProvider() -> String {
+        switch viewModel.keysignPayload?.swapPayload {
+        case .oneInch:
+            return "1Inch"
+        case .thorchain:
+            return "THORCain"
+        case .none:
+            return .empty
+        }
     }
 
     func getFromAmount() -> String {
