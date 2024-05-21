@@ -75,7 +75,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
 
     func showFees(tx: SwapTransaction) -> Bool {
-        let fee = feeString(tx: tx)
+        let fee = swapFeeString(tx: tx)
         return !fee.isEmpty && !fee.isZero
     }
     
@@ -87,16 +87,18 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         return tx.toAmountDecimal != 0
     }
     
-    func feeString(tx: SwapTransaction) -> String {
-        guard let inboundFee = tx.inboundFee else { return .empty }
+    func swapFeeString(tx: SwapTransaction) -> String {
+        guard let inboundFeeDecimal = tx.inboundFeeDecimal else { return .empty }
 
         let fromCoin = feeCoin(tx: tx)
+        let inboundFee = tx.toCoin.raw(for: inboundFeeDecimal)
         let fee = tx.toCoin.fiat(for: inboundFee) + fromCoin.fiat(for: tx.gas)
         return fee.formatToFiat(includeCurrencySymbol: true)
     }
 
-    func gasString(tx: SwapTransaction) -> String {
-        let fee = tx.fromCoin.fiat(for: tx.gas)
+    func approveFeeString(tx: SwapTransaction) -> String {
+        let fromCoin = feeCoin(tx: tx)
+        let fee = fromCoin.fiat(for: tx.gas)
         return fee.formatToFiat(includeCurrencySymbol: true)
     }
 
@@ -359,10 +361,6 @@ private extension SwapCryptoViewModel {
 
             if !isSufficientBalance(tx: tx) {
                 throw Errors.insufficientFunds
-            }
-
-            if let minSwapAmountDecimal = quote.minSwapAmountDecimal, amount < minSwapAmountDecimal {
-                throw Errors.swapAmountTooSmall
             }
 
             tx.quote = quote

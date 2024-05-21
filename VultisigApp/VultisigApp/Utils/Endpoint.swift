@@ -31,7 +31,7 @@ class Endpoint {
         "https://mayanode.mayachain.info/mayachain/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)&streaming_interval=\(interval)".asUrl
     }
     static func fetchSwaoQuoteThorchainNineRealms(address: String, fromAsset: String, toAsset: String, amount: String, interval: String) -> URL {
-        "https://thornode.ninerealms.com/thorchain/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)&streaming_interval=\(interval)&affiliate=vi&affiliate_bps=70".asUrl
+        "https://thornode.ninerealms.com/thorchain/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)&streaming_interval=\(interval)&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(THORChainSwaps.affiliateFeeRateBp)".asUrl
     }
 
     static func fetch1InchSwapQuote(chain: String, source: String, destination: String, amount: String, from: String, slippage: String, referrer: String, fee: Double) -> URL {
@@ -127,7 +127,7 @@ class Endpoint {
     static let broadcastKujiraTransaction = "https://kujira-rest.publicnode.com/cosmos/tx/v1beta1/txs"
 
     static func getSwapProgressURL(txid: String) -> String {
-        return "https://runescan.io/tx/\(txid.stripHexPrefix())"
+        return "https://track.ninerealms.com/\(txid.stripHexPrefix())"
     }
 
     static func getExplorerURL(chainTicker: String, txid: String) -> String {

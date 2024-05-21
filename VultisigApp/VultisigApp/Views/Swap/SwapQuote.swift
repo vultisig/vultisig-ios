@@ -39,40 +39,16 @@ enum SwapQuote {
         }
     }
 
-    func inboundFee(toCoin: Coin) -> BigInt? {
+    func inboundFeeDecimal(toCoin: Coin) -> Decimal? {
         switch self {
         case .thorchain(let quote):
             guard let fees = Decimal(string: quote.fees.total) else {
                 return nil
             }
-            let toDecimals = Int(toCoin.decimals) ?? 0
-            let powerBy = toDecimals - 8
-            let inboundFeeDecimal: Decimal
 
-            if powerBy >= 0 {
-                inboundFeeDecimal = fees * pow(10, abs(powerBy))
-            } else {
-                inboundFeeDecimal = fees / pow(10, abs(powerBy))
-            }
-
-            return BigInt(stringLiteral: inboundFeeDecimal.description)
-
+            return fees / 1e8
         case .oneinch:
             return .zero
-        }
-    }
-
-    var minSwapAmountDecimal: Decimal? {
-        switch self {
-        case .thorchain(let quote):
-            guard let recommendedMinAmountIn = Decimal(string: quote.recommendedMinAmountIn) else {
-                return nil
-            }
-            let minSwapAmountDecimal = recommendedMinAmountIn / 1e8
-            return minSwapAmountDecimal.isZero ? nil : minSwapAmountDecimal
-
-        case .oneinch(let oneInchQuote):
-            return nil
         }
     }
 }
