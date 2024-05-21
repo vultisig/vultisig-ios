@@ -13,7 +13,7 @@ class THORChainSwaps {
 #if DEBUG
         return "0"
 #else
-        return "70"
+        return "50"
 #endif
     }
 
