@@ -12,13 +12,6 @@ struct KeysignSwapConfirmView: View {
     @ObservedObject var viewModel: JoinKeysignViewModel
 
     var body: some View {
-        ZStack {
-            Background()
-            view
-        }
-    }
-
-    var view: some View {
         VStack {
             fields
             button
@@ -35,6 +28,10 @@ struct KeysignSwapConfirmView: View {
 
     var summary: some View {
         VStack(spacing: 16) {
+            getValueCell(for: "Action", with: getAction())
+            Separator()
+            getValueCell(for: "Provider", with: getProvider())
+            Separator()
             getValueCell(for: "Swap from", with: getFromAmount())
             Separator()
             getValueCell(for: "to", with: getToAmount())
@@ -51,6 +48,21 @@ struct KeysignSwapConfirmView: View {
             FilledButton(title: "joinKeySign")
         }
         .padding(20)
+    }
+
+    func getAction() -> String {
+        return NSLocalizedString("Swap", comment: "")
+    }
+
+    func getProvider() -> String {
+        switch viewModel.keysignPayload?.swapPayload {
+        case .oneInch:
+            return "1Inch"
+        case .thorchain:
+            return "THORCain"
+        case .none:
+            return .empty
+        }
     }
 
     func getFromAmount() -> String {

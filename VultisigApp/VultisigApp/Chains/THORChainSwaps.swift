@@ -8,6 +8,17 @@ import Tss
 import WalletCore
 
 class THORChainSwaps {
+
+    static var affiliateFeeRateBp: String {
+#if DEBUG
+        return "0"
+#else
+        return "50"
+#endif
+    }
+
+    static let affiliateFeeAddress = "vi"
+
     let vaultHexPublicKey: String
     let vaultHexChainCode: String
     
@@ -16,7 +27,6 @@ class THORChainSwaps {
         self.vaultHexChainCode = vaultHexChainCode
     }
     
-    static let affiliateFeeAddress = "vi"
     func getPreSignedInputData(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload) -> Result<Data, Error> {
         let input = THORChainSwapSwapInput.with {
             $0.fromAsset = swapPayload.fromAsset
@@ -33,7 +43,7 @@ class THORChainSwaps {
                 $0.quantity = swapPayload.streamingQuantity
             }
             $0.affiliateFeeAddress = THORChainSwaps.affiliateFeeAddress
-            $0.affiliateFeeRateBp = "70"
+            $0.affiliateFeeRateBp = THORChainSwaps.affiliateFeeRateBp
         }
 
         do {

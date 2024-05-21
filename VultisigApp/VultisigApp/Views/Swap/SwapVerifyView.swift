@@ -53,7 +53,7 @@ struct SwapVerifyView: View {
             getValueCell(for: "to", with: getToAmount())
             if swapViewModel.showDuration(tx: tx) {
                 Separator()
-                getDetailsCell(for: "Estimated Fees", with: swapViewModel.feeString(tx: tx))
+                getDetailsCell(for: "Estimated Fees", with: swapViewModel.swapFeeString(tx: tx))
             }
             if swapViewModel.showFees(tx: tx) {
                 Separator()
@@ -67,8 +67,8 @@ struct SwapVerifyView: View {
 
     var checkboxes: some View {
         VStack(spacing: 16) {
-            Checkbox(isChecked: $verifyViewModel.isAmountCorrect, text: "correctAmountCheck")
-            Checkbox(isChecked: $verifyViewModel.isHackedOrPhished, text: "notHackedCheck")
+            Checkbox(isChecked: $verifyViewModel.isAmountCorrect, text: "The swap amount is correct")
+            Checkbox(isChecked: $verifyViewModel.isFeeCorrect, text: "I agree with the amount I will receive after the swap.")
         }
     }
 

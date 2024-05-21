@@ -50,6 +50,10 @@ private extension SwapService {
                 throw Errors.swapAmountTooSmall
             }
 
+            if let minSwapAmountDecimal = quote.minSwapAmountDecimal, amount < minSwapAmountDecimal {
+                throw Errors.swapAmountTooSmall
+            }
+
             return .thorchain(quote)
         }
         catch let error as ThorchainSwapError {

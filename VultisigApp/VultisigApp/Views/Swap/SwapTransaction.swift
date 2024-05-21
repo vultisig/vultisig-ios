@@ -55,8 +55,8 @@ class SwapTransaction: ObservableObject {
         return quote?.router
     }
 
-    var inboundFee: BigInt? {
-        return quote?.inboundFee(toCoin: toCoin)
+    var inboundFeeDecimal: Decimal? {
+        return quote?.inboundFeeDecimal(toCoin: toCoin)
     }
 }
 
