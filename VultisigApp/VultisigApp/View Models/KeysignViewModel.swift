@@ -76,7 +76,7 @@ class KeysignViewModel: ObservableObject {
         guard let keysignPayload else { return .empty }
         return Endpoint.getExplorerURL(chainTicker: keysignPayload.coin.chain.ticker, txid: txid)
     }
-
+    
     func getSwapProgressURL(txid: String) -> String? {
         switch keysignPayload?.swapPayload {
         case .thorchain:
@@ -85,7 +85,7 @@ class KeysignViewModel: ObservableObject {
             return nil
         }
     }
-
+    
     func startKeysign() async {
         defer {
             self.messagePuller?.stop()
@@ -251,7 +251,7 @@ class KeysignViewModel: ObservableObject {
         case .Solana:
             let result = SolanaHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyEdDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
             return result
-
+            
         case .Sui:
             let result = SuiHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyEdDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
             return result
@@ -337,6 +337,9 @@ class KeysignViewModel: ObservableObject {
             } catch {
                 handleBroadcastError(err: error,tx: tx)
             }
+            if self.txid == "Transaction already broadcasted." {
+                self.txid = tx.transactionHash
+            }
         case .failure(let error):
             handleHelperError(err: error)
         }
@@ -349,7 +352,7 @@ class KeysignViewModel: ObservableObject {
             errMessage = "Failed to broadcast transaction,\(errDetail)"
         case RpcEvmServiceError.rpcError(let code, let message):
             print("code:\(code), message:\(message)")
-            if message == "already known" || message == "replacement transaction underpriced" {
+            if message == "already known" || message == "replacement transaction underpriced"{
                 print("the transaction already broadcast,code:\(code)")
                 self.txid = tx.transactionHash
                 return
