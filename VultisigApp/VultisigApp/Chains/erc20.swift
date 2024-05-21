@@ -110,7 +110,7 @@ class ERC20Helper {
                                                                                      publicKeys: publicKeys)
                 let output = try EthereumSigningOutput(serializedData: compileWithSignature)
                 let result = SignedTransactionResult(rawTransaction: output.encoded.hexString,
-                                                     transactionHash: output.encoded.sha3(.keccak256).toHexString())
+                                                     transactionHash: "0x"+output.encoded.sha3(.keccak256).toHexString())
                 return .success(result)
             } catch {
                 return .failure(HelperError.runtimeError("fail to get signed ethereum transaction,error:\(error.localizedDescription)"))
