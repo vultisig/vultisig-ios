@@ -8,18 +8,18 @@
 import Foundation
 
 class ThreadSafeDictionary<Key: Hashable, Value> {
-    private var dictionary: [Key: Value] = [:]
-    private let lock = NSLock()
+    private var dictionary: [Key: Value] = Dictionary(minimumCapacity: 1000)
+    private let queue = DispatchQueue(label: "ThreadSafeDictionaryQueue", attributes: .concurrent)
     
     func get(_ key: Key) -> Value? {
-        lock.lock()
-        defer { lock.unlock() }
-        return dictionary[key]
+        return queue.sync {
+            return dictionary[key]
+        }
     }
     
     func set(_ key: Key, _ value: Value) {
-        lock.lock()
-        defer { lock.unlock() }
-        dictionary[key] = value
+        queue.async(flags: .barrier) {
+            self.dictionary[key] = value
+        }
     }
 }
