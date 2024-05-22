@@ -29,6 +29,7 @@ class KeygenViewModel: ObservableObject {
     var mediatorURL: String
     var sessionID: String
     var encryptionKeyHex: String
+    var oldResharePrefix: String
     
     @Published var isLinkActive = false
     @Published var keygenError: String = ""
@@ -47,9 +48,17 @@ class KeygenViewModel: ObservableObject {
         self.mediatorURL = ""
         self.sessionID = ""
         self.encryptionKeyHex = ""
+        self.oldResharePrefix = ""
     }
     
-    func setData(vault: Vault, tssType: TssType, keygenCommittee: [String], vaultOldCommittee: [String], mediatorURL: String, sessionID: String, encryptionKeyHex: String) {
+    func setData(vault: Vault,
+                 tssType: TssType,
+                 keygenCommittee: [String],
+                 vaultOldCommittee: [String],
+                 mediatorURL: String,
+                 sessionID: String,
+                 encryptionKeyHex: String,
+                 oldResharePrefix:String) {
         self.vault = vault
         self.tssType = tssType
         self.keygenCommittee = keygenCommittee
@@ -57,6 +66,7 @@ class KeygenViewModel: ObservableObject {
         self.mediatorURL = mediatorURL
         self.sessionID = sessionID
         self.encryptionKeyHex = encryptionKeyHex
+        self.oldResharePrefix = oldResharePrefix
         messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex,pubKey: vault.pubKeyECDSA)
     }
     
@@ -149,7 +159,7 @@ class KeygenViewModel: ObservableObject {
                 reshareReq.pubKey = self.vault.pubKeyECDSA
                 reshareReq.oldParties = self.vaultOldCommittee.joined(separator: ",")
                 reshareReq.newParties = self.keygenCommittee.joined(separator: ",")
-                reshareReq.resharePrefix = self.vault.resharePrefix ?? ""
+                reshareReq.resharePrefix = self.vault.resharePrefix ?? self.oldResharePrefix
                 reshareReq.chainCodeHex = self.vault.hexChainCode
                 self.logger.info("chaincode:\(self.vault.hexChainCode)")
                 

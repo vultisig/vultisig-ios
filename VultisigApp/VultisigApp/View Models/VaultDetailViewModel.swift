@@ -12,6 +12,24 @@ class VaultDetailViewModel: ObservableObject {
     @Published var coins = [Coin]()
     @Published var coinsGroupedByChains = [GroupedChain]()
     let defaultChains = [Chain.bitcoin,Chain.ethereum,Chain.thorChain,Chain.solana]
+    @Published var totalBalanceInFiat: Decimal = 0
+    
+    func getTotalUpdatedBalance() async {
+        var totalBalance: Decimal = 0
+        
+        for group in coinsGroupedByChains {
+            for coin in group.coins {
+                do {
+                    let (_, _, balanceInFiatDecimal) = try await BalanceService.shared.balance(for: coin)
+                    totalBalance += balanceInFiatDecimal
+                } catch {
+                    print("Error fetching balance for coin \(coin): \(error)")
+                }
+            }
+        }
+        
+        self.totalBalanceInFiat = totalBalance
+    }
     
     func fetchCoins(for vault: Vault) {
         // add bitcoin when the vault doesn't have any coins in it

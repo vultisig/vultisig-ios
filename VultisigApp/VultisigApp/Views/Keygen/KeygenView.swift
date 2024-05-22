@@ -21,6 +21,7 @@ struct KeygenView: View {
     let mediatorURL: String
     let sessionID: String
     let encryptionKeyHex: String
+    let oldResharePrefix: String
     @StateObject var viewModel = KeygenViewModel()
     
     let progressTotalCount: Double = 4
@@ -183,7 +184,8 @@ struct KeygenView: View {
             vaultOldCommittee: vaultOldCommittee,
             mediatorURL: mediatorURL,
             sessionID: sessionID,
-            encryptionKeyHex: encryptionKeyHex
+            encryptionKeyHex: encryptionKeyHex,
+            oldResharePrefix: oldResharePrefix
         )
     }
 }
@@ -198,7 +200,8 @@ struct KeygenView: View {
             vaultOldCommittee: [],
             mediatorURL: "",
             sessionID: "",
-            encryptionKeyHex: ""
+            encryptionKeyHex: "",
+            oldResharePrefix: ""
         )
     }
 }

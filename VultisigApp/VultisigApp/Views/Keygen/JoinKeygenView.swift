@@ -109,7 +109,8 @@ struct JoinKeygenView: View {
             vaultOldCommittee: self.viewModel.oldCommittee.filter { self.viewModel.keygenCommittee.contains($0) },
             mediatorURL: viewModel.serverAddress!,
             sessionID: self.viewModel.sessionID!,
-            encryptionKeyHex: viewModel.encryptionKeyHex)
+            encryptionKeyHex: viewModel.encryptionKeyHex,
+            oldResharePrefix: viewModel.oldResharePrefix)
     }
     
     var keygenErrorText: some View {

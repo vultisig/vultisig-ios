@@ -41,6 +41,7 @@ class JoinKeygenViewModel: ObservableObject {
     @Published var serviceName = ""
     @Published var errorMessage = ""
     @Published var serverAddress: String? = nil
+    @Published var oldResharePrefix: String = ""
     var encryptionKeyHex: String = ""
     var vaults: [Vault] = []
     
@@ -186,6 +187,7 @@ class JoinKeygenViewModel: ObservableObject {
                 serviceName = reshareMsg.serviceName
                 encryptionKeyHex = reshareMsg.encryptionKeyHex
                 useVultisigRelay = reshareMsg.useVultisigRelay
+                oldResharePrefix = reshareMsg.oldResharePrefix
                 // this means the vault is new , and it join the reshare to become the new committee
                 if vault.pubKeyECDSA.isEmpty {
                     if !reshareMsg.pubKeyECDSA.isEmpty {
