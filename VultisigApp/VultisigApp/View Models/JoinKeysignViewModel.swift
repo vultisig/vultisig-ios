@@ -34,6 +34,7 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var keysignPayload: KeysignPayload? = nil
     @Published var serviceName = ""
     @Published var serverAddress: String? = nil
+    @Published var useVultisigRelay = false
     var encryptionKeyHex: String = ""
     
     init() {
@@ -158,51 +159,19 @@ class JoinKeysignViewModel: ObservableObject {
         defer {
             self.isShowingScanner = false
         }
-        var useVultisigRelay = false
+        
         switch result {
         case .success(let result):
             guard let json = DeeplinkViewModel.getJsonData(URL(string: result.string)) else {
                 return
             }
-            
-            let decoder = JSONDecoder()
-            if let jsonData = Data(base64Encoded: json) {
-                do {
-                    let decodedJsonData: Data = try (jsonData as NSData).decompressed(using: .zlib) as Data
-                    let keysignMsg = try decoder.decode(KeysignMessage.self, from: decodedJsonData)
-                    self.sessionID = keysignMsg.sessionID
-                    self.keysignPayload = keysignMsg.payload
-                    self.serviceName = keysignMsg.serviceName
-                    self.encryptionKeyHex = keysignMsg.encryptionKeyHex
-                    self.logger.info("QR code scanned successfully. Session ID: \(self.sessionID)")
-                    self.prepareKeysignMessages(keysignPayload: keysignMsg.payload)
-                    useVultisigRelay = keysignMsg.useVultisigRelay
-                } catch {
-                    self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"
-                    self.status = .FailedToStart
-                }
-            }
+            handleQrCodeSuccessResult(json: json)
         case .failure(let err):
             self.errorMsg = "QR code scanning failed: \(err.localizedDescription)"
             self.status = .FailedToStart
         }
         
-        if vault.pubKeyECDSA != keysignPayload?.vaultPubKeyECDSA {
-            self.status = .VaultMismatch
-            return
-        }
-        
-        if vault.localPartyID == keysignPayload?.vaultLocalPartyID {
-            self.status = .KeysignSameDeviceShare
-            return
-        }
-        
-        if useVultisigRelay {
-            self.serverAddress = Endpoint.vultisigRelay
-            self.status = .JoinKeysign
-        } else {
-            self.status = .DiscoverService
-        }
+        manageQrCodeStates()
     }
     
     func prepareKeysignMessages(keysignPayload: KeysignPayload) {
@@ -221,11 +190,14 @@ class JoinKeysignViewModel: ObservableObject {
         }
     }
     
-    func handleQrCodeSuccessResult(scanData: Data) {
-        var useVultisigRelay = false
+    func handleQrCodeSuccessResult(json: String?) {
+        guard let json else {
+            return
+        }
         
         let decoder = JSONDecoder()
-        if let jsonData = Data(base64Encoded: scanData) {
+        
+        if let jsonData = Data(base64Encoded: json) {
             do {
                 let decodedJsonData: Data = try (jsonData as NSData).decompressed(using: .zlib) as Data
                 let keysignMsg = try decoder.decode(KeysignMessage.self, from: decodedJsonData)
@@ -241,7 +213,9 @@ class JoinKeysignViewModel: ObservableObject {
                 self.status = .FailedToStart
             }
         }
-        
+    }
+    
+    func manageQrCodeStates() {
         if vault.pubKeyECDSA != keysignPayload?.vaultPubKeyECDSA {
             self.status = .VaultMismatch
             return
@@ -265,9 +239,10 @@ class JoinKeysignViewModel: ObservableObject {
             return
         }
         
-        guard let json = DeeplinkViewModel.getJsonData(url), let jsonData = json.data(using: .utf8) else {
+        guard let json = DeeplinkViewModel.getJsonData(url) else {
             return
         }
-        handleQrCodeSuccessResult(scanData: jsonData)
+        handleQrCodeSuccessResult(json: json)
+        manageQrCodeStates()
     }
 }
