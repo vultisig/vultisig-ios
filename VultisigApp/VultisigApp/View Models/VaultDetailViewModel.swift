@@ -17,18 +17,47 @@ class VaultDetailViewModel: ObservableObject {
     func getTotalUpdatedBalance() async {
         var totalBalance: Decimal = 0
         
-        for group in coinsGroupedByChains {
-            for coin in group.coins {
-                do {
-                    let (_, _, balanceInFiatDecimal) = try await BalanceService.shared.balance(for: coin)
-                    totalBalance += balanceInFiatDecimal
-                } catch {
-                    print("Error fetching balance for coin \(coin): \(error)")
+        await withTaskGroup(of: Decimal?.self) { group in
+            for groupedChain in coinsGroupedByChains {
+                for coin in groupedChain.coins {
+                    group.addTask {
+                        do {
+                            return try await self.fetchBalanceWithRetry(for: coin, retries: 3, delay: 1.0)
+                        } catch {
+                            print("Error fetching balance for coin \(coin): \(error)")
+                            return nil
+                        }
+                    }
+                }
+            }
+            
+            for await result in group {
+                if let balance = result {
+                    totalBalance += balance
                 }
             }
         }
         
         self.totalBalanceInFiat = totalBalance
+    }
+    
+    private func fetchBalanceWithRetry(for coin: Coin, retries: Int, delay: TimeInterval) async throws -> Decimal {
+        var attempts = 0
+        
+        while attempts < retries {
+            do {
+                let (_, _, balanceInFiatDecimal) = try await BalanceService.shared.balance(for: coin)
+                return balanceInFiatDecimal
+            } catch {
+                attempts += 1
+                if attempts >= retries {
+                    throw error
+                }
+                await Task.sleep(UInt64(delay * 1_000_000_000)) // Sleep for the specified delay
+            }
+        }
+        
+        throw NSError(domain: "BalanceService", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to fetch balance after \(retries) attempts"])
     }
     
     func fetchCoins(for vault: Vault) {

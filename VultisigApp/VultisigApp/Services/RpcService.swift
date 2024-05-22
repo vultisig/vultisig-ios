@@ -24,7 +24,7 @@ class RpcService {
         }
     }
     
-    func sendRPCRequest<T>(method: String, params: [Any], decode: (Any) throws -> T) async throws -> T {
+    func sendRPCRequest<T>(method: String, params: [Any], decode: @escaping (Any) throws -> T) async throws -> T {
         let payload: [String: Any] = [
             "jsonrpc": "2.0",
             "method": method,
@@ -41,31 +41,42 @@ class RpcService {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONSerialization.data(withJSONObject: payload, options: [])
         
-        do {
-            let (data, _) = try await URLSession.shared.data(for: request)
-            
-            guard let response = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-                throw RpcServiceError.rpcError(code: 500, message: "Error to decode the JSON response")
-            }
-            
-            if let error = response["error"] as? [String: Any], let message = error["message"] as? String {
+        var attempts = 0
+        let maxAttempts = 3
+        let retryDelay: UInt64 = 1_000_000_000 // 1 second in nanoseconds
+        
+        while attempts < maxAttempts {
+            do {
+                let (data, _) = try await URLSession.shared.data(for: request)
                 
-                if message.contains("known") || message.contains("already known") || message.contains("Transaction is temporarily banned") || message.contains("nonce too low: next nonce"){
-                    return try decode("Transaction already broadcasted.")
+                guard let response = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                    throw RpcServiceError.rpcError(code: 500, message: "Error to decode the JSON response")
                 }
                 
-                return try decode(message)
-            } else if let result = response["result"] {
-                return try decode(result)
-            } else {
-                throw RpcServiceError.rpcError(code: 500, message: "Unknown error")
+                if let error = response["error"] as? [String: Any], let message = error["message"] as? String {
+                    
+                    if message.contains("known") || message.contains("already known") || message.contains("Transaction is temporarily banned") || message.contains("nonce too low: next nonce"){
+                        return try decode("Transaction already broadcasted.")
+                    }
+                    
+                    return try decode(message)
+                } else if let result = response["result"] {
+                    return try decode(result)
+                } else {
+                    throw RpcServiceError.rpcError(code: 500, message: "Unknown error")
+                }
+            } catch {
+                print("sendRPCRequest > Error: \(error.localizedDescription). Attempt \(attempts + 1) failed, trying again...")
+                attempts += 1
+                if attempts < maxAttempts {
+                    await Task.sleep(retryDelay)
+                } else {
+                    throw error
+                }
             }
-        } catch {
-            print(payload)
-            print(error.localizedDescription)
-            throw error
         }
         
+        throw RpcServiceError.rpcError(code: 500, message: "All \(maxAttempts) attempts failed")
     }
     
     func intRpcCall(method: String, params: [Any]) async throws -> BigInt {
@@ -95,6 +106,5 @@ class RpcService {
             }
             return resultString
         }
-        
     }
 }

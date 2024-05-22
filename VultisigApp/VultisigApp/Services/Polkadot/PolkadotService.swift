@@ -11,10 +11,10 @@ import BigInt
 class PolkadotService: RpcService {
     static let rpcEndpoint = Endpoint.polkadotServiceRpc
     static let shared = PolkadotService(rpcEndpoint)
-
+    
     private var cachePolkadotBalance: ThreadSafeDictionary<String, (data: BigInt, timestamp: Date)> = ThreadSafeDictionary()
     private var cachePolkadotGenesisBlockHash: ThreadSafeDictionary<String, (data: String, timestamp: Date)> = ThreadSafeDictionary()
-        
+    
     private func fetchBalance(address: String) async throws -> BigInt {
         let cacheKey = "polkadot-\(address)-balance"
         if let cachedData: BigInt = await Utils.getCachedData(cacheKey: cacheKey, cache: cachePolkadotBalance, timeInSeconds: 60*1) {
@@ -22,19 +22,30 @@ class PolkadotService: RpcService {
         }
         
         let body = ["key": address]
-        do {
-            let requestBody = try JSONEncoder().encode(body)
-            let responseBodyData = try await Utils.asyncPostRequest(urlString: Endpoint.polkadotServiceBalance, headers: [:], body: requestBody)
-            
-            if let balance = Utils.extractResultFromJson(fromData: responseBodyData, path: "data.account.balance") as? String {
-                let decimalBalance = (Decimal(string: balance) ?? Decimal.zero) * pow(10, 10)
-                let bigIntResult = decimalBalance.description.toBigInt()
-                self.cachePolkadotBalance.set(cacheKey, (data: bigIntResult, timestamp: Date()))
-                return bigIntResult
+        var attempts = 0
+        let maxAttempts = 3
+        let retryDelay: UInt64 = 1_000_000_000 // 1 second in nanoseconds
+        
+        while attempts < maxAttempts {
+            do {
+                let requestBody = try JSONEncoder().encode(body)
+                let responseBodyData = try await Utils.asyncPostRequest(urlString: Endpoint.polkadotServiceBalance, headers: [:], body: requestBody)
+                
+                if let balance = Utils.extractResultFromJson(fromData: responseBodyData, path: "data.account.balance") as? String {
+                    let decimalBalance = (Decimal(string: balance) ?? Decimal.zero) * pow(10, 10)
+                    let bigIntResult = decimalBalance.description.toBigInt()
+                    self.cachePolkadotBalance.set(cacheKey, (data: bigIntResult, timestamp: Date()))
+                    return bigIntResult
+                }
+            } catch {
+                print("PolkadotService > fetchBalance > Error > atempt \(attempts): \(error)")
+                attempts += 1
+                if attempts < maxAttempts {
+                    await Task.sleep(retryDelay)
+                } else {
+                    return BigInt.zero
+                }
             }
-        } catch {
-            print("PolkadotService > fetchBalance > Error encoding JSON: \(error)")
-            return BigInt.zero
         }
         
         return BigInt.zero
