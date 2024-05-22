@@ -2,30 +2,34 @@ import Foundation
 import SwiftData
 import BigInt
 
-class Coin: Codable, Hashable {
+@Model
+class Coin: ObservableObject, Codable, Hashable {
     let chain: Chain
     let ticker: String
     let logo: String
-    var address: String
-    let chainType: ChainType?
-    
-    @DecodableDefault.EmptyString var decimals: String
-    @DecodableDefault.EmptyString var hexPublicKey: String
-    @DecodableDefault.EmptyString var feeUnit: String
-    @DecodableDefault.EmptyString var feeDefault: String
-    @DecodableDefault.EmptyString var priceProviderId: String
-    @DecodableDefault.EmptyString var contractAddress: String
-    @DecodableDefault.EmptyString var rawBalance: String
-    @DecodableDefault.False var isNativeToken: Bool
-    @DecodableDefault.EmptyDouble var priceRate: Double
-    
+    let chainType: ChainType
+    let decimals: String
+    let feeUnit: String
+    let feeDefault: String
+    let contractAddress: String
+    let isNativeToken: Bool
+
+    var priceProviderId: String
+
+    var hexPublicKey: String = ""
+    var address: String = ""
+    var rawBalance: String = ""
+    var priceRate: Double = 0
+
+    @Relationship var vault: Vault?
+
     init(
         chain: Chain,
         ticker: String,
         logo: String,
         address: String,
         priceRate: Double,
-        chainType: ChainType?,
+        chainType: ChainType,
         decimals: String,
         hexPublicKey: String,
         feeUnit: String,
@@ -50,7 +54,44 @@ class Coin: Codable, Hashable {
         self.isNativeToken = isNativeToken
         self.feeDefault = feeDefault
     }
-    
+
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        chain = try container.decode(Chain.self, forKey: .chain)
+        ticker = try container.decode(String.self, forKey: .ticker)
+        logo = try container.decode(String.self, forKey: .logo)
+        chainType = try container.decode(ChainType.self, forKey: .chainType)
+        decimals = try container.decode(String.self, forKey: .decimals)
+        feeUnit = try container.decode(String.self, forKey: .feeUnit)
+        feeDefault = try container.decode(String.self, forKey: .feeDefault)
+        priceProviderId = try container.decode(String.self, forKey: .priceProviderId)
+        contractAddress = try container.decode(String.self, forKey: .contractAddress)
+        isNativeToken = try container.decode(Bool.self, forKey: .isNativeToken)
+        hexPublicKey = try container.decodeIfPresent(String.self, forKey: .hexPublicKey) ?? ""
+        address = try container.decodeIfPresent(String.self, forKey: .address) ?? ""
+        rawBalance = try container.decodeIfPresent(String.self, forKey: .rawBalance) ?? ""
+        priceRate = try container.decodeIfPresent(Double.self, forKey: .priceRate) ?? 0
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(chain, forKey: .chain)
+        try container.encode(ticker, forKey: .ticker)
+        try container.encode(logo, forKey: .logo)
+        try container.encode(chainType, forKey: .chainType)
+        try container.encode(decimals, forKey: .decimals)
+        try container.encode(feeUnit, forKey: .feeUnit)
+        try container.encode(feeDefault, forKey: .feeDefault)
+        try container.encode(priceProviderId, forKey: .priceProviderId)
+        try container.encode(contractAddress, forKey: .contractAddress)
+        try container.encode(isNativeToken, forKey: .isNativeToken)
+        try container.encode(hexPublicKey, forKey: .hexPublicKey)
+        try container.encode(address, forKey: .address)
+        try container.encode(rawBalance, forKey: .rawBalance)
+        try container.encode(priceRate, forKey: .priceRate)
+    }
+
+
     func clone() -> Coin {
         return Coin(
             chain: chain,
@@ -167,29 +208,6 @@ class Coin: Codable, Hashable {
         guard !isNativeToken else { return nil }
         return chain.logo
     }
-
-    func toString() -> String {
-        let properties = [
-            "chain: \(chain.name)",
-            "ticker: \(ticker)",
-            "logo: \(logo)",
-            "address: \(address)",
-            "chainType: \((chainType?.description) ?? "N/A")",
-            "decimals: \(decimals)",
-            "hexPublicKey: \(hexPublicKey)",
-            "feeUnit: \(feeUnit)",
-            "feeDefault: \(feeDefault)",
-            "priceProviderId: \(priceProviderId)",
-            "contractAddress: \(contractAddress)",
-            "rawBalance: \(rawBalance)",
-            "isNativeToken: \(isNativeToken)",
-            "priceRate: \(priceRate)",
-            "balance: \(balanceString)",
-            "balanceInFiat: \(balanceInFiat)",
-            "swapAsset: \(swapAsset)"
-        ]
-        return properties.joined(separator: ",\n")
-    }
     
     static let example = Coin(
         chain: Chain.bitcoin,
@@ -207,4 +225,24 @@ class Coin: Codable, Hashable {
         isNativeToken: false,
         feeDefault: "20"
     )
+}
+
+private extension Coin {
+
+    enum CodingKeys: String, CodingKey {
+         case chain
+         case ticker
+         case logo
+         case chainType
+         case decimals
+         case feeUnit
+         case feeDefault
+         case priceProviderId
+         case contractAddress
+         case isNativeToken
+         case hexPublicKey
+         case address
+         case rawBalance
+         case priceRate
+     }
 }

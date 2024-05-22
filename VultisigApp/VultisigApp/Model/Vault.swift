@@ -22,7 +22,7 @@ final class Vault: ObservableObject, Codable {
     var resharePrefix: String? = nil
     var order: Int = 0
     
-    var coins = [Coin]()
+    @Relationship var coins = [Coin]()
     
     enum CodingKeys: CodingKey {
         case name

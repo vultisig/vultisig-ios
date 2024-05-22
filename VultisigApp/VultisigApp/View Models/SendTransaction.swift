@@ -255,20 +255,4 @@ class SendTransaction: ObservableObject, Hashable {
             }
         }
     }
-    
-    func toString() -> String {
-        let properties = [
-            "toAddress: \(toAddress)",
-            "amount: \(amount)",
-            "amountInFiat: \(amountInFiat)",
-            "memo: \(memo)",
-            "gas: \(gas)",
-            "coin: \(coin.toString())",
-            "fromAddress: \(fromAddress)",
-            "amountDecimal: \(amountDecimal)",
-            "amountInCoinDecimal: \(amountInCoinDecimal)",
-            "gasDecimal: \(gasDecimal)"
-        ]
-        return properties.joined(separator: ",\n")
-    }
 }
