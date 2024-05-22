@@ -38,6 +38,8 @@ class BalanceService {
             let blockChairData = try await utxo.fetchBlockchairData(coin: coin)
             coin.rawBalance = blockChairData?.address?.balance?.description ?? "0"
             coin.priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
+            
+            print("\(coin.chain.ticker).\(coin.ticker) balance \(coin.rawBalance)")
         case .thorChain:
             let thorBalances = try await thor.fetchBalances(coin.address)
             coin.rawBalance = thorBalances.balance(denom: Chain.thorChain.ticker.lowercased())
