@@ -1,10 +1,3 @@
-//
-//  CoinCell.swift
-//  VultisigApp
-//
-//  Created by Amol Kumar on 2024-03-08.
-//
-
 import SwiftUI
 
 struct CoinCell: View {
@@ -12,8 +5,8 @@ struct CoinCell: View {
     let group: GroupedChain
     let vault: Vault
     
-    @StateObject var coinViewModel = CoinViewModel()
-	
+    @ObservedObject var coinViewModel: CoinViewModel
+    
     var body: some View {
         HStack(spacing: 12) {
             logo
@@ -57,21 +50,17 @@ struct CoinCell: View {
     }
     
     var quantity: some View {
-        let balanceString = coinViewModel.coinBalance
-        
-        return Text(balanceString ?? "1000")
+        Text(coinViewModel.coinBalance ?? "1000")
             .font(.body16Menlo)
             .foregroundColor(.neutral0)
-            .redacted(reason: balanceString==nil ? .placeholder : [])
+            .redacted(reason: coinViewModel.coinBalance == nil ? .placeholder : [])
     }
     
     var amount: some View {
-        let balanceInFiat = coinViewModel.balanceFiat
-        
-        return Text(balanceInFiat ?? "1000")
+        Text(coinViewModel.balanceFiat ?? "1000")
             .font(.body16MenloBold)
             .foregroundColor(.neutral0)
-            .redacted(reason: balanceInFiat==nil ? .placeholder : [])
+            .redacted(reason: coinViewModel.balanceFiat == nil ? .placeholder : [])
     }
     
     private func setData() async {
@@ -80,5 +69,5 @@ struct CoinCell: View {
 }
 
 #Preview {
-    CoinCell(coin: Coin.example, group: GroupedChain.example, vault: Vault.example)
+    CoinCell(coin: Coin.example, group: GroupedChain.example, vault: Vault.example, coinViewModel: CoinViewModel())
 }

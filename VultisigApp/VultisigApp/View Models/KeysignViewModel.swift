@@ -17,7 +17,6 @@ enum KeysignStatus {
     case KeysignFinished
     case KeysignFailed
     case KeysignVaultMismatch
-    case KeysignSameDeviceShare
 }
 
 @MainActor
@@ -77,7 +76,7 @@ class KeysignViewModel: ObservableObject {
         guard let keysignPayload else { return .empty }
         return Endpoint.getExplorerURL(chainTicker: keysignPayload.coin.chain.ticker, txid: txid)
     }
-
+    
     func getSwapProgressURL(txid: String) -> String? {
         switch keysignPayload?.swapPayload {
         case .thorchain:
@@ -86,24 +85,26 @@ class KeysignViewModel: ObservableObject {
             return nil
         }
     }
-
+    
     func startKeysign() async {
         defer {
-            self.messagePuller?.stop()
+            messagePuller?.stop()
         }
-        for msg in self.messsageToSign {
+        for msg in messsageToSign {
             do {
+                try await verifyAllowance()
                 try await keysignOneMessageWithRetry(msg: msg,attempt: 1)
-            }catch{
-                self.logger.error("TSS keysign failed, error: \(error.localizedDescription)")
-                self.keysignError = error.localizedDescription
-                self.status = .KeysignFailed
+            } catch {
+                logger.error("TSS keysign failed, error: \(error.localizedDescription)")
+                keysignError = error.localizedDescription
+                status = .KeysignFailed
                 return
             }
         }
-        await self.broadcastTransaction()
-        self.status = .KeysignFinished
-        
+       
+        await broadcastTransaction()
+
+        status = .KeysignFinished
     }
     // Return value bool indicate whether keysign should be retried
     func keysignOneMessageWithRetry(msg: String,attempt: UInt8) async throws {
@@ -190,9 +191,30 @@ class KeysignViewModel: ObservableObject {
     }
     
     func stopMessagePuller(){
-        self.messagePuller?.stop()
+        messagePuller?.stop()
     }
-    
+
+    func verifyAllowance() async throws {
+        guard let swapPayload = keysignPayload?.swapPayload,
+              let spender = swapPayload.router, 
+              let fromCoin = keysignPayload?.coin else { return }
+
+        do {
+            let service = try EvmServiceFactory.getService(forChain: fromCoin)
+            let allowance = try await service.fetchAllowance(
+                contractAddress: fromCoin.contractAddress,
+                owner: fromCoin.address,
+                spender: spender
+            )
+
+            guard allowance >= swapPayload.fromAmount else {
+                throw KeysignError.noErc20Allowance
+            }
+        } catch {
+            throw KeysignError.networkError
+        }
+    }
+
     func tssKeysign(service: TssServiceImpl, req: TssKeysignRequest, keysignType: KeyType) async throws -> TssKeysignResponse {
         let t = Task.detached(priority: .high) {
             switch keysignType {
@@ -252,7 +274,7 @@ class KeysignViewModel: ObservableObject {
         case .Solana:
             let result = SolanaHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyEdDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
             return result
-
+            
         case .Sui:
             let result = SuiHelper.getSignedTransaction(vaultHexPubKey: self.vault.pubKeyEdDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
             return result
@@ -338,6 +360,9 @@ class KeysignViewModel: ObservableObject {
             } catch {
                 handleBroadcastError(err: error,tx: tx)
             }
+            if self.txid == "Transaction already broadcasted." {
+                self.txid = tx.transactionHash
+            }
         case .failure(let error):
             handleHelperError(err: error)
         }
@@ -350,7 +375,7 @@ class KeysignViewModel: ObservableObject {
             errMessage = "Failed to broadcast transaction,\(errDetail)"
         case RpcEvmServiceError.rpcError(let code, let message):
             print("code:\(code), message:\(message)")
-            if message == "already known" || message == "replacement transaction underpriced" {
+            if message == "already known" || message == "replacement transaction underpriced"{
                 print("the transaction already broadcast,code:\(code)")
                 self.txid = tx.transactionHash
                 return
@@ -378,6 +403,22 @@ class KeysignViewModel: ObservableObject {
             self.status = .KeysignFailed
             self.keysignError = errMessage
         }
-        
+    }
+}
+
+private extension KeysignViewModel {
+
+    enum KeysignError: Error, LocalizedError {
+        case noErc20Allowance
+        case networkError
+
+        var errorDescription: String? {
+            switch self {
+            case .noErc20Allowance:
+                return "ERC20 approve transaction is unconfirmed. Please wait a bit and try again leter"
+            case .networkError:
+                return " Unable to connect. Please check your internet connection and try again."
+            }
+        }
     }
 }

@@ -47,4 +47,13 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
             return payload.toAmountDecimal
         }
     }
+
+    var router: String? {
+        switch self {
+        case .thorchain(let payload):
+            return payload.routerAddress
+        case .oneInch(let payload):
+            return payload.quote.tx.to
+        }
+    }
 }
