@@ -17,7 +17,7 @@ struct VaultDetailView: View {
     @EnvironmentObject var viewModel: VaultDetailViewModel
     
     @State var showSheet = false
-    
+
     var body: some View {
         ZStack(alignment: .bottom) {
             Background()
@@ -153,17 +153,8 @@ struct VaultDetailView: View {
     
     private func setData() {
         viewModel.fetchCoins(for: vault)
-        setOrder()
-        
-        Task {
-            await viewModel.getTotalUpdatedBalance()
-        }
-    }
-    
-    private func setOrder() {
-        for index in 0..<viewModel.coinsGroupedByChains.count {
-            viewModel.coinsGroupedByChains[index].setOrder(index)
-        }
+        viewModel.setOrder()
+        viewModel.updateBalance()
     }
     
     private func move(from: IndexSet, to: Int) {

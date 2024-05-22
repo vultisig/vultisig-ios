@@ -23,8 +23,6 @@ class TokensStore {
         
         Coin(chain: Chain.ethereum, ticker: "USDC", logo: "usdc", address: "", priceRate: 1.0, chainType: ChainType.EVM, decimals: "6", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "usd-coin", contractAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
 
-        Coin(chain: Chain.bscChain, ticker: "USDC", logo: "usdc", address: "", priceRate: 1.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "usd-coin", contractAddress: "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
-
         Coin(chain: Chain.ethereum, ticker: "USDT", logo: "usdt", address: "", priceRate: 1.0, chainType: ChainType.EVM, decimals: "6", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "tether", contractAddress: "0xdac17f958d2ee523a2206206994597c13d831ec7", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
         
         Coin(chain: Chain.ethereum, ticker: "UNI", logo: "uni", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "uniswap", contractAddress: "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
@@ -50,7 +48,9 @@ class TokensStore {
         Coin(chain: Chain.bscChain, ticker: "BNB", logo: "bsc", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "binancecoin", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "23000"),
         
         Coin(chain: Chain.bscChain, ticker: "USDT", logo: "usdt", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "tether", contractAddress: "0x55d398326f99059fF775485246999027B3197955", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
-        
+
+        Coin(chain: Chain.bscChain, ticker: "USDC", logo: "usdc", address: "", priceRate: 1.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "usd-coin", contractAddress: "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
+
         Coin(chain: Chain.gaiaChain, ticker: "ATOM", logo: "atom", address: "", priceRate: 0.0, chainType: ChainType.Cosmos, decimals: "6", hexPublicKey: "", feeUnit: "uatom", priceProviderId: "cosmos", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "200000"),
         
         Coin(chain: Chain.kujira, ticker: "KUJI", logo: "kuji", address: "", priceRate: 0.0, chainType: ChainType.Cosmos, decimals: "6", hexPublicKey: "", feeUnit: "ukuji", priceProviderId: "kujira", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "200000"),

@@ -131,7 +131,6 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 isLoading = false
             }
         }
-        
     }
     
     func convertFiatToCoin(newValue: String, tx: SendTransaction) async {

@@ -48,14 +48,6 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         tx.fromCoin = fromCoin
 
         updateInitial(tx: tx, vault: vault)
-
-        await withTaskGroup(of: Void.self) { group in
-            for coin in coins {
-                group.addTask {
-                    await BalanceService.shared.updateBalance(for: coin)
-                }
-            }
-        }
     }
     
     var progress: Double {

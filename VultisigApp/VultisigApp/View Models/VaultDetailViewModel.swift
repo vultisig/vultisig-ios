@@ -13,15 +13,24 @@ class VaultDetailViewModel: ObservableObject {
     @Published var coinsGroupedByChains = [GroupedChain]()
     
     let defaultChains = [Chain.bitcoin, Chain.ethereum, Chain.thorChain, Chain.solana]
+    let balanceService = BalanceService.shared
 
-    nonisolated func getTotalUpdatedBalance() async {
-        for group in await coinsGroupedByChains {
-            for coin in group.coins {
-                await BalanceService.shared.updateBalance(for: coin)
-            }
+    private var updateBalanceTask: Task<Void, Never>?
+
+    func updateBalance() {
+        updateBalanceTask?.cancel()
+        updateBalanceTask = Task {
+            let coins = coinsGroupedByChains.reduce([]) { $0 + $1.coins }
+            await balanceService.updateBalances(coins: coins)
         }
     }
-    
+
+    func setOrder() {
+        for index in 0..<coinsGroupedByChains.count {
+            coinsGroupedByChains[index].setOrder(index)
+        }
+    }
+
     func fetchCoins(for vault: Vault) {
         // add bitcoin when the vault doesn't have any coins in it
         if vault.coins.count == 0 {

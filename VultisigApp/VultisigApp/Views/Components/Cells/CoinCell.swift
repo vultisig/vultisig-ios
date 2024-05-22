@@ -6,8 +6,6 @@ struct CoinCell: View {
     let group: GroupedChain
     let vault: Vault
 
-    let balanceService = BalanceService.shared
-
     var body: some View {
         HStack(spacing: 12) {
             logo
@@ -15,11 +13,6 @@ struct CoinCell: View {
         }
         .padding(16)
         .background(Color.blue600)
-        .onAppear {
-            Task {
-                await setData()
-            }
-        }
     }
     
     var logo: some View {
@@ -62,10 +55,6 @@ struct CoinCell: View {
             .font(.body16MenloBold)
             .foregroundColor(.neutral0)
             .redacted(reason: coin.balanceInFiat.isEmpty ? .placeholder : [])
-    }
-    
-    private func setData() async {
-        await balanceService.updateBalance(for: coin)
     }
 }
 

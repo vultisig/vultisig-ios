@@ -20,6 +20,18 @@ class BalanceService {
     private let maya = MayachainService.shared
     private let dot = PolkadotService.shared
 
+    func updateBalances(coins: [Coin]) async {
+        await withTaskGroup(of: Void.self) { group in
+            for coin in coins {
+                group.addTask { [unowned self]  in
+                    if !Task.isCancelled {
+                        await updateBalance(for: coin)
+                    }
+                }
+            }
+        }
+    }
+
     func updateBalance(for coin: Coin) async {
         do {
             switch coin.chain {
