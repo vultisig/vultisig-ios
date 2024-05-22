@@ -65,7 +65,7 @@ struct CoinCell: View {
     }
     
     private func setData() async {
-        try? await balanceService.balance(for: coin)
+        await balanceService.updateBalance(for: coin)
     }
 }
 

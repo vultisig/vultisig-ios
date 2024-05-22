@@ -3,7 +3,6 @@ import SwiftUI
 struct ChainDetailView: View {
     let group: GroupedChain
     let vault: Vault
-    @State var balanceInFiat: String?
     
     @State var showSheet = false
     @State var tokens: [Coin] = []
@@ -11,7 +10,7 @@ struct ChainDetailView: View {
     @StateObject var sendTx = SendTransaction()
 
     @EnvironmentObject var viewModel: TokenSelectionViewModel
-    
+
     var body: some View {
         ZStack {
             Background()
@@ -31,7 +30,6 @@ struct ChainDetailView: View {
                         for coin in group.coins {
                             await viewModel.loadData(coin: coin)
                         }
-                        await calculateTotalBalanceInFiat()
                     }
                 }
             }
@@ -90,7 +88,7 @@ struct ChainDetailView: View {
     }
     
     var header: some View {
-        ChainHeaderCell(group: group, balanceInFiat: balanceInFiat)
+        ChainHeaderCell(group: group)
     }
     
     var cells: some View {
@@ -141,14 +139,9 @@ struct ChainDetailView: View {
             sendTx.reset(coin: coin)
         }
     }
-    
-    private func calculateTotalBalanceInFiat() async {
-        let totalBalance = group.coins.totalBalanceInFiatDecimal
-        balanceInFiat = totalBalance.formatToFiat(includeCurrencySymbol: true)
-    }
 }
 
 #Preview {
-    ChainDetailView(group: GroupedChain.example, vault: Vault.example, balanceInFiat: "$65,899")
+    ChainDetailView(group: GroupedChain.example, vault: Vault.example)
         .environmentObject(TokenSelectionViewModel())
 }

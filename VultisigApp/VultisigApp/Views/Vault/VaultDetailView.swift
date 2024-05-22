@@ -17,8 +17,6 @@ struct VaultDetailView: View {
     @EnvironmentObject var viewModel: VaultDetailViewModel
     
     @State var showSheet = false
-    @State var totalBalance: Decimal = 0
-    @State var totalUpdateCount: Int = 0
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -36,9 +34,6 @@ struct VaultDetailView: View {
         }
         .onChange(of: vault.coins) {
             setData()
-        }
-        .onDisappear {
-            resetTotal()
         }
         .sheet(isPresented: $showSheet, content: {
             NavigationView {
@@ -70,9 +65,7 @@ struct VaultDetailView: View {
                 ChainNavigationCell(
                     group: group,
                     vault: vault,
-                    isEditingChains: $isEditingChains,
-                    totalBalance: $totalBalance,
-                    totalUpdateCount: $totalUpdateCount
+                    isEditingChains: $isEditingChains
                 )
             }
             .onMove(perform: isEditingChains ? move : nil)
@@ -90,23 +83,16 @@ struct VaultDetailView: View {
     }
     
     var balanceContent: some View {
-        Text(viewModel.totalBalanceInFiat.formatToFiat(includeCurrencySymbol: true))
+        Text(vault.coins.totalBalanceInFiatString)
             .font(.body16MenloBold)
             .foregroundColor(.neutral0)
-            .redacted(reason: totalUpdateCount >= viewModel.coinsGroupedByChains.count ? [] : .placeholder)
             .padding(.top, 30)
     }
 
     
     var chainList: some View {
         ForEach(viewModel.coinsGroupedByChains, id: \.id) { group in
-            ChainNavigationCell(
-                group: group,
-                vault: vault, 
-                isEditingChains: $isEditingChains,
-                totalBalance: $totalBalance,
-                totalUpdateCount: $totalUpdateCount
-            )
+            ChainNavigationCell(group: group, vault: vault, isEditingChains: $isEditingChains)
         }
     }
     
@@ -166,18 +152,12 @@ struct VaultDetailView: View {
     }
     
     private func setData() {
-        resetTotal()
         viewModel.fetchCoins(for: vault)
         setOrder()
         
-        Task{
+        Task {
             await viewModel.getTotalUpdatedBalance()
         }
-    }
-    
-    private func resetTotal() {
-        totalBalance = 0
-        totalUpdateCount = 0
     }
     
     private func setOrder() {

@@ -25,7 +25,7 @@ class TokenSelectionViewModel: ObservableObject {
     }
 
     func loadData(coin: Coin) async {
-        try? await balanceService.balance(for: coin)
+        await balanceService.updateBalance(for: coin)
     }
 
     func setData(for vault: Vault) {

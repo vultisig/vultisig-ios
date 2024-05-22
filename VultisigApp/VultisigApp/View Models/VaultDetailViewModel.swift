@@ -6,29 +6,20 @@
 //
 
 import Foundation
+import SwiftUI
 
 @MainActor
 class VaultDetailViewModel: ObservableObject {
-    @Published var coins = [Coin]()
     @Published var coinsGroupedByChains = [GroupedChain]()
-    let defaultChains = [Chain.bitcoin,Chain.ethereum,Chain.thorChain,Chain.solana]
-    @Published var totalBalanceInFiat: Decimal = 0
     
-    func getTotalUpdatedBalance() async {
-        var totalBalance: Decimal = 0
-        
-        for group in coinsGroupedByChains {
+    let defaultChains = [Chain.bitcoin, Chain.ethereum, Chain.thorChain, Chain.solana]
+
+    nonisolated func getTotalUpdatedBalance() async {
+        for group in await coinsGroupedByChains {
             for coin in group.coins {
-                do {
-                    try await BalanceService.shared.balance(for: coin)
-                    totalBalance += group.coins.totalBalanceInFiatDecimal
-                } catch {
-                    print("Error fetching balance for coin \(coin): \(error)")
-                }
+                await BalanceService.shared.updateBalance(for: coin)
             }
         }
-        
-        self.totalBalanceInFiat = totalBalance
     }
     
     func fetchCoins(for vault: Vault) {
@@ -60,14 +51,13 @@ class VaultDetailViewModel: ObservableObject {
                 
             }
         }
-        coins = vault.coins
-        categorizeCoins()
+        categorizeCoins(vault: vault)
     }
     
-    private func categorizeCoins() {
+    private func categorizeCoins(vault: Vault) {
         coinsGroupedByChains = [GroupedChain]()
         
-        for coin in coins {
+        for coin in vault.coins {
             addCoin(coin)
         }
         coinsGroupedByChains.sort { $0.name < $1.name }

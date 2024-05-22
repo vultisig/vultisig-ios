@@ -4,6 +4,8 @@ import BigInt
 
 @Model
 class Coin: ObservableObject, Codable, Hashable {
+    @Attribute(.unique) var id: String
+
     let chain: Chain
     let ticker: String
     let logo: String
@@ -53,24 +55,31 @@ class Coin: ObservableObject, Codable, Hashable {
         self.rawBalance = rawBalance
         self.isNativeToken = isNativeToken
         self.feeDefault = feeDefault
+
+        self.id = "\(chain.rawValue)-\(ticker)"
     }
 
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        chain = try container.decode(Chain.self, forKey: .chain)
-        ticker = try container.decode(String.self, forKey: .ticker)
-        logo = try container.decode(String.self, forKey: .logo)
-        chainType = try container.decode(ChainType.self, forKey: .chainType)
-        decimals = try container.decode(String.self, forKey: .decimals)
-        feeUnit = try container.decode(String.self, forKey: .feeUnit)
-        feeDefault = try container.decode(String.self, forKey: .feeDefault)
-        priceProviderId = try container.decode(String.self, forKey: .priceProviderId)
-        contractAddress = try container.decode(String.self, forKey: .contractAddress)
-        isNativeToken = try container.decode(Bool.self, forKey: .isNativeToken)
-        hexPublicKey = try container.decodeIfPresent(String.self, forKey: .hexPublicKey) ?? ""
-        address = try container.decodeIfPresent(String.self, forKey: .address) ?? ""
-        rawBalance = try container.decodeIfPresent(String.self, forKey: .rawBalance) ?? ""
-        priceRate = try container.decodeIfPresent(Double.self, forKey: .priceRate) ?? 0
+        let chain = try container.decode(Chain.self, forKey: .chain)
+        let ticker = try container.decode(String.self, forKey: .ticker)
+
+        self.chain = chain
+        self.ticker = ticker
+        self.logo = try container.decode(String.self, forKey: .logo)
+        self.chainType = try container.decode(ChainType.self, forKey: .chainType)
+        self.decimals = try container.decode(String.self, forKey: .decimals)
+        self.feeUnit = try container.decode(String.self, forKey: .feeUnit)
+        self.feeDefault = try container.decode(String.self, forKey: .feeDefault)
+        self.priceProviderId = try container.decode(String.self, forKey: .priceProviderId)
+        self.contractAddress = try container.decode(String.self, forKey: .contractAddress)
+        self.isNativeToken = try container.decode(Bool.self, forKey: .isNativeToken)
+        self.hexPublicKey = try container.decodeIfPresent(String.self, forKey: .hexPublicKey) ?? ""
+        self.address = try container.decodeIfPresent(String.self, forKey: .address) ?? ""
+        self.rawBalance = try container.decodeIfPresent(String.self, forKey: .rawBalance) ?? ""
+        self.priceRate = try container.decodeIfPresent(Double.self, forKey: .priceRate) ?? 0
+
+        self.id = "\(chain.rawValue)-\(ticker)"
     }
 
     func encode(to encoder: Encoder) throws {

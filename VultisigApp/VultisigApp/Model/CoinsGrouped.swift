@@ -16,8 +16,16 @@ class GroupedChain {
     var coins: [Coin]
     var order: Int = 0
 
+    var totalBalanceInFiatString: String {
+        return coins.totalBalanceInFiatString
+    }
+
     var name: String {
         return chain.name
+    }
+
+    var nativeCoin: Coin {
+        return coins[0]
     }
 
     init(chain: Chain, address: String, logo: String, count: Int = 0, coins: [Coin]) {

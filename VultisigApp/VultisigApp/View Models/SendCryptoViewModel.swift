@@ -125,13 +125,9 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             }
         case .kujira, .gaiaChain, .mayaChain, .thorChain, .polkadot:
             Task {
-                do{
-                    try await BalanceService.shared.balance(for: tx.coin)
-                    tx.amount = "\(tx.coin.getMaxValue(BigInt(tx.gasDecimal.description,radix:10) ?? 0 ))"
-                    await convertToFiat(newValue: tx.amount, tx: tx)
-                } catch {
-                    print("fail to get Maya balance,error:\(error.localizedDescription)")
-                }
+                await BalanceService.shared.updateBalance(for: tx.coin)
+                tx.amount = "\(tx.coin.getMaxValue(BigInt(tx.gasDecimal.description,radix:10) ?? 0 ))"
+                await convertToFiat(newValue: tx.amount, tx: tx)
                 isLoading = false
             }
         }

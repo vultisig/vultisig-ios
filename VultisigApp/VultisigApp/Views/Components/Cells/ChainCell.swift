@@ -9,15 +9,13 @@ import SwiftUI
 
 struct ChainCell: View {
     let group: GroupedChain
-    @Binding var balanceInFiat: String?
     @Binding var isEditingChains: Bool
-    @Binding var balanceInDecimal: Decimal?
     
     @State var showAlert = false
     @State var showQRcode = false
     
     @StateObject var viewModel = ChainCellViewModel()
-    
+
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
             rearrange
@@ -30,16 +28,6 @@ struct ChainCell: View {
         .cornerRadius(10)
         .padding(.horizontal, 16)
         .animation(.easeInOut, value: isEditingChains)
-        .onAppear {
-            Task {
-                await setData()
-            }
-        }
-        .onChange(of: group.coins) { oldValue, newValue in
-            Task {
-                await setData()
-            }
-        }
     }
     
     var content: some View {
@@ -62,7 +50,7 @@ struct ChainCell: View {
             title
             Spacer()
             
-            if group.coins.count>1 {
+            if group.coins.count > 1 {
                 count
             } else {
                 quantity
@@ -105,37 +93,20 @@ struct ChainCell: View {
     }
     
     var quantity: some View {
-        let quantity = viewModel.quantity
-        
-        return Text(quantity ?? "0.00000")
+        return Text(group.nativeCoin.balanceString)
             .font(.body12Menlo)
             .foregroundColor(.neutral100)
-            .redacted(reason: quantity==nil ? .placeholder : [])
     }
     
     var balance: some View {
-        let balance = viewModel.balanceInFiat
-        let decimalBalance = viewModel.balanceInDecimal
-        
-        return Text(balance ?? "$0.00000")
+        return Text(group.totalBalanceInFiatString)
             .font(.body16MenloBold)
             .foregroundColor(.neutral100)
-            .redacted(reason: balance==nil ? .placeholder : [])
-            .onChange(of: balance) { oldValue, newValue in
-                balanceInFiat = newValue
-            }
-            .onChange(of: decimalBalance) { oldValue, newValue in
-                balanceInDecimal = newValue
-            }
-    }
-    
-    private func setData() async {
-        await viewModel.loadData(for: group)
     }
 }
 
 #Preview {
     ScrollView {
-        ChainCell(group: GroupedChain.example, balanceInFiat: .constant("$65,899"), isEditingChains: .constant(true), balanceInDecimal: .constant(65899))
+        ChainCell(group: GroupedChain.example, isEditingChains: .constant(true))
     }
 }
