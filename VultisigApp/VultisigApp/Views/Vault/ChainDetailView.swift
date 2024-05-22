@@ -58,12 +58,14 @@ struct ChainDetailView: View {
             }
         })
         .onAppear {
-            setData()
-            initializeViewModels()
+            Task {
+                await setData()
+            }
         }
         .onChange(of: vault) {
-            setData()
-            initializeViewModels()
+            Task {
+                await setData()
+            }
         }
     }
     
@@ -139,10 +141,12 @@ struct ChainDetailView: View {
         }
     }
     
-    private func setData() {
+    private func setData() async {
         viewModel.setData(for: vault)
         tokens = viewModel.groupedAssets[group.name] ?? []
         tokens.removeFirst()
+        initializeViewModels()
+        await calculateTotalBalanceInFiat()
         
         if let coin = group.coins.first {
             sendTx.reset(coin: coin)

@@ -14,10 +14,16 @@ struct CoinDetailView: View {
     let viewModel: CoinViewModel
     @ObservedObject var sendTx: SendTransaction
     
+    @State var isLoading = false
+    
     var body: some View {
         ZStack {
             Background()
             view
+            
+            if isLoading {
+                loader
+            }
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString(coin.ticker, comment: ""))
@@ -30,16 +36,7 @@ struct CoinDetailView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationRefreshButton() {
                     Task {
-//                        isLoading = true
-//                        
-//                        for coin in group.coins {
-//                            if let viewModel = coinViewModels[coin.ticker] {
-//                                await viewModel.loadData(coin: coin)
-//                            }
-//                        }
-//                        
-//                        await calculateTotalBalanceInFiat()
-//                        isLoading = false
+                        await refreshData()
                     }
                 }
             }
@@ -57,6 +54,10 @@ struct CoinDetailView: View {
         }
     }
     
+    var loader: some View {
+        Loader()
+    }
+    
     var actionButtons: some View {
         ChainDetailActionButtons(group: group, vault: vault, sendTx: sendTx)
     }
@@ -70,6 +71,12 @@ struct CoinDetailView: View {
     
     var cell: some View {
         CoinCell(coin: coin, group: group, vault: vault, coinViewModel: viewModel)
+    }
+    
+    private func refreshData() async {
+        isLoading = true
+        await viewModel.loadData(coin: coin)
+        isLoading = false
     }
 }
 
