@@ -90,6 +90,8 @@
 		A62758F22B97B10600ADE3A6 /* Endpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62758F12B97B10600ADE3A6 /* Endpoint.swift */; };
 		A62758F52B97CE9E00ADE3A6 /* FontStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62758F42B97CE9E00ADE3A6 /* FontStyle.swift */; };
 		A62758F72B97DF4A00ADE3A6 /* ColorStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62758F62B97DF4A00ADE3A6 /* ColorStyle.swift */; };
+		A62D6B032BFE7BF400F24E51 /* TokenDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62D6B022BFE7BF400F24E51 /* TokenDetailView.swift */; };
+		A62D6B052BFE7C5E00F24E51 /* ChainDetailActionButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62D6B042BFE7C5E00F24E51 /* ChainDetailActionButtons.swift */; };
 		A633B11C2B99273A003D1738 /* ColorExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B11B2B99273A003D1738 /* ColorExtensions.swift */; };
 		A633B1212B993BF5003D1738 /* Montserrat-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A633B11F2B993BF5003D1738 /* Montserrat-Italic.ttf */; };
 		A633B1222B993BF5003D1738 /* Montserrat.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A633B1202B993BF5003D1738 /* Montserrat.ttf */; };
@@ -402,6 +404,8 @@
 		A62758F12B97B10600ADE3A6 /* Endpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endpoint.swift; sourceTree = "<group>"; };
 		A62758F42B97CE9E00ADE3A6 /* FontStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontStyle.swift; sourceTree = "<group>"; };
 		A62758F62B97DF4A00ADE3A6 /* ColorStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorStyle.swift; sourceTree = "<group>"; };
+		A62D6B022BFE7BF400F24E51 /* TokenDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenDetailView.swift; sourceTree = "<group>"; };
+		A62D6B042BFE7C5E00F24E51 /* ChainDetailActionButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailActionButtons.swift; sourceTree = "<group>"; };
 		A633B11B2B99273A003D1738 /* ColorExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorExtensions.swift; sourceTree = "<group>"; };
 		A633B11F2B993BF5003D1738 /* Montserrat-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Montserrat-Italic.ttf"; sourceTree = "<group>"; };
 		A633B1202B993BF5003D1738 /* Montserrat.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Montserrat.ttf; sourceTree = "<group>"; };
@@ -664,6 +668,7 @@
 				A5CBA32B2BCD747C00088CC3 /* TappableTextFieldStyle.swift */,
 				A69069B42BCF538000F28A8B /* NetworkPrompts.swift */,
 				A683EDEA2BCF635E00BB706E /* InstructionPrompt.swift */,
+				A62D6B042BFE7C5E00F24E51 /* ChainDetailActionButtons.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1249,6 +1254,7 @@
 				A6BACF1B2BC79B3100084810 /* TokenSelectionView.swift */,
 				461AD1B62BC6706500959278 /* VaultPairDetailView.swift */,
 				DEFF58F72BCF4E11005DFDF9 /* BackupVault.swift */,
+				A62D6B022BFE7BF400F24E51 /* TokenDetailView.swift */,
 			);
 			path = Vault;
 			sourceTree = "<group>";
@@ -1753,6 +1759,7 @@
 				465036BB2BCF968E00856B34 /* BigInt.swift in Sources */,
 				A6966D2F2BA4045C00903CA4 /* SwapCryptoView.swift in Sources */,
 				46F8F7282B9A011B0099454E /* ThorchainBroadcastTransactionService.swift in Sources */,
+				A62D6B032BFE7BF400F24E51 /* TokenDetailView.swift in Sources */,
 				A65649E12B96602700E4B329 /* Int64Extension.swift in Sources */,
 				DEFF58FC2BCFB384005DFDF9 /* MayaChainService.swift in Sources */,
 				DE63AE562BBA788D001BBE5C /* GaiaService.swift in Sources */,
@@ -1875,6 +1882,7 @@
 				DE49A1672B65F6D9000F3AFB /* VultisigApp.swift in Sources */,
 				A60CA7E72BB0EC6100FDEB5C /* AccountViewModel.swift in Sources */,
 				A588F2DB2BEE8090002EEC60 /* OneInchSwapPayload.swift in Sources */,
+				A62D6B052BFE7C5E00F24E51 /* ChainDetailActionButtons.swift in Sources */,
 				A6F9E7A52BED6BC800BA36E1 /* SetupVaultTabView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
