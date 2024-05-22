@@ -104,12 +104,7 @@ struct ChainDetailView: View {
     
     var cells: some View {
         ForEach(group.coins, id: \.self) { coin in
-            VStack(spacing: 0) {
-                Separator()
-                if let viewModel = coinViewModels[coin.ticker] {
-                    CoinCell(coin: coin, group: group, vault: vault, coinViewModel: viewModel)
-                }
-            }
+            getCoinCell(coin)
         }
     }
     
@@ -129,6 +124,19 @@ struct ChainDetailView: View {
         }
         .font(.body16MenloBold)
         .foregroundColor(.turquoise600)
+    }
+    
+    private func getCoinCell(_ coin: Coin) -> some View {
+        VStack(spacing: 0) {
+            Separator()
+            if let viewModel = coinViewModels[coin.ticker] {
+                NavigationLink {
+                    CoinDetailView(coin: coin, group: group, vault: vault, viewModel: viewModel, sendTx: sendTx)
+                } label: {
+                    CoinCell(coin: coin, group: group, vault: vault, coinViewModel: viewModel)
+                }
+            }
+        }
     }
     
     private func setData() {
