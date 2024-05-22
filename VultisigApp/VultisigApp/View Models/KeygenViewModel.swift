@@ -72,6 +72,7 @@ class KeygenViewModel: ObservableObject {
     
     func delaySwitchToMain() {
         Task {
+            
             // when user didn't touch it for 5 seconds , automatically goto home screen
             try await Task.sleep(for: .seconds(5)) // Back off 5s
             self.isLinkActive = true
