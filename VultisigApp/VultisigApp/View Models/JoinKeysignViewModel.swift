@@ -220,4 +220,54 @@ class JoinKeysignViewModel: ObservableObject {
             self.status = .FailedToStart
         }
     }
+    
+    func handleQrCodeSuccessResult(scanData: Data) {
+        var useVultisigRelay = false
+        
+        let decoder = JSONDecoder()
+        if let jsonData = Data(base64Encoded: scanData) {
+            do {
+                let decodedJsonData: Data = try (jsonData as NSData).decompressed(using: .zlib) as Data
+                let keysignMsg = try decoder.decode(KeysignMessage.self, from: decodedJsonData)
+                self.sessionID = keysignMsg.sessionID
+                self.keysignPayload = keysignMsg.payload
+                self.serviceName = keysignMsg.serviceName
+                self.encryptionKeyHex = keysignMsg.encryptionKeyHex
+                self.logger.info("QR code scanned successfully. Session ID: \(self.sessionID)")
+                self.prepareKeysignMessages(keysignPayload: keysignMsg.payload)
+                useVultisigRelay = keysignMsg.useVultisigRelay
+            } catch {
+                self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"
+                self.status = .FailedToStart
+            }
+        }
+        
+        if vault.pubKeyECDSA != keysignPayload?.vaultPubKeyECDSA {
+            self.status = .VaultMismatch
+            return
+        }
+        
+        if vault.localPartyID == keysignPayload?.vaultLocalPartyID {
+            self.status = .KeysignSameDeviceShare
+            return
+        }
+        
+        if useVultisigRelay {
+            self.serverAddress = Endpoint.vultisigRelay
+            self.status = .JoinKeysign
+        } else {
+            self.status = .DiscoverService
+        }
+    }
+    
+    func handleDeeplinkScan(_ url: URL?) {
+        guard let url else {
+            return
+        }
+        
+        guard let json = DeeplinkViewModel.getJsonData(url), let jsonData = json.data(using: .utf8) else {
+            return
+        }
+        handleQrCodeSuccessResult(scanData: jsonData)
+    }
 }
