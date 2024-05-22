@@ -13,4 +13,5 @@ struct ReshareMessage: Codable {
     let oldParties: [String]
     let encryptionKeyHex: String
     let useVultisigRelay: Bool
+    let oldResharePrefix: String
 }

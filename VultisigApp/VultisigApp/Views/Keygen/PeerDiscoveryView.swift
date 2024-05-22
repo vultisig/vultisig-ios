@@ -259,7 +259,8 @@ struct PeerDiscoveryView: View {
             },
             mediatorURL: viewModel.serverAddr,
             sessionID: viewModel.sessionID,
-            encryptionKeyHex: viewModel.encryptionKeyHex ?? "")
+            encryptionKeyHex: viewModel.encryptionKeyHex ?? "",
+            oldResharePrefix: vault.resharePrefix ?? "")
     }
     
     var failureText: some View {
