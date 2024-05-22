@@ -105,7 +105,7 @@ class Coin: Codable, Hashable {
     func raw(for value: Decimal) -> BigInt {
         let tokenDecimals = Int(decimals) ?? 0
         let decimal = value * pow(10, tokenDecimals)
-        return BigInt(stringLiteral: decimal.description)
+        return BigInt(decimal.description) ?? BigInt.zero
     }
 
     func fiat(for value: BigInt) -> Decimal {

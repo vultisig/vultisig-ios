@@ -59,13 +59,13 @@ private extension OneInchSwaps {
             $0.toAddress = quote.tx.to
             $0.transaction = .with {
                 $0.contractGeneric = .with {
-                    $0.amount = BigUInt(stringLiteral: quote.tx.value).serialize()
+                    $0.amount = (BigUInt(quote.tx.value) ?? BigUInt.zero).serialize()
                     $0.data = Data(hex: quote.tx.data.stripHexPrefix())
                 }
             }
         }
 
-        let gasPrice = BigUInt(stringLiteral: quote.tx.gasPrice)
+        let gasPrice = BigUInt(quote.tx.gasPrice) ?? BigUInt.zero
         let gas = BigUInt(EVMHelper.defaultETHSwapGasUnit)
         let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
         let signed = helper.getPreSignedInputData(signingInput: input, keysignPayload: keysignPayload, gas: gas, gasPrice: gasPrice)
