@@ -225,4 +225,16 @@ class JoinKeygenViewModel: ObservableObject {
     func handleQrCodeFromImage(result: Result<[URL], Error>) {
         handleQrCodeSuccessResult(scanData: Utils.handleQrCodeFromImage(result: result))
     }
+    
+    func handleDeeplinkScan(_ url: URL?) {
+        guard let url else {
+            return
+        }
+        
+        guard let json = DeeplinkViewModel.getJsonData(url), let jsonData = json.data(using: .utf8) else {
+            status = .FailToStart
+            return
+        }
+        handleQrCodeSuccessResult(scanData: jsonData)
+    }
 }

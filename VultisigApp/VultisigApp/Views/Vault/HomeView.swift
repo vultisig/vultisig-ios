@@ -20,6 +20,7 @@ struct HomeView: View {
     @State var isEditingVaults = false
     @State var isEditingChains = false
     @State var showMenu = false
+    @State var shouldJoinKeygen = false
     
     var body: some View {
         ZStack {
@@ -58,8 +59,8 @@ struct HomeView: View {
         .onAppear {
             setData()
         }
-        .navigationDestination(isPresented: $deeplinkViewModel.joinVaultActive) {
-            SetupVaultView(tssType: deeplinkViewModel.tssType ?? .Keygen)
+        .navigationDestination(isPresented: $shouldJoinKeygen) {
+            JoinKeygenView(vault: Vault(name: "Main Vault"), shouldJoinKeygen: shouldJoinKeygen)
         }
     }
     
@@ -118,6 +119,8 @@ struct HomeView: View {
     }
     
     private func setData() {
+        shouldJoinKeygen = false
+        
         if let vault = selectedVault {
             viewModel.setSelectedVault(vault)
             return
@@ -144,7 +147,7 @@ struct HomeView: View {
     
     private func moveToCreateVaultView() {
         showVaultsList = true
-        deeplinkViewModel.joinVaultActive = true
+        shouldJoinKeygen = true
     }
     
     private func moveToVaultsView() {

@@ -34,7 +34,7 @@ class SwapTransaction: ObservableObject {
             let expected = Decimal(string: quote.expectedAmountOut) ?? 0
             return expected / Decimal(100_000_000)
         case .oneinch(let quote):
-            let amount = BigInt(stringLiteral: quote.dstAmount)
+            let amount = BigInt(quote.dstAmount) ?? BigInt.zero
             return toCoin.decimal(for: amount)
         }
     }
@@ -47,7 +47,7 @@ class SwapTransaction: ObservableObject {
         case .thorchain:
             return toCoin.raw(for: toAmountDecimal)
         case .oneinch(let quote):
-            return BigInt(stringLiteral: quote.dstAmount)
+            return BigInt(quote.dstAmount) ?? BigInt.zero
         }
     }
 
