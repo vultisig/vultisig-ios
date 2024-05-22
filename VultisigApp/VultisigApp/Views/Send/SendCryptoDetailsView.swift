@@ -128,6 +128,11 @@ struct SendCryptoDetailsView: View {
             onMaxPressed: { sendCryptoViewModel.setMaxValues(tx: tx) }
         )
         .focused($focusedField, equals: .amount)
+        .onChange(of: tx.coin) { oldValue, newValue in
+            Task {
+                await sendCryptoViewModel.convertToFiat(newValue: tx.amount, tx: tx)
+            }
+        }
     }
     
     var balanceNativeTokenField: some View {
