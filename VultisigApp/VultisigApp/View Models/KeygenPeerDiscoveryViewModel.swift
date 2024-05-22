@@ -83,7 +83,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         self.mediator.start(name: self.serviceName)
         self.logger.info("mediator server started")
         self.startSession()
-        self.participantDiscovery?.getParticipants(serverAddr: self.serverAddr, 
+        self.participantDiscovery?.getParticipants(serverAddr: self.serverAddr,
                                                    sessionID: self.sessionID,
                                                    localParty: self.localPartyID,
                                                    pubKeyECDSA: vault.pubKeyECDSA)
@@ -120,7 +120,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         self.mediator.stop()
     }
     
-   
+    
     private func startSession() {
         let urlString = "\(self.serverAddr)/\(self.sessionID)"
         let body = [self.localPartyID]
@@ -170,7 +170,8 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     pubKeyECDSA: vault.pubKeyECDSA,
                     oldParties: vault.signers,
                     encryptionKeyHex: encryptionKeyHex,
-                    useVultisigRelay: VultisigRelay.IsRelayEnabled
+                    useVultisigRelay: VultisigRelay.IsRelayEnabled,
+                    oldResharePrefix: vault.resharePrefix ?? ""
                 )
                 data = try jsonEncoder.encode(PeerDiscoveryPayload.Reshare(reshareMsg))
                 let json = String(decoding: data, as: UTF8.self)
