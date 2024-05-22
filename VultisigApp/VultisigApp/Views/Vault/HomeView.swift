@@ -58,8 +58,8 @@ struct HomeView: View {
         .onAppear {
             setData()
         }
-        .navigationDestination(isPresented: $deeplinkViewModel.joinVaultActive) {
-            SetupVaultView(tssType: deeplinkViewModel.tssType ?? .Keygen)
+        .navigationDestination(isPresented: $deeplinkViewModel.shouldJoinKeygen) {
+            JoinKeygenView(vault: Vault(name: "Main Vault"))
         }
     }
     
@@ -144,7 +144,7 @@ struct HomeView: View {
     
     private func moveToCreateVaultView() {
         showVaultsList = true
-        deeplinkViewModel.joinVaultActive = true
+        deeplinkViewModel.shouldJoinKeygen = true
     }
     
     private func moveToVaultsView() {

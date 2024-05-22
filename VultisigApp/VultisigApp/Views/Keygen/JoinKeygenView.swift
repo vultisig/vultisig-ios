@@ -18,6 +18,8 @@ struct JoinKeygenView: View {
     @State var isGalleryPresented = false
     @Query var vaults: [Vault]
     
+    @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
+    
     let logger = Logger(subsystem: "join-keygen", category: "communication")
     
     var body: some View {
@@ -46,7 +48,7 @@ struct JoinKeygenView: View {
             codeScanner
         })
         .onAppear {
-            viewModel.setData(vault: vault, serviceDelegate: self.serviceDelegate, vaults: vaults)
+            setData()
         }
         .onDisappear {
             viewModel.stopJoinKeygen()
@@ -231,6 +233,11 @@ struct JoinKeygenView: View {
             OpenGalleryButton()
         }
         .padding(.bottom, 50)
+    }
+    
+    private func setData() {
+        viewModel.setData(vault: vault, serviceDelegate: self.serviceDelegate, vaults: vaults)
+        deeplinkViewModel.shouldJoinKeygen = false
     }
 }
 

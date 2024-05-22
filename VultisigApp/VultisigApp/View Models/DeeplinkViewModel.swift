@@ -17,7 +17,7 @@ enum DeeplinkFlowType {
 class DeeplinkViewModel: ObservableObject {
     @Published var type: DeeplinkFlowType? = nil
     @Published var selectedVault: Vault? = nil
-    @Published var joinVaultActive: Bool = false
+    @Published var shouldJoinKeygen: Bool = false
     @Published var tssType: TssType? = nil
     @Published var jsonData: String? = nil
     @Published var viewID = UUID()
@@ -54,7 +54,7 @@ class DeeplinkViewModel: ObservableObject {
         type = nil
         tssType = nil
         selectedVault = nil
-        joinVaultActive = false
+        shouldJoinKeygen = false
     }
     
     private func getFlowType(_ type: String?) -> DeeplinkFlowType {
