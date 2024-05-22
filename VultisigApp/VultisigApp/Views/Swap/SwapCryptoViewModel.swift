@@ -445,7 +445,7 @@ private extension SwapCryptoViewModel {
     }
 
     func oneInchFee(quote: OneInchQuote) -> BigInt {
-        let gasPrice = BigInt(stringLiteral: quote.tx.gasPrice)
+        let gasPrice = BigInt(quote.tx.gasPrice) ?? BigInt.zero
         return gasPrice * BigInt(EVMHelper.defaultETHSwapGasUnit)
     }
 }
