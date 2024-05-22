@@ -92,31 +92,54 @@ enum Utils {
         for item in headers {
             request.setValue(item.value, forHTTPHeaderField: item.key)
         }
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                completion(.failure(error))
-            }
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                completion(.failure(NSError(domain: "Invalid response", code: 0, userInfo: nil)))
-                return
-            }
-            switch httpResponse.statusCode {
-            case 200 ... 299:
-                guard let data = data else {
-                    completion(.failure(NSError(domain: "No data available", code: 0, userInfo: nil)))
+        
+        let maxRetries = 3
+        
+        func performRequest(attempt: Int) {
+            URLSession.shared.dataTask(with: request) { data, response, error in
+                if let error = error {
+                    if attempt < maxRetries {
+                        Thread.sleep(forTimeInterval: 1.0) // 1 second wait
+                        performRequest(attempt: attempt + 1)
+                    } else {
+                        completion(.failure(error))
+                    }
                     return
                 }
-                completion(.success(data))
-            case 404: // success
-                completion(.failure(NSError(domain: "Invalid response code", code: httpResponse.statusCode, userInfo: nil)))
-                return
-            default:
-                completion(.failure(NSError(domain: "Invalid response code", code: httpResponse.statusCode, userInfo: nil)))
-                return
-            }
-            
-        }.resume()
+                
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    if attempt < maxRetries {
+                        Thread.sleep(forTimeInterval: 1.0) // 1 second wait
+                        performRequest(attempt: attempt + 1)
+                    } else {
+                        completion(.failure(NSError(domain: "Invalid response", code: 0, userInfo: nil)))
+                    }
+                    return
+                }
+                
+                switch httpResponse.statusCode {
+                case 200...299:
+                    guard let data = data else {
+                        completion(.failure(NSError(domain: "No data available", code: 0, userInfo: nil)))
+                        return
+                    }
+                    completion(.success(data))
+                case 429:
+                    if attempt < maxRetries {
+                        Thread.sleep(forTimeInterval: 1.0) // 1 second wait
+                        performRequest(attempt: attempt + 1)
+                    } else {
+                        completion(.failure(NSError(domain: "Too many requests", code: httpResponse.statusCode, userInfo: nil)))
+                    }
+                case 404:
+                    completion(.failure(NSError(domain: "Resource not found", code: httpResponse.statusCode, userInfo: nil)))
+                default:
+                    completion(.failure(NSError(domain: "Invalid response code", code: httpResponse.statusCode, userInfo: nil)))
+                }
+            }.resume()
+        }
+        
+        performRequest(attempt: 0)
     }
     
     static func fetchArray<T: Decodable>(from urlString: String) async throws -> [T] {
