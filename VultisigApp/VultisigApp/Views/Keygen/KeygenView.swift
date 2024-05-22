@@ -184,7 +184,8 @@ struct KeygenView: View {
             vaultOldCommittee: vaultOldCommittee,
             mediatorURL: mediatorURL,
             sessionID: sessionID,
-            encryptionKeyHex: encryptionKeyHex
+            encryptionKeyHex: encryptionKeyHex,
+            oldResharePrefix: oldResharePrefix
         )
     }
 }
