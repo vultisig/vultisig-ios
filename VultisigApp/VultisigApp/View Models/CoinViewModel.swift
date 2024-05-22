@@ -15,7 +15,7 @@ class CoinViewModel: ObservableObject {
     @Published var balanceFiat: String? = nil
     @Published var coinBalance: String? = nil
     
-    private let balanceService = BalanceService()
+    private let balanceService = BalanceService.shared
 
     func loadData(coin: Coin) async {
         isLoading = true

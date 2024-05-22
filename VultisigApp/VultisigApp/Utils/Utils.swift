@@ -143,11 +143,11 @@ enum Utils {
         }
     }
     
-    
     public static func asyncGetRequest(urlString: String, headers: [String: String]) async throws -> Data {
         guard let url = URL(string: urlString) else {
             throw NSError(domain: "Invalid URL", code: 0, userInfo: nil)
         }
+        
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -155,25 +155,46 @@ enum Utils {
             request.addValue(value, forHTTPHeaderField: key)
         }
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let maxRetries = 3
+        var currentAttempt = 0
         
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw NSError(domain: "Invalid response", code: 0, userInfo: nil)
+        while currentAttempt < maxRetries {
+            do {
+                let (data, response) = try await URLSession.shared.data(for: request)
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    throw NSError(domain: "Invalid response", code: 0, userInfo: nil)
+                }
+                switch httpResponse.statusCode {
+                case 200...299:
+                    return data
+                case 429:
+                    currentAttempt += 1
+                    if currentAttempt < maxRetries {
+                        try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second wait
+                    } else {
+                        throw NSError(domain: "Too many requests", code: httpResponse.statusCode, userInfo: nil)
+                    }
+                case 404:
+                    throw NSError(domain: "Resource not found", code: httpResponse.statusCode, userInfo: nil)
+                default:
+                    throw NSError(domain: "Unexpected response code", code: httpResponse.statusCode, userInfo: nil)
+                }
+            } catch {
+                if currentAttempt >= maxRetries - 1 {
+                    throw error
+                }
+                currentAttempt += 1
+                try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second wait
+            }
         }
-        switch httpResponse.statusCode {
-        case 200...299:
-            return data
-        case 404:
-            throw NSError(domain: "Resource not found", code: httpResponse.statusCode, userInfo: nil)
-        default:
-            throw NSError(domain: "Invalid response code", code: httpResponse.statusCode, userInfo: nil)
-        }
+        throw NSError(domain: "Max retries reached", code: 0, userInfo: nil)
     }
     
     public static func asyncPostRequest(urlString: String, headers: [String: String], body: Data) async throws -> Data {
         guard let url = URL(string: urlString) else {
             throw NSError(domain: "Invalid URL", code: 0, userInfo: nil)
         }
+        
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -182,19 +203,39 @@ enum Utils {
         }
         request.httpBody = body
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let maxRetries = 3
+        var currentAttempt = 0
         
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw NSError(domain: "Invalid response", code: 0, userInfo: nil)
+        while currentAttempt < maxRetries {
+            do {
+                let (data, response) = try await URLSession.shared.data(for: request)
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    throw NSError(domain: "Invalid response", code: 0, userInfo: nil)
+                }
+                switch httpResponse.statusCode {
+                case 200...299:
+                    return data
+                case 429:
+                    currentAttempt += 1
+                    if currentAttempt < maxRetries {
+                        try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second wait
+                    } else {
+                        throw NSError(domain: "Too many requests", code: httpResponse.statusCode, userInfo: nil)
+                    }
+                case 404:
+                    throw NSError(domain: "Resource not found", code: httpResponse.statusCode, userInfo: nil)
+                default:
+                    throw NSError(domain: "Unexpected response code", code: httpResponse.statusCode, userInfo: nil)
+                }
+            } catch {
+                if currentAttempt >= maxRetries - 1 {
+                    throw error
+                }
+                currentAttempt += 1
+                try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second wait
+            }
         }
-        switch httpResponse.statusCode {
-        case 200...299:
-            return data
-        case 404: // Consider if 404 should really be considered a success or not.
-            throw NSError(domain: "Resource not found", code: httpResponse.statusCode, userInfo: nil)
-        default:
-            throw NSError(domain: "Unexpected response code", code: httpResponse.statusCode, userInfo: nil)
-        }
+        throw NSError(domain: "Max retries reached", code: 0, userInfo: nil)
     }
     
     public static func getMessageBodyHash(msg: String) -> String {

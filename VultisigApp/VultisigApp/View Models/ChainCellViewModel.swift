@@ -23,7 +23,7 @@ class ChainCellViewModel: ObservableObject {
     
     func loadQuantity(for coin: Coin) async {
         do {
-            let balanceService = BalanceService()
+            let balanceService = BalanceService.shared
             let coinQuantity = try await balanceService.balance(for: coin)
             quantity = coinQuantity.coinBalance
         }
@@ -56,7 +56,7 @@ class ChainCellViewModel: ObservableObject {
     
     private func getCoinBalance(for coin: Coin) async -> Decimal {
         do {
-            let balanceService = BalanceService()
+            let balanceService = BalanceService.shared
             let balance = try await balanceService.balance(for: coin)
             return balance.balanceInFiatDecimal
         }
