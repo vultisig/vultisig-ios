@@ -16,13 +16,18 @@ class TokenSelectionViewModel: ObservableObject {
     @Published var selection = Set<Coin>()
     
     let actionResolver = CoinActionResolver()
-    
+    let balanceService = BalanceService.shared
+
     private let logger = Logger(subsystem: "assets-list", category: "view")
     
     var allCoins: [Coin] {
         return groupedAssets.values.reduce([], +)
     }
-    
+
+    func loadData(coin: Coin) async {
+        try? await balanceService.balance(for: coin)
+    }
+
     func setData(for vault: Vault) {
         groupAssets()
         checkSelected(for: vault)

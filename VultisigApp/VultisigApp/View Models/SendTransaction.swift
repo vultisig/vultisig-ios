@@ -69,7 +69,7 @@ class SendTransaction: ObservableObject, Hashable {
                     
                     do
                     {
-                        let (_, _, _) = try await BalanceService.shared.balance(for: nativeToken)
+                        try await BalanceService.shared.balance(for: nativeToken)
                         
                         let nativeTokenBalance = BigInt(nativeToken.rawBalance) ?? BigInt.zero
                         
@@ -102,7 +102,7 @@ class SendTransaction: ObservableObject, Hashable {
             if let nativeToken = vault.coins.first(where: { $0.isNativeToken && $0.chain.name == coin.chain.name }) {
                 do
                 {
-                    let (_, _, _) = try await BalanceService.shared.balance(for: nativeToken)
+                    try await BalanceService.shared.balance(for: nativeToken)
                     let nativeTokenRawBalance = Decimal(string: nativeToken.rawBalance) ?? .zero
                     
                     guard let nativeDecimals = Int(nativeToken.decimals) else {

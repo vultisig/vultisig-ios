@@ -18,18 +18,8 @@ class BalanceService {
     private let kuji = KujiraService.shared
     private let maya = MayachainService.shared
     private let dot = PolkadotService.shared
-    
-    private var balanceCache = ThreadSafeDictionary<String, (data: (coinBalance: String, balanceFiat: String, balanceInFiatDecimal: Decimal), timestamp: Date)>()
-    
-    func balance(for coin: Coin) async throws -> (coinBalance: String, balanceFiat: String, balanceInFiatDecimal: Decimal) {
-        
-        let cacheKey = "\(coin.chain.ticker).\(coin.ticker)-\(coin.address)"
-        
-        // Check the cache so we avoid hitting so many times on the services apis.
-        if let cachedData = await Utils.getCachedData(cacheKey: cacheKey, cache: balanceCache, timeInSeconds: 60) {
-            return cachedData
-        }
-        
+
+    func balance(for coin: Coin) async throws {
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             let blockChairData = try await utxo.fetchBlockchairData(coin: coin)
@@ -70,14 +60,5 @@ class BalanceService {
             coin.rawBalance = rawBalance
             coin.priceRate = priceRate
         }
-        let balanceFiat = coin.balanceInFiat
-        let coinBalance = coin.balanceString
-        let balanceInFiatDecimal = coin.balanceInFiatDecimal
-        
-        let balanceData = (coinBalance, balanceFiat, balanceInFiatDecimal)
-                
-        balanceCache.set(cacheKey, (data: balanceData, timestamp: Date()))
-        
-        return (coinBalance, balanceFiat, balanceInFiatDecimal)
     }
 }

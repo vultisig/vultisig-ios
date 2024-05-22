@@ -126,7 +126,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         case .kujira, .gaiaChain, .mayaChain, .thorChain, .polkadot:
             Task {
                 do{
-                    let (_, _, _) = try await BalanceService.shared.balance(for: tx.coin)
+                    try await BalanceService.shared.balance(for: tx.coin)
                     tx.amount = "\(tx.coin.getMaxValue(BigInt(tx.gasDecimal.description,radix:10) ?? 0 ))"
                     await convertToFiat(newValue: tx.amount, tx: tx)
                 } catch {

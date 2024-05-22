@@ -20,8 +20,8 @@ class VaultDetailViewModel: ObservableObject {
         for group in coinsGroupedByChains {
             for coin in group.coins {
                 do {
-                    let (_, _, balanceInFiatDecimal) = try await BalanceService.shared.balance(for: coin)
-                    totalBalance += balanceInFiatDecimal
+                    try await BalanceService.shared.balance(for: coin)
+                    totalBalance += group.coins.totalBalanceInFiatDecimal
                 } catch {
                     print("Error fetching balance for coin \(coin): \(error)")
                 }

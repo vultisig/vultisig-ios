@@ -24,8 +24,8 @@ class ChainCellViewModel: ObservableObject {
     func loadQuantity(for coin: Coin) async {
         do {
             let balanceService = BalanceService()
-            let coinQuantity = try await balanceService.balance(for: coin)
-            quantity = coinQuantity.coinBalance
+            try await balanceService.balance(for: coin)
+            quantity = coin.balanceString
         }
         catch {
             print("error fetching data: \(error.localizedDescription)")
@@ -56,9 +56,8 @@ class ChainCellViewModel: ObservableObject {
     
     private func getCoinBalance(for coin: Coin) async -> Decimal {
         do {
-            let balanceService = BalanceService()
-            let balance = try await balanceService.balance(for: coin)
-            return balance.balanceInFiatDecimal
+            try await BalanceService.shared.balance(for: coin)
+            return coin.balanceInFiatDecimal
         }
         catch {
             print("error fetching data: \(error.localizedDescription)")

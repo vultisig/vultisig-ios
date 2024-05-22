@@ -7,20 +7,15 @@ struct ChainDetailView: View {
     
     @State var showSheet = false
     @State var tokens: [Coin] = []
-    @State var isLoading = false
+    @State var actions: [CoinAction] = []
     @StateObject var sendTx = SendTransaction()
-    @State var coinViewModels: [String: CoinViewModel] = [:]
-    
+
     @EnvironmentObject var viewModel: TokenSelectionViewModel
     
     var body: some View {
         ZStack {
             Background()
             view
-            
-            if isLoading {
-                loader
-            }
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString(group.name, comment: ""))
@@ -33,16 +28,10 @@ struct ChainDetailView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationRefreshButton() {
                     Task {
-                        isLoading = true
-                        
                         for coin in group.coins {
-                            if let viewModel = coinViewModels[coin.ticker] {
-                                await viewModel.loadData(coin: coin)
-                            }
+                            await viewModel.loadData(coin: coin)
                         }
-                        
                         await calculateTotalBalanceInFiat()
-                        isLoading = false
                     }
                 }
             }
@@ -153,23 +142,8 @@ struct ChainDetailView: View {
         }
     }
     
-    private func initializeViewModels() {
-        for coin in group.coins {
-            if coinViewModels[coin.ticker] == nil {
-                coinViewModels[coin.ticker] = CoinViewModel()
-            }
-        }
-    }
-    
     private func calculateTotalBalanceInFiat() async {
-        var totalBalance: Decimal = 0.0
-        for coin in group.coins {
-            if let viewModel = coinViewModels[coin.ticker],
-               let balanceFiat = viewModel.balanceFiat?.fiatToDecimal()
-            {
-                totalBalance += balanceFiat
-            }
-        }
+        let totalBalance = group.coins.totalBalanceInFiatDecimal
         balanceInFiat = totalBalance.formatToFiat(includeCurrencySymbol: true)
     }
 }

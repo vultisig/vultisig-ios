@@ -1,12 +1,13 @@
 import SwiftUI
 
 struct CoinCell: View {
-    let coin: Coin
+    @ObservedObject var coin: Coin
+    
     let group: GroupedChain
     let vault: Vault
-    
-    @ObservedObject var coinViewModel: CoinViewModel
-    
+
+    let balanceService = BalanceService.shared
+
     var body: some View {
         HStack(spacing: 12) {
             logo
@@ -50,24 +51,24 @@ struct CoinCell: View {
     }
     
     var quantity: some View {
-        Text(coinViewModel.coinBalance ?? "1000")
+        Text(coin.balanceString)
             .font(.body16Menlo)
             .foregroundColor(.neutral0)
-            .redacted(reason: coinViewModel.coinBalance == nil ? .placeholder : [])
+            .redacted(reason: coin.rawBalance.isEmpty ? .placeholder : [])
     }
     
     var amount: some View {
-        Text(coinViewModel.balanceFiat ?? "1000")
+        Text(coin.balanceInFiat)
             .font(.body16MenloBold)
             .foregroundColor(.neutral0)
-            .redacted(reason: coinViewModel.balanceFiat == nil ? .placeholder : [])
+            .redacted(reason: coin.balanceInFiat.isEmpty ? .placeholder : [])
     }
     
     private func setData() async {
-        await coinViewModel.loadData(coin: coin)
+        try? await balanceService.balance(for: coin)
     }
 }
 
 #Preview {
-    CoinCell(coin: Coin.example, group: GroupedChain.example, vault: Vault.example, coinViewModel: CoinViewModel())
+    CoinCell(coin: Coin.example, group: GroupedChain.example, vault: Vault.example)
 }

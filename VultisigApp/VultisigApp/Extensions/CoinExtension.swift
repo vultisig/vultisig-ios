@@ -57,3 +57,14 @@ extension Coin {
         }
     }
 }
+
+extension Array where Element: Coin {
+
+    var totalBalanceInFiatDecimal: Decimal {
+        return reduce(Decimal(0), { $0 + $1.balanceInFiatDecimal })
+    }
+
+    var totalBalanceDecimal: Decimal {
+        return reduce(Decimal(0), { $0 + $1.balanceDecimal })
+    }
+}
