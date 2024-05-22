@@ -11,6 +11,7 @@ struct ChainDetailActionButtons: View {
     let group: GroupedChain
     let vault: Vault
     @ObservedObject var sendTx: SendTransaction
+    var coin: Coin? = nil
     
     @State var actions: [CoinAction] = []
     

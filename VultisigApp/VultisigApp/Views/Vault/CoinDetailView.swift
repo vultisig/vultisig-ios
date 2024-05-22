@@ -41,6 +41,9 @@ struct CoinDetailView: View {
                 }
             }
         }
+        .onAppear {
+            sendTx.coin = coin
+        }
     }
     
     var view: some View {
@@ -59,7 +62,7 @@ struct CoinDetailView: View {
     }
     
     var actionButtons: some View {
-        ChainDetailActionButtons(group: group, vault: vault, sendTx: sendTx)
+        ChainDetailActionButtons(group: group, vault: vault, sendTx: sendTx, coin: coin)
     }
     
     var content: some View {
