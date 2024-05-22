@@ -13,9 +13,13 @@ struct PeerDiscoveryView: View {
     
     @StateObject var viewModel = KeygenPeerDiscoveryViewModel()
     @StateObject var participantDiscovery = ParticipantDiscovery(isKeygen: true)
+    
+    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
     @State private var orientation = UIDevice.current.orientation
+    @State var isLandscape: Bool = false
     
     let columns = [
+        GridItem(.adaptive(minimum: 160)),
         GridItem(.adaptive(minimum: 160)),
         GridItem(.adaptive(minimum: 160)),
     ]
@@ -44,9 +48,13 @@ struct PeerDiscoveryView: View {
         }
         .onAppear {
             viewModel.setData(vault: vault, tssType: tssType, participantDiscovery: participantDiscovery)
+            setData()
         }
         .onDisappear {
             viewModel.stopMediator()
+        }
+        .onChange(of: orientation) { oldValue, newValue in
+            setData()
         }
     }
     
@@ -67,9 +75,9 @@ struct PeerDiscoveryView: View {
     }
     
     var waitingForDevices: some View {
-        ZStack(alignment: .bottom) {
+        VStack(spacing: 0) {
             content
-            bottomButtons
+            bottomButton
         }
     }
     
@@ -79,7 +87,7 @@ struct PeerDiscoveryView: View {
     
     var content: some View {
         ZStack {
-            if orientation == .landscapeLeft || orientation == .landscapeRight {
+            if isLandscape {
                 landscapeContent
             } else {
                 portraitContent
@@ -90,7 +98,7 @@ struct PeerDiscoveryView: View {
     var landscapeContent: some View {
         HStack {
             qrCode
-                .padding(60)
+            
             VStack{
                 list
                     .padding(20)
@@ -100,7 +108,7 @@ struct PeerDiscoveryView: View {
     }
     
     var portraitContent: some View {
-        ScrollView {
+        VStack(spacing: 0) {
             vaultDetail
             qrCode
             list
@@ -144,19 +152,24 @@ struct PeerDiscoveryView: View {
         .padding()
         .cornerRadius(10)
         .shadow(radius: 5)
-        .padding(.vertical, 80)
     }
     
     var paringBarcode: some View {
-        VStack {
+        VStack(spacing: 0) {
             Text(NSLocalizedString("pairWithOtherDevices", comment: "Pair with two other devices"))
                 .font(.body18MenloBold)
                 .multilineTextAlignment(.center)
             
             viewModel.getQrImage(size: 100)
                 .resizable()
-                .scaledToFit()
+                .aspectRatio(
+                    contentMode:
+                        participantDiscovery.peersFound.count == 0 && idiom == .phone ?
+                        .fill :
+                        .fit
+                )
                 .padding()
+                .frame(maxHeight: .infinity)
                 .frame(maxWidth: 512)
             
             Text(NSLocalizedString("scanQrCode", comment: "Scan QR Code"))
@@ -165,18 +178,40 @@ struct PeerDiscoveryView: View {
         }
         .cornerRadius(10)
         .shadow(radius: 5)
-        .padding()
     }
     
     var deviceList: some View {
-        LazyVGrid(columns: columns, spacing: 32) {
-            devices
+        ZStack {
+            if isLandscape {
+                gridList
+            } else {
+                scrollList
+            }
         }
-        .padding(20)
+    }
+    
+    var scrollList: some View {
+        ScrollView(.horizontal) {
+            HStack(spacing: 18) {
+                devices
+            }
+            .padding(.horizontal, 30)
+        }
+        .padding(idiom == .phone ? 0 : 20)
+    }
+    
+    var gridList: some View {
+        ScrollView {
+            LazyVGrid(columns: columns, spacing: 32) {
+                devices
+            }
+            .padding(.vertical, 16)
+        }
     }
     
     var networkPrompts: some View {
         NetworkPrompts(selectedNetwork: $viewModel.selectedNetwork)
+            .padding(.top, 10)
             .onChange(of: viewModel.selectedNetwork) {
                 viewModel.restartParticipantDiscovery()
             }
@@ -193,24 +228,26 @@ struct PeerDiscoveryView: View {
                 handleAutoSelection()
             }
         }
+        .padding(idiom == .phone ? 0 : 8)
     }
     
     var instructions: some View {
         InstructionPrompt(networkType: viewModel.selectedNetwork)
-            .padding(.bottom, 150)
+            .padding(.vertical, 10)
     }
     
-    var bottomButtons: some View {
+    var bottomButton: some View {
         Button(action: {
             viewModel.showSummary()
         }) {
             FilledButton(title: "continue")
-                .padding(40)
         }
+        .padding(.horizontal, 40)
+        .padding(.top, 20)
+        .padding(.bottom, 10)
         .disabled(viewModel.selections.count < 2)
         .opacity(viewModel.selections.count < 2 ? 0.8 : 1)
         .background(Color.backgroundBlue.opacity(0.95))
-        .edgesIgnoringSafeArea(.bottom)
     }
     
     var keygenView: some View {
@@ -238,6 +275,10 @@ struct PeerDiscoveryView: View {
         Text(viewModel.vaultDetail)
             .font(.body15MenloBold)
             .multilineTextAlignment(.center)
+    }
+    
+    private func setData() {
+        isLandscape = (orientation == .landscapeLeft || orientation == .landscapeRight) && idiom == .pad
     }
     
     private func handleSelection(_ peer: String) {

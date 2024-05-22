@@ -11,11 +11,23 @@ struct PeerCell: View {
     let id: String
     let isSelected: Bool
     
+    @State var isPhone: Bool = false
+    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+    
     var body: some View {
         ZStack(alignment: .topTrailing) {
             cell
             check
         }
+        .scaleEffect(isPhone ? 0.7 : 1)
+        .clipped()
+        .onAppear {
+            setData()
+        }
+        .frame(
+            width: isPhone ? 100 : 150,
+            height: isPhone ? 140 : 200
+        )
     }
     
     var cell: some View {
@@ -25,7 +37,10 @@ struct PeerCell: View {
             description
         }
         .padding(16)
-        .frame(width: 150, height: 200)
+        .frame(
+            width: 150,
+            height: 200
+        )
         .background(Color.blue600)
         .cornerRadius(10)
         .overlay (
@@ -94,6 +109,10 @@ struct PeerCell: View {
                 .resizable()
                 .frame(width: 100, height: 67)
         }
+    }
+    
+    private func setData() {
+        isPhone = idiom == .phone
     }
 }
 

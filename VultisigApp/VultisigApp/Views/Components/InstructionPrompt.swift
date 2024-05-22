@@ -27,7 +27,7 @@ struct InstructionPrompt: View {
             Text(networkType.getInstruction())
                 .font(.body10Menlo)
                 .foregroundColor(.neutral0)
-                .frame(maxWidth: 250)
+                .frame(maxWidth: 350)
                 .multilineTextAlignment(.center)
         }
     }
