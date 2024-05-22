@@ -138,16 +138,17 @@ public final class Mediator {
         guard let participantID = req.params[":participantKey"] else {
             return HttpResponse.badRequest(.text("participantKey is empty"))
         }
-        let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
-        let cleanParticipantKey = participantID.trimmingCharacters(in: .whitespacesAndNewlines)
-        let messageID = req.headers["message_id"]
-        // make sure the keyprefix endwith `-` so it doesn't clash with the participant key
-        var keyPrefix = "\(cleanSessionID)-\(cleanParticipantKey)-"
-        if let messageID {
-            keyPrefix = "\(cleanSessionID)-\(cleanParticipantKey)-\(messageID)-"
-        }
-        let encoder = JSONEncoder()
         do {
+            let cleanSessionID = sessionID.trimmingCharacters(in: .whitespacesAndNewlines)
+            let cleanParticipantKey = participantID.trimmingCharacters(in: .whitespacesAndNewlines)
+            let messageID = req.headers["message_id"]
+            // make sure the keyprefix endwith `-` so it doesn't clash with the participant key
+            var keyPrefix = "\(cleanSessionID)-\(cleanParticipantKey)-"
+            if let messageID {
+                keyPrefix = "\(cleanSessionID)-\(cleanParticipantKey)-\(messageID)-"
+            }
+            let encoder = JSONEncoder()
+            
             // get all the messages
             let messages = try self.cache.allKeys.filter{
                 $0.hasPrefix(keyPrefix)
