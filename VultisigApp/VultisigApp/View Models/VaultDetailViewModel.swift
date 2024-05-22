@@ -53,7 +53,7 @@ class VaultDetailViewModel: ObservableObject {
                 if attempts >= retries {
                     throw error
                 }
-                await Task.sleep(UInt64(delay * 1_000_000_000)) // Sleep for the specified delay
+                try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000)) // Sleep for the specified delay
             }
         }
         

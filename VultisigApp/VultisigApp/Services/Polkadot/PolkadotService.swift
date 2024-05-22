@@ -41,7 +41,7 @@ class PolkadotService: RpcService {
                 print("PolkadotService > fetchBalance > Error > atempt \(attempts): \(error)")
                 attempts += 1
                 if attempts < maxAttempts {
-                    await Task.sleep(retryDelay)
+                    try await Task.sleep(nanoseconds: retryDelay)
                 } else {
                     return BigInt.zero
                 }
