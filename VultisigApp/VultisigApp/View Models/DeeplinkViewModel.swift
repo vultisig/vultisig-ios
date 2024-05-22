@@ -19,11 +19,14 @@ class DeeplinkViewModel: ObservableObject {
     @Published var selectedVault: Vault? = nil
     @Published var tssType: TssType? = nil
     @Published var jsonData: String? = nil
+    @Published var receivedUrl: URL? = nil
     @Published var viewID = UUID()
     
     func extractParameters(_ url: URL, vaults: [Vault]) {
         resetData()
         viewID = UUID()
+        
+        receivedUrl = url
         
         let queryItems = URLComponents(string: url.absoluteString)?.queryItems
         
@@ -38,6 +41,9 @@ class DeeplinkViewModel: ObservableObject {
         //Vault
         let vaultPubKey = queryItems?.first(where: { $0.name == "vault" })?.value
         selectedVault = getVault(for: vaultPubKey, vaults: vaults)
+        
+        //JsonData
+        jsonData = queryItems?.first(where: { $0.name == "jsonData" })?.value
     }
     
     static func getJsonData(_ url: URL?) -> String? {
@@ -51,8 +57,10 @@ class DeeplinkViewModel: ObservableObject {
     
     func resetData() {
         type = nil
-        tssType = nil
         selectedVault = nil
+        tssType = nil
+        jsonData = nil
+        receivedUrl = nil
     }
     
     private func getFlowType(_ type: String?) -> DeeplinkFlowType {
