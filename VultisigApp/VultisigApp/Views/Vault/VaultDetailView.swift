@@ -90,12 +90,13 @@ struct VaultDetailView: View {
     }
     
     var balanceContent: some View {
-        Text(totalBalance.formatToFiat())
+        Text(viewModel.totalBalanceInFiat.formatToFiat(includeCurrencySymbol: true))
             .font(.body16MenloBold)
             .foregroundColor(.neutral0)
-            .redacted(reason: totalUpdateCount>=viewModel.coinsGroupedByChains.count ? [] : .placeholder)
+            .redacted(reason: totalUpdateCount >= viewModel.coinsGroupedByChains.count ? [] : .placeholder)
             .padding(.top, 30)
     }
+
     
     var chainList: some View {
         ForEach(viewModel.coinsGroupedByChains, id: \.id) { group in
@@ -168,6 +169,10 @@ struct VaultDetailView: View {
         resetTotal()
         viewModel.fetchCoins(for: vault)
         setOrder()
+        
+        Task{
+            await viewModel.getTotalUpdatedBalance()
+        }
     }
     
     private func resetTotal() {
