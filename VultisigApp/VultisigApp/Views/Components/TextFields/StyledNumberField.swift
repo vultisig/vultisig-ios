@@ -25,6 +25,7 @@ struct StyledIntegerField<Value: BinaryInteger & Codable>: View {
                 .padding(12)
                 .background(Color.blue600)
                 .cornerRadius(12)
+                .keyboardType(.numberPad) // Set the keyboard type to number pad
         }
     }
     

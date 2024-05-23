@@ -13,7 +13,7 @@ class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
     @Published var amount: Double = 0.0
     @Published var nodeAddress: String = ""
     @Published var provider: String = ""
-    @Published var fee: Double = 0.0
+    @Published var fee: Int64 = .zero
 
     var addressFields: [String: String] {
         get {
@@ -35,7 +35,7 @@ class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
 
     required init() {}
 
-    init(nodeAddress: String, provider: String = "", fee: Double = 0.0) {
+    init(nodeAddress: String, provider: String = "", fee: Int64 = .zero) {
         self.nodeAddress = nodeAddress
         self.provider = provider
         self.fee = fee
@@ -50,7 +50,7 @@ class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
         if !self.provider.isEmpty {
             memo += ":\(self.provider)"
         }
-        if self.fee != 0.0 {
+        if self.fee != .zero {
             if self.provider.isEmpty {
                 memo += "::\(self.fee)"
             } else {
@@ -77,7 +77,7 @@ class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
             ), format: .number)
             TransactionMemoAddressTextField(memo: self, addressKey: "nodeAddress")
             TransactionMemoAddressTextField(memo: self, addressKey: "provider")
-            StyledFloatingPointField(placeholder: "Fee", value: Binding(
+            StyledIntegerField(placeholder: "Operator's Fee", value: Binding(
                 get: { self.fee },
                 set: { self.fee = $0 }
             ), format: .number)
