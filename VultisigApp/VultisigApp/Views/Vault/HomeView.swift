@@ -21,6 +21,7 @@ struct HomeView: View {
     @State var isEditingChains = false
     @State var showMenu = false
     @State var shouldJoinKeygen = false
+    @State var shouldKeysignTransaction = false
     
     var body: some View {
         ZStack {
@@ -61,6 +62,11 @@ struct HomeView: View {
         }
         .navigationDestination(isPresented: $shouldJoinKeygen) {
             JoinKeygenView(vault: Vault(name: "Main Vault"), shouldJoinKeygen: shouldJoinKeygen)
+        }
+        .navigationDestination(isPresented: $shouldKeysignTransaction) {
+            if let vault = viewModel.selectedVault {
+                JoinKeysignView(vault: vault, shouldKeysignTransaction: shouldKeysignTransaction)
+            }
         }
     }
     
@@ -120,6 +126,7 @@ struct HomeView: View {
     
     private func setData() {
         shouldJoinKeygen = false
+        shouldKeysignTransaction = false
         
         if let vault = selectedVault {
             viewModel.setSelectedVault(vault)
@@ -157,6 +164,10 @@ struct HomeView: View {
         
         viewModel.setSelectedVault(vault)
         showVaultsList = false
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            shouldKeysignTransaction = true
+        }
     }
     
     private func switchView() {

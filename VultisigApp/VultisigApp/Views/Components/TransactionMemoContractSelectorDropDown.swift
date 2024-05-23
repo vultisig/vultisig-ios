@@ -42,7 +42,7 @@ struct TransactionMemoContractSelectorDropDown: View {
     
     var cell: some View {
         HStack(spacing: 12) {
-            Text(selected.rawValue.toFormattedTitleCase())
+            Text(selected.description)
             Spacer()
             
             if isActive {
@@ -70,7 +70,7 @@ struct TransactionMemoContractSelectorDropDown: View {
     
     private func getCell(for item: TransactionMemoContractType) -> some View {
         HStack(spacing: 12) {
-            Text(item.rawValue.toFormattedTitleCase())
+            Text(item.description)
                 .font(.body16Menlo)
                 .foregroundColor(.neutral0)
             
