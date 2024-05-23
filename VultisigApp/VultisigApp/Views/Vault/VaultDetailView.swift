@@ -114,7 +114,6 @@ struct VaultDetailView: View {
         HStack {
             chooseChainButton
             Spacer()
-            settingsButton
         }
         .padding(16)
         .padding(.bottom, 150)
@@ -132,15 +131,6 @@ struct VaultDetailView: View {
         }
         .font(.body16MenloBold)
         .foregroundColor(.turquoise600)
-    }
-    
-    var settingsButton: some View {
-        NavigationLink {
-            EditVaultView(vault: vault)
-        } label: {
-            NavigationSettingButton(tint: .turquoise600)
-        }
-        .frame(width: 30, height: 30)
     }
        
     var scanButton: some View {
