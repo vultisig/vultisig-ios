@@ -19,7 +19,7 @@ class BalanceService {
     private let maya = MayachainService.shared
     private let dot = PolkadotService.shared
     
-    private var balanceCache = ThreadSafeDictionary<String, (data: (rawBalance: String, priceRate: Double, coinBalance: String, balanceFiat: String, balanceInFiatDecimal: Decimal), timestamp: Date)>()
+    private var balanceCache = ThreadSafeDictionary<String, (data: BalanceCachedData, timestamp: Date)>()
     
     func balance(for coin: Coin) async throws -> (coinBalance: String, balanceFiat: String, balanceInFiatDecimal: Decimal) {
         
@@ -79,7 +79,13 @@ class BalanceService {
         let coinBalance = coin.balanceString
         let balanceInFiatDecimal = coin.balanceInFiatDecimal
         
-        let balanceData = (coin.rawBalance, coin.priceRate, coinBalance, balanceFiat, balanceInFiatDecimal)
+        let balanceData = BalanceCachedData(
+            rawBalance: coin.rawBalance,
+            priceRate: coin.priceRate,
+            coinBalance: coinBalance,
+            balanceFiat: balanceFiat,
+            balanceInFiatDecimal: balanceInFiatDecimal
+        )
         
         balanceCache.set(cacheKey, (data: balanceData, timestamp: Date()))
         
