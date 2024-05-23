@@ -13,6 +13,7 @@ struct ChainNavigationCell: View {
     @Binding var isEditingChains: Bool
     @Binding var totalBalance: Decimal
     @Binding var totalUpdateCount: Int
+    @ObservedObject var sendTx: SendTransaction
     
     @State var balanceInFiat: String? = nil
     @State var balanceInDecimal: Decimal? = nil
@@ -39,7 +40,7 @@ struct ChainNavigationCell: View {
     
     var navigationCell: some View {
         NavigationLink {
-            ChainDetailView(group: group, vault: vault, balanceInFiat: balanceInFiat)
+            ChainDetailView(group: group, vault: vault, sendTx: sendTx, balanceInFiat: balanceInFiat)
         } label: {
             ChainCell(group: group, balanceInFiat: $balanceInFiat, isEditingChains: $isEditingChains, balanceInDecimal: $balanceInDecimal)
         }
@@ -60,7 +61,8 @@ struct ChainNavigationCell: View {
         group: GroupedChain.example,
         vault: Vault.example,
         isEditingChains: .constant(true), totalBalance: .constant(0),
-        totalUpdateCount: .constant(0)
+        totalUpdateCount: .constant(0),
+        sendTx: SendTransaction()
     )
     .environmentObject(VaultDetailViewModel())
 }

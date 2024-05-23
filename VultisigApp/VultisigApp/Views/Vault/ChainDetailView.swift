@@ -3,12 +3,13 @@ import SwiftUI
 struct ChainDetailView: View {
     let group: GroupedChain
     let vault: Vault
+    @ObservedObject var sendTx: SendTransaction
+    
     @State var balanceInFiat: String?
     
     @State var showSheet = false
     @State var tokens: [Coin] = []
     @State var isLoading = false
-    @StateObject var sendTx = SendTransaction()
     @State var coinViewModels: [String: CoinViewModel] = [:]
     
     @EnvironmentObject var viewModel: TokenSelectionViewModel
@@ -175,6 +176,6 @@ struct ChainDetailView: View {
 }
 
 #Preview {
-    ChainDetailView(group: GroupedChain.example, vault: Vault.example, balanceInFiat: "$65,899")
+    ChainDetailView(group: GroupedChain.example, vault: Vault.example, sendTx: SendTransaction(), balanceInFiat: "$65,899")
         .environmentObject(TokenSelectionViewModel())
 }

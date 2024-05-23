@@ -199,3 +199,6 @@
 "uploadFromGallery" = "Upload from Gallery";
 "goToHomeView" = "Go to Home View";
 "sameDeviceShareError" = "Same vault share, use a different device.";
+"errorFetchingVault" = "Error with fetching the vault.";
+"vaultSettings" = "Vault Settings";
+"mainVault" = "Main Vault";
