@@ -23,8 +23,6 @@ class Coin: ObservableObject, Codable, Hashable {
     var rawBalance: String = ""
     var priceRate: Double = 0
 
-    @Relationship var vault: Vault?
-
     init(
         chain: Chain,
         ticker: String,
@@ -85,6 +83,7 @@ class Coin: ObservableObject, Codable, Hashable {
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
         try container.encode(chain, forKey: .chain)
         try container.encode(ticker, forKey: .ticker)
         try container.encode(logo, forKey: .logo)
@@ -122,16 +121,13 @@ class Coin: ObservableObject, Codable, Hashable {
     }
     
     func hash(into hasher: inout Hasher) {
-        hasher.combine(ticker)
-        hasher.combine(address)
-        hasher.combine(chain.name)
+        hasher.combine(id)
     }
     
     static func == (lhs: Coin, rhs: Coin) -> Bool {
-        return lhs.ticker == rhs.ticker && lhs.address == rhs.address && lhs.chain.name == rhs.chain.name
+        return lhs.id == rhs.id
     }
-    
-    
+
     var balanceDecimal: Decimal {
         let tokenBalance = Decimal(string: rawBalance) ?? 0.0
         let tokenDecimals = Int(decimals) ?? 0
@@ -240,19 +236,20 @@ class Coin: ObservableObject, Codable, Hashable {
 private extension Coin {
 
     enum CodingKeys: String, CodingKey {
-         case chain
-         case ticker
-         case logo
-         case chainType
-         case decimals
-         case feeUnit
-         case feeDefault
-         case priceProviderId
-         case contractAddress
-         case isNativeToken
-         case hexPublicKey
-         case address
-         case rawBalance
-         case priceRate
-     }
+        case id
+        case chain
+        case ticker
+        case logo
+        case chainType
+        case decimals
+        case feeUnit
+        case feeDefault
+        case priceProviderId
+        case contractAddress
+        case isNativeToken
+        case hexPublicKey
+        case address
+        case rawBalance
+        case priceRate
+    }
 }
