@@ -118,12 +118,10 @@ struct ChainDetailView: View {
     private func getCoinCell(_ coin: Coin) -> some View {
         VStack(spacing: 0) {
             Separator()
-            if let viewModel = coinViewModels[coin.ticker] {
-                NavigationLink {
-                    CoinDetailView(coin: coin, group: group, vault: vault, viewModel: viewModel, sendTx: sendTx)
-                } label: {
-                    CoinCell(coin: coin, group: group, vault: vault, coinViewModel: viewModel)
-                }
+            NavigationLink {
+                CoinDetailView(coin: coin, group: group, vault: vault, sendTx: sendTx)
+            } label: {
+                CoinCell(coin: coin, group: group, vault: vault)
             }
         }
     }
@@ -132,8 +130,6 @@ struct ChainDetailView: View {
         viewModel.setData(for: vault)
         tokens = viewModel.groupedAssets[group.name] ?? []
         tokens.removeFirst()
-        initializeViewModels()
-        await calculateTotalBalanceInFiat()
         
         if let coin = group.coins.first {
             sendTx.reset(coin: coin)
