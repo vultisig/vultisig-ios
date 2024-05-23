@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @Binding var showMenu: Bool
+    @ObservedObject var homeViewModel: HomeViewModel
     
     @EnvironmentObject var settingsViewModel: SettingsViewModel
     
@@ -41,6 +42,7 @@ struct SettingsView: View {
     
     var mainSection: some View {
         VStack(spacing: 16) {
+            vaultSettingsCell
             languageSelectionCell
             currencySelectionCell
             faqCell
@@ -51,6 +53,18 @@ struct SettingsView: View {
         VStack(spacing: 16) {
             getTitle("other")
             shareAppCell
+        }
+    }
+    
+    var vaultSettingsCell: some View {
+        NavigationLink {
+            if let vault = homeViewModel.selectedVault {
+                EditVaultView(vault: vault)
+            } else {
+                ErrorMessage(text: "errorFetchingVault")
+            }
+        } label: {
+            SettingCell(title: "vaultSettings", icon: "gear")
         }
     }
     
@@ -133,6 +147,6 @@ struct SettingsView: View {
 }
 
 #Preview {
-    SettingsView(showMenu: .constant(true))
+    SettingsView(showMenu: .constant(true), homeViewModel: HomeViewModel())
         .environmentObject(SettingsViewModel())
 }

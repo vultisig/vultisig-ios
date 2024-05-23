@@ -27,7 +27,7 @@ struct HomeView: View {
             Background()
             
             if showMenu {
-                SettingsView(showMenu: $showMenu)
+                SettingsView(showMenu: $showMenu, homeViewModel: viewModel)
             } else {
                 view
             }
