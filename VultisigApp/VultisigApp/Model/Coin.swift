@@ -56,16 +56,18 @@ class Coin: ObservableObject, Codable, Hashable {
         self.isNativeToken = isNativeToken
         self.feeDefault = feeDefault
 
-        self.id = "\(chain.rawValue)-\(ticker)"
+        self.id = "\(chain.rawValue)-\(ticker)-\(address)"
     }
 
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let chain = try container.decode(Chain.self, forKey: .chain)
         let ticker = try container.decode(String.self, forKey: .ticker)
+        let address = try container.decodeIfPresent(String.self, forKey: .address) ?? ""
 
         self.chain = chain
         self.ticker = ticker
+        self.address = address
         self.logo = try container.decode(String.self, forKey: .logo)
         self.chainType = try container.decode(ChainType.self, forKey: .chainType)
         self.decimals = try container.decode(String.self, forKey: .decimals)
@@ -75,11 +77,10 @@ class Coin: ObservableObject, Codable, Hashable {
         self.contractAddress = try container.decode(String.self, forKey: .contractAddress)
         self.isNativeToken = try container.decode(Bool.self, forKey: .isNativeToken)
         self.hexPublicKey = try container.decodeIfPresent(String.self, forKey: .hexPublicKey) ?? ""
-        self.address = try container.decodeIfPresent(String.self, forKey: .address) ?? ""
         self.rawBalance = try container.decodeIfPresent(String.self, forKey: .rawBalance) ?? ""
         self.priceRate = try container.decodeIfPresent(Double.self, forKey: .priceRate) ?? 0
 
-        self.id = "\(chain.rawValue)-\(ticker)"
+        self.id = "\(chain.rawValue)-\(ticker)-\(address)"
     }
 
     func encode(to encoder: Encoder) throws {
