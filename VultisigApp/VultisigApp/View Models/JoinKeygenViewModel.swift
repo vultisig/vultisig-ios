@@ -41,6 +41,7 @@ class JoinKeygenViewModel: ObservableObject {
     @Published var serviceName = ""
     @Published var errorMessage = ""
     @Published var serverAddress: String? = nil
+    @Published var oldResharePrefix: String = ""
     var encryptionKeyHex: String = ""
     var vaults: [Vault] = []
     
@@ -186,6 +187,7 @@ class JoinKeygenViewModel: ObservableObject {
                 serviceName = reshareMsg.serviceName
                 encryptionKeyHex = reshareMsg.encryptionKeyHex
                 useVultisigRelay = reshareMsg.useVultisigRelay
+                oldResharePrefix = reshareMsg.oldResharePrefix
                 // this means the vault is new , and it join the reshare to become the new committee
                 if vault.pubKeyECDSA.isEmpty {
                     if !reshareMsg.pubKeyECDSA.isEmpty {
@@ -222,5 +224,17 @@ class JoinKeygenViewModel: ObservableObject {
     
     func handleQrCodeFromImage(result: Result<[URL], Error>) {
         handleQrCodeSuccessResult(scanData: Utils.handleQrCodeFromImage(result: result))
+    }
+    
+    func handleDeeplinkScan(_ url: URL?) {
+        guard let url else {
+            return
+        }
+        
+        guard let json = DeeplinkViewModel.getJsonData(url), let jsonData = json.data(using: .utf8) else {
+            status = .FailToStart
+            return
+        }
+        handleQrCodeSuccessResult(scanData: jsonData)
     }
 }

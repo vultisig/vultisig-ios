@@ -32,9 +32,7 @@ struct SetupVaultView: View {
             }
         }
         .onAppear {
-            if vault == nil {
-                vault = Vault(name: "Vault #\(vaults.count + 1)")
-            }
+            setData()
         }
     }
     
@@ -49,7 +47,6 @@ struct SetupVaultView: View {
     
     var image: some View {
         SetupVaultTabView(selectedTab: $selectedTab)
-//            .padding(.top, 30)
     }
     
     var messageModal: some View {
@@ -92,8 +89,15 @@ struct SetupVaultView: View {
             OutlineButton(title: "pair")
         }
     }
+    
+    private func setData() {
+        if vault == nil {
+            vault = Vault(name: "Vault #\(vaults.count + 1)")
+        }
+    }
 }
 
 #Preview {
     SetupVaultView(tssType: .Keygen)
+        .environmentObject(DeeplinkViewModel())
 }
