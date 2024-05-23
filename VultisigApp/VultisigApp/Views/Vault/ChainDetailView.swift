@@ -7,7 +7,6 @@ struct ChainDetailView: View {
     
     @State var showSheet = false
     @State var tokens: [Coin] = []
-    @State var actions: [CoinAction] = []
     @State var isLoading = false
     @StateObject var sendTx = SendTransaction()
     @State var coinViewModels: [String: CoinViewModel] = [:]
@@ -61,13 +60,11 @@ struct ChainDetailView: View {
         .onAppear {
             Task {
                 await setData()
-                initializeViewModels()
             }
         }
         .onChange(of: vault) {
             Task {
                 await setData()
-                initializeViewModels()
             }
         }
     }
@@ -92,41 +89,7 @@ struct ChainDetailView: View {
     }
     
     var actionButtons: some View {
-        HStack(spacing: 12) {
-            ForEach(actions, id: \.rawValue) { action in
-                switch action {
-                case .send:
-                    sendButton
-                case .swap:
-                    swapButton
-                case .deposit, .bridge:
-                    ActionButton(title: action.title, fontColor: action.color)
-                }
-            }
-        }
-        .frame(height: 28)
-    }
-    
-    var sendButton: some View {
-        NavigationLink {
-            SendCryptoView(
-                tx: sendTx,
-                group: group,
-                vault: vault
-            )
-        } label: {
-            ActionButton(title: "send", fontColor: .turquoise600)
-        }
-    }
-    
-    var swapButton: some View {
-        NavigationLink {
-            if let coin = group.coins.first {
-                SwapCryptoView(coin: coin, coins: viewModel.allCoins, vault: vault)
-            }
-        } label: {
-            ActionButton(title: "swap", fontColor: .persianBlue200)
-        }
+        ChainDetailActionButtons(group: group, vault: vault, sendTx: sendTx)
     }
     
     var content: some View {
@@ -143,12 +106,7 @@ struct ChainDetailView: View {
     
     var cells: some View {
         ForEach(group.coins, id: \.self) { coin in
-            VStack(spacing: 0) {
-                Separator()
-                if let viewModel = coinViewModels[coin.ticker] {
-                    CoinCell(coin: coin, group: group, vault: vault, coinViewModel: viewModel)
-                }
-            }
+            getCoinCell(coin)
         }
     }
     
@@ -170,12 +128,25 @@ struct ChainDetailView: View {
         .foregroundColor(.turquoise600)
     }
     
+    private func getCoinCell(_ coin: Coin) -> some View {
+        VStack(spacing: 0) {
+            Separator()
+            if let viewModel = coinViewModels[coin.ticker] {
+                NavigationLink {
+                    CoinDetailView(coin: coin, group: group, vault: vault, viewModel: viewModel, sendTx: sendTx)
+                } label: {
+                    CoinCell(coin: coin, group: group, vault: vault, coinViewModel: viewModel)
+                }
+            }
+        }
+    }
+    
     private func setData() async {
         viewModel.setData(for: vault)
         tokens = viewModel.groupedAssets[group.name] ?? []
         tokens.removeFirst()
-        
-        actions = await viewModel.actionResolver.resolveActions(for: group.chain)
+        initializeViewModels()
+        await calculateTotalBalanceInFiat()
         
         if let coin = group.coins.first {
             sendTx.reset(coin: coin)

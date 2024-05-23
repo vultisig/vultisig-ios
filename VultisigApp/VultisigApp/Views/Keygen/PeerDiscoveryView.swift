@@ -171,10 +171,7 @@ struct PeerDiscoveryView: View {
                 .padding()
                 .frame(maxHeight: .infinity)
                 .frame(maxWidth: 512)
-            
-            Text(NSLocalizedString("scanQrCode", comment: "Scan QR Code"))
-                .font(.body13Menlo)
-                .multilineTextAlignment(.center)
+                .padding(5)
         }
         .cornerRadius(10)
         .shadow(radius: 5)
@@ -211,7 +208,7 @@ struct PeerDiscoveryView: View {
     
     var networkPrompts: some View {
         NetworkPrompts(selectedNetwork: $viewModel.selectedNetwork)
-            .padding(.top, 10)
+            .padding(.top, idiom == .pad ? 10 : 0)
             .onChange(of: viewModel.selectedNetwork) {
                 viewModel.restartParticipantDiscovery()
             }
