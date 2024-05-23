@@ -17,7 +17,7 @@ enum Field: Int, Hashable {
 struct SendCryptoDetailsView: View {
     @ObservedObject var tx: SendTransaction
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
-    let group: GroupedChain
+    let vault: Vault
     
     @State var amount = ""
     @State var nativeTokenBalance = ""
@@ -81,7 +81,7 @@ struct SendCryptoDetailsView: View {
     }
     
     var coinSelector: some View {
-        TokenSelectorDropdown(coins: .constant(group.coins), selected: $tx.coin)
+        TokenSelectorDropdown(coins: .constant(vault.coins), selected: $tx.coin)
     }
     
     var fromField: some View {
@@ -208,6 +208,6 @@ struct SendCryptoDetailsView: View {
     SendCryptoDetailsView(
         tx: SendTransaction(),
         sendCryptoViewModel: SendCryptoViewModel(),
-        group: GroupedChain.example
+        vault: Vault.example
     )
 }

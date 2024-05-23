@@ -201,3 +201,4 @@
 "sameDeviceShareError" = "Same vault share, use a different device.";
 "errorFetchingVault" = "Error with fetching the vault.";
 "vaultSettings" = "Vault Settings";
+"mainVault" = "Main Vault";

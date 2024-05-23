@@ -49,7 +49,7 @@ struct NewWalletNameView: View {
     }
     
     var textfield: some View {
-        TextField(NSLocalizedString("typeHere", comment: "").capitalized, text: $name)
+        TextField(NSLocalizedString("mainVault", comment: "").capitalized, text: $name)
             .font(.body16Menlo)
             .foregroundColor(.neutral0)
             .submitLabel(.done)

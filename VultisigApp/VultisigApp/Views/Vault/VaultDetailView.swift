@@ -20,6 +20,8 @@ struct VaultDetailView: View {
     @State var totalBalance: Decimal = 0
     @State var totalUpdateCount: Int = 0
     
+    @StateObject var sendTx = SendTransaction()
+    
     var body: some View {
         ZStack(alignment: .bottom) {
             Background()
@@ -51,6 +53,11 @@ struct VaultDetailView: View {
         ScrollView {
             if viewModel.coinsGroupedByChains.count>=1 {
                 balanceContent
+                
+                if let group = viewModel.coinsGroupedByChains.first {
+                    getActions(group)
+                }
+                
                 list
             } else {
                 emptyList
@@ -72,7 +79,8 @@ struct VaultDetailView: View {
                     vault: vault,
                     isEditingChains: $isEditingChains,
                     totalBalance: $totalBalance,
-                    totalUpdateCount: $totalUpdateCount
+                    totalUpdateCount: $totalUpdateCount, 
+                    sendTx: sendTx
                 )
             }
             .onMove(perform: isEditingChains ? move : nil)
@@ -97,6 +105,11 @@ struct VaultDetailView: View {
             .padding(.top, 10)
     }
 
+    private func getActions(_ group: GroupedChain) -> some View {
+        ChainDetailActionButtons(group: group, vault: vault, sendTx: sendTx)
+            .padding(16)
+            .padding(.horizontal, 12)
+    }
     
     var chainList: some View {
         ForEach(viewModel.coinsGroupedByChains, id: \.id) { group in
@@ -105,7 +118,8 @@ struct VaultDetailView: View {
                 vault: vault, 
                 isEditingChains: $isEditingChains,
                 totalBalance: $totalBalance,
-                totalUpdateCount: $totalUpdateCount
+                totalUpdateCount: $totalUpdateCount, 
+                sendTx: sendTx
             )
         }
     }
@@ -159,6 +173,7 @@ struct VaultDetailView: View {
         resetTotal()
         viewModel.fetchCoins(for: vault)
         setOrder()
+        
         
         Task{
             await viewModel.getTotalUpdatedBalance()
