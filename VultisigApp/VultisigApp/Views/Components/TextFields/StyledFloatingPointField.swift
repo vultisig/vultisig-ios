@@ -26,6 +26,7 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
                 .padding(12)
                 .background(Color.blue600)
                 .cornerRadius(12)
+                .keyboardType(.decimalPad)
         }
     }
     
