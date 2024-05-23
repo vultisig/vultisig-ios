@@ -1,4 +1,4 @@
-app_identifier("com.voltix.wallet") # The bundle identifier of your app
+app_identifier("com.vultisig.wallet") # The bundle identifier of your app
 
 itc_team_id("126546604") # App Store Connect Team ID
 team_id("G8Q5XUAJD9") # Developer Portal Team ID

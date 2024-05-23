@@ -118,3 +118,20 @@ extension String {
         return valueBigInt
     }
 }
+
+extension String {
+    func toFormattedTitleCase() -> String {
+        let formattedString = self
+            .enumerated()
+            .map { index, character in
+                if index > 0 && character.isUppercase {
+                    return " \(character)"
+                } else {
+                    return String(character)
+                }
+            }
+            .joined()
+            .capitalized
+        return formattedString
+    }
+}
