@@ -91,10 +91,10 @@ struct VaultDetailView: View {
     
     var balanceContent: some View {
         Text(viewModel.totalBalanceInFiat.formatToFiat(includeCurrencySymbol: true))
-            .font(.body16MenloBold)
+            .font(.title32MenloBold)
             .foregroundColor(.neutral0)
             .redacted(reason: totalUpdateCount >= viewModel.coinsGroupedByChains.count ? [] : .placeholder)
-            .padding(.top, 30)
+            .padding(.top, 10)
     }
 
     
