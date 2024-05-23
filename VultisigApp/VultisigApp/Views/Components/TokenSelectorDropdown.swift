@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct TokenSelectorDropdown: View {
-
     @Binding var coins: [Coin]
     @Binding var selected: Coin
 
