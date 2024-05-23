@@ -19,7 +19,6 @@ struct VaultDetailView: View {
     @State var showSheet = false
     @State var totalBalance: Decimal = 0
     @State var totalUpdateCount: Int = 0
-    @State var isEnabled = false
     
     @StateObject var sendTx = SendTransaction()
     
@@ -102,19 +101,14 @@ struct VaultDetailView: View {
         Text(viewModel.totalBalanceInFiat.formatToFiat(includeCurrencySymbol: true))
             .font(.title32MenloBold)
             .foregroundColor(.neutral0)
-            .redacted(reason: isEnabled ? [] : .placeholder)
+            .redacted(reason: totalUpdateCount >= viewModel.coinsGroupedByChains.count ? [] : .placeholder)
             .padding(.top, 10)
-            .onChange(of: totalUpdateCount, { oldValue, newValue in
-                isEnabled = totalUpdateCount >= viewModel.coinsGroupedByChains.count
-            })
     }
 
     private func getActions(_ group: GroupedChain) -> some View {
         ChainDetailActionButtons(group: group, vault: vault, sendTx: sendTx)
             .padding(16)
             .padding(.horizontal, 12)
-            .disabled(!isEnabled)
-            .grayscale(isEnabled ? 0 : 1)
     }
     
     var chainList: some View {

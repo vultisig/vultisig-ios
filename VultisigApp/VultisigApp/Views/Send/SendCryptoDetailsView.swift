@@ -21,6 +21,7 @@ struct SendCryptoDetailsView: View {
     
     @State var amount = ""
     @State var nativeTokenBalance = ""
+    @State var coinBalance: String? = nil
     
     @FocusState private var focusedField: Field?
     
@@ -40,6 +41,12 @@ struct SendCryptoDetailsView: View {
                     Text(NSLocalizedString("done", comment: "Done"))
                 }
             }
+        }
+        .onAppear {
+            setData()
+        }
+        .onChange(of: tx.coin) { oldValue, newValue in
+            setData()
         }
         .alert(isPresented: $sendCryptoViewModel.showAlert) {
             alert
@@ -81,7 +88,11 @@ struct SendCryptoDetailsView: View {
     }
     
     var coinSelector: some View {
-        TokenSelectorDropdown(coins: .constant(vault.coins), selected: $tx.coin)
+        TokenSelectorDropdown(
+            coins: .constant(vault.coins),
+            selected: $tx.coin,
+            balance: coinBalance
+        )
     }
     
     var fromField: some View {
@@ -197,9 +208,23 @@ struct SendCryptoDetailsView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
     
+    private func setData() {
+        Task {
+            await getBalance()
+        }
+    }
+    
     private func validateForm() async {
         if await sendCryptoViewModel.validateForm(tx: tx) {
             sendCryptoViewModel.moveToNextView()
+        }
+    }
+    
+    private func getBalance() async {
+        do {
+            coinBalance = try await BalanceService.shared.balance(for: tx.coin).coinBalance
+        } catch {
+            print(error)
         }
     }
 }
