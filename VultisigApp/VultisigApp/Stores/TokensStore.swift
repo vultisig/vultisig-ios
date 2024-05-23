@@ -36,7 +36,10 @@ class TokensStore {
         Coin(chain: Chain.ethereum, ticker: "LINK", logo: "link", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "chainlink", contractAddress: "0x514910771af9ca656af840dff83e8264ecf986ca", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
         
         Coin(chain: Chain.ethereum, ticker: "FLIP", logo: "flip", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "chainflip", contractAddress: "0x826180541412d574cf1336d22c0c0a287822678a", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
+        
         Coin(chain: Chain.ethereum, ticker: "TGT", logo: "tgt", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "thorwallet", contractAddress: "0x108a850856Db3f85d0269a2693D896B394C80325", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
+        
+        Coin(chain: Chain.ethereum, ticker: "FOX", logo: "fox", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "shapeshift-fox-token", contractAddress: "0xc770eefad204b5180df6a14ee197d99d808ee52d", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
         
         Coin(chain: Chain.solana, ticker: "SOL", logo: "solana", address: "", priceRate: 0.0, chainType: ChainType.Solana, decimals: "9", hexPublicKey: "", feeUnit: "SOL", priceProviderId: "solana", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "7000"),
         
@@ -62,13 +65,19 @@ class TokensStore {
         
         Coin(chain: Chain.arbitrum, ticker: "TGT", logo: "tgt", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "thorwallet", contractAddress: "0x429fEd88f10285E61b12BDF00848315fbDfCC341", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
         
+        Coin(chain: Chain.arbitrum, ticker: "FOX", logo: "fox", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "shapeshift-fox-token", contractAddress: "0xf929de51D91C77E42f5090069E0AD7A09e513c73", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
+        
         Coin(chain: Chain.optimism, ticker: "ETH", logo: "eth_optimism", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "ethereum", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "23000"),
         
         Coin(chain: Chain.optimism, ticker: "OP", logo: "optimism", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "optimism", contractAddress: "0x4200000000000000000000000000000000000042", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
         
+        Coin(chain: Chain.optimism, ticker: "FOX", logo: "fox", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "shapeshift-fox-token", contractAddress: "0xf1a0da3367bc7aa04f8d94ba57b862ff37ced174", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
+        
         Coin(chain: Chain.polygon, ticker: "MATIC", logo: "polygon", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "matic-network", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "23000"),
         
         Coin(chain: Chain.polygon, ticker: "WETH", logo: "wETH", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "ethereum", contractAddress: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
+        
+        Coin(chain: Chain.polygon, ticker: "FOX", logo: "fox", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "shapeshift-fox-token", contractAddress: "0x65a05db8322701724c197af82c9cae41195b0aa8", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
         
         Coin(chain: Chain.blast, ticker: "ETH", logo: "eth_blast", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "ethereum", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "23000"),
         
