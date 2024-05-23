@@ -12,18 +12,7 @@ import Combine
 enum TransactionMemoType: String, CaseIterable, Identifiable {
     case bond,
          unbond,
-         leave,
-         swap,
-         depositSavers,
-         withdrawSavers,
-         openLoan,
-         repayLoan,
-         addLiquidity,
-         withdrawLiquidity,
-         addTradeAccount,
-         withdrawTradeAccount,
-         donateReserve,
-         migrate
+         leave
     
     var id: String { self.rawValue }
 }

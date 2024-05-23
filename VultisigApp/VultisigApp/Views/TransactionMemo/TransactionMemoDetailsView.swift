@@ -41,28 +41,6 @@ struct TransactionMemoDetailsView: View {
                 txMemoInstance = .unbond(TransactionMemoUnbond())
             case .leave:
                 txMemoInstance = .leave(TransactionMemoLeave())
-            case .swap:
-                txMemoInstance = .swap(TransactionMemoSwap())
-            case .depositSavers:
-                txMemoInstance = .depositSavers(TransactionMemoDepositSavers())
-            case .withdrawSavers:
-                txMemoInstance = .withdrawSavers(TransactionMemoWithdrawSavers())
-            case .openLoan:
-                txMemoInstance = .openLoan(TransactionMemoOpenLoan())
-            case .repayLoan:
-                txMemoInstance = .repayLoan(TransactionMemoRepayLoan())
-            case .addLiquidity:
-                txMemoInstance = .addLiquidity(TransactionMemoAddLiquidity())
-            case .withdrawLiquidity:
-                txMemoInstance = .withdrawLiquidity(TransactionMemoWithdrawLiquidity())
-            case .addTradeAccount:
-                txMemoInstance = .addTradeAccount(TransactionMemoAddTradeAccount())
-            case .withdrawTradeAccount:
-                txMemoInstance = .withdrawTradeAccount(TransactionMemoWithdrawTradeAccount())
-            case .donateReserve:
-                txMemoInstance = .donateReserve(TransactionMemoDonateReserve())
-            case .migrate:
-                txMemoInstance = .migrate(TransactionMemoMigrate())
             }
         }
     }

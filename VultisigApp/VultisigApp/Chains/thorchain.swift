@@ -81,7 +81,8 @@ enum THORChainHelper {
         }
         let coin = CoinType.thorchain
         
-        var input: WalletCore.TW_Cosmos_Proto_SigningInput = TW_Cosmos_Proto_SigningInput()
+        var thorChainCoin = TW_Cosmos_Proto_THORChainCoin()
+        var message = [CosmosMessage()]
         
         var isDeposit: Bool = false
         if let memo = keysignPayload.memo, !memo.isEmpty {
@@ -91,7 +92,7 @@ enum THORChainHelper {
         }
         
         if isDeposit {
-            let thorChainCoin = TW_Cosmos_Proto_THORChainCoin.with {
+            thorChainCoin = TW_Cosmos_Proto_THORChainCoin.with {
                 $0.asset = TW_Cosmos_Proto_THORChainAsset.with {
                     $0.chain = "THOR"
                     $0.symbol = "RUNE"
@@ -101,66 +102,48 @@ enum THORChainHelper {
                 $0.amount = String(keysignPayload.toAmount)
                 $0.decimals = 8
             }
-            
-            input = CosmosSigningInput.with {
-                $0.publicKey = pubKeyData
-                $0.signingMode = .protobuf
-                $0.chainID = coin.chainId
-                $0.accountNumber = accountNumber
-                $0.sequence = sequence
-                $0.mode = .sync
-                if let memo = keysignPayload.memo {
-                    $0.memo = memo
+            message = [CosmosMessage.with {
+                $0.thorchainDepositMessage = CosmosMessage.THORChainDeposit.with {
+                    $0.signer = fromAddr.data
+                    $0.memo = keysignPayload.memo ?? ""
+                    $0.coins = [thorChainCoin]
                 }
-                $0.messages = [CosmosMessage.with {
-                    $0.thorchainDepositMessage = CosmosMessage.THORChainDeposit.with {
-                        $0.signer = fromAddr.data
-                        $0.memo = keysignPayload.memo ?? ""
-                        $0.coins = [thorChainCoin]
-                    }
-                }]
-                // THORChain fee is 0.02 RUNE
-                $0.fee = CosmosFee.with {
-                    $0.gas = THORChainGas
-                    $0.amounts = [CosmosAmount.with {
-                        $0.denom = "rune"
-                        $0.amount = "2000000"
-                    }]
-                }
-            }
+            }]
         } else {
             guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .thorchain) else {
                 return .failure(HelperError.runtimeError("\(keysignPayload.toAddress) is invalid"))
             }
             
-            input = CosmosSigningInput.with {
-                $0.publicKey = pubKeyData
-                $0.signingMode = .protobuf
-                $0.chainID = coin.chainId
-                $0.accountNumber = accountNumber
-                $0.sequence = sequence
-                $0.mode = .sync
-                if let memo = keysignPayload.memo {
-                    $0.memo = memo
-                }
-                $0.messages = [CosmosMessage.with {
-                    $0.thorchainSendMessage = CosmosMessage.THORChainSend.with {
-                        $0.fromAddress = fromAddr.data
-                        $0.amounts = [CosmosAmount.with {
-                            $0.denom = "rune"
-                            $0.amount = String(keysignPayload.toAmount)
-                        }]
-                        $0.toAddress = toAddress.data
-                    }
-                }]
-                // THORChain fee is 0.02 RUNE
-                $0.fee = CosmosFee.with {
-                    $0.gas = THORChainGas
+            message = [CosmosMessage.with {
+                $0.thorchainSendMessage = CosmosMessage.THORChainSend.with {
+                    $0.fromAddress = fromAddr.data
                     $0.amounts = [CosmosAmount.with {
                         $0.denom = "rune"
-                        $0.amount = "2000000"
+                        $0.amount = String(keysignPayload.toAmount)
                     }]
+                    $0.toAddress = toAddress.data
                 }
+            }]
+        }
+        
+        let input = CosmosSigningInput.with {
+            $0.publicKey = pubKeyData
+            $0.signingMode = .protobuf
+            $0.chainID = coin.chainId
+            $0.accountNumber = accountNumber
+            $0.sequence = sequence
+            $0.mode = .sync
+            if let memo = keysignPayload.memo {
+                $0.memo = memo
+            }
+            $0.messages = message
+            // THORChain fee is 0.02 RUNE
+            $0.fee = CosmosFee.with {
+                $0.gas = THORChainGas
+                $0.amounts = [CosmosAmount.with {
+                    $0.denom = "rune"
+                    $0.amount = "2000000"
+                }]
             }
         }
         
