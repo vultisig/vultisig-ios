@@ -12,6 +12,9 @@ struct JoinKeysignView: View {
     @StateObject private var serviceDelegate = ServiceDelegate()
     @StateObject var viewModel = JoinKeysignViewModel()
     @State var isGalleryPresented = false
+    @State var shouldKeysignTransaction = false
+    
+    @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     
     let logger = Logger(subsystem: "join-keysign", category: "communication")
 
@@ -35,7 +38,7 @@ struct JoinKeysignView: View {
             codeScanner
         })
         .onAppear {
-            viewModel.setData(vault: vault, serviceDelegate: serviceDelegate)
+            setData()
         }
         .onDisappear(){
             viewModel.stopJoiningKeysign()
@@ -148,8 +151,20 @@ struct JoinKeysignView: View {
         }
         .padding(.bottom, 50)
     }
+    
+    private func setData() {
+        viewModel.setData(vault: vault, serviceDelegate: serviceDelegate)
+        
+        if shouldKeysignTransaction {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                viewModel.isShowingScanner = false
+                viewModel.handleDeeplinkScan(deeplinkViewModel.receivedUrl)
+            }
+        }
+    }
 }
 
 #Preview {
     JoinKeysignView(vault: Vault.example)
+        .environmentObject(DeeplinkViewModel())
 }
