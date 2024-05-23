@@ -82,21 +82,8 @@ struct TransactionMemoDetailsView: View {
     var fromField: some View {
         VStack(spacing: 8) {
             getTitle(for: "from")
-            //            fromTextField
         }
     }
-    
-    //    var fromTextField: some View {
-    //        Text(tx.fromAddress)
-    //            .font(.body12Menlo)
-    //            .foregroundColor(.neutral0)
-    //            .frame(height: 48)
-    //            .frame(maxWidth: .infinity, alignment: .leading)
-    //            .padding(.horizontal, 12)
-    //            .background(Color.blue600)
-    //            .cornerRadius(10)
-    //            .lineLimit(1)
-    //    }
     
     var button: some View {
         Button {
