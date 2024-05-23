@@ -1,10 +1,3 @@
-//
-//  ThreadSafeDictionary.swift
-//  VultisigApp
-//
-//  Created by Johnny Luo on 18/4/2024.
-//
-
 import Foundation
 
 class ThreadSafeDictionary<Key: Hashable, Value> {
@@ -20,6 +13,18 @@ class ThreadSafeDictionary<Key: Hashable, Value> {
     func set(_ key: Key, _ value: Value) {
         queue.async(flags: .barrier) {
             self.dictionary[key] = value
+        }
+    }
+    
+    func allItems() -> [Key: Value] {
+        return queue.sync {
+            return dictionary
+        }
+    }
+    
+    func allKeysInOrder() -> [Key] {
+        return queue.sync {
+            return Array(dictionary.keys)
         }
     }
 }

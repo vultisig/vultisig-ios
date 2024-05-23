@@ -25,8 +25,10 @@ struct ChainDetailActionButtons: View {
                     sendButton
                 case .swap:
                     swapButton
+                case .memo:
+                    memoButton
                 case .deposit, .bridge:
-                    depositButton(action)
+                    ActionButton(title: action.title, fontColor: action.color)
                 }
             }
         }
@@ -35,6 +37,18 @@ struct ChainDetailActionButtons: View {
             Task {
                 await setData()
             }
+        }
+    }
+    
+    var memoButton: some View {
+        NavigationLink {
+            TransactionMemoView(
+                tx: sendTx,
+                group: group,
+                vault: vault
+            )
+        } label: {
+            ActionButton(title: "Deposit", fontColor: .turquoise600)
         }
     }
     

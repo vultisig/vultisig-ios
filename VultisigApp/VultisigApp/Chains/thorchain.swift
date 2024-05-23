@@ -73,9 +73,6 @@ enum THORChainHelper {
             return .failure(HelperError.runtimeError("\(keysignPayload.coin.address) is invalid"))
         }
         
-        guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .thorchain) else {
-            return .failure(HelperError.runtimeError("\(keysignPayload.toAddress) is invalid"))
-        }
         guard case .THORChain(let accountNumber, let sequence) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get account number and sequence"))
         }
@@ -83,6 +80,51 @@ enum THORChainHelper {
             return .failure(HelperError.runtimeError("invalid hex public key"))
         }
         let coin = CoinType.thorchain
+        
+        var thorChainCoin = TW_Cosmos_Proto_THORChainCoin()
+        var message = [CosmosMessage()]
+        
+        var isDeposit: Bool = false
+        if let memo = keysignPayload.memo, !memo.isEmpty {
+            if DepositStore.PREFIXES.contains(where: { memo.hasPrefix($0) }) {
+                isDeposit = true
+            }
+        }
+        
+        if isDeposit {
+            thorChainCoin = TW_Cosmos_Proto_THORChainCoin.with {
+                $0.asset = TW_Cosmos_Proto_THORChainAsset.with {
+                    $0.chain = "THOR"
+                    $0.symbol = "RUNE"
+                    $0.ticker = "RUNE"
+                    $0.synth = false
+                }
+                $0.amount = String(keysignPayload.toAmount)
+                $0.decimals = 8
+            }
+            message = [CosmosMessage.with {
+                $0.thorchainDepositMessage = CosmosMessage.THORChainDeposit.with {
+                    $0.signer = fromAddr.data
+                    $0.memo = keysignPayload.memo ?? ""
+                    $0.coins = [thorChainCoin]
+                }
+            }]
+        } else {
+            guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .thorchain) else {
+                return .failure(HelperError.runtimeError("\(keysignPayload.toAddress) is invalid"))
+            }
+            
+            message = [CosmosMessage.with {
+                $0.thorchainSendMessage = CosmosMessage.THORChainSend.with {
+                    $0.fromAddress = fromAddr.data
+                    $0.amounts = [CosmosAmount.with {
+                        $0.denom = "rune"
+                        $0.amount = String(keysignPayload.toAmount)
+                    }]
+                    $0.toAddress = toAddress.data
+                }
+            }]
+        }
         
         let input = CosmosSigningInput.with {
             $0.publicKey = pubKeyData
@@ -94,16 +136,7 @@ enum THORChainHelper {
             if let memo = keysignPayload.memo {
                 $0.memo = memo
             }
-            $0.messages = [CosmosMessage.with {
-                $0.thorchainSendMessage = CosmosMessage.THORChainSend.with {
-                    $0.fromAddress = fromAddr.data
-                    $0.amounts = [CosmosAmount.with {
-                        $0.denom = "rune"
-                        $0.amount = String(keysignPayload.toAmount)
-                    }]
-                    $0.toAddress = toAddress.data
-                }
-            }]
+            $0.messages = message
             // THORChain fee is 0.02 RUNE
             $0.fee = CosmosFee.with {
                 $0.gas = THORChainGas
