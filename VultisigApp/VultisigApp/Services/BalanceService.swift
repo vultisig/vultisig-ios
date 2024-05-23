@@ -32,7 +32,7 @@ class BalanceService {
         }
     }
 
-    func updateBalance(for coin: Coin) async {
+    @MainActor func updateBalance(for coin: Coin) async {
         do {
             switch coin.chain {
             case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
