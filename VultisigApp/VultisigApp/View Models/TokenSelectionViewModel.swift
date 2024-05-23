@@ -14,15 +14,15 @@ class TokenSelectionViewModel: ObservableObject {
     
     @Published var groupedAssets: [String: [Coin]] = [:]
     @Published var selection = Set<Coin>()
-
+    
     let actionResolver = CoinActionResolver()
-
+    
     private let logger = Logger(subsystem: "assets-list", category: "view")
-
+    
     var allCoins: [Coin] {
         return groupedAssets.values.reduce([], +)
     }
-
+    
     func setData(for vault: Vault) {
         groupAssets()
         checkSelected(for: vault)
@@ -30,13 +30,18 @@ class TokenSelectionViewModel: ObservableObject {
     
     private func groupAssets() {
         groupedAssets = [:]
-        groupedAssets = Dictionary(grouping: TokensStore.TokenSelectionAssets) { $0.chain.name }
+        groupedAssets = Dictionary(grouping: TokensStore.TokenSelectionAssets.sorted(by: { first, second in
+            if first.isNativeToken {
+                return true
+            }
+            return false
+        })) { $0.chain.name }
     }
     
     private func checkSelected(for vault: Vault) {
         selection = Set<Coin>()
         for asset in vault.coins {
-            if let asset = TokensStore.TokenSelectionAssets.first(where: { $0.ticker == asset.ticker && $0.chain == asset.chain}) {
+            if let asset = TokensStore.TokenSelectionAssets.first(where: { $0.ticker == asset.ticker && $0.chain == asset.chain && $0.isNativeToken == true}) {
                 selection.insert(asset)
             }
         }
@@ -49,7 +54,7 @@ class TokenSelectionViewModel: ObservableObject {
             selection.remove(asset)
         }
     }
-
+    
     func saveAssets(for vault: Vault) {
         vault.coins = vault.coins.filter { coin in
             selection.contains(where: { $0.ticker == coin.ticker && $0.chain == coin.chain})
