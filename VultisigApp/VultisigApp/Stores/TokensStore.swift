@@ -29,7 +29,7 @@ class TokensStore {
         
         Coin(chain: Chain.ethereum, ticker: "UNI", logo: "uni", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "uniswap", contractAddress: "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
         
-        Coin(chain: Chain.ethereum, ticker: "MATIC", logo: "polygon", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "matic-network", contractAddress: "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
+        Coin(chain: Chain.ethereum, ticker: "MATIC", logo: "matic", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "matic-network", contractAddress: "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
         
         Coin(chain: Chain.ethereum, ticker: "WBTC", logo: "wbtc", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "8", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "wrapped-bitcoin", contractAddress: "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
         
@@ -73,7 +73,7 @@ class TokensStore {
         
         Coin(chain: Chain.optimism, ticker: "FOX", logo: "fox", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "shapeshift-fox-token", contractAddress: "0xf1a0da3367bc7aa04f8d94ba57b862ff37ced174", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
         
-        Coin(chain: Chain.polygon, ticker: "MATIC", logo: "polygon", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "matic-network", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "23000"),
+        Coin(chain: Chain.polygon, ticker: "MATIC", logo: "matic", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "matic-network", contractAddress: "", rawBalance: "0", isNativeToken: true, feeDefault: "23000"),
         
         Coin(chain: Chain.polygon, ticker: "WETH", logo: "wETH", address: "", priceRate: 0.0, chainType: ChainType.EVM, decimals: "18", hexPublicKey: "", feeUnit: "Gwei", priceProviderId: "ethereum", contractAddress: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619", rawBalance: "0", isNativeToken: false, feeDefault: "120000"),
         

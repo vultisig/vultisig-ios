@@ -34,6 +34,7 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var keysignPayload: KeysignPayload? = nil
     @Published var serviceName = ""
     @Published var serverAddress: String? = nil
+    @Published var useVultisigRelay = false
     var encryptionKeyHex: String = ""
     
     init() {
@@ -158,35 +159,63 @@ class JoinKeysignViewModel: ObservableObject {
         defer {
             self.isShowingScanner = false
         }
-        var useVultisigRelay = false
+        
         switch result {
         case .success(let result):
             guard let json = DeeplinkViewModel.getJsonData(URL(string: result.string)) else {
                 return
             }
-            
-            let decoder = JSONDecoder()
-            if let jsonData = Data(base64Encoded: json) {
-                do {
-                    let decodedJsonData: Data = try (jsonData as NSData).decompressed(using: .zlib) as Data
-                    let keysignMsg = try decoder.decode(KeysignMessage.self, from: decodedJsonData)
-                    self.sessionID = keysignMsg.sessionID
-                    self.keysignPayload = keysignMsg.payload
-                    self.serviceName = keysignMsg.serviceName
-                    self.encryptionKeyHex = keysignMsg.encryptionKeyHex
-                    self.logger.info("QR code scanned successfully. Session ID: \(self.sessionID)")
-                    self.prepareKeysignMessages(keysignPayload: keysignMsg.payload)
-                    useVultisigRelay = keysignMsg.useVultisigRelay
-                } catch {
-                    self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"
-                    self.status = .FailedToStart
-                }
-            }
+            handleQrCodeSuccessResult(json: json)
         case .failure(let err):
             self.errorMsg = "QR code scanning failed: \(err.localizedDescription)"
             self.status = .FailedToStart
         }
         
+        manageQrCodeStates()
+    }
+    
+    func prepareKeysignMessages(keysignPayload: KeysignPayload) {
+        let result = keysignPayload.getKeysignMessages(vault: self.vault)
+        switch result {
+        case .success(let preSignedImageHash):
+            self.logger.info("Successfully prepared messages for keysigning.")
+            self.keysignMessages = preSignedImageHash.sorted()
+            if self.keysignMessages.isEmpty {
+                self.errorMsg = "There is no messages to be signed"
+                self.status = .FailedToStart
+            }
+        case .failure(let err):
+            self.errorMsg = "Failed to prepare messages for keysigning. Error: \(err.localizedDescription)"
+            self.status = .FailedToStart
+        }
+    }
+    
+    func handleQrCodeSuccessResult(json: String?) {
+        guard let json else {
+            return
+        }
+        
+        let decoder = JSONDecoder()
+        
+        if let jsonData = Data(base64Encoded: json) {
+            do {
+                let decodedJsonData: Data = try (jsonData as NSData).decompressed(using: .zlib) as Data
+                let keysignMsg = try decoder.decode(KeysignMessage.self, from: decodedJsonData)
+                self.sessionID = keysignMsg.sessionID
+                self.keysignPayload = keysignMsg.payload
+                self.serviceName = keysignMsg.serviceName
+                self.encryptionKeyHex = keysignMsg.encryptionKeyHex
+                self.logger.info("QR code scanned successfully. Session ID: \(self.sessionID)")
+                self.prepareKeysignMessages(keysignPayload: keysignMsg.payload)
+                useVultisigRelay = keysignMsg.useVultisigRelay
+            } catch {
+                self.errorMsg = "Error decoding keysign message: \(error.localizedDescription)"
+                self.status = .FailedToStart
+            }
+        }
+    }
+    
+    func manageQrCodeStates() {
         if vault.pubKeyECDSA != keysignPayload?.vaultPubKeyECDSA {
             self.status = .VaultMismatch
             return
@@ -205,19 +234,15 @@ class JoinKeysignViewModel: ObservableObject {
         }
     }
     
-    func prepareKeysignMessages(keysignPayload: KeysignPayload) {
-        let result = keysignPayload.getKeysignMessages(vault: self.vault)
-        switch result {
-        case .success(let preSignedImageHash):
-            self.logger.info("Successfully prepared messages for keysigning.")
-            self.keysignMessages = preSignedImageHash.sorted()
-            if self.keysignMessages.isEmpty {
-                self.errorMsg = "There is no messages to be signed"
-                self.status = .FailedToStart
-            }
-        case .failure(let err):
-            self.errorMsg = "Failed to prepare messages for keysigning. Error: \(err.localizedDescription)"
-            self.status = .FailedToStart
+    func handleDeeplinkScan(_ url: URL?) {
+        guard let url else {
+            return
         }
+        
+        guard let json = DeeplinkViewModel.getJsonData(url) else {
+            return
+        }
+        handleQrCodeSuccessResult(json: json)
+        manageQrCodeStates()
     }
 }
