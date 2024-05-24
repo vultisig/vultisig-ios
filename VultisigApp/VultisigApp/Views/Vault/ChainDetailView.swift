@@ -160,9 +160,6 @@ struct ChainDetailView: View {
         for coin in group.coins {
             if coinViewModels[coin.ticker] == nil {
                 coinViewModels[coin.ticker] = CoinViewModel()
-                Task{
-                    await coinViewModels[coin.ticker]?.loadData(coin: coin)
-                }
             }
         }
     }
