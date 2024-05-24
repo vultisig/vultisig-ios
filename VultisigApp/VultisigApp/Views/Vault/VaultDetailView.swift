@@ -18,6 +18,8 @@ struct VaultDetailView: View {
     
     @State var showSheet = false
 
+    @StateObject var sendTx = SendTransaction()
+
     var body: some View {
         ZStack(alignment: .bottom) {
             Background()
