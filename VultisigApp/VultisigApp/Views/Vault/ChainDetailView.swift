@@ -33,17 +33,8 @@ struct ChainDetailView: View {
             
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationRefreshButton() {
-                    Task {
-                        isLoading = true
-                        
-                        for coin in group.coins {
-                            if let viewModel = coinViewModels[coin.ticker] {
-                                await viewModel.loadData(coin: coin)
-                            }
-                        }
-                        
-                        await calculateTotalBalanceInFiat()
-                        isLoading = false
+                    Task{
+                        await loadAllBalances()
                     }
                 }
             }
@@ -147,11 +138,22 @@ struct ChainDetailView: View {
         tokens = viewModel.groupedAssets[group.name] ?? []
         tokens.removeFirst()
         initializeViewModels()
-        await calculateTotalBalanceInFiat()
+        await loadAllBalances()
         
         if let coin = group.coins.first {
             sendTx.reset(coin: coin)
         }
+    }
+    
+    private func loadAllBalances() async {
+        isLoading = true
+        for coin in group.coins {
+            if let viewModel = coinViewModels[coin.ticker] {
+                await viewModel.loadData(coin: coin)
+            }
+        }
+        await calculateTotalBalanceInFiat()
+        isLoading = false
     }
     
     private func initializeViewModels() {
