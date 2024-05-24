@@ -5,7 +5,6 @@ import SwiftUI
 struct TransactionMemoDetailsView: View {
     @ObservedObject var tx: SendTransaction
     @ObservedObject var transactionMemoViewModel: TransactionMemoViewModel
-    let group: GroupedChain
     
     @State var amount = ""
     @State var nativeTokenBalance = ""
@@ -126,7 +125,6 @@ struct TransactionMemoDetailsView: View {
 #Preview {
     TransactionMemoDetailsView(
         tx: SendTransaction(),
-        transactionMemoViewModel: TransactionMemoViewModel(),
-        group: GroupedChain.example
+        transactionMemoViewModel: TransactionMemoViewModel()
     )
 }
