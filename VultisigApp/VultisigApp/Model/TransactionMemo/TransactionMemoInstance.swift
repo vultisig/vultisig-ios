@@ -13,6 +13,7 @@ enum TransactionMemoInstance {
     case bond(TransactionMemoBond)
     case unbond(TransactionMemoUnbond)
     case leave(TransactionMemoLeave)
+    case custom(TransactionMemoCustom)
     
     var view: AnyView {
         switch self {
@@ -21,6 +22,8 @@ enum TransactionMemoInstance {
         case .unbond(let memo):
             return memo.getView()
         case .leave(let memo):
+            return memo.getView()
+        case .custom(let memo):
             return memo.getView()
         }
     }
@@ -33,10 +36,11 @@ enum TransactionMemoInstance {
             return memo.description
         case .leave(let memo):
             return memo.description
+        case .custom(let memo):
+            return memo.description
         }
     }
     
-    //TODO: Check if others need amount if not keep it as zero
     var amount: Double {
         switch self {
         case .bond(let memo):
@@ -45,6 +49,8 @@ enum TransactionMemoInstance {
             return memo.amount
         case .leave:
             return .zero
+        case .custom(let memo):
+            return memo.amount
         }
     }
     
@@ -55,6 +61,8 @@ enum TransactionMemoInstance {
         case .unbond(let memo):
             return memo.toDictionary()
         case .leave(let memo):
+            return memo.toDictionary()
+        case .custom(let memo):
             return memo.toDictionary()
         }
     }

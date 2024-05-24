@@ -40,6 +40,8 @@ struct TransactionMemoDetailsView: View {
                 txMemoInstance = .unbond(TransactionMemoUnbond())
             case .leave:
                 txMemoInstance = .leave(TransactionMemoLeave())
+            case .custom:
+                txMemoInstance = .custom(TransactionMemoCustom())
             }
         }
     }
