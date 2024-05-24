@@ -77,8 +77,8 @@ class Coin: ObservableObject, Codable, Hashable {
         self.hexPublicKey = try container.decodeIfPresent(String.self, forKey: .hexPublicKey) ?? ""
         self.rawBalance = try container.decodeIfPresent(String.self, forKey: .rawBalance) ?? ""
         self.priceRate = try container.decodeIfPresent(Double.self, forKey: .priceRate) ?? 0
-
-        self.id = "\(chain.rawValue)-\(ticker)-\(address)"
+        self.id = try container.decode(String.self, forKey: .id)
+        
     }
 
     func encode(to encoder: Encoder) throws {

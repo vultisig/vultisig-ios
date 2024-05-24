@@ -111,6 +111,7 @@ class TokensStore {
         }
         let clonedCoin = templateCoin.clone()
         clonedCoin.address = address
+        clonedCoin.id = "\(clonedCoin.chain.rawValue)-\(clonedCoin.ticker)-\(clonedCoin.address)"
         clonedCoin.hexPublicKey = hexPublicKey
         return .success(clonedCoin)
     }

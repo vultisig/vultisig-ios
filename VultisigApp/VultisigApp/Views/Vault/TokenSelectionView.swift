@@ -46,7 +46,9 @@ struct TokenSelectionView: View {
     }
     
     private func saveAssets() {
-        viewModel.saveAssets(for: vault)
+        Task{
+            await   viewModel.saveAssets(for: vault)
+        }
     }
 }
 

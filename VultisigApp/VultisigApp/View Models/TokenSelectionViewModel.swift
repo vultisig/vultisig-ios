@@ -17,17 +17,17 @@ class TokenSelectionViewModel: ObservableObject {
     
     let actionResolver = CoinActionResolver()
     let balanceService = BalanceService.shared
-
+    
     private let logger = Logger(subsystem: "assets-list", category: "view")
     
     var allCoins: [Coin] {
         return groupedAssets.values.reduce([], +)
     }
-
+    
     func loadData(coin: Coin) async {
         await balanceService.updateBalance(for: coin)
     }
-
+    
     func setData(for vault: Vault) {
         groupAssets()
         checkSelected(for: vault)
@@ -45,8 +45,8 @@ class TokenSelectionViewModel: ObservableObject {
     
     private func checkSelected(for vault: Vault) {
         selection = Set<Coin>()
-        for asset in vault.coins {
-            if let asset = TokensStore.TokenSelectionAssets.first(where: { $0.ticker == asset.ticker && $0.chain == asset.chain && $0.isNativeToken == true}) {
+        for coin in vault.coins {
+            if let asset = TokensStore.TokenSelectionAssets.first(where: { $0.ticker == coin.ticker && $0.chain == coin.chain}) {
                 selection.insert(asset)
             }
         }
@@ -60,26 +60,41 @@ class TokenSelectionViewModel: ObservableObject {
         }
     }
     
-    func saveAssets(for vault: Vault) {
-        vault.coins = vault.coins.filter { coin in
-            selection.contains(where: { $0.ticker == coin.ticker && $0.chain == coin.chain})
-        }
-        
-        for asset in selection {
-            if !vault.coins.contains(where: { $0.ticker == asset.ticker && $0.chain == asset.chain}) {
-                addToChain(asset: asset, to: vault)
+    func saveAssets(for vault: Vault) async {
+        do {
+            let removedCoins = vault.coins.filter{coin in
+                !selection.contains(where: { $0.ticker == coin.ticker && $0.chain == coin.chain})
             }
+            for coin in removedCoins {
+                if let idx = vault.coins.firstIndex(where: {$0.ticker == coin.ticker && $0.chain == coin.chain}) {
+                    vault.coins.remove(at: idx)
+                }
+                
+                try await Storage.shared.delete(coin)
+                
+            }
+            
+            vault.coins = vault.coins.filter { coin in
+                selection.contains(where: { $0.ticker == coin.ticker && $0.chain == coin.chain})
+            }
+            
+            for asset in selection {
+                if !vault.coins.contains(where: { $0.ticker == asset.ticker && $0.chain == asset.chain}) {
+                    await addToChain(asset: asset, to: vault)
+                }
+            }
+        } catch {
+            print("fail to save asset,\(error)")
         }
     }
-    
-    private func addToChain(asset: Coin, to vault: Vault) {
+    private func getNewCoin(asset: Coin, vault:Vault) -> Coin? {
         switch asset.chain {
         case .thorChain:
             let runeCoinResult = THORChainHelper.getRUNECoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
             switch runeCoinResult {
             case .success(let coin):
                 coin.priceProviderId = asset.priceProviderId
-                vault.coins.append(coin)
+                return coin
             case .failure(let error):
                 logger.info("fail to get thorchain address,error:\(error.localizedDescription)")
             }
@@ -90,7 +105,7 @@ class TokenSelectionViewModel: ObservableObject {
             switch cacaoCoinResult {
             case .success(let coin):
                 coin.priceProviderId = asset.priceProviderId
-                vault.coins.append(coin)
+                return coin
             case .failure(let error):
                 logger.info("fail to get thorchain address,error:\(error.localizedDescription)")
             }
@@ -100,7 +115,6 @@ class TokenSelectionViewModel: ObservableObject {
             let coinResult = evmHelper.getCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
             switch coinResult {
             case .success(let coin):
-                
                 let newCoin = Coin(chain: asset.chain,
                                    ticker: asset.ticker,
                                    logo: asset.logo,
@@ -117,7 +131,7 @@ class TokenSelectionViewModel: ObservableObject {
                                    feeDefault: asset.feeDefault
                                    
                 )
-                vault.coins.append(newCoin)
+                return newCoin
                 
             case .failure(let error):
                 logger.info("fail to get ethereum address, error: \(error.localizedDescription)")
@@ -126,13 +140,13 @@ class TokenSelectionViewModel: ObservableObject {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             guard let coinType = CoinType.from(string: asset.chain.name.replacingOccurrences(of: "-", with: "")) else {
                 print("Coin type not found on Wallet Core")
-                return
+                return nil
             }
             let coinResult = UTXOChainsHelper(coin: coinType, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode).getCoin()
             switch coinResult {
             case .success(let btc):
                 btc.priceProviderId = asset.priceProviderId
-                vault.coins.append(btc)
+                return btc
             case .failure(let err):
                 logger.info("fail to get bitcoin address,error:\(err.localizedDescription)")
             }
@@ -141,7 +155,7 @@ class TokenSelectionViewModel: ObservableObject {
             switch coinResult {
             case .success(let sol):
                 sol.priceProviderId = asset.priceProviderId
-                vault.coins.append(sol)
+                return sol
             case .failure(let err):
                 logger.info("fail to get solana address,error:\(err.localizedDescription)")
             }
@@ -150,7 +164,7 @@ class TokenSelectionViewModel: ObservableObject {
             switch coinResult {
             case .success(let sui):
                 sui.priceProviderId = asset.priceProviderId
-                vault.coins.append(sui)
+                return sui
             case .failure(let err):
                 logger.info("fail to get sui address,error:\(err.localizedDescription)")
             }
@@ -159,7 +173,7 @@ class TokenSelectionViewModel: ObservableObject {
             switch coinResult {
             case .success(let dot):
                 dot.priceProviderId = asset.priceProviderId
-                vault.coins.append(dot)
+                return dot
             case .failure(let err):
                 logger.info("fail to get polkadot address,error:\(err.localizedDescription)")
             }
@@ -168,19 +182,32 @@ class TokenSelectionViewModel: ObservableObject {
             switch coinResult {
             case .success(let atom):
                 atom.priceProviderId = asset.priceProviderId
-                vault.coins.append(atom)
+                return atom
             case .failure(let err):
                 logger.info("fail to get solana address,error:\(err.localizedDescription)")
             }
         case .kujira:
             let coinResult = KujiraHelper().getCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
             switch coinResult {
-            case .success(let atom):
-                atom.priceProviderId = asset.priceProviderId
-                vault.coins.append(atom)
+            case .success(let kuji):
+                kuji.priceProviderId = asset.priceProviderId
+                return kuji
             case .failure(let err):
                 logger.info("fail to get solana address,error:\(err.localizedDescription)")
             }
+        }
+        return nil
+    }
+    private func addToChain(asset: Coin, to vault: Vault) async {
+        do{
+            if let newCoin = getNewCoin(asset: asset, vault: vault) {
+                print("coin id:\(newCoin.id)")
+                // save the new coin first
+                try await Storage.shared.save(newCoin)
+                vault.coins.append(newCoin)
+            }
+        } catch {
+            print("failed to save coin to model context \(error.localizedDescription)")
         }
     }
 }
