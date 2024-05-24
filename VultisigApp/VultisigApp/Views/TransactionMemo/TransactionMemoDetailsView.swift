@@ -1,6 +1,9 @@
 import Foundation
 import OSLog
 import SwiftUI
+import Foundation
+import OSLog
+import SwiftUI
 
 struct TransactionMemoDetailsView: View {
     @ObservedObject var tx: SendTransaction
@@ -8,9 +11,16 @@ struct TransactionMemoDetailsView: View {
     
     @State var amount = ""
     @State var nativeTokenBalance = ""
-    @State private var selectedFunctionMemoType: TransactionMemoType = .bond
+    
     @State private var selectedContractMemoType: TransactionMemoContractType = .thorChainMessageDeposit
+    
+    @State private var selectedFunctionMemoType: TransactionMemoType = .bond
     @State private var txMemoInstance: TransactionMemoInstance = .bond(TransactionMemoBond())
+    
+    @State private var selectedFunctionMemoExpertType: TransactionMemoExpertType = .bond
+    @State private var txMemoExpertInstance: TransactionMemoExpertInstance = .bond(TransactionMemoBond())
+    
+    @State private var isExpertMode = false
     
     var body: some View {
         ZStack {
@@ -21,7 +31,6 @@ struct TransactionMemoDetailsView: View {
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
-                
                 Button {
                     hideKeyboard()
                 } label: {
@@ -41,6 +50,41 @@ struct TransactionMemoDetailsView: View {
             case .leave:
                 txMemoInstance = .leave(TransactionMemoLeave())
             }
+        }
+        .onChange(of: selectedFunctionMemoExpertType) {
+            switch selectedFunctionMemoExpertType {
+            case .bond:
+                txMemoExpertInstance = .bond(TransactionMemoBond())
+            case .unbond:
+                txMemoExpertInstance = .unbond(TransactionMemoUnbond())
+            case .leave:
+                txMemoExpertInstance = .leave(TransactionMemoLeave())
+            case .swap:
+                txMemoExpertInstance = .swap(TransactionMemoSwap())
+            case .depositSavers:
+                txMemoExpertInstance = .depositSavers(TransactionMemoDepositSavers())
+            case .withdrawSavers:
+                txMemoExpertInstance = .withdrawSavers(TransactionMemoWithdrawSavers())
+            case .openLoan:
+                txMemoExpertInstance = .openLoan(TransactionMemoOpenLoan())
+            case .repayLoan:
+                txMemoExpertInstance = .repayLoan(TransactionMemoRepayLoan())
+            case .addLiquidity:
+                txMemoExpertInstance = .addLiquidity(TransactionMemoAddLiquidity())
+            case .withdrawLiquidity:
+                txMemoExpertInstance = .withdrawLiquidity(TransactionMemoWithdrawLiquidity())
+            case .addTradeAccount:
+                txMemoExpertInstance = .addTradeAccount(TransactionMemoAddTradeAccount())
+            case .withdrawTradeAccount:
+                txMemoExpertInstance = .withdrawTradeAccount(TransactionMemoWithdrawTradeAccount())
+            case .donateReserve:
+                txMemoExpertInstance = .donateReserve(TransactionMemoDonateReserve())
+            case .migrate:
+                txMemoExpertInstance = .migrate(TransactionMemoMigrate())
+            }
+        }
+        .onChange(of: selectedContractMemoType) {
+            isExpertMode = selectedContractMemoType == TransactionMemoContractType.thorChainMessageDepositExpert
         }
     }
     
@@ -64,14 +108,24 @@ struct TransactionMemoDetailsView: View {
             VStack(spacing: 16) {
                 contractSelector
                 functionSelector
-                txMemoInstance.view
+                if isExpertMode {
+                    txMemoExpertInstance.view
+                } else {
+                    txMemoInstance.view
+                }
             }
             .padding(.horizontal, 16)
         }
     }
     
     var functionSelector: some View {
-        TransactionMemoSelectorDropdown(items: .constant(TransactionMemoType.allCases), selected: $selectedFunctionMemoType)
+        Group {
+            if isExpertMode {
+                GenericEnumSelectorDropdown(items: .constant(Array(TransactionMemoExpertType.allCases)), selected: $selectedFunctionMemoExpertType)
+            } else {
+                GenericEnumSelectorDropdown(items: .constant(Array(TransactionMemoType.allCases)), selected: $selectedFunctionMemoType)
+            }
+        }
     }
     
     var contractSelector: some View {
@@ -87,10 +141,17 @@ struct TransactionMemoDetailsView: View {
     var button: some View {
         Button {
             Task {
-                tx.amount = txMemoInstance.amount.description
-                tx.memo = txMemoInstance.description
-                tx.memoFunctionDictionary = txMemoInstance.toDictionary()
-                print(tx.memo)
+                if isExpertMode {
+                    tx.amount = "1"
+                    tx.memo = txMemoExpertInstance.description
+                    tx.memoFunctionDictionary = txMemoExpertInstance.toDictionary()
+                    print(tx.memo)
+                } else {
+                    tx.amount = txMemoInstance.amount.description
+                    tx.memo = txMemoInstance.description
+                    tx.memoFunctionDictionary = txMemoInstance.toDictionary()
+                    print(tx.memo)
+                }
                 transactionMemoViewModel.moveToNextView()
             }
         } label: {

@@ -208,6 +208,19 @@
 		B50E399B2BF5AB2100B9A269 /* TransactionMemoAddressable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50E399A2BF5AB2100B9A269 /* TransactionMemoAddressable.swift */; };
 		B50E399D2BF5AB4B00B9A269 /* TransactionMemoContractTypeEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50E399C2BF5AB4B00B9A269 /* TransactionMemoContractTypeEnum.swift */; };
 		B51119172C0010D40020B711 /* BalanceCachedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51119162C0010D40020B711 /* BalanceCachedData.swift */; };
+		B51119242C0059A20020B711 /* TransactionMemoDonateReserve.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51119182C0059A20020B711 /* TransactionMemoDonateReserve.swift */; };
+		B51119252C0059A20020B711 /* TransactionMemoRepayLoan.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51119192C0059A20020B711 /* TransactionMemoRepayLoan.swift */; };
+		B51119262C0059A20020B711 /* TransactionMemoWithdrawTradeAccount.swift in Sources */ = {isa = PBXBuildFile; fileRef = B511191A2C0059A20020B711 /* TransactionMemoWithdrawTradeAccount.swift */; };
+		B51119272C0059A20020B711 /* TransactionMemoDepositSavers.swift in Sources */ = {isa = PBXBuildFile; fileRef = B511191B2C0059A20020B711 /* TransactionMemoDepositSavers.swift */; };
+		B51119282C0059A20020B711 /* TransactionMemoOpenLoan.swift in Sources */ = {isa = PBXBuildFile; fileRef = B511191C2C0059A20020B711 /* TransactionMemoOpenLoan.swift */; };
+		B51119292C0059A20020B711 /* TransactionMemoMigrate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B511191D2C0059A20020B711 /* TransactionMemoMigrate.swift */; };
+		B511192A2C0059A20020B711 /* TransactionMemoAddLiquidity.swift in Sources */ = {isa = PBXBuildFile; fileRef = B511191E2C0059A20020B711 /* TransactionMemoAddLiquidity.swift */; };
+		B511192B2C0059A20020B711 /* TransactionMemoSwap.swift in Sources */ = {isa = PBXBuildFile; fileRef = B511191F2C0059A20020B711 /* TransactionMemoSwap.swift */; };
+		B511192C2C0059A20020B711 /* TransactionMemoWithdrawSavers.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51119202C0059A20020B711 /* TransactionMemoWithdrawSavers.swift */; };
+		B511192D2C0059A20020B711 /* TransactionMemoWithdrawLiquidity.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51119212C0059A20020B711 /* TransactionMemoWithdrawLiquidity.swift */; };
+		B511192E2C0059A20020B711 /* TransactionMemoNodeMaintenance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51119222C0059A20020B711 /* TransactionMemoNodeMaintenance.swift */; };
+		B511192F2C0059A20020B711 /* TransactionMemoAddTradeAccount.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51119232C0059A20020B711 /* TransactionMemoAddTradeAccount.swift */; };
+		B51119312C005FE60020B711 /* GenericEnumSelectorDropdown.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51119302C005FE60020B711 /* GenericEnumSelectorDropdown.swift */; };
 		B53D8CC82BF7F21500B795D3 /* TransactionMemoBond.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53D8CC72BF7F21500B795D3 /* TransactionMemoBond.swift */; };
 		B53D8CCA2BF7F22500B795D3 /* TransactionMemoUnbond.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53D8CC92BF7F22500B795D3 /* TransactionMemoUnbond.swift */; };
 		B53D8CCC2BF7F22F00B795D3 /* TransactionMemoLeave.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53D8CCB2BF7F22F00B795D3 /* TransactionMemoLeave.swift */; };
@@ -541,6 +554,19 @@
 		B50E399A2BF5AB2100B9A269 /* TransactionMemoAddressable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoAddressable.swift; sourceTree = "<group>"; };
 		B50E399C2BF5AB4B00B9A269 /* TransactionMemoContractTypeEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoContractTypeEnum.swift; sourceTree = "<group>"; };
 		B51119162C0010D40020B711 /* BalanceCachedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BalanceCachedData.swift; sourceTree = "<group>"; };
+		B51119182C0059A20020B711 /* TransactionMemoDonateReserve.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionMemoDonateReserve.swift; sourceTree = "<group>"; };
+		B51119192C0059A20020B711 /* TransactionMemoRepayLoan.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionMemoRepayLoan.swift; sourceTree = "<group>"; };
+		B511191A2C0059A20020B711 /* TransactionMemoWithdrawTradeAccount.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionMemoWithdrawTradeAccount.swift; sourceTree = "<group>"; };
+		B511191B2C0059A20020B711 /* TransactionMemoDepositSavers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionMemoDepositSavers.swift; sourceTree = "<group>"; };
+		B511191C2C0059A20020B711 /* TransactionMemoOpenLoan.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionMemoOpenLoan.swift; sourceTree = "<group>"; };
+		B511191D2C0059A20020B711 /* TransactionMemoMigrate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionMemoMigrate.swift; sourceTree = "<group>"; };
+		B511191E2C0059A20020B711 /* TransactionMemoAddLiquidity.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionMemoAddLiquidity.swift; sourceTree = "<group>"; };
+		B511191F2C0059A20020B711 /* TransactionMemoSwap.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionMemoSwap.swift; sourceTree = "<group>"; };
+		B51119202C0059A20020B711 /* TransactionMemoWithdrawSavers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionMemoWithdrawSavers.swift; sourceTree = "<group>"; };
+		B51119212C0059A20020B711 /* TransactionMemoWithdrawLiquidity.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionMemoWithdrawLiquidity.swift; sourceTree = "<group>"; };
+		B51119222C0059A20020B711 /* TransactionMemoNodeMaintenance.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionMemoNodeMaintenance.swift; sourceTree = "<group>"; };
+		B51119232C0059A20020B711 /* TransactionMemoAddTradeAccount.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TransactionMemoAddTradeAccount.swift; sourceTree = "<group>"; };
+		B51119302C005FE60020B711 /* GenericEnumSelectorDropdown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericEnumSelectorDropdown.swift; sourceTree = "<group>"; };
 		B53D8CC72BF7F21500B795D3 /* TransactionMemoBond.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoBond.swift; sourceTree = "<group>"; };
 		B53D8CC92BF7F22500B795D3 /* TransactionMemoUnbond.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoUnbond.swift; sourceTree = "<group>"; };
 		B53D8CCB2BF7F22F00B795D3 /* TransactionMemoLeave.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoLeave.swift; sourceTree = "<group>"; };
@@ -709,6 +735,7 @@
 				B5A97CF42BF4287A007574D7 /* TransactionMemoSelectorDropdown.swift */,
 				B54E317A2BF57D9300D4FC0A /* TransactionMemoContractSelectorDropDown.swift */,
 				A62D6B042BFE7C5E00F24E51 /* ChainDetailActionButtons.swift */,
+				B51119302C005FE60020B711 /* GenericEnumSelectorDropdown.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1193,6 +1220,18 @@
 		B5A97CFA2BF43653007574D7 /* TransactionMemo */ = {
 			isa = PBXGroup;
 			children = (
+				B511191E2C0059A20020B711 /* TransactionMemoAddLiquidity.swift */,
+				B51119232C0059A20020B711 /* TransactionMemoAddTradeAccount.swift */,
+				B511191B2C0059A20020B711 /* TransactionMemoDepositSavers.swift */,
+				B51119182C0059A20020B711 /* TransactionMemoDonateReserve.swift */,
+				B511191D2C0059A20020B711 /* TransactionMemoMigrate.swift */,
+				B51119222C0059A20020B711 /* TransactionMemoNodeMaintenance.swift */,
+				B511191C2C0059A20020B711 /* TransactionMemoOpenLoan.swift */,
+				B51119192C0059A20020B711 /* TransactionMemoRepayLoan.swift */,
+				B511191F2C0059A20020B711 /* TransactionMemoSwap.swift */,
+				B51119212C0059A20020B711 /* TransactionMemoWithdrawLiquidity.swift */,
+				B51119202C0059A20020B711 /* TransactionMemoWithdrawSavers.swift */,
+				B511191A2C0059A20020B711 /* TransactionMemoWithdrawTradeAccount.swift */,
 				B5A97CFB2BF4365E007574D7 /* TransactionMemoInstance.swift */,
 				B54E31822BF5A73500D4FC0A /* TransactionMemoTypeEnum.swift */,
 				B50E399A2BF5AB2100B9A269 /* TransactionMemoAddressable.swift */,
@@ -1735,6 +1774,7 @@
 				DE64A4C62BA7E0E400C342E3 /* KeygenPeerDiscoveryViewModel.swift in Sources */,
 				462DCD742BCA1F45003D542F /* CoinPaprikaCoin.swift in Sources */,
 				465B09B52B7D8E7B00952DD9 /* CryptoPriceService.swift in Sources */,
+				B51119282C0059A20020B711 /* TransactionMemoOpenLoan.swift in Sources */,
 				B54E31812BF5A22700D4FC0A /* StyledFloatingPointField.swift in Sources */,
 				A6980C342BC0A30900F452AB /* SettingFAQCell.swift in Sources */,
 				A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */,
@@ -1772,6 +1812,7 @@
 				DE9EB0EE2BA2CF49001747D9 /* KeygenMessage.swift in Sources */,
 				A6F9F7ED2B9D1F5700790258 /* CoinViewModel.swift in Sources */,
 				461AD1B72BC6706500959278 /* VaultPairDetailView.swift in Sources */,
+				B51119272C0059A20020B711 /* TransactionMemoDepositSavers.swift in Sources */,
 				A6FB96B32BD0CDA900D56F68 /* NavigationEditButton.swift in Sources */,
 				DE3D44AF2BD2487900BD64CD /* CosmosSignature.swift in Sources */,
 				A623A09F2BF09FEE00AA2F8D /* NewWalletNameView.swift in Sources */,
@@ -1841,7 +1882,9 @@
 				DEEDAEE12B8AF7EF005170E8 /* evm.swift in Sources */,
 				465036BB2BCF968E00856B34 /* BigInt.swift in Sources */,
 				A6966D2F2BA4045C00903CA4 /* SwapCryptoView.swift in Sources */,
+				B511192F2C0059A20020B711 /* TransactionMemoAddTradeAccount.swift in Sources */,
 				46F8F7282B9A011B0099454E /* ThorchainBroadcastTransactionService.swift in Sources */,
+				B511192A2C0059A20020B711 /* TransactionMemoAddLiquidity.swift in Sources */,
 				A62D6B032BFE7BF400F24E51 /* CoinDetailView.swift in Sources */,
 				A65649E12B96602700E4B329 /* Int64Extension.swift in Sources */,
 				DEFF58FC2BCFB384005DFDF9 /* MayaChainService.swift in Sources */,
@@ -1876,6 +1919,7 @@
 				DED05FE42BBB824D00E0496C /* ThorchainAccountValue.swift in Sources */,
 				A60CA7E52BB0D37D00FDEB5C /* ContentView.swift in Sources */,
 				B5F7581D2BD8FDA20097B5B9 /* SuiCoin.swift in Sources */,
+				B511192C2C0059A20020B711 /* TransactionMemoWithdrawSavers.swift in Sources */,
 				A6C0D55C2BB3AE8600156689 /* TransactionsView.swift in Sources */,
 				4606B3B02B80465E0045094D /* UTXOTransactionsService.swift in Sources */,
 				DEEFF4FD2B9835DE0015692E /* THORChainSwapChainExtension.swift in Sources */,
@@ -1892,14 +1936,17 @@
 				A69069A32BCE2FD300F28A8B /* KeygenStatusText.swift in Sources */,
 				A52313DE2BDF665E00D4D0D5 /* KeysignSwapConfirmView.swift in Sources */,
 				DEEDAEE32B8AF8B1005170E8 /* publickey.swift in Sources */,
+				B51119292C0059A20020B711 /* TransactionMemoMigrate.swift in Sources */,
 				A65C754D2BBF5A250076F30A /* PeerCell.swift in Sources */,
 				A633B11C2B99273A003D1738 /* ColorExtensions.swift in Sources */,
 				46B106512BA7CAFE00564023 /* ChainType.swift in Sources */,
 				DE9EB0EC2BA2CC3C001747D9 /* TssType.swift in Sources */,
+				B511192D2C0059A20020B711 /* TransactionMemoWithdrawLiquidity.swift in Sources */,
 				DEEDAEE52B8AFB5D005170E8 /* common.swift in Sources */,
 				A653242E2BA53D0900DDE6EB /* SendCryptoPairView.swift in Sources */,
 				DE63AE532BBA627B001BBE5C /* atom.swift in Sources */,
 				A65649E22B96602700E4B329 /* DataExtension.swift in Sources */,
+				B51119252C0059A20020B711 /* TransactionMemoRepayLoan.swift in Sources */,
 				A6966D292BA400B700903CA4 /* SendCryptoAddressTextField.swift in Sources */,
 				A6F9F7EB2B9D1B3700790258 /* VaultDetailViewModel.swift in Sources */,
 				A65BA9842BAA07B500B2D8AA /* Background.swift in Sources */,
@@ -1913,6 +1960,7 @@
 				A611735D2BC8D94400D616F9 /* KeyGenSummaryView.swift in Sources */,
 				A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */,
 				DE64A4CA2BA7F90E00C342E3 /* ServiceDelegate.swift in Sources */,
+				B51119262C0059A20020B711 /* TransactionMemoWithdrawTradeAccount.swift in Sources */,
 				A5D49F562BE26BB9001766C8 /* ChainAction.swift in Sources */,
 				A6E52F802BBE430600FD3785 /* TransactionCell.swift in Sources */,
 				A6CBA8F02BA2A629008B110C /* ImportWalletUploadSection.swift in Sources */,
@@ -1943,13 +1991,16 @@
 				A65649F02B966A1200E4B329 /* UTXOTransactionMempoolOutput.swift in Sources */,
 				A653242A2BA52A4700DDE6EB /* SendCryptoViewModel.swift in Sources */,
 				A54BBCFF2BC6E11600645C06 /* TransferViewModel.swift in Sources */,
+				B511192B2C0059A20020B711 /* TransactionMemoSwap.swift in Sources */,
 				46DE08902BD0D03E00AE8BDE /* CosmosService.swift in Sources */,
 				465B09A92B7C176700952DD9 /* SendTransaction.swift in Sources */,
 				A633B12D2B994E92003D1738 /* CreateVaultView.swift in Sources */,
 				A63953B02BA7BEDA000802EC /* Checkbox.swift in Sources */,
 				A6966D1E2BA3DDAD00903CA4 /* OnboardingView.swift in Sources */,
 				A633B1382B997F39003D1738 /* NavigationHelpButton.swift in Sources */,
+				B51119242C0059A20020B711 /* TransactionMemoDonateReserve.swift in Sources */,
 				A6F2C5492BA001460095C8E3 /* ChainSelectionView.swift in Sources */,
+				B51119312C005FE60020B711 /* GenericEnumSelectorDropdown.swift in Sources */,
 				D9AD8EE62B6730A40009F8D5 /* PeerDiscoveryView.swift in Sources */,
 				461AD1BB2BC7239C00959278 /* DeviceInfo.swift in Sources */,
 				A61BC8142BA240FC00484689 /* SendCryptoDetailsView.swift in Sources */,
@@ -1965,6 +2016,7 @@
 				A65649E42B96602700E4B329 /* StringExtension.swift in Sources */,
 				A6F9F7E92B9BBFD500790258 /* AddressQRCodeView.swift in Sources */,
 				A6C0D5692BB3C6D400156689 /* ErrorMessage.swift in Sources */,
+				B511192E2C0059A20020B711 /* TransactionMemoNodeMaintenance.swift in Sources */,
 				B53D8CCC2BF7F22F00B795D3 /* TransactionMemoLeave.swift in Sources */,
 				46C8CBBD2BA7753900E68E08 /* Blockchair.swift in Sources */,
 				B54E317F2BF5A1A700D4FC0A /* StyledNumberField.swift in Sources */,
