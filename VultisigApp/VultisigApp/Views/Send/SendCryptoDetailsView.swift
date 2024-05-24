@@ -221,11 +221,8 @@ struct SendCryptoDetailsView: View {
     }
     
     private func getBalance() async {
-        do {
-            coinBalance = try await BalanceService.shared.balance(for: tx.coin).coinBalance
-        } catch {
-            print(error)
-        }
+        await BalanceService.shared.updateBalance(for: tx.coin)
+        coinBalance = tx.coin.balanceString
     }
 }
 

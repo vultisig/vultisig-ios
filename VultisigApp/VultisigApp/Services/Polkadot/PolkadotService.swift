@@ -99,17 +99,16 @@ class PolkadotService: RpcService {
         return try await strRpcCall(method: "author_submitExtrinsic", params: [hexWithPrefix])
     }
     
-    func getBalance(coin: Coin) async throws ->(rawBalance: String,priceRate: Double){
+    func getBalance(coin: Coin) async throws -> (rawBalance: String, priceRate: Double) {
         // Start fetching all information concurrently
-        let cryptoPrice = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
-        var rawBalance = ""
-        do{
-            rawBalance = String(try await fetchBalance(address: coin.address))
+        do {
+            let cryptoPrice = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
+            let rawBalance = String(try await fetchBalance(address: coin.address))
+            return (rawBalance,cryptoPrice)
         } catch {
             print("getBalance:: \(error.localizedDescription)")
             throw error
         }
-        return (rawBalance,cryptoPrice)
     }
     
     func getGasInfo(fromAddress: String) async throws -> (recentBlockHash: String, currentBlockNumber: BigInt, nonce: Int64, specVersion: UInt32, transactionVersion: UInt32, genesisHash: String) {

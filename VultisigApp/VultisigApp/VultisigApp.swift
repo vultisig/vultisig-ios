@@ -12,8 +12,7 @@ import WalletCore
 
 struct VultisigApp: App {
     @Environment(\.scenePhase) private var scenePhase
-    
-    @StateObject var coinViewModel = CoinViewModel()
+
     @StateObject var applicationState = ApplicationState.shared
     @StateObject var vaultDetailViewModel = VaultDetailViewModel()
     @StateObject var tokenSelectionViewModel = TokenSelectionViewModel()
@@ -24,7 +23,6 @@ struct VultisigApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environmentObject(coinViewModel)
                 .environmentObject(applicationState) // Shared monolithic mutable state
                 .environmentObject(vaultDetailViewModel)
                 .environmentObject(tokenSelectionViewModel)
@@ -48,10 +46,20 @@ struct VultisigApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Vault.self,
+            Coin.self,
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        let modelConfiguration = ModelConfiguration(
+            schema: schema,
+            isStoredInMemoryOnly: false
+        )
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            let modelContainer = try ModelContainer(
+                for: schema,
+                migrationPlan: MigrationPlan.self,
+                configurations: [modelConfiguration]
+            )
+            Storage.shared.modelContext = modelContainer.mainContext
+            return modelContainer
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }
@@ -63,5 +71,26 @@ struct VultisigApp: App {
     
     private func resetLogin() {
         accountViewModel.revokeAuth()
+    }
+}
+
+private extension VultisigApp {
+
+    enum SchemaV1: VersionedSchema {
+        static var versionIdentifier = Schema.Version(1, 0, 0)
+
+        static var models: [any PersistentModel.Type] {
+            [Vault.self, Coin.self]
+        }
+    }
+
+    enum MigrationPlan: SchemaMigrationPlan {
+        static var schemas: [any VersionedSchema.Type] {
+            return [SchemaV1.self]
+        }
+
+        static var stages: [MigrationStage] {
+            return []
+        }
     }
 }
