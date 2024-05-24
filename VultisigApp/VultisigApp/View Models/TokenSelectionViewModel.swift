@@ -73,11 +73,6 @@ class TokenSelectionViewModel: ObservableObject {
                 try await Storage.shared.delete(coin)
                 
             }
-            
-            vault.coins = vault.coins.filter { coin in
-                selection.contains(where: { $0.ticker == coin.ticker && $0.chain == coin.chain})
-            }
-            
             for asset in selection {
                 if !vault.coins.contains(where: { $0.ticker == asset.ticker && $0.chain == asset.chain}) {
                     await addToChain(asset: asset, to: vault)
