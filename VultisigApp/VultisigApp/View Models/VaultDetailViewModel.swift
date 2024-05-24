@@ -53,7 +53,10 @@ class VaultDetailViewModel: ObservableObject {
                 
                 switch result {
                 case .success(let btc):
-                    vault.coins.append(btc)
+                    Task{
+                        try await Storage.shared.save(btc)
+                        vault.coins.append(btc)
+                    }
                 case .failure(let error):
                     print("error: \(error)")
                 }
