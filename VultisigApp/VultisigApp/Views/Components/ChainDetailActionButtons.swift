@@ -38,13 +38,17 @@ struct ChainDetailActionButtons: View {
                 await setData()
             }
         }
+        .onChange(of: group.id) { oldValue, newValue in
+            Task {
+                await setData()
+            }
+        }
     }
     
     var memoButton: some View {
         NavigationLink {
             TransactionMemoView(
                 tx: sendTx,
-                group: group,
                 vault: vault
             )
         } label: {
@@ -56,7 +60,6 @@ struct ChainDetailActionButtons: View {
         NavigationLink {
             SendCryptoView(
                 tx: sendTx,
-                group: group,
                 vault: vault
             )
         } label: {
@@ -82,6 +85,12 @@ struct ChainDetailActionButtons: View {
     
     private func setData() async {
         actions = await viewModel.actionResolver.resolveActions(for: group.chain)
+        
+        guard let firstCoin = group.coins.first else {
+            return
+        }
+        
+        sendTx.coin = firstCoin
     }
 }
 

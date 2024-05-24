@@ -8,9 +8,9 @@
 import SwiftUI
 
 struct TokenSelectorDropdown: View {
-
     @Binding var coins: [Coin]
     @Binding var selected: Coin
+    var balance: String? = nil
 
     var onSelect: ((Coin) -> Void)?
 
@@ -46,7 +46,11 @@ struct TokenSelectorDropdown: View {
             Text("\(selected.ticker)")
             Spacer()
             
-            Text(selected.balanceString)
+            if let balance {
+                Text(balance)
+            } else {
+                Text(selected.balanceString)
+            }
 
             if isActive {
                 Image(systemName: "chevron.down")

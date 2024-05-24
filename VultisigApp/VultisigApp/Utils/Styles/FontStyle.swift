@@ -67,6 +67,7 @@ extension Font {
     
     // Bold
     static let title30MenloBold = Font.custom("Menlo", size: 30).bold()
+    static let title32MenloBold = Font.custom("Menlo", size: 32).bold()
     static let title35MenloBold = Font.custom("Menlo", size: 35).bold()
     static let title40MenloBold = Font.custom("Menlo", size: 40).bold()
     

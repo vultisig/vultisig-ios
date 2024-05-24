@@ -12,7 +12,6 @@ struct ChainNavigationCell: View {
     let vault: Vault
     
     @Binding var isEditingChains: Bool
-
     @EnvironmentObject var viewModel: VaultDetailViewModel
     
     var body: some View {
