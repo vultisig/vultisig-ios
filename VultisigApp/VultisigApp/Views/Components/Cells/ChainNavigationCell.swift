@@ -10,13 +10,8 @@ import SwiftUI
 struct ChainNavigationCell: View {
     let group: GroupedChain
     let vault: Vault
+    
     @Binding var isEditingChains: Bool
-    @Binding var totalBalance: Decimal
-    @Binding var totalUpdateCount: Int
-    
-    @State var balanceInFiat: String? = nil
-    @State var balanceInDecimal: Decimal? = nil
-    
     @EnvironmentObject var viewModel: VaultDetailViewModel
     
     var body: some View {
@@ -28,30 +23,18 @@ struct ChainNavigationCell: View {
         .listRowSeparator(.hidden)
         .disabled(isEditingChains ? true : false)
         .padding(.vertical, 8)
-        .onChange(of: balanceInDecimal) { oldValue, newValue in
-            updateTotal(newValue)
-        }
     }
     
     var cell: some View {
-        ChainCell(group: group, balanceInFiat: $balanceInFiat, isEditingChains: $isEditingChains, balanceInDecimal: $balanceInDecimal)
+        ChainCell(group: group, isEditingChains: $isEditingChains)
     }
     
     var navigationCell: some View {
         NavigationLink {
-            ChainDetailView(group: group, vault: vault, balanceInFiat: balanceInFiat)
+            ChainDetailView(group: group, vault: vault)
         } label: {
-            ChainCell(group: group, balanceInFiat: $balanceInFiat, isEditingChains: $isEditingChains, balanceInDecimal: $balanceInDecimal)
+            ChainCell(group: group, isEditingChains: $isEditingChains)
         }
-    }
-    
-    private func updateTotal(_ value: Decimal?) {
-        guard let value, totalUpdateCount <= viewModel.coinsGroupedByChains.count else {
-            return
-        }
-        
-        totalUpdateCount += 1
-        totalBalance += value
     }
 }
 
@@ -59,8 +42,7 @@ struct ChainNavigationCell: View {
     ChainNavigationCell(
         group: GroupedChain.example,
         vault: Vault.example,
-        isEditingChains: .constant(true), totalBalance: .constant(0),
-        totalUpdateCount: .constant(0)
+        isEditingChains: .constant(true)
     )
     .environmentObject(VaultDetailViewModel())
 }

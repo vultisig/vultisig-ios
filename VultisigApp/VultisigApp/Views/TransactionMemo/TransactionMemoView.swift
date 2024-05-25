@@ -2,7 +2,6 @@ import SwiftUI
 
 struct TransactionMemoView: View {
     @ObservedObject var tx: SendTransaction
-    let group: GroupedChain
     let vault: Vault
     
     @StateObject var transactionMemoViewModel = TransactionMemoViewModel()
@@ -89,8 +88,7 @@ struct TransactionMemoView: View {
     var detailsView: some View {
         TransactionMemoDetailsView(
             tx: tx,
-            transactionMemoViewModel: transactionMemoViewModel,
-            group: group
+            transactionMemoViewModel: transactionMemoViewModel
         )
     }
     

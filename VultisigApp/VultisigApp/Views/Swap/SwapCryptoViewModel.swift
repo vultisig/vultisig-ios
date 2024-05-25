@@ -28,6 +28,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
     private let swapService = SwapService.shared
     private let blockchainService = BlockChainService.shared
+    private let balanceService = BalanceService.shared
 
     var keysignPayload: KeysignPayload?
     
@@ -41,20 +42,12 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     @MainActor @Published var isLoading = false
     @MainActor @Published var quoteLoading = false
 
-    func load(tx: SwapTransaction, fromCoin: Coin, coins: [Coin], coinViewModel: CoinViewModel, vault: Vault) async {
+    func load(tx: SwapTransaction, fromCoin: Coin, coins: [Coin], vault: Vault) async {
         self.coins = coins.filter { $0.chain.isSwapSupported }
         tx.toCoin = coins.first!
         tx.fromCoin = fromCoin
 
         updateInitial(tx: tx, vault: vault)
-
-        await withTaskGroup(of: Void.self) { group in
-            for coin in coins {
-                group.addTask {
-                    await coinViewModel.loadData(coin: coin)
-                }
-            }
-        }
     }
     
     var progress: Double {
@@ -399,7 +392,7 @@ private extension SwapCryptoViewModel {
 
     func feeCoin(tx: SwapTransaction) -> Coin {
         switch tx.fromCoin.chainType {
-        case .UTXO, .Solana, .THORChain, .Cosmos, .none, .Polkadot, .Sui:
+        case .UTXO, .Solana, .THORChain, .Cosmos, .Polkadot, .Sui:
             return tx.fromCoin
         case .EVM:
             guard !tx.fromCoin.isNativeToken else { return tx.fromCoin }

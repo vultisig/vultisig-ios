@@ -6,31 +6,31 @@
 //
 
 import Foundation
+import SwiftUI
 
 @MainActor
 class VaultDetailViewModel: ObservableObject {
-    @Published var coins = [Coin]()
     @Published var coinsGroupedByChains = [GroupedChain]()
-    let defaultChains = [Chain.bitcoin,Chain.ethereum,Chain.thorChain,Chain.solana]
-    @Published var totalBalanceInFiat: Decimal = 0
     
-    func getTotalUpdatedBalance() async {
-        var totalBalance: Decimal = 0
-        
-        for group in coinsGroupedByChains {
-            for coin in group.coins {
-                do {
-                    let (_, _, balanceInFiatDecimal) = try await BalanceService.shared.balance(for: coin)
-                    totalBalance += balanceInFiatDecimal
-                } catch {
-                    print("Error fetching balance for coin \(coin): \(error)")
-                }
-            }
+    let defaultChains = [Chain.bitcoin, Chain.ethereum, Chain.thorChain, Chain.solana]
+    let balanceService = BalanceService.shared
+
+    private var updateBalanceTask: Task<Void, Never>?
+
+    func updateBalance() {
+        updateBalanceTask?.cancel()
+        updateBalanceTask = Task {
+            let coins = coinsGroupedByChains.reduce([]) { $0 + $1.coins }
+            await balanceService.updateBalances(coins: coins)
         }
-        
-        self.totalBalanceInFiat = totalBalance
     }
-    
+
+    func setOrder() {
+        for index in 0..<coinsGroupedByChains.count {
+            coinsGroupedByChains[index].setOrder(index)
+        }
+    }
+
     func fetchCoins(for vault: Vault) {
         // add bitcoin when the vault doesn't have any coins in it
         if vault.coins.count == 0 {
@@ -53,21 +53,23 @@ class VaultDetailViewModel: ObservableObject {
                 
                 switch result {
                 case .success(let btc):
-                    vault.coins.append(btc)
+                    Task{
+                        try await Storage.shared.save(btc)
+                        vault.coins.append(btc)
+                    }
                 case .failure(let error):
                     print("error: \(error)")
                 }
                 
             }
         }
-        coins = vault.coins
-        categorizeCoins()
+        categorizeCoins(vault: vault)
     }
     
-    private func categorizeCoins() {
+    private func categorizeCoins(vault: Vault) {
         coinsGroupedByChains = [GroupedChain]()
         
-        for coin in coins {
+        for coin in vault.coins {
             addCoin(coin)
         }
         coinsGroupedByChains.sort { $0.name < $1.name }

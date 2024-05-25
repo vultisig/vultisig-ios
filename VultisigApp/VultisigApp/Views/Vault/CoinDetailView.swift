@@ -11,7 +11,6 @@ struct CoinDetailView: View {
     let coin: Coin
     let group: GroupedChain
     let vault: Vault
-    let viewModel: CoinViewModel
     @ObservedObject var sendTx: SendTransaction
     
     @State var isLoading = false
@@ -73,16 +72,16 @@ struct CoinDetailView: View {
     }
     
     var cell: some View {
-        CoinCell(coin: coin, group: group, vault: vault, coinViewModel: viewModel)
+        CoinCell(coin: coin, group: group, vault: vault)
     }
     
     private func refreshData() async {
         isLoading = true
-        await viewModel.loadData(coin: coin)
+        await BalanceService.shared.updateBalance(for: coin)
         isLoading = false
     }
 }
 
 #Preview {
-    CoinDetailView(coin: Coin.example, group: GroupedChain.example, vault: Vault.example, viewModel: CoinViewModel(), sendTx: SendTransaction())
+    CoinDetailView(coin: Coin.example, group: GroupedChain.example, vault: Vault.example, sendTx: SendTransaction())
 }

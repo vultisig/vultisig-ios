@@ -11,7 +11,6 @@ struct SwapCryptoDetailsView: View {
 
     @ObservedObject var tx: SwapTransaction
     @ObservedObject var swapViewModel: SwapCryptoViewModel
-    @ObservedObject var coinViewModel: CoinViewModel
 
     let vault: Vault
 
@@ -63,7 +62,7 @@ struct SwapCryptoDetailsView: View {
                 swapViewModel.updateFromCoin(tx: tx, vault: vault)
             })
             getBalance(for: tx.fromBalance)
-                .redacted(reason: coinViewModel.isLoading ? .placeholder : [])
+                .redacted(reason: tx.fromCoin.balanceDecimal.isZero ? .placeholder : [])
         }
     }
     
@@ -94,7 +93,7 @@ struct SwapCryptoDetailsView: View {
                 swapViewModel.updateToCoin(tx: tx)
             })
             getBalance(for: tx.toBalance)
-                .redacted(reason: coinViewModel.isLoading ? .placeholder : [])
+                .redacted(reason: tx.toCoin.balanceDecimal.isZero ? .placeholder : [])
         }
     }
     
@@ -168,5 +167,5 @@ struct SwapCryptoDetailsView: View {
 }
 
 #Preview {
-    SwapCryptoDetailsView(tx: SwapTransaction(), swapViewModel: SwapCryptoViewModel(), coinViewModel: CoinViewModel(), vault: .example)
+    SwapCryptoDetailsView(tx: SwapTransaction(), swapViewModel: SwapCryptoViewModel(), vault: .example)
 }
