@@ -23,13 +23,11 @@ struct NetworkPrompts: View {
     }
     
     var phoneLayout: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 12) {
-                cells
-            }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 8)
+        HStack(spacing: 12) {
+            cells
         }
+        .padding(.horizontal, 24)
+        .padding(.vertical, 8)
     }
     
     var padLayout: some View {
