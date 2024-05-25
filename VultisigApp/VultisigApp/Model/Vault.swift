@@ -9,20 +9,19 @@ import WalletCore
 @Model
 final class Vault: ObservableObject, Codable {
     @Attribute(.unique) var name: String
-    var signers: [String] = []
-    var createdAt: Date = Date.now
     @Attribute(.unique) var pubKeyECDSA: String = ""
     @Attribute(.unique) var pubKeyEdDSA: String = ""
-    var hexChainCode: String = ""
     
+    var signers: [String] = []
+    var createdAt: Date = Date.now
+    var hexChainCode: String = ""
     var keyshares = [KeyShare]()
-    // it is important to record the localPartID of the vault, when the vault is created, the local party id has been record as part of it's local keyshare , and keygen committee
-    // thus , when user change their device name , or if they lost the original device , and restore the keyshare to a new device , keysign can still work
+
+/// Note: it is important to record the localPartID of the vault, when the vault is created, the local party id has been record as part of it's local keyshare , and keygen committee thus , when user change their device name , or if they lost the original device , and restore the keyshare to a new device , keysign can still work
     var localPartyID: String = ""
     var resharePrefix: String? = nil
     var order: Int = 0
-    
-    var coins = [Coin]()
+    @Relationship(deleteRule: .cascade) var coins = [Coin]()
     
     enum CodingKeys: CodingKey {
         case name
@@ -56,7 +55,7 @@ final class Vault: ObservableObject, Codable {
     init(name: String, signers: [String], pubKeyECDSA: String, pubKeyEdDSA: String, keyshares: [KeyShare], localPartyID: String, hexChainCode: String, resharePrefix: String?) {
         self.name = name
         self.signers = signers
-        createdAt = Date.now
+        self.createdAt = Date.now
         self.pubKeyECDSA = pubKeyECDSA
         self.pubKeyEdDSA = pubKeyEdDSA
         self.keyshares = keyshares

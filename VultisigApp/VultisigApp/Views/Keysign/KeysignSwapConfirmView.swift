@@ -59,7 +59,7 @@ struct KeysignSwapConfirmView: View {
         case .oneInch:
             return "1Inch"
         case .thorchain:
-            return "THORCain"
+            return "THORChain"
         case .none:
             return .empty
         }
