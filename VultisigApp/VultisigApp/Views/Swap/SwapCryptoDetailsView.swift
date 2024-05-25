@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct SwapCryptoDetailsView: View {
-
     @ObservedObject var tx: SwapTransaction
     @ObservedObject var swapViewModel: SwapCryptoViewModel
 
@@ -103,18 +102,7 @@ struct SwapCryptoDetailsView: View {
     }
     
     var summary: some View {
-        VStack(spacing: 16) {
-            if swapViewModel.showFees(tx: tx) {
-                getSummaryCell(leadingText: "Estimated Fees", trailingText: swapViewModel.swapFeeString(tx: tx))
-            }
-            if swapViewModel.showDuration(tx: tx) {
-                getSummaryCell(leadingText: "Estimated Time", trailingText: swapViewModel.durationString(tx: tx))
-            }
-            if let error = swapViewModel.error {
-                Separator()
-                getErrorCell(text: error.localizedDescription)
-            }
-        }
+        SwapDetailsSummary(tx: tx, swapViewModel: swapViewModel)
     }
     
     var continueButton: some View {
@@ -141,28 +129,6 @@ struct SwapCryptoDetailsView: View {
              .foregroundColor(.neutral0)
              .frame(maxWidth: .infinity, alignment: .leading)
              .padding(.top, 4)
-    }
-
-    private func getSummaryCell(leadingText: String, trailingText: String) -> some View {
-        HStack {
-            Text(NSLocalizedString(leadingText, comment: ""))
-            Spacer()
-            Text(trailingText)
-        }
-        .font(.body16Menlo)
-        .foregroundColor(.neutral0)
-    }
-
-    private func getErrorCell(text: String) -> some View {
-        HStack() {
-            Text(text)
-                .foregroundColor(.destructive)
-                .font(.body12Menlo)
-                .multilineTextAlignment(.leading)
-                .lineSpacing(4)
-
-            Spacer()
-        }
     }
 }
 
