@@ -10,6 +10,7 @@ import SwiftUI
 struct SwapCryptoDetailsView: View {
     @ObservedObject var tx: SwapTransaction
     @ObservedObject var swapViewModel: SwapCryptoViewModel
+    @State var buttonRotated = false
 
     let vault: Vault
 
@@ -80,6 +81,7 @@ struct SwapCryptoDetailsView: View {
     
     var swapButton: some View {
         Button {
+            buttonRotated.toggle()
             swapViewModel.switchCoins(tx: tx, vault: vault)
         } label: {
             Image(systemName: "arrow.up.arrow.down")
@@ -91,6 +93,8 @@ struct SwapCryptoDetailsView: View {
                 .padding(2)
                 .background(Color.black.opacity(0.2))
                 .cornerRadius(50)
+                .rotationEffect(.degrees(buttonRotated ? 180 : 0))
+                .animation(.spring, value: buttonRotated)
         }
     }
     
