@@ -12,7 +12,8 @@ import Combine
 enum TransactionMemoType: String, CaseIterable, Identifiable {
     case bond,
          unbond,
-         leave
+         leave,
+         custom
     
     var id: String { self.rawValue }
 }
