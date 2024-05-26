@@ -85,7 +85,7 @@ struct SwapCryptoAmountTextField: View {
     }
     
     var fiatBalance: some View {
-        Text(fiatAmount)
+        Text(fiatAmount.formatToFiat(includeCurrencySymbol: true))
             .font(.body16Menlo)
             .foregroundColor(.neutral400)
     }
