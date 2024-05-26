@@ -40,7 +40,7 @@ struct SwapCryptoDetailsView: View {
     
     var fields: some View {
         ScrollView {
-            VStack(spacing: 16) {
+            VStack(spacing: 8) {
                 fromCoinField
                 swapContent
                 toCoinField

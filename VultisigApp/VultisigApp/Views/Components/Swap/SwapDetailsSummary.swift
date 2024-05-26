@@ -17,7 +17,9 @@ struct SwapDetailsSummary: View {
     
     var content: some View {
         VStack(spacing: 16) {
-            
+            if let providerName = tx.quote?.displayName {
+                getSummaryCell(leadingText: "provider", trailingText: providerName, image: providerName)
+            }
             
             getSummaryCell(leadingText: "gas(auto)", trailingText: String(tx.gas))
             
@@ -34,16 +36,39 @@ struct SwapDetailsSummary: View {
                 getErrorCell(text: error.localizedDescription)
             }
         }
+        .padding(.top, 8)
     }
     
-    private func getSummaryCell(leadingText: String, trailingText: String) -> some View {
+    func getProvider() -> String? {
+        switch swapViewModel.keysignPayload?.swapPayload {
+        case .oneInch:
+            return "1Inch"
+        case .thorchain:
+            return "THORChain"
+        case .none:
+            return nil
+        }
+    }
+    
+    private func getSummaryCell(leadingText: String, trailingText: String, image: String? = nil) -> some View {
         HStack {
             Text(NSLocalizedString(leadingText, comment: ""))
             Spacer()
+            
+            if let image {
+                getImage(image)
+            }
+            
             Text(trailingText)
         }
         .font(.body14Menlo)
         .foregroundColor(.neutral0)
+    }
+    
+    private func getImage(_ image: String) -> some View {
+        Image(image)
+            .resizable()
+            .frame(width: 16, height: 16)
     }
     
     private func getErrorCell(text: String) -> some View {
