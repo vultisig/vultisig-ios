@@ -41,6 +41,9 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     @MainActor @Published var error: Error?
     @MainActor @Published var isLoading = false
     @MainActor @Published var quoteLoading = false
+    
+    @MainActor @Published var fromFiatAmount = "0"
+    @MainActor @Published var toFiatAmount = "0"
 
     func load(tx: SwapTransaction, fromCoin: Coin, coins: [Coin], vault: Vault) async {
         self.coins = coins.filter { $0.chain.isSwapSupported }
@@ -302,6 +305,23 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     
     func handleBackTap() {
         currentIndex-=1
+    }
+    
+    func convertToFiat(amount: String, coin: Coin, tx: SwapTransaction) async -> String {
+        let priceRateFiat = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
+        if let newValueDouble = Double(amount) {
+            let newValueFiat = String(format: "%.2f", newValueDouble * priceRateFiat)
+            return newValueFiat.isEmpty ? "" : newValueFiat
+        } else {
+            return ""
+        }
+    }
+    
+    func updateFiatAmount(tx: SwapTransaction) {
+        Task {
+            fromFiatAmount = await convertToFiat(amount: tx.fromAmount, coin: tx.fromCoin, tx: tx)
+            toFiatAmount = await convertToFiat(amount: tx.toAmountDecimal.description, coin: tx.toCoin, tx: tx)
+        }
     }
 }
 

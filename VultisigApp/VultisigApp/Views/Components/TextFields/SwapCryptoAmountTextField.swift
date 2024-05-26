@@ -33,7 +33,10 @@ struct SwapCryptoAmountTextField: View {
             }
             
             Spacer()
-            fiatBalance
+            
+            if !amount.isEmpty, amount != "0" {
+                fiatBalance
+            }
         }
     }
     

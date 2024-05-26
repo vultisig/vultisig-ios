@@ -10,6 +10,7 @@ import SwiftUI
 struct SwapCryptoDetailsView: View {
     @ObservedObject var tx: SwapTransaction
     @ObservedObject var swapViewModel: SwapCryptoViewModel
+    
     @State var buttonRotated = false
 
     let vault: Vault
@@ -74,8 +75,16 @@ struct SwapCryptoDetailsView: View {
     }
     
     var fromAmountField: some View {
-        SwapCryptoAmountTextField(title: "from", fiatAmount: "$100", amount: $tx.fromAmount) { _ in
+        SwapCryptoAmountTextField(
+            title: "from",
+            fiatAmount: swapViewModel.fromFiatAmount,
+            amount: $tx.fromAmount
+        ) { _ in
             swapViewModel.updateFromAmount(tx: tx)
+            swapViewModel.updateFiatAmount(tx: tx)
+        }
+        .onChange(of: tx.fromCoin) { oldValue, newValue in
+            swapViewModel.updateFiatAmount(tx: tx)
         }
     }
     
@@ -107,8 +116,16 @@ struct SwapCryptoDetailsView: View {
     }
     
     var toAmountField: some View {
-        SwapCryptoAmountTextField(title: "to", fiatAmount: "$100", amount: .constant(tx.toAmountDecimal.description), onChange: { _ in })
-            .disabled(true)
+        SwapCryptoAmountTextField(
+            title: "to",
+            fiatAmount: swapViewModel.toFiatAmount,
+            amount: .constant(tx.toAmountDecimal.description),
+            onChange: { _ in }
+        )
+        .disabled(true)
+        .onChange(of: tx.toCoin) { oldValue, newValue in
+            swapViewModel.updateFiatAmount(tx: tx)
+        }
     }
     
     var summary: some View {

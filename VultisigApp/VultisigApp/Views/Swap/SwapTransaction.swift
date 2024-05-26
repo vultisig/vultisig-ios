@@ -60,27 +60,27 @@ class SwapTransaction: ObservableObject {
     }
     
     var gasInReadable: String {
-        guard var decimals = Int(toCoin.decimals) else {
+        guard var decimals = Int(fromCoin.decimals) else {
             return .empty
         }
-        if toCoin.chain.chainType == .EVM {
+        if fromCoin.chain.chainType == .EVM {
             // convert to Gwei , show as Gwei for EVM chain only
             guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description) else {
                 return .empty
             }
-            return "\(Decimal(gas) / weiPerGWeiDecimal) \(toCoin.feeUnit)"
+            return "\(Decimal(gas) / weiPerGWeiDecimal) \(fromCoin.feeUnit)"
         }
         
         // If not a native token we need to get the decimals from the native token
-        if !toCoin.isNativeToken {
+        if !fromCoin.isNativeToken {
             if let vault = ApplicationState.shared.currentVault {
-                if let nativeToken = vault.coins.first(where: { $0.isNativeToken && $0.chain.name == toCoin.chain.name }) {
+                if let nativeToken = vault.coins.first(where: { $0.isNativeToken && $0.chain.name == fromCoin.chain.name }) {
                     decimals = Int(nativeToken.decimals) ?? .zero
                 }
             }
         }
         
-        return "\((Decimal(gas) / pow(10,decimals)).formatToDecimal(digits: decimals).description) \(toCoin.feeUnit)"
+        return "\((Decimal(gas) / pow(10,decimals)).formatToDecimal(digits: decimals).description) \(fromCoin.feeUnit)"
     }
 }
 
