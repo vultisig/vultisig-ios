@@ -28,11 +28,13 @@ struct VaultDetailView: View {
         }
         .onAppear {
             setData()
+            viewModel.setDefaultCoins(for: vault)
             appState.currentVault = vault
-			ApplicationState.shared.currentVault = vault
         }
         .onChange(of: vault) {
             setData()
+            viewModel.setDefaultCoins(for: vault)
+            appState.currentVault = vault
         }
         .onChange(of: vault.coins) {
             setData()

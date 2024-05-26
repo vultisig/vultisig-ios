@@ -14,9 +14,9 @@ class VaultDetailViewModel: ObservableObject {
     
     let defaultChains = [Chain.bitcoin, Chain.ethereum, Chain.thorChain, Chain.solana]
     let balanceService = BalanceService.shared
-
+    
     private var updateBalanceTask: Task<Void, Never>?
-
+    
     func updateBalance() {
         updateBalanceTask?.cancel()
         updateBalanceTask = Task {
@@ -24,16 +24,15 @@ class VaultDetailViewModel: ObservableObject {
             await balanceService.updateBalances(coins: coins)
         }
     }
-
+    
     func setOrder() {
         for index in 0..<coinsGroupedByChains.count {
             coinsGroupedByChains[index].setOrder(index)
         }
     }
-
-    func fetchCoins(for vault: Vault) {
+    func setDefaultCoins(for vault: Vault){
         // add bitcoin when the vault doesn't have any coins in it
-        if vault.coins.count == 0 {
+        if vault.coins.count == 0{
             for chain in defaultChains {
                 var result: Result<Coin,Error>
                 switch chain {
@@ -54,7 +53,11 @@ class VaultDetailViewModel: ObservableObject {
                 switch result {
                 case .success(let btc):
                     Task{
-                        try await Storage.shared.save(btc)
+                        do{
+                            try await Storage.shared.save(btc)
+                        }catch{
+                            print("fail to save coin: \(error)")
+                        }
                         vault.coins.append(btc)
                     }
                 case .failure(let error):
@@ -63,6 +66,8 @@ class VaultDetailViewModel: ObservableObject {
                 
             }
         }
+    }
+    func fetchCoins(for vault: Vault) {
         categorizeCoins(vault: vault)
     }
     
