@@ -55,10 +55,10 @@ class VaultDetailViewModel: ObservableObject {
                     Task{
                         do{
                             try await Storage.shared.save(btc)
+                            vault.coins.append(btc)
                         }catch{
                             print("fail to save coin: \(error)")
                         }
-                        vault.coins.append(btc)
                     }
                 case .failure(let error):
                     print("error: \(error)")
