@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SwapCryptoAmountTextField: View {
     let title: String
-    let balanceString: String
+    let fiatAmount: String
     @Binding var amount: String
 
     var onChange: (String) async -> Void
@@ -33,7 +33,7 @@ struct SwapCryptoAmountTextField: View {
             }
             
             Spacer()
-            balance
+            fiatBalance
         }
     }
     
@@ -81,21 +81,17 @@ struct SwapCryptoAmountTextField: View {
         }
     }
     
-    var balance: some View {
-        Group {
-            Text(NSLocalizedString("balance", comment: "")) +
-            Text(": ") +
-            Text(balanceString)
-        }
-        .font(.body12Menlo)
-        .foregroundColor(.neutral200)
+    var fiatBalance: some View {
+        Text(fiatAmount)
+            .font(.body16Menlo)
+            .foregroundColor(.neutral400)
     }
 }
 
 #Preview {
     SwapCryptoAmountTextField(
         title: "to",
-        balanceString: "1.1",
+        fiatAmount: "$1000",
         amount: .constant(.empty),
         onChange: { _ in }
     )
