@@ -41,23 +41,26 @@ struct SwapCryptoDetailsView: View {
     var fields: some View {
         ScrollView {
             VStack(spacing: 16) {
-                ZStack {
-                    content
-                    swapButton
-                }
-                
+                fromCoinField
+                swapContent
+                toCoinField
                 summary
             }
             .padding(.horizontal, 16)
         }
     }
     
+    var swapContent: some View {
+        ZStack {
+            content
+            swapButton
+        }
+    }
+    
     var content: some View {
         VStack(spacing: 8) {
-            fromCoinField
             fromAmountField
             toAmountField
-            toCoinField
         }
     }
     
