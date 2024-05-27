@@ -71,9 +71,7 @@ enum MayaChainHelper {
     }
     
     static func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
-        guard keysignPayload.coin.chain.ticker == "CACAO" else {
-            return .failure(HelperError.runtimeError("coin is not CACAO"))
-        }
+        
         guard let fromAddr = AnyAddress(string: keysignPayload.coin.address, coin: .thorchain, hrp: "maya") else {
             return .failure(HelperError.runtimeError("\(keysignPayload.coin.address) is invalid"))
         }
@@ -123,7 +121,7 @@ enum MayaChainHelper {
                 $0.thorchainSendMessage = CosmosMessage.THORChainSend.with {
                     $0.fromAddress = fromAddr.data
                     $0.amounts = [CosmosAmount.with {
-                        $0.denom = "cacao"
+                        $0.denom = keysignPayload.coin.ticker.lowercased()
                         $0.amount = String(keysignPayload.toAmount)
                     }]
                     $0.toAddress = toAddress.data
