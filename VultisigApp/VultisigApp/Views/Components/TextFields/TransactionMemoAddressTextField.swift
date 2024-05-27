@@ -143,7 +143,8 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
     }
     
     private func validateAddress(_ newValue: String) {
-        isValid = CoinType.thorchain.validate(address: newValue)
+        isValid = CoinType.thorchain.validate(address: newValue) ||
+                    AnyAddress.isValidBech32(string: newValue, coin: .thorchain, hrp: "maya")
     }
     
     private func pasteAddress() {

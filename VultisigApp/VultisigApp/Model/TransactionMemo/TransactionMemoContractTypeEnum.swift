@@ -8,15 +8,16 @@
 import SwiftUI
 import Foundation
 import Combine
+import WalletCore
 
 enum TransactionMemoContractType: String, CaseIterable, Identifiable {
     case thorChainMessageDeposit
     var id: String { self.rawValue }
-    
-    var description: String {
-        switch(self){
+
+    func getDescription(for coin: Coin) -> String {
+        switch self {
         case .thorChainMessageDeposit:
-            "THORChain message deposit"
+            return "\(coin.chain.name) message deposit"
         }
     }
 }
