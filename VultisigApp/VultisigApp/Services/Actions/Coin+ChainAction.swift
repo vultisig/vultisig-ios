@@ -46,7 +46,7 @@ extension Chain {
         case .kujira:
             return [.send]
         case .mayaChain:
-            return [.send]
+            return [.send, .memo]
         case .cronosChain:
             return [.send]
         case .sui:

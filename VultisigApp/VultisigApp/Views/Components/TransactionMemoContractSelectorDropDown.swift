@@ -11,6 +11,7 @@ struct TransactionMemoContractSelectorDropDown: View {
     
     @Binding var items: [TransactionMemoContractType]
     @Binding var selected: TransactionMemoContractType
+    var coin: Coin
     
     var onSelect: ((TransactionMemoContractType) -> Void)?
     
@@ -42,7 +43,7 @@ struct TransactionMemoContractSelectorDropDown: View {
     
     var cell: some View {
         HStack(spacing: 12) {
-            Text(selected.description)
+            Text(selected.getDescription(for: coin))
             Spacer()
             
             if isActive {
@@ -70,7 +71,7 @@ struct TransactionMemoContractSelectorDropDown: View {
     
     private func getCell(for item: TransactionMemoContractType) -> some View {
         HStack(spacing: 12) {
-            Text(item.description)
+            Text(item.getDescription(for: coin))
                 .font(.body16Menlo)
                 .foregroundColor(.neutral0)
             
