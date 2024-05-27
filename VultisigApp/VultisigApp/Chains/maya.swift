@@ -103,7 +103,7 @@ enum MayaChainHelper {
                     $0.synth = false
                 }
                 $0.amount = String(keysignPayload.toAmount)
-                $0.decimals = 8
+                $0.decimals = Int64(keysignPayload.coin.decimals) ?? .zero
             }
             message = [CosmosMessage.with {
                 $0.thorchainDepositMessage = CosmosMessage.THORChainDeposit.with {
@@ -149,6 +149,7 @@ enum MayaChainHelper {
                 }]
             }
         }
+        print(input.debugDescription)
         do {
             let inputData = try input.serializedData()
             return .success(inputData)
