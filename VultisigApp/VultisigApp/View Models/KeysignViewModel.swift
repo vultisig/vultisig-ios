@@ -197,7 +197,7 @@ class KeysignViewModel: ObservableObject {
     func verifyAllowance() async throws {
         guard let swapPayload = keysignPayload?.swapPayload,
               let spender = swapPayload.router, 
-              let fromCoin = keysignPayload?.coin else { return }
+              let fromCoin = keysignPayload?.coin, fromCoin.shouldApprove else { return }
 
         do {
             let service = try EvmServiceFactory.getService(forChain: fromCoin)
