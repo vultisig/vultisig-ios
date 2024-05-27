@@ -83,7 +83,9 @@ struct PeerCell: View {
         let idString = id.lowercased()
         let deviceName: String
         
-        if idString.contains("iphone") {
+        if ProcessInfo.processInfo.isiOSAppOnMac {
+            deviceName = "Mac"
+        } else if idString.contains("iphone") {
             deviceName = "iPhone"
         } else if idString.contains("ipad") {
             deviceName = "iPad"
