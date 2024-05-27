@@ -22,24 +22,32 @@ class PolkadotService: RpcService {
         }
         
         let body = ["key": address]
-        do {
-            let requestBody = try JSONEncoder().encode(body)
-            let responseBodyData = try await Utils.asyncPostRequest(urlString: Endpoint.polkadotServiceBalance, headers: [:], body: requestBody)
-            
-            if let balance = Utils.extractResultFromJson(fromData: responseBodyData, path: "data.account.balance") as? String {
-                let decimalBalance = (Decimal(string: balance) ?? Decimal.zero) * pow(10, 10)
-                let bigIntResult = decimalBalance.description.toBigInt()
-                self.cachePolkadotBalance.set(cacheKey, (data: bigIntResult, timestamp: Date()))
-                return bigIntResult
+        let maxRetries = 3
+        let retryDelay: UInt64 = 1_000_000_000 // 1 second in nanoseconds
+
+        for attempt in 1...maxRetries {
+            do {
+                let requestBody = try JSONEncoder().encode(body)
+                let responseBodyData = try await Utils.asyncPostRequest(urlString: Endpoint.polkadotServiceBalance, headers: [:], body: requestBody)
+                
+                if let balance = Utils.extractResultFromJson(fromData: responseBodyData, path: "data.account.balance") as? String {
+                    let decimalBalance = (Decimal(string: balance) ?? Decimal.zero) * pow(10, 10)
+                    let bigIntResult = decimalBalance.description.toBigInt()
+                    self.cachePolkadotBalance.set(cacheKey, (data: bigIntResult, timestamp: Date()))
+                    return bigIntResult
+                }
+            } catch {
+                print("PolkadotService > fetchBalance > Error encoding JSON: \(error), Attempt: \(attempt) of \(maxRetries)")
+                if attempt < maxRetries {
+                    try await Task.sleep(nanoseconds: retryDelay)
+                } else {
+                    return BigInt.zero
+                }
             }
-        } catch {
-            print("PolkadotService > fetchBalance > Error encoding JSON: \(error)")
-            return BigInt.zero
         }
-        
         return BigInt.zero
     }
-    
+
     private func fetchNonce(address: String) async throws -> BigInt {
         return try await intRpcCall(method: "system_accountNextIndex", params: [address])
     }
