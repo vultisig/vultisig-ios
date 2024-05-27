@@ -42,8 +42,10 @@ class THORChainSwaps {
                 $0.interval = swapPayload.streamingInterval
                 $0.quantity = swapPayload.streamingQuantity
             }
-            $0.affiliateFeeAddress = THORChainSwaps.affiliateFeeAddress
-            $0.affiliateFeeRateBp = THORChainSwaps.affiliateFeeRateBp
+            if swapPayload.isAffiliate {
+                $0.affiliateFeeAddress = THORChainSwaps.affiliateFeeAddress
+                $0.affiliateFeeRateBp = THORChainSwaps.affiliateFeeRateBp
+            }
         }
 
         do {
@@ -81,7 +83,7 @@ class THORChainSwaps {
     
     func getPreSignedImageHash(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload) -> Result<[String], Error> {
         let result = getPreSignedInputData(swapPayload: swapPayload, keysignPayload: keysignPayload)
-        
+
         do {
             switch result {
             case .success(let inputData):
