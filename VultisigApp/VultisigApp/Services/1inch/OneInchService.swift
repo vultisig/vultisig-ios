@@ -33,7 +33,7 @@ struct OneInchService {
             from: from,
             slippage: "0.5",
             referrer: referrerAddress,
-            fee: 0.7, 
+            fee: 0.5, 
             isAffiliate: isAffiliate
         )
 
