@@ -37,8 +37,8 @@ enum THORChainHelper {
     }
     
     static func getSwapPreSignedInputData(keysignPayload: KeysignPayload, signingInput: CosmosSigningInput) -> Result<Data, Error> {
-        guard case .THORChain(let accountNumber, let sequence) = keysignPayload.chainSpecific else {
-            return .failure(HelperError.runtimeError("fail to get account number and sequence"))
+        guard case .THORChain(let accountNumber, let sequence, let fee) = keysignPayload.chainSpecific else {
+            return .failure(HelperError.runtimeError("fail to get account number, sequence, or fee"))
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
             return .failure(HelperError.runtimeError("invalid hex public key"))
@@ -52,7 +52,7 @@ enum THORChainHelper {
             $0.gas = 20000000
             $0.amounts = [CosmosAmount.with {
                 $0.denom = "rune"
-                $0.amount = THORChainHelper.THORChainGas.description
+                $0.amount = fee.description
             }]
         }
         // memo has been set
@@ -73,8 +73,8 @@ enum THORChainHelper {
             return .failure(HelperError.runtimeError("\(keysignPayload.coin.address) is invalid"))
         }
         
-        guard case .THORChain(let accountNumber, let sequence) = keysignPayload.chainSpecific else {
-            return .failure(HelperError.runtimeError("fail to get account number and sequence"))
+        guard case .THORChain(let accountNumber, let sequence, let fee) = keysignPayload.chainSpecific else {
+            return .failure(HelperError.runtimeError("fail to get account number, sequence, or fee"))
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
             return .failure(HelperError.runtimeError("invalid hex public key"))
@@ -138,10 +138,10 @@ enum THORChainHelper {
             }
             $0.messages = message
             $0.fee = CosmosFee.with {
-                $0.gas = THORChainGas
+                $0.gas = 20000000
                 $0.amounts = [CosmosAmount.with {
                     $0.denom = "rune"
-                    $0.amount = THORChainHelper.THORChainGas.description
+                    $0.amount = fee.description
                 }]
             }
         }
