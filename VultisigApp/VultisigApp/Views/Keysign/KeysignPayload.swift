@@ -32,7 +32,7 @@ enum BlockChainSpecific: Codable, Hashable {
         case .Ethereum(let maxFeePerGas, _, _, _):
             return maxFeePerGas
         case .THORChain:
-            return 2_000_000
+            return THORChainHelper.THORChainGas.description.toBigInt()
         case .MayaChain:
             return MayaChainHelper.MayaChainGas.description.toBigInt() //Maya uses 10e10
         case .Cosmos:

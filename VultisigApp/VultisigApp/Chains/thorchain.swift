@@ -8,7 +8,41 @@ import Tss
 import WalletCore
 
 enum THORChainHelper {
-    static let THORChainGas: UInt64 = 2000000
+    static let THORChainGas: UInt64 = getTHORChainGasPrice()
+    
+    private static var cachedTHORChainGas: UInt64?
+    
+    private static func fetchTHORChainGas(completion: @escaping (UInt64) -> Void) {
+        if let gas = cachedTHORChainGas {
+            completion(gas)
+        } else {
+            Task {
+                do {
+                    let feePrice = try await ThorchainService.shared.fetchFeePrice()
+                    cachedTHORChainGas = feePrice
+                    completion(feePrice)
+                } catch {
+                    print("Failed to fetch THORChain gas price: \(error)")
+                    completion(0) // or any default value you see fit
+                }
+            }
+        }
+    }
+    
+    static func getTHORChainGasPrice() -> UInt64 {
+        let semaphore = DispatchSemaphore(value: 0)
+        var gasPrice: UInt64 = 0
+        
+        fetchTHORChainGas { price in
+            gasPrice = price
+            semaphore.signal()
+        }
+        
+        _ = semaphore.wait(timeout: .distantFuture)
+        return gasPrice
+    }
+    
+    
     static func getRUNECoin(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
         let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
                                                             hexChainCode: hexChainCode,
@@ -47,12 +81,11 @@ enum THORChainHelper {
         input.accountNumber = accountNumber
         input.sequence = sequence
         input.mode = .sync
-        // THORChain fee is 0.02 RUNE
         input.fee = CosmosFee.with {
-            $0.gas = 20000000
+            $0.gas = THORChainHelper.THORChainGas
             $0.amounts = [CosmosAmount.with {
                 $0.denom = "rune"
-                $0.amount = "2000000"
+                $0.amount = THORChainHelper.THORChainGas.description
             }]
         }
         // memo has been set
@@ -137,12 +170,11 @@ enum THORChainHelper {
                 $0.memo = memo
             }
             $0.messages = message
-            // THORChain fee is 0.02 RUNE
             $0.fee = CosmosFee.with {
                 $0.gas = THORChainGas
                 $0.amounts = [CosmosAmount.with {
                     $0.denom = "rune"
-                    $0.amount = "2000000"
+                    $0.amount = THORChainHelper.THORChainGas.description
                 }]
             }
         }
