@@ -249,15 +249,15 @@ struct PeerDiscoveryView: View {
     
     var keygenView: some View {
         KeygenView(
-            vault: vault,
+            vault: viewModel.vault,
             tssType: tssType,
             keygenCommittee: viewModel.selections.map { $0 },
-            vaultOldCommittee: vault.signers.filter { viewModel.selections.contains($0)
+            vaultOldCommittee: viewModel.vault.signers.filter { viewModel.selections.contains($0)
             },
             mediatorURL: viewModel.serverAddr,
             sessionID: viewModel.sessionID,
             encryptionKeyHex: viewModel.encryptionKeyHex ?? "",
-            oldResharePrefix: vault.resharePrefix ?? "")
+            oldResharePrefix: viewModel.vault.resharePrefix ?? "")
     }
     
     var failureText: some View {
