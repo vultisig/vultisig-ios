@@ -38,18 +38,8 @@ struct WelcomeView: View {
     }
     
     var content: some View {
-        VStack(spacing: 40) {
-            VultisigLogo()
-            text
-        }
-        .offset(y: 20)
-    }
-    
-    var text: some View {
-        Text("secureCryptoVault")
-            .font(.body16MontserratSemiBold)
-            .foregroundColor(.neutral0)
-            .opacity(didAppear ? 1 : 0)
+        VultisigLogo()
+            .offset(y: 20)
     }
     
     var progress: some View {
