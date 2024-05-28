@@ -10,6 +10,8 @@ import Foundation
 class ThorchainService {
     static let shared = ThorchainService()
     
+    private var cacheFeePrice: [String: (data: UInt64, timestamp: Date)] = [:]
+    
     private init() {}
     
     func fetchBalances(_ address: String) async throws -> [CosmosBalance] {
@@ -76,8 +78,6 @@ class ThorchainService {
         return cacheEntry.balances
     }
     
-    private var cacheFeePrice: [String: (data: UInt64, timestamp: Date)] = [:]
-    
     func fetchFeePrice() async throws -> UInt64 {
         let cacheKey = "thorchain-fee-price"
         if let cachedData: UInt64 = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheFeePrice, timeInSeconds: 60*5) {
@@ -86,8 +86,6 @@ class ThorchainService {
         
         let urlString = Endpoint.fetchThorchainNetworkInfoNineRealms
         let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
-        
-        print(String(data: data, encoding: .utf8) ?? "No data received")
         
         if let result = Utils.extractResultFromJson(fromData: data, path: "native_tx_fee_rune") as? String,
            let resultNumber = UInt64(result) {
