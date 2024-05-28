@@ -49,7 +49,7 @@ enum THORChainHelper {
         input.sequence = sequence
         input.mode = .sync
         input.fee = CosmosFee.with {
-            $0.gas = THORChainHelper.THORChainGas
+            $0.gas = 20000000
             $0.amounts = [CosmosAmount.with {
                 $0.denom = "rune"
                 $0.amount = THORChainHelper.THORChainGas.description
