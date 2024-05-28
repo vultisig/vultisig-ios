@@ -18,7 +18,6 @@ struct VaultDetailView: View {
     @EnvironmentObject var tokenSelectionViewModel: TokenSelectionViewModel
     
     @State var showSheet = false
-    @State var selectedGroup: GroupedChain? = nil
     @StateObject var sendTx = SendTransaction()
 
     var body: some View {
@@ -52,7 +51,7 @@ struct VaultDetailView: View {
             if viewModel.coinsGroupedByChains.count>=1 {
                 balanceContent
                 
-                if let selectedGroup {
+                if let selectedGroup = viewModel.selectedGroup {
                     getActions(selectedGroup)
                 }
                 
@@ -151,10 +150,10 @@ struct VaultDetailView: View {
     }
     
     private func setData() {
-        getGroupAsync()
         viewModel.fetchCoins(for: vault)
         viewModel.setOrder()
         viewModel.updateBalance()
+        viewModel.getGroupAsync(tokenSelectionViewModel)
     }
     
     private func move(from: IndexSet, to: Int) {
@@ -194,25 +193,6 @@ struct VaultDetailView: View {
         ChainDetailActionButtons(group: group, vault: vault, sendTx: sendTx)
             .padding(16)
             .padding(.horizontal, 12)
-    }
-    
-    private func getGroupAsync() {
-        Task {
-            selectedGroup = await getGroup()
-        }
-    }
-    
-    private func getGroup() async -> GroupedChain? {
-        for group in viewModel.coinsGroupedByChains {
-            let actions = await tokenSelectionViewModel.actionResolver.resolveActions(for: group.chain)
-            
-            for action in actions {
-                if action == .swap {
-                    return group
-                }
-            }
-        }
-        return viewModel.coinsGroupedByChains.first
     }
 }
 
