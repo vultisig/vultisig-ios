@@ -46,6 +46,8 @@ final class BlockChainService {
         case .thorChain:
             let account = try await thor.fetchAccountNumber(coin.address)
             
+            let fee = try await thor.fetchFeePrice()
+            
             guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
                 throw Errors.failToGetAccountNumber
             }
@@ -53,7 +55,7 @@ final class BlockChainService {
             guard let sequence = UInt64(account?.sequence ?? "0") else {
                 throw Errors.failToGetSequenceNo
             }
-            return .THORChain(accountNumber: accountNumber, sequence: sequence)
+            return .THORChain(accountNumber: accountNumber, sequence: sequence, fee: fee)
         case .mayaChain:
             let account = try await maya.fetchAccountNumber(coin.address)
             

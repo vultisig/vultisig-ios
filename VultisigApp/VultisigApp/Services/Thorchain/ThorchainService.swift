@@ -10,6 +10,8 @@ import Foundation
 class ThorchainService {
     static let shared = ThorchainService()
     
+    private var cacheFeePrice: [String: (data: UInt64, timestamp: Date)] = [:]
+    
     private init() {}
     
     func fetchBalances(_ address: String) async throws -> [CosmosBalance] {
@@ -35,7 +37,7 @@ class ThorchainService {
         let accountResponse = try JSONDecoder().decode(THORChainAccountNumberResponse.self, from: data)
         return accountResponse.result.value
     }
-
+    
     func get9RRequest(url: URL) -> URLRequest{
         var req = URLRequest(url:url)
         req.addValue("vultisig", forHTTPHeaderField: "X-Client-ID")
@@ -53,7 +55,7 @@ class ThorchainService {
             throw error
         }
     }
-
+    
     private func cacheBalances(_ balances: [CosmosBalance], forAddress address: String) {
         let addressKey = "balancesCache_\(address)"
         let cacheEntry = BalanceCacheEntry(balances: balances, timestamp: Date())
@@ -74,5 +76,25 @@ class ThorchainService {
         }
         
         return cacheEntry.balances
+    }
+    
+    func fetchFeePrice() async throws -> UInt64 {
+        let cacheKey = "thorchain-fee-price"
+        if let cachedData: UInt64 = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheFeePrice, timeInSeconds: 60*5) {
+            return cachedData
+        }
+        
+        let urlString = Endpoint.fetchThorchainNetworkInfoNineRealms
+        let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
+        
+        if let result = Utils.extractResultFromJson(fromData: data, path: "native_tx_fee_rune") as? String,
+           let resultNumber = UInt64(result) {
+            self.cacheFeePrice[cacheKey] = (data: resultNumber, timestamp: Date())
+            return resultNumber
+        } else {
+            print("JSON decoding error")
+        }
+        
+        return .zero
     }
 }

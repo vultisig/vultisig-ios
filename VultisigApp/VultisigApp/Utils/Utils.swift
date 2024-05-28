@@ -353,12 +353,9 @@ enum Utils {
         
         if ProcessInfo.processInfo.isiOSAppOnMac {
             deviceName = "Mac"
-        } else if device.contains("iphone") {
-            deviceName = "iPhone"
-        } else if device.contains("ipad") {
-            deviceName = "iPad"
-        } else {
-            deviceName = "Unknown"
+        }
+        else {
+            deviceName = device
         }
         return deviceName
     }
