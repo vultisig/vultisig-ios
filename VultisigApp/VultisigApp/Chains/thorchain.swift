@@ -8,8 +8,6 @@ import Tss
 import WalletCore
 
 enum THORChainHelper {
-    static let THORChainGas: UInt64 = ThorchainService.shared.fetchFeePrice()
-    
     static func getRUNECoin(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
         let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
                                                             hexChainCode: hexChainCode,

@@ -97,29 +97,4 @@ class ThorchainService {
         
         return .zero
     }
-    
-    private func fetchFeePrice(completion: @escaping (UInt64) -> Void) {
-        Task {
-            do {
-                let feePrice = try await self.fetchFeePrice()
-                completion(feePrice)
-            } catch {
-                print("Failed to fetch THORChain gas price: \(error)")
-                completion(0) // or any default value you see fit
-            }
-        }
-    }
-    
-    func fetchFeePrice() -> UInt64 {
-        let semaphore = DispatchSemaphore(value: 0)
-        var gasPrice: UInt64 = 0
-        
-        fetchFeePrice { price in
-            gasPrice = price
-            semaphore.signal()
-        }
-        
-        _ = semaphore.wait(timeout: .distantFuture)
-        return gasPrice
-    }
 }
