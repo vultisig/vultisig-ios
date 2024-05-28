@@ -63,12 +63,12 @@ class SwapTransaction: ObservableObject {
 
 extension SwapTransaction {
     
-    var amountDecimal: Decimal {
+    var fromAmountDecimal: Decimal {
         let amountString = fromAmount.replacingOccurrences(of: ",", with: ".")
         return Decimal(string: amountString) ?? .zero
     }
-    
+
     var amountInCoinDecimal: BigInt {
-        return fromCoin.raw(for: amountDecimal)
+        return fromCoin.raw(for: fromAmountDecimal)
     }
 }

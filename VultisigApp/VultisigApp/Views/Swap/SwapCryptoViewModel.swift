@@ -41,16 +41,13 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     @MainActor @Published var error: Error?
     @MainActor @Published var isLoading = false
     @MainActor @Published var quoteLoading = false
-    
-    @MainActor @Published var fromFiatAmount = "0"
-    @MainActor @Published var toFiatAmount = "0"
 
     func load(tx: SwapTransaction, fromCoin: Coin, coins: [Coin], vault: Vault) async {
         self.coins = coins.filter { $0.chain.isSwapSupported }
         tx.toCoin = coins.first!
         tx.fromCoin = fromCoin
 
-        updateInitial(tx: tx, vault: vault)
+        await updateFees(tx: tx, vault: vault)
     }
     
     var progress: Double {
@@ -68,6 +65,14 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         case .oneinch, .none:
             return nil
         }
+    }
+
+    func fromFiatAmount(tx: SwapTransaction) -> String {
+        return tx.fromCoin.fiat(decimal: tx.fromAmountDecimal).description
+    }
+
+    func toFiatAmount(tx: SwapTransaction) -> String {
+        return tx.toCoin.fiat(decimal: tx.toAmountDecimal).description
     }
 
     func showGas(tx: SwapTransaction) -> Bool {
@@ -92,7 +97,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
         let fromCoin = feeCoin(tx: tx)
         let inboundFee = tx.toCoin.raw(for: inboundFeeDecimal)
-        let fee = tx.toCoin.fiat(for: inboundFee) + fromCoin.fiat(for: tx.fee)
+        let fee = tx.toCoin.fiat(value: inboundFee) + fromCoin.fiat(value: tx.fee)
         return fee.formatToFiat(includeCurrencySymbol: true)
     }
 
@@ -115,7 +120,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
     func approveFeeString(tx: SwapTransaction) -> String {
         let fromCoin = feeCoin(tx: tx)
-        let fee = fromCoin.fiat(for: tx.fee)
+        let fee = fromCoin.fiat(value: tx.fee)
         return fee.formatToFiat(includeCurrencySymbol: true)
     }
 
@@ -281,7 +286,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
 
     func switchCoins(tx: SwapTransaction, vault: Vault) {
-        defer { clear(tx: tx) }
+        defer { clearQuote(tx: tx) }
 
         let fromCoin = tx.fromCoin
         let toCoin = tx.toCoin
@@ -290,37 +295,32 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         tx.toCoin = fromCoin
 
         Task {
-            async let quote: () = updateQuotes(tx: tx)
-            async let fee: () = updateFee(tx: tx, vault: vault)
-
-            _ = await [quote, fee]
+            await updateQuotes(tx: tx, vault: vault)
         }
     }
 
     func updateInitial(tx: SwapTransaction, vault: Vault) {
         Task {
-            await updateFee(tx: tx, vault: vault)
+            await updateFees(tx: tx, vault: vault)
         }
     }
 
-    func updateFromAmount(tx: SwapTransaction) {
+    func updateFromAmount(tx: SwapTransaction, vault: Vault) {
         Task {
-            await updateQuotes(tx: tx)
+            await updateQuotes(tx: tx, vault: vault)
         }
     }
 
     func updateFromCoin(tx: SwapTransaction, vault: Vault) {
         Task {
-            async let quote: () = updateQuotes(tx: tx)
-            async let fee: () = updateFee(tx: tx, vault: vault)
-
-            _ = await [quote, fee]
+            await updateFees(tx: tx, vault: vault)
+            await updateQuotes(tx: tx, vault: vault)
         }
     }
 
-    func updateToCoin(tx: SwapTransaction) {
+    func updateToCoin(tx: SwapTransaction, vault: Vault) {
         Task {
-            await updateQuotes(tx: tx)
+            await updateQuotes(tx: tx, vault: vault)
         }
     }
     
@@ -335,13 +335,6 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             return newValueFiat.isEmpty ? "" : newValueFiat
         } else {
             return ""
-        }
-    }
-    
-    func updateFiatAmount(tx: SwapTransaction) {
-        Task {
-            fromFiatAmount = await convertToFiat(amount: tx.fromAmount, coin: tx.fromCoin, tx: tx)
-            toFiatAmount = await convertToFiat(amount: tx.toAmountDecimal.description, coin: tx.toCoin, tx: tx)
         }
     }
 }
@@ -365,27 +358,13 @@ private extension SwapCryptoViewModel {
         }
     }
 
-    func updateFee(tx: SwapTransaction, vault: Vault) async {
-        do {                
-            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin, action: .swap, sendMaxAmount: false)
-            tx.gas = chainSpecific.gas
-
-            switch tx.quote {
-            case .thorchain, .none:
-                tx.fee = try await thorchainFee(for: chainSpecific, tx: tx, vault: vault)
-            case .oneinch(let quote):
-                tx.fee = oneInchFee(quote: quote)
-            }
-        } catch {
-            self.error = error
-        }
-    }
-
-    func updateQuotes(tx: SwapTransaction) async {
+    func updateQuotes(tx: SwapTransaction, vault: Vault) async {
         quoteLoading = true
         defer { quoteLoading = false }
 
-        guard !tx.fromAmount.isEmpty else { return clear(tx: tx) }
+        clearQuote(tx: tx)
+
+        guard !tx.fromAmount.isEmpty else { return }
 
         error = nil
 
@@ -405,16 +384,18 @@ private extension SwapCryptoViewModel {
                 throw Errors.insufficientFunds
             }
 
-            tx.quote = quote
-
-            if case SwapQuote.oneinch(let quote) = quote {
+            switch quote {
+            case .oneinch(let quote):
                 tx.fee = oneInchFee(quote: quote)
+            case .thorchain: 
+                break
             }
+            
+            tx.quote = quote
 
             try await updateFlow(tx: tx)
         } catch {
             self.error = error
-            clear(tx: tx)
         }
     }
 
@@ -431,8 +412,28 @@ private extension SwapCryptoViewModel {
         flow = swapFromAmount(tx: tx) > allowance ? .erc20 : .normal
     }
 
-    func clear(tx: SwapTransaction) {
+    func updateFees(tx: SwapTransaction, vault: Vault) async {
+        tx.gas = .zero
+
+        do {
+            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin, action: .swap, sendMaxAmount: false)
+
+            switch tx.quote {
+            case .thorchain:
+                tx.fee = try await thorchainFee(for: chainSpecific, tx: tx, vault: vault)
+            case .oneinch, .none:
+                break
+            }
+
+            tx.gas = chainSpecific.gas
+        } catch {
+            print("Update fees error: \(error.localizedDescription)")
+        }
+    }
+
+    func clearQuote(tx: SwapTransaction) {
         tx.quote = nil
+        tx.fee = .zero
     }
     
     func swapFromAmount(tx: SwapTransaction) -> BigInt {
@@ -492,8 +493,8 @@ private extension SwapCryptoViewModel {
     }
 
     func isAlliliate(tx: SwapTransaction) -> Bool {
-        let rawAmount = tx.fromCoin.raw(for: tx.amountDecimal)
-        let fiatAmount = tx.fromCoin.fiat(for: rawAmount)
+        let rawAmount = tx.fromCoin.raw(for: tx.fromAmountDecimal)
+        let fiatAmount = tx.fromCoin.fiat(value: rawAmount)
         return fiatAmount >= 100
     }
 }
