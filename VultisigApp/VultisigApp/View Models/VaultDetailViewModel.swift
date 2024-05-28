@@ -11,6 +11,7 @@ import SwiftUI
 @MainActor
 class VaultDetailViewModel: ObservableObject {
     @Published var coinsGroupedByChains = [GroupedChain]()
+    @Published var selectedGroup: GroupedChain? = nil
     
     let defaultChains = [Chain.bitcoin, Chain.ethereum, Chain.thorChain, Chain.solana]
     let balanceService = BalanceService.shared
@@ -67,8 +68,28 @@ class VaultDetailViewModel: ObservableObject {
             }
         }
     }
+    
     func fetchCoins(for vault: Vault) {
         categorizeCoins(vault: vault)
+    }
+    
+    func getGroupAsync(_ viewModel: TokenSelectionViewModel) {
+        Task {
+            selectedGroup = await getGroup(viewModel)
+        }
+    }
+    
+    private func getGroup(_ viewModel: TokenSelectionViewModel) async -> GroupedChain? {
+        for group in coinsGroupedByChains {
+            let actions = await viewModel.actionResolver.resolveActions(for: group.chain)
+            
+            for action in actions {
+                if action == .swap {
+                    return group
+                }
+            }
+        }
+        return coinsGroupedByChains.first
     }
     
     private func categorizeCoins(vault: Vault) {

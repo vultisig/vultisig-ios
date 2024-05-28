@@ -14,12 +14,12 @@ struct SwapService {
     private let thorchainService: ThorchainService = ThorchainService.shared
     private let oneInchService: OneInchService = OneInchService.shared
 
-    func fetchQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin) async throws -> SwapQuote {
+    func fetchQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
         guard let fromChainID = fromCoin.chain.chainID, let toChainID = toCoin.chain.chainID, fromChainID == toChainID else {
-            return try await fetchThorchainQuote(amount: amount, fromCoin: fromCoin, toCoin: toCoin)
+            return try await fetchThorchainQuote(amount: amount, fromCoin: fromCoin, toCoin: toCoin, isAffiliate: isAffiliate)
         }
 
-        return try await fetchOneInchQuote(chain: fromChainID, amount: amount, fromCoin: fromCoin, toCoin: toCoin)
+        return try await fetchOneInchQuote(chain: fromChainID, amount: amount, fromCoin: fromCoin, toCoin: toCoin, isAffiliate: isAffiliate)
     }
 }
 
@@ -36,14 +36,15 @@ private extension SwapService {
         }
     }
 
-    func fetchThorchainQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin) async throws -> SwapQuote {
+    func fetchThorchainQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
         do {
             let quote = try await thorchainService.fetchSwapQuotes(
                 address: toCoin.address,
                 fromAsset: fromCoin.swapAsset,
                 toAsset: toCoin.swapAsset,
                 amount: (amount * 100_000_000).description, // https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
-                interval: "1"
+                interval: "1",
+                isAffiliate: isAffiliate
             )
 
             guard let expected = Decimal(string: quote.expectedAmountOut), !expected.isZero else {
@@ -64,14 +65,15 @@ private extension SwapService {
         }
     }
 
-    func fetchOneInchQuote(chain: Int, amount: Decimal, fromCoin: Coin, toCoin: Coin) async throws -> SwapQuote {
+    func fetchOneInchQuote(chain: Int, amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
         let rawAmount = fromCoin.raw(for: amount)
         let quote = try await oneInchService.fetchQuotes(
             chain: String(chain),
             source: fromCoin.contractAddress,
             destination: toCoin.contractAddress,
             amount: String(rawAmount),
-            from: fromCoin.address
+            from: fromCoin.address,
+            isAffiliate: isAffiliate
         )
         return .oneinch(quote)
     }

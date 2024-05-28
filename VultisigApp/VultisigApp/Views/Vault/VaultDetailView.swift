@@ -15,9 +15,9 @@ struct VaultDetailView: View {
     
     @EnvironmentObject var appState: ApplicationState
     @EnvironmentObject var viewModel: VaultDetailViewModel
+    @EnvironmentObject var tokenSelectionViewModel: TokenSelectionViewModel
     
     @State var showSheet = false
-
     @StateObject var sendTx = SendTransaction()
 
     var body: some View {
@@ -51,8 +51,8 @@ struct VaultDetailView: View {
             if viewModel.coinsGroupedByChains.count>=1 {
                 balanceContent
                 
-                if let group = viewModel.coinsGroupedByChains.first {
-                    getActions(group)
+                if let selectedGroup = viewModel.selectedGroup {
+                    getActions(selectedGroup)
                 }
                 
                 list
@@ -96,12 +96,6 @@ struct VaultDetailView: View {
             .font(.title32MenloBold)
             .foregroundColor(.neutral0)
             .padding(.top, 10)
-    }
-
-    private func getActions(_ group: GroupedChain) -> some View {
-        ChainDetailActionButtons(group: group, vault: vault, sendTx: sendTx)
-            .padding(16)
-            .padding(.horizontal, 12)
     }
     
     var chainList: some View {
@@ -159,6 +153,7 @@ struct VaultDetailView: View {
         viewModel.fetchCoins(for: vault)
         viewModel.setOrder()
         viewModel.updateBalance()
+        viewModel.getGroupAsync(tokenSelectionViewModel)
     }
     
     private func move(from: IndexSet, to: Int) {
@@ -192,6 +187,12 @@ struct VaultDetailView: View {
     
     private func getListHeight() -> CGFloat {
         CGFloat(viewModel.coinsGroupedByChains.count*85)
+    }
+    
+    private func getActions(_ group: GroupedChain) -> some View {
+        ChainDetailActionButtons(group: group, vault: vault, sendTx: sendTx)
+            .padding(16)
+            .padding(.horizontal, 12)
     }
 }
 

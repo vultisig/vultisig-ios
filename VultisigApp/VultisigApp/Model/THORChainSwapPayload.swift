@@ -44,6 +44,7 @@ struct THORChainSwapPayload: Codable, Hashable {
     let streamingInterval: String
     let streamingQuantity: String
     let expirationTime: UInt64
+    let isAffiliate: Bool
 
     var toAddress: String {
         return toCoin.address
