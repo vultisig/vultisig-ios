@@ -16,6 +16,7 @@ struct VultisigLogo: View {
         VStack {
             logo
             title
+            description
         }
         .onAppear {
             setData()
@@ -86,6 +87,14 @@ struct VultisigLogo: View {
             .animation(
                 isAnimated ? .easeIn(duration: 1) : .none,
                 value: didAppear)
+    }
+    
+    var description: some View {
+        Text("secureCryptoVault")
+            .font(.body16MontserratSemiBold)
+            .foregroundColor(.neutral0)
+            .opacity(didAppear ? 1 : 0)
+            .padding(.top, 10)
     }
     
     private func setData() {

@@ -50,11 +50,7 @@ struct VaultDetailView: View {
         ScrollView {
             if viewModel.coinsGroupedByChains.count>=1 {
                 balanceContent
-                
-                if let selectedGroup = viewModel.selectedGroup {
-                    getActions(selectedGroup)
-                }
-                
+                getActions()
                 list
             } else {
                 emptyList
@@ -189,10 +185,13 @@ struct VaultDetailView: View {
         CGFloat(viewModel.coinsGroupedByChains.count*86)
     }
     
-    private func getActions(_ group: GroupedChain) -> some View {
-        ChainDetailActionButtons(group: group, vault: vault, sendTx: sendTx)
+    private func getActions() -> some View {
+        let selectedGroup = viewModel.selectedGroup
+        
+        return ChainDetailActionButtons(group: selectedGroup ?? GroupedChain.example, vault: vault, sendTx: sendTx)
             .padding(16)
             .padding(.horizontal, 12)
+            .redacted(reason: selectedGroup == nil ? .placeholder : [])
     }
 }
 
