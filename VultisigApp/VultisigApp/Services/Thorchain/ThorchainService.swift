@@ -98,29 +98,23 @@ class ThorchainService {
         return .zero
     }
     
-    private var cachedTHORChainGas: UInt64?
-    private func fetchTHORChainGas(completion: @escaping (UInt64) -> Void) {
-        if let gas = cachedTHORChainGas {
-            completion(gas)
-        } else {
-            Task {
-                do {
-                    let feePrice = try await self.fetchFeePrice()
-                    cachedTHORChainGas = feePrice
-                    completion(feePrice)
-                } catch {
-                    print("Failed to fetch THORChain gas price: \(error)")
-                    completion(0) // or any default value you see fit
-                }
+    private func fetchFeePrice(completion: @escaping (UInt64) -> Void) {
+        Task {
+            do {
+                let feePrice = try await self.fetchFeePrice()
+                completion(feePrice)
+            } catch {
+                print("Failed to fetch THORChain gas price: \(error)")
+                completion(0) // or any default value you see fit
             }
         }
     }
     
-    func getTHORChainGasPrice() -> UInt64 {
+    func fetchFeePrice() -> UInt64 {
         let semaphore = DispatchSemaphore(value: 0)
         var gasPrice: UInt64 = 0
         
-        fetchTHORChainGas { price in
+        fetchFeePrice { price in
             gasPrice = price
             semaphore.signal()
         }
