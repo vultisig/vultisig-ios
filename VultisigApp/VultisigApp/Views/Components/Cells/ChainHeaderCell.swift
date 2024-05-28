@@ -102,11 +102,7 @@ struct ChainHeaderCell: View {
     
     var showTransactionsButton: some View {
         ZStack {
-            if group.name == Chain.bitcoin.name {
-                transactionsViewLink
-            } else {
-                webLink
-            }
+            webLink
         }
     }
     
