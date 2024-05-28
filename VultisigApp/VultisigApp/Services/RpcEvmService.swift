@@ -32,17 +32,17 @@ class RpcEvmService: RpcService {
     }
     
     func getGasInfo(fromAddress: String) async throws -> (gasPrice: BigInt, priorityFee: BigInt, nonce: Int64) {
-        async let gasPrice = fetchGasPrice()
+        async let fastestGasFee = getFastestGasFee()
         async let nonce = fetchNonce(address: fromAddress)
-        async let priorityFee = fetchMaxPriorityFeePerGas()
-        return (try await gasPrice, try await priorityFee, Int64(try await nonce))
+        
+        let (maxFeePerGas, maxPriorityFeePerGas) = try await fastestGasFee
+        return (maxFeePerGas, maxPriorityFeePerGas, Int64(try await nonce))
     }
     
     func broadcastTransaction(hex: String) async throws -> String {
         let hexWithPrefix = hex.hasPrefix("0x") ? hex : "0x\(hex)"
         return try await strRpcCall(method: "eth_sendRawTransaction", params: [hexWithPrefix])
     }
-
     
     func estimateGasForEthTransaction(senderAddress: String, recipientAddress: String, value: BigInt, memo: String?) async throws -> BigInt {
         // Convert the memo to hex (if present). Assume memo is a String.
@@ -89,17 +89,17 @@ class RpcEvmService: RpcService {
         
         return try await intRpcCall(method: "eth_call", params: params)
     }
-
+    
     func fetchAllowance(contractAddress: String, owner: String, spender: String) async throws -> BigInt {
         let paddedOwner = String(owner.dropFirst(2)).paddingLeft(toLength: 64, withPad: "0")
         let paddedSpender = String(spender.dropFirst(2)).paddingLeft(toLength: 64, withPad: "0")
         
         let data = "0xdd62ed3e" + paddedOwner + paddedSpender
         let params: [Any] = [["to": contractAddress, "data": data], "latest"]
-
+        
         return try await intRpcCall(method: "eth_call", params: params)
     }
-
+    
     private func fetchBalance(address: String) async throws -> BigInt {
         return try await intRpcCall(method: "eth_getBalance", params: [address, "latest"])
     }
@@ -107,7 +107,7 @@ class RpcEvmService: RpcService {
     func fetchMaxPriorityFeePerGas() async throws -> BigInt {
         return try await intRpcCall(method: "eth_maxPriorityFeePerGas", params: []) //WEI
     }
-
+    
     private func fetchNonce(address: String) async throws -> BigInt {
         return try await intRpcCall(method: "eth_getTransactionCount", params: [address, "latest"])
     }
