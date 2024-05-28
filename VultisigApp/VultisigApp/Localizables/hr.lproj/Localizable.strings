@@ -1,6 +1,5 @@
 "secureCryptoVault" = "SIGURNO KRIPTO SEF";
 "thisDevice" = "Ovaj uređaj:";
-"homeViewDescription" = "DVOFAKTORSKA AUTENTIFIKACIJA\nSIGURNI, POVJERLJIVI UREĐAJI\nPOTPUNO SAMOSTALNO ČUVANJE\nBEZ PRAĆENJA, BEZ REGISTRACIJE\nPOTPUNO OTVOREN IZVORNI KOD\nPROVJERENO";
 "start" = "Početak";
 "createNewVault" = "Stvorite novi sef";
 "importExistingVault" = "Uvezite postojeći sef";
