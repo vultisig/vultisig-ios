@@ -176,7 +176,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                     fromAmount: swapFromAmount(tx: tx),
                     toAmountDecimal: tx.toAmountDecimal,
                     toAmountLimit: "0", streamingInterval: "1", streamingQuantity: "0",
-                    expirationTime: UInt64(expirationTime.timeIntervalSince1970)
+                    expirationTime: UInt64(expirationTime.timeIntervalSince1970), 
+                    isAffiliate: isAlliliate(tx: tx)
                 )
                 keysignPayload = try await keysignFactory.buildTransfer(
                     coin: tx.fromCoin,
@@ -350,7 +351,12 @@ private extension SwapCryptoViewModel {
                 return
             }
 
-            let quote = try await swapService.fetchQuote(amount: amount, fromCoin: tx.fromCoin, toCoin: tx.toCoin)
+            let quote = try await swapService.fetchQuote(
+                amount: amount,
+                fromCoin: tx.fromCoin,
+                toCoin: tx.toCoin,
+                isAffiliate: isAlliliate(tx: tx)
+            )
 
             if !isSufficientBalance(tx: tx) {
                 throw Errors.insufficientFunds
@@ -440,5 +446,11 @@ private extension SwapCryptoViewModel {
     func oneInchFee(quote: OneInchQuote) -> BigInt {
         let gasPrice = BigInt(quote.tx.gasPrice) ?? BigInt.zero
         return gasPrice * BigInt(EVMHelper.defaultETHSwapGasUnit)
+    }
+
+    func isAlliliate(tx: SwapTransaction) -> Bool {
+        let rawAmount = tx.fromCoin.raw(for: tx.amountDecimal)
+        let fiatAmount = tx.fromCoin.fiat(for: rawAmount)
+        return fiatAmount >= 100
     }
 }
