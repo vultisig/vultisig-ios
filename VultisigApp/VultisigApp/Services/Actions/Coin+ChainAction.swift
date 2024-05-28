@@ -12,7 +12,7 @@ extension Chain {
     var defaultActions: [CoinAction] {
         switch self {
         case .thorChain:
-            return [.send, .swap]
+            return [.send, .swap, .memo]
         case .solana:
             return [.send]
         case .ethereum:
@@ -46,7 +46,7 @@ extension Chain {
         case .kujira:
             return [.send]
         case .mayaChain:
-            return [.send]
+            return [.send, .memo]
         case .cronosChain:
             return [.send]
         case .sui:

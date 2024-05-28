@@ -2,30 +2,34 @@ import Foundation
 import SwiftData
 import BigInt
 
-class Coin: Codable, Hashable {
+@Model
+class Coin: ObservableObject, Codable, Hashable {
+    @Attribute(.unique) var id: String
+
     let chain: Chain
     let ticker: String
     let logo: String
-    var address: String
-    let chainType: ChainType?
-    
-    @DecodableDefault.EmptyString var decimals: String
-    @DecodableDefault.EmptyString var hexPublicKey: String
-    @DecodableDefault.EmptyString var feeUnit: String
-    @DecodableDefault.EmptyString var feeDefault: String
-    @DecodableDefault.EmptyString var priceProviderId: String
-    @DecodableDefault.EmptyString var contractAddress: String
-    @DecodableDefault.EmptyString var rawBalance: String
-    @DecodableDefault.False var isNativeToken: Bool
-    @DecodableDefault.EmptyDouble var priceRate: Double
-    
+    let chainType: ChainType
+    let decimals: String
+    let feeUnit: String
+    let feeDefault: String
+    let contractAddress: String
+    let isNativeToken: Bool
+
+    var priceProviderId: String
+
+    var hexPublicKey: String = ""
+    var address: String = ""
+    var rawBalance: String = ""
+    var priceRate: Double = 0
+
     init(
         chain: Chain,
         ticker: String,
         logo: String,
         address: String,
         priceRate: Double,
-        chainType: ChainType?,
+        chainType: ChainType,
         decimals: String,
         hexPublicKey: String,
         feeUnit: String,
@@ -49,8 +53,54 @@ class Coin: Codable, Hashable {
         self.rawBalance = rawBalance
         self.isNativeToken = isNativeToken
         self.feeDefault = feeDefault
+
+        self.id = "\(chain.rawValue)-\(ticker)-\(address)"
     }
-    
+
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let chain = try container.decode(Chain.self, forKey: .chain)
+        let ticker = try container.decode(String.self, forKey: .ticker)
+        let address = try container.decodeIfPresent(String.self, forKey: .address) ?? ""
+
+        self.chain = chain
+        self.ticker = ticker
+        self.address = address
+        self.logo = try container.decode(String.self, forKey: .logo)
+        self.chainType = try container.decode(ChainType.self, forKey: .chainType)
+        self.decimals = try container.decode(String.self, forKey: .decimals)
+        self.feeUnit = try container.decode(String.self, forKey: .feeUnit)
+        self.feeDefault = try container.decode(String.self, forKey: .feeDefault)
+        self.priceProviderId = try container.decode(String.self, forKey: .priceProviderId)
+        self.contractAddress = try container.decode(String.self, forKey: .contractAddress)
+        self.isNativeToken = try container.decode(Bool.self, forKey: .isNativeToken)
+        self.hexPublicKey = try container.decodeIfPresent(String.self, forKey: .hexPublicKey) ?? ""
+        self.rawBalance = try container.decodeIfPresent(String.self, forKey: .rawBalance) ?? ""
+        self.priceRate = try container.decodeIfPresent(Double.self, forKey: .priceRate) ?? 0
+        self.id = try container.decode(String.self, forKey: .id)
+        
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(chain, forKey: .chain)
+        try container.encode(ticker, forKey: .ticker)
+        try container.encode(logo, forKey: .logo)
+        try container.encode(chainType, forKey: .chainType)
+        try container.encode(decimals, forKey: .decimals)
+        try container.encode(feeUnit, forKey: .feeUnit)
+        try container.encode(feeDefault, forKey: .feeDefault)
+        try container.encode(priceProviderId, forKey: .priceProviderId)
+        try container.encode(contractAddress, forKey: .contractAddress)
+        try container.encode(isNativeToken, forKey: .isNativeToken)
+        try container.encode(hexPublicKey, forKey: .hexPublicKey)
+        try container.encode(address, forKey: .address)
+        try container.encode(rawBalance, forKey: .rawBalance)
+        try container.encode(priceRate, forKey: .priceRate)
+    }
+
+
     func clone() -> Coin {
         return Coin(
             chain: chain,
@@ -71,16 +121,13 @@ class Coin: Codable, Hashable {
     }
     
     func hash(into hasher: inout Hasher) {
-        hasher.combine(ticker)
-        hasher.combine(address)
-        hasher.combine(chain.name)
+        hasher.combine(id)
     }
     
     static func == (lhs: Coin, rhs: Coin) -> Bool {
-        return lhs.ticker == rhs.ticker && lhs.address == rhs.address && lhs.chain.name == rhs.chain.name
+        return lhs.id == rhs.id
     }
-    
-    
+
     var balanceDecimal: Decimal {
         let tokenBalance = Decimal(string: rawBalance) ?? 0.0
         let tokenDecimals = Int(decimals) ?? 0
@@ -167,29 +214,6 @@ class Coin: Codable, Hashable {
         guard !isNativeToken else { return nil }
         return chain.logo
     }
-
-    func toString() -> String {
-        let properties = [
-            "chain: \(chain.name)",
-            "ticker: \(ticker)",
-            "logo: \(logo)",
-            "address: \(address)",
-            "chainType: \((chainType?.description) ?? "N/A")",
-            "decimals: \(decimals)",
-            "hexPublicKey: \(hexPublicKey)",
-            "feeUnit: \(feeUnit)",
-            "feeDefault: \(feeDefault)",
-            "priceProviderId: \(priceProviderId)",
-            "contractAddress: \(contractAddress)",
-            "rawBalance: \(rawBalance)",
-            "isNativeToken: \(isNativeToken)",
-            "priceRate: \(priceRate)",
-            "balance: \(balanceString)",
-            "balanceInFiat: \(balanceInFiat)",
-            "swapAsset: \(swapAsset)"
-        ]
-        return properties.joined(separator: ",\n")
-    }
     
     static let example = Coin(
         chain: Chain.bitcoin,
@@ -207,4 +231,25 @@ class Coin: Codable, Hashable {
         isNativeToken: false,
         feeDefault: "20"
     )
+}
+
+private extension Coin {
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case chain
+        case ticker
+        case logo
+        case chainType
+        case decimals
+        case feeUnit
+        case feeDefault
+        case priceProviderId
+        case contractAddress
+        case isNativeToken
+        case hexPublicKey
+        case address
+        case rawBalance
+        case priceRate
+    }
 }

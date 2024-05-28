@@ -8,7 +8,21 @@
 import Foundation
 
 class Endpoint {
-    
+
+    enum SwapChain {
+        case thorchain
+        case maya
+
+        var baseUrl: String {
+            switch self {
+            case .thorchain:
+                return "https://thornode.ninerealms.com/thorchain"
+            case .maya:
+                return "https://mayanode.mayachain.info/mayachain"
+            }
+        }
+    }
+
     static let vultisigApiProxy = "https://api.vultisig.com"
     static let supportDocumentLink = "https://docs.voltix.org/user-actions/creating-a-vault"
     static let vultisigRelay = "https://api.vultisig.com/router"
@@ -27,15 +41,22 @@ class Endpoint {
     static func fetchAccountBalanceMayachain(address: String) -> String {
         "https://mayanode.mayachain.info/cosmos/bank/v1beta1/balances/\(address)"
     }
-    static func fetchSwaoQuoteMayachain(address: String, fromAsset: String, toAsset: String, amount: String, interval: String) -> URL {
-        "https://mayanode.mayachain.info/mayachain/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)&streaming_interval=\(interval)".asUrl
-    }
-    static func fetchSwaoQuoteThorchainNineRealms(address: String, fromAsset: String, toAsset: String, amount: String, interval: String) -> URL {
-        "https://thornode.ninerealms.com/thorchain/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)&streaming_interval=\(interval)&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(THORChainSwaps.affiliateFeeRateBp)".asUrl
+
+    static func fetchSwapQuoteThorchain(chain: SwapChain, address: String, fromAsset: String, toAsset: String, amount: String, interval: String, isAffiliate: Bool) -> URL {
+        let isAffiliateParams = isAffiliate
+            ? "&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(THORChainSwaps.affiliateFeeRateBp)"
+            : .empty
+
+        return "\(chain.baseUrl)/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)&streaming_interval=\(interval)\(isAffiliateParams)".asUrl
     }
 
-    static func fetch1InchSwapQuote(chain: String, source: String, destination: String, amount: String, from: String, slippage: String, referrer: String, fee: Double) -> URL {
-        "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/swap?src=\(source)&dst=\(destination)&amount=\(amount)&from=\(from)&slippage=\(slippage)&referrer=\(referrer)&fee=\(fee)&disableEstimate=true&includeGas=true".asUrl
+    static func fetch1InchSwapQuote(chain: String, source: String, destination: String, amount: String, from: String, slippage: String, referrer: String, fee: Double, isAffiliate: Bool) -> URL {
+
+        let isAffiliateParams = isAffiliate
+            ? "&referrer=\(referrer)&fee=\(fee)"
+            : .empty
+
+        return "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/swap?src=\(source)&dst=\(destination)&amount=\(amount)&from=\(from)&slippage=\(slippage)&disableEstimate=true&includeGas=true\(isAffiliateParams)".asUrl
     }
 
     static func fetchCoinPaprikaQuotes(_ quotes: String) -> String {

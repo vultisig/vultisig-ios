@@ -13,7 +13,8 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var memo: String = .empty
     @Published var gas: String = .empty
     @Published var sendMaxAmount: Bool = false
-    
+    @Published var memoFunctionDictionary: ThreadSafeDictionary<String, String> = ThreadSafeDictionary()
+
     @Published var coin: Coin = Coin(
         chain: Chain.bitcoin,
         ticker: "BTC",
@@ -65,19 +66,12 @@ class SendTransaction: ObservableObject, Hashable {
             }
             if let vault = ApplicationState.shared.currentVault {
                 if let nativeToken = vault.coins.first(where: { $0.isNativeToken && $0.chain.name == coin.chain.name }) {
-                    
-                    do
-                    {
-                        let (_, _, _) = try await BalanceService.shared.balance(for: nativeToken)
-                        
-                        let nativeTokenBalance = BigInt(nativeToken.rawBalance) ?? BigInt.zero
-                        
-                        if gasPriceBigInt > nativeTokenBalance {
-                            print("Insufficient \(nativeToken.ticker) balance for fees: needed \(gasPriceBigInt), available \(nativeTokenBalance)")
-                            return false
-                        }
-                    } catch {
-                        print("Error to get the balance for a Native Coin")
+                    await BalanceService.shared.updateBalance(for: nativeToken)
+
+                    let nativeTokenBalance = BigInt(nativeToken.rawBalance) ?? BigInt.zero
+
+                    if gasPriceBigInt > nativeTokenBalance {
+                        print("Insufficient \(nativeToken.ticker) balance for fees: needed \(gasPriceBigInt), available \(nativeTokenBalance)")
                         return false
                     }
                     return true
@@ -99,24 +93,18 @@ class SendTransaction: ObservableObject, Hashable {
         
         if let vault = ApplicationState.shared.currentVault {
             if let nativeToken = vault.coins.first(where: { $0.isNativeToken && $0.chain.name == coin.chain.name }) {
-                do
-                {
-                    let (_, _, _) = try await BalanceService.shared.balance(for: nativeToken)
-                    let nativeTokenRawBalance = Decimal(string: nativeToken.rawBalance) ?? .zero
-                    
-                    guard let nativeDecimals = Int(nativeToken.decimals) else {
-                        return .zero
-                    }
-                    
-                    let nativeTokenBalance = nativeTokenRawBalance / pow(10, nativeDecimals)
-                    
-                    let nativeTokenBalanceDecimal = nativeTokenBalance.description.formatToDecimal(digits: 8)
-                    
-                    return "\(nativeTokenBalanceDecimal) \(nativeToken.ticker)"
-                } catch {
-                    print("Error to get the balance for a Native Coin")
+                await BalanceService.shared.updateBalance(for: nativeToken)
+                let nativeTokenRawBalance = Decimal(string: nativeToken.rawBalance) ?? .zero
+
+                guard let nativeDecimals = Int(nativeToken.decimals) else {
                     return .zero
                 }
+
+                let nativeTokenBalance = nativeTokenRawBalance / pow(10, nativeDecimals)
+
+                let nativeTokenBalanceDecimal = nativeTokenBalance.description.formatToDecimal(digits: 8)
+
+                return "\(nativeTokenBalanceDecimal) \(nativeToken.ticker)"
             } else {
                 print("No native token found for chain \(coin.chain.name)")
                 return .zero
@@ -253,21 +241,5 @@ class SendTransaction: ObservableObject, Hashable {
                 print("Unknown query item: \(item.name)")
             }
         }
-    }
-    
-    func toString() -> String {
-        let properties = [
-            "toAddress: \(toAddress)",
-            "amount: \(amount)",
-            "amountInFiat: \(amountInFiat)",
-            "memo: \(memo)",
-            "gas: \(gas)",
-            "coin: \(coin.toString())",
-            "fromAddress: \(fromAddress)",
-            "amountDecimal: \(amountDecimal)",
-            "amountInCoinDecimal: \(amountInCoinDecimal)",
-            "gasDecimal: \(gasDecimal)"
-        ]
-        return properties.joined(separator: ",\n")
     }
 }

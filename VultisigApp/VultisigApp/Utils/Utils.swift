@@ -344,7 +344,23 @@ enum Utils {
     public static func getLocalDeviceIdentity() -> String {
         let identifierForVendor = UIDevice.current.identifierForVendor?.uuidString
         let parts = identifierForVendor?.components(separatedBy: "-")
-        return "\(UIDevice.current.name)-\(parts?.last?.suffix(3) ?? "N/A")"
+        return "\(getDeviceName())-\(parts?.last?.suffix(3) ?? "N/A")"
+    }
+    
+    public static func getDeviceName() -> String {
+        let device = UIDevice.current.name
+        let deviceName: String
+        
+        if ProcessInfo.processInfo.isiOSAppOnMac {
+            deviceName = "Mac"
+        } else if device.contains("iphone") {
+            deviceName = "iPhone"
+        } else if device.contains("ipad") {
+            deviceName = "iPad"
+        } else {
+            deviceName = "Unknown"
+        }
+        return deviceName
     }
     
     public static func handleJsonDecodingError(_ error: Error) -> String {

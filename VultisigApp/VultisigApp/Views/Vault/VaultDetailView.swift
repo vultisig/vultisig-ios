@@ -17,9 +17,9 @@ struct VaultDetailView: View {
     @EnvironmentObject var viewModel: VaultDetailViewModel
     
     @State var showSheet = false
-    @State var totalBalance: Decimal = 0
-    @State var totalUpdateCount: Int = 0
-    
+
+    @StateObject var sendTx = SendTransaction()
+
     var body: some View {
         ZStack(alignment: .bottom) {
             Background()
@@ -28,17 +28,16 @@ struct VaultDetailView: View {
         }
         .onAppear {
             setData()
+            viewModel.setDefaultCoins(for: vault)
             appState.currentVault = vault
-			ApplicationState.shared.currentVault = vault
         }
         .onChange(of: vault) {
             setData()
+            viewModel.setDefaultCoins(for: vault)
+            appState.currentVault = vault
         }
         .onChange(of: vault.coins) {
             setData()
-        }
-        .onDisappear {
-            resetTotal()
         }
         .sheet(isPresented: $showSheet, content: {
             NavigationView {
@@ -51,6 +50,11 @@ struct VaultDetailView: View {
         ScrollView {
             if viewModel.coinsGroupedByChains.count>=1 {
                 balanceContent
+                
+                if let group = viewModel.coinsGroupedByChains.first {
+                    getActions(group)
+                }
+                
                 list
             } else {
                 emptyList
@@ -70,9 +74,7 @@ struct VaultDetailView: View {
                 ChainNavigationCell(
                     group: group,
                     vault: vault,
-                    isEditingChains: $isEditingChains,
-                    totalBalance: $totalBalance,
-                    totalUpdateCount: $totalUpdateCount
+                    isEditingChains: $isEditingChains
                 )
             }
             .onMove(perform: isEditingChains ? move : nil)
@@ -90,23 +92,21 @@ struct VaultDetailView: View {
     }
     
     var balanceContent: some View {
-        Text(viewModel.totalBalanceInFiat.formatToFiat(includeCurrencySymbol: true))
-            .font(.body16MenloBold)
+        Text(vault.coins.totalBalanceInFiatString)
+            .font(.title32MenloBold)
             .foregroundColor(.neutral0)
-            .redacted(reason: totalUpdateCount >= viewModel.coinsGroupedByChains.count ? [] : .placeholder)
-            .padding(.top, 30)
+            .padding(.top, 10)
     }
 
+    private func getActions(_ group: GroupedChain) -> some View {
+        ChainDetailActionButtons(group: group, vault: vault, sendTx: sendTx)
+            .padding(16)
+            .padding(.horizontal, 12)
+    }
     
     var chainList: some View {
         ForEach(viewModel.coinsGroupedByChains, id: \.id) { group in
-            ChainNavigationCell(
-                group: group,
-                vault: vault, 
-                isEditingChains: $isEditingChains,
-                totalBalance: $totalBalance,
-                totalUpdateCount: $totalUpdateCount
-            )
+            ChainNavigationCell(group: group, vault: vault, isEditingChains: $isEditingChains)
         }
     }
     
@@ -114,7 +114,6 @@ struct VaultDetailView: View {
         HStack {
             chooseChainButton
             Spacer()
-            settingsButton
         }
         .padding(16)
         .padding(.bottom, 150)
@@ -132,15 +131,6 @@ struct VaultDetailView: View {
         }
         .font(.body16MenloBold)
         .foregroundColor(.turquoise600)
-    }
-    
-    var settingsButton: some View {
-        NavigationLink {
-            EditVaultView(vault: vault)
-        } label: {
-            NavigationSettingButton(tint: .turquoise600)
-        }
-        .frame(width: 30, height: 30)
     }
        
     var scanButton: some View {
@@ -166,24 +156,9 @@ struct VaultDetailView: View {
     }
     
     private func setData() {
-        resetTotal()
         viewModel.fetchCoins(for: vault)
-        setOrder()
-        
-        Task{
-            await viewModel.getTotalUpdatedBalance()
-        }
-    }
-    
-    private func resetTotal() {
-        totalBalance = 0
-        totalUpdateCount = 0
-    }
-    
-    private func setOrder() {
-        for index in 0..<viewModel.coinsGroupedByChains.count {
-            viewModel.coinsGroupedByChains[index].setOrder(index)
-        }
+        viewModel.setOrder()
+        viewModel.updateBalance()
     }
     
     private func move(from: IndexSet, to: Int) {

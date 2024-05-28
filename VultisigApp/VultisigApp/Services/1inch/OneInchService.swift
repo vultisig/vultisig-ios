@@ -20,7 +20,7 @@ struct OneInchService {
         return "0xa4a4f610e89488eb4ecc6c63069f241a54485269"
     }
 
-    func fetchQuotes(chain: String, source: String, destination: String, amount: String, from: String) async throws -> OneInchQuote {
+    func fetchQuotes(chain: String, source: String, destination: String, amount: String, from: String, isAffiliate: Bool) async throws -> OneInchQuote {
 
         let sourceAddress = source.isEmpty ? nullAddress : source
         let destinationAddress = destination.isEmpty ? nullAddress : destination
@@ -33,7 +33,8 @@ struct OneInchService {
             from: from,
             slippage: "0.5",
             referrer: referrerAddress,
-            fee: 0.7
+            fee: 0.5,
+            isAffiliate: isAffiliate
         )
 
         var request = URLRequest(url: url)

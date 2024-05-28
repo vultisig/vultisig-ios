@@ -28,6 +28,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
     private let swapService = SwapService.shared
     private let blockchainService = BlockChainService.shared
+    private let balanceService = BalanceService.shared
 
     var keysignPayload: KeysignPayload?
     
@@ -41,20 +42,12 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     @MainActor @Published var isLoading = false
     @MainActor @Published var quoteLoading = false
 
-    func load(tx: SwapTransaction, fromCoin: Coin, coins: [Coin], coinViewModel: CoinViewModel, vault: Vault) async {
+    func load(tx: SwapTransaction, fromCoin: Coin, coins: [Coin], vault: Vault) async {
         self.coins = coins.filter { $0.chain.isSwapSupported }
         tx.toCoin = coins.first!
         tx.fromCoin = fromCoin
 
         updateInitial(tx: tx, vault: vault)
-
-        await withTaskGroup(of: Void.self) { group in
-            for coin in coins {
-                group.addTask {
-                    await coinViewModel.loadData(coin: coin)
-                }
-            }
-        }
     }
     
     var progress: Double {
@@ -183,7 +176,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                     fromAmount: swapFromAmount(tx: tx),
                     toAmountDecimal: tx.toAmountDecimal,
                     toAmountLimit: "0", streamingInterval: "1", streamingQuantity: "0",
-                    expirationTime: UInt64(expirationTime.timeIntervalSince1970)
+                    expirationTime: UInt64(expirationTime.timeIntervalSince1970), 
+                    isAffiliate: isAlliliate(tx: tx)
                 )
                 keysignPayload = try await keysignFactory.buildTransfer(
                     coin: tx.fromCoin,
@@ -357,7 +351,12 @@ private extension SwapCryptoViewModel {
                 return
             }
 
-            let quote = try await swapService.fetchQuote(amount: amount, fromCoin: tx.fromCoin, toCoin: tx.toCoin)
+            let quote = try await swapService.fetchQuote(
+                amount: amount,
+                fromCoin: tx.fromCoin,
+                toCoin: tx.toCoin,
+                isAffiliate: isAlliliate(tx: tx)
+            )
 
             if !isSufficientBalance(tx: tx) {
                 throw Errors.insufficientFunds
@@ -399,7 +398,7 @@ private extension SwapCryptoViewModel {
 
     func feeCoin(tx: SwapTransaction) -> Coin {
         switch tx.fromCoin.chainType {
-        case .UTXO, .Solana, .THORChain, .Cosmos, .none, .Polkadot, .Sui:
+        case .UTXO, .Solana, .THORChain, .Cosmos, .Polkadot, .Sui:
             return tx.fromCoin
         case .EVM:
             guard !tx.fromCoin.isNativeToken else { return tx.fromCoin }
@@ -447,5 +446,11 @@ private extension SwapCryptoViewModel {
     func oneInchFee(quote: OneInchQuote) -> BigInt {
         let gasPrice = BigInt(quote.tx.gasPrice) ?? BigInt.zero
         return gasPrice * BigInt(EVMHelper.defaultETHSwapGasUnit)
+    }
+
+    func isAlliliate(tx: SwapTransaction) -> Bool {
+        let rawAmount = tx.fromCoin.raw(for: tx.amountDecimal)
+        let fiatAmount = tx.fromCoin.fiat(for: rawAmount)
+        return fiatAmount >= 100
     }
 }

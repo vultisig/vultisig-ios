@@ -71,21 +71,64 @@ enum MayaChainHelper {
     }
     
     static func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
-       
-        guard let fromAddr = AnyAddress(string: keysignPayload.coin.address, coin: .thorchain,hrp: "maya") else {
+        
+        guard let fromAddr = AnyAddress(string: keysignPayload.coin.address, coin: .thorchain, hrp: "maya") else {
             return .failure(HelperError.runtimeError("\(keysignPayload.coin.address) is invalid"))
         }
-        
-        guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .thorchain,hrp: "maya") else {
-            return .failure(HelperError.runtimeError("\(keysignPayload.toAddress) is invalid"))
-        }
+
         guard case .MayaChain(let accountNumber, let sequence) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get account number and sequence"))
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
             return .failure(HelperError.runtimeError("invalid hex public key"))
         }
-        
+        let coin = CoinType.thorchain
+
+        var mayaChainCoin = TW_Cosmos_Proto_THORChainCoin()
+        var message = [CosmosMessage()]
+
+        var isDeposit: Bool = false
+        if let memo = keysignPayload.memo, !memo.isEmpty {
+            if DepositStore.PREFIXES.contains(where: { memo.hasPrefix($0) }) {
+                isDeposit = true
+            }
+        }
+
+        if isDeposit {
+            mayaChainCoin = TW_Cosmos_Proto_THORChainCoin.with {
+                $0.asset = TW_Cosmos_Proto_THORChainAsset.with {
+                    $0.chain = "MAYA"
+                    $0.symbol = "CACAO"
+                    $0.ticker = "CACAO"
+                    $0.synth = false
+                }
+                $0.amount = String(keysignPayload.toAmount)
+                $0.decimals = Int64(keysignPayload.coin.decimals) ?? .zero
+            }
+            message = [CosmosMessage.with {
+                $0.thorchainDepositMessage = CosmosMessage.THORChainDeposit.with {
+                    $0.signer = fromAddr.data
+                    $0.memo = keysignPayload.memo ?? ""
+                    $0.coins = [mayaChainCoin]
+                }
+            }]
+        } else {
+            guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .thorchain, hrp: "maya") else {
+                return .failure(HelperError.runtimeError("\(keysignPayload.toAddress) is invalid"))
+            }
+
+            message = [CosmosMessage.with {
+                $0.thorchainSendMessage = CosmosMessage.THORChainSend.with {
+                    $0.fromAddress = fromAddr.data
+                    $0.amounts = [CosmosAmount.with {
+                        $0.denom = keysignPayload.coin.ticker.lowercased()
+                        $0.amount = String(keysignPayload.toAmount)
+                    }]
+                    $0.toAddress = toAddress.data
+                }
+            }]
+        }
+
         let input = CosmosSigningInput.with {
             $0.publicKey = pubKeyData
             $0.signingMode = .protobuf
@@ -96,17 +139,8 @@ enum MayaChainHelper {
             if let memo = keysignPayload.memo {
                 $0.memo = memo
             }
-            $0.messages = [CosmosMessage.with {
-                $0.thorchainSendMessage = CosmosMessage.THORChainSend.with {
-                    $0.fromAddress = fromAddr.data
-                    $0.amounts = [CosmosAmount.with {
-                        $0.denom = keysignPayload.coin.ticker.lowercased()
-                        $0.amount = String(keysignPayload.toAmount)
-                    }]
-                    $0.toAddress = toAddress.data
-                }
-            }]
-            // MAYAChain fee is 0.02 Cacao
+            $0.messages = message
+            // MAYAChain fee is 0.02 CACAO
             $0.fee = CosmosFee.with {
                 $0.gas = MayaChainGas
                 $0.amounts = [CosmosAmount.with {
@@ -115,9 +149,7 @@ enum MayaChainHelper {
                 }]
             }
         }
-        
         print(input.debugDescription)
-        
         do {
             let inputData = try input.serializedData()
             return .success(inputData)
