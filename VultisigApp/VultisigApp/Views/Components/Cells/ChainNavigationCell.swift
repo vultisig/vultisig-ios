@@ -27,6 +27,9 @@ struct ChainNavigationCell: View {
     
     var cell: some View {
         ChainCell(group: group, isEditingChains: $isEditingChains)
+            .onLongPressGesture {
+                copyAddress()
+            }
     }
     
     var navigationCell: some View {
@@ -35,6 +38,12 @@ struct ChainNavigationCell: View {
         } label: {
             ChainCell(group: group, isEditingChains: $isEditingChains)
         }
+    }
+    
+    private func copyAddress() {
+//        showAlert = true
+        let pasteboard = UIPasteboard.general
+        pasteboard.string = group.address
     }
 }
 
