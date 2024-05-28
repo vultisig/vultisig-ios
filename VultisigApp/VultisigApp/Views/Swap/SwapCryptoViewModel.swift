@@ -30,6 +30,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     private let blockchainService = BlockChainService.shared
     private let balanceService = BalanceService.shared
 
+    private var updateTask: Task<Void, Never>?
+
     var keysignPayload: KeysignPayload?
     
     @MainActor @Published var coins: [Coin] = []
@@ -294,7 +296,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         tx.fromCoin = toCoin
         tx.toCoin = fromCoin
 
-        Task {
+        updateTask?.cancel()
+        updateTask = Task {
             await updateQuotes(tx: tx, vault: vault)
         }
     }
@@ -306,20 +309,23 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
 
     func updateFromAmount(tx: SwapTransaction, vault: Vault) {
-        Task {
+        updateTask?.cancel()
+        updateTask = Task {
             await updateQuotes(tx: tx, vault: vault)
         }
     }
 
     func updateFromCoin(tx: SwapTransaction, vault: Vault) {
-        Task {
+        updateTask?.cancel()
+        updateTask = Task {
             await updateFees(tx: tx, vault: vault)
             await updateQuotes(tx: tx, vault: vault)
         }
     }
 
     func updateToCoin(tx: SwapTransaction, vault: Vault) {
-        Task {
+        updateTask?.cancel()
+        updateTask = Task {
             await updateQuotes(tx: tx, vault: vault)
         }
     }
@@ -369,12 +375,12 @@ private extension SwapCryptoViewModel {
         error = nil
 
         do {
-            guard let amount = Decimal(string: tx.fromAmount), !amount.isZero, tx.fromCoin != tx.toCoin else {
+            guard !tx.fromAmountDecimal.isZero, tx.fromCoin != tx.toCoin else {
                 return
             }
 
             let quote = try await swapService.fetchQuote(
-                amount: amount,
+                amount: tx.fromAmountDecimal,
                 fromCoin: tx.fromCoin,
                 toCoin: tx.toCoin,
                 isAffiliate: isAlliliate(tx: tx)
