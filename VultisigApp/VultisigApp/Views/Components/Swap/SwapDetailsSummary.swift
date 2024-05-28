@@ -21,8 +21,10 @@ struct SwapDetailsSummary: View {
                 getSummaryCell(leadingText: "provider", trailingText: providerName, image: providerName)
             }
             
-            getSummaryCell(leadingText: "gas(auto)", trailingText: String(tx.gasInReadable))
-            
+            if swapViewModel.showGas(tx: tx) {
+                getSummaryCell(leadingText: "gas(auto)", trailingText: swapViewModel.swapGasString(tx: tx))
+            }
+
             if swapViewModel.showFees(tx: tx) {
                 getSummaryCell(leadingText: "Estimated Fees", trailingText: swapViewModel.swapFeeString(tx: tx))
             }

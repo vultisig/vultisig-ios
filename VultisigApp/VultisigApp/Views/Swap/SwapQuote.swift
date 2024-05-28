@@ -41,9 +41,9 @@ enum SwapQuote {
     
     var displayName: String? {
         switch self {
-        case .thorchain(let quote):
+        case .thorchain:
             return "THORChain"
-        case .oneinch(let quote):
+        case .oneinch:
             return "1Inch"
         }
     }
