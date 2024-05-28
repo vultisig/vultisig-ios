@@ -8,40 +8,7 @@ import Tss
 import WalletCore
 
 enum THORChainHelper {
-    static let THORChainGas: UInt64 = getTHORChainGasPrice()
-    
-    private static var cachedTHORChainGas: UInt64?
-    
-    private static func fetchTHORChainGas(completion: @escaping (UInt64) -> Void) {
-        if let gas = cachedTHORChainGas {
-            completion(gas)
-        } else {
-            Task {
-                do {
-                    let feePrice = try await ThorchainService.shared.fetchFeePrice()
-                    cachedTHORChainGas = feePrice
-                    completion(feePrice)
-                } catch {
-                    print("Failed to fetch THORChain gas price: \(error)")
-                    completion(0) // or any default value you see fit
-                }
-            }
-        }
-    }
-    
-    static func getTHORChainGasPrice() -> UInt64 {
-        let semaphore = DispatchSemaphore(value: 0)
-        var gasPrice: UInt64 = 0
-        
-        fetchTHORChainGas { price in
-            gasPrice = price
-            semaphore.signal()
-        }
-        
-        _ = semaphore.wait(timeout: .distantFuture)
-        return gasPrice
-    }
-    
+    static let THORChainGas: UInt64 = ThorchainService.shared.getTHORChainGasPrice()
     
     static func getRUNECoin(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
         let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
