@@ -41,6 +41,7 @@ extension Font {
     
     // Semi-bold
     static let body12MontserratSemiBold = Font.custom("Montserrat", size: 12).weight(.semibold)
+    static let body16MontserratSemiBold = Font.custom("Montserrat", size: 16).weight(.semibold)
     static let body20MontserratSemiBold = Font.custom("Montserrat", size: 20).weight(.semibold)
     
     // Bold
