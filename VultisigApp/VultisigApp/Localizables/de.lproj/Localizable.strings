@@ -1,6 +1,5 @@
 "secureCryptoVault" = "SICHERER KRYPTO-TRESOR";
 "thisDevice" = "Dieses Gerät:";
-"homeViewDescription" = "ZWEI-FAKTOR-AUTHENTIFIZIERUNG\nSICHERE UND VERTRAUENSWÜRDIGE GERÄTE\nVOLLSTÄNDIG EIGENVERWALTET\nKEIN TRACKING, KEINE REGISTRIERUNG\nVOLLSTÄNDIG OPEN-SOURCE\nAUDITIERT";
 "start" = "Starten";
 "createNewVault" = "Einen neuen Tresor erstellen";
 "importExistingVault" = "Einen bestehenden Tresor importieren";

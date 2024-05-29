@@ -1,6 +1,5 @@
 "secureCryptoVault" = "COFRE SEGURO DE CRIPTO";
 "thisDevice" = "Este Dispositivo:";
-"homeViewDescription" = "AUTENTICAÇÃO DE DOIS FATORES\nDISPOSITIVOS SEGUROS E CONFIÁVEIS\nTOTALMENTE AUTOCUSTODIADO\nSEM RASTREAMENTO, SEM REGISTRO\nTOTALMENTE DE CÓDIGO ABERTO\nAUDITADO";
 "start" = "Iniciar";
 "createNewVault" = "Criar um Novo Cofre";
 "importExistingVault" = "Importar um Cofre Existente";

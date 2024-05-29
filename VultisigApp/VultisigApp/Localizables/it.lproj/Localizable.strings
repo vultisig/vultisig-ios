@@ -1,6 +1,5 @@
 "secureCryptoVault" = "CASSETTA DI SICUREZZA CRYPTO";
 "thisDevice" = "Questo Dispositivo:";
-"homeViewDescription" = "AUTENTICAZIONE A DUE FATTORI\nDISPOSITIVI SICURI E FIDATI\nCOMPLETAMENTE AUTOGESTITO\nNESSUN TRACCIAMENTO, NESSUNA REGISTRAZIONE\nCOMPLETAMENTE OPEN SOURCE\nAUDITATO";
 "start" = "Inizia";
 "createNewVault" = "Crea una Nuova Cassaforte";
 "importExistingVault" = "Importa una Cassaforte Esistente";
