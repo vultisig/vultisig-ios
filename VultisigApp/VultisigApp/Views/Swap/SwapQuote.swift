@@ -38,6 +38,15 @@ enum SwapQuote {
             return quote.tx.to
         }
     }
+    
+    var displayName: String? {
+        switch self {
+        case .thorchain:
+            return "THORChain"
+        case .oneinch:
+            return "1Inch"
+        }
+    }
 
     func inboundFeeDecimal(toCoin: Coin) -> Decimal? {
         switch self {
