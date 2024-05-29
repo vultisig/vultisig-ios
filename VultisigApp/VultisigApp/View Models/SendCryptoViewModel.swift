@@ -77,7 +77,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                             return
                         }
                         
-                        let gasPriceWei = BigInt(gasPrice)
+                        let gasPriceWei = BigInt(gasPrice) // We are already summing the priority fee and the base fee
                         
                         let totalFeeWei: BigInt = gasLimitBigInt * gasPriceWei
                         
