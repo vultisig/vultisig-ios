@@ -155,8 +155,12 @@ class Coin: ObservableObject, Codable, Hashable {
         return BigInt(decimal.description) ?? BigInt.zero
     }
 
-    func fiat(for value: BigInt) -> Decimal {
+    func fiat(value: BigInt) -> Decimal {
         let decimal = decimal(for: value)
+        return decimal * Decimal(priceRate)
+    }
+
+    func fiat(decimal: Decimal) -> Decimal {
         return decimal * Decimal(priceRate)
     }
 

@@ -14,6 +14,7 @@ class SwapTransaction: ObservableObject {
     @Published var fromCoin: Coin = .example
     @Published var toCoin: Coin = .example
     @Published var fromAmount: String = .empty
+    @Published var fee: BigInt = .zero
     @Published var gas: BigInt = .zero
     @Published var quote: SwapQuote?
 
@@ -62,12 +63,12 @@ class SwapTransaction: ObservableObject {
 
 extension SwapTransaction {
     
-    var amountDecimal: Decimal {
+    var fromAmountDecimal: Decimal {
         let amountString = fromAmount.replacingOccurrences(of: ",", with: ".")
         return Decimal(string: amountString) ?? .zero
     }
-    
+
     var amountInCoinDecimal: BigInt {
-        return fromCoin.raw(for: amountDecimal)
+        return fromCoin.raw(for: fromAmountDecimal)
     }
 }
