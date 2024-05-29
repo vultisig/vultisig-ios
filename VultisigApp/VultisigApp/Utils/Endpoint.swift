@@ -62,6 +62,10 @@ class Endpoint {
         return "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/swap?src=\(source)&dst=\(destination)&amount=\(amount)&from=\(from)&slippage=\(slippage)&disableEstimate=true&includeGas=true\(isAffiliateParams)".asUrl
     }
 
+    static func fetchTokens(chain: Int) -> URL {
+        return "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/tokens".asUrl
+    }
+
     static func fetchCoinPaprikaQuotes(_ quotes: String) -> String {
         "https://api.coinpaprika.com/v1/tickers?quotes=\(quotes)"
     }

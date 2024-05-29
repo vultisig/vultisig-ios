@@ -15,7 +15,7 @@ struct ChainDetailActionButtons: View {
     
     @State var actions: [CoinAction] = []
     
-    @EnvironmentObject var viewModel: TokenSelectionViewModel
+    @EnvironmentObject var viewModel: CoinSelectionViewModel
     
     var body: some View {
         HStack(spacing: 12) {
@@ -96,5 +96,5 @@ struct ChainDetailActionButtons: View {
 
 #Preview {
     ChainDetailActionButtons(group: GroupedChain.example, vault: Vault.example, sendTx: SendTransaction())
-        .environmentObject(TokenSelectionViewModel())
+        .environmentObject(CoinSelectionViewModel())
 }

@@ -12,7 +12,7 @@ struct ChainSelectionView: View {
     let vault: Vault
     
     @State var showAlert = false
-    @EnvironmentObject var viewModel: TokenSelectionViewModel
+    @EnvironmentObject var viewModel: CoinSelectionViewModel
     
     var body: some View {
         content
@@ -81,5 +81,5 @@ struct ChainSelectionView: View {
 
 #Preview {
     ChainSelectionView(showChainSelectionSheet: .constant(true), vault: Vault.example)
-        .environmentObject(TokenSelectionViewModel())
+        .environmentObject(CoinSelectionViewModel())
 }

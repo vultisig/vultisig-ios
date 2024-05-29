@@ -11,10 +11,10 @@ struct TokenSelectionView: View {
     @Binding var showTokenSelectionSheet: Bool
     let vault: Vault
     let group: GroupedChain
-    let tokens: [Coin]
-    
-    @EnvironmentObject var viewModel: TokenSelectionViewModel
-    
+
+    @EnvironmentObject var tokenViewModel: TokenSelectionViewModel
+    @EnvironmentObject var coinViewModel: CoinSelectionViewModel
+
     var body: some View {
         ZStack {
             Background()
@@ -28,6 +28,9 @@ struct TokenSelectionView: View {
                 NavigationBackSheetButton(showSheet: $showTokenSelectionSheet)
             }
         }
+        .task {
+            try? await tokenViewModel.loadData(chain: group.chain)
+        }
         .onDisappear {
             saveAssets()
         }
@@ -36,8 +39,8 @@ struct TokenSelectionView: View {
     var view: some View {
         ScrollView {
             VStack(spacing: 12) {
-                ForEach(tokens, id: \.self) { token in
-                    TokenSelectionCell(asset: token)
+                ForEach(tokenViewModel.tokens, id: \.self) { token in
+                    TokenSelectionCell(chain: group.chain, asset: token)
                 }
             }
             .padding(.top, 30)
@@ -46,13 +49,8 @@ struct TokenSelectionView: View {
     }
     
     private func saveAssets() {
-        Task{
-            await   viewModel.saveAssets(for: vault)
+        Task {
+            await coinViewModel.saveAssets(for: vault)
         }
     }
-}
-
-#Preview {
-    TokenSelectionView(showTokenSelectionSheet: .constant(true), vault: Vault.example, group: GroupedChain.example, tokens: [])
-        .environmentObject(TokenSelectionViewModel())
 }

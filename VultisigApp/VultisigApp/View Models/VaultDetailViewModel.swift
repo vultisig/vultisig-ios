@@ -73,13 +73,13 @@ class VaultDetailViewModel: ObservableObject {
         categorizeCoins(vault: vault)
     }
     
-    func getGroupAsync(_ viewModel: TokenSelectionViewModel) {
+    func getGroupAsync(_ viewModel: CoinSelectionViewModel) {
         Task {
             selectedGroup = await getGroup(viewModel)
         }
     }
     
-    private func getGroup(_ viewModel: TokenSelectionViewModel) async -> GroupedChain? {
+    private func getGroup(_ viewModel: CoinSelectionViewModel) async -> GroupedChain? {
         for group in coinsGroupedByChains {
             let actions = await viewModel.actionResolver.resolveActions(for: group.chain)
             
