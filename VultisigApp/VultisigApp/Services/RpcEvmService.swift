@@ -40,7 +40,7 @@ class RpcEvmService: RpcService {
         let gasPriceValue = try await gasPrice
         let priorityFeeValue = try await priorityFee
         
-        let adjustedGasPrice = BigInt(Double(gasPriceValue + priorityFeeValue) * multiplier)
+        let adjustedGasPrice = BigInt(Double(gasPriceValue) * multiplier)
         
         return (adjustedGasPrice, priorityFeeValue, Int64(try await nonce))
     }
