@@ -1,6 +1,5 @@
 "secureCryptoVault" = "CAJA FUERTE DE CRIPTO";
 "thisDevice" = "Este Dispositivo:";
-"homeViewDescription" = "AUTENTICACIÓN DE DOS FACTORES\nDISPOSITIVOS SEGUROS Y DE CONFIANZA\nTOTALMENTE AUTOGESTIONADO\nSIN RASTREO, SIN REGISTRO\nTOTALMENTE DE CÓDIGO ABIERTO\nAUDITADO";
 "start" = "Iniciar";
 "createNewVault" = "Crear una Nueva Caja Fuerte";
 "importExistingVault" = "Importar una Caja Fuerte Existente";
