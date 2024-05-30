@@ -16,6 +16,7 @@ enum JoinKeysignStatus {
     case FailedToStart
     case VaultMismatch
     case KeysignSameDeviceShare
+    case KeysignNoCameraAccess
 }
 @MainActor
 class JoinKeysignViewModel: ObservableObject {
@@ -35,6 +36,8 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var serviceName = ""
     @Published var serverAddress: String? = nil
     @Published var useVultisigRelay = false
+    @Published var isCameraPermissionGranted: Bool? = nil
+    
     var encryptionKeyHex: String = ""
     
     init() {
@@ -42,14 +45,19 @@ class JoinKeysignViewModel: ObservableObject {
         self.isShowingScanner = false
     }
     
-    func setData(vault: Vault, serviceDelegate: ServiceDelegate) {
+    func setData(vault: Vault, serviceDelegate: ServiceDelegate, isCameraPermissionGranted: Bool) {
         self.vault = vault
         self.serviceDelegate = serviceDelegate
+        self.isCameraPermissionGranted = isCameraPermissionGranted
         
         if !self.vault.localPartyID.isEmpty {
             self.localPartyID = self.vault.localPartyID
         } else {
             self.localPartyID = Utils.getLocalDeviceIdentity()
+        }
+        
+        if let isAllowed = self.isCameraPermissionGranted, !isAllowed {
+            status = .KeysignNoCameraAccess
         }
     }
     
@@ -158,6 +166,11 @@ class JoinKeysignViewModel: ObservableObject {
     func handleScan(result: Result<ScanResult, ScanError>) {
         defer {
             self.isShowingScanner = false
+        }
+        
+        guard let isCameraPermissionGranted, isCameraPermissionGranted else {
+            status = .KeysignNoCameraAccess
+            return
         }
         
         switch result {

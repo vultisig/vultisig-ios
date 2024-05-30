@@ -13,6 +13,7 @@ struct ContentView: View {
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var accountViewModel: AccountViewModel
+    @EnvironmentObject var appViewModel: ApplicationState
     
     var body: some View {
         ZStack {
@@ -47,7 +48,7 @@ struct ContentView: View {
     var splashView: some View {
         WelcomeView()
             .onAppear {
-                authenticateUser()
+                setData()
             }
             .onChange(of: accountViewModel.canLogin) { oldValue, newValue in
                 if newValue {
@@ -72,6 +73,11 @@ struct ContentView: View {
         CreateVaultView()
     }
     
+    private func setData() {
+        authenticateUser()
+        appViewModel.checkCameraPermission()
+    }
+    
     private func authenticateUser() {
         guard accountViewModel.canLogin else {
             return
@@ -92,4 +98,5 @@ struct ContentView: View {
     ContentView()
         .environmentObject(AccountViewModel())
         .environmentObject(DeeplinkViewModel())
+        .environmentObject(ApplicationState())
 }

@@ -83,7 +83,8 @@ struct KeysignView: View {
             messagesToSign: self.messsageToSign,
             vault: self.vault,
             keysignPayload: keysignPayload,
-            encryptionKeyHex: encryptionKeyHex)
+            encryptionKeyHex: encryptionKeyHex
+        )
     }
     
     private func movetoDoneView() {
