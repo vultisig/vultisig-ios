@@ -182,3 +182,4 @@
 "typeHere" = "Ovdje upišite";
 "nameYourVault" = "Imenujte svoj trezor";
 "uploadFromGallery" = "Prenesi iz galerije";
+"polkadotExistentialDepositError" = "Ako račun padne ispod 1 DOT (Egzistencijalni Depozit), račun se briše (deaktivira), a preostala sredstva se uništavaju. Adresa se može ponovno aktivirati s novim depozitom većim od egzistencijalnog depozita u bilo kojem trenutku. To neće vratiti uništena sredstva.";
