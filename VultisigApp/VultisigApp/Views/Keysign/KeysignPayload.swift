@@ -29,8 +29,8 @@ enum BlockChainSpecific: Codable, Hashable {
         switch self {
         case .UTXO(let byteFee, _):
             return byteFee
-        case .Ethereum(let maxFeePerGas, _, _, _):
-            return maxFeePerGas
+        case .Ethereum(let baseFee, let priorityFeeWei, _, _):
+            return baseFee + priorityFeeWei
         case .THORChain(_, _, let fee):
             return fee.description.toBigInt()
         case .MayaChain:

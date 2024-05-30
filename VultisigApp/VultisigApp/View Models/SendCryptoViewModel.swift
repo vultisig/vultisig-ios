@@ -70,14 +70,14 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 do {
                     if tx.coin.isNativeToken {
                         let service = try EvmServiceFactory.getService(forChain: tx.coin)
-                        let (gasPrice,_,_) = try await service.getGasInfo(fromAddress: tx.fromAddress)
+                        let (baseFee, priorityFee,_) = try await service.getGasInfo(fromAddress: tx.fromAddress)
                         
                         guard let gasLimitBigInt = BigInt(tx.coin.feeDefault) else {
                             print("Invalid gas limit")
                             return
                         }
                         
-                        let gasPriceWei = BigInt(gasPrice)
+                        let gasPriceWei = baseFee + priorityFee
                         
                         let totalFeeWei: BigInt = gasLimitBigInt * gasPriceWei
                         
