@@ -73,7 +73,7 @@ class TransactionMemoUnbond: TransactionMemoAddressable, ObservableObject {
                 get: { self.amount },
                 set: { self.amount = $0 }
             ), format: .number)
-            TransactionMemoAddressTextField(memo: self, addressKey: "provider")
+            TransactionMemoAddressTextField(memo: self, addressKey: "provider", isOptional: true)
         })
     }
 }
