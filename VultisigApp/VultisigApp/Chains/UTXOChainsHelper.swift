@@ -69,8 +69,13 @@ class UTXOChainsHelper {
         else {
             return .failure(HelperError.runtimeError("public key \(derivedPubKey) is invalid"))
         }
+        let address = coin.deriveAddressFromPublicKey(publicKey: publicKey)
+        if coin == .bitcoinCash {
+            let addressWithoutPrefix = address.replacingOccurrences(of: "bitcoincash:", with: "")
+            return .success(addressWithoutPrefix)
+        }
+        return .success(address)
         
-        return .success(coin.deriveAddressFromPublicKey(publicKey: publicKey))
     }
     
     // before keysign , we need to get the preSignedImageHash , so it can be signed with TSS
