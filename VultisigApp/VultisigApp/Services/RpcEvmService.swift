@@ -38,10 +38,12 @@ class RpcEvmService: RpcService {
         async let priorityFee = fetchMaxPriorityFeePerGas()
         
         let gasPriceValue = try await gasPrice
-        let priorityFeeValue = try await priorityFee
-        
+        var priorityFeeValue = try await priorityFee
+        let oneGwei = BigInt(1000000000)
+        if priorityFeeValue < oneGwei {
+            priorityFeeValue = oneGwei
+        }
         let adjustedGasPrice = BigInt(Double(gasPriceValue) * multiplier)
-        
         return (adjustedGasPrice, priorityFeeValue, Int64(try await nonce))
     }
     
