@@ -14,6 +14,7 @@ import WalletCore
 struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: View {
     @ObservedObject var memo: MemoType
     var addressKey: String
+    var isOptional: Bool = false
     
     @State var isValid = true
     @State var showScanner = false
@@ -23,7 +24,7 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack{
-                Text(addressKey.toFormattedTitleCase())
+                Text("\(addressKey.toFormattedTitleCase())\(optionalMessage)")
                     .font(.body14MontserratMedium)
                     .foregroundColor(.neutral0)
                 
@@ -124,6 +125,13 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
         }
     }
     
+    var optionalMessage: String {
+        if isOptional {
+            return " (optional)"
+        }
+        return .empty
+    }
+    
     private func processImage() {
         guard let selectedImage = selectedImage else { return }
         handleImageQrCode(image: selectedImage)
@@ -144,7 +152,7 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
     
     private func validateAddress(_ newValue: String) {
         isValid = CoinType.thorchain.validate(address: newValue) ||
-                    AnyAddress.isValidBech32(string: newValue, coin: .thorchain, hrp: "maya")
+        AnyAddress.isValidBech32(string: newValue, coin: .thorchain, hrp: "maya")
     }
     
     private func pasteAddress() {

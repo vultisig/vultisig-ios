@@ -76,8 +76,8 @@ class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
                 set: { self.amount = $0 }
             ), format: .number)
             TransactionMemoAddressTextField(memo: self, addressKey: "nodeAddress")
-            TransactionMemoAddressTextField(memo: self, addressKey: "provider")
-            StyledIntegerField(placeholder: "Operator's Fee", value: Binding(
+            TransactionMemoAddressTextField(memo: self, addressKey: "provider", isOptional: true)
+            StyledIntegerField(placeholder: "Operator's Fee (optional)", value: Binding(
                 get: { self.fee },
                 set: { self.fee = $0 }
             ), format: .number)
