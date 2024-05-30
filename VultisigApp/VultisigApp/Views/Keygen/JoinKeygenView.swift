@@ -20,6 +20,7 @@ struct JoinKeygenView: View {
     @State var shouldJoinKeygen = false
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
+    @EnvironmentObject var appViewModel: ApplicationState
     
     let logger = Logger(subsystem: "join-keygen", category: "communication")
     
@@ -71,6 +72,8 @@ struct JoinKeygenView: View {
                 keygenStarted
             case .FailToStart:
                 failToStartKeygen
+            case .NoCameraAccess:
+                cameraErrorView
             }
         }
         .padding()
@@ -237,8 +240,17 @@ struct JoinKeygenView: View {
         .padding(.bottom, 50)
     }
     
+    var cameraErrorView: some View {
+        NoCameraPermissionView()
+    }
+    
     private func setData() {
-        viewModel.setData(vault: vault, serviceDelegate: self.serviceDelegate, vaults: vaults)
+        viewModel.setData(
+            vault: vault,
+            serviceDelegate: self.serviceDelegate,
+            vaults: vaults,
+            isCameraPermissionGranted: appViewModel.isCameraPermissionGranted
+        )
         
         if shouldJoinKeygen {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -249,8 +261,8 @@ struct JoinKeygenView: View {
     }
 }
 
-struct JoinKeygenView_Previews: PreviewProvider {
-    static var previews: some View {
-        JoinKeygenView(vault: Vault.example)
-    }
+#Preview {
+    JoinKeygenView(vault: Vault.example)
+        .environmentObject(DeeplinkViewModel())
+        .environmentObject(ApplicationState())
 }

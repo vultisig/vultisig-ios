@@ -20,6 +20,7 @@ enum JoinKeygenStatus {
     case WaitingForKeygenToStart
     case KeygenStarted
     case FailToStart
+    case NoCameraAccess
 }
 
 @MainActor
@@ -32,6 +33,7 @@ class JoinKeygenViewModel: ObservableObject {
     @Published var isShowingScanner = false
     @Published var sessionID: String? = nil
     @Published var hexChainCode: String = ""
+    @Published var isCameraPermissionGranted: Bool? = nil
     
     @Published var netService: NetService? = nil
     @Published var status = JoinKeygenStatus.DiscoverSessionID
@@ -49,15 +51,21 @@ class JoinKeygenViewModel: ObservableObject {
         self.vault = Vault(name: "Main Vault")
     }
     
-    func setData(vault: Vault, serviceDelegate: ServiceDelegate,vaults: [Vault]) {
+    func setData(vault: Vault, serviceDelegate: ServiceDelegate,vaults: [Vault], isCameraPermissionGranted: Bool) {
         self.vault = vault
         self.vaults = vaults
         self.serviceDelegate = serviceDelegate
+        self.isCameraPermissionGranted = isCameraPermissionGranted
+        
         if !vault.localPartyID.isEmpty {
             self.localPartyID = vault.localPartyID
         } else {
             self.localPartyID = Utils.getLocalDeviceIdentity()
             vault.localPartyID = self.localPartyID
+        }
+        
+        if let isAllowed = self.isCameraPermissionGranted, !isAllowed {
+            status = .NoCameraAccess
         }
     }
     
@@ -146,6 +154,11 @@ class JoinKeygenViewModel: ObservableObject {
     func handleScan(result: Result<ScanResult, ScanError>) {
         defer {
             isShowingScanner = false
+        }
+        
+        guard let isCameraPermissionGranted, isCameraPermissionGranted else {
+            status = .NoCameraAccess
+            return
         }
         
         switch result {
