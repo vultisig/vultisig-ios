@@ -19,6 +19,10 @@ struct TokenSelectionView: View {
         ZStack {
             Background()
             view
+
+            if tokenViewModel.isLoading {
+                Loader()
+            }
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("chooseTokens", comment: "Choose Tokens"))
@@ -39,12 +43,13 @@ struct TokenSelectionView: View {
     var view: some View {
         ScrollView {
             VStack(spacing: 12) {
-                ForEach(tokenViewModel.tokens, id: \.self) { token in
+                ForEach(tokenViewModel.filteredTokens, id: \.self) { token in
                     TokenSelectionCell(chain: group.chain, asset: token)
                 }
             }
             .padding(.top, 30)
         }
+        .searchable(text: $tokenViewModel.searchText)
         .padding(.horizontal, 16)
     }
     
