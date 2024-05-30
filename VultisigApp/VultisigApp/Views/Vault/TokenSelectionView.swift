@@ -12,7 +12,7 @@ struct TokenSelectionView: View {
     let vault: Vault
     let group: GroupedChain
 
-    @EnvironmentObject var tokenViewModel: TokenSelectionViewModel
+    @StateObject var tokenViewModel = TokenSelectionViewModel()
     @EnvironmentObject var coinViewModel: CoinSelectionViewModel
 
     var body: some View {
@@ -20,7 +20,7 @@ struct TokenSelectionView: View {
             Background()
             view
 
-            if tokenViewModel.isLoading, tokenViewModel.tokens.isEmpty {
+            if tokenViewModel.isLoading {
                 Loader()
             }
         }
@@ -38,21 +38,24 @@ struct TokenSelectionView: View {
         .onDisappear {
             saveAssets()
         }
+        .searchable(text: $tokenViewModel.searchText)
     }
     
     var view: some View {
         ScrollView {
-            VStack(spacing: 12) {
+            LazyVStack(spacing: 12) {
                 ForEach(tokenViewModel.filteredTokens, id: \.self) { token in
-                    TokenSelectionCell(chain: group.chain, asset: token)
+                    TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel)
                 }
             }
-            .padding(.top, 30)
         }
-        .searchable(text: $tokenViewModel.searchText)
         .padding(.horizontal, 16)
     }
-    
+
+    var address: String {
+        return vault.coins.first(where: { $0.chain == group.chain })?.address ?? .empty
+    }
+
     private func saveAssets() {
         Task {
             await coinViewModel.saveAssets(for: vault)

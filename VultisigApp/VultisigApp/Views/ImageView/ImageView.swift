@@ -8,7 +8,7 @@
 import SwiftUI
 
 extension URLCache {
-    static let imageCache = URLCache(memoryCapacity: 10_000_000, diskCapacity: 100_000_000)
+    static let imageCache = URLCache(memoryCapacity: 100_000_000, diskCapacity: 500_000_000)
 }
 
 struct ImageView: View {

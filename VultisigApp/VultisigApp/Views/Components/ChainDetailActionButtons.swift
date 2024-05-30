@@ -70,9 +70,9 @@ struct ChainDetailActionButtons: View {
     var swapButton: some View {
         NavigationLink {
             if let coin {
-                SwapCryptoView(coin: coin, coins: viewModel.allCoins, vault: vault)
+                SwapCryptoView(coin: coin, coins: viewModel.allCoins(vault: vault), vault: vault)
             } else if let coin = group.coins.first {
-                SwapCryptoView(coin: coin, coins: viewModel.allCoins, vault: vault)
+                SwapCryptoView(coin: coin, coins: viewModel.allCoins(vault: vault), vault: vault)
             }
         } label: {
             ActionButton(title: "swap", fontColor: .persianBlue200)

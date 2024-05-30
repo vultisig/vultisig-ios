@@ -3,7 +3,7 @@ import SwiftData
 import BigInt
 
 @Model
-class Coin: ObservableObject,Codable, Hashable {
+class Coin: ObservableObject, Codable, Hashable {
     @Attribute(.unique) var id: String
     let chain: Chain
     let ticker: String

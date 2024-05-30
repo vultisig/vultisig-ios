@@ -20,8 +20,8 @@ class CoinSelectionViewModel: ObservableObject {
     
     private let logger = Logger(subsystem: "assets-list", category: "view")
     
-    var allCoins: [Coin] {
-        return groupedAssets.values.reduce([], +)
+    func allCoins(vault: Vault) -> [Coin] {
+        return vault.coins.filter { $0.isNativeToken }
     }
     
     func loadData(coin: Coin) async {
@@ -33,6 +33,10 @@ class CoinSelectionViewModel: ObservableObject {
         checkSelected(for: vault)
     }
     
+    private func checkSelected(for vault: Vault) {
+        selection = Set(vault.coins)
+    }
+
     private func groupAssets() {
         groupedAssets = [:]
         groupedAssets = Dictionary(grouping: TokensStore.TokenSelectionAssets.sorted(by: { first, second in
@@ -42,16 +46,7 @@ class CoinSelectionViewModel: ObservableObject {
             return false
         })) { $0.chain.name }
     }
-    
-    private func checkSelected(for vault: Vault) {
-        selection = Set<Coin>()
-        for coin in vault.coins {
-            if let asset = TokensStore.TokenSelectionAssets.first(where: { $0.ticker == coin.ticker && $0.chain == coin.chain}) {
-                selection.insert(asset)
-            }
-        }
-    }
-    
+
     func handleSelection(isSelected: Bool, asset: Coin) {
         if isSelected {
             selection.insert(asset)
@@ -59,7 +54,7 @@ class CoinSelectionViewModel: ObservableObject {
             selection.remove(asset)
         }
     }
-    
+
     func saveAssets(for vault: Vault) async {
         do {
             let removedCoins = vault.coins.filter { coin in

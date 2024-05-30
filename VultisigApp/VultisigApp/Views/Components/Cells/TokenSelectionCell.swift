@@ -9,12 +9,13 @@ import SwiftUI
 
 struct TokenSelectionCell: View {
     let chain: Chain
+    let address: String
     let asset: OneInchToken
+    let tokenSelectionViewModel: TokenSelectionViewModel
+
     @State var isSelected = false
 
-    @EnvironmentObject var tokenSelectionViewModel: TokenSelectionViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
-
 
     var body: some View {
         HStack(spacing: 16) {
@@ -61,7 +62,7 @@ struct TokenSelectionCell: View {
     }
 
     private func setData() {
-        if coinSelectionViewModel.selection.contains(convertToCoin(asset)) {
+        if coinSelectionViewModel.selection.contains(where: { $0.chain == chain && $0.ticker.lowercased() == asset.symbol.lowercased() }) {
             isSelected = true
         } else {
             isSelected = false
@@ -77,13 +78,13 @@ struct TokenSelectionCell: View {
             chain: chain,
             ticker: token.symbol,
             logo: token.logoURI.absoluteString,
-            address: .empty,
+            address: address,
             priceRate: 0,
             chainType: .EVM,
             decimals: String(token.decimals),
             hexPublicKey: .empty,
             feeUnit: "Gwei",
-            priceProviderId: "\(chain.coingeckoId)_\(token.address)",
+            priceProviderId: token.symbol.lowercased(),
             contractAddress: token.address,
             rawBalance: .zero,
             isNativeToken: false,

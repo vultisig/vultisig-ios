@@ -16,7 +16,6 @@ struct VultisigApp: App {
     @StateObject var applicationState = ApplicationState.shared
     @StateObject var vaultDetailViewModel = VaultDetailViewModel()
     @StateObject var coinSelectionViewModel = CoinSelectionViewModel()
-    @StateObject var tokenSelectionViewModel = TokenSelectionViewModel()
     @StateObject var accountViewModel = AccountViewModel()
     @StateObject var deeplinkViewModel = DeeplinkViewModel()
     @StateObject var settingsViewModel = SettingsViewModel.shared
@@ -28,7 +27,6 @@ struct VultisigApp: App {
                 .environmentObject(applicationState) // Shared monolithic mutable state
                 .environmentObject(vaultDetailViewModel)
                 .environmentObject(coinSelectionViewModel)
-                .environmentObject(tokenSelectionViewModel)
                 .environmentObject(accountViewModel)
                 .environmentObject(deeplinkViewModel)
                 .environmentObject(settingsViewModel)
