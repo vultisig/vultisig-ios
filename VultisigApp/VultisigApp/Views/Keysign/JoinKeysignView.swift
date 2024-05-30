@@ -15,6 +15,7 @@ struct JoinKeysignView: View {
     @State var shouldKeysignTransaction = false
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
+    @EnvironmentObject var appViewModel: ApplicationState
     
     let logger = Logger(subsystem: "join-keysign", category: "communication")
 
@@ -64,6 +65,8 @@ struct JoinKeysignView: View {
                 KeysignVaultMismatchErrorView()
             case .KeysignSameDeviceShare:
                 KeysignSameDeviceShareErrorView()
+            case .KeysignNoCameraAccess:
+                NoCameraPermissionView()
             }
         }
         .padding()
@@ -153,7 +156,11 @@ struct JoinKeysignView: View {
     }
     
     private func setData() {
-        viewModel.setData(vault: vault, serviceDelegate: serviceDelegate)
+        viewModel.setData(
+            vault: vault,
+            serviceDelegate: serviceDelegate, 
+            isCameraPermissionGranted: appViewModel.isCameraPermissionGranted
+        )
         
         if shouldKeysignTransaction {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -167,4 +174,5 @@ struct JoinKeysignView: View {
 #Preview {
     JoinKeysignView(vault: Vault.example)
         .environmentObject(DeeplinkViewModel())
+        .environmentObject(ApplicationState())
 }
