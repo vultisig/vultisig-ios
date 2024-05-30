@@ -1248,8 +1248,10 @@
 		D9AD8ED72B67225F0009F8D5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				B5A97CEB2BF41554007574D7 /* TransactionMemo */,
 				D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */,
+				A6D0BA692C08353700E24DC9 /* NoCameraPermissionView.swift */,
+				A65518022BF849FC006BB924 /* CoverView.swift */,
+				B5A97CEB2BF41554007574D7 /* TransactionMemo */,
 				46D067E42B8852B70052F535 /* Keygen */,
 				049BBB4E2B71E37B004C231F /* Components */,
 				DE15729A2B70F284009BC7C5 /* Keysign */,
@@ -1260,8 +1262,6 @@
 				A6C0D55D2BB3B71300156689 /* Transactions */,
 				A6980C222BC0834E00F452AB /* Settings */,
 				A6966D1C2BA3DD9900903CA4 /* Onboarding */,
-				A65518022BF849FC006BB924 /* CoverView.swift */,
-				A6D0BA692C08353700E24DC9 /* NoCameraPermissionView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
