@@ -3,36 +3,30 @@ import SwiftData
 import BigInt
 
 @Model
-class Coin: ObservableObject, Codable, Hashable {
+class Coin: ObservableObject,Codable, Hashable {
     @Attribute(.unique) var id: String
-
+    
     let chain: Chain
     let ticker: String
     let logo: String
-    let chainType: ChainType
     let decimals: String
-    let feeUnit: String
     let feeDefault: String
     let contractAddress: String
     let isNativeToken: Bool
-
     var priceProviderId: String
-
     var hexPublicKey: String = ""
     var address: String = ""
     var rawBalance: String = ""
     var priceRate: Double = 0
-
+    
     init(
         chain: Chain,
         ticker: String,
         logo: String,
         address: String,
         priceRate: Double,
-        chainType: ChainType,
         decimals: String,
         hexPublicKey: String,
-        feeUnit: String,
         priceProviderId: String,
         contractAddress: String,
         rawBalance: String,
@@ -44,32 +38,28 @@ class Coin: ObservableObject, Codable, Hashable {
         self.logo = logo
         self.address = address
         self.priceRate = priceRate
-        self.chainType = chainType
         self.decimals = decimals
         self.hexPublicKey = hexPublicKey
-        self.feeUnit = feeUnit
         self.priceProviderId = priceProviderId
         self.contractAddress = contractAddress
         self.rawBalance = rawBalance
         self.isNativeToken = isNativeToken
         self.feeDefault = feeDefault
-
+        
         self.id = "\(chain.rawValue)-\(ticker)-\(address)"
     }
-
+    
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let chain = try container.decode(Chain.self, forKey: .chain)
         let ticker = try container.decode(String.self, forKey: .ticker)
         let address = try container.decodeIfPresent(String.self, forKey: .address) ?? ""
-
+        
         self.chain = chain
         self.ticker = ticker
         self.address = address
         self.logo = try container.decode(String.self, forKey: .logo)
-        self.chainType = try container.decode(ChainType.self, forKey: .chainType)
         self.decimals = try container.decode(String.self, forKey: .decimals)
-        self.feeUnit = try container.decode(String.self, forKey: .feeUnit)
         self.feeDefault = try container.decode(String.self, forKey: .feeDefault)
         self.priceProviderId = try container.decode(String.self, forKey: .priceProviderId)
         self.contractAddress = try container.decode(String.self, forKey: .contractAddress)
@@ -80,16 +70,14 @@ class Coin: ObservableObject, Codable, Hashable {
         self.id = try container.decode(String.self, forKey: .id)
         
     }
-
+    
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
         try container.encode(chain, forKey: .chain)
         try container.encode(ticker, forKey: .ticker)
         try container.encode(logo, forKey: .logo)
-        try container.encode(chainType, forKey: .chainType)
         try container.encode(decimals, forKey: .decimals)
-        try container.encode(feeUnit, forKey: .feeUnit)
         try container.encode(feeDefault, forKey: .feeDefault)
         try container.encode(priceProviderId, forKey: .priceProviderId)
         try container.encode(contractAddress, forKey: .contractAddress)
@@ -99,8 +87,8 @@ class Coin: ObservableObject, Codable, Hashable {
         try container.encode(rawBalance, forKey: .rawBalance)
         try container.encode(priceRate, forKey: .priceRate)
     }
-
-
+    
+    
     func clone() -> Coin {
         return Coin(
             chain: chain,
@@ -108,10 +96,8 @@ class Coin: ObservableObject, Codable, Hashable {
             logo: logo,
             address: address,
             priceRate: priceRate,
-            chainType: chainType,
             decimals: decimals,
             hexPublicKey: hexPublicKey,
-            feeUnit: feeUnit,
             priceProviderId: priceProviderId,
             contractAddress: contractAddress,
             rawBalance: rawBalance,
@@ -127,7 +113,7 @@ class Coin: ObservableObject, Codable, Hashable {
     static func == (lhs: Coin, rhs: Coin) -> Bool {
         return lhs.id == rhs.id
     }
-
+    
     var balanceDecimal: Decimal {
         let tokenBalance = Decimal(string: rawBalance) ?? 0.0
         let tokenDecimals = Int(decimals) ?? 0
@@ -142,28 +128,46 @@ class Coin: ObservableObject, Codable, Hashable {
         let balanceInFiat = balanceDecimal * Decimal(priceRate)
         return balanceInFiat.formatToFiat()
     }
-
+    var chainType: ChainType {
+        switch self.chain {
+        case .thorChain,.mayaChain:
+            return .THORChain
+        case .solana:
+            return .Solana
+        case .ethereum,.avalanche,.base,.blast,.arbitrum,.polygon,.optimism,.bscChain,.cronosChain:
+            return .EVM
+        case .bitcoin,.bitcoinCash,.litecoin,.dogecoin,.dash:
+            return .UTXO
+        case .gaiaChain,.kujira:
+            return .Cosmos
+        case .sui:
+            return .Sui
+        case .polkadot:
+            return .Polkadot
+        }
+    }
+    
     func decimal(for value: BigInt) -> Decimal {
         let decimals = Int(decimals) ?? 0
         let decimalValue = Decimal(string: String(value)) ?? 0
         return decimalValue / pow(Decimal(10), decimals)
     }
-
+    
     func raw(for value: Decimal) -> BigInt {
         let tokenDecimals = Int(decimals) ?? 0
         let decimal = value * pow(10, tokenDecimals)
         return BigInt(decimal.description) ?? BigInt.zero
     }
-
+    
     func fiat(value: BigInt) -> Decimal {
         let decimal = decimal(for: value)
         return decimal * Decimal(priceRate)
     }
-
+    
     func fiat(decimal: Decimal) -> Decimal {
         return decimal * Decimal(priceRate)
     }
-
+    
     var swapAsset: String {
         guard !isNativeToken else {
             if chain == .gaiaChain {
@@ -188,20 +192,20 @@ class Coin: ObservableObject, Codable, Hashable {
         
         return maxValueCalculated < .zero ? 0 : maxValueCalculated
     }
-
+    
     var balanceInFiatDecimal: Decimal {
         let balanceInFiat = balanceDecimal * Decimal(priceRate)
         return balanceInFiat
     }
-
+    
     var blockchairKey: String {
         return "\(address)-\(chain.name.lowercased())"
     }
-
+    
     var shouldApprove: Bool {
         return !isNativeToken && chain.chainType == .EVM
     }
-
+    
     var tokenSchema: String? {
         guard !isNativeToken else { return nil }
         switch chain {
@@ -213,7 +217,7 @@ class Coin: ObservableObject, Codable, Hashable {
             return nil
         }
     }
-
+    
     var tokenChainLogo: String? {
         guard !isNativeToken else { return nil }
         return chain.logo
@@ -225,10 +229,8 @@ class Coin: ObservableObject, Codable, Hashable {
         logo: "BitcoinLogo",
         address: "bc1qxyz...",
         priceRate: 20000.0,
-        chainType: ChainType.UTXO,
         decimals: "8",
         hexPublicKey: "HexPublicKeyExample",
-        feeUnit: "Satoshi",
         priceProviderId: "Bitcoin",
         contractAddress: "ContractAddressExample",
         rawBalance: "500000000",
@@ -238,7 +240,7 @@ class Coin: ObservableObject, Codable, Hashable {
 }
 
 private extension Coin {
-
+    
     enum CodingKeys: String, CodingKey {
         case id
         case chain
@@ -246,7 +248,6 @@ private extension Coin {
         case logo
         case chainType
         case decimals
-        case feeUnit
         case feeDefault
         case priceProviderId
         case contractAddress

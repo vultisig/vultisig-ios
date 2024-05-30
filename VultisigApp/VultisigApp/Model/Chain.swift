@@ -58,6 +58,23 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             
         }
     }
+    var feeUnit: String{
+        switch self {
+        case .thorChain: return "RUNE"
+        case .solana: return "SOL"
+        case .ethereum,.avalanche,.base,.blast,.arbitrum,.polygon,.optimism,.bscChain,.cronosChain: return "Gwei"
+        case .bitcoin: return "BTC/vbyte"
+        case .bitcoinCash: return "BCH/vbyte"
+        case .litecoin: return "LTC/vbyte"
+        case .dogecoin: return "DOGE/vbyte"
+        case .dash: return "DASH/vbyte"
+        case .gaiaChain: return "uatom"
+        case .kujira: return "ukuji"
+        case .mayaChain: return "CACAO"
+        case .sui: return "SUI"
+        case .polkadot: return "DOT"
+        }
+    }
     
     var ticker: String {
         switch self {

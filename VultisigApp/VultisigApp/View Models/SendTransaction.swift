@@ -21,10 +21,8 @@ class SendTransaction: ObservableObject, Hashable {
         logo: "",
         address: "",
         priceRate: 0.0,
-        chainType: ChainType.UTXO,
         decimals: "8",
         hexPublicKey: "",
-        feeUnit: "",
         priceProviderId: "",
         contractAddress: "",
         rawBalance: "0",
@@ -146,7 +144,7 @@ class SendTransaction: ObservableObject, Hashable {
             guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description) else {
                 return .empty
             }
-            return "\(gasDecimal / weiPerGWeiDecimal) \(coin.feeUnit)"
+            return "\(gasDecimal / weiPerGWeiDecimal) \(coin.chain.feeUnit)"
         }
         
         // If not a native token we need to get the decimals from the native token
@@ -158,7 +156,7 @@ class SendTransaction: ObservableObject, Hashable {
             }
         }
         
-        return "\((gasDecimal / pow(10,decimals)).formatToDecimal(digits: decimals).description) \(coin.feeUnit)"
+        return "\((gasDecimal / pow(10,decimals)).formatToDecimal(digits: decimals).description) \(coin.chain.feeUnit)"
     }
     
     init() {
