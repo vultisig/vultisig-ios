@@ -53,6 +53,19 @@ class SendTransaction: ObservableObject, Hashable {
         
     }
     
+    var canBeReaped: Bool {
+        if coin.ticker != Chain.polkadot.ticker {
+            return false
+        }
+        
+        let totalBalance = BigInt(coin.rawBalance) ?? BigInt.zero
+        let gasInt = BigInt(gas) ?? BigInt.zero
+        let totalTransactionCost = amountInRaw + gasInt
+        let remainingBalance = totalBalance - totalTransactionCost
+        
+        return remainingBalance < PolkadotHelper.defaultExistentialDeposit
+    }
+    
     func hasEnoughNativeTokensToPayTheFees() async -> Bool {
         guard !coin.isNativeToken else { return true }
         
@@ -64,9 +77,9 @@ class SendTransaction: ObservableObject, Hashable {
             if let vault = ApplicationState.shared.currentVault {
                 if let nativeToken = vault.coins.first(where: { $0.isNativeToken && $0.chain.name == coin.chain.name }) {
                     await BalanceService.shared.updateBalance(for: nativeToken)
-
+                    
                     let nativeTokenBalance = BigInt(nativeToken.rawBalance) ?? BigInt.zero
-
+                    
                     if gasPriceBigInt > nativeTokenBalance {
                         print("Insufficient \(nativeToken.ticker) balance for fees: needed \(gasPriceBigInt), available \(nativeTokenBalance)")
                         return false
@@ -92,15 +105,15 @@ class SendTransaction: ObservableObject, Hashable {
             if let nativeToken = vault.coins.first(where: { $0.isNativeToken && $0.chain.name == coin.chain.name }) {
                 await BalanceService.shared.updateBalance(for: nativeToken)
                 let nativeTokenRawBalance = Decimal(string: nativeToken.rawBalance) ?? .zero
-
+                
                 guard let nativeDecimals = Int(nativeToken.decimals) else {
                     return .zero
                 }
-
+                
                 let nativeTokenBalance = nativeTokenRawBalance / pow(10, nativeDecimals)
-
+                
                 let nativeTokenBalanceDecimal = nativeTokenBalance.description.formatToDecimal(digits: 8)
-
+                
                 return "\(nativeTokenBalanceDecimal) \(nativeToken.ticker)"
             } else {
                 print("No native token found for chain \(coin.chain.name)")

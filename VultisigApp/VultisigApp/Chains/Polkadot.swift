@@ -10,7 +10,17 @@ import BigInt
 
 enum PolkadotHelper {
     
-    static let defaultFeeInPlancks: BigInt = 10_000_000_000 //1 DOT, polkadot deletes your account if less than 1 DOT and you lose your dust.
+    /*
+     https://polkadot.network/blog/polkadot_q4_update_data
+     Average daily transaction fees hovered close to 0.02 DOT for all of December. The chart above features data supplied by DotLake, a data platform reflecting activity on Polkadot and its ecosystem, and maintained by engineers and analysts at Parity Technologies.
+    */
+    static let defaultFeeInPlancks: BigInt = 250_000_000
+    
+    /*
+     https://support.polkadot.network/support/solutions/articles/65000168651-what-is-the-existential-deposit-
+     Polkadot deletes your account if less than 1 DOT
+     */
+    static let defaultExistentialDeposit: BigInt = 10_000_000_000 // 1 DOT
     
     static func getPolkadot(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
         return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).flatMap { addr -> Result<Coin, Error> in
