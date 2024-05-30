@@ -5,12 +5,10 @@ import BigInt
 @Model
 class Coin: ObservableObject,Codable, Hashable {
     @Attribute(.unique) var id: String
-    
     let chain: Chain
     let ticker: String
     let logo: String
     let decimals: String
-    let feeDefault: String
     let contractAddress: String
     let isNativeToken: Bool
     var priceProviderId: String
@@ -30,8 +28,7 @@ class Coin: ObservableObject,Codable, Hashable {
         priceProviderId: String,
         contractAddress: String,
         rawBalance: String,
-        isNativeToken: Bool,
-        feeDefault: String
+        isNativeToken: Bool
     ) {
         self.chain = chain
         self.ticker = ticker
@@ -44,7 +41,6 @@ class Coin: ObservableObject,Codable, Hashable {
         self.contractAddress = contractAddress
         self.rawBalance = rawBalance
         self.isNativeToken = isNativeToken
-        self.feeDefault = feeDefault
         
         self.id = "\(chain.rawValue)-\(ticker)-\(address)"
     }
@@ -60,13 +56,10 @@ class Coin: ObservableObject,Codable, Hashable {
         self.address = address
         self.logo = try container.decode(String.self, forKey: .logo)
         self.decimals = try container.decode(String.self, forKey: .decimals)
-        self.feeDefault = try container.decode(String.self, forKey: .feeDefault)
         self.priceProviderId = try container.decode(String.self, forKey: .priceProviderId)
         self.contractAddress = try container.decode(String.self, forKey: .contractAddress)
         self.isNativeToken = try container.decode(Bool.self, forKey: .isNativeToken)
         self.hexPublicKey = try container.decodeIfPresent(String.self, forKey: .hexPublicKey) ?? ""
-        self.rawBalance = try container.decodeIfPresent(String.self, forKey: .rawBalance) ?? ""
-        self.priceRate = try container.decodeIfPresent(Double.self, forKey: .priceRate) ?? 0
         self.id = try container.decode(String.self, forKey: .id)
         
     }
@@ -78,14 +71,11 @@ class Coin: ObservableObject,Codable, Hashable {
         try container.encode(ticker, forKey: .ticker)
         try container.encode(logo, forKey: .logo)
         try container.encode(decimals, forKey: .decimals)
-        try container.encode(feeDefault, forKey: .feeDefault)
         try container.encode(priceProviderId, forKey: .priceProviderId)
         try container.encode(contractAddress, forKey: .contractAddress)
         try container.encode(isNativeToken, forKey: .isNativeToken)
         try container.encode(hexPublicKey, forKey: .hexPublicKey)
         try container.encode(address, forKey: .address)
-        try container.encode(rawBalance, forKey: .rawBalance)
-        try container.encode(priceRate, forKey: .priceRate)
     }
     
     
@@ -101,8 +91,7 @@ class Coin: ObservableObject,Codable, Hashable {
             priceProviderId: priceProviderId,
             contractAddress: contractAddress,
             rawBalance: rawBalance,
-            isNativeToken: isNativeToken,
-            feeDefault: feeDefault
+            isNativeToken: isNativeToken
         )
     }
     
@@ -128,6 +117,7 @@ class Coin: ObservableObject,Codable, Hashable {
         let balanceInFiat = balanceDecimal * Decimal(priceRate)
         return balanceInFiat.formatToFiat()
     }
+    
     var chainType: ChainType {
         switch self.chain {
         case .thorChain,.mayaChain:
@@ -144,6 +134,34 @@ class Coin: ObservableObject,Codable, Hashable {
             return .Sui
         case .polkadot:
             return .Polkadot
+        }
+    }
+    var feeDefault: String{
+        switch self.chain {
+        case .thorChain:
+            return "2000000"
+        case .mayaChain:
+            return "2000000000"
+        case .solana:
+            return "7000"
+        case .ethereum,.avalanche,.base,.blast,.arbitrum,.polygon,.optimism,.bscChain,.cronosChain:
+            if self.isNativeToken {
+                return "23000"
+            } else {
+                return "120000"
+            }
+        case .bitcoin,.bitcoinCash,.dash:
+            return "20"
+        case .litecoin:
+            return "1000"
+        case .dogecoin:
+            return "1000000"
+        case .gaiaChain,.kujira:
+            return "200000"
+        case .sui:
+            return "500000000"
+        case .polkadot:
+            return "10000000000"
         }
     }
     
@@ -234,8 +252,7 @@ class Coin: ObservableObject,Codable, Hashable {
         priceProviderId: "Bitcoin",
         contractAddress: "ContractAddressExample",
         rawBalance: "500000000",
-        isNativeToken: false,
-        feeDefault: "20"
+        isNativeToken: false
     )
 }
 
@@ -254,7 +271,5 @@ private extension Coin {
         case isNativeToken
         case hexPublicKey
         case address
-        case rawBalance
-        case priceRate
     }
 }

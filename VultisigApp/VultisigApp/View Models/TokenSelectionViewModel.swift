@@ -120,8 +120,7 @@ class TokenSelectionViewModel: ObservableObject {
                                    priceProviderId: asset.priceProviderId ,
                                    contractAddress: asset.contractAddress , // Assuming asset has a contractAddress field
                                    rawBalance: "0",
-                                   isNativeToken: asset.isNativeToken,
-                                   feeDefault: asset.feeDefault
+                                   isNativeToken: asset.isNativeToken
                                    
                 )
                 return newCoin
