@@ -46,12 +46,7 @@ struct TokenSelectorDropdown: View {
             image
             Text("\(selected.ticker)")
             Spacer()
-            
-            if let balance {
-                Text(balance)
-            } else {
-                Text(selected.balanceString)
-            }
+            balanceContent
 
             if isActive {
                 Image(systemName: "chevron.down")
@@ -81,6 +76,23 @@ struct TokenSelectorDropdown: View {
                 }
             }
         }
+    }
+    
+    var balanceContent: some View {
+        HStack(spacing: 0) {
+            Group {
+                Text(NSLocalizedString("balance", comment: "")) +
+                Text(": ")
+            }
+            
+            if let balance {
+                Text(balance)
+            } else {
+                Text(selected.balanceString)
+            }
+        }
+        .font(.body12Menlo)
+        .foregroundColor(.neutral200)
     }
     
     private func getCell(for coin: Coin) -> some View {

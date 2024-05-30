@@ -82,6 +82,10 @@ struct SendCryptoDetailsView: View {
                 }
                 
                 gasField
+                    
+                if tx.canBeReaped {
+                    existentialDepositTextMessage
+                }
             }
             .padding(.horizontal, 16)
         }
@@ -144,6 +148,14 @@ struct SendCryptoDetailsView: View {
                 await sendCryptoViewModel.convertToFiat(newValue: tx.amount, tx: tx)
             }
         }
+    }
+    
+    var existentialDepositTextMessage: some View {
+        HStack {
+            Text(NSLocalizedString("polkadotExistentialDepositError", comment: ""))
+        }
+        .font(.body8Menlo)
+        .foregroundColor(.red)
     }
     
     var balanceNativeTokenField: some View {

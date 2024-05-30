@@ -182,3 +182,6 @@
 "typeHere" = "Digite aqui";
 "nameYourVault" = "Nomeie o seu Vault";
 "uploadFromGallery" = "Carregar da galeria";
+"polkadotExistentialDepositError" = "Se uma conta cair abaixo de 1 DOT (Depósito Existencial), a conta é eliminada (desativada) e quaisquer fundos restantes são destruídos. O endereço pode ser reativado com um novo depósito maior do que o depósito existencial a qualquer momento. Isso não restaurará os fundos destruídos.";
+"noCameraPermissionError" = "Permissão para a câmera negada.\n\nPor favor, ative-a nas Configurações.";
+"openSettings" = "Abrir Configurações";

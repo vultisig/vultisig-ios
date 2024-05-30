@@ -75,6 +75,8 @@
 		A5F4710A2BFB73EF00778AB7 /* KeysignApproveConfirmView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F471092BFB73EF00778AB7 /* KeysignApproveConfirmView.swift */; };
 		A5F4710C2BFB8A0000778AB7 /* SwapCryptoApproveViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F4710B2BFB8A0000778AB7 /* SwapCryptoApproveViewModel.swift */; };
 		A5F97C8E2BBF0BCF000C30DF /* BalanceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F97C8D2BBF0BCF000C30DF /* BalanceService.swift */; };
+		A608E3772C01BD7A00E40B85 /* SwapDetailsSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = A608E3762C01BD7A00E40B85 /* SwapDetailsSummary.swift */; };
+		A608E3792C02472C00E40B85 /* SwapCryptoAmountTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A608E3782C02472C00E40B85 /* SwapCryptoAmountTextField.swift */; };
 		A60CA7E52BB0D37D00FDEB5C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60CA7E42BB0D37D00FDEB5C /* ContentView.swift */; };
 		A60CA7E72BB0EC6100FDEB5C /* AccountViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60CA7E62BB0EC6100FDEB5C /* AccountViewModel.swift */; };
 		A60CA7E92BB0F60100FDEB5C /* ViewExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60CA7E82BB0F60100FDEB5C /* ViewExtension.swift */; };
@@ -182,6 +184,7 @@
 		A6C9D5C12BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C9D5C02BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift */; };
 		A6CBA8EE2BA299E8008B110C /* ImportVaultViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CBA8ED2BA299E8008B110C /* ImportVaultViewModel.swift */; };
 		A6CBA8F02BA2A629008B110C /* ImportWalletUploadSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CBA8EF2BA2A629008B110C /* ImportWalletUploadSection.swift */; };
+		A6D0BA6A2C08353700E24DC9 /* NoCameraPermissionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6D0BA692C08353700E24DC9 /* NoCameraPermissionView.swift */; };
 		A6E52F802BBE430600FD3785 /* TransactionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E52F7F2BBE430600FD3785 /* TransactionCell.swift */; };
 		A6E5823D2BE98C4F006DA410 /* NavigationBlankBackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E5823C2BE98C4F006DA410 /* NavigationBlankBackButton.swift */; };
 		A6F2C5452B9FE3A00095C8E3 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */; };
@@ -408,6 +411,8 @@
 		A5F471092BFB73EF00778AB7 /* KeysignApproveConfirmView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignApproveConfirmView.swift; sourceTree = "<group>"; };
 		A5F4710B2BFB8A0000778AB7 /* SwapCryptoApproveViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoApproveViewModel.swift; sourceTree = "<group>"; };
 		A5F97C8D2BBF0BCF000C30DF /* BalanceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BalanceService.swift; sourceTree = "<group>"; };
+		A608E3762C01BD7A00E40B85 /* SwapDetailsSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapDetailsSummary.swift; sourceTree = "<group>"; };
+		A608E3782C02472C00E40B85 /* SwapCryptoAmountTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoAmountTextField.swift; sourceTree = "<group>"; };
 		A60CA7E42BB0D37D00FDEB5C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A60CA7E62BB0EC6100FDEB5C /* AccountViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountViewModel.swift; sourceTree = "<group>"; };
 		A60CA7E82BB0F60100FDEB5C /* ViewExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewExtension.swift; sourceTree = "<group>"; };
@@ -515,6 +520,7 @@
 		A6C9D5C02BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignVaultMismatchErrorView.swift; sourceTree = "<group>"; };
 		A6CBA8ED2BA299E8008B110C /* ImportVaultViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportVaultViewModel.swift; sourceTree = "<group>"; };
 		A6CBA8EF2BA2A629008B110C /* ImportWalletUploadSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportWalletUploadSection.swift; sourceTree = "<group>"; };
+		A6D0BA692C08353700E24DC9 /* NoCameraPermissionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoCameraPermissionView.swift; sourceTree = "<group>"; };
 		A6E52F7F2BBE430600FD3785 /* TransactionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionCell.swift; sourceTree = "<group>"; };
 		A6E5823C2BE98C4F006DA410 /* NavigationBlankBackButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBlankBackButton.swift; sourceTree = "<group>"; };
 		A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
@@ -691,6 +697,7 @@
 				A6966D272BA4009B00903CA4 /* TextFields */,
 				A633B1342B997D35003D1738 /* Navigation Items */,
 				A6F9E7A32BED6BA200BA36E1 /* New Wallet */,
+				A608E3752C01BD6800E40B85 /* Swap */,
 				049BBB5D2B71E83D004C231F /* VultisigLogo.swift */,
 				049BBB672B71E9C5004C231F /* WifiInstruction.swift */,
 				A6F9F7DE2B9BAA9F00790258 /* Separator.swift */,
@@ -955,6 +962,14 @@
 			path = Actions;
 			sourceTree = "<group>";
 		};
+		A608E3752C01BD6800E40B85 /* Swap */ = {
+			isa = PBXGroup;
+			children = (
+				A608E3762C01BD7A00E40B85 /* SwapDetailsSummary.swift */,
+			);
+			path = Swap;
+			sourceTree = "<group>";
+		};
 		A61BC8172BA2685E00484689 /* Stores */ = {
 			isa = PBXGroup;
 			children = (
@@ -1105,6 +1120,7 @@
 				B54E317C2BF5A19200D4FC0A /* StyledTextField.swift */,
 				B54E317E2BF5A1A700D4FC0A /* StyledNumberField.swift */,
 				B54E31802BF5A22700D4FC0A /* StyledFloatingPointField.swift */,
+				A608E3782C02472C00E40B85 /* SwapCryptoAmountTextField.swift */,
 			);
 			path = TextFields;
 			sourceTree = "<group>";
@@ -1232,8 +1248,10 @@
 		D9AD8ED72B67225F0009F8D5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				B5A97CEB2BF41554007574D7 /* TransactionMemo */,
 				D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */,
+				A6D0BA692C08353700E24DC9 /* NoCameraPermissionView.swift */,
+				A65518022BF849FC006BB924 /* CoverView.swift */,
+				B5A97CEB2BF41554007574D7 /* TransactionMemo */,
 				46D067E42B8852B70052F535 /* Keygen */,
 				049BBB4E2B71E37B004C231F /* Components */,
 				DE15729A2B70F284009BC7C5 /* Keysign */,
@@ -1244,7 +1262,6 @@
 				A6C0D55D2BB3B71300156689 /* Transactions */,
 				A6980C222BC0834E00F452AB /* Settings */,
 				A6966D1C2BA3DD9900903CA4 /* Onboarding */,
-				A65518022BF849FC006BB924 /* CoverView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1873,6 +1890,7 @@
 				A65649E52B96602700E4B329 /* VaultExtension.swift in Sources */,
 				DE9EB0F82BA43388001747D9 /* KeysignViewModel.swift in Sources */,
 				DE9EB0F42BA309AB001747D9 /* MessagePuller.swift in Sources */,
+				A608E3772C01BD7A00E40B85 /* SwapDetailsSummary.swift in Sources */,
 				A61BC8162BA256C600484689 /* ProgressBar.swift in Sources */,
 				DE63AE0E2BAD2408001BBE5C /* THORBalanceExtension.swift in Sources */,
 				461AD1B92BC6858000959278 /* VaultPairDetailCell.swift in Sources */,
@@ -1891,6 +1909,7 @@
 				A5F4710C2BFB8A0000778AB7 /* SwapCryptoApproveViewModel.swift in Sources */,
 				A65649DF2B96602700E4B329 /* DecodableDefaultExtension.swift in Sources */,
 				A633B13E2B9A9E30003D1738 /* VaultDetailView.swift in Sources */,
+				A6D0BA6A2C08353700E24DC9 /* NoCameraPermissionView.swift in Sources */,
 				A5CBA32C2BCD747C00088CC3 /* TappableTextFieldStyle.swift in Sources */,
 				DE1905272BD8CC4D0043577E /* KeysignVerify.swift in Sources */,
 				469ED39B2B98E8B5008D4951 /* CosmosBalance.swift in Sources */,
@@ -1928,6 +1947,7 @@
 				DE49A19C2B67133D000F3AFB /* Vault.swift in Sources */,
 				A6F9E7AB2BED6CCC00BA36E1 /* SetupVaultState.swift in Sources */,
 				A55BCEBB2BC59E8100D35917 /* KeysignPayloadFactory.swift in Sources */,
+				A608E3792C02472C00E40B85 /* SwapCryptoAmountTextField.swift in Sources */,
 				A564ED442BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift in Sources */,
 				A5D0C9352BEE77190022D421 /* SwapPayload.swift in Sources */,
 				A6BACF1C2BC79B3100084810 /* TokenSelectionView.swift in Sources */,

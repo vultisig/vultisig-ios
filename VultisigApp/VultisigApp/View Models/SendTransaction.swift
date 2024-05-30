@@ -14,22 +14,19 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var gas: String = .empty
     @Published var sendMaxAmount: Bool = false
     @Published var memoFunctionDictionary: ThreadSafeDictionary<String, String> = ThreadSafeDictionary()
-
+    
     @Published var coin: Coin = Coin(
         chain: Chain.bitcoin,
         ticker: "BTC",
         logo: "",
         address: "",
         priceRate: 0.0,
-        chainType: ChainType.UTXO,
-        decimals: "8",
+        decimals: 8,
         hexPublicKey: "",
-        feeUnit: "",
         priceProviderId: "",
         contractAddress: "",
         rawBalance: "0",
-        isNativeToken: true,
-        feeDefault: "20"
+        isNativeToken: true
     )
     
     var fromAddress: String {
@@ -56,6 +53,19 @@ class SendTransaction: ObservableObject, Hashable {
         
     }
     
+    var canBeReaped: Bool {
+        if coin.ticker != Chain.polkadot.ticker {
+            return false
+        }
+        
+        let totalBalance = BigInt(coin.rawBalance) ?? BigInt.zero
+        let gasInt = BigInt(gas) ?? BigInt.zero
+        let totalTransactionCost = amountInRaw + gasInt
+        let remainingBalance = totalBalance - totalTransactionCost
+        
+        return remainingBalance < PolkadotHelper.defaultExistentialDeposit
+    }
+    
     func hasEnoughNativeTokensToPayTheFees() async -> Bool {
         guard !coin.isNativeToken else { return true }
         
@@ -67,9 +77,9 @@ class SendTransaction: ObservableObject, Hashable {
             if let vault = ApplicationState.shared.currentVault {
                 if let nativeToken = vault.coins.first(where: { $0.isNativeToken && $0.chain.name == coin.chain.name }) {
                     await BalanceService.shared.updateBalance(for: nativeToken)
-
+                    
                     let nativeTokenBalance = BigInt(nativeToken.rawBalance) ?? BigInt.zero
-
+                    
                     if gasPriceBigInt > nativeTokenBalance {
                         print("Insufficient \(nativeToken.ticker) balance for fees: needed \(gasPriceBigInt), available \(nativeTokenBalance)")
                         return false
@@ -95,15 +105,13 @@ class SendTransaction: ObservableObject, Hashable {
             if let nativeToken = vault.coins.first(where: { $0.isNativeToken && $0.chain.name == coin.chain.name }) {
                 await BalanceService.shared.updateBalance(for: nativeToken)
                 let nativeTokenRawBalance = Decimal(string: nativeToken.rawBalance) ?? .zero
-
-                guard let nativeDecimals = Int(nativeToken.decimals) else {
-                    return .zero
-                }
-
+                
+                let nativeDecimals = nativeToken.decimals
+                
                 let nativeTokenBalance = nativeTokenRawBalance / pow(10, nativeDecimals)
-
+                
                 let nativeTokenBalanceDecimal = nativeTokenBalance.description.formatToDecimal(digits: 8)
-
+                
                 return "\(nativeTokenBalanceDecimal) \(nativeToken.ticker)"
             } else {
                 print("No native token found for chain \(coin.chain.name)")
@@ -115,10 +123,9 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     var amountInRaw: BigInt {
-        if let decimals = Double(coin.decimals) {
-            return BigInt(amountDecimal * pow(10, decimals))
-        }
-        return BigInt.zero
+        let decimals = Double(coin.decimals)
+        return BigInt(amountDecimal * pow(10, decimals))
+        
     }
     
     var amountDecimal: Double {
@@ -128,7 +135,7 @@ class SendTransaction: ObservableObject, Hashable {
     
     var amountInCoinDecimal: BigInt {
         let amountDouble = amountDecimal
-        let decimals = Int(coin.decimals) ?? 8
+        let decimals = coin.decimals
         return BigInt(amountDouble * pow(10,Double(decimals)))
     }
     
@@ -138,15 +145,13 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     var gasInReadable: String {
-        guard var decimals = Int(coin.decimals) else {
-            return .empty
-        }
+        var decimals = coin.decimals
         if coin.chain.chainType == .EVM {
             // convert to Gwei , show as Gwei for EVM chain only
             guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description) else {
                 return .empty
             }
-            return "\(gasDecimal / weiPerGWeiDecimal) \(coin.feeUnit)"
+            return "\(gasDecimal / weiPerGWeiDecimal) \(coin.chain.feeUnit)"
         }
         
         // If not a native token we need to get the decimals from the native token
@@ -158,7 +163,7 @@ class SendTransaction: ObservableObject, Hashable {
             }
         }
         
-        return "\((gasDecimal / pow(10,decimals)).formatToDecimal(digits: decimals).description) \(coin.feeUnit)"
+        return "\((gasDecimal / pow(10,decimals)).formatToDecimal(digits: decimals).description) \(coin.chain.feeUnit)"
     }
     
     init() {
