@@ -21,6 +21,19 @@ struct ImageView: View {
     let source: Source
     let size: CGSize
 
+    init(source: Source, size: CGSize) {
+        self.source = source
+        self.size = size
+    }
+
+    init(_ string: String, size: CGSize) {
+        if let url = URL(string: string), url.absoluteString.starts(with: "http") {
+            self.init(source: .remote(url), size: size)
+        } else {
+            self.init(source: .resource(string), size: size)
+        }
+    }
+
     var body: some View {
         ZStack {
             switch source {
