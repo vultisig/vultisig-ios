@@ -197,6 +197,7 @@ struct VaultDetailView: View {
 
 #Preview {
     VaultDetailView(showVaultsList: .constant(false), isEditingChains: .constant(false), vault: Vault.example)
+        .environmentObject(ApplicationState())
         .environmentObject(VaultDetailViewModel())
         .environmentObject(ApplicationState.shared)
 }
