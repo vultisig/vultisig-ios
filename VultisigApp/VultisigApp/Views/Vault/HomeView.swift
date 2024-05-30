@@ -12,9 +12,9 @@ struct HomeView: View {
     var selectedVault: Vault? = nil
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
+    @EnvironmentObject var viewModel: HomeViewModel
     
     @Query var vaults: [Vault]
-    @StateObject var viewModel = HomeViewModel()
     
     @State var showVaultsList = false
     @State var isEditingVaults = false
@@ -184,4 +184,5 @@ struct HomeView: View {
 #Preview {
     HomeView()
         .environmentObject(DeeplinkViewModel())
+        .environmentObject(HomeViewModel())
 }

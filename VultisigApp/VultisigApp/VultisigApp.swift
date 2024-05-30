@@ -19,6 +19,7 @@ struct VultisigApp: App {
     @StateObject var accountViewModel = AccountViewModel()
     @StateObject var deeplinkViewModel = DeeplinkViewModel()
     @StateObject var settingsViewModel = SettingsViewModel.shared
+    @StateObject var homeViewModel = HomeViewModel()
 
     var body: some Scene {
         WindowGroup {
@@ -29,6 +30,7 @@ struct VultisigApp: App {
                 .environmentObject(accountViewModel)
                 .environmentObject(deeplinkViewModel)
                 .environmentObject(settingsViewModel)
+                .environmentObject(homeViewModel)
         }
         .modelContainer(sharedModelContainer)
         .onChange(of: scenePhase) {

@@ -225,10 +225,17 @@ struct JoinKeygenView: View {
     }
     
     var codeScanner: some View {
-        ZStack(alignment: .bottom) {
-            CodeScannerView(codeTypes: [.qr], isGalleryPresented: $isGalleryPresented, completion: self.viewModel.handleScan)
-            galleryButton
-        }
+//        ZStack(alignment: .bottom) {
+//            CodeScannerView(codeTypes: [.qr], isGalleryPresented: $isGalleryPresented, completion: self.viewModel.handleScan)
+//            galleryButton
+//        }
+        
+        GeneralCodeScannerView(
+            isForKeysign: true,
+            isGalleryPresented: $isGalleryPresented,
+            showScanner: $viewModel.isShowingScanner,
+            handleScan: viewModel.handleDeeplinkScan
+        )
     }
     
     var galleryButton: some View {
