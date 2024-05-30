@@ -11,6 +11,7 @@ struct TokenSelectorDropdown: View {
     @Binding var coins: [Coin]
     @Binding var selected: Coin
     var balance: String? = nil
+    var excludedCoin: Coin? = nil
 
     var onSelect: ((Coin) -> Void)?
 
@@ -70,7 +71,7 @@ struct TokenSelectorDropdown: View {
     }
     
     var cells: some View {
-        ForEach(coins, id: \.self) { coin in
+        ForEach(getCoins(), id: \.self) { coin in
             Button {
                 handleSelection(for: coin)
             } label: {
@@ -128,6 +129,20 @@ struct TokenSelectorDropdown: View {
         isExpanded = false
         selected = coin
         onSelect?(coin)
+    }
+    
+    private func getCoins() -> [Coin] {
+        let coinsList: [Coin]
+        
+        if let excludedCoin {
+            coinsList = coins.filter({ coin in
+                coin.id != excludedCoin.id
+            })
+        } else {
+            coinsList = coins
+        }
+        
+        return coinsList
     }
 }
 

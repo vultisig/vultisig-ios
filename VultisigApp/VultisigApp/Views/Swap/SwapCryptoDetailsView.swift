@@ -89,9 +89,15 @@ struct SwapCryptoDetailsView: View {
     var toCoinField: some View {
         VStack(spacing: 8) {
             getTitle(for: "to")
-            TokenSelectorDropdown(coins: $swapViewModel.coins, selected: $tx.toCoin, onSelect: { _ in
-                swapViewModel.updateToCoin(tx: tx)
-            })
+            TokenSelectorDropdown(
+                coins: $swapViewModel.coins,
+                selected: $tx.toCoin,
+                excludedCoin: tx.fromCoin,
+                onSelect: { _ in
+                    swapViewModel.updateToCoin(tx: tx)
+                }
+            )
+            
             getBalance(for: tx.toBalance)
                 .redacted(reason: tx.toCoin.balanceDecimal.isZero ? .placeholder : [])
         }
