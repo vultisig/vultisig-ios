@@ -14,14 +14,14 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var gas: String = .empty
     @Published var sendMaxAmount: Bool = false
     @Published var memoFunctionDictionary: ThreadSafeDictionary<String, String> = ThreadSafeDictionary()
-
+    
     @Published var coin: Coin = Coin(
         chain: Chain.bitcoin,
         ticker: "BTC",
         logo: "",
         address: "",
         priceRate: 0.0,
-        decimals: "8",
+        decimals: 8,
         hexPublicKey: "",
         priceProviderId: "",
         contractAddress: "",
@@ -64,9 +64,9 @@ class SendTransaction: ObservableObject, Hashable {
             if let vault = ApplicationState.shared.currentVault {
                 if let nativeToken = vault.coins.first(where: { $0.isNativeToken && $0.chain.name == coin.chain.name }) {
                     await BalanceService.shared.updateBalance(for: nativeToken)
-
+                    
                     let nativeTokenBalance = BigInt(nativeToken.rawBalance) ?? BigInt.zero
-
+                    
                     if gasPriceBigInt > nativeTokenBalance {
                         print("Insufficient \(nativeToken.ticker) balance for fees: needed \(gasPriceBigInt), available \(nativeTokenBalance)")
                         return false
@@ -92,15 +92,13 @@ class SendTransaction: ObservableObject, Hashable {
             if let nativeToken = vault.coins.first(where: { $0.isNativeToken && $0.chain.name == coin.chain.name }) {
                 await BalanceService.shared.updateBalance(for: nativeToken)
                 let nativeTokenRawBalance = Decimal(string: nativeToken.rawBalance) ?? .zero
-
-                guard let nativeDecimals = Int(nativeToken.decimals) else {
-                    return .zero
-                }
-
+                
+                let nativeDecimals = nativeToken.decimals
+                
                 let nativeTokenBalance = nativeTokenRawBalance / pow(10, nativeDecimals)
-
+                
                 let nativeTokenBalanceDecimal = nativeTokenBalance.description.formatToDecimal(digits: 8)
-
+                
                 return "\(nativeTokenBalanceDecimal) \(nativeToken.ticker)"
             } else {
                 print("No native token found for chain \(coin.chain.name)")
@@ -112,10 +110,9 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     var amountInRaw: BigInt {
-        if let decimals = Double(coin.decimals) {
-            return BigInt(amountDecimal * pow(10, decimals))
-        }
-        return BigInt.zero
+        let decimals = Double(coin.decimals)
+        return BigInt(amountDecimal * pow(10, decimals))
+        
     }
     
     var amountDecimal: Double {
@@ -125,7 +122,7 @@ class SendTransaction: ObservableObject, Hashable {
     
     var amountInCoinDecimal: BigInt {
         let amountDouble = amountDecimal
-        let decimals = Int(coin.decimals) ?? 8
+        let decimals = coin.decimals
         return BigInt(amountDouble * pow(10,Double(decimals)))
     }
     
@@ -135,9 +132,7 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     var gasInReadable: String {
-        guard var decimals = Int(coin.decimals) else {
-            return .empty
-        }
+        var decimals = coin.decimals
         if coin.chain.chainType == .EVM {
             // convert to Gwei , show as Gwei for EVM chain only
             guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description) else {

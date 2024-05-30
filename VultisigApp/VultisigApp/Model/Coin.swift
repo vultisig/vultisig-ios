@@ -8,7 +8,7 @@ class Coin: ObservableObject,Codable, Hashable {
     let chain: Chain
     let ticker: String
     let logo: String
-    let decimals: String
+    @Attribute(originalName: "decimals") var strDecimals: String
     let contractAddress: String
     let isNativeToken: Bool
     var priceProviderId: String
@@ -17,13 +17,21 @@ class Coin: ObservableObject,Codable, Hashable {
     var rawBalance: String = ""
     var priceRate: Double = 0
     
+    var decimals: Int{
+        get{
+            return Int(strDecimals) ?? 0
+        }
+        set{
+            strDecimals = String(newValue)
+        }
+    }
     init(
         chain: Chain,
         ticker: String,
         logo: String,
         address: String,
         priceRate: Double,
-        decimals: String,
+        decimals: Int,
         hexPublicKey: String,
         priceProviderId: String,
         contractAddress: String,
@@ -35,7 +43,7 @@ class Coin: ObservableObject,Codable, Hashable {
         self.logo = logo
         self.address = address
         self.priceRate = priceRate
-        self.decimals = decimals
+        self.strDecimals = String(decimals)
         self.hexPublicKey = hexPublicKey
         self.priceProviderId = priceProviderId
         self.contractAddress = contractAddress
@@ -55,12 +63,12 @@ class Coin: ObservableObject,Codable, Hashable {
         self.ticker = ticker
         self.address = address
         self.logo = try container.decode(String.self, forKey: .logo)
-        self.decimals = try container.decode(String.self, forKey: .decimals)
+        self.strDecimals = String(try container.decode(Int.self, forKey: .decimals))
         self.priceProviderId = try container.decode(String.self, forKey: .priceProviderId)
         self.contractAddress = try container.decode(String.self, forKey: .contractAddress)
         self.isNativeToken = try container.decode(Bool.self, forKey: .isNativeToken)
         self.hexPublicKey = try container.decodeIfPresent(String.self, forKey: .hexPublicKey) ?? ""
-        self.id = try container.decode(String.self, forKey: .id)
+        self.id = try container.decodeIfPresent(String.self, forKey: .id) ?? "\(chain.rawValue)-\(ticker)-\(address)"
         
     }
     
@@ -105,7 +113,7 @@ class Coin: ObservableObject,Codable, Hashable {
     
     var balanceDecimal: Decimal {
         let tokenBalance = Decimal(string: rawBalance) ?? 0.0
-        let tokenDecimals = Int(decimals) ?? 0
+        let tokenDecimals = decimals
         return tokenBalance / pow(10, tokenDecimals)
     }
     
@@ -166,14 +174,12 @@ class Coin: ObservableObject,Codable, Hashable {
     }
     
     func decimal(for value: BigInt) -> Decimal {
-        let decimals = Int(decimals) ?? 0
         let decimalValue = Decimal(string: String(value)) ?? 0
         return decimalValue / pow(Decimal(10), decimals)
     }
     
     func raw(for value: Decimal) -> BigInt {
-        let tokenDecimals = Int(decimals) ?? 0
-        let decimal = value * pow(10, tokenDecimals)
+        let decimal = value * pow(10, decimals)
         return BigInt(decimal.description) ?? BigInt.zero
     }
     
@@ -199,13 +205,13 @@ class Coin: ObservableObject,Codable, Hashable {
     func getMaxValue(_ fee: BigInt) -> Decimal {
         var totalFeeAdjusted = fee
         if chain.chainType == .EVM {
-            let adjustmentFactor = BigInt(10).power(EVMHelper.ethDecimals - (Int(decimals) ?? 0))
+            let adjustmentFactor = BigInt(10).power(EVMHelper.ethDecimals - decimals)
             totalFeeAdjusted = fee / adjustmentFactor
         }
         
         let maxValue = (BigInt(rawBalance, radix: 10) ?? .zero) - totalFeeAdjusted
         let maxValueDecimal = Decimal(string: String(maxValue)) ?? .zero
-        let tokenDecimals = Int(decimals) ?? .zero
+        let tokenDecimals = decimals
         let maxValueCalculated = maxValueDecimal / pow(10, tokenDecimals)
         
         return maxValueCalculated < .zero ? 0 : maxValueCalculated
@@ -247,7 +253,7 @@ class Coin: ObservableObject,Codable, Hashable {
         logo: "BitcoinLogo",
         address: "bc1qxyz...",
         priceRate: 20000.0,
-        decimals: "8",
+        decimals: 8,
         hexPublicKey: "HexPublicKeyExample",
         priceProviderId: "Bitcoin",
         contractAddress: "ContractAddressExample",

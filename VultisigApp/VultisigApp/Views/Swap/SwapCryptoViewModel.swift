@@ -106,9 +106,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     func swapGasString(tx: SwapTransaction) -> String {
         let coin = feeCoin(tx: tx)
         
-        guard let decimals = Int(coin.decimals) else {
-            return .empty
-        }
+        let decimals = coin.decimals
         
         if coin.chain.chainType == .EVM {
             guard let weiPerGWeiDecimal = Decimal(string: EVMHelper.weiPerGWei.description) else {
