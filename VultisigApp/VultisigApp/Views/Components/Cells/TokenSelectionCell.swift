@@ -83,7 +83,7 @@ struct TokenSelectionCell: View {
             decimals: String(token.decimals),
             hexPublicKey: .empty,
             feeUnit: "Gwei",
-            priceProviderId: token.symbol, // TODO: Fetch price ID
+            priceProviderId: "\(chain.coingeckoId)_\(token.address)",
             contractAddress: token.address,
             rawBalance: .zero,
             isNativeToken: false,

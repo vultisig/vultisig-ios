@@ -236,4 +236,29 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return nil
         }
     }
+
+    var coingeckoId: String {
+        switch self {
+        case .ethereum:
+            return "eth"
+        case .avalanche:
+            return "avax"
+        case .base:
+            return "base"
+        case .blast:
+            return "blast"
+        case .arbitrum:
+            return "arbitrum"
+        case .polygon:
+            return "polygon_pos"
+        case .optimism:
+            return "optimism"
+        case .bscChain:
+            return "bsc"
+        case .cronosChain:
+            return "cro"
+        case .solana, .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .sui, .polkadot:
+            return .empty
+        }
+    }
 }

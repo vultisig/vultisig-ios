@@ -66,7 +66,7 @@ class CoinSelectionViewModel: ObservableObject {
                 !selection.contains(where: { $0.ticker == coin.ticker && $0.chain == coin.chain})
             }
             for coin in removedCoins {
-                if let idx = vault.coins.firstIndex(where: {$0.ticker == coin.ticker && $0.chain == coin.chain}) {
+                if let idx = vault.coins.firstIndex(where: { $0.ticker == coin.ticker && $0.chain == coin.chain }) {
                     vault.coins.remove(at: idx)
                 }
                 
