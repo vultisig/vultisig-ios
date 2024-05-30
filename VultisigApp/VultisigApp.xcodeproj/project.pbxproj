@@ -66,6 +66,8 @@
 		A5BA15082C077A0B00AA6C07 /* OneInchToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA15072C077A0B00AA6C07 /* OneInchToken.swift */; };
 		A5BA150A2C078EED00AA6C07 /* TokenSelectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA15092C078EED00AA6C07 /* TokenSelectionCell.swift */; };
 		A5BA150C2C078FA000AA6C07 /* TokenSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA150B2C078FA000AA6C07 /* TokenSelectionViewModel.swift */; };
+		A5BA150F2C085EEB00AA6C07 /* CachedAsyncImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA150E2C085EEB00AA6C07 /* CachedAsyncImage.swift */; };
+		A5BA15132C085F5C00AA6C07 /* ImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA15122C085F5C00AA6C07 /* ImageView.swift */; };
 		A5CBA32C2BCD747C00088CC3 /* TappableTextFieldStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5CBA32B2BCD747C00088CC3 /* TappableTextFieldStyle.swift */; };
 		A5D00E412BD65CE7009E025F /* ERC20ApprovePayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D00E402BD65CE7009E025F /* ERC20ApprovePayload.swift */; };
 		A5D00E432BD68B66009E025F /* SwapApproveVerifyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D00E422BD68B66009E025F /* SwapApproveVerifyView.swift */; };
@@ -410,6 +412,8 @@
 		A5BA15072C077A0B00AA6C07 /* OneInchToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneInchToken.swift; sourceTree = "<group>"; };
 		A5BA15092C078EED00AA6C07 /* TokenSelectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionCell.swift; sourceTree = "<group>"; };
 		A5BA150B2C078FA000AA6C07 /* TokenSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionViewModel.swift; sourceTree = "<group>"; };
+		A5BA150E2C085EEB00AA6C07 /* CachedAsyncImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedAsyncImage.swift; sourceTree = "<group>"; };
+		A5BA15122C085F5C00AA6C07 /* ImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageView.swift; sourceTree = "<group>"; };
 		A5CBA32B2BCD747C00088CC3 /* TappableTextFieldStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TappableTextFieldStyle.swift; sourceTree = "<group>"; };
 		A5D00E402BD65CE7009E025F /* ERC20ApprovePayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ERC20ApprovePayload.swift; sourceTree = "<group>"; };
 		A5D00E422BD68B66009E025F /* SwapApproveVerifyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapApproveVerifyView.swift; sourceTree = "<group>"; };
@@ -969,6 +973,15 @@
 			path = SwapService;
 			sourceTree = "<group>";
 		};
+		A5BA150D2C085ED300AA6C07 /* ImageView */ = {
+			isa = PBXGroup;
+			children = (
+				A5BA150E2C085EEB00AA6C07 /* CachedAsyncImage.swift */,
+				A5BA15122C085F5C00AA6C07 /* ImageView.swift */,
+			);
+			path = ImageView;
+			sourceTree = "<group>";
+		};
 		A5D49F542BE26BA7001766C8 /* Actions */ = {
 			isa = PBXGroup;
 			children = (
@@ -1268,6 +1281,8 @@
 		D9AD8ED72B67225F0009F8D5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				A5BA150D2C085ED300AA6C07 /* ImageView */,
+				B5A97CEB2BF41554007574D7 /* TransactionMemo */,
 				D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */,
 				A6D0BA692C08353700E24DC9 /* NoCameraPermissionView.swift */,
 				A65518022BF849FC006BB924 /* CoverView.swift */,
@@ -1791,6 +1806,7 @@
 				462DCD702BCA14F3003D542F /* CoinPaprikaQuote.swift in Sources */,
 				B5A97CF52BF4287A007574D7 /* TransactionMemoSelectorDropdown.swift in Sources */,
 				A6966D262BA3E2CF00903CA4 /* OnboardingView3.swift in Sources */,
+				A5BA150F2C085EEB00AA6C07 /* CachedAsyncImage.swift in Sources */,
 				DE63AE4D2BB4E94E001BBE5C /* JSONRPCResponse.swift in Sources */,
 				46DE08952BD0DCA200AE8BDE /* EvmL2Service.swift in Sources */,
 				A65BA98A2BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift in Sources */,
@@ -2029,6 +2045,7 @@
 				A5125F072BEBBFAB008A79AA /* OneInchQuote.swift in Sources */,
 				DE49A1672B65F6D9000F3AFB /* VultisigApp.swift in Sources */,
 				A60CA7E72BB0EC6100FDEB5C /* AccountViewModel.swift in Sources */,
+				A5BA15132C085F5C00AA6C07 /* ImageView.swift in Sources */,
 				A588F2DB2BEE8090002EEC60 /* OneInchSwapPayload.swift in Sources */,
 				A62D6B052BFE7C5E00F24E51 /* ChainDetailActionButtons.swift in Sources */,
 				A6F9E7A52BED6BC800BA36E1 /* SetupVaultTabView.swift in Sources */,

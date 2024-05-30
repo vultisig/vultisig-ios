@@ -20,7 +20,7 @@ struct TokenSelectionView: View {
             Background()
             view
 
-            if tokenViewModel.isLoading {
+            if tokenViewModel.isLoading, tokenViewModel.tokens.isEmpty {
                 Loader()
             }
         }

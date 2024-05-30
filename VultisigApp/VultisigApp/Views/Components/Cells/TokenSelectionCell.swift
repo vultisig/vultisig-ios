@@ -36,16 +36,10 @@ struct TokenSelectionCell: View {
     }
 
     var image: some View {
-        AsyncImage(url: asset.logoURI) { image in
-            image
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 32, height: 32)
-        } placeholder: {
-            ProgressView()
-        }
-        .frame(width: 32, height: 32)
-        .cornerRadius(100)
+        ImageView(
+            source: .remote(asset.logoURI),
+            size: CGSize(width: 32, height: 32)
+        )
     }
 
     var text: some View {
