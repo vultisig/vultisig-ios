@@ -40,8 +40,16 @@ struct NoCameraPermissionView: View {
     }
     
     var button: some View {
-        FilledButton(title: "openSettings")
-            .padding(40)
+        Button {
+            openSettings()
+        } label: {
+            FilledButton(title: "openSettings")
+                .padding(40)
+        }
+    }
+    
+    private func openSettings() {
+        UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
     }
 }
 
