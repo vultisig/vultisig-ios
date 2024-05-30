@@ -156,12 +156,6 @@ struct SendCryptoDetailsView: View {
         }
         .font(.body8Menlo)
         .foregroundColor(.red)
-        .onAppear{
-            Task {
-                let balanceInt = await tx.getNativeTokenBalance()
-                nativeTokenBalance = balanceInt.description
-            }
-        }
     }
     
     var balanceNativeTokenField: some View {
