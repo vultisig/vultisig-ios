@@ -32,19 +32,14 @@ class RpcEvmService: RpcService {
     }
     
     func getGasInfo(fromAddress: String) async throws -> (gasPrice: BigInt, priorityFee: BigInt, nonce: Int64) {
-        let multiplier: Double = 1.5
         async let gasPrice = fetchGasPrice()
         async let nonce = fetchNonce(address: fromAddress)
         async let priorityFee = fetchMaxPriorityFeePerGas()
         
         let gasPriceValue = try await gasPrice
         var priorityFeeValue = try await priorityFee
-        let oneGwei = BigInt(1000000000)
-        if priorityFeeValue < oneGwei {
-            priorityFeeValue = oneGwei
-        }
-        let adjustedGasPrice = BigInt(Double(gasPriceValue) * multiplier)
-        return (adjustedGasPrice, priorityFeeValue, Int64(try await nonce))
+
+        return (gasPriceValue, priorityFeeValue, Int64(try await nonce))
     }
     
     func broadcastTransaction(hex: String) async throws -> String {

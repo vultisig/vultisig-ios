@@ -78,7 +78,7 @@ final class BlockChainService {
                 throw Errors.failToGetRecentBlockHash
             }
             return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(highPriorityFee))
-
+            
         case .sui:
             let (referenceGasPrice, allCoins) = try await sui.getGasInfo(coin: coin)
             return .Sui(referenceGasPrice: referenceGasPrice, coins: allCoins)
@@ -92,8 +92,7 @@ final class BlockChainService {
             let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(fromAddress: coin.address)
             let gasLimit = BigInt(coin.feeDefault) ?? 0
             let normalizedGasPrice = normalize(gasPrice, action: action)
-            
-            return .Ethereum(maxFeePerGasWei: normalizedGasPrice, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: gasLimit)
+            return .Ethereum(maxFeePerGasWei: normalizedGasPrice, priorityFeeWei: normalizePriorityFee(priorityFee,coin.chain), nonce: nonce, gasLimit: gasLimit)
             
         case .gaiaChain:
             let account = try await atom.fetchAccountNumber(coin.address)
@@ -119,13 +118,19 @@ final class BlockChainService {
             return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500)
         }
     }
-    
-    func normalize(_ value: BigInt, action: Action) -> BigInt {
-        switch action {
-        case .transfer:
-            return value
-        case .swap:
-            return value + value / 2 // x1.5 fee for swaps
+    func normalizePriorityFee(_ value: BigInt,_ chain: Chain) -> BigInt {
+        if chain == .ethereum || chain == .avalanche {
+            // BSC is very cheap , and layer two is very low priority fee as well
+            //  Just pay 1Gwei priority for ETH and AVAX
+            let oneGwei = BigInt(1000000000)
+            if value < oneGwei {
+                return oneGwei
+            }
         }
+        return value
+    }
+    func normalize(_ value: BigInt, action: Action) -> BigInt {
+        // let's do 1.5x regardless swap of send
+        return value + value / 2 // x1.5 fee for swaps
     }
 }
