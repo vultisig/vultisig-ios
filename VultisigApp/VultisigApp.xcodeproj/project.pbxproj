@@ -1282,7 +1282,6 @@
 			isa = PBXGroup;
 			children = (
 				A5BA150D2C085ED300AA6C07 /* ImageView */,
-				B5A97CEB2BF41554007574D7 /* TransactionMemo */,
 				D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */,
 				A6D0BA692C08353700E24DC9 /* NoCameraPermissionView.swift */,
 				A65518022BF849FC006BB924 /* CoverView.swift */,

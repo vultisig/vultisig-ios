@@ -80,15 +80,12 @@ struct TokenSelectionCell: View {
             logo: token.logoURI.absoluteString,
             address: address,
             priceRate: 0,
-            chainType: .EVM,
-            decimals: String(token.decimals),
+            decimals: token.decimals,
             hexPublicKey: .empty,
-            feeUnit: "Gwei",
             priceProviderId: token.symbol.lowercased(),
             contractAddress: token.address,
             rawBalance: .zero,
-            isNativeToken: false,
-            feeDefault: "120000"
+            isNativeToken: false
         )
     }
 }
