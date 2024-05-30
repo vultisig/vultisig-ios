@@ -22,7 +22,23 @@ public class CryptoPriceService: ObservableObject {
         
         return price
     }
-    
+
+    func fetchCoingeckoId(chain: Chain, address: String) async throws -> String {
+        struct Response: Codable {
+            struct Data: Codable {
+                struct Attributes: Codable {
+                    let coingecko_coin_id: String
+                }
+                let attributes: Attributes
+            }
+            let data: Data
+        }
+        let url = Endpoint.fetchTokenInfo(network: chain.coingeckoId, address: address)
+        let (data, _) = try await URLSession.shared.data(from: url)
+        let response = try JSONDecoder().decode(Response.self, from: data)
+        return response.data.attributes.coingecko_coin_id
+    }
+
     private func getAllCryptoPricesCoinGecko() async -> CryptoPrice? {
         let coins = getCoins().map { $0.priceProviderId }.joined(separator: ",")
         return await fetchAllCryptoPricesCoinGecko(for: coins, for: SettingsCurrency.current.rawValue.lowercased())

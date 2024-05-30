@@ -17,7 +17,8 @@ class CoinSelectionViewModel: ObservableObject {
     
     let actionResolver = CoinActionResolver()
     let balanceService = BalanceService.shared
-    
+    let priceService = CryptoPriceService.shared
+
     private let logger = Logger(subsystem: "assets-list", category: "view")
     
     func allCoins(vault: Vault) -> [Coin] {
@@ -190,9 +191,15 @@ class CoinSelectionViewModel: ObservableObject {
     }
     private func addToChain(asset: Coin, to vault: Vault) async {
         do{
-            if let newCoin = getNewCoin(asset: asset, vault: vault) {
-                print("coin id:\(newCoin.id)")
-                // save the new coin first
+            if var newCoin = getNewCoin(asset: asset, vault: vault) {
+                // Fetch priceProviderId for EVM tokens
+                if !newCoin.isNativeToken, asset.chainType == .EVM {
+                    newCoin.priceProviderId = try await priceService.fetchCoingeckoId(
+                        chain: asset.chain,
+                        address: asset.contractAddress
+                    )
+                }
+                // Save the new coin first
                 try await Storage.shared.save(newCoin)
                 vault.coins.append(newCoin)
             }

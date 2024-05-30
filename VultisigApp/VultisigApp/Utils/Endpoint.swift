@@ -123,7 +123,11 @@ class Endpoint {
     static func fetchCryptoPrices(coin: String, fiat: String) -> String {
         "\(vultisigApiProxy)/coingeicko/api/v3/simple/price?ids=\(coin)&vs_currencies=\(fiat)"
     }
-    
+
+    static func fetchTokenInfo(network: String, address: String) -> URL {
+        "\(vultisigApiProxy)/coingeicko/api/v3/onchain/networks/\(network)/tokens/\(address)".asUrl
+    }
+
     static func fetchBitcoinTransactions(_ userAddress: String) -> String {
         "https://mempool.space/api/address/\(userAddress)/txs"
     }
