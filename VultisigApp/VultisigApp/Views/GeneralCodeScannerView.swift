@@ -10,13 +10,10 @@ import CodeScanner
 import SwiftData
 
 struct GeneralCodeScannerView: View {
-    let isForKeysign: Bool
-    @Binding var isGalleryPresented: Bool
-    @Binding var showScanner: Bool
-    let handleScan: @MainActor (URL?) -> ()
+    @Binding var showSheet: Bool
+    @Binding var shouldNavigate: Bool
     
-    @State var shouldJoinKeygen = false
-    @State var shouldKeysignTransaction = false
+    @State var isGalleryPresented = false
     
     @Query var vaults: [Vault]
     
@@ -48,29 +45,30 @@ struct GeneralCodeScannerView: View {
             deeplinkViewModel.extractParameters(url, vaults: vaults)
             presetValuesForDeeplink(url)
         case .failure(_):
-            showScanner = false
             return
         }
     }
     
     private func presetValuesForDeeplink(_ url: URL) {
-//        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            handleScan(url)
-            showScanner = false
-//        }
+        shouldNavigate = false
         
-//        switch type {
-//        case .NewVault:
-//            moveToCreateVaultView()
-//        case .SignTransaction:
-//            moveToVaultsView()
-//        case .Unknown:
-//            return
-//        }
+        guard let type = deeplinkViewModel.type else {
+            return
+        }
+        
+        switch type {
+        case .NewVault:
+            moveToCreateVaultView()
+        case .SignTransaction:
+            moveToVaultsView()
+        case .Unknown:
+            return
+        }
     }
     
     private func moveToCreateVaultView() {
-        shouldJoinKeygen = true
+        shouldNavigate = true
+        showSheet = false
     }
     
     private func moveToVaultsView() {
@@ -81,14 +79,13 @@ struct GeneralCodeScannerView: View {
         viewModel.setSelectedVault(vault)
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            shouldKeysignTransaction = true
+            shouldNavigate = true
+            showSheet = false
         }
     }
 }
 
-//#Preview {
-//    func example() {}
-//    
-//    GeneralCodeScannerView(isForKeysign: true, isGalleryPresented: .constant(false), showScanner: .constant(true), handleScan: example, url: URL(string: "")!)
-//        .environmentObject(DeeplinkViewModel())
-//}
+#Preview {
+    GeneralCodeScannerView(showSheet: .constant(true), shouldNavigate: .constant(false))
+        .environmentObject(DeeplinkViewModel())
+}

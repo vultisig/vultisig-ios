@@ -10,9 +10,12 @@ import SwiftUI
 
 struct SetupVaultView: View {
     let tssType: TssType
-    @State var vault: Vault? = nil
+    
     @Query var vaults: [Vault]
     
+    @State var vault: Vault? = nil
+    @State var showSheet = false
+    @State var shouldJoinKeygen = false
     @State var selectedTab: SetupVaultState = .TwoOfTwoVaults
     
     var body: some View {
@@ -42,6 +45,15 @@ struct SetupVaultView: View {
             messageModal
             Spacer()
             buttons
+        }
+        .sheet(isPresented: $showSheet, content: {
+            GeneralCodeScannerView(
+                showSheet: $showSheet,
+                shouldNavigate: $shouldJoinKeygen
+            )
+        })
+        .navigationDestination(isPresented: $shouldJoinKeygen) {
+            JoinKeygenView(vault: Vault(name: "Main Vault"), shouldJoinKeygen: shouldJoinKeygen)
         }
     }
     
@@ -83,8 +95,14 @@ struct SetupVaultView: View {
     }
     
     var joinButton: some View {
-        NavigationLink {
-            JoinKeygenView(vault: vault ?? Vault(name: "Main Vault"))
+//        NavigationLink {
+//            JoinKeygenView(vault: vault ?? Vault(name: "Main Vault"))
+//        } label: {
+//            OutlineButton(title: "pair")
+//        }
+//        
+        Button {
+            showSheet = true
         } label: {
             OutlineButton(title: "pair")
         }

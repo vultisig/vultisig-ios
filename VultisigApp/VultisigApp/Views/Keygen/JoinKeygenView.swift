@@ -46,9 +46,9 @@ struct JoinKeygenView: View {
         ) { result in
             viewModel.handleQrCodeFromImage(result: result)
         }
-        .sheet(isPresented: $viewModel.isShowingScanner, content: {
-            codeScanner
-        })
+//        .sheet(isPresented: $viewModel.isShowingScanner, content: {
+//            codeScanner
+//        })
         .onAppear {
             setData()
         }
@@ -225,17 +225,10 @@ struct JoinKeygenView: View {
     }
     
     var codeScanner: some View {
-//        ZStack(alignment: .bottom) {
-//            CodeScannerView(codeTypes: [.qr], isGalleryPresented: $isGalleryPresented, completion: self.viewModel.handleScan)
-//            galleryButton
-//        }
-        
-        GeneralCodeScannerView(
-            isForKeysign: true,
-            isGalleryPresented: $isGalleryPresented,
-            showScanner: $viewModel.isShowingScanner,
-            handleScan: viewModel.handleDeeplinkScan
-        )
+        ZStack(alignment: .bottom) {
+            CodeScannerView(codeTypes: [.qr], isGalleryPresented: $isGalleryPresented, completion: self.viewModel.handleScan)
+            galleryButton
+        }
     }
     
     var galleryButton: some View {
