@@ -35,6 +35,9 @@ struct VaultDetailView: View {
         .onChange(of: vault.coins) {
             setData()
         }
+        .onFirstAppear {
+            viewModel.setDefaultCoins(for: vault)
+        }
         .sheet(isPresented: $showSheet, content: {
             NavigationView {
                 ChainSelectionView(showChainSelectionSheet: $showSheet, vault: vault)
@@ -146,7 +149,6 @@ struct VaultDetailView: View {
         viewModel.setOrder()
         viewModel.updateBalance()
         viewModel.getGroupAsync(tokenSelectionViewModel)
-        viewModel.setDefaultCoins(for: vault)
         appState.currentVault = vault
     }
     
