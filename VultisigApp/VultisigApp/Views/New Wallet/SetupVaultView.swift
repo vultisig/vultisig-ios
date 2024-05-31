@@ -57,11 +57,11 @@ struct SetupVaultView: View {
             )
         })
         .navigationDestination(isPresented: $shouldJoinKeygen) {
-            JoinKeygenView(vault: Vault(name: "Main Vault"), shouldJoinKeygen: shouldJoinKeygen)
+            JoinKeygenView(vault: Vault(name: "Main Vault"))
         }
         .navigationDestination(isPresented: $shouldKeysignTransaction) {
             if let vault = viewModel.selectedVault {
-                JoinKeysignView(vault: vault, shouldKeysignTransaction: shouldKeysignTransaction)
+                JoinKeysignView(vault: vault)
             }
         }
     }
@@ -104,12 +104,6 @@ struct SetupVaultView: View {
     }
     
     var joinButton: some View {
-//        NavigationLink {
-//            JoinKeygenView(vault: vault ?? Vault(name: "Main Vault"))
-//        } label: {
-//            OutlineButton(title: "pair")
-//        }
-//        
         Button {
             showSheet = true
         } label: {

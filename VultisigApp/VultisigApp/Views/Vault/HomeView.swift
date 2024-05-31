@@ -61,11 +61,11 @@ struct HomeView: View {
             setData()
         }
         .navigationDestination(isPresented: $shouldJoinKeygen) {
-            JoinKeygenView(vault: Vault(name: "Main Vault"), shouldJoinKeygen: shouldJoinKeygen)
+            JoinKeygenView(vault: Vault(name: "Main Vault"))
         }
         .navigationDestination(isPresented: $shouldKeysignTransaction) {
             if let vault = viewModel.selectedVault {
-                JoinKeysignView(vault: vault, shouldKeysignTransaction: shouldKeysignTransaction)
+                JoinKeysignView(vault: vault)
             }
         }
     }

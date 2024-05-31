@@ -17,7 +17,6 @@ struct JoinKeygenView: View {
     @StateObject var viewModel = JoinKeygenViewModel()
     @StateObject var serviceDelegate = ServiceDelegate()
     @State var showFileImporter = false
-    @State var shouldJoinKeygen = false
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var appViewModel: ApplicationState
@@ -233,11 +232,9 @@ struct JoinKeygenView: View {
             isCameraPermissionGranted: appViewModel.isCameraPermissionGranted
         )
         
-        if shouldJoinKeygen {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                viewModel.isShowingScanner = false
-                viewModel.handleDeeplinkScan(deeplinkViewModel.receivedUrl)
-            }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            viewModel.isShowingScanner = false
+            viewModel.handleDeeplinkScan(deeplinkViewModel.receivedUrl)
         }
     }
 }
