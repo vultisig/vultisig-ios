@@ -37,3 +37,8 @@ class BlastService: RpcEvmService {
     static let rpcEndpoint = Endpoint.blastServiceRpcService
     static let shared = BlastService(rpcEndpoint)
 }
+
+class ZksyncService: RpcEvmService {
+    static let rpcEndpoint = Endpoint.zksyncServiceRpcService
+    static let shared = ZksyncService(rpcEndpoint)
+}

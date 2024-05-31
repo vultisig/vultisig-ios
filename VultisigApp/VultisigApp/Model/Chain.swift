@@ -27,6 +27,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case cronosChain
     case sui
     case polkadot
+    case zksync
     
     enum MigrationKeys: String, CodingKey {
         case ticker
@@ -55,14 +56,14 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .cronosChain: return "CronosChain"
         case .sui: return "Sui"
         case .polkadot: return "Polkadot"
-            
+        case .zksync: return "Zksync"
         }
     }
     var feeUnit: String{
         switch self {
         case .thorChain: return "RUNE"
         case .solana: return "SOL"
-        case .ethereum,.avalanche,.base,.blast,.arbitrum,.polygon,.optimism,.bscChain,.cronosChain: return "Gwei"
+        case .ethereum,.avalanche,.base,.blast,.arbitrum,.polygon,.optimism,.bscChain,.cronosChain, .zksync: return "Gwei"
         case .bitcoin: return "BTC/vbyte"
         case .bitcoinCash: return "BCH/vbyte"
         case .litecoin: return "LTC/vbyte"
@@ -99,6 +100,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .cronosChain: return "CRO"
         case .sui: return "SUI"
         case .polkadot: return "DOT"
+        case .zksync: return "ZK"
         }
     }
     
@@ -125,6 +127,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .cronosChain: return "CRO"
         case .sui: return "SUI"
         case .polkadot: return "DOT"
+        case .zksync: return "ZK"
         }
     }
     
@@ -132,7 +135,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         switch self {
         case .thorChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .gaiaChain:
             return true
-        case .solana, .dash, .kujira, .mayaChain,.arbitrum, .base, .optimism, .polygon, .blast, .cronosChain, .polkadot, .sui:
+        case .solana, .dash, .kujira, .mayaChain,.arbitrum, .base, .optimism, .polygon, .blast, .cronosChain, .polkadot, .sui, .zksync:
             return false
         }
     }
@@ -148,7 +151,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     
     var chainType: ChainType {
         switch self {
-        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain:
+        case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain, .zksync:
             return .EVM
         case .thorChain,.mayaChain:
             return .THORChain
@@ -164,7 +167,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return .Polkadot
         }
     }
-
+    
     var logo: String {
         switch self {
         case .thorChain:
@@ -209,9 +212,11 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return "sui"
         case .polkadot:
             return "polkadot"
+        case .zksync:
+            return "eth_zksync"
         }
     }
-
+    
     var chainID: Int? {
         switch self {
         case .ethereum:
@@ -232,6 +237,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return 56
         case .cronosChain:
             return 25
+        case .zksync:
+            return 324
         case .solana, .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .sui, .polkadot:
             return nil
         }
