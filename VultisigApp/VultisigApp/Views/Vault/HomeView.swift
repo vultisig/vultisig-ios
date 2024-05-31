@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct HomeView: View {
-    var selectedVault: Vault? = nil
+    @State var selectedVault: Vault? = nil
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var viewModel: HomeViewModel
@@ -126,14 +126,14 @@ struct HomeView: View {
     }
     
     private func setData() {
-        if let vault = selectedVault, didUpdate {
-            viewModel.setSelectedVault(vault)
-            showVaultsList = false
-            didUpdate = false
-        }
-        
         shouldJoinKeygen = false
         shouldKeysignTransaction = false
+        
+        if let vault = selectedVault {
+            viewModel.setSelectedVault(vault)
+            selectedVault = nil
+            return
+        }
         
         viewModel.loadSelectedVault(for: vaults)
         presetValuesForDeeplink()
@@ -155,7 +155,7 @@ struct HomeView: View {
     }
     
     private func moveToCreateVaultView() {
-        showVaultsList = true
+        showVaultsList = false
         shouldJoinKeygen = true
     }
     
