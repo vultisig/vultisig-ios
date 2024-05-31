@@ -12,5 +12,9 @@ struct OneInchToken: Codable, Hashable {
     let symbol: String
     let name: String
     let decimals: Int
-    let logoURI: URL
+    let logoURI: String?
+
+    var logoUrl: URL? {
+        return logoURI.flatMap { URL(string: $0) }
+    }
 }

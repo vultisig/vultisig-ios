@@ -38,7 +38,7 @@ struct TokenSelectionCell: View {
 
     var image: some View {
         ImageView(
-            source: .remote(asset.logoURI),
+            source: .remote(asset.logoUrl),
             size: CGSize(width: 32, height: 32)
         )
     }
@@ -77,7 +77,7 @@ struct TokenSelectionCell: View {
         return Coin(
             chain: chain,
             ticker: token.symbol,
-            logo: token.logoURI.absoluteString,
+            logo: token.logoURI ?? .empty,
             address: address,
             priceRate: 0,
             decimals: token.decimals,
