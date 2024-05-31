@@ -12,12 +12,11 @@ import CodeScanner
 struct JoinKeygenView: View {
     let vault: Vault
     
+    @Query var vaults: [Vault]
+    
     @StateObject var viewModel = JoinKeygenViewModel()
     @StateObject var serviceDelegate = ServiceDelegate()
     @State var showFileImporter = false
-    @State var isGalleryPresented = false
-    @Query var vaults: [Vault]
-    @State var shouldJoinKeygen = false
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var appViewModel: ApplicationState
@@ -46,9 +45,6 @@ struct JoinKeygenView: View {
         ) { result in
             viewModel.handleQrCodeFromImage(result: result)
         }
-        .sheet(isPresented: $viewModel.isShowingScanner, content: {
-            codeScanner
-        })
         .onAppear {
             setData()
         }
@@ -224,22 +220,6 @@ struct JoinKeygenView: View {
         }
     }
     
-    var codeScanner: some View {
-        ZStack(alignment: .bottom) {
-            CodeScannerView(codeTypes: [.qr], isGalleryPresented: $isGalleryPresented, completion: self.viewModel.handleScan)
-            galleryButton
-        }
-    }
-    
-    var galleryButton: some View {
-        Button {
-            isGalleryPresented.toggle()
-        } label: {
-            OpenGalleryButton()
-        }
-        .padding(.bottom, 50)
-    }
-    
     var cameraErrorView: some View {
         NoCameraPermissionView()
     }
@@ -252,11 +232,9 @@ struct JoinKeygenView: View {
             isCameraPermissionGranted: appViewModel.isCameraPermissionGranted
         )
         
-        if shouldJoinKeygen {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                viewModel.isShowingScanner = false
-                viewModel.handleDeeplinkScan(deeplinkViewModel.receivedUrl)
-            }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            viewModel.isShowingScanner = false
+            viewModel.handleDeeplinkScan(deeplinkViewModel.receivedUrl)
         }
     }
 }

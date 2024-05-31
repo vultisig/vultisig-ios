@@ -2,7 +2,6 @@
 //  JoinKeysignView.swift
 //  VultisigApp
 
-import CodeScanner
 import OSLog
 import SwiftUI
 
@@ -11,8 +10,6 @@ struct JoinKeysignView: View {
        
     @StateObject private var serviceDelegate = ServiceDelegate()
     @StateObject var viewModel = JoinKeysignViewModel()
-    @State var isGalleryPresented = false
-    @State var shouldKeysignTransaction = false
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var appViewModel: ApplicationState
@@ -35,9 +32,6 @@ struct JoinKeysignView: View {
                 NavigationHelpButton()
             }
         }
-        .sheet(isPresented: $viewModel.isShowingScanner, content: {
-            codeScanner
-        })
         .onAppear {
             setData()
         }
@@ -139,22 +133,6 @@ struct JoinKeysignView: View {
         KeysignDiscoverServiceView(viewModel: viewModel, serviceDelegate: serviceDelegate)
     }
     
-    var codeScanner: some View {
-        ZStack(alignment: .bottom) {
-            CodeScannerView(codeTypes: [.qr], isGalleryPresented: $isGalleryPresented, completion: viewModel.handleScan)
-            galleryButton
-        }
-    }
-    
-    var galleryButton: some View {
-        Button {
-            isGalleryPresented.toggle()
-        } label: {
-            OpenGalleryButton()
-        }
-        .padding(.bottom, 50)
-    }
-    
     private func setData() {
         viewModel.setData(
             vault: vault,
@@ -162,11 +140,9 @@ struct JoinKeysignView: View {
             isCameraPermissionGranted: appViewModel.isCameraPermissionGranted
         )
         
-        if shouldKeysignTransaction {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                viewModel.isShowingScanner = false
-                viewModel.handleDeeplinkScan(deeplinkViewModel.receivedUrl)
-            }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            viewModel.isShowingScanner = false
+            viewModel.handleDeeplinkScan(deeplinkViewModel.receivedUrl)
         }
     }
 }

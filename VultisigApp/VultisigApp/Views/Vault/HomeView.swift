@@ -9,17 +9,18 @@ import SwiftUI
 import SwiftData
 
 struct HomeView: View {
-    var selectedVault: Vault? = nil
+    @State var selectedVault: Vault? = nil
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
+    @EnvironmentObject var viewModel: HomeViewModel
     
     @Query var vaults: [Vault]
-    @StateObject var viewModel = HomeViewModel()
     
     @State var showVaultsList = false
     @State var isEditingVaults = false
     @State var isEditingChains = false
     @State var showMenu = false
+    @State var didUpdate = true
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
     
@@ -60,15 +61,12 @@ struct HomeView: View {
         .onAppear {
             setData()
         }
-        .onFirstAppear {
-            onFirstAppear()
-        }
         .navigationDestination(isPresented: $shouldJoinKeygen) {
-            JoinKeygenView(vault: Vault(name: "Main Vault"), shouldJoinKeygen: shouldJoinKeygen)
+            JoinKeygenView(vault: Vault(name: "Main Vault"))
         }
         .navigationDestination(isPresented: $shouldKeysignTransaction) {
             if let vault = viewModel.selectedVault {
-                JoinKeysignView(vault: vault, shouldKeysignTransaction: shouldKeysignTransaction)
+                JoinKeysignView(vault: vault)
             }
         }
     }
@@ -131,14 +129,14 @@ struct HomeView: View {
         shouldJoinKeygen = false
         shouldKeysignTransaction = false
         
-        viewModel.loadSelectedVault(for: vaults)
-        presetValuesForDeeplink()
-    }
-    
-    private func onFirstAppear() {
         if let vault = selectedVault {
             viewModel.setSelectedVault(vault)
+            selectedVault = nil
+            return
         }
+        
+        viewModel.loadSelectedVault(for: vaults)
+        presetValuesForDeeplink()
     }
     
     private func presetValuesForDeeplink() {
@@ -157,7 +155,7 @@ struct HomeView: View {
     }
     
     private func moveToCreateVaultView() {
-        showVaultsList = true
+        showVaultsList = false
         shouldJoinKeygen = true
     }
     
@@ -188,4 +186,5 @@ struct HomeView: View {
 #Preview {
     HomeView()
         .environmentObject(DeeplinkViewModel())
+        .environmentObject(HomeViewModel())
 }

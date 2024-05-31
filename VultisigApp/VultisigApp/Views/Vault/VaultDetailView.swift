@@ -15,9 +15,14 @@ struct VaultDetailView: View {
     
     @EnvironmentObject var appState: ApplicationState
     @EnvironmentObject var viewModel: VaultDetailViewModel
+    @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var tokenSelectionViewModel: TokenSelectionViewModel
     
     @State var showSheet = false
+    @State var isLoading = true
+    @State var showScanner = false
+    @State var shouldJoinKeygen = false
+    @State var shouldKeysignTransaction = false
     @StateObject var sendTx = SendTransaction()
 
     var body: some View {
@@ -27,16 +32,14 @@ struct VaultDetailView: View {
             scanButton
         }
         .onAppear {
-            setData()
+            onAppear()
         }
         .onChange(of: vault) {
             setData()
+            appState.currentVault = vault
         }
         .onChange(of: vault.coins) {
             setData()
-        }
-        .onFirstAppear {
-            viewModel.setDefaultCoins(for: vault)
         }
         .sheet(isPresented: $showSheet, content: {
             NavigationView {
@@ -47,7 +50,9 @@ struct VaultDetailView: View {
     
     var view: some View {
         ScrollView {
-            if viewModel.coinsGroupedByChains.count>=1 {
+            if isLoading {
+                loader
+            } else if viewModel.coinsGroupedByChains.count>=1 {
                 balanceContent
                 getActions()
                 list
@@ -59,6 +64,21 @@ struct VaultDetailView: View {
             Spacer()
         }
         .opacity(showVaultsList ? 0 : 1)
+        .sheet(isPresented: $showScanner, content: {
+            GeneralCodeScannerView(
+                showSheet: $showScanner,
+                shouldJoinKeygen: $shouldJoinKeygen,
+                shouldKeysignTransaction: $shouldKeysignTransaction
+            )
+        })
+        .navigationDestination(isPresented: $shouldJoinKeygen) {
+            JoinKeygenView(vault: Vault(name: "Main Vault"))
+        }
+        .navigationDestination(isPresented: $shouldKeysignTransaction) {
+            if let vault = homeViewModel.selectedVault {
+                JoinKeysignView(vault: vault)
+            }
+        }
     }
     
     var list: some View {
@@ -123,33 +143,41 @@ struct VaultDetailView: View {
     }
        
     var scanButton: some View {
-        NavigationLink {
-            JoinKeysignView(vault: vault)
-        } label: {
-            ZStack {
-                Circle()
-                    .foregroundColor(.blue800)
-                    .frame(width: 80, height: 80)
-                    .opacity(0.8)
-                
-                Circle()
-                    .foregroundColor(.turquoise600)
-                    .frame(width: 60, height: 60)
-                
-                Image(systemName: "camera")
-                    .font(.title30MenloUltraLight)
-                    .foregroundColor(.blue600)
-            }
+        VaultDetailScanButton(showSheet: $showScanner)
             .opacity(showVaultsList ? 0 : 1)
+    }
+    
+    var loader: some View {
+        HStack(spacing: 20) {
+            Text(NSLocalizedString("fetchingVaultDetails", comment: ""))
+                .font(.body16Menlo)
+                .foregroundColor(.neutral0)
+            
+            ProgressView()
+                .preferredColorScheme(.dark)
+        }
+        .padding(.vertical, 50)
+    }
+    
+    private func onAppear() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            isLoading = false
+        }
+        
+        Task {
+            setData()
+            appState.currentVault = vault
+            try await Task.sleep(for: .seconds(1))
+            viewModel.setDefaultCoins(for: vault)
         }
     }
     
     private func setData() {
+//        homeViewModel.setSelectedVault(vault)
         viewModel.fetchCoins(for: vault)
         viewModel.setOrder()
         viewModel.updateBalance()
         viewModel.getGroupAsync(tokenSelectionViewModel)
-        appState.currentVault = vault
     }
     
     private func move(from: IndexSet, to: Int) {
@@ -200,4 +228,5 @@ struct VaultDetailView: View {
         .environmentObject(ApplicationState())
         .environmentObject(VaultDetailViewModel())
         .environmentObject(ApplicationState.shared)
+        .environmentObject(HomeViewModel())
 }
