@@ -2,7 +2,6 @@
 //  JoinKeygen.swift
 //  VultisigApp
 
-import CodeScanner
 import Network
 import OSLog
 import SwiftUI
