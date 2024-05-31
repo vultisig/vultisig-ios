@@ -75,12 +75,6 @@ struct GeneralCodeScannerView: View {
     }
     
     private func moveToVaultsView() {
-//        guard let vault = deeplinkViewModel.selectedVault else {
-//            return
-//        }
-//        
-//        viewModel.setSelectedVault(vault)
-        
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             shouldKeysignTransaction = true
             showSheet = false
