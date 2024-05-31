@@ -10,7 +10,7 @@ import SwiftUI
 struct TokenSelectionCell: View {
     let chain: Chain
     let address: String
-    let asset: OneInchToken
+    let asset: TokenSelectionViewModel.Token
     let tokenSelectionViewModel: TokenSelectionViewModel
 
     @State var isSelected = false
@@ -38,7 +38,7 @@ struct TokenSelectionCell: View {
 
     var image: some View {
         ImageView(
-            source: .remote(asset.logoUrl),
+            source: asset.logo,
             size: CGSize(width: 32, height: 32)
         )
     }
@@ -73,20 +73,25 @@ struct TokenSelectionCell: View {
         coinSelectionViewModel.handleSelection(isSelected: isSelected, asset: convertToCoin(asset))
     }
 
-    private func convertToCoin(_ token: OneInchToken) -> Coin {
-        return Coin(
-            chain: chain,
-            ticker: token.symbol,
-            logo: token.logoURI ?? .empty,
-            address: address,
-            priceRate: 0,
-            decimals: token.decimals,
-            hexPublicKey: .empty,
-            priceProviderId: token.symbol.lowercased(),
-            contractAddress: token.address,
-            rawBalance: .zero,
-            isNativeToken: false
-        )
+    private func convertToCoin(_ asset: TokenSelectionViewModel.Token) -> Coin {
+        switch asset {
+        case .coin(let coin):
+            return coin
+        case .oneInch(let token):
+            return Coin(
+                chain: chain,
+                ticker: token.symbol,
+                logo: token.logoURI ?? .empty,
+                address: address,
+                priceRate: 0,
+                decimals: token.decimals,
+                hexPublicKey: .empty,
+                priceProviderId: token.symbol.lowercased(),
+                contractAddress: token.address,
+                rawBalance: .zero,
+                isNativeToken: false
+            )
+        }
     }
 }
 

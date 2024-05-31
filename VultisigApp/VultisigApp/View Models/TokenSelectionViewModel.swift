@@ -10,18 +10,40 @@ import SwiftUI
 @MainActor
 class TokenSelectionViewModel: ObservableObject {
 
+    enum Token: Hashable {
+        case coin(Coin)
+        case oneInch(OneInchToken)
+
+        var symbol: String {
+            switch self {
+            case .coin(let coin):
+                return coin.ticker
+            case .oneInch(let coin):
+                return coin.symbol
+            }
+        }
+
+        var logo: ImageView.Source {
+            switch self {
+            case .coin(let coin):
+                return .resource(coin.logo)
+            case .oneInch(let token):
+                return .remote(token.logoUrl)
+            }
+        }
+    }
+
     @Published var searchText: String = .empty
-    @Published var tokens: [OneInchToken] = []
+    @Published var tokens: [Token] = []
     @Published var isLoading: Bool = false
     @Published var error: Error?
 
     private let oneInchservice = OneInchService.shared
 
-    var filteredTokens: [OneInchToken] {
+    var filteredTokens: [Token] {
         guard !searchText.isEmpty else { return tokens }
-        return tokens.filter { meal in
-            meal.name.lowercased().contains(searchText.lowercased()) ||
-            meal.symbol.lowercased().contains(searchText.lowercased())
+        return tokens.filter { token in
+            token.symbol.lowercased().contains(searchText.lowercased())
         }
     }
 
@@ -35,17 +57,14 @@ class TokenSelectionViewModel: ObservableObject {
     }
 
     func loadData(chain: Chain) async {
-        guard let chainID = chain.chainID else { return }
-        isLoading = true
-        do {
-            tokens = try await oneInchservice.fetchTokens(chain: chainID).sorted(by: { $0.name < $1.name })
-            if tokens.isEmpty {
-                self.error = Errors.noTokens
-            }
-        } catch {
-            self.error = Errors.networkError
+        error = nil
+
+        switch chain.chainType {
+        case .EVM:
+            await loadEVMTokens(chain: chain)
+        default:
+            await loadOtherTokens(chain: chain)
         }
-        isLoading = false
     }
 }
 
@@ -63,5 +82,27 @@ private extension TokenSelectionViewModel {
                 return "Unable to connect.\nPlease check your internet connection and try again"
             }
         }
+    }
+
+    func loadEVMTokens(chain: Chain) async {
+        guard let chainID = chain.chainID else { return }
+        isLoading = true
+        do {
+            let response = try await oneInchservice.fetchTokens(chain: chainID).sorted(by: { $0.name < $1.name })
+            tokens = response.map { .oneInch($0) }
+
+            if tokens.isEmpty {
+                error = Errors.noTokens
+            }
+        } catch {
+            self.error = Errors.networkError
+        }
+        isLoading = false
+    }
+
+    func loadOtherTokens(chain: Chain) async {
+        tokens = TokensStore.TokenSelectionAssets
+            .filter { $0.chain == chain && !$0.isNativeToken }
+            .map { .coin($0) }
     }
 }
