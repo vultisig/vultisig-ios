@@ -61,9 +61,6 @@ struct HomeView: View {
         .onAppear {
             setData()
         }
-//        .onFirstAppear {
-//            onFirstAppear()
-//        }
         .navigationDestination(isPresented: $shouldJoinKeygen) {
             JoinKeygenView(vault: Vault(name: "Main Vault"))
         }
@@ -129,25 +126,18 @@ struct HomeView: View {
     }
     
     private func setData() {
-        shouldJoinKeygen = false
-        shouldKeysignTransaction = false
-        
-        viewModel.loadSelectedVault(for: vaults)
-        presetValuesForDeeplink()
-        
         if let vault = selectedVault, didUpdate {
             viewModel.setSelectedVault(vault)
             showVaultsList = false
             didUpdate = false
         }
+        
+        shouldJoinKeygen = false
+        shouldKeysignTransaction = false
+        
+        viewModel.loadSelectedVault(for: vaults)
+        presetValuesForDeeplink()
     }
-    
-//    private func onFirstAppear() {
-//        if let vault = selectedVault {
-//            viewModel.setSelectedVault(vault)
-//            showVaultsList = false
-//        }
-//    }
     
     private func presetValuesForDeeplink() {
         guard let type = deeplinkViewModel.type else {
