@@ -26,15 +26,11 @@ struct VaultDetailView: View {
             view
             scanButton
         }
-        .onAppear {
+        .onFirstAppear {
             setData()
-            viewModel.setDefaultCoins(for: vault)
-            appState.currentVault = vault
         }
         .onChange(of: vault) {
             setData()
-            viewModel.setDefaultCoins(for: vault)
-            appState.currentVault = vault
         }
         .onChange(of: vault.coins) {
             setData()
@@ -150,6 +146,8 @@ struct VaultDetailView: View {
         viewModel.setOrder()
         viewModel.updateBalance()
         viewModel.getGroupAsync(tokenSelectionViewModel)
+        viewModel.setDefaultCoins(for: vault)
+        appState.currentVault = vault
     }
     
     private func move(from: IndexSet, to: Int) {

@@ -39,4 +39,8 @@ extension View {
             field.wrappedValue = newValue
         }
     }
+    
+    func onFirstAppear(perform: @escaping () -> Void) -> some View {
+        modifier(OnFirstAppear(perform: perform))
+    }
 }
