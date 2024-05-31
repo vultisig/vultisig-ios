@@ -26,7 +26,7 @@ struct VaultDetailView: View {
             view
             scanButton
         }
-        .onFirstAppear {
+        .onAppear {
             setData()
         }
         .onChange(of: vault) {
