@@ -54,12 +54,7 @@ enum MayaChainHelper {
         // THORChain fee is 0.02 RUNE
         input.fee = CosmosFee.with {
             $0.gas = MayaChainGas
-            $0.amounts = [CosmosAmount.with {
-                $0.denom = "cacao"
-                $0.amount = MayaChainGas.description
-            }]
         }
-        print(input.debugDescription)
         // memo has been set
         // deposit message has been set
         do {
@@ -143,10 +138,6 @@ enum MayaChainHelper {
             // MAYAChain fee is 0.02 CACAO
             $0.fee = CosmosFee.with {
                 $0.gas = MayaChainGas
-                $0.amounts = [CosmosAmount.with {
-                    $0.denom = "cacao"
-                    $0.amount = MayaChainGas.description
-                }]
             }
         }
         print(input.debugDescription)
