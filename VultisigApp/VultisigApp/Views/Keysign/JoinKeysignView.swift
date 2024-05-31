@@ -2,7 +2,6 @@
 //  JoinKeysignView.swift
 //  VultisigApp
 
-import CodeScanner
 import OSLog
 import SwiftUI
 
@@ -35,9 +34,6 @@ struct JoinKeysignView: View {
                 NavigationHelpButton()
             }
         }
-        .sheet(isPresented: $viewModel.isShowingScanner, content: {
-            codeScanner
-        })
         .onAppear {
             setData()
         }
@@ -137,13 +133,6 @@ struct JoinKeysignView: View {
     
     var discoverService: some View {
         KeysignDiscoverServiceView(viewModel: viewModel, serviceDelegate: serviceDelegate)
-    }
-    
-    var codeScanner: some View {
-        ZStack(alignment: .bottom) {
-            CodeScannerView(codeTypes: [.qr], isGalleryPresented: $isGalleryPresented, completion: viewModel.handleScan)
-            galleryButton
-        }
     }
     
     var galleryButton: some View {
