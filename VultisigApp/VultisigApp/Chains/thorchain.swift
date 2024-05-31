@@ -48,10 +48,6 @@ enum THORChainHelper {
         input.mode = .sync
         input.fee = CosmosFee.with {
             $0.gas = 20000000
-            $0.amounts = [CosmosAmount.with {
-                $0.denom = "rune"
-                $0.amount = fee.description
-            }]
         }
         // memo has been set
         // deposit message has been set
@@ -137,12 +133,10 @@ enum THORChainHelper {
             $0.messages = message
             $0.fee = CosmosFee.with {
                 $0.gas = 20000000
-                $0.amounts = [CosmosAmount.with {
-                    $0.denom = "rune"
-                    $0.amount = fee.description
-                }]
             }
         }
+        
+        print(input.debugDescription)
         
         do {
             let inputData = try input.serializedData()
