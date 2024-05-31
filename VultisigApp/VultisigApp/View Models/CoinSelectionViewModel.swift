@@ -50,9 +50,13 @@ class CoinSelectionViewModel: ObservableObject {
 
     func handleSelection(isSelected: Bool, asset: Coin) {
         if isSelected {
-            selection.insert(asset)
+            if !selection.contains(where: { $0.chain == asset.chain && $0.ticker == asset.ticker }) {
+                selection.insert(asset)
+            }
         } else {
-            selection.remove(asset)
+            if let remove = selection.first(where: { $0.chain == asset.chain && $0.ticker == asset.ticker }) {
+                selection.remove(remove)
+            }
         }
     }
 
@@ -78,7 +82,7 @@ class CoinSelectionViewModel: ObservableObject {
             print("fail to save asset,\(error)")
         }
     }
-    private func getNewCoin(asset: Coin, vault:Vault) -> Coin? {
+    private func getNewCoin(asset: Coin, vault: Vault) -> Coin? {
         switch asset.chain {
         case .thorChain:
             let runeCoinResult = THORChainHelper.getRUNECoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
@@ -187,7 +191,7 @@ class CoinSelectionViewModel: ObservableObject {
     }
     private func addToChain(asset: Coin, to vault: Vault) async {
         do{
-            if var newCoin = getNewCoin(asset: asset, vault: vault) {
+            if let newCoin = getNewCoin(asset: asset, vault: vault) {
                 // Fetch priceProviderId for EVM tokens
                 if !newCoin.isNativeToken, asset.chainType == .EVM {
                     newCoin.priceProviderId = try await priceService.fetchCoingeckoId(
