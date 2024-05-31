@@ -136,8 +136,6 @@ enum THORChainHelper {
             }
         }
         
-        print(input.debugDescription)
-        
         do {
             let inputData = try input.serializedData()
             return .success(inputData)

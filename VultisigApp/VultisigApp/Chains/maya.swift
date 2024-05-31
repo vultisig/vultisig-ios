@@ -55,7 +55,6 @@ enum MayaChainHelper {
         input.fee = CosmosFee.with {
             $0.gas = MayaChainGas
         }
-        print(input.debugDescription)
         // memo has been set
         // deposit message has been set
         do {
