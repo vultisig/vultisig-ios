@@ -206,3 +206,4 @@
 "polkadotExistentialDepositError" = "If an account drops below 1 DOT (Existential Deposit), the account is reaped (deactivated), and any remaining funds are destroyed. The address can be reactivated with a new deposit larger than the existential deposit at any time. This will not restore the destroyed funds.";
 "noCameraPermissionError" = "Camera permission denied.\n\nPlease enable it in the Settings.";
 "openSettings" = "Open Settings";
+"fetchingVaultDetails" = "Fetching Vault Details";

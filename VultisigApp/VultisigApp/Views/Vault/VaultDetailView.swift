@@ -19,6 +19,7 @@ struct VaultDetailView: View {
     @EnvironmentObject var tokenSelectionViewModel: TokenSelectionViewModel
     
     @State var showSheet = false
+    @State var isLoading = true
     @State var showScanner = false
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
@@ -31,16 +32,14 @@ struct VaultDetailView: View {
             scanButton
         }
         .onAppear {
-            setData()
+            onAppear()
         }
         .onChange(of: vault) {
             setData()
+            appState.currentVault = vault
         }
         .onChange(of: vault.coins) {
             setData()
-        }
-        .onFirstAppear {
-            viewModel.setDefaultCoins(for: vault)
         }
         .sheet(isPresented: $showSheet, content: {
             NavigationView {
@@ -51,7 +50,9 @@ struct VaultDetailView: View {
     
     var view: some View {
         ScrollView {
-            if viewModel.coinsGroupedByChains.count>=1 {
+            if isLoading {
+                loader
+            } else if viewModel.coinsGroupedByChains.count>=1 {
                 balanceContent
                 getActions()
                 list
@@ -146,12 +147,36 @@ struct VaultDetailView: View {
             .opacity(showVaultsList ? 0 : 1)
     }
     
+    var loader: some View {
+        HStack(spacing: 20) {
+            Text(NSLocalizedString("fetchingVaultDetails", comment: ""))
+                .font(.body16Menlo)
+                .foregroundColor(.neutral0)
+            
+            ProgressView()
+                .preferredColorScheme(.dark)
+        }
+        .padding(.vertical, 50)
+    }
+    
+    private func onAppear() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            isLoading = false
+        }
+        
+        Task {
+            setData()
+            appState.currentVault = vault
+            try await Task.sleep(for: .seconds(1))
+            viewModel.setDefaultCoins(for: vault)
+        }
+    }
+    
     private func setData() {
         viewModel.fetchCoins(for: vault)
         viewModel.setOrder()
         viewModel.updateBalance()
         viewModel.getGroupAsync(tokenSelectionViewModel)
-        appState.currentVault = vault
     }
     
     private func move(from: IndexSet, to: Int) {

@@ -133,15 +133,6 @@ struct JoinKeysignView: View {
         KeysignDiscoverServiceView(viewModel: viewModel, serviceDelegate: serviceDelegate)
     }
     
-    var galleryButton: some View {
-        Button {
-            isGalleryPresented.toggle()
-        } label: {
-            OpenGalleryButton()
-        }
-        .padding(.bottom, 50)
-    }
-    
     private func setData() {
         viewModel.setData(
             vault: vault,

@@ -138,6 +138,7 @@ struct HomeView: View {
     private func onFirstAppear() {
         if let vault = selectedVault {
             viewModel.setSelectedVault(vault)
+            showVaultsList = false
         }
     }
     
