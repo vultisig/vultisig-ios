@@ -12,11 +12,11 @@ import SwiftData
 struct JoinKeygenView: View {
     let vault: Vault
     
+    @Query var vaults: [Vault]
+    
     @StateObject var viewModel = JoinKeygenViewModel()
     @StateObject var serviceDelegate = ServiceDelegate()
     @State var showFileImporter = false
-    @State var isGalleryPresented = false
-    @Query var vaults: [Vault]
     @State var shouldJoinKeygen = false
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
@@ -46,9 +46,6 @@ struct JoinKeygenView: View {
         ) { result in
             viewModel.handleQrCodeFromImage(result: result)
         }
-//        .sheet(isPresented: $viewModel.isShowingScanner, content: {
-//            codeScanner
-//        })
         .onAppear {
             setData()
         }
@@ -222,22 +219,6 @@ struct JoinKeygenView: View {
         .task {
             await viewModel.waitForKeygenStart()
         }
-    }
-    
-    var codeScanner: some View {
-        ZStack(alignment: .bottom) {
-            CodeScannerView(codeTypes: [.qr], isGalleryPresented: $isGalleryPresented, completion: self.viewModel.handleScan)
-            galleryButton
-        }
-    }
-    
-    var galleryButton: some View {
-        Button {
-            isGalleryPresented.toggle()
-        } label: {
-            OpenGalleryButton()
-        }
-        .padding(.bottom, 50)
     }
     
     var cameraErrorView: some View {
