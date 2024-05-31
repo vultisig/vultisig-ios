@@ -11,7 +11,8 @@ import SwiftData
 
 struct GeneralCodeScannerView: View {
     @Binding var showSheet: Bool
-    @Binding var shouldNavigate: Bool
+    @Binding var shouldJoinKeygen: Bool
+    @Binding var shouldKeysignTransaction: Bool
     
     @State var isGalleryPresented = false
     
@@ -25,6 +26,7 @@ struct GeneralCodeScannerView: View {
             CodeScannerView(codeTypes: [.qr], isGalleryPresented: $isGalleryPresented, completion: handleScan)
             galleryButton
         }
+        .ignoresSafeArea()
     }
     
     var galleryButton: some View {
@@ -50,7 +52,8 @@ struct GeneralCodeScannerView: View {
     }
     
     private func presetValuesForDeeplink(_ url: URL) {
-        shouldNavigate = false
+        shouldJoinKeygen = false
+        shouldKeysignTransaction = false
         
         guard let type = deeplinkViewModel.type else {
             return
@@ -67,7 +70,7 @@ struct GeneralCodeScannerView: View {
     }
     
     private func moveToCreateVaultView() {
-        shouldNavigate = true
+        shouldJoinKeygen = true
         showSheet = false
     }
     
@@ -79,13 +82,17 @@ struct GeneralCodeScannerView: View {
         viewModel.setSelectedVault(vault)
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            shouldNavigate = true
+            shouldKeysignTransaction = true
             showSheet = false
         }
     }
 }
 
 #Preview {
-    GeneralCodeScannerView(showSheet: .constant(true), shouldNavigate: .constant(false))
+    GeneralCodeScannerView(
+        showSheet: .constant(true),
+        shouldJoinKeygen: .constant(true),
+        shouldKeysignTransaction: .constant(true)
+    )
         .environmentObject(DeeplinkViewModel())
 }

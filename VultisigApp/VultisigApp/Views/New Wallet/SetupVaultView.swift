@@ -16,7 +16,10 @@ struct SetupVaultView: View {
     @State var vault: Vault? = nil
     @State var showSheet = false
     @State var shouldJoinKeygen = false
+    @State var shouldKeysignTransaction = false
     @State var selectedTab: SetupVaultState = .TwoOfTwoVaults
+    
+    @EnvironmentObject var viewModel: HomeViewModel
     
     var body: some View {
         ZStack {
@@ -49,11 +52,17 @@ struct SetupVaultView: View {
         .sheet(isPresented: $showSheet, content: {
             GeneralCodeScannerView(
                 showSheet: $showSheet,
-                shouldNavigate: $shouldJoinKeygen
+                shouldJoinKeygen: $shouldJoinKeygen,
+                shouldKeysignTransaction: $shouldKeysignTransaction
             )
         })
         .navigationDestination(isPresented: $shouldJoinKeygen) {
             JoinKeygenView(vault: Vault(name: "Main Vault"), shouldJoinKeygen: shouldJoinKeygen)
+        }
+        .navigationDestination(isPresented: $shouldKeysignTransaction) {
+            if let vault = viewModel.selectedVault {
+                JoinKeysignView(vault: vault, shouldKeysignTransaction: shouldKeysignTransaction)
+            }
         }
     }
     
@@ -117,5 +126,5 @@ struct SetupVaultView: View {
 
 #Preview {
     SetupVaultView(tssType: .Keygen)
-        .environmentObject(DeeplinkViewModel())
+        .environmentObject(HomeViewModel())
 }
