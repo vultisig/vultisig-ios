@@ -32,16 +32,15 @@ struct VaultDetailView: View {
         }
         .onAppear {
             setData()
-            viewModel.setDefaultCoins(for: vault)
-            appState.currentVault = vault
         }
         .onChange(of: vault) {
             setData()
-            viewModel.setDefaultCoins(for: vault)
-            appState.currentVault = vault
         }
         .onChange(of: vault.coins) {
             setData()
+        }
+        .onFirstAppear {
+            viewModel.setDefaultCoins(for: vault)
         }
         .sheet(isPresented: $showSheet, content: {
             NavigationView {
@@ -152,6 +151,7 @@ struct VaultDetailView: View {
         viewModel.setOrder()
         viewModel.updateBalance()
         viewModel.getGroupAsync(tokenSelectionViewModel)
+        appState.currentVault = vault
     }
     
     private func move(from: IndexSet, to: Int) {
