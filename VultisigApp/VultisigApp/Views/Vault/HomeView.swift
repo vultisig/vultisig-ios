@@ -20,6 +20,7 @@ struct HomeView: View {
     @State var isEditingVaults = false
     @State var isEditingChains = false
     @State var showMenu = false
+    @State var didUpdate = true
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
     
@@ -60,9 +61,9 @@ struct HomeView: View {
         .onAppear {
             setData()
         }
-        .onFirstAppear {
-            onFirstAppear()
-        }
+//        .onFirstAppear {
+//            onFirstAppear()
+//        }
         .navigationDestination(isPresented: $shouldJoinKeygen) {
             JoinKeygenView(vault: Vault(name: "Main Vault"))
         }
@@ -133,14 +134,20 @@ struct HomeView: View {
         
         viewModel.loadSelectedVault(for: vaults)
         presetValuesForDeeplink()
-    }
-    
-    private func onFirstAppear() {
-        if let vault = selectedVault {
+        
+        if let vault = selectedVault, didUpdate {
             viewModel.setSelectedVault(vault)
             showVaultsList = false
+            didUpdate = false
         }
     }
+    
+//    private func onFirstAppear() {
+//        if let vault = selectedVault {
+//            viewModel.setSelectedVault(vault)
+//            showVaultsList = false
+//        }
+//    }
     
     private func presetValuesForDeeplink() {
         guard let type = deeplinkViewModel.type else {
