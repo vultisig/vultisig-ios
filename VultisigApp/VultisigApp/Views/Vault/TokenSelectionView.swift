@@ -20,6 +20,10 @@ struct TokenSelectionView: View {
             Background()
             view
 
+            if let error = tokenViewModel.error {
+                errorView(error: error)
+            }
+
             if tokenViewModel.isLoading {
                 Loader()
             }
@@ -33,7 +37,7 @@ struct TokenSelectionView: View {
             }
         }
         .task {
-            try? await tokenViewModel.loadData(chain: group.chain)
+            await tokenViewModel.loadData(chain: group.chain)
         }
         .onDisappear {
             saveAssets()
@@ -50,6 +54,26 @@ struct TokenSelectionView: View {
             }
         }
         .padding(.horizontal, 16)
+    }
+    
+    func errorView(error: Error) -> some View {
+        return VStack(spacing: 16) {
+            Text(error.localizedDescription)
+                .multilineTextAlignment(.center)
+                .font(.body16Menlo)
+                .foregroundColor(.neutral0)
+                .padding(.horizontal, 16)
+
+            if tokenViewModel.showRetry {
+                Button {
+                    Task { await tokenViewModel.loadData(chain: group.chain) }
+                } label: {
+                    FilledButton(title: "Retry")
+                }
+                .padding(.horizontal, 40)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     var address: String {
