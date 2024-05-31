@@ -33,9 +33,10 @@ public class CryptoPriceService: ObservableObject {
             }
             let data: Data
         }
-        let url = Endpoint.fetchTokenInfo(network: chain.coingeckoId, address: address)
-        let (data, _) = try await URLSession.shared.data(from: url)
-        let response = try JSONDecoder().decode(Response.self, from: data)
+        let response: Response = try await Utils.fetchObject(from: Endpoint.fetchTokenInfo(
+            network: chain.coingeckoId,
+            address: address)
+        )
         return response.data.attributes.coingecko_coin_id
     }
 

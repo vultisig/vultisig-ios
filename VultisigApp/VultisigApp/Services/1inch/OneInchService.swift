@@ -48,10 +48,7 @@ struct OneInchService {
     }
 
     func fetchTokens(chain: Int) async throws -> [OneInchToken] {
-        let url = Endpoint.fetchTokens(chain: chain)
-        let request = URLRequest(url: url)
-        let (data, _) = try await URLSession.shared.data(for: request)
-        let response = try JSONDecoder().decode(OneInchTokensResponse.self, from: data)
+        let response: OneInchTokensResponse = try await Utils.fetchObject(from: Endpoint.fetchTokens(chain: chain))
         let tokens = Array(arrayLiteral: response.tokens.values).reduce([], +)
         return tokens
     }

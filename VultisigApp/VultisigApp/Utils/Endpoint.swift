@@ -62,8 +62,8 @@ class Endpoint {
         return "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/swap?src=\(source)&dst=\(destination)&amount=\(amount)&from=\(from)&slippage=\(slippage)&disableEstimate=true&includeGas=true\(isAffiliateParams)".asUrl
     }
 
-    static func fetchTokens(chain: Int) -> URL {
-        return "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/tokens".asUrl
+    static func fetchTokens(chain: Int) -> String {
+        return "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/tokens"
     }
 
     static func fetchCoinPaprikaQuotes(_ quotes: String) -> String {
@@ -124,8 +124,8 @@ class Endpoint {
         "\(vultisigApiProxy)/coingeicko/api/v3/simple/price?ids=\(coin)&vs_currencies=\(fiat)"
     }
 
-    static func fetchTokenInfo(network: String, address: String) -> URL {
-        "\(vultisigApiProxy)/coingeicko/api/v3/onchain/networks/\(network)/tokens/\(address)".asUrl
+    static func fetchTokenInfo(network: String, address: String) -> String {
+        "\(vultisigApiProxy)/coingeicko/api/v3/onchain/networks/\(network)/tokens/\(address)"
     }
 
     static func fetchBitcoinTransactions(_ userAddress: String) -> String {
