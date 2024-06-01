@@ -56,6 +56,7 @@ struct NewWalletNameView: View {
             .padding(12)
             .background(Color.blue600)
             .cornerRadius(12)
+            .colorScheme(.dark)
     }
     
     var button: some View {
