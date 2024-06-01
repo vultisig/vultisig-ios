@@ -10,8 +10,6 @@ struct JoinKeysignView: View {
        
     @StateObject private var serviceDelegate = ServiceDelegate()
     @StateObject var viewModel = JoinKeysignViewModel()
-    @State var isGalleryPresented = false
-    @State var shouldKeysignTransaction = false
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var appViewModel: ApplicationState
@@ -135,15 +133,6 @@ struct JoinKeysignView: View {
         KeysignDiscoverServiceView(viewModel: viewModel, serviceDelegate: serviceDelegate)
     }
     
-    var galleryButton: some View {
-        Button {
-            isGalleryPresented.toggle()
-        } label: {
-            OpenGalleryButton()
-        }
-        .padding(.bottom, 50)
-    }
-    
     private func setData() {
         viewModel.setData(
             vault: vault,
@@ -151,11 +140,9 @@ struct JoinKeysignView: View {
             isCameraPermissionGranted: appViewModel.isCameraPermissionGranted
         )
         
-        if shouldKeysignTransaction {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                viewModel.isShowingScanner = false
-                viewModel.handleDeeplinkScan(deeplinkViewModel.receivedUrl)
-            }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            viewModel.isShowingScanner = false
+            viewModel.handleDeeplinkScan(deeplinkViewModel.receivedUrl)
         }
     }
 }
