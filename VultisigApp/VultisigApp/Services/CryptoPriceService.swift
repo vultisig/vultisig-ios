@@ -23,21 +23,21 @@ public class CryptoPriceService: ObservableObject {
         return price
     }
 
-    func fetchCoingeckoId(chain: Chain, address: String) async throws -> String {
+    func fetchCoingeckoId(chain: Chain, addresses: [String]) async throws -> [String?] {
         struct Response: Codable {
             struct Data: Codable {
                 struct Attributes: Codable {
-                    let coingecko_coin_id: String
+                    let coingecko_coin_id: String?
                 }
                 let attributes: Attributes
             }
-            let data: Data
+            let data: [Data]
         }
-        let response: Response = try await Utils.fetchObject(from: Endpoint.fetchTokenInfo(
+        let response: Response = try await Utils.fetchObject(from: Endpoint.fetchTokensInfo(
             network: chain.coingeckoId,
-            address: address)
+            addresses: addresses)
         )
-        return response.data.attributes.coingecko_coin_id
+        return response.data.map { $0.attributes.coingecko_coin_id }
     }
 
     private func getAllCryptoPricesCoinGecko() async -> CryptoPrice? {

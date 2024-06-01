@@ -65,6 +65,7 @@ class CoinSelectionViewModel: ObservableObject {
             let removedCoins = vault.coins.filter { coin in
                 !selection.contains(where: { $0.ticker == coin.ticker && $0.chain == coin.chain})
             }
+
             for coin in removedCoins {
                 if let idx = vault.coins.firstIndex(where: { $0.ticker == coin.ticker && $0.chain == coin.chain }) {
                     vault.coins.remove(at: idx)
@@ -73,11 +74,17 @@ class CoinSelectionViewModel: ObservableObject {
                 try await Storage.shared.delete(coin)
                 
             }
+
+            var newCoins: [Coin] = []
+
             for asset in selection {
                 if !vault.coins.contains(where: { $0.ticker == asset.ticker && $0.chain == asset.chain}) {
-                    await addToChain(asset: asset, to: vault)
+                    newCoins.append(asset)
                 }
             }
+
+            try await addToChain(assets: newCoins, to: vault)
+
         } catch {
             print("fail to save asset,\(error)")
         }
@@ -189,22 +196,37 @@ class CoinSelectionViewModel: ObservableObject {
         }
         return nil
     }
-    private func addToChain(asset: Coin, to vault: Vault) async {
-        do{
-            if let newCoin = getNewCoin(asset: asset, vault: vault) {
-                // Fetch priceProviderId for EVM tokens
-                if !newCoin.isNativeToken, asset.chainType == .EVM {
-                    newCoin.priceProviderId = try await priceService.fetchCoingeckoId(
-                        chain: asset.chain,
-                        address: asset.contractAddress
-                    )
-                }
-                // Save the new coin first
-                try await Storage.shared.save(newCoin)
-                vault.coins.append(newCoin)
+
+    private func addToChain(assets: [Coin], to vault: Vault) async throws {
+        if let coin = assets.first, coin.chainType == .EVM {
+            let addresses = assets.map { $0.contractAddress }
+            let coingekoIDs = try await priceService.fetchCoingeckoId(chain: coin.chain, addresses: addresses)
+
+            guard coingekoIDs.count == assets.count else {
+                return
             }
-        } catch {
-            print("failed to save coin to model context \(error.localizedDescription)")
+
+            for (index, asset) in assets.enumerated() {
+                if let priceProviderId = coingekoIDs[index] {
+                    try await addToChain(asset: asset, to: vault, priceProviderId: coingekoIDs[index])
+                }
+            }
+        } else {
+            for asset in assets {
+                try await addToChain(asset: asset, to: vault, priceProviderId: nil)
+            }
         }
+    }
+
+    private func addToChain(asset: Coin, to vault: Vault, priceProviderId: String?) async throws {
+        guard let newCoin = getNewCoin(asset: asset, vault: vault) else {
+            return
+        }
+        if let priceProviderId {
+            newCoin.priceProviderId = priceProviderId
+        }
+        // Save the new coin first
+        try await Storage.shared.save(newCoin)
+        vault.coins.append(newCoin)
     }
 }
