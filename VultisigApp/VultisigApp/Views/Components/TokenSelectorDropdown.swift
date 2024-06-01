@@ -58,10 +58,18 @@ struct TokenSelectorDropdown: View {
     }
     
     var image: some View {
-        Image(selected.logo)
-            .resizable()
-            .frame(width: 32, height: 32)
-            .cornerRadius(100)
+        ZStack {
+            ImageView(selected.logo, size: CGSize(width: 32, height: 32))
+                .cornerRadius(100)
+
+            if let chainIcon = selected.tokenChainLogo {
+                Image(chainIcon)
+                    .resizable()
+                    .frame(width: 16, height: 16)
+                    .cornerRadius(16)
+                    .offset(x: 12, y: 12)
+            }
+        }
     }
     
     var cells: some View {
@@ -97,9 +105,7 @@ struct TokenSelectorDropdown: View {
     private func getCell(for coin: Coin) -> some View {
         HStack(spacing: 12) {
             ZStack {
-                Image(coin.logo)
-                    .resizable()
-                    .frame(width: 32, height: 32)
+                ImageView(coin.logo, size: CGSize(width: 32, height: 32))
                     .cornerRadius(50)
 
                 if let chainIcon = coin.tokenChainLogo {

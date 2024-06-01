@@ -46,4 +46,17 @@ struct OneInchService {
         let response = try JSONDecoder().decode(OneInchQuote.self, from: data)
         return response
     }
+
+    func fetchTokens(chain: Int) async throws -> [OneInchToken] {
+        let response: OneInchTokensResponse = try await Utils.fetchObject(from: Endpoint.fetchTokens(chain: chain))
+        let tokens = Array(arrayLiteral: response.tokens.values).reduce([], +)
+        return tokens
+    }
+}
+
+private extension OneInchService {
+
+    struct OneInchTokensResponse: Codable {
+        let tokens: [String: OneInchToken]
+    }
 }

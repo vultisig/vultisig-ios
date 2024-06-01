@@ -11,14 +11,22 @@ struct TokenSelectionView: View {
     @Binding var showTokenSelectionSheet: Bool
     let vault: Vault
     let group: GroupedChain
-    let tokens: [Coin]
-    
-    @EnvironmentObject var viewModel: TokenSelectionViewModel
-    
+
+    @StateObject var tokenViewModel = TokenSelectionViewModel()
+    @EnvironmentObject var coinViewModel: CoinSelectionViewModel
+
     var body: some View {
         ZStack {
             Background()
             view
+
+            if let error = tokenViewModel.error {
+                errorView(error: error)
+            }
+
+            if tokenViewModel.isLoading {
+                Loader()
+            }
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("chooseTokens", comment: "Choose Tokens"))
@@ -28,31 +36,53 @@ struct TokenSelectionView: View {
                 NavigationBackSheetButton(showSheet: $showTokenSelectionSheet)
             }
         }
+        .task {
+            await tokenViewModel.loadData(chain: group.chain)
+        }
         .onDisappear {
             saveAssets()
         }
+        .searchable(text: $tokenViewModel.searchText)
     }
     
     var view: some View {
         ScrollView {
-            VStack(spacing: 12) {
-                ForEach(tokens, id: \.self) { token in
-                    TokenSelectionCell(asset: token)
+            LazyVStack(spacing: 12) {
+                ForEach(tokenViewModel.filteredTokens, id: \.self) { token in
+                    TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel)
                 }
             }
-            .padding(.top, 30)
         }
         .padding(.horizontal, 16)
     }
     
+    func errorView(error: Error) -> some View {
+        return VStack(spacing: 16) {
+            Text(error.localizedDescription)
+                .multilineTextAlignment(.center)
+                .font(.body16Menlo)
+                .foregroundColor(.neutral0)
+                .padding(.horizontal, 16)
+
+            if tokenViewModel.showRetry {
+                Button {
+                    Task { await tokenViewModel.loadData(chain: group.chain) }
+                } label: {
+                    FilledButton(title: "Retry")
+                }
+                .padding(.horizontal, 40)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    var address: String {
+        return vault.coins.first(where: { $0.chain == group.chain })?.address ?? .empty
+    }
+
     private func saveAssets() {
-        Task{
-            await   viewModel.saveAssets(for: vault)
+        Task {
+            await coinViewModel.saveAssets(for: vault)
         }
     }
-}
-
-#Preview {
-    TokenSelectionView(showTokenSelectionSheet: .constant(true), vault: Vault.example, group: GroupedChain.example, tokens: [])
-        .environmentObject(TokenSelectionViewModel())
 }

@@ -16,7 +16,7 @@ struct VaultDetailView: View {
     @EnvironmentObject var appState: ApplicationState
     @EnvironmentObject var viewModel: VaultDetailViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
-    @EnvironmentObject var tokenSelectionViewModel: TokenSelectionViewModel
+    @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
     
     @State var showSheet = false
     @State var isLoading = true
