@@ -198,7 +198,7 @@ class CoinSelectionViewModel: ObservableObject {
     }
 
     private func addToChain(assets: [Coin], to vault: Vault) async throws {
-        if let coin = assets.first, coin.chainType == .EVM {
+        if let coin = assets.first, coin.chainType == .EVM, !coin.isNativeToken {
             let addresses = assets.map { $0.contractAddress }
             let coingekoIDs = try await priceService.fetchCoingeckoId(chain: coin.chain, addresses: addresses)
 
@@ -208,7 +208,7 @@ class CoinSelectionViewModel: ObservableObject {
 
             for (index, asset) in assets.enumerated() {
                 if let priceProviderId = coingekoIDs[index] {
-                    try await addToChain(asset: asset, to: vault, priceProviderId: coingekoIDs[index])
+                    try await addToChain(asset: asset, to: vault, priceProviderId: priceProviderId)
                 }
             }
         } else {
