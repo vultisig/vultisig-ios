@@ -89,8 +89,7 @@ class TokensStore {
         
         Coin(chain: Chain.polkadot, ticker: "DOT", logo: "dot", address: "", priceRate: 0.0,  decimals: 10, hexPublicKey: "",  priceProviderId: "polkadot", contractAddress: "", rawBalance: "0", isNativeToken: true), //find the default fee per unit
         
-        
-        Coin(chain: Chain.zksync, ticker: "ETH", logo: "eth", address: "", priceRate: 0.0,  decimals: 18, hexPublicKey: "",  priceProviderId: "ethereum", contractAddress: "", rawBalance: "0", isNativeToken: true),
+        Coin(chain: Chain.zksync, ticker: "ETH", logo: "zsync_era", address: "", priceRate: 0.0,  decimals: 18, hexPublicKey: "",  priceProviderId: "ethereum", contractAddress: "", rawBalance: "0", isNativeToken: true),
         
     ]
     

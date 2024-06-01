@@ -203,7 +203,7 @@ class Endpoint {
         case "DOT":
             return "https://polkadot.subscan.io/extrinsic/\(txid)"
         case "ZK":
-            return ""
+            return "https://explorer.zksync.io/tx/\(txid)"
         default:
             return ""
         }
@@ -254,7 +254,7 @@ class Endpoint {
         case "DOT":
             return "https://polkadot.subscan.io/account/\(address)"
         case "ZK":
-            return ""
+            return "https://explorer.zksync.io/address/\(address)"
         default:
             return nil
         }
@@ -305,7 +305,7 @@ class Endpoint {
         case .polkadot:
             return "https://polkadot.subscan.io/account/\(address)"
         case .zksync:
-            return ""
+            return "https://explorer.zksync.io/address/\(address)"
         case .none:
             return nil
         }
