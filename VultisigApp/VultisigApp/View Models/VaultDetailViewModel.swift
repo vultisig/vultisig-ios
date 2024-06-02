@@ -12,6 +12,7 @@ import SwiftUI
 class VaultDetailViewModel: ObservableObject {
     @Published var coinsGroupedByChains = [GroupedChain]()
     @Published var selectedGroup: GroupedChain? = nil
+    private let semaphore = DispatchSemaphore(value: 1)
     
     let defaultChains = [Chain.bitcoin, Chain.ethereum, Chain.thorChain, Chain.solana]
     let balanceService = BalanceService.shared
@@ -31,9 +32,17 @@ class VaultDetailViewModel: ObservableObject {
             coinsGroupedByChains[index].setOrder(index)
         }
     }
-    func setDefaultCoins(for vault: Vault){
+    func setDefaultCoinsOnce(for vault: Vault) {
+        semaphore.wait()
+        Task{
+            await setDefaultCoins(for: vault)
+            semaphore.signal()
+        }
+    }
+    func setDefaultCoins(for vault: Vault) async {
         // add bitcoin when the vault doesn't have any coins in it
-        if vault.coins.count == 0{
+        if vault.coins.count == 0 {
+            print("set default coins for vault:\(vault.name)")
             for chain in defaultChains {
                 var result: Result<Coin,Error>
                 switch chain {
@@ -53,14 +62,13 @@ class VaultDetailViewModel: ObservableObject {
                 
                 switch result {
                 case .success(let btc):
-                    Task{
-                        do{
-                            try await Storage.shared.save(btc)
-                            vault.coins.append(btc)
-                        }catch{
-                            print("fail to save coin: \(error)")
-                        }
+                    do{
+                        try await Storage.shared.save(btc)
+                        vault.coins.append(btc)
+                    }catch{
+                        print("fail to save coin: \(error)")
                     }
+                    
                 case .failure(let error):
                     print("error: \(error)")
                 }

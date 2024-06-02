@@ -137,12 +137,12 @@ struct EditVaultView: View {
     
     private func delete() {
         modelContext.delete(vault)
-        
         do {
             try modelContext.save()
         } catch {
             print("Error: \(error)")
         }
+        ApplicationState.shared.currentVault = nil
         navigateBackToHome = true
     }
 }
