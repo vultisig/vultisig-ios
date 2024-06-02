@@ -207,3 +207,6 @@
 "noCameraPermissionError" = "Camera permission denied.\n\nPlease enable it in the Settings.";
 "openSettings" = "Open Settings";
 "fetchingVaultDetails" = "Fetching Vault Details";
+"vaultNameUnique" = "Vault's name needs to be unique.";
+"alreadyExists" = "already exists";
+"dismiss" = "Dismiss";

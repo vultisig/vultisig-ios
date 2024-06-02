@@ -173,7 +173,6 @@ struct VaultDetailView: View {
     }
     
     private func setData() {
-//        homeViewModel.setSelectedVault(vault)
         viewModel.fetchCoins(for: vault)
         viewModel.setOrder()
         viewModel.updateBalance()
