@@ -82,6 +82,8 @@ class ImportVaultViewModel: ObservableObject {
                 isLinkActive = false
                 return
             }
+            VaultDefaultCoinService(context: modelContext)
+                .setDefaultCoinsOnce(vault: backupVault.vault)
             modelContext.insert(backupVault.vault)
             isLinkActive = true
         }  catch {
@@ -97,6 +99,8 @@ class ImportVaultViewModel: ObservableObject {
                     isLinkActive = false
                     return
                 }
+                VaultDefaultCoinService(context: modelContext)
+                    .setDefaultCoinsOnce(vault: vault)
                 modelContext.insert(vault)
                 isLinkActive = true
             } catch {

@@ -110,6 +110,9 @@ class KeygenViewModel: ObservableObject {
             }
             switch self.tssType {
             case .Keygen:
+                // make sure the newly created vault has default coins
+                VaultDefaultCoinService(context: context)
+                    .setDefaultCoinsOnce(vault: self.vault)
                 context.insert(self.vault)
             case .Reshare:
                 // if local party is not in the old committee , then he is the new guy , need to add the vault
