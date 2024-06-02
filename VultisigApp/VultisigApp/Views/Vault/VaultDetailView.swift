@@ -34,9 +34,10 @@ struct VaultDetailView: View {
         .onAppear {
             onAppear()
         }
-        .onChange(of: vault) {
+        .onChange(of: homeViewModel.selectedVault) {
+            viewModel.setDefaultCoins(for: vault)
             setData()
-            appState.currentVault = vault
+            appState.currentVault = homeViewModel.selectedVault
         }
         .onChange(of: vault.coins) {
             setData()
@@ -164,12 +165,6 @@ struct VaultDetailView: View {
             isLoading = false
         }
         
-        Task {
-            setData()
-            appState.currentVault = vault
-            try await Task.sleep(for: .seconds(1))
-            viewModel.setDefaultCoins(for: vault)
-        }
     }
     
     private func setData() {

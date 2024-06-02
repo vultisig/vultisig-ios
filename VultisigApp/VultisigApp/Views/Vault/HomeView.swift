@@ -133,9 +133,9 @@ struct HomeView: View {
             viewModel.setSelectedVault(vault)
             selectedVault = nil
             return
+        } else {   
+            viewModel.loadSelectedVault(for: vaults)
         }
-        
-        viewModel.loadSelectedVault(for: vaults)
         presetValuesForDeeplink()
     }
     
