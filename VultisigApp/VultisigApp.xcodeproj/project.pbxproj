@@ -196,12 +196,10 @@
 		A6F2C5452B9FE3A00095C8E3 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */; };
 		A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5462B9FFC560095C8E3 /* NavigationBackSheetButton.swift */; };
 		A6F2C5492BA001460095C8E3 /* ChainSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5482BA001460095C8E3 /* ChainSelectionView.swift */; };
-		A6F2C54B2BA003E10095C8E3 /* TokenSelectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C54A2BA003E10095C8E3 /* TokenSelectionCell.swift */; };
-		A6F2C54F2BA009420095C8E3 /* TokenSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C54E2BA009420095C8E3 /* TokenSelectionViewModel.swift */; };
-		A6F42CC22C09175B00D0431C /* GeneralCodeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F42CC12C09175B00D0431C /* GeneralCodeScannerView.swift */; };
-		A6F42CC42C09598900D0431C /* VaultDetailScanButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F42CC32C09598900D0431C /* VaultDetailScanButton.swift */; };
 		A6F2C54B2BA003E10095C8E3 /* CoinSelectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C54A2BA003E10095C8E3 /* CoinSelectionCell.swift */; };
 		A6F2C54F2BA009420095C8E3 /* CoinSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C54E2BA009420095C8E3 /* CoinSelectionViewModel.swift */; };
+		A6F42CC22C09175B00D0431C /* GeneralCodeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F42CC12C09175B00D0431C /* GeneralCodeScannerView.swift */; };
+		A6F42CC42C09598900D0431C /* VaultDetailScanButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F42CC32C09598900D0431C /* VaultDetailScanButton.swift */; };
 		A6F9E7A52BED6BC800BA36E1 /* SetupVaultTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9E7A42BED6BC800BA36E1 /* SetupVaultTabView.swift */; };
 		A6F9E7A72BED6BD100BA36E1 /* SetupVaultTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9E7A62BED6BD100BA36E1 /* SetupVaultTab.swift */; };
 		A6F9E7A92BED6BDB00BA36E1 /* SetupVaultImageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9E7A82BED6BDB00BA36E1 /* SetupVaultImageManager.swift */; };
@@ -308,6 +306,7 @@
 		DEBF93972B8D5FEF002868CD /* KeysignPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */; };
 		DED05FE42BBB824D00E0496C /* ThorchainAccountValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED05FE32BBB824D00E0496C /* ThorchainAccountValue.swift */; };
 		DED05FE62BBB82F300E0496C /* CosmosAccountsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED05FE52BBB82F300E0496C /* CosmosAccountsResponse.swift */; };
+		DEE2D8722C0D37A900D2F4C3 /* VaultDefaultCoinService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */; };
 		DEEADCF72B916676007978DE /* Solana.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEADCF62B916676007978DE /* Solana.swift */; };
 		DEEDAEE12B8AF7EF005170E8 /* evm.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEDAEE02B8AF7EF005170E8 /* evm.swift */; };
 		DEEDAEE32B8AF8B1005170E8 /* publickey.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEDAEE22B8AF8B1005170E8 /* publickey.swift */; };
@@ -542,12 +541,10 @@
 		A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		A6F2C5462B9FFC560095C8E3 /* NavigationBackSheetButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBackSheetButton.swift; sourceTree = "<group>"; };
 		A6F2C5482BA001460095C8E3 /* ChainSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainSelectionView.swift; sourceTree = "<group>"; };
-		A6F2C54A2BA003E10095C8E3 /* TokenSelectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionCell.swift; sourceTree = "<group>"; };
-		A6F2C54E2BA009420095C8E3 /* TokenSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionViewModel.swift; sourceTree = "<group>"; };
-		A6F42CC12C09175B00D0431C /* GeneralCodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralCodeScannerView.swift; sourceTree = "<group>"; };
-		A6F42CC32C09598900D0431C /* VaultDetailScanButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailScanButton.swift; sourceTree = "<group>"; };
 		A6F2C54A2BA003E10095C8E3 /* CoinSelectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinSelectionCell.swift; sourceTree = "<group>"; };
 		A6F2C54E2BA009420095C8E3 /* CoinSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinSelectionViewModel.swift; sourceTree = "<group>"; };
+		A6F42CC12C09175B00D0431C /* GeneralCodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralCodeScannerView.swift; sourceTree = "<group>"; };
+		A6F42CC32C09598900D0431C /* VaultDetailScanButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailScanButton.swift; sourceTree = "<group>"; };
 		A6F9E7A42BED6BC800BA36E1 /* SetupVaultTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultTabView.swift; sourceTree = "<group>"; };
 		A6F9E7A62BED6BD100BA36E1 /* SetupVaultTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultTab.swift; sourceTree = "<group>"; };
 		A6F9E7A82BED6BDB00BA36E1 /* SetupVaultImageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupVaultImageManager.swift; sourceTree = "<group>"; };
@@ -655,6 +652,7 @@
 		DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignPayload.swift; sourceTree = "<group>"; };
 		DED05FE32BBB824D00E0496C /* ThorchainAccountValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainAccountValue.swift; sourceTree = "<group>"; };
 		DED05FE52BBB82F300E0496C /* CosmosAccountsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosAccountsResponse.swift; sourceTree = "<group>"; };
+		DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDefaultCoinService.swift; sourceTree = "<group>"; };
 		DEEADCF62B916676007978DE /* Solana.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Solana.swift; sourceTree = "<group>"; };
 		DEEDAEE02B8AF7EF005170E8 /* evm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = evm.swift; sourceTree = "<group>"; };
 		DEEDAEE22B8AF8B1005170E8 /* publickey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = publickey.swift; sourceTree = "<group>"; };
@@ -1091,6 +1089,7 @@
 				A6BEF5BF2BE2B11C007A84A1 /* DeeplinkViewModel.swift */,
 				B5A97CEE2BF41779007574D7 /* TransactionMemoViewModel.swift */,
 				B5A97CF02BF41903007574D7 /* TransactionMemoVerifyViewModel.swift */,
+				DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */,
 			);
 			path = "View Models";
 			sourceTree = "<group>";
@@ -1833,6 +1832,7 @@
 				DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */,
 				46B60BC02BBB20130043EBBA /* RpcEvmService.swift in Sources */,
 				B53D8CC82BF7F21500B795D3 /* TransactionMemoBond.swift in Sources */,
+				DEE2D8722C0D37A900D2F4C3 /* VaultDefaultCoinService.swift in Sources */,
 				DE9EB0EE2BA2CF49001747D9 /* KeygenMessage.swift in Sources */,
 				461AD1B72BC6706500959278 /* VaultPairDetailView.swift in Sources */,
 				A6FB96B32BD0CDA900D56F68 /* NavigationEditButton.swift in Sources */,
