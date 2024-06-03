@@ -97,6 +97,6 @@ final class Vault: ObservableObject, Codable {
             searchName.isEmpty || vault.name == searchName
         }
     }
-    
+
     static let example = Vault(name: "Bitcoin", signers: [], pubKeyECDSA: "ECDSAKey", pubKeyEdDSA: "EdDSAKey", keyshares: [], localPartyID: "partyID", hexChainCode: "hexCode", resharePrefix: nil)
 }
