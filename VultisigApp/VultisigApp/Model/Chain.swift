@@ -264,7 +264,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return "bsc"
         case .cronosChain:
             return "cro"
-        case .solana, .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .sui, .polkadot:
+        case .solana, .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .sui, .polkadot, .zksync:
             return .empty
         }
     }
