@@ -51,7 +51,7 @@ class BalanceService {
             case .sui:
                 let (rawBalance,priceRate) = try await sui.getBalance(coin: coin)
                 try await updateCoin(coin, rawBalance: rawBalance, priceRate: priceRate)
-            case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain:
+            case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain, .zksync:
                 let service = try EvmServiceFactory.getService(forChain: coin)
                 let (rawBalance, priceRate) = try await service.getBalance(coin: coin)
                 try await updateCoin(coin, rawBalance: rawBalance, priceRate: priceRate)

@@ -86,6 +86,10 @@ class Endpoint {
     
     static let blastServiceRpcService = "https://rpc.ankr.com/blast"
     
+    static let zksyncServiceRpcService = "https://mainnet.era.zksync.io"
+    
+
+    
     static let ethServiceRpcService = "https://ethereum-rpc.publicnode.com"
     
     static let solanaServiceRpc = "https://api.mainnet-beta.solana.com"
@@ -207,6 +211,8 @@ class Endpoint {
             return "https://suiscan.xyz/mainnet/tx/\(txid)"
         case "DOT":
             return "https://polkadot.subscan.io/extrinsic/\(txid)"
+        case "ZK":
+            return "https://explorer.zksync.io/tx/\(txid)"
         default:
             return ""
         }
@@ -256,6 +262,8 @@ class Endpoint {
             return "https://suiscan.xyz/mainnet/address/\(address)"
         case "DOT":
             return "https://polkadot.subscan.io/account/\(address)"
+        case "ZK":
+            return "https://explorer.zksync.io/address/\(address)"
         default:
             return nil
         }
@@ -305,6 +313,8 @@ class Endpoint {
             return "https://suiscan.xyz/mainnet/address/\(address)"
         case .polkadot:
             return "https://polkadot.subscan.io/account/\(address)"
+        case .zksync:
+            return "https://explorer.zksync.io/address/\(address)"
         case .none:
             return nil
         }

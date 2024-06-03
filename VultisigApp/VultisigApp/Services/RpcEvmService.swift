@@ -42,6 +42,18 @@ class RpcEvmService: RpcService {
         return (gasPriceValue, priorityFeeValue, Int64(try await nonce))
     }
     
+    func getGasInfoZk(fromAddress: String, toAddress: String, memo: String = "0xffffffff") async throws -> (gasLimit: BigInt, gasPerPubdataLimit: BigInt, maxFeePerGas: BigInt, maxPriorityFeePerGas: BigInt, nonce: Int64) {
+        let memoDataHex = memo.data(using: .utf8)?.map { byte in String(format: "%02x", byte) }.joined() ?? ""
+        let data = "0x" + memoDataHex
+        
+        async let nonce = fetchNonce(address: fromAddress)
+        async let feeEstimate = zksEstimateFee(fromAddress: fromAddress, toAddress: toAddress, data: data)
+
+        let feeEstimateValue = try await feeEstimate
+
+        return (feeEstimateValue.gasLimit, feeEstimateValue.gasPerPubdataLimit, feeEstimateValue.maxFeePerGas, feeEstimateValue.maxPriorityFeePerGas, Int64(try await nonce))
+    }
+    
     func broadcastTransaction(hex: String) async throws -> String {
         let hexWithPrefix = hex.hasPrefix("0x") ? hex : "0x\(hex)"
         return try await strRpcCall(method: "eth_sendRawTransaction", params: [hexWithPrefix])
@@ -137,4 +149,23 @@ class RpcEvmService: RpcService {
         return data
     }
     
+    private func zksEstimateFee(fromAddress: String, toAddress: String, data: String) async throws -> (gasLimit: BigInt, gasPerPubdataLimit: BigInt, maxFeePerGas: BigInt, maxPriorityFeePerGas: BigInt) {
+        return try await sendRPCRequest(method: "zks_estimateFee", params: [["from": fromAddress, "to": toAddress, "data": data]]) { result in
+            guard let response = result as? [String: Any],
+                  let gasLimitHex = response["gas_limit"] as? String,
+                  let gasPerPubdataLimitHex = response["gas_per_pubdata_limit"] as? String,
+                  let maxFeePerGasHex = response["max_fee_per_gas"] as? String,
+                  let maxPriorityFeePerGasHex = response["max_priority_fee_per_gas"] as? String
+            else {
+                throw RpcEvmServiceError.rpcError(code: -1, message: "Invalid response from zks_estimateFee")
+            }
+            
+            let gasLimit = BigInt(gasLimitHex.stripHexPrefix(), radix: 16) ?? BigInt(0)
+            let gasPerPubdataLimit = BigInt(gasPerPubdataLimitHex.stripHexPrefix(), radix: 16) ?? BigInt(0)
+            let maxFeePerGas = BigInt(maxFeePerGasHex.stripHexPrefix(), radix: 16) ?? BigInt(0)
+            let maxPriorityFeePerGas = BigInt(maxPriorityFeePerGasHex.stripHexPrefix(), radix: 16) ?? BigInt(0)
+            
+            return (gasLimit, gasPerPubdataLimit, maxFeePerGas, maxPriorityFeePerGas)
+        }
+    }
 }
