@@ -16,9 +16,7 @@ struct CoinCell: View {
     }
     
     var logo: some View {
-        Image(coin.logo)
-            .resizable()
-            .frame(width: 32, height: 32)
+        ImageView(coin.logo, size: CGSize(width: 32, height: 32))
             .cornerRadius(50)
     }
     

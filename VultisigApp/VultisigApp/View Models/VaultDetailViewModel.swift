@@ -12,12 +12,8 @@ import SwiftUI
 class VaultDetailViewModel: ObservableObject {
     @Published var coinsGroupedByChains = [GroupedChain]()
     @Published var selectedGroup: GroupedChain? = nil
-    
-    let defaultChains = [Chain.bitcoin, Chain.ethereum, Chain.thorChain, Chain.solana]
     let balanceService = BalanceService.shared
-    
     private var updateBalanceTask: Task<Void, Never>?
-    
     func updateBalance() {
         updateBalanceTask?.cancel()
         updateBalanceTask = Task {
@@ -31,55 +27,19 @@ class VaultDetailViewModel: ObservableObject {
             coinsGroupedByChains[index].setOrder(index)
         }
     }
-    func setDefaultCoins(for vault: Vault){
-        // add bitcoin when the vault doesn't have any coins in it
-        if vault.coins.count == 0{
-            for chain in defaultChains {
-                var result: Result<Coin,Error>
-                switch chain {
-                case .bscChain:
-                    result = EVMHelper(coinType: .smartChain).getCoin(hexPubKey: vault.pubKeyEdDSA, hexChainCode: vault.hexChainCode)
-                case .bitcoin:
-                    result = UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode).getCoin()
-                case .ethereum:
-                    result = EVMHelper(coinType: .ethereum).getCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
-                case .thorChain:
-                    result = THORChainHelper.getRUNECoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
-                case .solana:
-                    result = SolanaHelper.getSolana(hexPubKey: vault.pubKeyEdDSA, hexChainCode: vault.hexChainCode)
-                default:
-                    continue
-                }
-                
-                switch result {
-                case .success(let btc):
-                    Task{
-                        do{
-                            try await Storage.shared.save(btc)
-                            vault.coins.append(btc)
-                        }catch{
-                            print("fail to save coin: \(error)")
-                        }
-                    }
-                case .failure(let error):
-                    print("error: \(error)")
-                }
-                
-            }
-        }
-    }
+    
     
     func fetchCoins(for vault: Vault) {
         categorizeCoins(vault: vault)
     }
     
-    func getGroupAsync(_ viewModel: TokenSelectionViewModel) {
+    func getGroupAsync(_ viewModel: CoinSelectionViewModel) {
         Task {
             selectedGroup = await getGroup(viewModel)
         }
     }
     
-    private func getGroup(_ viewModel: TokenSelectionViewModel) async -> GroupedChain? {
+    private func getGroup(_ viewModel: CoinSelectionViewModel) async -> GroupedChain? {
         for group in coinsGroupedByChains {
             let actions = await viewModel.actionResolver.resolveActions(for: group.chain)
             

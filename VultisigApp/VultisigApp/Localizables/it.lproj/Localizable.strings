@@ -185,3 +185,7 @@
 "polkadotExistentialDepositError" = "Se un account scende sotto 1 DOT (Deposito Esistenziale), l'account viene eliminato (disattivato) e i fondi rimanenti vengono distrutti. L'indirizzo può essere riattivato con un nuovo deposito superiore al deposito esistenziale in qualsiasi momento. Questo non ripristinerà i fondi distrutti.";
 "noCameraPermissionError" = "Autorizzazione della fotocamera negata.\n\nPer favore, abilitala nelle Impostazioni.";
 "openSettings" = "Apri Impostazioni";
+"fetchingVaultDetails" = "Recupero dei dettagli del caveau";
+"vaultNameUnique" = "Il nome del caveau deve essere univoco.";
+"alreadyExists" = "esiste già";
+"dismiss" = "Ignora";

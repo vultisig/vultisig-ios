@@ -6,12 +6,18 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct NewWalletNameView: View {
     let tssType: TssType
     let vault: Vault?
     let selectedTab: SetupVaultState
+    
     @State var name = ""
+    @State var isLinkActive = false
+    @State var showAlert = false
+    
+    @Query var vaults: [Vault]
     
     var body: some View {
         ZStack {
@@ -33,6 +39,9 @@ struct NewWalletNameView: View {
             content
             Spacer()
             button
+        }
+        .alert(isPresented: $showAlert) {
+            alert
         }
     }
     
@@ -56,16 +65,50 @@ struct NewWalletNameView: View {
             .padding(12)
             .background(Color.blue600)
             .cornerRadius(12)
+            .colorScheme(.dark)
     }
     
     var button: some View {
-        NavigationLink {
-            let vaultName = name.isEmpty ? "Main Vault" : name
-            PeerDiscoveryView(tssType: tssType, vault: Vault(name: vaultName), selectedTab: selectedTab)
+        Button {
+            verifyVault()
         } label: {
             FilledButton(title: "continue")
         }
         .padding(40)
+        .navigationDestination(isPresented: $isLinkActive) {
+            let vaultName = name.isEmpty ? "Main Vault" : name
+            PeerDiscoveryView(tssType: tssType, vault: Vault(name: vaultName), selectedTab: selectedTab)
+        }
+    }
+    
+    var alert: Alert {
+        Alert(
+            title: Text(getVaultName() + NSLocalizedString("alreadyExists", comment: "")),
+            message: Text(NSLocalizedString("vaultNameUnique", comment: "")),
+            dismissButton: .default(Text(NSLocalizedString("dismiss", comment: "")))
+        )
+    }
+    
+    private func verifyVault() {
+        for vault in vaults {
+            if name.isEmpty && vault.name == "Main Vault" {
+                showAlert = true
+                return
+            } else if vault.name == name {
+                showAlert = true
+                return
+            }
+        }
+        
+        isLinkActive = true
+    }
+    
+    private func getVaultName() -> String {
+        if name.isEmpty {
+            return "Main Vault "
+        } else {
+            return name + " "
+        }
     }
 }
 

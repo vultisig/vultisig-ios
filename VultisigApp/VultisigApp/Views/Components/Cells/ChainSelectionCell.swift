@@ -13,7 +13,7 @@ struct ChainSelectionCell: View {
     
     @State var isSelected = false
     @State var selectedTokensCount = 0
-    @EnvironmentObject var tokenSelectionViewModel: TokenSelectionViewModel
+    @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
     
     var body: some View {
         content
@@ -51,7 +51,7 @@ struct ChainSelectionCell: View {
     var cell: some View {
         let nativeAsset = assets.first
         
-        return TokenSelectionCell(asset: nativeAsset ?? Coin.example)
+        return CoinSelectionCell(asset: nativeAsset ?? Coin.example)
             .redacted(reason: nativeAsset==nil ? .placeholder : [])
     }
     
@@ -84,5 +84,5 @@ struct ChainSelectionCell: View {
         Background()
         ChainSelectionCell(assets: [], showAlert: .constant(false))
     }
-    .environmentObject(TokenSelectionViewModel())
+    .environmentObject(CoinSelectionViewModel())
 }

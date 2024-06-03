@@ -62,6 +62,10 @@ class Endpoint {
         return "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/swap?src=\(source)&dst=\(destination)&amount=\(amount)&from=\(from)&slippage=\(slippage)&disableEstimate=true&includeGas=true\(isAffiliateParams)".asUrl
     }
 
+    static func fetchTokens(chain: Int) -> String {
+        return "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/tokens"
+    }
+
     static func fetchCoinPaprikaQuotes(_ quotes: String) -> String {
         "https://api.coinpaprika.com/v1/tickers?quotes=\(quotes)"
     }
@@ -123,7 +127,12 @@ class Endpoint {
     static func fetchCryptoPrices(coin: String, fiat: String) -> String {
         "\(vultisigApiProxy)/coingeicko/api/v3/simple/price?ids=\(coin)&vs_currencies=\(fiat)"
     }
-    
+
+    static func fetchTokensInfo(network: String, addresses: [String]) -> String {
+        let addresses = addresses.joined(separator: ",")
+        return "\(vultisigApiProxy)/coingeicko/api/v3/onchain/networks/\(network)/tokens/multi/\(addresses)"
+    }
+
     static func fetchBitcoinTransactions(_ userAddress: String) -> String {
         "https://mempool.space/api/address/\(userAddress)/txs"
     }

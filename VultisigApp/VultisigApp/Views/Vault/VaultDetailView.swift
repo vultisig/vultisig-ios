@@ -16,7 +16,7 @@ struct VaultDetailView: View {
     @EnvironmentObject var appState: ApplicationState
     @EnvironmentObject var viewModel: VaultDetailViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
-    @EnvironmentObject var tokenSelectionViewModel: TokenSelectionViewModel
+    @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
     
     @State var showSheet = false
     @State var isLoading = true
@@ -32,11 +32,13 @@ struct VaultDetailView: View {
             scanButton
         }
         .onAppear {
+            appState.currentVault = homeViewModel.selectedVault
             onAppear()
         }
-        .onChange(of: vault) {
+        .onChange(of: homeViewModel.selectedVault?.pubKeyECDSA) {
+            print("on vault Pubkey change \(homeViewModel.selectedVault?.pubKeyECDSA ?? "")")
+            appState.currentVault = homeViewModel.selectedVault
             setData()
-            appState.currentVault = vault
         }
         .onChange(of: vault.coins) {
             setData()
@@ -163,17 +165,10 @@ struct VaultDetailView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             isLoading = false
         }
-        
-        Task {
-            setData()
-            appState.currentVault = vault
-            try await Task.sleep(for: .seconds(1))
-            viewModel.setDefaultCoins(for: vault)
-        }
+        setData()
     }
     
     private func setData() {
-//        homeViewModel.setSelectedVault(vault)
         viewModel.fetchCoins(for: vault)
         viewModel.setOrder()
         viewModel.updateBalance()

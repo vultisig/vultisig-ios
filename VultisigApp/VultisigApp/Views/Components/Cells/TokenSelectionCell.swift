@@ -2,17 +2,21 @@
 //  TokenSelectionCell.swift
 //  VultisigApp
 //
-//  Created by Amol Kumar on 2024-03-11.
+//  Created by Artur Guseinov on 29.05.2024.
 //
 
 import SwiftUI
 
 struct TokenSelectionCell: View {
-    let asset: Coin
+    let chain: Chain
+    let address: String
+    let asset: TokenSelectionViewModel.Token
+    let tokenSelectionViewModel: TokenSelectionViewModel
+
     @State var isSelected = false
-    
-    @EnvironmentObject var tokenSelectionViewModel: TokenSelectionViewModel
-    
+
+    @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
+
     var body: some View {
         HStack(spacing: 16) {
             image
@@ -31,48 +35,70 @@ struct TokenSelectionCell: View {
             handleSelection(newValue)
         }
     }
-    
+
     var image: some View {
-        Image(asset.logo)
-            .resizable()
-            .frame(width: 32, height: 32)
-            .cornerRadius(100)
+        ImageView(
+            source: asset.logo,
+            size: CGSize(width: 32, height: 32)
+        )
     }
-    
+
     var text: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(asset.ticker)
+            Text(asset.symbol)
                 .font(.body16MontserratBold)
                 .foregroundColor(.neutral0)
-            
-			Text(asset.chain.name)
+
+            Text(chain.name)
                 .font(.body12MontserratSemiBold)
                 .foregroundColor(.neutral0)
         }
     }
-    
+
     var toggle: some View {
         Toggle("Is selected", isOn: $isSelected)
             .labelsHidden()
             .scaleEffect(0.6)
     }
-    
+
     private func setData() {
-        if tokenSelectionViewModel.selection.contains(asset) {
+        if coinSelectionViewModel.selection.contains(where: { $0.chain == chain && $0.ticker.lowercased() == asset.symbol.lowercased() }) {
             isSelected = true
         } else {
             isSelected = false
         }
     }
-    
+
     private func handleSelection(_ isSelected: Bool) {
-        tokenSelectionViewModel.handleSelection(isSelected: isSelected, asset: asset)
+        coinSelectionViewModel.handleSelection(isSelected: isSelected, asset: convertToCoin(asset))
+    }
+
+    private func convertToCoin(_ asset: TokenSelectionViewModel.Token) -> Coin {
+        switch asset {
+        case .coin(let coin):
+            return coin
+        case .oneInch(let token):
+            return Coin(
+                chain: chain,
+                ticker: token.symbol,
+                logo: token.logoURI ?? .empty,
+                address: address,
+                priceRate: 0,
+                decimals: token.decimals,
+                hexPublicKey: .empty,
+                priceProviderId: token.symbol.lowercased(),
+                contractAddress: token.address,
+                rawBalance: .zero,
+                isNativeToken: false
+            )
+        }
     }
 }
 
 #Preview {
     ScrollView {
-        TokenSelectionCell(asset: Coin.example)
-            .environmentObject(TokenSelectionViewModel())
+        CoinSelectionCell(asset: Coin.example)
+            .environmentObject(CoinSelectionViewModel())
     }
 }
+

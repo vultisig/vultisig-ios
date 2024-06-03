@@ -2,204 +2,107 @@
 //  TokenSelectionViewModel.swift
 //  VultisigApp
 //
-//  Created by Amol Kumar on 2024-03-11.
+//  Created by Artur Guseinov on 30.05.2024.
 //
 
-import Foundation
-import OSLog
-import WalletCore
+import SwiftUI
 
 @MainActor
 class TokenSelectionViewModel: ObservableObject {
-    
-    @Published var groupedAssets: [String: [Coin]] = [:]
-    @Published var selection = Set<Coin>()
-    
-    let actionResolver = CoinActionResolver()
-    let balanceService = BalanceService.shared
-    
-    private let logger = Logger(subsystem: "assets-list", category: "view")
-    
-    var allCoins: [Coin] {
-        return groupedAssets.values.reduce([], +)
-    }
-    
-    func loadData(coin: Coin) async {
-        await balanceService.updateBalance(for: coin)
-    }
-    
-    func setData(for vault: Vault) {
-        groupAssets()
-        checkSelected(for: vault)
-    }
-    
-    private func groupAssets() {
-        groupedAssets = [:]
-        groupedAssets = Dictionary(grouping: TokensStore.TokenSelectionAssets.sorted(by: { first, second in
-            if first.isNativeToken {
-                return true
+
+    enum Token: Hashable {
+        case coin(Coin)
+        case oneInch(OneInchToken)
+
+        var symbol: String {
+            switch self {
+            case .coin(let coin):
+                return coin.ticker
+            case .oneInch(let coin):
+                return coin.symbol
             }
+        }
+
+        var logo: ImageView.Source {
+            switch self {
+            case .coin(let coin):
+                return .resource(coin.logo)
+            case .oneInch(let token):
+                return .remote(token.logoUrl)
+            }
+        }
+    }
+
+    @Published var searchText: String = .empty
+    @Published var tokens: [Token] = []
+    @Published var isLoading: Bool = false
+    @Published var error: Error?
+
+    private let oneInchservice = OneInchService.shared
+
+    var filteredTokens: [Token] {
+        guard !searchText.isEmpty else { return tokens }
+        return tokens.filter { token in
+            token.symbol.lowercased().contains(searchText.lowercased())
+        }
+    }
+
+    var showRetry: Bool {
+        switch error {
+        case let error as Errors:
+            return error == .networkError
+        default:
             return false
-        })) { $0.chain.name }
+        }
     }
-    
-    private func checkSelected(for vault: Vault) {
-        selection = Set<Coin>()
-        for coin in vault.coins {
-            if let asset = TokensStore.TokenSelectionAssets.first(where: { $0.ticker == coin.ticker && $0.chain == coin.chain}) {
-                selection.insert(asset)
+
+    func loadData(chain: Chain) async {
+        error = nil
+
+        switch chain.chainType {
+        case .EVM:
+            await loadEVMTokens(chain: chain)
+        default:
+            await loadOtherTokens(chain: chain)
+        }
+    }
+}
+
+private extension TokenSelectionViewModel {
+
+    enum Errors: Error, LocalizedError {
+        case noTokens
+        case networkError
+
+        var errorDescription: String? {
+            switch self {
+            case .noTokens:
+                return "Tokens not found"
+            case .networkError:
+                return "Unable to connect.\nPlease check your internet connection and try again"
             }
         }
     }
-    
-    func handleSelection(isSelected: Bool, asset: Coin) {
-        if isSelected {
-            selection.insert(asset)
-        } else {
-            selection.remove(asset)
-        }
-    }
-    
-    func saveAssets(for vault: Vault) async {
+
+    func loadEVMTokens(chain: Chain) async {
+        guard let chainID = chain.chainID else { return }
+        isLoading = true
         do {
-            let removedCoins = vault.coins.filter{coin in
-                !selection.contains(where: { $0.ticker == coin.ticker && $0.chain == coin.chain})
-            }
-            for coin in removedCoins {
-                if let idx = vault.coins.firstIndex(where: {$0.ticker == coin.ticker && $0.chain == coin.chain}) {
-                    vault.coins.remove(at: idx)
-                }
-                
-                try await Storage.shared.delete(coin)
-                
-            }
-            for asset in selection {
-                if !vault.coins.contains(where: { $0.ticker == asset.ticker && $0.chain == asset.chain}) {
-                    await addToChain(asset: asset, to: vault)
-                }
+            let response = try await oneInchservice.fetchTokens(chain: chainID).sorted(by: { $0.name < $1.name })
+            tokens = response.map { .oneInch($0) }
+
+            if tokens.isEmpty {
+                error = Errors.noTokens
             }
         } catch {
-            print("fail to save asset,\(error)")
+            self.error = Errors.networkError
         }
+        isLoading = false
     }
-    private func getNewCoin(asset: Coin, vault:Vault) -> Coin? {
-        switch asset.chain {
-        case .thorChain:
-            let runeCoinResult = THORChainHelper.getRUNECoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
-            switch runeCoinResult {
-            case .success(let coin):
-                coin.priceProviderId = asset.priceProviderId
-                return coin
-            case .failure(let error):
-                logger.info("fail to get thorchain address,error:\(error.localizedDescription)")
-            }
-        case .mayaChain:
-            let cacaoCoinResult = MayaChainHelper.getMayaCoin(hexPubKey: vault.pubKeyECDSA,
-                                                              hexChainCode: vault.hexChainCode,
-                                                              coinTicker: asset.ticker)
-            switch cacaoCoinResult {
-            case .success(let coin):
-                coin.priceProviderId = asset.priceProviderId
-                return coin
-            case .failure(let error):
-                logger.info("fail to get thorchain address,error:\(error.localizedDescription)")
-            }
-        case .ethereum, .arbitrum, .base, .optimism, .polygon, .bscChain, .avalanche, .blast, .cronosChain, .zksync:
-            let evmHelper = EVMHelper.getHelper(coin: asset)
-            
-            let coinResult = evmHelper.getCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
-            switch coinResult {
-            case .success(let coin):
-                let newCoin = Coin(chain: asset.chain,
-                                   ticker: asset.ticker,
-                                   logo: asset.logo,
-                                   address: coin.address,
-                                   priceRate: 0.0,
-                                   decimals: asset.decimals, // Assuming 18 for Ethereum-based tokens
-                                   hexPublicKey: coin.hexPublicKey,
-                                   priceProviderId: asset.priceProviderId ,
-                                   contractAddress: asset.contractAddress , // Assuming asset has a contractAddress field
-                                   rawBalance: "0",
-                                   isNativeToken: asset.isNativeToken
-                                   
-                )
-                return newCoin
-                
-            case .failure(let error):
-                logger.info("fail to get ethereum address, error: \(error.localizedDescription)")
-            }
-            
-        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
-            guard let coinType = CoinType.from(string: asset.chain.name.replacingOccurrences(of: "-", with: "")) else {
-                print("Coin type not found on Wallet Core")
-                return nil
-            }
-            let coinResult = UTXOChainsHelper(coin: coinType, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode).getCoin()
-            switch coinResult {
-            case .success(let btc):
-                btc.priceProviderId = asset.priceProviderId
-                return btc
-            case .failure(let err):
-                logger.info("fail to get bitcoin address,error:\(err.localizedDescription)")
-            }
-        case .solana:
-            let coinResult = SolanaHelper.getSolana(hexPubKey: vault.pubKeyEdDSA, hexChainCode: vault.hexChainCode)
-            switch coinResult {
-            case .success(let sol):
-                sol.priceProviderId = asset.priceProviderId
-                return sol
-            case .failure(let err):
-                logger.info("fail to get solana address,error:\(err.localizedDescription)")
-            }
-        case .sui:
-            let coinResult = SuiHelper.getSui(hexPubKey: vault.pubKeyEdDSA, hexChainCode: vault.hexChainCode)
-            switch coinResult {
-            case .success(let sui):
-                sui.priceProviderId = asset.priceProviderId
-                return sui
-            case .failure(let err):
-                logger.info("fail to get sui address,error:\(err.localizedDescription)")
-            }
-        case .polkadot:
-            let coinResult = PolkadotHelper.getPolkadot(hexPubKey: vault.pubKeyEdDSA, hexChainCode: vault.hexChainCode)
-            switch coinResult {
-            case .success(let dot):
-                dot.priceProviderId = asset.priceProviderId
-                return dot
-            case .failure(let err):
-                logger.info("fail to get polkadot address,error:\(err.localizedDescription)")
-            }
-        case .gaiaChain:
-            let coinResult = ATOMHelper().getATOMCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
-            switch coinResult {
-            case .success(let atom):
-                atom.priceProviderId = asset.priceProviderId
-                return atom
-            case .failure(let err):
-                logger.info("fail to get solana address,error:\(err.localizedDescription)")
-            }
-        case .kujira:
-            let coinResult = KujiraHelper().getCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
-            switch coinResult {
-            case .success(let kuji):
-                kuji.priceProviderId = asset.priceProviderId
-                return kuji
-            case .failure(let err):
-                logger.info("fail to get solana address,error:\(err.localizedDescription)")
-            }
-        }
-        return nil
-    }
-    private func addToChain(asset: Coin, to vault: Vault) async {
-        do{
-            if let newCoin = getNewCoin(asset: asset, vault: vault) {
-                print("coin id:\(newCoin.id)")
-                // save the new coin first
-                try await Storage.shared.save(newCoin)
-                vault.coins.append(newCoin)
-            }
-        } catch {
-            print("failed to save coin to model context \(error.localizedDescription)")
-        }
+
+    func loadOtherTokens(chain: Chain) async {
+        tokens = TokensStore.TokenSelectionAssets
+            .filter { $0.chain == chain && !$0.isNativeToken }
+            .map { .coin($0) }
     }
 }

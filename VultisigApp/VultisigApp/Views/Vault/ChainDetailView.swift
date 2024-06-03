@@ -9,7 +9,7 @@ struct ChainDetailView: View {
     @State var actions: [CoinAction] = []
     @StateObject var sendTx = SendTransaction()
 
-    @EnvironmentObject var viewModel: TokenSelectionViewModel
+    @EnvironmentObject var viewModel: CoinSelectionViewModel
 
     var body: some View {
         ZStack {
@@ -39,8 +39,7 @@ struct ChainDetailView: View {
                 TokenSelectionView(
                     showTokenSelectionSheet: $showSheet,
                     vault: vault,
-                    group: group,
-                    tokens: tokens
+                    group: group
                 )
             }
         })
@@ -139,5 +138,5 @@ struct ChainDetailView: View {
 
 #Preview {
     ChainDetailView(group: GroupedChain.example, vault: Vault.example)
-        .environmentObject(TokenSelectionViewModel())
+        .environmentObject(CoinSelectionViewModel())
 }
