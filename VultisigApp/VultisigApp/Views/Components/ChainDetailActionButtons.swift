@@ -71,7 +71,7 @@ struct ChainDetailActionButtons: View {
         NavigationLink {
             if let coin {
                 SwapCryptoView(coin: coin, coins: viewModel.allCoins(vault: vault), vault: vault)
-            } else if let coin = group.coins.first {
+            } else if let coin = group.coins.first(where: { $0.isNativeToken }) {
                 SwapCryptoView(coin: coin, coins: viewModel.allCoins(vault: vault), vault: vault)
             }
         } label: {
@@ -86,11 +86,11 @@ struct ChainDetailActionButtons: View {
     private func setData() async {
         actions = await viewModel.actionResolver.resolveActions(for: group.chain)
         
-        guard let firstCoin = group.coins.first else {
+        guard let activeCoin = coin ?? group.coins.first(where: { $0.isNativeToken }) else {
             return
         }
         
-        sendTx.coin = firstCoin
+        sendTx.coin = activeCoin
     }
 }
 
