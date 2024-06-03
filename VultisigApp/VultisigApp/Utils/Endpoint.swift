@@ -74,6 +74,10 @@ class Endpoint {
     
     static let bscServiceRpcService = "https://bsc-rpc.publicnode.com"
     
+    static func bscServiceToken(_ address: String) -> String {
+        "https://api.binplorer.com/getAddressInfo/\(address)?apiKey=freekey"
+    }
+    
     static let baseServiceRpcService = "https://base-rpc.publicnode.com"
     
     static let arbitrumOneServiceRpcService = "https://arbitrum-one-rpc.publicnode.com"
@@ -86,11 +90,17 @@ class Endpoint {
     
     static let blastServiceRpcService = "https://rpc.ankr.com/blast"
     
+    static func blastServiceToken(_ address: String) -> String {
+        "https://api.blastplorer.info/getAddressInfo/\(address)?apiKey=freekey"
+    }
+    
     static let zksyncServiceRpcService = "https://mainnet.era.zksync.io"
     
-
-    
     static let ethServiceRpcService = "https://ethereum-rpc.publicnode.com"
+    
+    static func ethServiceToken(_ address: String) -> String {
+        "https://api.ethplorer.io/getAddressInfo/\(address)?apiKey=freekey"
+    }
     
     static let solanaServiceRpc = "https://api.mainnet-beta.solana.com"
     

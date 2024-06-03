@@ -33,12 +33,25 @@ class CronosService: RpcEvmService {
     static let shared = CronosService(rpcEndpoint)
 }
 
-class BlastService: RpcEvmService {
-    static let rpcEndpoint = Endpoint.blastServiceRpcService
-    static let shared = BlastService(rpcEndpoint)
-}
-
 class ZksyncService: RpcEvmService {
     static let rpcEndpoint = Endpoint.zksyncServiceRpcService
     static let shared = ZksyncService(rpcEndpoint)
+}
+
+class BlastService: RpcEvmService {
+    static let rpcEndpoint = Endpoint.blastServiceRpcService
+    static let shared = BlastService(rpcEndpoint)
+    
+    func getTokens(_ address: String) async -> [Token] {
+        return await super.getTokens(urlString: Endpoint.blastServiceToken(address))
+    }
+}
+
+class BnbService: RpcEvmService {
+    static let rpcEndpoint = Endpoint.bscServiceRpcService
+    static let shared = BnbService(rpcEndpoint)
+    
+    func getTokens(_ address: String) async -> [Token] {
+        return await super.getTokens(urlString: Endpoint.bscServiceToken(address))
+    }
 }

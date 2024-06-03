@@ -38,7 +38,7 @@ class RpcEvmService: RpcService {
         
         let gasPriceValue = try await gasPrice
         var priorityFeeValue = try await priorityFee
-
+        
         return (gasPriceValue, priorityFeeValue, Int64(try await nonce))
     }
     
@@ -48,9 +48,9 @@ class RpcEvmService: RpcService {
         
         async let nonce = fetchNonce(address: fromAddress)
         async let feeEstimate = zksEstimateFee(fromAddress: fromAddress, toAddress: toAddress, data: data)
-
+        
         let feeEstimateValue = try await feeEstimate
-
+        
         return (feeEstimateValue.gasLimit, feeEstimateValue.gasPerPubdataLimit, feeEstimateValue.maxFeePerGas, feeEstimateValue.maxPriorityFeePerGas, Int64(try await nonce))
     }
     
@@ -58,7 +58,7 @@ class RpcEvmService: RpcService {
         let hexWithPrefix = hex.hasPrefix("0x") ? hex : "0x\(hex)"
         return try await strRpcCall(method: "eth_sendRawTransaction", params: [hexWithPrefix])
     }
-
+    
     
     func estimateGasForEthTransaction(senderAddress: String, recipientAddress: String, value: BigInt, memo: String?) async throws -> BigInt {
         // Convert the memo to hex (if present). Assume memo is a String.
@@ -166,6 +166,20 @@ class RpcEvmService: RpcService {
             let maxPriorityFeePerGas = BigInt(maxPriorityFeePerGasHex.stripHexPrefix(), radix: 16) ?? BigInt(0)
             
             return (gasLimit, gasPerPubdataLimit, maxFeePerGas, maxPriorityFeePerGas)
+        }
+    }
+    
+    func getTokens(urlString: String) async -> [Token] {
+        do {
+            let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
+            if let tokens = Utils.extractResultFromJson(fromData: data, path: "tokens", type: [Token].self) {
+                return tokens
+            } else {
+                return []
+            }
+        } catch {
+            print("Error fetching tokens: \(error)")
+            return []
         }
     }
 }
