@@ -23,4 +23,21 @@ struct Token: Decodable {
     let tokenInfo: TokenInfo
     let balance: Int
     let rawBalance: String
+    
+    func toCoin(chain: Chain, address: String, priceRate: Double) -> Coin {
+        return Coin(
+            chain: chain,
+            ticker: self.tokenInfo.symbol,
+            logo: self.tokenInfo.image,
+            address: address,
+            priceRate: priceRate,
+            decimals: Int(self.tokenInfo.decimals) ?? 0,
+            hexPublicKey: "", // Assuming this is not available from Token
+            priceProviderId: "", // Assuming this is not available from Token
+            contractAddress: self.tokenInfo.address,
+            rawBalance: self.rawBalance,
+            isNativeToken: false // Assuming this is not available from Token
+        )
+    }
 }
+

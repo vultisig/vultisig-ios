@@ -8,7 +8,7 @@
 import Foundation
 
 class EvmServiceFactory {
-    static func getService(forChain coin: Coin) throws -> RpcEvmService {
+    static func getService(forChain coin: Coin) throws -> (RpcEvmService & EvmTokenServiceProtocol) {
         switch coin.chain {
         case .ethereum:
             return EthService.shared

@@ -18,7 +18,7 @@ class CoinSelectionViewModel: ObservableObject {
     let actionResolver = CoinActionResolver()
     let balanceService = BalanceService.shared
     let priceService = CryptoPriceService.shared
-
+    
     private let logger = Logger(subsystem: "assets-list", category: "view")
     
     func allCoins(vault: Vault) -> [Coin] {
@@ -37,7 +37,7 @@ class CoinSelectionViewModel: ObservableObject {
     private func checkSelected(for vault: Vault) {
         selection = Set(vault.coins)
     }
-
+    
     private func groupAssets() {
         groupedAssets = [:]
         groupedAssets = Dictionary(grouping: TokensStore.TokenSelectionAssets.sorted(by: { first, second in
@@ -47,7 +47,7 @@ class CoinSelectionViewModel: ObservableObject {
             return false
         })) { $0.chain.name }
     }
-
+    
     func handleSelection(isSelected: Bool, asset: Coin) {
         if isSelected {
             if !selection.contains(where: { $0.chain == asset.chain && $0.ticker == asset.ticker }) {
@@ -59,13 +59,13 @@ class CoinSelectionViewModel: ObservableObject {
             }
         }
     }
-
+    
     func saveAssets(for vault: Vault) async {
         do {
             let removedCoins = vault.coins.filter { coin in
                 !selection.contains(where: { $0.ticker == coin.ticker && $0.chain == coin.chain})
             }
-
+            
             for coin in removedCoins {
                 if let idx = vault.coins.firstIndex(where: { $0.ticker == coin.ticker && $0.chain == coin.chain }) {
                     vault.coins.remove(at: idx)
@@ -74,17 +74,17 @@ class CoinSelectionViewModel: ObservableObject {
                 try await Storage.shared.delete(coin)
                 
             }
-
+            
             var newCoins: [Coin] = []
-
+            
             for asset in selection {
                 if !vault.coins.contains(where: { $0.ticker == asset.ticker && $0.chain == asset.chain}) {
                     newCoins.append(asset)
                 }
             }
-
+            
             try await addToChain(assets: newCoins, to: vault)
-
+            
         } catch {
             print("fail to save asset,\(error)")
         }
@@ -196,28 +196,45 @@ class CoinSelectionViewModel: ObservableObject {
         }
         return nil
     }
-
+    
     private func addToChain(assets: [Coin], to vault: Vault) async throws {
         if let coin = assets.first, coin.chainType == .EVM, !coin.isNativeToken {
             let addresses = assets.map { $0.contractAddress }
             let coingekoIDs = try await priceService.fetchCoingeckoId(chain: coin.chain, addresses: addresses)
-
+            
             guard coingekoIDs.count == assets.count else {
                 return
             }
-
+            
             for (index, asset) in assets.enumerated() {
                 if let priceProviderId = coingekoIDs[index] {
                     try await addToChain(asset: asset, to: vault, priceProviderId: priceProviderId)
                 }
             }
+            
+            do {
+                let service = try EvmServiceFactory.getService(forChain: coin)
+                let tokens = await service.getTokens(address: coin.address)
+                if tokens.isEmpty {
+                    print("No tokens found for \(coin.chain)")
+                } else {
+                    for token in tokens {
+                        print("Token name: \(token.tokenInfo.name), Symbol: \(token.tokenInfo.symbol), Balance: \(token.balance)")
+                    }
+                }
+            } catch {
+                print("Error fetching service: \(error)")
+            }
+            
+            
+            
         } else {
             for asset in assets {
                 try await addToChain(asset: asset, to: vault, priceProviderId: nil)
             }
         }
     }
-
+    
     private func addToChain(asset: Coin, to vault: Vault, priceProviderId: String?) async throws {
         guard let newCoin = getNewCoin(asset: asset, vault: vault) else {
             return

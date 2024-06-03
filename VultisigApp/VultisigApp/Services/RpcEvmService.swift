@@ -37,7 +37,7 @@ class RpcEvmService: RpcService {
         async let priorityFee = fetchMaxPriorityFeePerGas()
         
         let gasPriceValue = try await gasPrice
-        var priorityFeeValue = try await priorityFee
+        let priorityFeeValue = try await priorityFee
         
         return (gasPriceValue, priorityFeeValue, Int64(try await nonce))
     }
@@ -169,10 +169,20 @@ class RpcEvmService: RpcService {
         }
     }
     
+    private var cacheTokens = ThreadSafeDictionary<String, (data: [Token], timestamp: Date)>()
     func getTokens(urlString: String) async -> [Token] {
+        let cacheKey = urlString
+        let cacheDuration: TimeInterval = 60 * 10 // Cache duration of 10 minutes
+        
+        if let cachedTokens = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheTokens, timeInSeconds: cacheDuration) {
+            print("Returning tokens from cache")
+            return cachedTokens
+        }
+        
         do {
             let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
             if let tokens = Utils.extractResultFromJson(fromData: data, path: "tokens", type: [Token].self) {
+                cacheTokens.set(cacheKey, (data: tokens, timestamp: Date()))
                 return tokens
             } else {
                 return []
