@@ -26,8 +26,8 @@ struct SendCryptoDoneView: View {
         }
         .alert(isPresented: $showAlert) {
             Alert(
-                title: Text(NSLocalizedString("hashCopied", comment: "")),
-                message: Text(hash),
+                title: Text(NSLocalizedString("urlCopied", comment: "")),
+                message: Text(explorerLink),
                 dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
             )
         }
@@ -125,14 +125,16 @@ struct SendCryptoDoneView: View {
     }
 
     private func copyHash() {
-        showAlert = true
-        let pasteboard = UIPasteboard.general
-        pasteboard.string = hash
+        if !explorerLink.isEmpty {
+            showAlert = true
+            let pasteboard = UIPasteboard.general
+            pasteboard.string = explorerLink
+        }
     }
     
     private func shareLink() {
-        if !explorerLink.isEmpty, let u = URL(string: explorerLink) {
-            openURL(u)
+        if !explorerLink.isEmpty, let url = URL(string: explorerLink) {
+            openURL(url)
         }
     }
 
