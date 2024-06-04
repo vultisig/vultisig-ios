@@ -13,9 +13,9 @@ struct HomeView: View {
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var viewModel: HomeViewModel
-    
+
     @Query var vaults: [Vault]
-    
+
     @State var showVaultsList = false
     @State var isEditingVaults = false
     @State var isEditingChains = false

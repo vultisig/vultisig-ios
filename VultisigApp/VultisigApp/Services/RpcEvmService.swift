@@ -38,7 +38,7 @@ class RpcEvmService: RpcService {
         
         let gasPriceValue = try await gasPrice
         let priorityFeeValue = try await priorityFee
-        
+
         return (gasPriceValue, priorityFeeValue, Int64(try await nonce))
     }
     
