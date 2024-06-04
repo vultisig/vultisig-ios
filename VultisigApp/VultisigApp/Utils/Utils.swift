@@ -408,6 +408,53 @@ enum Utils {
         return nil
     }
     
+    public static func extractResultFromJson<T: Decodable>(fromData data: Data, path: String, type: T.Type, mustHaveFields: [String] = []) -> [T]? {
+        do {
+            let json = try JSONSerialization.jsonObject(with: data, options: []) as? NSDictionary
+            if let result = getValueFromJson(for: path, in: json) as? [NSDictionary] {
+                var filteredResults: [T] = []
+                let decoder = JSONDecoder()
+                decoder.dateDecodingStrategy = .secondsSince1970
+                decoder.nonConformingFloatDecodingStrategy = .convertFromString(
+                    positiveInfinity: "Infinity",
+                    negativeInfinity: "-Infinity",
+                    nan: "NaN"
+                )
+                
+                for item in result {
+                    var hasAllFields = true
+                    for field in mustHaveFields {
+                        if let value = item.value(forKeyPath: field) as? String, value.isEmpty {
+                            hasAllFields = false
+                            break
+                        } else if item.value(forKeyPath: field) == nil {
+                            hasAllFields = false
+                            break
+                        }
+                    }
+                    if hasAllFields {
+                        let resultData = try JSONSerialization.data(withJSONObject: item)
+                        if let decodedItem = try? decoder.decode(T.self, from: resultData) {
+                            filteredResults.append(decodedItem)
+                        }
+                    }
+                }
+                return filteredResults
+            }
+        } catch let DecodingError.dataCorrupted(context) {
+            print("Error processing JSON: dataCorrupted \(context)")
+        } catch let DecodingError.keyNotFound(key, context) {
+            print("Error processing JSON: keyNotFound \(key) \(context)")
+        } catch let DecodingError.typeMismatch(type, context) {
+            print("Error processing JSON: typeMismatch \(type) \(context)")
+        } catch let DecodingError.valueNotFound(value, context) {
+            print("Error processing JSON: valueNotFound \(value) \(context)")
+        } catch {
+            print("Error processing JSON: \(error)")
+        }
+        return nil
+    }
+    
     public static func extractResultFromJson(fromData data: Data, path: String) -> Any? {
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: []) as? NSDictionary

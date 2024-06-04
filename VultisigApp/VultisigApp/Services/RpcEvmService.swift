@@ -38,7 +38,7 @@ class RpcEvmService: RpcService {
         
         let gasPriceValue = try await gasPrice
         let priorityFeeValue = try await priorityFee
-
+        
         return (gasPriceValue, priorityFeeValue, Int64(try await nonce))
     }
     
@@ -173,20 +173,22 @@ class RpcEvmService: RpcService {
     func getTokens(urlString: String) async -> [Token] {
         let cacheKey = urlString
         let cacheDuration: TimeInterval = 60 * 10 // Cache duration of 10 minutes
-        
-        if let cachedTokens = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheTokens, timeInSeconds: cacheDuration) {
+
+        if let cachedTokens: [Token] = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheTokens, timeInSeconds: cacheDuration) {
             print("Returning tokens from cache")
             return cachedTokens
         }
-        
+
         do {
-            let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
-            if var tokens = Utils.extractResultFromJson(fromData: data, path: "tokens", type: [Token].self) {
+            let data: Data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
+            if var tokens: [Token] = Utils.extractResultFromJson(fromData: data, path: "tokens", type: Token.self, mustHaveFields: ["tokenInfo.website", "tokenInfo.image"]) {
                 tokens = tokens.map { token in
                     var mutableToken = token
-                    mutableToken.tokenInfo.setImage(image: "\(extractTokenDomainURL(from: urlString))\(mutableToken.tokenInfo.image)" )
+                    if let image = mutableToken.tokenInfo.image{
+                        mutableToken.tokenInfo.setImage(image: "\(extractTokenDomainURL(from: urlString))\(image)" )
+                    }
                     return mutableToken
-                }
+                }                
                 cacheTokens.set(cacheKey, (data: tokens, timestamp: Date()))
                 return tokens
             } else {
@@ -196,7 +198,6 @@ class RpcEvmService: RpcService {
             print("Error fetching tokens: \(error)")
             return []
         }
-        
     }
     
     private func extractTokenDomainURL(from urlString: String) -> String {

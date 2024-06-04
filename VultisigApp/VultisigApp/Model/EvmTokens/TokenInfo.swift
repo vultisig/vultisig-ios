@@ -16,8 +16,8 @@ struct TokenInfo: Decodable, Identifiable {
     let symbol: String
     let totalSupply: String
     let holdersCount: Int
-    let website: String
-    var image: String
+    let website: String?
+    var image: String?
     
     mutating func setImage(image: String) {
         self.image = image
@@ -34,7 +34,7 @@ struct Token: Decodable, Identifiable {
         return Coin(
             chain: nativeToken.chain,
             ticker: self.tokenInfo.symbol,
-            logo: self.tokenInfo.image,
+            logo: self.tokenInfo.image ?? .empty,
             address: nativeToken.address,
             priceRate: priceRate,
             decimals: Int(self.tokenInfo.decimals) ?? 0,
