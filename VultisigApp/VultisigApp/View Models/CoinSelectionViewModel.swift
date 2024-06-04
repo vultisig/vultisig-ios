@@ -208,42 +208,54 @@ class CoinSelectionViewModel: ObservableObject {
             
             for (index, asset) in assets.enumerated() {
                 if let priceProviderId = coingekoIDs[index] {
-                    try await addToChain(asset: asset, to: vault, priceProviderId: priceProviderId)
+                    _ = try await addToChain(asset: asset, to: vault, priceProviderId: priceProviderId)
                 }
             }
-            
-            do {
-                let service = try EvmServiceFactory.getService(forCoin: coin)
-                let tokens = await service.getTokens(chain: coin.chain, address: coin.address)
-                if tokens.isEmpty {
-                    print("No tokens found for \(coin.chain)")
-                } else {
-                    for token in tokens {
-                        print("Token name: \(coin.chain.name), Symbol: \(coin.ticker), Balance: \(coin.rawBalance)")
-                    }
-                }
-            } catch {
-                print("Error fetching service: \(error)")
-            }
-            
-            
             
         } else {
             for asset in assets {
-                try await addToChain(asset: asset, to: vault, priceProviderId: nil)
+                if let newCoin = try await addToChain(asset: asset, to: vault, priceProviderId: nil) {
+                    print("Add discovered tokens for \(asset.ticker) on the chain \(asset.chain.name)")
+                    
+                    try await addDiscoveredTokens(nativeToken: newCoin, to: vault)
+                }
             }
         }
     }
     
-    private func addToChain(asset: Coin, to vault: Vault, priceProviderId: String?) async throws {
+    private func addToChain(asset: Coin, to vault: Vault, priceProviderId: String?) async throws -> Coin? {
         guard let newCoin = getNewCoin(asset: asset, vault: vault) else {
-            return
+            return nil
         }
         if let priceProviderId {
             newCoin.priceProviderId = priceProviderId
         }
+        
         // Save the new coin first
         try await Storage.shared.save(newCoin)
         vault.coins.append(newCoin)
+        
+        return newCoin
+    }
+    
+    private func addDiscoveredTokens(nativeToken: Coin, to vault: Vault) async throws  {
+        do {
+            let service = try EvmServiceFactory.getService(forCoin: nativeToken)
+            let tokens = await service.getTokens(nativeToken: nativeToken, address: nativeToken.address)
+            let addresses = tokens.map { $0.contractAddress }
+            let coingekoIDs = try await priceService.fetchCoingeckoId(chain: nativeToken.chain, addresses: addresses)
+            
+            guard coingekoIDs.count == tokens.count else {
+                return
+            }
+            
+            for (index, token) in tokens.enumerated() {
+                if let priceProviderId = coingekoIDs[index] {
+                    _ = try await addToChain(asset: token, to: vault, priceProviderId: priceProviderId)
+                }
+            }
+        } catch {
+            print("Error fetching service: \(error)")
+        }
     }
 }

@@ -8,5 +8,5 @@
 import Foundation
 
 protocol EvmTokenServiceProtocol {
-    func getTokens(chain:Chain, address: String) async -> [Coin]
+    func getTokens(nativeToken: Coin, address: String) async -> [Coin]
 }

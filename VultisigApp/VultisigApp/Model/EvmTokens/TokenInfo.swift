@@ -24,19 +24,19 @@ struct Token: Decodable {
     let balance: Int
     let rawBalance: String
     
-    func toCoin(chain: Chain, address: String, priceRate: Double) -> Coin {
+    func toCoin(nativeToken: Coin, priceRate: Double) -> Coin {
         return Coin(
-            chain: chain,
+            chain: nativeToken.chain,
             ticker: self.tokenInfo.symbol,
             logo: self.tokenInfo.image,
-            address: address,
+            address: nativeToken.address,
             priceRate: priceRate,
             decimals: Int(self.tokenInfo.decimals) ?? 0,
-            hexPublicKey: "", // Assuming this is not available from Token
-            priceProviderId: "", // Assuming this is not available from Token
+            hexPublicKey: nativeToken.hexPublicKey,
+            priceProviderId: .empty,
             contractAddress: self.tokenInfo.address,
             rawBalance: self.rawBalance,
-            isNativeToken: false // Assuming this is not available from Token
+            isNativeToken: false
         )
     }
 }
