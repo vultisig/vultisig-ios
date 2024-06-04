@@ -200,7 +200,7 @@ class KeysignViewModel: ObservableObject {
               let fromCoin = keysignPayload?.coin, fromCoin.shouldApprove else { return }
 
         do {
-            let service = try EvmServiceFactory.getService(forChain: fromCoin)
+            let service = try EvmServiceFactory.getService(forCoin: fromCoin)
             let allowance = try await service.fetchAllowance(
                 contractAddress: fromCoin.contractAddress,
                 owner: fromCoin.address,
@@ -322,7 +322,7 @@ class KeysignViewModel: ObservableObject {
                         throw error
                     }
                 case .ethereum, .avalanche,.arbitrum, .bscChain, .base, .optimism, .polygon, .blast, .cronosChain, .zksync:
-                    let service = try EvmServiceFactory.getService(forChain: keysignPayload.coin)
+                    let service = try EvmServiceFactory.getService(forCoin: keysignPayload.coin)
                     self.txid = try await service.broadcastTransaction(hex: tx.rawTransaction)
                 case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
                     let chainName = keysignPayload.coin.chain.name.lowercased()

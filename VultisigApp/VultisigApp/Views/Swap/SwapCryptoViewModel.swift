@@ -407,7 +407,7 @@ private extension SwapCryptoViewModel {
         guard tx.fromCoin.shouldApprove, let spender = tx.router else {
             return flow = .normal
         }
-        let service = try EvmServiceFactory.getService(forChain: tx.fromCoin)
+        let service = try EvmServiceFactory.getService(forCoin: tx.fromCoin)
         let allowance = try await service.fetchAllowance(
             contractAddress: tx.fromCoin.contractAddress,
             owner: tx.fromCoin.address,

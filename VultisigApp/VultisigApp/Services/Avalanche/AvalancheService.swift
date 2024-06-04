@@ -5,7 +5,7 @@ class AvalancheService: RpcEvmService, EvmTokenServiceProtocol {
     static let avaxRpcEndpoint = Endpoint.avalancheServiceRpcService
     static let shared = AvalancheService(avaxRpcEndpoint)
     
-    func getTokens(address: String) async -> [Token] {
+    func getTokens(chain:Chain, address: String) async -> [Coin] {
         return []
     }
 }

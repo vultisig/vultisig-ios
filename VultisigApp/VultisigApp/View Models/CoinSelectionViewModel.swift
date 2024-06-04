@@ -213,13 +213,13 @@ class CoinSelectionViewModel: ObservableObject {
             }
             
             do {
-                let service = try EvmServiceFactory.getService(forChain: coin)
-                let tokens = await service.getTokens(address: coin.address)
+                let service = try EvmServiceFactory.getService(forCoin: coin)
+                let tokens = await service.getTokens(chain: coin.chain, address: coin.address)
                 if tokens.isEmpty {
                     print("No tokens found for \(coin.chain)")
                 } else {
                     for token in tokens {
-                        print("Token name: \(token.tokenInfo.name), Symbol: \(token.tokenInfo.symbol), Balance: \(token.balance)")
+                        print("Token name: \(coin.chain.name), Symbol: \(coin.ticker), Balance: \(coin.rawBalance)")
                     }
                 }
             } catch {
