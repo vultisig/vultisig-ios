@@ -189,3 +189,4 @@
 "vaultNameUnique" = "Naziv spremišta mora biti jedinstven.";
 "alreadyExists" = "već postoji";
 "dismiss" = "Odbaci";
+"urlCopied" = "URL kopiran";

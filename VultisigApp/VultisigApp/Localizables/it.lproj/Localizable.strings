@@ -189,3 +189,4 @@
 "vaultNameUnique" = "Il nome del caveau deve essere univoco.";
 "alreadyExists" = "esiste già";
 "dismiss" = "Ignora";
+"urlCopied" = "URL copiato";
