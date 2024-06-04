@@ -60,24 +60,38 @@ class CoinSelectionViewModel: ObservableObject {
         }
     }
     
+    private func removeCoins(coins: [Coin], vault: Vault) async throws {
+        for coin in coins {
+            if let idx = vault.coins.firstIndex(where: { $0.ticker == coin.ticker && $0.chain == coin.chain }) {
+                vault.coins.remove(at: idx)
+            }
+            
+            try await Storage.shared.delete(coin)
+        }
+    }
+    
     func saveAssets(for vault: Vault) async {
         do {
             let removedCoins = vault.coins.filter { coin in
                 !selection.contains(where: { $0.ticker == coin.ticker && $0.chain == coin.chain})
             }
+            let nativeCoins = removedCoins.filter { $0.isNativeToken }
+            let allTokens = vault.coins.filter { coin in
+                nativeCoins.contains(where: { $0.chain == coin.chain }) && !coin.isNativeToken
+            }
             
-            for coin in removedCoins {
-                if let idx = vault.coins.firstIndex(where: { $0.ticker == coin.ticker && $0.chain == coin.chain }) {
-                    vault.coins.remove(at: idx)
-                }
-                
-                try await Storage.shared.delete(coin)
-                
+            try await removeCoins(coins: removedCoins, vault: vault)
+            try await removeCoins(coins: nativeCoins, vault: vault)
+            try await removeCoins(coins: allTokens, vault: vault)
+            
+            // remove all native tokens and also the tokens so they are not added again
+            let filteredSelection = selection.filter{ selection in
+                !nativeCoins.contains(where: { selection.ticker == $0.ticker && selection.chain == $0.chain}) &&
+                !allTokens.contains(where: { selection.ticker == $0.ticker && selection.chain == $0.chain})
             }
             
             var newCoins: [Coin] = []
-            
-            for asset in selection {
+            for asset in filteredSelection {
                 if !vault.coins.contains(where: { $0.ticker == asset.ticker && $0.chain == asset.chain}) {
                     newCoins.append(asset)
                 }
