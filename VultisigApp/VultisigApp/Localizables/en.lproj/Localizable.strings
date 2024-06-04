@@ -210,3 +210,4 @@
 "vaultNameUnique" = "Vault's name needs to be unique.";
 "alreadyExists" = "already exists";
 "dismiss" = "Dismiss";
+"urlCopied" = "URL Copied";
