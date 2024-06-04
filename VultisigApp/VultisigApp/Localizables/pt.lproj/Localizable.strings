@@ -189,3 +189,4 @@
 "vaultNameUnique" = "O nome do cofre precisa ser único.";
 "alreadyExists" = "já existe";
 "dismiss" = "Descartar";
+"urlCopied" = "URL copiado";

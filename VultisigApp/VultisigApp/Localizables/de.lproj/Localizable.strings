@@ -189,3 +189,4 @@
 "vaultNameUnique" = "Der Name des Tresors muss eindeutig sein.";
 "alreadyExists" = "existiert bereits";
 "dismiss" = "Verwerfen";
+"urlCopied" = "URL kopiert";
