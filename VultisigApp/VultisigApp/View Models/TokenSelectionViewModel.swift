@@ -40,11 +40,25 @@ class TokenSelectionViewModel: ObservableObject {
 
     private let oneInchservice = OneInchService.shared
 
-    var filteredTokens: [Token] {
-        guard !searchText.isEmpty else { return tokens }
+    func selectedTokens(groupedChain: GroupedChain) -> [Token] {
+        let tickers = groupedChain.coins
+            .filter { !$0.isNativeToken }
+            .map { $0.ticker.lowercased() }
         return tokens.filter { token in
-            token.symbol.lowercased().contains(searchText.lowercased())
+            tickers.contains(token.symbol.lowercased())
         }
+    }
+
+    func filteredTokens(groupedChain: GroupedChain) -> [Token] {
+        guard !searchText.isEmpty else { return [] }
+        let tickers = groupedChain.coins
+            .filter { !$0.isNativeToken }
+            .map { $0.ticker.lowercased() }
+        return tokens
+            .filter { $0.symbol.lowercased().contains(searchText.lowercased())}
+            .filter { token in
+                !tickers.contains(token.symbol.lowercased())
+            }
     }
 
     var showRetry: Bool {
