@@ -32,12 +32,13 @@ struct VaultDetailView: View {
             scanButton
         }
         .onAppear {
+            appState.currentVault = homeViewModel.selectedVault
             onAppear()
         }
-        .onChange(of: homeViewModel.selectedVault) {
-            viewModel.setDefaultCoinsOnce(for: vault)
-            setData()
+        .onChange(of: homeViewModel.selectedVault?.pubKeyECDSA) {
+            print("on vault Pubkey change \(homeViewModel.selectedVault?.pubKeyECDSA ?? "")")
             appState.currentVault = homeViewModel.selectedVault
+            setData()
         }
         .onChange(of: vault.coins) {
             setData()

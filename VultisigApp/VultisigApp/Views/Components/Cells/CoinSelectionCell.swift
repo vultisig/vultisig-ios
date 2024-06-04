@@ -58,11 +58,6 @@ struct CoinSelectionCell: View {
     }
     
     private func setData() {
-
-        if asset.ticker == "AVAX" {
-            print("yo")
-        }
-
         if tokenSelectionViewModel.selection.contains(where: { $0.chain == asset.chain && $0.ticker == asset.ticker }) {
             isSelected = true
         } else {

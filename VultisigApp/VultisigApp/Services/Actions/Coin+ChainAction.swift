@@ -53,6 +53,8 @@ extension Chain {
             return [.send]
         case .polkadot:
             return [.send]
+        case .zksync:
+            return [.send]
         }
     }
 }

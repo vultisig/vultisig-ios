@@ -46,14 +46,30 @@ struct TokenSelectionView: View {
     }
     
     var view: some View {
-        ScrollView {
-            LazyVStack(spacing: 12) {
-                ForEach(tokenViewModel.filteredTokens, id: \.self) { token in
-                    TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel)
+        List {
+            let selected = tokenViewModel.selectedTokens(groupedChain: group)
+            if !selected.isEmpty {
+                Section(header: Text("Selected")) {
+                    ForEach(selected, id: \.self) { token in
+                        TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel)
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                    }
+                }
+            }
+            let filtered = tokenViewModel.filteredTokens(groupedChain: group)
+            if !filtered.isEmpty {
+                Section(header: Text("Search result")) {
+                    ForEach(filtered, id: \.self) { token in
+                        TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel)
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                    }
                 }
             }
         }
-        .padding(.horizontal, 16)
+        .scrollContentBackground(.hidden)
+        .listStyle(.grouped)
     }
     
     func errorView(error: Error) -> some View {
