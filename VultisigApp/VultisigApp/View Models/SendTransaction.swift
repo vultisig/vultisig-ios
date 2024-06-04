@@ -158,7 +158,7 @@ class SendTransaction: ObservableObject, Hashable {
         if !coin.isNativeToken {
             if let vault = ApplicationState.shared.currentVault {
                 if let nativeToken = vault.coins.first(where: { $0.isNativeToken && $0.chain.name == coin.chain.name }) {
-                    decimals = Int(nativeToken.decimals) ?? .zero
+                    decimals = nativeToken.decimals
                 }
             }
         }

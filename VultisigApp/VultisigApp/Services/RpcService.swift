@@ -49,8 +49,10 @@ class RpcService {
             }
             
             if let error = response["error"] as? [String: Any], let message = error["message"] as? String {
-                
-                if message.contains("known") || message.contains("already known") || message.contains("Transaction is temporarily banned") || message.contains("nonce too low: next nonce"){
+                if message.contains("known") || message.contains("already known") 
+                    || message.contains("Transaction is temporarily banned")
+                    || message.contains("nonce too low: next nonce")
+                    || message.contains("transaction already exists "){
                     return try decode("Transaction already broadcasted.")
                 }
                 
