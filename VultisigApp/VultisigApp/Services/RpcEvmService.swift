@@ -181,7 +181,12 @@ class RpcEvmService: RpcService {
         
         do {
             let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
-            if let tokens = Utils.extractResultFromJson(fromData: data, path: "tokens", type: [Token].self) {
+            if var tokens = Utils.extractResultFromJson(fromData: data, path: "tokens", type: [Token].self) {
+                tokens = tokens.map { token in
+                    var mutableToken = token
+                    mutableToken.tokenInfo.setImage(image: "\(extractTokenDomainURL(from: urlString))\(mutableToken.tokenInfo.image)" )
+                    return mutableToken
+                }
                 cacheTokens.set(cacheKey, (data: tokens, timestamp: Date()))
                 return tokens
             } else {
@@ -191,5 +196,18 @@ class RpcEvmService: RpcService {
             print("Error fetching tokens: \(error)")
             return []
         }
+        
+    }
+    
+    private func extractTokenDomainURL(from urlString: String) -> String {
+        guard let url = URL(string: urlString), let host = url.host else { return .empty }
+        let components = host.components(separatedBy: ".")
+        guard components.count >= 2 else { return .empty }
+        
+        // Extract the last two components (domain and top-level domain)
+        let domain = components.suffix(2).joined(separator: ".")
+        
+        // Construct the new URL string without the trailing slash
+        return "https://\(domain)"
     }
 }

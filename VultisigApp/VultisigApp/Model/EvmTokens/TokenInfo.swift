@@ -7,7 +7,8 @@
 
 import Foundation
 
-struct TokenInfo: Decodable {
+struct TokenInfo: Decodable, Identifiable {
+    var id: String { address }  // Assuming 'address' is unique for each token
     let address: String
     let decimals: String
     let name: String
@@ -16,11 +17,16 @@ struct TokenInfo: Decodable {
     let totalSupply: String
     let holdersCount: Int
     let website: String
-    let image: String
+    var image: String
+    
+    mutating func setImage(image: String) {
+        self.image = image
+    }
 }
 
-struct Token: Decodable {
-    let tokenInfo: TokenInfo
+struct Token: Decodable, Identifiable {
+    var id: String { tokenInfo.address }  // Assuming 'address' is unique for each token
+    var tokenInfo: TokenInfo
     let balance: Int
     let rawBalance: String
     
@@ -40,4 +46,3 @@ struct Token: Decodable {
         )
     }
 }
-
