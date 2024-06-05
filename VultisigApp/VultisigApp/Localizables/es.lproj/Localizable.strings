@@ -189,3 +189,4 @@
 "vaultNameUnique" = "El nombre del almacén debe ser único.";
 "alreadyExists" = "ya existe";
 "dismiss" = "Descartar";
+"urlCopied" = "URL copiado";

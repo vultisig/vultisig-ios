@@ -18,7 +18,7 @@ class CoinSelectionViewModel: ObservableObject {
     let actionResolver = CoinActionResolver()
     let balanceService = BalanceService.shared
     let priceService = CryptoPriceService.shared
-
+    
     private let logger = Logger(subsystem: "assets-list", category: "view")
     
     func allCoins(vault: Vault) -> [Coin] {
@@ -37,7 +37,7 @@ class CoinSelectionViewModel: ObservableObject {
     private func checkSelected(for vault: Vault) {
         selection = Set(vault.coins)
     }
-
+    
     private func groupAssets() {
         groupedAssets = [:]
         groupedAssets = Dictionary(grouping: TokensStore.TokenSelectionAssets.sorted(by: { first, second in
@@ -47,7 +47,7 @@ class CoinSelectionViewModel: ObservableObject {
             return false
         })) { $0.chain.name }
     }
-
+    
     func handleSelection(isSelected: Bool, asset: Coin) {
         if isSelected {
             if !selection.contains(where: { $0.chain == asset.chain && $0.ticker == asset.ticker }) {
@@ -59,32 +59,46 @@ class CoinSelectionViewModel: ObservableObject {
             }
         }
     }
-
+    
+    private func removeCoins(coins: [Coin], vault: Vault) async throws {
+        for coin in coins {
+            if let idx = vault.coins.firstIndex(where: { $0.ticker == coin.ticker && $0.chain == coin.chain }) {
+                vault.coins.remove(at: idx)
+            }
+            
+            try await Storage.shared.delete(coin)
+        }
+    }
+    
     func saveAssets(for vault: Vault) async {
         do {
             let removedCoins = vault.coins.filter { coin in
                 !selection.contains(where: { $0.ticker == coin.ticker && $0.chain == coin.chain})
             }
-
-            for coin in removedCoins {
-                if let idx = vault.coins.firstIndex(where: { $0.ticker == coin.ticker && $0.chain == coin.chain }) {
-                    vault.coins.remove(at: idx)
-                }
-                
-                try await Storage.shared.delete(coin)
-                
+            let nativeCoins = removedCoins.filter { $0.isNativeToken }
+            let allTokens = vault.coins.filter { coin in
+                nativeCoins.contains(where: { $0.chain == coin.chain }) && !coin.isNativeToken
             }
-
+            
+            try await removeCoins(coins: removedCoins, vault: vault)
+            try await removeCoins(coins: nativeCoins, vault: vault)
+            try await removeCoins(coins: allTokens, vault: vault)
+            
+            // remove all native tokens and also the tokens so they are not added again
+            let filteredSelection = selection.filter{ selection in
+                !nativeCoins.contains(where: { selection.ticker == $0.ticker && selection.chain == $0.chain}) &&
+                !allTokens.contains(where: { selection.ticker == $0.ticker && selection.chain == $0.chain})
+            }
+            
             var newCoins: [Coin] = []
-
-            for asset in selection {
+            for asset in filteredSelection {
                 if !vault.coins.contains(where: { $0.ticker == asset.ticker && $0.chain == asset.chain}) {
                     newCoins.append(asset)
                 }
             }
-
+            
             try await addToChain(assets: newCoins, to: vault)
-
+            
         } catch {
             print("fail to save asset,\(error)")
         }
@@ -196,37 +210,66 @@ class CoinSelectionViewModel: ObservableObject {
         }
         return nil
     }
-
+    
     private func addToChain(assets: [Coin], to vault: Vault) async throws {
         if let coin = assets.first, coin.chainType == .EVM, !coin.isNativeToken {
             let addresses = assets.map { $0.contractAddress }
             let coingekoIDs = try await priceService.fetchCoingeckoId(chain: coin.chain, addresses: addresses)
-
+            
             guard coingekoIDs.count == assets.count else {
                 return
             }
-
+            
             for (index, asset) in assets.enumerated() {
                 if let priceProviderId = coingekoIDs[index] {
-                    try await addToChain(asset: asset, to: vault, priceProviderId: priceProviderId)
+                    _ = try await addToChain(asset: asset, to: vault, priceProviderId: priceProviderId)
                 }
             }
+            
         } else {
             for asset in assets {
-                try await addToChain(asset: asset, to: vault, priceProviderId: nil)
+                if let newCoin = try await addToChain(asset: asset, to: vault, priceProviderId: nil) {
+                    print("Add discovered tokens for \(asset.ticker) on the chain \(asset.chain.name)")
+                    
+                    try await addDiscoveredTokens(nativeToken: newCoin, to: vault)
+                }
             }
         }
     }
-
-    private func addToChain(asset: Coin, to vault: Vault, priceProviderId: String?) async throws {
+    
+    private func addToChain(asset: Coin, to vault: Vault, priceProviderId: String?) async throws -> Coin? {
         guard let newCoin = getNewCoin(asset: asset, vault: vault) else {
-            return
+            return nil
         }
         if let priceProviderId {
             newCoin.priceProviderId = priceProviderId
         }
+        
         // Save the new coin first
         try await Storage.shared.save(newCoin)
         vault.coins.append(newCoin)
+        
+        return newCoin
+    }
+    
+    private func addDiscoveredTokens(nativeToken: Coin, to vault: Vault) async throws  {
+        do {
+            let service = try EvmServiceFactory.getService(forCoin: nativeToken)
+            let tokens = await service.getTokens(nativeToken: nativeToken, address: nativeToken.address)
+            let addresses = tokens.map { $0.contractAddress }
+            let coingekoIDs = try await priceService.fetchCoingeckoId(chain: nativeToken.chain, addresses: addresses)
+            
+            guard coingekoIDs.count == tokens.count else {
+                return
+            }
+            
+            for (index, token) in tokens.enumerated() {
+                if let priceProviderId = coingekoIDs[index] {
+                    _ = try await addToChain(asset: token, to: vault, priceProviderId: priceProviderId)
+                }
+            }
+        } catch {
+            print("Error fetching service: \(error)")
+        }
     }
 }
