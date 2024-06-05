@@ -437,7 +437,6 @@ private extension SwapCryptoViewModel {
     
     func clearQuote(tx: SwapTransaction) {
         tx.quote = nil
-        tx.fee = .zero
     }
     
     func swapFromAmount(tx: SwapTransaction) -> BigInt {

@@ -90,7 +90,7 @@ final class BlockChainService {
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain:
             let service = try EvmServiceFactory.getService(forCoin: coin)
             let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(fromAddress: coin.address)
-            let gasLimit = BigInt(coin.feeDefault) ?? 0
+            let gasLimit = normalizeGasLimit(coin: coin, action: action)
             let normalizedGasPrice = normalize(gasPrice, action: action)
             return .Ethereum(maxFeePerGasWei: normalizedGasPrice, priorityFeeWei: normalizePriorityFee(priorityFee,coin.chain), nonce: nonce, gasLimit: gasLimit)
             
@@ -124,6 +124,16 @@ final class BlockChainService {
             return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500)
         }
     }
+
+    func normalizeGasLimit(coin: Coin, action: Action) -> BigInt {
+        switch action {
+        case .transfer:
+            return BigInt(coin.feeDefault) ?? 0
+        case .swap:
+            return BigInt(EVMHelper.defaultETHSwapGasUnit)
+        }
+    }
+
     func normalizePriorityFee(_ value: BigInt,_ chain: Chain) -> BigInt {
         if chain == .ethereum || chain == .avalanche {
             // BSC is very cheap , and layer two is very low priority fee as well
@@ -135,6 +145,7 @@ final class BlockChainService {
         }
         return value
     }
+
     func normalize(_ value: BigInt, action: Action) -> BigInt {
         // let's do 1.5x regardless swap of send
         return value + value / 2 // x1.5 fee for swaps
