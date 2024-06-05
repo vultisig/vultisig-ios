@@ -30,6 +30,9 @@ struct CoinSelectionCell: View {
         .onChange(of: isSelected) { _, newValue in
             handleSelection(newValue)
         }
+        .onTapGesture {
+            isSelected.toggle()
+        }
     }
     
     var image: some View {
