@@ -69,7 +69,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             Task {
                 do {
                     if tx.coin.isNativeToken {
-                        let service = try EvmServiceFactory.getService(forChain: tx.coin)
+                        let service = try EvmServiceFactory.getService(forCoin: tx.coin)
                         let (baseFee, priorityFee,_) = try await service.getGasInfo(fromAddress: tx.fromAddress)
                         
                         guard let gasLimitBigInt = BigInt(tx.coin.feeDefault) else {

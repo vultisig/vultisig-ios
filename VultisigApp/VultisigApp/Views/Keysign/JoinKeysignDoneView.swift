@@ -21,8 +21,8 @@ struct JoinKeysignDoneView: View {
             .redacted(reason: viewModel.txid.isEmpty ? .placeholder : [])
             .alert(isPresented: $showAlert) {
                 Alert(
-                    title: Text(NSLocalizedString("hashCopied", comment: "")),
-                    message: Text(viewModel.txid),
+                    title: Text(NSLocalizedString("urlCopied", comment: "")),
+                    message: Text(viewModel.getTransactionExplorerURL(txid: viewModel.txid)),
                     dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
                 )
             }
@@ -135,9 +135,10 @@ struct JoinKeysignDoneView: View {
     }
     
     private func copyHash() {
+        let urlStr = viewModel.getTransactionExplorerURL(txid: viewModel.txid)
         showAlert = true
         let pasteboard = UIPasteboard.general
-        pasteboard.string = viewModel.txid
+        pasteboard.string = urlStr
     }
     
     private func shareLink() {

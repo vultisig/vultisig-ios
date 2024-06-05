@@ -38,7 +38,7 @@ class RpcEvmService: RpcService {
         
         let gasPriceValue = try await gasPrice
         let priorityFeeValue = try await priorityFee
-
+        
         return (gasPriceValue, priorityFeeValue, Int64(try await nonce))
     }
     
@@ -48,9 +48,9 @@ class RpcEvmService: RpcService {
         
         async let nonce = fetchNonce(address: fromAddress)
         async let feeEstimate = zksEstimateFee(fromAddress: fromAddress, toAddress: toAddress, data: data)
-
+        
         let feeEstimateValue = try await feeEstimate
-
+        
         return (feeEstimateValue.gasLimit, feeEstimateValue.gasPerPubdataLimit, feeEstimateValue.maxFeePerGas, feeEstimateValue.maxPriorityFeePerGas, Int64(try await nonce))
     }
     
@@ -58,7 +58,7 @@ class RpcEvmService: RpcService {
         let hexWithPrefix = hex.hasPrefix("0x") ? hex : "0x\(hex)"
         return try await strRpcCall(method: "eth_sendRawTransaction", params: [hexWithPrefix])
     }
-
+    
     
     func estimateGasForEthTransaction(senderAddress: String, recipientAddress: String, value: BigInt, memo: String?) async throws -> BigInt {
         // Convert the memo to hex (if present). Assume memo is a String.
@@ -167,5 +167,48 @@ class RpcEvmService: RpcService {
             
             return (gasLimit, gasPerPubdataLimit, maxFeePerGas, maxPriorityFeePerGas)
         }
+    }
+    
+    private var cacheTokens = ThreadSafeDictionary<String, (data: [Token], timestamp: Date)>()
+    func getTokens(urlString: String) async -> [Token] {
+        let cacheKey = urlString
+        let cacheDuration: TimeInterval = 60 * 10 // Cache duration of 10 minutes
+
+        if let cachedTokens: [Token] = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheTokens, timeInSeconds: cacheDuration) {
+            print("Returning tokens from cache")
+            return cachedTokens
+        }
+
+        do {
+            let data: Data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
+            if var tokens: [Token] = Utils.extractResultFromJson(fromData: data, path: "tokens", type: Token.self, mustHaveFields: ["tokenInfo.website", "tokenInfo.image"]) {
+                tokens = tokens.map { token in
+                    var mutableToken = token
+                    if let image = mutableToken.tokenInfo.image{
+                        mutableToken.tokenInfo.setImage(image: "\(extractTokenDomainURL(from: urlString))\(image)" )
+                    }
+                    return mutableToken
+                }                
+                cacheTokens.set(cacheKey, (data: tokens, timestamp: Date()))
+                return tokens
+            } else {
+                return []
+            }
+        } catch {
+            print("Error fetching tokens: \(error)")
+            return []
+        }
+    }
+    
+    private func extractTokenDomainURL(from urlString: String) -> String {
+        guard let url = URL(string: urlString), let host = url.host else { return .empty }
+        let components = host.components(separatedBy: ".")
+        guard components.count >= 2 else { return .empty }
+        
+        // Extract the last two components (domain and top-level domain)
+        let domain = components.suffix(2).joined(separator: ".")
+        
+        // Construct the new URL string without the trailing slash
+        return "https://\(domain)"
     }
 }
