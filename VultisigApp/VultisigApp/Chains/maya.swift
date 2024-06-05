@@ -77,7 +77,6 @@ enum MayaChainHelper {
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
             return .failure(HelperError.runtimeError("invalid hex public key"))
         }
-        _ = CoinType.thorchain
 
         var mayaChainCoin = TW_Cosmos_Proto_THORChainCoin()
         var message = [CosmosMessage()]
