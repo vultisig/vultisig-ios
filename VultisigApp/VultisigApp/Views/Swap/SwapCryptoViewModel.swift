@@ -384,10 +384,6 @@ private extension SwapCryptoViewModel {
                 isAffiliate: isAlliliate(tx: tx)
             )
             
-            if !isSufficientBalance(tx: tx) {
-                throw Errors.insufficientFunds
-            }
-            
             switch quote {
             case .oneinch(let quote):
                 tx.fee = oneInchFee(quote: quote)
@@ -396,7 +392,11 @@ private extension SwapCryptoViewModel {
             }
             
             tx.quote = quote
-            
+
+            if !isSufficientBalance(tx: tx) {
+                throw Errors.insufficientFunds
+            }
+
             try await updateFlow(tx: tx)
         } catch {
             self.error = error
