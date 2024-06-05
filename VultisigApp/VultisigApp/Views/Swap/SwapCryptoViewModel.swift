@@ -386,7 +386,7 @@ private extension SwapCryptoViewModel {
             
             switch quote {
             case .oneinch(let quote):
-                tx.fee = oneInchFee(quote: quote)
+                tx.oneInchFee = oneInchFee(quote: quote)
             case .thorchain: 
                 break
             }
@@ -421,14 +421,8 @@ private extension SwapCryptoViewModel {
         
         do {
             let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin, action: .swap, sendMaxAmount: false)
-            
-            switch tx.quote {
-            case .thorchain:
-                tx.fee = try await thorchainFee(for: chainSpecific, tx: tx, vault: vault)
-            case .oneinch, .none:
-                break
-            }
-            
+
+            tx.thorchainFee = try await thorchainFee(for: chainSpecific, tx: tx, vault: vault)
             tx.gas = chainSpecific.gas
         } catch {
             print("Update fees error: \(error.localizedDescription)")
@@ -437,7 +431,6 @@ private extension SwapCryptoViewModel {
     
     func clearQuote(tx: SwapTransaction) {
         tx.quote = nil
-        tx.fee = .zero
     }
     
     func swapFromAmount(tx: SwapTransaction) -> BigInt {

@@ -14,9 +14,21 @@ class SwapTransaction: ObservableObject {
     @Published var fromCoin: Coin = .example
     @Published var toCoin: Coin = .example
     @Published var fromAmount: String = .empty
-    @Published var fee: BigInt = .zero
+    @Published var thorchainFee: BigInt = .zero
+    @Published var oneInchFee: BigInt = .zero
     @Published var gas: BigInt = .zero
     @Published var quote: SwapQuote?
+
+    var fee: BigInt {
+        switch quote {
+        case .thorchain:
+            return thorchainFee
+        case .oneinch:
+            return oneInchFee
+        case nil:
+            return .zero
+        }
+    }
 
     var fromBalance: String {
         return fromCoin.balanceString
