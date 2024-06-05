@@ -85,7 +85,7 @@ struct VaultDetailView: View {
     var list: some View {
         List {
             ForEach(viewModel.coinsGroupedByChains.sorted(by: {
-                $0.totalBalanceInFiatString > $1.totalBalanceInFiatString
+                $0.coins.totalBalanceInFiatDecimal > $1.coins.totalBalanceInFiatDecimal
             }), id: \.id) { group in
                 ChainNavigationCell(
                     group: group,
