@@ -70,7 +70,7 @@ struct VaultDeletionConfirmView: View {
     }
     
     var checkboxes: some View {
-        VStack(spacing: 32) {
+        VStack(spacing: 24) {
             Checkbox(isChecked: $permanentDeletionCheck, text: "vaultWillBeDeletedPermanentlyPrompt")
             Checkbox(isChecked: $canLooseFundCheck, text: "canLooseFundsPrompt")
             Checkbox(isChecked: $vaultBackupCheck, text: "madeVaultBackupPrompt")
