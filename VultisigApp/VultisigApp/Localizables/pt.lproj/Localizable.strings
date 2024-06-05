@@ -190,3 +190,9 @@
 "alreadyExists" = "já existe";
 "dismiss" = "Descartar";
 "urlCopied" = "URL copiado";
+"vaultWillBeDeletedPermanentlyPrompt" = "Estou ciente de que o cofre será excluído permanentemente";
+"canLooseFundsPrompt" = "Estou ciente de que posso perder fundos";
+"madeVaultBackupPrompt" = "Fiz um backup do cofre";
+"youArePermanentlyDeletingVault" = "Você está excluindo permanentemente seu cofre";
+"reviewConditions" = "Revisar Condições";
+"reviewConditionsMessage" = "Por favor, reveja e concorde com todas as condições listadas.";
