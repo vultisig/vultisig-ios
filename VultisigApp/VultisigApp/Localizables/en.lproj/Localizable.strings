@@ -215,3 +215,5 @@
 "canLooseFundsPrompt" = "I am aware that I can loose funds";
 "madeVaultBackupPrompt" = "I have made a vault backup";
 "youArePermanentlyDeletingVault" = "You are permanently deleting your vault";
+"reviewConditions" = "Review Conditions";
+"reviewConditionsMessage" = "Kindly review and agree to all the listed conditions.";

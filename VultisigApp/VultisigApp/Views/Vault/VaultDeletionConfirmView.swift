@@ -14,6 +14,8 @@ struct VaultDeletionConfirmView: View {
     @State var permanentDeletionCheck = false
     @State var canLooseFundCheck = false
     @State var vaultBackupCheck = false
+    
+    @State var showAlert = false
     @State var navigateBackToHome = false
     
     @Environment(\.modelContext) private var modelContext
@@ -46,6 +48,9 @@ struct VaultDeletionConfirmView: View {
         .padding(18)
         .navigationDestination(isPresented: $navigateBackToHome) {
             HomeView(selectedVault: vaults.first, showVaultsList: true)
+        }
+        .alert(isPresented: $showAlert) {
+            alert
         }
     }
     
@@ -81,6 +86,11 @@ struct VaultDeletionConfirmView: View {
     }
     
     private func delete() {
+        guard allFieldsChecked() else {
+            showAlert = true
+            return
+        }
+        
         modelContext.delete(vault)
         do {
             try modelContext.save()
@@ -89,6 +99,18 @@ struct VaultDeletionConfirmView: View {
         }
         ApplicationState.shared.currentVault = nil
         navigateBackToHome = true
+    }
+    
+    private func allFieldsChecked() -> Bool {
+        permanentDeletionCheck && canLooseFundCheck && vaultBackupCheck
+    }
+    
+    var alert: Alert {
+        Alert(
+            title: Text(NSLocalizedString("reviewConditions", comment: "")),
+            message: Text(NSLocalizedString("reviewConditionsMessage", comment: "")),
+            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+        )
     }
 }
 
