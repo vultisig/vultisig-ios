@@ -25,13 +25,16 @@ struct SwapService {
 
 private extension SwapService {
 
-    enum Errors: String, Error, LocalizedError {
+    enum Errors: Error, LocalizedError {
         case swapAmountTooSmall
+        case lessThenMinSwapAmount(amount: String)
 
         var errorDescription: String? {
             switch self {
             case .swapAmountTooSmall:
                 return "Swap amount too small"
+            case .lessThenMinSwapAmount(let amount):
+                return "Swap amount too small. Recommended amount \(amount)"
             }
         }
     }
@@ -52,12 +55,16 @@ private extension SwapService {
             }
 
             if let minSwapAmountDecimal = quote.minSwapAmountDecimal, amount < minSwapAmountDecimal {
-                throw Errors.swapAmountTooSmall
+                let recommendedAmount = "\(minSwapAmountDecimal) \(fromCoin.ticker)"
+                throw Errors.lessThenMinSwapAmount(amount: recommendedAmount)
             }
 
             return .thorchain(quote)
         }
         catch let error as ThorchainSwapError {
+            throw error
+        }
+        catch let error as Errors {
             throw error
         }
         catch {
