@@ -12,13 +12,8 @@ struct EditVaultView: View {
     let vault: Vault
     
     @State var showVaultExporter = false
-    @State var showAlert = false
-    @State var navigateBackToHome = false
     
     @Environment(\.dismiss) var dismiss
-    @Environment(\.modelContext) private var modelContext
-    
-    @Query var vaults: [Vault]
     
     var body: some View {
         exporter
@@ -45,15 +40,6 @@ struct EditVaultView: View {
     
     var alert: some View {
         navigation
-            .alert(NSLocalizedString("deleteVaultTitle", comment: ""), isPresented: $showAlert) {
-                Button(NSLocalizedString("delete", comment: ""), role: .destructive) { delete() }
-                Button(NSLocalizedString("cancel", comment: ""), role: .cancel) {}
-            } message: {
-                Text(NSLocalizedString("deleteVaultDescription", comment: ""))
-            }
-            .navigationDestination(isPresented: $navigateBackToHome) {
-                HomeView(selectedVault: vaults.first, showVaultsList: true)
-            }
     }
     
     var exporter: some View {
@@ -116,11 +102,12 @@ struct EditVaultView: View {
     }
     
     var deleteVault: some View {
-        Button {
-            showDeleteAlert()
+        NavigationLink {
+            VaultDeletionConfirmView(vault: vault)
         } label: {
             EditVaultCell(title: "delete", description: "deleteVault", icon: "trash.fill", isDestructive: true)
         }
+
     }
     
     var reshareVault: some View {
@@ -129,21 +116,6 @@ struct EditVaultView: View {
         } label: {
             EditVaultCell(title: "reshare", description: "reshareVault", icon: "square.and.arrow.up.fill")
         }
-    }
-    
-    private func showDeleteAlert() {
-        showAlert.toggle()
-    }
-    
-    private func delete() {
-        modelContext.delete(vault)
-        do {
-            try modelContext.save()
-        } catch {
-            print("Error: \(error)")
-        }
-        ApplicationState.shared.currentVault = nil
-        navigateBackToHome = true
     }
 }
 

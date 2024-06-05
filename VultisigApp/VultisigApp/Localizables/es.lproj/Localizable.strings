@@ -190,3 +190,9 @@
 "alreadyExists" = "ya existe";
 "dismiss" = "Descartar";
 "urlCopied" = "URL copiado";
+"vaultWillBeDeletedPermanentlyPrompt" = "Soy consciente de que el almacén será eliminado permanentemente";
+"canLooseFundsPrompt" = "Soy consciente de que puedo perder fondos";
+"madeVaultBackupPrompt" = "He hecho una copia de seguridad del almacén";
+"youArePermanentlyDeletingVault" = "Estás eliminando permanentemente tu almacén";
+"reviewConditions" = "Revisar Condiciones";
+"reviewConditionsMessage" = "Por favor, revise y acepte todas las condiciones listadas.";
