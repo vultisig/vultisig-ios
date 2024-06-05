@@ -12,7 +12,7 @@ struct ChainNavigationCell: View {
     let vault: Vault
     
     @State private var isActive = false
-    @Binding var isEditingChains: Bool
+    @State var isEditingChains: Bool = false
     @EnvironmentObject var viewModel: VaultDetailViewModel
     
     @State var showAlert = false
@@ -66,8 +66,7 @@ struct ChainNavigationCell: View {
 #Preview {
     ChainNavigationCell(
         group: GroupedChain.example,
-        vault: Vault.example,
-        isEditingChains: .constant(true)
+        vault: Vault.example
     )
     .environmentObject(VaultDetailViewModel())
 }

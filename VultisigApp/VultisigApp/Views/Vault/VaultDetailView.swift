@@ -10,7 +10,6 @@ import SwiftUI
 
 struct VaultDetailView: View {
     @Binding var showVaultsList: Bool
-    @Binding var isEditingChains: Bool
     let vault: Vault
     
     @EnvironmentObject var appState: ApplicationState
@@ -86,15 +85,13 @@ struct VaultDetailView: View {
     var list: some View {
         List {
             ForEach(viewModel.coinsGroupedByChains.sorted(by: {
-                $0.order < $1.order
+                $0.coins.totalBalanceInFiatDecimal > $1.coins.totalBalanceInFiatDecimal
             }), id: \.id) { group in
                 ChainNavigationCell(
                     group: group,
-                    vault: vault,
-                    isEditingChains: $isEditingChains
+                    vault: vault
                 )
             }
-            .onMove(perform: isEditingChains ? move : nil)
             .background(Color.backgroundBlue)
         }
         .listStyle(PlainListStyle())
@@ -117,7 +114,7 @@ struct VaultDetailView: View {
     
     var chainList: some View {
         ForEach(viewModel.coinsGroupedByChains, id: \.id) { group in
-            ChainNavigationCell(group: group, vault: vault, isEditingChains: $isEditingChains)
+            ChainNavigationCell(group: group, vault: vault)
         }
     }
     
@@ -175,35 +172,6 @@ struct VaultDetailView: View {
         viewModel.getGroupAsync(tokenSelectionViewModel)
     }
     
-    private func move(from: IndexSet, to: Int) {
-        let fromIndex = from.first ?? 0
-        
-        if fromIndex<to {
-            moveDown(fromIndex: fromIndex, toIndex: to-1)
-        } else {
-            moveUp(fromIndex: fromIndex, toIndex: to)
-        }
-    }
-    
-    private func moveDown(fromIndex: Int, toIndex: Int) {
-        let groups = viewModel.coinsGroupedByChains
-        
-        for index in fromIndex...toIndex {
-            groups[index].order = groups[index].order-1
-        }
-        groups[fromIndex].order = toIndex
-    }
-    
-    private func moveUp(fromIndex: Int, toIndex: Int) {
-        let groups = viewModel.coinsGroupedByChains
-        
-        groups[fromIndex].order = toIndex
-        
-        for index in toIndex...fromIndex {
-            groups[index].order = groups[index].order+1
-        }
-    }
-    
     private func getListHeight() -> CGFloat {
         CGFloat(viewModel.coinsGroupedByChains.count*86)
     }
@@ -219,9 +187,9 @@ struct VaultDetailView: View {
 }
 
 #Preview {
-    VaultDetailView(showVaultsList: .constant(false), isEditingChains: .constant(false), vault: Vault.example)
+    VaultDetailView(showVaultsList: .constant(false), vault: Vault.example)
         .environmentObject(ApplicationState())
         .environmentObject(VaultDetailViewModel())
-        .environmentObject(ApplicationState.shared)
+        .environmentObject(CoinSelectionViewModel())
         .environmentObject(HomeViewModel())
 }
