@@ -10,6 +10,7 @@ import SwiftUI
 struct FilledButton: View {
     let title: String
     var icon: String = ""
+    var background: Color = Color.turquoise600
     
     var body: some View {
         HStack(spacing: 10) {
@@ -20,7 +21,7 @@ struct FilledButton: View {
         }
         .padding(12)
         .frame(maxWidth: .infinity)
-        .background(Color.turquoise600)
+        .background(background)
         .cornerRadius(100)
     }
     
