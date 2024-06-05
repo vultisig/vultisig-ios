@@ -67,6 +67,11 @@ struct HomeView: View {
         .navigationDestination(isPresented: $shouldKeysignTransaction) {
             if let vault = viewModel.selectedVault {
                 JoinKeysignView(vault: vault)
+                    .onAppear {
+                        print("----------")
+                        print("HOME VIEW")
+                        print("----------")
+                    }
             }
         }
     }
@@ -143,6 +148,7 @@ struct HomeView: View {
         guard let type = deeplinkViewModel.type else {
             return
         }
+        deeplinkViewModel.type = nil
         
         switch type {
         case .NewVault:
