@@ -211,3 +211,7 @@
 "alreadyExists" = "already exists";
 "dismiss" = "Dismiss";
 "urlCopied" = "URL Copied";
+"vaultWillBeDeletedPermanentlyPrompt" = "I am aware that the vault will be deleted permanently";
+"canLooseFundsPrompt" = "I am aware that I can loose funds";
+"madeVaultBackupPrompt" = "I have made a vault backup";
+"youArePermanentlyDeletingVault" = "You are permanently deleting your vault";
