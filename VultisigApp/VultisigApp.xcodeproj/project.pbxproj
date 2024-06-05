@@ -213,6 +213,7 @@
 		A6F9F7E72B9BB63700790258 /* VaultCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9F7E62B9BB63700790258 /* VaultCell.swift */; };
 		A6F9F7E92B9BBFD500790258 /* AddressQRCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9F7E82B9BBFD500790258 /* AddressQRCodeView.swift */; };
 		A6F9F7EB2B9D1B3700790258 /* VaultDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F9F7EA2B9D1B3700790258 /* VaultDetailViewModel.swift */; };
+		A6FA40212C10241700D6C6B7 /* VaultDeletionConfirmView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6FA40202C10241700D6C6B7 /* VaultDeletionConfirmView.swift */; };
 		A6FB96B12BD086AD00D56F68 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6FB96B02BD086AD00D56F68 /* HomeViewModel.swift */; };
 		A6FB96B32BD0CDA900D56F68 /* NavigationEditButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6FB96B22BD0CDA900D56F68 /* NavigationEditButton.swift */; };
 		A6FB96B52BD0CE6700D56F68 /* NavigationHomeEditButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6FB96B42BD0CE6700D56F68 /* NavigationHomeEditButton.swift */; };
@@ -560,6 +561,7 @@
 		A6F9F7E62B9BB63700790258 /* VaultCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultCell.swift; sourceTree = "<group>"; };
 		A6F9F7E82B9BBFD500790258 /* AddressQRCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressQRCodeView.swift; sourceTree = "<group>"; };
 		A6F9F7EA2B9D1B3700790258 /* VaultDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailViewModel.swift; sourceTree = "<group>"; };
+		A6FA40202C10241700D6C6B7 /* VaultDeletionConfirmView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDeletionConfirmView.swift; sourceTree = "<group>"; };
 		A6FB96B02BD086AD00D56F68 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
 		A6FB96B22BD0CDA900D56F68 /* NavigationEditButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationEditButton.swift; sourceTree = "<group>"; };
 		A6FB96B42BD0CE6700D56F68 /* NavigationHomeEditButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationHomeEditButton.swift; sourceTree = "<group>"; };
@@ -1293,10 +1295,11 @@
 		D9AD8ED72B67225F0009F8D5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				A5BA150D2C085ED300AA6C07 /* ImageView */,
+				A6F42CC12C09175B00D0431C /* GeneralCodeScannerView.swift */,
 				D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */,
 				A6D0BA692C08353700E24DC9 /* NoCameraPermissionView.swift */,
 				A65518022BF849FC006BB924 /* CoverView.swift */,
+				A5BA150D2C085ED300AA6C07 /* ImageView */,
 				B5A97CEB2BF41554007574D7 /* TransactionMemo */,
 				46D067E42B8852B70052F535 /* Keygen */,
 				049BBB4E2B71E37B004C231F /* Components */,
@@ -1308,7 +1311,6 @@
 				A6C0D55D2BB3B71300156689 /* Transactions */,
 				A6980C222BC0834E00F452AB /* Settings */,
 				A6966D1C2BA3DD9900903CA4 /* Onboarding */,
-				A6F42CC12C09175B00D0431C /* GeneralCodeScannerView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1334,6 +1336,7 @@
 				A66A0BDA2BA13B570021A483 /* CoinsGrouped.swift */,
 				DE63AE4C2BB4E94E001BBE5C /* JSONRPCResponse.swift */,
 				DE63AE4E2BB4E96E001BBE5C /* JSONRPCError.swift */,
+				DEFF58F72BCF4E11005DFDF9 /* BackupVault.swift */,
 				461AD1BA2BC7239C00959278 /* DeviceInfo.swift */,
 				DEFF58F52BCCB573005DFDF9 /* RegisterVault.swift */,
 			);
@@ -1399,8 +1402,8 @@
 				A6BACF192BC705DA00084810 /* ChainDetailView.swift */,
 				A6BACF1B2BC79B3100084810 /* TokenSelectionView.swift */,
 				461AD1B62BC6706500959278 /* VaultPairDetailView.swift */,
-				DEFF58F72BCF4E11005DFDF9 /* BackupVault.swift */,
 				A62D6B022BFE7BF400F24E51 /* CoinDetailView.swift */,
+				A6FA40202C10241700D6C6B7 /* VaultDeletionConfirmView.swift */,
 			);
 			path = Vault;
 			sourceTree = "<group>";
@@ -1799,6 +1802,7 @@
 				A65BA9862BAA0F0D00B2D8AA /* SendCryptoVerifyViewModel.swift in Sources */,
 				A63953B22BA7CB8E000802EC /* SendCryptoKeysignView.swift in Sources */,
 				A65BA9982BAD479C00B2D8AA /* JoinKeysignDoneView.swift in Sources */,
+				A6FA40212C10241700D6C6B7 /* VaultDeletionConfirmView.swift in Sources */,
 				A6980C242BC0836300F452AB /* SettingsView.swift in Sources */,
 				A6F9F7DF2B9BAA9F00790258 /* Separator.swift in Sources */,
 				A6966D222BA3E1B000903CA4 /* TextStore.swift in Sources */,
