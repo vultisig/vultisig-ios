@@ -18,7 +18,6 @@ struct HomeView: View {
 
     @State var showVaultsList = false
     @State var isEditingVaults = false
-    @State var isEditingChains = false
     @State var showMenu = false
     @State var didUpdate = true
     @State var shouldJoinKeygen = false
@@ -39,7 +38,7 @@ struct HomeView: View {
     var view: some View {
         ZStack {
             if let vault = viewModel.selectedVault {
-                VaultDetailView(showVaultsList: $showVaultsList, isEditingChains: $isEditingChains, vault: vault)
+                VaultDetailView(showVaultsList: $showVaultsList, vault: vault)
             }
             
             VaultsView(viewModel: viewModel, showVaultsList: $showVaultsList, isEditingVaults: $isEditingVaults)
@@ -120,8 +119,7 @@ struct HomeView: View {
         NavigationHomeEditButton(
             vault: viewModel.selectedVault,
             showVaultsList: showVaultsList,
-            isEditingVaults: $isEditingVaults, 
-            isEditingChains: $isEditingChains
+            isEditingVaults: $isEditingVaults
         )
     }
     
