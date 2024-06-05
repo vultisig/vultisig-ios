@@ -67,11 +67,6 @@ struct HomeView: View {
         .navigationDestination(isPresented: $shouldKeysignTransaction) {
             if let vault = viewModel.selectedVault {
                 JoinKeysignView(vault: vault)
-                    .onAppear {
-                        print("----------")
-                        print("HOME VIEW")
-                        print("----------")
-                    }
             }
         }
     }
