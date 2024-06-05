@@ -143,6 +143,7 @@ struct HomeView: View {
         guard let type = deeplinkViewModel.type else {
             return
         }
+        deeplinkViewModel.type = nil
         
         switch type {
         case .NewVault:
