@@ -6,11 +6,19 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct VaultDeletionConfirmView: View {
+    let vault: Vault
+    
     @State var permanentDeletionCheck = false
     @State var canLooseFundCheck = false
     @State var vaultBackupCheck = false
+    @State var navigateBackToHome = false
+    
+    @Environment(\.modelContext) private var modelContext
+    
+    @Query var vaults: [Vault]
     
     var body: some View {
         ZStack {
@@ -36,6 +44,9 @@ struct VaultDeletionConfirmView: View {
             button
         }
         .padding(18)
+        .navigationDestination(isPresented: $navigateBackToHome) {
+            HomeView(selectedVault: vaults.first, showVaultsList: true)
+        }
     }
     
     var logo: some View {
@@ -62,10 +73,25 @@ struct VaultDeletionConfirmView: View {
     }
     
     var button: some View {
-        FilledButton(title: "deleteVaultTitle", background: Color.alertRed)
+        Button {
+            delete()
+        } label: {
+            FilledButton(title: "deleteVaultTitle", background: Color.alertRed)
+        }
+    }
+    
+    private func delete() {
+        modelContext.delete(vault)
+        do {
+            try modelContext.save()
+        } catch {
+            print("Error: \(error)")
+        }
+        ApplicationState.shared.currentVault = nil
+        navigateBackToHome = true
     }
 }
 
 #Preview {
-    VaultDeletionConfirmView()
+    VaultDeletionConfirmView(vault: Vault.example)
 }
