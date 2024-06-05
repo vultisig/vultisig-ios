@@ -88,14 +88,14 @@ final class BlockChainService {
             return .Polkadot(recentBlockHash: gasInfo.recentBlockHash, nonce: UInt64(gasInfo.nonce), currentBlockNumber: gasInfo.currentBlockNumber, specVersion: gasInfo.specVersion, transactionVersion: gasInfo.transactionVersion, genesisHash: gasInfo.genesisHash)
             
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain:
-            let service = try EvmServiceFactory.getService(forChain: coin)
+            let service = try EvmServiceFactory.getService(forCoin: coin)
             let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(fromAddress: coin.address)
             let gasLimit = BigInt(coin.feeDefault) ?? 0
             let normalizedGasPrice = normalize(gasPrice, action: action)
             return .Ethereum(maxFeePerGasWei: normalizedGasPrice, priorityFeeWei: normalizePriorityFee(priorityFee,coin.chain), nonce: nonce, gasLimit: gasLimit)
             
         case .zksync:
-            let service = try EvmServiceFactory.getService(forChain: coin)
+            let service = try EvmServiceFactory.getService(forCoin: coin)
             let (gasLimit, _, maxFeePerGas, maxPriorityFeePerGas, nonce) = try await service.getGasInfoZk(fromAddress: coin.address, toAddress: "0x0000000000000000000000000000000000000000")
 
             return .Ethereum(maxFeePerGasWei: maxFeePerGas, priorityFeeWei: maxPriorityFeePerGas, nonce: nonce, gasLimit: gasLimit)
