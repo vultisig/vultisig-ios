@@ -12,7 +12,7 @@ struct VaultDeletionConfirmView: View {
     let vault: Vault
     
     @State var permanentDeletionCheck = false
-    @State var canLooseFundCheck = false
+    @State var canLoseFundCheck = false
     @State var vaultBackupCheck = false
     
     @State var showAlert = false
@@ -72,7 +72,7 @@ struct VaultDeletionConfirmView: View {
     var checkboxes: some View {
         VStack(spacing: 24) {
             Checkbox(isChecked: $permanentDeletionCheck, text: "vaultWillBeDeletedPermanentlyPrompt")
-            Checkbox(isChecked: $canLooseFundCheck, text: "canLooseFundsPrompt")
+            Checkbox(isChecked: $canLoseFundCheck, text: "canLoseFundsPrompt")
             Checkbox(isChecked: $vaultBackupCheck, text: "madeVaultBackupPrompt")
         }
     }
@@ -102,7 +102,7 @@ struct VaultDeletionConfirmView: View {
     }
     
     private func allFieldsChecked() -> Bool {
-        permanentDeletionCheck && canLooseFundCheck && vaultBackupCheck
+        permanentDeletionCheck && canLoseFundCheck && vaultBackupCheck
     }
     
     var alert: Alert {
