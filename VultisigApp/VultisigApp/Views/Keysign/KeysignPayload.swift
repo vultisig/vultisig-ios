@@ -80,7 +80,7 @@ struct KeysignPayload: Codable, Hashable {
     
     var toAmountString: String {
         let decimalAmount = Decimal(string: toAmount.description) ?? Decimal.zero
-        let power = Decimal(sign: .plus, exponent: -(Int(coin.decimals) ?? 0), significand: 1)
+        let power = Decimal(sign: .plus, exponent: -coin.decimals, significand: 1)
         return "\(decimalAmount * power) \(coin.ticker)"
     }
     
