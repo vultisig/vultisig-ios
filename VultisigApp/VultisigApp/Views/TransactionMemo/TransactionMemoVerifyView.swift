@@ -80,14 +80,6 @@ struct TransactionMemoVerifyView: View {
         .cornerRadius(10)
     }
     
-    //    var checkboxes: some View {
-    //        VStack(spacing: 16) {
-    //            Checkbox(isChecked: $depositVerifyViewModel.isAddressCorrect, text: "sendingRightAddressCheck")
-    //            Checkbox(isChecked: $depositVerifyViewModel.isAmountCorrect, text: "correctAmountCheck")
-    //            Checkbox(isChecked: $depositVerifyViewModel.isHackedOrPhished, text: "notHackedCheck")
-    //        }
-    //    }
-    
     var button: some View {
         Button {
             depositVerifyViewModel.isLoading = true

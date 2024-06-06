@@ -39,6 +39,8 @@ extension Color {
     static let loadingBlue = Color(hex: "1DA7FA")
     static let loadingGreen = Color(hex: "24D7A6")
     
+    static let alertRed = Color(hex: "#FF4040")
+    
     // Background
     static let backgroundBlue = Color(hex: "02122B")
 }

@@ -190,4 +190,10 @@
 "alreadyExists" = "već postoji";
 "dismiss" = "Odbaci";
 "urlCopied" = "URL kopiran";
+"vaultWillBeDeletedPermanentlyPrompt" = "Svjestan sam da će spremište biti trajno izbrisano";
+"canLoseFundsPrompt" = "Svjestan sam da mogu izgubiti sredstva";
+"madeVaultBackupPrompt" = "Napravio sam sigurnosnu kopiju spremišta";
+"youArePermanentlyDeletingVault" = "Trajno brišete svoje spremište";
+"reviewConditions" = "Pregled uvjeta";
+"reviewConditionsMessage" = "Molimo pregledajte i prihvatite sve navedene uvjete.";
 "deposit" = "Polog";

@@ -190,4 +190,10 @@
 "alreadyExists" = "esiste già";
 "dismiss" = "Ignora";
 "urlCopied" = "URL copiato";
+"vaultWillBeDeletedPermanentlyPrompt" = "Sono consapevole che il caveau sarà eliminato permanentemente";
+"canLoseFundsPrompt" = "Sono consapevole che posso perdere fondi";
+"madeVaultBackupPrompt" = "Ho fatto un backup del caveau";
+"youArePermanentlyDeletingVault" = "Stai eliminando definitivamente il tuo caveau";
+"reviewConditions" = "Rivedi le Condizioni";
+"reviewConditionsMessage" = "Si prega di rivedere e accettare tutte le condizioni elencate.";
 "deposit" = "Deposito";

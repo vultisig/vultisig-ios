@@ -190,4 +190,10 @@
 "alreadyExists" = "existiert bereits";
 "dismiss" = "Verwerfen";
 "urlCopied" = "URL kopiert";
+"vaultWillBeDeletedPermanentlyPrompt" = "Mir ist bewusst, dass der Tresor dauerhaft gelöscht wird";
+"canLoseFundsPrompt" = "Mir ist bewusst, dass ich Geld verlieren kann";
+"madeVaultBackupPrompt" = "Ich habe eine Sicherung des Tresors erstellt";
+"youArePermanentlyDeletingVault" = "Sie löschen Ihren Tresor dauerhaft";
+"reviewConditions" = "Bedingungen überprüfen";
+"reviewConditionsMessage" = "Bitte überprüfen und stimmen Sie allen aufgeführten Bedingungen zu.";
 "deposit" = "Einzahlung";

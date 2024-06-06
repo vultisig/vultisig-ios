@@ -62,6 +62,7 @@ struct VaultPairDetailView: View {
                     }
                 }
             }
+            .padding(.top, 30)
         }
     }
 }

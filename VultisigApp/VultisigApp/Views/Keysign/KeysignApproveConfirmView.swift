@@ -73,3 +73,7 @@ struct KeysignApproveConfirmView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
+
+#Preview {
+    KeysignApproveConfirmView(viewModel: JoinKeysignViewModel())
+}
