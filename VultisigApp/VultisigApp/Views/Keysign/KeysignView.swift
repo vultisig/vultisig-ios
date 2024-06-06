@@ -15,7 +15,7 @@ struct KeysignView: View {
     let keysignPayload: KeysignPayload? // need to pass it along to the next view
     let transferViewModel: TransferViewModel?
     let encryptionKeyHex: String
-
+    
     let logger = Logger(subsystem: "keysign", category: "tss")
     
     @StateObject var viewModel = KeysignViewModel()
@@ -38,6 +38,7 @@ struct KeysignView: View {
             }
         }
         .onAppear {
+            UIApplication.shared.isIdleTimerDisabled = true
             setData()
         }
         .task {
@@ -48,6 +49,7 @@ struct KeysignView: View {
         }
         .onDisappear(){
             viewModel.stopMessagePuller()
+            UIApplication.shared.isIdleTimerDisabled = false
         }
     }
     
