@@ -64,6 +64,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         switch tx.quote {
         case .thorchain:
             return Endpoint.getSwapProgressURL(txid: hash)
+        case .mayachain:
+            return Endpoint.getMayaSwapTracker(txid: hash)
         case .oneinch, .none:
             return nil
         }
@@ -185,8 +187,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             )
             
             switch quote {
-            case .thorchain(let quote):
-                
+            case .thorchain(let quote), .mayachain(let quote):
+
                 guard quote.inboundAddress != nil || tx.fromCoin.chain == .thorChain else {
                     throw Errors.unexpectedError
                 }
@@ -387,7 +389,7 @@ private extension SwapCryptoViewModel {
             switch quote {
             case .oneinch(let quote):
                 tx.oneInchFee = oneInchFee(quote: quote)
-            case .thorchain: 
+            case .thorchain, .mayachain: 
                 break
             }
             

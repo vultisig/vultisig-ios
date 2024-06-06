@@ -48,11 +48,7 @@ class MayachainService: ThorchainSwapProvider {
             let response = try JSONDecoder().decode(ThorchainSwapQuote.self, from: data)
             return response
         } catch {
-            struct CustomError: Codable, Error, LocalizedError {
-                let error: String
-                var errorDescription: String? { return error.capitalized }
-            }
-            let error = try JSONDecoder().decode(CustomError.self, from: data)
+            let error = try JSONDecoder().decode(ThorchainSwapError.self, from: data)
             throw error
         }
     }

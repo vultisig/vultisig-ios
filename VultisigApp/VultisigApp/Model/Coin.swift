@@ -199,9 +199,6 @@ class Coin: ObservableObject, Codable, Hashable {
             }
             return "\(chain.swapAsset).\(chain.ticker)"
         }
-        if chain == .mayaChain {
-            return "MAYA.RUNE"
-        }
         return "\(chain.swapAsset).\(ticker)-\(contractAddress)"
     }
     
