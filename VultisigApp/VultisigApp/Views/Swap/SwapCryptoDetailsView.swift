@@ -152,10 +152,6 @@ struct SwapCryptoDetailsView: View {
         toCoins = swapViewModel.coins.filter({ coin in
             coin.id != tx.fromCoin.id
         })
-        
-        if let firstCoin = toCoins.first {
-            tx.toCoin = firstCoin
-        }
     }
 }
 
