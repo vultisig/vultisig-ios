@@ -13,13 +13,25 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
     @Binding var value: Value
     let format: FloatingPointFormatStyle<Value>
     
-    var content: some View {
+    @Binding var isValid: Bool
+    var isOptional: Bool = false
+    
+    @State private var localIsValid: Bool = true
+    
+    var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(placeholder)
-                .font(.body14MontserratMedium)
-                .foregroundColor(.neutral0)
+            HStack {
+                Text("\(placeholder)\(optionalMessage)")
+                    .font(.body14MontserratMedium)
+                    .foregroundColor(.neutral0)
+                if !localIsValid {
+                    Text("*")
+                        .font(.body14MontserratMedium)
+                        .foregroundColor(.red)
+                }
+            }
             
-            TextField(placeholder.capitalized, value: $value, format: format)
+            TextField(placeholder.capitalized, value: customBinding, format: format)
                 .font(.body16Menlo)
                 .foregroundColor(.neutral0)
                 .submitLabel(.done)
@@ -27,10 +39,38 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
                 .background(Color.blue600)
                 .cornerRadius(12)
                 .keyboardType(.decimalPad)
+                .onAppear {
+                    localIsValid = isValid
+                    validate(value)
+                }
         }
     }
     
-    var body: some View {
-        content
+    var customBinding: Binding<Value> {
+        Binding<Value>(
+            get: { value },
+            set: { newValue in
+                value = newValue
+                validate(newValue)
+            }
+        )
+    }
+    
+    var optionalMessage: String {
+        if isOptional {
+            return " (optional)"
+        }
+        return ""
+    }
+    
+    private func validate(_ newValue: Value) {
+        print("Validating value: \(newValue)")
+        if isOptional {
+            isValid = String(describing: newValue).isEmpty || newValue > 0
+        } else {
+            isValid = !String(describing: newValue).isEmpty && newValue > 0
+        }
+        localIsValid = isValid
+        print("Validation result: \(isValid)")
     }
 }

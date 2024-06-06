@@ -66,4 +66,17 @@ enum TransactionMemoInstance {
             return memo.toDictionary()
         }
     }
+    
+    var isTheFormValid: Bool {
+        switch self {
+        case .bond(let memo):
+            return memo.isTheFormValid
+        case .unbond(let memo):
+            return memo.isTheFormValid
+        case .leave(let memo):
+            return memo.isTheFormValid
+        case .custom(let memo):
+            return memo.isTheFormValid
+        }
+    }
 }

@@ -89,16 +89,20 @@ struct TransactionMemoDetailsView: View {
     var button: some View {
         Button {
             Task {
-                tx.amount = txMemoInstance.amount.description
-                tx.memo = txMemoInstance.description
-                tx.memoFunctionDictionary = txMemoInstance.toDictionary()
-                print(tx.memo)
-                transactionMemoViewModel.moveToNextView()
+                print("Is the form valid \(txMemoInstance.isTheFormValid)")
+                
+                if txMemoInstance.isTheFormValid {
+                    tx.amount = txMemoInstance.amount.description
+                    tx.memo = txMemoInstance.description
+                    tx.memoFunctionDictionary = txMemoInstance.toDictionary()
+                    transactionMemoViewModel.moveToNextView()
+                }
             }
         } label: {
             FilledButton(title: "continue")
         }
         .padding(40)
+//        .disabled(!txMemoInstance.isTheFormValid)
     }
     
     private func getTitle(for text: String) -> some View {

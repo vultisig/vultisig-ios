@@ -1,10 +1,3 @@
-//
-//  TransactionMemoBond.swift
-//  VultisigApp
-//
-//  Created by Enrique Souza Soares on 17/05/24.
-//
-
 import SwiftUI
 import Foundation
 import Combine
@@ -14,7 +7,15 @@ class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
     @Published var nodeAddress: String = ""
     @Published var provider: String = ""
     @Published var fee: Int64 = .zero
-
+    
+    // Internal
+    @Published var amountValid: Bool = false
+    @Published var nodeAddressValid: Bool = false
+    @Published var providerValid: Bool = true
+    @Published var feeValid: Bool = true
+    
+    @Published var isTheFormValid: Bool = false
+    
     var addressFields: [String: String] {
         get {
             var fields = ["nodeAddress": nodeAddress]
@@ -32,19 +33,31 @@ class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
             }
         }
     }
-
-    required init() {}
-
+    
+    private var cancellables = Set<AnyCancellable>()
+    
+    required init() {
+        setupValidation()
+    }
+    
     init(nodeAddress: String, provider: String = "", fee: Int64 = .zero) {
         self.nodeAddress = nodeAddress
         self.provider = provider
         self.fee = fee
+        setupValidation()
     }
-
+    
+    private func setupValidation() {
+        Publishers.CombineLatest4($amountValid, $nodeAddressValid, $providerValid, $feeValid)
+            .map { $0 && $1 && $2 && $3 }
+            .assign(to: \.isTheFormValid, on: self)
+            .store(in: &cancellables)
+    }
+    
     var description: String {
         return toString()
     }
-
+    
     func toString() -> String {
         var memo = "BOND:\(self.nodeAddress)"
         if !self.provider.isEmpty {
@@ -59,7 +72,7 @@ class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
         }
         return memo
     }
-
+    
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("nodeAddress", self.nodeAddress)
@@ -68,19 +81,46 @@ class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
         dict.set("memo", self.toString())
         return dict
     }
-
+    
     func getView() -> AnyView {
         AnyView(VStack {
             StyledFloatingPointField(placeholder: "Amount", value: Binding(
                 get: { self.amount },
                 set: { self.amount = $0 }
-            ), format: .number)
-            TransactionMemoAddressTextField(memo: self, addressKey: "nodeAddress")
-            TransactionMemoAddressTextField(memo: self, addressKey: "provider", isOptional: true)
-            StyledIntegerField(placeholder: "Operator's Fee (optional)", value: Binding(
-                get: { self.fee },
-                set: { self.fee = $0 }
-            ), format: .number)
+            ), format: .number, isValid: Binding(
+                get: { self.amountValid },
+                set: { self.amountValid = $0 }
+            ))
+            TransactionMemoAddressTextField(
+                memo: self,
+                addressKey: "nodeAddress",
+                isAddressValid: Binding(
+                    get: { self.nodeAddressValid },
+                    set: { self.nodeAddressValid = $0 }
+                )
+            )
+            TransactionMemoAddressTextField(
+                memo: self,
+                addressKey: "provider",
+                isOptional: true,
+                isAddressValid: Binding(
+                    get: { self.providerValid },
+                    set: { self.providerValid = $0 }
+                )
+            )
+            StyledIntegerField(
+                placeholder: "Operator's Fee",
+                value: Binding(
+                    get: { self.fee },
+                    set: { self.fee = $0 }
+                ),
+                format: .number,
+                isValid: Binding(
+                    get: { self.feeValid },
+                    set: { self.feeValid = $0 }
+                ),
+                isOptional: true
+            )
         })
     }
 }

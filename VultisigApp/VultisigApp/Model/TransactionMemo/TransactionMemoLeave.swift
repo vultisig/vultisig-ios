@@ -10,8 +10,10 @@ import Foundation
 import Combine
 
 class TransactionMemoLeave: TransactionMemoAddressable, ObservableObject {
+    @Published var isTheFormValid: Bool = true
+    
     @Published var nodeAddress: String = ""
-
+    
     var addressFields: [String: String] {
         get {
             return ["nodeAddress": nodeAddress]
@@ -22,31 +24,34 @@ class TransactionMemoLeave: TransactionMemoAddressable, ObservableObject {
             }
         }
     }
-
+    
     required init() {}
-
+    
     init(nodeAddress: String) {
         self.nodeAddress = nodeAddress
     }
-
+    
     var description: String {
         return toString()
     }
-
+    
     func toString() -> String {
         return "LEAVE:\(self.nodeAddress)"
     }
-
+    
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("nodeAddress", self.nodeAddress)
         dict.set("memo", self.toString())
         return dict
     }
-
+    
     func getView() -> AnyView {
         AnyView(VStack {
-            TransactionMemoAddressTextField(memo: self, addressKey: "nodeAddress")
+            TransactionMemoAddressTextField(memo: self, addressKey: "nodeAddress", isAddressValid: Binding(
+                get: { self.isTheFormValid },
+                set: { self.isTheFormValid = $0 }
+            ))
         })
     }
 }

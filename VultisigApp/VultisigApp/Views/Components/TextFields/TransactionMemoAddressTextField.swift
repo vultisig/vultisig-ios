@@ -4,8 +4,8 @@
 //
 //  Created by Enrique Souza Soares on 14/05/24.
 //
-import Foundation
 import SwiftUI
+import Foundation
 import OSLog
 import CodeScanner
 import UniformTypeIdentifiers
@@ -16,7 +16,7 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
     var addressKey: String
     var isOptional: Bool = false
     
-    @State var isValid = true
+    @Binding var isAddressValid: Bool
     @State var showScanner = false
     @State var showImagePicker = false
     @State var selectedImage: UIImage?
@@ -28,7 +28,7 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
                     .font(.body14MontserratMedium)
                     .foregroundColor(.neutral0)
                 
-                if !isValid {
+                if !isAddressValid {
                     Text("*")
                         .font(.body14MontserratMedium)
                         .foregroundColor(.red)
@@ -55,6 +55,9 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
             .sheet(isPresented: $showImagePicker, onDismiss: processImage) {
                 ImagePicker(selectedImage: $selectedImage)
             }
+        }
+        .onChange(of: memo.addressFields[addressKey]) { newValue in
+            validateAddress(newValue ?? "")
         }
     }
     
@@ -151,7 +154,13 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
     }
     
     private func validateAddress(_ newValue: String) {
-        isValid = CoinType.thorchain.validate(address: newValue) ||
+        
+        if isOptional, newValue.isEmpty {
+            isAddressValid = true
+            return
+        }
+        
+        isAddressValid = CoinType.thorchain.validate(address: newValue) ||
         AnyAddress.isValidBech32(string: newValue, coin: .thorchain, hrp: "maya")
     }
     
