@@ -65,9 +65,9 @@ struct StyledIntegerField<Value: BinaryInteger & Codable>: View {
     private func validate(_ newValue: String) {
         print("Validating integer value: \(newValue)")
         if isOptional {
-            isValid = newValue.isEmpty || (Int64(newValue) ?? .zero > .zero)
+            isValid = newValue.isEmpty || (Int64(newValue) ?? .zero >= .zero)
         } else {
-            isValid = Int64(newValue) ?? .zero > .zero
+            isValid = !newValue.isEmpty && (Int64(newValue) ?? .zero > .zero)
         }
         localIsValid = isValid
         print("Validation result: \(isValid)")
