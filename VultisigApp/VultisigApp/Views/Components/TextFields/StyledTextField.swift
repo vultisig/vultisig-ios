@@ -62,13 +62,11 @@ struct StyledTextField: View {
     }
     
     private func validate(_ newValue: String) {
-        print("Validating text: \(newValue)")
         if isOptional {
             isValid = newValue.isEmpty || !newValue.trimmingCharacters(in: .whitespaces).isEmpty
         } else {
             isValid = !newValue.trimmingCharacters(in: .whitespaces).isEmpty
         }
         localIsValid = isValid
-        print("Validation result: \(isValid)")
     }
 }

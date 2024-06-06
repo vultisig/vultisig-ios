@@ -64,13 +64,11 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
     }
     
     private func validate(_ newValue: Value) {
-        print("Validating value: \(newValue)")
         if isOptional {
             isValid = String(describing: newValue).isEmpty || newValue >= 0
         } else {
             isValid = !String(describing: newValue).isEmpty && newValue > 0
         }
         localIsValid = isValid
-        print("Validation result: \(isValid)")
     }
 }

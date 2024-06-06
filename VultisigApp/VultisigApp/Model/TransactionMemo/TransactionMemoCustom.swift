@@ -52,7 +52,6 @@ class TransactionMemoCustom: TransactionMemoAddressable, ObservableObject {
     
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
-        dict.set("amount", "\(self.amount)")
         dict.set("memo", self.toString())
         return dict
     }
