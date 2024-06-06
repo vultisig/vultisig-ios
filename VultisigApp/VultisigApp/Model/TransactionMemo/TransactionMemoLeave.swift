@@ -10,9 +10,11 @@ import Foundation
 import Combine
 
 class TransactionMemoLeave: TransactionMemoAddressable, ObservableObject {
-    @Published var isTheFormValid: Bool = true
-    
     @Published var nodeAddress: String = ""
+    
+    // Internal
+    @Published var nodeAddressValid: Bool = false
+    @Published var isTheFormValid: Bool = false
     
     var addressFields: [String: String] {
         get {
@@ -25,10 +27,26 @@ class TransactionMemoLeave: TransactionMemoAddressable, ObservableObject {
         }
     }
     
-    required init() {}
+    private var cancellables = Set<AnyCancellable>()
+    
+    required init() {
+        setupValidation()
+    }
     
     init(nodeAddress: String) {
         self.nodeAddress = nodeAddress
+        setupValidation()
+    }
+    
+    private func setupValidation() {
+        $nodeAddressValid
+            .assign(to: \.isTheFormValid, on: self)
+            .store(in: &cancellables)
+        
+        $nodeAddress
+            .map { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+            .assign(to: \.nodeAddressValid, on: self)
+            .store(in: &cancellables)
     }
     
     var description: String {
@@ -48,10 +66,14 @@ class TransactionMemoLeave: TransactionMemoAddressable, ObservableObject {
     
     func getView() -> AnyView {
         AnyView(VStack {
-            TransactionMemoAddressTextField(memo: self, addressKey: "nodeAddress", isAddressValid: Binding(
-                get: { self.isTheFormValid },
-                set: { self.isTheFormValid = $0 }
-            ))
+            TransactionMemoAddressTextField(
+                memo: self,
+                addressKey: "nodeAddress",
+                isAddressValid: Binding(
+                    get: { self.nodeAddressValid },
+                    set: { self.nodeAddressValid = $0 }
+                )
+            )
         })
     }
 }
