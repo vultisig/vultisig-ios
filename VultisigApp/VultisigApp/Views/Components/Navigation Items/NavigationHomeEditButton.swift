@@ -12,6 +12,9 @@ struct NavigationHomeEditButton: View {
     let showVaultsList: Bool
     @Binding var isEditingVaults: Bool
     
+    @EnvironmentObject var viewModel: VaultDetailViewModel
+    @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
+    
     var body: some View {
         if showVaultsList {
             vaultsListEditButton
@@ -34,7 +37,7 @@ struct NavigationHomeEditButton: View {
     
     var vaultDetailRefreshButton: some View {
         NavigationRefreshButton {
-            
+            setData()
         }
     }
     
@@ -47,6 +50,17 @@ struct NavigationHomeEditButton: View {
             .font(.body18MenloBold)
             .foregroundColor(.neutral0)
     }
+    
+    private func setData() {
+        guard let vault else {
+            return
+        }
+        
+        viewModel.fetchCoins(for: vault)
+        viewModel.setOrder()
+        viewModel.updateBalance()
+        viewModel.getGroupAsync(tokenSelectionViewModel)
+    }
 }
 
 #Preview {
@@ -56,5 +70,7 @@ struct NavigationHomeEditButton: View {
             NavigationHomeEditButton(vault: Vault.example, showVaultsList: true, isEditingVaults: .constant(true))
             NavigationHomeEditButton(vault: Vault.example, showVaultsList: true, isEditingVaults: .constant(false))
         }
+        .environmentObject(VaultDetailViewModel())
+        .environmentObject(CoinSelectionViewModel())
     }
 }
