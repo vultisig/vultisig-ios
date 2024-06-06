@@ -87,7 +87,7 @@ struct VaultDetailView: View {
         .buttonStyle(BorderlessButtonStyle())
         .background(Color.backgroundBlue)
         .refreshable {
-            setData()
+            viewModel.updateBalance()
         }
         .colorScheme(.dark)
     }
