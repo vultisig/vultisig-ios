@@ -14,6 +14,7 @@ class VaultDetailViewModel: ObservableObject {
     @Published var selectedGroup: GroupedChain? = nil
     let balanceService = BalanceService.shared
     private var updateBalanceTask: Task<Void, Never>?
+    
     func updateBalance() {
         updateBalanceTask?.cancel()
         updateBalanceTask = Task {
