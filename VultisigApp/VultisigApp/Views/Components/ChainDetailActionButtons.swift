@@ -14,6 +14,9 @@ struct ChainDetailActionButtons: View {
     var coin: Coin? = nil
     
     @State var actions: [CoinAction] = []
+    @State var isSendLinkActive = false
+    @State var isSwapLinkActive = false
+    @State var isMemoLinkActive = false
     
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
@@ -43,37 +46,47 @@ struct ChainDetailActionButtons: View {
                 await setData()
             }
         }
-    }
-    
-    var memoButton: some View {
-        NavigationLink {
-            TransactionMemoView(
-                tx: sendTx,
-                vault: vault
-            )
-        } label: {
-            ActionButton(title: "Deposit", fontColor: .turquoise600)
-        }
-    }
-    
-    var sendButton: some View {
-        NavigationLink {
+        .navigationDestination(isPresented: $isSendLinkActive) {
             SendCryptoView(
                 tx: sendTx,
                 vault: vault
             )
+        }
+        .navigationDestination(isPresented: $isSwapLinkActive) {
+            if let coin {
+                SwapCryptoView(coin: coin, coins: viewModel.allCoins(vault: vault), vault: vault)
+            } else if let coin = group.coins.first(where: { $0.isNativeToken }) {
+                SwapCryptoView(coin: coin, coins: viewModel.allCoins(vault: vault), vault: vault)
+            }
+        }
+        .navigationDestination(isPresented: $isMemoLinkActive) {
+            TransactionMemoView(
+                tx: sendTx,
+                vault: vault
+            )
+        }
+    }
+    
+    var memoButton: some View {
+        Button {
+            isMemoLinkActive = true
+        } label: {
+            ActionButton(title: "Deposit", fontColor: .turquoise600)
+        }
+
+    }
+    
+    var sendButton: some View {
+        Button {
+            isSendLinkActive = true
         } label: {
             ActionButton(title: "send", fontColor: .turquoise600)
         }
     }
     
     var swapButton: some View {
-        NavigationLink {
-            if let coin {
-                SwapCryptoView(coin: coin, coins: viewModel.allCoins(vault: vault), vault: vault)
-            } else if let coin = group.coins.first(where: { $0.isNativeToken }) {
-                SwapCryptoView(coin: coin, coins: viewModel.allCoins(vault: vault), vault: vault)
-            }
+        Button {
+            isSwapLinkActive = true
         } label: {
             ActionButton(title: "swap", fontColor: .persianBlue200)
         }
