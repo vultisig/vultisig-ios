@@ -11,15 +11,42 @@ struct SwapService {
 
     static let shared = SwapService()
 
-    private let thorchainService: ThorchainService = ThorchainService.shared
+    private let thorchainService: ThorchainSwapProvider = ThorchainService.shared
+    private let mayachainService: ThorchainSwapProvider = MayachainService.shared
     private let oneInchService: OneInchService = OneInchService.shared
 
     func fetchQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
-        guard let fromChainID = fromCoin.chain.chainID, let toChainID = toCoin.chain.chainID, fromChainID == toChainID else {
-            return try await fetchThorchainQuote(amount: amount, fromCoin: fromCoin, toCoin: toCoin, isAffiliate: isAffiliate)
+        
+        // 1Inch resolver
+        if let fromChainID = fromCoin.chain.chainID,
+           let toChainID = toCoin.chain.chainID, fromChainID == toChainID
+        {
+            return try await fetchOneInchQuote(
+                chain: fromChainID,
+                amount: amount, fromCoin: fromCoin,
+                toCoin: toCoin, isAffiliate: isAffiliate
+            )
         }
 
-        return try await fetchOneInchQuote(chain: fromChainID, amount: amount, fromCoin: fromCoin, toCoin: toCoin, isAffiliate: isAffiliate)
+        // Mayachain resolver
+        if fromCoin.chain == .mayaChain || toCoin.chain == .mayaChain {
+            return try await fetchThorchainQuote(
+                provider: mayachainService,
+                amount: amount,
+                fromCoin: fromCoin,
+                toCoin: toCoin,
+                isAffiliate: isAffiliate
+            )
+        }
+
+        // Thorchain resolver
+        return try await fetchThorchainQuote(
+            provider: thorchainService,
+            amount: amount,
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            isAffiliate: isAffiliate
+        )
     }
 }
 
@@ -39,9 +66,15 @@ private extension SwapService {
         }
     }
 
-    func fetchThorchainQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
+    func fetchThorchainQuote(
+        provider: ThorchainSwapProvider,
+        amount: Decimal,
+        fromCoin: Coin,
+        toCoin: Coin,
+        isAffiliate: Bool
+    ) async throws -> SwapQuote {
         do {
-            let quote = try await thorchainService.fetchSwapQuotes(
+            let quote = try await provider.fetchSwapQuotes(
                 address: toCoin.address,
                 fromAsset: fromCoin.swapAsset,
                 toAsset: toCoin.swapAsset,

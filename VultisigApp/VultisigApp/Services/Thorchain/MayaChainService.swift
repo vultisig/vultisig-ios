@@ -7,7 +7,7 @@
 
 import Foundation
 
-class MayachainService {
+class MayachainService: ThorchainSwapProvider {
     static let shared = MayachainService()
     
     private init() {}
