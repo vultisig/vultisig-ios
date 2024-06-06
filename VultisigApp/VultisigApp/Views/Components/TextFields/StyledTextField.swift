@@ -12,23 +12,61 @@ struct StyledTextField: View {
     let placeholder: String
     @Binding var text: String
     
-    var content: some View {
+    @Binding var isValid: Bool
+    var isOptional: Bool = false
+    
+    @State private var localIsValid: Bool = true
+    
+    var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(placeholder)
-                .font(.body14MontserratMedium)
-                .foregroundColor(.neutral0)
+            HStack {
+                Text("\(placeholder)\(optionalMessage)")
+                    .font(.body14MontserratMedium)
+                    .foregroundColor(.neutral0)
+                if !localIsValid {
+                    Text("*")
+                        .font(.body14MontserratMedium)
+                        .foregroundColor(.red)
+                }
+            }
             
-            TextField(placeholder.capitalized, text: $text)
+            TextField(placeholder.capitalized, text: customBinding)
                 .font(.body16Menlo)
                 .foregroundColor(.neutral0)
                 .submitLabel(.done)
                 .padding(12)
                 .background(Color.blue600)
                 .cornerRadius(12)
+                .onAppear {
+                    localIsValid = isValid
+                    validate(text)
+                }
         }
     }
     
-    var body: some View {
-        content
+    var customBinding: Binding<String> {
+        Binding<String>(
+            get: { text },
+            set: { newValue in
+                text = newValue
+                validate(newValue)
+            }
+        )
+    }
+    
+    var optionalMessage: String {
+        if isOptional {
+            return " (optional)"
+        }
+        return ""
+    }
+    
+    private func validate(_ newValue: String) {
+        if isOptional {
+            isValid = newValue.isEmpty || !newValue.trimmingCharacters(in: .whitespaces).isEmpty
+        } else {
+            isValid = !newValue.trimmingCharacters(in: .whitespaces).isEmpty
+        }
+        localIsValid = isValid
     }
 }

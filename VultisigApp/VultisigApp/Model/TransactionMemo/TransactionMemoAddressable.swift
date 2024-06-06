@@ -10,6 +10,7 @@ import Foundation
 import Combine
 
 protocol TransactionMemoAddressable: ObservableObject {
+    var isTheFormValid: Bool { get set }
     var addressFields: [String: String] { get set }
     func getView() -> AnyView
     func toDictionary() -> ThreadSafeDictionary<String, String>

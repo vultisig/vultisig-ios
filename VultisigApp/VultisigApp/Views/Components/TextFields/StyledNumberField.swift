@@ -1,5 +1,5 @@
 //
-//  StyledNumberField.swift
+//  StyledIntegerField.swift
 //  VultisigApp
 //
 //  Created by Enrique Souza Soares on 15/05/24.
@@ -12,13 +12,25 @@ struct StyledIntegerField<Value: BinaryInteger & Codable>: View {
     @Binding var value: Value
     let format: IntegerFormatStyle<Value>
     
-    var content: some View {
+    @Binding var isValid: Bool
+    var isOptional: Bool = false
+    
+    @State private var localIsValid: Bool = true
+    
+    var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(placeholder)
-                .font(.body14MontserratMedium)
-                .foregroundColor(.neutral0)
+            HStack {
+                Text("\(placeholder)\(optionalMessage)")
+                    .font(.body14MontserratMedium)
+                    .foregroundColor(.neutral0)
+                if !localIsValid {
+                    Text("*")
+                        .font(.body14MontserratMedium)
+                        .foregroundColor(.red)
+                }
+            }
             
-            TextField(placeholder.capitalized, value: $value, format: format)
+            TextField(placeholder.capitalized, value: customBinding, format: format)
                 .font(.body16Menlo)
                 .foregroundColor(.neutral0)
                 .submitLabel(.done)
@@ -26,10 +38,36 @@ struct StyledIntegerField<Value: BinaryInteger & Codable>: View {
                 .background(Color.blue600)
                 .cornerRadius(12)
                 .keyboardType(.numberPad) // Set the keyboard type to number pad
+                .onAppear {
+                    localIsValid = isValid
+                    validate(String(describing: value))
+                }
         }
     }
     
-    var body: some View {
-        content
+    var customBinding: Binding<Value> {
+        Binding<Value>(
+            get: { value },
+            set: { newValue in
+                value = newValue
+                validate(String(describing: newValue))
+            }
+        )
+    }
+    
+    var optionalMessage: String {
+        if isOptional {
+            return " (optional)"
+        }
+        return ""
+    }
+    
+    private func validate(_ newValue: String) {
+        if isOptional {
+            isValid = newValue.isEmpty || (Int64(newValue) ?? .zero >= .zero)
+        } else {
+            isValid = !newValue.isEmpty && (Int64(newValue) ?? .zero > .zero)
+        }
+        localIsValid = isValid
     }
 }

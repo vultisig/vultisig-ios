@@ -11,6 +11,7 @@ struct TransactionMemoDetailsView: View {
     @State private var selectedFunctionMemoType: TransactionMemoType = .bond
     @State private var selectedContractMemoType: TransactionMemoContractType = .thorChainMessageDeposit
     @State private var txMemoInstance: TransactionMemoInstance = .bond(TransactionMemoBond())
+    @State private var showInvalidFormAlert = false
     
     var body: some View {
         ZStack {
@@ -31,6 +32,9 @@ struct TransactionMemoDetailsView: View {
         }
         .alert(isPresented: $transactionMemoViewModel.showAlert) {
             alert
+        }
+        .alert(isPresented: $showInvalidFormAlert) {
+            invalidFormAlert
         }
         .onChange(of: selectedFunctionMemoType) {
             switch selectedFunctionMemoType {
@@ -58,6 +62,14 @@ struct TransactionMemoDetailsView: View {
             title: Text(NSLocalizedString("error", comment: "")),
             message: Text(NSLocalizedString(transactionMemoViewModel.errorMessage, comment: "")),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+        )
+    }
+    
+    var invalidFormAlert: Alert {
+        Alert(
+            title: Text("Form Invalid"),
+            message: Text("The form is not valid. Please fix the fields marked with a red star."),
+            dismissButton: .default(Text("OK"))
         )
     }
     
@@ -89,11 +101,14 @@ struct TransactionMemoDetailsView: View {
     var button: some View {
         Button {
             Task {
-                tx.amount = txMemoInstance.amount.description
-                tx.memo = txMemoInstance.description
-                tx.memoFunctionDictionary = txMemoInstance.toDictionary()
-                print(tx.memo)
-                transactionMemoViewModel.moveToNextView()
+                if txMemoInstance.isTheFormValid {
+                    tx.amount = txMemoInstance.amount.description
+                    tx.memo = txMemoInstance.description
+                    tx.memoFunctionDictionary = txMemoInstance.toDictionary()
+                    transactionMemoViewModel.moveToNextView()
+                } else {
+                    showInvalidFormAlert = true
+                }
             }
         } label: {
             FilledButton(title: "continue")
