@@ -107,6 +107,11 @@ struct VaultDetailView: View {
     var emptyList: some View {
         ErrorMessage(text: "noChainSelected")
             .padding(.vertical, 50)
+            .listRowInsets(EdgeInsets())
+            .listRowSeparator(.hidden)
+            .frame(maxWidth: .infinity)
+            .multilineTextAlignment(.center)
+            .background(Color.backgroundBlue)
     }
     
     var balanceContent: some View {
@@ -168,6 +173,11 @@ struct VaultDetailView: View {
                 .preferredColorScheme(.dark)
         }
         .padding(.vertical, 50)
+        .listRowInsets(EdgeInsets())
+        .listRowSeparator(.hidden)
+        .frame(maxWidth: .infinity)
+        .multilineTextAlignment(.center)
+        .background(Color.backgroundBlue)
     }
     
     private func onAppear() {
