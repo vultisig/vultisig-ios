@@ -118,6 +118,9 @@ struct SwapCryptoDetailsView: View {
                 }
             )
         }
+        .onChange(of: tx.fromCoin) { oldValue, newValue in
+            setData()
+        }
     }
     
     var toAmountField: some View {
@@ -143,6 +146,16 @@ struct SwapCryptoDetailsView: View {
         .disabled(!swapViewModel.validateForm(tx: tx))
         .opacity(swapViewModel.validateForm(tx: tx) ? 1 : 0.5)
         .padding(40)
+    }
+    
+    private func setData() {
+        toCoins = swapViewModel.coins.filter({ coin in
+            coin.id != tx.fromCoin.id
+        })
+        
+        if let firstCoin = toCoins.first {
+            tx.toCoin = firstCoin
+        }
     }
 }
 
