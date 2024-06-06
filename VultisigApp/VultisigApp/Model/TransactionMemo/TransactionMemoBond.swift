@@ -1,3 +1,10 @@
+//
+//  TransactionMemoBond.swift
+//  VultisigApp
+//
+//  Created by Enrique Souza Soares on 17/05/24.
+//
+
 import SwiftUI
 import Foundation
 import Combine
