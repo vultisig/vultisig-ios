@@ -50,20 +50,7 @@ struct VaultDetailView: View {
     }
     
     var view: some View {
-        ScrollView {
-            if isLoading {
-                loader
-            } else if viewModel.coinsGroupedByChains.count>=1 {
-                balanceContent
-                getActions()
-                list
-            } else {
-                emptyList
-            }
-            
-            addButton
-            Spacer()
-        }
+        list
         .opacity(showVaultsList ? 0 : 1)
         .sheet(isPresented: $showScanner, content: {
             GeneralCodeScannerView(
@@ -84,32 +71,59 @@ struct VaultDetailView: View {
     
     var list: some View {
         List {
-            ForEach(viewModel.coinsGroupedByChains.sorted(by: {
-                $0.coins.totalBalanceInFiatDecimal > $1.coins.totalBalanceInFiatDecimal
-            }), id: \.id) { group in
-                ChainNavigationCell(
-                    group: group,
-                    vault: vault
-                )
+            if isLoading {
+                loader
+            } else if viewModel.coinsGroupedByChains.count>=1 {
+                balanceContent
+                getActions()
+                cells
+            } else {
+                emptyList
             }
-            .background(Color.backgroundBlue)
+            
+            addButton
         }
         .listStyle(PlainListStyle())
-        .frame(height: getListHeight())
+        .buttonStyle(BorderlessButtonStyle())
         .background(Color.backgroundBlue)
-        .scrollDisabled(true)
+        .refreshable {
+            viewModel.updateBalance()
+        }
+        .colorScheme(.dark)
+    }
+    
+    var cells: some View {
+        ForEach(viewModel.coinsGroupedByChains.sorted(by: {
+            $0.coins.totalBalanceInFiatDecimal > $1.coins.totalBalanceInFiatDecimal
+        }), id: \.id) { group in
+            ChainNavigationCell(
+                group: group,
+                vault: vault
+            )
+        }
+        .background(Color.backgroundBlue)
     }
     
     var emptyList: some View {
         ErrorMessage(text: "noChainSelected")
             .padding(.vertical, 50)
+            .listRowInsets(EdgeInsets())
+            .listRowSeparator(.hidden)
+            .frame(maxWidth: .infinity)
+            .multilineTextAlignment(.center)
+            .background(Color.backgroundBlue)
     }
     
     var balanceContent: some View {
         Text(vault.coins.totalBalanceInFiatString)
             .font(.title32MenloBold)
             .foregroundColor(.neutral0)
+            .frame(maxWidth: .infinity)
             .padding(.top, 10)
+            .background(Color.backgroundBlue)
+            .listRowInsets(EdgeInsets())
+            .listRowSeparator(.hidden)
+            .multilineTextAlignment(.center)
     }
     
     var chainList: some View {
@@ -126,6 +140,9 @@ struct VaultDetailView: View {
         .padding(16)
         .padding(.bottom, 150)
         .background(Color.backgroundBlue)
+        .background(Color.backgroundBlue)
+        .listRowInsets(EdgeInsets())
+        .listRowSeparator(.hidden)
     }
     
     var chooseChainButton: some View {
@@ -156,6 +173,11 @@ struct VaultDetailView: View {
                 .preferredColorScheme(.dark)
         }
         .padding(.vertical, 50)
+        .listRowInsets(EdgeInsets())
+        .listRowSeparator(.hidden)
+        .frame(maxWidth: .infinity)
+        .multilineTextAlignment(.center)
+        .background(Color.backgroundBlue)
     }
     
     private func onAppear() {
@@ -183,6 +205,9 @@ struct VaultDetailView: View {
             .padding(16)
             .padding(.horizontal, 12)
             .redacted(reason: selectedGroup == nil ? .placeholder : [])
+            .background(Color.backgroundBlue)
+            .listRowInsets(EdgeInsets())
+            .listRowSeparator(.hidden)
     }
 }
 

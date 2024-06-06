@@ -12,6 +12,8 @@ struct NavigationHomeEditButton: View {
     let showVaultsList: Bool
     @Binding var isEditingVaults: Bool
     
+    @EnvironmentObject var viewModel: VaultDetailViewModel
+    
     var body: some View {
         if showVaultsList {
             vaultsListEditButton
@@ -34,7 +36,7 @@ struct NavigationHomeEditButton: View {
     
     var vaultDetailRefreshButton: some View {
         NavigationRefreshButton {
-            
+            viewModel.updateBalance()
         }
     }
     
@@ -56,5 +58,7 @@ struct NavigationHomeEditButton: View {
             NavigationHomeEditButton(vault: Vault.example, showVaultsList: true, isEditingVaults: .constant(true))
             NavigationHomeEditButton(vault: Vault.example, showVaultsList: true, isEditingVaults: .constant(false))
         }
+        .environmentObject(VaultDetailViewModel())
+        .environmentObject(CoinSelectionViewModel())
     }
 }
