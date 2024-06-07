@@ -13,10 +13,13 @@ struct PeerDiscoveryView: View {
     
     @StateObject var viewModel = KeygenPeerDiscoveryViewModel()
     @StateObject var participantDiscovery = ParticipantDiscovery(isKeygen: true)
+    @StateObject var shareSheetViewModel = ShareSheetViewModel()
     
-    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
     @State private var orientation = UIDevice.current.orientation
     @State var isLandscape: Bool = false
+    
+    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+    @Environment(\.displayScale) var displayScale
     
     let columns = [
         GridItem(.adaptive(minimum: 160)),
@@ -39,9 +42,9 @@ struct PeerDiscoveryView: View {
             ToolbarItem(placement: .topBarLeading) {
                 NavigationBackButton()
             }
-            ToolbarItem(placement: .topBarTrailing) {
-                NavigationHelpButton()
-            }
+//            ToolbarItem(placement: .topBarTrailing) {
+//                NavigationQRShareButton(title: <#T##String#>, renderedImage: <#T##Image?#>)
+//            }
         }
         .task {
             viewModel.startDiscovery()
@@ -277,6 +280,12 @@ struct PeerDiscoveryView: View {
     
     private func setData() {
         isLandscape = (orientation == .landscapeLeft || orientation == .landscapeRight) && idiom == .pad
+        
+//        shareSheetViewModel.render(
+//            title: addressData,
+//            addressData: addressData,
+//            displayScale: displayScale
+//        )
     }
     
     private func handleSelection(_ peer: String) {

@@ -11,8 +11,8 @@ import SwiftUI
 class ShareSheetViewModel: ObservableObject {
     @Published var renderedImage: Image? = nil
     
-    func render(title: String, addressData: String, displayScale: CGFloat) {
-        let renderer = ImageRenderer(content: QRShareSheetImage(title: addressData, addressData: addressData))
+    func render(title: String, qrCodeImage: Image, displayScale: CGFloat) {
+        let renderer = ImageRenderer(content: QRShareSheetImage(title: title, image: qrCodeImage))
 
         renderer.scale = displayScale
 

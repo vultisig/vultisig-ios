@@ -9,7 +9,7 @@ import SwiftUI
 
 struct QRShareSheetImage: View {
     let title: String
-    let addressData: String
+    let image: Image
     
     let padding: CGFloat = 30
     
@@ -33,20 +33,17 @@ struct QRShareSheetImage: View {
     
     var qrCode: some View {
         GeometryReader { geometry in
-            Utils.getQrImage(
-                data: addressData.data(using: .utf8), size: 240)
-            .resizable()
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-            .padding(24)
-            .frame(maxWidth: .infinity)
-            .frame(height: geometry.size.width-(2*padding))
-            .background(Color.turquoise600.opacity(0.15))
-            .cornerRadius(10)
-            .overlay (
-                RoundedRectangle(cornerRadius: 10)
-                    .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [56]))
-            )
-            .padding(.horizontal, padding)
+            image
+                .resizable()
+                .frame(width: 220, height: 220)
+                .frame(width: 240, height: 240)
+                .background(Color.turquoise600.opacity(0.15))
+                .cornerRadius(6)
+                .overlay (
+                    RoundedRectangle(cornerRadius: 6)
+                        .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [24]))
+                )
+                .padding(.horizontal, padding)
         }
     }
     
@@ -68,5 +65,5 @@ struct QRShareSheetImage: View {
 }
 
 #Preview {
-    QRShareSheetImage(title: "thor1ls0p8e4ax7nxfeh37ncs25mn67ngmtzhwzkflk", addressData: "")
+    QRShareSheetImage(title: "thor1ls0p8e4ax7nxfeh37ncs25mn67ngmtzhwzkflk", image: Image("VultisigLogo"))
 }

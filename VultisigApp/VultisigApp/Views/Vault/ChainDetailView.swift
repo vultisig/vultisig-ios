@@ -58,6 +58,9 @@ struct ChainDetailView: View {
                 await setData()
             }
         }
+        .onDisappear {
+            isLoading = false
+        }
     }
     
     var loader: some View {
