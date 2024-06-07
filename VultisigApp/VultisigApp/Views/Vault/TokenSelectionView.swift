@@ -11,19 +11,19 @@ struct TokenSelectionView: View {
     @Binding var showTokenSelectionSheet: Bool
     let vault: Vault
     let group: GroupedChain
-
+    
     @StateObject var tokenViewModel = TokenSelectionViewModel()
     @EnvironmentObject var coinViewModel: CoinSelectionViewModel
-
+    
     var body: some View {
         ZStack {
             Background()
             view
-
+            
             if let error = tokenViewModel.error {
                 errorView(error: error)
             }
-
+            
             if tokenViewModel.isLoading {
                 Loader()
             }
@@ -38,6 +38,14 @@ struct TokenSelectionView: View {
         }
         .task {
             await tokenViewModel.loadData(chain: group.chain)
+            
+            do {
+                let service = try EvmServiceFactory.getService(forChain: group.chain)
+                let (name, symbol, decimals) = try await service.getTokenInfo(contractAddress: "0xc51d94a9936616b90e26abe61921ab3b4e66a149")
+                print("Token name \(name), Token symbol \(symbol), Token decimals \(decimals)")
+            }catch {
+                print("")
+            }
         }
         .onDisappear {
             saveAssets()
@@ -79,7 +87,7 @@ struct TokenSelectionView: View {
                 .font(.body16Menlo)
                 .foregroundColor(.neutral0)
                 .padding(.horizontal, 16)
-
+            
             if tokenViewModel.showRetry {
                 Button {
                     Task { await tokenViewModel.loadData(chain: group.chain) }
@@ -91,11 +99,11 @@ struct TokenSelectionView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-
+    
     var address: String {
         return vault.coins.first(where: { $0.chain == group.chain })?.address ?? .empty
     }
-
+    
     private func saveAssets() {
         Task {
             await coinViewModel.saveAssets(for: vault)

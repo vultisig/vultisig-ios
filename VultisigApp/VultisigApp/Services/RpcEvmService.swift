@@ -123,7 +123,7 @@ class RpcEvmService: RpcService {
             "0x95d89b41", // symbol()
             "0x313ce567"  // decimals()
         ]
-
+        
         // Fetch token details in parallel
         async let nameHex = fetchERC20Data(methodId: erc20Abi[0], contractAddress: contractAddress)
         async let symbolHex = fetchERC20Data(methodId: erc20Abi[1], contractAddress: contractAddress)
@@ -136,7 +136,7 @@ class RpcEvmService: RpcService {
         
         return (name, symbol, decimals)
     }
-
+    
     // Assuming the fetchERC20Data function exists or adding it if it does not
     private func fetchERC20Data(methodId: String, contractAddress: String) async throws -> String {
         let params: [Any] = [
@@ -145,7 +145,7 @@ class RpcEvmService: RpcService {
         ]
         return try await strRpcCall(method: "eth_call", params: params)
     }
-
+    
     private func fetchBalance(address: String) async throws -> BigInt {
         return try await intRpcCall(method: "eth_getBalance", params: [address, "latest"])
     }
