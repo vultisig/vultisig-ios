@@ -115,15 +115,7 @@ struct VaultDetailView: View {
     }
     
     var balanceContent: some View {
-        Text(vault.coins.totalBalanceInFiatString)
-            .font(.title32MenloBold)
-            .foregroundColor(.neutral0)
-            .frame(maxWidth: .infinity)
-            .padding(.top, 10)
-            .background(Color.backgroundBlue)
-            .listRowInsets(EdgeInsets())
-            .listRowSeparator(.hidden)
-            .multilineTextAlignment(.center)
+        VaultDetailBalanceContent(vault: vault)
     }
     
     var chainList: some View {

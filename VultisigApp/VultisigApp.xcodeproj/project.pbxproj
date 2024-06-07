@@ -150,6 +150,7 @@
 		A66A0BD72BA125C50021A483 /* EditVaultCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD62BA125C50021A483 /* EditVaultCell.swift */; };
 		A66A0BD92BA12DF50021A483 /* RenameVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */; };
 		A66A0BDB2BA13B570021A483 /* CoinsGrouped.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66A0BDA2BA13B570021A483 /* CoinsGrouped.swift */; };
+		A66BFCD52C136FB3004DCD4F /* VaultDetailBalanceContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66BFCD42C136FB3004DCD4F /* VaultDetailBalanceContent.swift */; };
 		A67F4C5F2BE313220086ED09 /* ActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67F4C5E2BE313220086ED09 /* ActionButton.swift */; };
 		A680BAC52BF47AA9006E611D /* OpenGalleryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A680BAC42BF47AA9006E611D /* OpenGalleryButton.swift */; };
 		A683EDEB2BCF635E00BB706E /* InstructionPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = A683EDEA2BCF635E00BB706E /* InstructionPrompt.swift */; };
@@ -498,6 +499,7 @@
 		A66A0BD62BA125C50021A483 /* EditVaultCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditVaultCell.swift; sourceTree = "<group>"; };
 		A66A0BD82BA12DF50021A483 /* RenameVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenameVaultView.swift; sourceTree = "<group>"; };
 		A66A0BDA2BA13B570021A483 /* CoinsGrouped.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinsGrouped.swift; sourceTree = "<group>"; };
+		A66BFCD42C136FB3004DCD4F /* VaultDetailBalanceContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailBalanceContent.swift; sourceTree = "<group>"; };
 		A67F4C5E2BE313220086ED09 /* ActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionButton.swift; sourceTree = "<group>"; };
 		A680BAC42BF47AA9006E611D /* OpenGalleryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenGalleryButton.swift; sourceTree = "<group>"; };
 		A683EDEA2BCF635E00BB706E /* InstructionPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstructionPrompt.swift; sourceTree = "<group>"; };
@@ -740,6 +742,7 @@
 				B5A97CF42BF4287A007574D7 /* TransactionMemoSelectorDropdown.swift */,
 				B54E317A2BF57D9300D4FC0A /* TransactionMemoContractSelectorDropDown.swift */,
 				A62D6B042BFE7C5E00F24E51 /* ChainDetailActionButtons.swift */,
+				A66BFCD42C136FB3004DCD4F /* VaultDetailBalanceContent.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1827,6 +1830,7 @@
 				46DE08952BD0DCA200AE8BDE /* EvmL2Service.swift in Sources */,
 				A65BA98A2BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift in Sources */,
 				46C8CBBF2BA777BF00E68E08 /* BlockchairService.swift in Sources */,
+				A66BFCD52C136FB3004DCD4F /* VaultDetailBalanceContent.swift in Sources */,
 				DEFF58FE2BD13E5D005DFDF9 /* ThreadSafeDictionary.swift in Sources */,
 				DE64A4CC2BA7F97500C342E3 /* KeysignDiscoveryViewModel.swift in Sources */,
 				A62758F72B97DF4A00ADE3A6 /* ColorStyle.swift in Sources */,
