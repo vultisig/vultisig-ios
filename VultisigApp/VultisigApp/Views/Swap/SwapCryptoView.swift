@@ -14,6 +14,7 @@ struct SwapCryptoView: View {
     
     @StateObject var tx = SwapTransaction()
     @StateObject var swapViewModel = SwapCryptoViewModel()
+    @StateObject var shareSheetViewModel = ShareSheetViewModel()
 
     @State var keysignView: KeysignView?
     
@@ -28,6 +29,12 @@ struct SwapCryptoView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     backButton
+                }
+                
+                if swapViewModel.currentIndex==3 {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        NavigationQRShareButton(title: "swap", renderedImage: shareSheetViewModel.renderedImage)
+                    }
                 }
             }
             .task {
@@ -129,7 +136,8 @@ struct SwapCryptoView: View {
                     vault: vault,
                     keysignPayload: keysignPayload,
                     transferViewModel: swapViewModel,
-                    keysignView: $keysignView
+                    keysignView: $keysignView, 
+                    shareSheetViewModel: shareSheetViewModel
                 )
             } else {
                 SendCryptoVaultErrorView()

@@ -10,13 +10,17 @@ struct KeysignDiscoveryView: View {
     let keysignPayload: KeysignPayload
     let transferViewModel: TransferViewModel
     @Binding var keysignView: KeysignView?
+    @ObservedObject var shareSheetViewModel: ShareSheetViewModel
     
     @StateObject var participantDiscovery = ParticipantDiscovery(isKeygen: false)
     @StateObject var viewModel = KeysignDiscoveryViewModel()
     
     @State var isLoading = false
+    @State var qrCodeImage: Image? = nil
     @State var selectedNetwork = NetworkPromptType.WiFi
     @State private var orientation = UIDevice.current.orientation
+    
+    @Environment(\.displayScale) var displayScale
     
     let columns = [
         GridItem(.adaptive(minimum: 160)),
@@ -36,10 +40,7 @@ struct KeysignDiscoveryView: View {
         }
         .detectOrientation($orientation)
         .onAppear {
-            if VultisigRelay.IsRelayEnabled {
-                self.selectedNetwork = .Cellular
-            }
-            viewModel.setData(vault: vault, keysignPayload: keysignPayload, participantDiscovery: participantDiscovery)
+            setData()
         }
         .task {
             await viewModel.startDiscovery()
@@ -122,7 +123,7 @@ struct KeysignDiscoveryView: View {
                 .font(.body18MenloBold)
                 .multilineTextAlignment(.center)
             
-            viewModel.getQrImage(size: 100)
+            qrCodeImage?
                 .resizable()
                 .scaledToFit()
                 .padding()
@@ -203,6 +204,25 @@ struct KeysignDiscoveryView: View {
         .edgesIgnoringSafeArea(.bottom)
     }
     
+    private func setData() {
+        if VultisigRelay.IsRelayEnabled {
+            self.selectedNetwork = .Cellular
+        }
+        viewModel.setData(vault: vault, keysignPayload: keysignPayload, participantDiscovery: participantDiscovery)
+        
+        qrCodeImage = viewModel.getQrImage(size: 100)
+        
+        guard let qrCodeImage else {
+            return
+        }
+        
+        shareSheetViewModel.render(
+            title: "send",
+            qrCodeImage: qrCodeImage,
+            displayScale: displayScale
+        )
+    }
+    
     func startKeysign(){
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             let isDisabled = viewModel.selections.count < (vault.getThreshold() + 1)
@@ -232,5 +252,5 @@ struct KeysignDiscoveryView: View {
 }
 
 #Preview {
-    KeysignDiscoveryView(vault: Vault.example, keysignPayload: KeysignPayload.example, transferViewModel: SendCryptoViewModel(), keysignView: .constant(nil))
+    KeysignDiscoveryView(vault: Vault.example, keysignPayload: KeysignPayload.example, transferViewModel: SendCryptoViewModel(), keysignView: .constant(nil), shareSheetViewModel: ShareSheetViewModel())
 }
