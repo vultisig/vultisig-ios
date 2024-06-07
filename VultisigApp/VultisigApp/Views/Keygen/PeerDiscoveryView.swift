@@ -15,6 +15,7 @@ struct PeerDiscoveryView: View {
     @StateObject var participantDiscovery = ParticipantDiscovery(isKeygen: true)
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
     
+    @State var qrCodeImage: Image? = nil
     @State private var orientation = UIDevice.current.orientation
     @State var isLandscape: Bool = false
     
@@ -42,9 +43,9 @@ struct PeerDiscoveryView: View {
             ToolbarItem(placement: .topBarLeading) {
                 NavigationBackButton()
             }
-//            ToolbarItem(placement: .topBarTrailing) {
-//                NavigationQRShareButton(title: <#T##String#>, renderedImage: <#T##Image?#>)
-//            }
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
+            }
         }
         .task {
             viewModel.startDiscovery()
@@ -163,7 +164,7 @@ struct PeerDiscoveryView: View {
                 .font(.body18MenloBold)
                 .multilineTextAlignment(.center)
             
-            viewModel.getQrImage(size: 100)
+            qrCodeImage?
                 .resizable()
                 .aspectRatio(
                     contentMode:
@@ -281,11 +282,17 @@ struct PeerDiscoveryView: View {
     private func setData() {
         isLandscape = (orientation == .landscapeLeft || orientation == .landscapeRight) && idiom == .pad
         
-//        shareSheetViewModel.render(
-//            title: addressData,
-//            addressData: addressData,
-//            displayScale: displayScale
-//        )
+        qrCodeImage = viewModel.getQrImage(size: 100)
+        
+        guard let qrCodeImage else {
+            return
+        }
+        
+        shareSheetViewModel.render(
+            title: "joinKeygen",
+            qrCodeImage: qrCodeImage,
+            displayScale: displayScale
+        )
     }
     
     private func handleSelection(_ peer: String) {

@@ -48,7 +48,7 @@ struct QRShareSheetImage: View {
     }
     
     var text: some View {
-        Text(title)
+        Text(NSLocalizedString(title, comment: ""))
             .font(.body12Menlo)
             .foregroundColor(.neutral0)
             .multilineTextAlignment(.center)
