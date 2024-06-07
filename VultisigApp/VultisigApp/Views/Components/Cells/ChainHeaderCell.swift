@@ -25,7 +25,7 @@ struct ChainHeaderCell: View {
             }
             .sheet(isPresented: $showQRcode) {
                 NavigationView {
-                    AddressQRCodeView(addressData: group.address, showSheet: $showQRcode)
+                    AddressQRCodeView(addressData: group.address, showSheet: $showQRcode, isLoading: $isLoading)
                 }
             }
     }

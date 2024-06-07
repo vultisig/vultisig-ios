@@ -10,6 +10,7 @@ import SwiftUI
 struct AddressQRCodeView: View {
     let addressData: String
     @Binding var showSheet: Bool
+    @Binding var isLoading: Bool
     
     let padding: CGFloat = 30
     
@@ -76,6 +77,7 @@ struct AddressQRCodeView: View {
     }
     
     private func setData() {
+        isLoading = false
         qrCodeImage = Utils.getQrImage(
             data: addressData.data(using: .utf8), size: 100)
         
@@ -92,5 +94,5 @@ struct AddressQRCodeView: View {
 }
 
 #Preview {
-    AddressQRCodeView(addressData: "", showSheet: .constant(true))
+    AddressQRCodeView(addressData: "", showSheet: .constant(true), isLoading: .constant(false))
 }

@@ -58,9 +58,6 @@ struct ChainDetailView: View {
                 await setData()
             }
         }
-        .onDisappear {
-            isLoading = false
-        }
     }
     
     var loader: some View {
@@ -83,7 +80,11 @@ struct ChainDetailView: View {
     }
     
     var actionButtons: some View {
-        ChainDetailActionButtons(group: group, vault: vault, sendTx: sendTx)
+        ChainDetailActionButtons(
+            group: group,
+            vault: vault,
+            sendTx: sendTx
+        )
     }
     
     var content: some View {
