@@ -116,6 +116,36 @@ class RpcEvmService: RpcService {
         return try await intRpcCall(method: "eth_call", params: params)
     }
     
+    func getTokenInfo(contractAddress: String) async throws -> (name: String, symbol: String, decimals: Int) {
+        // Define ABI for ERC20 functions
+        let erc20Abi = [
+            "0x06fdde03", // name()
+            "0x95d89b41", // symbol()
+            "0x313ce567"  // decimals()
+        ]
+
+        // Fetch token details in parallel
+        async let nameHex = fetchERC20Data(methodId: erc20Abi[0], contractAddress: contractAddress)
+        async let symbolHex = fetchERC20Data(methodId: erc20Abi[1], contractAddress: contractAddress)
+        async let decimalsHex = fetchERC20Data(methodId: erc20Abi[2], contractAddress: contractAddress)
+        
+        // Await results
+        let name = String(hex: try await nameHex)
+        let symbol = String(hex: try await symbolHex)
+        let decimals = Int(hex: try await decimalsHex) ?? .zero
+        
+        return (name, symbol, decimals)
+    }
+
+    // Assuming the fetchERC20Data function exists or adding it if it does not
+    private func fetchERC20Data(methodId: String, contractAddress: String) async throws -> String {
+        let params: [Any] = [
+            ["to": contractAddress, "data": methodId],
+            "latest"
+        ]
+        return try await strRpcCall(method: "eth_call", params: params)
+    }
+
     private func fetchBalance(address: String) async throws -> BigInt {
         return try await intRpcCall(method: "eth_getBalance", params: [address, "latest"])
     }
@@ -173,12 +203,12 @@ class RpcEvmService: RpcService {
     func getTokens(urlString: String) async -> [Token] {
         let cacheKey = urlString
         let cacheDuration: TimeInterval = 60 * 10 // Cache duration of 10 minutes
-
+        
         if let cachedTokens: [Token] = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheTokens, timeInSeconds: cacheDuration) {
             print("Returning tokens from cache")
             return cachedTokens
         }
-
+        
         do {
             let data: Data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
             if var tokens: [Token] = Utils.extractResultFromJson(fromData: data, path: "tokens", type: Token.self, mustHaveFields: ["tokenInfo.website", "tokenInfo.image"]) {
@@ -188,7 +218,7 @@ class RpcEvmService: RpcService {
                         mutableToken.tokenInfo.setImage(image: "\(extractTokenDomainURL(from: urlString))\(image)" )
                     }
                     return mutableToken
-                }                
+                }
                 cacheTokens.set(cacheKey, (data: tokens, timestamp: Date()))
                 return tokens
             } else {

@@ -135,3 +135,24 @@ extension String {
         return formattedString
     }
 }
+
+extension String {
+    init(hex: String) {
+        let cleanedHex = hex.stripHexPrefix()
+        var str = ""
+        var index = cleanedHex.startIndex
+        while index < cleanedHex.endIndex {
+            let nextIndex = cleanedHex.index(index, offsetBy: 2)
+            if nextIndex <= cleanedHex.endIndex {
+                let byte = cleanedHex[index..<nextIndex]
+                if let char = UInt8(byte, radix: 16).map({ Character(UnicodeScalar($0)) }) {
+                    str.append(char)
+                }
+                index = nextIndex
+            } else {
+                break
+            }
+        }
+        self = str
+    }
+}
