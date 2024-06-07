@@ -51,22 +51,22 @@ struct VaultDetailView: View {
     
     var view: some View {
         list
-        .opacity(showVaultsList ? 0 : 1)
-        .sheet(isPresented: $showScanner, content: {
-            GeneralCodeScannerView(
-                showSheet: $showScanner,
-                shouldJoinKeygen: $shouldJoinKeygen,
-                shouldKeysignTransaction: $shouldKeysignTransaction
-            )
-        })
-        .navigationDestination(isPresented: $shouldJoinKeygen) {
-            JoinKeygenView(vault: Vault(name: "Main Vault"))
-        }
-        .navigationDestination(isPresented: $shouldKeysignTransaction) {
-            if let vault = homeViewModel.selectedVault {
-                JoinKeysignView(vault: vault)
+            .opacity(showVaultsList ? 0 : 1)
+            .sheet(isPresented: $showScanner, content: {
+                GeneralCodeScannerView(
+                    showSheet: $showScanner,
+                    shouldJoinKeygen: $shouldJoinKeygen,
+                    shouldKeysignTransaction: $shouldKeysignTransaction
+                )
+            })
+            .navigationDestination(isPresented: $shouldJoinKeygen) {
+                JoinKeygenView(vault: Vault(name: "Main Vault"))
             }
-        }
+            .navigationDestination(isPresented: $shouldKeysignTransaction) {
+                if let vault = homeViewModel.selectedVault {
+                    JoinKeysignView(vault: vault)
+                }
+            }
     }
     
     var list: some View {

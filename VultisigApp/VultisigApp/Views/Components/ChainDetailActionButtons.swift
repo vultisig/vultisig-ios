@@ -36,6 +36,7 @@ struct ChainDetailActionButtons: View {
             }
         }
         .frame(height: 28)
+        .frame(maxWidth: .infinity)
         .onAppear {
             Task {
                 await setData()
