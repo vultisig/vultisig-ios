@@ -41,7 +41,11 @@ struct KeygenView: View {
             HomeView(selectedVault: vault, showVaultsList: false, shouldJoinKeygen: false)
         }
         .onAppear {
+            UIApplication.shared.isIdleTimerDisabled = true
             setData()
+        }
+        .onDisappear(){
+            UIApplication.shared.isIdleTimerDisabled = false
         }
         .task {
             await viewModel.startKeygen(context: context)
