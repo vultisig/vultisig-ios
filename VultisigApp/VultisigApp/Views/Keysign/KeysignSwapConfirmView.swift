@@ -60,6 +60,8 @@ struct KeysignSwapConfirmView: View {
             return "1Inch"
         case .thorchain:
             return "THORChain"
+        case .mayachain:
+            return "Maya protocol"
         case .none:
             return .empty
         }
