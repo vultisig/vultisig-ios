@@ -12,6 +12,7 @@ struct SendCryptoView: View {
     let vault: Vault
     
     @StateObject var sendCryptoViewModel = SendCryptoViewModel()
+    @StateObject var shareSheetViewModel = ShareSheetViewModel()
     @StateObject var sendCryptoVerifyViewModel = SendCryptoVerifyViewModel()
     
     @State var keysignPayload: KeysignPayload? = nil
@@ -28,6 +29,12 @@ struct SendCryptoView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     backButton
+                }
+                
+                if sendCryptoViewModel.currentIndex==3 {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
+                    }
                 }
             }
             .onAppear {
@@ -113,7 +120,8 @@ struct SendCryptoView: View {
                     vault: vault,
                     keysignPayload: keysignPayload,
                     transferViewModel: sendCryptoViewModel,
-                    keysignView: $keysignView
+                    keysignView: $keysignView,
+                    shareSheetViewModel: shareSheetViewModel
                 )
             } else {
                 SendCryptoVaultErrorView()

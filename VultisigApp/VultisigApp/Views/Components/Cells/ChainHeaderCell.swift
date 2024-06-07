@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ChainHeaderCell: View {
     let group: GroupedChain
+    @Binding var isLoading: Bool
     
     @State var showAlert = false
     @State var showQRcode = false
@@ -24,7 +25,7 @@ struct ChainHeaderCell: View {
             }
             .sheet(isPresented: $showQRcode) {
                 NavigationView {
-                    AddressQRCodeView(addressData: group.address, showSheet: $showQRcode)
+                    AddressQRCodeView(addressData: group.address, showSheet: $showQRcode, isLoading: $isLoading)
                 }
             }
     }
@@ -92,6 +93,7 @@ struct ChainHeaderCell: View {
     
     var showQRButton: some View {
         Button(action: {
+            isLoading = true
             showQRcode.toggle()
         }, label: {
             Image(systemName: "qrcode")
@@ -146,5 +148,5 @@ struct ChainHeaderCell: View {
 }
 
 #Preview {
-    ChainHeaderCell(group: GroupedChain.example)
+    ChainHeaderCell(group: GroupedChain.example, isLoading: .constant(false))
 }
