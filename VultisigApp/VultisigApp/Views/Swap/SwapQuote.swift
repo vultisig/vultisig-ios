@@ -53,12 +53,12 @@ enum SwapQuote {
 
     func inboundFeeDecimal(toCoin: Coin) -> Decimal? {
         switch self {
-        case .thorchain(let quote), .mayachain(let quote):
-            guard let fees = Decimal(string: quote.fees.total) else {
-                return nil
-            }
-
+        case .thorchain(let quote):
+            guard let fees = Decimal(string: quote.fees.total) else { return nil }
             return fees / 1e8
+        case .mayachain(let quote):
+            guard let fees = Decimal(string: quote.fees.total) else { return nil }
+            return fees / 1e10
         case .oneinch:
             return .zero
         }

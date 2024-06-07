@@ -92,7 +92,14 @@ private extension SwapService {
                 throw Errors.lessThenMinSwapAmount(amount: recommendedAmount)
             }
 
-            return .thorchain(quote)
+            switch provider {
+            case _ as ThorchainService:
+                return .thorchain(quote)
+            case _ as MayachainService:
+                return .mayachain(quote)
+            default:
+                return .thorchain(quote)
+            }
         }
         catch let error as ThorchainSwapError {
             throw error

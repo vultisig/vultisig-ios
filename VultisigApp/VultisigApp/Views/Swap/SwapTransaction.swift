@@ -43,9 +43,12 @@ class SwapTransaction: ObservableObject {
             return .zero
         }
         switch quote {
-        case .thorchain(let quote), .mayachain(let quote):
+        case .thorchain(let quote):
             let expected = Decimal(string: quote.expectedAmountOut) ?? 0
-            return expected / Decimal(100_000_000)
+            return expected / Decimal(1e8)
+        case .mayachain(let quote):
+            let expected = Decimal(string: quote.expectedAmountOut) ?? 0
+            return expected / Decimal(1e10)
         case .oneinch(let quote):
             let amount = BigInt(quote.dstAmount) ?? BigInt.zero
             return toCoin.decimal(for: amount)
