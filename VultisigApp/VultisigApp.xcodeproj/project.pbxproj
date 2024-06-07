@@ -154,6 +154,7 @@
 		A66BFCCF2C1348E4004DCD4F /* QRCodeShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66BFCCE2C1348E4004DCD4F /* QRCodeShareSheet.swift */; };
 		A66BFCD12C134B3B004DCD4F /* QRShareSheetImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66BFCD02C134B3B004DCD4F /* QRShareSheetImage.swift */; };
 		A66BFCD32C135699004DCD4F /* ShareSheetViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66BFCD22C135699004DCD4F /* ShareSheetViewModel.swift */; };
+		A66BFCD52C136FB3004DCD4F /* VaultDetailBalanceContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66BFCD42C136FB3004DCD4F /* VaultDetailBalanceContent.swift */; };
 		A67F4C5F2BE313220086ED09 /* ActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67F4C5E2BE313220086ED09 /* ActionButton.swift */; };
 		A680BAC52BF47AA9006E611D /* OpenGalleryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A680BAC42BF47AA9006E611D /* OpenGalleryButton.swift */; };
 		A683EDEB2BCF635E00BB706E /* InstructionPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = A683EDEA2BCF635E00BB706E /* InstructionPrompt.swift */; };
@@ -506,6 +507,7 @@
 		A66BFCCE2C1348E4004DCD4F /* QRCodeShareSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeShareSheet.swift; sourceTree = "<group>"; };
 		A66BFCD02C134B3B004DCD4F /* QRShareSheetImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRShareSheetImage.swift; sourceTree = "<group>"; };
 		A66BFCD22C135699004DCD4F /* ShareSheetViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSheetViewModel.swift; sourceTree = "<group>"; };
+		A66BFCD42C136FB3004DCD4F /* VaultDetailBalanceContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailBalanceContent.swift; sourceTree = "<group>"; };
 		A67F4C5E2BE313220086ED09 /* ActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionButton.swift; sourceTree = "<group>"; };
 		A680BAC42BF47AA9006E611D /* OpenGalleryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenGalleryButton.swift; sourceTree = "<group>"; };
 		A683EDEA2BCF635E00BB706E /* InstructionPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstructionPrompt.swift; sourceTree = "<group>"; };
@@ -748,6 +750,7 @@
 				B5A97CF42BF4287A007574D7 /* TransactionMemoSelectorDropdown.swift */,
 				B54E317A2BF57D9300D4FC0A /* TransactionMemoContractSelectorDropDown.swift */,
 				A62D6B042BFE7C5E00F24E51 /* ChainDetailActionButtons.swift */,
+				A66BFCD42C136FB3004DCD4F /* VaultDetailBalanceContent.swift */,
 				A66BFCCE2C1348E4004DCD4F /* QRCodeShareSheet.swift */,
 				A66BFCD02C134B3B004DCD4F /* QRShareSheetImage.swift */,
 			);
@@ -1840,6 +1843,7 @@
 				46DE08952BD0DCA200AE8BDE /* EvmL2Service.swift in Sources */,
 				A65BA98A2BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift in Sources */,
 				46C8CBBF2BA777BF00E68E08 /* BlockchairService.swift in Sources */,
+				A66BFCD52C136FB3004DCD4F /* VaultDetailBalanceContent.swift in Sources */,
 				DEFF58FE2BD13E5D005DFDF9 /* ThreadSafeDictionary.swift in Sources */,
 				DE64A4CC2BA7F97500C342E3 /* KeysignDiscoveryViewModel.swift in Sources */,
 				A62758F72B97DF4A00ADE3A6 /* ColorStyle.swift in Sources */,
@@ -2282,6 +2286,7 @@
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Secure your Vault using Face ID";
 				INFOPLIST_KEY_NSFileProviderDomainUsageDescription = "We need to access your files.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to your photo library to save photos.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -2333,6 +2338,7 @@
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Secure your Vault using Face ID";
 				INFOPLIST_KEY_NSFileProviderDomainUsageDescription = "We need to access your files.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to your photo library to save photos.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
