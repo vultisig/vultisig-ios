@@ -81,6 +81,8 @@ class KeysignViewModel: ObservableObject {
         switch keysignPayload?.swapPayload {
         case .thorchain:
             return Endpoint.getSwapProgressURL(txid: txid)
+        case .mayachain:
+            return Endpoint.getMayaSwapTracker(txid: txid)
         case .oneInch, .none:
             return nil
         }
@@ -238,6 +240,8 @@ class KeysignViewModel: ObservableObject {
                 let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
                 let result = swaps.getSignedTransaction(payload: payload, keysignPayload: keysignPayload, signatures: signatures)
                 return result
+            case .mayachain:
+                break // No op - Regular transaction with memo
             }
         }
         
@@ -301,7 +305,19 @@ class KeysignViewModel: ObservableObject {
         let result = getSignedTransaction(keysignPayload: keysignPayload)
         switch result {
         case .success(let tx):
-            do {
+            do { // TODO: Refactor broadcastTransaction into BroadcastService
+                if case .mayachain = keysignPayload.swapPayload {
+                    let broadcastResult = await MayachainService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
+                    switch broadcastResult {
+                    case .success(let txHash):
+                        self.txid = txHash
+                        print("Transaction successful, hash: \(txHash)")
+                    case .failure(let error):
+                        throw error
+                    }
+                    return
+                }
+
                 switch keysignPayload.coin.chain {
                 case .thorChain:
                     let broadcastResult = await ThorchainService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
@@ -366,8 +382,8 @@ class KeysignViewModel: ObservableObject {
         case .failure(let error):
             handleHelperError(err: error)
         }
-        
     }
+
     func handleBroadcastError(err: Error,tx: SignedTransactionResult){
         var errMessage: String = ""
         switch err{
