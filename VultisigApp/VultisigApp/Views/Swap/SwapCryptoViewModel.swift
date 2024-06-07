@@ -210,18 +210,29 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                     expirationTime: UInt64(expirationTime.timeIntervalSince1970), 
                     isAffiliate: isAlliliate(tx: tx)
                 )
+
+                let payload: SwapPayload
+                switch tx.quote {
+                case .thorchain:
+                    payload = .thorchain(swapPayload)
+                case .mayachain:
+                    payload = .mayachain(swapPayload)
+                case .oneinch, .none:
+                    throw Errors.unexpectedError
+                }
+
                 keysignPayload = try await keysignFactory.buildTransfer(
                     coin: tx.fromCoin,
                     toAddress: toAddress,
                     amount: tx.amountInCoinDecimal,
-                    memo: nil,
+                    memo: tx.quote?.memo,
                     chainSpecific: chainSpecific,
-                    swapPayload: .thorchain(swapPayload),
+                    swapPayload: payload,
                     vault: vault
                 )
                 
                 return true
-                
+
             case .oneinch(let quote):
                 let keysignFactory = KeysignPayloadFactory()
                 let payload = OneInchSwapPayload(
