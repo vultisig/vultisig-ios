@@ -25,6 +25,10 @@ struct AddressQRCodeView: View {
             ToolbarItem(placement: .topBarLeading) {
                 NavigationBackSheetButton(showSheet: $showSheet)
             }
+            
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationQRShareSheetButton(showSheet: $showSheet)
+            }
         }
     }
     
