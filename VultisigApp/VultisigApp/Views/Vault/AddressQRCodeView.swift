@@ -34,9 +34,6 @@ struct AddressQRCodeView: View {
                 NavigationQRShareButton(title: addressData, renderedImage: shareSheetViewModel.renderedImage)
             }
         }
-        .onAppear {
-            setData()
-        }
     }
     
     var view: some View {
@@ -46,6 +43,9 @@ struct AddressQRCodeView: View {
             Spacer()
         }
         .padding(.top, 30)
+        .onAppear {
+            setData()
+        }
     }
     
     var address: some View {

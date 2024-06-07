@@ -8,6 +8,7 @@ struct ChainDetailView: View {
     @State var tokens: [Coin] = []
     @State var actions: [CoinAction] = []
     @StateObject var sendTx = SendTransaction()
+    @State var isLoading = false
 
     @EnvironmentObject var viewModel: CoinSelectionViewModel
 
@@ -15,6 +16,10 @@ struct ChainDetailView: View {
         ZStack {
             Background()
             view
+            
+            if isLoading {
+                Loader()
+            }
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString(group.name, comment: ""))
@@ -87,7 +92,7 @@ struct ChainDetailView: View {
     }
     
     var header: some View {
-        ChainHeaderCell(group: group)
+        ChainHeaderCell(group: group, isLoading: $isLoading)
     }
     
     var cells: some View {
@@ -126,6 +131,7 @@ struct ChainDetailView: View {
     }
     
     private func setData() async {
+        isLoading = false
         viewModel.setData(for: vault)
         tokens = viewModel.groupedAssets[group.name] ?? []
         tokens.removeFirst()
