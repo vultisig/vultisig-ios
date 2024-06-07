@@ -13,6 +13,10 @@ struct AddressQRCodeView: View {
     
     let padding: CGFloat = 30
     
+    @StateObject var shareSheetViewModel = ShareSheetViewModel()
+    
+    @Environment(\.displayScale) var displayScale
+    
     var body: some View {
         ZStack {
             Background()
@@ -27,8 +31,11 @@ struct AddressQRCodeView: View {
             }
             
             ToolbarItem(placement: .topBarTrailing) {
-                NavigationQRShareSheetButton(showSheet: $showSheet)
+                NavigationQRShareButton(title: addressData, renderedImage: shareSheetViewModel.renderedImage)
             }
+        }
+        .onAppear {
+            setData()
         }
     }
     
@@ -66,6 +73,14 @@ struct AddressQRCodeView: View {
             )
             .padding(.horizontal, padding)
         }
+    }
+    
+    private func setData() {
+        shareSheetViewModel.render(
+            title: addressData,
+            addressData: addressData,
+            displayScale: displayScale
+        )
     }
 }
 
