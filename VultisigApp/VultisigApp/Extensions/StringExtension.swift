@@ -155,4 +155,22 @@ extension String {
         }
         self = str
     }
+    func hexToData() -> Data? {
+        var data = Data()
+        var hex = self
+        if hex.hasPrefix("0x") {
+            hex.removeFirst(2)
+        }
+        while !hex.isEmpty {
+            let subIndex = hex.index(hex.startIndex, offsetBy: 2)
+            let c = String(hex[..<subIndex])
+            hex = String(hex[subIndex...])
+            if let num = UInt8(c, radix: 16) {
+                data.append(num)
+            } else {
+                return nil
+            }
+        }
+        return data
+    }
 }

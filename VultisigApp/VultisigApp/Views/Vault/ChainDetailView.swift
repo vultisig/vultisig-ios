@@ -36,7 +36,7 @@ struct ChainDetailView: View {
         }
         .sheet(isPresented: $showSheet, content: {
             NavigationView {
-                TokenSelectionView(
+                CustomTokenView(
                     showTokenSelectionSheet: $showSheet,
                     vault: vault,
                     group: group
