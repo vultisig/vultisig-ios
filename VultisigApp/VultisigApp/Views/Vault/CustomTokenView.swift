@@ -24,8 +24,10 @@ struct CustomTokenView: View {
     var body: some View {
         ZStack {
             Background()
-            VStack {
+            VStack(alignment: .leading) {
                 view
+                    .padding(.top, 16)
+                    .padding(.horizontal, 16)
                 
                 if let error = error {
                     errorView(error: error)
@@ -34,10 +36,12 @@ struct CustomTokenView: View {
                 if isLoading {
                     Loader()
                 }
+                
+                Spacer()
             }
         }
         .navigationBarBackButtonHidden(true)
-        .navigationTitle(NSLocalizedString("chooseTokens", comment: "Choose Tokens"))
+        .navigationTitle(NSLocalizedString("chooseTokens", comment: "Custom Tokens"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -47,26 +51,25 @@ struct CustomTokenView: View {
     }
     
     var view: some View {
-        VStack(spacing: 16) {
-            AddressTextField(contractAddress: $contractAddress, validateAddress: validateAddress)
-                .padding(.horizontal)
-            
-            Button(action: {
-                Task {
-                    await fetchTokenInfo()
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                AddressTextField(contractAddress: $contractAddress, validateAddress: validateAddress)
+                
+                Button(action: {
+                    Task {
+                        await fetchTokenInfo()
+                    }
+                }) {
+                    CircularFilledButton(icon: "magnifyingglass")
                 }
-            }) {
-                FilledButton(title: "Fetch Token Info")
             }
-            .padding(.horizontal)
-            
             if showTokenInfo {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Name: \(tokenName)")
                     Text("Symbol: \(tokenSymbol)")
                     Text("Decimals: \(tokenDecimals)")
                 }
-                .padding(.horizontal)
+                .padding(.horizontal, 0) // Optional: to align text to the left
             }
         }
     }

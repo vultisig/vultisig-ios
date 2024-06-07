@@ -35,7 +35,7 @@ struct AddressTextField: View {
     }
     
     var placeholder: some View {
-        Text(NSLocalizedString("enterContractAddress", comment: ""))
+        Text(NSLocalizedString("enterContractAddress", comment: "").toFormattedTitleCase())
             .foregroundColor(Color.neutral0)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
