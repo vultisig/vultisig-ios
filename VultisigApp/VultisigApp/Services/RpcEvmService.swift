@@ -16,9 +16,13 @@ class RpcEvmService: RpcService {
     
     func getBalance(coin: Coin) async throws ->(rawBalance: String,priceRate: Double){
         // Start fetching all information concurrently
-        let cryptoPrice = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
+        var cryptoPrice = Double(0)
         var rawBalance = ""
         do{
+            if !coin.priceProviderId.isEmpty {
+                cryptoPrice = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
+            }
+            
             if coin.isNativeToken {
                 rawBalance = String(try await fetchBalance(address: coin.address))
             } else {

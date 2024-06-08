@@ -38,14 +38,6 @@ struct TokenSelectionView: View {
         }
         .task {
             await tokenViewModel.loadData(chain: group.chain)
-            
-            do {
-                let service = try EvmServiceFactory.getService(forChain: group.chain)
-                let (name, symbol, decimals) = try await service.getTokenInfo(contractAddress: "0xc51d94a9936616b90e26abe61921ab3b4e66a149")
-                print("Token name \(name), Token symbol \(symbol), Token decimals \(decimals)")
-            }catch {
-                print("")
-            }
         }
         .onDisappear {
             saveAssets()
