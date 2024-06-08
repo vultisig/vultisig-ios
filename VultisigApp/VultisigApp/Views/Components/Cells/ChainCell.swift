@@ -9,13 +9,13 @@ import SwiftUI
 
 struct ChainCell: View {
     let group: GroupedChain
-    let showBalance: Bool
     @Binding var isEditingChains: Bool
     
     @State var showAlert = false
     @State var showQRcode = false
     
     @StateObject var viewModel = ChainCellViewModel()
+    @EnvironmentObject var homeViewModel: HomeViewModel
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
@@ -97,19 +97,20 @@ struct ChainCell: View {
         return Text(group.nativeCoin.balanceString)
             .font(.body12Menlo)
             .foregroundColor(.neutral100)
-            .redacted(reason: showBalance ? .placeholder : [])
+            .redacted(reason: homeViewModel.hideVaultBalance ? .placeholder : [])
     }
     
     var balance: some View {
         return Text(group.totalBalanceInFiatString)
             .font(.body16MenloBold)
             .foregroundColor(.neutral100)
-            .redacted(reason: showBalance ? .placeholder : [])
+            .redacted(reason: homeViewModel.hideVaultBalance ? .placeholder : [])
     }
 }
 
 #Preview {
     ScrollView {
-        ChainCell(group: GroupedChain.example, showBalance: false, isEditingChains: .constant(true))
+        ChainCell(group: GroupedChain.example, isEditingChains: .constant(true))
+            .environmentObject(HomeViewModel())
     }
 }
