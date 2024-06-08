@@ -19,6 +19,7 @@ struct VaultDetailView: View {
     
     @State var showSheet = false
     @State var isLoading = true
+    @State var showBalance = true
     @State var showScanner = false
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
@@ -98,7 +99,8 @@ struct VaultDetailView: View {
         }), id: \.id) { group in
             ChainNavigationCell(
                 group: group,
-                vault: vault
+                vault: vault,
+                showBalance: showBalance
             )
         }
         .background(Color.backgroundBlue)
@@ -115,12 +117,15 @@ struct VaultDetailView: View {
     }
     
     var balanceContent: some View {
-        VaultDetailBalanceContent(vault: vault)
+        VaultDetailBalanceContent(
+            vault: vault,
+            showBalance: $showBalance
+        )
     }
     
     var chainList: some View {
         ForEach(viewModel.coinsGroupedByChains, id: \.id) { group in
-            ChainNavigationCell(group: group, vault: vault)
+            ChainNavigationCell(group: group, vault: vault, showBalance: showBalance)
         }
     }
     
