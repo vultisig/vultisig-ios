@@ -11,6 +11,7 @@ import SwiftUI
 class HomeViewModel: ObservableObject {
     @AppStorage("vaultName") var vaultName: String = ""
     @AppStorage("selectedPubKeyECDSA") var selectedPubKeyECDSA: String = ""
+    @AppStorage("showVaultBalance") var hideVaultBalance: Bool = false
     
     @Published var selectedVault: Vault? = nil
     

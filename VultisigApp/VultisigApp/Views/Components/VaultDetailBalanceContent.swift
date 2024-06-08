@@ -9,7 +9,8 @@ import SwiftUI
 
 struct VaultDetailBalanceContent: View {
     let vault: Vault
-    @Binding var showBalance: Bool
+    
+    @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
         HStack(spacing: 18) {
@@ -29,18 +30,18 @@ struct VaultDetailBalanceContent: View {
             .foregroundColor(.neutral0)
             .padding(.top, 10)
             .multilineTextAlignment(.center)
-            .padding(.horizontal, showBalance ? 12 : 0)
-            .redacted(reason: showBalance ? .placeholder : [])
+            .padding(.horizontal, homeViewModel.hideVaultBalance ? 12 : 0)
+            .redacted(reason: homeViewModel.hideVaultBalance ? .placeholder : [])
     }
     
     var hideButton: some View {
         VStack {
             Button {
                 withAnimation {
-                    showBalance.toggle()
+                    homeViewModel.hideVaultBalance.toggle()
                 }
             } label: {
-                Label("", systemImage: showBalance ? "eye": "eye.slash")
+                Label("", systemImage: homeViewModel.hideVaultBalance ? "eye": "eye.slash")
                     .labelsHidden()
                     .foregroundColor(.neutral0)
                     .font(.body16Menlo)
@@ -54,7 +55,6 @@ struct VaultDetailBalanceContent: View {
 
 #Preview {
     VaultDetailBalanceContent(
-        vault: Vault.example,
-        showBalance: .constant(false)
+        vault: Vault.example
     )
 }
