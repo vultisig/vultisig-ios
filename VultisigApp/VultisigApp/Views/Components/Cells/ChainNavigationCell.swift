@@ -10,7 +10,6 @@ import SwiftUI
 struct ChainNavigationCell: View {
     let group: GroupedChain
     let vault: Vault
-    let showBalance: Bool
     
     @State private var isActive = false
     @State var isEditingChains: Bool = false
@@ -36,7 +35,6 @@ struct ChainNavigationCell: View {
     var cell: some View {
         ChainCell(
             group: group,
-            showBalance: showBalance,
             isEditingChains: $isEditingChains
         )
         .onTapGesture {
@@ -49,7 +47,7 @@ struct ChainNavigationCell: View {
     
     var navigationCell: some View {
         NavigationLink(destination: ChainDetailView(group: group, vault: vault), isActive: $isActive) {
-            ChainCell(group: group, showBalance: showBalance, isEditingChains: $isEditingChains)
+            ChainCell(group: group, isEditingChains: $isEditingChains)
         }
     }
     
@@ -71,8 +69,7 @@ struct ChainNavigationCell: View {
 #Preview {
     ChainNavigationCell(
         group: GroupedChain.example,
-        vault: Vault.example, 
-        showBalance: true
+        vault: Vault.example
     )
     .environmentObject(VaultDetailViewModel())
 }
