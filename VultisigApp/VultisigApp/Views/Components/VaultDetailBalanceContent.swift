@@ -9,8 +9,7 @@ import SwiftUI
 
 struct VaultDetailBalanceContent: View {
     let vault: Vault
-    
-    @State var showBalance = true
+    @Binding var showBalance: Bool
     
     var body: some View {
         HStack(spacing: 18) {
@@ -54,5 +53,8 @@ struct VaultDetailBalanceContent: View {
 }
 
 #Preview {
-    VaultDetailBalanceContent(vault: Vault.example)
+    VaultDetailBalanceContent(
+        vault: Vault.example,
+        showBalance: .constant(false)
+    )
 }
