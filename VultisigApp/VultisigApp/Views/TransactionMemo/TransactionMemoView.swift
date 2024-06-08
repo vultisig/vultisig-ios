@@ -4,6 +4,7 @@ struct TransactionMemoView: View {
     @ObservedObject var tx: SendTransaction
     let vault: Vault
     
+    @StateObject var shareSheetViewModel = ShareSheetViewModel()
     @StateObject var transactionMemoViewModel = TransactionMemoViewModel()
     @StateObject var transactionMemoVerifyViewModel = TransactionMemoVerifyViewModel()
     
@@ -109,7 +110,8 @@ struct TransactionMemoView: View {
                     vault: vault,
                     keysignPayload: keysignPayload,
                     transferViewModel: transactionMemoViewModel,
-                    keysignView: $keysignView
+                    keysignView: $keysignView, 
+                    shareSheetViewModel: shareSheetViewModel
                 )
             } else {
                 SendCryptoVaultErrorView()

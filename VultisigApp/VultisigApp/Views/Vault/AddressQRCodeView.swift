@@ -10,8 +10,14 @@ import SwiftUI
 struct AddressQRCodeView: View {
     let addressData: String
     @Binding var showSheet: Bool
+    @Binding var isLoading: Bool
     
     let padding: CGFloat = 30
+    
+    @State var qrCodeImage: Image? = nil
+    @StateObject var shareSheetViewModel = ShareSheetViewModel()
+    
+    @Environment(\.displayScale) var displayScale
     
     var body: some View {
         ZStack {
@@ -25,6 +31,10 @@ struct AddressQRCodeView: View {
             ToolbarItem(placement: .topBarLeading) {
                 NavigationBackSheetButton(showSheet: $showSheet)
             }
+            
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
+            }
         }
     }
     
@@ -35,6 +45,9 @@ struct AddressQRCodeView: View {
             Spacer()
         }
         .padding(.top, 30)
+        .onAppear {
+            setData()
+        }
     }
     
     var address: some View {
@@ -47,24 +60,39 @@ struct AddressQRCodeView: View {
     
     var qrCode: some View {
         GeometryReader { geometry in
-            Utils.getQrImage(
-                data: addressData.data(using: .utf8), size: 100)
-            .resizable()
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-            .padding(24)
-            .frame(maxWidth: .infinity)
-            .frame(height: geometry.size.width-(2*padding))
-            .background(Color.turquoise600.opacity(0.15))
-            .cornerRadius(10)
-            .overlay (
-                RoundedRectangle(cornerRadius: 10)
-                    .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [56]))
-            )
-            .padding(.horizontal, padding)
+            qrCodeImage?
+                .resizable()
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .padding(24)
+                .frame(maxWidth: .infinity)
+                .frame(height: geometry.size.width-(2*padding))
+                .background(Color.turquoise600.opacity(0.15))
+                .cornerRadius(10)
+                .overlay (
+                    RoundedRectangle(cornerRadius: 10)
+                        .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [56]))
+                )
+                .padding(.horizontal, padding)
         }
+    }
+    
+    private func setData() {
+        isLoading = false
+        qrCodeImage = Utils.getQrImage(
+            data: addressData.data(using: .utf8), size: 100)
+        
+        guard let qrCodeImage else {
+            return
+        }
+        
+        shareSheetViewModel.render(
+            title: addressData,
+            qrCodeImage: qrCodeImage,
+            displayScale: displayScale
+        )
     }
 }
 
 #Preview {
-    AddressQRCodeView(addressData: "", showSheet: .constant(true))
+    AddressQRCodeView(addressData: "", showSheet: .constant(true), isLoading: .constant(false))
 }

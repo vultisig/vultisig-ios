@@ -19,6 +19,7 @@ struct VaultDetailView: View {
     
     @State var showSheet = false
     @State var isLoading = true
+    @State var showBalance = true
     @State var showScanner = false
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
@@ -51,22 +52,22 @@ struct VaultDetailView: View {
     
     var view: some View {
         list
-        .opacity(showVaultsList ? 0 : 1)
-        .sheet(isPresented: $showScanner, content: {
-            GeneralCodeScannerView(
-                showSheet: $showScanner,
-                shouldJoinKeygen: $shouldJoinKeygen,
-                shouldKeysignTransaction: $shouldKeysignTransaction
-            )
-        })
-        .navigationDestination(isPresented: $shouldJoinKeygen) {
-            JoinKeygenView(vault: Vault(name: "Main Vault"))
-        }
-        .navigationDestination(isPresented: $shouldKeysignTransaction) {
-            if let vault = homeViewModel.selectedVault {
-                JoinKeysignView(vault: vault)
+            .opacity(showVaultsList ? 0 : 1)
+            .sheet(isPresented: $showScanner, content: {
+                GeneralCodeScannerView(
+                    showSheet: $showScanner,
+                    shouldJoinKeygen: $shouldJoinKeygen,
+                    shouldKeysignTransaction: $shouldKeysignTransaction
+                )
+            })
+            .navigationDestination(isPresented: $shouldJoinKeygen) {
+                JoinKeygenView(vault: Vault(name: "Main Vault"))
             }
-        }
+            .navigationDestination(isPresented: $shouldKeysignTransaction) {
+                if let vault = homeViewModel.selectedVault {
+                    JoinKeysignView(vault: vault)
+                }
+            }
     }
     
     var list: some View {
@@ -98,7 +99,8 @@ struct VaultDetailView: View {
         }), id: \.id) { group in
             ChainNavigationCell(
                 group: group,
-                vault: vault
+                vault: vault,
+                showBalance: showBalance
             )
         }
         .background(Color.backgroundBlue)
@@ -115,20 +117,15 @@ struct VaultDetailView: View {
     }
     
     var balanceContent: some View {
-        Text(vault.coins.totalBalanceInFiatString)
-            .font(.title32MenloBold)
-            .foregroundColor(.neutral0)
-            .frame(maxWidth: .infinity)
-            .padding(.top, 10)
-            .background(Color.backgroundBlue)
-            .listRowInsets(EdgeInsets())
-            .listRowSeparator(.hidden)
-            .multilineTextAlignment(.center)
+        VaultDetailBalanceContent(
+            vault: vault,
+            showBalance: $showBalance
+        )
     }
     
     var chainList: some View {
         ForEach(viewModel.coinsGroupedByChains, id: \.id) { group in
-            ChainNavigationCell(group: group, vault: vault)
+            ChainNavigationCell(group: group, vault: vault, showBalance: showBalance)
         }
     }
     
