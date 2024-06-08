@@ -5,7 +5,7 @@ struct CoinCell: View {
     
     let group: GroupedChain
     let vault: Vault
-
+    
     var body: some View {
         HStack(spacing: 12) {
             logo
@@ -16,8 +16,21 @@ struct CoinCell: View {
     }
     
     var logo: some View {
-        ImageView(coin.logo, size: CGSize(width: 32, height: 32))
-            .cornerRadius(50)
+        Group {
+            if !coin.logo.isEmpty, UIImage(named: coin.logo) != nil {
+                Image(coin.logo)
+                    .resizable()
+                    .frame(width: 32, height: 32)
+                    .cornerRadius(50)
+            } else {
+                Text(String(coin.ticker.prefix(1)).uppercased())
+                    .font(.body16MontserratBold)
+                    .frame(width: 32, height: 32)
+                    .background(Color.white)
+                    .foregroundColor(.blue600)
+                    .cornerRadius(50)
+            }
+        }
     }
     
     var content: some View {

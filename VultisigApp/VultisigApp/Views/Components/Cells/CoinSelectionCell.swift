@@ -36,19 +36,30 @@ struct CoinSelectionCell: View {
     }
     
     var image: some View {
-        Image(asset.logo)
-            .resizable()
-            .frame(width: 32, height: 32)
-            .cornerRadius(100)
+        Group {
+            if !asset.logo.isEmpty, UIImage(named: asset.logo) != nil {
+                Image(asset.logo)
+                    .resizable()
+                    .frame(width: 32, height: 32)
+                    .cornerRadius(100)
+            } else {
+                Text(String(asset.ticker.prefix(1)).uppercased())
+                    .font(.body16MontserratBold)
+                    .frame(width: 32, height: 32)
+                    .background(Color.white)
+                    .foregroundColor(.blue600)
+                    .cornerRadius(100)
+            }
+        }
     }
-    
+
     var text: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(asset.ticker)
                 .font(.body16MontserratBold)
                 .foregroundColor(.neutral0)
             
-			Text(asset.chain.name)
+            Text(asset.chain.name)
                 .font(.body12MontserratSemiBold)
                 .foregroundColor(.neutral0)
         }

@@ -100,9 +100,7 @@ struct CustomTokenView: View {
                 .cornerRadius(10)
                 
                 Button(action: {
-                    Task {
-                        
-                    }
+                    saveAssets()
                 }) {
                     FilledButton(title: "Add \(tokenSymbol) token")
                 }
@@ -167,15 +165,15 @@ struct CustomTokenView: View {
             if let nativeToken = nativeTokenOptional {
                 self.token = Coin(
                     chain: nativeToken.chain,
-                    ticker: tokenSymbol,
-                    logo: "default",
+                    ticker: symbol,
+                    logo: .empty,
                     address: nativeToken.address,
-                    priceRate: 0,
-                    decimals: tokenDecimals,
+                    priceRate: .zero,
+                    decimals: decimals,
                     hexPublicKey: nativeToken.hexPublicKey,
-                    priceProviderId: "",
+                    priceProviderId: .empty,
                     contractAddress: contractAddress,
-                    rawBalance: "",
+                    rawBalance: .zero,
                     isNativeToken: false
                 )
                 
@@ -183,16 +181,16 @@ struct CustomTokenView: View {
                     let (rawBalance, priceRate) = try await service.getBalance(coin: customToken)
                     self.token?.rawBalance = rawBalance
                     self.token?.priceRate = priceRate
-                    coinViewModel.handleSelection(isSelected: true, asset: customToken)
+                    
+                    DispatchQueue.main.async {
+                        coinViewModel.handleSelection(isSelected: true, asset: customToken)
+                        self.tokenName = name
+                        self.tokenSymbol = symbol
+                        self.tokenDecimals = decimals
+                        self.showTokenInfo = true
+                        self.isLoading = false
+                    }
                 }
-            }
-            
-            DispatchQueue.main.async {
-                self.tokenName = name
-                self.tokenSymbol = symbol
-                self.tokenDecimals = decimals
-                self.showTokenInfo = true
-                self.isLoading = false
             }
         } catch {
             DispatchQueue.main.async {
@@ -216,7 +214,7 @@ struct CustomTokenView: View {
     private func saveAssets() {
         isLoading = true
         Task {
-            await coinViewModel.saveAssets(for: vault)
+            await coinViewModel.saveCustomAsset(for: vault)
         }
         isLoading = false
     }
