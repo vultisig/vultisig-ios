@@ -305,19 +305,7 @@ class KeysignViewModel: ObservableObject {
         let result = getSignedTransaction(keysignPayload: keysignPayload)
         switch result {
         case .success(let tx):
-            do { // TODO: Refactor broadcastTransaction into BroadcastService
-                if case .mayachain = keysignPayload.swapPayload {
-                    let broadcastResult = await MayachainService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
-                    switch broadcastResult {
-                    case .success(let txHash):
-                        self.txid = txHash
-                        print("Transaction successful, hash: \(txHash)")
-                    case .failure(let error):
-                        throw error
-                    }
-                    return
-                }
-
+            do {
                 switch keysignPayload.coin.chain {
                 case .thorChain:
                     let broadcastResult = await ThorchainService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
