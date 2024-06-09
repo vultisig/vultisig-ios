@@ -1,10 +1,3 @@
-//
-//  TokenSelectionView.swift
-//  VultisigApp
-//
-//  Created by Amol Kumar on 2024-04-11.
-//
-
 import SwiftUI
 
 struct TokenSelectionView: View {
@@ -14,6 +7,9 @@ struct TokenSelectionView: View {
     
     @StateObject var tokenViewModel = TokenSelectionViewModel()
     @EnvironmentObject var coinViewModel: CoinSelectionViewModel
+    
+    // Focus state for the search field to force layout update
+    @FocusState private var isSearchFieldFocused: Bool
     
     var body: some View {
         ZStack {
@@ -48,7 +44,8 @@ struct TokenSelectionView: View {
         .onDisappear {
             saveAssets()
         }
-        .searchable(text: $tokenViewModel.searchText)
+        .searchable(text: $tokenViewModel.searchText, placement: .navigationBarDrawer(displayMode: .always))
+        .focused($isSearchFieldFocused)
     }
     
     var view: some View {
