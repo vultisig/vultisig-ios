@@ -194,7 +194,6 @@ struct CustomTokenView: View {
                     self.token?.priceRate = priceRate
                     
                     DispatchQueue.main.async {
-                        coinViewModel.handleSelection(isSelected: true, asset: customToken)
                         self.tokenName = name
                         self.tokenSymbol = symbol
                         self.tokenDecimals = decimals
@@ -223,12 +222,15 @@ struct CustomTokenView: View {
     }
     
     private func saveAssets() {
-        isLoading = true
-        Task {
-            await coinViewModel.saveCustomAsset(for: vault)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                isLoading = false
-                chainDetailView.sheetType = nil
+        if let customToken = self.token {
+            isLoading = true
+            Task {
+                coinViewModel.handleSelection(isSelected: true, asset: customToken)
+                await coinViewModel.saveAssets(for: vault)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    isLoading = false
+                    chainDetailView.sheetType = nil
+                }
             }
         }
     }

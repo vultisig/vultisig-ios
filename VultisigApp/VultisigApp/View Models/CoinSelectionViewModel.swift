@@ -69,44 +69,6 @@ class CoinSelectionViewModel: ObservableObject {
             try await Storage.shared.delete(coin)
         }
     }
-    
-    func saveCustomAsset(for vault: Vault) async {
-        do {
-            let removedCoins = vault.coins.filter { coin in
-                !selection.contains(where: { $0.ticker == coin.ticker && $0.chain == coin.chain})
-            }
-            let nativeCoins = removedCoins.filter { $0.isNativeToken }
-            let allTokens = vault.coins.filter { coin in
-                nativeCoins.contains(where: { $0.chain == coin.chain }) && !coin.isNativeToken
-            }
-            
-            try await removeCoins(coins: removedCoins, vault: vault)
-            try await removeCoins(coins: nativeCoins, vault: vault)
-            try await removeCoins(coins: allTokens, vault: vault)
-            
-            // remove all native tokens and also the tokens so they are not added again
-            let filteredSelection = selection.filter{ selection in
-                !nativeCoins.contains(where: { selection.ticker == $0.ticker && selection.chain == $0.chain}) &&
-                !allTokens.contains(where: { selection.ticker == $0.ticker && selection.chain == $0.chain})
-            }
-            
-            var newCoins: [Coin] = []
-            for asset in filteredSelection {
-                if !vault.coins.contains(where: { $0.ticker == asset.ticker && $0.chain == asset.chain}) {
-                    newCoins.append(asset)
-                }
-            }
-            
-            if let customToken = newCoins.first {
-                try await addToChain(asset: customToken, to: vault, priceProviderId: nil)
-            }
-            
-        } catch {
-            print("fail to save asset,\(error)")
-        }
-    }
-    
-    
     func saveAssets(for vault: Vault) async {
         do {
             let removedCoins = vault.coins.filter { coin in
@@ -254,13 +216,19 @@ class CoinSelectionViewModel: ObservableObject {
             let addresses = assets.map { $0.contractAddress }
             let coingekoIDs = try await priceService.fetchCoingeckoId(chain: coin.chain, addresses: addresses)
             
-            guard coingekoIDs.count == assets.count else {
-                return
+            let assetsWithIDs = zip(assets, coingekoIDs).filter { $0.1 != nil }
+            let assetsWithoutIDs = zip(assets, coingekoIDs).filter { $0.1 == nil }.map { $0.0 }
+            
+            for (asset, priceProviderId) in assetsWithIDs {
+                if let priceProviderId = priceProviderId {
+                    _ = try await addToChain(asset: asset, to: vault, priceProviderId: priceProviderId)
+                }
             }
             
-            for (index, asset) in assets.enumerated() {
-                if let priceProviderId = coingekoIDs[index] {
-                    _ = try await addToChain(asset: asset, to: vault, priceProviderId: priceProviderId)
+            for asset in assetsWithoutIDs {
+                if let newCoin = try await addToChain(asset: asset, to: vault, priceProviderId: nil) {
+                    print("Add discovered tokens for \(asset.ticker) on the chain \(asset.chain.name)")
+                    try await addDiscoveredTokens(nativeToken: newCoin, to: vault)
                 }
             }
             
@@ -268,12 +236,12 @@ class CoinSelectionViewModel: ObservableObject {
             for asset in assets {
                 if let newCoin = try await addToChain(asset: asset, to: vault, priceProviderId: nil) {
                     print("Add discovered tokens for \(asset.ticker) on the chain \(asset.chain.name)")
-                    
                     try await addDiscoveredTokens(nativeToken: newCoin, to: vault)
                 }
             }
         }
     }
+    
     
     private func addToChain(asset: Coin, to vault: Vault, priceProviderId: String?) async throws -> Coin? {
         guard let newCoin = getNewCoin(asset: asset, vault: vault) else {

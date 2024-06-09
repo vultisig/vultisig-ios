@@ -27,6 +27,23 @@ class RpcEvmService: RpcService {
                 rawBalance = String(try await fetchBalance(address: coin.address))
             } else {
                 rawBalance = String(try await fetchERC20TokenBalance(contractAddress: coin.contractAddress, walletAddress: coin.address))
+                
+                // Probably a custom token, let's try to get the price from the pool
+                // It only works in USD
+                if cryptoPrice == .zero, coin.priceProviderId.isEmpty {
+                    if SettingsCurrency.current == .USD {
+                        let poolInfo = try await CryptoPriceService.shared.fetchCoingeckoPoolPrice(chain: coin.chain, contractAddress: coin.contractAddress)
+                        
+                        if let priceUsd = poolInfo.price_usd {
+                            coin.priceRate = priceUsd
+                            cryptoPrice = priceUsd
+                        }
+                        
+                        if let coinGeckoId = poolInfo.coingecko_coin_id {
+                            coin.priceProviderId = coinGeckoId
+                        }
+                    }
+                }
             }
         } catch {
             print("getBalance:: \(error.localizedDescription)")
@@ -127,7 +144,7 @@ class RpcEvmService: RpcService {
             "0x95d89b41", // symbol()
             "0x313ce567"  // decimals()
         ]
-
+        
         // Fetch token details in parallel
         async let nameHex = fetchERC20Data(methodId: erc20Abi[0], contractAddress: contractAddress)
         async let symbolHex = fetchERC20Data(methodId: erc20Abi[1], contractAddress: contractAddress)
@@ -137,7 +154,7 @@ class RpcEvmService: RpcService {
         let nameData = try await nameHex
         let symbolData = try await symbolHex
         let decimalsData = try await decimalsHex
-
+        
         // Decode hex values to respective types
         let name = try decodeAbiString(from: nameData)
         let symbol = try decodeAbiString(from: symbolData)
@@ -145,7 +162,7 @@ class RpcEvmService: RpcService {
         
         return (name, symbol, decimals)
     }
-
+    
     private func fetchERC20Data(methodId: String, contractAddress: String) async throws -> String {
         let params: [Any] = [
             ["to": contractAddress, "data": methodId],
@@ -153,7 +170,7 @@ class RpcEvmService: RpcService {
         ]
         return try await strRpcCall(method: "eth_call", params: params)
     }
-
+    
     private func decodeAbiString(from hex: String) throws -> String {
         let cleanedHex = hex.stripHexPrefix()
         guard let data = cleanedHex.hexToData() else {
