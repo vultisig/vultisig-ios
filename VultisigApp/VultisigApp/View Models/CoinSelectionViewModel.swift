@@ -216,20 +216,17 @@ class CoinSelectionViewModel: ObservableObject {
             let addresses = assets.map { $0.contractAddress }
             let coingekoIDs = try await priceService.fetchCoingeckoId(chain: coin.chain, addresses: addresses)
             
-            let assetsWithIDs = zip(assets, coingekoIDs).filter { $0.1 != nil }
-            let assetsWithoutIDs = zip(assets, coingekoIDs).filter { $0.1 == nil }.map { $0.0 }
+            let tokensWithCoingeckoIDs = zip(assets, coingekoIDs).filter { $0.1 != nil }
+            let tokensWithoutCoingeckoIDs = zip(assets, coingekoIDs).filter { $0.1 == nil }.map { $0.0 }
             
-            for (asset, priceProviderId) in assetsWithIDs {
+            for (token, priceProviderId) in tokensWithCoingeckoIDs {
                 if let priceProviderId = priceProviderId {
-                    _ = try await addToChain(asset: asset, to: vault, priceProviderId: priceProviderId)
+                    _ = try await addToChain(asset: token, to: vault, priceProviderId: priceProviderId)
                 }
             }
             
-            for asset in assetsWithoutIDs {
-                if let newCoin = try await addToChain(asset: asset, to: vault, priceProviderId: nil) {
-                    print("Add discovered tokens for \(asset.ticker) on the chain \(asset.chain.name)")
-                    try await addDiscoveredTokens(nativeToken: newCoin, to: vault)
-                }
+            for token in tokensWithoutCoingeckoIDs {
+                _ = try await addToChain(asset: token, to: vault, priceProviderId: nil)
             }
             
         } else {

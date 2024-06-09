@@ -17,22 +17,14 @@ struct CoinCell: View {
     
     var logo: some View {
         Group {
-            if !coin.logo.isEmpty, UIImage(named: coin.logo) != nil {
-                Image(coin.logo)
-                    .resizable()
-                    .frame(width: 32, height: 32)
-                    .cornerRadius(50)
+            if coin.logo.hasPrefix("https://") {
+                AsyncImageView(source: .remote(URL(string: coin.logo)), size: CGSize(width: 32, height: 32), ticker: coin.ticker)
             } else {
-                Text(String(coin.ticker.prefix(1)).uppercased())
-                    .font(.body16MontserratBold)
-                    .frame(width: 32, height: 32)
-                    .background(Color.white)
-                    .foregroundColor(.blue600)
-                    .cornerRadius(50)
+                AsyncImageView(source: .resource(coin.logo), size: CGSize(width: 32, height: 32), ticker: coin.ticker)
             }
         }
     }
-    
+
     var content: some View {
         VStack(alignment: .leading, spacing: 15) {
             header

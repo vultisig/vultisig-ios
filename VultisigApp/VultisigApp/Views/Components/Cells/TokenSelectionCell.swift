@@ -40,10 +40,14 @@ struct TokenSelectionCell: View {
     }
 
     var image: some View {
-        ImageView(
-            source: asset.logo,
-            size: CGSize(width: 32, height: 32)
-        )
+        Group {
+            switch asset.logo {
+            case .resource(let logoName):
+                AsyncImageView(source: .resource(logoName), size: CGSize(width: 32, height: 32), ticker: asset.symbol)
+            case .remote(let logoUrl):
+                AsyncImageView(source: .remote(logoUrl), size: CGSize(width: 32, height: 32), ticker: asset.symbol)
+            }
+        }
     }
 
     var text: some View {
