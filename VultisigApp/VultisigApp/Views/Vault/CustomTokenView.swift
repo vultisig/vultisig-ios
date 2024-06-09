@@ -89,16 +89,23 @@ struct CustomTokenView: View {
                     Separator()
                     getDetailsCell(for: "Decimals", with: tokenDecimals.description)
                     Separator()
-                    getDetailsCell(for: "Logo", with: token?.logo ?? "default")
-                    Separator()
-                    getDetailsCell(for: "Price Rate", with: "\(token?.priceRate ?? 0)")
-                    Separator()
-                    getAddressCell(for: "Hex Public Key", with: token?.hexPublicKey ?? "")
-                    Separator()
-                    getDetailsCell(for: "Price Provider ID", with: token?.priceProviderId ?? "")
-                    Separator()
-                    getDetailsCell(for: "Raw Balance", with: token?.rawBalance ?? "")
-                    Separator()
+                    
+                    if let logo = token?.logo, !logo.isEmpty {
+                        getDetailsCell(for: "Logo", with: logo)
+                        Separator()
+                    }
+                    if let priceRate = token?.priceRate, priceRate > 0 {
+                        getDetailsCell(for: "Price Rate", with: "\(priceRate)")
+                        Separator()
+                    }
+                    if let provider = token?.priceProviderId, !provider.isEmpty {
+                        getDetailsCell(for: "Price Provider ID", with: provider)
+                        Separator()
+                    }
+                    if let rawBalance = token?.rawBalance, !rawBalance.isEmpty {
+                        getDetailsCell(for: "Raw Balance", with: rawBalance)
+                        Separator()
+                    }
                     getDetailsCell(for: "Is Native Token", with: "\(token?.isNativeToken ?? false)")
                 }
                 .padding(16)
