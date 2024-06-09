@@ -46,9 +46,11 @@ struct ChainDetailView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationRefreshButton() {
                     Task {
+                        isLoading = true
                         for coin in group.coins {
                             await viewModel.loadData(coin: coin)
                         }
+                        isLoading = false
                     }
                 }
             }

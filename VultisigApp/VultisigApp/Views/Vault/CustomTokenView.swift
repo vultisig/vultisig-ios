@@ -130,9 +130,7 @@ struct CustomTokenView: View {
     
     private func getDetailsCell(for title: String, with value: String) -> some View {
         HStack {
-            Text(
-                NSLocalizedString(title, comment: "")
-            )
+            Text(NSLocalizedString(title, comment: ""))
             Spacer()
             Text(value)
         }
@@ -221,7 +219,10 @@ struct CustomTokenView: View {
         isLoading = true
         Task {
             await coinViewModel.saveCustomAsset(for: vault)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                isLoading = false
+                chainDetailView.sheetType = nil
+            }
         }
-        isLoading = false
     }
 }
