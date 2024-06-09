@@ -4,14 +4,28 @@ struct ChainDetailView: View {
     let group: GroupedChain
     let vault: Vault
     
-    @State var showSheet = false
     @State var tokens: [Coin] = []
     @State var actions: [CoinAction] = []
     @StateObject var sendTx = SendTransaction()
     @State var isLoading = false
-
+    @State var sheetType: SheetType? = nil
+    
     @EnvironmentObject var viewModel: CoinSelectionViewModel
-
+    
+    enum SheetType: Identifiable {
+        case tokenSelection
+        case customToken
+        
+        var id: Int {
+            switch self {
+            case .tokenSelection:
+                return 1
+            case .customToken:
+                return 2
+            }
+        }
+    }
+    
     var body: some View {
         ZStack {
             Background()
@@ -39,21 +53,41 @@ struct ChainDetailView: View {
                 }
             }
         }
-        .sheet(isPresented: $showSheet, content: {
-            NavigationView {
-                CustomTokenView(
-                    showTokenSelectionSheet: $showSheet,
-                    vault: vault,
-                    group: group
-                )
+        .sheet(isPresented: Binding<Bool>(
+            get: { sheetType != nil },
+            set: { newValue in
+                if !newValue {
+                    sheetType = nil
+                }
             }
-        })
+        )) {
+            if let sheetType = sheetType {
+                switch sheetType {
+                case .tokenSelection:
+                    NavigationView {
+                        TokenSelectionView(
+                            chainDetailView: self,
+                            vault: vault,
+                            group: group
+                        )
+                    }
+                case .customToken:
+                    NavigationView {
+                        CustomTokenView(
+                            chainDetailView: self,
+                            vault: vault,
+                            group: group
+                        )
+                    }
+                }
+            }
+        }
         .onAppear {
             Task {
                 await setData()
             }
         }
-        .onChange(of: vault) {
+        .onChange(of: vault) { _ in
             Task {
                 await setData()
             }
@@ -72,6 +106,7 @@ struct ChainDetailView: View {
                 
                 if tokens.count > 0 {
                     addButton
+                    addCustomTokenButton
                 }
             }
             .padding(.horizontal, 16)
@@ -107,16 +142,24 @@ struct ChainDetailView: View {
     
     var addButton: some View {
         Button {
-            showSheet.toggle()
+            sheetType = .tokenSelection
         } label: {
-            chooseTokensButton
+            chooseTokensButton(NSLocalizedString("chooseTokens", comment: "Choose Tokens"))
         }
     }
     
-    var chooseTokensButton: some View {
+    var addCustomTokenButton: some View {
+        Button {
+            sheetType = .customToken
+        } label: {
+            chooseTokensButton(NSLocalizedString("customToken", comment: "Custom Token"))
+        }
+    }
+    
+    func chooseTokensButton(_ text: String) -> some View {
         HStack(spacing: 10) {
             Image(systemName: "plus")
-            Text(NSLocalizedString("chooseTokens", comment: "Choose Tokens"))
+            Text(text)
             Spacer()
         }
         .font(.body16MenloBold)

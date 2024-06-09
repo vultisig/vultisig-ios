@@ -198,3 +198,4 @@
 "reviewConditionsMessage" = "Por favor, revise y acepte todas las condiciones listadas.";
 "deposit" = "Depósito";
 "findCustomTokens" = "Encuentra Tu Token Personalizado";
+"customToken" = "Token Personalizado";

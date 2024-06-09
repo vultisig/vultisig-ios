@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct TokenSelectionView: View {
-    @Binding var showTokenSelectionSheet: Bool
+    let chainDetailView: ChainDetailView
     let vault: Vault
     let group: GroupedChain
     
@@ -33,7 +33,13 @@ struct TokenSelectionView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                NavigationBackSheetButton(showSheet: $showTokenSelectionSheet)
+                Button(action: {
+                    self.chainDetailView.sheetType = nil
+                }) {
+                    Image(systemName: "chevron.backward")
+                        .font(.body18MenloBold)
+                        .foregroundColor(Color.neutral0)
+                }
             }
         }
         .task {
