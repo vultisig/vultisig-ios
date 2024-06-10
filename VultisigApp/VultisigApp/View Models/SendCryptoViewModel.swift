@@ -136,7 +136,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     private func getPriceRate(tx: SendTransaction) async -> Double {
         do {
             let priceRateFiat = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
-            if priceRateFiat == .zero {
+            if priceRateFiat == .zero, SettingsCurrency.current == .USD {
                 let poolInfo = try await CryptoPriceService.shared.fetchCoingeckoPoolPrice(chain: tx.coin.chain, contractAddress: tx.coin.contractAddress)
                 if let priceUsd = poolInfo.price_usd {
                     return priceUsd
