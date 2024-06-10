@@ -157,13 +157,13 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     
     func validateForm(tx: SwapTransaction) -> Bool {
         return tx.fromCoin != tx.toCoin
-        && tx.fromCoin != .example
-        && tx.toCoin != .example
-        && !tx.fromAmount.isEmpty
-        && !tx.toAmountDecimal.isZero
-        && tx.quote != nil
-        && isSufficientBalance(tx: tx)
-        && !quoteLoading
+            && tx.fromCoin != .example
+            && tx.toCoin != .example
+            && !tx.fromAmount.isEmpty
+            && !tx.toAmountDecimal.isZero
+            && tx.quote != nil
+            && isSufficientBalance(tx: tx)
+            && !quoteLoading
     }
     
     func moveToNextView() {
@@ -185,39 +185,41 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 action: .swap,
                 sendMaxAmount: false
             )
-            
-            switch quote {
-            case .thorchain(let quote), .mayachain(let quote):
 
-                guard quote.inboundAddress != nil || tx.fromCoin.chain == .thorChain else {
-                    throw Errors.unexpectedError
-                }
-                
-                let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
-                let vaultAddress = quote.inboundAddress ?? tx.fromCoin.address
-                let expirationTime = Date().addingTimeInterval(60 * 15) // 15 mins
-                let keysignFactory = KeysignPayloadFactory()
-                
-                let swapPayload = THORChainSwapPayload(
-                    fromAddress: tx.fromCoin.address,
-                    fromCoin: tx.fromCoin,
-                    toCoin: tx.toCoin,
-                    vaultAddress: vaultAddress,
-                    routerAddress: quote.router,
-                    fromAmount: swapFromAmount(tx: tx),
-                    toAmountDecimal: tx.toAmountDecimal,
-                    toAmountLimit: "0", streamingInterval: "1", streamingQuantity: "0",
-                    expirationTime: UInt64(expirationTime.timeIntervalSince1970), 
-                    isAffiliate: isAlliliate(tx: tx)
+            let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
+            let vaultAddress = quote.inboundAddress ?? tx.fromCoin.address
+            let expirationTime = Date().addingTimeInterval(60 * 15) // 15 mins
+            let keysignFactory = KeysignPayloadFactory()
+
+            let swapPayload = THORChainSwapPayload(
+                fromAddress: tx.fromCoin.address,
+                fromCoin: tx.fromCoin,
+                toCoin: tx.toCoin,
+                vaultAddress: vaultAddress,
+                routerAddress: quote.router,
+                fromAmount: swapFromAmount(tx: tx),
+                toAmountDecimal: tx.toAmountDecimal,
+                toAmountLimit: "0", streamingInterval: "1", streamingQuantity: "0",
+                expirationTime: UInt64(expirationTime.timeIntervalSince1970),
+                isAffiliate: isAlliliate(tx: tx)
+            )
+
+            switch quote {
+            case .mayachain(let quote):
+                keysignPayload = try await keysignFactory.buildTransfer(
+                    coin: tx.fromCoin,
+                    toAddress: toAddress,
+                    amount: tx.amountInCoinDecimal,
+                    memo: tx.quote?.memo,
+                    chainSpecific: chainSpecific,
+                    swapPayload: .mayachain(swapPayload),
+                    vault: vault
                 )
 
-                let payload: SwapPayload
-                switch tx.quote {
-                case .thorchain:
-                    payload = .thorchain(swapPayload)
-                case .mayachain:
-                    payload = .mayachain(swapPayload)
-                case .oneinch, .none:
+                return true
+
+            case .thorchain(let quote):
+                guard quote.inboundAddress != nil else {
                     throw Errors.unexpectedError
                 }
 
@@ -227,7 +229,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                     amount: tx.amountInCoinDecimal,
                     memo: tx.quote?.memo,
                     chainSpecific: chainSpecific,
-                    swapPayload: payload,
+                    swapPayload: .thorchain(swapPayload),
                     vault: vault
                 )
                 

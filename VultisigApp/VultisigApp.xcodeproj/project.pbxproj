@@ -56,6 +56,7 @@
 		A5199AF02BBD8C0400AA0A39 /* ThorchainSwapQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5199AEF2BBD8C0400AA0A39 /* ThorchainSwapQuote.swift */; };
 		A52313DE2BDF665E00D4D0D5 /* KeysignSwapConfirmView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52313DD2BDF665E00D4D0D5 /* KeysignSwapConfirmView.swift */; };
 		A543B3A22BEA93D4003FB989 /* SwapQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = A543B3A12BEA93D4003FB989 /* SwapQuote.swift */; };
+		A54676522C179A93004DD782 /* Coin+Swaps.swift in Sources */ = {isa = PBXBuildFile; fileRef = A54676512C179A93004DD782 /* Coin+Swaps.swift */; };
 		A54BBCFF2BC6E11600645C06 /* TransferViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A54BBCFE2BC6E11600645C06 /* TransferViewModel.swift */; };
 		A55BCEBB2BC59E8100D35917 /* KeysignPayloadFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55BCEBA2BC59E8100D35917 /* KeysignPayloadFactory.swift */; };
 		A564ED402BC34B690056FDC0 /* SwapVerifyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A564ED3F2BC34B690056FDC0 /* SwapVerifyView.swift */; };
@@ -410,6 +411,7 @@
 		A5199AEF2BBD8C0400AA0A39 /* ThorchainSwapQuote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainSwapQuote.swift; sourceTree = "<group>"; };
 		A52313DD2BDF665E00D4D0D5 /* KeysignSwapConfirmView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignSwapConfirmView.swift; sourceTree = "<group>"; };
 		A543B3A12BEA93D4003FB989 /* SwapQuote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapQuote.swift; sourceTree = "<group>"; };
+		A54676512C179A93004DD782 /* Coin+Swaps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Coin+Swaps.swift"; sourceTree = "<group>"; };
 		A54BBCFE2BC6E11600645C06 /* TransferViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferViewModel.swift; sourceTree = "<group>"; };
 		A55BCEBA2BC59E8100D35917 /* KeysignPayloadFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignPayloadFactory.swift; sourceTree = "<group>"; };
 		A564ED3F2BC34B690056FDC0 /* SwapVerifyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapVerifyView.swift; sourceTree = "<group>"; };
@@ -1008,6 +1010,7 @@
 			children = (
 				A5D49F552BE26BB9001766C8 /* ChainAction.swift */,
 				A5D49F592BE26C87001766C8 /* Coin+ChainAction.swift */,
+				A54676512C179A93004DD782 /* Coin+Swaps.swift */,
 				A5D49F572BE26C63001766C8 /* CoinActionResolver.swift */,
 			);
 			path = Actions;
@@ -1903,6 +1906,7 @@
 				46F47CBB2B870EE900D964EA /* UTXOTransactionMempool.swift in Sources */,
 				A543B3A22BEA93D4003FB989 /* SwapQuote.swift in Sources */,
 				A5D49F5A2BE26C87001766C8 /* Coin+ChainAction.swift in Sources */,
+				A54676522C179A93004DD782 /* Coin+Swaps.swift in Sources */,
 				A6F9E7A92BED6BDB00BA36E1 /* SetupVaultImageManager.swift in Sources */,
 				D9AD8EDA2B6722CC0009F8D5 /* ApplicationState.swift in Sources */,
 				A6C0D55A2BB3AAA200156689 /* ChainHeaderCell.swift in Sources */,
