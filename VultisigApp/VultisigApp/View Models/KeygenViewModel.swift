@@ -72,9 +72,12 @@ class KeygenViewModel: ObservableObject {
     
     func delaySwitchToMain() {
         Task {
-            
-            // when user didn't touch it for 5 seconds , automatically goto home screen
-            try await Task.sleep(for: .seconds(5)) // Back off 5s
+            // when user didn't touch it for 3 seconds , automatically goto home screen
+            if !VultisigRelay.IsRelayEnabled {
+                try await Task.sleep(for: .seconds(3)) // Back off 3s
+            } else {
+                try await Task.sleep(for: .seconds(1)) // Back off 1s, so we can at least show the done animation
+            }
             self.isLinkActive = true
         }
     }
