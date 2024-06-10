@@ -43,14 +43,6 @@ struct ThorchainSwapQuote: Codable {
         case warning
         case router
     }
-
-    var minSwapAmountDecimal: Decimal? {
-        guard let recommendedMinAmountIn = Decimal(string: recommendedMinAmountIn) else {
-            return nil
-        }
-        let minSwapAmountDecimal = recommendedMinAmountIn / 1e8
-        return minSwapAmountDecimal.isZero ? nil : minSwapAmountDecimal
-    }
 }
 
 struct Fees: Codable {

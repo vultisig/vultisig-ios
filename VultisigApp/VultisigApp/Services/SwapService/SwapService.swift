@@ -74,11 +74,12 @@ private extension SwapService {
         isAffiliate: Bool
     ) async throws -> SwapQuote {
         do {
+            let normalizedAmount = amount * fromCoin.thorswapMultiplier
             let quote = try await provider.fetchSwapQuotes(
                 address: toCoin.address,
                 fromAsset: fromCoin.swapAsset,
                 toAsset: toCoin.swapAsset,
-                amount: (amount * 100_000_000).description, // https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
+                amount: normalizedAmount.description, // https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
                 interval: "1",
                 isAffiliate: isAffiliate
             )
@@ -87,8 +88,8 @@ private extension SwapService {
                 throw Errors.swapAmountTooSmall
             }
 
-            if let minSwapAmountDecimal = quote.minSwapAmountDecimal, amount < minSwapAmountDecimal {
-                let recommendedAmount = "\(minSwapAmountDecimal) \(fromCoin.ticker)"
+            if let minSwapAmountDecimal = Decimal(string: quote.recommendedMinAmountIn), normalizedAmount < minSwapAmountDecimal {
+                let recommendedAmount = "\(minSwapAmountDecimal / fromCoin.thorswapMultiplier) \(fromCoin.ticker)"
                 throw Errors.lessThenMinSwapAmount(amount: recommendedAmount)
             }
 
