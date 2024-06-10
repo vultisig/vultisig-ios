@@ -60,9 +60,17 @@ struct TokenSelectionView: View {
                     }
                 }
             }
-            let filtered = tokenViewModel.filteredTokens(groupedChain: group)
-            if !filtered.isEmpty {
-                Section(header: Text("Search result")) {
+            Section(header: Text("Search result")) {
+                
+                if tokenViewModel.searchText.isEmpty {
+                    Text("Start typing to search for tokens")
+                        .padding(.vertical, 8) // Optional: Add some vertical padding
+                        .listRowBackground(Color.clear)
+                }
+                
+                let filtered = tokenViewModel.filteredTokens(groupedChain: group)
+                if !filtered.isEmpty {
+                    
                     ForEach(filtered, id: \.self) { token in
                         TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel)
                             .listRowBackground(Color.clear)
