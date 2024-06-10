@@ -36,7 +36,7 @@ struct ImportWalletView: View {
             viewModel.readFile(for: result)
         }
         .navigationDestination(isPresented: $viewModel.isLinkActive) {
-            HomeView()
+            HomeView(selectedVault: viewModel.vault)
         }
         .alert(isPresented: $viewModel.showAlert) {
             Alert(

@@ -17,6 +17,7 @@ class ImportVaultViewModel: ObservableObject {
     @Published var showAlert: Bool = false
     @Published var isLinkActive: Bool = false
     @Published var isFileUploaded: Bool = false
+    @Published var vault: Vault? = nil
     
     private let logger = Logger(subsystem: "import-wallet", category: "communication")
     
@@ -85,6 +86,7 @@ class ImportVaultViewModel: ObservableObject {
             VaultDefaultCoinService(context: modelContext)
                 .setDefaultCoinsOnce(vault: backupVault.vault)
             modelContext.insert(backupVault.vault)
+            self.vault = backupVault.vault
             isLinkActive = true
         }  catch {
             print("failed to import with new format , fallback to the old format instead. \(error.localizedDescription)")
@@ -102,6 +104,7 @@ class ImportVaultViewModel: ObservableObject {
                 VaultDefaultCoinService(context: modelContext)
                     .setDefaultCoinsOnce(vault: vault)
                 modelContext.insert(vault)
+                self.vault = vault
                 isLinkActive = true
             } catch {
                 logger.error("fail to restore vault: \(error.localizedDescription)")
