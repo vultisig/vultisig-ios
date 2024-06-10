@@ -56,7 +56,7 @@ class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
     
     private func setupValidation() {
         Publishers.CombineLatest4($amountValid, $nodeAddressValid, $providerValid, $feeValid)
-            .map { $0 && $1 && $2 && $3 }
+            .map { $0 && $1 && $2 && $3 && (!self.provider.isEmpty ? self.fee != .zero : true) }
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
     }
