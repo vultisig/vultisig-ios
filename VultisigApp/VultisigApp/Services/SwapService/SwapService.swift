@@ -30,7 +30,7 @@ struct SwapService {
 
         // Mayachain resolver
         if fromCoin.chain == .mayaChain || toCoin.chain == .mayaChain {
-            return try await fetchThorchainQuote(
+            return try await fetchCrossChainQuote(
                 provider: mayachainService,
                 amount: amount,
                 fromCoin: fromCoin,
@@ -40,7 +40,7 @@ struct SwapService {
         }
 
         // Thorchain resolver
-        return try await fetchThorchainQuote(
+        return try await fetchCrossChainQuote(
             provider: thorchainService,
             amount: amount,
             fromCoin: fromCoin,
@@ -66,7 +66,7 @@ private extension SwapService {
         }
     }
 
-    func fetchThorchainQuote(
+    func fetchCrossChainQuote(
         provider: ThorchainSwapProvider,
         amount: Decimal,
         fromCoin: Coin,
