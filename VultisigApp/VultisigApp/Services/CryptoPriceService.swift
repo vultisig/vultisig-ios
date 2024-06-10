@@ -12,6 +12,10 @@ public class CryptoPriceService: ObservableObject {
     
     func getPrice(priceProviderId: String) async -> Double {
         
+        if priceProviderId.isEmpty {
+            return Double.zero
+        }
+        
         var price = Double.zero
         
         if let priceCoinGecko = await getAllCryptoPricesCoinGecko() {

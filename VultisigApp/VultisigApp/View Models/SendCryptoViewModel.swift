@@ -133,9 +133,29 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         }
     }
     
+    private func getPriceRate(tx: SendTransaction) async -> Double {
+        
+        do {
+            var priceRateFiat = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
+            
+            if priceRateFiat == .zero {
+                
+                let poolInfo = try await CryptoPriceService.shared.fetchCoingeckoPoolPrice(chain: tx.coin.chain, contractAddress: tx.coin.contractAddress)
+                
+                if let priceUsd = poolInfo.price_usd {
+                    return priceUsd
+                }
+            }
+            
+        } catch {
+            return Double.zero
+        }
+        return Double.zero
+    }
+    
     func convertFiatToCoin(newValue: String, tx: SendTransaction) async {
         
-        let priceRateFiat = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
+        let priceRateFiat = await getPriceRate(tx: tx)
         if let newValueDouble = Double(newValue) {
             let newValueCoin = newValueDouble / priceRateFiat
             tx.amount = String(format: "%.9f", newValueCoin)
@@ -148,7 +168,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     
     func convertToFiat(newValue: String, tx: SendTransaction, setMaxValue: Bool = false) async {
         
-        let priceRateFiat = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
+        let priceRateFiat = await getPriceRate(tx: tx)
         if let newValueDouble = Double(newValue) {
             let newValueFiat = String(format: "%.2f", newValueDouble * priceRateFiat)
             tx.amountInFiat = newValueFiat.isEmpty ? "" : newValueFiat
@@ -264,7 +284,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             utxos: utxoInfo,
             memo: tx.memo,
             swapPayload: nil,
-            vaultPubKeyECDSA: vault.pubKeyECDSA, 
+            vaultPubKeyECDSA: vault.pubKeyECDSA,
             vaultLocalPartyID: vault.localPartyID
         )
         

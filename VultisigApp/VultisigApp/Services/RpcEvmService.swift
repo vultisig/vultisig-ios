@@ -43,7 +43,7 @@ class RpcEvmService: RpcService {
                             coin.priceProviderId = coinGeckoId
                         }
                         
-                        if let image = poolInfo.image_url {
+                        if let image = poolInfo.image_url, !image.contains("missing.png") {
                             coin.logo = image
                         }
                     }
