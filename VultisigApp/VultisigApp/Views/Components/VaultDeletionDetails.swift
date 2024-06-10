@@ -8,18 +8,19 @@
 import SwiftUI
 
 struct VaultDeletionDetails: View {
-    let name: String
-    let type: String
-    let ECDSAKey: String
-    let EdDSAKey: String
+    let vault: Vault
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             title
             nameCell
             typeCell
+            ECDSAKeyCell
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(12)
+        .background(Color.blue600)
+        .cornerRadius(10)
     }
     
     var title: some View {
@@ -35,14 +36,28 @@ struct VaultDeletionDetails: View {
     var nameCell: some View {
         HStack(spacing: 0) {
             getTitleText("vaultName")
-            getDescriptionText(name)
+            getDescriptionText(vault.name)
         }
     }
     
     var typeCell: some View {
         HStack(spacing: 0) {
             getTitleText("vaultType")
-            getDescriptionText(type)
+            getDescriptionText(getVaultType())
+        }
+    }
+    
+    var ECDSAKeyCell: some View {
+        HStack(spacing: 0) {
+            getTitleText("ECDSAKey")
+            getDescriptionText(vault.pubKeyECDSA)
+        }
+    }
+    
+    var EdDSAKeyCell: some View {
+        HStack(spacing: 0) {
+            getTitleText("EdDSAKey")
+            getDescriptionText(vault.pubKeyEdDSA)
         }
     }
     
@@ -60,16 +75,15 @@ struct VaultDeletionDetails: View {
             .font(.body12Menlo)
             .foregroundColor(.neutral0)
     }
+    
+    private func getVaultType() -> String {
+        return ""
+    }
 }
 
 #Preview {
     ZStack {
         Background()
-        VaultDeletionDetails(
-            name: "Main Vault",
-            type: "2-of-3 Vault",
-            ECDSAKey: "asdjhfaksdjhfkajsdhflkajshflkasdjflkajsdflk",
-            EdDSAKey: "lasdjflkasdjflkasjdflkasjdfklasjf"
-        )
+        VaultDeletionDetails(vault: Vault.example)
     }
 }
