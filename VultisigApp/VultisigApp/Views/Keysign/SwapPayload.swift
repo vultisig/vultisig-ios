@@ -57,4 +57,13 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
             return payload.quote.tx.to
         }
     }
+
+    var isDeposit: Bool {
+        switch self {
+        case .mayachain(let payload):
+            return payload.fromCoin.chain == .mayaChain && payload.toCoin.chain == .thorChain
+        case .oneInch, .thorchain:
+            return false
+        }
+    }
 }
