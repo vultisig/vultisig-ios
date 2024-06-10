@@ -42,6 +42,10 @@ class RpcEvmService: RpcService {
                         if let coinGeckoId = poolInfo.coingecko_coin_id {
                             coin.priceProviderId = coinGeckoId
                         }
+                        
+                        if let image = poolInfo.image_url {
+                            coin.logo = image
+                        }
                     }
                 }
             }
