@@ -59,8 +59,13 @@ struct TokenSelectorDropdown: View {
     
     var image: some View {
         ZStack {
-            ImageView(selected.logo, size: CGSize(width: 32, height: 32))
-                .cornerRadius(100)
+            Group {
+                if selected.logo.hasPrefix("https://") {
+                    AsyncImageView(source: .remote(URL(string: selected.logo)), size: CGSize(width: 32, height: 32), ticker: selected.ticker)
+                } else {
+                    AsyncImageView(source: .resource(selected.logo), size: CGSize(width: 32, height: 32), ticker: selected.ticker)
+                }
+            }
 
             if let chainIcon = selected.tokenChainLogo {
                 Image(chainIcon)
@@ -105,8 +110,13 @@ struct TokenSelectorDropdown: View {
     private func getCell(for coin: Coin) -> some View {
         HStack(spacing: 12) {
             ZStack {
-                ImageView(coin.logo, size: CGSize(width: 32, height: 32))
-                    .cornerRadius(50)
+                Group {
+                    if coin.logo.hasPrefix("https://") {
+                        AsyncImageView(source: .remote(URL(string: coin.logo)), size: CGSize(width: 32, height: 32), ticker: coin.ticker)
+                    } else {
+                        AsyncImageView(source: .resource(coin.logo), size: CGSize(width: 32, height: 32), ticker: coin.ticker)
+                    }
+                }
 
                 if let chainIcon = coin.tokenChainLogo {
                     Image(chainIcon)
