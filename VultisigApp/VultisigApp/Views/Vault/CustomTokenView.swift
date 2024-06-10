@@ -172,35 +172,48 @@ struct CustomTokenView: View {
         do {
             let service = try EvmServiceFactory.getService(forChain: group.chain)
             let (name, symbol, decimals) = try await service.getTokenInfo(contractAddress: contractAddress)
-            let nativeTokenOptional = group.coins.first(where: {$0.isNativeToken})
-            if let nativeToken = nativeTokenOptional {
-                self.token = Coin(
-                    chain: nativeToken.chain,
-                    ticker: symbol,
-                    logo: .empty,
-                    address: nativeToken.address,
-                    priceRate: .zero,
-                    decimals: decimals,
-                    hexPublicKey: nativeToken.hexPublicKey,
-                    priceProviderId: .empty,
-                    contractAddress: contractAddress,
-                    rawBalance: .zero,
-                    isNativeToken: false
-                )
+            
+            if !name.isEmpty, !symbol.isEmpty, decimals > 0 {
                 
-                if let customToken = self.token {
-                    let (rawBalance, priceRate) = try await service.getBalance(coin: customToken)
-                    self.token?.rawBalance = rawBalance
-                    self.token?.priceRate = priceRate
+                let nativeTokenOptional = group.coins.first(where: {$0.isNativeToken})
+                if let nativeToken = nativeTokenOptional {
+                    self.token = Coin(
+                        chain: nativeToken.chain,
+                        ticker: symbol,
+                        logo: .empty,
+                        address: nativeToken.address,
+                        priceRate: .zero,
+                        decimals: decimals,
+                        hexPublicKey: nativeToken.hexPublicKey,
+                        priceProviderId: .empty,
+                        contractAddress: contractAddress,
+                        rawBalance: .zero,
+                        isNativeToken: false
+                    )
                     
-                    DispatchQueue.main.async {
-                        self.tokenName = name
-                        self.tokenSymbol = symbol
-                        self.tokenDecimals = decimals
-                        self.showTokenInfo = true
-                        self.isLoading = false
+                    if let customToken = self.token {
+                        let (rawBalance, priceRate) = try await service.getBalance(coin: customToken)
+                        self.token?.rawBalance = rawBalance
+                        self.token?.priceRate = priceRate
+                        
+                        DispatchQueue.main.async {
+                            self.tokenName = name
+                            self.tokenSymbol = symbol
+                            self.tokenDecimals = decimals
+                            self.showTokenInfo = true
+                            self.isLoading = false
+                        }
                     }
                 }
+                
+            } else {
+                
+                DispatchQueue.main.async {
+                    self.error = TokenNotFoundError()
+                    self.isLoading = false
+                }
+                
+                
             }
         } catch {
             DispatchQueue.main.async {
@@ -234,4 +247,11 @@ struct CustomTokenView: View {
             }
         }
     }
+    
+    private struct TokenNotFoundError: LocalizedError {
+        var errorDescription: String? {
+            return NSLocalizedString("Token Not Found", comment: "Token not found error")
+        }
+    }
 }
+

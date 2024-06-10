@@ -28,31 +28,36 @@ public class CryptoPriceService: ObservableObject {
     }
     
     func fetchCoingeckoPoolPrice(chain: Chain, contractAddress: String) async throws -> (image_url: String?, coingecko_coin_id: String?, price_usd: Double?) {
-        
-        struct Response: Codable {
-            struct Data: Codable {
-                struct Attributes: Codable {
-                    let image_url: String?
-                    let coingecko_coin_id: String?
-                    let price_usd: String?
+        do {
+            struct Response: Codable {
+                struct Data: Codable {
+                    struct Attributes: Codable {
+                        let image_url: String?
+                        let coingecko_coin_id: String?
+                        let price_usd: String?
+                    }
+                    let attributes: Attributes
                 }
-                let attributes: Attributes
+                let data: [Data]
             }
-            let data: [Data]
-        }
-        let response: Response = try await Utils.fetchObject(from: Endpoint.fetchTokensInfo(
-            network: chain.coingeckoId,
-            addresses: [contractAddress])
-        )
-        if let response = response.data.first {
-            
-            var priceRate: Double? = nil
-            
-            if let priceUsd = response.attributes.price_usd {
-                priceRate = Double(priceUsd)
+            let response: Response = try await Utils.fetchObject(from: Endpoint.fetchTokensInfo(
+                network: chain.coingeckoId,
+                addresses: [contractAddress])
+            )
+            if let response = response.data.first {
+                
+                var priceRate: Double? = nil
+                
+                if let priceUsd = response.attributes.price_usd {
+                    priceRate = Double(priceUsd)
+                }
+                
+                return (response.attributes.image_url, response.attributes.coingecko_coin_id, priceRate)
             }
             
-            return (response.attributes.image_url, response.attributes.coingecko_coin_id, priceRate)
+        } catch {
+            print(error.localizedDescription)
+            return (image_url: nil, coingecko_coin_id: nil, price_usd: nil)
         }
         return (image_url: nil, coingecko_coin_id: nil, price_usd: nil)
     }

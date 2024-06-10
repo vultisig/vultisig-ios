@@ -51,7 +51,7 @@ class RpcEvmService: RpcService {
             }
         } catch {
             print("getBalance:: \(error.localizedDescription)")
-            throw error
+            return (.zero,.zero)
         }
         return (rawBalance,cryptoPrice)
     }
@@ -142,29 +142,34 @@ class RpcEvmService: RpcService {
     }
     
     func getTokenInfo(contractAddress: String) async throws -> (name: String, symbol: String, decimals: Int) {
-        // Define ABI for ERC20 functions
-        let erc20Abi = [
-            "0x06fdde03", // name()
-            "0x95d89b41", // symbol()
-            "0x313ce567"  // decimals()
-        ]
-        
-        // Fetch token details in parallel
-        async let nameHex = fetchERC20Data(methodId: erc20Abi[0], contractAddress: contractAddress)
-        async let symbolHex = fetchERC20Data(methodId: erc20Abi[1], contractAddress: contractAddress)
-        async let decimalsHex = fetchERC20Data(methodId: erc20Abi[2], contractAddress: contractAddress)
-        
-        // Await results
-        let nameData = try await nameHex
-        let symbolData = try await symbolHex
-        let decimalsData = try await decimalsHex
-        
-        // Decode hex values to respective types
-        let name = try decodeAbiString(from: nameData)
-        let symbol = try decodeAbiString(from: symbolData)
-        let decimals = Int(hex: decimalsData) ?? 0
-        
-        return (name, symbol, decimals)
+        do {
+            // Define ABI for ERC20 functions
+            let erc20Abi = [
+                "0x06fdde03", // name()
+                "0x95d89b41", // symbol()
+                "0x313ce567"  // decimals()
+            ]
+            
+            // Fetch token details in parallel
+            async let nameHex = fetchERC20Data(methodId: erc20Abi[0], contractAddress: contractAddress)
+            async let symbolHex = fetchERC20Data(methodId: erc20Abi[1], contractAddress: contractAddress)
+            async let decimalsHex = fetchERC20Data(methodId: erc20Abi[2], contractAddress: contractAddress)
+            
+            // Await results
+            let nameData = try await nameHex
+            let symbolData = try await symbolHex
+            let decimalsData = try await decimalsHex
+            
+            // Decode hex values to respective types
+            let name = try decodeAbiString(from: nameData)
+            let symbol = try decodeAbiString(from: symbolData)
+            let decimals = Int(hex: decimalsData) ?? 0
+            
+            return (name, symbol, decimals)
+        } catch {
+            print(error.localizedDescription)
+            return (.empty, .empty, .zero)
+        }
     }
     
     private func fetchERC20Data(methodId: String, contractAddress: String) async throws -> String {
