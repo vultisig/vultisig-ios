@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 import WalletCore
 
+@MainActor
 struct CustomTokenView: View {
     let chainDetailView: ChainDetailView
     let vault: Vault
@@ -184,30 +185,25 @@ struct CustomTokenView: View {
                         self.token?.rawBalance = rawBalance
                         self.token?.priceRate = priceRate
                         
-                        DispatchQueue.main.async {
-                            self.tokenName = name
-                            self.tokenSymbol = symbol
-                            self.tokenDecimals = decimals
-                            self.showTokenInfo = true
-                            self.isLoading = false
-                        }
+                        self.tokenName = name
+                        self.tokenSymbol = symbol
+                        self.tokenDecimals = decimals
+                        self.showTokenInfo = true
+                        self.isLoading = false
+                        
                     }
                 }
                 
             } else {
                 
-                DispatchQueue.main.async {
-                    self.error = TokenNotFoundError()
-                    self.isLoading = false
-                }
-                
+                self.error = TokenNotFoundError()
+                self.isLoading = false
                 
             }
         } catch {
-            DispatchQueue.main.async {
-                self.error = error
-                self.isLoading = false
-            }
+            self.error = error
+            self.isLoading = false
+            
         }
     }
     
@@ -228,10 +224,10 @@ struct CustomTokenView: View {
             Task {
                 coinViewModel.handleSelection(isSelected: true, asset: customToken)
                 await coinViewModel.saveAssets(for: vault)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    isLoading = false
-                    chainDetailView.sheetType = nil
-                }
+                
+                try await Task.sleep(nanoseconds: 1_000_000_000)
+                isLoading = false
+                chainDetailView.sheetType = nil
             }
         }
     }
