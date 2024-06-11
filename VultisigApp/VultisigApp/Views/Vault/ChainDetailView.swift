@@ -12,17 +12,12 @@ struct ChainDetailView: View {
     
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
-    enum SheetType: Identifiable {
-        case tokenSelection
-        case customToken
-        
+    enum SheetType: Int, Identifiable {
+        case tokenSelection = 1
+        case customToken = 2
+
         var id: Int {
-            switch self {
-            case .tokenSelection:
-                return 1
-            case .customToken:
-                return 2
-            }
+            return self.rawValue
         }
     }
     
