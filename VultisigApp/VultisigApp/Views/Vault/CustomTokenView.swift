@@ -68,6 +68,7 @@ struct CustomTokenView: View {
     
     var view: some View {
         VStack(alignment: .leading, spacing: 16) {
+            
             HStack {
                 AddressTextField(contractAddress: $contractAddress, validateAddress: validateAddress)
                 
@@ -79,36 +80,17 @@ struct CustomTokenView: View {
                     CircularFilledButton(icon: "magnifyingglass")
                 }
             }
+            
             if showTokenInfo {
-                VStack(alignment: .leading, spacing: 8) {
-                    getAddressCell(for: "Contract Address", with: contractAddress)
-                    Separator()
-                    getDetailsCell(for: "Name", with: tokenName)
-                    Separator()
-                    getDetailsCell(for: "Symbol", with: tokenSymbol)
-                    Separator()
-                    getDetailsCell(for: "Decimals", with: tokenDecimals.description)
-                    Separator()
-                    
-                    if let logo = token?.logo, !logo.isEmpty {
-                        getDetailsCell(for: "Logo", with: logo)
-                        Separator()
-                    }
-                    if let priceRate = token?.priceRate, priceRate > 0 {
-                        getDetailsCell(for: "Price Rate", with: "\(priceRate)")
-                        Separator()
-                    }
-                    if let provider = token?.priceProviderId, !provider.isEmpty {
-                        getDetailsCell(for: "Price Provider ID", with: provider)
-                        Separator()
-                    }
-                    if let rawBalance = token?.rawBalance, !rawBalance.isEmpty {
-                        getDetailsCell(for: "Raw Balance", with: rawBalance)
-                        Separator()
-                    }
-                    getDetailsCell(for: "Is Native Token", with: "\(token?.isNativeToken ?? false)")
+                
+                HStack(spacing: 16) {
+                    image
+                    text
+                    Spacer()
+                    price
                 }
-                .padding(16)
+                .frame(height: 72)
+                .padding(.horizontal, 16)
                 .background(Color.blue600)
                 .cornerRadius(10)
                 
@@ -120,29 +102,6 @@ struct CustomTokenView: View {
             }
             
         }
-    }
-    
-    private func getAddressCell(for title: String, with address: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(NSLocalizedString(title, comment: ""))
-                .font(.body20MontserratSemiBold)
-                .foregroundColor(.neutral0)
-            
-            Text(address)
-                .font(.body12Menlo)
-                .foregroundColor(.turquoise600)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-    
-    private func getDetailsCell(for title: String, with value: String) -> some View {
-        HStack {
-            Text(NSLocalizedString(title, comment: ""))
-            Spacer()
-            Text(value)
-        }
-        .font(.body16MenloBold)
-        .foregroundColor(.neutral100)
     }
     
     func errorView(error: Error) -> some View {
@@ -161,6 +120,43 @@ struct CustomTokenView: View {
             .padding(.horizontal, 40)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+    
+    var image: some View {
+        Group {
+            if let coin = token {
+                if coin.logo.hasPrefix("https://") {
+                    AsyncImageView(source: .remote(URL(string: coin.logo)), size: CGSize(width: 32, height: 32), ticker: coin.ticker)
+                } else {
+                    AsyncImageView(source: .resource(coin.logo), size: CGSize(width: 32, height: 32), ticker: coin.ticker)
+                }
+            }
+        }
+    }
+    
+    var text: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(self.token?.ticker ?? .empty)
+                .font(.body16MontserratBold)
+                .foregroundColor(.neutral0)
+            
+            Text(self.token?.chain.name ?? .empty)
+                .font(.body12MontserratSemiBold)
+                .foregroundColor(.neutral0)
+            
+            Text(contractAddress)
+                .font(.body12Menlo)
+                .foregroundColor(.turquoise600)
+        }
+    }
+    var price: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            
+            Text(self.token?.priceRate.description.formatToFiat() ?? .empty)
+                .font(.body12MontserratSemiBold)
+                .foregroundColor(.neutral0)
+
+        }
     }
     
     private func fetchTokenInfo() async {
