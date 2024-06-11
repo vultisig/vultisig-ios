@@ -197,3 +197,7 @@
 "reviewConditions" = "Bedingungen überprüfen";
 "reviewConditionsMessage" = "Bitte überprüfen und stimmen Sie allen aufgeführten Bedingungen zu.";
 "deposit" = "Einzahlung";
+"details" = "Details";
+"vaultType" = "Tresortyp";
+"ECDSAKey" = "ECDSA-Schlüssel";
+"EdDSAKey" = "EdDSA-Schlüssel";

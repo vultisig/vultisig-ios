@@ -218,3 +218,7 @@
 "reviewConditions" = "Review Conditions";
 "reviewConditionsMessage" = "Kindly review and agree to all the listed conditions.";
 "deposit" = "Deposit";
+"details" = "Details";
+"vaultType" = "Vault Type";
+"ECDSAKey" = "ECDSA Key";
+"EdDSAKey" = "EdDSA Key";

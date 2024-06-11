@@ -197,3 +197,7 @@
 "reviewConditions" = "Revisar Condições";
 "reviewConditionsMessage" = "Por favor, reveja e concorde com todas as condições listadas.";
 "deposit" = "Depósito";
+"details" = "Detalhes";
+"vaultType" = "Tipo de cofre";
+"ECDSAKey" = "Chave ECDSA";
+"EdDSAKey" = "Chave EdDSA";
