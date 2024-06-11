@@ -197,3 +197,7 @@
 "reviewConditions" = "Rivedi le Condizioni";
 "reviewConditionsMessage" = "Si prega di rivedere e accettare tutte le condizioni elencate.";
 "deposit" = "Deposito";
+"details" = "Dettagli";
+"vaultType" = "Tipo di caveau";
+"ECDSAKey" = "Chiave ECDSA";
+"EdDSAKey" = "Chiave EdDSA";
