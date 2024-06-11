@@ -182,7 +182,7 @@ class RpcEvmService: RpcService {
     
     private func decodeAbiString(from hex: String) throws -> String {
         let cleanedHex = hex.stripHexPrefix()
-        guard let data = cleanedHex.hexToData() else {
+        guard let data = Data(hexString: cleanedHex) else {
             throw RpcEvmServiceError.rpcError(code: -1, message: "Invalid hex string")
         }
         
