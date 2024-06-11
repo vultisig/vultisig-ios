@@ -199,3 +199,7 @@
 "deposit" = "Polog";
 "findCustomTokens" = "Pronađite Svoj Prilagođeni Token";
 "customToken" = "Prilagođeni Token";
+"details" = "Detalji";
+"vaultType" = "Tip spremišta";
+"ECDSAKey" = "ECDSA ključ";
+"EdDSAKey" = "EdDSA ključ";

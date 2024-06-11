@@ -44,10 +44,11 @@ struct EditVaultView: View {
     
     var exporter: some View {
         alert
-            .fileExporter(isPresented: $showVaultExporter,
-                          document: VultisigDocument(vault: BackupVault(version: .v1, vault: vault)),
-                          contentType: .data,
-                          defaultFilename: "\(vault.getExportName())") { result in
+            .fileExporter(
+                isPresented: $showVaultExporter,
+                document: VultisigDocument(vault: BackupVault(version: .v1, vault: vault)),
+                contentType: .data,
+                defaultFilename: "\(vault.getExportName())") { result in
                 switch result {
                 case .failure(let error):
                     print("Failed to export, error: \(error.localizedDescription)")

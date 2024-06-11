@@ -220,3 +220,7 @@
 "deposit" = "Deposit";
 "findCustomTokens" = "Find Your Custom Token";
 "customToken" = "Custom Token";
+"details" = "Details";
+"vaultType" = "Vault Type";
+"ECDSAKey" = "ECDSA Key";
+"EdDSAKey" = "EdDSA Key";

@@ -199,3 +199,7 @@
 "deposit" = "Depósito";
 "findCustomTokens" = "Encontre Seu Token Personalizado";
 "customToken" = "Token Personalizado";
+"details" = "Detalhes";
+"vaultType" = "Tipo de cofre";
+"ECDSAKey" = "Chave ECDSA";
+"EdDSAKey" = "Chave EdDSA";

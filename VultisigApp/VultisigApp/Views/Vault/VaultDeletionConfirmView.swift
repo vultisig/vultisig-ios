@@ -38,10 +38,11 @@ struct VaultDeletionConfirmView: View {
     }
     
     var view: some View {
-        VStack(spacing: 48) {
+        VStack(spacing: 32) {
             Spacer()
             logo
             Spacer()
+            details
             checkboxes
             button
         }
@@ -75,6 +76,10 @@ struct VaultDeletionConfirmView: View {
             Checkbox(isChecked: $canLoseFundCheck, text: "canLoseFundsPrompt")
             Checkbox(isChecked: $vaultBackupCheck, text: "madeVaultBackupPrompt")
         }
+    }
+    
+    var details: some View {
+        VaultDeletionDetails(vault: vault)
     }
     
     var button: some View {

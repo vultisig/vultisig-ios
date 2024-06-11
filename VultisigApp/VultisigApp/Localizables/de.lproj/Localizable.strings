@@ -199,3 +199,7 @@
 "deposit" = "Einzahlung";
 "findCustomTokens" = "Finde Deinen Benutzerdefinierten Token";
 "customToken" = "Benutzerdefinierten Token";
+"details" = "Details";
+"vaultType" = "Tresortyp";
+"ECDSAKey" = "ECDSA-Schlüssel";
+"EdDSAKey" = "EdDSA-Schlüssel";
