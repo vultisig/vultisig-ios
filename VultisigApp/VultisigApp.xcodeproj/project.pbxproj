@@ -69,7 +69,6 @@
 		A5BA150A2C078EED00AA6C07 /* TokenSelectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA15092C078EED00AA6C07 /* TokenSelectionCell.swift */; };
 		A5BA150C2C078FA000AA6C07 /* TokenSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA150B2C078FA000AA6C07 /* TokenSelectionViewModel.swift */; };
 		A5BA150F2C085EEB00AA6C07 /* CachedAsyncImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA150E2C085EEB00AA6C07 /* CachedAsyncImage.swift */; };
-		A5BA15132C085F5C00AA6C07 /* ImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA15122C085F5C00AA6C07 /* ImageView.swift */; };
 		A5CBA32C2BCD747C00088CC3 /* TappableTextFieldStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5CBA32B2BCD747C00088CC3 /* TappableTextFieldStyle.swift */; };
 		A5D00E412BD65CE7009E025F /* ERC20ApprovePayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D00E402BD65CE7009E025F /* ERC20ApprovePayload.swift */; };
 		A5D00E432BD68B66009E025F /* SwapApproveVerifyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D00E422BD68B66009E025F /* SwapApproveVerifyView.swift */; };
@@ -429,7 +428,6 @@
 		A5BA15092C078EED00AA6C07 /* TokenSelectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionCell.swift; sourceTree = "<group>"; };
 		A5BA150B2C078FA000AA6C07 /* TokenSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionViewModel.swift; sourceTree = "<group>"; };
 		A5BA150E2C085EEB00AA6C07 /* CachedAsyncImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedAsyncImage.swift; sourceTree = "<group>"; };
-		A5BA15122C085F5C00AA6C07 /* ImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageView.swift; sourceTree = "<group>"; };
 		A5CBA32B2BCD747C00088CC3 /* TappableTextFieldStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TappableTextFieldStyle.swift; sourceTree = "<group>"; };
 		A5D00E402BD65CE7009E025F /* ERC20ApprovePayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ERC20ApprovePayload.swift; sourceTree = "<group>"; };
 		A5D00E422BD68B66009E025F /* SwapApproveVerifyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapApproveVerifyView.swift; sourceTree = "<group>"; };
@@ -1010,7 +1008,6 @@
 			isa = PBXGroup;
 			children = (
 				A5BA150E2C085EEB00AA6C07 /* CachedAsyncImage.swift */,
-				A5BA15122C085F5C00AA6C07 /* ImageView.swift */,
 				B5CA1A052C16C39700789B11 /* AsyncImageView.swift */,
 			);
 			path = ImageView;
@@ -2112,7 +2109,6 @@
 				DE49A1672B65F6D9000F3AFB /* VultisigApp.swift in Sources */,
 				A60CA7E72BB0EC6100FDEB5C /* AccountViewModel.swift in Sources */,
 				A66BFCCF2C1348E4004DCD4F /* QRCodeShareSheet.swift in Sources */,
-				A5BA15132C085F5C00AA6C07 /* ImageView.swift in Sources */,
 				A588F2DB2BEE8090002EEC60 /* OneInchSwapPayload.swift in Sources */,
 				A62D6B052BFE7C5E00F24E51 /* ChainDetailActionButtons.swift in Sources */,
 				A6F9E7A52BED6BC800BA36E1 /* SetupVaultTabView.swift in Sources */,

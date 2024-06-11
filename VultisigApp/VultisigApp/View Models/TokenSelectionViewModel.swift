@@ -23,7 +23,7 @@ class TokenSelectionViewModel: ObservableObject {
             }
         }
         
-        var logo: ImageView.Source {
+        var logo: AsyncImageView.Source {
             switch self {
             case .coin(let coin):
                 return .resource(coin.logo)

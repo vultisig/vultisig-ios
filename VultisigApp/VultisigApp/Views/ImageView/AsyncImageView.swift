@@ -8,10 +8,19 @@
 import SwiftUI
 import Foundation
 
+extension URLCache {
+    static let imageCache = URLCache(memoryCapacity: 100_000_000, diskCapacity: 500_000_000)
+}
+
 struct AsyncImageView: View {
-    let source: ImageView.Source
+    let source: Source
     let size: CGSize
     let ticker: String
+    
+    enum Source {
+        case resource(String)
+        case remote(URL?)
+    }
 
     var body: some View {
         ZStack {
