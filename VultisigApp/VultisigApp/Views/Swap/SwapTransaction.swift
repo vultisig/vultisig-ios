@@ -21,7 +21,7 @@ class SwapTransaction: ObservableObject {
 
     var fee: BigInt {
         switch quote {
-        case .thorchain:
+        case .thorchain, .mayachain:
             return thorchainFee
         case .oneinch:
             return oneInchFee
@@ -43,9 +43,9 @@ class SwapTransaction: ObservableObject {
             return .zero
         }
         switch quote {
-        case .thorchain(let quote):
+        case .mayachain(let quote), .thorchain(let quote):
             let expected = Decimal(string: quote.expectedAmountOut) ?? 0
-            return expected / Decimal(100_000_000)
+            return expected / toCoin.thorswapMultiplier
         case .oneinch(let quote):
             let amount = BigInt(quote.dstAmount) ?? BigInt.zero
             return toCoin.decimal(for: amount)
@@ -57,7 +57,7 @@ class SwapTransaction: ObservableObject {
             return .zero
         }
         switch quote {
-        case .thorchain:
+        case .thorchain, .mayachain:
             return toCoin.raw(for: toAmountDecimal)
         case .oneinch(let quote):
             return BigInt(quote.dstAmount) ?? BigInt.zero

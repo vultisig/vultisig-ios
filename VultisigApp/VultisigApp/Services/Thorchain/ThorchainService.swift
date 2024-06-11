@@ -7,7 +7,7 @@
 
 import Foundation
 
-class ThorchainService {
+class ThorchainService: ThorchainSwapProvider {
     static let shared = ThorchainService()
     
     private var cacheFeePrice: [String: (data: UInt64, timestamp: Date)] = [:]

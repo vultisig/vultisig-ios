@@ -84,7 +84,10 @@ enum THORChainHelper {
                 isDeposit = true
             }
         }
-        
+        if let swapPayload = keysignPayload.swapPayload, swapPayload.isDeposit {
+            isDeposit = true
+        }
+
         if isDeposit {
             thorChainCoin = TW_Cosmos_Proto_THORChainCoin.with {
                 $0.asset = TW_Cosmos_Proto_THORChainAsset.with {

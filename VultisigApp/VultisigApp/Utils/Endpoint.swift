@@ -177,6 +177,10 @@ class Endpoint {
         return "https://track.ninerealms.com/\(txid.stripHexPrefix())"
     }
 
+    static func getMayaSwapTracker(txid: String) -> String {
+        return "https://www.mayascan.org/tx/\(txid.stripHexPrefix())"
+    }
+
     static func getExplorerURL(chainTicker: String, txid: String) -> String {
         switch chainTicker {
         case "BTC":
