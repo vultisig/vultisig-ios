@@ -45,16 +45,10 @@ public class CryptoPriceService: ObservableObject {
                 addresses: [contractAddress])
             )
             if let response = response.data.first {
-                
-                var priceRate: Double? = nil
-                
-                if let priceUsd = response.attributes.price_usd {
-                    priceRate = Double(priceUsd)
-                }
-                
+                let priceRate = response.attributes.price_usd.flatMap { Double($0) }
                 return (response.attributes.image_url, response.attributes.coingecko_coin_id, priceRate)
             }
-            
+
         } catch {
             print(error.localizedDescription)
             return (image_url: nil, coingecko_coin_id: nil, price_usd: nil)
