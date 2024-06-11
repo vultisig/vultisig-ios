@@ -123,15 +123,7 @@ struct CustomTokenView: View {
     }
     
     var image: some View {
-        Group {
-            if let coin = token {
-                if coin.logo.hasPrefix("https://") {
-                    AsyncImageView(source: .remote(URL(string: coin.logo)), size: CGSize(width: 32, height: 32), ticker: coin.ticker)
-                } else {
-                    AsyncImageView(source: .resource(coin.logo), size: CGSize(width: 32, height: 32), ticker: coin.ticker)
-                }
-            }
-        }
+        AsyncImageView(logo: token?.logo ?? .empty, size: CGSize(width: 32, height: 32), ticker: token?.ticker ?? .empty, tokenChainLogo: token?.tokenChainLogo)
     }
     
     var text: some View {
@@ -155,7 +147,7 @@ struct CustomTokenView: View {
             Text(self.token?.priceRate.description.formatToFiat() ?? .empty)
                 .font(.body12MontserratSemiBold)
                 .foregroundColor(.neutral0)
-
+            
         }
     }
     

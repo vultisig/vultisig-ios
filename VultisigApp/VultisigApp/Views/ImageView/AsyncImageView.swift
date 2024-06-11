@@ -13,10 +13,19 @@ extension URLCache {
 }
 
 struct AsyncImageView: View {
-    let source: Source
+    let logo: String
     let size: CGSize
     let ticker: String
+    let tokenChainLogo: String?
     
+    var source: Source {
+        if logo.hasPrefix("https://") {
+            return .remote(URL(string: logo))
+        } else {
+            return .resource(logo)
+        }
+    }
+
     enum Source {
         case resource(String)
         case remote(URL?)
@@ -48,6 +57,14 @@ struct AsyncImageView: View {
                 } else {
                     fallbackText
                 }
+            }
+            
+            if let chainIcon = tokenChainLogo {
+                Image(chainIcon)
+                    .resizable()
+                    .frame(width: 16, height: 16)
+                    .cornerRadius(16)
+                    .offset(x: 12, y: 12)
             }
         }
     }

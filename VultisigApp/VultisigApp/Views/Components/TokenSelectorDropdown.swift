@@ -58,23 +58,7 @@ struct TokenSelectorDropdown: View {
     }
     
     var image: some View {
-        ZStack {
-            Group {
-                if selected.logo.hasPrefix("https://") {
-                    AsyncImageView(source: .remote(URL(string: selected.logo)), size: CGSize(width: 32, height: 32), ticker: selected.ticker)
-                } else {
-                    AsyncImageView(source: .resource(selected.logo), size: CGSize(width: 32, height: 32), ticker: selected.ticker)
-                }
-            }
-
-            if let chainIcon = selected.tokenChainLogo {
-                Image(chainIcon)
-                    .resizable()
-                    .frame(width: 16, height: 16)
-                    .cornerRadius(16)
-                    .offset(x: 12, y: 12)
-            }
-        }
+        AsyncImageView(logo: selected.logo, size: CGSize(width: 32, height: 32), ticker: selected.ticker, tokenChainLogo: selected.tokenChainLogo)
     }
     
     var cells: some View {
@@ -109,24 +93,8 @@ struct TokenSelectorDropdown: View {
     
     private func getCell(for coin: Coin) -> some View {
         HStack(spacing: 12) {
-            ZStack {
-                Group {
-                    if coin.logo.hasPrefix("https://") {
-                        AsyncImageView(source: .remote(URL(string: coin.logo)), size: CGSize(width: 32, height: 32), ticker: coin.ticker)
-                    } else {
-                        AsyncImageView(source: .resource(coin.logo), size: CGSize(width: 32, height: 32), ticker: coin.ticker)
-                    }
-                }
-
-                if let chainIcon = coin.tokenChainLogo {
-                    Image(chainIcon)
-                        .resizable()
-                        .frame(width: 16, height: 16)
-                        .cornerRadius(16)
-                        .offset(x: 12, y: 12)
-                }
-            }
-
+            AsyncImageView(logo: coin.logo, size: CGSize(width: 32, height: 32), ticker: coin.ticker, tokenChainLogo: coin.tokenChainLogo)
+            
             Text(coin.ticker)
                 .font(.body16Menlo)
                 .foregroundColor(.neutral0)

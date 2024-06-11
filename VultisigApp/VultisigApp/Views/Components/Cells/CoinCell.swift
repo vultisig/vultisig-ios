@@ -16,13 +16,7 @@ struct CoinCell: View {
     }
     
     var logo: some View {
-        Group {
-            if coin.logo.hasPrefix("https://") {
-                AsyncImageView(source: .remote(URL(string: coin.logo)), size: CGSize(width: 32, height: 32), ticker: coin.ticker)
-            } else {
-                AsyncImageView(source: .resource(coin.logo), size: CGSize(width: 32, height: 32), ticker: coin.ticker)
-            }
-        }
+        AsyncImageView(logo: coin.logo, size: CGSize(width: 32, height: 32), ticker: coin.ticker, tokenChainLogo: coin.tokenChainLogo)
     }
 
     var content: some View {

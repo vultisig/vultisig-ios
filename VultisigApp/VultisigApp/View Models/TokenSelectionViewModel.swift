@@ -23,12 +23,12 @@ class TokenSelectionViewModel: ObservableObject {
             }
         }
         
-        var logo: AsyncImageView.Source {
+        var logo: String {
             switch self {
             case .coin(let coin):
-                return .resource(coin.logo)
+                return coin.logo
             case .oneInch(let token):
-                return .remote(token.logoUrl)
+                return token.logoUrl?.description ?? .empty
             }
         }
     }
