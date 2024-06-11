@@ -10,11 +10,12 @@ import BigInt
 
 enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
     case thorchain(THORChainSwapPayload)
+    case mayachain(THORChainSwapPayload)
     case oneInch(OneInchSwapPayload)
 
     var fromCoin: Coin {
         switch self {
-        case .thorchain(let payload):
+        case .thorchain(let payload), .mayachain(let payload):
             return payload.fromCoin
         case .oneInch(let payload):
             return payload.fromCoin
@@ -23,7 +24,7 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
 
     var toCoin: Coin {
         switch self {
-        case .thorchain(let payload):
+        case .thorchain(let payload), .mayachain(let payload):
             return payload.toCoin
         case .oneInch(let payload):
             return payload.toCoin
@@ -32,7 +33,7 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
 
     var fromAmount: BigInt {
         switch self {
-        case .thorchain(let payload):
+        case .thorchain(let payload), .mayachain(let payload):
             return payload.fromAmount
         case .oneInch(let payload):
             return payload.fromAmount
@@ -41,7 +42,7 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
 
     var toAmountDecimal: Decimal {
         switch self {
-        case .thorchain(let payload):
+        case .thorchain(let payload), .mayachain(let payload):
             return payload.toAmountDecimal
         case .oneInch(let payload):
             return payload.toAmountDecimal
@@ -50,10 +51,19 @@ enum SwapPayload: Codable, Hashable { // TODO: Merge with SwapQuote
 
     var router: String? {
         switch self {
-        case .thorchain(let payload):
+        case .thorchain(let payload), .mayachain(let payload):
             return payload.routerAddress
         case .oneInch(let payload):
             return payload.quote.tx.to
+        }
+    }
+
+    var isDeposit: Bool {
+        switch self {
+        case .mayachain(let payload):
+            return payload.fromCoin.chain == .mayaChain && payload.toCoin.chain == .thorChain
+        case .oneInch, .thorchain:
+            return false
         }
     }
 }

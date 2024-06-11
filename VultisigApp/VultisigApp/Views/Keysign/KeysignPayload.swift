@@ -93,6 +93,8 @@ struct KeysignPayload: Codable, Hashable {
             case .oneInch(let payload):
                 let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
                 return swaps.getPreSignedImageHash(payload: payload, keysignPayload: self)
+            case .mayachain:
+                break // No op - Regular transaction with memo
             }
         }
         
