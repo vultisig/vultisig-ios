@@ -38,12 +38,12 @@ struct VaultDeletionConfirmView: View {
     }
     
     var view: some View {
-        VStack(spacing: 48) {
+        VStack(spacing: 32) {
             Spacer()
             logo
+            Spacer()
             details
             checkboxes
-            Spacer()
             button
         }
         .padding(18)

@@ -16,6 +16,7 @@ struct VaultDeletionDetails: View {
             nameCell
             typeCell
             ECDSAKeyCell
+            EdDSAKeyCell
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
@@ -50,14 +51,14 @@ struct VaultDeletionDetails: View {
     var ECDSAKeyCell: some View {
         HStack(spacing: 0) {
             getTitleText("ECDSAKey")
-            getDescriptionText(vault.pubKeyECDSA)
+            getDescriptionText(vault.pubKeyECDSA, shouldShrink: true)
         }
     }
     
     var EdDSAKeyCell: some View {
         HStack(spacing: 0) {
             getTitleText("EdDSAKey")
-            getDescriptionText(vault.pubKeyEdDSA)
+            getDescriptionText(vault.pubKeyEdDSA, shouldShrink: true)
         }
     }
     
@@ -70,14 +71,15 @@ struct VaultDeletionDetails: View {
         .foregroundColor(.neutral0)
     }
     
-    private func getDescriptionText(_ description: String) -> some View {
+    private func getDescriptionText(_ description: String, shouldShrink: Bool = false) -> some View {
         Text(NSLocalizedString(description, comment: ""))
-            .font(.body12Menlo)
+            .font(shouldShrink ? .body10Menlo : .body12Menlo)
             .foregroundColor(.neutral0)
+            .lineLimit(2)
     }
     
     private func getVaultType() -> String {
-        return ""
+        return "\(vault.getThreshold() + 1) of \(vault.signers.count) Vaults"
     }
 }
 
