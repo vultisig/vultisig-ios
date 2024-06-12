@@ -63,10 +63,7 @@ struct ChainCell: View {
     }
     
     var logo: some View {
-        Image(group.logo)
-            .resizable()
-            .frame(width: 32, height: 32)
-            .cornerRadius(50)
+        AsyncImageView(logo: group.logo, size: CGSize(width: 32, height: 32), ticker: group.chain.ticker, tokenChainLogo: nil)
     }
     
     var title: some View {

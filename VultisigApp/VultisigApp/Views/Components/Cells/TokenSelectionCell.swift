@@ -1,10 +1,3 @@
-//
-//  TokenSelectionCell.swift
-//  VultisigApp
-//
-//  Created by Artur Guseinov on 29.05.2024.
-//
-
 import SwiftUI
 
 struct TokenSelectionCell: View {
@@ -12,6 +5,7 @@ struct TokenSelectionCell: View {
     let address: String
     let asset: TokenSelectionViewModel.Token
     let tokenSelectionViewModel: TokenSelectionViewModel
+    let tokenSelectionView: TokenSelectionView
 
     @State var isSelected = false
 
@@ -71,6 +65,10 @@ struct TokenSelectionCell: View {
 
     private func handleSelection(_ isSelected: Bool) {
         coinSelectionViewModel.handleSelection(isSelected: isSelected, asset: convertToCoin(asset))
+        // Save assets whenever the selection changes
+        Task {
+            await coinSelectionViewModel.saveAssets(for: tokenSelectionView.vault)
+        }
     }
 
     private func convertToCoin(_ asset: TokenSelectionViewModel.Token) -> Coin {
@@ -94,11 +92,3 @@ struct TokenSelectionCell: View {
         }
     }
 }
-
-#Preview {
-    ScrollView {
-        CoinSelectionCell(asset: Coin.example)
-            .environmentObject(CoinSelectionViewModel())
-    }
-}
-

@@ -10,11 +10,12 @@ struct TokenSelectionView: View {
     
     // Focus state for the search field to force layout update
     @FocusState private var isSearchFieldFocused: Bool
+    @State private var isSearching = false
     
     var body: some View {
         ZStack {
             Background()
-            VStack{
+            VStack {
                 addCustomTokenButton.background(Color.clear).padding()
                 view
             }
@@ -40,6 +41,49 @@ struct TokenSelectionView: View {
                         .foregroundColor(Color.neutral0)
                 }
             }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(action: {
+                    self.chainDetailView.sheetType = nil
+                }) {
+                    Text("Done")
+                        .foregroundColor(.blue)
+                }
+            }
+            ToolbarItem(placement: .principal) {
+                
+                ZStack(alignment: .trailing) {
+                    HStack {
+                        TextField(NSLocalizedString("search", comment: "Search"), text: $tokenViewModel.searchText)
+                            .foregroundColor(.neutral0)
+                            .submitLabel(.next)
+                            .textInputAutocapitalization(.never)
+                            .disableAutocorrection(true)
+                            .keyboardType(.default)
+                            .textContentType(.oneTimeCode)
+                            .focused($isSearchFieldFocused)
+                        
+                        if isSearching {
+                            Button("Cancel") {
+                                tokenViewModel.searchText = ""
+                                isSearchFieldFocused = false
+                                isSearching = false
+                            }
+                            .foregroundColor(.blue)
+                        }
+                    }
+                    .onChange(of: tokenViewModel.searchText) { oldValue, newValue in
+                        isSearching = !newValue.isEmpty
+                    }
+                }
+                .font(.body12Menlo)
+                .foregroundColor(.neutral0)
+                .frame(height: 38)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 12)
+                .background(Color.blue600)
+                .cornerRadius(10)
+                
+            }
         }
         .task {
             await tokenViewModel.loadData(chain: group.chain)
@@ -47,8 +91,6 @@ struct TokenSelectionView: View {
         .onDisappear {
             saveAssets()
         }
-        .searchable(text: $tokenViewModel.searchText, placement: .navigationBarDrawer(displayMode: .always))
-        .focused($isSearchFieldFocused)
     }
     
     var addCustomTokenButton: some View {
@@ -65,28 +107,27 @@ struct TokenSelectionView: View {
             if !selected.isEmpty {
                 Section(header: Text(NSLocalizedString("Selected", comment:"Selected"))) {
                     ForEach(selected, id: \.self) { token in
-                        TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel)
+                        TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel, tokenSelectionView: self)
                             .listRowBackground(Color.clear)
                             .listRowSeparator(.hidden)
                     }
                 }
             }
             
-                if tokenViewModel.searchText.isEmpty {
-                    Section(header: Text(NSLocalizedString("tokens", comment:"Tokens"))) {
-                        ForEach(tokenViewModel.preExistingTokens(groupedChain: group), id: \.self) { token in
-                            TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel)
-                                .listRowBackground(Color.clear)
-                                .listRowSeparator(.hidden)
-                        }
+            if tokenViewModel.searchText.isEmpty {
+                Section(header: Text(NSLocalizedString("tokens", comment:"Tokens"))) {
+                    ForEach(tokenViewModel.preExistingTokens(groupedChain: group), id: \.self) { token in
+                        TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel, tokenSelectionView: self)
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
                     }
-                } else {
-                    Section(header: Text(NSLocalizedString("searchResult", comment:"Search Result"))) {
+                }
+            } else {
+                Section(header: Text(NSLocalizedString("searchResult", comment:"Search Result"))) {
                     let filtered = tokenViewModel.filteredTokens(groupedChain: group)
                     if !filtered.isEmpty {
-                        
                         ForEach(filtered, id: \.self) { token in
-                            TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel)
+                            TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel, tokenSelectionView: self)
                                 .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
                         }
