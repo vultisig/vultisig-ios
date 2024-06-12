@@ -203,3 +203,5 @@
 "vaultType" = "Tipo di caveau";
 "ECDSAKey" = "Chiave ECDSA";
 "EdDSAKey" = "Chiave EdDSA";
+"Selected" = "Selezionato";
+"searchResult" = "Risultato della ricerca";

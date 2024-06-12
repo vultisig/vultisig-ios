@@ -205,7 +205,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             )
 
             switch quote {
-            case .mayachain(let quote):
+            case .mayachain(_):
                 keysignPayload = try await keysignFactory.buildTransfer(
                     coin: tx.fromCoin,
                     toAddress: toAddress,

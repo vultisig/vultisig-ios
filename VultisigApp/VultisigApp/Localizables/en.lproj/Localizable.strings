@@ -224,3 +224,5 @@
 "vaultType" = "Vault Type";
 "ECDSAKey" = "ECDSA Key";
 "EdDSAKey" = "EdDSA Key";
+"Selected" = "Selected";
+"searchResult" = "Search Result";

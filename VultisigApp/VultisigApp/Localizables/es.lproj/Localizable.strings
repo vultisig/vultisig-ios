@@ -203,3 +203,5 @@
 "vaultType" = "Tipo de almacén";
 "ECDSAKey" = "Clave ECDSA";
 "EdDSAKey" = "Clave EdDSA";
+"Selected" = "Seleccionado";
+"searchResult" = "Resultado de la búsqueda";
