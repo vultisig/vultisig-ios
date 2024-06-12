@@ -50,7 +50,6 @@ struct TokenSelectionView: View {
                 }
             }
             ToolbarItem(placement: .principal) {
-                
                 ZStack(alignment: .trailing) {
                     HStack {
                         TextField(NSLocalizedString("search", comment: "Search"), text: $tokenViewModel.searchText)
@@ -61,6 +60,7 @@ struct TokenSelectionView: View {
                             .keyboardType(.default)
                             .textContentType(.oneTimeCode)
                             .focused($isSearchFieldFocused)
+                            .padding(.horizontal, 8)
                         
                         if isSearching {
                             Button("Cancel") {
@@ -71,25 +71,26 @@ struct TokenSelectionView: View {
                             .foregroundColor(.blue)
                         }
                     }
+                    .background(Color.blue600)
+                    .cornerRadius(10)
+                    .padding(.horizontal, 12)
                     .onChange(of: tokenViewModel.searchText) { oldValue, newValue in
                         isSearching = !newValue.isEmpty
                     }
                 }
+                .frame(maxWidth: .infinity)
                 .font(.body12Menlo)
                 .foregroundColor(.neutral0)
                 .frame(height: 38)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 12)
                 .background(Color.blue600)
                 .cornerRadius(10)
-                
             }
         }
         .task {
             await tokenViewModel.loadData(chain: group.chain)
         }
-        .onDisappear {
-            saveAssets()
+        .onAppear {
+            isSearchFieldFocused = true
         }
     }
     

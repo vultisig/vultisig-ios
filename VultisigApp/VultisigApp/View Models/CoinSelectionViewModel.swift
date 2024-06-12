@@ -247,13 +247,18 @@ class CoinSelectionViewModel: ObservableObject {
         if let priceProviderId {
             newCoin.priceProviderId = priceProviderId
         }
-        
+
         // Save the new coin first
         try await Storage.shared.save(newCoin)
-        vault.coins.append(newCoin)
-        
+
+        // Check if the new coin already exists in the vault's coins before appending it
+        if !vault.coins.contains(where: { $0.id == newCoin.id }) {
+            vault.coins.append(newCoin)
+        }
+
         return newCoin
     }
+
     
     private func addDiscoveredTokens(nativeToken: Coin, to vault: Vault) async throws  {
         do {
