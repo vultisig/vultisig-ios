@@ -14,7 +14,10 @@ struct TokenSelectionView: View {
     var body: some View {
         ZStack {
             Background()
-            view
+            VStack{
+                addCustomTokenButton.background(Color.clear).padding()
+                view
+            }
             
             if let error = tokenViewModel.error {
                 errorView(error: error)
@@ -46,6 +49,14 @@ struct TokenSelectionView: View {
         }
         .searchable(text: $tokenViewModel.searchText, placement: .navigationBarDrawer(displayMode: .always))
         .focused($isSearchFieldFocused)
+    }
+    
+    var addCustomTokenButton: some View {
+        Button {
+            chainDetailView.sheetType = .customToken
+        } label: {
+            chainDetailView.chooseTokensButton(NSLocalizedString("customToken", comment: "Custom Token"))
+        }
     }
     
     var view: some View {

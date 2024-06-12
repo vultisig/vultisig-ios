@@ -15,7 +15,7 @@ struct ChainDetailView: View {
     enum SheetType: Int, Identifiable {
         case tokenSelection = 1
         case customToken = 2
-
+        
         var id: Int {
             return self.rawValue
         }
@@ -84,7 +84,7 @@ struct ChainDetailView: View {
                 await setData()
             }
         }
-        .onChange(of: vault) { _ in
+        .onChange(of: vault) {
             Task {
                 await setData()
             }
@@ -103,7 +103,6 @@ struct ChainDetailView: View {
                 
                 if tokens.count > 0 {
                     addButton
-                    addCustomTokenButton
                 }
             }
             .padding(.horizontal, 16)
@@ -142,14 +141,6 @@ struct ChainDetailView: View {
             sheetType = .tokenSelection
         } label: {
             chooseTokensButton(NSLocalizedString("chooseTokens", comment: "Choose Tokens"))
-        }
-    }
-    
-    var addCustomTokenButton: some View {
-        Button {
-            sheetType = .customToken
-        } label: {
-            chooseTokensButton(NSLocalizedString("customToken", comment: "Custom Token"))
         }
     }
     

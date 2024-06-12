@@ -13,9 +13,6 @@ struct AddressTextField: View {
     
     var body: some View {
         ZStack(alignment: .trailing) {
-            if contractAddress.isEmpty {
-                placeholder
-            }
             
             field
         }
@@ -42,7 +39,7 @@ struct AddressTextField: View {
     
     var field: some View {
         HStack(spacing: 0) {
-            TextField(NSLocalizedString("enterContractAddress", comment: "").capitalized, text: $contractAddress)
+            TextField(NSLocalizedString("enterContractAddress", comment: "").toFormattedTitleCase(), text: $contractAddress)
                 .foregroundColor(.neutral0)
                 .submitLabel(.next)
                 .textInputAutocapitalization(.never)
