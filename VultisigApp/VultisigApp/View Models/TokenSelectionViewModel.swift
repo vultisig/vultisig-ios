@@ -59,7 +59,16 @@ class TokenSelectionViewModel: ObservableObject {
 
         return filteredTokens + tickerTokens
     }
-
+    
+    func preExistingTokens(groupedChain: GroupedChain) ->[Token] {
+        let tickers = groupedChain.coins
+            .filter { !$0.isNativeToken }
+            .map { $0.ticker.lowercased() }
+        
+        return TokensStore.TokenSelectionAssets
+            .filter { $0.chain == groupedChain.chain && !$0.isNativeToken && !tickers.contains($0.ticker.lowercased())}
+            .map { .coin($0) }
+    }
     
     func filteredTokens(groupedChain: GroupedChain) -> [Token] {
         guard !searchText.isEmpty else { return [] }

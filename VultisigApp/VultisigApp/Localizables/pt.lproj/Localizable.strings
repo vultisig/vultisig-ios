@@ -203,3 +203,5 @@
 "vaultType" = "Tipo de cofre";
 "ECDSAKey" = "Chave ECDSA";
 "EdDSAKey" = "Chave EdDSA";
+"Selected" = "Selecionado";
+"searchResult" = "Resultado da pesquisa";

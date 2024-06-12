@@ -203,3 +203,6 @@
 "vaultType" = "Tresortyp";
 "ECDSAKey" = "ECDSA-Schlüssel";
 "EdDSAKey" = "EdDSA-Schlüssel";
+"Selected" = "Ausgewählt";
+"searchResult" = "Suchergebnis";
+

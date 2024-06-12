@@ -46,7 +46,9 @@ struct AddressTextField: View {
                 .disableAutocorrection(true)
                 .keyboardType(.default)
                 .textContentType(.oneTimeCode)
-                .onChange(of: contractAddress, perform: validateAddress)
+                .onChange(of: contractAddress){oldValue,newValue in
+                    validateAddress(newValue)
+                }
             
             pasteButton
             scanButton

@@ -63,7 +63,7 @@ struct TokenSelectionView: View {
         List {
             let selected = tokenViewModel.selectedTokens(groupedChain: group)
             if !selected.isEmpty {
-                Section(header: Text("Selected")) {
+                Section(header: Text(NSLocalizedString("Selected", comment:"Selected"))) {
                     ForEach(selected, id: \.self) { token in
                         TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel)
                             .listRowBackground(Color.clear)
@@ -71,21 +71,25 @@ struct TokenSelectionView: View {
                     }
                 }
             }
-            Section(header: Text("Search result")) {
-                
+            
                 if tokenViewModel.searchText.isEmpty {
-                    Text("Start typing to search for tokens")
-                        .padding(.vertical, 8) // Optional: Add some vertical padding
-                        .listRowBackground(Color.clear)
-                }
-                
-                let filtered = tokenViewModel.filteredTokens(groupedChain: group)
-                if !filtered.isEmpty {
-                    
-                    ForEach(filtered, id: \.self) { token in
-                        TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel)
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
+                    Section(header: Text(NSLocalizedString("tokens", comment:"Tokens"))) {
+                        ForEach(tokenViewModel.preExistingTokens(groupedChain: group), id: \.self) { token in
+                            TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel)
+                                .listRowBackground(Color.clear)
+                                .listRowSeparator(.hidden)
+                        }
+                    }
+                } else {
+                    Section(header: Text(NSLocalizedString("searchResult", comment:"Search Result"))) {
+                    let filtered = tokenViewModel.filteredTokens(groupedChain: group)
+                    if !filtered.isEmpty {
+                        
+                        ForEach(filtered, id: \.self) { token in
+                            TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel)
+                                .listRowBackground(Color.clear)
+                                .listRowSeparator(.hidden)
+                        }
                     }
                 }
             }

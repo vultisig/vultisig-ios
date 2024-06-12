@@ -203,3 +203,5 @@
 "vaultType" = "Tip spremišta";
 "ECDSAKey" = "ECDSA ključ";
 "EdDSAKey" = "EdDSA ključ";
+"Selected" = "Odabrano";
+"searchResult" = "Rezultat pretraživanja";
