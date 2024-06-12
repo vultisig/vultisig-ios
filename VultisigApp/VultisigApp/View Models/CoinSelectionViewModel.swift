@@ -207,6 +207,15 @@ class CoinSelectionViewModel: ObservableObject {
             case .failure(let err):
                 logger.info("fail to get solana address,error:\(err.localizedDescription)")
             }
+        case .dydx:
+            let coinResult = DydxHelper().getDydxCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
+            switch coinResult {
+            case .success(let dydx):
+                dydx.priceProviderId = asset.priceProviderId
+                return dydx
+            case .failure(let err):
+                logger.info("fail to get solana address,error:\(err.localizedDescription)")
+            }
         }
         return nil
     }

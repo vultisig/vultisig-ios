@@ -133,7 +133,10 @@ struct KeysignPayload: Codable, Hashable {
             return KujiraHelper().getPreSignedImageHash(keysignPayload: self)
         case .polkadot:
             return PolkadotHelper.getPreSignedImageHash(keysignPayload: self)
+        case .dydx:
+            return DydxHelper().getPreSignedImageHash(keysignPayload: self)
         }
+        
     }
     
     static let example = KeysignPayload(coin: Coin.example, toAddress: "toAddress", toAmount: 100, chainSpecific: BlockChainSpecific.UTXO(byteFee: 100, sendMaxAmount: false), utxos: [], memo: "Memo", swapPayload: nil, vaultPubKeyECDSA: "12345", vaultLocalPartyID: "iPhone-100")
