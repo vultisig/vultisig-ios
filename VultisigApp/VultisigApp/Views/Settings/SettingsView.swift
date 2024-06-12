@@ -32,6 +32,7 @@ struct SettingsView: View {
         VStack(spacing: 24) {
             mainSection
             otherSection
+            test
             Spacer()
             socials
             appVersion
@@ -53,6 +54,14 @@ struct SettingsView: View {
         VStack(spacing: 16) {
             getTitle("other")
             shareAppCell
+        }
+    }
+    
+    var test: some View {
+        NavigationLink {
+            PasswordTestView()
+        } label: {
+            Text("TEST")
         }
     }
     
