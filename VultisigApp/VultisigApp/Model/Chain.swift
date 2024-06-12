@@ -133,9 +133,9 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     
     var isSwapSupported: Bool {
         switch self {
-        case .thorChain, .mayaChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .gaiaChain:
+        case .thorChain, .mayaChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .gaiaChain, .dash, .kujira:
             return true
-        case .solana, .dash, .kujira,.arbitrum, .base, .optimism, .polygon, .blast, .cronosChain, .polkadot, .sui, .zksync:
+        case .solana,.arbitrum, .base, .optimism, .polygon, .blast, .cronosChain, .polkadot, .sui, .zksync:
             return false
         }
     }
