@@ -7,7 +7,7 @@ class Coin: ObservableObject, Codable, Hashable {
     @Attribute(.unique) var id: String
     let chain: Chain
     let ticker: String
-    let logo: String
+    var logo: String
     @Attribute(originalName: "decimals") var strDecimals: String
     let contractAddress: String
     let isNativeToken: Bool

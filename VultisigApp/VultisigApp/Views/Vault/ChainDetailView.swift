@@ -4,14 +4,23 @@ struct ChainDetailView: View {
     let group: GroupedChain
     let vault: Vault
     
-    @State var showSheet = false
     @State var tokens: [Coin] = []
     @State var actions: [CoinAction] = []
     @StateObject var sendTx = SendTransaction()
     @State var isLoading = false
-
+    @State var sheetType: SheetType? = nil
+    
     @EnvironmentObject var viewModel: CoinSelectionViewModel
-
+    
+    enum SheetType: Int, Identifiable {
+        case tokenSelection = 1
+        case customToken = 2
+        
+        var id: Int {
+            return self.rawValue
+        }
+    }
+    
     var body: some View {
         ZStack {
             Background()
@@ -32,22 +41,44 @@ struct ChainDetailView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationRefreshButton() {
                     Task {
+                        isLoading = true
                         for coin in group.coins {
                             await viewModel.loadData(coin: coin)
                         }
+                        isLoading = false
                     }
                 }
             }
         }
-        .sheet(isPresented: $showSheet, content: {
-            NavigationView {
-                TokenSelectionView(
-                    showTokenSelectionSheet: $showSheet,
-                    vault: vault,
-                    group: group
-                )
+        .sheet(isPresented: Binding<Bool>(
+            get: { sheetType != nil },
+            set: { newValue in
+                if !newValue {
+                    sheetType = nil
+                }
             }
-        })
+        )) {
+            if let sheetType = sheetType {
+                switch sheetType {
+                case .tokenSelection:
+                    NavigationView {
+                        TokenSelectionView(
+                            chainDetailView: self,
+                            vault: vault,
+                            group: group
+                        )
+                    }
+                case .customToken:
+                    NavigationView {
+                        CustomTokenView(
+                            chainDetailView: self,
+                            vault: vault,
+                            group: group
+                        )
+                    }
+                }
+            }
+        }
         .onAppear {
             Task {
                 await setData()
@@ -107,16 +138,16 @@ struct ChainDetailView: View {
     
     var addButton: some View {
         Button {
-            showSheet.toggle()
+            sheetType = .tokenSelection
         } label: {
-            chooseTokensButton
+            chooseTokensButton(NSLocalizedString("chooseTokens", comment: "Choose Tokens"))
         }
     }
     
-    var chooseTokensButton: some View {
+    func chooseTokensButton(_ text: String) -> some View {
         HStack(spacing: 10) {
             Image(systemName: "plus")
-            Text(NSLocalizedString("chooseTokens", comment: "Choose Tokens"))
+            Text(text)
             Spacer()
         }
         .font(.body16MenloBold)

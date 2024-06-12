@@ -69,7 +69,6 @@ class CoinSelectionViewModel: ObservableObject {
             try await Storage.shared.delete(coin)
         }
     }
-    
     func saveAssets(for vault: Vault) async {
         do {
             let removedCoins = vault.coins.filter { coin in
@@ -94,6 +93,7 @@ class CoinSelectionViewModel: ObservableObject {
             for asset in filteredSelection {
                 if !vault.coins.contains(where: { $0.ticker == asset.ticker && $0.chain == asset.chain}) {
                     newCoins.append(asset)
+                    print("asset ticker \(asset.ticker)")
                 }
             }
             
@@ -216,26 +216,29 @@ class CoinSelectionViewModel: ObservableObject {
             let addresses = assets.map { $0.contractAddress }
             let coingekoIDs = try await priceService.fetchCoingeckoId(chain: coin.chain, addresses: addresses)
             
-            guard coingekoIDs.count == assets.count else {
-                return
+            let tokensWithCoingeckoIDs = zip(assets, coingekoIDs).filter { $0.1 != nil }
+            let tokensWithoutCoingeckoIDs = zip(assets, coingekoIDs).filter { $0.1 == nil }.map { $0.0 }
+            
+            for (token, priceProviderId) in tokensWithCoingeckoIDs {
+                if let priceProviderId = priceProviderId {
+                    _ = try await addToChain(asset: token, to: vault, priceProviderId: priceProviderId)
+                }
             }
             
-            for (index, asset) in assets.enumerated() {
-                if let priceProviderId = coingekoIDs[index] {
-                    _ = try await addToChain(asset: asset, to: vault, priceProviderId: priceProviderId)
-                }
+            for token in tokensWithoutCoingeckoIDs {
+                _ = try await addToChain(asset: token, to: vault, priceProviderId: nil)
             }
             
         } else {
             for asset in assets {
                 if let newCoin = try await addToChain(asset: asset, to: vault, priceProviderId: nil) {
                     print("Add discovered tokens for \(asset.ticker) on the chain \(asset.chain.name)")
-                    
                     try await addDiscoveredTokens(nativeToken: newCoin, to: vault)
                 }
             }
         }
     }
+    
     
     private func addToChain(asset: Coin, to vault: Vault, priceProviderId: String?) async throws -> Coin? {
         guard let newCoin = getNewCoin(asset: asset, vault: vault) else {

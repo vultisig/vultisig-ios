@@ -1,29 +1,28 @@
-//
-//  TokenSelectionView.swift
-//  VultisigApp
-//
-//  Created by Amol Kumar on 2024-04-11.
-//
-
 import SwiftUI
 
 struct TokenSelectionView: View {
-    @Binding var showTokenSelectionSheet: Bool
+    let chainDetailView: ChainDetailView
     let vault: Vault
     let group: GroupedChain
-
+    
     @StateObject var tokenViewModel = TokenSelectionViewModel()
     @EnvironmentObject var coinViewModel: CoinSelectionViewModel
-
+    
+    // Focus state for the search field to force layout update
+    @FocusState private var isSearchFieldFocused: Bool
+    
     var body: some View {
         ZStack {
             Background()
-            view
-
+            VStack{
+                addCustomTokenButton.background(Color.clear).padding()
+                view
+            }
+            
             if let error = tokenViewModel.error {
                 errorView(error: error)
             }
-
+            
             if tokenViewModel.isLoading {
                 Loader()
             }
@@ -33,7 +32,13 @@ struct TokenSelectionView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                NavigationBackSheetButton(showSheet: $showTokenSelectionSheet)
+                Button(action: {
+                    self.chainDetailView.sheetType = nil
+                }) {
+                    Image(systemName: "chevron.backward")
+                        .font(.body18MenloBold)
+                        .foregroundColor(Color.neutral0)
+                }
             }
         }
         .task {
@@ -42,7 +47,16 @@ struct TokenSelectionView: View {
         .onDisappear {
             saveAssets()
         }
-        .searchable(text: $tokenViewModel.searchText)
+        .searchable(text: $tokenViewModel.searchText, placement: .navigationBarDrawer(displayMode: .always))
+        .focused($isSearchFieldFocused)
+    }
+    
+    var addCustomTokenButton: some View {
+        Button {
+            chainDetailView.sheetType = .customToken
+        } label: {
+            chainDetailView.chooseTokensButton(NSLocalizedString("customToken", comment: "Custom Token"))
+        }
     }
     
     var view: some View {
@@ -57,9 +71,17 @@ struct TokenSelectionView: View {
                     }
                 }
             }
-            let filtered = tokenViewModel.filteredTokens(groupedChain: group)
-            if !filtered.isEmpty {
-                Section(header: Text("Search result")) {
+            Section(header: Text("Search result")) {
+                
+                if tokenViewModel.searchText.isEmpty {
+                    Text("Start typing to search for tokens")
+                        .padding(.vertical, 8) // Optional: Add some vertical padding
+                        .listRowBackground(Color.clear)
+                }
+                
+                let filtered = tokenViewModel.filteredTokens(groupedChain: group)
+                if !filtered.isEmpty {
+                    
                     ForEach(filtered, id: \.self) { token in
                         TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel)
                             .listRowBackground(Color.clear)
@@ -79,7 +101,7 @@ struct TokenSelectionView: View {
                 .font(.body16Menlo)
                 .foregroundColor(.neutral0)
                 .padding(.horizontal, 16)
-
+            
             if tokenViewModel.showRetry {
                 Button {
                     Task { await tokenViewModel.loadData(chain: group.chain) }
@@ -91,11 +113,11 @@ struct TokenSelectionView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-
+    
     var address: String {
         return vault.coins.first(where: { $0.chain == group.chain })?.address ?? .empty
     }
-
+    
     private func saveAssets() {
         Task {
             await coinViewModel.saveAssets(for: vault)

@@ -40,10 +40,7 @@ struct TokenSelectionCell: View {
     }
 
     var image: some View {
-        ImageView(
-            source: asset.logo,
-            size: CGSize(width: 32, height: 32)
-        )
+        AsyncImageView(logo: asset.logo, size: CGSize(width: 32, height: 32), ticker: asset.symbol, tokenChainLogo: nil)
     }
 
     var text: some View {
