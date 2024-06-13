@@ -197,6 +197,9 @@ class Coin: ObservableObject, Codable, Hashable {
             if chain == .gaiaChain {
                 return "\(chain.swapAsset).ATOM"
             }
+            if chain == .kujira {
+                return "\(chain.swapAsset).KUJI"
+            }
             return "\(chain.swapAsset).\(chain.ticker)"
         }
         return "\(chain.swapAsset).\(ticker)-\(contractAddress)"
