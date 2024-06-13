@@ -36,7 +36,6 @@ struct ImportWalletView: View {
             switch result {
             case .success(let urls):
                 if let url = urls.first {
-                    backupViewModel.isFileUploaded = true
                     backupViewModel.importedFileName = url.lastPathComponent
                     backupViewModel.importFile(from: url)
                 }
@@ -44,9 +43,9 @@ struct ImportWalletView: View {
                 print("Error importing file: \(error.localizedDescription)")
             }
         }
-//        .navigationDestination(isPresented: $viewModel.isLinkActive) {
-//            HomeView()
-//        }
+        .navigationDestination(isPresented: $backupViewModel.isLinkActive) {
+            HomeView(selectedVault: backupViewModel.selectedVault)
+        }
         .onAppear {
             resetData()
         }
@@ -60,7 +59,7 @@ struct ImportWalletView: View {
             instruction
             uploadSection
             
-            if let filename = backupViewModel.importedFileName {
+            if let filename = backupViewModel.importedFileName, backupViewModel.isFileUploaded {
                 fileCell(filename)
             }
             

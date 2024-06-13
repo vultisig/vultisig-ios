@@ -25,6 +25,7 @@ class EncryptedBackupViewModel: ObservableObject {
     @Published var alertMessage: String = ""
     @Published var isFileUploaded = false
     @Published var importedFileName: String? = nil
+    @Published var selectedVault: Vault? = nil
     
     private let logger = Logger(subsystem: "import-wallet", category: "communication")
     
@@ -44,7 +45,6 @@ class EncryptedBackupViewModel: ObservableObject {
     }
     
     // Export
-    
     func exportFile(_ vault: Vault) {
         do {
             let data = try JSONEncoder().encode(vault)
@@ -86,12 +86,14 @@ class EncryptedBackupViewModel: ObservableObject {
         }
     }
     
+    // Import
     func importFile(from url: URL) {
         do {
             let data = try Data(contentsOf: url)
             
             if let decryptedString = decryptOrReadData(data: data, password: "") {
                 decryptedContent = decryptedString
+                isFileUploaded = true
             } else {
                 promptForPasswordAndImport(from: url)
             }
@@ -125,6 +127,7 @@ class EncryptedBackupViewModel: ObservableObject {
             if let decryptedData = decrypt(data: data, password: password),
                let decryptedString = String(data: decryptedData, encoding: .utf8) {
                 decryptedContent = decryptedString
+                isFileUploaded = true
             } else {
                 decryptedContent = ""
                 isFileUploaded = false
@@ -183,6 +186,7 @@ class EncryptedBackupViewModel: ObservableObject {
             VaultDefaultCoinService(context: modelContext)
                 .setDefaultCoinsOnce(vault: backupVault.vault)
             modelContext.insert(backupVault.vault)
+            selectedVault = backupVault.vault
             isLinkActive = true
         }  catch {
             print("failed to import with new format , fallback to the old format instead. \(error.localizedDescription)")
@@ -190,7 +194,7 @@ class EncryptedBackupViewModel: ObservableObject {
             do{
                 let vault = try decoder.decode(Vault.self,
                                                from: vaultData)
-                // if version get updated , then we can process the migration here
+                
                 if !isVaultUnique(backupVault: vault,vaults:vaults){
                     alertTitle = "error"
                     alertMessage = "vaultAlreadyExists"
@@ -201,6 +205,7 @@ class EncryptedBackupViewModel: ObservableObject {
                 VaultDefaultCoinService(context: modelContext)
                     .setDefaultCoinsOnce(vault: vault)
                 modelContext.insert(vault)
+                selectedVault = vault
                 isLinkActive = true
             } catch {
                 logger.error("fail to restore vault: \(error.localizedDescription)")
