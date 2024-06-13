@@ -123,7 +123,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 
                 isLoading = false
             }
-        case .kujira, .gaiaChain, .mayaChain, .thorChain, .polkadot:
+        case .kujira, .gaiaChain, .mayaChain, .thorChain, .polkadot, .dydx:
             Task {
                 await BalanceService.shared.updateBalance(for: tx.coin)
                 tx.amount = "\(tx.coin.getMaxValue(BigInt(tx.gasDecimal.description,radix:10) ?? 0 ))"

@@ -56,6 +56,8 @@ extension Coin {
             return CoinType.polkadot
         case .zksync:
             return CoinType.zksync
+        case .dydx:
+            return CoinType.dydx
         }
     }
 }
