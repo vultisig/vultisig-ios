@@ -7,7 +7,6 @@
 
 import Foundation
 import Tss
-import WalletCore
 import CryptoSwift
 
 enum MayaChainHelper {

@@ -7,7 +7,6 @@
 
 import Foundation
 import OSLog
-import WalletCore
 
 @MainActor
 class CoinSelectionViewModel: ObservableObject {

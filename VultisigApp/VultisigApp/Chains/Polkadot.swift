@@ -5,7 +5,6 @@
 
 import Foundation
 import Tss
-import WalletCore
 import BigInt
 
 enum PolkadotHelper {

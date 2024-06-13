@@ -7,7 +7,6 @@
 
 import SwiftUI
 import BigInt
-import WalletCore
 import Mediator
 
 class SwapCryptoViewModel: ObservableObject, TransferViewModel {

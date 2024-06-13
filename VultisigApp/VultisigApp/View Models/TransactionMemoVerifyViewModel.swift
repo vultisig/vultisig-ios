@@ -8,7 +8,6 @@
 import Foundation
 import SwiftUI
 import BigInt
-import WalletCore
 
 @MainActor
 class TransactionMemoVerifyViewModel: ObservableObject {

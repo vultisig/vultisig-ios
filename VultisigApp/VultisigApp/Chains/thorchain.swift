@@ -5,7 +5,6 @@
 
 import Foundation
 import Tss
-import WalletCore
 
 enum THORChainHelper {
     static func getRUNECoin(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {

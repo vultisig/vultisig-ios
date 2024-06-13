@@ -8,7 +8,7 @@
 import SwiftUI
 import Foundation
 import Combine
-import WalletCore
+
 
 enum TransactionMemoContractType: String, CaseIterable, Identifiable {
     case thorChainMessageDeposit

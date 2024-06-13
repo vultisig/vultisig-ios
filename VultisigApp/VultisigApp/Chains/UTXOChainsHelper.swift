@@ -5,7 +5,6 @@
 
 import Foundation
 import Tss
-import WalletCore
 
 struct UtxoInfo: Codable, Hashable {
     let hash: String

@@ -3,7 +3,6 @@ import CodeScanner
 import OSLog
 import SwiftUI
 import UniformTypeIdentifiers
-import WalletCore
 import BigInt
 
 class SendTransaction: ObservableObject, Hashable {

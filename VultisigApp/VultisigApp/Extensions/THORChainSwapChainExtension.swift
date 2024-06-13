@@ -4,7 +4,6 @@
 //
 
 import Foundation
-import WalletCore
 
 extension THORChainSwapChain {
     func getCoinType() -> CoinType? {

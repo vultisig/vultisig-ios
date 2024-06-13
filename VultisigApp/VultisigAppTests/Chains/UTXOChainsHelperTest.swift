@@ -5,7 +5,6 @@
 
 import Tss
 @testable import VultisigApp
-import WalletCore
 import XCTest
 
 final class UTXOChainsHelperTest: XCTestCase {

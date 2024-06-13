@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import WalletCore
 import Tss
 import CryptoSwift
 

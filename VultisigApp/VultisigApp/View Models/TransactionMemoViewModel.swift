@@ -9,7 +9,6 @@ import Foundation
 import SwiftUI
 import BigInt
 import OSLog
-import WalletCore
 import Mediator
 
 @MainActor

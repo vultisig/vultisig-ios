@@ -4,7 +4,7 @@
 //
 
 import Foundation
-import WalletCore
+
 import BigInt
 
 extension THORChainSwapChain: Codable {}

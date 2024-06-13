@@ -9,7 +9,7 @@ import Foundation
 import OSLog
 import CodeScanner
 import UniformTypeIdentifiers
-import WalletCore
+
 
 struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: View {
     @ObservedObject var memo: MemoType

@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import WalletCore
 
 extension CoinType {
 	static func from(string: String) -> CoinType? {

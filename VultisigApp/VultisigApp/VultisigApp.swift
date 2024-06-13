@@ -6,10 +6,8 @@
 import Mediator
 import SwiftData
 import SwiftUI
-import WalletCore
 
 @main
-
 struct VultisigApp: App {
     @Environment(\.scenePhase) private var scenePhase
 

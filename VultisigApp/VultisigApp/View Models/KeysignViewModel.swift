@@ -8,7 +8,6 @@
 import Foundation
 import OSLog
 import Tss
-import WalletCore
 
 enum KeysignStatus {
     case CreatingInstance

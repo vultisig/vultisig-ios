@@ -6,7 +6,6 @@
 import BigInt
 import Foundation
 import Tss
-import WalletCore
 import CryptoSwift
 
 class EVMHelper {

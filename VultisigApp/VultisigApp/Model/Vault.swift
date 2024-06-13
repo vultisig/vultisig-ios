@@ -4,7 +4,6 @@
 
 import Foundation
 import SwiftData
-import WalletCore
 
 @Model
 final class Vault: ObservableObject, Codable {

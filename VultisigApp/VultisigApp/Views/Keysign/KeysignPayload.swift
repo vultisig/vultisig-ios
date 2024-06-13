@@ -5,7 +5,7 @@
 
 import Foundation
 import BigInt
-import WalletCore
+import WalletCoreCommon
 
 struct KeysignMessage: Codable, Hashable {
     let sessionID: String

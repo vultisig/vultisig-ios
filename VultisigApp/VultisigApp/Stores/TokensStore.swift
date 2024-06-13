@@ -1,5 +1,4 @@
 import Foundation
-import WalletCore
 
 class TokensStore {
     static var TokenSelectionAssets = [

@@ -7,7 +7,6 @@
 
 import Foundation
 import SwiftUI
-import WalletCore
 
 @MainActor
 struct CustomTokenView: View {
