@@ -13,6 +13,9 @@ struct ImportWalletView: View {
     @Environment(\.modelContext) private var context
     @StateObject var backupViewModel = EncryptedBackupViewModel()
     
+    @State var isFileUploaded = false
+    @State var importedFileName: String? = nil
+    
     @Query var vaults: [Vault]
     
     var body: some View {
@@ -36,6 +39,8 @@ struct ImportWalletView: View {
             switch result {
             case .success(let urls):
                 if let url = urls.first {
+                    isFileUploaded = true
+                    importedFileName = url.lastPathComponent
                     backupViewModel.importFile(from: url)
                 }
             case .failure(let error):
@@ -58,9 +63,9 @@ struct ImportWalletView: View {
             instruction
             uploadSection
             
-//            if let filename = viewModel.filename {
-//                fileCell(filename)
-//            }
+            if let filename = importedFileName {
+                fileCell(filename)
+            }
             
             Spacer()
             continueButton
@@ -85,11 +90,11 @@ struct ImportWalletView: View {
     
     var continueButton: some View {
         Button {
-//            viewModel.restoreVault(modelContext: context,vaults: vaults)
+            backupViewModel.restoreVault(modelContext: context,vaults: vaults)
         } label: {
             FilledButton(title: "continue")
-//                .disabled(!viewModel.isFileUploaded)
-//                .grayscale(viewModel.isFileUploaded ? 0 : 1)
+                .disabled(!isFileUploaded)
+                .grayscale(isFileUploaded ? 0 : 1)
         }
         .padding(.horizontal, 10)
         .padding(.bottom, 40)

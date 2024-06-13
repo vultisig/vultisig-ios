@@ -8,6 +8,8 @@
 import Foundation
 import CryptoKit
 import UIKit
+import SwiftData
+import OSLog
 
 class EncryptedBackupViewModel: ObservableObject {
     @Published var showVaultExporter = false
@@ -17,8 +19,11 @@ class EncryptedBackupViewModel: ObservableObject {
     @Published var encryptionPassword: String = ""
     @Published var decryptionPassword: String = ""
     
+    @Published var isLinkActive: Bool = false
     @Published var showAlert: Bool = false
     @Published var alertMessage: String = ""
+    
+    private let logger = Logger(subsystem: "import-wallet", category: "communication")
     
     enum VultisigDocumentError : Error{
         case customError(String)
@@ -141,5 +146,66 @@ class EncryptedBackupViewModel: ObservableObject {
             print("Error decrypting data: \(error.localizedDescription)")
             return nil
         }
+    }
+    
+    func restoreVault(modelContext: ModelContext,vaults: [Vault]) {
+        
+        guard let vaultText = decryptedContent, let vaultData = Data(hexString: vaultText) else {
+            alertMessage = "invalid vault data"
+            showAlert = true
+            isLinkActive = false
+            return
+        }
+        
+        let decoder = JSONDecoder()
+        do {
+            let backupVault = try decoder.decode(BackupVault.self,
+                                                 from: vaultData)
+            // if version get updated , then we can process the migration here
+            if !isVaultUnique(backupVault: backupVault.vault,vaults:vaults){
+                alertMessage = "Vault already exists"
+                showAlert = true
+                isLinkActive = false
+                return
+            }
+            VaultDefaultCoinService(context: modelContext)
+                .setDefaultCoinsOnce(vault: backupVault.vault)
+            modelContext.insert(backupVault.vault)
+            isLinkActive = true
+        }  catch {
+            print("failed to import with new format , fallback to the old format instead. \(error.localizedDescription)")
+            // fallback
+            do{
+                let vault = try decoder.decode(Vault.self,
+                                               from: vaultData)
+                // if version get updated , then we can process the migration here
+                if !isVaultUnique(backupVault: vault,vaults:vaults){
+                    alertMessage = "Vault already exists"
+                    showAlert = true
+                    isLinkActive = false
+                    return
+                }
+                VaultDefaultCoinService(context: modelContext)
+                    .setDefaultCoinsOnce(vault: vault)
+                modelContext.insert(vault)
+                isLinkActive = true
+            } catch {
+                logger.error("fail to restore vault: \(error.localizedDescription)")
+                alertMessage = "fail to restore vault: \(error.localizedDescription)"
+                showAlert = true
+                isLinkActive = false
+            }
+        }
+    }
+    
+    private func isVaultUnique(backupVault: Vault,vaults: [Vault]) -> Bool {
+        for vault in vaults{
+            if vault.pubKeyECDSA == backupVault.pubKeyECDSA &&
+                vault.pubKeyEdDSA == backupVault.pubKeyEdDSA {
+                return false
+            }
+            
+        }
+        return true
     }
 }
