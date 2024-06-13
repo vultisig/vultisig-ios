@@ -56,6 +56,7 @@ struct BackupPasswordSetupView: View {
                 dismiss()
             case .failure(let error):
                 print("Error saving file: \(error.localizedDescription)")
+                backupViewModel.alertTitle = "errorSavingFile"
                 backupViewModel.alertMessage = error.localizedDescription
                 backupViewModel.showAlert = true
             }
@@ -112,8 +113,8 @@ struct BackupPasswordSetupView: View {
     
     var alert: Alert {
         Alert(
-            title: Text(NSLocalizedString("errorSavingFile", comment: "")),
-            message: Text(backupViewModel.alertMessage),
+            title: Text(NSLocalizedString(backupViewModel.alertTitle, comment: "")),
+            message: Text(NSLocalizedString(backupViewModel.alertMessage, comment: "")),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }

@@ -221,3 +221,9 @@
 "enterPassword" = "Enter Password";
 "passwordProtectBackup" = "Password protect your backup";
 "errorSavingFile" = "Error saving file";
+"invalidVaultData" = "Invalid vault data";
+"invalidVaultData" = "Invalid vault data";
+"vaultAlreadyExists" = "Vault already exists";
+"vaultRestoreFailed" = "Failed to restore vault";
+"backupDecryptionFailed" = "Failed to decrypt the backup";
+"incorrectPassword" = "Incorrect Password";

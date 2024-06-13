@@ -13,9 +13,6 @@ struct ImportWalletView: View {
     @Environment(\.modelContext) private var context
     @StateObject var backupViewModel = EncryptedBackupViewModel()
     
-    @State var isFileUploaded = false
-    @State var importedFileName: String? = nil
-    
     @Query var vaults: [Vault]
     
     var body: some View {
@@ -39,8 +36,8 @@ struct ImportWalletView: View {
             switch result {
             case .success(let urls):
                 if let url = urls.first {
-                    isFileUploaded = true
-                    importedFileName = url.lastPathComponent
+                    backupViewModel.isFileUploaded = true
+                    backupViewModel.importedFileName = url.lastPathComponent
                     backupViewModel.importFile(from: url)
                 }
             case .failure(let error):
@@ -51,10 +48,10 @@ struct ImportWalletView: View {
 //            HomeView()
 //        }
         .onAppear {
-            backupViewModel.resetData()
+            resetData()
         }
         .onDisappear {
-            backupViewModel.resetData()
+            resetData()
         }
     }
     
@@ -63,7 +60,7 @@ struct ImportWalletView: View {
             instruction
             uploadSection
             
-            if let filename = importedFileName {
+            if let filename = backupViewModel.importedFileName {
                 fileCell(filename)
             }
             
@@ -72,6 +69,9 @@ struct ImportWalletView: View {
         }
         .padding(.top, 30)
         .padding(.horizontal, 30)
+        .alert(isPresented: $backupViewModel.showAlert) {
+            alert
+        }
     }
     
     var instruction: some View {
@@ -93,8 +93,8 @@ struct ImportWalletView: View {
             backupViewModel.restoreVault(modelContext: context,vaults: vaults)
         } label: {
             FilledButton(title: "continue")
-                .disabled(!isFileUploaded)
-                .grayscale(isFileUploaded ? 0 : 1)
+                .disabled(!backupViewModel.isFileUploaded)
+                .grayscale(backupViewModel.isFileUploaded ? 0 : 1)
         }
         .padding(.horizontal, 10)
         .padding(.bottom, 40)
@@ -114,13 +114,21 @@ struct ImportWalletView: View {
     
     var closeButton: some View {
         Button {
-            backupViewModel.resetData()
+            resetData()
         } label: {
             Image(systemName: "xmark")
                 .font(.body16MontserratMedium)
                 .foregroundColor(.neutral0)
                 .padding(8)
         }
+    }
+    
+    var alert: Alert {
+        Alert(
+            title: Text(NSLocalizedString(backupViewModel.alertTitle, comment: "")),
+            message: Text(NSLocalizedString(backupViewModel.alertMessage, comment: "")),
+            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+        )
     }
     
     private func fileCell(_ name: String) -> some View {
@@ -131,6 +139,10 @@ struct ImportWalletView: View {
             closeButton
         }
         .padding(12)
+    }
+    
+    private func resetData() {
+        backupViewModel.resetData()
     }
 }
 
