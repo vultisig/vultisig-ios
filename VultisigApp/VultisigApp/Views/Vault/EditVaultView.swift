@@ -11,8 +11,6 @@ import SwiftData
 struct EditVaultView: View {
     let vault: Vault
     
-    @State var showVaultExporter = false
-    
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
@@ -44,18 +42,6 @@ struct EditVaultView: View {
     
     var exporter: some View {
         alert
-            .fileExporter(
-                isPresented: $showVaultExporter,
-                document: VultisigDocument(vault: BackupVault(version: .v1, vault: vault)),
-                contentType: .data,
-                defaultFilename: "\(vault.getExportName())") { result in
-                switch result {
-                case .failure(let error):
-                    print("Failed to export, error: \(error.localizedDescription)")
-                case .success(let url):
-                    print("Exported to \(url)")
-                }
-            }
     }
     
     var view: some View {
@@ -87,8 +73,8 @@ struct EditVaultView: View {
     }
     
     var backupVault: some View {
-        Button {
-            showVaultExporter = true
+        NavigationLink {
+            BackupPasswordSetupView(vault: vault)
         } label: {
             EditVaultCell(title: "backup", description: "backupVault", icon: "arrow.down.circle.fill")
         }

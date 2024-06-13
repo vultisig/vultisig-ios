@@ -197,6 +197,14 @@
 "reviewConditions" = "Bedingungen überprüfen";
 "reviewConditionsMessage" = "Bitte überprüfen und stimmen Sie allen aufgeführten Bedingungen zu.";
 "deposit" = "Einzahlung";
+"enterPassword" = "Passwort eingeben";
+"passwordProtectBackup" = "Sichern Sie Ihre Sicherung mit einem Passwort";
+"errorSavingFile" = "Fehler beim Speichern der Datei";
+"invalidVaultData" = "Ungültige Tresordaten";
+"vaultAlreadyExists" = "Tresor existiert bereits";
+"vaultRestoreFailed" = "Wiederherstellung des Tresors fehlgeschlagen";
+"backupDecryptionFailed" = "Entschlüsselung der Sicherung fehlgeschlagen";
+"incorrectPassword" = "Falsches Passwort";
 "findCustomTokens" = "Finde Deinen Benutzerdefinierten Token";
 "customToken" = "Benutzerdefinierten Token";
 "details" = "Details";

@@ -11,8 +11,8 @@ import UniformTypeIdentifiers
 
 struct ImportWalletView: View {
     @Environment(\.modelContext) private var context
-    @StateObject var viewModel = ImportVaultViewModel()
-    @State var showFileImporter = false
+    @StateObject var backupViewModel = EncryptedBackupViewModel()
+    
     @Query var vaults: [Vault]
     
     var body: some View {
@@ -29,24 +29,28 @@ struct ImportWalletView: View {
             }
         }
         .fileImporter(
-            isPresented: $showFileImporter,
-            allowedContentTypes: [UTType.data],
+            isPresented: $backupViewModel.showVaultImporter,
+            allowedContentTypes: [.data],
             allowsMultipleSelection: false
         ) { result in
-            viewModel.readFile(for: result)
+            switch result {
+            case .success(let urls):
+                if let url = urls.first {
+                    backupViewModel.importedFileName = url.lastPathComponent
+                    backupViewModel.importFile(from: url)
+                }
+            case .failure(let error):
+                print("Error importing file: \(error.localizedDescription)")
+            }
         }
-        .navigationDestination(isPresented: $viewModel.isLinkActive) {
-            HomeView(selectedVault: viewModel.vault)
+        .navigationDestination(isPresented: $backupViewModel.isLinkActive) {
+            HomeView(selectedVault: backupViewModel.selectedVault)
         }
-        .alert(isPresented: $viewModel.showAlert) {
-            Alert(
-                title: Text(NSLocalizedString("error", comment: "")),
-                message: Text(viewModel.errorMessage),
-                dismissButton: .default(Text("ok"))
-            )
+        .onAppear {
+            resetData()
         }
         .onDisappear {
-            viewModel.removeFile()
+            resetData()
         }
     }
     
@@ -55,7 +59,7 @@ struct ImportWalletView: View {
             instruction
             uploadSection
             
-            if let filename = viewModel.filename {
+            if let filename = backupViewModel.importedFileName, backupViewModel.isFileUploaded {
                 fileCell(filename)
             }
             
@@ -64,6 +68,9 @@ struct ImportWalletView: View {
         }
         .padding(.top, 30)
         .padding(.horizontal, 30)
+        .alert(isPresented: $backupViewModel.showAlert) {
+            alert
+        }
     }
     
     var instruction: some View {
@@ -74,19 +81,19 @@ struct ImportWalletView: View {
     
     var uploadSection: some View {
         Button {
-            showFileImporter.toggle()
+            backupViewModel.showVaultImporter.toggle()
         } label: {
-            ImportWalletUploadSection(viewModel: viewModel)
+            ImportWalletUploadSection(viewModel: backupViewModel)
         }
     }
     
     var continueButton: some View {
         Button {
-            viewModel.restoreVault(modelContext: context,vaults: vaults)
+            backupViewModel.restoreVault(modelContext: context,vaults: vaults)
         } label: {
             FilledButton(title: "continue")
-                .disabled(!viewModel.isFileUploaded)
-                .grayscale(viewModel.isFileUploaded ? 0 : 1)
+                .disabled(!backupViewModel.isFileUploaded)
+                .grayscale(backupViewModel.isFileUploaded ? 0 : 1)
         }
         .padding(.horizontal, 10)
         .padding(.bottom, 40)
@@ -106,13 +113,21 @@ struct ImportWalletView: View {
     
     var closeButton: some View {
         Button {
-            viewModel.removeFile()
+            resetData()
         } label: {
             Image(systemName: "xmark")
                 .font(.body16MontserratMedium)
                 .foregroundColor(.neutral0)
                 .padding(8)
         }
+    }
+    
+    var alert: Alert {
+        Alert(
+            title: Text(NSLocalizedString(backupViewModel.alertTitle, comment: "")),
+            message: Text(NSLocalizedString(backupViewModel.alertMessage, comment: "")),
+            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+        )
     }
     
     private func fileCell(_ name: String) -> some View {
@@ -123,6 +138,10 @@ struct ImportWalletView: View {
             closeButton
         }
         .padding(12)
+    }
+    
+    private func resetData() {
+        backupViewModel.resetData()
     }
 }
 

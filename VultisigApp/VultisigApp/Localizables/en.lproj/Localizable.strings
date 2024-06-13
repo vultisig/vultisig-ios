@@ -218,6 +218,15 @@
 "reviewConditions" = "Review Conditions";
 "reviewConditionsMessage" = "Kindly review and agree to all the listed conditions.";
 "deposit" = "Deposit";
+"enterPassword" = "Enter Password";
+"passwordProtectBackup" = "Password protect your backup";
+"errorSavingFile" = "Error saving file";
+"invalidVaultData" = "Invalid vault data";
+"invalidVaultData" = "Invalid vault data";
+"vaultAlreadyExists" = "Vault already exists";
+"vaultRestoreFailed" = "Failed to restore vault";
+"backupDecryptionFailed" = "Failed to decrypt the backup";
+"incorrectPassword" = "Incorrect Password";
 "findCustomTokens" = "Find Your Custom Token";
 "customToken" = "Custom Token";
 "details" = "Details";

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ImportWalletUploadSection: View {
-    @ObservedObject var viewModel: ImportVaultViewModel
+    @ObservedObject var viewModel: EncryptedBackupViewModel
     
     var body: some View {
         uploadSection
@@ -28,7 +28,7 @@ struct ImportWalletUploadSection: View {
     
     var section: some View {
         ZStack {
-            if let vaultText = viewModel.vaultText {
+            if let vaultText = viewModel.decryptedContent, viewModel.isFileUploaded {
                 textFile(for: vaultText)
             } else {
                 uploadFile
@@ -58,5 +58,5 @@ struct ImportWalletUploadSection: View {
 }
 
 #Preview {
-    ImportWalletUploadSection(viewModel: ImportVaultViewModel())
+    ImportWalletUploadSection(viewModel: EncryptedBackupViewModel())
 }
