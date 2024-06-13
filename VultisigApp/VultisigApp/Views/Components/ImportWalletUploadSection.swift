@@ -28,7 +28,7 @@ struct ImportWalletUploadSection: View {
     
     var section: some View {
         ZStack {
-            if let vaultText = viewModel.decryptedContent {
+            if let vaultText = viewModel.decryptedContent, viewModel.isFileUploaded {
                 textFile(for: vaultText)
             } else {
                 uploadFile
