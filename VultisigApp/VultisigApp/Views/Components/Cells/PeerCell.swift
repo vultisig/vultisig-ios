@@ -90,7 +90,9 @@ struct PeerCell: View {
         } else if idString.contains("ipad") {
             deviceName = "iPad"
         } else {
-            deviceName = "Unknown"
+            // likely it will be android device , let's treat it as phone
+            // android eco-system has too many types of devices, hard to know what phone or tablet it is
+            deviceName = "Phone"
         }
         return deviceName
     }
@@ -106,10 +108,15 @@ struct PeerCell: View {
             return Image("iPadAsset")
                 .resizable()
                 .frame(width: 60, height: 80)
-        } else {
+        } else if idString.contains("mac") {
             return Image("macAsset")
                 .resizable()
                 .frame(width: 100, height: 67)
+        } else {
+            // this could be android device, just show as phone
+            return Image("iPhoneAsset")
+                .resizable()
+                .frame(width: 30, height: 50)
         }
     }
     
