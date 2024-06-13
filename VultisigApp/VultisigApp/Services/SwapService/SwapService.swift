@@ -29,7 +29,7 @@ struct SwapService {
         }
 
         // Mayachain resolver
-        if fromCoin.chain == .mayaChain || toCoin.chain == .mayaChain {
+        if mayaChains.contains(fromCoin.chain) || mayaChains.contains(toCoin.chain) {
             return try await fetchCrossChainQuote(
                 provider: mayachainService,
                 amount: amount,
@@ -51,6 +51,10 @@ struct SwapService {
 }
 
 private extension SwapService {
+
+    var mayaChains: [Chain] {
+        return [.mayaChain, .kujira, .dash]
+    }
 
     enum Errors: Error, LocalizedError {
         case swapAmountTooSmall

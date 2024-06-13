@@ -84,8 +84,8 @@ enum THORChainHelper {
                 isDeposit = true
             }
         }
-        if let swapPayload = keysignPayload.swapPayload, swapPayload.isDeposit {
-            isDeposit = true
+        if let swapPayload = keysignPayload.swapPayload {
+            isDeposit = swapPayload.isDeposit
         }
 
         if isDeposit {
