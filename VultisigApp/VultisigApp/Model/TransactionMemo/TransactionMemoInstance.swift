@@ -46,7 +46,7 @@ enum TransactionMemoInstance {
         case .bond(let memo):
             return memo.amount
         case .unbond(let memo):
-            return memo.amount
+            return .zero
         case .leave:
             return .zero
         case .custom(let memo):
