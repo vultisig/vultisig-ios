@@ -197,6 +197,14 @@
 "reviewConditions" = "Pregled uvjeta";
 "reviewConditionsMessage" = "Molimo pregledajte i prihvatite sve navedene uvjete.";
 "deposit" = "Polog";
+"enterPassword" = "Unesite lozinku";
+"passwordProtectBackup" = "Zaštitite svoju sigurnosnu kopiju lozinkom";
+"errorSavingFile" = "Pogreška pri spremanju datoteke";
+"invalidVaultData" = "Nevažeći podaci spremišta";
+"vaultAlreadyExists" = "Spremište već postoji";
+"vaultRestoreFailed" = "Neuspješno vraćanje spremišta";
+"backupDecryptionFailed" = "Neuspješno dešifriranje sigurnosne kopije";
+"incorrectPassword" = "Netočna lozinka";
 "findCustomTokens" = "Pronađite Svoj Prilagođeni Token";
 "customToken" = "Prilagođeni Token";
 "details" = "Detalji";

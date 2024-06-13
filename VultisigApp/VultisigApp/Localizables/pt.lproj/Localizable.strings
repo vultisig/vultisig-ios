@@ -197,6 +197,14 @@
 "reviewConditions" = "Revisar Condições";
 "reviewConditionsMessage" = "Por favor, reveja e concorde com todas as condições listadas.";
 "deposit" = "Depósito";
+"enterPassword" = "Digite a senha";
+"passwordProtectBackup" = "Proteja seu backup com uma senha";
+"errorSavingFile" = "Erro ao salvar o arquivo";
+"invalidVaultData" = "Dados do cofre inválidos";
+"vaultAlreadyExists" = "O cofre já existe";
+"vaultRestoreFailed" = "Falha ao restaurar o cofre";
+"backupDecryptionFailed" = "Falha ao descriptografar o backup";
+"incorrectPassword" = "Senha incorreta";
 "findCustomTokens" = "Encontre Seu Token Personalizado";
 "customToken" = "Token Personalizado";
 "details" = "Detalhes";
