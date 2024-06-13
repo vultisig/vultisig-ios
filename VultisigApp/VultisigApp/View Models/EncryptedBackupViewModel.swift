@@ -6,14 +6,21 @@
 //
 
 import Foundation
+import CryptoKit
 
 class EncryptedBackupViewModel: ObservableObject {
-    @Published private var showVaultExporter = false
-    @Published private var showVaultImporter = false
-    @Published private var encryptedFileURL: URL?
-    @Published private var decryptedContent: String = ""
-    @Published private var encryptionPassword: String = ""
-    @Published private var decryptionPassword: String = ""
+    @Published var showVaultExporter = false
+    @Published var showVaultImporter = false
+    @Published var encryptedFileURL: URL?
+    @Published var decryptedContent: String = ""
+    @Published var encryptionPassword: String = ""
+    @Published var decryptionPassword: String = ""
+    
+    enum VultisigDocumentError : Error{
+        case customError(String)
+    }
+    
+    // Export
     
     func exportFile(_ vault: Vault) {
         do {
@@ -36,12 +43,23 @@ class EncryptedBackupViewModel: ObservableObject {
             do {
                 try dataToSave.write(to: tempURL)
                 encryptedFileURL = tempURL
-                isShowingFileExporter = true
+                showVaultExporter = true
             } catch {
                 print("Error writing file: \(error.localizedDescription)")
             }
         } catch {
             print(error)
+        }
+    }
+    
+    private func encrypt(data: Data, password: String) -> Data? {
+        let key = SymmetricKey(data: SHA256.hash(data: Data(password.utf8)))
+        do {
+            let sealedBox = try AES.GCM.seal(data, using: key)
+            return sealedBox.combined
+        } catch {
+            print("Error encrypting data: \(error.localizedDescription)")
+            return nil
         }
     }
 }

@@ -10,6 +10,8 @@ import SwiftUI
 struct BackupPasswordSetupView: View {
     let vault: Vault
     
+    @StateObject var backupViewModel = EncryptedBackupViewModel()
+    
     var body: some View {
         ZStack {
             Background()
@@ -32,8 +34,8 @@ struct BackupPasswordSetupView: View {
             buttons
         }
         .fileExporter(
-            isPresented: $showVaultExporter,
-            document: EncryptedDataFile(url: encryptedFileURL),
+            isPresented: $backupViewModel.showVaultExporter,
+            document: EncryptedDataFile(url: backupViewModel.encryptedFileURL),
             contentType: .data,
             defaultFilename: "\(vault.getExportName())"
         ) { result in
@@ -59,7 +61,7 @@ struct BackupPasswordSetupView: View {
     }
     
     var textfield: some View {
-        TextField(NSLocalizedString("enterPassword", comment: "").capitalized, text: $name)
+        SecureField(NSLocalizedString("enterPassword", comment: "").capitalized, text: $backupViewModel.encryptionPassword)
             .font(.body16Menlo)
             .foregroundColor(.neutral0)
             .submitLabel(.done)
@@ -71,23 +73,24 @@ struct BackupPasswordSetupView: View {
     
     var buttons: some View {
         VStack(spacing: 20) {
-            startButton
-            joinButton
+            saveButton
+            skipButton
         }
         .padding(40)
     }
     
-    var startButton: some View {
+    var saveButton: some View {
         Button {
-            
+            backupViewModel.exportFile(vault)
         } label: {
             FilledButton(title: "save")
         }
     }
     
-    var joinButton: some View {
+    var skipButton: some View {
         Button {
-            
+            backupViewModel.encryptionPassword = ""
+            backupViewModel.exportFile(vault)
         } label: {
             OutlineButton(title: "skip")
         }
