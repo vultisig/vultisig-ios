@@ -220,3 +220,4 @@
 "deposit" = "Deposit";
 "enterPassword" = "Enter Password";
 "passwordProtectBackup" = "Password protect your backup";
+"errorSavingFile" = "Error saving file";

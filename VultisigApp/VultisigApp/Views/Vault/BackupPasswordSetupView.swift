@@ -12,6 +12,8 @@ struct BackupPasswordSetupView: View {
     
     @StateObject var backupViewModel = EncryptedBackupViewModel()
     
+    @Environment(\.dismiss) var dismiss
+    
     var body: some View {
         ZStack {
             Background()
@@ -24,6 +26,9 @@ struct BackupPasswordSetupView: View {
             ToolbarItem(placement: .topBarLeading) {
                 NavigationBackButton()
             }
+        }
+        .alert(isPresented: $backupViewModel.showAlert) {
+            alert
         }
     }
     
@@ -42,8 +47,11 @@ struct BackupPasswordSetupView: View {
             switch result {
             case .success(let url):
                 print("File saved to: \(url)")
+                dismiss()
             case .failure(let error):
                 print("Error saving file: \(error.localizedDescription)")
+                backupViewModel.alertMessage = error.localizedDescription
+                backupViewModel.showAlert = true
             }
         }
     }
@@ -94,6 +102,14 @@ struct BackupPasswordSetupView: View {
         } label: {
             OutlineButton(title: "skip")
         }
+    }
+    
+    var alert: Alert {
+        Alert(
+            title: Text(NSLocalizedString("errorSavingFile", comment: "")),
+            message: Text(backupViewModel.alertMessage),
+            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+        )
     }
 }
 

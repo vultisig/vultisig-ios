@@ -16,6 +16,9 @@ class EncryptedBackupViewModel: ObservableObject {
     @Published var encryptionPassword: String = ""
     @Published var decryptionPassword: String = ""
     
+    @Published var showAlert: Bool = false
+    @Published var alertMessage: String = ""
+    
     enum VultisigDocumentError : Error{
         case customError(String)
     }
