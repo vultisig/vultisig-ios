@@ -58,8 +58,11 @@ struct TransactionMemoVerifyView: View {
     var summary: some View {
         VStack(spacing: 16) {
             getAddressCell(for: "from", with: tx.fromAddress)
-            Separator()
-            getDetailsCell(for: "amount", with: getAmount())
+            
+            if tx.amountDecimal > 0 {
+                Separator()
+                getDetailsCell(for: "amount", with: getAmount())
+            }
             
             VStack {
                 ForEach(Array(tx.memoFunctionDictionary.allKeysInOrder()), id: \.self) { key in
