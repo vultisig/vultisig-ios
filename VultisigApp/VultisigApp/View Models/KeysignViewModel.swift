@@ -103,9 +103,9 @@ class KeysignViewModel: ObservableObject {
                 return
             }
         }
-       
+        
         await broadcastTransaction()
-
+        
         status = .KeysignFinished
     }
     // Return value bool indicate whether keysign should be retried
@@ -195,12 +195,12 @@ class KeysignViewModel: ObservableObject {
     func stopMessagePuller(){
         messagePuller?.stop()
     }
-
+    
     func verifyAllowance() async throws {
         guard let swapPayload = keysignPayload?.swapPayload,
-              let spender = swapPayload.router, 
-              let fromCoin = keysignPayload?.coin, fromCoin.shouldApprove else { return }
-
+              let spender = swapPayload.router,
+                let fromCoin = keysignPayload?.coin, fromCoin.shouldApprove else { return }
+        
         do {
             let service = try EvmServiceFactory.getService(forCoin: fromCoin)
             let allowance = try await service.fetchAllowance(
@@ -208,7 +208,7 @@ class KeysignViewModel: ObservableObject {
                 owner: fromCoin.address,
                 spender: spender
             )
-
+            
             guard allowance >= swapPayload.fromAmount else {
                 throw KeysignError.noErc20Allowance
             }
@@ -216,7 +216,7 @@ class KeysignViewModel: ObservableObject {
             throw KeysignError.networkError
         }
     }
-
+    
     func tssKeysign(service: TssServiceImpl, req: TssKeysignRequest, keysignType: KeyType) async throws -> TssKeysignResponse {
         let t = Task.detached(priority: .high) {
             switch keysignType {
@@ -294,6 +294,9 @@ class KeysignViewModel: ObservableObject {
             } else if keysignPayload.coin.chain == .kujira {
                 let result = KujiraHelper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
                 return result
+            } else if keysignPayload.coin.chain == .dydx {
+                let result = DydxHelper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                return result
             }
         }
         
@@ -354,6 +357,14 @@ class KeysignViewModel: ObservableObject {
                     case .failure(let err):
                         throw err
                     }
+                case .dydx:
+                    let broadcastResult = await DydxService.shared.broadcastTransaction(jsonString: tx.rawTransaction)
+                    switch broadcastResult {
+                    case .success(let hash):
+                        self.txid = hash
+                    case .failure(let err):
+                        throw err
+                    }
                 case .solana:
                     self.txid = await SolanaService.shared.sendSolanaTransaction(encodedTransaction: tx.rawTransaction) ?? .empty
                 case .sui:
@@ -371,7 +382,7 @@ class KeysignViewModel: ObservableObject {
             handleHelperError(err: error)
         }
     }
-
+    
     func handleBroadcastError(err: Error,tx: SignedTransactionResult){
         var errMessage: String = ""
         switch err{
@@ -411,11 +422,11 @@ class KeysignViewModel: ObservableObject {
 }
 
 private extension KeysignViewModel {
-
+    
     enum KeysignError: Error, LocalizedError {
         case noErc20Allowance
         case networkError
-
+        
         var errorDescription: String? {
             switch self {
             case .noErc20Allowance:

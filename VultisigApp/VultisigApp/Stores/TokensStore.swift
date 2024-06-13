@@ -55,6 +55,8 @@ class TokensStore {
         
         Coin(chain: Chain.kujira, ticker: "KUJI", logo: "kuji", address: "", priceRate: 0.0,  decimals: 6, hexPublicKey: "", priceProviderId: "kujira", contractAddress: "", rawBalance: "0", isNativeToken: true),
         
+        Coin(chain: Chain.dydx, ticker: "DYDX", logo: "dydx", address: "", priceRate: 0.0,  decimals: 18, hexPublicKey: "", priceProviderId: "dydx-chain", contractAddress: "", rawBalance: "0", isNativeToken: true),
+        
         Coin(chain: Chain.base, ticker: "ETH", logo: "eth_base", address: "", priceRate: 0.0,  decimals: 18, hexPublicKey: "",  priceProviderId: "ethereum", contractAddress: "", rawBalance: "0", isNativeToken: true),
         
         Coin(chain: Chain.base, ticker: "USDC", logo: "usdc", address: "", priceRate: 0.0,  decimals: 6, hexPublicKey: "", priceProviderId: "usd-coin", contractAddress: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913", rawBalance: "0", isNativeToken: false ),

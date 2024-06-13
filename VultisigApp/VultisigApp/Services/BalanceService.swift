@@ -16,6 +16,7 @@ class BalanceService {
     private let sol = SolanaService.shared
     private let sui = SuiService.shared
     private let gaia = GaiaService.shared
+    private let dydx = DydxService.shared
     private let kuji = KujiraService.shared
     private let maya = MayachainService.shared
     private let dot = PolkadotService.shared
@@ -58,6 +59,11 @@ class BalanceService {
             case .gaiaChain:
                 let atomBalance =  try await gaia.fetchBalances(address: coin.address)
                 let rawBalance = atomBalance.balance(denom: Chain.gaiaChain.ticker.lowercased())
+                let priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
+                try await updateCoin(coin, rawBalance: rawBalance, priceRate: priceRate)
+            case .dydx:
+                let dydxBalance =  try await dydx.fetchBalances(address: coin.address)
+                let rawBalance = dydxBalance.balance(denom: Chain.dydx.ticker.lowercased())
                 let priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
                 try await updateCoin(coin, rawBalance: rawBalance, priceRate: priceRate)
             case .kujira:

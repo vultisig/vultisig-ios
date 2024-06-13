@@ -35,6 +35,7 @@ final class BlockChainService {
     private let atom = GaiaService.shared
     private let maya = MayachainService.shared
     private let kuji = KujiraService.shared
+    private let dydx = DydxService.shared
     
     func fetchSpecific(for coin: Coin, action: Action = .transfer, sendMaxAmount: Bool) async throws -> BlockChainSpecific {
         switch coin.chain {
@@ -122,6 +123,17 @@ final class BlockChainService {
                 throw Errors.failToGetSequenceNo
             }
             return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500)
+        case .dydx:
+            let account = try await dydx.fetchAccountNumber(coin.address)
+            
+            guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
+                throw Errors.failToGetAccountNumber
+            }
+            
+            guard let sequence = UInt64(account?.sequence ?? "0") else {
+                throw Errors.failToGetSequenceNo
+            }
+            return .DydxChain(accountNumber: accountNumber, sequence: sequence, gas: 2500000000000000)
         }
     }
 
