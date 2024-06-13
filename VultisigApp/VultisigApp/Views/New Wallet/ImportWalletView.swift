@@ -11,8 +11,8 @@ import UniformTypeIdentifiers
 
 struct ImportWalletView: View {
     @Environment(\.modelContext) private var context
-    @StateObject var viewModel = ImportVaultViewModel()
-    @State var showFileImporter = false
+    @StateObject var backupViewModel = EncryptedBackupViewModel()
+    
     @Query var vaults: [Vault]
     
     var body: some View {
@@ -29,24 +29,27 @@ struct ImportWalletView: View {
             }
         }
         .fileImporter(
-            isPresented: $showFileImporter,
-            allowedContentTypes: [UTType.data],
+            isPresented: $backupViewModel.showVaultImporter,
+            allowedContentTypes: [.data],
             allowsMultipleSelection: false
         ) { result in
-            viewModel.readFile(for: result)
+            switch result {
+            case .success(let urls):
+                if let url = urls.first {
+                    backupViewModel.importFile(from: url)
+                }
+            case .failure(let error):
+                print("Error importing file: \(error.localizedDescription)")
+            }
         }
-        .navigationDestination(isPresented: $viewModel.isLinkActive) {
-            HomeView()
-        }
-        .alert(isPresented: $viewModel.showAlert) {
-            Alert(
-                title: Text(NSLocalizedString("error", comment: "")),
-                message: Text(viewModel.errorMessage),
-                dismissButton: .default(Text("ok"))
-            )
+//        .navigationDestination(isPresented: $viewModel.isLinkActive) {
+//            HomeView()
+//        }
+        .onAppear {
+            backupViewModel.resetData()
         }
         .onDisappear {
-            viewModel.removeFile()
+            backupViewModel.resetData()
         }
     }
     
@@ -55,9 +58,9 @@ struct ImportWalletView: View {
             instruction
             uploadSection
             
-            if let filename = viewModel.filename {
-                fileCell(filename)
-            }
+//            if let filename = viewModel.filename {
+//                fileCell(filename)
+//            }
             
             Spacer()
             continueButton
@@ -74,19 +77,19 @@ struct ImportWalletView: View {
     
     var uploadSection: some View {
         Button {
-            showFileImporter.toggle()
+            backupViewModel.showVaultImporter.toggle()
         } label: {
-            ImportWalletUploadSection(viewModel: viewModel)
+            ImportWalletUploadSection(viewModel: backupViewModel)
         }
     }
     
     var continueButton: some View {
         Button {
-            viewModel.restoreVault(modelContext: context,vaults: vaults)
+//            viewModel.restoreVault(modelContext: context,vaults: vaults)
         } label: {
             FilledButton(title: "continue")
-                .disabled(!viewModel.isFileUploaded)
-                .grayscale(viewModel.isFileUploaded ? 0 : 1)
+//                .disabled(!viewModel.isFileUploaded)
+//                .grayscale(viewModel.isFileUploaded ? 0 : 1)
         }
         .padding(.horizontal, 10)
         .padding(.bottom, 40)
@@ -106,7 +109,7 @@ struct ImportWalletView: View {
     
     var closeButton: some View {
         Button {
-            viewModel.removeFile()
+            backupViewModel.resetData()
         } label: {
             Image(systemName: "xmark")
                 .font(.body16MontserratMedium)

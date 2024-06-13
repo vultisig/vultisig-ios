@@ -30,6 +30,12 @@ struct BackupPasswordSetupView: View {
         .alert(isPresented: $backupViewModel.showAlert) {
             alert
         }
+        .onAppear {
+            backupViewModel.resetData()
+        }
+        .onDisappear {
+            backupViewModel.resetData()
+        }
     }
     
     var view: some View {
