@@ -5,7 +5,7 @@ struct CoinCell: View {
     
     let group: GroupedChain
     let vault: Vault
-
+    
     var body: some View {
         HStack(spacing: 12) {
             logo
@@ -16,10 +16,9 @@ struct CoinCell: View {
     }
     
     var logo: some View {
-        ImageView(coin.logo, size: CGSize(width: 32, height: 32))
-            .cornerRadius(50)
+        AsyncImageView(logo: coin.logo, size: CGSize(width: 32, height: 32), ticker: coin.ticker, tokenChainLogo: coin.tokenChainLogo)
     }
-    
+
     var content: some View {
         VStack(alignment: .leading, spacing: 15) {
             header

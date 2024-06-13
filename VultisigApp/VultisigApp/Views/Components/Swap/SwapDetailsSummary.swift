@@ -47,6 +47,8 @@ struct SwapDetailsSummary: View {
             return "1Inch"
         case .thorchain:
             return "THORChain"
+        case .mayachain:
+            return "Maya Protocol"
         case .none:
             return nil
         }

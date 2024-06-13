@@ -7,7 +7,7 @@ class Coin: ObservableObject, Codable, Hashable {
     @Attribute(.unique) var id: String
     let chain: Chain
     let ticker: String
-    let logo: String
+    var logo: String
     @Attribute(originalName: "decimals") var strDecimals: String
     let contractAddress: String
     let isNativeToken: Bool
@@ -136,7 +136,7 @@ class Coin: ObservableObject, Codable, Hashable {
             return .EVM
         case .bitcoin,.bitcoinCash,.litecoin,.dogecoin,.dash:
             return .UTXO
-        case .gaiaChain,.kujira:
+        case .gaiaChain,.kujira, .dydx:
             return .Cosmos
         case .sui:
             return .Sui
@@ -166,6 +166,8 @@ class Coin: ObservableObject, Codable, Hashable {
             return "1000000"
         case .gaiaChain,.kujira:
             return "200000"
+        case .dydx:
+            return DydxHelper.DydxGasLimit.description
         case .sui:
             return "500000000"
         case .polkadot:
@@ -196,6 +198,9 @@ class Coin: ObservableObject, Codable, Hashable {
         guard !isNativeToken else {
             if chain == .gaiaChain {
                 return "\(chain.swapAsset).ATOM"
+            }
+            if chain == .kujira {
+                return "\(chain.swapAsset).KUJI"
             }
             return "\(chain.swapAsset).\(chain.ticker)"
         }

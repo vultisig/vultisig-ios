@@ -56,7 +56,7 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
                 ImagePicker(selectedImage: $selectedImage)
             }
         }
-        .onChange(of: memo.addressFields[addressKey]) { newValue in
+        .onChange(of: memo.addressFields[addressKey]) { oldValue,newValue in
             validateAddress(newValue ?? "")
         }
     }

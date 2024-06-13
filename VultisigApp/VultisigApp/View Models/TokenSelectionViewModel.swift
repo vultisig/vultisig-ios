@@ -9,11 +9,11 @@ import SwiftUI
 
 @MainActor
 class TokenSelectionViewModel: ObservableObject {
-
+    
     enum Token: Hashable {
         case coin(Coin)
         case oneInch(OneInchToken)
-
+        
         var symbol: String {
             switch self {
             case .coin(let coin):
@@ -22,33 +22,54 @@ class TokenSelectionViewModel: ObservableObject {
                 return coin.symbol
             }
         }
-
-        var logo: ImageView.Source {
+        
+        var logo: String {
             switch self {
             case .coin(let coin):
-                return .resource(coin.logo)
+                return coin.logo
             case .oneInch(let token):
-                return .remote(token.logoUrl)
+                return token.logoUrl?.description ?? .empty
             }
         }
     }
-
+    
     @Published var searchText: String = .empty
     @Published var tokens: [Token] = []
     @Published var isLoading: Bool = false
     @Published var error: Error?
-
+    
     private let oneInchservice = OneInchService.shared
-
+    
     func selectedTokens(groupedChain: GroupedChain) -> [Token] {
         let tickers = groupedChain.coins
             .filter { !$0.isNativeToken }
             .map { $0.ticker.lowercased() }
-        return tokens.filter { token in
+
+        let filteredTokens = tokens.filter { token in
             tickers.contains(token.symbol.lowercased())
         }
-    }
 
+        // Convert tickers to tokens if they are not already in the existing tokens list
+        let tickerTokens = groupedChain.coins.filter { coin in
+            tickers.contains(coin.ticker.lowercased()) &&
+            !tokens.contains { token in token.symbol.lowercased() == coin.ticker.lowercased() }
+        }.map { coin in
+            Token.coin(coin)
+        }
+
+        return filteredTokens + tickerTokens
+    }
+    
+    func preExistingTokens(groupedChain: GroupedChain) ->[Token] {
+        let tickers = groupedChain.coins
+            .filter { !$0.isNativeToken }
+            .map { $0.ticker.lowercased() }
+        
+        return TokensStore.TokenSelectionAssets
+            .filter { $0.chain == groupedChain.chain && !$0.isNativeToken && !tickers.contains($0.ticker.lowercased())}
+            .map { .coin($0) }
+    }
+    
     func filteredTokens(groupedChain: GroupedChain) -> [Token] {
         guard !searchText.isEmpty else { return [] }
         let tickers = groupedChain.coins
@@ -60,7 +81,7 @@ class TokenSelectionViewModel: ObservableObject {
                 !tickers.contains(token.symbol.lowercased())
             }
     }
-
+    
     var showRetry: Bool {
         switch error {
         case let error as Errors:
@@ -69,25 +90,25 @@ class TokenSelectionViewModel: ObservableObject {
             return false
         }
     }
-
+    
     func loadData(chain: Chain) async {
         error = nil
-
-        switch chain.chainType {
-        case .EVM:
+        // always keep those tokens in vultisig tokenstore
+        await loadOtherTokens(chain: chain)
+        
+        if chain.chainType == .EVM {
             await loadEVMTokens(chain: chain)
-        default:
-            await loadOtherTokens(chain: chain)
         }
+        
     }
 }
 
 private extension TokenSelectionViewModel {
-
+    
     enum Errors: Error, LocalizedError {
         case noTokens
         case networkError
-
+        
         var errorDescription: String? {
             switch self {
             case .noTokens:
@@ -97,23 +118,26 @@ private extension TokenSelectionViewModel {
             }
         }
     }
-
+    
     func loadEVMTokens(chain: Chain) async {
         guard let chainID = chain.chainID else { return }
         isLoading = true
         do {
             let response = try await oneInchservice.fetchTokens(chain: chainID).sorted(by: { $0.name < $1.name })
-            tokens = response.map { .oneInch($0) }
-
-            if tokens.isEmpty {
-                error = Errors.noTokens
+            let oneInchTokens: [Token] = response.map { .oneInch($0) }
+            let uniqueTokens = oneInchTokens.filter { item in
+                !tokens.contains{$0.symbol == item.symbol}
             }
+            tokens.append(contentsOf: uniqueTokens)
+            
         } catch {
             self.error = Errors.networkError
         }
+        
+        
         isLoading = false
     }
-
+    
     func loadOtherTokens(chain: Chain) async {
         tokens = TokensStore.TokenSelectionAssets
             .filter { $0.chain == chain && !$0.isNativeToken }

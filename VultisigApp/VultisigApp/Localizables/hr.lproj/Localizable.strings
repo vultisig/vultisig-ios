@@ -205,3 +205,11 @@
 "vaultRestoreFailed" = "Neuspješno vraćanje spremišta";
 "backupDecryptionFailed" = "Neuspješno dešifriranje sigurnosne kopije";
 "incorrectPassword" = "Netočna lozinka";
+"findCustomTokens" = "Pronađite Svoj Prilagođeni Token";
+"customToken" = "Prilagođeni Token";
+"details" = "Detalji";
+"vaultType" = "Tip spremišta";
+"ECDSAKey" = "ECDSA ključ";
+"EdDSAKey" = "EdDSA ključ";
+"Selected" = "Odabrano";
+"searchResult" = "Rezultat pretraživanja";

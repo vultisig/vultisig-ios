@@ -64,6 +64,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         switch tx.quote {
         case .thorchain:
             return Endpoint.getSwapProgressURL(txid: hash)
+        case .mayachain:
+            return Endpoint.getMayaSwapTracker(txid: hash)
         case .oneinch, .none:
             return nil
         }
@@ -155,13 +157,13 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     
     func validateForm(tx: SwapTransaction) -> Bool {
         return tx.fromCoin != tx.toCoin
-        && tx.fromCoin != .example
-        && tx.toCoin != .example
-        && !tx.fromAmount.isEmpty
-        && !tx.toAmountDecimal.isZero
-        && tx.quote != nil
-        && isSufficientBalance(tx: tx)
-        && !quoteLoading
+            && tx.fromCoin != .example
+            && tx.toCoin != .example
+            && !tx.fromAmount.isEmpty
+            && !tx.toAmountDecimal.isZero
+            && tx.quote != nil
+            && isSufficientBalance(tx: tx)
+            && !quoteLoading
     }
     
     func moveToNextView() {
@@ -183,43 +185,56 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 action: .swap,
                 sendMaxAmount: false
             )
-            
+
+            let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
+            let vaultAddress = quote.inboundAddress ?? tx.fromCoin.address
+            let expirationTime = Date().addingTimeInterval(60 * 15) // 15 mins
+            let keysignFactory = KeysignPayloadFactory()
+
+            let swapPayload = THORChainSwapPayload(
+                fromAddress: tx.fromCoin.address,
+                fromCoin: tx.fromCoin,
+                toCoin: tx.toCoin,
+                vaultAddress: vaultAddress,
+                routerAddress: quote.router,
+                fromAmount: swapFromAmount(tx: tx),
+                toAmountDecimal: tx.toAmountDecimal,
+                toAmountLimit: "0", streamingInterval: "1", streamingQuantity: "0",
+                expirationTime: UInt64(expirationTime.timeIntervalSince1970),
+                isAffiliate: isAlliliate(tx: tx)
+            )
+
             switch quote {
-            case .thorchain(let quote):
-                
-                guard quote.inboundAddress != nil || tx.fromCoin.chain == .thorChain else {
-                    throw Errors.unexpectedError
-                }
-                
-                let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
-                let vaultAddress = quote.inboundAddress ?? tx.fromCoin.address
-                let expirationTime = Date().addingTimeInterval(60 * 15) // 15 mins
-                let keysignFactory = KeysignPayloadFactory()
-                
-                let swapPayload = THORChainSwapPayload(
-                    fromAddress: tx.fromCoin.address,
-                    fromCoin: tx.fromCoin,
-                    toCoin: tx.toCoin,
-                    vaultAddress: vaultAddress,
-                    routerAddress: quote.router,
-                    fromAmount: swapFromAmount(tx: tx),
-                    toAmountDecimal: tx.toAmountDecimal,
-                    toAmountLimit: "0", streamingInterval: "1", streamingQuantity: "0",
-                    expirationTime: UInt64(expirationTime.timeIntervalSince1970), 
-                    isAffiliate: isAlliliate(tx: tx)
-                )
+            case .mayachain(_):
                 keysignPayload = try await keysignFactory.buildTransfer(
                     coin: tx.fromCoin,
                     toAddress: toAddress,
                     amount: tx.amountInCoinDecimal,
-                    memo: nil,
+                    memo: tx.quote?.memo,
+                    chainSpecific: chainSpecific,
+                    swapPayload: .mayachain(swapPayload),
+                    vault: vault
+                )
+
+                return true
+
+            case .thorchain(let quote):
+                guard quote.inboundAddress != nil else {
+                    throw Errors.unexpectedError
+                }
+
+                keysignPayload = try await keysignFactory.buildTransfer(
+                    coin: tx.fromCoin,
+                    toAddress: toAddress,
+                    amount: tx.amountInCoinDecimal,
+                    memo: tx.quote?.memo,
                     chainSpecific: chainSpecific,
                     swapPayload: .thorchain(swapPayload),
                     vault: vault
                 )
                 
                 return true
-                
+
             case .oneinch(let quote):
                 let keysignFactory = KeysignPayloadFactory()
                 let payload = OneInchSwapPayload(
@@ -387,7 +402,7 @@ private extension SwapCryptoViewModel {
             switch quote {
             case .oneinch(let quote):
                 tx.oneInchFee = oneInchFee(quote: quote)
-            case .thorchain: 
+            case .thorchain, .mayachain: 
                 break
             }
             
@@ -479,7 +494,7 @@ private extension SwapCryptoViewModel {
                 throw error
             }
             
-        case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui:
+        case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui, .DydxChain:
             return chainSpecific.gas
         }
     }

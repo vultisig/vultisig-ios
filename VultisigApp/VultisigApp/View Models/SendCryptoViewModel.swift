@@ -123,7 +123,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 
                 isLoading = false
             }
-        case .kujira, .gaiaChain, .mayaChain, .thorChain, .polkadot:
+        case .kujira, .gaiaChain, .mayaChain, .thorChain, .polkadot, .dydx:
             Task {
                 await BalanceService.shared.updateBalance(for: tx.coin)
                 tx.amount = "\(tx.coin.getMaxValue(BigInt(tx.gasDecimal.description,radix:10) ?? 0 ))"
@@ -133,9 +133,24 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         }
     }
     
+    private func getPriceRate(tx: SendTransaction) async -> Double {
+        do {
+            let priceRateFiat = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
+            if priceRateFiat == .zero, SettingsCurrency.current == .USD {
+                let poolInfo = try await CryptoPriceService.shared.fetchCoingeckoPoolPrice(chain: tx.coin.chain, contractAddress: tx.coin.contractAddress)
+                if let priceUsd = poolInfo.price_usd {
+                    return priceUsd
+                }
+            }
+            return priceRateFiat
+        } catch {
+            return Double.zero
+        }
+    }
+    
     func convertFiatToCoin(newValue: String, tx: SendTransaction) async {
         
-        let priceRateFiat = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
+        let priceRateFiat = await getPriceRate(tx: tx)
         if let newValueDouble = Double(newValue) {
             let newValueCoin = newValueDouble / priceRateFiat
             tx.amount = String(format: "%.9f", newValueCoin)
@@ -148,7 +163,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     
     func convertToFiat(newValue: String, tx: SendTransaction, setMaxValue: Bool = false) async {
         
-        let priceRateFiat = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
+        let priceRateFiat = await getPriceRate(tx: tx)
         if let newValueDouble = Double(newValue) {
             let newValueFiat = String(format: "%.2f", newValueDouble * priceRateFiat)
             tx.amountInFiat = newValueFiat.isEmpty ? "" : newValueFiat
@@ -264,7 +279,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             utxos: utxoInfo,
             memo: tx.memo,
             swapPayload: nil,
-            vaultPubKeyECDSA: vault.pubKeyECDSA, 
+            vaultPubKeyECDSA: vault.pubKeyECDSA,
             vaultLocalPartyID: vault.localPartyID
         )
         

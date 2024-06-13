@@ -16,17 +16,42 @@ class RpcEvmService: RpcService {
     
     func getBalance(coin: Coin) async throws ->(rawBalance: String,priceRate: Double){
         // Start fetching all information concurrently
-        let cryptoPrice = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
+        var cryptoPrice = Double(0)
         var rawBalance = ""
         do{
+            if !coin.priceProviderId.isEmpty {
+                cryptoPrice = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
+            }
+            
             if coin.isNativeToken {
                 rawBalance = String(try await fetchBalance(address: coin.address))
             } else {
                 rawBalance = String(try await fetchERC20TokenBalance(contractAddress: coin.contractAddress, walletAddress: coin.address))
+                
+                // Probably a custom token, let's try to get the price from the pool
+                // It only works in USD
+                if cryptoPrice == .zero, coin.priceProviderId.isEmpty {
+                    if SettingsCurrency.current == .USD {
+                        let poolInfo = try await CryptoPriceService.shared.fetchCoingeckoPoolPrice(chain: coin.chain, contractAddress: coin.contractAddress)
+                        
+                        if let priceUsd = poolInfo.price_usd {
+                            coin.priceRate = priceUsd
+                            cryptoPrice = priceUsd
+                        }
+                        
+                        if let coinGeckoId = poolInfo.coingecko_coin_id {
+                            coin.priceProviderId = coinGeckoId
+                        }
+                        
+                        if let image = poolInfo.image_url, !image.contains("missing.png") {
+                            coin.logo = image
+                        }
+                    }
+                }
             }
         } catch {
             print("getBalance:: \(error.localizedDescription)")
-            throw error
+            return (.zero,.zero)
         }
         return (rawBalance,cryptoPrice)
     }
@@ -116,6 +141,67 @@ class RpcEvmService: RpcService {
         return try await intRpcCall(method: "eth_call", params: params)
     }
     
+    func getTokenInfo(contractAddress: String) async throws -> (name: String, symbol: String, decimals: Int) {
+        do {
+            // Define ABI for ERC20 functions
+            let erc20Abi = [
+                "0x06fdde03", // name()
+                "0x95d89b41", // symbol()
+                "0x313ce567"  // decimals()
+            ]
+            
+            // Fetch token details in parallel
+            async let nameHex = fetchERC20Data(methodId: erc20Abi[0], contractAddress: contractAddress)
+            async let symbolHex = fetchERC20Data(methodId: erc20Abi[1], contractAddress: contractAddress)
+            async let decimalsHex = fetchERC20Data(methodId: erc20Abi[2], contractAddress: contractAddress)
+            
+            // Await results
+            let nameData = try await nameHex
+            let symbolData = try await symbolHex
+            let decimalsData = try await decimalsHex
+            
+            // Decode hex values to respective types
+            let name = try decodeAbiString(from: nameData)
+            let symbol = try decodeAbiString(from: symbolData)
+            let decimals = Int(hex: decimalsData) ?? 0
+            
+            return (name, symbol, decimals)
+        } catch {
+            print(error.localizedDescription)
+            return (.empty, .empty, .zero)
+        }
+    }
+    
+    private func fetchERC20Data(methodId: String, contractAddress: String) async throws -> String {
+        let params: [Any] = [
+            ["to": contractAddress, "data": methodId],
+            "latest"
+        ]
+        return try await strRpcCall(method: "eth_call", params: params)
+    }
+    
+    private func decodeAbiString(from hex: String) throws -> String {
+        let cleanedHex = hex.stripHexPrefix()
+        guard let data = Data(hexString: cleanedHex) else {
+            throw RpcEvmServiceError.rpcError(code: -1, message: "Invalid hex string")
+        }
+        
+        // ABI-encoded strings are padded to 32-byte words. The actual string length is stored at the beginning.
+        guard data.count >= 64 else {
+            throw RpcEvmServiceError.rpcError(code: -1, message: "Invalid ABI-encoded string")
+        }
+        
+        let lengthData = data[32..<64]
+        let length = Int(BigUInt(lengthData))
+        
+        guard length > 0 && data.count >= 64 + length else {
+            throw RpcEvmServiceError.rpcError(code: -1, message: "Invalid ABI-encoded string length")
+        }
+        
+        let stringData = data[64..<(64 + length)]
+        return String(data: stringData, encoding: .utf8)?.trimmingCharacters(in: .controlCharacters) ?? ""
+    }
+    
     private func fetchBalance(address: String) async throws -> BigInt {
         return try await intRpcCall(method: "eth_getBalance", params: [address, "latest"])
     }
@@ -173,12 +259,12 @@ class RpcEvmService: RpcService {
     func getTokens(urlString: String) async -> [Token] {
         let cacheKey = urlString
         let cacheDuration: TimeInterval = 60 * 10 // Cache duration of 10 minutes
-
+        
         if let cachedTokens: [Token] = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheTokens, timeInSeconds: cacheDuration) {
             print("Returning tokens from cache")
             return cachedTokens
         }
-
+        
         do {
             let data: Data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
             if var tokens: [Token] = Utils.extractResultFromJson(fromData: data, path: "tokens", type: Token.self, mustHaveFields: ["tokenInfo.website", "tokenInfo.image"]) {
@@ -188,7 +274,7 @@ class RpcEvmService: RpcService {
                         mutableToken.tokenInfo.setImage(image: "\(extractTokenDomainURL(from: urlString))\(image)" )
                     }
                     return mutableToken
-                }                
+                }
                 cacheTokens.set(cacheKey, (data: tokens, timestamp: Date()))
                 return tokens
             } else {

@@ -205,3 +205,11 @@
 "vaultRestoreFailed" = "Ripristino del caveau non riuscito";
 "backupDecryptionFailed" = "Decrittazione del backup non riuscita";
 "incorrectPassword" = "Password errata";
+"findCustomTokens" = "Trova Il Tuo Token Personalizzato";
+"customToken" = "Token Personalizzato";
+"details" = "Dettagli";
+"vaultType" = "Tipo di caveau";
+"ECDSAKey" = "Chiave ECDSA";
+"EdDSAKey" = "Chiave EdDSA";
+"Selected" = "Selezionato";
+"searchResult" = "Risultato della ricerca";

@@ -8,11 +8,11 @@
 import Foundation
 
 class Endpoint {
-
+    
     enum SwapChain {
         case thorchain
         case maya
-
+        
         var baseUrl: String {
             switch self {
             case .thorchain:
@@ -22,7 +22,7 @@ class Endpoint {
             }
         }
     }
-
+    
     static let vultisigApiProxy = "https://api.vultisig.com"
     static let supportDocumentLink = "https://docs.voltix.org/user-actions/creating-a-vault"
     static let vultisigRelay = "https://api.vultisig.com/router"
@@ -44,28 +44,28 @@ class Endpoint {
     static func fetchAccountBalanceMayachain(address: String) -> String {
         "https://mayanode.mayachain.info/cosmos/bank/v1beta1/balances/\(address)"
     }
-
+    
     static func fetchSwapQuoteThorchain(chain: SwapChain, address: String, fromAsset: String, toAsset: String, amount: String, interval: String, isAffiliate: Bool) -> URL {
         let isAffiliateParams = isAffiliate
-            ? "&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(THORChainSwaps.affiliateFeeRateBp)"
-            : .empty
-
+        ? "&affiliate=\(THORChainSwaps.affiliateFeeAddress)&affiliate_bps=\(THORChainSwaps.affiliateFeeRateBp)"
+        : .empty
+        
         return "\(chain.baseUrl)/quote/swap?from_asset=\(fromAsset)&to_asset=\(toAsset)&amount=\(amount)&destination=\(address)&streaming_interval=\(interval)\(isAffiliateParams)".asUrl
     }
-
+    
     static func fetch1InchSwapQuote(chain: String, source: String, destination: String, amount: String, from: String, slippage: String, referrer: String, fee: Double, isAffiliate: Bool) -> URL {
-
+        
         let isAffiliateParams = isAffiliate
-            ? "&referrer=\(referrer)&fee=\(fee)"
-            : .empty
-
+        ? "&referrer=\(referrer)&fee=\(fee)"
+        : .empty
+        
         return "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/swap?src=\(source)&dst=\(destination)&amount=\(amount)&from=\(from)&slippage=\(slippage)&disableEstimate=true&includeGas=true\(isAffiliateParams)".asUrl
     }
-
+    
     static func fetchTokens(chain: Int) -> String {
         return "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/tokens"
     }
-
+    
     static func fetchCoinPaprikaQuotes(_ quotes: String) -> String {
         "https://api.coinpaprika.com/v1/tickers?quotes=\(quotes)"
     }
@@ -105,7 +105,7 @@ class Endpoint {
     static let solanaServiceRpc = "https://api.mainnet-beta.solana.com"
     
     static let suiServiceRpc = "https://sui-rpc.publicnode.com"
-        
+    
     static let polkadotServiceRpc = "https://polkadot-rpc.publicnode.com"
     
     static let polkadotServiceBalance = "https://polkadot.api.subscan.io/api/v2/scan/search"
@@ -137,12 +137,12 @@ class Endpoint {
     static func fetchCryptoPrices(coin: String, fiat: String) -> String {
         "\(vultisigApiProxy)/coingeicko/api/v3/simple/price?ids=\(coin)&vs_currencies=\(fiat)"
     }
-
+    
     static func fetchTokensInfo(network: String, addresses: [String]) -> String {
         let addresses = addresses.joined(separator: ",")
         return "\(vultisigApiProxy)/coingeicko/api/v3/onchain/networks/\(network)/tokens/multi/\(addresses)"
     }
-
+    
     static func fetchBitcoinTransactions(_ userAddress: String) -> String {
         "https://mempool.space/api/address/\(userAddress)/txs"
     }
@@ -164,19 +164,32 @@ class Endpoint {
     
     static let broadcastCosmosTransaction = "https://cosmos-rest.publicnode.com/cosmos/tx/v1beta1/txs"
     
+    static func fetchDydxAccountBalance(address: String) -> String{
+        "https://dydx-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
+    }
+    static func fetchDydxAccountNumber(_ address: String) -> String {
+        "https://dydx-rest.publicnode.com/cosmos/auth/v1beta1/accounts/\(address)"
+    }
+    
+    static let broadcastDydxTransaction = "https://dydx-rest.publicnode.com/cosmos/tx/v1beta1/txs"
+    
     static func fetchKujiraAccountBalance(address: String) -> String{
         "https://kujira-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
     }
     static func fetchKujiraAccountNumber(_ address: String) -> String {
         "https://kujira-rest.publicnode.com/cosmos/auth/v1beta1/accounts/\(address)"
     }
-        
+    
     static let broadcastKujiraTransaction = "https://kujira-rest.publicnode.com/cosmos/tx/v1beta1/txs"
-
+    
     static func getSwapProgressURL(txid: String) -> String {
         return "https://track.ninerealms.com/\(txid.stripHexPrefix())"
     }
-
+    
+    static func getMayaSwapTracker(txid: String) -> String {
+        return "https://www.mayascan.org/tx/\(txid.stripHexPrefix())"
+    }
+    
     static func getExplorerURL(chainTicker: String, txid: String) -> String {
         switch chainTicker {
         case "BTC":
@@ -197,6 +210,8 @@ class Endpoint {
             return "https://etherscan.io/tx/\(txid)"
         case "UATOM":
             return "https://www.mintscan.io/cosmos/tx/\(txid)"
+        case "ADYDX":
+            return "https://www.mintscan.io/dydx/tx/\(txid)"
         case "UKUJI":
             return "https://finder.kujira.network/kaiyo-1/tx/\(txid)"
         case "AVAX":
@@ -248,6 +263,8 @@ class Endpoint {
             return "https://etherscan.io/address/\(address)"
         case "UATOM":
             return "https://www.mintscan.io/cosmos/address/\(address)"
+        case "ADYDX":
+            return "https://www.mintscan.io/dydx/address/\(address)"
         case "UKUJI":
             return "https://finder.kujira.network/kaiyo-1/address/\(address)"
         case "AVAX":
@@ -289,6 +306,8 @@ class Endpoint {
             return "https://etherscan.io/address/\(address)"
         case .gaiaChain:
             return "https://www.mintscan.io/cosmos/address/\(address)"
+        case .dydx:
+            return "https://www.mintscan.io/dydx/address/\(address)"
         case .kujira:
             return "https://finder.kujira.network/kaiyo-1/address/\(address)"
         case .avalanche:

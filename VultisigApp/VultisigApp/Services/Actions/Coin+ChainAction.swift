@@ -40,13 +40,13 @@ extension Chain {
         case .dogecoin:
             return [.send, .swap]
         case .dash:
-            return [.send]
+            return [.send, .swap]
         case .gaiaChain:
             return [.send, .swap]
         case .kujira:
-            return [.send]
+            return [.send, .swap]
         case .mayaChain:
-            return [.send, .memo]
+            return [.send, .swap, .memo]
         case .cronosChain:
             return [.send]
         case .sui:
@@ -54,6 +54,8 @@ extension Chain {
         case .polkadot:
             return [.send]
         case .zksync:
+            return [.send]
+        case .dydx:
             return [.send]
         }
     }

@@ -205,3 +205,11 @@
 "vaultRestoreFailed" = "No se pudo restaurar el almacén";
 "backupDecryptionFailed" = "No se pudo descifrar la copia de seguridad";
 "incorrectPassword" = "Contraseña incorrecta";
+"findCustomTokens" = "Encuentra Tu Token Personalizado";
+"customToken" = "Token Personalizado";
+"details" = "Detalles";
+"vaultType" = "Tipo de almacén";
+"ECDSAKey" = "Clave ECDSA";
+"EdDSAKey" = "Clave EdDSA";
+"Selected" = "Seleccionado";
+"searchResult" = "Resultado de la búsqueda";

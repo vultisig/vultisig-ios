@@ -21,6 +21,7 @@ enum BlockChainSpecific: Codable, Hashable {
     case THORChain(accountNumber: UInt64, sequence: UInt64, fee: UInt64)
     case MayaChain(accountNumber: UInt64, sequence: UInt64)
     case Cosmos(accountNumber: UInt64, sequence: UInt64, gas: UInt64)
+    case DydxChain(accountNumber: UInt64, sequence: UInt64, gas: UInt64)
     case Solana(recentBlockHash: String, priorityFee: BigInt) // priority fee is in microlamports
     case Sui(referenceGasPrice: BigInt, coins: [[String:String]])
     case Polkadot(recentBlockHash: String, nonce: UInt64, currentBlockNumber: BigInt, specVersion: UInt32, transactionVersion: UInt32, genesisHash: String)
@@ -37,6 +38,8 @@ enum BlockChainSpecific: Codable, Hashable {
             return MayaChainHelper.MayaChainGas.description.toBigInt() //Maya uses 10e10
         case .Cosmos:
             return 7500
+        case .DydxChain:
+            return 2500000000000000
         case .Solana:
             return SolanaHelper.defaultFeeInLamports
         case .Sui(let referenceGasPrice, _):
@@ -93,6 +96,8 @@ struct KeysignPayload: Codable, Hashable {
             case .oneInch(let payload):
                 let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
                 return swaps.getPreSignedImageHash(payload: payload, keysignPayload: self)
+            case .mayachain:
+                break // No op - Regular transaction with memo
             }
         }
         
@@ -131,7 +136,10 @@ struct KeysignPayload: Codable, Hashable {
             return KujiraHelper().getPreSignedImageHash(keysignPayload: self)
         case .polkadot:
             return PolkadotHelper.getPreSignedImageHash(keysignPayload: self)
+        case .dydx:
+            return DydxHelper().getPreSignedImageHash(keysignPayload: self)
         }
+        
     }
     
     static let example = KeysignPayload(coin: Coin.example, toAddress: "toAddress", toAmount: 100, chainSpecific: BlockChainSpecific.UTXO(byteFee: 100, sendMaxAmount: false), utxos: [], memo: "Memo", swapPayload: nil, vaultPubKeyECDSA: "12345", vaultLocalPartyID: "iPhone-100")

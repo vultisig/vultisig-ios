@@ -227,3 +227,11 @@
 "vaultRestoreFailed" = "Failed to restore vault";
 "backupDecryptionFailed" = "Failed to decrypt the backup";
 "incorrectPassword" = "Incorrect Password";
+"findCustomTokens" = "Find Your Custom Token";
+"customToken" = "Custom Token";
+"details" = "Details";
+"vaultType" = "Vault Type";
+"ECDSAKey" = "ECDSA Key";
+"EdDSAKey" = "EdDSA Key";
+"Selected" = "Selected";
+"searchResult" = "Search Result";

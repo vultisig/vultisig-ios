@@ -28,6 +28,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case sui
     case polkadot
     case zksync
+    case dydx
     
     enum MigrationKeys: String, CodingKey {
         case ticker
@@ -57,6 +58,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .sui: return "Sui"
         case .polkadot: return "Polkadot"
         case .zksync: return "Zksync"
+        case .dydx: return "Dydx"
         }
     }
     var feeUnit: String{
@@ -74,6 +76,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .mayaChain: return "CACAO"
         case .sui: return "SUI"
         case .polkadot: return "DOT"
+        case .dydx: return "adydx"
         }
     }
     
@@ -101,6 +104,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .sui: return "SUI"
         case .polkadot: return "DOT"
         case .zksync: return "ZK"
+        case .dydx: return "ADYDX"
         }
     }
     
@@ -118,7 +122,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .kujira: return "KUJI"
         case .solana: return "SOL"
         case .dash: return "DASH"
-        case .mayaChain: return "CACAO"
+        case .mayaChain: return "MAYA"
         case .arbitrum: return "ARB"
         case .base: return "BASE"
         case .optimism: return "OP"
@@ -128,14 +132,15 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .sui: return "SUI"
         case .polkadot: return "DOT"
         case .zksync: return "ZK"
+        case .dydx: return "DYDX"
         }
     }
     
     var isSwapSupported: Bool {
         switch self {
-        case .thorChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .gaiaChain:
+        case .thorChain, .mayaChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .gaiaChain, .dash, .kujira:
             return true
-        case .solana, .dash, .kujira, .mayaChain,.arbitrum, .base, .optimism, .polygon, .blast, .cronosChain, .polkadot, .sui, .zksync:
+        case .solana,.arbitrum, .base, .optimism, .polygon, .blast, .cronosChain, .polkadot, .sui, .zksync, .dydx:
             return false
         }
     }
@@ -161,7 +166,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return .Sui
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             return .UTXO
-        case .gaiaChain, .kujira:
+        case .gaiaChain, .kujira, .dydx:
             return .Cosmos
         case .polkadot:
             return .Polkadot
@@ -214,6 +219,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return "polkadot"
         case .zksync:
             return "eth_zksync"
+        case .dydx:
+            return "dydx"
         }
     }
     
@@ -239,7 +246,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return 25
         case .zksync:
             return 324
-        case .solana, .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .sui, .polkadot:
+        case .solana, .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .sui, .polkadot, .dydx:
             return nil
         }
     }
@@ -264,7 +271,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return "bsc"
         case .cronosChain:
             return "cro"
-        case .solana, .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .sui, .polkadot, .zksync:
+        case .solana, .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .sui, .polkadot, .zksync, .dydx:
             return .empty
         }
     }
