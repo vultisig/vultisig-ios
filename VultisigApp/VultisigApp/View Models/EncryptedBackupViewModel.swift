@@ -103,10 +103,10 @@ class EncryptedBackupViewModel: ObservableObject {
     }
     
     func promptForPasswordAndImport(from url: URL) {
-        let alert = UIAlertController(title: "Enter Password", message: nil, preferredStyle: .alert)
+        let alert = UIAlertController(title: NSLocalizedString("enterPassword", comment: ""), message: nil, preferredStyle: .alert)
         alert.addTextField { textField in
             textField.isSecureTextEntry = true
-            textField.placeholder = "Password"
+            textField.placeholder = NSLocalizedString("password", comment: "")
         }
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
             if let password = alert.textFields?.first?.text {

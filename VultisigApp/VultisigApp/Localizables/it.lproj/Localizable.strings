@@ -197,3 +197,11 @@
 "reviewConditions" = "Rivedi le Condizioni";
 "reviewConditionsMessage" = "Si prega di rivedere e accettare tutte le condizioni elencate.";
 "deposit" = "Deposito";
+"enterPassword" = "Inserisci la password";
+"passwordProtectBackup" = "Proteggi il tuo backup con una password";
+"errorSavingFile" = "Errore nel salvataggio del file";
+"invalidVaultData" = "Dati del caveau non validi";
+"vaultAlreadyExists" = "Il caveau esiste già";
+"vaultRestoreFailed" = "Ripristino del caveau non riuscito";
+"backupDecryptionFailed" = "Decrittazione del backup non riuscita";
+"incorrectPassword" = "Password errata";

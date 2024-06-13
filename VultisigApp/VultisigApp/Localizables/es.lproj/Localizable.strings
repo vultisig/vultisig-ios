@@ -197,3 +197,11 @@
 "reviewConditions" = "Revisar Condiciones";
 "reviewConditionsMessage" = "Por favor, revise y acepte todas las condiciones listadas.";
 "deposit" = "Depósito";
+"enterPassword" = "Introduce la contraseña";
+"passwordProtectBackup" = "Protege tu copia de seguridad con una contraseña";
+"errorSavingFile" = "Error al guardar el archivo";
+"invalidVaultData" = "Datos del almacén no válidos";
+"vaultAlreadyExists" = "El almacén ya existe";
+"vaultRestoreFailed" = "No se pudo restaurar el almacén";
+"backupDecryptionFailed" = "No se pudo descifrar la copia de seguridad";
+"incorrectPassword" = "Contraseña incorrecta";
