@@ -164,8 +164,10 @@ class Coin: ObservableObject, Codable, Hashable {
             return "1000"
         case .dogecoin:
             return "1000000"
-        case .gaiaChain,.kujira, .dydx:
+        case .gaiaChain,.kujira:
             return "200000"
+        case .dydx:
+            return DydxHelper.DydxGasLimit.description
         case .sui:
             return "500000000"
         case .polkadot:

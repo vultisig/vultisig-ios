@@ -494,7 +494,7 @@ private extension SwapCryptoViewModel {
                 throw error
             }
             
-        case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui:
+        case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui, .DydxChain:
             return chainSpecific.gas
         }
     }

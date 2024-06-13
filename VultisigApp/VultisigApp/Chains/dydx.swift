@@ -17,7 +17,7 @@ class DydxHelper {
         self.coinType = CoinType.dydx
     }
     
-    static let DydxGasLimit:UInt64 = 200000
+    static let DydxGasLimit:UInt64 = 2500000000000000
     
     func getDydxCoin(hexPubKey: String,hexChainCode: String) -> Result<Coin,Error> {
         let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
@@ -45,7 +45,7 @@ class DydxHelper {
     }
     
     func getSwapPreSignedInputData(keysignPayload: KeysignPayload,signingInput: CosmosSigningInput) -> Result<Data,Error> {
-        guard case .Cosmos(let accountNumber, let sequence,let gas) = keysignPayload.chainSpecific else {
+        guard case .DydxChain(let accountNumber, let sequence,let gas) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get account number and sequence"))
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
@@ -58,7 +58,11 @@ class DydxHelper {
         input.mode = .sync
         
         input.fee = CosmosFee.with {
-            $0.gas = DydxHelper.DydxGasLimit
+            $0.gas = 200000
+            $0.amounts = [CosmosAmount.with {
+                $0.denom = "adydx"
+                $0.amount = String(gas)
+            }]
         }
         // memo has been set
         // deposit message has been set
@@ -71,7 +75,7 @@ class DydxHelper {
     }
     
     func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
-        guard case .Cosmos(let accountNumber, let sequence , let gas) = keysignPayload.chainSpecific else {
+        guard case .DydxChain(let accountNumber, let sequence , let gas) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get account number and sequence"))
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
@@ -101,9 +105,15 @@ class DydxHelper {
             }]
             
             $0.fee = CosmosFee.with {
-                $0.gas = DydxHelper.DydxGasLimit
+                $0.gas = 200000 // gas limit
+                $0.amounts = [CosmosAmount.with {
+                    $0.denom = "adydx"
+                    $0.amount = String(gas)
+                }]
             }
         }
+        
+        print(input.debugDescription)
         
         do {
             let inputData = try input.serializedData()
@@ -119,6 +129,8 @@ class DydxHelper {
             do {
                 let hashes = TransactionCompiler.preImageHashes(coinType: self.coinType, txInputData: inputData)
                 let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+                
+                print("ERROR preSigningOutput: \(preSigningOutput.errorMessage)")
                 return .success([preSigningOutput.dataHash.hexString])
             } catch {
                 return .failure(HelperError.runtimeError("fail to get preSignedImageHash,error:\(error.localizedDescription)"))
@@ -158,6 +170,9 @@ class DydxHelper {
         do {
             let hashes = TransactionCompiler.preImageHashes(coinType: self.coinType, txInputData: inputData)
             let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+            
+            print(preSigningOutput.errorMessage)
+            
             let allSignatures = DataVector()
             let publicKeys = DataVector()
             let signatureProvider = SignatureProvider(signatures: signatures)

@@ -294,6 +294,9 @@ class KeysignViewModel: ObservableObject {
             } else if keysignPayload.coin.chain == .kujira {
                 let result = KujiraHelper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
                 return result
+            } else if keysignPayload.coin.chain == .dydx {
+                let result = DydxHelper().getSignedTransaction(vaultHexPubKey: self.vault.pubKeyECDSA, vaultHexChainCode: self.vault.hexChainCode, keysignPayload: keysignPayload, signatures: self.signatures)
+                return result
             }
         }
         

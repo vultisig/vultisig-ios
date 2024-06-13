@@ -211,7 +211,7 @@ class Endpoint {
         case "UATOM":
             return "https://www.mintscan.io/cosmos/tx/\(txid)"
         case "ADYDX":
-            return "https://www.mintscan.io/dydx/cosmos/tx/\(txid)"
+            return "https://www.mintscan.io/dydx/tx/\(txid)"
         case "UKUJI":
             return "https://finder.kujira.network/kaiyo-1/tx/\(txid)"
         case "AVAX":

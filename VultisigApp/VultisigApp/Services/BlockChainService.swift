@@ -133,7 +133,7 @@ final class BlockChainService {
             guard let sequence = UInt64(account?.sequence ?? "0") else {
                 throw Errors.failToGetSequenceNo
             }
-            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500)
+            return .DydxChain(accountNumber: accountNumber, sequence: sequence, gas: 2500000000000000)
         }
     }
 
