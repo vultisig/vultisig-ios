@@ -96,8 +96,10 @@ enum THORChainHelper {
                     $0.ticker = "RUNE"
                     $0.synth = false
                 }
-                $0.amount = String(keysignPayload.toAmount)
-                $0.decimals = 8
+                if keysignPayload.toAmount > 0 {
+                    $0.amount = String(keysignPayload.toAmount)
+                    $0.decimals = 8
+                }
             }
             message = [CosmosMessage.with {
                 $0.thorchainDepositMessage = CosmosMessage.THORChainDeposit.with {
