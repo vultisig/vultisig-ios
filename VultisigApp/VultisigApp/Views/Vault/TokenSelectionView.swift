@@ -92,6 +92,9 @@ struct TokenSelectionView: View {
         .onAppear {
             isSearchFieldFocused = true
         }
+        .onDisappear {
+            saveAssets()
+        }
     }
     
     var addCustomTokenButton: some View {

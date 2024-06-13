@@ -64,19 +64,7 @@ struct TokenSelectionCell: View {
     }
     
     private func handleSelection(_ isSelected: Bool) {
-        
-        let existingCoin: Coin? = coinSelectionViewModel.selection.first(where: { $0.chain == chain && $0.ticker.lowercased() == asset.symbol.lowercased() })
-        
-        if let coin = existingCoin {
-            coinSelectionViewModel.handleSelection(isSelected: isSelected, asset: coin)
-        } else {
-            coinSelectionViewModel.handleSelection(isSelected: isSelected, asset: convertToCoin(asset))
-        }
-        
-        // Save assets whenever the selection changes
-        Task {
-            await coinSelectionViewModel.saveAssets(for: tokenSelectionView.vault)
-        }
+        coinSelectionViewModel.handleSelection(isSelected: isSelected, asset: convertToCoin(asset))
     }
     
     private func convertToCoin(_ asset: TokenSelectionViewModel.Token) -> Coin {
