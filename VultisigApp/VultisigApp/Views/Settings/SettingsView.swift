@@ -59,7 +59,7 @@ struct SettingsView: View {
     
     var test: some View {
         NavigationLink {
-            PasswordTestView()
+            PasswordTestView(vault: homeViewModel.selectedVault ?? Vault.example)
         } label: {
             Text("TEST")
         }

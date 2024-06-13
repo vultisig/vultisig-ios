@@ -10,6 +10,7 @@ import CryptoKit
 import UniformTypeIdentifiers
 
 struct PasswordTestView: View {
+    let vault: Vault
     @State private var isShowingFileExporter = false
     @State private var isShowingFileImporter = false
     @State private var encryptedFileURL: URL?
@@ -72,24 +73,37 @@ struct PasswordTestView: View {
         }
     }
     
+    enum VultisigDocumentError : Error{
+        case customError(String)
+    }
+    
     func exportFile() {
-        let dataToSave: Data
-        if encryptionPassword.isEmpty {
-            dataToSave = Data(fileContent.utf8)
-        } else if let encryptedData = encrypt(data: Data(fileContent.utf8), password: encryptionPassword) {
-            dataToSave = encryptedData
-        } else {
-            print("Error encrypting data")
-            return
-        }
-        
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("file.dat")
         do {
-            try dataToSave.write(to: tempURL)
-            encryptedFileURL = tempURL
-            isShowingFileExporter = true
+            let data = try JSONEncoder().encode(vault)
+            guard let hexData = data.hexString.data(using: .utf8) else {
+                throw VultisigDocumentError.customError("Could not convert data to hex")
+            }
+            
+            let dataToSave: Data
+            if encryptionPassword.isEmpty {
+                dataToSave = hexData
+            } else if let encryptedData = encrypt(data: hexData, password: encryptionPassword) {
+                dataToSave = encryptedData
+            } else {
+                print("Error encrypting data")
+                return
+            }
+            
+            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("file.dat")
+            do {
+                try dataToSave.write(to: tempURL)
+                encryptedFileURL = tempURL
+                isShowingFileExporter = true
+            } catch {
+                print("Error writing file: \(error.localizedDescription)")
+            }
         } catch {
-            print("Error writing file: \(error.localizedDescription)")
+            print(error)
         }
     }
     
