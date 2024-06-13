@@ -45,14 +45,14 @@ struct TokenSelectionView: View {
                 Button(action: {
                     self.chainDetailView.sheetType = nil
                 }) {
-                    Text("Done")
+                    Text("Save")
                         .foregroundColor(.blue)
                 }
             }
             ToolbarItem(placement: .principal) {
                 ZStack(alignment: .trailing) {
                     HStack {
-                        TextField(NSLocalizedString("search", comment: "Search"), text: $tokenViewModel.searchText)
+                        TextField(NSLocalizedString("Search", comment: "Search").toFormattedTitleCase(), text: $tokenViewModel.searchText)
                             .foregroundColor(.neutral0)
                             .submitLabel(.next)
                             .textInputAutocapitalization(.never)
