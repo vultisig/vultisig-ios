@@ -324,6 +324,7 @@
 		DED05FE62BBB82F300E0496C /* CosmosAccountsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED05FE52BBB82F300E0496C /* CosmosAccountsResponse.swift */; };
 		DED4D6192C1BCDE10034CD3B /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = DED4D6182C1BCDE10034CD3B /* SwiftProtobuf */; };
 		DED4D61C2C1BD1E70034CD3B /* walletcore in Frameworks */ = {isa = PBXBuildFile; productRef = DED4D61B2C1BD1E70034CD3B /* walletcore */; };
+		DED4D6522C1BDC5C0034CD3B /* walletcore in Frameworks */ = {isa = PBXBuildFile; productRef = DED4D6512C1BDC5C0034CD3B /* walletcore */; };
 		DEE2D8722C0D37A900D2F4C3 /* VaultDefaultCoinService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */; };
 		DEEADCF72B916676007978DE /* Solana.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEADCF62B916676007978DE /* Solana.swift */; };
 		DEEDAEE12B8AF7EF005170E8 /* evm.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEDAEE02B8AF7EF005170E8 /* evm.swift */; };
@@ -721,6 +722,7 @@
 				DED4D61C2C1BD1E70034CD3B /* walletcore in Frameworks */,
 				DE8AD7402BC649A600339775 /* Tss.xcframework in Frameworks */,
 				D9A22EB72B667C41007281BF /* Mediator in Frameworks */,
+				DED4D6522C1BDC5C0034CD3B /* walletcore in Frameworks */,
 				DE49A1B52B6A1088000F3AFB /* CodeScanner in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1678,6 +1680,7 @@
 				DE3D44AC2BD2445100BD64CD /* CryptoSwift */,
 				DED4D6182C1BCDE10034CD3B /* SwiftProtobuf */,
 				DED4D61B2C1BD1E70034CD3B /* walletcore */,
+				DED4D6512C1BDC5C0034CD3B /* walletcore */,
 			);
 			productName = voltixApp;
 			productReference = DE49A1632B65F6D9000F3AFB /* VultisigApp.app */;
@@ -1762,7 +1765,7 @@
 				DEEDAEE62B8B50A4005170E8 /* XCRemoteSwiftPackageReference "BigInt" */,
 				DEFF59022BD23A12005DFDF9 /* XCRemoteSwiftPackageReference "CryptoSwift" */,
 				DEB63FB72C1BC4D7007CC543 /* XCRemoteSwiftPackageReference "swift-protobuf" */,
-				DED4D61A2C1BD1E70034CD3B /* XCLocalSwiftPackageReference "walletcore" */,
+				DED4D6502C1BDC5C0034CD3B /* XCRemoteSwiftPackageReference "walletcore-spm" */,
 			);
 			productRefGroup = DE49A1642B65F6D9000F3AFB /* Products */;
 			projectDirPath = "";
@@ -2345,7 +2348,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -2397,7 +2400,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -2547,10 +2550,6 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../Mediator;
 		};
-		DED4D61A2C1BD1E70034CD3B /* XCLocalSwiftPackageReference "walletcore" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = walletcore;
-		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
@@ -2568,6 +2567,14 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 1.26.0;
+			};
+		};
+		DED4D6502C1BDC5C0034CD3B /* XCRemoteSwiftPackageReference "walletcore-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/vultisig/walletcore-spm.git";
+			requirement = {
+				kind = exactVersion;
+				version = 4.0.44;
 			};
 		};
 		DEEDAEE62B8B50A4005170E8 /* XCRemoteSwiftPackageReference "BigInt" */ = {
@@ -2614,6 +2621,11 @@
 		};
 		DED4D61B2C1BD1E70034CD3B /* walletcore */ = {
 			isa = XCSwiftPackageProductDependency;
+			productName = walletcore;
+		};
+		DED4D6512C1BDC5C0034CD3B /* walletcore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DED4D6502C1BDC5C0034CD3B /* XCRemoteSwiftPackageReference "walletcore-spm" */;
 			productName = walletcore;
 		};
 		DEEDAEE72B8B50A4005170E8 /* BigInt */ = {
