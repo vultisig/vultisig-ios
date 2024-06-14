@@ -140,6 +140,11 @@ final class BlockChainService {
     func normalizeGasLimit(coin: Coin, action: Action) -> BigInt {
         switch action {
         case .transfer:
+            
+            if coin.chain == .arbitrum {
+                return EVMHelper.defaultERC20TransferGasUnit.description.toBigInt()
+            }
+            
             return BigInt(coin.feeDefault) ?? 0
         case .swap:
             return BigInt(EVMHelper.defaultETHSwapGasUnit)
