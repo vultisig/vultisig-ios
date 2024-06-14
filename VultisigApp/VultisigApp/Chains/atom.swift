@@ -1,10 +1,3 @@
-//
-//  atom.swift
-//  VultisigApp
-//
-//  Created by Johnny Luo on 1/4/2024.
-//
-
 import Foundation
 import WalletCore
 import Tss
@@ -72,8 +65,30 @@ class ATOMHelper {
             return .failure(HelperError.runtimeError("fail to get plan"))
         }
     }
+    
+    func createProposalJSON(title: String, deposit: String, summary: String, contentTitle: String, contentDescription: String, authority: String) -> String {
+        return """
+        {
+            "title": "\(title)",
+            "deposit": "\(deposit)",
+            "summary": "\(summary)",
+            "messages": [
+                {
+                    "@type": "/cosmos.gov.v1.MsgExecLegacyContent",
+                    "content": {
+                        "@type": "/cosmos.gov.v1beta1.TextProposal",
+                        "title": "\(contentTitle)",
+                        "description": "\(contentDescription)"
+                    },
+                    "authority": "\(authority)"
+                }
+            ]
+        }
+        """
+    }
+    
     func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
-        guard case .Cosmos(let accountNumber, let sequence , let gas) = keysignPayload.chainSpecific else {
+        guard case .Cosmos(let accountNumber, let sequence, let gas) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get account number and sequence"))
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
@@ -81,7 +96,7 @@ class ATOMHelper {
         }
         let coin = self.coinType
         
-        let input = CosmosSigningInput.with {
+        var input = CosmosSigningInput.with {
             $0.publicKey = pubKeyData
             $0.signingMode = .protobuf
             $0.chainID = coin.chainId
@@ -91,8 +106,35 @@ class ATOMHelper {
             if let memo = keysignPayload.memo {
                 $0.memo = memo
             }
-            $0.messages = [CosmosMessage.with {
-                $0.sendCoinsMessage = CosmosMessage.Send.with{
+            $0.fee = CosmosFee.with {
+                $0.gas = ATOMHelper.ATOMGasLimit
+                $0.amounts = [CosmosAmount.with {
+                    $0.denom = "uatom"
+                    $0.amount = String(gas)
+                }]
+            }
+        }
+        
+        if keysignPayload.memo == "/cosmos.gov.v1beta1.MsgSubmitProposal" {
+            // Example proposal details
+            let proposalJSON = createProposalJSON(
+                title: "Title of test proposal",
+                deposit: "2000000000000000000000adydx",
+                summary: "Summary of the test proposal",
+                contentTitle: "Title of TextProposal message",
+                contentDescription: "Description of TextProposal message",
+                authority: "dydx10d07y265gmmuvt4z0w9aw880jnsr700jnmapky"
+            )
+            
+            input.messages = [CosmosMessage.with {
+                $0.rawJsonMessage = CosmosMessage.RawJSON.with {
+                    $0.type = "/cosmos.gov.v1beta1.MsgSubmitProposal"
+                    $0.value = proposalJSON
+                }
+            }]
+        } else {
+            input.messages = [CosmosMessage.with {
+                $0.sendCoinsMessage = CosmosMessage.Send.with {
                     $0.fromAddress = keysignPayload.coin.address
                     $0.amounts = [CosmosAmount.with {
                         $0.denom = "uatom"
@@ -101,14 +143,6 @@ class ATOMHelper {
                     $0.toAddress = keysignPayload.toAddress
                 }
             }]
-            
-            $0.fee = CosmosFee.with {
-                $0.gas = ATOMHelper.ATOMGasLimit // gas limit
-                $0.amounts = [CosmosAmount.with {
-                    $0.denom = "uatom"
-                    $0.amount = String(gas)
-                }]
-            }
         }
         
         do {
@@ -118,6 +152,7 @@ class ATOMHelper {
             return .failure(HelperError.runtimeError("fail to get plan"))
         }
     }
+    
     func getPreSignedImageHash(keysignPayload: KeysignPayload) -> Result<[String], Error> {
         let result = getPreSignedInputData(keysignPayload: keysignPayload)
         switch result {
@@ -135,10 +170,9 @@ class ATOMHelper {
     }
     
     func getSignedTransaction(vaultHexPubKey: String,
-                                     vaultHexChainCode: String,
-                                     keysignPayload: KeysignPayload,
-                                     signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error>
-    {
+                              vaultHexChainCode: String,
+                              keysignPayload: KeysignPayload,
+                              signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error> {
         let result = getPreSignedInputData(keysignPayload: keysignPayload)
         switch result {
         case .success(let inputData):
@@ -150,10 +184,9 @@ class ATOMHelper {
     }
     
     func getSignedTransaction(vaultHexPubKey: String,
-                                     vaultHexChainCode: String,
-                                     inputData: Data,
-                                     signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error>
-    {
+                              vaultHexChainCode: String,
+                              inputData: Data,
+                              signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error> {
         let cosmosPublicKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: vaultHexPubKey, hexChainCode: vaultHexChainCode, derivePath: self.coinType.derivationPath())
         guard let pubkeyData = Data(hexString: cosmosPublicKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)

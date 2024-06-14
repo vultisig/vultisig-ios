@@ -83,7 +83,8 @@ class DydxHelper {
         }
         let coin = self.coinType
         
-        let input = CosmosSigningInput.with {
+        var x = "/cosmos.gov.v1beta1.MsgSubmitProposal"
+        var input = CosmosSigningInput.with {
             $0.publicKey = pubKeyData
             $0.signingMode = .protobuf
             $0.chainID = coin.chainId
@@ -93,16 +94,6 @@ class DydxHelper {
             if let memo = keysignPayload.memo {
                 $0.memo = memo
             }
-            $0.messages = [CosmosMessage.with {
-                $0.sendCoinsMessage = CosmosMessage.Send.with{
-                    $0.fromAddress = keysignPayload.coin.address
-                    $0.amounts = [CosmosAmount.with {
-                        $0.denom = "adydx"
-                        $0.amount = String(keysignPayload.toAmount)
-                    }]
-                    $0.toAddress = keysignPayload.toAddress
-                }
-            }]
             
             $0.fee = CosmosFee.with {
                 $0.gas = 200000 // gas limit
@@ -112,6 +103,37 @@ class DydxHelper {
                 }]
             }
         }
+        
+        if x == "/cosmos.gov.v1beta1.MsgSubmitProposal" {
+            // Example proposal details
+            let proposalJSON = createProposalJSON(
+                title: "Title of test proposal",
+                deposit: "2000000000000000000000adydx",
+                summary: "Summary of the test proposal",
+                contentTitle: "Title of TextProposal message",
+                contentDescription: "Description of TextProposal message",
+                authority: "dydx10d07y265gmmuvt4z0w9aw880jnsr700jnmapky"
+            )
+            
+            input.messages = [CosmosMessage.with {
+                $0.rawJsonMessage = CosmosMessage.RawJSON.with {
+                    $0.type = "/cosmos.gov.v1.MsgExecLegacyContent"
+                    $0.value = proposalJSON
+                }
+            }]
+        }else {
+            input.messages = [CosmosMessage.with {
+                $0.sendCoinsMessage = CosmosMessage.Send.with{
+                    $0.fromAddress = keysignPayload.coin.address
+                    $0.amounts = [CosmosAmount.with {
+                        $0.denom = "adydx"
+                        $0.amount = String(keysignPayload.toAmount)
+                    }]
+                    $0.toAddress = keysignPayload.toAddress
+                }
+            }]
+        }
+        
         
         print(input.debugDescription)
         
@@ -195,6 +217,27 @@ class DydxHelper {
         } catch {
             return .failure(HelperError.runtimeError("fail to get signed transaction,error:\(error.localizedDescription)"))
         }
+    }
+    
+    func createProposalJSON(title: String, deposit: String, summary: String, contentTitle: String, contentDescription: String, authority: String) -> String {
+        return """
+            {
+                "title": "\(title)",
+                "deposit": "\(deposit)",
+                "summary": "\(summary)",
+                "messages": [
+                    {
+                        "@type": "/cosmos.gov.v1.MsgExecLegacyContent",
+                        "content": {
+                            "@type": "/cosmos.gov.v1beta1.TextProposal",
+                            "title": "\(contentTitle)",
+                            "description": "\(contentDescription)"
+                        },
+                        "authority": "\(authority)"
+                    }
+                ]
+            }
+            """
     }
 }
 
