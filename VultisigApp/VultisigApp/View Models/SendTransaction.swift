@@ -33,7 +33,7 @@ class SendTransaction: ObservableObject, Hashable {
         coin.address
     }
     
-    var isAmountExceeded: Bool {
+    func isAmountExceeded(_ evmFee: BigInt) -> Bool {
         
         let totalBalance = BigInt(coin.rawBalance) ?? BigInt.zero
         
@@ -41,8 +41,8 @@ class SendTransaction: ObservableObject, Hashable {
         if coin.isNativeToken {
             gasInt = BigInt(gas) ?? BigInt.zero
             if coin.chainType == .EVM {
-                if let gasLimitBigInt = BigInt(coin.feeDefault) {
-                    gasInt = gasInt * gasLimitBigInt
+                if evmFee > 0 {
+                    gasInt = evmFee
                 }
             }
         }

@@ -67,28 +67,13 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             }
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain, .zksync:
             Task {
-                do {
-                    if tx.coin.isNativeToken {
-                        let service = try EvmServiceFactory.getService(forCoin: tx.coin)
-                        let (baseFee, priorityFee,_) = try await service.getGasInfo(fromAddress: tx.fromAddress)
-                        
-                        guard let gasLimitBigInt = BigInt(tx.coin.feeDefault) else {
-                            print("Invalid gas limit")
-                            return
-                        }
-                        
-                        let gasPriceWei = baseFee + priorityFee
-                        
-                        let totalFeeWei: BigInt = gasLimitBigInt * gasPriceWei
-                        
-                        tx.amount = "\(tx.coin.getMaxValue(totalFeeWei))"
-                    } else {
-                        tx.amount = tx.coin.balanceString
-                    }
-                } catch {
+                if tx.coin.isNativeToken {
+                    let totalFeeWei = await getEvmFee(tx: tx)
+                    tx.amount = "\(tx.coin.getMaxValue(totalFeeWei))"
+                } else {
                     tx.amount = tx.coin.balanceString
-                    print("Failed to get EVM balance, error: \(error.localizedDescription)")
                 }
+                
                 
                 await convertToFiat(newValue: tx.amount, tx: tx)
                 isLoading = false
@@ -214,7 +199,12 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             return isValidForm
         }
         
-        if tx.isAmountExceeded {
+        var feeEvm = BigInt.zero
+        if tx.coin.chainType == .EVM {
+            feeEvm = await getEvmFee(tx: tx)
+        }
+        
+        if tx.isAmountExceeded(feeEvm) {
             
             errorMessage = "walletBalanceExceededError"
             showAlert = true
@@ -253,6 +243,36 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         self.mediator.stop()
         logger.info("mediator server stopped.")
     }
+    
+    private func getEvmFee(tx: SendTransaction) async -> BigInt  {
+        
+        do {
+            if tx.coin.isNativeToken {
+                let service = try EvmServiceFactory.getService(forCoin: tx.coin)
+                let (baseFee, priorityFee,_) = try await service.getGasInfo(fromAddress: tx.fromAddress)
+                
+                
+                let gasLimit = try await service.estimateGasForEthTransaction(senderAddress: tx.coin.address, recipientAddress: tx.toAddress, value: tx.amountInRaw, memo: tx.memo)
+                
+                print("gas limit \(gasLimit)")
+                
+                guard let gasLimitBigInt = BigInt(tx.coin.feeDefault) else {
+                    print("Invalid gas limit")
+                    return .zero
+                }
+                
+                let gasPriceWei = baseFee + priorityFee
+                
+                let totalFeeWei: BigInt = gasLimitBigInt * gasPriceWei
+                
+                return totalFeeWei
+            }
+        } catch {
+            print(error.localizedDescription)
+        }
+        return .zero
+    }
+    
     
     private func getTransactionPlan(tx: SendTransaction, key:String) -> TW_Bitcoin_Proto_TransactionPlan? {
         guard let utxoInfo = utxo.blockchairData.get(key)?.selectUTXOsForPayment(amountNeeded: Int64(tx.amountInCoinDecimal)).map({
