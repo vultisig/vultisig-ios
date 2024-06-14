@@ -36,21 +36,7 @@ struct CoinSelectionCell: View {
     }
     
     var image: some View {
-        Group {
-            if !asset.logo.isEmpty, UIImage(named: asset.logo) != nil {
-                Image(asset.logo)
-                    .resizable()
-                    .frame(width: 32, height: 32)
-                    .cornerRadius(100)
-            } else {
-                Text(String(asset.ticker.prefix(1)).uppercased())
-                    .font(.body16MontserratBold)
-                    .frame(width: 32, height: 32)
-                    .background(Color.white)
-                    .foregroundColor(.blue600)
-                    .cornerRadius(100)
-            }
-        }
+        AsyncImageView(logo: asset.logo, size: CGSize(width: 32, height: 32), ticker: asset.ticker, tokenChainLogo: asset.tokenChainLogo)
     }
 
     var text: some View {

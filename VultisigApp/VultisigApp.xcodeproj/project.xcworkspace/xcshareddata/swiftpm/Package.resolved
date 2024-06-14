@@ -37,12 +37,30 @@
       }
     },
     {
+      "identity" : "swift-protobuf",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-protobuf.git",
+      "state" : {
+        "revision" : "9f0c76544701845ad98716f3f6a774a892152bcb",
+        "version" : "1.26.0"
+      }
+    },
+    {
       "identity" : "swifter",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/httpswift/swifter.git",
       "state" : {
         "revision" : "9483a5d459b45c3ffd059f7b55f9638e268632fd",
         "version" : "1.5.0"
+      }
+    },
+    {
+      "identity" : "walletcore-spm",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/vultisig/walletcore-spm.git",
+      "state" : {
+        "revision" : "ebc125f2a4676b3f4a1c471b23627d704987af80",
+        "version" : "4.0.44"
       }
     }
   ],

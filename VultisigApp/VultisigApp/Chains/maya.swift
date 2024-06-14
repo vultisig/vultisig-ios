@@ -96,8 +96,10 @@ enum MayaChainHelper {
                     $0.ticker = "CACAO"
                     $0.synth = false
                 }
-                $0.amount = String(keysignPayload.toAmount)
-                $0.decimals = Int64(keysignPayload.coin.decimals)
+                if keysignPayload.toAmount > 0 {
+                    $0.amount = String(keysignPayload.toAmount)
+                    $0.decimals = Int64(keysignPayload.coin.decimals)
+                }
             }
             message = [CosmosMessage.with {
                 $0.thorchainDepositMessage = CosmosMessage.THORChainDeposit.with {
