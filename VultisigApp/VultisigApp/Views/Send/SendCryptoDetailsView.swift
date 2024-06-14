@@ -131,8 +131,33 @@ struct SendCryptoDetailsView: View {
     
     var amountField: some View {
         VStack(spacing: 8) {
-            getTitle(for: "amount")
+            HStack {
+                getTitle(for: "amount")
+                Spacer()
+                percentageButtons
+            }
+            
             textField
+        }
+    }
+    
+    var percentageButtons: some View {
+        HStack(spacing: 12) {
+            Button {
+                sendCryptoViewModel.setMaxValues(tx: tx, percentage: 25)
+                let max = tx.amount
+                tx.amount = String((Double(max) ?? 0)/4)
+            } label: {
+                getPercentageCell(for: "25")
+            }
+
+            Button {
+                sendCryptoViewModel.setMaxValues(tx: tx, percentage: 50)
+                let max = tx.amount
+                tx.amount = String((Double(max) ?? 0)/2)
+            } label: {
+                getPercentageCell(for: "50")
+            }
         }
     }
     
@@ -218,6 +243,16 @@ struct SendCryptoDetailsView: View {
         .font(.body14MontserratMedium)
         .foregroundColor(.neutral0)
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
+    private func getPercentageCell(for text: String) -> some View {
+        Text(text + "%")
+            .font(.body12Menlo)
+            .foregroundColor(.neutral0)
+            .padding(.vertical, 6)
+            .padding(.horizontal, 20)
+            .background(Color.blue600)
+            .cornerRadius(6)
     }
     
     private func setData() {
