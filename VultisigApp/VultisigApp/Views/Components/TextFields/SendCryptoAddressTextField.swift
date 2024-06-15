@@ -19,7 +19,12 @@ struct SendCryptoAddressTextField: View {
     
     @State var showScanner = false
     @State var showImagePicker = false  // State for showing the ImagePicker
+    
+#if os(iOS)
     @State var selectedImage: UIImage?  // Store the selected image
+#elseif os(macOS)
+    @State var selectedImage: NSImage?
+#endif
     
     var body: some View {
         ZStack(alignment: .trailing) {
@@ -63,10 +68,12 @@ struct SendCryptoAddressTextField: View {
             ))
             .foregroundColor(.neutral0)
             .submitLabel(.next)
-            .textInputAutocapitalization(.never)
             .disableAutocorrection(true)
+#if os(iOS)
             .keyboardType(.default)
+            .textInputAutocapitalization(.never)
             .textContentType(.oneTimeCode)
+#endif
             
             pasteButton
             scanButton
@@ -135,6 +142,7 @@ struct SendCryptoAddressTextField: View {
     }
     
     private func pasteAddress() {
+#if os(iOS)
         if let clipboardContent = UIPasteboard.general.string {
             tx.toAddress = clipboardContent
             
@@ -142,6 +150,7 @@ struct SendCryptoAddressTextField: View {
                 validateAddress(clipboardContent)
             }
         }
+#endif
     }
     
     private func handleImageQrCode(image: UIImage) {

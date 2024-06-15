@@ -31,8 +31,10 @@ struct ContentView: View {
                         createVaultView
                     }
                 }
+#if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
                 .navigationBarTitleTextColor(.neutral0)
+#endif
             }
             .onOpenURL { incomingURL in
                 deeplinkViewModel.extractParameters(incomingURL, vaults: vaults)

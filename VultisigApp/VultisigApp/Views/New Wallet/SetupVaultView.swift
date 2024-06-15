@@ -28,6 +28,10 @@ struct SetupVaultView: View {
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("setup", comment: "Setup title"))
+        .onAppear {
+            setData()
+        }
+#if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -37,9 +41,7 @@ struct SetupVaultView: View {
                 NavigationHelpButton()
             }
         }
-        .onAppear {
-            setData()
-        }
+#endif
     }
     
     var view: some View {

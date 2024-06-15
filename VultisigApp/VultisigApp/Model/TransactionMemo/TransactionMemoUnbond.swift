@@ -109,6 +109,7 @@ class TransactionMemoUnbond: TransactionMemoAddressable, ObservableObject {
                     set: { self.amountValid = $0 }
                 )
             )
+#if os(iOS)
             TransactionMemoAddressTextField(
                 memo: self,
                 addressKey: "provider",
@@ -118,6 +119,7 @@ class TransactionMemoUnbond: TransactionMemoAddressable, ObservableObject {
                     set: { self.providerValid = $0 }
                 )
             )
+#endif
         })
     }
 }

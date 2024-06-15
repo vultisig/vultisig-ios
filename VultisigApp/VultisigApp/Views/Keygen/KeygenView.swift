@@ -40,6 +40,10 @@ struct KeygenView: View {
         .navigationDestination(isPresented: $viewModel.isLinkActive) {
             HomeView(selectedVault: vault, showVaultsList: false, shouldJoinKeygen: false)
         }
+        .task {
+            await viewModel.startKeygen(context: context)
+        }
+#if os(iOS)
         .onAppear {
             UIApplication.shared.isIdleTimerDisabled = true
             setData()
@@ -47,9 +51,7 @@ struct KeygenView: View {
         .onDisappear(){
             UIApplication.shared.isIdleTimerDisabled = false
         }
-        .task {
-            await viewModel.startKeygen(context: context)
-        }
+#endif
     }
     
     var content: some View {
