@@ -85,24 +85,30 @@ struct KeysignPayload: Codable, Hashable {
     }
     
     func getKeysignMessages(vault: Vault) -> Result<[String], Error> {
-        if let swapPayload {
-            switch swapPayload {
-            case .thorchain(let payload):
+        do {
+            var messages: [String] = []
+
+            if let approvePayload {
                 let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-                return swaps.getPreSignedImageHash(swapPayload: payload, keysignPayload: self)
-            case .oneInch(let payload):
-                let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-                return swaps.getPreSignedImageHash(payload: payload, keysignPayload: self)
-            case .mayachain:
-                break // No op - Regular transaction with memo
+                messages += try swaps.getPreSignedApproveImageHash(approvePayload: approvePayload, keysignPayload: self)
             }
+
+            if let swapPayload {
+                switch swapPayload {
+                case .thorchain(let payload):
+                    let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                    messages += try swaps.getPreSignedImageHash(swapPayload: payload, keysignPayload: self)
+                case .oneInch(let payload):
+                    let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                    messages += try swaps.getPreSignedImageHash(payload: payload, keysignPayload: self)
+                case .mayachain:
+                    break // No op - Regular transaction with memo
+                }
+            }
+        } catch {
+            return .failure(error)
         }
-        
-        if let approvePayload {
-            let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-            return swaps.getPreSignedApproveImageHash(approvePayload: approvePayload, keysignPayload: self)
-        }
-        
+
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             guard let coinType = CoinType.from(string: coin.chain.name.replacingOccurrences(of: "-", with: "")) else {

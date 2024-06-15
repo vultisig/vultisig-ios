@@ -15,20 +15,16 @@ struct OneInchSwaps {
     let vaultHexPublicKey: String
     let vaultHexChainCode: String
 
-    func getPreSignedImageHash(payload: OneInchSwapPayload, keysignPayload: KeysignPayload) -> Result<[String], Error> {
+    func getPreSignedImageHash(payload: OneInchSwapPayload, keysignPayload: KeysignPayload) throws -> [String] {
         let result = getPreSignedInputData(quote: payload.quote, keysignPayload: keysignPayload)
 
         switch result {
         case .success(let inputData):
-            do {
-                let hashes = TransactionCompiler.preImageHashes(coinType: payload.fromCoin.coinType, txInputData: inputData)
-                let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
-                return .success([preSigningOutput.dataHash.hexString])
-            } catch {
-                return .failure(error)
-            }
+            let hashes = TransactionCompiler.preImageHashes(coinType: payload.fromCoin.coinType, txInputData: inputData)
+            let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+            return [preSigningOutput.dataHash.hexString]
         case .failure(let error):
-            return .failure(error)
+            throw error
         }
     }
 
