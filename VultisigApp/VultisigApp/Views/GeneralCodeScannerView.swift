@@ -6,8 +6,11 @@
 //
 
 import SwiftUI
-import CodeScanner
 import SwiftData
+
+#if os(iOS)
+import CodeScanner
+#endif
 
 struct GeneralCodeScannerView: View {
     @Binding var showSheet: Bool
@@ -23,7 +26,9 @@ struct GeneralCodeScannerView: View {
     
     var body: some View {
         ZStack(alignment: .bottom) {
+#if os(iOS)
             CodeScannerView(codeTypes: [.qr], isGalleryPresented: $isGalleryPresented, completion: handleScan)
+#endif
             galleryButton
         }
         .ignoresSafeArea()

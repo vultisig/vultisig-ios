@@ -30,6 +30,7 @@ struct ChainDetailView: View {
                 Loader()
             }
         }
+#if os(iOS)
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString(group.name, comment: ""))
         .navigationBarTitleDisplayMode(.inline)
@@ -50,6 +51,7 @@ struct ChainDetailView: View {
                 }
             }
         }
+#endif
         .sheet(isPresented: Binding<Bool>(
             get: { sheetType != nil },
             set: { newValue in

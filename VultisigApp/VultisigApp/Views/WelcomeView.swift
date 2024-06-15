@@ -11,10 +11,12 @@ struct WelcomeView: View {
             Background()
             view
         }
-        .toolbar(.hidden, for: .navigationBar)
         .onAppear {
             setData()
         }
+#if os(iOS)
+        .toolbar(.hidden, for: .navigationBar)
+#endif
     }
     
     var view: some View {

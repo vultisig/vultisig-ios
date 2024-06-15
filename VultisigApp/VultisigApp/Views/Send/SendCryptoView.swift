@@ -24,19 +24,7 @@ struct SendCryptoView: View {
         content
             .navigationBarBackButtonHidden(true)
             .navigationTitle(NSLocalizedString(sendCryptoViewModel.currentTitle, comment: "SendCryptoView title"))
-            .navigationBarTitleDisplayMode(.inline)
             .ignoresSafeArea(.keyboard)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    backButton
-                }
-                
-                if sendCryptoViewModel.currentIndex==3 {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
-                    }
-                }
-            }
             .onAppear {
                 Task {
                     await setData()
@@ -50,6 +38,20 @@ struct SendCryptoView: View {
             .onDisappear(){
                 sendCryptoViewModel.stopMediator()
             }
+#if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    backButton
+                }
+                
+                if sendCryptoViewModel.currentIndex==3 {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
+                    }
+                }
+            }
+#endif
     }
     
     var content: some View {
@@ -61,9 +63,11 @@ struct SendCryptoView: View {
                 loader
             }
         }
+#if os(iOS)
         .onTapGesture {
             hideKeyboard()
         }
+#endif
     }
     
     var view: some View {

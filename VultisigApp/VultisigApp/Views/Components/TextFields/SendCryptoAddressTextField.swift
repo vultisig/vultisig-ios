@@ -7,8 +7,11 @@
 
 import SwiftUI
 import OSLog
-import CodeScanner
 import UniformTypeIdentifiers
+
+#if os(iOS)
+import CodeScanner
+#endif
 
 struct SendCryptoAddressTextField: View {
     @ObservedObject var tx: SendTransaction

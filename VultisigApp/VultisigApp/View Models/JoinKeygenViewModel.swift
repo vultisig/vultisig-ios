@@ -7,9 +7,11 @@
 
 import Foundation
 import OSLog
-import CodeScanner
 
-import UIKit
+#if os(iOS)
+import CodeScanner
+#endif
+
 import CoreImage
 import Vision
 

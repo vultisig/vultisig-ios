@@ -5,7 +5,10 @@
 
 import Foundation
 import OSLog
+
+#if os(iOS)
 import CodeScanner
+#endif
 
 enum JoinKeysignStatus {
     case DiscoverSigningMsg

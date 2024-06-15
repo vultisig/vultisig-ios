@@ -1,7 +1,10 @@
 import SwiftUI
 import OSLog
-import CodeScanner
 import UniformTypeIdentifiers
+
+#if os(iOS)
+import CodeScanner
+#endif
 
 struct AddressTextField: View {
     @Binding var contractAddress: String

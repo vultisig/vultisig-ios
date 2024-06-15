@@ -9,7 +9,6 @@ import CryptoKit
 import Foundation
 import OSLog
 import SwiftUI
-import UIKit
 
 enum Utils {
     static let logger = Logger(subsystem: "util", category: "network")

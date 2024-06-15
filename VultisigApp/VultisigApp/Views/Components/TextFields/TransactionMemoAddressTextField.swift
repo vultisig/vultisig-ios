@@ -7,9 +7,12 @@
 import SwiftUI
 import Foundation
 import OSLog
-import CodeScanner
 import UniformTypeIdentifiers
 import WalletCore
+
+#if os(iOS)
+import CodeScanner
+#endif
 
 struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: View {
     @ObservedObject var memo: MemoType
@@ -80,10 +83,12 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
             ))
             .foregroundColor(.neutral0)
             .submitLabel(.next)
-            .textInputAutocapitalization(.never)
             .disableAutocorrection(true)
+#if os(iOS)
+            .textInputAutocapitalization(.never)
             .keyboardType(.default)
             .textContentType(.oneTimeCode)
+#endif
             
             pasteButton
             scanButton
@@ -165,10 +170,12 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
     }
     
     private func pasteAddress() {
+#if os(iOS)
         if let clipboardContent = UIPasteboard.general.string {
             memo.addressFields[addressKey] = clipboardContent
             validateAddress(memo.addressFields[addressKey] ?? "")
         }
+#endif
     }
     
     private func handleImageQrCode(image: UIImage) {

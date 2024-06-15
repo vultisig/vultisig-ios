@@ -7,7 +7,10 @@ import OSLog
 import SwiftUI
 import UniformTypeIdentifiers
 import SwiftData
+
+#if os(iOS)
 import CodeScanner
+#endif
 
 struct JoinKeygenView: View {
     let vault: Vault

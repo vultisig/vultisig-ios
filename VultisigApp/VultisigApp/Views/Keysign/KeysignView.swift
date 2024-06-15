@@ -38,8 +38,10 @@ struct KeysignView: View {
             }
         }
         .onAppear {
-            UIApplication.shared.isIdleTimerDisabled = true
             setData()
+#if os(iOS)
+            UIApplication.shared.isIdleTimerDisabled = true
+#endif
         }
         .task {
             await viewModel.startKeysign()
@@ -49,7 +51,9 @@ struct KeysignView: View {
         }
         .onDisappear(){
             viewModel.stopMessagePuller()
+#if os(iOS)
             UIApplication.shared.isIdleTimerDisabled = false
+#endif
         }
     }
     

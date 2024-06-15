@@ -6,7 +6,10 @@
 //
 
 import SwiftUI
+
+#if os(iOS)
 import CodeScanner
+#endif
 
 struct QRCodeScannerView: View {
     @Binding var showScanner: Bool
@@ -58,7 +61,10 @@ struct QRCodeScannerView: View {
     
     var codeScanner: some View {
         ZStack(alignment: .bottom) {
+#if os(iOS)
             CodeScannerView(codeTypes: [.qr], isGalleryPresented: $isGalleryPresented, completion: handleScan)
+#endif
+
             galleryButton
         }
     }
