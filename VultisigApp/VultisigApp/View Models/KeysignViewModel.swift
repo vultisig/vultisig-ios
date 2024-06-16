@@ -94,7 +94,6 @@ class KeysignViewModel: ObservableObject {
         }
         for msg in messsageToSign {
             do {
-                try await verifyAllowance()
                 try await keysignOneMessageWithRetry(msg: msg,attempt: 1)
             } catch {
                 logger.error("TSS keysign failed, error: \(error.localizedDescription)")
@@ -196,27 +195,6 @@ class KeysignViewModel: ObservableObject {
         messagePuller?.stop()
     }
     
-    func verifyAllowance() async throws {
-        guard let swapPayload = keysignPayload?.swapPayload,
-              let spender = swapPayload.router,
-                let fromCoin = keysignPayload?.coin, fromCoin.shouldApprove else { return }
-        
-        do {
-            let service = try EvmServiceFactory.getService(forCoin: fromCoin)
-            let allowance = try await service.fetchAllowance(
-                contractAddress: fromCoin.contractAddress,
-                owner: fromCoin.address,
-                spender: spender
-            )
-            
-            guard allowance >= swapPayload.fromAmount else {
-                throw KeysignError.noErc20Allowance
-            }
-        } catch {
-            throw KeysignError.networkError
-        }
-    }
-    
     func tssKeysign(service: TssServiceImpl, req: TssKeysignRequest, keysignType: KeyType) async throws -> TssKeysignResponse {
         let t = Task.detached(priority: .high) {
             switch keysignType {
@@ -229,28 +207,50 @@ class KeysignViewModel: ObservableObject {
         return try await t.value
     }
     
-    func getSignedTransaction(keysignPayload: KeysignPayload) -> Result<SignedTransactionResult, Error> {
+    func getSignedTransaction(keysignPayload: KeysignPayload) -> Result<SignedTransactionType, Error> {
+
+        var signedTransactions: [SignedTransactionResult] = []
+
+        if let approvePayload = keysignPayload.approvePayload {
+            let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+            let result = swaps.getSignedApproveTransaction(approvePayload: approvePayload, keysignPayload: keysignPayload, signatures: signatures)
+            switch result {
+            case .success(let transaction):
+                signedTransactions.append(transaction)
+            case .failure(let error):
+                return .failure(error)
+            }
+        }
+
         if let swapPayload = keysignPayload.swapPayload {
             switch swapPayload {
             case .thorchain(let payload):
                 let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
                 let result = swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures)
-                return result
+                switch result {
+                case .success(let transaction):
+                    signedTransactions.append(transaction)
+                case .failure(let error):
+                    return .failure(error)
+                }
             case .oneInch(let payload):
                 let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
                 let result = swaps.getSignedTransaction(payload: payload, keysignPayload: keysignPayload, signatures: signatures)
-                return result
+                switch result {
+                case .success(let transaction):
+                    signedTransactions.append(transaction)
+                case .failure(let error):
+                    return .failure(error)
+                }
             case .mayachain:
                 break // No op - Regular transaction with memo
             }
         }
-        
-        if let approvePayload = keysignPayload.approvePayload {
-            let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-            let result = swaps.getSignedApproveTransaction(approvePayload: approvePayload, keysignPayload: keysignPayload, signatures: signatures)
-            return result
+
+        if let signedTransactionType = SignedTransactionType(transactions: signedTransactions) {
+            return .success(signedTransactionType)
         }
-        
+
         switch keysignPayload.coin.chain.chainType {
         case .UTXO:
             let utxoHelper = UTXOChainsHelper(coin: keysignPayload.coin.coinType, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)

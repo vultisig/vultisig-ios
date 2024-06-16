@@ -105,6 +105,10 @@ struct KeysignPayload: Codable, Hashable {
                     break // No op - Regular transaction with memo
                 }
             }
+
+            if !messages.isEmpty {
+                return .success(messages)
+            }
         } catch {
             return .failure(error)
         }
