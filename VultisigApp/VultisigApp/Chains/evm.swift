@@ -92,9 +92,11 @@ class EVMHelper {
             return .failure(HelperError.runtimeError("fail to get Ethereum chain specific"))
         }
 
+        let incrementNonceValue: Int64 = keysignPayload.incrementNonce ? 1 : 0
+
         var input = signingInput
         input.chainID = Data(hexString: Int64(intChainID).hexString())!
-        input.nonce = Data(hexString: nonce.hexString())!
+        input.nonce = Data(hexString: (nonce + incrementNonceValue).hexString())!
 
         if let gas, let gasPrice {
             input.gasLimit = gas.serialize()

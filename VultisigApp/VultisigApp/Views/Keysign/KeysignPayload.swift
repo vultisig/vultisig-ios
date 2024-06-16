@@ -83,7 +83,11 @@ struct KeysignPayload: Codable, Hashable {
         let power = Decimal(sign: .plus, exponent: -coin.decimals, significand: 1)
         return "\(decimalAmount * power) \(coin.ticker)"
     }
-    
+
+    var incrementNonce: Bool {
+        return approvePayload != nil && swapPayload != nil
+    }
+
     func getKeysignMessages(vault: Vault) -> Result<[String], Error> {
         do {
             var messages: [String] = []
