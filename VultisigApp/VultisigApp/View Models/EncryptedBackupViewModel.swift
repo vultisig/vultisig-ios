@@ -91,6 +91,14 @@ class EncryptedBackupViewModel: ObservableObject {
     
     // Import
     func importFile(from url: URL) {
+        let success = url.startAccessingSecurityScopedResource()
+        defer { url.stopAccessingSecurityScopedResource() }
+        
+        guard success else {
+            alertMessage = "Permission denied for accessing the file."
+            showAlert = true
+            return
+        }
         do {
             let data = try Data(contentsOf: url)
             
@@ -110,7 +118,7 @@ class EncryptedBackupViewModel: ObservableObject {
         let alert = UIAlertController(title: NSLocalizedString("enterPassword", comment: ""), message: nil, preferredStyle: .alert)
         alert.addTextField { textField in
             textField.isSecureTextEntry = true
-            textField.placeholder = NSLocalizedString("password", comment: "")
+            textField.placeholder = NSLocalizedString("password", comment: "").capitalized
         }
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
             if let password = alert.textFields?.first?.text {
@@ -127,6 +135,14 @@ class EncryptedBackupViewModel: ObservableObject {
     }
     
     func importFileWithPassword(from url: URL, password: String) {
+        let success = url.startAccessingSecurityScopedResource()
+        defer { url.stopAccessingSecurityScopedResource() }
+        
+        guard success else {
+            alertMessage = "Permission denied for accessing the file."
+            showAlert = true
+            return
+        }
         do {
             let data = try Data(contentsOf: url)
             if let decryptedData = decrypt(data: data, password: password),

@@ -62,7 +62,7 @@ struct EditVaultView: View {
     var deviceName: some View {
         Text(vault.localPartyID)
             .padding(.top, 30)
-            .font(.body16MenloBold)
+            .font(.body16Menlo)
             .foregroundColor(.neutral0)
     }
     
@@ -78,7 +78,7 @@ struct EditVaultView: View {
         NavigationLink {
             BackupPasswordSetupView(vault: vault)
         } label: {
-            EditVaultCell(title: "backup", description: "backupVault", icon: "arrow.down.circle.fill")
+            EditVaultCell(title: "backup", description: "backupVault", icon: "icloud.and.arrow.up")
         }
     }
     
@@ -94,7 +94,7 @@ struct EditVaultView: View {
         NavigationLink {
             VaultDeletionConfirmView(vault: vault)
         } label: {
-            EditVaultCell(title: "delete", description: "deleteVault", icon: "trash.fill", isDestructive: true)
+            EditVaultCell(title: "delete", description: "deleteVault", icon: "trash", isDestructive: true)
         }
 
     }
@@ -103,7 +103,7 @@ struct EditVaultView: View {
         NavigationLink {
             SetupVaultView(tssType: .Reshare, vault: vault)
         } label: {
-            EditVaultCell(title: "reshare", description: "reshareVault", icon: "square.and.arrow.up.fill")
+            EditVaultCell(title: "reshare", description: "reshareVault", icon: "tray.and.arrow.up")
         }
     }
 }

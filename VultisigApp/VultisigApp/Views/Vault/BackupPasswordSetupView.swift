@@ -11,6 +11,7 @@ struct BackupPasswordSetupView: View {
     let vault: Vault
     
     @StateObject var backupViewModel = EncryptedBackupViewModel()
+    @State var verifyPassword: String = ""
     
     @Environment(\.dismiss) var dismiss
     
@@ -71,25 +72,24 @@ struct BackupPasswordSetupView: View {
     
     var passwordField: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(NSLocalizedString("passwordProtectBackup", comment: ""))
+            Text(NSLocalizedString("optionalPasswordProtectBackup", comment: ""))
                 .font(.body14MontserratMedium)
                 .foregroundColor(.neutral0)
             
             textfield
+            verifyTextfield
         }
         .padding(.horizontal, 16)
         .padding(.top, 30)
     }
     
     var textfield: some View {
-        SecureField(NSLocalizedString("enterPassword", comment: "").capitalized, text: $backupViewModel.encryptionPassword)
-            .font(.body16Menlo)
-            .foregroundColor(.neutral0)
-            .submitLabel(.done)
-            .padding(12)
-            .background(Color.blue600)
-            .cornerRadius(12)
-            .colorScheme(.dark)
+        HiddenTextField(placeholder: "enterPassword", password: $backupViewModel.encryptionPassword)
+            .padding(.top, 8)
+    }
+    
+    var verifyTextfield: some View {
+        HiddenTextField(placeholder: "verifyPassword", password: $verifyPassword)
     }
     
     var buttons: some View {
@@ -102,7 +102,7 @@ struct BackupPasswordSetupView: View {
     
     var saveButton: some View {
         Button {
-            backupViewModel.exportFile(vault)
+            handleSaveTap()
         } label: {
             FilledButton(title: "save")
         }
@@ -110,8 +110,7 @@ struct BackupPasswordSetupView: View {
     
     var skipButton: some View {
         Button {
-            backupViewModel.encryptionPassword = ""
-            backupViewModel.exportFile(vault)
+            handleSkipTap()
         } label: {
             OutlineButton(title: "skip")
         }
@@ -123,6 +122,29 @@ struct BackupPasswordSetupView: View {
             message: Text(NSLocalizedString(backupViewModel.alertMessage, comment: "")),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
+    }
+    
+    private func handleSaveTap() {
+        guard !backupViewModel.encryptionPassword.isEmpty && !verifyPassword.isEmpty else {
+            backupViewModel.alertTitle = "emptyField"
+            backupViewModel.alertMessage = "checkEmptyField"
+            backupViewModel.showAlert = true
+            return
+        }
+        
+        guard backupViewModel.encryptionPassword == verifyPassword else {
+            backupViewModel.alertTitle = "passwordMismatch"
+            backupViewModel.alertMessage = "verifyPasswordMismatch"
+            backupViewModel.showAlert = true
+            return
+        }
+        
+        backupViewModel.exportFile(vault)
+    }
+    
+    private func handleSkipTap() {
+        backupViewModel.encryptionPassword = ""
+        backupViewModel.exportFile(vault)
     }
 }
 

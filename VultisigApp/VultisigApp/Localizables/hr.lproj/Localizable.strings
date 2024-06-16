@@ -213,3 +213,9 @@
 "EdDSAKey" = "EdDSA ključ";
 "Selected" = "Odabrano";
 "searchResult" = "Rezultat pretraživanja";
+"verifyPassword" = "Potvrdite lozinku";
+"passwordMismatch" = "Lozinke se ne podudaraju";
+"verifyPasswordMismatch" = "Molimo vas provjerite da su vaše lozinke iste.";
+"emptyField" = "Prazno polje(a)";
+"checkEmptyField" = "Molimo provjerite da su sva polja ispunjena.";
+"optionalPasswordProtectBackup" = "Neobavezna zaštita lozinkom vašeg spremišta";

@@ -22,7 +22,7 @@
 "EdDSA" = "EdDSA";
 "backup" = "Backup";
 "error" = "Error";
-"backupVault" = "Backup your vault";
+"backupVault" = "Backup your vault share";
 "rename" = "Rename";
 "renameVault" = "Edit your vault name";
 "delete" = "Delete";
@@ -34,7 +34,6 @@
 "deleteVault" = "Delete your vault permanently";
 "deleteVaultTitle" = "Delete Vault";
 "deleteVaultDescription" = "This vault will be removed permanently";
-"backupVault" = "Backup your vault";
 "addNewVault" = "Add New Vault";
 "editVault" = "Edit Vault";
 "addressCopied" = "Address copied";
@@ -63,7 +62,7 @@
 "enterAmount" = "Enter Amount";
 "reshare" = "Reshare";
 "unknown" = "Unknown";
-"reshareVault" = "Reshare vault with a new committee";
+"reshareVault" = "Reshare vault with new committee";
 "pairWithOtherDevices" = "Pair with other devices:";
 "scanQrCode" = "Scan QR Code";
 "mainDevice" = "Main Device";
@@ -235,3 +234,9 @@
 "EdDSAKey" = "EdDSA Key";
 "Selected" = "Selected";
 "searchResult" = "Search Result";
+"verifyPassword" = "Verify Password";
+"passwordMismatch" = "Password Mismatch";
+"verifyPasswordMismatch" = "Please make sure your passwords match.";
+"emptyField" = "Empty Field(s)";
+"checkEmptyField" = "Please make sure all the fields are filled.";
+"optionalPasswordProtectBackup" = "Optional password protection of your Vault";

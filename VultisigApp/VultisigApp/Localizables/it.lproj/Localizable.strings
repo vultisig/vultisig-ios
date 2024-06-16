@@ -213,3 +213,9 @@
 "EdDSAKey" = "Chiave EdDSA";
 "Selected" = "Selezionato";
 "searchResult" = "Risultato della ricerca";
+"verifyPassword" = "Verifica la password";
+"passwordMismatch" = "Le password non corrispondono";
+"verifyPasswordMismatch" = "Assicurati che le tue password corrispondano.";
+"emptyField" = "Campo(i) vuoto(i)";
+"checkEmptyField" = "Assicurati che tutti i campi siano compilati.";
+"optionalPasswordProtectBackup" = "Protezione opzionale del tuo caveau con una password";

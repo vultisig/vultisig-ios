@@ -32,17 +32,18 @@ struct EditVaultCell: View {
         Image(systemName: icon)
             .font(.body24MontserratMedium)
             .foregroundColor(isDestructive ? .destructive : .neutral200)
+            .frame(width: 30)
     }
     
     var content: some View {
         VStack(alignment: .leading, spacing: 5) {
             Text(NSLocalizedString(title, comment: ""))
-                .font(.body16MenloBold)
+                .font(.body14Menlo)
                 .foregroundColor(isDestructive ? .destructive : .neutral0)
             
             Text(NSLocalizedString(description, comment: ""))
                 .font(.body12Menlo)
-                .foregroundColor(isDestructive ? .destructive : .neutral0)
+                .foregroundColor(isDestructive ? .destructive : .neutral300)
         }
     }
     
