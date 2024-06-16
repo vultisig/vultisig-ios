@@ -13,7 +13,9 @@ struct CoverView: View {
             Background()
             VultisigLogo()
         }
+#if os(iOS)
         .toolbar(.hidden, for: .navigationBar)
+#endif
     }
 }
 

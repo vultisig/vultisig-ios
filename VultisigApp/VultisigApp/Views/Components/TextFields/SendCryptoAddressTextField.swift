@@ -171,7 +171,6 @@ struct SendCryptoAddressTextField: View {
                 await sendCryptoViewModel.convertToFiat(newValue: amount, tx: tx)
             }
         }
-        
     }
 }
 

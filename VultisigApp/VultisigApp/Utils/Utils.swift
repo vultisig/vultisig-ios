@@ -207,23 +207,6 @@ enum Utils {
         input.utf8.map { String(format: "%02x", $0) }.joined()
     }
     
-    public static func generateQRCodeImage(from string: String) -> Image {
-        let context = CIContext()
-        let filter = CIFilter.qrCodeGenerator()
-        filter.message = Data(string.utf8)
-        
-        if let outputImage = filter.outputImage {
-            if let cgImage = context.createCGImage(outputImage, from: outputImage.extent) {
-                return Image(uiImage: UIImage(cgImage: cgImage))
-                    .interpolation(.none)
-            }
-        }
-        
-        let image = UIImage(systemName: "xmark.circle") ?? UIImage()
-        return Image(uiImage: image)
-            .interpolation(.none)
-    }
-    
     public static func getQrImage(data: Any?, size: CGFloat) -> Image {
         let context = CIContext()
         guard let qrFilter = CIFilter(name: "CIQRCodeGenerator") else {
@@ -270,93 +253,8 @@ enum Utils {
         return (address, amount, message)
     }
     
-    public static func handleQrCodeFromImage(result: Result<[URL], Error>) -> Data{
-        switch result {
-        case .success(let urls):
-            guard let url = urls.first else { return Data() }
-            let success = url.startAccessingSecurityScopedResource()
-            defer { url.stopAccessingSecurityScopedResource() }
-            
-            guard success else {
-                print("Failed to access URL")
-                return Data()
-            }
-            
-            if let imageData = try? Data(contentsOf: url),
-               let selectedImage = UIImage(data: imageData) {
-                let qrStrings = Utils.detectQRCode(selectedImage)
-                if qrStrings.isEmpty {
-                    print("No QR codes detected.")
-                } else {
-                    for qrString in qrStrings {
-                        return qrString.data(using: .utf8) ?? Data()
-                    }
-                }
-            } else {
-                print("Failed to load image from URL")
-            }
-            
-        case .failure(let error):
-            print("Error selecting file: \(error.localizedDescription)")
-        }
-        return Data()
-    }
-    
-    public static func handleQrCodeFromImage(image: UIImage) -> Data {
-        let qrStrings = detectQRCode(image)
-        if qrStrings.isEmpty {
-            print("No QR codes detected.")
-            return Data()
-        } else {
-            for qrString in qrStrings {
-                if let data = qrString.data(using: .utf8) {
-                    return data
-                }
-            }
-        }
-        return Data()
-    }
-    
-    public static func detectQRCode(_ image: UIImage?) -> [String] {
-        var detectedStrings = [String]()
-        guard let image = image, let ciImage = CIImage(image: image) else { return detectedStrings }
-        
-        let context = CIContext()
-        let options = [CIDetectorAccuracy: CIDetectorAccuracyHigh]
-        let qrDetector = CIDetector(ofType: CIDetectorTypeQRCode, context: context, options: options)
-        
-        if let features = qrDetector?.features(in: ciImage) {
-            for feature in features as! [CIQRCodeFeature] {
-                if let decodedString = feature.messageString {
-                    detectedStrings.append(decodedString)
-                }
-            }
-        }
-        
-        return detectedStrings
-    }
-    
     public static func isIOS() -> Bool {
         return true
-    }
-    
-    public static func getLocalDeviceIdentity() -> String {
-        let identifierForVendor = UIDevice.current.identifierForVendor?.uuidString
-        let parts = identifierForVendor?.components(separatedBy: "-")
-        return "\(getDeviceName())-\(parts?.last?.suffix(3) ?? "N/A")"
-    }
-    
-    public static func getDeviceName() -> String {
-        let device = UIDevice.current.name
-        let deviceName: String
-        
-        if ProcessInfo.processInfo.isiOSAppOnMac {
-            deviceName = "Mac"
-        }
-        else {
-            deviceName = device
-        }
-        return deviceName
     }
     
     public static func handleJsonDecodingError(_ error: Error) -> String {
@@ -528,8 +426,198 @@ enum Utils {
         let (data, _) = try await URLSession.shared.data(for: request)
         return data
     }
-    //RPC
     
+    public static func generateQRCodeImage(from string: String) -> Image {
+        let context = CIContext()
+        let filter = CIFilter.qrCodeGenerator()
+        filter.message = Data(string.utf8)
+        
+#if os(iOS)
+        if let outputImage = filter.outputImage {
+            if let cgImage = context.createCGImage(outputImage, from: outputImage.extent) {
+                return Image(uiImage: UIImage(cgImage: cgImage))
+                    .interpolation(.none)
+
+            }
+        }
+        
+        let image = UIImage(systemName: "xmark.circle") ?? UIImage()
+        return Image(uiImage: image)
+            .interpolation(.none)
+#elseif os(macOS)
+        if let outputImage = filter.outputImage {
+            if let cgImage = context.createCGImage(outputImage, from: outputImage.extent) {
+                return Image(nsImage: NSImage(cgImage: cgImage, size: CGSize(width: 1024, height: 1024)))
+                    .interpolation(.none)
+            }
+        }
+        
+        let image = NSImage(systemSymbolName: "xmark.circle", accessibilityDescription: nil) ?? NSImage()
+        return Image(nsImage: image)
+            .interpolation(.none)
+#endif
+    }
     
+#if os(iOS)
+    public static func handleQrCodeFromImage(image: UIImage) -> Data {
+        let qrStrings = detectQRCode(image)
+        if qrStrings.isEmpty {
+            print("No QR codes detected.")
+            return Data()
+        } else {
+            for qrString in qrStrings {
+                if let data = qrString.data(using: .utf8) {
+                    return data
+                }
+            }
+        }
+        return Data()
+    }
+
+    public static func detectQRCode(_ image: UIImage?) -> [String] {
+        var detectedStrings = [String]()
+        guard let image = image, let ciImage = CIImage(image: image) else { return detectedStrings }
+        
+        let context = CIContext()
+        let options = [CIDetectorAccuracy: CIDetectorAccuracyHigh]
+        let qrDetector = CIDetector(ofType: CIDetectorTypeQRCode, context: context, options: options)
+        
+        if let features = qrDetector?.features(in: ciImage) {
+            for feature in features as! [CIQRCodeFeature] {
+                if let decodedString = feature.messageString {
+                    detectedStrings.append(decodedString)
+                }
+            }
+        }
+        
+        return detectedStrings
+    }
     
+#elseif os(macOS)
+    public static func handleQrCodeFromImage(image: NSImage) -> Data {
+        let qrStrings = detectQRCode(image)
+        if qrStrings.isEmpty {
+            print("No QR codes detected.")
+            return Data()
+        } else {
+            for qrString in qrStrings {
+                if let data = qrString.data(using: .utf8) {
+                    return data
+                }
+            }
+        }
+        return Data()
+    }
+    
+    public static func detectQRCode(_ image: NSImage?) -> [String] {
+        var detectedStrings = [String]()
+        
+        guard let image = image else {
+            return detectedStrings
+        }
+        
+        var imageRect = CGRect(x: 0, y: 0, width: image.size.width, height: image.size.height)
+        let imageRef = image.cgImage(forProposedRect: &imageRect, context: nil, hints: nil)
+        
+        guard let ciImage = imageRef else {
+            return detectedStrings
+        }
+        
+        let context = CIContext()
+        let options = [CIDetectorAccuracy: CIDetectorAccuracyHigh]
+        let qrDetector = CIDetector(ofType: CIDetectorTypeQRCode, context: context, options: options)
+        
+        if let features = qrDetector?.features(in: CIImage(cgImage: ciImage)) {
+            for feature in features as! [CIQRCodeFeature] {
+                if let decodedString = feature.messageString {
+                    detectedStrings.append(decodedString)
+                }
+            }
+        }
+        
+        return detectedStrings
+    }
+
+    public static func getUniqueIdentifier() -> String {
+        let userDefaults = UserDefaults.standard
+        let uuidKey = "com.vultisig.wallet"
+
+        // Check if a UUID already exists in UserDefaults
+        if let uuid = userDefaults.string(forKey: uuidKey) {
+            return uuid
+        } else {
+            // Generate a new UUID and store it in UserDefaults
+            let newUUID = NSUUID().uuidString
+            userDefaults.set(newUUID, forKey: uuidKey)
+            return newUUID
+        }
+    }
+#endif
+    
+    public static func handleQrCodeFromImage(result: Result<[URL], Error>) -> Data{
+        switch result {
+        case .success(let urls):
+            guard let url = urls.first else { return Data() }
+            let success = url.startAccessingSecurityScopedResource()
+            defer { url.stopAccessingSecurityScopedResource() }
+            
+            guard success else {
+                print("Failed to access URL")
+                return Data()
+            }
+            
+#if os(iOS)
+            if let imageData = try? Data(contentsOf: url), let selectedImage = UIImage(data: imageData) {
+                let qrStrings = Utils.detectQRCode(selectedImage)
+            
+                if qrStrings.isEmpty {
+                    print("No QR codes detected.")
+                } else {
+                    for qrString in qrStrings {
+                        return qrString.data(using: .utf8) ?? Data()
+                    }
+                }
+            } else {
+                print("Failed to load image from URL")
+            }
+#elseif os(macOS)
+            if let imageData = try? Data(contentsOf: url), let selectedImage = NSImage(data: imageData) {
+                let qrStrings = Utils.detectQRCode(selectedImage)
+            
+                if qrStrings.isEmpty {
+                    print("No QR codes detected.")
+                } else {
+                    for qrString in qrStrings {
+                        return qrString.data(using: .utf8) ?? Data()
+                    }
+                }
+            } else {
+                print("Failed to load image from URL")
+            }
+#endif
+            
+        case .failure(let error):
+            print("Error selecting file: \(error.localizedDescription)")
+        }
+        return Data()
+    }
+    
+    public static func getLocalDeviceIdentity() -> String {
+#if os(iOS)
+        let identifierForVendor = UIDevice.current.identifierForVendor?.uuidString
+        let parts = identifierForVendor?.components(separatedBy: "-")
+        return "\(getDeviceName())-\(parts?.last?.suffix(3) ?? "N/A")"
+#elseif os(macOS)
+        let identifierForVendor = Utils.getUniqueIdentifier()
+        return "\(getDeviceName())-\(identifierForVendor.suffix(3))"
+#endif
+    }
+    
+    public static func getDeviceName() -> String {
+#if os(iOS)
+        return UIDevice.current.name
+#elseif os(macOS)
+        return Host.current().localizedName ?? "Mac"
+#endif
+    }
 }

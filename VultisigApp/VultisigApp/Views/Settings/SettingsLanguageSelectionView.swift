@@ -19,12 +19,6 @@ struct SettingsLanguageSelectionView: View {
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("language", comment: "Language"))
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                NavigationBackButton()
-            }
-        }
         .alert(isPresented: $showAlert) {
             Alert(
                 title: Text(NSLocalizedString("languageChangeTitle", comment: "Language Changed")),
@@ -32,6 +26,14 @@ struct SettingsLanguageSelectionView: View {
                 dismissButton: .default(Text(NSLocalizedString("ok", comment: "OK")))
             )
         }
+#if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                NavigationBackButton()
+            }
+        }
+#endif
     }
     
     var view: some View {

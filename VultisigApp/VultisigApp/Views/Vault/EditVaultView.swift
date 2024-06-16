@@ -28,12 +28,14 @@ struct EditVaultView: View {
         base
             .navigationBarBackButtonHidden(true)
             .navigationTitle(NSLocalizedString("editVault", comment: "Edit Vault View title"))
+#if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     NavigationBackButton()
                 }
             }
+#endif
     }
     
     var alert: some View {

@@ -153,6 +153,7 @@ class JoinKeygenViewModel: ObservableObject {
         })
     }
     
+#if os(iOS)
     func handleScan(result: Result<ScanResult, ScanError>) {
         defer {
             isShowingScanner = false
@@ -178,6 +179,7 @@ class JoinKeygenViewModel: ObservableObject {
             return
         }
     }
+#endif
     
     func handleQrCodeSuccessResult(scanData: Data) {
         var useVultisigRelay = false

@@ -17,17 +17,6 @@ struct TransactionMemoView: View {
         content
             .navigationBarBackButtonHidden(true)
             .navigationTitle(NSLocalizedString(transactionMemoViewModel.currentTitle, comment: "SendCryptoView title"))
-            .navigationBarTitleDisplayMode(.inline)
-            .ignoresSafeArea(.keyboard)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        handleBackTap()
-                    } label: {
-                        NavigationBlankBackButton()
-                    }
-                }
-            }
             .onAppear {
                 Task {
                     await setData()
@@ -41,6 +30,19 @@ struct TransactionMemoView: View {
             .onDisappear(){
                 transactionMemoViewModel.stopMediator()
             }
+#if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            .ignoresSafeArea(.keyboard)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        handleBackTap()
+                    } label: {
+                        NavigationBlankBackButton()
+                    }
+                }
+            }
+#endif
     }
     
     var content: some View {
@@ -52,9 +54,11 @@ struct TransactionMemoView: View {
                 loader
             }
         }
+#if os(iOS)
         .onTapGesture {
             hideKeyboard()
         }
+#endif
     }
     
     var view: some View {

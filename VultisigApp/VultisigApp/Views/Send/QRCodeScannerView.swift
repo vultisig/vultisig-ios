@@ -9,7 +9,6 @@ import SwiftUI
 
 #if os(iOS)
 import CodeScanner
-#endif
 
 struct QRCodeScannerView: View {
     @Binding var showScanner: Bool
@@ -78,3 +77,4 @@ struct QRCodeScannerView: View {
         .padding(.bottom, 50)
     }
 }
+#endif

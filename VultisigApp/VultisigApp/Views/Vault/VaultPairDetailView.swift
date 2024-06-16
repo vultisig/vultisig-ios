@@ -18,17 +18,19 @@ struct VaultPairDetailView: View {
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("vaultDetailsTitle", comment: "View your vault details"))
+        .onAppear {
+            self.devicesInfo = vault.signers.enumerated().map { index, signer in
+                DeviceInfo(Index: index, Signer: signer)
+            }
+        }
+#if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 NavigationBackButton()
             }
         }
-        .onAppear {
-            self.devicesInfo = vault.signers.enumerated().map { index, signer in
-                DeviceInfo(Index: index, Signer: signer)
-            }
-        }
+#endif
     }
     
     var view: some View {

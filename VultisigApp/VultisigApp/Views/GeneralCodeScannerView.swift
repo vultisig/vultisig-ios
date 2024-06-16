@@ -43,6 +43,7 @@ struct GeneralCodeScannerView: View {
         .padding(.bottom, 50)
     }
     
+#if os(iOS)
     private func handleScan(result: Result<ScanResult, ScanError>) {
         switch result {
         case .success(let result):
@@ -55,6 +56,7 @@ struct GeneralCodeScannerView: View {
             return
         }
     }
+#endif
     
     private func presetValuesForDeeplink(_ url: URL) {
         shouldJoinKeygen = false
