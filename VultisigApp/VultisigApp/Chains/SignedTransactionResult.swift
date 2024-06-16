@@ -31,4 +31,13 @@ enum SignedTransactionType {
 
         return nil
     }
+
+    var transactionHash: String {
+        switch self {
+        case .regular(let transaction):
+            return transaction.transactionHash
+        case .regularWithApprove(let approve, let transaction):
+            return transaction.transactionHash
+        }
+    }
 }
