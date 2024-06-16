@@ -22,18 +22,27 @@ struct HiddenTextField: View {
             textfield
             button
         }
-        .frame(height: 56)
+        .frame(height: 44)
         .padding(.horizontal, 16)
         .background(Color.blue600)
         .cornerRadius(12)
     }
     
     var textfield: some View {
-        ZStack {
+        ZStack(alignment: .leading) {
+            if password.isEmpty {
+                HStack {
+                    Text(NSLocalizedString(placeholder, comment: ""))
+                        .foregroundColor(Color.neutral500)
+                        .font(.body12Menlo)
+                    Spacer()
+                }
+            }
+            
             if isPasswordVisible {
-                TextField(NSLocalizedString(placeholder, comment: ""), text: $password)
+                 TextField(NSLocalizedString("", comment: ""), text: $password)
             } else {
-                SecureField(NSLocalizedString(placeholder, comment: ""), text: $password)
+                SecureField(NSLocalizedString("", comment: ""), text: $password)
             }
         }
         .submitLabel(.done)
@@ -57,6 +66,9 @@ struct HiddenTextField: View {
 #Preview {
     ZStack {
         Background()
-        HiddenTextField(placeholder: "verifyPassword", password: .constant("password"))
+        VStack {
+            HiddenTextField(placeholder: "verifyPassword", password: .constant("password"))
+            HiddenTextField(placeholder: "verifyPassword", password: .constant(""))
+        }
     }
 }
