@@ -371,7 +371,10 @@ class KeysignViewModel: ObservableObject {
                 }
 
             case .regularWithApprove(let approve, let transaction):
-                fatalError()
+                let service = try EvmServiceFactory.getService(forCoin: keysignPayload.coin)
+                let approveTxHash = try await service.broadcastTransaction(hex: approve.rawTransaction)
+                let regularTxHash = try await service.broadcastTransaction(hex: approve.rawTransaction)
+                self.txid = regularTxHash // TODO: Display approve and regulart tx hash separately
             }
         } catch {
             handleBroadcastError(error: error, transactionType: transactionType)
