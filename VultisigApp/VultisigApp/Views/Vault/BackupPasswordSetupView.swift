@@ -119,6 +119,13 @@ struct BackupPasswordSetupView: View {
     }
     
     private func handleSaveTap() {
+        guard !backupViewModel.encryptionPassword.isEmpty && !verifyPassword.isEmpty else {
+            backupViewModel.alertTitle = "emptyField"
+            backupViewModel.alertMessage = "checkEmptyField"
+            backupViewModel.showAlert = true
+            return
+        }
+        
         guard backupViewModel.encryptionPassword == verifyPassword else {
             backupViewModel.alertTitle = "passwordMismatch"
             backupViewModel.alertMessage = "verifyPasswordMismatch"

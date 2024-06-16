@@ -237,3 +237,5 @@
 "verifyPassword" = "Verify Password";
 "passwordMismatch" = "Password Mismatch";
 "verifyPasswordMismatch" = "Please make sure your passwords match.";
+"emptyField" = "Empty Field(s)";
+"checkEmptyField" = "Please make sure all the fields are filled.";
