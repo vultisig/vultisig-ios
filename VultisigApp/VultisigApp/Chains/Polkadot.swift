@@ -100,13 +100,13 @@ enum PolkadotHelper {
     static func getSignedTransaction(vaultHexPubKey: String,
                                      vaultHexChainCode: String,
                                      keysignPayload: KeysignPayload,
-                                     signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error>
+                                     signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {
         guard let pubkeyData = Data(hexString: vaultHexPubKey) else {
-            return .failure(HelperError.runtimeError("public key \(vaultHexPubKey) is invalid"))
+            throw HelperError.runtimeError("public key \(vaultHexPubKey) is invalid")
         }
         guard let publicKey = PublicKey(data: pubkeyData, type: .ed25519) else {
-            return .failure(HelperError.runtimeError("public key \(vaultHexPubKey) is invalid"))
+            throw HelperError.runtimeError("public key \(vaultHexPubKey) is invalid")
         }
         
         let result = getPreSignedInputData(keysignPayload: keysignPayload)
@@ -120,7 +120,7 @@ enum PolkadotHelper {
                 let signatureProvider = SignatureProvider(signatures: signatures)
                 let signature = signatureProvider.getSignature(preHash: preSigningOutput.data)
                 guard publicKey.verify(signature: signature, message: preSigningOutput.data) else {
-                    return .failure(HelperError.runtimeError("fail to verify signature"))
+                    throw HelperError.runtimeError("fail to verify signature")
                 }
                 
                 allSignatures.add(data: signature)
@@ -133,12 +133,12 @@ enum PolkadotHelper {
                 let transactionHash = Hash.blake2b(data: output.encoded, size: 32).toHexString()
                 let result = SignedTransactionResult(rawTransaction: output.encoded.hexString,
                                                      transactionHash: transactionHash)
-                return .success(result)
+                return result
             } catch {
-                return .failure(HelperError.runtimeError("fail to get signed polkadot transaction,error:\(error.localizedDescription)"))
+                throw HelperError.runtimeError("fail to get signed polkadot transaction,error:\(error.localizedDescription)")
             }
-        case .failure(let err):
-            return .failure(err)
+        case .failure(let error):
+            throw error
         }
     }
 }

@@ -28,22 +28,22 @@ struct OneInchSwaps {
         }
     }
 
-    func getSignedTransaction(payload: OneInchSwapPayload, keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error> {
+    func getSignedTransaction(payload: OneInchSwapPayload, keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
 
         let result = getPreSignedInputData(quote: payload.quote, keysignPayload: keysignPayload)
 
         switch result {
         case .success(let inputData):
             let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
-            let transaction = helper.getSignedTransaction(
+            let transaction = try helper.getSignedTransaction(
                 vaultHexPubKey: vaultHexPublicKey,
                 vaultHexChainCode: vaultHexChainCode,
                 inputData: inputData,
                 signatures: signatures
             )
             return transaction
-        case .failure(let err):
-            return .failure(err)
+        case .failure(let error):
+            throw error
         }
     }
 }
