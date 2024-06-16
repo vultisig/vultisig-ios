@@ -96,7 +96,7 @@ struct BackupPasswordSetupView: View {
     
     var saveButton: some View {
         Button {
-            backupViewModel.exportFile(vault)
+            handleSaveTap()
         } label: {
             FilledButton(title: "save")
         }
@@ -104,8 +104,7 @@ struct BackupPasswordSetupView: View {
     
     var skipButton: some View {
         Button {
-            backupViewModel.encryptionPassword = ""
-            backupViewModel.exportFile(vault)
+            handleSkipTap()
         } label: {
             OutlineButton(title: "skip")
         }
@@ -117,6 +116,22 @@ struct BackupPasswordSetupView: View {
             message: Text(NSLocalizedString(backupViewModel.alertMessage, comment: "")),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
+    }
+    
+    private func handleSaveTap() {
+        guard backupViewModel.encryptionPassword == verifyPassword else {
+            backupViewModel.alertTitle = "passwordMismatch"
+            backupViewModel.alertMessage = "verifyPasswordMismatch"
+            backupViewModel.showAlert = true
+            return
+        }
+        
+        backupViewModel.exportFile(vault)
+    }
+    
+    private func handleSkipTap() {
+        backupViewModel.encryptionPassword = ""
+        backupViewModel.exportFile(vault)
     }
 }
 

@@ -235,3 +235,5 @@
 "Selected" = "Selected";
 "searchResult" = "Search Result";
 "verifyPassword" = "Verify Password";
+"passwordMismatch" = "Password Mismatch";
+"verifyPasswordMismatch" = "Please make sure your passwords match.";
