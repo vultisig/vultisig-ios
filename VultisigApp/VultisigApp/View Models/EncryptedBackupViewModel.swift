@@ -88,6 +88,14 @@ class EncryptedBackupViewModel: ObservableObject {
     
     // Import
     func importFile(from url: URL) {
+        let success = url.startAccessingSecurityScopedResource()
+        defer { url.stopAccessingSecurityScopedResource() }
+        
+        guard success else {
+            alertMessage = "Permission denied for accessing the file."
+            showAlert = true
+            return
+        }
         do {
             let data = try Data(contentsOf: url)
             
@@ -122,6 +130,14 @@ class EncryptedBackupViewModel: ObservableObject {
     }
     
     func importFileWithPassword(from url: URL, password: String) {
+        let success = url.startAccessingSecurityScopedResource()
+        defer { url.stopAccessingSecurityScopedResource() }
+        
+        guard success else {
+            alertMessage = "Permission denied for accessing the file."
+            showAlert = true
+            return
+        }
         do {
             let data = try Data(contentsOf: url)
             if let decryptedData = decrypt(data: data, password: password),
