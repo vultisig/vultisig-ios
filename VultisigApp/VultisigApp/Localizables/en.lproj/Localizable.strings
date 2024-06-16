@@ -239,3 +239,4 @@
 "verifyPasswordMismatch" = "Please make sure your passwords match.";
 "emptyField" = "Empty Field(s)";
 "checkEmptyField" = "Please make sure all the fields are filled.";
+"optionalPasswordProtectBackup" = "Optional password protection of your Vault";

@@ -66,7 +66,7 @@ struct BackupPasswordSetupView: View {
     
     var content: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(NSLocalizedString("passwordProtectBackup", comment: ""))
+            Text(NSLocalizedString("optionalPasswordProtectBackup", comment: ""))
                 .font(.body14MontserratMedium)
                 .foregroundColor(.neutral0)
             

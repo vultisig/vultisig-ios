@@ -213,4 +213,9 @@
 "EdDSAKey" = "EdDSA-Schlüssel";
 "Selected" = "Ausgewählt";
 "searchResult" = "Suchergebnis";
-
+"verifyPassword" = "Passwort bestätigen";
+"passwordMismatch" = "Passwort stimmt nicht überein";
+"verifyPasswordMismatch" = "Bitte stellen Sie sicher, dass Ihre Passwörter übereinstimmen.";
+"emptyField" = "Leeres Feld(er)";
+"checkEmptyField" = "Bitte stellen Sie sicher, dass alle Felder ausgefüllt sind.";
+"optionalPasswordProtectBackup" = "Optionale Passwortsicherung Ihres Tresors";

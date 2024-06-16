@@ -213,3 +213,9 @@
 "EdDSAKey" = "Clave EdDSA";
 "Selected" = "Seleccionado";
 "searchResult" = "Resultado de la búsqueda";
+"verifyPassword" = "Verificar contraseña";
+"passwordMismatch" = "Las contraseñas no coinciden";
+"verifyPasswordMismatch" = "Por favor, asegúrate de que tus contraseñas coinciden.";
+"emptyField" = "Campo(s) vacío(s)";
+"checkEmptyField" = "Por favor, asegúrate de que todos los campos están llenos.";
+"optionalPasswordProtectBackup" = "Protección opcional con contraseña de tu almacén";

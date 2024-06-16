@@ -213,3 +213,9 @@
 "EdDSAKey" = "Chave EdDSA";
 "Selected" = "Selecionado";
 "searchResult" = "Resultado da pesquisa";
+"verifyPassword" = "Verificar senha";
+"passwordMismatch" = "Senhas não coincidem";
+"verifyPasswordMismatch" = "Certifique-se de que suas senhas coincidem.";
+"emptyField" = "Campo(s) vazio(s)";
+"checkEmptyField" = "Certifique-se de que todos os campos estão preenchidos.";
+"optionalPasswordProtectBackup" = "Proteção opcional do seu cofre com senha";
