@@ -5,6 +5,7 @@
 //  Created by Enrique Souza Soares on 09/05/24.
 //
 
+#if os(iOS)
 import Foundation
 import SwiftUI
 
@@ -46,3 +47,4 @@ struct ImagePicker: UIViewControllerRepresentable {
         }
     }
 }
+#endif

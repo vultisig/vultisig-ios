@@ -23,11 +23,13 @@ struct TransactionMemoDetailsView: View {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
                 
+#if os(iOS)
                 Button {
                     hideKeyboard()
                 } label: {
                     Text(NSLocalizedString("done", comment: "Done"))
                 }
+#endif
             }
         }
         .alert(isPresented: $transactionMemoViewModel.showAlert) {

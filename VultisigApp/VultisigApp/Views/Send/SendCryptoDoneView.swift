@@ -127,8 +127,14 @@ struct SendCryptoDoneView: View {
     private func copyHash() {
         if !explorerLink.isEmpty {
             showAlert = true
+#if os(iOS)
             let pasteboard = UIPasteboard.general
             pasteboard.string = explorerLink
+#elseif os(macOS)
+            let pasteboard = NSPasteboard.general
+            pasteboard.clearContents()
+            pasteboard.setString(explorerLink, forType: .string)
+#endif
         }
     }
     

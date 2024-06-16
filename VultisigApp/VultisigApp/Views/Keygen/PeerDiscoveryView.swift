@@ -16,11 +16,14 @@ struct PeerDiscoveryView: View {
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
     
     @State var qrCodeImage: Image? = nil
-    @State private var orientation = UIDevice.current.orientation
     @State var isLandscape: Bool = false
     
-    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
     @Environment(\.displayScale) var displayScale
+    
+#if os(iOS)
+    @State private var orientation = UIDevice.current.orientation
+    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+#endif
     
     let columns = [
         GridItem(.adaptive(minimum: 160)),
@@ -36,17 +39,7 @@ struct PeerDiscoveryView: View {
             states
         }
         .navigationTitle(NSLocalizedString("mainDevice", comment: "Main Device"))
-        .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
-        .detectOrientation($orientation)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                NavigationBackButton()
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
-            }
-        }
         .task {
             viewModel.startDiscovery()
         }
@@ -57,9 +50,21 @@ struct PeerDiscoveryView: View {
         .onDisappear {
             viewModel.stopMediator()
         }
+#if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        .detectOrientation($orientation)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                NavigationBackButton()
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
+            }
+        }
         .onChange(of: orientation) { oldValue, newValue in
             setData()
         }
+#endif
     }
     
     var states: some View {
@@ -166,12 +171,16 @@ struct PeerDiscoveryView: View {
             
             qrCodeImage?
                 .resizable()
+#if os(iOS)
                 .aspectRatio(
                     contentMode:
                         participantDiscovery.peersFound.count == 0 && idiom == .phone ?
                         .fill :
                         .fit
                 )
+#elseif os(macOS)
+                .aspectRatio(contentMode: .fit)
+#endif
                 .padding()
                 .frame(maxHeight: .infinity)
                 .frame(maxWidth: 512)
@@ -198,7 +207,11 @@ struct PeerDiscoveryView: View {
             }
             .padding(.horizontal, 30)
         }
+#if os(iOS)
         .padding(idiom == .phone ? 0 : 20)
+#elseif os(macOS)
+        .padding(20)
+#endif
     }
     
     var gridList: some View {
@@ -212,10 +225,14 @@ struct PeerDiscoveryView: View {
     
     var networkPrompts: some View {
         NetworkPrompts(selectedNetwork: $viewModel.selectedNetwork)
-            .padding(.top, idiom == .pad ? 10 : 0)
             .onChange(of: viewModel.selectedNetwork) {
                 viewModel.restartParticipantDiscovery()
             }
+#if os(iOS)
+            .padding(.top, idiom == .pad ? 10 : 0)
+#elseif os(macOS)
+            .padding(.top, 10)
+#endif
     }
     
     var devices: some View {
@@ -229,7 +246,11 @@ struct PeerDiscoveryView: View {
                 handleAutoSelection()
             }
         }
+#if os(iOS)
         .padding(idiom == .phone ? 0 : 8)
+#elseif os(macOS)
+        .padding(8)
+#endif
     }
     
     var instructions: some View {
@@ -280,7 +301,11 @@ struct PeerDiscoveryView: View {
     }
     
     private func setData() {
+#if os(iOS)
         isLandscape = (orientation == .landscapeLeft || orientation == .landscapeRight) && idiom == .pad
+#elseif os(macOS)
+        isLandscape = true
+#endif
         
         qrCodeImage = viewModel.getQrImage(size: 100)
         

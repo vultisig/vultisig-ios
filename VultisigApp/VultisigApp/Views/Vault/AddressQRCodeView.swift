@@ -26,6 +26,7 @@ struct AddressQRCodeView: View {
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("address", comment: "AddressQRCodeView title"))
+#if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -36,6 +37,7 @@ struct AddressQRCodeView: View {
                 NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
             }
         }
+#endif
     }
     
     var view: some View {

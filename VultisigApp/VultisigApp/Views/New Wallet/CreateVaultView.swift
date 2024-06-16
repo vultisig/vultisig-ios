@@ -16,6 +16,7 @@ struct CreateVaultView: View {
             view
         }
         .navigationBarBackButtonHidden(true)
+#if os(iOS)
         .toolbar {
             if showBackButton {
                 ToolbarItem(placement: .topBarLeading) {
@@ -27,6 +28,7 @@ struct CreateVaultView: View {
                 NavigationHelpButton()
             }
         }
+#endif
     }
     
     var view: some View {

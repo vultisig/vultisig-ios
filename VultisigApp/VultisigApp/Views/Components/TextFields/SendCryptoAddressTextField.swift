@@ -41,12 +41,14 @@ struct SendCryptoAddressTextField: View {
         .padding(.horizontal, 12)
         .background(Color.blue600)
         .cornerRadius(10)
+#if os(iOS)
         .sheet(isPresented: $showScanner) {
             codeScanner
         }
         .sheet(isPresented: $showImagePicker, onDismiss: processImage) {
             ImagePicker(selectedImage: $selectedImage)
         }
+#endif
     }
     
     var placeholder: some View {
@@ -75,12 +77,16 @@ struct SendCryptoAddressTextField: View {
             .textContentType(.oneTimeCode)
 #endif
             
+#if os(iOS)
             pasteButton
+#endif
+            
             scanButton
             fileButton
         }
     }
     
+#if os(iOS)
     var codeScanner: some View {
         QRCodeScannerView(showScanner: $showScanner, handleScan: handleScan)
     }
@@ -95,6 +101,7 @@ struct SendCryptoAddressTextField: View {
                 .frame(width: 40, height: 40)
         }
     }
+#endif
     
     var scanButton: some View {
         Button {
@@ -121,10 +128,16 @@ struct SendCryptoAddressTextField: View {
     private func processImage() {
         guard let selectedImage = selectedImage else { return }
         
-        
+#if os(iOS)
         handleImageQrCode(image: selectedImage)
+#endif
     }
     
+    private func validateAddress(_ newValue: String) {
+        sendCryptoViewModel.validateAddress(tx: tx, address: newValue)
+    }
+    
+#if os(iOS)
     private func handleScan(result: Result<ScanResult, ScanError>) {
         switch result {
         case .success(let result):
@@ -137,12 +150,7 @@ struct SendCryptoAddressTextField: View {
         }
     }
     
-    private func validateAddress(_ newValue: String) {
-        sendCryptoViewModel.validateAddress(tx: tx, address: newValue)
-    }
-    
     private func pasteAddress() {
-#if os(iOS)
         if let clipboardContent = UIPasteboard.general.string {
             tx.toAddress = clipboardContent
             
@@ -150,7 +158,6 @@ struct SendCryptoAddressTextField: View {
                 validateAddress(clipboardContent)
             }
         }
-#endif
     }
     
     private func handleImageQrCode(image: UIImage) {
@@ -172,6 +179,7 @@ struct SendCryptoAddressTextField: View {
             }
         }
     }
+#endif
 }
 
 #Preview {

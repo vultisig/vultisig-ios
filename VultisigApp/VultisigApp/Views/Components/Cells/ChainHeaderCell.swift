@@ -139,8 +139,15 @@ struct ChainHeaderCell: View {
     
     private func copyAddress() {
         showAlert = true
+        
+#if os(iOS)
         let pasteboard = UIPasteboard.general
         pasteboard.string = group.address
+#elseif os(macOS)
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(group.address, forType: .string)
+#endif
     }
 }
 

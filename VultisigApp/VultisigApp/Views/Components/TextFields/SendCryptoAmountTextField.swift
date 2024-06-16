@@ -38,12 +38,14 @@ struct SendCryptoAmountTextField: View {
                     }
 				))
 				.submitLabel(.next)
-				.textInputAutocapitalization(.never)
-				.keyboardType(.decimalPad)
-				.textContentType(.oneTimeCode)
 				.disableAutocorrection(true)
                 .textFieldStyle(TappableTextFieldStyle())
                 .foregroundColor(isEnabled ? .neutral0 : .neutral300)
+#if os(iOS)
+                .textInputAutocapitalization(.never)
+                .keyboardType(.decimalPad)
+                .textContentType(.oneTimeCode)
+#endif
 
 				if showButton {
 					maxButton

@@ -18,12 +18,6 @@ struct ChainSelectionView: View {
         content
             .navigationBarBackButtonHidden(true)
             .navigationTitle(NSLocalizedString("chooseChains", comment: "Choose Chains"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    NavigationBackSheetButton(showSheet: $showChainSelectionSheet)
-                }
-            }
             .onAppear {
                 setData()
             }
@@ -33,6 +27,14 @@ struct ChainSelectionView: View {
             .onDisappear {
                 saveAssets()
             }
+#if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    NavigationBackSheetButton(showSheet: $showChainSelectionSheet)
+                }
+            }
+#endif
     }
     
     var content: some View {

@@ -16,7 +16,9 @@ struct OnboardingView: View {
             Background()
             view
         }
+#if os(iOS)
         .toolbar(.hidden, for: .navigationBar)
+#endif
     }
     
     var view: some View {
@@ -38,7 +40,9 @@ struct OnboardingView: View {
             OnboardingView2().tag(1)
             OnboardingView3().tag(2)
         }
+#if os(iOS)
         .tabViewStyle(PageTabViewStyle())
+#endif
         .frame(maxHeight: .infinity)
     }
     

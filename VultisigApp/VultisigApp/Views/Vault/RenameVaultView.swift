@@ -23,12 +23,6 @@ struct RenameVaultView: View {
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("renameVault", comment: "Edit Rename Vault View title"))
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                NavigationBackButton()
-            }
-        }
         .onAppear {
             setData()
         }
@@ -39,6 +33,14 @@ struct RenameVaultView: View {
                 dismissButton: .default(Text("ok"))
             )
         }
+#if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                NavigationBackButton()
+            }
+        }
+#endif
     }
     
     var view: some View {
