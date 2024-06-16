@@ -92,7 +92,7 @@ class EncryptedBackupViewModel: ObservableObject {
         defer { url.stopAccessingSecurityScopedResource() }
         
         guard success else {
-            print("Permission denied for accessing the file.")
+            alertMessage = "Permission denied for accessing the file."
             showAlert = true
             return
         }
@@ -134,7 +134,7 @@ class EncryptedBackupViewModel: ObservableObject {
         defer { url.stopAccessingSecurityScopedResource() }
         
         guard success else {
-            print("Permission denied for accessing the file.")
+            alertMessage = "Permission denied for accessing the file."
             showAlert = true
             return
         }
