@@ -7,9 +7,11 @@
 
 import Foundation
 import OSLog
-import CodeScanner
 
-import UIKit
+#if os(iOS)
+import CodeScanner
+#endif
+
 import CoreImage
 import Vision
 
@@ -151,6 +153,7 @@ class JoinKeygenViewModel: ObservableObject {
         })
     }
     
+#if os(iOS)
     func handleScan(result: Result<ScanResult, ScanError>) {
         defer {
             isShowingScanner = false
@@ -176,6 +179,7 @@ class JoinKeygenViewModel: ObservableObject {
             return
         }
     }
+#endif
     
     func handleQrCodeSuccessResult(scanData: Data) {
         var useVultisigRelay = false

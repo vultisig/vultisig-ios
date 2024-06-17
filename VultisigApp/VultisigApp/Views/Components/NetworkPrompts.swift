@@ -15,10 +15,14 @@ struct NetworkPrompts: View {
     ]
     
     var body: some View {
-        if UIDevice.current.userInterfaceIdiom == .phone {
-            phoneLayout
-        } else {
-            padLayout
+        ZStack {
+#if os(iOS)
+            if UIDevice.current.userInterfaceIdiom == .phone {
+                phoneLayout
+            } else {
+                padLayout
+            }
+#endif
         }
     }
     

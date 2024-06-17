@@ -43,6 +43,19 @@ struct HomeView: View {
             
             VaultsView(viewModel: viewModel, showVaultsList: $showVaultsList, isEditingVaults: $isEditingVaults)
         }
+        .navigationBarBackButtonHidden(true)
+        .onAppear {
+            setData()
+        }
+        .navigationDestination(isPresented: $shouldJoinKeygen) {
+            JoinKeygenView(vault: Vault(name: "Main Vault"))
+        }
+        .navigationDestination(isPresented: $shouldKeysignTransaction) {
+            if let vault = viewModel.selectedVault {
+                JoinKeysignView(vault: vault)
+            }
+        }
+#if os(iOS)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 menuButton
@@ -56,18 +69,7 @@ struct HomeView: View {
                 editButton
             }
         }
-        .navigationBarBackButtonHidden(true)
-        .onAppear {
-            setData()
-        }
-        .navigationDestination(isPresented: $shouldJoinKeygen) {
-            JoinKeygenView(vault: Vault(name: "Main Vault"))
-        }
-        .navigationDestination(isPresented: $shouldKeysignTransaction) {
-            if let vault = viewModel.selectedVault {
-                JoinKeysignView(vault: vault)
-            }
-        }
+#endif
     }
     
     var navigationTitle: some View {

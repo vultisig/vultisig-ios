@@ -5,9 +5,9 @@
 //  Created by Enrique Souza Soares on 09/05/24.
 //
 
+#if os(iOS)
 import Foundation
 import SwiftUI
-import UIKit
 
 struct ImagePicker: UIViewControllerRepresentable {
     @Binding var selectedImage: UIImage?
@@ -47,3 +47,4 @@ struct ImagePicker: UIViewControllerRepresentable {
         }
     }
 }
+#endif

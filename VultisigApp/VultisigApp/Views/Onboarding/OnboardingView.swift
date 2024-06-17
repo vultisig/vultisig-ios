@@ -16,7 +16,9 @@ struct OnboardingView: View {
             Background()
             view
         }
+#if os(iOS)
         .toolbar(.hidden, for: .navigationBar)
+#endif
     }
     
     var view: some View {
@@ -33,6 +35,7 @@ struct OnboardingView: View {
     }
     
     var tabs: some View {
+#if os(iOS)
         TabView(selection: $tabIndex) {
             OnboardingView1().tag(0)
             OnboardingView2().tag(1)
@@ -40,12 +43,28 @@ struct OnboardingView: View {
         }
         .tabViewStyle(PageTabViewStyle())
         .frame(maxHeight: .infinity)
+#elseif os(macOS)
+        ZStack {
+            switch tabIndex {
+            case 0:
+                OnboardingView1(tabIndex: $tabIndex)
+            case 1:
+                OnboardingView2(tabIndex: $tabIndex)
+            default:
+                OnboardingView3(tabIndex: $tabIndex)
+            }
+        }
+#endif
     }
     
     var buttons: some View {
         VStack(spacing: 15) {
+#if os(iOS)
             nextButton
             skipButton
+#elseif os(macOS)
+            setupVaultButton
+#endif
         }
         .padding(.horizontal, 40)
         .padding(.bottom, 10)
@@ -57,6 +76,8 @@ struct OnboardingView: View {
         } label: {
             FilledButton(title: "next")
         }
+        .buttonStyle(PlainButtonStyle())
+        .background(Color.clear)
     }
     
     var skipButton: some View {
@@ -72,7 +93,23 @@ struct OnboardingView: View {
         .opacity(tabIndex==2 ? 0 : 1)
         .disabled(tabIndex==2 ? true : false)
         .animation(.easeInOut, value: tabIndex)
+        .buttonStyle(PlainButtonStyle())
+        .background(Color.clear)
     }
+    
+#if os(macOS)
+    var setupVaultButton: some View {
+        Button {
+            skipTapped()
+        } label: {
+            FilledButton(title: "setupVault")
+        }
+        .animation(.easeInOut, value: tabIndex)
+        .buttonStyle(PlainButtonStyle())
+        .background(Color.clear)
+        .padding(.bottom, 40)
+    }
+#endif
     
     private func nextTapped() {
         guard tabIndex<2 else {

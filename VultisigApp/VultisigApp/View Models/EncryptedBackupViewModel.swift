@@ -7,9 +7,12 @@
 
 import Foundation
 import CryptoKit
-import UIKit
 import SwiftData
 import OSLog
+
+#if os(iOS)
+import UIKit
+#endif
 
 class EncryptedBackupViewModel: ObservableObject {
     @Published var showVaultExporter = false
@@ -111,6 +114,7 @@ class EncryptedBackupViewModel: ObservableObject {
     }
     
     func promptForPasswordAndImport(from url: URL) {
+#if os(iOS)
         let alert = UIAlertController(title: NSLocalizedString("enterPassword", comment: ""), message: nil, preferredStyle: .alert)
         alert.addTextField { textField in
             textField.isSecureTextEntry = true
@@ -127,6 +131,7 @@ class EncryptedBackupViewModel: ObservableObject {
         if let rootViewController = UIApplication.shared.windows.first?.rootViewController {
             rootViewController.present(alert, animated: true, completion: nil)
         }
+#endif
     }
     
     func importFileWithPassword(from url: URL, password: String) {

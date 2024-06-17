@@ -23,6 +23,13 @@ struct JoinKeysignView: View {
         }
         .navigationTitle(NSLocalizedString("joinKeySign", comment: "Join Keysign"))
         .navigationBarBackButtonHidden(true)
+        .onAppear {
+            setData()
+        }
+        .onDisappear(){
+            viewModel.stopJoiningKeysign()
+        }
+#if os(iOS)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 NavigationBackButton()
@@ -32,12 +39,7 @@ struct JoinKeysignView: View {
                 NavigationHelpButton()
             }
         }
-        .onAppear {
-            setData()
-        }
-        .onDisappear(){
-            viewModel.stopJoiningKeysign()
-        }
+#endif
     }
     
     var states: some View {

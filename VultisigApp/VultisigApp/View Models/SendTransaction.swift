@@ -1,10 +1,13 @@
 import Foundation
-import CodeScanner
 import OSLog
 import SwiftUI
 import UniformTypeIdentifiers
 import WalletCore
 import BigInt
+
+#if os(iOS)
+import CodeScanner
+#endif
 
 class SendTransaction: ObservableObject, Hashable {
     @Published var toAddress: String = .empty

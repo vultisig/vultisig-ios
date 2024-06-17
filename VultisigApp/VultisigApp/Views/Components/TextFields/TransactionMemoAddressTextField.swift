@@ -7,9 +7,11 @@
 import SwiftUI
 import Foundation
 import OSLog
-import CodeScanner
 import UniformTypeIdentifiers
 import WalletCore
+
+#if os(iOS)
+import CodeScanner
 
 struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: View {
     @ObservedObject var memo: MemoType
@@ -80,8 +82,8 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
             ))
             .foregroundColor(.neutral0)
             .submitLabel(.next)
-            .textInputAutocapitalization(.never)
             .disableAutocorrection(true)
+            .textInputAutocapitalization(.never)
             .keyboardType(.default)
             .textContentType(.oneTimeCode)
             
@@ -178,3 +180,4 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
         validateAddress(memo.addressFields[addressKey] ?? "")
     }
 }
+#endif

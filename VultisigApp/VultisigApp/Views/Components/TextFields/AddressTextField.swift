@@ -1,7 +1,10 @@
 import SwiftUI
 import OSLog
-import CodeScanner
 import UniformTypeIdentifiers
+
+#if os(iOS)
+import CodeScanner
+#endif
 
 struct AddressTextField: View {
     @Binding var contractAddress: String
@@ -9,7 +12,12 @@ struct AddressTextField: View {
     
     @State private var showScanner = false
     @State private var showImagePicker = false
+    
+#if os(iOS)
     @State private var selectedImage: UIImage?
+#elseif os(macOS)
+    @State private var selectedImage: NSImage?
+#endif
     
     var body: some View {
         ZStack(alignment: .trailing) {
@@ -23,12 +31,14 @@ struct AddressTextField: View {
         .padding(.horizontal, 12)
         .background(Color.blue600)
         .cornerRadius(10)
+#if os(iOS)
         .sheet(isPresented: $showScanner) {
             codeScanner
         }
         .sheet(isPresented: $showImagePicker, onDismiss: processImage) {
             ImagePicker(selectedImage: $selectedImage)
         }
+#endif
     }
     
     var placeholder: some View {
@@ -42,13 +52,15 @@ struct AddressTextField: View {
             TextField(NSLocalizedString("enterContractAddress", comment: "").toFormattedTitleCase(), text: $contractAddress)
                 .foregroundColor(.neutral0)
                 .submitLabel(.next)
-                .textInputAutocapitalization(.never)
                 .disableAutocorrection(true)
-                .keyboardType(.default)
                 .textContentType(.oneTimeCode)
                 .onChange(of: contractAddress){oldValue,newValue in
                     validateAddress(newValue)
                 }
+#if os(iOS)
+                .textInputAutocapitalization(.never)
+                .keyboardType(.default)
+#endif
             
             pasteButton
             scanButton
@@ -56,13 +68,17 @@ struct AddressTextField: View {
         }
     }
     
+#if os(iOS)
     var codeScanner: some View {
         QRCodeScannerView(showScanner: $showScanner, handleScan: handleScan)
     }
+#endif
     
     var pasteButton: some View {
         Button {
+#if os(iOS)
             pasteAddress()
+#endif
         } label: {
             Image(systemName: "doc.on.clipboard")
                 .font(.body16Menlo)
@@ -95,9 +111,12 @@ struct AddressTextField: View {
     
     private func processImage() {
         guard let selectedImage = selectedImage else { return }
+#if os(iOS)
         handleImageQrCode(image: selectedImage)
+#endif
     }
     
+#if os(iOS)
     private func handleScan(result: Result<ScanResult, ScanError>) {
         switch result {
         case .success(let result):
@@ -125,4 +144,5 @@ struct AddressTextField: View {
             validateAddress(qrCodeString)
         }
     }
+#endif
 }

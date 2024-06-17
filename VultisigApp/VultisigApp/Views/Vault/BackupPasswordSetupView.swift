@@ -16,32 +16,38 @@ struct BackupPasswordSetupView: View {
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
+        content
+            .navigationBarBackButtonHidden(true)
+            .navigationTitle(NSLocalizedString("backup", comment: "Backup"))
+            .alert(isPresented: $backupViewModel.showAlert) {
+                alert
+            }
+            .onAppear {
+                backupViewModel.resetData()
+            }
+            .onDisappear {
+                backupViewModel.resetData()
+            }
+    }
+    
+    var content: some View {
         ZStack {
             Background()
             view
         }
-        .navigationBarBackButtonHidden(true)
-        .navigationTitle(NSLocalizedString("backup", comment: "Backup"))
+#if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 NavigationBackButton()
             }
         }
-        .alert(isPresented: $backupViewModel.showAlert) {
-            alert
-        }
-        .onAppear {
-            backupViewModel.resetData()
-        }
-        .onDisappear {
-            backupViewModel.resetData()
-        }
+#endif
     }
     
     var view: some View {
         VStack {
-            content
+            passwordField
             Spacer()
             buttons
         }
@@ -64,7 +70,7 @@ struct BackupPasswordSetupView: View {
         }
     }
     
-    var content: some View {
+    var passwordField: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(NSLocalizedString("optionalPasswordProtectBackup", comment: ""))
                 .font(.body14MontserratMedium)

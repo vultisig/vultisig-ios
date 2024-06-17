@@ -18,7 +18,9 @@ struct KeysignDiscoveryView: View {
     @State var isLoading = false
     @State var qrCodeImage: Image? = nil
     @State var selectedNetwork = NetworkPromptType.WiFi
+#if os(iOS)
     @State private var orientation = UIDevice.current.orientation
+#endif
     
     @Environment(\.displayScale) var displayScale
     
@@ -38,7 +40,6 @@ struct KeysignDiscoveryView: View {
                 loader
             }
         }
-        .detectOrientation($orientation)
         .onAppear {
             setData()
         }
@@ -48,6 +49,9 @@ struct KeysignDiscoveryView: View {
         .onDisappear {
             viewModel.stopDiscovery()
         }
+#if os(iOS)
+        .detectOrientation($orientation)
+#endif
     }
     
     var view: some View {
@@ -78,6 +82,7 @@ struct KeysignDiscoveryView: View {
     }
     
     var content: some View {
+#if os(iOS)
         ZStack {
             if orientation == .landscapeLeft || orientation == .landscapeRight {
                 landscapeContent
@@ -85,6 +90,9 @@ struct KeysignDiscoveryView: View {
                 portraitContent
             }
         }
+#elseif os(macOS)
+        landscapeContent
+#endif
     }
     
     var landscapeContent: some View {

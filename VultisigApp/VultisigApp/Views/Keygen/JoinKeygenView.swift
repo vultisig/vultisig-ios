@@ -7,7 +7,10 @@ import OSLog
 import SwiftUI
 import UniformTypeIdentifiers
 import SwiftData
+
+#if os(iOS)
 import CodeScanner
+#endif
 
 struct JoinKeygenView: View {
     let vault: Vault
@@ -30,14 +33,6 @@ struct JoinKeygenView: View {
         }
         .navigationTitle(NSLocalizedString("joinKeygen", comment: "Join keygen/reshare"))
         .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                NavigationBackButton()
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                NavigationHelpButton()
-            }
-        }
         .fileImporter(
             isPresented: $showFileImporter,
             allowedContentTypes: [UTType.image], // Ensure only images can be picked
@@ -51,6 +46,16 @@ struct JoinKeygenView: View {
         .onDisappear {
             viewModel.stopJoinKeygen()
         }
+#if os(iOS)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                NavigationBackButton()
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationHelpButton()
+            }
+        }
+#endif
     }
     
     var states: some View {

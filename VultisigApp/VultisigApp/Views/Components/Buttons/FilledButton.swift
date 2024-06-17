@@ -27,8 +27,13 @@ struct FilledButton: View {
     
     var text: some View {
         Text(NSLocalizedString(title, comment: "Button Text"))
-            .font(.body16MontserratBold)
             .foregroundColor(.blue600)
+#if os(iOS)
+            .font(.body16MontserratBold)
+#elseif os(macOS)
+            .font(.body12Menlo)
+            .bold()
+#endif
     }
     
     var image: some View {

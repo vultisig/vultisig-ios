@@ -11,10 +11,14 @@ struct InstructionPrompt: View {
     let networkType: NetworkPromptType
     
     var body: some View {
-        if UIDevice.current.userInterfaceIdiom == .phone {
-            phoneContent
-        } else {
-            padContent
+        ZStack {
+#if os(iOS)
+            if UIDevice.current.userInterfaceIdiom == .phone {
+                phoneContent
+            } else {
+                padContent
+            }
+#endif
         }
     }
     

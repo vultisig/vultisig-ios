@@ -28,6 +28,7 @@ struct SwapCryptoDetailsView: View {
             fields
             continueButton
         }
+#if os(iOS)
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
@@ -39,6 +40,7 @@ struct SwapCryptoDetailsView: View {
                 }
             }
         }
+#endif
     }
     
     var fields: some View {

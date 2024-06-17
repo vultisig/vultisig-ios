@@ -59,7 +59,7 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vultisig/walletcore-spm.git",
       "state" : {
-        "revision" : "87726d63a21bac4b6f8e929965e605278d0ac1c1",
+        "revision" : "daa59206c089fee24e5c709b299becd58c2536fe",
         "version" : "4.0.44"
       }
     }

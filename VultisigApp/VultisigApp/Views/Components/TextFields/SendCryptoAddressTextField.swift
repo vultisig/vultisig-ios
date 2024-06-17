@@ -7,8 +7,11 @@
 
 import SwiftUI
 import OSLog
-import CodeScanner
 import UniformTypeIdentifiers
+
+#if os(iOS)
+import CodeScanner
+#endif
 
 struct SendCryptoAddressTextField: View {
     @ObservedObject var tx: SendTransaction
@@ -16,7 +19,12 @@ struct SendCryptoAddressTextField: View {
     
     @State var showScanner = false
     @State var showImagePicker = false  // State for showing the ImagePicker
+    
+#if os(iOS)
     @State var selectedImage: UIImage?  // Store the selected image
+#elseif os(macOS)
+    @State var selectedImage: NSImage?
+#endif
     
     var body: some View {
         ZStack(alignment: .trailing) {
@@ -33,12 +41,14 @@ struct SendCryptoAddressTextField: View {
         .padding(.horizontal, 12)
         .background(Color.blue600)
         .cornerRadius(10)
+#if os(iOS)
         .sheet(isPresented: $showScanner) {
             codeScanner
         }
         .sheet(isPresented: $showImagePicker, onDismiss: processImage) {
             ImagePicker(selectedImage: $selectedImage)
         }
+#endif
     }
     
     var placeholder: some View {
@@ -60,17 +70,23 @@ struct SendCryptoAddressTextField: View {
             ))
             .foregroundColor(.neutral0)
             .submitLabel(.next)
-            .textInputAutocapitalization(.never)
             .disableAutocorrection(true)
+#if os(iOS)
             .keyboardType(.default)
+            .textInputAutocapitalization(.never)
             .textContentType(.oneTimeCode)
+#endif
             
+#if os(iOS)
             pasteButton
+#endif
+            
             scanButton
             fileButton
         }
     }
     
+#if os(iOS)
     var codeScanner: some View {
         QRCodeScannerView(showScanner: $showScanner, handleScan: handleScan)
     }
@@ -85,6 +101,7 @@ struct SendCryptoAddressTextField: View {
                 .frame(width: 40, height: 40)
         }
     }
+#endif
     
     var scanButton: some View {
         Button {
@@ -111,10 +128,16 @@ struct SendCryptoAddressTextField: View {
     private func processImage() {
         guard let selectedImage = selectedImage else { return }
         
-        
+#if os(iOS)
         handleImageQrCode(image: selectedImage)
+#endif
     }
     
+    private func validateAddress(_ newValue: String) {
+        sendCryptoViewModel.validateAddress(tx: tx, address: newValue)
+    }
+    
+#if os(iOS)
     private func handleScan(result: Result<ScanResult, ScanError>) {
         switch result {
         case .success(let result):
@@ -125,10 +148,6 @@ struct SendCryptoAddressTextField: View {
         case .failure(let err):
             sendCryptoViewModel.logger.error("fail to scan QR code,error:\(err.localizedDescription)")
         }
-    }
-    
-    private func validateAddress(_ newValue: String) {
-        sendCryptoViewModel.validateAddress(tx: tx, address: newValue)
     }
     
     private func pasteAddress() {
@@ -159,8 +178,8 @@ struct SendCryptoAddressTextField: View {
                 await sendCryptoViewModel.convertToFiat(newValue: amount, tx: tx)
             }
         }
-        
     }
+#endif
 }
 
 #Preview {

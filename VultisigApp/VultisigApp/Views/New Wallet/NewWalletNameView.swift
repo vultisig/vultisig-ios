@@ -26,12 +26,14 @@ struct NewWalletNameView: View {
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("nameYourVault", comment: "Name your Vault"))
+#if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 NavigationBackButton()
             }
         }
+#endif
     }
     
     var view: some View {

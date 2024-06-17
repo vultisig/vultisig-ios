@@ -12,7 +12,10 @@ struct PeerCell: View {
     let isSelected: Bool
     
     @State var isPhone: Bool = false
+    
+#if os(iOS)
     private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+#endif
     
     var body: some View {
         ZStack(alignment: .topTrailing) {
@@ -121,7 +124,11 @@ struct PeerCell: View {
     }
     
     private func setData() {
+#if os(iOS)
         isPhone = idiom == .phone
+#elseif os(macOS)
+        isPhone = false
+#endif
     }
 }
 

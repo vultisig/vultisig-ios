@@ -17,12 +17,14 @@ struct TransactionsView: View {
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("transactions", comment: "Transactions"))
+#if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 NavigationBackButton()
             }
         }
+#endif
     }
     
     var view: some View {

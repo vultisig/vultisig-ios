@@ -22,12 +22,14 @@ struct ImportWalletView: View {
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("import", comment: "Import title"))
+#if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 NavigationBackButton()
             }
         }
+#endif
         .fileImporter(
             isPresented: $backupViewModel.showVaultImporter,
             allowedContentTypes: [.data],

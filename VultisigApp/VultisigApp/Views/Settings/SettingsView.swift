@@ -20,12 +20,14 @@ struct SettingsView: View {
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("settings", comment: "Settings"))
+#if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 NavigationBackSheetButton(showSheet: $showMenu)
             }
         }
+#endif
     }
     
     var view: some View {

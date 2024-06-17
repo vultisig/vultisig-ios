@@ -5,6 +5,8 @@
 //  Created by Amol Kumar on 2024-06-07.
 //
 
+#if os(iOS)
+
 import UIKit
 import SwiftUI
 
@@ -21,3 +23,5 @@ struct QRCodeShareSheet: UIViewControllerRepresentable {
         // No update needed
     }
 }
+
+#endif

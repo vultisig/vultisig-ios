@@ -24,6 +24,10 @@ struct SwapCryptoView: View {
         content
             .navigationBarBackButtonHidden(true)
             .navigationTitle(NSLocalizedString("swap", comment: "SendCryptoView title"))
+            .task {
+                await swapViewModel.load(tx: tx, fromCoin: coin, coins: vault.coins, vault: vault)
+            }
+#if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             .ignoresSafeArea(.keyboard)
             .toolbar {
@@ -37,9 +41,7 @@ struct SwapCryptoView: View {
                     }
                 }
             }
-            .task {
-                await swapViewModel.load(tx: tx, fromCoin: coin, coins: vault.coins, vault: vault)
-            }
+#endif
     }
     
     var content: some View {
@@ -47,12 +49,14 @@ struct SwapCryptoView: View {
             Background()
             view
         }
-        .onTapGesture {
-            hideKeyboard()
-        }
         .onDisappear {
             swapViewModel.stopMediator()
         }
+#if os(iOS)
+        .onTapGesture {
+            hideKeyboard()
+        }
+#endif
     }
     
     var view: some View {

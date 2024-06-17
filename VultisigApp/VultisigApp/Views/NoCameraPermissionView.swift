@@ -49,7 +49,9 @@ struct NoCameraPermissionView: View {
     }
     
     private func openSettings() {
+#if os(iOS)
         UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
+#endif
     }
 }
 

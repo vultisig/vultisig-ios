@@ -30,6 +30,7 @@ struct TokenSelectionView: View {
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("chooseTokens", comment: "Choose Tokens"))
+#if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -86,6 +87,7 @@ struct TokenSelectionView: View {
                 .cornerRadius(10)
             }
         }
+#endif
         .task {
             await tokenViewModel.loadData(chain: group.chain)
         }
@@ -140,7 +142,9 @@ struct TokenSelectionView: View {
             }
         }
         .scrollContentBackground(.hidden)
+#if os(iOS)
         .listStyle(.grouped)
+#endif
     }
     
     func errorView(error: Error) -> some View {

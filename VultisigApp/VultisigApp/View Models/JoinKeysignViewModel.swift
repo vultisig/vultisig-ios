@@ -5,7 +5,10 @@
 
 import Foundation
 import OSLog
+
+#if os(iOS)
 import CodeScanner
+#endif
 
 enum JoinKeysignStatus {
     case DiscoverSigningMsg
@@ -162,6 +165,7 @@ class JoinKeysignViewModel: ObservableObject {
         })
     }
     
+#if os(iOS)
     // Scan the QR code and strip the data
     func handleScan(result: Result<ScanResult, ScanError>) {
         defer {
@@ -186,6 +190,7 @@ class JoinKeysignViewModel: ObservableObject {
         
         manageQrCodeStates()
     }
+#endif
     
     func prepareKeysignMessages(keysignPayload: KeysignPayload) {
         let result = keysignPayload.getKeysignMessages(vault: self.vault)

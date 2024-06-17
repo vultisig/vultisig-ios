@@ -29,12 +29,14 @@ struct VaultDeletionConfirmView: View {
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("deleteVaultTitle", comment: "Delete Vault"))
+#if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 NavigationBackButton()
             }
         }
+#endif
     }
     
     var view: some View {

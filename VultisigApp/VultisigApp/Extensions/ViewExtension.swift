@@ -8,6 +8,7 @@
 import SwiftUI
 
 extension View {
+#if os(iOS)
     func navigationBarTitleTextColor(_ color: Color) -> some View {
         let uiColor = UIColor(color)
         UINavigationBar.appearance().titleTextAttributes = [.foregroundColor: uiColor ]
@@ -23,6 +24,7 @@ extension View {
         let resign = #selector(UIResponder.resignFirstResponder)
         UIApplication.shared.sendAction(resign, to: nil, from: nil, for: nil)
     }
+#endif
     
     func focusNextField<F: RawRepresentable>(_ field: FocusState<F?>.Binding) where F.RawValue == Int {
             guard let currentValue = field.wrappedValue else { return }
