@@ -240,3 +240,4 @@
 "emptyField" = "Empty Field(s)";
 "checkEmptyField" = "Please make sure all the fields are filled.";
 "optionalPasswordProtectBackup" = "Optional password protection of your Vault";
+"setupVault" = "Setup Vault";
