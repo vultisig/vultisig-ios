@@ -151,9 +151,11 @@ struct SwapCryptoDetailsView: View {
     }
     
     private func setData() {
-        toCoins = swapViewModel.coins.filter({ coin in
-            coin.id != tx.fromCoin.id
-        })
+        toCoins = swapViewModel.coins.filter { $0 != tx.fromCoin }
+
+        if tx.fromCoin == tx.fromCoin, let selected = toCoins.first(where: { $0 != tx.fromCoin }) {
+            tx.toCoin = selected
+        }
     }
 }
 
