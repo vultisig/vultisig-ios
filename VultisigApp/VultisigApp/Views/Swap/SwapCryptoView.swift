@@ -95,10 +95,6 @@ struct SwapCryptoView: View {
         SwapVerifyView(tx: tx, swapViewModel: swapViewModel, vault: vault)
     }
 
-    var approveVerifyView: some View {
-        SwapApproveVerifyView(tx: tx, swapViewModel: swapViewModel, vault: vault)
-    }
-
     var pairView: some View {
         ZStack {
             if let keysignPayload = swapViewModel.keysignPayload {
