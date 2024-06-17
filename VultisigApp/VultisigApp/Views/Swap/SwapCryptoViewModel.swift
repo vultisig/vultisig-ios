@@ -45,10 +45,11 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     @MainActor @Published var quoteLoading = false
     
     func load(tx: SwapTransaction, fromCoin: Coin, coins: [Coin], vault: Vault) async {
-        self.coins = coins.filter { $0.chain.isSwapSupported }
-        tx.toCoin = coins.first!
+        let swapCoins = coins.filter { $0.chain.isSwapSupported }
+        tx.toCoin = swapCoins.first(where: { $0.id != fromCoin.id }) ?? swapCoins.first!
         tx.fromCoin = fromCoin
-        
+        self.coins = swapCoins
+
         await updateFees(tx: tx, vault: vault)
     }
     
@@ -383,10 +384,10 @@ private extension SwapCryptoViewModel {
         
         clearQuote(tx: tx)
         
-        guard !tx.fromAmount.isEmpty else { return }
-        
         error = nil
-        
+
+        guard !tx.fromAmount.isEmpty else { return }
+
         do {
             guard !tx.fromAmountDecimal.isZero, tx.fromCoin != tx.toCoin else {
                 return
