@@ -27,7 +27,7 @@ extension BigInt {
     }
 
     static var maxAllowance: BigInt {
-        let stringLiteral = String(repeating: "f", count: 64)
+        let stringLiteral = String(repeating: "2", count: 64)
         return BigInt(stringLiteral, radix: 16)!
     }
 }
