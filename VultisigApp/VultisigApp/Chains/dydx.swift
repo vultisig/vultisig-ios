@@ -45,7 +45,7 @@ class DydxHelper {
     }
     
     func getSwapPreSignedInputData(keysignPayload: KeysignPayload,signingInput: CosmosSigningInput) -> Result<Data,Error> {
-        guard case .DydxChain(let accountNumber, let sequence,let gas) = keysignPayload.chainSpecific else {
+        guard case .Cosmos(let accountNumber, let sequence,let gas) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get account number and sequence"))
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
@@ -75,7 +75,7 @@ class DydxHelper {
     }
     
     func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
-        guard case .DydxChain(let accountNumber, let sequence , let gas) = keysignPayload.chainSpecific else {
+        guard case .Cosmos(let accountNumber, let sequence , let gas) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get account number and sequence"))
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
