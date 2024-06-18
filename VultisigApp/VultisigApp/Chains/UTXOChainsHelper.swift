@@ -233,28 +233,28 @@ class UTXOChainsHelper {
     
     func getSignedTransaction(
         keysignPayload: KeysignPayload,
-        signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error>
+        signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {
         let result = getBitcoinPreSigningInputData(keysignPayload: keysignPayload)
         switch result {
         case .success(let inputData):
-            return getSignedTransaction(inputData: inputData,
+            return try getSignedTransaction(inputData: inputData,
                                         signatures: signatures)
             
-        case .failure(let err):
-            return .failure(err)
+        case .failure(let error):
+            throw error
         }
     }
     
     func getSignedTransaction(
         inputData: Data,
-        signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error>
+        signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {
         let bitcoinPubKey = getDerivedPubKey()
         guard let pubkeyData = Data(hexString: bitcoinPubKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
         else {
-            return .failure(HelperError.runtimeError("public key \(bitcoinPubKey) is invalid"))
+            throw HelperError.runtimeError("public key \(bitcoinPubKey) is invalid")
         }
         
         do {
@@ -267,7 +267,7 @@ class UTXOChainsHelper {
                 let preImageHash = h.dataHash
                 let signature = signatureProvider.getDerSignature(preHash: preImageHash)
                 guard publicKey.verifyAsDER(signature: signature, message: preImageHash) else {
-                    return .failure(HelperError.runtimeError("fail to verify signature"))
+                    throw HelperError.runtimeError("fail to verify signature")
                 }
                 allSignatures.add(data: signature)
                 publicKeys.add(data: pubkeyData)
@@ -275,9 +275,9 @@ class UTXOChainsHelper {
             let compileWithSignatures = TransactionCompiler.compileWithSignatures(coinType: coin, txInputData: inputData, signatures: allSignatures, publicKeys: publicKeys)
             let output = try BitcoinSigningOutput(serializedData: compileWithSignatures)
             let result = SignedTransactionResult(rawTransaction: output.encoded.hexString, transactionHash: output.transactionID)
-            return .success(result)
+            return result
         } catch {
-            return .failure(HelperError.runtimeError("fail to construct raw transaction,error: \(error.localizedDescription)"))
+            throw HelperError.runtimeError("fail to construct raw transaction,error: \(error.localizedDescription)")
         }
     }
 }

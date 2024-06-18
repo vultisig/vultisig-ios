@@ -15,46 +15,42 @@ struct OneInchSwaps {
     let vaultHexPublicKey: String
     let vaultHexChainCode: String
 
-    func getPreSignedImageHash(payload: OneInchSwapPayload, keysignPayload: KeysignPayload) -> Result<[String], Error> {
-        let result = getPreSignedInputData(quote: payload.quote, keysignPayload: keysignPayload)
+    func getPreSignedImageHash(payload: OneInchSwapPayload, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> [String] {
+        let result = getPreSignedInputData(quote: payload.quote, keysignPayload: keysignPayload, incrementNonce: incrementNonce)
 
         switch result {
         case .success(let inputData):
-            do {
-                let hashes = TransactionCompiler.preImageHashes(coinType: payload.fromCoin.coinType, txInputData: inputData)
-                let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
-                return .success([preSigningOutput.dataHash.hexString])
-            } catch {
-                return .failure(error)
-            }
+            let hashes = TransactionCompiler.preImageHashes(coinType: payload.fromCoin.coinType, txInputData: inputData)
+            let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+            return [preSigningOutput.dataHash.hexString]
         case .failure(let error):
-            return .failure(error)
+            throw error
         }
     }
 
-    func getSignedTransaction(payload: OneInchSwapPayload, keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error> {
+    func getSignedTransaction(payload: OneInchSwapPayload, keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse], incrementNonce: Bool) throws -> SignedTransactionResult {
 
-        let result = getPreSignedInputData(quote: payload.quote, keysignPayload: keysignPayload)
+        let result = getPreSignedInputData(quote: payload.quote, keysignPayload: keysignPayload, incrementNonce: incrementNonce)
 
         switch result {
         case .success(let inputData):
             let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
-            let transaction = helper.getSignedTransaction(
+            let transaction = try helper.getSignedTransaction(
                 vaultHexPubKey: vaultHexPublicKey,
                 vaultHexChainCode: vaultHexChainCode,
                 inputData: inputData,
                 signatures: signatures
             )
             return transaction
-        case .failure(let err):
-            return .failure(err)
+        case .failure(let error):
+            throw error
         }
     }
 }
 
 private extension OneInchSwaps {
 
-    func getPreSignedInputData(quote: OneInchQuote, keysignPayload: KeysignPayload) -> Result<Data, Error> {
+    func getPreSignedInputData(quote: OneInchQuote, keysignPayload: KeysignPayload, incrementNonce: Bool) -> Result<Data, Error> {
         let input = EthereumSigningInput.with {
             $0.toAddress = quote.tx.to
             $0.transaction = .with {
@@ -68,7 +64,7 @@ private extension OneInchSwaps {
         let gasPrice = BigUInt(quote.tx.gasPrice) ?? BigUInt.zero
         let gas = BigUInt(EVMHelper.defaultETHSwapGasUnit)
         let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
-        let signed = helper.getPreSignedInputData(signingInput: input, keysignPayload: keysignPayload, gas: gas, gasPrice: gasPrice)
+        let signed = helper.getPreSignedInputData(signingInput: input, keysignPayload: keysignPayload, gas: gas, gasPrice: gasPrice, incrementNonce: incrementNonce)
         return signed
     }
 }

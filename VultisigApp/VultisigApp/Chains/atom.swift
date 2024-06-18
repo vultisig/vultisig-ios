@@ -135,30 +135,30 @@ class ATOMHelper {
     }
     
     func getSignedTransaction(vaultHexPubKey: String,
-                                     vaultHexChainCode: String,
-                                     keysignPayload: KeysignPayload,
-                                     signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error>
+                              vaultHexChainCode: String,
+                              keysignPayload: KeysignPayload,
+                              signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {
         let result = getPreSignedInputData(keysignPayload: keysignPayload)
         switch result {
         case .success(let inputData):
-            return getSignedTransaction(vaultHexPubKey: vaultHexPubKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
-            
-        case .failure(let err):
-            return .failure(err)
+            return try getSignedTransaction(vaultHexPubKey: vaultHexPubKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
+
+        case .failure(let error):
+            throw error
         }
     }
     
     func getSignedTransaction(vaultHexPubKey: String,
                                      vaultHexChainCode: String,
                                      inputData: Data,
-                                     signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error>
+                                     signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {
         let cosmosPublicKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: vaultHexPubKey, hexChainCode: vaultHexChainCode, derivePath: self.coinType.derivationPath())
         guard let pubkeyData = Data(hexString: cosmosPublicKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
         else {
-            return .failure(HelperError.runtimeError("public key \(cosmosPublicKey) is invalid"))
+            throw HelperError.runtimeError("public key \(cosmosPublicKey) is invalid")
         }
         
         do {
@@ -169,7 +169,7 @@ class ATOMHelper {
             let signatureProvider = SignatureProvider(signatures: signatures)
             let signature = signatureProvider.getSignatureWithRecoveryID(preHash: preSigningOutput.dataHash)
             guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash) else {
-                return .failure(HelperError.runtimeError("fail to verify signature"))
+                throw HelperError.runtimeError("fail to verify signature")
             }
             
             allSignatures.add(data: signature)
@@ -182,9 +182,9 @@ class ATOMHelper {
             let serializedData = output.serialized
             let sig = try JSONDecoder().decode(CosmosSignature.self, from: serializedData.data(using: .utf8) ?? Data())
             let result = SignedTransactionResult(rawTransaction: serializedData, transactionHash:sig.getTransactionHash())
-            return .success(result)
+            return result
         } catch {
-            return .failure(HelperError.runtimeError("fail to get signed transaction,error:\(error.localizedDescription)"))
+            throw HelperError.runtimeError("fail to get signed transaction,error:\(error.localizedDescription)")
         }
     }
 }

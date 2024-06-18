@@ -69,15 +69,6 @@ struct SwapCryptoView: View {
 
     @ViewBuilder
     var tabView: some View {
-        switch swapViewModel.flow {
-        case .normal:
-            normalFlow
-        case .erc20:
-            erc20Flow
-        }
-    }
-
-    var normalFlow: some View {
         ZStack {
             switch swapViewModel.currentIndex {
             case 1:
@@ -89,31 +80,6 @@ struct SwapCryptoView: View {
             case 4:
                 keysign
             case 5:
-                doneView
-            default:
-                errorView
-            }
-        }
-    }
-
-    var erc20Flow: some View {
-        ZStack {
-            switch swapViewModel.currentIndex {
-            case 1:
-                detailsView
-            case 2:
-                approveVerifyView
-            case 3:
-                pairView
-            case 4:
-                keysign
-            case 5:
-                verifyView
-            case 6:
-                pairView
-            case 7:
-                keysign
-            case 8:
                 doneView
             default:
                 errorView
@@ -127,10 +93,6 @@ struct SwapCryptoView: View {
 
     var verifyView: some View {
         SwapVerifyView(tx: tx, swapViewModel: swapViewModel, vault: vault)
-    }
-
-    var approveVerifyView: some View {
-        SwapApproveVerifyView(tx: tx, swapViewModel: swapViewModel, vault: vault)
     }
 
     var pairView: some View {

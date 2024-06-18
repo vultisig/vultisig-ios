@@ -11,21 +11,9 @@ import WalletCore
 import Mediator
 
 class SwapCryptoViewModel: ObservableObject, TransferViewModel {
-    
-    enum Flow {
-        case normal
-        case erc20
-        
-        var titles: [String] {
-            switch self {
-            case .normal:
-                return ["send", "verify", "pair", "keysign", "done"]
-            case .erc20:
-                return ["send", "verifyApprove", "pair", "keysign", "verifySwap", "pair", "keysign", "done"]
-            }
-        }
-    }
-    
+
+    private let titles = ["send", "verify", "pair", "keysign", "done"]
+
     private let swapService = SwapService.shared
     private let blockchainService = BlockChainService.shared
     private let balanceService = BalanceService.shared
@@ -38,7 +26,6 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     @MainActor @Published var currentIndex = 1
     @MainActor @Published var currentTitle = "send"
     @MainActor @Published var hash: String?
-    @MainActor @Published var flow: Flow = .normal
     
     @MainActor @Published var error: Error?
     @MainActor @Published var isLoading = false
@@ -54,7 +41,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     var progress: Double {
-        return Double(currentIndex) / Double(flow.titles.count)
+        return Double(currentIndex) / Double(titles.count)
     }
     
     func explorerLink(tx: SwapTransaction, hash: String) -> String {
@@ -142,7 +129,22 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             return fromFee <= feeCoinBalance && amount <= fromBalance
         }
     }
-    
+
+    func buildApprovePayload(tx: SwapTransaction) async throws -> ERC20ApprovePayload? {
+        guard tx.fromCoin.shouldApprove, let spender = tx.router else {
+            return nil
+        }
+        let service = try EvmServiceFactory.getService(forCoin: tx.fromCoin)
+        let allowance = try await service.fetchAllowance(
+            contractAddress: tx.fromCoin.contractAddress,
+            owner: tx.fromCoin.address,
+            spender: spender
+        )
+        let amount = swapFromAmount(tx: tx)
+        let payload = ERC20ApprovePayload(amount: .maxAllowance, spender: spender)
+        return amount > allowance ? payload : nil
+    }
+
     func durationString(tx: SwapTransaction) -> String {
         guard let duration = tx.quote?.totalSwapSeconds else { return "Instant" }
         let formatter = DateComponentsFormatter()
@@ -169,7 +171,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     
     func moveToNextView() {
         currentIndex += 1
-        currentTitle = flow.titles[currentIndex-1]
+        currentTitle = titles[currentIndex-1]
     }
     
     func buildSwapKeysignPayload(tx: SwapTransaction, vault: Vault) async -> Bool {
@@ -214,6 +216,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                     memo: tx.quote?.memo,
                     chainSpecific: chainSpecific,
                     swapPayload: .mayachain(swapPayload),
+                    approvePayload: buildApprovePayload(tx: tx),
                     vault: vault
                 )
 
@@ -231,6 +234,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                     memo: tx.quote?.memo,
                     chainSpecific: chainSpecific,
                     swapPayload: .thorchain(swapPayload),
+                    approvePayload: buildApprovePayload(tx: tx),
                     vault: vault
                 )
                 
@@ -252,43 +256,12 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                     memo: nil,
                     chainSpecific: chainSpecific,
                     swapPayload: .oneInch(payload),
+                    approvePayload: buildApprovePayload(tx: tx),
                     vault: vault
                 )
                 
                 return true
             }
-        }
-        catch {
-            self.error = error
-            return false
-        }
-    }
-    
-    func buildApproveKeysignPayload(tx: SwapTransaction, vault: Vault) async -> Bool {
-        isLoading = true
-        defer { isLoading = false }
-        do {
-            guard let quote = tx.quote, let router = quote.router else {
-                throw Errors.unexpectedError
-            }
-            let approvePayload = ERC20ApprovePayload(
-                amount: .maxAllowance,
-                spender: router
-            )
-            let chainSpecific = try await blockchainService.fetchSpecific(
-                for: tx.fromCoin, sendMaxAmount: false
-            )
-            keysignPayload = try await KeysignPayloadFactory().buildTransfer(
-                coin: tx.fromCoin,
-                toAddress: tx.fromCoin.contractAddress,
-                amount: 0,
-                memo: nil,
-                chainSpecific: chainSpecific,
-                swapPayload: nil,
-                approvePayload: approvePayload,
-                vault: vault
-            )
-            return true
         }
         catch {
             self.error = error
@@ -412,24 +385,9 @@ private extension SwapCryptoViewModel {
             if !isSufficientBalance(tx: tx) {
                 throw Errors.insufficientFunds
             }
-
-            try await updateFlow(tx: tx)
         } catch {
             self.error = error
         }
-    }
-    
-    func updateFlow(tx: SwapTransaction) async throws {
-        guard tx.fromCoin.shouldApprove, let spender = tx.router else {
-            return flow = .normal
-        }
-        let service = try EvmServiceFactory.getService(forCoin: tx.fromCoin)
-        let allowance = try await service.fetchAllowance(
-            contractAddress: tx.fromCoin.contractAddress,
-            owner: tx.fromCoin.address,
-            spender: spender
-        )
-        flow = swapFromAmount(tx: tx) > allowance ? .erc20 : .normal
     }
     
     func updateFees(tx: SwapTransaction, vault: Vault) async {
