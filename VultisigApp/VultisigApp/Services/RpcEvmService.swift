@@ -19,8 +19,10 @@ class RpcEvmService: RpcService {
         var cryptoPrice = Double(0)
         var rawBalance = ""
         do{
-            if !coin.priceProviderId.isEmpty {
+            if !coin.priceProviderId.isEmpty, coin.isNativeToken {
                 cryptoPrice = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
+            } else {
+                cryptoPrice = await CryptoPriceService.shared.getTokenPrice(coin: coin)
             }
             
             if coin.isNativeToken {
