@@ -222,7 +222,19 @@ class CoinSelectionViewModel: ObservableObject {
     
     private func addToChain(assets: [Coin], to vault: Vault) async throws {
         if let coin = assets.first, coin.chainType == .EVM, !coin.isNativeToken {
-            for token in assets {
+            let addresses = assets.map { $0.contractAddress }
+            let coingekoIDs = try await priceService.fetchCoingeckoId(chain: coin.chain, addresses: addresses)
+            
+            let tokensWithCoingeckoIDs = zip(assets, coingekoIDs).filter { $0.1 != nil }
+            let tokensWithoutCoingeckoIDs = zip(assets, coingekoIDs).filter { $0.1 == nil }.map { $0.0 }
+            
+            for (token, priceProviderId) in tokensWithCoingeckoIDs {
+                if let priceProviderId = priceProviderId {
+                    _ = try await addToChain(asset: token, to: vault, priceProviderId: priceProviderId)
+                }
+            }
+            
+            for token in tokensWithoutCoingeckoIDs {
                 _ = try await addToChain(asset: token, to: vault, priceProviderId: nil)
             }
             
@@ -244,27 +256,34 @@ class CoinSelectionViewModel: ObservableObject {
         if let priceProviderId {
             newCoin.priceProviderId = priceProviderId
         }
-
+        
         // Save the new coin first
         try await Storage.shared.save(newCoin)
-
+        
         // Check if the new coin already exists in the vault's coins before appending it
         if !vault.coins.contains(where: { $0.id == newCoin.id }) {
             vault.coins.append(newCoin)
         }
-
+        
         return newCoin
     }
-
+    
     
     private func addDiscoveredTokens(nativeToken: Coin, to vault: Vault) async throws  {
         do {
             let service = try EvmServiceFactory.getService(forCoin: nativeToken)
             let tokens = await service.getTokens(nativeToken: nativeToken, address: nativeToken.address)
             let addresses = tokens.map { $0.contractAddress }
+            let coingekoIDs = try await priceService.fetchCoingeckoId(chain: nativeToken.chain, addresses: addresses)
+            
+            guard coingekoIDs.count == tokens.count else {
+                return
+            }
             
             for (index, token) in tokens.enumerated() {
-                    _ = try await addToChain(asset: token, to: vault, priceProviderId: nil)
+                if let priceProviderId = coingekoIDs[index] {
+                    _ = try await addToChain(asset: token, to: vault, priceProviderId: priceProviderId)
+                }
             }
         } catch {
             print("Error fetching service: \(error)")
