@@ -219,15 +219,16 @@ class KeysignViewModel: ObservableObject {
         }
 
         if let swapPayload = keysignPayload.swapPayload {
+            let incrementNonce = keysignPayload.approvePayload != nil
             switch swapPayload {
             case .thorchain(let payload):
                 let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-                let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures)
+                let transaction = try swaps.getSignedTransaction(swapPayload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
                 signedTransactions.append(transaction)
 
             case .oneInch(let payload):
                 let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-                let transaction = try swaps.getSignedTransaction(payload: payload, keysignPayload: keysignPayload, signatures: signatures)
+                let transaction = try swaps.getSignedTransaction(payload: payload, keysignPayload: keysignPayload, signatures: signatures, incrementNonce: incrementNonce)
                 signedTransactions.append(transaction)
             case .mayachain:
                 break // No op - Regular transaction with memo
@@ -373,8 +374,8 @@ class KeysignViewModel: ObservableObject {
             case .regularWithApprove(let approve, let transaction):
                 let service = try EvmServiceFactory.getService(forCoin: keysignPayload.coin)
                 let approveTxHash = try await service.broadcastTransaction(hex: approve.rawTransaction)
-                let regularTxHash = try await service.broadcastTransaction(hex: approve.rawTransaction)
-                self.txid = regularTxHash // TODO: Display approve and regulart tx hash separately
+                let regularTxHash = try await service.broadcastTransaction(hex: transaction.rawTransaction)
+                self.txid = regularTxHash // TODO: Display approve and regular tx hash separately
             }
         } catch {
             handleBroadcastError(error: error, transactionType: transactionType)

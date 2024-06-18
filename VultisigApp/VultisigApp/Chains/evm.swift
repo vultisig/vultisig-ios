@@ -76,7 +76,8 @@ class EVMHelper {
         signingInput: EthereumSigningInput,
         keysignPayload: KeysignPayload,
         gas: BigUInt? = nil,
-        gasPrice: BigUInt? = nil) -> Result<Data, Error>
+        gasPrice: BigUInt? = nil,
+        incrementNonce: Bool = false) -> Result<Data, Error>
     {
 
         guard let intChainID = Int(coinType.chainId) else {
@@ -92,7 +93,7 @@ class EVMHelper {
             return .failure(HelperError.runtimeError("fail to get Ethereum chain specific"))
         }
 
-        let incrementNonceValue: Int64 = keysignPayload.incrementNonce ? 1 : 0
+        let incrementNonceValue: Int64 = incrementNonce ? 1 : 0
 
         var input = signingInput
         input.chainID = Data(hexString: Int64(intChainID).hexString())!

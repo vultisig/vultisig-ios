@@ -15,8 +15,8 @@ struct OneInchSwaps {
     let vaultHexPublicKey: String
     let vaultHexChainCode: String
 
-    func getPreSignedImageHash(payload: OneInchSwapPayload, keysignPayload: KeysignPayload) throws -> [String] {
-        let result = getPreSignedInputData(quote: payload.quote, keysignPayload: keysignPayload)
+    func getPreSignedImageHash(payload: OneInchSwapPayload, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> [String] {
+        let result = getPreSignedInputData(quote: payload.quote, keysignPayload: keysignPayload, incrementNonce: incrementNonce)
 
         switch result {
         case .success(let inputData):
@@ -28,9 +28,9 @@ struct OneInchSwaps {
         }
     }
 
-    func getSignedTransaction(payload: OneInchSwapPayload, keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
+    func getSignedTransaction(payload: OneInchSwapPayload, keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse], incrementNonce: Bool) throws -> SignedTransactionResult {
 
-        let result = getPreSignedInputData(quote: payload.quote, keysignPayload: keysignPayload)
+        let result = getPreSignedInputData(quote: payload.quote, keysignPayload: keysignPayload, incrementNonce: incrementNonce)
 
         switch result {
         case .success(let inputData):
@@ -50,7 +50,7 @@ struct OneInchSwaps {
 
 private extension OneInchSwaps {
 
-    func getPreSignedInputData(quote: OneInchQuote, keysignPayload: KeysignPayload) -> Result<Data, Error> {
+    func getPreSignedInputData(quote: OneInchQuote, keysignPayload: KeysignPayload, incrementNonce: Bool) -> Result<Data, Error> {
         let input = EthereumSigningInput.with {
             $0.toAddress = quote.tx.to
             $0.transaction = .with {
@@ -64,7 +64,7 @@ private extension OneInchSwaps {
         let gasPrice = BigUInt(quote.tx.gasPrice) ?? BigUInt.zero
         let gas = BigUInt(EVMHelper.defaultETHSwapGasUnit)
         let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
-        let signed = helper.getPreSignedInputData(signingInput: input, keysignPayload: keysignPayload, gas: gas, gasPrice: gasPrice)
+        let signed = helper.getPreSignedInputData(signingInput: input, keysignPayload: keysignPayload, gas: gas, gasPrice: gasPrice, incrementNonce: incrementNonce)
         return signed
     }
 }

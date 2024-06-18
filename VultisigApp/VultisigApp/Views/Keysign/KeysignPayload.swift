@@ -77,15 +77,11 @@ struct KeysignPayload: Codable, Hashable {
         self.vaultPubKeyECDSA = vaultPubKeyECDSA
         self.vaultLocalPartyID = vaultLocalPartyID
     }
-    
+
     var toAmountString: String {
         let decimalAmount = Decimal(string: toAmount.description) ?? Decimal.zero
         let power = Decimal(sign: .plus, exponent: -coin.decimals, significand: 1)
         return "\(decimalAmount * power) \(coin.ticker)"
-    }
-
-    var incrementNonce: Bool {
-        return approvePayload != nil && swapPayload != nil
     }
 
     func getKeysignMessages(vault: Vault) -> Result<[String], Error> {
@@ -98,13 +94,14 @@ struct KeysignPayload: Codable, Hashable {
             }
 
             if let swapPayload {
+                let incrementNonce = approvePayload != nil
                 switch swapPayload {
                 case .thorchain(let payload):
                     let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-                    messages += try swaps.getPreSignedImageHash(swapPayload: payload, keysignPayload: self)
+                    messages += try swaps.getPreSignedImageHash(swapPayload: payload, keysignPayload: self, incrementNonce: incrementNonce)
                 case .oneInch(let payload):
                     let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-                    messages += try swaps.getPreSignedImageHash(payload: payload, keysignPayload: self)
+                    messages += try swaps.getPreSignedImageHash(payload: payload, keysignPayload: self, incrementNonce: incrementNonce)
                 case .mayachain:
                     break // No op - Regular transaction with memo
                 }

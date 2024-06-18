@@ -141,7 +141,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             spender: spender
         )
         let amount = swapFromAmount(tx: tx)
-        let payload = ERC20ApprovePayload(amount: amount, spender: spender)
+        let payload = ERC20ApprovePayload(amount: .maxAllowance, spender: spender)
         return amount > allowance ? payload : nil
     }
 

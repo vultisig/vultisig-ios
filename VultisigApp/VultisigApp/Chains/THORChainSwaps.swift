@@ -27,7 +27,7 @@ class THORChainSwaps {
         self.vaultHexChainCode = vaultHexChainCode
     }
     
-    func getPreSignedInputData(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload) -> Result<Data, Error> {
+    func getPreSignedInputData(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload, incrementNonce: Bool) -> Result<Data, Error> {
         let input = THORChainSwapSwapInput.with {
             $0.fromAsset = swapPayload.fromAsset
             $0.fromAddress = swapPayload.fromAddress
@@ -69,7 +69,7 @@ class THORChainSwaps {
                 let utxoHelper = UTXOChainsHelper(coin: .dogecoin, vaultHexPublicKey: self.vaultHexPublicKey, vaultHexChainCode: self.vaultHexChainCode)
                 return utxoHelper.getSigningInputData(keysignPayload: keysignPayload, signingInput: output.bitcoin)
             case .eth, .bsc, .avax:
-                let signedEvmTx = EVMHelper.getHelper(coin: keysignPayload.coin).getPreSignedInputData(signingInput: output.ethereum, keysignPayload: keysignPayload)
+                let signedEvmTx = EVMHelper.getHelper(coin: keysignPayload.coin).getPreSignedInputData(signingInput: output.ethereum, keysignPayload: keysignPayload, incrementNonce: incrementNonce)
                 return signedEvmTx
             case .atom:
                 return ATOMHelper().getSwapPreSignedInputData(keysignPayload:keysignPayload, signingInput: output.cosmos)
@@ -81,8 +81,8 @@ class THORChainSwaps {
         }
     }
     
-    func getPreSignedImageHash(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload) throws -> [String] {
-        let result = getPreSignedInputData(swapPayload: swapPayload, keysignPayload: keysignPayload)
+    func getPreSignedImageHash(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload, incrementNonce: Bool) throws -> [String] {
+        let result = getPreSignedInputData(swapPayload: swapPayload, keysignPayload: keysignPayload, incrementNonce: incrementNonce)
 
         switch result {
         case .success(let inputData):
@@ -139,7 +139,7 @@ class THORChainSwaps {
                     $0.spender = approvePayload.spender
                 }
             }
-            $0.toAddress = keysignPayload.toAddress
+            $0.toAddress = keysignPayload.coin.contractAddress
         }
         let result = EVMHelper.getHelper(coin: keysignPayload.coin).getPreSignedInputData(
             signingInput: approveInput,
@@ -180,9 +180,9 @@ class THORChainSwaps {
         }
     }
 
-    func getSignedTransaction(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
+    func getSignedTransaction(swapPayload: THORChainSwapPayload, keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse], incrementNonce: Bool) throws -> SignedTransactionResult {
 
-        let result = getPreSignedInputData(swapPayload: swapPayload, keysignPayload: keysignPayload)
+        let result = getPreSignedInputData(swapPayload: swapPayload, keysignPayload: keysignPayload, incrementNonce: incrementNonce)
 
         switch result {
         case .success(let inputData):
