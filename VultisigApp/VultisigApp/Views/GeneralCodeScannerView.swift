@@ -43,6 +43,15 @@ struct GeneralCodeScannerView: View {
         .padding(.bottom, 50)
     }
     
+    var fileButton: some View {
+        Button {
+            
+        } label: {
+            OpenGalleryButton()
+        }
+        .padding(.bottom, 50)
+    }
+    
 #if os(iOS)
     private func handleScan(result: Result<ScanResult, ScanError>) {
         switch result {

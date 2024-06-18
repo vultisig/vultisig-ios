@@ -235,6 +235,7 @@
 		B52196442C12C3540021D27A /* CustomTokenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52196432C12C3540021D27A /* CustomTokenView.swift */; };
 		B52196462C12CA2E0021D27A /* AddressTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52196452C12CA2E0021D27A /* AddressTextField.swift */; };
 		B52196482C12D1110021D27A /* CircularFilledButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52196472C12D1110021D27A /* CircularFilledButton.swift */; };
+		B52BED452C1EC1AE00C0F312 /* OpenFilesButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52BED442C1EC1AE00C0F312 /* OpenFilesButton.swift */; };
 		B53D8CC82BF7F21500B795D3 /* TransactionMemoBond.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53D8CC72BF7F21500B795D3 /* TransactionMemoBond.swift */; };
 		B53D8CCA2BF7F22500B795D3 /* TransactionMemoUnbond.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53D8CC92BF7F22500B795D3 /* TransactionMemoUnbond.swift */; };
 		B53D8CCC2BF7F22F00B795D3 /* TransactionMemoLeave.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53D8CCB2BF7F22F00B795D3 /* TransactionMemoLeave.swift */; };
@@ -601,6 +602,7 @@
 		B52196432C12C3540021D27A /* CustomTokenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTokenView.swift; sourceTree = "<group>"; };
 		B52196452C12CA2E0021D27A /* AddressTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressTextField.swift; sourceTree = "<group>"; };
 		B52196472C12D1110021D27A /* CircularFilledButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircularFilledButton.swift; sourceTree = "<group>"; };
+		B52BED442C1EC1AE00C0F312 /* OpenFilesButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenFilesButton.swift; sourceTree = "<group>"; };
 		B53D8CC72BF7F21500B795D3 /* TransactionMemoBond.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoBond.swift; sourceTree = "<group>"; };
 		B53D8CC92BF7F22500B795D3 /* TransactionMemoUnbond.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoUnbond.swift; sourceTree = "<group>"; };
 		B53D8CCB2BF7F22F00B795D3 /* TransactionMemoLeave.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoLeave.swift; sourceTree = "<group>"; };
@@ -1096,6 +1098,7 @@
 				A6F42CC32C09598900D0431C /* VaultDetailScanButton.swift */,
 				B52196472C12D1110021D27A /* CircularFilledButton.swift */,
 				A6C639482C1FED0F0078B8E3 /* NavigationButton.swift */,
+				B52BED442C1EC1AE00C0F312 /* OpenFilesButton.swift */,
 			);
 			path = Buttons;
 			sourceTree = "<group>";
@@ -2128,6 +2131,7 @@
 				A6C0D5692BB3C6D400156689 /* ErrorMessage.swift in Sources */,
 				B53D8CCC2BF7F22F00B795D3 /* TransactionMemoLeave.swift in Sources */,
 				46C8CBBD2BA7753900E68E08 /* Blockchair.swift in Sources */,
+				B52BED452C1EC1AE00C0F312 /* OpenFilesButton.swift in Sources */,
 				B54E317F2BF5A1A700D4FC0A /* StyledNumberField.swift in Sources */,
 				469ED3A42B98F5DE008D4951 /* CosmosAccountValue.swift in Sources */,
 				A5199AF02BBD8C0400AA0A39 /* ThorchainSwapQuote.swift in Sources */,
