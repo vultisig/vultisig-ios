@@ -21,7 +21,6 @@ enum BlockChainSpecific: Codable, Hashable {
     case THORChain(accountNumber: UInt64, sequence: UInt64, fee: UInt64)
     case MayaChain(accountNumber: UInt64, sequence: UInt64)
     case Cosmos(accountNumber: UInt64, sequence: UInt64, gas: UInt64)
-    case DydxChain(accountNumber: UInt64, sequence: UInt64, gas: UInt64)
     case Solana(recentBlockHash: String, priorityFee: BigInt) // priority fee is in microlamports
     case Sui(referenceGasPrice: BigInt, coins: [[String:String]])
     case Polkadot(recentBlockHash: String, nonce: UInt64, currentBlockNumber: BigInt, specVersion: UInt32, transactionVersion: UInt32, genesisHash: String)
@@ -36,10 +35,8 @@ enum BlockChainSpecific: Codable, Hashable {
             return fee.description.toBigInt()
         case .MayaChain:
             return MayaChainHelper.MayaChainGas.description.toBigInt() //Maya uses 10e10
-        case .Cosmos:
-            return 7500
-        case .DydxChain:
-            return 2500000000000000
+        case .Cosmos(_,_,let gas):
+            return gas.description.toBigInt()
         case .Solana:
             return SolanaHelper.defaultFeeInLamports
         case .Sui(let referenceGasPrice, _):
