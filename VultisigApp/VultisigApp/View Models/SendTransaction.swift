@@ -17,20 +17,7 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var gas: String = .empty
     @Published var sendMaxAmount: Bool = false
     @Published var memoFunctionDictionary: ThreadSafeDictionary<String, String> = ThreadSafeDictionary()
-    
-    @Published var coin: Coin = Coin.getInstance(
-        chain: Chain.bitcoin,
-        ticker: "BTC",
-        logo: "",
-        address: "",
-        priceRate: 0.0,
-        decimals: 8,
-        hexPublicKey: "",
-        priceProviderId: "",
-        contractAddress: "",
-        rawBalance: "0",
-        isNativeToken: true
-    )
+    @Published var coin: Coin = Coin.example
     
     var fromAddress: String {
         coin.address

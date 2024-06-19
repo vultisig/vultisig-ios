@@ -4,7 +4,7 @@ import BigInt
 
 @Model
 class Coin: ObservableObject, Codable, Hashable {
-    @Attribute(.unique) var id: String = UUID().uuidString
+    var id: String
     let chain: Chain
     let ticker: String
     var logo: String
@@ -87,8 +87,7 @@ class Coin: ObservableObject, Codable, Hashable {
         self.contractAddress = contractAddress
         self.rawBalance = rawBalance
         self.isNativeToken = isNativeToken
-        //self.id = "\(chain.rawValue)-\(ticker)-\(address)"
-        self.id = UUID().uuidString
+        self.id = "\(chain.rawValue)-\(ticker)-\(address)"
     }
     
     public required init(from decoder: Decoder) throws {
@@ -104,7 +103,7 @@ class Coin: ObservableObject, Codable, Hashable {
         self.hexPublicKey = try container.decodeIfPresent(String.self, forKey: .hexPublicKey) ?? ""
         self.rawBalance = try container.decodeIfPresent(String.self, forKey: .rawBalance) ?? ""
         self.priceRate = try container.decodeIfPresent(Double.self, forKey: .priceRate) ?? 0
-        self.id = UUID().uuidString  // Temporary placeholder, will be set after init
+        self.id = .empty
         self.id = try container.decodeIfPresent(String.self, forKey: .id) ?? "\(chain.rawValue)-\(ticker)-\(address)"
     }
     
