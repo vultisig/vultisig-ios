@@ -40,11 +40,7 @@ class RpcEvmService: RpcService {
                             coin.priceRate = priceUsd
                             cryptoPrice = priceUsd
                         }
-                        
-                        if let coinGeckoId = poolInfo.coingecko_coin_id {
-                            coin.priceProviderId = coinGeckoId
-                        }
-                        
+                                                
                         if let image = poolInfo.image_url, !image.contains("missing.png") {
                             coin.logo = image
                         }
@@ -152,20 +148,21 @@ class RpcEvmService: RpcService {
                 "0x313ce567"  // decimals()
             ]
             
-            // Fetch token details in parallel
-            async let nameHex = fetchERC20Data(methodId: erc20Abi[0], contractAddress: contractAddress)
-            async let symbolHex = fetchERC20Data(methodId: erc20Abi[1], contractAddress: contractAddress)
-            async let decimalsHex = fetchERC20Data(methodId: erc20Abi[2], contractAddress: contractAddress)
+            // Fetch token details sequentially with a 1-second delay
+            let nameHex = try await fetchERC20Data(methodId: erc20Abi[0], contractAddress: contractAddress)
+            try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second delay
             
-            // Await results
-            let nameData = try await nameHex
-            let symbolData = try await symbolHex
-            let decimalsData = try await decimalsHex
+            let symbolHex = try await fetchERC20Data(methodId: erc20Abi[1], contractAddress: contractAddress)
+            try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second delay
+            
+            let decimalsHex = try await fetchERC20Data(methodId: erc20Abi[2], contractAddress: contractAddress)
             
             // Decode hex values to respective types
-            let name = try decodeAbiString(from: nameData)
-            let symbol = try decodeAbiString(from: symbolData)
-            let decimals = Int(hex: decimalsData) ?? 0
+            let name = try decodeAbiString(from: nameHex)
+            let symbol = try decodeAbiString(from: symbolHex)
+            let decimals = Int(hex: decimalsHex) ?? 0
+            
+            print(name, symbol, decimals)
             
             return (name, symbol, decimals)
         } catch {
