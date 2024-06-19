@@ -259,7 +259,7 @@ class CoinSelectionViewModel: ObservableObject {
             let service = try EvmServiceFactory.getService(forCoin: nativeToken)
             let tokens = await service.getTokens(nativeToken: nativeToken, address: nativeToken.address)
             
-            for (index, token) in tokens.enumerated() {
+            for token in tokens {
                 _ = try await addToChain(asset: token, to: vault, priceProviderId: nil)
             }
         } catch {
