@@ -168,7 +168,7 @@ struct CustomTokenView: View {
                 
                 let nativeTokenOptional = group.coins.first(where: {$0.isNativeToken})
                 if let nativeToken = nativeTokenOptional {
-                    self.token = Coin(
+                    self.token = Coin.getInstance(
                         chain: nativeToken.chain,
                         ticker: symbol,
                         logo: .empty,

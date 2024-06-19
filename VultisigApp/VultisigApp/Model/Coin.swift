@@ -4,7 +4,7 @@ import BigInt
 
 @Model
 class Coin: ObservableObject, Codable, Hashable {
-    @Attribute(.unique) var id: String
+    @Attribute(.unique) var id: String = UUID().uuidString
     let chain: Chain
     let ticker: String
     var logo: String
@@ -16,16 +16,54 @@ class Coin: ObservableObject, Codable, Hashable {
     var address: String = ""
     var rawBalance: String = ""
     var priceRate: Double = 0
-    
-    var decimals: Int{
-        get{
+
+    var decimals: Int {
+        get {
             return Int(strDecimals) ?? 0
         }
-        set{
+        set {
             strDecimals = String(newValue)
         }
     }
-    init(
+
+    private static var instances = ThreadSafeDictionary<String, Coin>()
+    
+    static func getInstance(
+        chain: Chain,
+        ticker: String,
+        logo: String,
+        address: String,
+        priceRate: Double,
+        decimals: Int,
+        hexPublicKey: String,
+        priceProviderId: String,
+        contractAddress: String,
+        rawBalance: String,
+        isNativeToken: Bool
+    ) -> Coin {
+        let id = "\(chain.rawValue)-\(ticker)-\(address)"
+        if let instance = instances.get(id) {
+            return instance
+        } else {
+            let coin = Coin(
+                chain: chain,
+                ticker: ticker,
+                logo: logo,
+                address: address,
+                priceRate: priceRate,
+                decimals: decimals,
+                hexPublicKey: hexPublicKey,
+                priceProviderId: priceProviderId,
+                contractAddress: contractAddress,
+                rawBalance: rawBalance,
+                isNativeToken: isNativeToken
+            )
+            instances.set(id, coin)
+            return coin
+        }
+    }
+
+    private init(
         chain: Chain,
         ticker: String,
         logo: String,
@@ -49,30 +87,28 @@ class Coin: ObservableObject, Codable, Hashable {
         self.contractAddress = contractAddress
         self.rawBalance = rawBalance
         self.isNativeToken = isNativeToken
-        
-        self.id = "\(chain.rawValue)-\(ticker)-\(address)"
+        //self.id = "\(chain.rawValue)-\(ticker)-\(address)"
+        self.id = UUID().uuidString
     }
     
-    required init(from decoder: Decoder) throws {
+    public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        let chain = try container.decode(Chain.self, forKey: .chain)
-        let ticker = try container.decode(String.self, forKey: .ticker)
-        let address = try container.decodeIfPresent(String.self, forKey: .address) ?? ""
-        
-        self.chain = chain
-        self.ticker = ticker
-        self.address = address
+        self.chain = try container.decode(Chain.self, forKey: .chain)
+        self.ticker = try container.decode(String.self, forKey: .ticker)
+        self.address = try container.decodeIfPresent(String.self, forKey: .address) ?? ""
         self.logo = try container.decode(String.self, forKey: .logo)
         self.strDecimals = String(try container.decode(Int.self, forKey: .decimals))
         self.priceProviderId = try container.decode(String.self, forKey: .priceProviderId)
         self.contractAddress = try container.decode(String.self, forKey: .contractAddress)
         self.isNativeToken = try container.decode(Bool.self, forKey: .isNativeToken)
         self.hexPublicKey = try container.decodeIfPresent(String.self, forKey: .hexPublicKey) ?? ""
+        self.rawBalance = try container.decodeIfPresent(String.self, forKey: .rawBalance) ?? ""
+        self.priceRate = try container.decodeIfPresent(Double.self, forKey: .priceRate) ?? 0
+        self.id = UUID().uuidString  // Temporary placeholder, will be set after init
         self.id = try container.decodeIfPresent(String.self, forKey: .id) ?? "\(chain.rawValue)-\(ticker)-\(address)"
-        
     }
     
-    func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
         try container.encode(chain, forKey: .chain)
@@ -84,11 +120,12 @@ class Coin: ObservableObject, Codable, Hashable {
         try container.encode(isNativeToken, forKey: .isNativeToken)
         try container.encode(hexPublicKey, forKey: .hexPublicKey)
         try container.encode(address, forKey: .address)
+        try container.encode(rawBalance, forKey: .rawBalance)
+        try container.encode(priceRate, forKey: .priceRate)
     }
-    
-    
+
     func clone() -> Coin {
-        return Coin(
+        return Coin.getInstance(
             chain: chain,
             ticker: ticker,
             logo: logo,
@@ -128,15 +165,15 @@ class Coin: ObservableObject, Codable, Hashable {
     
     var chainType: ChainType {
         switch self.chain {
-        case .thorChain,.mayaChain:
+        case .thorChain, .mayaChain:
             return .THORChain
         case .solana:
             return .Solana
-        case .ethereum,.avalanche,.base,.blast,.arbitrum,.polygon,.optimism,.bscChain,.cronosChain, .zksync:
+        case .ethereum, .avalanche, .base, .blast, .arbitrum, .polygon, .optimism, .bscChain, .cronosChain, .zksync:
             return .EVM
-        case .bitcoin,.bitcoinCash,.litecoin,.dogecoin,.dash:
+        case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             return .UTXO
-        case .gaiaChain,.kujira, .dydx:
+        case .gaiaChain, .kujira, .dydx:
             return .Cosmos
         case .sui:
             return .Sui
@@ -144,7 +181,8 @@ class Coin: ObservableObject, Codable, Hashable {
             return .Polkadot
         }
     }
-    var feeDefault: String{
+    
+    var feeDefault: String {
         switch self.chain {
         case .thorChain:
             return "2000000"
@@ -152,19 +190,19 @@ class Coin: ObservableObject, Codable, Hashable {
             return "2000000000"
         case .solana:
             return "7000"
-        case .ethereum,.avalanche,.base,.blast,.arbitrum,.polygon,.optimism,.bscChain,.cronosChain, .zksync:
+        case .ethereum, .avalanche, .base, .blast, .arbitrum, .polygon, .optimism, .bscChain, .cronosChain, .zksync:
             if self.isNativeToken {
                 return "23000"
             } else {
                 return "120000"
             }
-        case .bitcoin,.bitcoinCash,.dash:
+        case .bitcoin, .bitcoinCash, .dash:
             return "20"
         case .litecoin:
             return "1000"
         case .dogecoin:
             return "1000000"
-        case .gaiaChain,.kujira:
+        case .gaiaChain, .kujira:
             return "200000"
         case .dydx:
             return DydxHelper.DydxGasLimit.description
@@ -251,10 +289,10 @@ class Coin: ObservableObject, Codable, Hashable {
         guard !isNativeToken else { return nil }
         return chain.logo
     }
-    
-    static let example = Coin(
-        chain: Chain.bitcoin,
-        ticker: "BTC",
+
+    static let example = Coin.getInstance(
+        chain: .solana,
+        ticker: "BTC-FAKE-ON-SOLANA",
         logo: "BitcoinLogo",
         address: "bc1qxyz...",
         priceRate: 20000.0,
@@ -263,24 +301,23 @@ class Coin: ObservableObject, Codable, Hashable {
         priceProviderId: "Bitcoin",
         contractAddress: "ContractAddressExample",
         rawBalance: "500000000",
-        isNativeToken: false
+        isNativeToken: true
     )
 }
 
 private extension Coin {
-    
     enum CodingKeys: String, CodingKey {
         case id
         case chain
         case ticker
         case logo
-        case chainType
         case decimals
-        case feeDefault
         case priceProviderId
         case contractAddress
         case isNativeToken
         case hexPublicKey
         case address
+        case rawBalance
+        case priceRate
     }
 }

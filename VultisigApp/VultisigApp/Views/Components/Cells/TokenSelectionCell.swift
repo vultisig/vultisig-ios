@@ -72,7 +72,7 @@ struct TokenSelectionCell: View {
         case .coin(let coin):
             return coin
         case .oneInch(let token):
-            return Coin(
+            return Coin.getInstance(
                 chain: chain,
                 ticker: token.symbol,
                 logo: token.logoURI ?? .empty,

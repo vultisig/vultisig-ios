@@ -131,7 +131,7 @@ class CoinSelectionViewModel: ObservableObject {
             let coinResult = evmHelper.getCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
             switch coinResult {
             case .success(let coin):
-                let newCoin = Coin(chain: asset.chain,
+                let newCoin = Coin.getInstance(chain: asset.chain,
                                    ticker: asset.ticker,
                                    logo: asset.logo,
                                    address: coin.address,

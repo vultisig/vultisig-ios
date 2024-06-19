@@ -31,7 +31,7 @@ struct Token: Decodable, Identifiable {
     let rawBalance: String
     
     func toCoin(nativeToken: Coin, priceRate: Double) -> Coin {
-        return Coin(
+        return Coin.getInstance(
             chain: nativeToken.chain,
             ticker: self.tokenInfo.symbol,
             logo: self.tokenInfo.image ?? .empty,

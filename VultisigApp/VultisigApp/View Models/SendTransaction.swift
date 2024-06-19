@@ -18,7 +18,7 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var sendMaxAmount: Bool = false
     @Published var memoFunctionDictionary: ThreadSafeDictionary<String, String> = ThreadSafeDictionary()
     
-    @Published var coin: Coin = Coin(
+    @Published var coin: Coin = Coin.getInstance(
         chain: Chain.bitcoin,
         ticker: "BTC",
         logo: "",
