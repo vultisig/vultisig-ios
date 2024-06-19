@@ -76,7 +76,8 @@ class EVMHelper {
         signingInput: EthereumSigningInput,
         keysignPayload: KeysignPayload,
         gas: BigUInt? = nil,
-        gasPrice: BigUInt? = nil) -> Result<Data, Error>
+        gasPrice: BigUInt? = nil,
+        incrementNonce: Bool = false) -> Result<Data, Error>
     {
 
         guard let intChainID = Int(coinType.chainId) else {
@@ -92,9 +93,11 @@ class EVMHelper {
             return .failure(HelperError.runtimeError("fail to get Ethereum chain specific"))
         }
 
+        let incrementNonceValue: Int64 = incrementNonce ? 1 : 0
+
         var input = signingInput
         input.chainID = Data(hexString: Int64(intChainID).hexString())!
-        input.nonce = Data(hexString: nonce.hexString())!
+        input.nonce = Data(hexString: (nonce + incrementNonceValue).hexString())!
 
         if let gas, let gasPrice {
             input.gasLimit = gas.serialize()
@@ -172,54 +175,50 @@ class EVMHelper {
     func getSignedTransaction(vaultHexPubKey: String,
                               vaultHexChainCode: String,
                               keysignPayload: KeysignPayload,
-                              signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error>
+                              signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {
         let result = getPreSignedInputData(keysignPayload: keysignPayload)
         switch result {
         case .success(let inputData):
-            return getSignedTransaction(vaultHexPubKey: vaultHexPubKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
-        case .failure(let err):
-            return .failure(err)
+            return try getSignedTransaction(vaultHexPubKey: vaultHexPubKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
+        case .failure(let error):
+            throw error
         }
     }
     
     func getSignedTransaction(vaultHexPubKey: String,
                               vaultHexChainCode: String,
                               inputData: Data,
-                              signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error>
+                              signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {
         let ethPublicKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: vaultHexPubKey, hexChainCode: vaultHexChainCode, derivePath: self.coinType.derivationPath())
         guard let pubkeyData = Data(hexString: ethPublicKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
         else {
-            return .failure(HelperError.runtimeError("public key \(ethPublicKey) is invalid"))
+            throw HelperError.runtimeError("public key \(ethPublicKey) is invalid")
         }
-        
-        do {
-            let hashes = TransactionCompiler.preImageHashes(coinType: self.coinType, txInputData: inputData)
-            let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
-            let allSignatures = DataVector()
-            let publicKeys = DataVector()
-            let signatureProvider = SignatureProvider(signatures: signatures)
-            let signature = signatureProvider.getSignatureWithRecoveryID(preHash: preSigningOutput.dataHash)
-            guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash) else {
-                return .failure(HelperError.runtimeError("fail to verify signature"))
-            }
-            
-            allSignatures.add(data: signature)
-            
-            // it looks like the pubkey compileWithSignature accept is extended public key
-            // also , it can be empty as well , since we don't have extended public key , so just leave it empty
-            let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: self.coinType,
-                                                                                 txInputData: inputData,
-                                                                                 signatures: allSignatures,
-                                                                                 publicKeys: publicKeys)
-            let output = try EthereumSigningOutput(serializedData: compileWithSignature)
-            let result = SignedTransactionResult(rawTransaction: output.encoded.hexString,
-                                                 transactionHash: "0x"+output.encoded.sha3(.keccak256).toHexString())
-            return .success(result)
-        } catch {
-            return .failure(HelperError.runtimeError("fail to get signed ethereum transaction,error:\(error.localizedDescription)"))
+
+        let hashes = TransactionCompiler.preImageHashes(coinType: self.coinType, txInputData: inputData)
+        let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+        let allSignatures = DataVector()
+        let publicKeys = DataVector()
+        let signatureProvider = SignatureProvider(signatures: signatures)
+        let signature = signatureProvider.getSignatureWithRecoveryID(preHash: preSigningOutput.dataHash)
+        guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash) else {
+            throw HelperError.runtimeError("fail to verify signature")
         }
+
+        allSignatures.add(data: signature)
+
+        // it looks like the pubkey compileWithSignature accept is extended public key
+        // also , it can be empty as well , since we don't have extended public key , so just leave it empty
+        let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: self.coinType,
+                                                                             txInputData: inputData,
+                                                                             signatures: allSignatures,
+                                                                             publicKeys: publicKeys)
+        let output = try EthereumSigningOutput(serializedData: compileWithSignature)
+        let result = SignedTransactionResult(rawTransaction: output.encoded.hexString,
+                                             transactionHash: "0x"+output.encoded.sha3(.keccak256).toHexString())
+        return result
     }
 }

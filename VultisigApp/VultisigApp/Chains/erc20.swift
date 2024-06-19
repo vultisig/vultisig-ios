@@ -77,13 +77,13 @@ class ERC20Helper {
     func getSignedTransaction(vaultHexPubKey: String,
                                      vaultHexChainCode: String,
                                      keysignPayload: KeysignPayload,
-                                     signatures: [String: TssKeysignResponse]) -> Result<SignedTransactionResult, Error>
+                                     signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {
         let ethPublicKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: vaultHexPubKey, hexChainCode: vaultHexChainCode, derivePath: self.coinType.derivationPath())
         guard let pubkeyData = Data(hexString: ethPublicKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
         else {
-            return .failure(HelperError.runtimeError("public key \(ethPublicKey) is invalid"))
+            throw HelperError.runtimeError("public key \(ethPublicKey) is invalid")
         }
         let result = getPreSignedInputData(keysignPayload: keysignPayload)
         switch result {
@@ -97,7 +97,7 @@ class ERC20Helper {
                 let signature = signatureProvider.getSignatureWithRecoveryID(preHash: preSigningOutput.dataHash)
                 
                 guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash) else {
-                    return .failure(HelperError.runtimeError("fail to verify signature"))
+                    throw HelperError.runtimeError("fail to verify signature")
                 }
                 
                 allSignatures.add(data: signature)
@@ -111,12 +111,12 @@ class ERC20Helper {
                 let output = try EthereumSigningOutput(serializedData: compileWithSignature)
                 let result = SignedTransactionResult(rawTransaction: output.encoded.hexString,
                                                      transactionHash: "0x"+output.encoded.sha3(.keccak256).toHexString())
-                return .success(result)
+                return result
             } catch {
-                return .failure(HelperError.runtimeError("fail to get signed ethereum transaction,error:\(error.localizedDescription)"))
+                throw HelperError.runtimeError("fail to get signed ethereum transaction,error:\(error.localizedDescription)")
             }
-        case .failure(let err):
-            return .failure(err)
+        case .failure(let error):
+            throw error
         }
     }
 }

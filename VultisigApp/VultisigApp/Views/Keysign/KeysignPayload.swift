@@ -21,7 +21,6 @@ enum BlockChainSpecific: Codable, Hashable {
     case THORChain(accountNumber: UInt64, sequence: UInt64, fee: UInt64)
     case MayaChain(accountNumber: UInt64, sequence: UInt64)
     case Cosmos(accountNumber: UInt64, sequence: UInt64, gas: UInt64)
-    case DydxChain(accountNumber: UInt64, sequence: UInt64, gas: UInt64)
     case Solana(recentBlockHash: String, priorityFee: BigInt) // priority fee is in microlamports
     case Sui(referenceGasPrice: BigInt, coins: [[String:String]])
     case Polkadot(recentBlockHash: String, nonce: UInt64, currentBlockNumber: BigInt, specVersion: UInt32, transactionVersion: UInt32, genesisHash: String)
@@ -36,10 +35,8 @@ enum BlockChainSpecific: Codable, Hashable {
             return fee.description.toBigInt()
         case .MayaChain:
             return MayaChainHelper.MayaChainGas.description.toBigInt() //Maya uses 10e10
-        case .Cosmos:
-            return 7500
-        case .DydxChain:
-            return 2500000000000000
+        case .Cosmos(_,_,let gas):
+            return gas.description.toBigInt()
         case .Solana:
             return SolanaHelper.defaultFeeInLamports
         case .Sui(let referenceGasPrice, _):
@@ -80,32 +77,43 @@ struct KeysignPayload: Codable, Hashable {
         self.vaultPubKeyECDSA = vaultPubKeyECDSA
         self.vaultLocalPartyID = vaultLocalPartyID
     }
-    
+
     var toAmountString: String {
         let decimalAmount = Decimal(string: toAmount.description) ?? Decimal.zero
         let power = Decimal(sign: .plus, exponent: -coin.decimals, significand: 1)
         return "\(decimalAmount * power) \(coin.ticker)"
     }
-    
+
     func getKeysignMessages(vault: Vault) -> Result<[String], Error> {
-        if let swapPayload {
-            switch swapPayload {
-            case .thorchain(let payload):
+        do {
+            var messages: [String] = []
+
+            if let approvePayload {
                 let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-                return swaps.getPreSignedImageHash(swapPayload: payload, keysignPayload: self)
-            case .oneInch(let payload):
-                let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-                return swaps.getPreSignedImageHash(payload: payload, keysignPayload: self)
-            case .mayachain:
-                break // No op - Regular transaction with memo
+                messages += try swaps.getPreSignedApproveImageHash(approvePayload: approvePayload, keysignPayload: self)
             }
+
+            if let swapPayload {
+                let incrementNonce = approvePayload != nil
+                switch swapPayload {
+                case .thorchain(let payload):
+                    let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                    messages += try swaps.getPreSignedImageHash(swapPayload: payload, keysignPayload: self, incrementNonce: incrementNonce)
+                case .oneInch(let payload):
+                    let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                    messages += try swaps.getPreSignedImageHash(payload: payload, keysignPayload: self, incrementNonce: incrementNonce)
+                case .mayachain:
+                    break // No op - Regular transaction with memo
+                }
+            }
+
+            if !messages.isEmpty {
+                return .success(messages)
+            }
+        } catch {
+            return .failure(error)
         }
-        
-        if let approvePayload {
-            let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-            return swaps.getPreSignedApproveImageHash(approvePayload: approvePayload, keysignPayload: self)
-        }
-        
+
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             guard let coinType = CoinType.from(string: coin.chain.name.replacingOccurrences(of: "-", with: "")) else {

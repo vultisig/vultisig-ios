@@ -31,18 +31,19 @@ struct VultisigApp: App {
                 .environmentObject(deeplinkViewModel)
                 .environmentObject(settingsViewModel)
                 .environmentObject(homeViewModel)
+                .onChange(of: scenePhase) {
+                    switch scenePhase {
+                    case .active:
+                        continueLogin()
+                    case .background:
+                        resetLogin()
+                    default:
+                        break
+                    }
+                }
         }
         .modelContainer(sharedModelContainer)
-        .onChange(of: scenePhase) {
-            switch scenePhase {
-            case .active:
-                continueLogin()
-            case .background:
-                resetLogin()
-            default:
-                break
-            }
-        }
+        
     }
     
     var sharedModelContainer: ModelContainer = {
