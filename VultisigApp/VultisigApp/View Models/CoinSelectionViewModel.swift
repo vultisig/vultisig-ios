@@ -271,6 +271,10 @@ class CoinSelectionViewModel: ObservableObject {
     
     private func addDiscoveredTokens(nativeToken: Coin, to vault: Vault) async throws  {
         do {
+            // Only auto discovery for EVM type chains
+            if nativeToken.chain.chainType != .EVM {
+                return
+            }
             let service = try EvmServiceFactory.getService(forCoin: nativeToken)
             let tokens = await service.getTokens(nativeToken: nativeToken, address: nativeToken.address)
             let addresses = tokens.map { $0.contractAddress }
