@@ -10,6 +10,8 @@ public class CryptoPriceService: ObservableObject {
     
     private var cacheTokens: [String: (data: [String: Double], timestamp: Date)] = [:]
     
+    private let CACHE_TIMEOUT_IN_SECONDS: Double = 60 * 60
+    
     private func getCacheTokenKey(contractAddress: String, chain: Chain) -> String {
         let fiat = SettingsCurrency.current.rawValue.lowercased()
         return "\(contractAddress)_\(chain.name.lowercased())_\(fiat)"
@@ -17,7 +19,7 @@ public class CryptoPriceService: ObservableObject {
     
     private func getCachedTokenPrice(contractAddress: String, chain: Chain) async -> Double? {
         let cacheKey = getCacheTokenKey(contractAddress: contractAddress, chain: chain)
-        if let cacheEntry = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheTokens, timeInSeconds: 60 * 30) {
+        if let cacheEntry = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheTokens, timeInSeconds: CACHE_TIMEOUT_IN_SECONDS) {
             return cacheEntry[contractAddress]
         }
         return nil
@@ -161,9 +163,7 @@ public class CryptoPriceService: ObservableObject {
             
             let cacheKey = "\(key)-\(fiat)"
             
-            
-            
-            if let cacheEntry = await Utils.getCachedData(cacheKey: cacheKey, cache: cache, timeInSeconds: 60 * 30) {
+            if let cacheEntry = await Utils.getCachedData(cacheKey: cacheKey, cache: cache, timeInSeconds: CACHE_TIMEOUT_IN_SECONDS) {
                 
                 print("Price from cache coin PAPRIKA")
                 return cacheEntry
@@ -186,8 +186,8 @@ public class CryptoPriceService: ObservableObject {
     private func fetchAllCryptoPricesCoinGecko(for coin: String = "bitcoin", for fiat: String = "usd") async -> CryptoPrice? {
         
         let cacheKey = "\(coin)-\(fiat)"
-        if let cacheEntry = await Utils.getCachedData(cacheKey: cacheKey, cache: cache, timeInSeconds: 60 * 30) {
-            print("Price from cache coin Gecko")
+        if let cacheEntry = await Utils.getCachedData(cacheKey: cacheKey, cache: cache, timeInSeconds: CACHE_TIMEOUT_IN_SECONDS) {
+            print("Price from cache coin Gecko native token \(cacheKey)")
             return cacheEntry
         }
         
@@ -270,10 +270,4 @@ public class CryptoPriceService: ObservableObject {
         
         return vault.coins
     }
-    
-    //    private func isCacheValid(for key: String) -> Bool {
-    //        guard let cacheEntry = cache[key] else { return false }
-    //        let elapsedTime = Date().timeIntervalSince(cacheEntry.timestamp)
-    //        return elapsedTime <= 120 // 1 hour in seconds
-    //    }
 }
