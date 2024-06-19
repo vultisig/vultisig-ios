@@ -260,11 +260,8 @@ class CoinSelectionViewModel: ObservableObject {
         // Save the new coin first
         try await Storage.shared.save(newCoin)
         
-        // Check if the new coin already exists in the vault's coins before appending it
-        if !vault.coins.contains(where: { $0.id == newCoin.id }) {
-            vault.coins.append(newCoin)
-        }
-        
+        vault.coins.append(newCoin)
+
         return newCoin
     }
     
