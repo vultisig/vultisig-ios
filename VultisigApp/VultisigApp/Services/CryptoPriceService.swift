@@ -10,6 +10,19 @@ public class CryptoPriceService: ObservableObject {
     
     private var cacheTokens: [String: (data: [String: Double], timestamp: Date)] = [:]
     
+    private func getCacheTokenKey(contractAddress: String, chain: Chain) -> String {
+        let fiat = SettingsCurrency.current.rawValue.lowercased()
+        return "\(contractAddress)_\(chain.name.lowercased())_\(fiat)"
+    }
+    
+    private func getCachedTokenPrice(contractAddress: String, chain: Chain) async -> Double? {
+        let cacheKey = getCacheTokenKey(contractAddress: contractAddress, chain: chain)
+        if let cacheEntry = await Utils.getCachedData(cacheKey: cacheKey, cache: cacheTokens, timeInSeconds: 60 * 30) {
+            return cacheEntry[contractAddress]
+        }
+        return nil
+    }
+    
     private init() {}
     
     func getPrice(priceProviderId: String) async -> Double {
@@ -30,13 +43,12 @@ public class CryptoPriceService: ObservableObject {
     }
     
     func fetchCoingeckoPoolPrice(chain: Chain, contractAddress: String) async throws -> (image_url: String?, coingecko_coin_id: String?, price_usd: Double?) {
-        let fiat = SettingsCurrency.current.rawValue.lowercased()
-        let cacheKey = "\(contractAddress)_\(chain.name.lowercased())_\(fiat)"
+        
+        let cacheKey = getCacheTokenKey(contractAddress: contractAddress, chain: chain)
         
         // Check if the price is cached and valid
-        if let cacheEntry = cacheTokens[cacheKey], isCacheValid(for: cacheKey) {
-            print("Price from cache")
-            return (image_url: nil, coingecko_coin_id: nil, price_usd: cacheEntry.data[contractAddress])
+        if let cacheEntry = await getCachedTokenPrice(contractAddress: contractAddress, chain: chain) {
+            return (image_url: nil, coingecko_coin_id: nil, price_usd: cacheEntry)
         }
         
         // Fetch the price from the network if not in cache
@@ -76,69 +88,30 @@ public class CryptoPriceService: ObservableObject {
         return (image_url: nil, coingecko_coin_id: nil, price_usd: nil)
     }
     
-    func fetchCoingeckoId(chain: Chain, addresses: [String]) async throws -> [String?] {
-        struct Response: Codable {
-            struct Data: Codable {
-                struct Attributes: Codable {
-                    let coingecko_coin_id: String?
-                }
-                let attributes: Attributes
-            }
-            let data: [Data]
-        }
-        let response: Response = try await Utils.fetchObject(from: Endpoint.fetchTokensInfo(
-            network: chain.coingeckoId,
-            addresses: addresses)
-        )
-        return response.data.map { $0.attributes.coingecko_coin_id }
-    }
-    
     func getTokenPrice(coin: Coin) async -> Double {
-        let fiat = SettingsCurrency.current.rawValue.lowercased()
-        let key = "\(coin.contractAddress)_\(coin.chain.name.lowercased())_\(fiat)"
+        let cacheKey = getCacheTokenKey(contractAddress: coin.contractAddress, chain: coin.chain)
         
-        // First check if the price is already cached
-        let pricesCoinGecko = await getAllTokenPricesCoinGecko()
-        if let cachedPrice = pricesCoinGecko[key] {
-            return cachedPrice
+        if let cacheEntry = await getCachedTokenPrice(contractAddress: coin.contractAddress, chain: coin.chain) {
+            print("getTokenPrice > from cache \(cacheKey)")
+            return cacheEntry
         } else {
             let prices = await fetchCoingeckoTokenPrice(contractAddresses: [coin.contractAddress], chain: coin.chain)
-            return prices[key] ?? .zero
+            return prices[cacheKey] ?? .zero
         }
-    }
-    
-    private func getAllTokenPricesCoinGecko() async -> [String: Double] {
-        let fiat = SettingsCurrency.current.rawValue.lowercased()
-        let tokens = getCoins().filter { !$0.isNativeToken }
-        let tokenGroups = Dictionary(grouping: tokens, by: { $0.chain })
-        
-        var allTokenPrices: [String: Double] = [:]
-        
-        for (chain, tokensInChain) in tokenGroups {
-            let contractAddresses = tokensInChain.map { $0.contractAddress }
-            let prices = await fetchCoingeckoTokenPrice(contractAddresses: contractAddresses, chain: chain)
-            for (address, price) in prices {
-                let key = "\(address)_\(chain.name.lowercased())_\(fiat)"
-                allTokenPrices[key] = price
-            }
-            try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second delay, should not throw
-        }
-        
-        return allTokenPrices
     }
     
     private func fetchCoingeckoTokenPrice(contractAddresses: [String], chain: Chain) async -> [String: Double] {
         var tokenPrices: [String: Double] = [:]
         let fiat = SettingsCurrency.current.rawValue.lowercased()
-        
         do {
             // Create a cache key for each contract address individually
             for address in contractAddresses {
-                let cacheKey = "\(address)_\(chain.name.lowercased())_\(fiat)"
-                
-                if let cacheEntry = cacheTokens[cacheKey], isCacheValid(for: cacheKey) {
+                let cacheKey = getCacheTokenKey(contractAddress: address, chain: chain)
+                //if let cacheEntry = cacheTokens[cacheKey], isCacheValid(for: cacheKey) {
+                if let cacheEntry = await getCachedTokenPrice(contractAddress: address, chain: chain) {
                     print("Price from cache tokens")
-                    tokenPrices[address] = cacheEntry.data[address]
+                    print("fetchCoingeckoTokenPrice > cacheKey: \(cacheKey)")
+                    tokenPrices[address] = cacheEntry
                     continue
                 }
             }
@@ -148,13 +121,15 @@ public class CryptoPriceService: ObservableObject {
             let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
             
             for address in contractAddresses {
-                if let result = Utils.extractResultFromJson(fromData: data, path: "\(address).\(SettingsCurrency.current.rawValue.lowercased())"),
+                if let result = Utils.extractResultFromJson(fromData: data, path: "\(address).\(fiat)"),
                    let resultNumber = result as? NSNumber {
                     let fiatPrice = Double(resultNumber.doubleValue)
                     tokenPrices[address] = fiatPrice
                     
                     // Cache the price for each contract address individually
-                    let cacheKey = "\(address)_\(chain.name.lowercased())_\(fiat)"
+                    let cacheKey = getCacheTokenKey(contractAddress: address, chain: chain)
+                    print("fetchCoingeckoTokenPrice > FROM WEB: \(cacheKey)")
+                    
                     self.cacheTokens[cacheKey] = (data: [address: fiatPrice], timestamp: Date())
                 } else {
                     print("JSON decoding error for \(address)")
@@ -186,9 +161,12 @@ public class CryptoPriceService: ObservableObject {
             
             let cacheKey = "\(key)-\(fiat)"
             
-            if let cacheEntry = cache[cacheKey], isCacheValid(for: cacheKey) {
+            
+            
+            if let cacheEntry = await Utils.getCachedData(cacheKey: cacheKey, cache: cache, timeInSeconds: 60 * 30) {
+                
                 print("Price from cache coin PAPRIKA")
-                return cacheEntry.data
+                return cacheEntry
             }
             
             let coinPaprikaCoins = getCoinPaprikaCoins(coins: coins)
@@ -208,10 +186,9 @@ public class CryptoPriceService: ObservableObject {
     private func fetchAllCryptoPricesCoinGecko(for coin: String = "bitcoin", for fiat: String = "usd") async -> CryptoPrice? {
         
         let cacheKey = "\(coin)-\(fiat)"
-        
-        if let cacheEntry = cache[cacheKey], isCacheValid(for: cacheKey) {
+        if let cacheEntry = await Utils.getCachedData(cacheKey: cacheKey, cache: cache, timeInSeconds: 60 * 30) {
             print("Price from cache coin Gecko")
-            return cacheEntry.data
+            return cacheEntry
         }
         
         let urlString = Endpoint.fetchCryptoPrices(coin: coin, fiat: fiat)
@@ -294,9 +271,9 @@ public class CryptoPriceService: ObservableObject {
         return vault.coins
     }
     
-    private func isCacheValid(for key: String) -> Bool {
-        guard let cacheEntry = cache[key] else { return false }
-        let elapsedTime = Date().timeIntervalSince(cacheEntry.timestamp)
-        return elapsedTime <= 120 // 1 hour in seconds
-    }
+    //    private func isCacheValid(for key: String) -> Bool {
+    //        guard let cacheEntry = cache[key] else { return false }
+    //        let elapsedTime = Date().timeIntervalSince(cacheEntry.timestamp)
+    //        return elapsedTime <= 120 // 1 hour in seconds
+    //    }
 }
