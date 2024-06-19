@@ -6,9 +6,9 @@ public class CryptoPriceService: ObservableObject {
     
     public static let shared = CryptoPriceService()
     
-    private var cache: [String: (data: CryptoPrice, timestamp: Date)] = [:]
+    private var cache: ThreadSafeDictionary<String, (data: CryptoPrice, timestamp: Date)> = ThreadSafeDictionary()
     
-    private var cacheTokens: [String: (data: [String: Double], timestamp: Date)] = [:]
+    private var cacheTokens: ThreadSafeDictionary<String, (data: [String: Double], timestamp: Date)> = ThreadSafeDictionary()
     
     private let CACHE_TIMEOUT_IN_SECONDS: Double = 60 * 60
     
@@ -42,8 +42,8 @@ public class CryptoPriceService: ObservableObject {
         return price
     }
     
-    // this function should prevent any rate limit on the CoinGecko API
-    // it fetches the prices of all tokens in the vault in bulk per chain
+    // This function should prevent any rate limit on the CoinGecko API
+    // It fetches the prices of all tokens in the vault in bulk per chain
     private func getAllTokenPricesCoinGecko() async -> [String: Double] {
         let tokens = getCoins().filter { !$0.isNativeToken }
         let tokenGroups = Dictionary(grouping: tokens, by: { $0.chain })
@@ -95,7 +95,7 @@ public class CryptoPriceService: ObservableObject {
                 
                 // Cache the fetched price
                 if let priceRate = priceRate {
-                    cacheTokens[cacheKey] = (data: [contractAddress: priceRate], timestamp: Date())
+                    cacheTokens.set(cacheKey, (data: [contractAddress: priceRate], timestamp: Date()))
                 }
                 
                 return (response.attributes.image_url, response.attributes.coingecko_coin_id, priceRate)
@@ -111,7 +111,7 @@ public class CryptoPriceService: ObservableObject {
     func getTokenPrice(coin: Coin) async -> Double {
         let cacheKey = getCacheTokenKey(contractAddress: coin.contractAddress, chain: coin.chain)
         
-        //Those tokens are the ones in the vault, so we should cache them if not cached
+        // Those tokens are the ones in the vault, so we should cache them if not cached
         let vaultTokens = await getAllTokenPricesCoinGecko()
         let vaultPrice = vaultTokens[coin.contractAddress]
         
@@ -143,7 +143,7 @@ public class CryptoPriceService: ObservableObject {
             let urlString = Endpoint.fetchTokenPrice(network: chain.name, addresses: contractAddresses, fiat: fiat)
             let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
             
-            // should not get the price to the coins already in the cache
+            // Should not get the price to the coins already in the cache
             for address in contractAddresses.filter({ !tokenPrices.keys.contains($0) }) {
                 if let result = Utils.extractResultFromJson(fromData: data, path: "\(address).\(fiat)"),
                    let resultNumber = result as? NSNumber {
@@ -154,7 +154,7 @@ public class CryptoPriceService: ObservableObject {
                     let cacheKey = getCacheTokenKey(contractAddress: address, chain: chain)
                     print("fetchCoingeckoTokenPrice > FROM WEB: \(cacheKey)")
                     
-                    self.cacheTokens[cacheKey] = (data: [address: fiatPrice], timestamp: Date())
+                    cacheTokens.set(cacheKey, (data: [address: fiatPrice], timestamp: Date()))
                 } else {
                     print("JSON decoding error for \(address)")
                 }
@@ -192,14 +192,14 @@ public class CryptoPriceService: ObservableObject {
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             let decodedData = try JSONDecoder().decode(CryptoPrice.self, from: data)
-            self.cache[cacheKey] = (data: decodedData, timestamp: Date())
+            cache.set(cacheKey, (data: decodedData, timestamp: Date()))
             return decodedData
         } catch {
             return nil
         }
     }
     
-    private func getCoins() -> [Coin]{
+    private func getCoins() -> [Coin] {
         guard let vault = ApplicationState.shared.currentVault else {
             print("current vault is nil")
             return []
