@@ -132,10 +132,14 @@ struct ChainDetailView: View {
         ChainHeaderCell(group: group, isLoading: $isLoading)
     }
     
-    var cells: some View {
-        ForEach(group.coins.sorted(by: {
+    var sortedCoins: [Coin] {
+        group.coins.sorted(by: {
             $0.isNativeToken || ($0.balanceInFiatDecimal > $1.balanceInFiatDecimal)
-        }), id: \.self) { coin in
+        })
+    }
+
+    var cells: some View {
+        ForEach(sortedCoins, id: \.self) { coin in
             getCoinCell(coin)
         }
     }
