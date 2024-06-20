@@ -138,6 +138,12 @@ class Endpoint {
         "\(vultisigApiProxy)/coingeicko/api/v3/simple/price?ids=\(coin)&vs_currencies=\(fiat)"
     }
     
+    static func fetchTokenPrice(network: String, addresses: [String], fiat: String) -> String {
+        let addresses = addresses.joined(separator: ",")
+        let url = "\(vultisigApiProxy)/coingeicko/api/v3/simple/token_price/\(network.lowercased())?contract_addresses=\(addresses)&vs_currencies=\(fiat)"
+        return url
+    }
+    
     static func fetchTokensInfo(network: String, addresses: [String]) -> String {
         let addresses = addresses.joined(separator: ",")
         return "\(vultisigApiProxy)/coingeicko/api/v3/onchain/networks/\(network)/tokens/multi/\(addresses)"

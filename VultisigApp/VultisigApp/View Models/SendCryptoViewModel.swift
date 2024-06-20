@@ -149,18 +149,38 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     
     private func getPriceRate(tx: SendTransaction) async -> Double {
         do {
-            let priceRateFiat = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
-            if priceRateFiat == .zero, SettingsCurrency.current == .USD {
-                let poolInfo = try await CryptoPriceService.shared.fetchCoingeckoPoolPrice(chain: tx.coin.chain, contractAddress: tx.coin.contractAddress)
-                if let priceUsd = poolInfo.price_usd {
-                    return priceUsd
+            
+            var priceRateFiat = Double.zero;
+            
+            if tx.coin.isNativeToken {
+                priceRateFiat = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
+            } else {
+                // If the price rate is zero and the current currency is USD
+                if tx.coin.chainType == .EVM {
+                    // Attempt to get the token price directly
+                    let tokenPrice = await CryptoPriceService.shared.getTokenPrice(coin: tx.coin)
+                    if tokenPrice != .zero {
+                        return tokenPrice
+                    }
+                    
+                    // Attempt to get the custom token price from CoinGecko
+                    if SettingsCurrency.current == .USD {
+                        let poolInfo = try await CryptoPriceService.shared.fetchCoingeckoPoolPrice(chain: tx.coin.chain, contractAddress: tx.coin.contractAddress)
+                        if let priceUsd = poolInfo.price_usd {
+                            return priceUsd
+                        }
+                    }
                 }
             }
+            
+            // Return the price rate in fiat if available, or zero if all attempts fail
             return priceRateFiat
         } catch {
+            // In case of any errors, return zero
             return Double.zero
         }
     }
+    
     
     func convertFiatToCoin(newValue: String, tx: SendTransaction) async {
         

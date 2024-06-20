@@ -19,8 +19,10 @@ class RpcEvmService: RpcService {
         var cryptoPrice = Double(0)
         var rawBalance = ""
         do{
-            if !coin.priceProviderId.isEmpty {
+            if !coin.priceProviderId.isEmpty, coin.isNativeToken {
                 cryptoPrice = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
+            } else {
+                cryptoPrice = await CryptoPriceService.shared.getTokenPrice(coin: coin)
             }
             
             if coin.isNativeToken {
@@ -37,10 +39,6 @@ class RpcEvmService: RpcService {
                         if let priceUsd = poolInfo.price_usd {
                             coin.priceRate = priceUsd
                             cryptoPrice = priceUsd
-                        }
-                        
-                        if let coinGeckoId = poolInfo.coingecko_coin_id {
-                            coin.priceProviderId = coinGeckoId
                         }
                         
                         if let image = poolInfo.image_url, !image.contains("missing.png") {
