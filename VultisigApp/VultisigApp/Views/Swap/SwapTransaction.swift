@@ -18,6 +18,7 @@ class SwapTransaction: ObservableObject {
     @Published var oneInchFee: BigInt = .zero
     @Published var gas: BigInt = .zero
     @Published var quote: SwapQuote?
+    @Published var isApproveRequired: Bool = false
 
     var fee: BigInt {
         switch quote {
