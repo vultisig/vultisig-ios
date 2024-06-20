@@ -4,7 +4,7 @@ struct ChainDetailView: View {
     @ObservedObject var group: GroupedChain
     let vault: Vault
     
-    @State var tokens: [Coin] = []
+    @State var tokens: [CoinMeta] = []
     @State var actions: [CoinAction] = []
     @StateObject var sendTx = SendTransaction()
     @State var isLoading = false

@@ -11,9 +11,8 @@ import WalletCore
 
 @MainActor
 class CoinSelectionViewModel: ObservableObject {
-    
-    @Published var groupedAssets: [String: [Coin]] = [:]
-    @Published var selection = Set<Coin>()
+    @Published var groupedAssets: [String: [CoinMeta]] = [:]
+    @Published var selection = Set<CoinMeta>()
     
     let actionResolver = CoinActionResolver()
     let balanceService = BalanceService.shared
@@ -35,7 +34,7 @@ class CoinSelectionViewModel: ObservableObject {
     }
     
     private func checkSelected(for vault: Vault) {
-        selection = Set(vault.coins)
+        selection = Set(vault.coins.map{$0.toCoinMeta()})
     }
     
     private func groupAssets() {
@@ -48,7 +47,7 @@ class CoinSelectionViewModel: ObservableObject {
         })) { $0.chain.name }
     }
     
-    func handleSelection(isSelected: Bool, asset: Coin) {
+    func handleSelection(isSelected: Bool, asset: CoinMeta) {
         if isSelected {
             if !selection.contains(where: { $0.chain == asset.chain && $0.ticker == asset.ticker }) {
                 selection.insert(asset)
@@ -89,7 +88,7 @@ class CoinSelectionViewModel: ObservableObject {
                 !allTokens.contains(where: { selection.ticker == $0.ticker && selection.chain == $0.chain})
             }
             
-            var newCoins: [Coin] = []
+            var newCoins: [CoinMeta] = []
             for asset in filteredSelection {
                 if !vault.coins.contains(where: { $0.ticker == asset.ticker && $0.chain == asset.chain}) {
                     newCoins.append(asset)
@@ -103,7 +102,7 @@ class CoinSelectionViewModel: ObservableObject {
             print("fail to save asset,\(error)")
         }
     }
-    private func getNewCoin(asset: Coin, vault: Vault) -> Coin? {
+    private func getNewCoin(asset: CoinMeta, vault: Vault) -> Coin? {
         switch asset.chain {
         case .thorChain:
             let runeCoinResult = THORChainHelper.getRUNECoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
@@ -220,14 +219,14 @@ class CoinSelectionViewModel: ObservableObject {
         return nil
     }
     
-    private func addToChain(assets: [Coin], to vault: Vault) async throws {
-        if let coin = assets.first, coin.chainType == .EVM, !coin.isNativeToken {
+    private func addToChain(assets: [CoinMeta], to vault: Vault) async throws {
+        if let coin = assets.first, coin.chain.chainType == .EVM, !coin.isNativeToken {
             for asset in assets {
                 _ = try await addToChain(asset: asset, to: vault, priceProviderId: nil)
             }
         } else {
             for asset in assets {
-                if let newCoin = try await addToChain(asset: asset, to: vault, priceProviderId: nil) {
+                if let newCoin = try await addToChain(asset: asset, to: vault, priceProviderId: asset.priceProviderId) {
                     print("Add discovered tokens for \(asset.ticker) on the chain \(asset.chain.name)")
                     try await addDiscoveredTokens(nativeToken: newCoin, to: vault)
                 }
@@ -236,7 +235,7 @@ class CoinSelectionViewModel: ObservableObject {
     }
     
     
-    private func addToChain(asset: Coin, to vault: Vault, priceProviderId: String?) async throws -> Coin? {
+    private func addToChain(asset: CoinMeta, to vault: Vault, priceProviderId: String?) async throws -> Coin? {
         guard let newCoin = getNewCoin(asset: asset, vault: vault) else {
             return nil
         }

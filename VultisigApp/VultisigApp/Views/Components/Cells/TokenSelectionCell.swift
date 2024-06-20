@@ -64,25 +64,21 @@ struct TokenSelectionCell: View {
     }
     
     private func handleSelection(_ isSelected: Bool) {
-        coinSelectionViewModel.handleSelection(isSelected: isSelected, asset: convertToCoin(asset))
+        coinSelectionViewModel.handleSelection(isSelected: isSelected, asset: convertToCoinMeta(asset))
     }
     
-    private func convertToCoin(_ asset: TokenSelectionViewModel.Token) -> Coin {
+    private func convertToCoinMeta(_ asset: TokenSelectionViewModel.Token) -> CoinMeta {
         switch asset {
         case .coin(let coin):
             return coin
         case .oneInch(let token):
-            return Coin(
+            return CoinMeta(
                 chain: chain,
                 ticker: token.symbol,
                 logo: token.logoURI ?? .empty,
-                address: address,
-                priceRate: 0,
                 decimals: token.decimals,
-                hexPublicKey: .empty,
                 priceProviderId: token.symbol.lowercased(),
                 contractAddress: token.address,
-                rawBalance: .zero,
                 isNativeToken: false
             )
         }

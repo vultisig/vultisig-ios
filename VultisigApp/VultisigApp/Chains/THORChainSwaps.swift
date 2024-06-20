@@ -69,7 +69,7 @@ class THORChainSwaps {
                 let utxoHelper = UTXOChainsHelper(coin: .dogecoin, vaultHexPublicKey: self.vaultHexPublicKey, vaultHexChainCode: self.vaultHexChainCode)
                 return utxoHelper.getSigningInputData(keysignPayload: keysignPayload, signingInput: output.bitcoin)
             case .eth, .bsc, .avax:
-                let signedEvmTx = EVMHelper.getHelper(coin: keysignPayload.coin).getPreSignedInputData(signingInput: output.ethereum, keysignPayload: keysignPayload, incrementNonce: incrementNonce)
+                let signedEvmTx = EVMHelper.getHelper(coin: keysignPayload.coin.toCoinMeta()).getPreSignedInputData(signingInput: output.ethereum, keysignPayload: keysignPayload, incrementNonce: incrementNonce)
                 return signedEvmTx
             case .atom:
                 return ATOMHelper().getSwapPreSignedInputData(keysignPayload:keysignPayload, signingInput: output.cosmos)
@@ -141,7 +141,7 @@ class THORChainSwaps {
             }
             $0.toAddress = keysignPayload.coin.contractAddress
         }
-        let result = EVMHelper.getHelper(coin: keysignPayload.coin).getPreSignedInputData(
+        let result = EVMHelper.getHelper(coin: keysignPayload.coin.toCoinMeta()).getPreSignedInputData(
             signingInput: approveInput,
             keysignPayload: keysignPayload
         )
@@ -173,7 +173,7 @@ class THORChainSwaps {
 
         switch result {
         case .success(let inputData):
-            let signedEvmTx = try EVMHelper.getHelper(coin: keysignPayload.coin).getSignedTransaction(vaultHexPubKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
+            let signedEvmTx = try EVMHelper.getHelper(coin: keysignPayload.coin.toCoinMeta()).getSignedTransaction(vaultHexPubKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
             return signedEvmTx
         case .failure(let error):
             throw error
@@ -202,7 +202,7 @@ class THORChainSwaps {
                 let utxoHelper = UTXOChainsHelper(coin: .dogecoin, vaultHexPublicKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode)
                 return try utxoHelper.getSignedTransaction(inputData: inputData, signatures: signatures)
             case .eth, .bsc, .avax:
-                let signedEvmTx = try EVMHelper.getHelper(coin: keysignPayload.coin).getSignedTransaction(vaultHexPubKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
+                let signedEvmTx = try EVMHelper.getHelper(coin: keysignPayload.coin.toCoinMeta()).getSignedTransaction(vaultHexPubKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
                 return signedEvmTx
             case .atom:
                 return try ATOMHelper().getSignedTransaction(vaultHexPubKey: vaultHexPublicKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)

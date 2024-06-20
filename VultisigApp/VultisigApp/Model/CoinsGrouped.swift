@@ -48,5 +48,5 @@ class GroupedChain: ObservableObject {
         order = index
     }
     
-    static var example = GroupedChain(chain: .ethereum, address: "bc1psrjtwm7682v6nhx2...uwfgcfelrennd7pcvq", logo: "btc", count: 3, coins: [Coin.example])
+    static var example = GroupedChain(chain: .bitcoin, address: "bc1psrjtwm7682v6nhx2...uwfgcfelrennd7pcvq", logo: "btc", count: 3, coins: [Coin.example])
 }

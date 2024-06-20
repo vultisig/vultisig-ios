@@ -9,9 +9,8 @@ import SwiftUI
 
 @MainActor
 class TokenSelectionViewModel: ObservableObject {
-    
     enum Token: Hashable {
-        case coin(Coin)
+        case coin(CoinMeta)
         case oneInch(OneInchToken)
         
         var symbol: String {
@@ -57,7 +56,7 @@ class TokenSelectionViewModel: ObservableObject {
             tickers.contains(coin.ticker.lowercased()) &&
             !tokens.contains { token in token.symbol.lowercased() == coin.ticker.lowercased() }
         }.map { coin in
-            Token.coin(coin)
+            Token.coin(coin.toCoinMeta())
         }
 
         return filteredTokens + tickerTokens

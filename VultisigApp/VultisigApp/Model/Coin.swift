@@ -144,6 +144,7 @@ class Coin: ObservableObject, Codable, Hashable {
             return .Polkadot
         }
     }
+    
     var feeDefault: String{
         switch self.chain {
         case .thorChain:
@@ -265,10 +266,13 @@ class Coin: ObservableObject, Codable, Hashable {
         rawBalance: "500000000",
         isNativeToken: false
     )
+    
+    func toCoinMeta() -> CoinMeta {
+        return CoinMeta(chain: self.chain, ticker: self.ticker, logo: self.logo, decimals: self.decimals, priceProviderId: self.priceProviderId, contractAddress: self.contractAddress, isNativeToken: self.isNativeToken)
+    }
 }
 
 private extension Coin {
-    
     enum CodingKeys: String, CodingKey {
         case id
         case chain
