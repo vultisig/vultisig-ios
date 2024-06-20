@@ -4,6 +4,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 import WalletCore
 import BigInt
+import Combine
 
 #if os(iOS)
 import CodeScanner
@@ -31,9 +32,9 @@ class SendTransaction: ObservableObject, Hashable {
         rawBalance: "0",
         isNativeToken: true
     )
-    
+    private var _fromAddress: String = ""
     var fromAddress: String {
-        coin.address
+        return _fromAddress
     }
     
     var isAmountExceeded: Bool {
@@ -197,6 +198,7 @@ class SendTransaction: ObservableObject, Hashable {
         self.gas = gas
         self.coin = coin
         self.sendMaxAmount = false
+        self._fromAddress = coin.address
     }
     
     static func == (lhs: SendTransaction, rhs: SendTransaction) -> Bool {
@@ -225,6 +227,7 @@ class SendTransaction: ObservableObject, Hashable {
         self.gas = .empty
         self.coin = coin
         self.sendMaxAmount = false
+        self._fromAddress = coin.address
     }
     
     func parseCryptoURI(_ uri: String) {

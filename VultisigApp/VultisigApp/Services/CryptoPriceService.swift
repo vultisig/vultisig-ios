@@ -48,7 +48,10 @@ public class CryptoPriceService: ObservableObject {
         let allTokenPrices = CryptoPrice(prices: [:])
         
         for (chain, tokensInChain) in tokenGroups {
-            let contractAddresses = tokensInChain.map { $0.contractAddress }
+            let contractAddresses = tokensInChain.map { $0.contractAddress }.filter{!$0.isEmpty}
+            if contractAddresses.count == 0 {
+                continue
+            }
             if let prices = await fetchCoingeckoTokenPrices(contractAddresses: contractAddresses, chain: chain) {
                 allTokenPrices.prices.merge(prices.prices) { (current, _) in current }
             }
@@ -171,7 +174,7 @@ public class CryptoPriceService: ObservableObject {
             return tokenPrices
             
         } catch {
-            print("Fail to fetch coin gecko prices:" + error.localizedDescription)
+            print("Fail to fetch coin gecko prices: \(error.localizedDescription)")
         }
         
         return tokenPrices

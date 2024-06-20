@@ -27,7 +27,7 @@ struct CoinDetailView: View {
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString(coin.ticker, comment: ""))
         .onAppear {
-            sendTx.coin = coin
+            sendTx.reset(coin: coin)
         }
 #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
