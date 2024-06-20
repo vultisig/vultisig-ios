@@ -104,7 +104,7 @@ struct ChainDetailActionButtons: View {
             return
         }
         
-        sendTx.coin = activeCoin
+        sendTx.reset(coin: activeCoin)
     }
 }
 

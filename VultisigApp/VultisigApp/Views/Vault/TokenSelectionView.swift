@@ -89,13 +89,16 @@ struct TokenSelectionView: View {
         }
 #endif
         .task {
-            await tokenViewModel.loadData(chain: group.chain)
+            await tokenViewModel.loadData(groupedChain: group)
         }
         .onAppear {
             isSearchFieldFocused = true
         }
         .onDisappear {
             saveAssets()
+        }
+        .onReceive(tokenViewModel.$searchText) {newVault in
+            tokenViewModel.updateSearchedTokens(groupedChain: group)
         }
     }
     
@@ -109,7 +112,7 @@ struct TokenSelectionView: View {
     
     var view: some View {
         List {
-            let selected = tokenViewModel.selectedTokens(groupedChain: group)
+            let selected = tokenViewModel.selectedTokens
             if !selected.isEmpty {
                 Section(header: Text(NSLocalizedString("Selected", comment:"Selected"))) {
                     ForEach(selected, id: \.self) { token in
@@ -122,7 +125,7 @@ struct TokenSelectionView: View {
             
             if tokenViewModel.searchText.isEmpty {
                 Section(header: Text(NSLocalizedString("tokens", comment:"Tokens"))) {
-                    ForEach(tokenViewModel.preExistingTokens(groupedChain: group), id: \.self) { token in
+                    ForEach(tokenViewModel.preExistTokens, id: \.self) { token in
                         TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel, tokenSelectionView: self)
                             .listRowBackground(Color.clear)
                             .listRowSeparator(.hidden)
@@ -130,7 +133,7 @@ struct TokenSelectionView: View {
                 }
             } else {
                 Section(header: Text(NSLocalizedString("searchResult", comment:"Search Result"))) {
-                    let filtered = tokenViewModel.filteredTokens(groupedChain: group)
+                    let filtered = tokenViewModel.searchedTokens
                     if !filtered.isEmpty {
                         ForEach(filtered, id: \.self) { token in
                             TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel, tokenSelectionView: self)
@@ -157,7 +160,7 @@ struct TokenSelectionView: View {
             
             if tokenViewModel.showRetry {
                 Button {
-                    Task { await tokenViewModel.loadData(chain: group.chain) }
+                    Task { await tokenViewModel.loadData(groupedChain: group) }
                 } label: {
                     FilledButton(title: "Retry")
                 }
