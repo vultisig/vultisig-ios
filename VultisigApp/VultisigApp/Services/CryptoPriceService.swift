@@ -45,8 +45,7 @@ public class CryptoPriceService: ObservableObject {
     private func getAllTokenPricesCoinGecko() async -> CryptoPrice? {
         let tokens = getCoins().filter { !$0.isNativeToken }
         let tokenGroups = Dictionary(grouping: tokens, by: { $0.chain })
-        
-        var allTokenPrices = CryptoPrice(prices: [:])
+        let allTokenPrices = CryptoPrice(prices: [:])
         
         for (chain, tokensInChain) in tokenGroups {
             let contractAddresses = tokensInChain.map { $0.contractAddress }
@@ -106,7 +105,6 @@ public class CryptoPriceService: ObservableObject {
     }
     
     func getTokenPrice(coin: Coin) async -> Double {
-        let cacheKey = getCacheTokenKey(contractAddresses: [coin.contractAddress], chain: coin.chain)
         
         // Those tokens are the ones in the vault, so we should cache them if not cached
         let vaultTokens = await getAllTokenPricesCoinGecko()
@@ -119,9 +117,32 @@ public class CryptoPriceService: ObservableObject {
         
         return price
     }
-    
+    private func getCoinGeckoPlatform(chain:Chain) -> String{
+        switch chain{
+        case .thorChain,.solana,.bitcoin,.bitcoinCash,.litecoin,.dogecoin,.dash,.gaiaChain,.kujira,.mayaChain,.cronosChain,.polkadot,.dydx,.sui:
+            return ""
+        case .ethereum:
+            return "ethereum"
+        case .avalanche:
+            return "avalanche"
+        case .base:
+            return "base"
+        case .blast:
+            return "blast"
+        case .arbitrum:
+            return "arbitrum-one"
+        case .polygon:
+            return "polygon-pos"
+        case .optimism:
+            return "optimistic-ethereum"
+        case .bscChain:
+            return "binance-smart-chain"
+        case .zksync:
+            return "zksync"
+        }
+    }
     private func fetchCoingeckoTokenPrices(contractAddresses: [String], chain: Chain) async -> CryptoPrice? {
-        var tokenPrices = CryptoPrice(prices: [:])
+        let tokenPrices = CryptoPrice(prices: [:])
         let fiat = SettingsCurrency.current.rawValue.lowercased()
         do {
             // Create a cache key for all contract addresses combined
@@ -130,7 +151,7 @@ public class CryptoPriceService: ObservableObject {
             }
             
             // If no cache entry is found, fetch the prices for all contract addresses
-            let urlString = Endpoint.fetchTokenPrice(network: chain.name, addresses: contractAddresses, fiat: fiat)
+            let urlString = Endpoint.fetchTokenPrice(network: getCoinGeckoPlatform(chain: chain), addresses: contractAddresses, fiat: fiat)
             let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
             
             for address in contractAddresses {
@@ -150,7 +171,7 @@ public class CryptoPriceService: ObservableObject {
             return tokenPrices
             
         } catch {
-            print(error.localizedDescription)
+            print("Fail to fetch coin gecko prices:" + error.localizedDescription)
         }
         
         return tokenPrices
@@ -182,6 +203,7 @@ public class CryptoPriceService: ObservableObject {
             cache.set(cacheKey, (data: decodedData, timestamp: Date()))
             return decodedData
         } catch {
+            print("fail to get crypto price: \(error)")
             return nil
         }
     }
