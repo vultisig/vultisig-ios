@@ -95,28 +95,6 @@ class TokensStore {
         
     ]
     
-    static func getNativeToken(coin: Coin) throws -> Coin {
-        if coin.isNativeToken {
-            return coin
-        }
-        guard let nativeToken = TokenSelectionAssets.first(where: { $0.isNativeToken && $0.chain == coin.chain }) else {
-            throw TokenSelectionAssetError.error(message: "We could not find the native/parent token for the token \(coin.ticker)")
-        }
-        return nativeToken.toCoin(address: coin.address, hexPublicKey: coin.hexPublicKey)
-    }
-    
-    static func getCoin(_ ticker: String, coinType: CoinType, address: String,hexPublicKey: String) -> Coin? {
-        return TokenSelectionAssets.first(where: { $0.ticker == ticker && $0.coinType == coinType}).map{$0.toCoin(address: address, hexPublicKey: hexPublicKey)} ?? nil
-    }
-    
-    static func createNewCoinInstance(ticker: String, address: String, hexPublicKey: String, coinType: CoinType) -> Result<Coin, Error> {
-        guard let templateCoin = getCoin(ticker, coinType: coinType,address: address,hexPublicKey: hexPublicKey) else {
-            return .failure(HelperError.runtimeError("doesn't support coin \(ticker)"))
-        }
-        
-        return .success(templateCoin)
-    }
-    
     enum TokenSelectionAssetError: Error {
         case error(message: String)
         

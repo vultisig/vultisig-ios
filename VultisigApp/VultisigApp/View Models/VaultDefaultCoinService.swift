@@ -24,35 +24,19 @@ class VaultDefaultCoinService {
         }
     }
     func setDefaultCoins(for vault: Vault) async {
-        // add bitcoin when the vault doesn't have any coins in it
+        // Add default coins when the vault doesn't have any coins in it
         if vault.coins.count == 0 {
-            print("set default coins for vault:\(vault.name)")
-            for chain in defaultChains {
-                var result: Result<Coin,Error>
-                switch chain {
-                case .bscChain:
-                    result = EVMHelper(coinType: .smartChain).getCoin(hexPubKey: vault.pubKeyEdDSA, hexChainCode: vault.hexChainCode)
-                case .bitcoin:
-                    result = UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode).getCoin()
-                case .ethereum:
-                    result = EVMHelper(coinType: .ethereum).getCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
-                case .thorChain:
-                    result = THORChainHelper.getRUNECoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
-                case .solana:
-                    result = SolanaHelper.getSolana(hexPubKey: vault.pubKeyEdDSA, hexChainCode: vault.hexChainCode)
-                default:
-                    continue
-                }
-                
-                switch result {
-                case .success(let coin):
-                    context.insert(coin)
-                    vault.coins.append(coin)
-                case .failure(let error):
-                    print("error: \(error)")
-                }
-                
-            }
+            let coins = TokensStore.TokenSelectionAssets
+                .filter { asset in defaultChains.contains(where: { $0 == asset.chain }) }
+                .filter { $0.isNativeToken }
+                .compactMap { try? CoinFactory.create(
+                    asset: $0,
+                    hexPubKey: vault.hexChainCode,
+                    hexChainCode: vault.hexChainCode
+                )}
+
+            await Storage.shared.insert(coins)
+            vault.coins += coins
         }
     }
 }

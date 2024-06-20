@@ -19,31 +19,6 @@ class DydxHelper {
     
     static let DydxGasLimit:UInt64 = 2500000000000000
     
-    func getDydxCoin(hexPubKey: String,hexChainCode: String) -> Result<Coin,Error> {
-        let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
-                                                            hexChainCode: hexChainCode,
-                                                            derivePath: self.coinType.derivationPath())
-        if derivePubKey.isEmpty {
-            return .failure(HelperError.runtimeError("derived public key is empty"))
-        }
-        return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).flatMap { addr -> Result<Coin, Error> in
-            TokensStore.createNewCoinInstance(ticker: "DYDX", address: addr, hexPublicKey: derivePubKey, coinType: self.coinType)
-        }
-    }
-    
-    func getAddressFromPublicKey(hexPubKey: String, hexChainCode: String) -> Result<String, Error> {
-        let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
-                                                            hexChainCode: hexChainCode,
-                                                            derivePath: self.coinType.derivationPath())
-        if derivePubKey.isEmpty {
-            return .failure(HelperError.runtimeError("derived public key is empty"))
-        }
-        guard let pubKeyData = Data(hexString: derivePubKey), let publicKey = PublicKey(data: pubKeyData, type: .secp256k1) else {
-            return .failure(HelperError.runtimeError("public key: \(derivePubKey) is invalid"))
-        }
-        return .success(self.coinType.deriveAddressFromPublicKey(publicKey: publicKey))
-    }
-    
     func getSwapPreSignedInputData(keysignPayload: KeysignPayload,signingInput: CosmosSigningInput) -> Result<Data,Error> {
         guard case .Cosmos(let accountNumber, let sequence,let gas) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get account number and sequence"))

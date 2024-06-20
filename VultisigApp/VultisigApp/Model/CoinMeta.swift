@@ -32,22 +32,7 @@ struct CoinMeta : Hashable,Codable{
         self.isNativeToken = isNativeToken
         self.priceProviderId = priceProviderId
     }
-    
-    func toCoin(address: String, hexPublicKey: String) -> Coin{
-        return Coin(
-            chain: self.chain,
-            ticker: self.ticker,
-            logo: self.logo,
-            address: address,
-            priceRate: 0.0,
-            decimals: self.decimals,
-            hexPublicKey: hexPublicKey,
-            priceProviderId: self.priceProviderId,
-            contractAddress: self.contractAddress,
-            rawBalance: "0",
-            isNativeToken: self.isNativeToken
-        )
-    }
+
     var tokenChainLogo: String? {
         guard !isNativeToken else { return nil }
         return chain.logo
@@ -55,6 +40,10 @@ struct CoinMeta : Hashable,Codable{
     
     var coinType: CoinType {
         return self.chain.coinType
+    }
+
+    func coinId(address: String) -> String {
+        return "\(chain.rawValue)-\(ticker)-\(address)"
     }
 }
 
