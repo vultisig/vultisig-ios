@@ -23,7 +23,7 @@ struct VaultDetailView: View {
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
     @StateObject var sendTx = SendTransaction()
-
+    
     var body: some View {
         ZStack(alignment: .bottom) {
             Background()
@@ -40,7 +40,7 @@ struct VaultDetailView: View {
             setData()
         }
         .onChange(of: vault.coins) {
-            setData()
+            viewModel.fetchCoins(for: vault)
         }
         .sheet(isPresented: $showSheet, content: {
             NavigationView {
@@ -93,9 +93,11 @@ struct VaultDetailView: View {
     }
     
     var cells: some View {
-        ForEach(viewModel.coinsGroupedByChains.sorted(by: {
+        let sortedGroups = viewModel.coinsGroupedByChains.sorted(by: {
             $0.coins.totalBalanceInFiatDecimal > $1.coins.totalBalanceInFiatDecimal
-        }), id: \.id) { group in
+        })
+        
+        return ForEach(sortedGroups, id: \.id) { group in
             ChainNavigationCell(
                 group: group,
                 vault: vault
@@ -149,7 +151,7 @@ struct VaultDetailView: View {
         .font(.body16MenloBold)
         .foregroundColor(.turquoise600)
     }
-       
+    
     var scanButton: some View {
         VaultDetailScanButton(showSheet: $showScanner)
             .opacity(showVaultsList ? 0 : 1)

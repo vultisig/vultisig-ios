@@ -35,6 +35,9 @@ class TokenSelectionViewModel: ObservableObject {
     
     @Published var searchText: String = .empty
     @Published var tokens: [Token] = []
+    @Published var selectedTokens: [Token] = []
+    @Published var preExistTokens: [Token] = []
+    @Published var searchedTokens: [Token] = []
     @Published var isLoading: Bool = false
     @Published var error: Error?
     
@@ -69,6 +72,9 @@ class TokenSelectionViewModel: ObservableObject {
             .filter { $0.chain == groupedChain.chain && !$0.isNativeToken && !tickers.contains($0.ticker.lowercased())}
             .map { .coin($0) }
     }
+    func updateSearchedTokens(groupedChain: GroupedChain) {
+        searchedTokens = filteredTokens(groupedChain: groupedChain)
+    }
     
     func filteredTokens(groupedChain: GroupedChain) -> [Token] {
         guard !searchText.isEmpty else { return [] }
@@ -91,15 +97,16 @@ class TokenSelectionViewModel: ObservableObject {
         }
     }
     
-    func loadData(chain: Chain) async {
+    func loadData(groupedChain: GroupedChain) async {
         error = nil
         // always keep those tokens in vultisig tokenstore
-        await loadOtherTokens(chain: chain)
+        await loadOtherTokens(chain: groupedChain.chain)
         
-        if chain.chainType == .EVM {
-            await loadEVMTokens(chain: chain)
+        if groupedChain.chain.chainType == .EVM {
+            await loadEVMTokens(chain: groupedChain.chain)
         }
-        
+        selectedTokens = selectedTokens(groupedChain: groupedChain)
+        preExistTokens = preExistingTokens(groupedChain: groupedChain)
     }
 }
 
