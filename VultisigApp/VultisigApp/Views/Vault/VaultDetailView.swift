@@ -41,6 +41,8 @@ struct VaultDetailView: View {
         }
         .onChange(of: vault.coins) {
             viewModel.fetchCoins(for: vault)
+            // Without the set data it does not update the balance
+            setData()
         }
         .sheet(isPresented: $showSheet, content: {
             NavigationView {

@@ -93,8 +93,10 @@ class BalanceService {
                 (rawBalance, priceRate) = try await dot.getBalance(coin: coin)
             }
             
-            try await updateCoin(coin, rawBalance: rawBalance, priceRate: priceRate)
-            cache.set(cacheKey, (data: (balance: rawBalance, priceRate), timestamp: Date()))
+            if rawBalance != .zero, priceRate > 0 {
+                try await updateCoin(coin, rawBalance: rawBalance, priceRate: priceRate)
+                cache.set(cacheKey, (data: (balance: rawBalance, priceRate), timestamp: Date()))
+            }
         } catch {
             print("BalanceService error: \(error.localizedDescription)")
         }

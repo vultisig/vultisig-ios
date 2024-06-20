@@ -55,12 +55,16 @@ struct ChainSelectionView: View {
         )
     }
     
+    var sortedKeys: [String] {
+        viewModel.groupedAssets.keys.sorted()
+    }
+
     var view: some View {
         ScrollView {
             VStack(spacing: 24) {
-                ForEach(viewModel.groupedAssets.keys.sorted(), id: \.self) { key in
+                ForEach(sortedKeys, id: \.self) { key in
                     ChainSelectionCell(
-                        assets: viewModel.groupedAssets[key] ?? [], 
+                        assets: viewModel.groupedAssets[key] ?? [],
                         showAlert: $showAlert
                     )
                 }
