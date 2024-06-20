@@ -77,7 +77,6 @@
 		A5D49F582BE26C63001766C8 /* CoinActionResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D49F572BE26C63001766C8 /* CoinActionResolver.swift */; };
 		A5D49F5A2BE26C87001766C8 /* Coin+ChainAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D49F592BE26C87001766C8 /* Coin+ChainAction.swift */; };
 		A5DA62092BF79C1D00CBEAEE /* ThorchainSwapError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5DA62082BF79C1D00CBEAEE /* ThorchainSwapError.swift */; };
-		A5F4710A2BFB73EF00778AB7 /* KeysignApproveConfirmView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F471092BFB73EF00778AB7 /* KeysignApproveConfirmView.swift */; };
 		A5F97C8E2BBF0BCF000C30DF /* BalanceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F97C8D2BBF0BCF000C30DF /* BalanceService.swift */; };
 		A608E3772C01BD7A00E40B85 /* SwapDetailsSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = A608E3762C01BD7A00E40B85 /* SwapDetailsSummary.swift */; };
 		A608E3792C02472C00E40B85 /* SwapCryptoAmountTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A608E3782C02472C00E40B85 /* SwapCryptoAmountTextField.swift */; };
@@ -441,7 +440,6 @@
 		A5D49F572BE26C63001766C8 /* CoinActionResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinActionResolver.swift; sourceTree = "<group>"; };
 		A5D49F592BE26C87001766C8 /* Coin+ChainAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Coin+ChainAction.swift"; sourceTree = "<group>"; };
 		A5DA62082BF79C1D00CBEAEE /* ThorchainSwapError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainSwapError.swift; sourceTree = "<group>"; };
-		A5F471092BFB73EF00778AB7 /* KeysignApproveConfirmView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignApproveConfirmView.swift; sourceTree = "<group>"; };
 		A5F97C8D2BBF0BCF000C30DF /* BalanceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BalanceService.swift; sourceTree = "<group>"; };
 		A608E3762C01BD7A00E40B85 /* SwapDetailsSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapDetailsSummary.swift; sourceTree = "<group>"; };
 		A608E3782C02472C00E40B85 /* SwapCryptoAmountTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoAmountTextField.swift; sourceTree = "<group>"; };
@@ -1474,7 +1472,6 @@
 				DE9EB0F52BA3F9C2001747D9 /* ParticipantDiscovery.swift */,
 				A65BA98F2BAD402A00B2D8AA /* KeysignMessageConfirmView.swift */,
 				A52313DD2BDF665E00D4D0D5 /* KeysignSwapConfirmView.swift */,
-				A5F471092BFB73EF00778AB7 /* KeysignApproveConfirmView.swift */,
 				A65BA9912BAD439900B2D8AA /* KeysignDiscoverServiceView.swift */,
 				A65BA9952BAD460600B2D8AA /* KeysignStartView.swift */,
 				A65BA9972BAD479C00B2D8AA /* JoinKeysignDoneView.swift */,
@@ -1890,7 +1887,6 @@
 				A65BA9822BA93A9F00B2D8AA /* DebounceHelper.swift in Sources */,
 				A690E00E2BC0ED290006DC0D /* URL.swift in Sources */,
 				B52196442C12C3540021D27A /* CustomTokenView.swift in Sources */,
-				A5F4710A2BFB73EF00778AB7 /* KeysignApproveConfirmView.swift in Sources */,
 				B5A97CEF2BF41779007574D7 /* TransactionMemoViewModel.swift in Sources */,
 				DE1572972B70F254009BC7C5 /* LocalStateAccessorImp.swift in Sources */,
 				A65BA9962BAD460600B2D8AA /* KeysignStartView.swift in Sources */,
