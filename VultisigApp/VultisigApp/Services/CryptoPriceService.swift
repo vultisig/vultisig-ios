@@ -155,7 +155,7 @@ public class CryptoPriceService: ObservableObject {
             let data = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
             
             for address in contractAddresses {
-                if let result = Utils.extractResultFromJson(fromData: data, path: "\(address).\(fiat)"),
+                if let result = Utils.extractResultFromJson(fromData: data, path: "\(address.lowercased()).\(fiat)"),
                    let resultNumber = result as? NSNumber {
                     let fiatPrice = Double(resultNumber.doubleValue)
                     tokenPrices.prices[address] = [fiat: fiatPrice]
