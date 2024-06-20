@@ -50,7 +50,7 @@ struct CustomTokenView: View {
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("findCustomTokens", comment: "Find Your Custom Token"))
         .task {
-            await tokenViewModel.loadData(groupedChain:  group)
+            await tokenViewModel.loadData(groupedChain: group)
         }
 #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)

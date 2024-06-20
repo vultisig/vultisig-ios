@@ -50,7 +50,7 @@ class TokenSelectionViewModel: ObservableObject {
         let filteredTokens = tokens.filter { token in
             tickers.contains(token.symbol.lowercased())
         }
-
+        print("total tokens:\(tokens.count)")
         // Convert tickers to tokens if they are not already in the existing tokens list
         let tickerTokens = groupedChain.coins.filter { coin in
             tickers.contains(coin.ticker.lowercased()) &&
@@ -74,17 +74,16 @@ class TokenSelectionViewModel: ObservableObject {
     func updateSearchedTokens(groupedChain: GroupedChain) {
         searchedTokens = filteredTokens(groupedChain: groupedChain)
     }
-    
+
     func filteredTokens(groupedChain: GroupedChain) -> [Token] {
         guard !searchText.isEmpty else { return [] }
         let tickers = groupedChain.coins
             .filter { !$0.isNativeToken }
             .map { $0.ticker.lowercased() }
+        print("total tokens \(tokens.count)")
         return tokens
-            .filter { $0.symbol.lowercased().contains(searchText.lowercased())}
-            .filter { token in
-                !tickers.contains(token.symbol.lowercased())
-            }
+            .filter { $0.symbol.lowercased().contains(searchText.lowercased()) && !tickers.contains($0.symbol.lowercased())}
+            
     }
     
     var showRetry: Bool {

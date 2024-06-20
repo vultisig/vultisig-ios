@@ -259,7 +259,7 @@ class CoinSelectionViewModel: ObservableObject {
                 return
             }
             let service = try EvmServiceFactory.getService(forCoin: nativeToken)
-            let tokens = await service.getTokens(nativeToken: nativeToken, address: nativeToken.address)
+            let tokens = await service.getTokens(nativeToken: nativeToken)
             
             for token in tokens {
                 _ = try await addToChain(asset: token, to: vault, priceProviderId: nil)
