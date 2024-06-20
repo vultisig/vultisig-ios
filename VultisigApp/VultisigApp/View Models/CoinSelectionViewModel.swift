@@ -222,7 +222,9 @@ class CoinSelectionViewModel: ObservableObject {
     
     private func addToChain(assets: [Coin], to vault: Vault) async throws {
         if let coin = assets.first, coin.chainType == .EVM, !coin.isNativeToken {
-            _ = try await addToChain(asset: coin, to: vault, priceProviderId: nil)
+            for asset in assets {
+                _ = try await addToChain(asset: asset, to: vault, priceProviderId: nil)
+            }
         } else {
             for asset in assets {
                 if let newCoin = try await addToChain(asset: asset, to: vault, priceProviderId: nil) {
