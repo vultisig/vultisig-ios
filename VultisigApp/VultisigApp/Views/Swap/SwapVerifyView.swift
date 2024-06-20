@@ -53,7 +53,7 @@ struct SwapVerifyView: View {
             getValueCell(for: "to", with: getToAmount())
             if swapViewModel.showAllowance(tx: tx) {
                 Separator()
-                getValueCell(for: "ERC20 Allowance", with: "UNLIMITED")
+                getValueCell(for: "Allowance", with: "UNLIMITED")
             }
             if swapViewModel.showDuration(tx: tx) {
                 Separator()

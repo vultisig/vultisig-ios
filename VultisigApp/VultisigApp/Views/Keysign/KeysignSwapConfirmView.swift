@@ -37,9 +37,9 @@ struct KeysignSwapConfirmView: View {
             getValueCell(for: "to", with: getToAmount())
             if showApprove {
                 Separator()
-                getValueCell(for: "Approve spender", with: getSpender())
+                getValueCell(for: "Allowance spender", with: getSpender())
                 Separator()
-                getValueCell(for: "Approve amount", with: getAmount())
+                getValueCell(for: "Allowance amount", with: getAmount())
             }
         }
         .padding(16)
