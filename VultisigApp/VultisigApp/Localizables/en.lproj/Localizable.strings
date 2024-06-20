@@ -177,8 +177,8 @@
 "noBackupDeviceDisclaimer" = "You do not have a 3rd backup device - so you should backup one vault share securely later.";
 "vaultNameExists" = "Vault name %s already exists";
 "devicesOnSameWifiNoHotel" = "Keep all devices on same network with Vultisig App open. (May not work on hotel/airport wifi).";
-"devicesOnSameHotspot" = "Connect all devices to the same Personal Hotspot with Vultisig App open.";
-"devicesOnSameCellular" = "Connect all devices to the internet with the Vultisig App open.";
+"devicesOnSameNetwork" = "Connect all devices to the same\nNetwork with Vultisig App open.";
+"devicesOnSameInternet" = "Connect all devices to the\ninternet with the Vultisig App open.";
 "balanceNotAvailable" = "Balance not available";
 "invalidBalance" = "Invalid balance";
 "cannotDisableChain" = "Cannot Disable Chain";

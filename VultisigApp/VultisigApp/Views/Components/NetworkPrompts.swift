@@ -60,7 +60,7 @@ struct NetworkPrompts: View {
             selectedNetwork = network
         }
         
-        if network == .Cellular {
+        if network == .Internet {
             VultisigRelay.IsRelayEnabled = true
         } else {
             VultisigRelay.IsRelayEnabled = false
@@ -71,6 +71,6 @@ struct NetworkPrompts: View {
 #Preview {
     ZStack {
         Background()
-        NetworkPrompts(selectedNetwork: .constant(.WiFi))
+        NetworkPrompts(selectedNetwork: .constant(.Internet))
     }
 }

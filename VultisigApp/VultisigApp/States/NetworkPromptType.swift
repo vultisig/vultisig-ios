@@ -8,20 +8,17 @@
 import SwiftUI
 
 enum NetworkPromptType: String, CaseIterable {
-    case WiFi
-    case Hotspot
-    case Cellular
+    case Internet
+    case Local
     
     func getImage() -> Image {
         let name: String
         
         switch self {
-        case .WiFi:
-            name = "wifi"
-        case .Hotspot:
-            name = "personalhotspot"
-        case .Cellular:
+        case .Internet:
             name = "cellularbars"
+        case .Local:
+            name = "wifi"
         }
         
         return Image(systemName: name)
@@ -31,12 +28,10 @@ enum NetworkPromptType: String, CaseIterable {
         let title: String
         
         switch self {
-        case .WiFi:
-            title = "devicesOnSameWifiNoHotel"
-        case .Hotspot:
-            title = "devicesOnSameHotspot"
-        case .Cellular:
-            title = "devicesOnSameCellular"
+        case .Internet:
+            title = "devicesOnSameInternet"
+        case .Local:
+            title = "devicesOnSameNetwork"
         }
         
         return NSLocalizedString(title, comment: "")

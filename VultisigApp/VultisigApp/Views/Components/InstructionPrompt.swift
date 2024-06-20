@@ -54,6 +54,6 @@ struct InstructionPrompt: View {
 #Preview {
     ZStack {
         Background()
-        InstructionPrompt(networkType: .WiFi)
+        InstructionPrompt(networkType: .Internet)
     }
 }

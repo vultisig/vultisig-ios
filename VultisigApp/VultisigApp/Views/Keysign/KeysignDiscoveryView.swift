@@ -17,7 +17,7 @@ struct KeysignDiscoveryView: View {
     
     @State var isLoading = false
     @State var qrCodeImage: Image? = nil
-    @State var selectedNetwork = NetworkPromptType.WiFi
+    @State var selectedNetwork = NetworkPromptType.Internet
 #if os(iOS)
     @State private var orientation = UIDevice.current.orientation
 #endif
@@ -214,7 +214,7 @@ struct KeysignDiscoveryView: View {
     
     private func setData() {
         if VultisigRelay.IsRelayEnabled {
-            self.selectedNetwork = .Cellular
+            self.selectedNetwork = .Internet
         }
         viewModel.setData(vault: vault, keysignPayload: keysignPayload, participantDiscovery: participantDiscovery)
         
