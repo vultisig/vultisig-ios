@@ -35,6 +35,12 @@ struct KeysignSwapConfirmView: View {
             getValueCell(for: "Swap from", with: getFromAmount())
             Separator()
             getValueCell(for: "to", with: getToAmount())
+            if showApprove {
+                Separator()
+                getValueCell(for: "Approve spender", with: getSpender())
+                Separator()
+                getValueCell(for: "Approve amount", with: getAmount())
+            }
         }
         .padding(16)
         .background(Color.blue600)
@@ -51,6 +57,9 @@ struct KeysignSwapConfirmView: View {
     }
 
     func getAction() -> String {
+        guard viewModel.keysignPayload?.approvePayload == nil else {
+            return NSLocalizedString("Approve and Swap", comment: "")
+        }
         return NSLocalizedString("Swap", comment: "")
     }
 
@@ -65,6 +74,18 @@ struct KeysignSwapConfirmView: View {
         case .none:
             return .empty
         }
+    }
+
+    var showApprove: Bool {
+        viewModel.keysignPayload?.approvePayload != nil
+    }
+
+    func getSpender() -> String {
+        return viewModel.keysignPayload?.approvePayload?.spender ?? .empty
+    }
+
+    func getAmount() -> String {
+        return "UNLIMITED"
     }
 
     func getFromAmount() -> String {
