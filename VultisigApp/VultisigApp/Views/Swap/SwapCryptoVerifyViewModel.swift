@@ -12,8 +12,13 @@ class SwapCryptoVerifyViewModel: ObservableObject {
 
     @Published var isAmountCorrect = false
     @Published var isFeeCorrect = false
+    @Published var isApproveCorrect = false
 
-    var isValidForm: Bool {
-        return isAmountCorrect && isFeeCorrect
+    func isValidForm(shouldApprove: Bool) -> Bool {
+        if shouldApprove {
+            return isAmountCorrect && isFeeCorrect && isApproveCorrect
+        } else {
+            return isAmountCorrect && isFeeCorrect
+        }
     }
 }
