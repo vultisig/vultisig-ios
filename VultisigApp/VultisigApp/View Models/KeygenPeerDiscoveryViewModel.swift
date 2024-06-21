@@ -30,7 +30,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     @Published var selections = Set<String>()
     @Published var serverAddr = "http://127.0.0.1:18080"
     @Published var vaultDetail = String.empty
-    @Published var selectedNetwork = NetworkPromptType.WiFi
+    @Published var selectedNetwork = NetworkPromptType.Internet
     
     private let mediator = Mediator.shared
     
@@ -42,7 +42,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         self.encryptionKeyHex = Encryption.getEncryptionKey()
         if VultisigRelay.IsRelayEnabled {
             serverAddr = Endpoint.vultisigRelay
-            selectedNetwork = .Cellular
+            selectedNetwork = .Internet
         }
     }
     

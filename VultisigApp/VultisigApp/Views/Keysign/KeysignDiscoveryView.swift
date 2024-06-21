@@ -17,9 +17,10 @@ struct KeysignDiscoveryView: View {
     
     @State var isLoading = false
     @State var qrCodeImage: Image? = nil
-    @State var selectedNetwork = NetworkPromptType.WiFi
+    @State var selectedNetwork = NetworkPromptType.Internet
 #if os(iOS)
     @State private var orientation = UIDevice.current.orientation
+    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 #endif
     
     @Environment(\.displayScale) var displayScale
@@ -75,9 +76,18 @@ struct KeysignDiscoveryView: View {
     }
     
     var waitingForDevices: some View {
-        ZStack(alignment: .bottom) {
-            content
-            bottomButtons
+        ZStack {
+            if participantDiscovery.peersFound.count == 0 {
+                VStack(spacing: 16) {
+                    content
+                    bottomButtons
+                }
+            } else {
+                ZStack(alignment: .bottom) {
+                    content
+                    bottomButtons
+                }
+            }
         }
     }
     
@@ -105,66 +115,69 @@ struct KeysignDiscoveryView: View {
     }
     
     var portraitContent: some View {
-        ScrollView {
-            paringQRCode
-            list
+        ZStack {
+            if participantDiscovery.peersFound.count == 0 {
+                VStack {
+                    paringQRCode
+                    list
+                }
+            } else {
+                ScrollView {
+                    paringQRCode
+                    list
+                }
+            }
         }
     }
     
     var list: some View {
-        ZStack {
-            VStack{
-                networkPrompts
-                if participantDiscovery.peersFound.count == 0 {
-                    lookingForDevices
-                } else {
-                    deviceList
-                }
-                instructions
+        VStack(spacing: 18) {
+            networkPrompts
+            
+            if participantDiscovery.peersFound.count == 0 {
+                lookingForDevices
+#if os(iOS)
+                    .frame(height: idiom == .phone ? 50 : 150)
+#endif
+            } else {
+                deviceList
             }
+            
+            instructions
         }
     }
     
     var paringQRCode: some View {
         VStack {
-            Text(NSLocalizedString("pairWithOtherDevices", comment: "Pair with two other devices"))
-                .font(.body18MenloBold)
+            Text(NSLocalizedString("scanWithPairedDevice", comment: ""))
+                .font(.body14MontserratMedium)
                 .multilineTextAlignment(.center)
             
             qrCodeImage?
                 .resizable()
                 .scaledToFit()
-                .padding()
+                .padding(3)
+                .background(Color.neutral0)
+                .cornerRadius(10)
                 .frame(maxWidth: 512)
-            
-            Text(NSLocalizedString("scanQrCode", comment: "Scan QR Code"))
-                .font(.body13Menlo)
-                .multilineTextAlignment(.center)
+                .padding(24)
+                .background(Color.blue600)
+                .cornerRadius(20)
+                .overlay (
+                    RoundedRectangle(cornerRadius: 10)
+                        .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [12]))
+                )
+                .padding(1)
         }
         .foregroundColor(.neutral0)
         .cornerRadius(10)
         .shadow(radius: 5)
-        .padding()
+        .padding(.horizontal, 22)
     }
     
     var lookingForDevices: some View {
-        VStack {
-            HStack {
-                Text(NSLocalizedString("lookingForDevices", comment: "Looking for devices"))
-                    .font(.body15MenloBold)
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(.neutral0)
-                
-                ProgressView()
-                    .preferredColorScheme(.dark)
-                    .progressViewStyle(.circular)
-                    .padding(2)
-            }
-        }
-        .cornerRadius(10)
-        .shadow(radius: 5)
-        .padding()
-        .padding(.vertical, 50)
+        LookingForDevicesLoader()
+            .padding()
     }
     
     var deviceList: some View {
@@ -192,7 +205,6 @@ struct KeysignDiscoveryView: View {
     
     var instructions: some View {
         InstructionPrompt(networkType: selectedNetwork)
-            .padding(.bottom, 150)
     }
     
     var bottomButtons: some View {
@@ -207,14 +219,14 @@ struct KeysignDiscoveryView: View {
         .disabled(isDisabled)
         .opacity(isDisabled ? 0.8 : 1)
         .grayscale(isDisabled ? 1 : 0)
-        .padding(40)
+        .padding(.horizontal, 40)
         .background(Color.backgroundBlue.opacity(0.95))
         .edgesIgnoringSafeArea(.bottom)
     }
     
     private func setData() {
         if VultisigRelay.IsRelayEnabled {
-            self.selectedNetwork = .Cellular
+            self.selectedNetwork = .Internet
         }
         viewModel.setData(vault: vault, keysignPayload: keysignPayload, participantDiscovery: participantDiscovery)
         

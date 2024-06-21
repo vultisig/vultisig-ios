@@ -16,29 +16,16 @@ struct NetworkPrompts: View {
     
     var body: some View {
         ZStack {
-#if os(iOS)
-            if UIDevice.current.userInterfaceIdiom == .phone {
-                phoneLayout
-            } else {
-                padLayout
-            }
-#endif
+            layout
         }
     }
     
-    var phoneLayout: some View {
+    var layout: some View {
         HStack(spacing: 12) {
             cells
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 8)
-    }
-    
-    var padLayout: some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible(minimum: 120)), count: 3), spacing: 10){
-            cells
-        }
-        .padding(.horizontal, 24)
     }
     
     var cells: some View {
@@ -56,11 +43,9 @@ struct NetworkPrompts: View {
     }
     
     private func handleSelection(for network: NetworkPromptType) {
-        withAnimation {
-            selectedNetwork = network
-        }
+        selectedNetwork = network
         
-        if network == .Cellular {
+        if network == .Internet {
             VultisigRelay.IsRelayEnabled = true
         } else {
             VultisigRelay.IsRelayEnabled = false
@@ -71,6 +56,6 @@ struct NetworkPrompts: View {
 #Preview {
     ZStack {
         Background()
-        NetworkPrompts(selectedNetwork: .constant(.WiFi))
+        NetworkPrompts(selectedNetwork: .constant(.Internet))
     }
 }
