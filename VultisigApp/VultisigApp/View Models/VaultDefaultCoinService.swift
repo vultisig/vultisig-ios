@@ -31,8 +31,7 @@ class VaultDefaultCoinService {
                 .filter { $0.isNativeToken }
                 .compactMap { try? CoinFactory.create(
                     asset: $0,
-                    hexPubKey: vault.hexChainCode,
-                    hexChainCode: vault.hexChainCode
+                    vault: vault
                 )}
 
             await Storage.shared.insert(coins)
