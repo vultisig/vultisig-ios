@@ -20,11 +20,15 @@ class BalanceService {
     private let kuji = KujiraService.shared
     private let maya = MayachainService.shared
     private let dot = PolkadotService.shared
-
+    
+    private var cache: ThreadSafeDictionary<String, (data: Bool, timestamp: Date)> = ThreadSafeDictionary()
+    
+    private let CACHE_TIMEOUT_IN_SECONDS: Double = 120 // 2 minutes
+    
     func updateBalances(coins: [Coin]) async {
         await withTaskGroup(of: Void.self) { group in
             for coin in coins {
-                group.addTask { [unowned self]  in
+                group.addTask { [unowned self] in
                     if !Task.isCancelled {
                         await updateBalance(for: coin)
                     }
@@ -32,66 +36,76 @@ class BalanceService {
             }
         }
     }
-
+    
     @MainActor func updateBalance(for coin: Coin) async {
         do {
+            let cacheKey = "\(coin.ticker)-\(coin.contractAddress)-\(coin.chain.rawValue)-\(coin.address)"
+            if (await Utils.getCachedData(cacheKey: cacheKey, cache: cache, timeInSeconds: CACHE_TIMEOUT_IN_SECONDS)) != nil {
+                return
+            }
+            
+            var rawBalance: String = .empty
+            var priceRate = Double.zero
+            
             switch coin.chain {
             case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
                 let blockChairData = try await utxo.fetchBlockchairData(coin: coin)
-                let rawBalance = blockChairData?.address?.balance?.description ?? "0"
-                let priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
-                try await updateCoin(coin, rawBalance: rawBalance, priceRate: priceRate)
+                rawBalance = blockChairData?.address?.balance?.description ?? "0"
+                priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
+                
             case .thorChain:
                 let thorBalances = try await thor.fetchBalances(coin.address)
-                let rawBalance = thorBalances.balance(denom: Chain.thorChain.ticker.lowercased())
-                let priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
-                try await updateCoin(coin, rawBalance: rawBalance, priceRate: priceRate)
+                rawBalance = thorBalances.balance(denom: Chain.thorChain.ticker.lowercased())
+                priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
+                
             case .solana:
-                let (rawBalance, priceRate) = try await sol.getSolanaBalance(coin: coin)
-                try await updateCoin(coin, rawBalance: rawBalance, priceRate: priceRate)
+                (rawBalance, priceRate) = try await sol.getSolanaBalance(coin: coin)
+                
             case .sui:
-                let (rawBalance,priceRate) = try await sui.getBalance(coin: coin)
-                try await updateCoin(coin, rawBalance: rawBalance, priceRate: priceRate)
+                (rawBalance, priceRate) = try await sui.getBalance(coin: coin)
+                
             case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain, .zksync:
                 let service = try EvmServiceFactory.getService(forCoin: coin)
-                let (rawBalance, priceRate) = try await service.getBalance(coin: coin)
-                try await updateCoin(coin, rawBalance: rawBalance, priceRate: priceRate)
+                (rawBalance, priceRate) = try await service.getBalance(coin: coin)
+                
             case .gaiaChain:
-                let atomBalance =  try await gaia.fetchBalances(address: coin.address)
-                let rawBalance = atomBalance.balance(denom: Chain.gaiaChain.ticker.lowercased())
-                let priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
-                try await updateCoin(coin, rawBalance: rawBalance, priceRate: priceRate)
+                let atomBalance = try await gaia.fetchBalances(address: coin.address)
+                rawBalance = atomBalance.balance(denom: Chain.gaiaChain.ticker.lowercased())
+                priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
+                
             case .dydx:
-                let dydxBalance =  try await dydx.fetchBalances(address: coin.address)
-                let rawBalance = dydxBalance.balance(denom: Chain.dydx.ticker.lowercased())
-                let priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
-                try await updateCoin(coin, rawBalance: rawBalance, priceRate: priceRate)
+                let dydxBalance = try await dydx.fetchBalances(address: coin.address)
+                rawBalance = dydxBalance.balance(denom: Chain.dydx.ticker.lowercased())
+                priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
+                
             case .kujira:
-                let kujiBalance =  try await kuji.fetchBalances(address: coin.address)
-                let rawBalance = kujiBalance.balance(denom: Chain.kujira.ticker.lowercased())
-                let priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
-                try await updateCoin(coin, rawBalance: rawBalance, priceRate: priceRate)
+                let kujiBalance = try await kuji.fetchBalances(address: coin.address)
+                rawBalance = kujiBalance.balance(denom: Chain.kujira.ticker.lowercased())
+                priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
+                
             case .mayaChain:
                 let mayaBalance = try await maya.fetchBalances(coin.address)
-                let rawBalance = mayaBalance.balance(denom: coin.ticker.lowercased())
-                let priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
-                try await updateCoin(coin, rawBalance: rawBalance, priceRate: priceRate)
+                rawBalance = mayaBalance.balance(denom: coin.ticker.lowercased())
+                priceRate = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
+                
             case .polkadot:
-                let (rawBalance,priceRate) = try await dot.getBalance(coin: coin)
-                try await updateCoin(coin, rawBalance: rawBalance, priceRate: priceRate)
+                (rawBalance, priceRate) = try await dot.getBalance(coin: coin)
             }
-        }
-        catch {
+            
+            try await updateCoin(coin, rawBalance: rawBalance, priceRate: priceRate)
+            cache.set(cacheKey, (data: true, timestamp: Date()))
+        } catch {
             print("BalanceService error: \(error.localizedDescription)")
         }
     }
 }
 
 private extension BalanceService {
-
+    
     @MainActor func updateCoin(_ coin: Coin, rawBalance: String, priceRate: Double) async throws {
         coin.rawBalance = rawBalance
         coin.priceRate = priceRate
+        // Swift Data persists on disk io, that is slower than the cache on KEY VALUE RAM
         try await Storage.shared.save(coin)
     }
 }
