@@ -13,12 +13,14 @@ struct LookingForDevicesLoader: View {
     var body: some View {
         VStack {
             Text(NSLocalizedString("lookingForDevices", comment: "Looking for devices"))
-                .font(.body15MenloBold)
+                .font(.body14Montserrat)
+                .bold()
                 .multilineTextAlignment(.center)
             
             loader
         }
         .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .cornerRadius(10)
         .shadow(radius: 5)
         .onAppear {

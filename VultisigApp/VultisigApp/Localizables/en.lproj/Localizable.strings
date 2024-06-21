@@ -178,7 +178,7 @@
 "vaultNameExists" = "Vault name %s already exists";
 "devicesOnSameWifiNoHotel" = "Keep all devices on same network with Vultisig App open. (May not work on hotel/airport wifi).";
 "devicesOnSameNetwork" = "Connect all devices to the same\nNetwork with Vultisig App open.";
-"devicesOnSameInternet" = "Connect all devices to the\ninternet with the Vultisig App open.";
+"devicesOnSameInternet" = "Connect all devices to the\nInternet with the Vultisig App open.";
 "balanceNotAvailable" = "Balance not available";
 "invalidBalance" = "Invalid balance";
 "cannotDisableChain" = "Cannot Disable Chain";
