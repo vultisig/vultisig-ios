@@ -21,6 +21,7 @@ struct InstructionPrompt: View {
 #endif
         }
         .frame(maxWidth: .infinity)
+        .frame(maxWidth: 350)
     }
     
     var phoneContent: some View {

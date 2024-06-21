@@ -43,9 +43,7 @@ struct NetworkPrompts: View {
     }
     
     private func handleSelection(for network: NetworkPromptType) {
-        withAnimation {
-            selectedNetwork = network
-        }
+        selectedNetwork = network
         
         if network == .Internet {
             VultisigRelay.IsRelayEnabled = true
