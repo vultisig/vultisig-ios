@@ -58,7 +58,7 @@ private extension CoinFactory {
                 derivePath: asset.coinType.derivationPath()
             )
             guard
-                let pubKeyData = Data(hexString: vault.pubKeyECDSA),
+                let pubKeyData = Data(hexString: derivedKey),
                 let publicKey = PublicKey(data: pubKeyData, type: .secp256k1) else {
                 throw Errors.invalidPublicKey(pubKey: vault.pubKeyEdDSA)
             }
