@@ -189,7 +189,6 @@ public class CryptoPriceService: ObservableObject {
         
         let cacheKey = "\(coin)-\(fiat)"
         if let cacheEntry = await Utils.getCachedData(cacheKey: cacheKey, cache: cache, timeInSeconds: CACHE_TIMEOUT_IN_SECONDS) {
-            print("Price from cache coin Gecko native token \(cacheKey)")
             return cacheEntry
         }
         

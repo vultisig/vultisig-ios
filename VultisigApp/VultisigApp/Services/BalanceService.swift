@@ -21,7 +21,7 @@ class BalanceService {
     private let maya = MayachainService.shared
     private let dot = PolkadotService.shared
     
-    private var cache: ThreadSafeDictionary<String, (data: (balance: String, priceRate: Double), timestamp: Date)> = ThreadSafeDictionary()
+    private var cache: ThreadSafeDictionary<String, (data: Bool, timestamp: Date)> = ThreadSafeDictionary()
     
     private let CACHE_TIMEOUT_IN_SECONDS: Double = 120 // 2 minutes
     
@@ -93,7 +93,7 @@ class BalanceService {
             }
             
             try await updateCoin(coin, rawBalance: rawBalance, priceRate: priceRate)
-            cache.set(cacheKey, (data: (balance: rawBalance, priceRate), timestamp: Date()))
+            cache.set(cacheKey, (data: true, timestamp: Date()))
         } catch {
             print("BalanceService error: \(error.localizedDescription)")
         }
