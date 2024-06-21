@@ -57,10 +57,6 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         case .bitcoin,.dogecoin,.litecoin,.bitcoinCash,.dash:
             tx.sendMaxAmount = true
             tx.amount = utxo.blockchairData.get(key)?.address?.balanceInBTC ?? "0.0"
-            if let plan = getTransactionPlan(tx: tx, key: key), plan.amount > 0 {
-                tx.amount = utxo.blockchairData.get(key)?.address?.formatAsBitcoin(Int(plan.amount)) ?? "0.0"
-                tx.gas = plan.fee.description
-            }
             Task{
                 setPercentageAmount(tx: tx, for: percentage)
                 await convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: true)

@@ -38,15 +38,24 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     var isAmountExceeded: Bool {
+        //return false
         
         let totalBalance = BigInt(coin.rawBalance) ?? BigInt.zero
-        
         var gasInt = BigInt.zero
+        
+        if sendMaxAmount, coin.chainType == .UTXO {
+            let totalTransactionCost = amountInRaw
+            return totalTransactionCost > totalBalance
+        } else if sendMaxAmount, coin.chainType == .EVM {
+            let totalTransactionCost = amountInRaw
+            return totalTransactionCost > totalBalance
+        }
+        
         if coin.isNativeToken {
             gasInt = BigInt(gas) ?? BigInt.zero
             if coin.chainType == .EVM {
                 if let gasLimitBigInt = BigInt(coin.feeDefault) {
-                    gasInt = gasInt * gasLimitBigInt
+                    gasInt = gasInt * gasLimitBigInt + 1
                 }
             }
         }
