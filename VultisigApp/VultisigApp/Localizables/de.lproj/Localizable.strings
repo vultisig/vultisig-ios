@@ -172,9 +172,6 @@
 "backupNotNeededDisclaimer" = "Dein Backup-Gerät wird nicht benötigt, es sei denn, du verlierst eines deiner Hauptgeräte.";
 "noBackupDeviceDisclaimer" = "Du hast kein drittes Backup-Gerät - daher solltest du später einen Tresoranteil sicher sichern.";
 "vaultNameExists" = "Tresorname %s existiert bereits";
-"devicesOnSameWifiNoHotel" = "Halten Sie alle Geräte im gleichen Netzwerk mit der Vultisig App offen. (Funktioniert möglicherweise nicht auf Hotel-/Flughafen-WLAN).";
-"devicesOnSameHotspot" = "Verbinde alle Geräte mit demselben persönlichen Hotspot und öffne die Vultisig.";
-"devicesOnSameCellular" = "Verbinde alle Geräte mit dem Internet und öffne die Vultisig.";
 "balanceNotAvailable" = "Guthaben nicht verfügbar";
 "invalidBalance" = "Ungültiges Guthaben";
 "cannotDisableChain" = "Kette kann nicht deaktiviert werden";
@@ -219,3 +216,6 @@
 "emptyField" = "Leeres Feld(er)";
 "checkEmptyField" = "Bitte stellen Sie sicher, dass alle Felder ausgefüllt sind.";
 "optionalPasswordProtectBackup" = "Optionale Passwortsicherung Ihres Tresors";
+"keygenFor" = "Schlüsselgenerierung für";
+"devicesOnSameNetwork" = "Verbinden Sie alle Geräte mit demselben\nNetzwerk und öffnen Sie die Vultisig-App.";
+"devicesOnSameInternet" = "Verbinden Sie alle Geräte mit dem\nInternet und öffnen Sie die Vultisig-App.";

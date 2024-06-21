@@ -63,4 +63,15 @@ enum SetupVaultState: String, CaseIterable {
         
         return "2. " + NSLocalizedString("pairFromThe", comment: "") + " \(description) " + NSLocalizedString("device", comment: "")
     }
+    
+    func getNavigationTitle() -> String {
+        switch self {
+        case .TwoOfTwoVaults:
+            return "2/2"
+        case .TwoOfThreeVaults:
+            return "2/3"
+        case .MOfNVaults:
+            return "M/N"
+        }
+    }
 }
