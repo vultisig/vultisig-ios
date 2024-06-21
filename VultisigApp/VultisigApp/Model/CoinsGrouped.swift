@@ -15,9 +15,10 @@ class GroupedChain {
     var count: Int
     var coins: [Coin]
     var order: Int = 0
+    var totalBalanceInFiatDecimal: Decimal = 0.0
 
     var totalBalanceInFiatString: String {
-        return coins.totalBalanceInFiatString
+        return totalBalanceInFiatDecimal.formatToFiat(includeCurrencySymbol: true)
     }
 
     var name: String {

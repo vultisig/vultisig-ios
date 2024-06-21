@@ -94,7 +94,7 @@ struct VaultDetailView: View {
     
     var cells: some View {
         let sortedGroups = viewModel.coinsGroupedByChains.sorted(by: {
-            $0.coins.totalBalanceInFiatDecimal > $1.coins.totalBalanceInFiatDecimal
+            $0.totalBalanceInFiatDecimal > $1.totalBalanceInFiatDecimal
         })
         
         return ForEach(sortedGroups, id: \.id) { group in
