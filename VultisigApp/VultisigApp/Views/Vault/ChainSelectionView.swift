@@ -60,7 +60,7 @@ struct ChainSelectionView: View {
             VStack(spacing: 24) {
                 ForEach(viewModel.groupedAssets.keys.sorted(), id: \.self) { key in
                     ChainSelectionCell(
-                        assets: viewModel.groupedAssets[key] ?? [], 
+                        assets: viewModel.groupedAssets[key] ?? [],
                         showAlert: $showAlert
                     )
                 }

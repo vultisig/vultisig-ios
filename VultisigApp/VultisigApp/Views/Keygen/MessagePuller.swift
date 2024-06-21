@@ -73,7 +73,8 @@ class MessagePuller: ObservableObject {
                     print("Response: \(String(data:data,encoding: .utf8) ?? "")")
                     let decoder = JSONDecoder()
                     let msgs = try decoder.decode([Message].self, from: data)
-                    for msg in msgs.sorted(by: { $0.sequence_no < $1.sequence_no }) {
+                    let sortedMsgs = msgs.sorted(by: { $0.sequence_no < $1.sequence_no })
+                    for msg in sortedMsgs {
                         var key = "\(sessionID)-\(localPartyKey)-\(msg.hash)" as NSString
                         if let messageID {
                             key = "\(sessionID)-\(localPartyKey)-\(messageID)-\(msg.hash)" as NSString
