@@ -172,9 +172,6 @@
 "backupNotNeededDisclaimer" = "Tu dispositivo de respaldo no es necesario a menos que pierdas uno de tus dispositivos principales.";
 "noBackupDeviceDisclaimer" = "No tienes un tercer dispositivo de respaldo, así que debes hacer una copia de seguridad de una parte del cofre de forma segura más tarde.";
 "vaultNameExists" = "El nombre de la bóveda %s ya existe";
-"devicesOnSameWifiNoHotel" = "Mantenga todos los dispositivos en la misma red con la aplicación Vultisig abierta. (Puede no funcionar en wifi de hoteles/aeropuertos).";
-"devicesOnSameHotspot" = "Conecta todos los dispositivos al mismo hotspot personal con la aplicación Vultisig abierta.";
-"devicesOnSameCellular" = "Conecta todos los dispositivos a internet con la aplicación Vultisig abierta.";
 "balanceNotAvailable" = "Saldo no disponible";
 "invalidBalance" = "Saldo no válido";
 "cannotDisableChain" = "No se puede desactivar la cadena";
@@ -219,3 +216,6 @@
 "emptyField" = "Campo(s) vacío(s)";
 "checkEmptyField" = "Por favor, asegúrate de que todos los campos están llenos.";
 "optionalPasswordProtectBackup" = "Protección opcional con contraseña de tu almacén";
+"keygenFor" = "Generación de claves para";
+"devicesOnSameNetwork" = "Conecta todos los dispositivos a la misma\nred con la aplicación Vultisig abierta.";
+"devicesOnSameInternet" = "Conecta todos los dispositivos a Internet\ncon la aplicación Vultisig abierta.";

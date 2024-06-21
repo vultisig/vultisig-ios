@@ -172,9 +172,6 @@
 "backupNotNeededDisclaimer" = "Seu dispositivo de backup não é necessário a menos que você perca um dos seus dispositivos principais.";
 "noBackupDeviceDisclaimer" = "Você não tem um terceiro dispositivo de backup, então deve fazer o backup de uma parte do cofre com segurança mais tarde.";
 "vaultNameExists" = "O nome do cofre %s já existe";
-"devicesOnSameWifiNoHotel" = "Mantenha todos os dispositivos na mesma rede com o aplicativo Vultisig aberto. (Pode não funcionar em wifi de hotel/aeroporto).";
-"devicesOnSameHotspot" = "Conecte todos os dispositivos ao mesmo hotspot pessoal com o aplicativo Vultisig aberto.";
-"devicesOnSameCellular" = "Conecte todos os dispositivos à internet com o aplicativo Vultisig aberto.";
 "balanceNotAvailable" = "Saldo não disponível";
 "invalidBalance" = "Saldo inválido";
 "cannotDisableChain" = "Não é possível desativar a cadeia";
@@ -217,5 +214,9 @@
 "passwordMismatch" = "Senhas não coincidem";
 "verifyPasswordMismatch" = "Certifique-se de que suas senhas coincidem.";
 "emptyField" = "Campo(s) vazio(s)";
+"emptyField" = "Campo(s) vazio(s)";
 "checkEmptyField" = "Certifique-se de que todos os campos estão preenchidos.";
 "optionalPasswordProtectBackup" = "Proteção opcional do seu cofre com senha";
+"keygenFor" = "Geração de chaves para";
+"devicesOnSameNetwork" = "Conecte todos os dispositivos à mesma\nrede com o aplicativo Vultisig aberto.";
+"devicesOnSameInternet" = "Conecte todos os dispositivos à Internet\ncom o aplicativo Vultisig aberto.";
