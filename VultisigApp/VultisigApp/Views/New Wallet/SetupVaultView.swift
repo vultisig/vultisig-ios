@@ -118,6 +118,28 @@ struct SetupVaultView: View {
             vault = Vault(name: "Vault #\(vaults.count + 1)")
         }
     }
+    
+    private func getUniqueVaultName() -> String {
+        let start = vaults.count
+        var idx = start
+        repeat {
+            let vaultName = "Vault #\(idx + 1)"
+            if !isVaultNameExist(name: vaultName) {
+                return vaultName
+            }
+            idx += 1
+        } while idx < 1000
+        
+        return "Main Vault"
+    }
+    private func isVaultNameExist(name: String) -> Bool{
+        for item in self.vaults {
+            if item.name == name && !item.pubKeyECDSA.isEmpty {
+                return true
+            }
+        }
+        return false
+    }
 }
 
 #Preview {
