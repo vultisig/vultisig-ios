@@ -136,7 +136,9 @@ struct KeysignDiscoveryView: View {
             
             if participantDiscovery.peersFound.count == 0 {
                 lookingForDevices
+#if os(iOS)
                     .frame(height: idiom == .phone ? 50 : 150)
+#endif
             } else {
                 deviceList
             }
