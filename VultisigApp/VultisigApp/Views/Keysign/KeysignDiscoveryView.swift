@@ -148,23 +148,9 @@ struct KeysignDiscoveryView: View {
     }
     
     var lookingForDevices: some View {
-        VStack {
-            HStack {
-                Text(NSLocalizedString("lookingForDevices", comment: "Looking for devices"))
-                    .font(.body15MenloBold)
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(.neutral0)
-                
-                ProgressView()
-                    .preferredColorScheme(.dark)
-                    .progressViewStyle(.circular)
-                    .padding(2)
-            }
-        }
-        .cornerRadius(10)
-        .shadow(radius: 5)
-        .padding()
-        .padding(.vertical, 50)
+        LookingForDevicesLoader()
+            .padding()
+            .padding(.vertical, 50)
     }
     
     var deviceList: some View {

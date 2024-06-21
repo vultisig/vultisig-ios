@@ -147,20 +147,7 @@ struct PeerDiscoveryView: View {
     }
     
     var lookingForDevices: some View {
-        HStack {
-            Text(NSLocalizedString("lookingForDevices", comment: "Looking for devices"))
-                .font(.body15MenloBold)
-                .multilineTextAlignment(.center)
-            
-            ProgressView()
-                .preferredColorScheme(.dark)
-                .progressViewStyle(.circular)
-                .padding(2)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding()
-        .cornerRadius(10)
-        .shadow(radius: 5)
+        LookingForDevicesLoader()
     }
     
     var paringBarcode: some View {

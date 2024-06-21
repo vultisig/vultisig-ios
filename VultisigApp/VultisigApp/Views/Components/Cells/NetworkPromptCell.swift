@@ -42,6 +42,7 @@ struct NetworkPromptCell: View {
                 .stroke(Color.neutral0, lineWidth: 2)
                 .opacity(isSelected ? 1 : 0)
         )
+        .padding(.horizontal, 8)
     }
     
     var padCell: some View {
@@ -63,6 +64,7 @@ struct NetworkPromptCell: View {
                 .stroke(Color.neutral0, lineWidth: 2)
                 .opacity(isSelected ? 1 : 0)
         )
+        .padding(.horizontal, 8)
     }
 }
 
