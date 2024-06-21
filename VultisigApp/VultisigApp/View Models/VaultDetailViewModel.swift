@@ -69,6 +69,7 @@ class VaultDetailViewModel: ObservableObject {
         for group in coinsGroupedByChains {
             if group.address == coin.address && group.name == coin.chain.name {
                 group.coins.append(coin)
+                group.totalBalanceInFiatDecimal = group.coins.totalBalanceInFiatDecimal
                 group.count+=1
                 if coin.isNativeToken {
                     group.logo = coin.logo
