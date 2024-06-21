@@ -20,6 +20,8 @@ struct InstructionPrompt: View {
             }
 #endif
         }
+        .frame(maxWidth: .infinity)
+        .frame(maxWidth: 350)
     }
     
     var phoneContent: some View {
@@ -31,9 +33,9 @@ struct InstructionPrompt: View {
             Text(networkType.getInstruction())
                 .font(.body10Menlo)
                 .foregroundColor(.neutral0)
-                .frame(maxWidth: 350)
                 .multilineTextAlignment(.center)
         }
+        .frame(height: 60)
     }
     
     var padContent: some View {
@@ -45,15 +47,15 @@ struct InstructionPrompt: View {
             Text(networkType.getInstruction())
                 .font(.body12Menlo)
                 .foregroundColor(.neutral0)
-                .frame(maxWidth: 250)
                 .multilineTextAlignment(.center)
         }
+        .frame(height: 80)
     }
 }
 
 #Preview {
     ZStack {
         Background()
-        InstructionPrompt(networkType: .WiFi)
+        InstructionPrompt(networkType: .Internet)
     }
 }

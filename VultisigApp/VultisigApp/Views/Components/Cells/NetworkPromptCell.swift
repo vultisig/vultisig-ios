@@ -32,9 +32,8 @@ struct NetworkPromptCell: View {
             Text(NSLocalizedString(network.rawValue, comment: ""))
                 .font(.body10MenloBold)
                 .foregroundColor(.neutral0)
-                .frame(width: 50)
         }
-        .padding(.horizontal, 14)
+        .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
         .background(isSelected ? Color.blue200 : Color.blue400)
         .cornerRadius(20)
@@ -43,6 +42,7 @@ struct NetworkPromptCell: View {
                 .stroke(Color.neutral0, lineWidth: 2)
                 .opacity(isSelected ? 1 : 0)
         )
+        .padding(.horizontal, 8)
     }
     
     var padCell: some View {
@@ -54,9 +54,8 @@ struct NetworkPromptCell: View {
             Text(NSLocalizedString(network.rawValue, comment: ""))
                 .font(.body14MenloBold)
                 .foregroundColor(.neutral0)
-                .frame(width: 70)
         }
-        .padding(.horizontal, 24)
+        .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
         .background(isSelected ? Color.blue200 : Color.blue400)
         .cornerRadius(20)
@@ -65,9 +64,10 @@ struct NetworkPromptCell: View {
                 .stroke(Color.neutral0, lineWidth: 2)
                 .opacity(isSelected ? 1 : 0)
         )
+        .padding(.horizontal, 8)
     }
 }
 
 #Preview {
-    NetworkPromptCell(network: .Cellular, isSelected: true)
+    NetworkPromptCell(network: .Internet, isSelected: true)
 }

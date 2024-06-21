@@ -172,9 +172,6 @@
 "backupNotNeededDisclaimer" = "Il tuo dispositivo di backup non è necessario a meno che non perdi uno dei tuoi dispositivi principali.";
 "noBackupDeviceDisclaimer" = "Non hai un terzo dispositivo di backup, quindi dovresti fare il backup di una parte del vault in modo sicuro in seguito.";
 "vaultNameExists" = "Il nome del deposito %s esiste già";
-"devicesOnSameWifiNoHotel" = "Mantieni tutti i dispositivi sulla stessa rete con l'app Vultisig aperta. (Potrebbe non funzionare su wifi di hotel/aeroporto).";
-"devicesOnSameHotspot" = "Collega tutti i dispositivi allo stesso hotspot personale con l'app Vultisig aperta.";
-"devicesOnSameCellular" = "Collega tutti i dispositivi a internet con l'app Vultisig aperta.";
 "balanceNotAvailable" = "Saldo non disponibile";
 "invalidBalance" = "Saldo non valido";
 "cannotDisableChain" = "Impossibile disabilitare la catena";
@@ -219,3 +216,6 @@
 "emptyField" = "Campo(i) vuoto(i)";
 "checkEmptyField" = "Assicurati che tutti i campi siano compilati.";
 "optionalPasswordProtectBackup" = "Protezione opzionale del tuo caveau con una password";
+"keygenFor" = "Generazione chiavi per";
+"devicesOnSameNetwork" = "Collega tutti i dispositivi alla stessa\nrete con l'app Vultisig aperta.";
+"devicesOnSameInternet" = "Collega tutti i dispositivi a Internet\ncon l'app Vultisig aperta.";
