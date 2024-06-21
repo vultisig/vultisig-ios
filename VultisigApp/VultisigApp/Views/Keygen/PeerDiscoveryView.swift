@@ -38,7 +38,7 @@ struct PeerDiscoveryView: View {
             Background()
             states
         }
-        .navigationTitle(NSLocalizedString("mainDevice", comment: "Main Device"))
+        .navigationTitle(getTitle())
         .navigationBarBackButtonHidden(true)
         .task {
             viewModel.startDiscovery()
@@ -341,6 +341,14 @@ struct PeerDiscoveryView: View {
                 viewModel.showSummary()
             }
         }
+    }
+    
+    private func getTitle() -> String {
+        NSLocalizedString("keygenFor", comment: "") +
+        " " +
+        selectedTab.getNavigationTitle() +
+        " " +
+        NSLocalizedString("vault", comment: "")
     }
 }
 
