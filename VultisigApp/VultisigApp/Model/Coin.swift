@@ -4,9 +4,7 @@ import BigInt
 
 @Model
 class Coin: ObservableObject, Codable, Hashable {
-
-    @Attribute(.unique) var id: String
-
+    var id: String
     let chain: Chain
     let address: String
     let hexPublicKey: String

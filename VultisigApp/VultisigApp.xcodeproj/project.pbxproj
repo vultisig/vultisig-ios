@@ -69,7 +69,7 @@
 		A5BA150A2C078EED00AA6C07 /* TokenSelectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA15092C078EED00AA6C07 /* TokenSelectionCell.swift */; };
 		A5BA150C2C078FA000AA6C07 /* TokenSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA150B2C078FA000AA6C07 /* TokenSelectionViewModel.swift */; };
 		A5BA150F2C085EEB00AA6C07 /* CachedAsyncImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA150E2C085EEB00AA6C07 /* CachedAsyncImage.swift */; };
-		A5C568952C246A0000E463B6 /* AccountFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5C568942C246A0000E463B6 /* AccountFactory.swift */; };
+		A5C568952C246A0000E463B6 /* CoinFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5C568942C246A0000E463B6 /* CoinFactory.swift */; };
 		A5CBA32C2BCD747C00088CC3 /* TappableTextFieldStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5CBA32B2BCD747C00088CC3 /* TappableTextFieldStyle.swift */; };
 		A5D00E412BD65CE7009E025F /* ERC20ApprovePayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D00E402BD65CE7009E025F /* ERC20ApprovePayload.swift */; };
 		A5D0C9352BEE77190022D421 /* SwapPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D0C9342BEE77190022D421 /* SwapPayload.swift */; };
@@ -435,7 +435,7 @@
 		A5BA15092C078EED00AA6C07 /* TokenSelectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionCell.swift; sourceTree = "<group>"; };
 		A5BA150B2C078FA000AA6C07 /* TokenSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionViewModel.swift; sourceTree = "<group>"; };
 		A5BA150E2C085EEB00AA6C07 /* CachedAsyncImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedAsyncImage.swift; sourceTree = "<group>"; };
-		A5C568942C246A0000E463B6 /* AccountFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountFactory.swift; sourceTree = "<group>"; };
+		A5C568942C246A0000E463B6 /* CoinFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinFactory.swift; sourceTree = "<group>"; };
 		A5CBA32B2BCD747C00088CC3 /* TappableTextFieldStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TappableTextFieldStyle.swift; sourceTree = "<group>"; };
 		A5D00E402BD65CE7009E025F /* ERC20ApprovePayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ERC20ApprovePayload.swift; sourceTree = "<group>"; };
 		A5D0C9342BEE77190022D421 /* SwapPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapPayload.swift; sourceTree = "<group>"; };
@@ -1514,7 +1514,7 @@
 				DEEADCF62B916676007978DE /* Solana.swift */,
 				DEFC7BFE2B8EC95E0090B07A /* thorchain.swift */,
 				DEEDAEE02B8AF7EF005170E8 /* evm.swift */,
-				A5C568942C246A0000E463B6 /* AccountFactory.swift */,
+				A5C568942C246A0000E463B6 /* CoinFactory.swift */,
 				DEEDAEE22B8AF8B1005170E8 /* publickey.swift */,
 				DEEDAEE42B8AFB5D005170E8 /* common.swift */,
 				DEFC7BFA2B8D87370090B07A /* erc20.swift */,
@@ -2058,7 +2058,7 @@
 				A65BA9842BAA07B500B2D8AA /* Background.swift in Sources */,
 				A65649F22B966A2300E4B329 /* UTXOTransactionStatus.swift in Sources */,
 				A6BEF5C02BE2B11C007A84A1 /* DeeplinkViewModel.swift in Sources */,
-				A5C568952C246A0000E463B6 /* AccountFactory.swift in Sources */,
+				A5C568952C246A0000E463B6 /* CoinFactory.swift in Sources */,
 				A5D0C9372BEE778F0022D421 /* OneInchSwaps.swift in Sources */,
 				DE64A4CE2BA7FEE100C342E3 /* JoinKeysignViewModel.swift in Sources */,
 				A65518032BF849FC006BB924 /* CoverView.swift in Sources */,
