@@ -69,7 +69,10 @@ struct ChainSelectionView: View {
                     )
                 }
             }
-            .padding(.top, 30)
+            .padding(.vertical, 30)
+#if os(iOS)
+            .padding(.bottom, UIDevice.current.userInterfaceIdiom == .pad ? 50 : 0)
+#endif
         }
         .padding(.horizontal, 16)
     }

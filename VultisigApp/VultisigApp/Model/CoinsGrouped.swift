@@ -36,6 +36,7 @@ class GroupedChain {
         self.logo = logo
         self.count = count
         self.coins = coins
+        self.totalBalanceInFiatDecimal = coins.totalBalanceInFiatDecimal
     }
     
     func setOrder(_ index: Int) {
