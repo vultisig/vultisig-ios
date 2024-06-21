@@ -36,7 +36,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     private let mediator = Mediator.shared
     
     let totalViews = 5
-    let titles = ["send", "verify", "pair", "keysign", "done"]
+    let titles = ["send", "verify", "send", "keysign", "done"]
     
     let logger = Logger(subsystem: "send-input-details", category: "transaction")
     

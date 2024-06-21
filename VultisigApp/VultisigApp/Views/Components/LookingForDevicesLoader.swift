@@ -14,6 +14,7 @@ struct LookingForDevicesLoader: View {
         VStack {
             Text(NSLocalizedString("lookingForDevices", comment: "Looking for devices"))
                 .font(.body14Montserrat)
+                .foregroundColor(.neutral0)
                 .bold()
                 .multilineTextAlignment(.center)
             
