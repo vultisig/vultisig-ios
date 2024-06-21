@@ -12,17 +12,13 @@ struct CoinFactory {
 
     private init() { }
 
-    static func create(asset: CoinMeta, hexPubKey: String, hexChainCode: String) throws -> Coin {
-        let derivePubKey = PublicKeyHelper.getDerivedPubKey(
-            hexPubKey: hexPubKey,
-            hexChainCode: hexChainCode,
-            derivePath: asset.coinType.derivationPath()
-        )
+    static func create(asset: CoinMeta, vault: Vault) throws -> Coin {
+        let hexPubKey = publicKey(asset: asset, vault: vault)
 
         guard 
-            let pubKeyData = Data(hexString: derivePubKey),
+            let pubKeyData = Data(hexString: hexPubKey),
             let publicKey = PublicKey(data: pubKeyData, type: .secp256k1) else {
-            throw Errors.invalidPublicKey(derivePubKey: derivePubKey)
+            throw Errors.invalidPublicKey(pubKey: hexPubKey)
         }
 
         let address: String
@@ -42,13 +38,26 @@ struct CoinFactory {
 private extension CoinFactory {
 
     enum Errors: Error, LocalizedError {
-        case invalidPublicKey(derivePubKey: String)
+        case invalidPublicKey(pubKey: String)
 
         var errorDescription: String? {
             switch self {
-            case .invalidPublicKey(let derivePubKey):
-                return "Public key: \(derivePubKey) is invalid"
+            case .invalidPublicKey(let pubKey):
+                return "Public key: \(pubKey) is invalid"
             }
+        }
+    }
+
+    static func publicKey(asset: CoinMeta, vault: Vault) -> String {
+        switch asset.chain {
+        case .solana, .sui, .polkadot:
+            return vault.pubKeyEdDSA
+        case .arbitrum, .avalanche, .base, .bitcoin, .bitcoinCash, .blast, .bscChain, .cronosChain, .dash, .dogecoin, .dydx, .ethereum, .gaiaChain, .kujira, .litecoin, .mayaChain, .optimism, .polygon, .thorChain, .zksync:
+            return PublicKeyHelper.getDerivedPubKey(
+                hexPubKey: vault.pubKeyECDSA,
+                hexChainCode: vault.hexChainCode,
+                derivePath: asset.coinType.derivationPath()
+            )
         }
     }
 }
