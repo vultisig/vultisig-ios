@@ -41,7 +41,6 @@ class BalanceService {
         do {
             let cacheKey = "\(coin.ticker)-\(coin.contractAddress)-\(coin.chain.rawValue)-\(coin.address)"
             if let cachedData = await Utils.getCachedData(cacheKey: cacheKey, cache: cache, timeInSeconds: CACHE_TIMEOUT_IN_SECONDS) {
-                try await updateCoin(coin, rawBalance: cachedData.balance, priceRate: cachedData.priceRate)
                 return
             }
             
@@ -93,10 +92,8 @@ class BalanceService {
                 (rawBalance, priceRate) = try await dot.getBalance(coin: coin)
             }
             
-            if rawBalance != .zero, priceRate > 0 {
-                try await updateCoin(coin, rawBalance: rawBalance, priceRate: priceRate)
-                cache.set(cacheKey, (data: (balance: rawBalance, priceRate), timestamp: Date()))
-            }
+            try await updateCoin(coin, rawBalance: rawBalance, priceRate: priceRate)
+            cache.set(cacheKey, (data: (balance: rawBalance, priceRate), timestamp: Date()))
         } catch {
             print("BalanceService error: \(error.localizedDescription)")
         }
