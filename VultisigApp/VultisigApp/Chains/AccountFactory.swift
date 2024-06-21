@@ -13,16 +13,9 @@ struct CoinFactory {
     private init() { }
 
     static func create(asset: CoinMeta, vault: Vault) throws -> Coin {
-        let hexPubKey = publicKey(asset: asset, vault: vault)
-
-        guard 
-            let pubKeyData = Data(hexString: hexPubKey),
-            let publicKey = PublicKey(data: pubKeyData, type: .secp256k1) else {
-            throw Errors.invalidPublicKey(pubKey: hexPubKey)
-        }
+        let publicKey = try publicKey(asset: asset, vault: vault)
 
         let address: String
-
         switch asset.chain {
         case .mayaChain:
             let anyAddress = AnyAddress(publicKey: publicKey, coin: .thorchain, hrp: "maya")
@@ -31,7 +24,7 @@ struct CoinFactory {
             address = asset.coinType.deriveAddressFromPublicKey(publicKey: publicKey)
         }
 
-        return Coin(asset: asset, address: address, hexPublicKey: hexPubKey)
+        return Coin(asset: asset, address: address, hexPublicKey: publicKey.data.hexString)
     }
 }
 
@@ -48,16 +41,28 @@ private extension CoinFactory {
         }
     }
 
-    static func publicKey(asset: CoinMeta, vault: Vault) -> String {
+    static func publicKey(asset: CoinMeta, vault: Vault) throws -> PublicKey {
         switch asset.chain {
         case .solana, .sui, .polkadot:
-            return vault.pubKeyEdDSA
+            guard 
+                let pubKeyData = Data(hexString: vault.pubKeyEdDSA),
+                let publicKey = PublicKey(data: pubKeyData, type: .ed25519) else {
+                throw Errors.invalidPublicKey(pubKey: vault.pubKeyEdDSA)
+            }
+            return publicKey
+
         case .arbitrum, .avalanche, .base, .bitcoin, .bitcoinCash, .blast, .bscChain, .cronosChain, .dash, .dogecoin, .dydx, .ethereum, .gaiaChain, .kujira, .litecoin, .mayaChain, .optimism, .polygon, .thorChain, .zksync:
-            return PublicKeyHelper.getDerivedPubKey(
+            let derivedKey = PublicKeyHelper.getDerivedPubKey(
                 hexPubKey: vault.pubKeyECDSA,
                 hexChainCode: vault.hexChainCode,
                 derivePath: asset.coinType.derivationPath()
             )
+            guard
+                let pubKeyData = Data(hexString: vault.pubKeyECDSA),
+                let publicKey = PublicKey(data: pubKeyData, type: .secp256k1) else {
+                throw Errors.invalidPublicKey(pubKey: vault.pubKeyEdDSA)
+            }
+            return publicKey
         }
     }
 }
