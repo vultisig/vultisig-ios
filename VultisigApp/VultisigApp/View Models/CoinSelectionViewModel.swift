@@ -120,11 +120,7 @@ class CoinSelectionViewModel: ObservableObject {
     
     
     private func addToChain(asset: CoinMeta, to vault: Vault, priceProviderId: String?) async throws -> Coin? {
-        let newCoin = try CoinFactory.create(
-            asset: asset,
-            hexPubKey: vault.pubKeyECDSA,
-            hexChainCode: vault.hexChainCode
-        )
+        let newCoin = try CoinFactory.create(asset: asset, vault: vault)
         if let priceProviderId {
             newCoin.priceProviderId = priceProviderId
         }
