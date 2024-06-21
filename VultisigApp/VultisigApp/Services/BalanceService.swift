@@ -40,7 +40,7 @@ class BalanceService {
     @MainActor func updateBalance(for coin: Coin) async {
         do {
             let cacheKey = "\(coin.ticker)-\(coin.contractAddress)-\(coin.chain.rawValue)-\(coin.address)"
-            if let cachedData = await Utils.getCachedData(cacheKey: cacheKey, cache: cache, timeInSeconds: CACHE_TIMEOUT_IN_SECONDS) {
+            if (await Utils.getCachedData(cacheKey: cacheKey, cache: cache, timeInSeconds: CACHE_TIMEOUT_IN_SECONDS)) != nil {
                 return
             }
             
