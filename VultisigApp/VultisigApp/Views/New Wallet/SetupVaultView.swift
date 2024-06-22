@@ -59,7 +59,7 @@ struct SetupVaultView: View {
             )
         })
         .navigationDestination(isPresented: $shouldJoinKeygen) {
-            JoinKeygenView(vault: Vault(name: "Main Vault"))
+            JoinKeygenView(vault: Vault(name: getUniqueVaultName()))
         }
         .navigationDestination(isPresented: $shouldKeysignTransaction) {
             if let vault = viewModel.selectedVault {
@@ -96,7 +96,7 @@ struct SetupVaultView: View {
             } else {
                 PeerDiscoveryView(
                     tssType: tssType,
-                    vault: vault ?? Vault(name: "Main Vault"),
+                    vault: vault ?? Vault(name: getUniqueVaultName()),
                     selectedTab: selectedTab
                 )
             }
@@ -115,7 +115,7 @@ struct SetupVaultView: View {
     
     private func setData() {
         if vault == nil {
-            vault = Vault(name: "Vault #\(vaults.count + 1)")
+            vault = Vault(name: getUniqueVaultName())
         }
     }
     
