@@ -180,6 +180,14 @@ class JoinKeygenViewModel: ObservableObject {
         }
     }
 #endif
+    func isVaultNameAlreadyExist(name: String) -> Bool  {
+        for v in self.vaults {
+            if v.name == name && !v.pubKeyECDSA.isEmpty {
+                return true
+            }
+        }
+        return false
+    }
     
     func handleQrCodeSuccessResult(scanData: Data) {
         var useVultisigRelay = false
@@ -196,6 +204,12 @@ class JoinKeygenViewModel: ObservableObject {
                 encryptionKeyHex = keygenMsg.encryptionKeyHex
                 useVultisigRelay = keygenMsg.useVultisigRelay
                 vault.name = keygenMsg.vaultName
+                if isVaultNameAlreadyExist(name: keygenMsg.vaultName) {
+                    errorMessage = "Vault with name:\(keygenMsg.vaultName) already exist"
+                    logger.error("\(self.errorMessage)")
+                    status = .FailToStart
+                    return
+                }
             case .Reshare(let reshareMsg):
                 tssType = .Reshare
                 oldCommittee = reshareMsg.oldParties
