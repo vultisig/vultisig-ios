@@ -41,32 +41,34 @@ struct VultisigApp: App {
                         break
                     }
                 }
+#if os(macOS)
+                .frame(minWidth: 800, minHeight: 500)
+#endif
         }
-        .modelContainer(sharedModelContainer)
-        
+//        .modelContainer(sharedModelContainer)
     }
     
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Vault.self,
-            Coin.self,
-        ])
-        let modelConfiguration = ModelConfiguration(
-            schema: schema,
-            isStoredInMemoryOnly: false
-        )
-        do {
-            let modelContainer = try ModelContainer(
-                for: schema,
-                migrationPlan: MigrationPlan.self,
-                configurations: [modelConfiguration]
-            )
-            Storage.shared.modelContext = modelContainer.mainContext
-            return modelContainer
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
+//    var sharedModelContainer: ModelContainer = {
+//        let schema = Schema([
+//            Vault.self,
+//            Coin.self,
+//        ])
+//        let modelConfiguration = ModelConfiguration(
+//            schema: schema,
+//            isStoredInMemoryOnly: false
+//        )
+//        do {
+//            let modelContainer = try ModelContainer(
+//                for: schema,
+//                migrationPlan: MigrationPlan.self,
+//                configurations: [modelConfiguration]
+//            )
+//            Storage.shared.modelContext = modelContainer.mainContext
+//            return modelContainer
+//        } catch {
+//            fatalError("Could not create ModelContainer: \(error)")
+//        }
+//    }()
     
     private func continueLogin() {
         accountViewModel.enableAuth()
