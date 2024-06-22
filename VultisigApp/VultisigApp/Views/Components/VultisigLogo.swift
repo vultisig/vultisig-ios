@@ -13,7 +13,7 @@ struct VultisigLogo: View {
     @State var didAppear = false
     
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
             logo
             title
             description
@@ -98,7 +98,11 @@ struct VultisigLogo: View {
             .foregroundColor(.neutral0)
             .opacity(didAppear ? 1 : 0)
             .font(.body16MontserratBold)
-            .padding(.top, 2)
+#if os(iOS)
+            .padding(.top, 10)
+#elseif os(macOS)
+            .padding(.top, 5)
+#endif
     }
     
     private func setData() {
