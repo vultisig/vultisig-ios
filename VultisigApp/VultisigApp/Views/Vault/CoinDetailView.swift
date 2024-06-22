@@ -9,7 +9,7 @@ import SwiftUI
 
 struct CoinDetailView: View {
     let coin: Coin
-    @StateObject var group: GroupedChain
+    @ObservedObject var group: GroupedChain
     let vault: Vault
     @ObservedObject var sendTx: SendTransaction
     

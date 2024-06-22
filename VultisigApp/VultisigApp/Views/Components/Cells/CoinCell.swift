@@ -3,7 +3,7 @@ import SwiftUI
 struct CoinCell: View {
     @ObservedObject var coin: Coin
     
-    @StateObject var group: GroupedChain
+    @ObservedObject var group: GroupedChain
     let vault: Vault
     
     var body: some View {

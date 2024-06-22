@@ -12,7 +12,7 @@ import WalletCore
 struct CustomTokenView: View {
     let chainDetailView: ChainDetailView
     let vault: Vault
-    @StateObject var group: GroupedChain
+    @ObservedObject var group: GroupedChain
     
     @State private var contractAddress: String = ""
     @State private var tokenName: String = ""

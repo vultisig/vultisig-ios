@@ -9,7 +9,7 @@ import SwiftUI
 
 
 struct ChainHeaderCell: View {
-    @StateObject var group: GroupedChain
+    @ObservedObject var group: GroupedChain
     @Binding var isLoading: Bool
     
     @State var showAlert = false
