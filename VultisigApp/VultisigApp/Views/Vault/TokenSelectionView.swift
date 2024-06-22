@@ -3,7 +3,7 @@ import SwiftUI
 struct TokenSelectionView: View {
     let chainDetailView: ChainDetailView
     let vault: Vault
-    let group: GroupedChain
+    @StateObject var group: GroupedChain
     
     @StateObject var tokenViewModel = TokenSelectionViewModel()
     @EnvironmentObject var coinViewModel: CoinSelectionViewModel

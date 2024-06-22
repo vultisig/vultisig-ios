@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ChainDetailView: View {
-    let group: GroupedChain
+    @StateObject var group: GroupedChain
     let vault: Vault
     
     @State var tokens: [Coin] = []

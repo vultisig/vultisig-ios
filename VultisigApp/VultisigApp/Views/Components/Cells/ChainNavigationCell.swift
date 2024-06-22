@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ChainNavigationCell: View {
-    let group: GroupedChain
+    @StateObject var group: GroupedChain
     let vault: Vault
     
     @State private var isActive = false
