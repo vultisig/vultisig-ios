@@ -6,8 +6,10 @@
 //
 
 import Foundation
+import SwiftUI
+import Combine
 
-class GroupedChain {
+class GroupedChain: ObservableObject {
     let id: String
     let chain: Chain
     let address: String
@@ -15,11 +17,13 @@ class GroupedChain {
     var count: Int
     var coins: [Coin]
     var order: Int = 0
-    var totalBalanceInFiatDecimal: Decimal = 0.0
-
-    var totalBalanceInFiatString: String {
-        return totalBalanceInFiatDecimal.formatToFiat(includeCurrencySymbol: true)
+    @Published var totalBalanceInFiatDecimal: Decimal = 0.0 {
+        didSet {
+            totalBalanceInFiatString = totalBalanceInFiatDecimal.formatToFiat(includeCurrencySymbol: true)
+        }
     }
+
+    @Published var totalBalanceInFiatString: String = ""
 
     var name: String {
         return chain.name
@@ -37,6 +41,7 @@ class GroupedChain {
         self.count = count
         self.coins = coins
         self.totalBalanceInFiatDecimal = coins.totalBalanceInFiatDecimal
+        self.totalBalanceInFiatString = totalBalanceInFiatDecimal.formatToFiat(includeCurrencySymbol: true)
     }
     
     func setOrder(_ index: Int) {
