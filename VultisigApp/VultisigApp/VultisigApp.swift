@@ -41,9 +41,11 @@ struct VultisigApp: App {
                         break
                     }
                 }
+#if os(macOS)
+                .frame(minWidth: 900, minHeight: 600)
+#endif
         }
         .modelContainer(sharedModelContainer)
-        
     }
     
     var sharedModelContainer: ModelContainer = {

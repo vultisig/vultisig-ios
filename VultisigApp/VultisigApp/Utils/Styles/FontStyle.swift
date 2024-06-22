@@ -41,6 +41,7 @@ extension Font {
     
     // Semi-bold
     static let body12MontserratSemiBold = Font.custom("Montserrat", size: 12).weight(.semibold)
+    static let body14MontserratSemiBold = Font.custom("Montserrat", size: 14).weight(.semibold)
     static let body16MontserratSemiBold = Font.custom("Montserrat", size: 16).weight(.semibold)
     static let body20MontserratSemiBold = Font.custom("Montserrat", size: 20).weight(.semibold)
     
@@ -53,6 +54,8 @@ extension Font {
     static let body18MenloBold = Font.custom("Menlo", size: 18).bold()
     static let body20MenloBold = Font.custom("Menlo", size: 20).bold()
     
+    static let body12MontserratBold = Font.custom("Montserrat", size: 12).bold()
+    static let body14MontserratBold = Font.custom("Montserrat", size: 14).bold()
     static let body16MontserratBold = Font.custom("Montserrat", size: 16).bold()
     
     /// TITLE
@@ -64,6 +67,7 @@ extension Font {
     static let title80MontserratLight = Font.custom("Montserrat", size: 80).weight(.light)
     
     // Semi-bold
+    static let title36MontserratSemiBold = Font.custom("Montserrat", size: 36).weight(.semibold)
     static let title40MontserratSemiBold = Font.custom("Montserrat", size: 40).weight(.semibold)
     
     // Bold
@@ -71,6 +75,10 @@ extension Font {
     static let title32MenloBold = Font.custom("Menlo", size: 32).bold()
     static let title35MenloBold = Font.custom("Menlo", size: 35).bold()
     static let title40MenloBold = Font.custom("Menlo", size: 40).bold()
+    
+    static let title36MontserratBold = Font.custom("Montserrat", size: 36).bold()
+    static let title38MontserratBold = Font.custom("Montserrat", size: 38).bold()
+    static let title40MontserratBold = Font.custom("Montserrat", size: 40).bold()
     
     // Black
     static let title30MenloBlack = Font.custom("Menlo", size: 30).weight(.black)

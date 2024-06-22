@@ -14,7 +14,6 @@ struct OutlineButton: View {
     
     var body: some View {
         Text(NSLocalizedString(title, comment: "Button Text"))
-            .font(.body16MontserratBold)
             .foregroundStyle(LinearGradient.primaryGradient)
             .padding(12)
             .frame(maxWidth: .infinity)
@@ -22,8 +21,17 @@ struct OutlineButton: View {
             .cornerRadius(100)
             .overlay(
                 RoundedRectangle(cornerRadius: 100)
+                #if os(iOS)
                     .stroke(LinearGradient.primaryGradient, lineWidth: 1)
+                #elseif os(macOS)
+                    .stroke(LinearGradient.primaryGradient, lineWidth: 2)
+                #endif
             )
+#if os(iOS)
+            .font(.body16MontserratBold)
+#elseif os(macOS)
+            .font(.body14MontserratBold)
+#endif
     }
 }
 

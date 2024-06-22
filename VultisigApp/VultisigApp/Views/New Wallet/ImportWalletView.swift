@@ -24,12 +24,12 @@ struct ImportWalletView: View {
         .navigationTitle(NSLocalizedString("import", comment: "Import title"))
 #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+#endif
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: .navigation) {
                 NavigationBackButton()
             }
         }
-#endif
         .fileImporter(
             isPresented: $backupViewModel.showVaultImporter,
             allowedContentTypes: [.data],
@@ -87,6 +87,8 @@ struct ImportWalletView: View {
         } label: {
             ImportWalletUploadSection(viewModel: backupViewModel)
         }
+        .buttonStyle(PlainButtonStyle())
+        .background(Color.clear)
     }
     
     var continueButton: some View {
@@ -99,6 +101,8 @@ struct ImportWalletView: View {
         }
         .padding(.horizontal, 10)
         .padding(.bottom, 40)
+        .buttonStyle(PlainButtonStyle())
+        .background(Color.clear)
     }
     
     var fileImage: some View {
@@ -122,6 +126,8 @@ struct ImportWalletView: View {
                 .foregroundColor(.neutral0)
                 .padding(8)
         }
+        .buttonStyle(PlainButtonStyle())
+        .background(Color.clear)
     }
     
     var alert: Alert {

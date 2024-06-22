@@ -31,8 +31,7 @@ struct FilledButton: View {
 #if os(iOS)
             .font(.body16MontserratBold)
 #elseif os(macOS)
-            .font(.body12Menlo)
-            .bold()
+            .font(.body14MontserratBold)
 #endif
     }
     
