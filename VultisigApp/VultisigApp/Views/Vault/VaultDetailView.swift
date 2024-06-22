@@ -40,7 +40,6 @@ struct VaultDetailView: View {
             setData()
         }
         .onChange(of: vault.coins) {
-            viewModel.fetchCoins(for: vault)
             setData()
         }
         .sheet(isPresented: $showSheet, content: {
