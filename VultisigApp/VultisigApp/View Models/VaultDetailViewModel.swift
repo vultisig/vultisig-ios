@@ -18,7 +18,6 @@ class VaultDetailViewModel: ObservableObject {
     func updateBalance(vault: Vault) {
         updateBalanceTask?.cancel()
         updateBalanceTask = Task {
-            let coins = coinsGroupedByChains.reduce([]) { $0 + $1.coins }
             await balanceService.updateBalances(vault: vault)
             for gc in coinsGroupedByChains {
                 gc.totalBalanceInFiatDecimal = gc.coins.totalBalanceInFiatDecimal
