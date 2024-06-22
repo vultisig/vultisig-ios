@@ -98,11 +98,7 @@ struct VultisigLogo: View {
             .foregroundColor(.neutral0)
             .opacity(didAppear ? 1 : 0)
             .font(.body16MontserratBold)
-#if os(iOS)
-            .padding(.top, 10)
-#elseif os(macOS)
             .padding(.top, 2)
-#endif
     }
     
     private func setData() {
