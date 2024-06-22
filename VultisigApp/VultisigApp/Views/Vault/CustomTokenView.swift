@@ -9,11 +9,10 @@ import Foundation
 import SwiftUI
 import WalletCore
 
-@MainActor
 struct CustomTokenView: View {
     let chainDetailView: ChainDetailView
     let vault: Vault
-    let group: GroupedChain
+    @ObservedObject var group: GroupedChain
     
     @State private var contractAddress: String = ""
     @State private var tokenName: String = ""

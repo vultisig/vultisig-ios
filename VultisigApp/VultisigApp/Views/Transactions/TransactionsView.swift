@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct TransactionsView: View {
-    let group: GroupedChain
+    @ObservedObject var group: GroupedChain
     
     var body: some View {
         ZStack {
