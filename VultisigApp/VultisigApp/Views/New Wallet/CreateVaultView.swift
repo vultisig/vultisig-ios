@@ -54,6 +54,8 @@ struct CreateVaultView: View {
         } label: {
             FilledButton(title: "createNewVault")
         }
+        .buttonStyle(PlainButtonStyle())
+        .background(Color.clear)
     }
     
     var importVaultButton: some View {
@@ -62,6 +64,8 @@ struct CreateVaultView: View {
         } label: {
             OutlineButton(title: "importExistingVault")
         }
+        .buttonStyle(PlainButtonStyle())
+        .background(Color.clear)
     }
 }
 
