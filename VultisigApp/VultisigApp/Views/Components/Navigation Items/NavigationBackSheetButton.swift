@@ -11,13 +11,19 @@ struct NavigationBackSheetButton: View {
     @Binding var showSheet: Bool
     var tint: Color = Color.neutral0
     
+    @Environment(\.colorScheme) var colorScheme
+    
     var body: some View {
         Button(action: {
             showSheet.toggle()
         }) {
             Image(systemName: "chevron.backward")
                 .font(.body18MenloBold)
+#if os(iOS)
                 .foregroundColor(tint)
+#elseif os(macOS)
+                .foregroundColor(colorScheme == .light ? .neutral700 : .neutral0)
+#endif
         }
     }
 }

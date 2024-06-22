@@ -747,6 +747,7 @@
 		049BBB4E2B71E37B004C231F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				A5BA150D2C085ED300AA6C07 /* ImageView */,
 				A6F9F7D92B9BA2CF00790258 /* Cells */,
 				A633B1232B993FCC003D1738 /* Buttons */,
 				A6966D272BA4009B00903CA4 /* TextFields */,
@@ -903,6 +904,8 @@
 		469ED3962B98E7B7008D4951 /* Cosmos */ = {
 			isa = PBXGroup;
 			children = (
+				DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */,
+				A5D0C9342BEE77190022D421 /* SwapPayload.swift */,
 				46F8F71F2B99FDAC0099454E /* TransactionManager */,
 				469ED39E2B98F5A9008D4951 /* AccountManager */,
 				469ED3972B98E885008D4951 /* BalanceManager */,
@@ -968,7 +971,6 @@
 				D9AD8EE52B6730A40009F8D5 /* PeerDiscoveryView.swift */,
 				DE9EB0F32BA309AB001747D9 /* MessagePuller.swift */,
 				A611735C2BC8D94400D616F9 /* KeyGenSummaryView.swift */,
-				DE8AD74B2BC8E3FE00339775 /* KeygenVerify.swift */,
 			);
 			path = Keygen;
 			sourceTree = "<group>";
@@ -1116,6 +1118,7 @@
 		A65649D52B965FC400E4B329 /* View Models */ = {
 			isa = PBXGroup;
 			children = (
+				DE8AD74B2BC8E3FE00339775 /* KeygenVerify.swift */,
 				D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */,
 				465B09A82B7C176700952DD9 /* SendTransaction.swift */,
 				A6F9F7EA2B9D1B3700790258 /* VaultDetailViewModel.swift */,
@@ -1344,10 +1347,8 @@
 				D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */,
 				A6D0BA692C08353700E24DC9 /* NoCameraPermissionView.swift */,
 				A65518022BF849FC006BB924 /* CoverView.swift */,
-				A5BA150D2C085ED300AA6C07 /* ImageView */,
 				B5A97CEB2BF41554007574D7 /* TransactionMemo */,
 				46D067E42B8852B70052F535 /* Keygen */,
-				049BBB4E2B71E37B004C231F /* Components */,
 				DE15729A2B70F284009BC7C5 /* Keysign */,
 				D9AD8F042B675E230009F8D5 /* Vault */,
 				D9AD8EED2B6731290009F8D5 /* New Wallet */,
@@ -1356,6 +1357,7 @@
 				A6C0D55D2BB3B71300156689 /* Transactions */,
 				A6980C222BC0834E00F452AB /* Settings */,
 				A6966D1C2BA3DD9900903CA4 /* Onboarding */,
+				049BBB4E2B71E37B004C231F /* Components */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1470,8 +1472,6 @@
 				DE15729B2B70F284009BC7C5 /* JoinKeysignView.swift */,
 				DE15729C2B70F284009BC7C5 /* KeysignDiscoveryView.swift */,
 				DE15729D2B70F284009BC7C5 /* KeysignView.swift */,
-				DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */,
-				A5D0C9342BEE77190022D421 /* SwapPayload.swift */,
 				DE9EB0F52BA3F9C2001747D9 /* ParticipantDiscovery.swift */,
 				A65BA98F2BAD402A00B2D8AA /* KeysignMessageConfirmView.swift */,
 				A52313DD2BDF665E00D4D0D5 /* KeysignSwapConfirmView.swift */,

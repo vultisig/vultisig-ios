@@ -12,6 +12,8 @@ struct NavigationQRShareButton: View {
     let renderedImage: Image?
     var tint: Color = Color.neutral0
     
+    @Environment(\.colorScheme) var colorScheme
+    
     var body: some View {
         ZStack {
             if let image = renderedImage {
@@ -34,7 +36,11 @@ struct NavigationQRShareButton: View {
     var content: some View {
         Image(systemName: "arrow.up.doc")
             .font(.body16MenloBold)
-            .foregroundColor(tint)
+#if os(iOS)
+                .foregroundColor(tint)
+#elseif os(macOS)
+                .foregroundColor(colorScheme == .light ? .neutral700 : .neutral0)
+#endif
     }
 }
 

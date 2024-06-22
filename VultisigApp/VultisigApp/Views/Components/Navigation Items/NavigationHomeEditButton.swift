@@ -12,6 +12,9 @@ struct NavigationHomeEditButton: View {
     let showVaultsList: Bool
     @Binding var isEditingVaults: Bool
     
+    var tint: Color = Color.neutral0
+    
+    @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject var viewModel: VaultDetailViewModel
     
     var body: some View {
@@ -47,7 +50,11 @@ struct NavigationHomeEditButton: View {
     var doneButton: some View {
         Text(NSLocalizedString("done", comment: ""))
             .font(.body18MenloBold)
-            .foregroundColor(.neutral0)
+#if os(iOS)
+                .foregroundColor(tint)
+#elseif os(macOS)
+                .foregroundColor(colorScheme == .light ? .neutral700 : .neutral0)
+#endif
     }
 }
 

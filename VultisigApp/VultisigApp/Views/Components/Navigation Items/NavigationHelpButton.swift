@@ -10,6 +10,8 @@ import SwiftUI
 struct NavigationHelpButton: View {
     var tint: Color = Color.neutral0
     
+    @Environment(\.colorScheme) var colorScheme
+    
     var body: some View {
         Link(destination: URL(string: Endpoint.supportDocumentLink)!) {
             image
@@ -19,7 +21,11 @@ struct NavigationHelpButton: View {
     var image: some View {
         Image(systemName: "questionmark.circle")
             .font(.body18MenloBold)
-            .foregroundColor(tint)
+#if os(iOS)
+                .foregroundColor(tint)
+#elseif os(macOS)
+                .foregroundColor(colorScheme == .light ? .neutral700 : .neutral0)
+#endif
     }
 }
 
