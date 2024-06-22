@@ -21,9 +21,18 @@ class BalanceService {
     private let maya = MayachainService.shared
     private let dot = PolkadotService.shared
     
-    private var cache: ThreadSafeDictionary<String, (data: Bool, timestamp: Date)> = ThreadSafeDictionary()
+    private struct CachedValue {
+        let rawBalance: String
+        let priceRate: Double
+    }
+    
+    private var cache: ThreadSafeDictionary<String, (data: CachedValue, timestamp: Date)> = ThreadSafeDictionary()
     
     private let CACHE_TIMEOUT_IN_SECONDS: Double = 120 // 2 minutes
+    
+    private func cacheKey(coin: Coin) -> String {
+        "\(coin.ticker)-\(coin.contractAddress)-\(coin.chain.rawValue)-\(coin.address)"
+    }
     
     func updateBalances(coins: [Coin]) async {
         await withTaskGroup(of: Void.self) { group in
@@ -39,8 +48,10 @@ class BalanceService {
     
     @MainActor func updateBalance(for coin: Coin) async {
         do {
-            let cacheKey = "\(coin.ticker)-\(coin.contractAddress)-\(coin.chain.rawValue)-\(coin.address)"
-            if (await Utils.getCachedData(cacheKey: cacheKey, cache: cache, timeInSeconds: CACHE_TIMEOUT_IN_SECONDS)) != nil {
+            
+            if let cachedValue = await Utils.getCachedData(cacheKey: cacheKey(coin: coin), cache: cache, timeInSeconds: CACHE_TIMEOUT_IN_SECONDS) {
+                coin.rawBalance = cachedValue.rawBalance
+                coin.priceRate = cachedValue.priceRate
                 return
             }
             
@@ -93,7 +104,6 @@ class BalanceService {
             }
             
             try await updateCoin(coin, rawBalance: rawBalance, priceRate: priceRate)
-            cache.set(cacheKey, (data: true, timestamp: Date()))
         } catch {
             print("BalanceService error: \(error.localizedDescription)")
         }
@@ -103,9 +113,11 @@ class BalanceService {
 private extension BalanceService {
     
     @MainActor func updateCoin(_ coin: Coin, rawBalance: String, priceRate: Double) async throws {
+        guard coin.rawBalance != rawBalance && coin.priceRate != priceRate else { return }
         coin.rawBalance = rawBalance
         coin.priceRate = priceRate
         // Swift Data persists on disk io, that is slower than the cache on KEY VALUE RAM
         try await Storage.shared.save(coin)
+        cache.set(cacheKey(coin: coin), (data: CachedValue(rawBalance: rawBalance, priceRate: priceRate), timestamp: Date()))
     }
 }

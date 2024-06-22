@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ChainCell: View {
-    let group: GroupedChain
+    @ObservedObject var group: GroupedChain
     @Binding var isEditingChains: Bool
     
     @State var showAlert = false

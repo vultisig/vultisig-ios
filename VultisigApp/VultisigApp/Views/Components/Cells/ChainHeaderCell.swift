@@ -7,8 +7,9 @@
 
 import SwiftUI
 
+
 struct ChainHeaderCell: View {
-    let group: GroupedChain
+    @ObservedObject var group: GroupedChain
     @Binding var isLoading: Bool
     
     @State var showAlert = false
