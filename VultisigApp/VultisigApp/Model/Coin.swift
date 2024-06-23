@@ -152,12 +152,14 @@ class Coin: ObservableObject, Codable, Hashable {
             return "2000000000"
         case .solana:
             return "7000"
-        case .ethereum,.avalanche,.base,.blast,.arbitrum,.polygon,.optimism,.bscChain,.cronosChain, .zksync:
+        case .ethereum,.avalanche,.base,.blast,.arbitrum,.polygon,.optimism,.bscChain,.cronosChain:
             if self.isNativeToken {
-                return "33000"
+                return "40000"
             } else {
                 return "120000"
             }
+        case .zksync:
+            return "200000"
         case .bitcoin,.bitcoinCash,.dash:
             return "20"
         case .litecoin:
