@@ -38,31 +38,17 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     var isAmountExceeded: Bool {
-        //return false
         
-        let totalBalance = BigInt(coin.rawBalance) ?? BigInt.zero
-        
-        var gasInt = BigInt.zero
-        
-        // I don't need to subtract the fee if UTXO
-        // Wallet core does that internally
-        if sendMaxAmount, coin.chainType == .UTXO {
-            let totalTransactionCost = amountInRaw
-            return totalTransactionCost > totalBalance
-        }
-        
-        if coin.isNativeToken {
-            gasInt = BigInt(gas) ?? BigInt.zero
-            if coin.chainType == .EVM {
-                if let gasLimitBigInt = BigInt(coin.feeDefault) {
-                    gasInt = gasInt * gasLimitBigInt + 1
-                }
-            }
-        }
-        
-        let totalTransactionCost = amountInRaw + gasInt
-        
-        return totalTransactionCost > totalBalance
+       let totalBalance = BigInt(coin.rawBalance) ?? BigInt.zero
+       
+       if sendMaxAmount, coin.chainType == .UTXO {
+           let totalTransactionCost = amountInRaw
+           return totalTransactionCost > totalBalance
+       }
+       
+        let totalTransactionCost = amountInRaw + gas.toBigInt()
+       
+       return totalTransactionCost > totalBalance
         
     }
     

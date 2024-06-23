@@ -44,6 +44,9 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         do {
             let chainSpecific = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: false)
             tx.gas = chainSpecific.gas.description
+            if tx.coin.chainType == .EVM {
+                tx.gas = (tx.coin.feeDefault.toBigInt() * chainSpecific.gas).description
+            }
         } catch {
             print("error fetching data: \(error.localizedDescription)")
         }
@@ -66,20 +69,14 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             Task {
                 do {
                     if tx.coin.isNativeToken {
-                        let service = try EvmServiceFactory.getService(forCoin: tx.coin)
-                        let (baseFee, priorityFee,_) = try await service.getGasInfo(fromAddress: tx.fromAddress)
+                        let evm = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: true)
+                        let totalFeeWei = tx.coin.feeDefault.toBigInt() * evm.gas
                         
-                        guard let gasLimitBigInt = BigInt(tx.coin.feeDefault) else {
-                            print("Invalid gas limit")
-                            return
-                        }
-                        
-                        let gasPriceWei = baseFee + priorityFee
-                        
-                        let totalFeeWei: BigInt = gasLimitBigInt * gasPriceWei
-                        
+                        tx.gas = totalFeeWei.description
                         tx.amount = "\(tx.coin.getMaxValue(totalFeeWei))"
+                        
                         setPercentageAmount(tx: tx, for: percentage)
+                        
                     } else {
                         tx.amount = tx.coin.balanceString
                         setPercentageAmount(tx: tx, for: percentage)

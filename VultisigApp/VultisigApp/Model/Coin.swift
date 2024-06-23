@@ -154,7 +154,7 @@ class Coin: ObservableObject, Codable, Hashable {
             return "7000"
         case .ethereum,.avalanche,.base,.blast,.arbitrum,.polygon,.optimism,.bscChain,.cronosChain, .zksync:
             if self.isNativeToken {
-                return "23000"
+                return "33000"
             } else {
                 return "120000"
             }
@@ -208,12 +208,7 @@ class Coin: ObservableObject, Codable, Hashable {
     }
     
     func getMaxValue(_ fee: BigInt) -> Decimal {
-        var totalFeeAdjusted = fee
-        if chain.chainType == .EVM {
-            let adjustmentFactor = BigInt(10).power(EVMHelper.ethDecimals - decimals)
-            totalFeeAdjusted = fee / adjustmentFactor
-        }
-        
+        let totalFeeAdjusted = fee        
         let maxValue = (BigInt(rawBalance, radix: 10) ?? .zero) - totalFeeAdjusted
         let maxValueDecimal = Decimal(string: String(maxValue)) ?? .zero
         let tokenDecimals = decimals
