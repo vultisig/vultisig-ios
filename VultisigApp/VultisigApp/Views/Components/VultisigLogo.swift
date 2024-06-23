@@ -13,11 +13,15 @@ struct VultisigLogo: View {
     @State var didAppear = false
     
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
             logo
             title
             description
         }
+#if os(macOS)
+        .scaleEffect(0.9)
+        .offset(y: 12)
+#endif
         .onAppear {
             setData()
         }
@@ -81,7 +85,7 @@ struct VultisigLogo: View {
     
     var title: some View {
         Text("Vultisig")
-            .font(.title40MontserratSemiBold)
+            .font(.title40MontserratBold)
             .foregroundColor(.neutral0)
             .opacity(didAppear ? 1 : 0)
             .animation(
@@ -91,10 +95,14 @@ struct VultisigLogo: View {
     
     var description: some View {
         Text("secureCryptoVault")
-            .font(.body16MontserratSemiBold)
             .foregroundColor(.neutral0)
             .opacity(didAppear ? 1 : 0)
+            .font(.body16MontserratBold)
+#if os(iOS)
             .padding(.top, 10)
+#elseif os(macOS)
+            .padding(.top, 5)
+#endif
     }
     
     private func setData() {

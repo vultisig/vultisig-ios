@@ -24,12 +24,12 @@ struct ImportWalletView: View {
         .navigationTitle(NSLocalizedString("import", comment: "Import title"))
 #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+#endif
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: .navigation) {
                 NavigationBackButton()
             }
         }
-#endif
         .fileImporter(
             isPresented: $backupViewModel.showVaultImporter,
             allowedContentTypes: [.data],
@@ -37,6 +37,11 @@ struct ImportWalletView: View {
         ) { result in
             switch result {
             case .success(let urls):
+                guard isValidFormat(urls) else {
+                    showInvalidFormatAlert()
+                    return
+                }
+                
                 if let url = urls.first {
                     backupViewModel.importedFileName = url.lastPathComponent
                     backupViewModel.importFile(from: url)
@@ -87,6 +92,8 @@ struct ImportWalletView: View {
         } label: {
             ImportWalletUploadSection(viewModel: backupViewModel)
         }
+        .buttonStyle(PlainButtonStyle())
+        .background(Color.clear)
     }
     
     var continueButton: some View {
@@ -99,6 +106,8 @@ struct ImportWalletView: View {
         }
         .padding(.horizontal, 10)
         .padding(.bottom, 40)
+        .buttonStyle(PlainButtonStyle())
+        .background(Color.clear)
     }
     
     var fileImage: some View {
@@ -122,6 +131,8 @@ struct ImportWalletView: View {
                 .foregroundColor(.neutral0)
                 .padding(8)
         }
+        .buttonStyle(PlainButtonStyle())
+        .background(Color.clear)
     }
     
     var alert: Alert {
@@ -144,6 +155,24 @@ struct ImportWalletView: View {
     
     private func resetData() {
         backupViewModel.resetData()
+    }
+    
+    private func isValidFormat(_ urls: [URL]) -> Bool {
+        guard let fileExtension = urls.first?.pathExtension.lowercased() else {
+            return false
+        }
+        
+        if fileExtension == "dat" {
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    private func showInvalidFormatAlert() {
+        backupViewModel.alertTitle = "invalidFileFormat"
+        backupViewModel.alertMessage = "invalidFileFormatMessage"
+        backupViewModel.showAlert = true
     }
 }
 

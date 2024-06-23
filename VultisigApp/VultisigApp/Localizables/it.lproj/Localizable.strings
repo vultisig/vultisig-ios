@@ -219,3 +219,6 @@
 "keygenFor" = "Generazione chiavi per";
 "devicesOnSameNetwork" = "Collega tutti i dispositivi alla stessa\nrete con l'app Vultisig aperta.";
 "devicesOnSameInternet" = "Collega tutti i dispositivi a Internet\ncon l'app Vultisig aperta.";
+"invalidFileFormat" = "Formato di file non valido";
+"invalidFileFormatMessage" = "Assicurati di aver selezionato il file di backup corretto con estensione .dat.";
+"uploadBackupFile" = "Carica il file di backup";

@@ -43,15 +43,19 @@ struct KeygenView: View {
         .task {
             await viewModel.startKeygen(context: context)
         }
-#if os(iOS)
+        
         .onAppear {
+#if os(iOS)
             UIApplication.shared.isIdleTimerDisabled = true
+#endif
             setData()
         }
         .onDisappear(){
+#if os(iOS)
             UIApplication.shared.isIdleTimerDisabled = false
-        }
 #endif
+        }
+        
     }
     
     var content: some View {

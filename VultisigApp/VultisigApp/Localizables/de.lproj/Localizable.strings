@@ -219,3 +219,6 @@
 "keygenFor" = "Schlüsselgenerierung für";
 "devicesOnSameNetwork" = "Verbinden Sie alle Geräte mit demselben\nNetzwerk und öffnen Sie die Vultisig-App.";
 "devicesOnSameInternet" = "Verbinden Sie alle Geräte mit dem\nInternet und öffnen Sie die Vultisig-App.";
+"invalidFileFormat" = "Ungültiges Dateiformat";
+"invalidFileFormatMessage" = "Bitte stellen Sie sicher, dass Sie die richtige Sicherungsdatei mit der Erweiterung .dat ausgewählt haben.";
+"uploadBackupFile" = "Sicherungsdatei hochladen";

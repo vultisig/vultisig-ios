@@ -219,3 +219,6 @@
 "keygenFor" = "Generiranje ključeva za";
 "devicesOnSameNetwork" = "Povežite sve uređaje na istu\nmrežu s otvorenom aplikacijom Vultisig.";
 "devicesOnSameInternet" = "Povežite sve uređaje na\ninternet s otvorenom aplikacijom Vultisig.";
+"invalidFileFormat" = "Nevažeći format datoteke";
+"invalidFileFormatMessage" = "Molimo vas provjerite jeste li odabrali ispravnu sigurnosnu kopiju s ekstenzijom .dat.";
+"uploadBackupFile" = "Prenesite sigurnosnu kopiju datoteke";
