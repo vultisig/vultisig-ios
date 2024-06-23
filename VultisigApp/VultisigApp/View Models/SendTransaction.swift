@@ -41,12 +41,12 @@ class SendTransaction: ObservableObject, Hashable {
         //return false
         
         let totalBalance = BigInt(coin.rawBalance) ?? BigInt.zero
+        
         var gasInt = BigInt.zero
         
+        // I don't need to subtract the fee if UTXO
+        // Wallet core does that internally
         if sendMaxAmount, coin.chainType == .UTXO {
-            let totalTransactionCost = amountInRaw
-            return totalTransactionCost > totalBalance
-        } else if sendMaxAmount, coin.chainType == .EVM {
             let totalTransactionCost = amountInRaw
             return totalTransactionCost > totalBalance
         }
