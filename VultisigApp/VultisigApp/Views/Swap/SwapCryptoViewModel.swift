@@ -22,7 +22,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     
     var keysignPayload: KeysignPayload?
     
-    @MainActor @Published var coins: [Coin] = []
+    @MainActor @Published var fromCoins: [Coin] = []
+    @MainActor @Published var toCoins: [Coin] = []
     @MainActor @Published var currentIndex = 1
     @MainActor @Published var currentTitle = "send"
     @MainActor @Published var hash: String?
@@ -31,11 +32,15 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     @MainActor @Published var isLoading = false
     @MainActor @Published var quoteLoading = false
     
-    func load(tx: SwapTransaction, fromCoin: Coin, coins: [Coin], vault: Vault) async {
-        let swapCoins = coins.filter { $0.chain.isSwapSupported }
-        tx.toCoin = swapCoins.first(where: { $0.id != fromCoin.id }) ?? swapCoins.first!
+    func load(tx: SwapTransaction, initialFromCoin: Coin?, vault: Vault) async {
+        isLoading = true
+        defer { isLoading = false }
+
+        let (fromCoins, selectedFromCoin) = SwapCoinsResolver.resolveFromCoins(allCoins: vault.coins)
+        let fromCoin = initialFromCoin ?? selectedFromCoin
+       
         tx.fromCoin = fromCoin
-        self.coins = swapCoins
+        self.fromCoins = fromCoins
 
         await updateFees(tx: tx, vault: vault)
     }
@@ -47,7 +52,13 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     func explorerLink(tx: SwapTransaction, hash: String) -> String {
         return Endpoint.getExplorerURL(chainTicker: tx.fromCoin.chain.ticker, txid: hash)
     }
-    
+
+    func updateCoinLists(tx: SwapTransaction) {
+        let (toCoins, toCoin) = SwapCoinsResolver.resolveToCoins(fromCoin: tx.fromCoin, allCoins: fromCoins)
+        tx.toCoin = toCoin
+        self.toCoins = toCoins
+    }
+
     func progressLink(tx: SwapTransaction, hash: String) -> String? {
         switch tx.quote {
         case .thorchain:
@@ -434,7 +445,7 @@ private extension SwapCryptoViewModel {
             return tx.fromCoin
         case .EVM:
             guard !tx.fromCoin.isNativeToken else { return tx.fromCoin }
-            return coins.first(where: { $0.chain == tx.fromCoin.chain && $0.isNativeToken }) ?? tx.fromCoin
+            return fromCoins.first(where: { $0.chain == tx.fromCoin.chain && $0.isNativeToken }) ?? tx.fromCoin
         }
     }
     

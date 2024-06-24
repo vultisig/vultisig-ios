@@ -137,15 +137,6 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         }
     }
     
-    var isSwapSupported: Bool {
-        switch self {
-        case .thorChain, .mayaChain, .ethereum, .avalanche, .bscChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .gaiaChain, .dash, .kujira:
-            return true
-        case .solana,.arbitrum, .base, .optimism, .polygon, .blast, .cronosChain, .polkadot, .sui, .zksync, .dydx:
-            return false
-        }
-    }
-    
     var signingKeyType: KeyType {
         switch self.chainType {
         case .Cosmos, .EVM, .THORChain, .UTXO:
