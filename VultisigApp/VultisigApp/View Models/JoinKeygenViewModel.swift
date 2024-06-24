@@ -229,7 +229,7 @@ class JoinKeygenViewModel: ObservableObject {
                             vault.hexChainCode = reshareMsg.hexChainCode
                             vault.name = reshareMsg.vaultName
                             if isVaultNameAlreadyExist(name: reshareMsg.vaultName) {
-                                errorMessage = "Vault with name:\(keygenMsg.vaultName) already exist"
+                                errorMessage = "Vault with name:\(reshareMsg.vaultName) already exist"
                                 logger.error("\(self.errorMessage)")
                                 status = .FailToStart
                                 return
