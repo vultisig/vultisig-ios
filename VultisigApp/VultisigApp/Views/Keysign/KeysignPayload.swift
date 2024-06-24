@@ -29,8 +29,8 @@ enum BlockChainSpecific: Codable, Hashable {
         switch self {
         case .UTXO(let byteFee, _):
             return byteFee
-        case .Ethereum(let baseFee, let priorityFeeWei, _, _):
-            return baseFee + priorityFeeWei
+        case .Ethereum(let baseFee, let priorityFeeWei, _, let gasLimit):
+            return (baseFee + priorityFeeWei) * gasLimit
         case .THORChain(_, _, let fee):
             return fee.description.toBigInt()
         case .MayaChain:
@@ -77,22 +77,22 @@ struct KeysignPayload: Codable, Hashable {
         self.vaultPubKeyECDSA = vaultPubKeyECDSA
         self.vaultLocalPartyID = vaultLocalPartyID
     }
-
+    
     var toAmountString: String {
         let decimalAmount = Decimal(string: toAmount.description) ?? Decimal.zero
         let power = Decimal(sign: .plus, exponent: -coin.decimals, significand: 1)
         return "\(decimalAmount * power) \(coin.ticker)"
     }
-
+    
     func getKeysignMessages(vault: Vault) -> Result<[String], Error> {
         do {
             var messages: [String] = []
-
+            
             if let approvePayload {
                 let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
                 messages += try swaps.getPreSignedApproveImageHash(approvePayload: approvePayload, keysignPayload: self)
             }
-
+            
             if let swapPayload {
                 let incrementNonce = approvePayload != nil
                 switch swapPayload {
@@ -106,14 +106,14 @@ struct KeysignPayload: Codable, Hashable {
                     break // No op - Regular transaction with memo
                 }
             }
-
+            
             if !messages.isEmpty {
                 return .success(messages)
             }
         } catch {
             return .failure(error)
         }
-
+        
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             guard let coinType = CoinType.from(string: coin.chain.name.replacingOccurrences(of: "-", with: "")) else {
