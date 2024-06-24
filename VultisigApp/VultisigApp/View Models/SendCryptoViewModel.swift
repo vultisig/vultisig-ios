@@ -78,11 +78,11 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                         setPercentageAmount(tx: tx, for: percentage)
                         
                     } else {
-                        tx.amount = tx.coin.balanceString
+                        tx.amount = "\(tx.coin.getMaxValue(0))"
                         setPercentageAmount(tx: tx, for: percentage)
                     }
                 } catch {
-                    tx.amount = tx.coin.balanceString
+                    tx.amount = "\(tx.coin.getMaxValue(0))"
                     setPercentageAmount(tx: tx, for: percentage)
                     print("Failed to get EVM balance, error: \(error.localizedDescription)")
                 }
@@ -137,68 +137,60 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         let max = tx.amount
         let multiplier = (Decimal(percentage) / 100)
         let amountDecimal = (Decimal(string: max) ?? 0) * multiplier
-        tx.amount = "\(amountDecimal)"
+        tx.amount = "\(amountDecimal.formatToDecimal(digits: tx.coin.decimals))"
     }
     
-    private func getPriceRate(tx: SendTransaction) async -> Double {
+    private func getPriceRate(tx: SendTransaction) async -> Decimal {
         do {
-            
-            var priceRateFiat = Double.zero;
+            var priceRateFiat = Decimal.zero
             
             if tx.coin.isNativeToken {
-                priceRateFiat = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
+                let price = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
+                priceRateFiat = Decimal(price)
             } else {
-                // If the price rate is zero and the current currency is USD
                 if tx.coin.chainType == .EVM {
-                    // Attempt to get the token price directly
                     let tokenPrice = await CryptoPriceService.shared.getTokenPrice(coin: tx.coin)
                     if tokenPrice != .zero {
-                        return tokenPrice
+                        return Decimal(tokenPrice)
                     }
                     
-                    // Attempt to get the custom token price from CoinGecko
                     if SettingsCurrency.current == .USD {
                         let poolInfo = try await CryptoPriceService.shared.fetchCoingeckoPoolPrice(chain: tx.coin.chain, contractAddress: tx.coin.contractAddress)
                         if let priceUsd = poolInfo.price_usd {
-                            return priceUsd
+                            return Decimal(priceUsd)
                         }
                     }
                 }
             }
             
-            // Return the price rate in fiat if available, or zero if all attempts fail
             return priceRateFiat
         } catch {
-            // In case of any errors, return zero
-            return Double.zero
+            return Decimal.zero
         }
     }
     
-    
     func convertFiatToCoin(newValue: String, tx: SendTransaction) async {
-        
         let priceRateFiat = await getPriceRate(tx: tx)
-        if let newValueDouble = Double(newValue) {
-            let newValueCoin = newValueDouble / priceRateFiat
-            tx.amount = String(format: "%.9f", newValueCoin)
+        if let newValueDecimal = Decimal(string: newValue) {
+            let newValueCoin = newValueDecimal / priceRateFiat
+            let truncatedValueCoin = newValueCoin.truncated(toPlaces: tx.coin.decimals)
+            tx.amount = NSDecimalNumber(decimal: truncatedValueCoin).stringValue
             tx.sendMaxAmount = false
         } else {
             tx.amount = ""
         }
-        
     }
     
     func convertToFiat(newValue: String, tx: SendTransaction, setMaxValue: Bool = false) async {
-        
         let priceRateFiat = await getPriceRate(tx: tx)
-        if let newValueDouble = Double(newValue) {
-            let newValueFiat = String(format: "%.2f", newValueDouble * priceRateFiat)
-            tx.amountInFiat = newValueFiat.isEmpty ? "" : newValueFiat
+        if let newValueDecimal = Decimal(string: newValue) {
+            let newValueFiat = newValueDecimal * priceRateFiat
+            let truncatedValueFiat = newValueFiat.truncated(toPlaces: 2) // Assuming 2 decimal places for fiat
+            tx.amountInFiat = NSDecimalNumber(decimal: truncatedValueFiat).stringValue
             tx.sendMaxAmount = setMaxValue
         } else {
             tx.amountInFiat = ""
         }
-        
     }
     
     func validateAddress(tx: SendTransaction, address: String) {
@@ -250,14 +242,23 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             
         }
         
-        let hasEnoughNativeTokensToPayTheFees = await tx.hasEnoughNativeTokensToPayTheFees()
-        if !hasEnoughNativeTokensToPayTheFees {
-            
-            errorMessage = "walletBalanceExceededError"
-            showAlert = true
-            logger.log("You must have enough Native Tokens (Eg. ETH) to pay the fees.")
-            isValidForm = false
-            
+        if !tx.coin.isNativeToken {
+            do {
+                let evmToken = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: tx.sendMaxAmount)
+                let (hasEnoughFees, feeErrorMsg) = await tx.hasEnoughNativeTokensToPayTheFees(specific: evmToken)
+                if !hasEnoughFees {
+                    errorMessage = feeErrorMsg
+                    showAlert = true
+                    logger.log("\(feeErrorMsg)")
+                    isValidForm = false
+                }
+            } catch {
+                let fetchErrorMsg = "Failed to fetch specific token data: \(tx.coin.ticker)"
+                logger.log("\(fetchErrorMsg)")
+                errorMessage = fetchErrorMsg
+                showAlert = true
+                isValidForm = false
+            }
         }
         
         return isValidForm
@@ -282,7 +283,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     private func getTransactionPlan(tx: SendTransaction, key:String) -> TW_Bitcoin_Proto_TransactionPlan? {
-        guard let utxoInfo = utxo.blockchairData.get(key)?.selectUTXOsForPayment(amountNeeded: Int64(tx.amountInCoinDecimal)).map({
+        guard let utxoInfo = utxo.blockchairData.get(key)?.selectUTXOsForPayment(amountNeeded: Int64(tx.amountInRaw)).map({
             UtxoInfo(
                 hash: $0.transactionHash ?? "",
                 amount: Int64($0.value ?? 0),

@@ -147,16 +147,16 @@ struct SendCryptoDetailsView: View {
         HStack(spacing: 12) {
             Button {
                 sendCryptoViewModel.setMaxValues(tx: tx, percentage: 25)
-                let max = tx.amount
-                tx.amount = String((Double(max) ?? 0)/4)
+                let max = tx.amount.toDecimal() / 4
+                tx.amount = max.description
             } label: {
                 getPercentageCell(for: "25")
             }
-
+            
             Button {
                 sendCryptoViewModel.setMaxValues(tx: tx, percentage: 50)
-                let max = tx.amount
-                tx.amount = String((Double(max) ?? 0)/2)
+                let max = tx.amount.toDecimal() / 2
+                tx.amount = max.description
             } label: {
                 getPercentageCell(for: "50")
             }

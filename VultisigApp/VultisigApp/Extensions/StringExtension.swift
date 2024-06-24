@@ -63,6 +63,18 @@ extension String {
 
 extension String {
     
+    func toDecimal() -> Decimal {
+        let trimmed = self.trimmingCharacters(in: .whitespacesAndNewlines)
+        let cleaned = trimmed.replacingOccurrences(of: ",", with: "")
+        
+        if let decimal = Decimal(string: cleaned) {
+            return decimal
+        } else {
+            print("Failed to convert to Decimal: \(self)")
+            return .zero
+        }
+    }
+    
     func fiatToDecimal() -> Decimal? {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
