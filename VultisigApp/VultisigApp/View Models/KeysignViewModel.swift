@@ -247,7 +247,7 @@ class KeysignViewModel: ObservableObject {
 
         case .EVM:
             if keysignPayload.coin.isNativeToken {
-                let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
+                let helper = EVMHelper.getHelper(coin: keysignPayload.coin.toCoinMeta())
                 let transaction = try helper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
             } else {

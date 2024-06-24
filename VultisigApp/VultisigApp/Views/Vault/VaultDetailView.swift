@@ -87,7 +87,7 @@ struct VaultDetailView: View {
         .buttonStyle(BorderlessButtonStyle())
         .background(Color.backgroundBlue)
         .refreshable {
-            viewModel.updateBalance()
+            viewModel.updateBalance(vault: vault)
         }
         .colorScheme(.dark)
     }
@@ -184,7 +184,7 @@ struct VaultDetailView: View {
     private func setData() {
         viewModel.fetchCoins(for: vault)
         viewModel.setOrder()
-        viewModel.updateBalance()
+        viewModel.updateBalance(vault: vault)
         viewModel.getGroupAsync(tokenSelectionViewModel)
     }
     

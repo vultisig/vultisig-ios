@@ -12,7 +12,7 @@ import WalletCore
 
 struct VultisigApp: App {
     @Environment(\.scenePhase) private var scenePhase
-
+    
     @StateObject var applicationState = ApplicationState.shared
     @StateObject var vaultDetailViewModel = VaultDetailViewModel()
     @StateObject var coinSelectionViewModel = CoinSelectionViewModel()
@@ -20,7 +20,7 @@ struct VultisigApp: App {
     @StateObject var deeplinkViewModel = DeeplinkViewModel()
     @StateObject var settingsViewModel = SettingsViewModel.shared
     @StateObject var homeViewModel = HomeViewModel()
-
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -31,6 +31,8 @@ struct VultisigApp: App {
                 .environmentObject(deeplinkViewModel)
                 .environmentObject(settingsViewModel)
                 .environmentObject(homeViewModel)
+            
+#if os(macOS)
                 .onChange(of: scenePhase) {
                     switch scenePhase {
                     case .active:
@@ -41,10 +43,21 @@ struct VultisigApp: App {
                         break
                     }
                 }
-#if os(macOS)
                 .frame(minWidth: 900, minHeight: 600)
 #endif
         }
+#if os(iOS)
+        .onChange(of: scenePhase) {
+            switch scenePhase {
+            case .active:
+                continueLogin()
+            case .background:
+                resetLogin()
+            default:
+                break
+            }
+        }
+#endif
         .modelContainer(sharedModelContainer)
     }
     
@@ -80,20 +93,20 @@ struct VultisigApp: App {
 }
 
 private extension VultisigApp {
-
+    
     enum SchemaV1: VersionedSchema {
         static var versionIdentifier = Schema.Version(1, 0, 0)
-
+        
         static var models: [any PersistentModel.Type] {
             [Vault.self, Coin.self]
         }
     }
-
+    
     enum MigrationPlan: SchemaMigrationPlan {
         static var schemas: [any VersionedSchema.Type] {
             return [SchemaV1.self]
         }
-
+        
         static var stages: [MigrationStage] {
             return []
         }

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ChainSelectionCell: View {
-    let assets: [Coin]
+    let assets: [CoinMeta]
     @Binding var showAlert: Bool
     
     @State var isSelected = false
@@ -49,10 +49,9 @@ struct ChainSelectionCell: View {
     }
     
     var cell: some View {
-        let nativeAsset = assets.first
-        
-        return CoinSelectionCell(asset: nativeAsset ?? Coin.example)
-            .redacted(reason: nativeAsset==nil ? .placeholder : [])
+        let nativeAsset = assets[0]
+        return CoinSelectionCell(asset: nativeAsset)
+            //.redacted(reason: nativeAsset==nil ? .placeholder : [])
     }
     
     private func setData() {
@@ -60,7 +59,9 @@ struct ChainSelectionCell: View {
             return
         }
         
-        if tokenSelectionViewModel.selection.contains(nativeAsset) {
+        if tokenSelectionViewModel.selection.contains(where: { cm in
+            cm.chain == nativeAsset.chain && cm.ticker == nativeAsset.ticker
+        }) {
             isSelected = true
         } else {
             isSelected = false
@@ -72,7 +73,9 @@ struct ChainSelectionCell: View {
     private func countSelectedToken() {
         selectedTokensCount = 0
         for asset in assets {
-            if tokenSelectionViewModel.selection.contains(asset) {
+            if tokenSelectionViewModel.selection.contains(where: { cm in
+                cm.chain == asset.chain && cm.ticker == asset.ticker
+            }) {
                 selectedTokensCount += 1
             }
         }

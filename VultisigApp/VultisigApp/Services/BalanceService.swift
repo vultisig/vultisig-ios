@@ -34,10 +34,10 @@ class BalanceService {
         "\(coin.ticker)-\(coin.contractAddress)-\(coin.chain.rawValue)-\(coin.address)"
     }
     
-    func updateBalances(coins: [Coin]) async {
+    func updateBalances(vault: Vault) async {
         await withTaskGroup(of: Void.self) { group in
-            for coin in coins {
-                group.addTask { [unowned self] in
+            for coin in vault.coins {
+                group.addTask { [unowned self]  in
                     if !Task.isCancelled {
                         await updateBalance(for: coin)
                     }

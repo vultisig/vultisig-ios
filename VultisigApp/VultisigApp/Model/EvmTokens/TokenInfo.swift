@@ -30,19 +30,13 @@ struct Token: Decodable, Identifiable {
     let balance: Int
     let rawBalance: String
     
-    func toCoin(nativeToken: Coin, priceRate: Double) -> Coin {
-        return Coin(
-            chain: nativeToken.chain,
-            ticker: self.tokenInfo.symbol,
-            logo: self.tokenInfo.image ?? .empty,
-            address: nativeToken.address,
-            priceRate: priceRate,
-            decimals: Int(self.tokenInfo.decimals) ?? 0,
-            hexPublicKey: nativeToken.hexPublicKey,
-            priceProviderId: .empty,
-            contractAddress: self.tokenInfo.address,
-            rawBalance: self.rawBalance,
-            isNativeToken: false
-        )
+    func toCoinMeta(nativeToken: Coin) -> CoinMeta {
+        return CoinMeta(chain: nativeToken.chain,
+                        ticker: self.tokenInfo.symbol,
+                        logo: self.tokenInfo.image ?? .empty,
+                        decimals:Int(self.tokenInfo.decimals) ?? 18,
+                        priceProviderId: .empty,
+                        contractAddress: self.tokenInfo.address,
+                        isNativeToken:false)
     }
 }

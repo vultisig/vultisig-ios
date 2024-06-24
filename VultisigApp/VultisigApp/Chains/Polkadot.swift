@@ -22,23 +22,6 @@ enum PolkadotHelper {
      */
     static let defaultExistentialDeposit: BigInt = 10_000_000_000 // 1 DOT
     
-    static func getPolkadot(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
-        return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).flatMap { addr -> Result<Coin, Error> in
-            TokensStore.createNewCoinInstance(ticker: "DOT", address: addr, hexPublicKey: hexPubKey, coinType: .polkadot)
-        }
-    }
-    
-    static func getAddressFromPublicKey(hexPubKey: String, hexChainCode: String) -> Result<String, Error> {
-        // Polkadot is using EdDSA , so it doesn't need to use HD derive
-        guard let pubKeyData = Data(hexString: hexPubKey) else {
-            return .failure(HelperError.runtimeError("public key: \(hexPubKey) is invalid"))
-        }
-        guard let publicKey = PublicKey(data: pubKeyData, type: .ed25519) else {
-            return .failure(HelperError.runtimeError("public key: \(hexPubKey) is invalid"))
-        }
-        return .success(CoinType.polkadot.deriveAddressFromPublicKey(publicKey: publicKey))
-    }
-    
     static func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
         guard keysignPayload.coin.chain.ticker == "DOT" else {
             return .failure(HelperError.runtimeError("coin is not DOT"))
