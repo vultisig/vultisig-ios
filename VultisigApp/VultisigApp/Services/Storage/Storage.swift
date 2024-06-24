@@ -15,6 +15,8 @@ final class Storage {
     var modelContext: ModelContext!
     
     @MainActor func save<T>(_ model: T) async throws where T : PersistentModel {
+        modelContext.insert(model)
+        print(modelContext.sqliteCommand)
         try modelContext.save()
     }
 
