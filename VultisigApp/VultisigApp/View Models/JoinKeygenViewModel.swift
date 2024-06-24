@@ -227,6 +227,7 @@ class JoinKeygenViewModel: ObservableObject {
                             self.localPartyID = reshareVault.localPartyID
                         } else {
                             vault.hexChainCode = reshareMsg.hexChainCode
+                            vault.name = reshareMsg.vaultName
                         }
                     }
                     
