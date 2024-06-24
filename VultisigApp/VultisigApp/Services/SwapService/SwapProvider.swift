@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum SwapProvider {
+enum SwapProvider: Equatable {
     case thorchain
     case mayachain
     case oneinch

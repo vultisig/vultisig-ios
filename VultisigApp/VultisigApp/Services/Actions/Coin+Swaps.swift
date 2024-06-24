@@ -18,6 +18,10 @@ extension Coin {
         }
     }
 
+    var isSwapSupported: Bool {
+        return !swapProviders.isEmpty
+    }
+
     var swapProviders: [SwapProvider] {
         switch chain {
         case .mayaChain, .dash, .kujira:
