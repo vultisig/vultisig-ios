@@ -65,7 +65,7 @@ class CoinSelectionViewModel: ObservableObject {
                 vault.coins.remove(at: idx)
             }
             
-            try await Storage.shared.delete(coin)
+            await Storage.shared.delete(coin)
         }
     }
     func saveAssets(for vault: Vault) async {

@@ -8,6 +8,7 @@
 import Foundation
 import SwiftData
 
+
 class VaultDefaultCoinService {
     let context: ModelContext
     private let semaphore = DispatchSemaphore(value: 1)
@@ -16,15 +17,17 @@ class VaultDefaultCoinService {
     init(context:ModelContext){
         self.context = context
     }
+    
     func setDefaultCoinsOnce(vault: Vault) {
         semaphore.wait()
-        Task{
-            await setDefaultCoins(for: vault)
+        defer {
             semaphore.signal()
         }
+        setDefaultCoins(for: vault)
     }
-    func setDefaultCoins(for vault: Vault) async {
+    func setDefaultCoins(for vault: Vault) {
         // Add default coins when the vault doesn't have any coins in it
+        print("set default chains to vault")
         if vault.coins.count == 0 {
             let coins = TokensStore.TokenSelectionAssets
                 .filter { asset in defaultChains.contains(where: { $0 == asset.chain }) }
@@ -33,9 +36,10 @@ class VaultDefaultCoinService {
                     asset: $0,
                     vault: vault
                 )}
-
-            await Storage.shared.insert(coins)
-            vault.coins += coins
+            for coin in coins {
+                self.context.insert(coin)
+                vault.coins.append(coin)
+            }
         }
     }
 }
