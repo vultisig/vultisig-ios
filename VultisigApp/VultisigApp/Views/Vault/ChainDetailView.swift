@@ -4,7 +4,7 @@ struct ChainDetailView: View {
     @ObservedObject var group: GroupedChain
     let vault: Vault
     
-    @State var tokens: [Coin] = []
+    @State var tokens: [CoinMeta] = []
     @State var actions: [CoinAction] = []
     @StateObject var sendTx = SendTransaction()
     @State var isLoading = false
@@ -135,7 +135,7 @@ struct ChainDetailView: View {
     var cells: some View {
         ForEach(group.coins.sorted(by: {
             $0.isNativeToken || ($0.balanceInFiatDecimal > $1.balanceInFiatDecimal)
-        }), id: \.self) { coin in
+        }), id: \.id) { coin in
             getCoinCell(coin)
         }
     }

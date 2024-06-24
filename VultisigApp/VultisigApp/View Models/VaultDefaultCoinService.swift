@@ -8,6 +8,7 @@
 import Foundation
 import SwiftData
 
+
 class VaultDefaultCoinService {
     let context: ModelContext
     private let semaphore = DispatchSemaphore(value: 1)
@@ -16,42 +17,28 @@ class VaultDefaultCoinService {
     init(context:ModelContext){
         self.context = context
     }
+    
     func setDefaultCoinsOnce(vault: Vault) {
         semaphore.wait()
-        Task{
-            await setDefaultCoins(for: vault)
+        defer {
             semaphore.signal()
         }
+        setDefaultCoins(for: vault)
     }
-    func setDefaultCoins(for vault: Vault) async {
-        // add bitcoin when the vault doesn't have any coins in it
+    func setDefaultCoins(for vault: Vault) {
+        // Add default coins when the vault doesn't have any coins in it
+        print("set default chains to vault")
         if vault.coins.count == 0 {
-            print("set default coins for vault:\(vault.name)")
-            for chain in defaultChains {
-                var result: Result<Coin,Error>
-                switch chain {
-                case .bscChain:
-                    result = EVMHelper(coinType: .smartChain).getCoin(hexPubKey: vault.pubKeyEdDSA, hexChainCode: vault.hexChainCode)
-                case .bitcoin:
-                    result = UTXOChainsHelper(coin: .bitcoin, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode).getCoin()
-                case .ethereum:
-                    result = EVMHelper(coinType: .ethereum).getCoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
-                case .thorChain:
-                    result = THORChainHelper.getRUNECoin(hexPubKey: vault.pubKeyECDSA, hexChainCode: vault.hexChainCode)
-                case .solana:
-                    result = SolanaHelper.getSolana(hexPubKey: vault.pubKeyEdDSA, hexChainCode: vault.hexChainCode)
-                default:
-                    continue
-                }
-                
-                switch result {
-                case .success(let coin):
-                    context.insert(coin)
-                    vault.coins.append(coin)
-                case .failure(let error):
-                    print("error: \(error)")
-                }
-                
+            let coins = TokensStore.TokenSelectionAssets
+                .filter { asset in defaultChains.contains(where: { $0 == asset.chain }) }
+                .filter { $0.isNativeToken }
+                .compactMap { try? CoinFactory.create(
+                    asset: $0,
+                    vault: vault
+                )}
+            for coin in coins {
+                self.context.insert(coin)
+                vault.coins.append(coin)
             }
         }
     }

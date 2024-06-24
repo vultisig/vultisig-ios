@@ -23,49 +23,8 @@ class EVMHelper {
         self.coinType = coinType
     }
     
-    static func getHelper(coin: Coin) -> EVMHelper {
+    static func getHelper(coin: CoinMeta) -> EVMHelper {
         return EVMHelper(coinType: coin.coinType)
-    }
-    
-    func getCoin(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
-        let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
-                                                            hexChainCode: hexChainCode,
-                                                            derivePath: coinType.derivationPath())
-        if derivePubKey.isEmpty {
-            return .failure(HelperError.runtimeError("derived public key is empty"))
-        }
-        
-        return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).flatMap { addr -> Result<Coin, Error> in
-            var ticker = ""
-            switch self.coinType{
-            case .ethereum, .base, .optimism, .arbitrum, .blast, .zksync:
-                ticker = "ETH"
-            case .cronosChain:
-                ticker = "CRO"
-            case .polygon:
-                ticker = "MATIC"
-            case .avalancheCChain:
-                ticker = "AVAX"
-            case .smartChain:
-                ticker = "BNB"
-            default:
-                ticker = ""
-            }
-            return TokensStore.createNewCoinInstance(ticker:ticker, address: addr, hexPublicKey: derivePubKey, coinType: self.coinType)
-        }
-    }
-    
-    func getAddressFromPublicKey(hexPubKey: String, hexChainCode: String) -> Result<String, Error> {
-        let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
-                                                            hexChainCode: hexChainCode,
-                                                            derivePath: coinType.derivationPath())
-        if derivePubKey.isEmpty {
-            return .failure(HelperError.runtimeError("derived public key is empty"))
-        }
-        guard let pubKeyData = Data(hexString: derivePubKey), let publicKey = PublicKey(data: pubKeyData, type: .secp256k1) else {
-            return .failure(HelperError.runtimeError("public key: \(derivePubKey) is invalid"))
-        }
-        return .success(coinType.deriveAddressFromPublicKey(publicKey: publicKey))
     }
     
     static func convertEthereumNumber(input: BigInt) -> Data {

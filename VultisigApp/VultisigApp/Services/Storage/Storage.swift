@@ -15,12 +15,20 @@ final class Storage {
     var modelContext: ModelContext!
     
     @MainActor func save<T>(_ model: T) async throws where T : PersistentModel {
-        modelContext.insert(model)
         try modelContext.save()
     }
-    
-    @MainActor func delete<T>(_ model: T) async throws where T : PersistentModel {
-        modelContext.delete(model)
+
+    @MainActor func save<T>(_ models: [T]) async throws where T : PersistentModel {
         try modelContext.save()
+    }
+
+    @MainActor func insert<T>(_ models: [T]) async where T : PersistentModel {
+        for model in models {
+            modelContext.insert(model)
+        }
+    }
+
+    @MainActor func delete<T>(_ model: T) async where T : PersistentModel {
+        modelContext.delete(model)
     }
 }

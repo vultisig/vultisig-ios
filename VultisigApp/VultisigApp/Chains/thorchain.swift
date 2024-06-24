@@ -8,32 +8,7 @@ import Tss
 import WalletCore
 
 enum THORChainHelper {
-    static func getRUNECoin(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
-        let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
-                                                            hexChainCode: hexChainCode,
-                                                            derivePath: CoinType.thorchain.derivationPath())
-        if derivePubKey.isEmpty {
-            return .failure(HelperError.runtimeError("derived public key is empty"))
-        }
-        return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).flatMap { addr -> Result<Coin, Error> in
-            TokensStore.createNewCoinInstance(ticker: "RUNE", address: addr, hexPublicKey: derivePubKey, coinType: .thorchain)
-        }
-    }
-    
-    static func getAddressFromPublicKey(hexPubKey: String, hexChainCode: String) -> Result<String, Error> {
-        let derivePubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: hexPubKey,
-                                                            hexChainCode: hexChainCode,
-                                                            derivePath: CoinType.thorchain.derivationPath())
-        if derivePubKey.isEmpty {
-            return .failure(HelperError.runtimeError("derived public key is empty"))
-        }
-        guard let pubKeyData = Data(hexString: derivePubKey), let publicKey = PublicKey(data: pubKeyData, type: .secp256k1) else {
-            return .failure(HelperError.runtimeError("public key: \(derivePubKey) is invalid"))
-        }
-        
-        return .success(CoinType.thorchain.deriveAddressFromPublicKey(publicKey: publicKey))
-    }
-    
+
     static func getSwapPreSignedInputData(keysignPayload: KeysignPayload, signingInput: CosmosSigningInput) -> Result<Data, Error> {
         guard case .THORChain(let accountNumber, let sequence, _) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get account number, sequence, or fee"))
