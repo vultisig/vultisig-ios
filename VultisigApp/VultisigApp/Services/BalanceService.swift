@@ -114,6 +114,7 @@ private extension BalanceService {
     
     @MainActor func updateCoin(_ coin: Coin, rawBalance: String, priceRate: Double) async throws {
         guard coin.rawBalance != rawBalance && coin.priceRate != priceRate else { return }
+        guard coin.rawBalance != .zero && coin.priceRate != .zero else { return }
         coin.rawBalance = rawBalance
         coin.priceRate = priceRate
         // Swift Data persists on disk io, that is slower than the cache on KEY VALUE RAM
