@@ -31,4 +31,8 @@ struct SwapCoinsResolver {
 
         return (coins, selected)
     }
+
+    static func resolveProvider(fromCoin: Coin, toCoin: Coin) -> SwapProvider? {
+        return fromCoin.swapProviders.first(where: toCoin.swapProviders.contains)
+    }
 }

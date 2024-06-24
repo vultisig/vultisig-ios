@@ -57,14 +57,14 @@ extension Coin {
 private extension Coin {
 
     var thorEthTokens: [String] {
-        return ["USDT", "USDC", "WBTC", "THOR", "XRUNE", "DAI", "LUSD", "GUSD", "VTHOR", "USDP", "LINK", "WSTETH", "TGT", "AAVE", "FOX", "DPI", "SNX"]
+        return ["ETH", "USDT", "USDC", "WBTC", "THOR", "XRUNE", "DAI", "LUSD", "GUSD", "VTHOR", "USDP", "LINK", "WSTETH", "TGT", "AAVE", "FOX", "DPI", "SNX"]
     }
 
     var thorBscTokens: [String] {
-        return ["USDT", "USDC"]
+        return ["BNB", "USDT", "USDC"]
     }
 
     var thorAvaxTokens: [String] {
-        return ["USDC", "USDT", "SOL"]
+        return ["AVAX", "USDC", "USDT", "SOL"]
     }
 }
