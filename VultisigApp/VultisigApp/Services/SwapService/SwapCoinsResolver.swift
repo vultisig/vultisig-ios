@@ -11,15 +11,24 @@ struct SwapCoinsResolver {
 
     private init() { }
 
-    static func resolveFromCoins(allCoins: [Coin]) -> [Coin] {
-        return allCoins
+    static func resolveFromCoins(allCoins: [Coin]) -> ([Coin], selected: Coin) {
+        let coins = allCoins
             .filter { $0.isSwapSupported }
-            .sorted(by: { $0.rawBalance > $1.rawBalance })
+            .sorted()
+
+        let selected = coins.first ?? .example
+
+        return (coins, selected)
     }
 
-    static func resolveToCoins(fromCoin: Coin, allCoins: [Coin]) -> [Coin] {
-        return allCoins.filter { coin in
-            coin.swapProviders.contains(where: fromCoin.swapProviders.contains)
-        }
+    static func resolveToCoins(fromCoin: Coin, allCoins: [Coin]) -> (coins: [Coin], selected: Coin) {
+        let coins = allCoins
+            .filter { $0.swapProviders.contains(where: fromCoin.swapProviders.contains) }
+            .filter { $0 != fromCoin }
+            .sorted()
+
+        let selected = coins.first ?? .example
+
+        return (coins, selected)
     }
 }
