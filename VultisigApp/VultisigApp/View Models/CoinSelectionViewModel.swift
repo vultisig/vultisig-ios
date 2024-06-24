@@ -20,10 +20,6 @@ class CoinSelectionViewModel: ObservableObject {
     
     private let logger = Logger(subsystem: "assets-list", category: "view")
     
-    func allCoins(vault: Vault) -> [Coin] {
-        return vault.coins.filter { $0.isNativeToken }
-    }
-    
     func loadData(coin: Coin) async {
         await balanceService.updateBalance(for: coin)
     }
