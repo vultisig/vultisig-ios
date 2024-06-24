@@ -54,11 +54,7 @@ struct ChainDetailActionButtons: View {
             )
         }
         .navigationDestination(isPresented: $isSwapLinkActive) {
-            if let coin {
-                SwapCryptoView(coin: coin, coins: viewModel.allCoins(vault: vault), vault: vault)
-            } else if let coin = group.coins.first(where: { $0.isNativeToken }) {
-                SwapCryptoView(coin: coin, coins: viewModel.allCoins(vault: vault), vault: vault)
-            }
+            SwapCryptoView(coin: coin, vault: vault)
         }
         .navigationDestination(isPresented: $isMemoLinkActive) {
             TransactionMemoView(
