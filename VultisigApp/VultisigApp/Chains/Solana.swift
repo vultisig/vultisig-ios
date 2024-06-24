@@ -11,23 +11,6 @@ import BigInt
 enum SolanaHelper {
 
     static let defaultFeeInLamports: BigInt = 1000000 //0.001
-
-    static func getSolana(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
-        return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).flatMap { addr -> Result<Coin, Error> in
-            TokensStore.createNewCoinInstance(ticker: "SOL", address: addr, hexPublicKey: hexPubKey, coinType: .solana)
-        }
-    }
-    
-    static func getAddressFromPublicKey(hexPubKey: String, hexChainCode: String) -> Result<String, Error> {
-        // Solana is using EdDSA , so it doesn't need to use HD derive
-        guard let pubKeyData = Data(hexString: hexPubKey) else {
-            return .failure(HelperError.runtimeError("public key: \(hexPubKey) is invalid"))
-        }
-        guard let publicKey = PublicKey(data: pubKeyData, type: .ed25519) else {
-            return .failure(HelperError.runtimeError("public key: \(hexPubKey) is invalid"))
-        }
-        return .success(CoinType.solana.deriveAddressFromPublicKey(publicKey: publicKey))
-    }
     
     static func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
         guard keysignPayload.coin.chain.ticker == "SOL" else {

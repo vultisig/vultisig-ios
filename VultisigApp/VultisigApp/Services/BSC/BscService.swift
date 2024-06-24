@@ -5,9 +5,9 @@ class BSCService: RpcEvmService, EvmTokenServiceProtocol {
     static let bscRpcEndpoint = Endpoint.bscServiceRpcService
     static let shared = BSCService(bscRpcEndpoint)
     
-    func getTokens(nativeToken: Coin, address: String) async -> [Coin] {
-        return await super.getTokens(urlString: Endpoint.bscServiceToken(address)).map{
-            $0.toCoin(nativeToken: nativeToken, priceRate: .zero)
+    func getTokens(nativeToken: Coin) async -> [CoinMeta] {
+        return await super.getTokens(urlString: Endpoint.bscServiceToken(nativeToken.address)).map{
+            $0.toCoinMeta(nativeToken: nativeToken)
         }
     }
 }

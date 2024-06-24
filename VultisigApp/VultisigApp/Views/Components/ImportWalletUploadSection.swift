@@ -44,7 +44,7 @@ struct ImportWalletUploadSection: View {
     }
     
     var uploadText: some View {
-        Text(NSLocalizedString("uploadFile", comment: "Upload file details"))
+        Text(NSLocalizedString("uploadBackupFile", comment: "Upload backup file"))
             .font(.body12MontserratSemiBold)
             .foregroundColor(.neutral0)
     }

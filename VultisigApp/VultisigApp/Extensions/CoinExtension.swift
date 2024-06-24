@@ -9,56 +9,8 @@ import Foundation
 import WalletCore
 
 extension Coin {
-    
-    var coinType: CoinType {
-        switch chain {
-        case .bitcoin:
-            return CoinType.bitcoin
-        case .thorChain:
-            return CoinType.thorchain
-        case .solana:
-            return CoinType.solana
-        case .bitcoinCash:
-            return CoinType.bitcoinCash
-        case .litecoin:
-            return CoinType.litecoin
-        case .dogecoin:
-            return CoinType.dogecoin
-        case .ethereum:
-            return CoinType.ethereum
-        case .bscChain:
-            return CoinType.smartChain
-        case .avalanche:
-            return CoinType.avalancheCChain
-        case .gaiaChain:
-            return CoinType.cosmos
-        case .kujira:
-            return CoinType.kujira
-        case .dash:
-            return CoinType.dash
-        case .mayaChain:
-            return CoinType.thorchain
-        case .arbitrum:
-            return CoinType.arbitrum
-        case .polygon:
-            return CoinType.polygon
-        case .base:
-            return CoinType.base
-        case .optimism:
-            return CoinType.optimism
-        case .blast:
-            return CoinType.blast
-        case .cronosChain:
-            return CoinType.cronosChain
-        case .sui:
-            return CoinType.sui
-        case .polkadot:
-            return CoinType.polkadot
-        case .zksync:
-            return CoinType.zksync
-        case .dydx:
-            return CoinType.dydx
-        }
+    var coinType: CoinType{
+        return self.chain.coinType
     }
 }
 

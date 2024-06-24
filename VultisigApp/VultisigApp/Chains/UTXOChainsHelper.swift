@@ -35,47 +35,8 @@ class UTXOChainsHelper {
         }
     }
     
-    func getCoin() -> Result<Coin, Error> {
-        var ticker = "BTC"
-        switch coin {
-        case .bitcoin:
-            ticker = "BTC"
-        case .bitcoinCash:
-            ticker = "BCH"
-        case .litecoin:
-            ticker = "LTC"
-        case .dogecoin:
-            ticker = "DOGE"
-        case .dash:
-            ticker = "DASH"
-        default:
-            return .failure(HelperError.runtimeError("doesn't support coin \(coin)"))
-        }
-        
-        return getAddressFromPubKey()
-            .flatMap { addr -> Result<Coin, Error> in
-                TokensStore.createNewCoinInstance(ticker: ticker, address: addr, hexPublicKey: self.getDerivedPubKey(), coinType: self.coin)
-            }
-    }
-    
     func getDerivedPubKey() -> String {
         return PublicKeyHelper.getDerivedPubKey(hexPubKey: vaultHexPublicKey, hexChainCode: vaultHexChainCode, derivePath: coin.derivationPath())
-    }
-    
-    func getAddressFromPubKey() -> Result<String, Error> {
-        let derivedPubKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: vaultHexPublicKey, hexChainCode: vaultHexChainCode, derivePath: coin.derivationPath())
-        guard let pubkeyData = Data(hexString: derivedPubKey),
-              let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
-        else {
-            return .failure(HelperError.runtimeError("public key \(derivedPubKey) is invalid"))
-        }
-        let address = coin.deriveAddressFromPublicKey(publicKey: publicKey)
-        if coin == .bitcoinCash {
-            let addressWithoutPrefix = address.replacingOccurrences(of: "bitcoincash:", with: "")
-            return .success(addressWithoutPrefix)
-        }
-        return .success(address)
-        
     }
     
     // before keysign , we need to get the preSignedImageHash , so it can be signed with TSS
