@@ -11,7 +11,7 @@ struct VaultDeletionDetails: View {
     let vault: Vault
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 18) {
             title
             nameCell
             typeCell
@@ -30,8 +30,9 @@ struct VaultDeletionDetails: View {
             Text(":")
         }
         .multilineTextAlignment(.leading)
-        .font(.body20MenloBold)
+        .font(.body20MontserratSemiBold)
         .foregroundColor(.neutral0)
+        .padding(.top, 8)
     }
     
     var nameCell: some View {
@@ -73,9 +74,9 @@ struct VaultDeletionDetails: View {
     
     private func getDescriptionText(_ description: String, shouldShrink: Bool = false) -> some View {
         Text(NSLocalizedString(description, comment: ""))
-            .font(shouldShrink ? .body10Menlo : .body12Menlo)
+            .font(shouldShrink ? .body8Menlo : .body12Menlo)
             .foregroundColor(.neutral0)
-            .lineLimit(2)
+            .fixedSize(horizontal: false, vertical: true)
     }
     
     private func getVaultType() -> String {
