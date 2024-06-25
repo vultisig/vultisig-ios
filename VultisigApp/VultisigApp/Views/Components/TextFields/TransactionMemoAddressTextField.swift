@@ -89,6 +89,7 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
             .foregroundColor(.neutral0)
             .submitLabel(.next)
             .disableAutocorrection(true)
+            .borderlessTextFieldStyle()
 #if os(iOS)
             .textInputAutocapitalization(.never)
             .keyboardType(.default)
