@@ -237,6 +237,24 @@ class Coin: ObservableObject, Codable, Hashable {
     }
 }
 
+extension Coin: Comparable {
+
+    static func < (lhs: Coin, rhs: Coin) -> Bool {
+        if lhs.balanceInFiatDecimal != rhs.balanceInFiatDecimal {
+            return lhs.balanceInFiatDecimal > rhs.balanceInFiatDecimal
+        }
+        else if lhs.chain.name != rhs.chain.name {
+            return lhs.chain.name < rhs.chain.name
+        }
+        else if lhs.isNativeToken != rhs.isNativeToken {
+            return !lhs.isNativeToken
+        }
+        else {
+            return lhs.ticker < rhs.ticker
+        }
+    }
+}
+
 private extension Coin {
     enum CodingKeys: String, CodingKey {
         case id
