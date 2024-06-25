@@ -16,7 +16,7 @@ struct PeerDiscoveryView: View {
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
     
     @State var qrCodeImage: Image? = nil
-    @State var isLandscape: Bool = false
+    @State var isLandscape: Bool = true
     
     @Environment(\.displayScale) var displayScale
     
@@ -114,6 +114,7 @@ struct PeerDiscoveryView: View {
             VStack{
                 list
                     .padding(20)
+                
                 vaultDetail
             }
         }
@@ -178,6 +179,9 @@ struct PeerDiscoveryView: View {
         }
         .cornerRadius(10)
         .shadow(radius: 5)
+#if os(macOS)
+        .padding(40)
+#endif
     }
     
     var deviceList: some View {
@@ -260,6 +264,9 @@ struct PeerDiscoveryView: View {
         .disabled(viewModel.selections.count < 2)
         .opacity(viewModel.selections.count < 2 ? 0.8 : 1)
         .background(Color.backgroundBlue.opacity(0.95))
+#if os(macOS)
+        .padding(.bottom, 30)
+#endif
     }
     
     var keygenView: some View {
@@ -293,8 +300,6 @@ struct PeerDiscoveryView: View {
     private func setData() {
 #if os(iOS)
         isLandscape = (orientation == .landscapeLeft || orientation == .landscapeRight) && idiom == .pad
-#elseif os(macOS)
-        isLandscape = true
 #endif
         
         qrCodeImage = viewModel.getQrImage(size: 100)
