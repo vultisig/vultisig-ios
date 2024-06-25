@@ -73,7 +73,9 @@ struct SwapVerifyView: View {
         VStack(spacing: 16) {
             Checkbox(isChecked: $verifyViewModel.isAmountCorrect, text: "The swap amount is correct")
             Checkbox(isChecked: $verifyViewModel.isFeeCorrect, text: "I agree with the amount I will receive after the swap.")
-            Checkbox(isChecked: $verifyViewModel.isApproveCorrect, text: "I agree with providing unlimited ERC20 allowance")
+            if showApproveCheckmark {
+                Checkbox(isChecked: $verifyViewModel.isApproveCorrect, text: "I agree with providing unlimited ERC20 allowance")
+            }
         }
     }
 
@@ -90,6 +92,10 @@ struct SwapVerifyView: View {
         .disabled(!verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired))
         .opacity(verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired) ? 1 : 0.5)
         .padding(40)
+    }
+
+    var showApproveCheckmark: Bool {
+        return tx.isApproveRequired
     }
 
     func getFromAmount() -> String {
