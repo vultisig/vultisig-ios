@@ -109,6 +109,9 @@ struct ChainDetailView: View {
                     addButton
                 }
             }
+            .buttonStyle(BorderlessButtonStyle())
+            .background(Color.backgroundBlue)
+            .colorScheme(.dark)
             .padding(.horizontal, 16)
             .padding(.vertical, 30)
         }
