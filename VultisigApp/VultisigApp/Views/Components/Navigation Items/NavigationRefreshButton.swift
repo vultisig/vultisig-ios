@@ -14,7 +14,7 @@ struct NavigationRefreshButton: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: "arrow.clockwise.circle")
-                .font(.body18MenloBold)
+                .font(.body18Menlo)
 #if os(iOS)
                 .foregroundColor(tint)
 #endif

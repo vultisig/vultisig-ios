@@ -50,7 +50,7 @@ struct NavigationHomeEditButton: View {
     
     var doneButton: some View {
         Text(NSLocalizedString("done", comment: ""))
-            .font(.body18MenloBold)
+            .font(.body18Menlo)
 #if os(iOS)
                 .foregroundColor(tint)
 #endif
