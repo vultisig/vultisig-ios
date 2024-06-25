@@ -16,20 +16,21 @@ struct SwapService {
     private let oneInchService: OneInchService = OneInchService.shared
 
     func fetchQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
-        
-        // 1Inch resolver
-        if let fromChainID = fromCoin.chain.chainID,
-           let toChainID = toCoin.chain.chainID, fromChainID == toChainID
-        {
-            return try await fetchOneInchQuote(
-                chain: fromChainID,
-                amount: amount, fromCoin: fromCoin,
-                toCoin: toCoin, isAffiliate: isAffiliate
-            )
+
+        guard let provider = SwapCoinsResolver.resolveProvider(fromCoin: fromCoin, toCoin: toCoin) else {
+            throw Errors.routeUnavailable
         }
 
-        // Mayachain resolver
-        if mayaChains.contains(fromCoin.chain) || mayaChains.contains(toCoin.chain) {
+        switch provider {
+        case .thorchain:
+            return try await fetchCrossChainQuote(
+                provider: thorchainService,
+                amount: amount,
+                fromCoin: fromCoin,
+                toCoin: toCoin,
+                isAffiliate: isAffiliate
+            )
+        case .mayachain:
             return try await fetchCrossChainQuote(
                 provider: mayachainService,
                 amount: amount,
@@ -37,31 +38,31 @@ struct SwapService {
                 toCoin: toCoin,
                 isAffiliate: isAffiliate
             )
+        case .oneinch:
+            guard let fromChainID = fromCoin.chain.chainID,
+                  let toChainID = toCoin.chain.chainID, fromChainID == toChainID else {
+                  throw Errors.routeUnavailable
+            }
+            return try await fetchOneInchQuote(
+                chain: fromChainID,
+                amount: amount, fromCoin: fromCoin,
+                toCoin: toCoin, isAffiliate: isAffiliate
+            )
         }
-
-        // Thorchain resolver
-        return try await fetchCrossChainQuote(
-            provider: thorchainService,
-            amount: amount,
-            fromCoin: fromCoin,
-            toCoin: toCoin,
-            isAffiliate: isAffiliate
-        )
     }
 }
 
 private extension SwapService {
 
-    var mayaChains: [Chain] {
-        return [.mayaChain, .kujira, .dash]
-    }
-
     enum Errors: Error, LocalizedError {
+        case routeUnavailable
         case swapAmountTooSmall
         case lessThenMinSwapAmount(amount: String)
 
         var errorDescription: String? {
             switch self {
+            case .routeUnavailable:
+                return "Route unavailable"
             case .swapAmountTooSmall:
                 return "Swap amount too small"
             case .lessThenMinSwapAmount(let amount):
