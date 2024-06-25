@@ -176,5 +176,4 @@ struct KeyGenSummaryView: View {
 
 #Preview {
     KeyGenSummaryView(viewModel: KeygenPeerDiscoveryViewModel())
-        .environmentObject(KeygenPeerDiscoveryViewModel())
 }
