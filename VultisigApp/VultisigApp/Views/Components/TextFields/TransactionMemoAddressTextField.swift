@@ -98,8 +98,9 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
 #if os(iOS)
             pasteButton
             scanButton
-#endif
             fileButton
+#endif
+            
         }
     }
     
@@ -164,7 +165,6 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
         memo.addressFields[addressKey] = address
         validateAddress(memo.addressFields[addressKey] ?? "")
     }
-#endif
     
     var fileButton: some View {
         Button {
@@ -176,6 +176,7 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
                 .frame(width: 40, height: 40)
         }
     }
+#endif
     
     var optionalMessage: String {
         if isOptional {
