@@ -121,7 +121,8 @@ struct ChainDetailView: View {
         ChainDetailActionButtons(
             group: group,
             vault: vault,
-            sendTx: sendTx
+            sendTx: sendTx,
+            coin: group.nativeCoin
         )
     }
     
