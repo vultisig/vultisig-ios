@@ -216,11 +216,13 @@ struct PeerDiscoveryView: View {
     }
     
     var gridList: some View {
-        ScrollView {
-            LazyVGrid(columns: columns, spacing: 32) {
+        ScrollView(showsIndicators: false) {
+            LazyVGrid(columns: columns, spacing: 8) {
                 devices
             }
-            .padding(.vertical, 16)
+#if os(iOS)
+        .padding(idiom == .phone ? 0 : 20)
+#endif
         }
     }
     
