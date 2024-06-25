@@ -55,7 +55,11 @@ struct NewWalletNameView: View {
             
             textfield
         }
+#if os(iOS)
         .padding(.horizontal, 16)
+#elseif os(macOS)
+        .padding(.horizontal, 40)
+#endif
         .padding(.top, 30)
     }
     

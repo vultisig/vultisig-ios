@@ -82,12 +82,7 @@ struct SetupVaultView: View {
             startButton
             joinButton
         }
-#if os(iOS)
         .padding(40)
-#elseif os(macOS)
-        .padding(.horizontal, 20)
-        .padding(20)
-#endif
     }
     
     var startButton: some View {
