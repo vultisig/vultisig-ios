@@ -17,7 +17,9 @@ struct NavigationBackSheetButton: View {
         }) {
             Image(systemName: "chevron.backward")
                 .font(.body18MenloBold)
+#if os(iOS)
                 .foregroundColor(tint)
+#endif
         }
     }
 }

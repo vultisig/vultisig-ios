@@ -15,7 +15,9 @@ struct NavigationRefreshButton: View {
         Button(action: action) {
             Image(systemName: "arrow.clockwise.circle")
                 .font(.body18MenloBold)
+#if os(iOS)
                 .foregroundColor(tint)
+#endif
         }
     }
 }

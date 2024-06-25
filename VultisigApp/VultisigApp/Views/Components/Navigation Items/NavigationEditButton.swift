@@ -13,7 +13,9 @@ struct NavigationEditButton: View {
     var body: some View {
         Image(systemName: "square.and.pencil")
             .font(.body18MenloBold)
+#if os(iOS)
             .foregroundColor(tint)
+#endif
     }
 }
 

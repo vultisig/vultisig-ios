@@ -13,7 +13,9 @@ struct NavigationMenuButton: View {
     var body: some View {
         Image("MenuIcon")
             .font(.body18MenloBold)
+#if os(iOS)
             .foregroundColor(tint)
+#endif
     }
 }
 
