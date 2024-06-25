@@ -54,8 +54,9 @@ struct CustomTokenView: View {
         }
 #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+#endif
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 Button(action: {
                     self.chainDetailView.sheetType = nil
                 }) {
@@ -65,7 +66,6 @@ struct CustomTokenView: View {
                 }
             }
         }
-#endif
     }
     
     var view: some View {

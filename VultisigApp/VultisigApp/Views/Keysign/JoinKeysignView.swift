@@ -29,17 +29,16 @@ struct JoinKeysignView: View {
         .onDisappear(){
             viewModel.stopJoiningKeysign()
         }
-#if os(iOS)
+
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
             }
             
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 NavigationHelpButton()
             }
         }
-#endif
     }
     
     var states: some View {

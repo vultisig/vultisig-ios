@@ -98,7 +98,7 @@ class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
                 get: { self.amountValid },
                 set: { self.amountValid = $0 }
             ))
-#if os(iOS)
+
             TransactionMemoAddressTextField(
                 memo: self,
                 addressKey: "nodeAddress",
@@ -116,7 +116,7 @@ class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
                     set: { self.providerValid = $0 }
                 )
             )
-#endif
+
             StyledIntegerField(
                 placeholder: "Operator's Fee",
                 value: Binding(

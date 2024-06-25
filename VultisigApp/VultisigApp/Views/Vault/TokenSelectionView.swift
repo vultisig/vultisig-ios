@@ -32,8 +32,9 @@ struct TokenSelectionView: View {
         .navigationTitle(NSLocalizedString("chooseTokens", comment: "Choose Tokens"))
 #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+#endif
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 Button(action: {
                     self.chainDetailView.sheetType = nil
                 }) {
@@ -42,7 +43,7 @@ struct TokenSelectionView: View {
                         .foregroundColor(Color.neutral0)
                 }
             }
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 Button(action: {
                     self.chainDetailView.sheetType = nil
                 }) {
@@ -50,15 +51,18 @@ struct TokenSelectionView: View {
                         .foregroundColor(.blue)
                 }
             }
-            ToolbarItem(placement: .principal) {
+            ToolbarItem(placement: Placement.principal.getPlacement()) {
                 ZStack(alignment: .trailing) {
                     HStack {
                         TextField(NSLocalizedString("Search", comment: "Search").toFormattedTitleCase(), text: $tokenViewModel.searchText)
                             .foregroundColor(.neutral0)
                             .submitLabel(.next)
+                            .borderlessTextFieldStyle()
+#if os(iOS)
                             .textInputAutocapitalization(.never)
-                            .disableAutocorrection(true)
                             .keyboardType(.default)
+#endif
+                            .disableAutocorrection(true)
                             .textContentType(.oneTimeCode)
                             .focused($isSearchFieldFocused)
                             .padding(.horizontal, 8)
@@ -87,7 +91,6 @@ struct TokenSelectionView: View {
                 .cornerRadius(10)
             }
         }
-#endif
         .task {
             await tokenViewModel.loadData(groupedChain: group)
         }

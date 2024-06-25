@@ -28,16 +28,17 @@ struct AddressQRCodeView: View {
         .navigationTitle(NSLocalizedString("address", comment: "AddressQRCodeView title"))
 #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+#endif
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackSheetButton(showSheet: $showSheet)
             }
             
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
             }
         }
-#endif
+
     }
     
     var view: some View {
