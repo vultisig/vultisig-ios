@@ -37,6 +37,7 @@ struct StyledTextField: View {
                 .padding(12)
                 .background(Color.blue600)
                 .cornerRadius(12)
+                .borderlessTextFieldStyle()
                 .onAppear {
                     localIsValid = isValid
                     validate(text)

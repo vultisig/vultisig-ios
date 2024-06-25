@@ -73,6 +73,7 @@ struct RenameVaultView: View {
             .padding(12)
             .background(Color.blue600)
             .cornerRadius(12)
+            .borderlessTextFieldStyle()
     }
     
     var button: some View {

@@ -77,6 +77,7 @@ struct SwapCryptoAmountTextField: View {
             .submitLabel(.next)
             .disableAutocorrection(true)
             .textFieldStyle(TappableTextFieldStyle())
+            .borderlessTextFieldStyle()
             .foregroundColor(isEnabled ? .neutral0 : .neutral300)
 #if os(iOS)
             .textInputAutocapitalization(.never)
