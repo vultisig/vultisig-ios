@@ -37,6 +37,7 @@ struct SendCryptoAmountTextField: View {
                         }
                     }
 				))
+                .borderlessTextFieldStyle()
 				.submitLabel(.next)
 				.disableAutocorrection(true)
                 .textFieldStyle(TappableTextFieldStyle())

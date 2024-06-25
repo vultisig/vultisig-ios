@@ -118,6 +118,7 @@ struct SendCryptoDetailsView: View {
             .background(Color.blue600)
             .cornerRadius(10)
             .lineLimit(1)
+            
     }
     
     var toField: some View {

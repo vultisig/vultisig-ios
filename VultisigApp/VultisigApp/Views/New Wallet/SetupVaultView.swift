@@ -33,22 +33,22 @@ struct SetupVaultView: View {
         }
 #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+#endif
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
             }
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 NavigationHelpButton()
             }
         }
-#endif
+
     }
     
     var view: some View {
         VStack {
             image
             messageModal
-            Spacer()
             buttons
         }
         .sheet(isPresented: $showSheet, content: {

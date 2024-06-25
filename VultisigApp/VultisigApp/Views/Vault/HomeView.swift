@@ -13,9 +13,9 @@ struct HomeView: View {
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var viewModel: HomeViewModel
-
+    
     @Query var vaults: [Vault]
-
+    
     @State var showVaultsList = false
     @State var isEditingVaults = false
     @State var showMenu = false
@@ -55,22 +55,22 @@ struct HomeView: View {
                 JoinKeysignView(vault: vault)
             }
         }
-#if os(iOS)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 menuButton
             }
             
-            ToolbarItem(placement: .principal) {
+            ToolbarItem(placement: Placement.principal.getPlacement()) {
                 navigationTitle
             }
-
-            ToolbarItem(placement: .topBarTrailing) {
+            
+            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 editButton
             }
         }
-#endif
+        
     }
+    
     
     var navigationTitle: some View {
         ZStack {
@@ -114,7 +114,7 @@ struct HomeView: View {
         } label: {
             NavigationMenuButton()
         }
-
+        
     }
     
     var editButton: some View {
@@ -133,7 +133,7 @@ struct HomeView: View {
             viewModel.setSelectedVault(vault)
             selectedVault = nil
             return
-        } else {   
+        } else {
             viewModel.loadSelectedVault(for: vaults)
         }
         presetValuesForDeeplink()

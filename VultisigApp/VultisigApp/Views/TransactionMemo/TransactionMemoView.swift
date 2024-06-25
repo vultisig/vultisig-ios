@@ -33,8 +33,9 @@ struct TransactionMemoView: View {
 #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             .ignoresSafeArea(.keyboard)
+#endif
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                     Button {
                         handleBackTap()
                     } label: {
@@ -42,7 +43,7 @@ struct TransactionMemoView: View {
                     }
                 }
             }
-#endif
+
     }
     
     var content: some View {

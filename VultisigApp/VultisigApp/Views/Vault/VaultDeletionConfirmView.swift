@@ -20,7 +20,7 @@ struct VaultDeletionConfirmView: View {
     
     @Environment(\.modelContext) private var modelContext
     
-    @Query var vaults: [Vault]
+    let vaults: [Vault]
     
     var body: some View {
         ZStack {
@@ -31,12 +31,12 @@ struct VaultDeletionConfirmView: View {
         .navigationTitle(NSLocalizedString("deleteVaultTitle", comment: "Delete Vault"))
 #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+#endif
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
             }
         }
-#endif
     }
     
     var view: some View {
@@ -122,5 +122,5 @@ struct VaultDeletionConfirmView: View {
 }
 
 #Preview {
-    VaultDeletionConfirmView(vault: Vault.example)
+    VaultDeletionConfirmView(vault: Vault.example, vaults: [])
 }

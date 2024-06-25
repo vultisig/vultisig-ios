@@ -50,21 +50,24 @@ struct PeerDiscoveryView: View {
         .onDisappear {
             viewModel.stopMediator()
         }
+        
 #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         .detectOrientation($orientation)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                NavigationBackButton()
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
-            }
-        }
         .onChange(of: orientation) { oldValue, newValue in
             setData()
         }
 #endif
+        .toolbar {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
+                NavigationBackButton()
+            }
+            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
+            }
+        }
+        
+        
     }
     
     var states: some View {
@@ -163,7 +166,7 @@ struct PeerDiscoveryView: View {
                     contentMode:
                         participantDiscovery.peersFound.count == 0 && idiom == .phone ?
                         .fill :
-                        .fit
+                            .fit
                 )
 #elseif os(macOS)
                 .aspectRatio(contentMode: .fit)
