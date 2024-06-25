@@ -41,8 +41,10 @@ struct HiddenTextField: View {
             
             if isPasswordVisible {
                  TextField(NSLocalizedString("", comment: ""), text: $password)
+                    .borderlessTextFieldStyle()
             } else {
                 SecureField(NSLocalizedString("", comment: ""), text: $password)
+                    .borderlessTextFieldStyle()
             }
         }
         .submitLabel(.done)

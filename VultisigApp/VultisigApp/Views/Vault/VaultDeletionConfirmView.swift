@@ -20,7 +20,7 @@ struct VaultDeletionConfirmView: View {
     
     @Environment(\.modelContext) private var modelContext
     
-    @Query var vaults: [Vault]
+    let vaults: [Vault]
     
     var body: some View {
         ZStack {
@@ -122,5 +122,5 @@ struct VaultDeletionConfirmView: View {
 }
 
 #Preview {
-    VaultDeletionConfirmView(vault: Vault.example)
+    VaultDeletionConfirmView(vault: Vault.example, vaults: [])
 }
