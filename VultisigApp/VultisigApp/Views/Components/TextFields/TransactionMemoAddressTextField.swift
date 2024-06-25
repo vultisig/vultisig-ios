@@ -12,6 +12,7 @@ import WalletCore
 
 #if os(iOS)
 import CodeScanner
+#endif
 
 struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: View {
     @ObservedObject var memo: MemoType
@@ -21,11 +22,14 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
     @Binding var isAddressValid: Bool
     @State var showScanner = false
     @State var showImagePicker = false
+    
+#if os(iOS)
     @State var selectedImage: UIImage?
+#endif
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack{
+            HStack {
                 Text("\(addressKey.toFormattedTitleCase())\(optionalMessage)")
                     .font(.body14MontserratMedium)
                     .foregroundColor(.neutral0)
@@ -51,14 +55,16 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
             .padding(.horizontal, 12)
             .background(Color.blue600)
             .cornerRadius(10)
+#if os(iOS)
             .sheet(isPresented: $showScanner) {
                 codeScanner
             }
             .sheet(isPresented: $showImagePicker, onDismiss: processImage) {
                 ImagePicker(selectedImage: $selectedImage)
             }
+#endif
         }
-        .onChange(of: memo.addressFields[addressKey]) { oldValue,newValue in
+        .onChange(of: memo.addressFields[addressKey]) { oldValue, newValue in
             validateAddress(newValue ?? "")
         }
     }
@@ -83,19 +89,26 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
             .foregroundColor(.neutral0)
             .submitLabel(.next)
             .disableAutocorrection(true)
+#if os(iOS)
             .textInputAutocapitalization(.never)
             .keyboardType(.default)
             .textContentType(.oneTimeCode)
-            
+#endif
+#if os(iOS)
             pasteButton
+#endif
+#if os(iOS)
             scanButton
+#endif
             fileButton
         }
     }
     
+#if os(iOS)
     var codeScanner: some View {
         QRCodeScannerView(showScanner: $showScanner, handleScan: handleScan)
     }
+
     
     var pasteButton: some View {
         Button {
@@ -108,6 +121,7 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
         }
     }
     
+
     var scanButton: some View {
         Button {
             showScanner.toggle()
@@ -118,6 +132,7 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
                 .frame(width: 40, height: 40)
         }
     }
+#endif
     
     var fileButton: some View {
         Button {
@@ -136,12 +151,13 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
         }
         return .empty
     }
-    
+#if os(iOS)
     private func processImage() {
         guard let selectedImage = selectedImage else { return }
         handleImageQrCode(image: selectedImage)
     }
     
+
     private func handleScan(result: Result<ScanResult, ScanError>) {
         switch result {
         case .success(let result):
@@ -154,6 +170,7 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
             print("Failed to scan QR code, error: \(err.localizedDescription)")
         }
     }
+#endif
     
     private func validateAddress(_ newValue: String) {
         
@@ -165,19 +182,19 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
         isAddressValid = CoinType.thorchain.validate(address: newValue) ||
         AnyAddress.isValidBech32(string: newValue, coin: .thorchain, hrp: "maya")
     }
-    
+#if os(iOS)
     private func pasteAddress() {
         if let clipboardContent = UIPasteboard.general.string {
             memo.addressFields[addressKey] = clipboardContent
             validateAddress(memo.addressFields[addressKey] ?? "")
         }
     }
-    
+
     private func handleImageQrCode(image: UIImage) {
         let qrCodeFromImage = Utils.handleQrCodeFromImage(image: image)
         let address = String(data: qrCodeFromImage, encoding: .utf8) ?? ""
         memo.addressFields[addressKey] = address
         validateAddress(memo.addressFields[addressKey] ?? "")
     }
-}
 #endif
+}
