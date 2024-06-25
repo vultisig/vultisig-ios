@@ -23,3 +23,26 @@ platform :ios do
     upload_to_testflight
   end
 end
+
+platform :mac do
+  desc "Build the macOS app and package it into a .dmg file"
+  lane :release_mac do
+    # Specify the path to your Xcode project and the scheme for your macOS app
+    build_app(scheme: "VultisigApp",
+              configuration: "Release",
+              export_method: "mac-application")
+
+    sh "create-dmg 'VultisigApp.dmg' 'VultisigApp.app'"
+  end
+  lane :notarize_mac do
+     # Notarize the packaged app
+     notarize(package: "VultisigApp.dmg",
+     username: "johnnyluo1980@gmail.com",
+     bundle_id: "com.vultisig.wallet",
+     asc_provider: "G8Q5XUAJD9",
+     verbose: true) # Optional: only needed if you belong to multiple teams
+
+    # Staple the notarization ticket to your .dmg
+    sh "xcrun stapler staple 'path/to/VultisigApp.dmg'"
+  end
+end
