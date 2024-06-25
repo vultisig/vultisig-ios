@@ -192,13 +192,12 @@ class Coin: ObservableObject, Codable, Hashable {
     
     func getMaxValue(_ fee: BigInt) -> Decimal {
         let totalFeeAdjusted = fee
-        // let maxValue = rawBalance.toDecimal().description.toBigInt() - totalFeeAdjusted
         let maxValue = rawBalance.toBigInt() - totalFeeAdjusted
         let maxValueDecimal = maxValue.toDecimal(decimals: decimals)
         let tokenDecimals = decimals
         let maxValueCalculated = maxValueDecimal / pow(10, tokenDecimals)
         
-        return maxValueCalculated < .zero ? 0 : maxValueCalculated
+        return maxValueCalculated < .zero ? 0 : maxValueCalculated.truncated(toPlaces: decimals - 1) //the max value must be less than the balance, so we need to reduce the precision.
     }
     
     var balanceInFiatDecimal: Decimal {

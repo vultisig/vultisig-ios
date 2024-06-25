@@ -44,9 +44,6 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         do {
             let chainSpecific = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: false)
             tx.gas = chainSpecific.gas.description
-            if tx.coin.chainType == .EVM {
-                tx.gas = (tx.coin.feeDefault.toBigInt() * chainSpecific.gas).description
-            }
         } catch {
             print("error fetching data: \(error.localizedDescription)")
         }
@@ -70,10 +67,10 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 do {
                     if tx.coin.isNativeToken {
                         let evm = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: true)
-                        let totalFeeWei = tx.coin.feeDefault.toBigInt() * evm.gas
+                        let totalFeeWei = evm.gas
                         
                         tx.gas = totalFeeWei.description
-                        tx.amount = "\(tx.coin.getMaxValue(totalFeeWei).truncated(toPlaces: tx.coin.decimals))" // the decimals must be truncaded otherwise the give us precisions errors
+                        tx.amount = "\(tx.coin.getMaxValue(totalFeeWei)))" // the decimals must be truncaded otherwise the give us precisions errors
                         
                         setPercentageAmount(tx: tx, for: percentage)
                         
