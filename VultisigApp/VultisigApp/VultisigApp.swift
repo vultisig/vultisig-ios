@@ -43,6 +43,7 @@ struct VultisigApp: App {
                         break
                     }
                 }
+                .buttonStyle(BorderlessButtonStyle())
                 .frame(minWidth: 900, minHeight: 600)
 #endif
         }
@@ -77,6 +78,7 @@ struct VultisigApp: App {
                 configurations: [modelConfiguration]
             )
             Storage.shared.modelContext = modelContainer.mainContext
+            
             return modelContainer
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
@@ -109,6 +111,15 @@ private extension VultisigApp {
         
         static var stages: [MigrationStage] {
             return []
+        }
+    }
+}
+extension ModelContext {
+    var sqliteCommand: String {
+        if let url = container.configurations.first?.url.path(percentEncoded: false) {
+            "sqlite3 \"\(url)\""
+        } else {
+            "No SQLite database found."
         }
     }
 }
