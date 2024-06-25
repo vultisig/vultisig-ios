@@ -129,6 +129,11 @@ extension String {
         }
         return valueBigInt
     }
+    
+    // We must truncate before converting to bigInt.
+    func toBigInt(decimals: Int) -> BigInt {
+        self.toDecimal().truncated(toPlaces: decimals).description.toBigInt()
+    }
 }
 
 extension String {

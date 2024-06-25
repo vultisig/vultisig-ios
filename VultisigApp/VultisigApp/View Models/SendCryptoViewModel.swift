@@ -73,7 +73,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                         let totalFeeWei = tx.coin.feeDefault.toBigInt() * evm.gas
                         
                         tx.gas = totalFeeWei.description
-                        tx.amount = "\(tx.coin.getMaxValue(totalFeeWei))"
+                        tx.amount = "\(tx.coin.getMaxValue(totalFeeWei).truncated(toPlaces: tx.coin.decimals))" // the decimals must be truncaded otherwise the give us precisions errors
                         
                         setPercentageAmount(tx: tx, for: percentage)
                         

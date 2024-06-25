@@ -30,13 +30,13 @@ class SendTransaction: ObservableObject, Hashable {
     var isAmountExceeded: Bool {
         
         if (sendMaxAmount && coin.chainType == .UTXO) || !coin.isNativeToken {
-            let comparison = amountInRaw > coin.rawBalance.toBigInt()
+            let comparison = amountInRaw > coin.rawBalance.toBigInt(decimals: coin.decimals)
             return comparison
         }
         
         let gasBigInt = gas.toBigInt()
         let totalTransactionCost = amountInRaw + gasBigInt
-        let comparison = totalTransactionCost > coin.rawBalance.toBigInt()
+        let comparison = totalTransactionCost > coin.rawBalance.toBigInt(decimals: coin.decimals)
         return comparison
     }
     
@@ -107,12 +107,7 @@ class SendTransaction: ObservableObject, Hashable {
     var amountInRaw: BigInt {
         let decimals = coin.decimals
         let amountInDecimals = amountDecimal * pow(10, decimals)
-        
-        // Convert Decimal to BigInt using string representation to ensure precision
-        let nsDecimalNumber = NSDecimalNumber(decimal: amountInDecimals)
-        let bigIntValue = BigInt(nsDecimalNumber.stringValue) ?? BigInt(0)
-        
-        return bigIntValue
+        return amountInDecimals.description.toBigInt(decimals: decimals)
     }
     
     var amountDecimal: Decimal {
