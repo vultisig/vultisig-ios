@@ -47,6 +47,7 @@ struct VaultDetailView: View {
                 ChainSelectionView(showChainSelectionSheet: $showSheet, vault: vault)
             }
         })
+        
     }
     
     var view: some View {

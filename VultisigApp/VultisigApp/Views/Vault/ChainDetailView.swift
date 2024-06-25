@@ -9,7 +9,6 @@ struct ChainDetailView: View {
     @StateObject var sendTx = SendTransaction()
     @State var isLoading = false
     @State var sheetType: SheetType? = nil
-    
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
     enum SheetType: Int, Identifiable {
@@ -34,24 +33,19 @@ struct ChainDetailView: View {
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString(group.name, comment: ""))
         .navigationBarTitleDisplayMode(.inline)
+#endif
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
             }
             
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 NavigationRefreshButton() {
-                    Task {
-                        isLoading = true
-                        for coin in group.coins {
-                            await viewModel.loadData(coin: coin)
-                        }
-                        isLoading = false
-                    }
+                    refreshAction()
                 }
             }
         }
-#endif
+
         .sheet(isPresented: Binding<Bool>(
             get: { sheetType != nil },
             set: { newValue in
@@ -92,7 +86,15 @@ struct ChainDetailView: View {
             }
         }
     }
-    
+    func refreshAction(){
+        Task {
+            isLoading = true
+            for coin in group.coins {
+                await viewModel.loadData(coin: coin)
+            }
+            isLoading = false
+        }
+    }
     var loader: some View {
         Loader()
     }
