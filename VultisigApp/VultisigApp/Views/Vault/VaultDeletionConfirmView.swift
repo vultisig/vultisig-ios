@@ -31,12 +31,12 @@ struct VaultDeletionConfirmView: View {
         .navigationTitle(NSLocalizedString("deleteVaultTitle", comment: "Delete Vault"))
 #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+#endif
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
             }
         }
-#endif
     }
     
     var view: some View {

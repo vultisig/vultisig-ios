@@ -22,12 +22,13 @@ struct SettingsView: View {
         .navigationTitle(NSLocalizedString("settings", comment: "Settings"))
 #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+#endif
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackSheetButton(showSheet: $showMenu)
             }
         }
-#endif
+
     }
     
     var view: some View {
