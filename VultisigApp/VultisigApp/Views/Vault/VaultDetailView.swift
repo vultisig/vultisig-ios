@@ -135,7 +135,6 @@ struct VaultDetailView: View {
         .padding(16)
         .padding(.bottom, 150)
         .background(Color.backgroundBlue)
-        .background(Color.backgroundBlue)
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
     }
@@ -156,6 +155,7 @@ struct VaultDetailView: View {
     var scanButton: some View {
         VaultDetailScanButton(showSheet: $showScanner)
             .opacity(showVaultsList ? 0 : 1)
+            .buttonStyle(BorderlessButtonStyle())
     }
     
     var loader: some View {
