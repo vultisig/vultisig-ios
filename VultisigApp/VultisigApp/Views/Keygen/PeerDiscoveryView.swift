@@ -111,12 +111,19 @@ struct PeerDiscoveryView: View {
         HStack {
             qrCode
             
-            VStack{
+#if os(iOS)
+            VStack {
                 list
                     .padding(20)
-                
                 vaultDetail
             }
+#elseif os(macOS)
+            VStack {
+                vaultDetail
+                list
+            }
+            .padding(40)
+#endif
         }
     }
     
@@ -263,7 +270,7 @@ struct PeerDiscoveryView: View {
         .padding(.bottom, 10)
         .disabled(viewModel.selections.count < 2)
         .opacity(viewModel.selections.count < 2 ? 0.8 : 1)
-        .background(Color.backgroundBlue.opacity(0.95))
+        .grayscale(viewModel.selections.count < 2 ? 1 : 0)
 #if os(macOS)
         .padding(.bottom, 30)
 #endif
