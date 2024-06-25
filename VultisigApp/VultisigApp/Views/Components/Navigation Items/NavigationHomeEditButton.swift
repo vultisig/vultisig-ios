@@ -14,7 +14,6 @@ struct NavigationHomeEditButton: View {
     
     var tint: Color = Color.neutral0
     
-    @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject var viewModel: VaultDetailViewModel
     
     var body: some View {
@@ -52,8 +51,6 @@ struct NavigationHomeEditButton: View {
             .font(.body18MenloBold)
 #if os(iOS)
                 .foregroundColor(tint)
-#elseif os(macOS)
-                .foregroundColor(colorScheme == .light ? .neutral700 : .neutral0)
 #endif
     }
 }
