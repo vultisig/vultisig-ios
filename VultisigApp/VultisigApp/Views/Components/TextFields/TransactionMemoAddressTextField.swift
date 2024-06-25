@@ -86,7 +86,7 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
             .textInputAutocapitalization(.never)
             .keyboardType(.default)
             .textContentType(.oneTimeCode)
-            .borderlessTextFieldStyle()
+            
             pasteButton
             scanButton
             fileButton
