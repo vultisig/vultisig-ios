@@ -17,10 +17,10 @@ struct NavigationBackButton: View {
             dismiss()
         }) {
             Image(systemName: "chevron.backward")
-                .font(.body18MenloBold)
-            #if os(iOS)
+                .font(.body18Menlo)
+#if os(iOS)
                 .foregroundColor(tint)
-            #endif
+#endif
         }
     }
 }

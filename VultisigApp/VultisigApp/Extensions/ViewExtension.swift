@@ -45,4 +45,8 @@ extension View {
     func onFirstAppear(perform: @escaping () -> Void) -> some View {
         modifier(OnFirstAppear(perform: perform))
     }
+    
+    func borderlessTextFieldStyle() -> some View {
+        self.textFieldStyle(PlainTextFieldStyle())
+    }
 }

@@ -55,7 +55,11 @@ struct NewWalletNameView: View {
             
             textfield
         }
+#if os(iOS)
         .padding(.horizontal, 16)
+#elseif os(macOS)
+        .padding(.horizontal, 40)
+#endif
         .padding(.top, 30)
     }
     
@@ -68,6 +72,7 @@ struct NewWalletNameView: View {
             .background(Color.blue600)
             .cornerRadius(12)
             .colorScheme(.dark)
+            .borderlessTextFieldStyle()
     }
     
     var button: some View {

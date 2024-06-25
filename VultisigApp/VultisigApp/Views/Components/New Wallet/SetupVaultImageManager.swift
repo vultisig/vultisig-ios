@@ -10,15 +10,10 @@ import SwiftUI
 struct SetupVaultImageManager: View {
     @Binding var selectedTab: SetupVaultState
     
-#if os(iOS)
-    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-#endif
-    
     var body: some View {
         VStack(spacing: 12) {
             text
             image
-            Spacer()
         }
         .padding(24)
         .clipped()
@@ -36,11 +31,6 @@ struct SetupVaultImageManager: View {
         Image(selectedTab.getImage())
             .resizable()
             .frame(maxWidth: .infinity)
-#if os(iOS)
-            .aspectRatio(contentMode: idiom == .phone ? .fit : .fill)
-#elseif os(macOS)
-            .aspectRatio(contentMode: .fill)
-#endif
     }
     
     var image: some View {
@@ -48,6 +38,10 @@ struct SetupVaultImageManager: View {
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(maxWidth: .infinity)
+#if os(macOS)
+            .offset(y: 15)
+            .scaleEffect(1.1)
+#endif
     }
 }
 

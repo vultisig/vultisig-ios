@@ -49,7 +49,6 @@ struct SetupVaultView: View {
         VStack {
             image
             messageModal
-            Spacer()
             buttons
         }
         .sheet(isPresented: $showSheet, content: {
