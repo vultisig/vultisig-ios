@@ -4,12 +4,11 @@ struct ChainDetailView: View {
     @ObservedObject var group: GroupedChain
     let vault: Vault
     
-    @State var tokens: [Coin] = []
+    @State var tokens: [CoinMeta] = []
     @State var actions: [CoinAction] = []
     @StateObject var sendTx = SendTransaction()
     @State var isLoading = false
     @State var sheetType: SheetType? = nil
-    
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
     enum SheetType: Int, Identifiable {
@@ -34,24 +33,19 @@ struct ChainDetailView: View {
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString(group.name, comment: ""))
         .navigationBarTitleDisplayMode(.inline)
+#endif
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
             }
             
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 NavigationRefreshButton() {
-                    Task {
-                        isLoading = true
-                        for coin in group.coins {
-                            await viewModel.loadData(coin: coin)
-                        }
-                        isLoading = false
-                    }
+                    refreshAction()
                 }
             }
         }
-#endif
+
         .sheet(isPresented: Binding<Bool>(
             get: { sheetType != nil },
             set: { newValue in
@@ -92,7 +86,15 @@ struct ChainDetailView: View {
             }
         }
     }
-    
+    func refreshAction(){
+        Task {
+            isLoading = true
+            for coin in group.coins {
+                await viewModel.loadData(coin: coin)
+            }
+            isLoading = false
+        }
+    }
     var loader: some View {
         Loader()
     }
@@ -107,6 +109,9 @@ struct ChainDetailView: View {
                     addButton
                 }
             }
+            .buttonStyle(BorderlessButtonStyle())
+            .background(Color.backgroundBlue)
+            .colorScheme(.dark)
             .padding(.horizontal, 16)
             .padding(.vertical, 30)
         }
@@ -116,7 +121,8 @@ struct ChainDetailView: View {
         ChainDetailActionButtons(
             group: group,
             vault: vault,
-            sendTx: sendTx
+            sendTx: sendTx,
+            coin: group.nativeCoin
         )
     }
     
@@ -135,7 +141,7 @@ struct ChainDetailView: View {
     var cells: some View {
         ForEach(group.coins.sorted(by: {
             $0.isNativeToken || ($0.balanceInFiatDecimal > $1.balanceInFiatDecimal)
-        }), id: \.self) { coin in
+        }), id: \.id) { coin in
             getCoinCell(coin)
         }
     }

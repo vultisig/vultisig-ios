@@ -14,22 +14,6 @@ enum SuiHelper {
     
     static let defaultFeeInSui: BigInt = 1000  // Example fee, adjust as necessary
     
-    static func getSui(hexPubKey: String, hexChainCode: String) -> Result<Coin, Error> {
-        return getAddressFromPublicKey(hexPubKey: hexPubKey, hexChainCode: hexChainCode).flatMap { addr -> Result<Coin, Error> in
-            TokensStore.createNewCoinInstance(ticker: "SUI", address: addr, hexPublicKey: hexPubKey, coinType: .sui)
-        }
-    }
-    static func getAddressFromPublicKey(hexPubKey: String, hexChainCode: String) -> Result<String, Error> {
-        // Sui is using EdDSA , so it doesn't need to use HD derive
-        guard let pubKeyData = Data(hexString: hexPubKey) else {
-            return .failure(HelperError.runtimeError("public key: \(hexPubKey) is invalid"))
-        }
-        guard let publicKey = PublicKey(data: pubKeyData, type: .ed25519) else {
-            return .failure(HelperError.runtimeError("public key: \(hexPubKey) is invalid"))
-        }
-        return .success(CoinType.sui.deriveAddressFromPublicKey(publicKey: publicKey))
-    }
-    
     static func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
         guard keysignPayload.coin.chain.ticker == "SUI" else {
             return .failure(HelperError.runtimeError("coin is not SUI"))

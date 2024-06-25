@@ -34,10 +34,10 @@ class BalanceService {
         "\(coin.ticker)-\(coin.contractAddress)-\(coin.chain.rawValue)-\(coin.address)"
     }
     
-    func updateBalances(coins: [Coin]) async {
+    func updateBalances(vault: Vault) async {
         await withTaskGroup(of: Void.self) { group in
-            for coin in coins {
-                group.addTask { [unowned self] in
+            for coin in vault.coins {
+                group.addTask { [unowned self]  in
                     if !Task.isCancelled {
                         await updateBalance(for: coin)
                     }
@@ -50,9 +50,11 @@ class BalanceService {
         do {
             
             if let cachedValue = await Utils.getCachedData(cacheKey: cacheKey(coin: coin), cache: cache, timeInSeconds: CACHE_TIMEOUT_IN_SECONDS) {
-                coin.rawBalance = cachedValue.rawBalance
-                coin.priceRate = cachedValue.priceRate
-                return
+                if cachedValue.rawBalance != .zero && cachedValue.priceRate != .zero {
+                    coin.rawBalance = cachedValue.rawBalance
+                    coin.priceRate = cachedValue.priceRate
+                    return
+                }
             }
             
             var rawBalance: String = .empty
@@ -113,7 +115,7 @@ class BalanceService {
 private extension BalanceService {
     
     @MainActor func updateCoin(_ coin: Coin, rawBalance: String, priceRate: Double) async throws {
-        guard coin.rawBalance != rawBalance && coin.priceRate != priceRate else { return }
+        guard coin.rawBalance != rawBalance || coin.priceRate != priceRate else { return }
         coin.rawBalance = rawBalance
         coin.priceRate = priceRate
         // Swift Data persists on disk io, that is slower than the cache on KEY VALUE RAM

@@ -46,16 +46,14 @@ struct JoinKeygenView: View {
         .onDisappear {
             viewModel.stopJoinKeygen()
         }
-#if os(iOS)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
             }
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 NavigationHelpButton()
             }
         }
-#endif
     }
     
     var states: some View {

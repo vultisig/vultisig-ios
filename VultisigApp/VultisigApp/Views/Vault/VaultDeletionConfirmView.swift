@@ -31,24 +31,24 @@ struct VaultDeletionConfirmView: View {
         .navigationTitle(NSLocalizedString("deleteVaultTitle", comment: "Delete Vault"))
 #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+#endif
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
             }
         }
-#endif
     }
     
     var view: some View {
         VStack(spacing: 32) {
-            Spacer()
             logo
-            Spacer()
             details
+            Spacer()
             checkboxes
             button
         }
         .padding(18)
+        .padding(.top, 12)
         .navigationDestination(isPresented: $navigateBackToHome) {
             HomeView(selectedVault: vaults.first, showVaultsList: true)
         }
@@ -58,7 +58,7 @@ struct VaultDeletionConfirmView: View {
     }
     
     var logo: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 28) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.title80Menlo)
                 .symbolRenderingMode(.palette)
@@ -73,7 +73,7 @@ struct VaultDeletionConfirmView: View {
     }
     
     var checkboxes: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 32) {
             Checkbox(isChecked: $permanentDeletionCheck, text: "vaultWillBeDeletedPermanentlyPrompt")
             Checkbox(isChecked: $canLoseFundCheck, text: "canLoseFundsPrompt")
             Checkbox(isChecked: $vaultBackupCheck, text: "madeVaultBackupPrompt")

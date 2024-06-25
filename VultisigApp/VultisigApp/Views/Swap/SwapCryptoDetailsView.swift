@@ -12,7 +12,6 @@ struct SwapCryptoDetailsView: View {
     @ObservedObject var swapViewModel: SwapCryptoViewModel
     
     @State var buttonRotated = false
-    @State var toCoins = [Coin]()
 
     let vault: Vault
 
@@ -20,6 +19,13 @@ struct SwapCryptoDetailsView: View {
         ZStack {
             Background()
             view
+
+            if swapViewModel.isLoading {
+                Loader()
+            }
+        }
+        .onChange(of: tx.fromCoin) { oldValue, newValue in
+            swapViewModel.updateCoinLists(tx: tx)
         }
     }
     
@@ -72,7 +78,7 @@ struct SwapCryptoDetailsView: View {
     var fromCoinField: some View {
         VStack(spacing: 8) {
             TokenSelectorDropdown(
-                coins: $swapViewModel.coins,
+                coins: $swapViewModel.fromCoins,
                 selected: $tx.fromCoin,
                 onSelect: { _ in
                     swapViewModel.updateFromCoin(tx: tx, vault: vault)
@@ -113,15 +119,12 @@ struct SwapCryptoDetailsView: View {
     var toCoinField: some View {
         VStack(spacing: 8) {
             TokenSelectorDropdown(
-                coins: $toCoins,
+                coins: $swapViewModel.toCoins,
                 selected: $tx.toCoin,
                 onSelect: { _ in
                     swapViewModel.updateToCoin(tx: tx, vault: vault)
                 }
             )
-        }
-        .onChange(of: tx.fromCoin) { oldValue, newValue in
-            setData()
         }
     }
     
@@ -151,14 +154,6 @@ struct SwapCryptoDetailsView: View {
         .disabled(!swapViewModel.validateForm(tx: tx))
         .opacity(swapViewModel.validateForm(tx: tx) ? 1 : 0.5)
         .padding(40)
-    }
-    
-    private func setData() {
-        toCoins = swapViewModel.coins.filter { $0 != tx.fromCoin }
-
-        if tx.fromCoin == tx.fromCoin, let selected = toCoins.first(where: { $0 != tx.fromCoin }) {
-            tx.toCoin = selected
-        }
     }
 }
 

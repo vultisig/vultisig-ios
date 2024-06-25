@@ -19,19 +19,18 @@ struct TransactionMemoDetailsView: View {
             view
         }
         .gesture(DragGesture())
+        #if os(iOS)
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
-                
-#if os(iOS)
                 Button {
                     hideKeyboard()
                 } label: {
                     Text(NSLocalizedString("done", comment: "Done"))
                 }
-#endif
             }
         }
+        #endif
         .alert(isPresented: $transactionMemoViewModel.showAlert) {
             alert
         }

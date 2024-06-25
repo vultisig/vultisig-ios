@@ -121,6 +121,8 @@ class KeygenViewModel: ObservableObject {
                 // if local party is not in the old committee , then he is the new guy , need to add the vault
                 // otherwise , they previously have the vault
                 if !self.vaultOldCommittee.contains(self.vault.localPartyID) {
+                    VaultDefaultCoinService(context: context)
+                        .setDefaultCoinsOnce(vault: self.vault)
                     context.insert(self.vault)
                 }
             }

@@ -38,7 +38,9 @@ struct NavigationHomeEditButton: View {
     
     var vaultDetailRefreshButton: some View {
         NavigationRefreshButton {
-            viewModel.updateBalance()
+            if let vault {
+                viewModel.updateBalance(vault: vault)
+            }
         }
     }
     

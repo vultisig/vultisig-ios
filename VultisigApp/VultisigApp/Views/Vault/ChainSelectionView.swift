@@ -29,12 +29,13 @@ struct ChainSelectionView: View {
             }
 #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+#endif
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                     NavigationBackSheetButton(showSheet: $showChainSelectionSheet)
                 }
             }
-#endif
+        
     }
     
     var content: some View {

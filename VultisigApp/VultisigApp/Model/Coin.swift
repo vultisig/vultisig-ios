@@ -6,53 +6,44 @@ import BigInt
 class Coin: ObservableObject, Codable, Hashable {
     var id: String
     let chain: Chain
+    let address: String
+    let hexPublicKey: String
     let ticker: String
-    var logo: String
-    @Attribute(originalName: "decimals") var strDecimals: String
     let contractAddress: String
     let isNativeToken: Bool
+
+    @Attribute(originalName: "decimals") private(set) var strDecimals: String
+
+    var logo: String
     var priceProviderId: String
-    var hexPublicKey: String = ""
-    var address: String = ""
     var rawBalance: String = ""
     var priceRate: Double = 0
     
-    var decimals: Int{
-        get{
+    var decimals: Int {
+        get {
             return Int(strDecimals) ?? 0
         }
-        set{
+        set {
             strDecimals = String(newValue)
         }
     }
-    init(
-        chain: Chain,
-        ticker: String,
-        logo: String,
-        address: String,
-        priceRate: Double,
-        decimals: Int,
-        hexPublicKey: String,
-        priceProviderId: String,
-        contractAddress: String,
-        rawBalance: String,
-        isNativeToken: Bool
-    ) {
-        self.chain = chain
-        self.ticker = ticker
-        self.logo = logo
-        self.address = address
-        self.priceRate = priceRate
-        self.strDecimals = String(decimals)
-        self.hexPublicKey = hexPublicKey
-        self.priceProviderId = priceProviderId
-        self.contractAddress = contractAddress
-        self.rawBalance = rawBalance
-        self.isNativeToken = isNativeToken
+
+    init(asset: CoinMeta, address: String, hexPublicKey: String) {
+        self.chain = asset.chain
+        self.ticker = asset.ticker
+        self.logo = asset.logo
+        self.strDecimals = String(asset.decimals)
+        self.priceProviderId = asset.priceProviderId
+        self.contractAddress = asset.contractAddress
+        self.isNativeToken = asset.isNativeToken
+        self.id = asset.coinId(address: address)
         
-        self.id = "\(chain.rawValue)-\(ticker)-\(address)"
+        self.rawBalance = .zero
+        self.priceRate = .zero
+        self.address = address
+        self.hexPublicKey = hexPublicKey
     }
-    
+
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let chain = try container.decode(Chain.self, forKey: .chain)
@@ -84,23 +75,6 @@ class Coin: ObservableObject, Codable, Hashable {
         try container.encode(isNativeToken, forKey: .isNativeToken)
         try container.encode(hexPublicKey, forKey: .hexPublicKey)
         try container.encode(address, forKey: .address)
-    }
-    
-    
-    func clone() -> Coin {
-        return Coin(
-            chain: chain,
-            ticker: ticker,
-            logo: logo,
-            address: address,
-            priceRate: priceRate,
-            decimals: decimals,
-            hexPublicKey: hexPublicKey,
-            priceProviderId: priceProviderId,
-            contractAddress: contractAddress,
-            rawBalance: rawBalance,
-            isNativeToken: isNativeToken
-        )
     }
     
     func hash(into hasher: inout Hasher) {
@@ -144,6 +118,7 @@ class Coin: ObservableObject, Codable, Hashable {
             return .Polkadot
         }
     }
+    
     var feeDefault: String{
         switch self.chain {
         case .thorChain:
@@ -252,23 +227,35 @@ class Coin: ObservableObject, Codable, Hashable {
         return chain.logo
     }
     
-    static let example = Coin(
-        chain: Chain.bitcoin,
-        ticker: "BTC",
-        logo: "BitcoinLogo",
-        address: "bc1qxyz...",
-        priceRate: 20000.0,
-        decimals: 8,
-        hexPublicKey: "HexPublicKeyExample",
-        priceProviderId: "Bitcoin",
-        contractAddress: "ContractAddressExample",
-        rawBalance: "500000000",
-        isNativeToken: false
-    )
+    static let example: Coin = {
+        let asset = CoinMeta(chain: .bitcoin, ticker: "BTC", logo: "BitcoinLogo", decimals: 8, priceProviderId: "Bitcoin", contractAddress: "ContractAddressExample", isNativeToken: false)
+        return Coin(asset: asset, address: "bc1qxyz...", hexPublicKey: "HexPublicKeyExample")
+    }()
+    
+    func toCoinMeta() -> CoinMeta {
+        return CoinMeta(chain: chain, ticker: ticker, logo: logo, decimals: decimals, priceProviderId: priceProviderId, contractAddress: contractAddress, isNativeToken: isNativeToken)
+    }
+}
+
+extension Coin: Comparable {
+
+    static func < (lhs: Coin, rhs: Coin) -> Bool {
+        if lhs.balanceInFiatDecimal != rhs.balanceInFiatDecimal {
+            return lhs.balanceInFiatDecimal > rhs.balanceInFiatDecimal
+        }
+        else if lhs.chain.name != rhs.chain.name {
+            return lhs.chain.name < rhs.chain.name
+        }
+        else if lhs.isNativeToken != rhs.isNativeToken {
+            return !lhs.isNativeToken
+        }
+        else {
+            return lhs.ticker < rhs.ticker
+        }
+    }
 }
 
 private extension Coin {
-    
     enum CodingKeys: String, CodingKey {
         case id
         case chain

@@ -8,9 +8,8 @@
 import SwiftUI
 
 struct CoinSelectionCell: View {
-    let asset: Coin
+    let asset: CoinMeta
     @State var isSelected = false
-    
     @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
     
     var body: some View {
@@ -72,7 +71,7 @@ struct CoinSelectionCell: View {
 
 #Preview {
     ScrollView {
-        CoinSelectionCell(asset: Coin.example)
+        CoinSelectionCell(asset: TokensStore.TokenSelectionAssets[0])
             .environmentObject(CoinSelectionViewModel())
     }
 }

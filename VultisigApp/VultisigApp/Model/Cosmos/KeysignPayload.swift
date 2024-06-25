@@ -124,7 +124,7 @@ struct KeysignPayload: Codable, Hashable {
             return utxoHelper.getPreSignedImageHash(keysignPayload: self)
         case .ethereum, .arbitrum, .base, .optimism, .polygon, .avalanche, .bscChain, .blast, .cronosChain, .zksync:
             if coin.isNativeToken {
-                let helper = EVMHelper.getHelper(coin: coin)
+                let helper = EVMHelper.getHelper(coin: coin.toCoinMeta())
                 return helper.getPreSignedImageHash(keysignPayload: self)
             } else {
                 let helper = ERC20Helper.getHelper(coin: coin)

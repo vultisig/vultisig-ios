@@ -171,7 +171,8 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     oldParties: vault.signers,
                     encryptionKeyHex: encryptionKeyHex,
                     useVultisigRelay: VultisigRelay.IsRelayEnabled,
-                    oldResharePrefix: vault.resharePrefix ?? ""
+                    oldResharePrefix: vault.resharePrefix ?? "",
+                    vaultName: vault.name
                 )
                 data = try jsonEncoder.encode(PeerDiscoveryPayload.Reshare(reshareMsg))
                 let json = String(decoding: data, as: UTF8.self)

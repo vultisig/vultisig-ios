@@ -23,7 +23,7 @@ struct CustomTokenView: View {
     @State private var error: Error?
     
     @State private var isValidAddress: Bool = false
-    @State private var token: Coin? = nil
+    @State private var token: CoinMeta? = nil
     
     @StateObject var tokenViewModel = TokenSelectionViewModel()
     @EnvironmentObject var coinViewModel: CoinSelectionViewModel
@@ -50,12 +50,13 @@ struct CustomTokenView: View {
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("findCustomTokens", comment: "Find Your Custom Token"))
         .task {
-            await tokenViewModel.loadData(groupedChain:  group)
+            await tokenViewModel.loadData(groupedChain: group)
         }
 #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+#endif
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 Button(action: {
                     self.chainDetailView.sheetType = nil
                 }) {
@@ -65,7 +66,6 @@ struct CustomTokenView: View {
                 }
             }
         }
-#endif
     }
     
     var view: some View {
@@ -89,7 +89,6 @@ struct CustomTokenView: View {
                     image
                     text
                     Spacer()
-                    price
                 }
                 .frame(height: 72)
                 .padding(.horizontal, 16)
@@ -125,7 +124,7 @@ struct CustomTokenView: View {
     }
     
     var image: some View {
-        AsyncImageView(logo: token?.logo ?? .empty, size: CGSize(width: 32, height: 32), ticker: token?.ticker ?? .empty, tokenChainLogo: token?.tokenChainLogo)
+        AsyncImageView(logo: token?.logo ?? .empty, size: CGSize(width: 32, height: 32), ticker: token?.ticker ?? .empty, tokenChainLogo: token?.chain.logo)
     }
     
     var text: some View {
@@ -143,15 +142,7 @@ struct CustomTokenView: View {
                 .foregroundColor(.turquoise600)
         }
     }
-    var price: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            
-            Text(self.token?.priceRate.description.formatToFiat() ?? .empty)
-                .font(.body12MontserratSemiBold)
-                .foregroundColor(.neutral0)
-            
-        }
-    }
+    
     
     private func fetchTokenInfo() async {
         guard !contractAddress.isEmpty else { return }
@@ -164,35 +155,22 @@ struct CustomTokenView: View {
             let (name, symbol, decimals) = try await service.getTokenInfo(contractAddress: contractAddress)
             
             if !name.isEmpty, !symbol.isEmpty, decimals > 0 {
-                
                 let nativeTokenOptional = group.coins.first(where: {$0.isNativeToken})
                 if let nativeToken = nativeTokenOptional {
-                    self.token = Coin(
+                    self.token = CoinMeta(
                         chain: nativeToken.chain,
                         ticker: symbol,
                         logo: .empty,
-                        address: nativeToken.address,
-                        priceRate: .zero,
                         decimals: decimals,
-                        hexPublicKey: nativeToken.hexPublicKey,
                         priceProviderId: .empty,
                         contractAddress: contractAddress,
-                        rawBalance: .zero,
                         isNativeToken: false
                     )
-                    
-                    if let customToken = self.token {
-                        let (rawBalance, priceRate) = try await service.getBalance(coin: customToken)
-                        self.token?.rawBalance = rawBalance
-                        self.token?.priceRate = priceRate
-                        
-                        self.tokenName = name
-                        self.tokenSymbol = symbol
-                        self.tokenDecimals = decimals
-                        self.showTokenInfo = true
-                        self.isLoading = false
-                        
-                    }
+                    self.tokenName = name
+                    self.tokenSymbol = symbol
+                    self.tokenDecimals = decimals
+                    self.showTokenInfo = true
+                    self.isLoading = false
                 }
                 
             } else {
