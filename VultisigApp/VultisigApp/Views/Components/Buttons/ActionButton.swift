@@ -23,6 +23,7 @@ struct ActionButton: View {
                 RoundedRectangle(cornerRadius: 50)
                     .stroke(LinearGradient.primaryGradient, lineWidth: 1)
             )
+            .frame(maxWidth: .infinity, alignment: .center)
     }
 }
 

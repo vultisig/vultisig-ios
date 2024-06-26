@@ -138,16 +138,31 @@ struct VaultDetailView: View {
     }
     
     var chooseChainButton: some View {
-        Button {
-            showSheet.toggle()
-        } label: {
-            HStack(spacing: 10) {
-                Image(systemName: "plus")
-                Text(NSLocalizedString("chooseChains", comment: "Choose Chains"))
-            }
+        ZStack {
+            #if os(iOS)
+                    Button {
+                        showSheet.toggle()
+                    } label: {
+                        chooseChainButtonLabel
+                    }
+            #elseif os(macOS)
+                    NavigationLink {
+                        ChainSelectionView(showChainSelectionSheet: $showSheet, vault: vault)
+                    } label: {
+                        chooseChainButtonLabel
+                    }
+                    .padding(.horizontal, 16)
+            #endif
         }
         .font(.body16MenloBold)
         .foregroundColor(.turquoise600)
+    }
+    
+    var chooseChainButtonLabel: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "plus")
+            Text(NSLocalizedString("chooseChains", comment: "Choose Chains"))
+        }
     }
     
     var scanButton: some View {

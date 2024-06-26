@@ -22,6 +22,9 @@ struct VaultDetailBalanceContent: View {
         .background(Color.backgroundBlue)
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
+#if os(macOS)
+        .padding(.vertical, 18)
+#endif
     }
     
     var content: some View {
