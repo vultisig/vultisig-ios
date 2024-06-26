@@ -41,8 +41,6 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
        
         tx.fromCoin = fromCoin
         self.fromCoins = fromCoins
-
-        await updateFees(tx: tx, vault: vault)
     }
     
     var progress: Double {
@@ -316,13 +314,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             await updateQuotes(tx: tx, vault: vault)
         }
     }
-    
-    func updateInitial(tx: SwapTransaction, vault: Vault) {
-        Task {
-            await updateFees(tx: tx, vault: vault)
-        }
-    }
-    
+
     func updateFromAmount(tx: SwapTransaction, vault: Vault) {
         updateTask?.cancel()
         updateTask = Task {
