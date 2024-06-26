@@ -41,6 +41,7 @@ struct KeyGenSummaryView: View {
             .padding(.top, 30)
             .padding(.horizontal, 22)
             .foregroundColor(.neutral0)
+            .scrollIndicators(.hidden)
         }
     }
     

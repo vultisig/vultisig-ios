@@ -18,6 +18,8 @@ struct InstructionPrompt: View {
             } else {
                 padContent
             }
+#elseif os(macOS)
+            padContent
 #endif
         }
         .frame(maxWidth: .infinity)
