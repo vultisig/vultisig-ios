@@ -40,6 +40,7 @@ platform :mac do
      username: "johnnyluo1980@gmail.com",
      bundle_id: "com.vultisig.wallet",
      asc_provider: "G8Q5XUAJD9",
+     print_log: true,
      verbose: true) # Optional: only needed if you belong to multiple teams
 
     # Staple the notarization ticket to your .dmg
