@@ -216,7 +216,7 @@ struct PeerDiscoveryView: View {
     }
     
     var gridList: some View {
-        ScrollView(showsIndicators: false) {
+        ScrollView {
             LazyVGrid(columns: columns, spacing: 8) {
                 devices
             }
@@ -224,6 +224,7 @@ struct PeerDiscoveryView: View {
         .padding(idiom == .phone ? 0 : 20)
 #endif
         }
+        .scrollIndicators(.hidden)
     }
     
     var networkPrompts: some View {
