@@ -55,12 +55,8 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         isLoading = true
         switch tx.coin.chain {
         case .bitcoin,.dogecoin,.litecoin,.bitcoinCash,.dash:
-            tx.sendMaxAmount = true
+            tx.sendMaxAmount = percentage == 100 // Never set this to true if the percentage is not 100, otherwise it will wipe your wallet.
             tx.amount = utxo.blockchairData.get(key)?.address?.balanceInBTC ?? "0.0"
-            if let plan = getTransactionPlan(tx: tx, key: key), plan.amount > 0 {
-                tx.amount = utxo.blockchairData.get(key)?.address?.formatAsBitcoin(Int(plan.amount)) ?? "0.0"
-                tx.gas = plan.fee.description
-            }
             Task{
                 setPercentageAmount(tx: tx, for: percentage)
                 await convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: true)
