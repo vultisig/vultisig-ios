@@ -16,7 +16,7 @@ struct PeerDiscoveryView: View {
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
     
     @State var qrCodeImage: Image? = nil
-    @State var isLandscape: Bool = false
+    @State var isLandscape: Bool = true
     
     @Environment(\.displayScale) var displayScale
     
@@ -111,11 +111,19 @@ struct PeerDiscoveryView: View {
         HStack {
             qrCode
             
-            VStack{
+#if os(iOS)
+            VStack {
                 list
                     .padding(20)
                 vaultDetail
             }
+#elseif os(macOS)
+            VStack {
+                vaultDetail
+                list
+            }
+            .padding(40)
+#endif
         }
     }
     
@@ -178,6 +186,9 @@ struct PeerDiscoveryView: View {
         }
         .cornerRadius(10)
         .shadow(radius: 5)
+#if os(macOS)
+        .padding(40)
+#endif
     }
     
     var deviceList: some View {
@@ -206,11 +217,14 @@ struct PeerDiscoveryView: View {
     
     var gridList: some View {
         ScrollView {
-            LazyVGrid(columns: columns, spacing: 32) {
+            LazyVGrid(columns: columns, spacing: 8) {
                 devices
             }
-            .padding(.vertical, 16)
+#if os(iOS)
+        .padding(idiom == .phone ? 0 : 20)
+#endif
         }
+        .scrollIndicators(.hidden)
     }
     
     var networkPrompts: some View {
@@ -259,7 +273,10 @@ struct PeerDiscoveryView: View {
         .padding(.bottom, 10)
         .disabled(viewModel.selections.count < 2)
         .opacity(viewModel.selections.count < 2 ? 0.8 : 1)
-        .background(Color.backgroundBlue.opacity(0.95))
+        .grayscale(viewModel.selections.count < 2 ? 1 : 0)
+#if os(macOS)
+        .padding(.bottom, 30)
+#endif
     }
     
     var keygenView: some View {
@@ -293,8 +310,6 @@ struct PeerDiscoveryView: View {
     private func setData() {
 #if os(iOS)
         isLandscape = (orientation == .landscapeLeft || orientation == .landscapeRight) && idiom == .pad
-#elseif os(macOS)
-        isLandscape = true
 #endif
         
         qrCodeImage = viewModel.getQrImage(size: 100)

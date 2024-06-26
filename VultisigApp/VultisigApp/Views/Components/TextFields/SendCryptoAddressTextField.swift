@@ -71,6 +71,7 @@ struct SendCryptoAddressTextField: View {
             .foregroundColor(.neutral0)
             .submitLabel(.next)
             .disableAutocorrection(true)
+            .borderlessTextFieldStyle()
 #if os(iOS)
             .keyboardType(.default)
             .textInputAutocapitalization(.never)

@@ -55,14 +55,9 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         isLoading = true
         switch tx.coin.chain {
         case .bitcoin,.dogecoin,.litecoin,.bitcoinCash,.dash:
-            tx.sendMaxAmount = true
+            tx.sendMaxAmount = percentage == 100 // Never set this to true if the percentage is not 100, otherwise it will wipe your wallet.
             tx.amount = utxo.blockchairData.get(key)?.address?.balanceInBTC ?? "0.0"
-            if let plan = getTransactionPlan(tx: tx, key: key), plan.amount > 0 {
-                tx.amount = utxo.blockchairData.get(key)?.address?.formatAsBitcoin(Int(plan.amount)) ?? "0.0"
-                tx.gas = plan.fee.description
-            }
             Task{
-                setPercentageAmount(tx: tx, for: percentage)
                 await convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: true)
                 isLoading = false
             }
@@ -83,14 +78,11 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                         let totalFeeWei: BigInt = gasLimitBigInt * gasPriceWei
                         
                         tx.amount = "\(tx.coin.getMaxValue(totalFeeWei))"
-                        setPercentageAmount(tx: tx, for: percentage)
                     } else {
                         tx.amount = tx.coin.balanceString
-                        setPercentageAmount(tx: tx, for: percentage)
                     }
                 } catch {
                     tx.amount = tx.coin.balanceString
-                    setPercentageAmount(tx: tx, for: percentage)
                     print("Failed to get EVM balance, error: \(error.localizedDescription)")
                 }
                 
@@ -105,7 +97,6 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                     tx.coin.rawBalance = rawBalance
                     tx.coin.priceRate = priceRate
                     tx.amount = "\(tx.coin.getMaxValue(SolanaHelper.defaultFeeInLamports))"
-                    setPercentageAmount(tx: tx, for: percentage)
                     await convertToFiat(newValue: tx.amount, tx: tx)
                 } catch {
                     print("fail to load solana balances,error:\(error.localizedDescription)")
@@ -121,7 +112,6 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                     tx.coin.priceRate = priceRate
                     
                     tx.amount = "\(tx.coin.getMaxValue(tx.coin.feeDefault.toBigInt()))"
-                    setPercentageAmount(tx: tx, for: percentage)
                     await convertToFiat(newValue: tx.amount, tx: tx)
                 } catch {
                     print("fail to load solana balances,error:\(error.localizedDescription)")
@@ -133,18 +123,10 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             Task {
                 await BalanceService.shared.updateBalance(for: tx.coin)
                 tx.amount = "\(tx.coin.getMaxValue(BigInt(tx.gasDecimal.description,radix:10) ?? 0 ))"
-                setPercentageAmount(tx: tx, for: percentage)
                 await convertToFiat(newValue: tx.amount, tx: tx)
                 isLoading = false
             }
         }
-    }
-    
-    private func setPercentageAmount(tx: SendTransaction, for percentage: Double) {
-        let max = tx.amount
-        let multiplier = (Decimal(percentage) / 100)
-        let amountDecimal = (Decimal(string: max) ?? 0) * multiplier
-        tx.amount = "\(amountDecimal)"
     }
     
     private func getPriceRate(tx: SendTransaction) async -> Double {
