@@ -55,6 +55,10 @@ struct VaultsView: View {
             .background(Color.backgroundBlue)
         }
         .listStyle(PlainListStyle())
+        .buttonStyle(BorderlessButtonStyle())
+        .colorScheme(.dark)
+        .scrollContentBackground(.hidden)
+        .background(Color.backgroundBlue)
     }
     
     var addVaultButton: some View {
@@ -66,6 +70,7 @@ struct VaultsView: View {
         }
         .scaleEffect(showVaultsList ? 1 : 0)
         .opacity(showVaultsList ? 1 : 0)
+        .buttonStyle(BorderlessButtonStyle())
     }
     
     private func getButton(for vault: Vault) -> some View {

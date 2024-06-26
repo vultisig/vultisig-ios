@@ -29,14 +29,12 @@ struct CoinDetailView: View {
         .onAppear {
             sendTx.reset(coin: coin)
         }
-#if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
             }
             
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 NavigationRefreshButton() {
                     Task {
                         await refreshData()
@@ -44,7 +42,7 @@ struct CoinDetailView: View {
                 }
             }
         }
-#endif
+
     }
     
     var view: some View {
@@ -55,6 +53,9 @@ struct CoinDetailView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 30)
+#if os(macOS)
+            .padding(24)
+#endif
         }
     }
     

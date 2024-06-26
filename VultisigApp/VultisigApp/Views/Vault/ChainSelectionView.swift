@@ -27,14 +27,18 @@ struct ChainSelectionView: View {
             .onDisappear {
                 saveAssets()
             }
-#if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    NavigationBackSheetButton(showSheet: $showChainSelectionSheet)
-                }
+#if os(iOS)
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
+                NavigationBackSheetButton(showSheet: $showChainSelectionSheet)
+            }
+#elseif os(macOS)
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
+                NavigationBackButton()
             }
 #endif
+            }
+        
     }
     
     var content: some View {
@@ -68,9 +72,12 @@ struct ChainSelectionView: View {
             .padding(.vertical, 30)
 #if os(iOS)
             .padding(.bottom, UIDevice.current.userInterfaceIdiom == .pad ? 50 : 0)
+#elseif os(macOS)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 30)
 #endif
+            .padding(.horizontal, 16)
         }
-        .padding(.horizontal, 16)
     }
     
     private func setData() {

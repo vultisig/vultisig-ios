@@ -8,8 +8,7 @@
 import SwiftUI
 
 struct SwapCryptoView: View {
-    let coin: Coin
-    let coins: [Coin]
+    let coin: Coin?
     let vault: Vault
     
     @StateObject var tx = SwapTransaction()
@@ -25,23 +24,20 @@ struct SwapCryptoView: View {
             .navigationBarBackButtonHidden(true)
             .navigationTitle(NSLocalizedString("swap", comment: "SendCryptoView title"))
             .task {
-                await swapViewModel.load(tx: tx, fromCoin: coin, coins: vault.coins, vault: vault)
+                await swapViewModel.load(tx: tx, initialFromCoin: coin, vault: vault)
             }
-#if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
             .ignoresSafeArea(.keyboard)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                     backButton
                 }
                 
                 if swapViewModel.currentIndex==3 {
-                    ToolbarItem(placement: .topBarTrailing) {
+                    ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                         NavigationQRShareButton(title: "swap", renderedImage: shareSheetViewModel.renderedImage)
                     }
                 }
             }
-#endif
     }
     
     var content: some View {
@@ -167,5 +163,5 @@ struct SwapCryptoView: View {
 }
 
 #Preview {
-    SwapCryptoView(coin: .example, coins: Vault.example.coins, vault: .example)
+    SwapCryptoView(coin: .example, vault: .example)
 }

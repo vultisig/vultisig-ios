@@ -35,14 +35,12 @@ struct BackupPasswordSetupView: View {
             Background()
             view
         }
-#if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
             }
         }
-#endif
+
     }
     
     var view: some View {

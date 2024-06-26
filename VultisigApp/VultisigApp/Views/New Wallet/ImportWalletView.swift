@@ -22,9 +22,6 @@ struct ImportWalletView: View {
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("import", comment: "Import title"))
-#if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
-#endif
         .toolbar {
             ToolbarItem(placement: .navigation) {
                 NavigationBackButton()

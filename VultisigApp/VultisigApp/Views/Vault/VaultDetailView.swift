@@ -47,6 +47,7 @@ struct VaultDetailView: View {
                 ChainSelectionView(showChainSelectionSheet: $showSheet, vault: vault)
             }
         })
+        
     }
     
     var view: some View {
@@ -85,11 +86,12 @@ struct VaultDetailView: View {
         }
         .listStyle(PlainListStyle())
         .buttonStyle(BorderlessButtonStyle())
-        .background(Color.backgroundBlue)
         .refreshable {
             viewModel.updateBalance(vault: vault)
         }
         .colorScheme(.dark)
+        .scrollContentBackground(.hidden)
+        .background(Color.backgroundBlue)
     }
     
     var cells: some View {
@@ -104,6 +106,9 @@ struct VaultDetailView: View {
             )
         }
         .background(Color.backgroundBlue)
+#if os(macOS)
+                    .padding(.horizontal, 16)
+#endif
     }
     
     var emptyList: some View {
@@ -120,12 +125,6 @@ struct VaultDetailView: View {
         VaultDetailBalanceContent(vault: vault)
     }
     
-    var chainList: some View {
-        ForEach(viewModel.coinsGroupedByChains, id: \.id) { group in
-            ChainNavigationCell(group: group, vault: vault)
-        }
-    }
-    
     var addButton: some View {
         HStack {
             chooseChainButton
@@ -134,27 +133,45 @@ struct VaultDetailView: View {
         .padding(16)
         .padding(.bottom, 150)
         .background(Color.backgroundBlue)
-        .background(Color.backgroundBlue)
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
     }
     
     var chooseChainButton: some View {
-        Button {
-            showSheet.toggle()
-        } label: {
-            HStack(spacing: 10) {
-                Image(systemName: "plus")
-                Text(NSLocalizedString("chooseChains", comment: "Choose Chains"))
-            }
+        ZStack {
+            #if os(iOS)
+                    Button {
+                        showSheet.toggle()
+                    } label: {
+                        chooseChainButtonLabel
+                    }
+            #elseif os(macOS)
+                    NavigationLink {
+                        ChainSelectionView(showChainSelectionSheet: $showSheet, vault: vault)
+                    } label: {
+                        chooseChainButtonLabel
+                    }
+                    .padding(.horizontal, 16)
+            #endif
         }
         .font(.body16MenloBold)
         .foregroundColor(.turquoise600)
     }
     
+    var chooseChainButtonLabel: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "plus")
+            Text(NSLocalizedString("chooseChains", comment: "Choose Chains"))
+        }
+    }
+    
     var scanButton: some View {
         VaultDetailScanButton(showSheet: $showScanner)
             .opacity(showVaultsList ? 0 : 1)
+            .buttonStyle(BorderlessButtonStyle())
+#if os(macOS)
+            .padding(.bottom, 30)
+#endif
     }
     
     var loader: some View {

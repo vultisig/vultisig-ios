@@ -9,7 +9,6 @@ struct ChainDetailView: View {
     @StateObject var sendTx = SendTransaction()
     @State var isLoading = false
     @State var sheetType: SheetType? = nil
-    
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
     enum SheetType: Int, Identifiable {
@@ -30,28 +29,19 @@ struct ChainDetailView: View {
                 Loader()
             }
         }
-#if os(iOS)
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString(group.name, comment: ""))
-        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
             }
             
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 NavigationRefreshButton() {
-                    Task {
-                        isLoading = true
-                        for coin in group.coins {
-                            await viewModel.loadData(coin: coin)
-                        }
-                        isLoading = false
-                    }
+                    refreshAction()
                 }
             }
         }
-#endif
         .sheet(isPresented: Binding<Bool>(
             get: { sheetType != nil },
             set: { newValue in
@@ -107,8 +97,14 @@ struct ChainDetailView: View {
                     addButton
                 }
             }
+            .buttonStyle(BorderlessButtonStyle())
+            .background(Color.backgroundBlue)
+            .colorScheme(.dark)
             .padding(.horizontal, 16)
             .padding(.vertical, 30)
+#if os(macOS)
+            .padding(24)
+#endif
         }
     }
     
@@ -116,7 +112,8 @@ struct ChainDetailView: View {
         ChainDetailActionButtons(
             group: group,
             vault: vault,
-            sendTx: sendTx
+            sendTx: sendTx,
+            coin: group.nativeCoin
         )
     }
     
@@ -177,6 +174,16 @@ struct ChainDetailView: View {
         
         if let coin = group.coins.first {
             sendTx.reset(coin: coin)
+        }
+    }
+    
+    private func refreshAction(){
+        Task {
+            isLoading = true
+            for coin in group.coins {
+                await viewModel.loadData(coin: coin)
+            }
+            isLoading = false
         }
     }
 }

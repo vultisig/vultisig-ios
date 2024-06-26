@@ -57,6 +57,7 @@ struct AddressTextField: View {
                 .onChange(of: contractAddress){oldValue,newValue in
                     validateAddress(newValue)
                 }
+                .borderlessTextFieldStyle()
 #if os(iOS)
                 .textInputAutocapitalization(.never)
                 .keyboardType(.default)

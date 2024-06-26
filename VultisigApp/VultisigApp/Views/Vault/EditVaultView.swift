@@ -10,7 +10,7 @@ import SwiftData
 
 struct EditVaultView: View {
     let vault: Vault
-    
+    @Query var vaults: [Vault]
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
@@ -28,14 +28,12 @@ struct EditVaultView: View {
         base
             .navigationBarBackButtonHidden(true)
             .navigationTitle(NSLocalizedString("editVault", comment: "Edit Vault View title"))
-#if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                     NavigationBackButton()
                 }
             }
-#endif
+        
     }
     
     var alert: some View {
@@ -84,7 +82,7 @@ struct EditVaultView: View {
     
     var editVault: some View {
         NavigationLink {
-            RenameVaultView(vault: vault)
+            RenameVaultView(vaults:vaults,vault: vault)
         } label: {
             EditVaultCell(title: "rename", description: "renameVault", icon: "square.and.pencil")
         }
@@ -92,11 +90,11 @@ struct EditVaultView: View {
     
     var deleteVault: some View {
         NavigationLink {
-            VaultDeletionConfirmView(vault: vault)
+            VaultDeletionConfirmView(vault: vault, vaults: vaults)
         } label: {
             EditVaultCell(title: "delete", description: "deleteVault", icon: "trash", isDestructive: true)
         }
-
+        
     }
     
     var reshareVault: some View {

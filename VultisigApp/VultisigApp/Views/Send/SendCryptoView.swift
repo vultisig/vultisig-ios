@@ -38,20 +38,18 @@ struct SendCryptoView: View {
             .onDisappear(){
                 sendCryptoViewModel.stopMediator()
             }
-#if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                     backButton
                 }
                 
                 if sendCryptoViewModel.currentIndex==3 {
-                    ToolbarItem(placement: .topBarTrailing) {
+                    ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                         NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
                     }
                 }
             }
-#endif
+
     }
     
     var content: some View {

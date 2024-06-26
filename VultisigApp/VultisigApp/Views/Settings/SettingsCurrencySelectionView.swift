@@ -18,14 +18,12 @@ struct SettingsCurrencySelectionView: View {
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("currency", comment: "Currency"))
-#if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
             }
         }
-#endif
+
     }
     
     var view: some View {
