@@ -38,9 +38,6 @@ struct SendCryptoView: View {
             .onDisappear(){
                 sendCryptoViewModel.stopMediator()
             }
-#if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
-#endif
             .toolbar {
                 ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                     backButton

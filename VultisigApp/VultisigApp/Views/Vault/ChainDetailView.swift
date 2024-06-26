@@ -29,11 +29,8 @@ struct ChainDetailView: View {
                 Loader()
             }
         }
-#if os(iOS)
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString(group.name, comment: ""))
-        .navigationBarTitleDisplayMode(.inline)
-#endif
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
@@ -45,7 +42,6 @@ struct ChainDetailView: View {
                 }
             }
         }
-
         .sheet(isPresented: Binding<Bool>(
             get: { sheetType != nil },
             set: { newValue in
@@ -86,15 +82,7 @@ struct ChainDetailView: View {
             }
         }
     }
-    func refreshAction(){
-        Task {
-            isLoading = true
-            for coin in group.coins {
-                await viewModel.loadData(coin: coin)
-            }
-            isLoading = false
-        }
-    }
+    
     var loader: some View {
         Loader()
     }
@@ -114,6 +102,9 @@ struct ChainDetailView: View {
             .colorScheme(.dark)
             .padding(.horizontal, 16)
             .padding(.vertical, 30)
+#if os(macOS)
+            .padding(24)
+#endif
         }
     }
     
@@ -183,6 +174,16 @@ struct ChainDetailView: View {
         
         if let coin = group.coins.first {
             sendTx.reset(coin: coin)
+        }
+    }
+    
+    private func refreshAction(){
+        Task {
+            isLoading = true
+            for coin in group.coins {
+                await viewModel.loadData(coin: coin)
+            }
+            isLoading = false
         }
     }
 }

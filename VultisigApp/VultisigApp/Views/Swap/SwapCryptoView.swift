@@ -26,9 +26,6 @@ struct SwapCryptoView: View {
             .task {
                 await swapViewModel.load(tx: tx, initialFromCoin: coin, vault: vault)
             }
-#if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
-#endif
             .ignoresSafeArea(.keyboard)
             .toolbar {
                 ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
