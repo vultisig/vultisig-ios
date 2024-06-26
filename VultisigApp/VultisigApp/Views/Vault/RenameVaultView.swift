@@ -34,9 +34,6 @@ struct RenameVaultView: View {
                 dismissButton: .default(Text("ok"))
             )
         }
-#if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
-#endif
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()

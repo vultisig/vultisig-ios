@@ -52,9 +52,6 @@ struct CustomTokenView: View {
         .task {
             await tokenViewModel.loadData(groupedChain: group)
         }
-#if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
-#endif
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 Button(action: {
