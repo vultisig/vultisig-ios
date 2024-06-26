@@ -27,9 +27,6 @@ struct ChainSelectionView: View {
             .onDisappear {
                 saveAssets()
             }
-#if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
-#endif
             .toolbar {
                 ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                     NavigationBackSheetButton(showSheet: $showChainSelectionSheet)

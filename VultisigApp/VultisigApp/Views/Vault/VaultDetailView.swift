@@ -78,9 +78,6 @@ struct VaultDetailView: View {
                 balanceContent
                 getActions()
                 cells
-#if os(macOS)
-                    .padding(.horizontal, 16)
-#endif
             } else {
                 emptyList
             }
@@ -109,6 +106,9 @@ struct VaultDetailView: View {
             )
         }
         .background(Color.backgroundBlue)
+#if os(macOS)
+                    .padding(.horizontal, 16)
+#endif
     }
     
     var emptyList: some View {
@@ -123,12 +123,6 @@ struct VaultDetailView: View {
     
     var balanceContent: some View {
         VaultDetailBalanceContent(vault: vault)
-    }
-    
-    var chainList: some View {
-        ForEach(viewModel.coinsGroupedByChains, id: \.id) { group in
-            ChainNavigationCell(group: group, vault: vault)
-        }
     }
     
     var addButton: some View {

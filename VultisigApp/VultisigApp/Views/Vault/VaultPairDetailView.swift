@@ -23,9 +23,6 @@ struct VaultPairDetailView: View {
                 DeviceInfo(Index: index, Signer: signer)
             }
         }
-#if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
-#endif
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
