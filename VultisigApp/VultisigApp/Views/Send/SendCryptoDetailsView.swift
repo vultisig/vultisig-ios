@@ -84,7 +84,7 @@ struct SendCryptoDetailsView: View {
                 }
                 
                 gasField
-                    
+                
                 if tx.canBeReaped {
                     existentialDepositTextMessage
                 }
@@ -118,7 +118,7 @@ struct SendCryptoDetailsView: View {
             .background(Color.blue600)
             .cornerRadius(10)
             .lineLimit(1)
-            
+        
     }
     
     var toField: some View {
@@ -136,31 +136,9 @@ struct SendCryptoDetailsView: View {
         VStack(spacing: 8) {
             HStack {
                 getTitle(for: "amount")
-                Spacer()
-                percentageButtons
             }
             
             textField
-        }
-    }
-    
-    var percentageButtons: some View {
-        HStack(spacing: 12) {
-            Button {
-                sendCryptoViewModel.setMaxValues(tx: tx, percentage: 25)
-                let max = tx.amount.toDecimal() / 4
-                tx.amount = max.description
-            } label: {
-                getPercentageCell(for: "25")
-            }
-            
-            Button {
-                sendCryptoViewModel.setMaxValues(tx: tx, percentage: 50)
-                let max = tx.amount.toDecimal() / 2
-                tx.amount = max.description
-            } label: {
-                getPercentageCell(for: "50")
-            }
         }
     }
     
@@ -247,17 +225,7 @@ struct SendCryptoDetailsView: View {
         .foregroundColor(.neutral0)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
-    private func getPercentageCell(for text: String) -> some View {
-        Text(text + "%")
-            .font(.body12Menlo)
-            .foregroundColor(.neutral0)
-            .padding(.vertical, 6)
-            .padding(.horizontal, 20)
-            .background(Color.blue600)
-            .cornerRadius(6)
-    }
-    
+        
     private func setData() {
         Task {
             await getBalance()
