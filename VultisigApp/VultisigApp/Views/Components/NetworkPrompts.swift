@@ -11,16 +11,10 @@ struct NetworkPrompts: View {
     @Binding var selectedNetwork: NetworkPromptType
     
     private let gridRows = [
-            GridItem(.adaptive(minimum: 150))
+        GridItem(.adaptive(minimum: 150))
     ]
     
     var body: some View {
-        ZStack {
-            layout
-        }
-    }
-    
-    var layout: some View {
         HStack(spacing: 12) {
             cells
         }

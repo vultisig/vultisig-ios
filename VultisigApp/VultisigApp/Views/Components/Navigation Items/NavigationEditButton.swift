@@ -12,9 +12,11 @@ struct NavigationEditButton: View {
     
     var body: some View {
         Image(systemName: "square.and.pencil")
-            .font(.body18Menlo)
 #if os(iOS)
-                .foregroundColor(tint)
+            .font(.body18MenloBold)
+            .foregroundColor(tint)
+#elseif os(macOS)
+            .font(.body18Menlo)
 #endif
     }
 }

@@ -22,7 +22,11 @@ struct PeerCell: View {
             cell
             check
         }
+#if os(iOS)
         .scaleEffect(isPhone ? 0.7 : 1)
+#elseif os(macOS)
+        .scaleEffect(0.7)
+#endif
         .clipped()
         .onAppear {
             setData()

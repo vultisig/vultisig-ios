@@ -33,9 +33,11 @@ struct NavigationQRShareButton: View {
     
     var content: some View {
         Image(systemName: "arrow.up.doc")
-            .font(.body16Menlo)
 #if os(iOS)
-                .foregroundColor(tint)
+            .font(.body18MenloBold)
+            .foregroundColor(tint)
+#elseif os(macOS)
+            .font(.body18Menlo)
 #endif
     }
 }

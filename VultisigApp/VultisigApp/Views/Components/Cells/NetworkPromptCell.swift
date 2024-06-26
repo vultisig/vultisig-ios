@@ -19,6 +19,8 @@ struct NetworkPromptCell: View {
             } else {
                 padCell
             }
+#elseif os(macOS)
+            padCell
 #endif
         }
     }
