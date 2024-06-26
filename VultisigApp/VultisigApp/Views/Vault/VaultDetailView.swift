@@ -86,11 +86,12 @@ struct VaultDetailView: View {
         }
         .listStyle(PlainListStyle())
         .buttonStyle(BorderlessButtonStyle())
-        .background(Color.backgroundBlue)
         .refreshable {
             viewModel.updateBalance(vault: vault)
         }
         .colorScheme(.dark)
+        .scrollContentBackground(.hidden)
+        .background(Color.backgroundBlue)
     }
     
     var cells: some View {
