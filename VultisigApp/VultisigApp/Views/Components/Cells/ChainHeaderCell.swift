@@ -90,20 +90,30 @@ struct ChainHeaderCell: View {
     }
     
     var showQRButton: some View {
-        Button(action: {
-            isLoading = true
-            showQRcode.toggle()
-        }, label: {
-            Image(systemName: "qrcode")
-                .foregroundColor(.neutral0)
-                .font(.body18MenloMedium)
-        })
+        #if os(iOS)
+                Button(action: {
+                    isLoading = true
+                    showQRcode.toggle()
+                }, label: {
+                    qrCodeLabel
+                })
+        #elseif os(macOS)
+                NavigationLink {
+                    AddressQRCodeView(addressData: group.address, showSheet: $showQRcode, isLoading: $isLoading)
+                } label: {
+                    qrCodeLabel
+                }
+        #endif
+    }
+    
+    var qrCodeLabel: some View {
+        Image(systemName: "qrcode")
+            .foregroundColor(.neutral0)
+            .font(.body18MenloMedium)
     }
     
     var showTransactionsButton: some View {
-        ZStack {
-            webLink
-        }
+        webLink
     }
     
     var transactionsViewLink: some View {

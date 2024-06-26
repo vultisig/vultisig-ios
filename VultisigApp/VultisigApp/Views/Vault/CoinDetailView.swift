@@ -29,9 +29,6 @@ struct CoinDetailView: View {
         .onAppear {
             sendTx.reset(coin: coin)
         }
-#if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
-#endif
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
@@ -56,6 +53,9 @@ struct CoinDetailView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 30)
+#if os(macOS)
+            .padding(24)
+#endif
         }
     }
     

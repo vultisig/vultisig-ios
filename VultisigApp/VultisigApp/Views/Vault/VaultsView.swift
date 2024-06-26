@@ -57,6 +57,8 @@ struct VaultsView: View {
         .listStyle(PlainListStyle())
         .buttonStyle(BorderlessButtonStyle())
         .colorScheme(.dark)
+        .scrollContentBackground(.hidden)
+        .background(Color.backgroundBlue)
     }
     
     var addVaultButton: some View {
