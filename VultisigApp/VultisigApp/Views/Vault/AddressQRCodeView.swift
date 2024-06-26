@@ -26,13 +26,16 @@ struct AddressQRCodeView: View {
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("address", comment: "AddressQRCodeView title"))
-#if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
-#endif
         .toolbar {
+#if os(iOS)
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackSheetButton(showSheet: $showSheet)
             }
+#elseif os(macOS)
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
+                NavigationBackButton()
+            }
+#endif
             
             ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
@@ -67,8 +70,13 @@ struct AddressQRCodeView: View {
                 .resizable()
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 .padding(24)
+#if os(iOS)
                 .frame(maxWidth: .infinity)
                 .frame(height: geometry.size.width-(2*padding))
+#elseif os(macOS)
+                .frame(maxHeight: .infinity)
+                .frame(width: geometry.size.height)
+#endif
                 .background(Color.turquoise600.opacity(0.15))
                 .cornerRadius(10)
                 .overlay (
@@ -76,6 +84,9 @@ struct AddressQRCodeView: View {
                         .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [56]))
                 )
                 .padding(.horizontal, padding)
+#if os(macOS)
+                .frame(maxWidth: .infinity, alignment: .center)
+#endif
         }
     }
     

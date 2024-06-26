@@ -26,9 +26,6 @@ struct SettingsLanguageSelectionView: View {
                 dismissButton: .default(Text(NSLocalizedString("ok", comment: "OK")))
             )
         }
-#if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
-#endif
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
