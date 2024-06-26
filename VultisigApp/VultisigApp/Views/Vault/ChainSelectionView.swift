@@ -30,7 +30,7 @@ struct ChainSelectionView: View {
             .toolbar {
 #if os(iOS)
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                NavigationBackSheetButton(showSheet: $showSheet)
+                NavigationBackSheetButton(showSheet: $showChainSelectionSheet)
             }
 #elseif os(macOS)
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
