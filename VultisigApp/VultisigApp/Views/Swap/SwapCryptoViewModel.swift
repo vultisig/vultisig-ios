@@ -18,8 +18,9 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     private let blockchainService = BlockChainService.shared
     private let balanceService = BalanceService.shared
     
-    private var updateTask: Task<Void, Never>?
-    
+    private var updateQuoteTask: Task<Void, Never>?
+    private var updateFeesTask: Task<Void, Never>?
+
     var keysignPayload: KeysignPayload?
     
     @MainActor @Published var fromCoins: [Coin] = []
@@ -52,7 +53,11 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
 
     func updateCoinLists(tx: SwapTransaction) {
-        let (toCoins, toCoin) = SwapCoinsResolver.resolveToCoins(fromCoin: tx.fromCoin, allCoins: fromCoins)
+        let (toCoins, toCoin) = SwapCoinsResolver.resolveToCoins(
+            fromCoin: tx.fromCoin,
+            allCoins: fromCoins,
+            selectedToCoin: tx.toCoin
+        )
         tx.toCoin = toCoin
         self.toCoins = toCoins
     }
@@ -301,40 +306,25 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     
     
     func switchCoins(tx: SwapTransaction, vault: Vault) {
-        defer { clearQuote(tx: tx) }
-        
         let fromCoin = tx.fromCoin
         let toCoin = tx.toCoin
-        
         tx.fromCoin = toCoin
         tx.toCoin = fromCoin
-        
-        updateTask?.cancel()
-        updateTask = Task {
-            await updateQuotes(tx: tx, vault: vault)
-        }
+        fetchFees(tx: tx, vault: vault)
+        fetchQuotes(tx: tx, vault: vault)
     }
 
     func updateFromAmount(tx: SwapTransaction, vault: Vault) {
-        updateTask?.cancel()
-        updateTask = Task {
-            await updateQuotes(tx: tx, vault: vault)
-        }
+        fetchQuotes(tx: tx, vault: vault)
     }
     
     func updateFromCoin(tx: SwapTransaction, vault: Vault) {
-        updateTask?.cancel()
-        updateTask = Task {
-            await updateFees(tx: tx, vault: vault)
-            await updateQuotes(tx: tx, vault: vault)
-        }
+        fetchFees(tx: tx, vault: vault)
+        fetchQuotes(tx: tx, vault: vault)
     }
     
     func updateToCoin(tx: SwapTransaction, vault: Vault) {
-        updateTask?.cancel()
-        updateTask = Task {
-            await updateQuotes(tx: tx, vault: vault)
-        }
+        fetchQuotes(tx: tx, vault: vault)
     }
     
     func handleBackTap() {
@@ -412,7 +402,8 @@ private extension SwapCryptoViewModel {
     
     func updateFees(tx: SwapTransaction, vault: Vault) async {
         tx.gas = .zero
-        
+        tx.thorchainFee = .zero
+
         do {
             let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin, action: .swap, sendMaxAmount: false)
 
@@ -487,5 +478,19 @@ private extension SwapCryptoViewModel {
         let rawAmount = tx.fromCoin.raw(for: tx.fromAmountDecimal)
         let fiatAmount = tx.fromCoin.fiat(value: rawAmount)
         return fiatAmount >= 100
+    }
+
+    func fetchFees(tx: SwapTransaction, vault: Vault) {
+        updateFeesTask?.cancel()
+        updateFeesTask = Task {
+            await updateFees(tx: tx, vault: vault)
+        }
+    }
+
+    func fetchQuotes(tx: SwapTransaction, vault: Vault) {
+        updateQuoteTask?.cancel()
+        updateQuoteTask = Task {
+            await updateQuotes(tx: tx, vault: vault)
+        }
     }
 }
