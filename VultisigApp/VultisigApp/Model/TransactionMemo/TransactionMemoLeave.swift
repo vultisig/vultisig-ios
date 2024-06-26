@@ -66,7 +66,6 @@ class TransactionMemoLeave: TransactionMemoAddressable, ObservableObject {
     
     func getView() -> AnyView {
         AnyView(VStack {
-#if os(iOS)
             TransactionMemoAddressTextField(
                 memo: self,
                 addressKey: "nodeAddress",
@@ -75,7 +74,6 @@ class TransactionMemoLeave: TransactionMemoAddressable, ObservableObject {
                     set: { self.nodeAddressValid = $0 }
                 )
             )
-#endif
         })
     }
 }

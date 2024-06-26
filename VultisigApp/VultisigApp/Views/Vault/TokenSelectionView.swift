@@ -57,6 +57,7 @@ struct TokenSelectionView: View {
                         TextField(NSLocalizedString("Search", comment: "Search").toFormattedTitleCase(), text: $tokenViewModel.searchText)
                             .foregroundColor(.neutral0)
                             .submitLabel(.next)
+                            .borderlessTextFieldStyle()
 #if os(iOS)
                             .textInputAutocapitalization(.never)
                             .keyboardType(.default)

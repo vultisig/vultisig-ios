@@ -9,8 +9,9 @@ import SwiftUI
 import SwiftData
 
 struct RenameVaultView: View {
+    let vaults: [Vault]
     let vault: Vault
-    @Query var vaults: [Vault]
+    
     @State var name = ""
     @Environment(\.dismiss) var dismiss
     @State var showAlert: Bool = false
@@ -41,7 +42,7 @@ struct RenameVaultView: View {
                 NavigationBackButton()
             }
         }
-
+        
     }
     
     var view: some View {
@@ -72,6 +73,7 @@ struct RenameVaultView: View {
             .padding(12)
             .background(Color.blue600)
             .cornerRadius(12)
+            .borderlessTextFieldStyle()
     }
     
     var button: some View {
@@ -102,5 +104,5 @@ struct RenameVaultView: View {
 }
 
 #Preview {
-    RenameVaultView(vault: Vault.example)
+    RenameVaultView(vaults:[],vault: Vault.example)
 }

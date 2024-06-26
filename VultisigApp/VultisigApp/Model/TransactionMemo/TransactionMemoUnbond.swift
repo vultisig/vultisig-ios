@@ -87,7 +87,7 @@ class TransactionMemoUnbond: TransactionMemoAddressable, ObservableObject {
     
     func getView() -> AnyView {
         AnyView(VStack {
-#if os(iOS)
+
             TransactionMemoAddressTextField(
                 memo: self,
                 addressKey: "nodeAddress",
@@ -96,7 +96,7 @@ class TransactionMemoUnbond: TransactionMemoAddressable, ObservableObject {
                     set: { self.nodeAddressValid = $0 }
                 )
             )
-#endif
+
             StyledFloatingPointField(
                 placeholder: "Amount",
                 value: Binding(
@@ -109,7 +109,7 @@ class TransactionMemoUnbond: TransactionMemoAddressable, ObservableObject {
                     set: { self.amountValid = $0 }
                 )
             )
-#if os(iOS)
+
             TransactionMemoAddressTextField(
                 memo: self,
                 addressKey: "provider",
@@ -119,7 +119,6 @@ class TransactionMemoUnbond: TransactionMemoAddressable, ObservableObject {
                     set: { self.providerValid = $0 }
                 )
             )
-#endif
         })
     }
 }
