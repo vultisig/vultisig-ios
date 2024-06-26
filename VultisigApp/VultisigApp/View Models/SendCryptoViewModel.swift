@@ -55,7 +55,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         isLoading = true
         switch tx.coin.chain {
         case .bitcoin,.dogecoin,.litecoin,.bitcoinCash,.dash:
-            tx.sendMaxAmount = true
+            tx.sendMaxAmount = percentage == 100 // Never set this to true if the percentage is not 100, otherwise it will wipe your wallet.
             tx.amount = utxo.blockchairData.get(key)?.address?.balanceInBTC ?? "0.0"
             Task{
                 await convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: true)
@@ -69,7 +69,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                         let totalFeeWei = evm.gas
                         
                         tx.gas = totalFeeWei.description
-                        tx.amount = "\(tx.coin.getMaxValue(totalFeeWei)))" // the decimals must be truncaded otherwise the give us precisions errors
+                        tx.amount = "\(tx.coin.getMaxValue(totalFeeWei))" // the decimals must be truncaded otherwise the give us precisions errors
                         
                     } else {
                         tx.amount = "\(tx.coin.getMaxValue(0))"
@@ -126,14 +126,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             }
         }
     }
-    
-    private func setPercentageAmount(tx: SendTransaction, for percentage: Double) {
-        let max = tx.amount
-        let multiplier = (Decimal(percentage) / 100)
-        let amountDecimal = (Decimal(string: max) ?? 0) * multiplier
-        tx.amount = "\(amountDecimal.formatToDecimal(digits: tx.coin.decimals))"
-    }
-    
+        
     private func getPriceRate(tx: SendTransaction) async -> Decimal {
         do {
             var priceRateFiat = Decimal.zero
