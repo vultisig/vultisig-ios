@@ -56,6 +56,9 @@ struct CoinDetailView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 30)
+#if os(macOS)
+            .padding(24)
+#endif
         }
     }
     

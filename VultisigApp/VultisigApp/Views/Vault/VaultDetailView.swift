@@ -78,6 +78,9 @@ struct VaultDetailView: View {
                 balanceContent
                 getActions()
                 cells
+#if os(macOS)
+                    .padding(.horizontal, 16)
+#endif
             } else {
                 emptyList
             }
@@ -157,6 +160,9 @@ struct VaultDetailView: View {
         VaultDetailScanButton(showSheet: $showScanner)
             .opacity(showVaultsList ? 0 : 1)
             .buttonStyle(BorderlessButtonStyle())
+#if os(macOS)
+            .padding(.bottom, 30)
+#endif
     }
     
     var loader: some View {
