@@ -22,6 +22,7 @@ struct VaultDetailView: View {
     @State var showScanner = false
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
+    @State var qrCodeResult: String? // Add this state to hold the QR code result
     @StateObject var sendTx = SendTransaction()
     
     var body: some View {
@@ -42,12 +43,18 @@ struct VaultDetailView: View {
         .onChange(of: vault.coins) {
             setData()
         }
+        .onChange(of: qrCodeResult) { old, result in
+            // Handle the QR code result
+            if let result = result {
+                print("QR Code Result: \(result)")
+                // Perform any additional actions with the result
+            }
+        }
         .sheet(isPresented: $showSheet, content: {
             NavigationView {
                 ChainSelectionView(showChainSelectionSheet: $showSheet, vault: vault)
             }
         })
-        
     }
     
     var view: some View {
@@ -57,7 +64,8 @@ struct VaultDetailView: View {
                 GeneralCodeScannerView(
                     showSheet: $showScanner,
                     shouldJoinKeygen: $shouldJoinKeygen,
-                    shouldKeysignTransaction: $shouldKeysignTransaction
+                    shouldKeysignTransaction: $shouldKeysignTransaction,
+                    qrCodeResult: $qrCodeResult // Pass the binding
                 )
             })
             .navigationDestination(isPresented: $shouldJoinKeygen) {
@@ -74,7 +82,7 @@ struct VaultDetailView: View {
         List {
             if isLoading {
                 loader
-            } else if viewModel.coinsGroupedByChains.count>=1 {
+            } else if viewModel.coinsGroupedByChains.count >= 1 {
                 balanceContent
                 getActions()
                 cells
@@ -106,9 +114,9 @@ struct VaultDetailView: View {
             )
         }
         .background(Color.backgroundBlue)
-#if os(macOS)
-                    .padding(.horizontal, 16)
-#endif
+        #if os(macOS)
+        .padding(.horizontal, 16)
+        #endif
     }
     
     var emptyList: some View {
@@ -140,18 +148,18 @@ struct VaultDetailView: View {
     var chooseChainButton: some View {
         ZStack {
             #if os(iOS)
-                    Button {
-                        showSheet.toggle()
-                    } label: {
-                        chooseChainButtonLabel
-                    }
+            Button {
+                showSheet.toggle()
+            } label: {
+                chooseChainButtonLabel
+            }
             #elseif os(macOS)
-                    NavigationLink {
-                        ChainSelectionView(showChainSelectionSheet: $showSheet, vault: vault)
-                    } label: {
-                        chooseChainButtonLabel
-                    }
-                    .padding(.horizontal, 16)
+            NavigationLink {
+                ChainSelectionView(showChainSelectionSheet: $showSheet, vault: vault)
+            } label: {
+                chooseChainButtonLabel
+            }
+            .padding(.horizontal, 16)
             #endif
         }
         .font(.body16MenloBold)
@@ -169,9 +177,9 @@ struct VaultDetailView: View {
         VaultDetailScanButton(showSheet: $showScanner)
             .opacity(showVaultsList ? 0 : 1)
             .buttonStyle(BorderlessButtonStyle())
-#if os(macOS)
-            .padding(.bottom, 30)
-#endif
+        #if os(macOS)
+        .padding(.bottom, 30)
+        #endif
     }
     
     var loader: some View {
@@ -206,7 +214,7 @@ struct VaultDetailView: View {
     }
     
     private func getListHeight() -> CGFloat {
-        CGFloat(viewModel.coinsGroupedByChains.count*86)
+        CGFloat(viewModel.coinsGroupedByChains.count * 86)
     }
     
     private func getActions() -> some View {

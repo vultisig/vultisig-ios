@@ -18,6 +18,7 @@ struct SetupVaultView: View {
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
     @State var selectedTab: SetupVaultState = .TwoOfTwoVaults
+    @State var qrCodeResult: String? // Adiciona estado para armazenar o resultado do QR code
     
     @EnvironmentObject var viewModel: HomeViewModel
     
@@ -39,7 +40,13 @@ struct SetupVaultView: View {
                 NavigationHelpButton()
             }
         }
-
+        .onChange(of: qrCodeResult) { result in
+            // Lida com o resultado do QR code
+            if let result = result {
+                print("QR Code Result: \(result)")
+                // Executa ações adicionais com o resultado
+            }
+        }
     }
     
     var view: some View {
@@ -52,7 +59,8 @@ struct SetupVaultView: View {
             GeneralCodeScannerView(
                 showSheet: $showSheet,
                 shouldJoinKeygen: $shouldJoinKeygen,
-                shouldKeysignTransaction: $shouldKeysignTransaction
+                shouldKeysignTransaction: $shouldKeysignTransaction,
+                qrCodeResult: $qrCodeResult // Passa o binding
             )
         })
         .navigationDestination(isPresented: $shouldJoinKeygen) {

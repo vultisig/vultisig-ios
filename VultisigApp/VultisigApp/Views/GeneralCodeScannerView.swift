@@ -17,6 +17,7 @@ struct GeneralCodeScannerView: View {
     @Binding var showSheet: Bool
     @Binding var shouldJoinKeygen: Bool
     @Binding var shouldKeysignTransaction: Bool
+    @Binding var qrCodeResult: String? // Add this binding to pass the QR code result back
     
     @State var isGalleryPresented = false
     @State var isFilePresented = false
@@ -28,9 +29,9 @@ struct GeneralCodeScannerView: View {
     
     var body: some View {
         ZStack(alignment: .bottom) {
-    #if os(iOS)
+            #if os(iOS)
             CodeScannerView(codeTypes: [.qr], isGalleryPresented: $isGalleryPresented, completion: handleScan)
-    #endif
+            #endif
             HStack(spacing: 0) {
                 galleryButton
                     .frame(maxWidth: .infinity)
@@ -45,9 +46,8 @@ struct GeneralCodeScannerView: View {
             allowedContentTypes: [UTType.image],
             allowsMultipleSelection: false
         ) { result in
-            
             let qrCode = Utils.handleQrCodeFromImage(result: result)
-            
+            qrCodeResult = String(data: qrCode, encoding: .utf8) // Set the QR code result to the binding
         }
     }
     
@@ -69,7 +69,7 @@ struct GeneralCodeScannerView: View {
         .padding(.bottom, 50)
     }
     
-#if os(iOS)
+    #if os(iOS)
     private func handleScan(result: Result<ScanResult, ScanError>) {
         switch result {
         case .success(let result):
@@ -78,11 +78,12 @@ struct GeneralCodeScannerView: View {
             }
             deeplinkViewModel.extractParameters(url, vaults: vaults)
             presetValuesForDeeplink(url)
+            qrCodeResult = result.string // Set the QR code result to the binding
         case .failure(_):
             return
         }
     }
-#endif
+    #endif
     
     private func presetValuesForDeeplink(_ url: URL) {
         shouldJoinKeygen = false
@@ -116,11 +117,11 @@ struct GeneralCodeScannerView: View {
     }
 }
 
-#Preview {
-    GeneralCodeScannerView(
-        showSheet: .constant(true),
-        shouldJoinKeygen: .constant(true),
-        shouldKeysignTransaction: .constant(true)
-    )
-    .environmentObject(DeeplinkViewModel())
-}
+//#Preview {
+//    GeneralCodeScannerView(
+//        showSheet: .constant(true),
+//        shouldJoinKeygen: .constant(true),
+//        shouldKeysignTransaction: .constant(true)
+//    )
+//    .environmentObject(DeeplinkViewModel())
+//}
