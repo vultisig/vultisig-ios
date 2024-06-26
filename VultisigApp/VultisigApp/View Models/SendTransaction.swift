@@ -60,7 +60,7 @@ class SendTransaction: ObservableObject, Hashable {
         
         let totalFeeWei = coin.feeDefault.toBigInt() * specific.gas
         if let vault = ApplicationState.shared.currentVault {
-            if let nativeToken = vault.coins.first(where: { $0.isNativeToken && $0.chain.name == coin.chain.name }) {
+            if let nativeToken = vault.coins.nativeCoin(chain: coin.chain) {
                 await BalanceService.shared.updateBalance(for: nativeToken)
                 
                 let nativeTokenBalance = nativeToken.rawBalance.toBigInt()
@@ -84,7 +84,7 @@ class SendTransaction: ObservableObject, Hashable {
         guard !coin.isNativeToken else { return .zero }
         
         if let vault = ApplicationState.shared.currentVault {
-            if let nativeToken = vault.coins.first(where: { $0.isNativeToken && $0.chain.name == coin.chain.name }) {
+            if let nativeToken = vault.coins.nativeCoin(chain: coin.chain) {
                 await BalanceService.shared.updateBalance(for: nativeToken)
                 let nativeTokenRawBalance = Decimal(string: nativeToken.rawBalance) ?? .zero
                 
@@ -134,7 +134,7 @@ class SendTransaction: ObservableObject, Hashable {
         // If not a native token we need to get the decimals from the native token
         if !coin.isNativeToken {
             if let vault = ApplicationState.shared.currentVault {
-                if let nativeToken = vault.coins.first(where: { $0.isNativeToken && $0.chain.name == coin.chain.name }) {
+                if let nativeToken = vault.coins.nativeCoin(chain: coin.chain) {
                     decimals = nativeToken.decimals
                 }
             }
