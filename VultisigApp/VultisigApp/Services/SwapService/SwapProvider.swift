@@ -10,5 +10,5 @@ import Foundation
 enum SwapProvider: Equatable {
     case thorchain
     case mayachain
-    case oneinch
+    case oneinch(Chain)
 }
