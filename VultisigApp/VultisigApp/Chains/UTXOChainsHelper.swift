@@ -113,10 +113,19 @@ class UTXOChainsHelper {
             return .failure(HelperError.runtimeError("fail to get UTXO chain specific byte fee"))
         }
         
+        // Prevent from accedentally sending all balance
+        var safeGuardMaxAmount = false
+        if let rawBalance = Int64(keysignPayload.coin.rawBalance),
+           sendMaxAmount,
+           rawBalance > 0,
+           rawBalance == Int64(keysignPayload.toAmount) {
+            safeGuardMaxAmount = true
+        }
+        
         var input = BitcoinSigningInput.with {
             $0.hashType = BitcoinScript.hashTypeForCoin(coinType: self.coin)
             $0.amount = Int64(keysignPayload.toAmount)
-            $0.useMaxAmount = sendMaxAmount
+            $0.useMaxAmount = safeGuardMaxAmount
             $0.toAddress = keysignPayload.toAddress
             $0.changeAddress = keysignPayload.coin.address
             $0.byteFee = Int64(byteFee)
@@ -200,7 +209,7 @@ class UTXOChainsHelper {
         switch result {
         case .success(let inputData):
             return try getSignedTransaction(inputData: inputData,
-                                        signatures: signatures)
+                                            signatures: signatures)
             
         case .failure(let error):
             throw error
