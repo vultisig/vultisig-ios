@@ -178,15 +178,6 @@ struct SendCryptoAddressTextField: View {
         }
     }
     
-    private func pasteAddress() {
-        if let clipboardContent = UIPasteboard.general.string {
-            tx.toAddress = clipboardContent
-            
-            DebounceHelper.shared.debounce {
-                validateAddress(clipboardContent)
-            }
-        }
-    }
     private func handleImageQrCode(image: UIImage) {
         
         let qrCodeFromImage = Utils.handleQrCodeFromImage(image: image)
