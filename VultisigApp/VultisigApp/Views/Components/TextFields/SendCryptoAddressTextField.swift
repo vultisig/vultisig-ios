@@ -88,7 +88,9 @@ struct SendCryptoAddressTextField: View {
 #endif
             
             pasteButton
+#if os(iOS)
             scanButton
+#endif
             fileButton
         }
     }

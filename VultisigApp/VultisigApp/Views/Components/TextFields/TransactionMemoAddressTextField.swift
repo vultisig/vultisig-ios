@@ -1,5 +1,5 @@
 //
-//  AddressTextField.swift
+//  TransactionMemoAddressTextField.swift
 //  VultisigApp
 //
 //  Created by Enrique Souza Soares on 14/05/24.
@@ -25,6 +25,8 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
     
 #if os(iOS)
     @State var selectedImage: UIImage?
+#elseif os(macOS)
+    @State var selectedImage: NSImage?
 #endif
     
     var body: some View {
@@ -62,6 +64,15 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
             .sheet(isPresented: $showImagePicker, onDismiss: processImage) {
                 ImagePicker(selectedImage: $selectedImage)
             }
+#elseif os(macOS)
+            .fileImporter(
+                isPresented: $showImagePicker,
+                allowedContentTypes: [UTType.image],
+                allowsMultipleSelection: false
+            ) { result in
+                let qrCode = Utils.handleQrCodeFromImage(result: result)
+                handleImageQrCode(data: qrCode)
+            }
 #endif
         }
         .onChange(of: memo.addressFields[addressKey]) { oldValue, newValue in
@@ -95,12 +106,12 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
             .keyboardType(.default)
             .textContentType(.oneTimeCode)
 #endif
-#if os(iOS)
-            pasteButton
-            scanButton
-            fileButton
-#endif
             
+            pasteButton
+#if os(iOS)
+            scanButton
+#endif
+            fileButton
         }
     }
     
@@ -108,7 +119,7 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
     var codeScanner: some View {
         QRCodeScannerView(showScanner: $showScanner, handleScan: handleScan)
     }
-    
+#endif
     
     var pasteButton: some View {
         Button {
@@ -121,7 +132,6 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
         }
     }
     
-    
     var scanButton: some View {
         Button {
             showScanner.toggle()
@@ -131,39 +141,6 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
                 .foregroundColor(.neutral0)
                 .frame(width: 40, height: 40)
         }
-    }
-    
-    private func processImage() {
-        guard let selectedImage = selectedImage else { return }
-        handleImageQrCode(image: selectedImage)
-    }
-    
-    
-    private func handleScan(result: Result<ScanResult, ScanError>) {
-        switch result {
-        case .success(let result):
-            let qrCodeResult = result.string
-            memo.addressFields[addressKey] = qrCodeResult
-            validateAddress(memo.addressFields[addressKey] ?? "")
-            showScanner = false
-        case .failure(let err):
-            // Log the error using the depositViewModel.logger or handle it appropriately
-            print("Failed to scan QR code, error: \(err.localizedDescription)")
-        }
-    }
-    
-    private func pasteAddress() {
-        if let clipboardContent = UIPasteboard.general.string {
-            memo.addressFields[addressKey] = clipboardContent
-            validateAddress(memo.addressFields[addressKey] ?? "")
-        }
-    }
-    
-    private func handleImageQrCode(image: UIImage) {
-        let qrCodeFromImage = Utils.handleQrCodeFromImage(image: image)
-        let address = String(data: qrCodeFromImage, encoding: .utf8) ?? ""
-        memo.addressFields[addressKey] = address
-        validateAddress(memo.addressFields[addressKey] ?? "")
     }
     
     var fileButton: some View {
@@ -176,7 +153,57 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
                 .frame(width: 40, height: 40)
         }
     }
+    
+    private func processImage() {
+        guard let selectedImage = selectedImage else { return }
+        
+#if os(iOS)
+        handleImageQrCode(image: selectedImage)
 #endif
+    }
+    
+#if os(iOS)
+    private func handleScan(result: Result<ScanResult, ScanError>) {
+        switch result {
+        case .success(let result):
+            let qrCodeResult = result.string
+            memo.addressFields[addressKey] = qrCodeResult
+            validateAddress(memo.addressFields[addressKey] ?? "")
+            showScanner = false
+        case .failure(let err):
+            print("Failed to scan QR code, error: \(err.localizedDescription)")
+        }
+    }
+    
+    private func handleImageQrCode(image: UIImage) {
+        let qrCodeFromImage = Utils.handleQrCodeFromImage(image: image)
+        let address = String(data: qrCodeFromImage, encoding: .utf8) ?? ""
+        memo.addressFields[addressKey] = address
+        validateAddress(memo.addressFields[addressKey] ?? "")
+    }
+#elseif os(macOS)
+    private func handleImageQrCode(data: Data) {
+        let (address, amount, message) = Utils.parseCryptoURI(String(data: data, encoding: .utf8) ?? .empty)
+        memo.addressFields[addressKey] = address
+        memo.addressFields["amount"] = amount
+        validateAddress(address)
+    }
+#endif
+    
+    private func pasteAddress() {
+#if os(iOS)
+        if let clipboardContent = UIPasteboard.general.string {
+            memo.addressFields[addressKey] = clipboardContent
+            validateAddress(memo.addressFields[addressKey] ?? "")
+        }
+#elseif os(macOS)
+        let pasteboard = NSPasteboard.general
+        if let clipboardContent = pasteboard.string(forType: .string) {
+            memo.addressFields[addressKey] = clipboardContent
+            validateAddress(memo.addressFields[addressKey] ?? "")
+        }
+#endif
+    }
     
     var optionalMessage: String {
         if isOptional {
@@ -186,7 +213,6 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
     }
     
     private func validateAddress(_ newValue: String) {
-        
         if isOptional, newValue.isEmpty {
             isAddressValid = true
             return
