@@ -31,7 +31,7 @@ platform :mac do
     build_app(scheme: "VultisigApp",
               configuration: "Release",
               export_method: "developer-id",
-              export_team_id: "G8Q5XUAJD9",
+              export_team_id: ENV['APPLE_TEAM_ID'],
               skip_package_pkg: false)
 
     sh "create-dmg '../VultisigApp.dmg' '../VultisigApp.app'"
@@ -39,9 +39,9 @@ platform :mac do
   lane :notarize_mac do
      # Notarize the packaged app
      notarize(package: "VultisigApp.dmg",
-     username: "johnnyluo1980@gmail.com",
+     username: ENV['APPLE_DEVELOPER_USERNAME'],
      bundle_id: "com.vultisig.wallet",
-     asc_provider: "G8Q5XUAJD9",
+     asc_provider: ENV['APPLE_TEAM_ID'],
      print_log: true,
      verbose: true) # Optional: only needed if you belong to multiple teams
 
