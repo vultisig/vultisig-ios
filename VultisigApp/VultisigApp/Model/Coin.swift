@@ -11,9 +11,9 @@ class Coin: ObservableObject, Codable, Hashable {
     let ticker: String
     let contractAddress: String
     let isNativeToken: Bool
-
+    
     @Attribute(originalName: "decimals") private(set) var strDecimals: String
-
+    
     var logo: String
     var priceProviderId: String
     var rawBalance: String = ""
@@ -27,7 +27,7 @@ class Coin: ObservableObject, Codable, Hashable {
             strDecimals = String(newValue)
         }
     }
-
+    
     init(asset: CoinMeta, address: String, hexPublicKey: String) {
         self.chain = asset.chain
         self.ticker = asset.ticker
@@ -43,7 +43,7 @@ class Coin: ObservableObject, Codable, Hashable {
         self.address = address
         self.hexPublicKey = hexPublicKey
     }
-
+    
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let chain = try container.decode(Chain.self, forKey: .chain)
@@ -127,12 +127,20 @@ class Coin: ObservableObject, Codable, Hashable {
             return "2000000000"
         case .solana:
             return "7000"
-        case .ethereum,.avalanche,.base,.blast,.arbitrum,.polygon,.optimism,.bscChain,.cronosChain, .zksync:
+        case .ethereum,.avalanche,.polygon, .bscChain:
             if self.isNativeToken {
                 return "23000"
             } else {
                 return "120000"
             }
+        case .base,.blast,.arbitrum,.optimism,.cronosChain:
+            if self.isNativeToken {
+                return "40000"
+            } else {
+                return "120000"
+            }
+        case .zksync:
+            return "200000"
         case .bitcoin,.bitcoinCash,.dash:
             return "20"
         case .litecoin:
@@ -183,18 +191,13 @@ class Coin: ObservableObject, Codable, Hashable {
     }
     
     func getMaxValue(_ fee: BigInt) -> Decimal {
-        var totalFeeAdjusted = fee
-        if chain.chainType == .EVM {
-            let adjustmentFactor = BigInt(10).power(EVMHelper.ethDecimals - decimals)
-            totalFeeAdjusted = fee / adjustmentFactor
-        }
-        
-        let maxValue = (BigInt(rawBalance, radix: 10) ?? .zero) - totalFeeAdjusted
-        let maxValueDecimal = Decimal(string: String(maxValue)) ?? .zero
+        let totalFeeAdjusted = fee
+        let maxValue = rawBalance.toBigInt() - totalFeeAdjusted
+        let maxValueDecimal = maxValue.toDecimal(decimals: decimals)
         let tokenDecimals = decimals
         let maxValueCalculated = maxValueDecimal / pow(10, tokenDecimals)
         
-        return maxValueCalculated < .zero ? 0 : maxValueCalculated
+        return maxValueCalculated < .zero ? 0 : maxValueCalculated.truncated(toPlaces: decimals - 1) //the max value must be less than the balance, so we need to reduce the precision.
     }
     
     var balanceInFiatDecimal: Decimal {
@@ -238,7 +241,7 @@ class Coin: ObservableObject, Codable, Hashable {
 }
 
 extension Coin: Comparable {
-
+    
     static func < (lhs: Coin, rhs: Coin) -> Bool {
         if lhs.balanceInFiatDecimal != rhs.balanceInFiatDecimal {
             return lhs.balanceInFiatDecimal > rhs.balanceInFiatDecimal
