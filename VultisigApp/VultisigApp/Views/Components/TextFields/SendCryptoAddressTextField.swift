@@ -11,6 +11,9 @@ import UniformTypeIdentifiers
 
 #if os(iOS)
 import CodeScanner
+import UIKit
+#elseif os(macOS)
+import AppKit
 #endif
 
 struct SendCryptoAddressTextField: View {
@@ -86,9 +89,8 @@ struct SendCryptoAddressTextField: View {
             .textInputAutocapitalization(.never)
             .textContentType(.oneTimeCode)
 #endif
-            
-#if os(iOS)
             pasteButton
+#if os(iOS)
             scanButton
 #endif
             fileButton
@@ -99,7 +101,7 @@ struct SendCryptoAddressTextField: View {
     var codeScanner: some View {
         QRCodeScannerView(showScanner: $showScanner, handleScan: handleScan)
     }
-    
+#endif
     var pasteButton: some View {
         Button {
             pasteAddress()
@@ -110,8 +112,6 @@ struct SendCryptoAddressTextField: View {
                 .frame(width: 40, height: 40)
         }
     }
-#endif
-    
     var scanButton: some View {
         Button {
             showScanner.toggle()
@@ -188,6 +188,16 @@ struct SendCryptoAddressTextField: View {
         }
     }
 #elseif os(macOS)
+    private func pasteAddress() {
+        if let clipboardContent = NSPasteboard.general.string(forType: .string) {
+            tx.toAddress = clipboardContent
+            
+            DebounceHelper.shared.debounce {
+                validateAddress(clipboardContent)
+            }
+        }
+    }
+    
     private func handleImageQrCode(data: Data) {
         
         let (address, amount, message) = Utils.parseCryptoURI(String(data: data, encoding: .utf8) ?? .empty)
@@ -213,4 +223,3 @@ struct SendCryptoAddressTextField: View {
 #Preview {
     SendCryptoAddressTextField(tx: SendTransaction(), sendCryptoViewModel: SendCryptoViewModel())
 }
-
