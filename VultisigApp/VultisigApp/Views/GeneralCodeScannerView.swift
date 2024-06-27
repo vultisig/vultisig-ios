@@ -121,11 +121,11 @@ struct GeneralCodeScannerView: View {
     }
 }
 
-//#Preview {
-//    GeneralCodeScannerView(
-//        showSheet: .constant(true),
-//        shouldJoinKeygen: .constant(true),
-//        shouldKeysignTransaction: .constant(true)
-//    )
-//    .environmentObject(DeeplinkViewModel())
-//}
+#Preview {
+    GeneralCodeScannerView(
+        showSheet: .constant(true),
+        shouldJoinKeygen: .constant(true),
+        shouldKeysignTransaction: .constant(true)
+    )
+    .environmentObject(DeeplinkViewModel())
+}
