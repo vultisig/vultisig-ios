@@ -9,7 +9,6 @@ import Foundation
 import CryptoKit
 import SwiftData
 import OSLog
-import AppKit
 
 #if os(iOS)
 import UIKit
