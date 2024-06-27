@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import UniformTypeIdentifiers
 
 #if os(iOS)
 import CodeScanner
@@ -16,20 +15,11 @@ struct QRCodeScannerView: View {
     let handleScan: (Result<ScanResult, ScanError>) -> Void
     
     @State var isGalleryPresented = false
-    @State var isFilePresented = false
     
     var body: some View {
         VStack(spacing: 0) {
             topBar
             view
-        }
-        .fileImporter(
-            isPresented: $isFilePresented,
-            allowedContentTypes: [UTType.image], // Ensure only images can be picked
-            allowsMultipleSelection: false
-        ) { result in
-            let qrCodeFromImage = Utils.handleQrCodeFromImage(result: result)
-            let (address, amount, message) = Utils.parseCryptoURI(String(data: qrCodeFromImage, encoding: .utf8) ?? .empty)
         }
     }
     
@@ -74,13 +64,7 @@ struct QRCodeScannerView: View {
             CodeScannerView(codeTypes: [.qr], isGalleryPresented: $isGalleryPresented, completion: handleScan)
 #endif
 
-            HStack(spacing: 0) {
-                galleryButton
-                    .frame(maxWidth: .infinity)
-
-                fileButton
-                    .frame(maxWidth: .infinity)
-            }
+            galleryButton
         }
     }
     
@@ -89,15 +73,6 @@ struct QRCodeScannerView: View {
             isGalleryPresented.toggle()
         } label: {
             OpenButton(buttonIcon: "photo.stack", buttonLabel: "uploadFromGallery")
-        }
-        .padding(.bottom, 50)
-    }
-    
-    var fileButton: some View {
-        Button {
-            isFilePresented.toggle()
-        } label: {
-            OpenButton(buttonIcon: "folder", buttonLabel: "uploadFromFiles")
         }
         .padding(.bottom, 50)
     }
