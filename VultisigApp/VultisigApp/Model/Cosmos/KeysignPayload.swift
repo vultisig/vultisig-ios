@@ -29,8 +29,8 @@ enum BlockChainSpecific: Codable, Hashable {
         switch self {
         case .UTXO(let byteFee, _):
             return byteFee
-        case .Ethereum(let baseFee, let priorityFeeWei, _, let gasLimit):
-            return (baseFee + priorityFeeWei) * gasLimit
+        case .Ethereum(let baseFee, let priorityFeeWei, _, _):
+            return baseFee + priorityFeeWei
         case .THORChain(_, _, let fee):
             return fee.description.toBigInt()
         case .MayaChain:
@@ -43,6 +43,15 @@ enum BlockChainSpecific: Codable, Hashable {
             return referenceGasPrice
         case .Polkadot:
             return PolkadotHelper.defaultFeeInPlancks
+        }
+    }
+
+    var fee: BigInt {
+        switch self {
+        case .Ethereum(let baseFee, let priorityFeeWei, _, let gasLimit):
+            return (baseFee + priorityFeeWei) * gasLimit
+        case .UTXO, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot:
+            return gas
         }
     }
 }

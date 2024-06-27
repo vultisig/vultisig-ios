@@ -58,7 +58,7 @@ class SendTransaction: ObservableObject, Hashable {
         var errorMessage = ""
         guard !coin.isNativeToken else { return (true, errorMessage) }
         
-        let totalFeeWei = coin.feeDefault.toBigInt() * specific.gas
+        let totalFeeWei = coin.feeDefault.toBigInt() * specific.fee
         if let vault = ApplicationState.shared.currentVault {
             if let nativeToken = vault.coins.nativeCoin(chain: coin.chain) {
                 await BalanceService.shared.updateBalance(for: nativeToken)
