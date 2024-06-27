@@ -16,11 +16,7 @@ struct ActionButton: View {
             .font(.body16MenloBold)
             .foregroundColor(fontColor)
             .padding(.vertical, 5)
-#if os(iOS)
             .frame(maxWidth: .infinity)
-#elseif os(macOS)
-            .frame(maxWidth: 512)
-#endif
             .background(Color.blue400)
             .cornerRadius(50)
             .overlay(
