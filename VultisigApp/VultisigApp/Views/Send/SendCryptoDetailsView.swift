@@ -225,17 +225,7 @@ struct SendCryptoDetailsView: View {
         .foregroundColor(.neutral0)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
-    private func getPercentageCell(for text: String) -> some View {
-        Text(text + "%")
-            .font(.body12Menlo)
-            .foregroundColor(.neutral0)
-            .padding(.vertical, 6)
-            .padding(.horizontal, 20)
-            .background(Color.blue600)
-            .cornerRadius(6)
-    }
-    
+        
     private func setData() {
         Task {
             await getBalance()

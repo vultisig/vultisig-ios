@@ -30,5 +30,9 @@ extension BigInt {
         let stringLiteral = String(repeating: "2", count: 64)
         return BigInt(stringLiteral, radix: 16)!
     }
+    // the decimals must be truncaded otherwise the give us precisions errors
+    func toDecimal(decimals: Int) -> Decimal {
+        self.description.toDecimal().truncated(toPlaces: decimals)
+    }
 }
 
