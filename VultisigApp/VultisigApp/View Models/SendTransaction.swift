@@ -29,23 +29,17 @@ class SendTransaction: ObservableObject, Hashable {
     
     var isAmountExceeded: Bool {
         
-        let totalBalance = BigInt(coin.rawBalance) ?? BigInt.zero
-        
-        var gasInt = BigInt.zero
-        if coin.isNativeToken {
-            gasInt = BigInt(gas) ?? BigInt.zero
-            if coin.chainType == .EVM {
-                if let gasLimitBigInt = BigInt(coin.feeDefault) {
-                    gasInt = gasInt * gasLimitBigInt
-                }
-            }
+        if (sendMaxAmount && coin.chainType == .UTXO) || !coin.isNativeToken {
+            let comparison = amountInRaw > coin.rawBalance.toBigInt(decimals: coin.decimals)
+            return comparison
         }
         
-        let totalTransactionCost = amountInRaw + gasInt
-        
-        return totalTransactionCost > totalBalance
-        
+        let gasBigInt = gas.toBigInt()
+        let totalTransactionCost = amountInRaw + gasBigInt
+        let comparison = totalTransactionCost > coin.rawBalance.toBigInt(decimals: coin.decimals)
+        return comparison
     }
+    
     
     var canBeReaped: Bool {
         if coin.ticker != Chain.polkadot.ticker {
@@ -60,35 +54,29 @@ class SendTransaction: ObservableObject, Hashable {
         return remainingBalance < PolkadotHelper.defaultExistentialDeposit
     }
     
-    func hasEnoughNativeTokensToPayTheFees() async -> Bool {
-        guard !coin.isNativeToken else { return true }
+    func hasEnoughNativeTokensToPayTheFees(specific: BlockChainSpecific) async -> (Bool, String) {
+        var errorMessage = ""
+        guard !coin.isNativeToken else { return (true, errorMessage) }
         
-        var gasPriceBigInt = BigInt(gas) ?? BigInt.zero
-        if let gasLimitBigInt = BigInt(coin.feeDefault) {
-            if coin.chainType == .EVM {
-                gasPriceBigInt *= gasLimitBigInt
-            }
-            if let vault = ApplicationState.shared.currentVault {
-                if let nativeToken = vault.coins.first(where: { $0.isNativeToken && $0.chain.name == coin.chain.name }) {
-                    await BalanceService.shared.updateBalance(for: nativeToken)
+        let totalFeeWei = coin.feeDefault.toBigInt() * specific.fee
+        if let vault = ApplicationState.shared.currentVault {
+            if let nativeToken = vault.coins.nativeCoin(chain: coin.chain) {
+                await BalanceService.shared.updateBalance(for: nativeToken)
+                
+                let nativeTokenBalance = nativeToken.rawBalance.toBigInt()
+                
+                if totalFeeWei > nativeTokenBalance {
+                    errorMessage = "Insufficient \(nativeToken.ticker) balance for the \(coin.ticker) transaction fees."
                     
-                    let nativeTokenBalance = BigInt(nativeToken.rawBalance) ?? BigInt.zero
-                    
-                    if gasPriceBigInt > nativeTokenBalance {
-                        print("Insufficient \(nativeToken.ticker) balance for fees: needed \(gasPriceBigInt), available \(nativeTokenBalance)")
-                        return false
-                    }
-                    return true
-                } else {
-                    print("No native token found for chain \(coin.chain.name)")
-                    return false
+                    return (false, errorMessage)
                 }
+                return (true, errorMessage)
+            } else {
+                errorMessage = "No native token found for chain \(coin.chain.name)"
+                return (false, errorMessage)
             }
-            print("Failed to access current vault")
-        } else {
-            print("Failed to convert \(coin.feeDefault) to BigInt")
         }
-        return false
+        return (false, errorMessage)
     }
     
     
@@ -96,7 +84,7 @@ class SendTransaction: ObservableObject, Hashable {
         guard !coin.isNativeToken else { return .zero }
         
         if let vault = ApplicationState.shared.currentVault {
-            if let nativeToken = vault.coins.first(where: { $0.isNativeToken && $0.chain.name == coin.chain.name }) {
+            if let nativeToken = vault.coins.nativeCoin(chain: coin.chain) {
                 await BalanceService.shared.updateBalance(for: nativeToken)
                 let nativeTokenRawBalance = Decimal(string: nativeToken.rawBalance) ?? .zero
                 
@@ -117,20 +105,15 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     var amountInRaw: BigInt {
-        let decimals = Double(coin.decimals)
-        return BigInt(amountDecimal * pow(10, decimals))
-        
-    }
-    
-    var amountDecimal: Double {
-        let amountString = amount.replacingOccurrences(of: ",", with: ".")
-        return Double(amountString) ?? 0
-    }
-    
-    var amountInCoinDecimal: BigInt {
-        let amountDouble = amountDecimal
         let decimals = coin.decimals
-        return BigInt(amountDouble * pow(10,Double(decimals)))
+        let amountInDecimals = amountDecimal * pow(10, decimals)
+        return amountInDecimals.description.toBigInt(decimals: decimals)
+    }
+    
+    var amountDecimal: Decimal {
+        let decimalValue = amount.toDecimal()
+        let truncatedDecimal = decimalValue.truncated(toPlaces: coin.decimals)
+        return truncatedDecimal
     }
     
     var gasDecimal: Decimal {
@@ -151,7 +134,7 @@ class SendTransaction: ObservableObject, Hashable {
         // If not a native token we need to get the decimals from the native token
         if !coin.isNativeToken {
             if let vault = ApplicationState.shared.currentVault {
-                if let nativeToken = vault.coins.first(where: { $0.isNativeToken && $0.chain.name == coin.chain.name }) {
+                if let nativeToken = vault.coins.nativeCoin(chain: coin.chain) {
                     decimals = nativeToken.decimals
                 }
             }
