@@ -48,6 +48,13 @@ struct GeneralCodeScannerView: View {
         ) { result in
             let qrCode = Utils.handleQrCodeFromImage(result: result)
             qrCodeResult = String(data: qrCode, encoding: .utf8) // Set the QR code result to the binding
+            guard let url = URL(string: qrCodeResult ?? .empty) else {
+                return
+            }
+            
+            deeplinkViewModel.extractParameters(url, vaults: vaults)
+            presetValuesForDeeplink(url)
+            qrCodeResult = qrCodeResult // Set the QR code result to the binding
         }
     }
     
