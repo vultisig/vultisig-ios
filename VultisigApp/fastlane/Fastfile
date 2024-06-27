@@ -30,9 +30,11 @@ platform :mac do
     # Specify the path to your Xcode project and the scheme for your macOS app
     build_app(scheme: "VultisigApp",
               configuration: "Release",
-              export_method: "mac-application")
+              export_method: "developer-id",
+              export_team_id: "G8Q5XUAJD9",
+              skip_package_pkg: false)
 
-    sh "create-dmg 'VultisigApp.dmg' 'VultisigApp.app'"
+    sh "create-dmg '../VultisigApp.dmg' '../VultisigApp.app'"
   end
   lane :notarize_mac do
      # Notarize the packaged app
@@ -43,7 +45,5 @@ platform :mac do
      print_log: true,
      verbose: true) # Optional: only needed if you belong to multiple teams
 
-    # Staple the notarization ticket to your .dmg
-    sh "xcrun stapler staple 'path/to/VultisigApp.dmg'"
   end
 end
