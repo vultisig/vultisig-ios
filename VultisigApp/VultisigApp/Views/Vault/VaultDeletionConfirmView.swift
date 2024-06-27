@@ -46,6 +46,9 @@ struct VaultDeletionConfirmView: View {
         }
         .padding(18)
         .padding(.top, 12)
+#if os(macOS)
+        .padding(.horizontal, 25)
+#endif
         .navigationDestination(isPresented: $navigateBackToHome) {
             HomeView(selectedVault: vaults.first, showVaultsList: true)
         }
@@ -55,7 +58,13 @@ struct VaultDeletionConfirmView: View {
     }
     
     var logo: some View {
-        VStack(spacing: 28) {
+#if os(iOS)
+        let spacing: CGFloat = 28
+#elseif os(macOS)
+        let spacing: CGFloat = 14
+#endif
+                
+        return VStack(spacing: spacing) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.title80Menlo)
                 .symbolRenderingMode(.palette)
@@ -66,11 +75,18 @@ struct VaultDeletionConfirmView: View {
                 .foregroundColor(.neutral0)
                 .frame(maxWidth: 200)
                 .multilineTextAlignment(.center)
+                .fixedSize()
         }
     }
     
     var checkboxes: some View {
-        VStack(spacing: 32) {
+#if os(iOS)
+        let spacing: CGFloat = 32
+#elseif os(macOS)
+        let spacing: CGFloat = 14
+#endif
+                
+        return VStack(spacing: spacing) {
             Checkbox(isChecked: $permanentDeletionCheck, text: "vaultWillBeDeletedPermanentlyPrompt")
             Checkbox(isChecked: $canLoseFundCheck, text: "canLoseFundsPrompt")
             Checkbox(isChecked: $vaultBackupCheck, text: "madeVaultBackupPrompt")

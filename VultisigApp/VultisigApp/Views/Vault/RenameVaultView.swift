@@ -48,6 +48,9 @@ struct RenameVaultView: View {
             Spacer()
             button
         }
+#if os(macOS)
+        .padding(.horizontal, 25)
+#endif
     }
     
     var content: some View {

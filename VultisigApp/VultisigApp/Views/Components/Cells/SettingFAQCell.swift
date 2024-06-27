@@ -24,6 +24,9 @@ struct SettingFAQCell: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
+#if os(macOS)
+        .padding(8)
+#endif
         .background(Color.blue600)
         .cornerRadius(10)
         .onTapGesture {

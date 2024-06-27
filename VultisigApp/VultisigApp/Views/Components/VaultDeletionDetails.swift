@@ -74,7 +74,11 @@ struct VaultDeletionDetails: View {
     
     private func getDescriptionText(_ description: String, shouldShrink: Bool = false) -> some View {
         Text(NSLocalizedString(description, comment: ""))
+#if os(iOS)
             .font(shouldShrink ? .body8Menlo : .body12Menlo)
+#elseif os(macOS)
+            .font(.body12Menlo)
+#endif
             .foregroundColor(.neutral0)
             .fixedSize(horizontal: false, vertical: true)
     }

@@ -33,11 +33,13 @@ struct SettingsView: View {
             mainSection
             otherSection
             Spacer()
-            socials
-            appVersion
+            bottomSection
         }
         .padding(15)
         .padding(.top, 30)
+#if os(macOS)
+        .padding(.horizontal, 25)
+#endif
     }
     
     var mainSection: some View {
@@ -54,6 +56,16 @@ struct SettingsView: View {
             getTitle("other")
             shareAppCell
         }
+    }
+    
+    var bottomSection: some View {
+        VStack(spacing: 24) {
+            socials
+            appVersion
+        }
+#if os(macOS)
+        .padding(.bottom, 20)
+#endif
     }
     
     var vaultSettingsCell: some View {
@@ -104,7 +116,6 @@ struct SettingsView: View {
             xButton
             discordButton
         }
-        .padding(.top, 100)
     }
     
     var githubButton: some View {

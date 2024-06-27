@@ -35,6 +35,9 @@ struct VaultPairDetailView: View {
         VStack {
             content
         }
+#if os(macOS)
+        .padding(.horizontal, 25)
+#endif
     }
     
     var content: some View {
