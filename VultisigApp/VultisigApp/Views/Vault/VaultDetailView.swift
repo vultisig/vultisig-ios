@@ -82,9 +82,7 @@ struct VaultDetailView: View {
             }
             
             addButton
-            
-            Color.clear
-                .frame(height: 150)
+            pad
         }
         .listStyle(PlainListStyle())
         .buttonStyle(BorderlessButtonStyle())
@@ -136,6 +134,13 @@ struct VaultDetailView: View {
         .background(Color.backgroundBlue)
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
+    }
+    
+    var pad: some View {
+        Color.backgroundBlue
+            .frame(height: 150)
+            .listRowInsets(EdgeInsets())
+            .listRowSeparator(.hidden)
     }
     
     var chooseChainButton: some View {
