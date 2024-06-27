@@ -48,6 +48,15 @@ struct SendCryptoAddressTextField: View {
         .sheet(isPresented: $showImagePicker, onDismiss: processImage) {
             ImagePicker(selectedImage: $selectedImage)
         }
+#elseif os(macOS)
+        .fileImporter(
+            isPresented: $showImagePicker,
+            allowedContentTypes: [UTType.image],
+            allowsMultipleSelection: false
+        ) { result in
+            let qrCode = Utils.handleQrCodeFromImage(result: result)
+            handleImageQrCode(data: qrCode)
+        }
 #endif
     }
     
@@ -80,6 +89,7 @@ struct SendCryptoAddressTextField: View {
             
             pasteButton
             scanButton
+#endif
             fileButton
         }
     }
@@ -169,6 +179,15 @@ struct SendCryptoAddressTextField: View {
         }
     }
     
+    private func pasteAddress() {
+        if let clipboardContent = UIPasteboard.general.string {
+            tx.toAddress = clipboardContent
+            
+            DebounceHelper.shared.debounce {
+                validateAddress(clipboardContent)
+            }
+        }
+    }
     private func handleImageQrCode(image: UIImage) {
         
         let qrCodeFromImage = Utils.handleQrCodeFromImage(image: image)
@@ -188,7 +207,27 @@ struct SendCryptoAddressTextField: View {
             }
         }
     }
+#elseif os(macOS)
+    private func handleImageQrCode(data: Data) {
+        
+        let (address, amount, message) = Utils.parseCryptoURI(String(data: data, encoding: .utf8) ?? .empty)
+        
+        tx.toAddress = address
+        tx.amount = amount
+        tx.memo = message
+        
+        DebounceHelper.shared.debounce {
+            validateAddress(address)
+        }
+        
+        Task{
+            if !amount.isEmpty {
+                await sendCryptoViewModel.convertToFiat(newValue: amount, tx: tx)
+            }
+        }
+    }
 #endif
+    
 }
 
 #Preview {

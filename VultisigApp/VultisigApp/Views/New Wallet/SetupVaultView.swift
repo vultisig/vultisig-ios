@@ -39,7 +39,6 @@ struct SetupVaultView: View {
                 NavigationHelpButton()
             }
         }
-
     }
     
     var view: some View {

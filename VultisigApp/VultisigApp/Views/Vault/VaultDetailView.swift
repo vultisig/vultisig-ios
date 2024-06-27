@@ -47,7 +47,6 @@ struct VaultDetailView: View {
                 ChainSelectionView(showChainSelectionSheet: $showSheet, vault: vault)
             }
         })
-        
     }
     
     var view: some View {
@@ -74,7 +73,7 @@ struct VaultDetailView: View {
         List {
             if isLoading {
                 loader
-            } else if viewModel.coinsGroupedByChains.count>=1 {
+            } else if viewModel.coinsGroupedByChains.count >= 1 {
                 balanceContent
                 getActions()
                 cells
@@ -106,9 +105,9 @@ struct VaultDetailView: View {
             )
         }
         .background(Color.backgroundBlue)
-#if os(macOS)
-                    .padding(.horizontal, 16)
-#endif
+        #if os(macOS)
+        .padding(.horizontal, 16)
+        #endif
     }
     
     var emptyList: some View {
@@ -140,18 +139,18 @@ struct VaultDetailView: View {
     var chooseChainButton: some View {
         ZStack {
             #if os(iOS)
-                    Button {
-                        showSheet.toggle()
-                    } label: {
-                        chooseChainButtonLabel
-                    }
+            Button {
+                showSheet.toggle()
+            } label: {
+                chooseChainButtonLabel
+            }
             #elseif os(macOS)
-                    NavigationLink {
-                        ChainSelectionView(showChainSelectionSheet: $showSheet, vault: vault)
-                    } label: {
-                        chooseChainButtonLabel
-                    }
-                    .padding(.horizontal, 16)
+            NavigationLink {
+                ChainSelectionView(showChainSelectionSheet: $showSheet, vault: vault)
+            } label: {
+                chooseChainButtonLabel
+            }
+            .padding(.horizontal, 16)
             #endif
         }
         .font(.body16MenloBold)
@@ -169,9 +168,9 @@ struct VaultDetailView: View {
         VaultDetailScanButton(showSheet: $showScanner)
             .opacity(showVaultsList ? 0 : 1)
             .buttonStyle(BorderlessButtonStyle())
-#if os(macOS)
-            .padding(.bottom, 30)
-#endif
+        #if os(macOS)
+        .padding(.bottom, 30)
+        #endif
     }
     
     var loader: some View {
@@ -206,7 +205,7 @@ struct VaultDetailView: View {
     }
     
     private func getListHeight() -> CGFloat {
-        CGFloat(viewModel.coinsGroupedByChains.count*86)
+        CGFloat(viewModel.coinsGroupedByChains.count * 86)
     }
     
     private func getActions() -> some View {

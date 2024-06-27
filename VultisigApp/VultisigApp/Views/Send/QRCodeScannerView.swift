@@ -72,7 +72,7 @@ struct QRCodeScannerView: View {
         Button {
             isGalleryPresented.toggle()
         } label: {
-            OpenGalleryButton()
+            OpenButton(buttonIcon: "photo.stack", buttonLabel: "uploadFromGallery")
         }
         .padding(.bottom, 50)
     }

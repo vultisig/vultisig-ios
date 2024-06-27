@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import UniformTypeIdentifiers
 
 #if os(iOS)
 import CodeScanner
@@ -18,6 +19,7 @@ struct GeneralCodeScannerView: View {
     @Binding var shouldKeysignTransaction: Bool
     
     @State var isGalleryPresented = false
+    @State var isFilePresented = false
     
     @Query var vaults: [Vault]
     
@@ -26,24 +28,53 @@ struct GeneralCodeScannerView: View {
     
     var body: some View {
         ZStack(alignment: .bottom) {
-#if os(iOS)
+            #if os(iOS)
             CodeScannerView(codeTypes: [.qr], isGalleryPresented: $isGalleryPresented, completion: handleScan)
-#endif
-            galleryButton
+            #endif
+            HStack(spacing: 0) {
+                galleryButton
+                    .frame(maxWidth: .infinity)
+
+                fileButton
+                    .frame(maxWidth: .infinity)
+            }
         }
         .ignoresSafeArea()
+        .fileImporter(
+            isPresented: $isFilePresented,
+            allowedContentTypes: [UTType.image],
+            allowsMultipleSelection: false
+        ) { result in
+            let qrCode = Utils.handleQrCodeFromImage(result: result)
+            let result = String(data: qrCode, encoding: .utf8) // Set the QR code result to the binding
+            guard let url = URL(string: result ?? .empty) else {
+                return
+            }
+            
+            deeplinkViewModel.extractParameters(url, vaults: vaults)
+            presetValuesForDeeplink(url)
+        }
     }
     
     var galleryButton: some View {
         Button {
             isGalleryPresented.toggle()
         } label: {
-            OpenGalleryButton()
+            OpenButton(buttonIcon: "photo.stack", buttonLabel: "uploadFromGallery")
         }
         .padding(.bottom, 50)
     }
     
-#if os(iOS)
+    var fileButton: some View {
+        Button {
+            isFilePresented.toggle()
+        } label: {
+            OpenButton(buttonIcon: "folder", buttonLabel: "uploadFromFiles")
+        }
+        .padding(.bottom, 50)
+    }
+    
+    #if os(iOS)
     private func handleScan(result: Result<ScanResult, ScanError>) {
         switch result {
         case .success(let result):
@@ -56,7 +87,7 @@ struct GeneralCodeScannerView: View {
             return
         }
     }
-#endif
+    #endif
     
     private func presetValuesForDeeplink(_ url: URL) {
         shouldJoinKeygen = false
@@ -96,5 +127,5 @@ struct GeneralCodeScannerView: View {
         shouldJoinKeygen: .constant(true),
         shouldKeysignTransaction: .constant(true)
     )
-        .environmentObject(DeeplinkViewModel())
+    .environmentObject(DeeplinkViewModel())
 }
