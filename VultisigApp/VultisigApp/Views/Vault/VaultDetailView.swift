@@ -106,9 +106,9 @@ struct VaultDetailView: View {
             )
         }
         .background(Color.backgroundBlue)
-        #if os(macOS)
+#if os(macOS)
         .padding(.horizontal, 16)
-        #endif
+#endif
     }
     
     var emptyList: some View {
@@ -176,9 +176,9 @@ struct VaultDetailView: View {
         VaultDetailScanButton(showSheet: $showScanner)
             .opacity(showVaultsList ? 0 : 1)
             .buttonStyle(BorderlessButtonStyle())
-        #if os(macOS)
+#if os(macOS)
         .padding(.bottom, 30)
-        #endif
+#endif
     }
     
     var loader: some View {

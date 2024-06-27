@@ -55,6 +55,9 @@ struct SettingsLanguageSelectionView: View {
         }
         .padding(15)
         .padding(.top, 30)
+#if os(macOS)
+        .padding(.horizontal, 25)
+#endif
     }
     
     private func handleSelection(_ language: SettingsLanguage) {
