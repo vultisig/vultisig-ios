@@ -115,10 +115,18 @@ struct AddressTextField: View {
     }
     
     private func pasteAddress() {
+#if os(iOS)
         if let clipboardContent = UIPasteboard.general.string {
             contractAddress = clipboardContent
             validateAddress(clipboardContent)
         }
+#elseif os(macOS)
+        let pasteboard = NSPasteboard.general
+        if let clipboardContent = pasteboard.string(forType: .string) {
+            contractAddress = clipboardContent
+            validateAddress(clipboardContent)
+        }
+#endif
     }
     
 #if os(iOS)
