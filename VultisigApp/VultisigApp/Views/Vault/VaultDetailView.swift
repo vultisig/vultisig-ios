@@ -82,6 +82,9 @@ struct VaultDetailView: View {
             }
             
             addButton
+            
+            Color.clear
+                .frame(height: 150)
         }
         .listStyle(PlainListStyle())
         .buttonStyle(BorderlessButtonStyle())
@@ -130,7 +133,6 @@ struct VaultDetailView: View {
             Spacer()
         }
         .padding(16)
-        .padding(.bottom, 150)
         .background(Color.backgroundBlue)
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
@@ -138,20 +140,21 @@ struct VaultDetailView: View {
     
     var chooseChainButton: some View {
         ZStack {
-            #if os(iOS)
+#if os(iOS)
             Button {
                 showSheet.toggle()
             } label: {
                 chooseChainButtonLabel
             }
-            #elseif os(macOS)
+#elseif os(macOS)
             NavigationLink {
                 ChainSelectionView(showChainSelectionSheet: $showSheet, vault: vault)
             } label: {
                 chooseChainButtonLabel
             }
             .padding(.horizontal, 16)
-            #endif
+            .frame(height: 20)
+#endif
         }
         .font(.body16MenloBold)
         .foregroundColor(.turquoise600)
