@@ -78,10 +78,7 @@ struct SendCryptoAddressTextField: View {
             .textContentType(.oneTimeCode)
 #endif
             
-#if os(iOS)
             pasteButton
-#endif
-            
             scanButton
             fileButton
         }
@@ -91,6 +88,7 @@ struct SendCryptoAddressTextField: View {
     var codeScanner: some View {
         QRCodeScannerView(showScanner: $showScanner, handleScan: handleScan)
     }
+#endif
     
     var pasteButton: some View {
         Button {
@@ -102,7 +100,6 @@ struct SendCryptoAddressTextField: View {
                 .frame(width: 40, height: 40)
         }
     }
-#endif
     
     var scanButton: some View {
         Button {
@@ -138,6 +135,27 @@ struct SendCryptoAddressTextField: View {
         sendCryptoViewModel.validateAddress(tx: tx, address: newValue)
     }
     
+    private func pasteAddress() {
+#if os(iOS)
+        if let clipboardContent = UIPasteboard.general.string {
+            tx.toAddress = clipboardContent
+            
+            DebounceHelper.shared.debounce {
+                validateAddress(clipboardContent)
+            }
+        }
+#elseif os(macOS)
+        let pasteboard = NSPasteboard.general
+        if let clipboardContent = pasteboard.string(forType: .string) {
+            tx.toAddress = clipboardContent
+            
+            DebounceHelper.shared.debounce {
+                validateAddress(clipboardContent)
+            }
+        }
+#endif
+    }
+    
 #if os(iOS)
     private func handleScan(result: Result<ScanResult, ScanError>) {
         switch result {
@@ -148,16 +166,6 @@ struct SendCryptoAddressTextField: View {
             showScanner = false
         case .failure(let err):
             sendCryptoViewModel.logger.error("fail to scan QR code,error:\(err.localizedDescription)")
-        }
-    }
-    
-    private func pasteAddress() {
-        if let clipboardContent = UIPasteboard.general.string {
-            tx.toAddress = clipboardContent
-            
-            DebounceHelper.shared.debounce {
-                validateAddress(clipboardContent)
-            }
         }
     }
     

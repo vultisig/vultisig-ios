@@ -38,6 +38,9 @@ struct SendCryptoDoneView: View {
             cards
             continueButton
         }
+#if os(macOS)
+        .padding(26)
+#endif
     }
     
     var cards: some View {

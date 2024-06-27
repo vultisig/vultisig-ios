@@ -60,6 +60,9 @@ struct SendCryptoDetailsView: View {
             fields
             button
         }
+#if os(macOS)
+        .padding(26)
+#endif
     }
     
     var alert: Alert {
