@@ -28,6 +28,8 @@ struct CustomTokenView: View {
     @StateObject var tokenViewModel = TokenSelectionViewModel()
     @EnvironmentObject var coinViewModel: CoinSelectionViewModel
     
+    @Environment(\.dismiss) var dismiss
+    
     var body: some View {
         ZStack {
             Background()
@@ -56,9 +58,14 @@ struct CustomTokenView: View {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 Button(action: {
                     self.chainDetailView.sheetType = nil
+                    dismiss()
                 }) {
                     Image(systemName: "chevron.backward")
+#if os(iOS)
                         .font(.body18MenloBold)
+#elseif os(macOS)
+                        .font(.body18Menlo)
+#endif
                         .foregroundColor(Color.neutral0)
                 }
             }

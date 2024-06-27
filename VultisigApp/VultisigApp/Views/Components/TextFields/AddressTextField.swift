@@ -21,7 +21,6 @@ struct AddressTextField: View {
     
     var body: some View {
         ZStack(alignment: .trailing) {
-            
             field
         }
         .font(.body12Menlo)
@@ -77,9 +76,7 @@ struct AddressTextField: View {
     
     var pasteButton: some View {
         Button {
-#if os(iOS)
             pasteAddress()
-#endif
         } label: {
             Image(systemName: "doc.on.clipboard")
                 .font(.body16Menlo)
@@ -117,6 +114,21 @@ struct AddressTextField: View {
 #endif
     }
     
+    private func pasteAddress() {
+#if os(iOS)
+        if let clipboardContent = UIPasteboard.general.string {
+            contractAddress = clipboardContent
+            validateAddress(clipboardContent)
+        }
+#elseif os(macOS)
+        let pasteboard = NSPasteboard.general
+        if let clipboardContent = pasteboard.string(forType: .string) {
+            contractAddress = clipboardContent
+            validateAddress(clipboardContent)
+        }
+#endif
+    }
+    
 #if os(iOS)
     private func handleScan(result: Result<ScanResult, ScanError>) {
         switch result {
@@ -128,13 +140,6 @@ struct AddressTextField: View {
         case .failure(let err):
             // Handle the error appropriately
             print("Failed to scan QR code: \(err.localizedDescription)")
-        }
-    }
-    
-    private func pasteAddress() {
-        if let clipboardContent = UIPasteboard.general.string {
-            contractAddress = clipboardContent
-            validateAddress(clipboardContent)
         }
     }
     

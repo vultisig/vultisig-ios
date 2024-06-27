@@ -36,12 +36,18 @@ struct HomeView: View {
     }
     
     var view: some View {
-        ZStack {
-            if let vault = viewModel.selectedVault {
-                VaultDetailView(showVaultsList: $showVaultsList, vault: vault)
-            }
+        VStack(spacing: 0) {
+#if os(macOS)
+            navigationContent
+#endif
             
-            VaultsView(viewModel: viewModel, showVaultsList: $showVaultsList, isEditingVaults: $isEditingVaults)
+            ZStack {
+                if let vault = viewModel.selectedVault {
+                    VaultDetailView(showVaultsList: $showVaultsList, vault: vault)
+                }
+                
+                VaultsView(viewModel: viewModel, showVaultsList: $showVaultsList, isEditingVaults: $isEditingVaults)
+            }
         }
         .navigationBarBackButtonHidden(true)
         .onAppear {
@@ -60,17 +66,17 @@ struct HomeView: View {
                 menuButton
             }
             
+#if os(iOS)
             ToolbarItem(placement: Placement.principal.getPlacement()) {
                 navigationTitle
             }
+#endif
             
             ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 editButton
             }
         }
-        
     }
-    
     
     var navigationTitle: some View {
         ZStack {
@@ -91,21 +97,29 @@ struct HomeView: View {
         }
     }
     
+    var navigationContent: some View {
+        VStack(spacing: 0) {
+            navigationTitle
+                .padding(.vertical, 12)
+            Separator()
+        }
+    }
+    
     var title: some View {
         VStack(spacing: 0) {
             Text(NSLocalizedString("vaults", comment: "Vaults"))
-                .font(.body)
-                .bold()
-                .foregroundColor(.neutral0)
-            
             Text(viewModel.selectedVault?.name ?? NSLocalizedString("vault", comment: "Home view title"))
-                .font(.body)
-                .bold()
-                .foregroundColor(.neutral0)
         }
         .offset(y: showVaultsList ? 9 : -10)
         .frame(height: 20)
         .clipped()
+        .bold()
+        .foregroundColor(.neutral0)
+#if os(iOS)
+        .font(.body)
+#elseif os(macOS)
+        .font(.title2)
+#endif
     }
     
     var menuButton: some View {

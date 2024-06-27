@@ -8,6 +8,8 @@ struct TokenSelectionView: View {
     @StateObject var tokenViewModel = TokenSelectionViewModel()
     @EnvironmentObject var coinViewModel: CoinSelectionViewModel
     
+    @Environment(\.dismiss) var dismiss
+    
     // Focus state for the search field to force layout update
     @FocusState private var isSearchFieldFocused: Bool
     @State private var isSearching = false
@@ -34,12 +36,18 @@ struct TokenSelectionView: View {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 Button(action: {
                     self.chainDetailView.sheetType = nil
+                    dismiss()
                 }) {
                     Image(systemName: "chevron.backward")
+#if os(iOS)
                         .font(.body18MenloBold)
+#elseif os(macOS)
+                        .font(.body18Menlo)
+#endif
                         .foregroundColor(Color.neutral0)
                 }
             }
+#if os(iOS)
             ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 Button(action: {
                     self.chainDetailView.sheetType = nil
@@ -48,45 +56,11 @@ struct TokenSelectionView: View {
                         .foregroundColor(.blue)
                 }
             }
+            
             ToolbarItem(placement: Placement.principal.getPlacement()) {
-                ZStack(alignment: .trailing) {
-                    HStack {
-                        TextField(NSLocalizedString("Search", comment: "Search").toFormattedTitleCase(), text: $tokenViewModel.searchText)
-                            .foregroundColor(.neutral0)
-                            .submitLabel(.next)
-                            .borderlessTextFieldStyle()
-#if os(iOS)
-                            .textInputAutocapitalization(.never)
-                            .keyboardType(.default)
-#endif
-                            .disableAutocorrection(true)
-                            .textContentType(.oneTimeCode)
-                            .focused($isSearchFieldFocused)
-                            .padding(.horizontal, 8)
-                        
-                        if isSearching {
-                            Button("Cancel") {
-                                tokenViewModel.searchText = ""
-                                isSearchFieldFocused = false
-                                isSearching = false
-                            }
-                            .foregroundColor(.blue)
-                        }
-                    }
-                    .background(Color.blue600)
-                    .cornerRadius(10)
-                    .padding(.horizontal, 12)
-                    .onChange(of: tokenViewModel.searchText) { oldValue, newValue in
-                        isSearching = !newValue.isEmpty
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                .font(.body12Menlo)
-                .foregroundColor(.neutral0)
-                .frame(height: 38)
-                .background(Color.blue600)
-                .cornerRadius(10)
+                searchBar
             }
+#endif
         }
         .task {
             await tokenViewModel.loadData(groupedChain: group)
@@ -108,10 +82,17 @@ struct TokenSelectionView: View {
         } label: {
             chainDetailView.chooseTokensButton(NSLocalizedString("customToken", comment: "Custom Token"))
         }
+#if os(macOS)
+        .padding(.top, 10)
+#endif
     }
     
     var view: some View {
         List {
+#if os(macOS)
+            searchBar
+#endif
+            
             let selected = tokenViewModel.selectedTokens
             if !selected.isEmpty {
                 Section(header: Text(NSLocalizedString("Selected", comment:"Selected"))) {
@@ -148,6 +129,44 @@ struct TokenSelectionView: View {
 #if os(iOS)
         .listStyle(.grouped)
 #endif
+    }
+    
+    var searchBar: some View {
+        HStack(spacing: 0) {
+            TextField(NSLocalizedString("Search", comment: "Search").toFormattedTitleCase(), text: $tokenViewModel.searchText)
+                .font(.body16Menlo)
+                .foregroundColor(.neutral0)
+                .submitLabel(.next)
+                .disableAutocorrection(true)
+                .textContentType(.oneTimeCode)
+                .padding(.horizontal, 8)
+                .borderlessTextFieldStyle()
+#if os(iOS)
+                .focused($isSearchFieldFocused)
+                .textInputAutocapitalization(.never)
+                .keyboardType(.default)
+#endif
+            
+            if isSearching {
+                Button("Cancel") {
+                    tokenViewModel.searchText = ""
+                    isSearchFieldFocused = false
+                    isSearching = false
+                }
+                .foregroundColor(.blue)
+                .font(.body12Menlo)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 44)
+        .padding(.horizontal, 12)
+        .listRowInsets(EdgeInsets())
+        .listRowSeparator(.hidden)
+        .onChange(of: tokenViewModel.searchText) { oldValue, newValue in
+            isSearching = !newValue.isEmpty
+        }
+        .background(Color.blue600)
+        .cornerRadius(12)
     }
     
     func errorView(error: Error) -> some View {

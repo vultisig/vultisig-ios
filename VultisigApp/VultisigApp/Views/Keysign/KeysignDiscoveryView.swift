@@ -222,6 +222,9 @@ struct KeysignDiscoveryView: View {
         .padding(.horizontal, 40)
         .background(Color.backgroundBlue.opacity(0.95))
         .edgesIgnoringSafeArea(.bottom)
+#if os(macOS)
+        .padding(.bottom, 40)
+#endif
     }
     
     private func setData() {

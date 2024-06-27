@@ -34,6 +34,9 @@ struct SendCryptoVerifyView: View {
             button
         }
         .blur(radius: sendCryptoVerifyViewModel.isLoading ? 1 : 0)
+#if os(macOS)
+        .padding(26)
+#endif
     }
     
     var alert: Alert {
