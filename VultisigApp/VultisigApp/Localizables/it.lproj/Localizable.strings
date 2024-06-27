@@ -179,6 +179,7 @@
 "typeHere" = "Digita qui";
 "nameYourVault" = "Nomina il tuo Vault";
 "uploadFromGallery" = "Carica dalla galleria";
+"uploadFromFiles" = "Seleziona i file";
 "polkadotExistentialDepositError" = "Se un account scende sotto 1 DOT (Deposito Esistenziale), l'account viene eliminato (disattivato) e i fondi rimanenti vengono distrutti. L'indirizzo può essere riattivato con un nuovo deposito superiore al deposito esistenziale in qualsiasi momento. Questo non ripristinerà i fondi distrutti.";
 "noCameraPermissionError" = "Autorizzazione della fotocamera negata.\n\nPer favore, abilitala nelle Impostazioni.";
 "openSettings" = "Apri Impostazioni";

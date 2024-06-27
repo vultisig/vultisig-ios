@@ -179,6 +179,7 @@
 "typeHere" = "Hier eingeben";
 "nameYourVault" = "Benennen Sie Ihren Tresor";
 "uploadFromGallery" = "Aus der Galerie hochladen";
+"uploadFromFiles" = "Dateien auswählen";
 "polkadotExistentialDepositError" = "Wenn ein Konto unter 1 DOT (Existenzielle Einzahlung) fällt, wird das Konto gelöscht (deaktiviert) und alle verbleibenden Mittel werden zerstört. Die Adresse kann jederzeit mit einer neuen Einzahlung, die größer ist als die existenzielle Einzahlung, reaktiviert werden. Dies wird die zerstörten Mittel nicht wiederherstellen.";
 "noCameraPermissionError" = "Kameraberechtigung verweigert.\n\nBitte aktivieren Sie sie in den Einstellungen.";
 "openSettings" = "Einstellungen öffnen";

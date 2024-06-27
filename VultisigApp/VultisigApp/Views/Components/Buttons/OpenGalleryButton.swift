@@ -7,7 +7,12 @@
 
 import SwiftUI
 
-struct OpenGalleryButton: View {
+struct OpenButton: View {
+    
+    @State var buttonIcon: String
+    @State var buttonLabel: String
+    
+    
     var body: some View {
         content
             .padding(12)
@@ -18,11 +23,11 @@ struct OpenGalleryButton: View {
     
     var content: some View {
         HStack(spacing: 10) {
-            Image(systemName: "photo.stack")
+            Image(systemName: buttonIcon)
                 .font(.body16Menlo)
                 .foregroundColor(.blue600)
             
-            Text(NSLocalizedString("uploadFromGallery", comment: ""))
+            Text(NSLocalizedString(buttonLabel, comment: ""))
                 .font(.body16MontserratBold)
                 .foregroundColor(.blue600)
         }
@@ -30,5 +35,5 @@ struct OpenGalleryButton: View {
 }
 
 #Preview {
-    OpenGalleryButton()
+    OpenButton(buttonIcon: "photo.stack", buttonLabel: "uploadFromGallery")
 }

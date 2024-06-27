@@ -193,6 +193,7 @@
 "typeHere" = "Type Here";
 "nameYourVault" = "Name your Vault";
 "uploadFromGallery" = "Upload from Gallery";
+"uploadFromFiles" = "Upload from files";
 "goToHomeView" = "Go to Home View";
 "sameDeviceShareError" = "Same vault share, use a different device.";
 "errorFetchingVault" = "Error with fetching the vault.";
