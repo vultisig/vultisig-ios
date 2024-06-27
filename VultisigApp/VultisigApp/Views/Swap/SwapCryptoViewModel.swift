@@ -254,10 +254,6 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 return true
 
             case .thorchain(let quote):
-                guard quote.inboundAddress != nil else {
-                    throw Errors.unexpectedError
-                }
-
                 keysignPayload = try await keysignFactory.buildTransfer(
                     coin: tx.fromCoin,
                     toAddress: toAddress,
