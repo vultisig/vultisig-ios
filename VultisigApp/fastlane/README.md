@@ -25,6 +25,27 @@ Push a new beta build to TestFlight
 
 ----
 
+
+## Mac
+
+### mac release_mac
+
+```sh
+[bundle exec] fastlane mac release_mac
+```
+
+Build the macOS app and package it into a .dmg file
+
+### mac notarize_mac
+
+```sh
+[bundle exec] fastlane mac notarize_mac
+```
+
+
+
+----
+
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
 
 More information about _fastlane_ can be found on [fastlane.tools](https://fastlane.tools).
