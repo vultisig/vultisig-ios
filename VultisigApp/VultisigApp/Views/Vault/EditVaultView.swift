@@ -54,6 +54,9 @@ struct EditVaultView: View {
                 reshareVault
                 deleteVault
             }
+#if os(macOS)
+        .padding(.horizontal, 25)
+#endif
         }
     }
     
