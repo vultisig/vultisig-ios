@@ -49,6 +49,9 @@ struct BackupPasswordSetupView: View {
             Spacer()
             buttons
         }
+#if os(macOS)
+        .padding(.horizontal, 25)
+#endif
         .fileExporter(
             isPresented: $backupViewModel.showVaultExporter,
             document: EncryptedDataFile(url: backupViewModel.encryptedFileURL),
@@ -136,12 +139,15 @@ struct BackupPasswordSetupView: View {
             backupViewModel.showAlert = true
             return
         }
-        
-        backupViewModel.exportFile(vault)
+        export()
     }
     
     private func handleSkipTap() {
         backupViewModel.encryptionPassword = ""
+        export()
+    }
+    
+    private func export() {
         backupViewModel.exportFile(vault)
     }
 }
