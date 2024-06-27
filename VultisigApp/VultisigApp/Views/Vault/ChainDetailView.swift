@@ -138,10 +138,42 @@ struct ChainDetailView: View {
     }
     
     var addButton: some View {
+#if os(iOS)
         Button {
             sheetType = .tokenSelection
         } label: {
             chooseTokensButton(NSLocalizedString("chooseTokens", comment: "Choose Tokens"))
+        }
+#elseif os(macOS)
+        NavigationLink {
+            sheetView
+                .onAppear {
+                    sheetType = .tokenSelection
+                }
+        } label: {
+            chooseTokensButton(NSLocalizedString("chooseTokens", comment: "Choose Tokens"))
+        }
+#endif
+    }
+    
+    var sheetView: some View {
+        ZStack {
+            if let sheetType = sheetType {
+                switch sheetType {
+                case .tokenSelection:
+                    TokenSelectionView(
+                        chainDetailView: self,
+                        vault: vault,
+                        group: group
+                    )
+                case .customToken:
+                    CustomTokenView(
+                        chainDetailView: self,
+                        vault: vault,
+                        group: group
+                    )
+                }
+            }
         }
     }
     
