@@ -62,20 +62,12 @@ public class CryptoPriceService: ObservableObject {
     
     func fetchCoingeckoPoolPrice(chain: Chain, contractAddress: String) async throws -> (image_url: String?, coingecko_coin_id: String?, price_usd: Double?) {
         
-        let cacheKey = getCacheTokenKey(contractAddresses: [contractAddress], chain: chain)
-        
-        // Check if the price is cached and valid
-        if let cacheEntry = await getCachedTokenPrices(contractAddresses: [contractAddress], chain: chain) {
-            return (image_url: nil, coingecko_coin_id: nil, price_usd: cacheEntry.prices[contractAddress]?[SettingsCurrency.current.rawValue.lowercased()])
-        }
-        
         // Fetch the price from the network if not in cache
         do {
             struct Response: Codable {
                 struct Data: Codable {
                     struct Attributes: Codable {
                         let image_url: String?
-                        let coingecko_coin_id: String?
                         let price_usd: String?
                     }
                     let attributes: Attributes
@@ -89,15 +81,9 @@ public class CryptoPriceService: ObservableObject {
             )
             
             if let response = response.data.first {
-                let priceRate = response.attributes.price_usd.flatMap { Double($0) }
-                
-                // Cache the fetched price
-                if let priceRate = priceRate {
-                    let cryptoPrice = CryptoPrice(prices: [contractAddress: [SettingsCurrency.current.rawValue.lowercased(): priceRate]])
-                    cacheTokens.set(cacheKey, (data: cryptoPrice, timestamp: Date()))
+                if let priceRate = response.attributes.price_usd {
+                    return (image_url: response.attributes.image_url, coingecko_coin_id: nil, price_usd: Double(priceRate))
                 }
-                
-                return (response.attributes.image_url, response.attributes.coingecko_coin_id, priceRate)
             }
         } catch {
             print(error.localizedDescription)

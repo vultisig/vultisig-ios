@@ -11,6 +11,14 @@ import SwiftUI
 import BigInt
 
 extension Decimal {
+    
+    func truncated(toPlaces places: Int) -> Decimal {
+        var original = self
+        var truncated = Decimal()
+        NSDecimalRound(&truncated, &original, places, .down)
+        return truncated
+    }
+    
     func formatToFiat(includeCurrencySymbol: Bool = true) -> String {
         let formatter = NumberFormatter()
         if includeCurrencySymbol {

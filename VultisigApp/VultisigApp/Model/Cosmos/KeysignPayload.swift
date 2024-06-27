@@ -45,6 +45,15 @@ enum BlockChainSpecific: Codable, Hashable {
             return PolkadotHelper.defaultFeeInPlancks
         }
     }
+
+    var fee: BigInt {
+        switch self {
+        case .Ethereum(let baseFee, let priorityFeeWei, _, let gasLimit):
+            return (baseFee + priorityFeeWei) * gasLimit
+        case .UTXO, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot:
+            return gas
+        }
+    }
 }
 
 struct KeysignPayload: Codable, Hashable {

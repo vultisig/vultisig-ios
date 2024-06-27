@@ -27,4 +27,8 @@ extension Array where Element: Coin {
     var totalBalanceInFiatString: String {
         return totalBalanceInFiatDecimal.formatToFiat(includeCurrencySymbol: true)
     }
+    
+    func nativeCoin(chain: Chain) -> Coin? {
+        self.first(where: { $0.isNativeToken && $0.chain.name == chain.name })
+    }
 }
