@@ -1,61 +1,61 @@
 {
   "images" : [
     {
-      "filename" : "VoltixAppLogo 9.png",
+      "filename" : "Vultisig16.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "16x16"
     },
     {
-      "filename" : "VoltixAppLogo 8.png",
+      "filename" : "Vultisig32 1.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "16x16"
     },
     {
-      "filename" : "VoltixAppLogo 7.png",
+      "filename" : "Vultisig32.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "32x32"
     },
     {
-      "filename" : "VoltixAppLogo 6.png",
+      "filename" : "Vultisig64.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "32x32"
     },
     {
-      "filename" : "VoltixAppLogo 5.png",
+      "filename" : "Vultisig128.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "128x128"
     },
     {
-      "filename" : "VoltixAppLogo 4.png",
+      "filename" : "Vultisig256 1.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "128x128"
     },
     {
-      "filename" : "VoltixAppLogo 3.png",
+      "filename" : "Vultisig256.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "256x256"
     },
     {
-      "filename" : "VoltixAppLogo 1.png",
+      "filename" : "Vultisig512 1.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "256x256"
     },
     {
-      "filename" : "VoltixAppLogo 2.png",
+      "filename" : "Vultisig512.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "512x512"
     },
     {
-      "filename" : "VoltixAppLogo.png",
+      "filename" : "AppIconMacOS512x512@2x.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "512x512"
