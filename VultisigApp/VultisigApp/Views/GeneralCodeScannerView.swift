@@ -17,7 +17,6 @@ struct GeneralCodeScannerView: View {
     @Binding var showSheet: Bool
     @Binding var shouldJoinKeygen: Bool
     @Binding var shouldKeysignTransaction: Bool
-    @Binding var qrCodeResult: String? // Add this binding to pass the QR code result back
     
     @State var isGalleryPresented = false
     @State var isFilePresented = false
@@ -47,14 +46,13 @@ struct GeneralCodeScannerView: View {
             allowsMultipleSelection: false
         ) { result in
             let qrCode = Utils.handleQrCodeFromImage(result: result)
-            qrCodeResult = String(data: qrCode, encoding: .utf8) // Set the QR code result to the binding
-            guard let url = URL(string: qrCodeResult ?? .empty) else {
+            let result = String(data: qrCode, encoding: .utf8) // Set the QR code result to the binding
+            guard let url = URL(string: result ?? .empty) else {
                 return
             }
             
             deeplinkViewModel.extractParameters(url, vaults: vaults)
             presetValuesForDeeplink(url)
-            qrCodeResult = qrCodeResult // Set the QR code result to the binding
         }
     }
     
@@ -85,7 +83,6 @@ struct GeneralCodeScannerView: View {
             }
             deeplinkViewModel.extractParameters(url, vaults: vaults)
             presetValuesForDeeplink(url)
-            qrCodeResult = result.string // Set the QR code result to the binding
         case .failure(_):
             return
         }

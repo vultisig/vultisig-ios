@@ -22,7 +22,6 @@ struct VaultDetailView: View {
     @State var showScanner = false
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
-    @State var qrCodeResult: String? // Add this state to hold the QR code result
     @StateObject var sendTx = SendTransaction()
     
     var body: some View {
@@ -43,13 +42,6 @@ struct VaultDetailView: View {
         .onChange(of: vault.coins) {
             setData()
         }
-        .onChange(of: qrCodeResult) { old, result in
-            // Handle the QR code result
-            if let result = result {
-                print("QR Code Result: \(result)")
-                // Perform any additional actions with the result
-            }
-        }
         .sheet(isPresented: $showSheet, content: {
             NavigationView {
                 ChainSelectionView(showChainSelectionSheet: $showSheet, vault: vault)
@@ -64,8 +56,7 @@ struct VaultDetailView: View {
                 GeneralCodeScannerView(
                     showSheet: $showScanner,
                     shouldJoinKeygen: $shouldJoinKeygen,
-                    shouldKeysignTransaction: $shouldKeysignTransaction,
-                    qrCodeResult: $qrCodeResult // Pass the binding
+                    shouldKeysignTransaction: $shouldKeysignTransaction
                 )
             })
             .navigationDestination(isPresented: $shouldJoinKeygen) {
