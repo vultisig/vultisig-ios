@@ -9,18 +9,21 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct FileQRCodeImporterMac: View {
+    let fileName: String?
+    let selectedImage: NSImage?
+    let resetData: () -> ()
+    let handleFileImport: (_ result: Result<[URL], Error>) -> ()
+    
     @State var showFileImporter = false
     
     var body: some View {
-        button
-            .frame(height: 200)
-            .frame(maxWidth: .infinity)
-            .background(Color.turquoise600.opacity(0.15))
-            .cornerRadius(10)
-            .overlay (
-                RoundedRectangle(cornerRadius: 10)
-                    .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 1, dash: [10]))
-            )
+        VStack {
+            button
+            
+            if let name = fileName {
+                fileCell(name)
+            }
+        }
     }
     
     var button: some View {
@@ -29,19 +32,37 @@ struct FileQRCodeImporterMac: View {
         } label: {
             content
         }
+        .frame(height: 300)
+        .frame(maxWidth: .infinity)
+        .background(Color.turquoise600.opacity(0.15))
+        .cornerRadius(10)
+        .overlay (
+            RoundedRectangle(cornerRadius: 10)
+                .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 1, dash: [10]))
+        )
     }
     
     var content: some View {
-        VStack(spacing: 12) {
-            icon
-            title
+        ZStack {
+            if let selectedImage {
+                getPreviewImage(selectedImage)
+            } else {
+                placeholderImage
+            }
         }
         .fileImporter(
             isPresented: $showFileImporter,
             allowedContentTypes: [UTType.image],
             allowsMultipleSelection: false
         ) { result in
-            print(result)
+            handleFileImport(result)
+        }
+    }
+    
+    var placeholderImage: some View {
+        VStack(spacing: 12) {
+            icon
+            title
         }
     }
     
@@ -60,9 +81,28 @@ struct FileQRCodeImporterMac: View {
     private func handleTap() {
         showFileImporter = true
     }
+    
+    private func fileCell(_ name: String) -> some View {
+        ImportFileCell(name: name, resetData: resetData)
+    }
+    
+    private func getPreviewImage(_ image: NSImage) -> some View {
+        Image(nsImage: image)
+            .resizable()
+            .scaledToFit()
+            .padding(.vertical, 18)
+    }
 }
 
 #Preview {
-    FileQRCodeImporterMac()
+    func reset() {
+        print("RESET")
+    }
+    
+    func handleFileImport(result: Result<[URL], Error>) {
+        print("IMPORTED")
+    }
+    
+    return FileQRCodeImporterMac(fileName: "File", selectedImage: nil, resetData: reset, handleFileImport: handleFileImport)
         .padding(100)
 }
