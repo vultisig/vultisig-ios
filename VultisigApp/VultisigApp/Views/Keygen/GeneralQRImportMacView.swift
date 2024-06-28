@@ -4,7 +4,7 @@
 //
 //  Created by Amol Kumar on 2024-06-27.
 //
-
+#if os(macOS)
 import SwiftUI
 import SwiftData
 
@@ -66,7 +66,7 @@ struct GeneralQRImportMacView: View {
     
     var uploadSection: some View {
         FileQRCodeImporterMac(
-            fileName: fileName, 
+            fileName: fileName,
             selectedImage: selectedImage,
             resetData: resetData,
             handleFileImport: handleFileImport
@@ -209,3 +209,4 @@ struct GeneralQRImportMacView: View {
         .environmentObject(HomeViewModel())
         .environmentObject(DeeplinkViewModel())
 }
+#endif

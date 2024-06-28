@@ -5,10 +5,12 @@
 //  Created by Amol Kumar on 2024-06-27.
 //
 
+#if os(macOS)
 import SwiftUI
 import UniformTypeIdentifiers
 
 struct FileQRCodeImporterMac: View {
+    
     let fileName: String?
     let selectedImage: NSImage?
     let resetData: () -> ()
@@ -106,3 +108,4 @@ struct FileQRCodeImporterMac: View {
     return FileQRCodeImporterMac(fileName: "File", selectedImage: nil, resetData: reset, handleFileImport: handleFileImport)
         .padding(100)
 }
+#endif
