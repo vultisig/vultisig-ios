@@ -10,6 +10,7 @@ import SwiftUI
 struct KeygenQRImportMacView: View {
     @State var fileName: String? = nil
     @State private var selectedImage: NSImage?
+    @State var isButtonEnabled = false
     
     var body: some View {
         ZStack {
@@ -52,11 +53,14 @@ struct KeygenQRImportMacView: View {
     
     var button: some View {
         FilledButton(title: "continue")
+            .disabled(!isButtonEnabled)
+            .grayscale(isButtonEnabled ? 0 : 1)
     }
     
     private func resetData() {
         fileName = nil
         selectedImage = nil
+        isButtonEnabled = false
     }
     
     private func handleFileImport(result: Result<[URL], Error>) {
@@ -76,11 +80,9 @@ struct KeygenQRImportMacView: View {
                 
                 let imageData = try Data(contentsOf: url)
                 if let nsImage = NSImage(data: imageData) {
-                    print("Successfully loaded image")
                     selectedImage = nsImage
-                } else {
-                    print("Failed to create NSImage from data")
                 }
+                isButtonEnabled = true
             }
         } catch {
             print(error)
