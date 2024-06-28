@@ -11,7 +11,7 @@ import Combine
 import WalletCore
 
 class TransactionMemoVote: TransactionMemoAddressable, ObservableObject {
-    @Published var isTheFormValid: Bool = false
+    @Published var isTheFormValid: Bool = true
     @Published var selectedMemo: TW_Cosmos_Proto_Message.VoteOption
     
     // Internal
@@ -35,10 +35,10 @@ class TransactionMemoVote: TransactionMemoAddressable, ObservableObject {
     private func setupValidation() {
         // Implement any validation logic if needed
         // For now, assume form is valid if there's a selected memo
-        $selectedMemo
-            .map { $0 != .unspecified }
-            .assign(to: \.isTheFormValid, on: self)
-            .store(in: &cancellables)
+        //        $selectedMemo
+        //            .map { $0 != .unspecified }
+        //            .assign(to: \.isTheFormValid, on: self)
+        //            .store(in: &cancellables)
     }
     
     var description: String {
@@ -46,11 +46,13 @@ class TransactionMemoVote: TransactionMemoAddressable, ObservableObject {
     }
     
     func toString() -> String {
-        return String(selectedMemo.rawValue)
+        var memo = "DYDX_VOTE:\(selectedMemo.rawValue)"
+        return memo
     }
     
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
+        dict.set("VoteDescription", selectedMemo.description)
         dict.set("memo", self.toString())
         return dict
     }
@@ -69,31 +71,5 @@ class TransactionMemoVote: TransactionMemoAddressable, ObservableObject {
                 }
             )
         })
-    }
-}
-
-// Extend TW_Cosmos_Proto_Message.VoteOption to conform to Identifiable and Equatable
-extension TW_Cosmos_Proto_Message.VoteOption: Identifiable, Equatable, CaseIterable {
-    public var id: Int {
-        return self.rawValue
-    }
-    
-    public var description: String {
-        switch self {
-        case .unspecified:
-            return "Unspecified"
-        case .yes:
-            return "Yes"
-        case .abstain:
-            return "Abstain"
-        case .no:
-            return "No"
-        case .noWithVeto:
-            return "No with Veto"
-        case .UNRECOGNIZED(let value):
-            return "Unrecognized (\(value))"
-        @unknown default:
-            return "Unknown"
-        }
     }
 }
