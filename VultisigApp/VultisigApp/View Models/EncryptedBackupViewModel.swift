@@ -69,6 +69,9 @@ class EncryptedBackupViewModel: ObservableObject {
             
 #if os(iOS)
             let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("file.dat")
+#elseif os(macOS)
+            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(vault.getExportName()).appendingPathExtension("dat")
+#endif
             do {
                 try dataToSave.write(to: tempURL)
                 encryptedFileURL = tempURL
@@ -76,22 +79,7 @@ class EncryptedBackupViewModel: ObservableObject {
             } catch {
                 print("Error writing file: \(error.localizedDescription)")
             }
-#elseif os(macOS)
-            let savePanel = NSSavePanel()
-            savePanel.allowedContentTypes = [.data]
-            savePanel.nameFieldStringValue = vault.getExportName()
-            
-            savePanel.begin { response in
-                if response == .OK, let url = savePanel.url {
-                    do {
-                        try dataToSave.write(to: url)
-                        self.encryptedFileURL = url
-                    } catch {
-                        print("Error writing file: \(error.localizedDescription)")
-                    }
-                }
-            }
-#endif
+
         } catch {
             print(error)
         }
