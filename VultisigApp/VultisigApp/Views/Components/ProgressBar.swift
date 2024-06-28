@@ -16,6 +16,9 @@ struct ProgressBar: View {
                 base
                 loadingBar(for: geometry.size.width)
             }
+#if os(macOS)
+        .padding(.horizontal, 25)
+#endif
         }
         .padding(.horizontal, 16)
         .frame(height: 10)

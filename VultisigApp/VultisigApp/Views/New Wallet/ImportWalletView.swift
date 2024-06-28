@@ -107,31 +107,6 @@ struct ImportWalletView: View {
         .background(Color.clear)
     }
     
-    var fileImage: some View {
-        Image("FileIcon")
-            .resizable()
-            .frame(width: 24, height: 24)
-    }
-    
-    func fileName(_ name: String) -> some View {
-        Text(name)
-            .font(.body12Menlo)
-            .foregroundColor(.neutral0)
-    }
-    
-    var closeButton: some View {
-        Button {
-            resetData()
-        } label: {
-            Image(systemName: "xmark")
-                .font(.body16MontserratMedium)
-                .foregroundColor(.neutral0)
-                .padding(8)
-        }
-        .buttonStyle(PlainButtonStyle())
-        .background(Color.clear)
-    }
-    
     var alert: Alert {
         Alert(
             title: Text(NSLocalizedString(backupViewModel.alertTitle, comment: "")),
@@ -141,13 +116,7 @@ struct ImportWalletView: View {
     }
     
     private func fileCell(_ name: String) -> some View {
-        HStack {
-            fileImage
-            fileName(name)
-            Spacer()
-            closeButton
-        }
-        .padding(12)
+        ImportFileCell(name: name, resetData: resetData)
     }
     
     private func resetData() {

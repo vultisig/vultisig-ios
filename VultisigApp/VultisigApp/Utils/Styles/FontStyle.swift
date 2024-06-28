@@ -64,6 +64,7 @@ extension Font {
     
     // Light
     static let title40MontserratLight = Font.custom("Montserrat", size: 40).weight(.light)
+    static let title60MontserratLight = Font.custom("Montserrat", size: 60).weight(.light)
     static let title80MontserratLight = Font.custom("Montserrat", size: 80).weight(.light)
     
     // Semi-bold

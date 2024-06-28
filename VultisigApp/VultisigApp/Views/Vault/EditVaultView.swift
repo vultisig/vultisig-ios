@@ -102,7 +102,7 @@ struct EditVaultView: View {
     
     var reshareVault: some View {
         NavigationLink {
-                SetupVaultView(tssType: .Reshare, vault: vault)
+            SetupVaultView(tssType: .Reshare, vault: vault)
         } label: {
             EditVaultCell(title: "reshare", description: "reshareVault", icon: "tray.and.arrow.up")
         }

@@ -68,6 +68,9 @@ struct TransactionMemoDetailsView: View {
             fields
             button
         }
+#if os(macOS)
+        .padding(.horizontal, 25)
+#endif
     }
     
     var alert: Alert {

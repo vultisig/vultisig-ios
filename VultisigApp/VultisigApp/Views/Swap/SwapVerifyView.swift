@@ -34,6 +34,9 @@ struct SwapVerifyView: View {
             fields
             button
         }
+#if os(macOS)
+        .padding(.horizontal, 25)
+#endif
     }
 
     var fields: some View {

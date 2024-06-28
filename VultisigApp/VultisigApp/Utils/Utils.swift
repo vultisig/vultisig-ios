@@ -554,7 +554,7 @@ enum Utils {
     }
 #endif
     
-    public static func handleQrCodeFromImage(result: Result<[URL], Error>) -> Data{
+    public static func handleQrCodeFromImage(result: Result<[URL], Error>) throws -> Data {
         switch result {
         case .success(let urls):
             guard let url = urls.first else { return Data() }
@@ -563,7 +563,7 @@ enum Utils {
             
             guard success else {
                 print("Failed to access URL")
-                return Data()
+                throw UtilsQrCodeFromImageError.URLInaccessible
             }
             
 #if os(iOS)
@@ -572,6 +572,7 @@ enum Utils {
             
                 if qrStrings.isEmpty {
                     print("No QR codes detected.")
+                    throw UtilsQrCodeFromImageError.NoQRCodesDetected
                 } else {
                     for qrString in qrStrings {
                         return qrString.data(using: .utf8) ?? Data()
@@ -579,6 +580,7 @@ enum Utils {
                 }
             } else {
                 print("Failed to load image from URL")
+                throw UtilsQrCodeFromImageError.FailedToLoadImage
             }
 #elseif os(macOS)
             if let imageData = try? Data(contentsOf: url), let selectedImage = NSImage(data: imageData) {
@@ -586,6 +588,7 @@ enum Utils {
             
                 if qrStrings.isEmpty {
                     print("No QR codes detected.")
+                    throw UtilsQrCodeFromImageError.NoQRCodesDetected
                 } else {
                     for qrString in qrStrings {
                         return qrString.data(using: .utf8) ?? Data()
@@ -593,6 +596,7 @@ enum Utils {
                 }
             } else {
                 print("Failed to load image from URL")
+                throw UtilsQrCodeFromImageError.FailedToLoadImage
             }
 #endif
             

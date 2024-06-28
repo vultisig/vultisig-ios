@@ -70,8 +70,12 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
                 allowedContentTypes: [UTType.image],
                 allowsMultipleSelection: false
             ) { result in
-                let qrCode = Utils.handleQrCodeFromImage(result: result)
-                handleImageQrCode(data: qrCode)
+                do {
+                    let qrCode = try Utils.handleQrCodeFromImage(result: result)
+                    handleImageQrCode(data: qrCode)
+                } catch {
+                    print(error)
+                }
             }
 #endif
         }

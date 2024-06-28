@@ -65,6 +65,9 @@ struct KeysignDiscoveryView: View {
             }
         }
         .blur(radius: isLoading ? 1 : 0)
+#if os(macOS)
+        .padding(.horizontal, 25)
+#endif
     }
     
     var loader: some View {

@@ -223,3 +223,11 @@
 "invalidFileFormat" = "Ungültiges Dateiformat";
 "invalidFileFormatMessage" = "Bitte stellen Sie sicher, dass Sie die richtige Sicherungsdatei mit der Erweiterung .dat ausgewählt haben.";
 "uploadBackupFile" = "Sicherungsdatei hochladen";
+"uploadQRCodeImage" = "QR-Code-Bild hochladen";
+"uploadQRCodeImageKeygen" = "QR-Code hochladen, um dem Keygen beizutreten";
+"uploadQRCodeImageKeysign" = "QR-Code hochladen, um dem Keysign beizutreten";
+"joinKeysign" = "Keysign beitreten";
+"joinKeygen" = "Keygen beitreten";
+"URLInaccessible" = "Zugriff auf URL fehlgeschlagen";
+"NoQRCodesDetected" = "Kein QR-Code erkannt";
+"FailedToLoadImage" = "Bild von URL konnte nicht geladen werden";
