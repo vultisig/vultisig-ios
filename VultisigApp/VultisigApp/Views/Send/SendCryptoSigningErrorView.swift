@@ -17,6 +17,9 @@ struct SendCryptoSigningErrorView: View {
             Spacer()
             bottomBar
         }
+#if os(macOS)
+        .padding(.horizontal, 25)
+#endif
     }
     
     var errorMessage: some View {
