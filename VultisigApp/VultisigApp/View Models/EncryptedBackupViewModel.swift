@@ -12,6 +12,8 @@ import OSLog
 
 #if os(iOS)
 import UIKit
+#elseif os(macOS)
+import AppKit
 #endif
 
 class EncryptedBackupViewModel: ObservableObject {
@@ -131,6 +133,45 @@ class EncryptedBackupViewModel: ObservableObject {
         if let rootViewController = UIApplication.shared.windows.first?.rootViewController {
             rootViewController.present(alert, animated: true, completion: nil)
         }
+#elseif os(macOS)
+        let alert = NSAlert()
+        alert.messageText = NSLocalizedString("enterPassword", comment: "")
+        alert.informativeText = ""
+        alert.alertStyle = .informational
+        
+        let textField = NSSecureTextField(frame: NSRect(x: 0, y: 0, width: 200, height: 24))
+        textField.placeholderString = NSLocalizedString("password", comment: "").capitalized
+        alert.accessoryView = textField
+        
+        alert.addButton(withTitle: "OK")
+        alert.addButton(withTitle: "Cancel")
+        
+//        guard let mainWindow = NSApplication.shared.mainWindow else {
+//                // If there's no main window, show the alert as a modal dialog
+//            let alertWindow = alert.window
+//            let screenFrame = NSScreen.main?.frame ?? NSRect.zero
+//            let alertFrame = alertWindow.frame
+//            let centerX = screenFrame.midX - alertFrame.width / 2
+//            let centerY = screenFrame.midY - alertFrame.height / 2
+//            alertWindow.setFrameOrigin(NSPoint(x: centerX, y: centerY))
+//            
+//            let response = alert.runModal()
+//            if response == .alertFirstButtonReturn {
+//                let password = textField.stringValue
+//                self.decryptionPassword = password
+//                self.importFileWithPassword(from: url, password: password)
+//            }
+//            return
+//        }
+//
+//        // Show the alert as a sheet attached to the main window
+//        alert.beginSheetModal(for: mainWindow) { response in
+//            if response == .alertFirstButtonReturn {
+//                let password = textField.stringValue
+//                self.decryptionPassword = password
+//                self.importFileWithPassword(from: url, password: password)
+//            }
+//        }
 #endif
     }
     
