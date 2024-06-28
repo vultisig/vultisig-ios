@@ -62,7 +62,7 @@ private extension SwapService {
         var errorDescription: String? {
             switch self {
             case .routeUnavailable:
-                return "Route unavailable"
+                return "Swap route not available"
             case .swapAmountTooSmall:
                 return "Swap amount too small"
             case .lessThenMinSwapAmount(let amount):
@@ -108,7 +108,7 @@ private extension SwapService {
             }
         }
         catch let error as ThorchainSwapError {
-            throw error
+            throw Errors.routeUnavailable
         }
         catch let error as Errors {
             throw error
