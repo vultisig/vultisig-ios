@@ -28,7 +28,12 @@ class CoinSelectionViewModel: ObservableObject {
         groupAssets()
         checkSelected(for: vault)
     }
-    
+
+    func hasTokens(chain: Chain) -> Bool {
+        guard let coins = groupedAssets[chain.name] else { return false }
+        return coins.count > 1
+    }
+
     private func checkSelected(for vault: Vault) {
         selection = Set(vault.coins.map{$0.toCoinMeta()})
     }

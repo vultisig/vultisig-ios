@@ -98,7 +98,7 @@ struct ChainDetailView: View {
                 actionButtons
                 content
                 
-                if tokens.count > 0 {
+                if viewModel.hasTokens(chain: group.chain) {
                     addButton
                 }
             }
