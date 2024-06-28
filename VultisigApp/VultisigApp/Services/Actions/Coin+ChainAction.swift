@@ -56,7 +56,7 @@ extension Chain {
         case .zksync:
             return [.send]
         case .dydx:
-            return [.send]
+            return [.send, .memo]
         }
     }
 }

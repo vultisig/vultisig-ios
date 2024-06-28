@@ -8,10 +8,19 @@ struct TransactionMemoDetailsView: View {
     
     @State var amount = ""
     @State var nativeTokenBalance = ""
-    @State private var selectedFunctionMemoType: TransactionMemoType = .bond
-    @State private var selectedContractMemoType: TransactionMemoContractType = .thorChainMessageDeposit
-    @State private var txMemoInstance: TransactionMemoInstance = .bond(TransactionMemoBond())
+    @State private var selectedFunctionMemoType: TransactionMemoType
+    @State private var selectedContractMemoType: TransactionMemoContractType
+    @State private var txMemoInstance: TransactionMemoInstance
     @State private var showInvalidFormAlert = false
+    
+    init(tx: SendTransaction, transactionMemoViewModel: TransactionMemoViewModel) {
+        self.tx = tx
+        self.transactionMemoViewModel = transactionMemoViewModel
+        let defaultCoin = tx.coin
+        self._selectedFunctionMemoType = State(initialValue: TransactionMemoType.getDefault(for: defaultCoin))
+        self._selectedContractMemoType = State(initialValue: TransactionMemoContractType.getDefault(for: defaultCoin))
+        self._txMemoInstance = State(initialValue: TransactionMemoInstance.getDefault(for: defaultCoin))
+    }
     
     var body: some View {
         ZStack {
@@ -19,7 +28,7 @@ struct TransactionMemoDetailsView: View {
             view
         }
         .gesture(DragGesture())
-        #if os(iOS)
+#if os(iOS)
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
@@ -30,7 +39,7 @@ struct TransactionMemoDetailsView: View {
                 }
             }
         }
-        #endif
+#endif
         .alert(isPresented: $transactionMemoViewModel.showAlert) {
             alert
         }
@@ -47,6 +56,9 @@ struct TransactionMemoDetailsView: View {
                 txMemoInstance = .leave(TransactionMemoLeave())
             case .custom:
                 txMemoInstance = .custom(TransactionMemoCustom())
+            case .vote:
+                txMemoInstance = .vote(TransactionMemoVote())
+                
             }
         }
     }
@@ -86,11 +98,11 @@ struct TransactionMemoDetailsView: View {
     }
     
     var functionSelector: some View {
-        TransactionMemoSelectorDropdown(items: .constant(TransactionMemoType.allCases), selected: $selectedFunctionMemoType)
+        TransactionMemoSelectorDropdown(items: .constant(TransactionMemoType.getCases(for: tx.coin)), selected: $selectedFunctionMemoType)
     }
     
     var contractSelector: some View {
-        TransactionMemoContractSelectorDropDown(items: .constant(TransactionMemoContractType.allCases), selected: $selectedContractMemoType, coin: tx.coin)
+        TransactionMemoContractSelectorDropDown(items: .constant(TransactionMemoContractType.getCases(for: tx.coin)), selected: $selectedContractMemoType, coin: tx.coin)
     }
     
     var fromField: some View {

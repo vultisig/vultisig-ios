@@ -250,6 +250,8 @@
 		B54E31812BF5A22700D4FC0A /* StyledFloatingPointField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54E31802BF5A22700D4FC0A /* StyledFloatingPointField.swift */; };
 		B54E31832BF5A73500D4FC0A /* TransactionMemoTypeEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54E31822BF5A73500D4FC0A /* TransactionMemoTypeEnum.swift */; };
 		B58768702BFB0C43001AAEA5 /* DepositStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B587686F2BFB0C43001AAEA5 /* DepositStore.swift */; };
+		B590DF862C2E70B800ED934E /* TransactionMemoVote.swift in Sources */ = {isa = PBXBuildFile; fileRef = B590DF852C2E70B800ED934E /* TransactionMemoVote.swift */; };
+		B590DF882C2E815A00ED934E /* GenericSelectorDropDown.swift in Sources */ = {isa = PBXBuildFile; fileRef = B590DF872C2E815A00ED934E /* GenericSelectorDropDown.swift */; };
 		B5A97CED2BF41573007574D7 /* TransactionMemoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CEC2BF41573007574D7 /* TransactionMemoView.swift */; };
 		B5A97CEF2BF41779007574D7 /* TransactionMemoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CEE2BF41779007574D7 /* TransactionMemoViewModel.swift */; };
 		B5A97CF12BF41903007574D7 /* TransactionMemoVerifyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CF02BF41903007574D7 /* TransactionMemoVerifyViewModel.swift */; };
@@ -620,6 +622,8 @@
 		B54E31802BF5A22700D4FC0A /* StyledFloatingPointField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyledFloatingPointField.swift; sourceTree = "<group>"; };
 		B54E31822BF5A73500D4FC0A /* TransactionMemoTypeEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoTypeEnum.swift; sourceTree = "<group>"; };
 		B587686F2BFB0C43001AAEA5 /* DepositStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepositStore.swift; sourceTree = "<group>"; };
+		B590DF852C2E70B800ED934E /* TransactionMemoVote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoVote.swift; sourceTree = "<group>"; };
+		B590DF872C2E815A00ED934E /* GenericSelectorDropDown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericSelectorDropDown.swift; sourceTree = "<group>"; };
 		B5A97CEC2BF41573007574D7 /* TransactionMemoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoView.swift; sourceTree = "<group>"; };
 		B5A97CEE2BF41779007574D7 /* TransactionMemoViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoViewModel.swift; sourceTree = "<group>"; };
 		B5A97CF02BF41903007574D7 /* TransactionMemoVerifyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoVerifyViewModel.swift; sourceTree = "<group>"; };
@@ -790,6 +794,7 @@
 				A63253C32C17BE9000D2F1B8 /* VaultDeletionDetails.swift */,
 				A68696592C1F72FF004EDE0B /* HiddenTextField.swift */,
 				A6CBF2DB2C251D4100FD8080 /* LookingForDevicesLoader.swift */,
+				B590DF872C2E815A00ED934E /* GenericSelectorDropDown.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1334,6 +1339,7 @@
 				B53D8CC92BF7F22500B795D3 /* TransactionMemoUnbond.swift */,
 				B53D8CCB2BF7F22F00B795D3 /* TransactionMemoLeave.swift */,
 				B51119322C0072620020B711 /* TransactionMemoCustom.swift */,
+				B590DF852C2E70B800ED934E /* TransactionMemoVote.swift */,
 			);
 			path = TransactionMemo;
 			sourceTree = "<group>";
@@ -2068,6 +2074,7 @@
 				A653242E2BA53D0900DDE6EB /* SendCryptoPairView.swift in Sources */,
 				DE63AE532BBA627B001BBE5C /* atom.swift in Sources */,
 				A65649E22B96602700E4B329 /* DataExtension.swift in Sources */,
+				B590DF862C2E70B800ED934E /* TransactionMemoVote.swift in Sources */,
 				A6966D292BA400B700903CA4 /* SendCryptoAddressTextField.swift in Sources */,
 				A6F9F7EB2B9D1B3700790258 /* VaultDetailViewModel.swift in Sources */,
 				A65BA9842BAA07B500B2D8AA /* Background.swift in Sources */,
@@ -2107,6 +2114,7 @@
 				A6966D2D2BA402A900903CA4 /* TokenSelectorDropdown.swift in Sources */,
 				A6F2C5452B9FE3A00095C8E3 /* HomeView.swift in Sources */,
 				A66A0BD72BA125C50021A483 /* EditVaultCell.swift in Sources */,
+				B590DF882C2E815A00ED934E /* GenericSelectorDropDown.swift in Sources */,
 				A63953B42BA7F120000802EC /* SendCryptoDoneView.swift in Sources */,
 				DE49A1A02B67143B000F3AFB /* Chain.swift in Sources */,
 				B5F7581A2BD8E7230097B5B9 /* SuiService.swift in Sources */,

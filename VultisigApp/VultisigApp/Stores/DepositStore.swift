@@ -23,6 +23,8 @@ class DepositStore {
         "BOND:", "UNBOND:", "LEAVE:",
         "MIGRATE:",
         "NOOP:",
-        "consolidate", "limito", "lo", "name", "n", "~", "out", "ragnarok", "switch", "yggdrasil+", "yggdrasil-"
+        "consolidate", "limito", "lo", "name", "n", "~", "out", "ragnarok", "switch", "yggdrasil+", "yggdrasil-",
+        //DYDX VOTE
+        "DYDX_VOTE:"
     ]
 }

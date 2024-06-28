@@ -58,17 +58,60 @@ class DydxHelper {
         }
         let coin = self.coinType
         
-        let input = CosmosSigningInput.with {
-            $0.publicKey = pubKeyData
-            $0.signingMode = .protobuf
-            $0.chainID = coin.chainId
-            $0.accountNumber = accountNumber
-            $0.sequence = sequence
-            $0.mode = .sync
-            if let memo = keysignPayload.memo {
-                $0.memo = memo
+        var message = [CosmosMessage()]
+        
+        var isDeposit: Bool = false
+        var isVote: Bool = false
+        if let memo = keysignPayload.memo, !memo.isEmpty {
+            isDeposit = DepositStore.PREFIXES.contains(where: { memo.hasPrefix($0) })
+            isVote = memo.hasPrefix("DYDX_VOTE")
+        }
+        
+        if let swapPayload = keysignPayload.swapPayload {
+            isDeposit = swapPayload.isDeposit
+        }
+        
+        /*
+         enum VoteOption {
+         // VOTE_OPTION_UNSPECIFIED defines a no-op vote option.
+         VOTE_OPTION_UNSPECIFIED = 0;
+         // VOTE_OPTION_YES defines a yes vote option.
+         VOTE_OPTION_YES = 1;
+         // VOTE_OPTION_ABSTAIN defines an abstain vote option.
+         VOTE_OPTION_ABSTAIN = 2;
+         // VOTE_OPTION_NO defines a no vote option.
+         VOTE_OPTION_NO = 3;
+         // VOTE_OPTION_NO_WITH_VETO defines a no with veto vote option.
+         VOTE_OPTION_NO_WITH_VETO = 4;
+         }
+         */
+        
+        if isDeposit, isVote {
+            
+            let selectedOption = keysignPayload.memo?.replacingOccurrences(of: "DYDX_VOTE:", with: "") ?? .empty
+            
+            guard let rawValueSelectedOption = Int(selectedOption) else {
+                return .failure(HelperError.runtimeError("The vote option is invalid"))
             }
-            $0.messages = [CosmosMessage.with {
+            
+            guard let voteOption: TW_Cosmos_Proto_Message.VoteOption = TW_Cosmos_Proto_Message.VoteOption.init(rawValue: rawValueSelectedOption) else {
+                return .failure(HelperError.runtimeError("The vote option is invalid"))
+            }
+            
+            message = [CosmosMessage.with {
+                $0.msgVote = CosmosMessage.MsgVote.with{
+                    $0.proposalID = 0
+                    $0.voter = keysignPayload.coin.address
+                    $0.option = voteOption
+                }
+            }]
+            
+        } else {
+            guard AnyAddress(string: keysignPayload.toAddress, coin: coin) != nil else {
+                return .failure(HelperError.runtimeError("\(keysignPayload.toAddress) is invalid"))
+            }
+            
+            message = [CosmosMessage.with {
                 $0.sendCoinsMessage = CosmosMessage.Send.with{
                     $0.fromAddress = keysignPayload.coin.address
                     $0.amounts = [CosmosAmount.with {
@@ -78,6 +121,19 @@ class DydxHelper {
                     $0.toAddress = keysignPayload.toAddress
                 }
             }]
+        }
+        
+        let input = CosmosSigningInput.with {
+            $0.publicKey = pubKeyData
+            $0.signingMode = .protobuf
+            $0.chainID = coin.chainId
+            $0.accountNumber = accountNumber
+            $0.sequence = sequence
+            $0.mode = .sync
+            if let memo = keysignPayload.memo, !isVote {
+                $0.memo = memo
+            }
+            $0.messages = message
             
             $0.fee = CosmosFee.with {
                 $0.gas = 200000 // gas limit
@@ -97,6 +153,7 @@ class DydxHelper {
             return .failure(HelperError.runtimeError("fail to get plan"))
         }
     }
+    
     func getPreSignedImageHash(keysignPayload: KeysignPayload) -> Result<[String], Error> {
         let result = getPreSignedInputData(keysignPayload: keysignPayload)
         switch result {

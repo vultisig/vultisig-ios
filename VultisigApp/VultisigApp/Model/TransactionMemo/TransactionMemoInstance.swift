@@ -14,6 +14,7 @@ enum TransactionMemoInstance {
     case unbond(TransactionMemoUnbond)
     case leave(TransactionMemoLeave)
     case custom(TransactionMemoCustom)
+    case vote(TransactionMemoVote)
     
     var view: AnyView {
         switch self {
@@ -24,6 +25,8 @@ enum TransactionMemoInstance {
         case .leave(let memo):
             return memo.getView()
         case .custom(let memo):
+            return memo.getView()
+        case .vote(let memo):
             return memo.getView()
         }
     }
@@ -38,6 +41,8 @@ enum TransactionMemoInstance {
             return memo.description
         case .custom(let memo):
             return memo.description
+        case .vote(let memo):
+            return memo.description
         }
     }
     
@@ -51,6 +56,8 @@ enum TransactionMemoInstance {
             return .zero
         case .custom(let memo):
             return memo.amount
+        case .vote:
+            return .zero
         }
     }
     
@@ -63,6 +70,8 @@ enum TransactionMemoInstance {
         case .leave(let memo):
             return memo.toDictionary()
         case .custom(let memo):
+            return memo.toDictionary()
+        case .vote(let memo):
             return memo.toDictionary()
         }
     }
@@ -77,6 +86,19 @@ enum TransactionMemoInstance {
             return memo.isTheFormValid
         case .custom(let memo):
             return memo.isTheFormValid
+        case .vote(let memo):
+            return memo.isTheFormValid
+        }
+    }
+    
+    static func getDefault(for coin: Coin) -> TransactionMemoInstance {
+        switch coin.chain {
+        case .thorChain, .mayaChain:
+            return .bond(TransactionMemoBond())
+        case .dydx:
+            return .vote(TransactionMemoVote())
+        default:
+            return .custom(TransactionMemoCustom())
         }
     }
 }
