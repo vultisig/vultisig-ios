@@ -223,3 +223,11 @@
 "invalidFileFormat" = "Nevažeći format datoteke";
 "invalidFileFormatMessage" = "Molimo vas provjerite jeste li odabrali ispravnu sigurnosnu kopiju s ekstenzijom .dat.";
 "uploadBackupFile" = "Prenesite sigurnosnu kopiju datoteke";
+"uploadQRCodeImage" = "Prenesite QR kod sliku";
+"uploadQRCodeImageKeygen" = "Prenesite QR kod za pridruživanje Keygen-u";
+"uploadQRCodeImageKeysign" = "Prenesite QR kod za pridruživanje Keysign-u";
+"joinKeysign" = "Pridružite se Keysign-u";
+"joinKeygen" = "Pridružite se Keygen-u";
+"URLInaccessible" = "Neuspješan pristup URL-u";
+"NoQRCodesDetected" = "Nema QR kodova otkrivenih";
+"FailedToLoadImage" = "Neuspješno učitavanje slike s URL-a";
