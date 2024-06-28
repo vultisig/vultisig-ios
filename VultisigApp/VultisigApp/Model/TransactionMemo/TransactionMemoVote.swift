@@ -13,6 +13,7 @@ import WalletCore
 class TransactionMemoVote: TransactionMemoAddressable, ObservableObject {
     @Published var isTheFormValid: Bool = true
     @Published var selectedMemo: TW_Cosmos_Proto_Message.VoteOption
+    @Published var proposalID: Int = 0
     
     // Internal
     private var cancellables = Set<AnyCancellable>()
@@ -27,18 +28,18 @@ class TransactionMemoVote: TransactionMemoAddressable, ObservableObject {
         setupValidation()
     }
     
-    init(selectedMemo: TW_Cosmos_Proto_Message.VoteOption) {
+    init(selectedMemo: TW_Cosmos_Proto_Message.VoteOption, proposalID: Int = 0) {
         self.selectedMemo = selectedMemo
+        self.proposalID = proposalID
         setupValidation()
     }
     
     private func setupValidation() {
         // Implement any validation logic if needed
-        // For now, assume form is valid if there's a selected memo
-        //        $selectedMemo
-        //            .map { $0 != .unspecified }
-        //            .assign(to: \.isTheFormValid, on: self)
-        //            .store(in: &cancellables)
+        $selectedMemo
+            .map { $0.rawValue >= 0 && self.proposalID > 0 }
+            .assign(to: \.isTheFormValid, on: self)
+            .store(in: &cancellables)
     }
     
     var description: String {
@@ -46,13 +47,14 @@ class TransactionMemoVote: TransactionMemoAddressable, ObservableObject {
     }
     
     func toString() -> String {
-        var memo = "DYDX_VOTE:\(selectedMemo.rawValue)"
+        var memo = "DYDX_VOTE:\(selectedMemo.description):\(proposalID)"
         return memo
     }
     
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("VoteDescription", selectedMemo.description)
+        dict.set("ProposalId", "\(proposalID)")
         dict.set("memo", self.toString())
         return dict
     }
@@ -69,6 +71,16 @@ class TransactionMemoVote: TransactionMemoAddressable, ObservableObject {
                 onSelect: { memo in
                     self.selectedMemo = memo
                 }
+            )
+            
+            StyledIntegerField(
+                placeholder: "Proposal ID",
+                value: Binding(
+                    get: { self.proposalID },
+                    set: { self.proposalID = $0 }
+                ),
+                format: .number,
+                isValid: .constant(true)
             )
         })
     }

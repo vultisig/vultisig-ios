@@ -87,25 +87,22 @@ class DydxHelper {
          */
         
         if isDeposit, isVote {
+            let selectedOption = keysignPayload.memo?.replacingOccurrences(of: "DYDX_VOTE:", with: "") ?? ""
+            let components = selectedOption.split(separator: ":")
             
-            let selectedOption = keysignPayload.memo?.replacingOccurrences(of: "DYDX_VOTE:", with: "") ?? .empty
-            
-            guard let rawValueSelectedOption = Int(selectedOption) else {
-                return .failure(HelperError.runtimeError("The vote option is invalid"))
-            }
-            
-            guard let voteOption: TW_Cosmos_Proto_Message.VoteOption = TW_Cosmos_Proto_Message.VoteOption.init(rawValue: rawValueSelectedOption) else {
+            guard components.count == 2,
+                  let proposalID = Int(components[1]),
+                  let voteOption = TW_Cosmos_Proto_Message.VoteOption.allCases.first(where: { $0.description == String(components[0]) }) else {
                 return .failure(HelperError.runtimeError("The vote option is invalid"))
             }
             
             message = [CosmosMessage.with {
-                $0.msgVote = CosmosMessage.MsgVote.with{
-                    $0.proposalID = 0
+                $0.msgVote = CosmosMessage.MsgVote.with {
+                    $0.proposalID = UInt64(proposalID)
                     $0.voter = keysignPayload.coin.address
                     $0.option = voteOption
                 }
             }]
-            
         } else {
             guard AnyAddress(string: keysignPayload.toAddress, coin: coin) != nil else {
                 return .failure(HelperError.runtimeError("\(keysignPayload.toAddress) is invalid"))
