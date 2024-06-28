@@ -8,7 +8,6 @@ struct ChainDetailView: View {
     var tokens: [Coin] {
         return vault.coins
             .filter { $0.chain == group.chain }
-            .filter { !$0.isNativeToken }
             .sorted()
     }
 
