@@ -37,7 +37,10 @@ class TransactionMemoVote: TransactionMemoAddressable, ObservableObject {
     private func setupValidation() {
         // Implement any validation logic if needed
         $selectedMemo
-            .map { $0.rawValue >= 0 && self.proposalID > 0 }
+            .combineLatest($proposalID)
+            .map { memo, proposalID in
+                memo.rawValue >= 0 && proposalID > 0
+            }
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
     }
@@ -47,8 +50,7 @@ class TransactionMemoVote: TransactionMemoAddressable, ObservableObject {
     }
     
     func toString() -> String {
-        var memo = "DYDX_VOTE:\(selectedMemo.description):\(proposalID)"
-        return memo
+        return "DYDX_VOTE:\(selectedMemo.description):\(proposalID)"
     }
     
     func toDictionary() -> ThreadSafeDictionary<String, String> {
