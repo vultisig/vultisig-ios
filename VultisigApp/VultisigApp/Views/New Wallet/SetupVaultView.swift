@@ -102,11 +102,19 @@ struct SetupVaultView: View {
     }
     
     var joinButton: some View {
+#if os(iOS)
         Button {
             showSheet = true
         } label: {
             OutlineButton(title: "pair")
         }
+#elseif os(macOS)
+        NavigationLink {
+            KeygenQRImportMacView()
+        } label: {
+            OutlineButton(title: "pair")
+        }
+#endif
     }
     
     private func setData() {
