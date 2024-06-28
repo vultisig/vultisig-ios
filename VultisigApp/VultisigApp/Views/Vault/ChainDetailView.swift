@@ -42,6 +42,9 @@ struct ChainDetailView: View {
                 }
             }
         }
+        .refreshable {
+            refreshAction()
+        }
         .sheet(isPresented: Binding<Bool>(
             get: { sheetType != nil },
             set: { newValue in
