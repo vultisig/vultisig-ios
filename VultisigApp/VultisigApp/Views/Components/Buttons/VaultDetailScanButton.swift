@@ -19,7 +19,7 @@ struct VaultDetailScanButton: View {
         }
 #elseif os(macOS)
         NavigationLink {
-            KeysignQRImportMacView()
+            GeneralQRImportMacView(type: .SignTransaction)
         } label: {
             label
         }

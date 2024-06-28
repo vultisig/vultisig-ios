@@ -8,7 +8,9 @@
 import SwiftUI
 import SwiftData
 
-struct KeygenQRImportMacView: View {
+struct GeneralQRImportMacView: View {
+    let type: DeeplinkFlowType
+    
     @State var fileName: String? = nil
     @State private var selectedImage: NSImage?
     @State var isButtonEnabled = false
@@ -19,6 +21,7 @@ struct KeygenQRImportMacView: View {
     
     @Query var vaults: [Vault]
     
+    @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     
     var body: some View {
@@ -26,7 +29,7 @@ struct KeygenQRImportMacView: View {
             Background()
             content
         }
-        .navigationTitle("pair")
+        .navigationTitle(getTitle())
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
@@ -46,10 +49,15 @@ struct KeygenQRImportMacView: View {
         .navigationDestination(isPresented: $shouldJoinKeygen) {
             JoinKeygenView(vault: Vault(name: "Main Vault"))
         }
+        .navigationDestination(isPresented: $shouldKeysignTransaction) {
+            if let vault = homeViewModel.selectedVault {
+                JoinKeysignView(vault: vault)
+            }
+        }
     }
     
     var title: some View {
-        Text(NSLocalizedString("uploadQRCodeImageKeygen", comment: ""))
+        Text(getDescription())
             .font(.body16MontserratBold)
             .foregroundColor(.neutral0)
     }
@@ -151,9 +159,32 @@ struct KeygenQRImportMacView: View {
             shouldKeysignTransaction = true
         }
     }
+    
+    private func getTitle() -> String {
+        let text: String
+        
+        if type == .NewVault {
+            text = "pair"
+        } else {
+            text = "keysign"
+        }
+        return NSLocalizedString(text, comment: "")
+    }
+    
+    private func getDescription() -> String {
+        let text: String
+        
+        if type == .NewVault {
+            text = "uploadQRCodeImageKeygen"
+        } else {
+            text = "uploadQRCodeImageKeysign"
+        }
+        return NSLocalizedString(text, comment: "")
+    }
 }
 
 #Preview {
-    KeygenQRImportMacView()
+    GeneralQRImportMacView(type: .NewVault)
+        .environmentObject(HomeViewModel())
         .environmentObject(DeeplinkViewModel())
 }

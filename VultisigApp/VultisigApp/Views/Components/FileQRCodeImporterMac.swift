@@ -32,14 +32,13 @@ struct FileQRCodeImporterMac: View {
         } label: {
             content
         }
-        .frame(height: 300)
-        .frame(maxWidth: .infinity)
-        .background(Color.turquoise600.opacity(0.15))
-        .cornerRadius(10)
-        .overlay (
-            RoundedRectangle(cornerRadius: 10)
-                .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 1, dash: [10]))
-        )
+        .fileImporter(
+            isPresented: $showFileImporter,
+            allowedContentTypes: [UTType.image],
+            allowsMultipleSelection: false
+        ) { result in
+            handleFileImport(result)
+        }
     }
     
     var content: some View {
@@ -50,13 +49,14 @@ struct FileQRCodeImporterMac: View {
                 placeholderImage
             }
         }
-        .fileImporter(
-            isPresented: $showFileImporter,
-            allowedContentTypes: [UTType.image],
-            allowsMultipleSelection: false
-        ) { result in
-            handleFileImport(result)
-        }
+        .frame(height: 300)
+        .frame(maxWidth: .infinity)
+        .background(Color.turquoise600.opacity(0.15))
+        .cornerRadius(10)
+        .overlay (
+            RoundedRectangle(cornerRadius: 10)
+                .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 1, dash: [10]))
+        )
     }
     
     var placeholderImage: some View {

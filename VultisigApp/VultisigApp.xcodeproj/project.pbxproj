@@ -187,8 +187,7 @@
 		A6980C302BC0A11100F452AB /* SettingsCurrencySelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6980C2F2BC0A11100F452AB /* SettingsCurrencySelectionView.swift */; };
 		A6980C322BC0A2F700F452AB /* SettingsFAQView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6980C312BC0A2F700F452AB /* SettingsFAQView.swift */; };
 		A6980C342BC0A30900F452AB /* SettingFAQCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6980C332BC0A30900F452AB /* SettingFAQCell.swift */; };
-		A6AF960C2C2E2D6400992578 /* KeygenQRImportMacView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6AF960B2C2E2D6400992578 /* KeygenQRImportMacView.swift */; };
-		A6AF960E2C2E2D7200992578 /* KeysignQRImportMacView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6AF960D2C2E2D7200992578 /* KeysignQRImportMacView.swift */; };
+		A6AF960C2C2E2D6400992578 /* GeneralQRImportMacView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6AF960B2C2E2D6400992578 /* GeneralQRImportMacView.swift */; };
 		A6AF96102C2E2DC900992578 /* FileQRCodeImporterMac.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6AF960F2C2E2DC900992578 /* FileQRCodeImporterMac.swift */; };
 		A6AF96122C2E3D6100992578 /* ImportFileCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6AF96112C2E3D6100992578 /* ImportFileCell.swift */; };
 		A6B51BE92C098DAE007FDD3C /* OnFirstAppear.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B51BE82C098DAE007FDD3C /* OnFirstAppear.swift */; };
@@ -563,8 +562,7 @@
 		A6980C2F2BC0A11100F452AB /* SettingsCurrencySelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCurrencySelectionView.swift; sourceTree = "<group>"; };
 		A6980C312BC0A2F700F452AB /* SettingsFAQView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsFAQView.swift; sourceTree = "<group>"; };
 		A6980C332BC0A30900F452AB /* SettingFAQCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingFAQCell.swift; sourceTree = "<group>"; };
-		A6AF960B2C2E2D6400992578 /* KeygenQRImportMacView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenQRImportMacView.swift; sourceTree = "<group>"; };
-		A6AF960D2C2E2D7200992578 /* KeysignQRImportMacView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignQRImportMacView.swift; sourceTree = "<group>"; };
+		A6AF960B2C2E2D6400992578 /* GeneralQRImportMacView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralQRImportMacView.swift; sourceTree = "<group>"; };
 		A6AF960F2C2E2DC900992578 /* FileQRCodeImporterMac.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileQRCodeImporterMac.swift; sourceTree = "<group>"; };
 		A6AF96112C2E3D6100992578 /* ImportFileCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportFileCell.swift; sourceTree = "<group>"; };
 		A6B51BE82C098DAE007FDD3C /* OnFirstAppear.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnFirstAppear.swift; sourceTree = "<group>"; };
@@ -992,7 +990,7 @@
 				D9AD8EE52B6730A40009F8D5 /* PeerDiscoveryView.swift */,
 				DE9EB0F32BA309AB001747D9 /* MessagePuller.swift */,
 				A611735C2BC8D94400D616F9 /* KeyGenSummaryView.swift */,
-				A6AF960B2C2E2D6400992578 /* KeygenQRImportMacView.swift */,
+				A6AF960B2C2E2D6400992578 /* GeneralQRImportMacView.swift */,
 			);
 			path = Keygen;
 			sourceTree = "<group>";
@@ -1506,7 +1504,6 @@
 				A65BA9972BAD479C00B2D8AA /* JoinKeysignDoneView.swift */,
 				A6C9D5C02BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift */,
 				A65518042BF867CF006BB924 /* KeysignSameDeviceShareErrorView.swift */,
-				A6AF960D2C2E2D7200992578 /* KeysignQRImportMacView.swift */,
 			);
 			path = Keysign;
 			sourceTree = "<group>";
@@ -1856,7 +1853,6 @@
 				A6F9F7E52B9BB4D100790258 /* NavigationMenuButton.swift in Sources */,
 				A5DA62092BF79C1D00CBEAEE /* ThorchainSwapError.swift in Sources */,
 				049BBB5E2B71E83D004C231F /* VultisigLogo.swift in Sources */,
-				A6AF960E2C2E2D7200992578 /* KeysignQRImportMacView.swift in Sources */,
 				DE1572A02B70F284009BC7C5 /* KeysignView.swift in Sources */,
 				A6FB96B52BD0CE6700D56F68 /* NavigationHomeEditButton.swift in Sources */,
 				A66BFCD32C135699004DCD4F /* ShareSheetViewModel.swift in Sources */,
@@ -2149,7 +2145,7 @@
 				B52196462C12CA2E0021D27A /* AddressTextField.swift in Sources */,
 				B5E476AD2C1A556D005DB485 /* DydxService.swift in Sources */,
 				B54B01972BDCEB8E00FDA472 /* Polkadot.swift in Sources */,
-				A6AF960C2C2E2D6400992578 /* KeygenQRImportMacView.swift in Sources */,
+				A6AF960C2C2E2D6400992578 /* GeneralQRImportMacView.swift in Sources */,
 				DE49A19E2B671416000F3AFB /* Coin.swift in Sources */,
 				B54E31832BF5A73500D4FC0A /* TransactionMemoTypeEnum.swift in Sources */,
 				A5BA150A2C078EED00AA6C07 /* TokenSelectionCell.swift in Sources */,
