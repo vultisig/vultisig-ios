@@ -13,9 +13,11 @@ struct GeneralQRImportMacView: View {
     
     @State var fileName: String? = nil
     @State private var selectedImage: NSImage?
-    @State var isButtonEnabled = false
+    @State var alertDescription = ""
     @State var importResult: Result<[URL], Error>? = nil
     
+    @State var showAlert = false
+    @State var isButtonEnabled = false
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
     
@@ -69,16 +71,49 @@ struct GeneralQRImportMacView: View {
             resetData: resetData,
             handleFileImport: handleFileImport
         )
+        .alert(isPresented: $showAlert) {
+            alert
+        }
     }
     
     var button: some View {
         Button {
-            joinKeygen()
+            handleTap()
         } label: {
             FilledButton(title: "continue")
                 .disabled(!isButtonEnabled)
                 .grayscale(isButtonEnabled ? 0 : 1)
         }
+    }
+    
+    var alert: Alert {
+        Alert(
+            title: Text(NSLocalizedString("error", comment: "")),
+            message: Text(NSLocalizedString(alertDescription, comment: "")),
+            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+        )
+    }
+    
+    private func getTitle() -> String {
+        let text: String
+        
+        if type == .NewVault {
+            text = "pair"
+        } else {
+            text = "keysign"
+        }
+        return NSLocalizedString(text, comment: "")
+    }
+    
+    private func getDescription() -> String {
+        let text: String
+        
+        if type == .NewVault {
+            text = "uploadQRCodeImageKeygen"
+        } else {
+            text = "uploadQRCodeImageKeysign"
+        }
+        return NSLocalizedString(text, comment: "")
     }
     
     private func resetData() {
@@ -115,20 +150,28 @@ struct GeneralQRImportMacView: View {
         }
     }
     
-    private func joinKeygen() {
+    private func handleTap() {
         guard let importResult else {
             return
         }
         
-        let qrCode = Utils.handleQrCodeFromImage(result: importResult)
-        let result = String(data: qrCode, encoding: .utf8)
-        
-        guard let result, let url = URL(string: result) else {
-            return
+        do {
+            let qrCode = try Utils.handleQrCodeFromImage(result: importResult)
+            let result = String(data: qrCode, encoding: .utf8)
+            
+            guard let result, let url = URL(string: result) else {
+                return
+            }
+            
+            deeplinkViewModel.extractParameters(url, vaults: vaults)
+            presetValuesForDeeplink(url)
+        } catch {
+            if let description = error as? UtilsQrCodeFromImageError {
+                alertDescription = description.localizedDescription
+                showAlert = true
+            }
+            print(error)
         }
-        
-        deeplinkViewModel.extractParameters(url, vaults: vaults)
-        presetValuesForDeeplink(url)
     }
     
     private func presetValuesForDeeplink(_ url: URL) {
@@ -158,28 +201,6 @@ struct GeneralQRImportMacView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             shouldKeysignTransaction = true
         }
-    }
-    
-    private func getTitle() -> String {
-        let text: String
-        
-        if type == .NewVault {
-            text = "pair"
-        } else {
-            text = "keysign"
-        }
-        return NSLocalizedString(text, comment: "")
-    }
-    
-    private func getDescription() -> String {
-        let text: String
-        
-        if type == .NewVault {
-            text = "uploadQRCodeImageKeygen"
-        } else {
-            text = "uploadQRCodeImageKeysign"
-        }
-        return NSLocalizedString(text, comment: "")
     }
 }
 
