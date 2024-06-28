@@ -11,23 +11,35 @@ struct VaultDetailScanButton: View {
     @Binding var showSheet: Bool
     
     var body: some View {
+#if os(iOS)
         Button {
             showSheet.toggle()
         } label: {
-            ZStack {
-                Circle()
-                    .foregroundColor(.blue800)
-                    .frame(width: 80, height: 80)
-                    .opacity(0.8)
-                
-                Circle()
-                    .foregroundColor(.turquoise600)
-                    .frame(width: 60, height: 60)
-                
-                Image(systemName: "camera")
-                    .font(.title30MenloUltraLight)
-                    .foregroundColor(.blue600)
-            }
+            label
+        }
+#elseif os(macOS)
+        NavigationLink {
+            KeysignQRImportMacView()
+        } label: {
+            label
+        }
+#endif
+    }
+    
+    var label: some View {
+        ZStack {
+            Circle()
+                .foregroundColor(.blue800)
+                .frame(width: 80, height: 80)
+                .opacity(0.8)
+            
+            Circle()
+                .foregroundColor(.turquoise600)
+                .frame(width: 60, height: 60)
+            
+            Image(systemName: "camera")
+                .font(.title30MenloUltraLight)
+                .foregroundColor(.blue600)
         }
     }
 }

@@ -248,5 +248,6 @@
 "uploadBackupFile" = "Upload backup file";
 "uploadQRCodeImage" = "Upload QR-Code Image";
 "uploadQRCodeImageKeygen" = "Upload QR-Code to join Keygen";
+"uploadQRCodeImageKeysign" = "Upload QR-Code to join Keysign";
 "joinKeysign" = "Join Keysign";
 "joinKeygen" = "Join Keygen";
