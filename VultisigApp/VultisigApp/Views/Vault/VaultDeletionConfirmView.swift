@@ -61,7 +61,7 @@ struct VaultDeletionConfirmView: View {
 #if os(iOS)
         let spacing: CGFloat = 28
 #elseif os(macOS)
-        let spacing: CGFloat = 14
+        let spacing: CGFloat = 12
 #endif
                 
         return VStack(spacing: spacing) {
@@ -83,7 +83,7 @@ struct VaultDeletionConfirmView: View {
 #if os(iOS)
         let spacing: CGFloat = 32
 #elseif os(macOS)
-        let spacing: CGFloat = 14
+        let spacing: CGFloat = 12
 #endif
                 
         return VStack(spacing: spacing) {
@@ -103,6 +103,9 @@ struct VaultDeletionConfirmView: View {
         } label: {
             FilledButton(title: "deleteVaultTitle", background: Color.alertRed)
         }
+#if os(macOS)
+        .padding(.bottom, 20)
+#endif
     }
     
     private func delete() {

@@ -11,7 +11,13 @@ struct VaultDeletionDetails: View {
     let vault: Vault
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
+#if os(iOS)
+        let spacing: CGFloat = 32
+#elseif os(macOS)
+        let spacing: CGFloat = 12
+#endif
+                
+        return VStack(alignment: .leading, spacing: spacing) {
             title
             nameCell
             typeCell
