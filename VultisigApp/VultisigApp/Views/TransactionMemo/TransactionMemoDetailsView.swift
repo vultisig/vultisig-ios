@@ -19,7 +19,7 @@ struct TransactionMemoDetailsView: View {
             view
         }
         .gesture(DragGesture())
-        #if os(iOS)
+#if os(iOS)
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
@@ -30,7 +30,7 @@ struct TransactionMemoDetailsView: View {
                 }
             }
         }
-        #endif
+#endif
         .alert(isPresented: $transactionMemoViewModel.showAlert) {
             alert
         }
@@ -56,6 +56,9 @@ struct TransactionMemoDetailsView: View {
             fields
             button
         }
+#if os(macOS)
+        .padding(.horizontal, 25)
+#endif
     }
     
     var alert: Alert {

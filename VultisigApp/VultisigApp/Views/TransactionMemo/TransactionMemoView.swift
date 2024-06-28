@@ -66,6 +66,7 @@ struct TransactionMemoView: View {
         VStack(spacing: 30) {
             ProgressBar(progress: transactionMemoViewModel.getProgress())
                 .padding(.top, 30)
+
             tabView
         }
         .blur(radius: transactionMemoViewModel.isLoading ? 1 : 0)
