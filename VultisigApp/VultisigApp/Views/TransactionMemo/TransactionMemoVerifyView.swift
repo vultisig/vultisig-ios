@@ -35,6 +35,9 @@ struct TransactionMemoVerifyView: View {
             button
         }
         .blur(radius: depositVerifyViewModel.isLoading ? 1 : 0)
+#if os(macOS)
+        .padding(.horizontal, 25)
+#endif
     }
     
     var alert: Alert {

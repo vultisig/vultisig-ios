@@ -46,6 +46,8 @@ struct SwapCryptoDetailsView: View {
                 }
             }
         }
+#elseif os(macOS)
+        .padding(.horizontal, 25)
 #endif
     }
     

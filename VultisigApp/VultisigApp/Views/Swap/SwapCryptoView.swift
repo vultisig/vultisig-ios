@@ -59,6 +59,7 @@ struct SwapCryptoView: View {
         VStack(spacing: 30) {
             ProgressBar(progress: swapViewModel.progress)
                 .padding(.top, 30)
+            
             tabView
         }
     }

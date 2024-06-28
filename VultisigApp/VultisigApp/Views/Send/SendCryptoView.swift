@@ -72,9 +72,6 @@ struct SendCryptoView: View {
         VStack(spacing: 30) {
             ProgressBar(progress: sendCryptoViewModel.getProgress())
                 .padding(.top, 30)
-#if os(macOS)
-                .padding(.horizontal, 26)
-#endif
             
             tabView
         }

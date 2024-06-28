@@ -39,7 +39,7 @@ struct SendCryptoDoneView: View {
             continueButton
         }
 #if os(macOS)
-        .padding(26)
+        .padding(.horizontal, 25)
 #endif
     }
     
