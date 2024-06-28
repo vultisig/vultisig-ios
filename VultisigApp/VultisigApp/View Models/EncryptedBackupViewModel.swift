@@ -67,6 +67,7 @@ class EncryptedBackupViewModel: ObservableObject {
                 return
             }
             
+#if os(iOS)
             let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("file.dat")
             do {
                 try dataToSave.write(to: tempURL)
@@ -75,6 +76,22 @@ class EncryptedBackupViewModel: ObservableObject {
             } catch {
                 print("Error writing file: \(error.localizedDescription)")
             }
+#elseif os(macOS)
+            let savePanel = NSSavePanel()
+            savePanel.allowedContentTypes = [.data]
+            savePanel.nameFieldStringValue = vault.getExportName()
+            
+            savePanel.begin { response in
+                if response == .OK, let url = savePanel.url {
+                    do {
+                        try dataToSave.write(to: url)
+                        self.encryptedFileURL = url
+                    } catch {
+                        print("Error writing file: \(error.localizedDescription)")
+                    }
+                }
+            }
+#endif
         } catch {
             print(error)
         }
@@ -147,7 +164,6 @@ class EncryptedBackupViewModel: ObservableObject {
         alert.addButton(withTitle: "Cancel")
         
         guard let mainWindow = NSApplication.shared.mainWindow else {
-                // If there's no main window, show the alert as a modal dialog
             let alertWindow = alert.window
             let screenFrame = NSScreen.main?.frame ?? NSRect.zero
             let alertFrame = alertWindow.frame

@@ -128,11 +128,11 @@ struct ImportWalletView: View {
             return false
         }
         
-//        if fileExtension == "dat" {
+        if fileExtension == "dat" {
             return true
-//        } else {
-//            return false
-//        }
+        } else {
+            return false
+        }
     }
     
     private func showInvalidFormatAlert() {
