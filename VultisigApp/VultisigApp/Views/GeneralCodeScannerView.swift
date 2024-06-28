@@ -45,14 +45,18 @@ struct GeneralCodeScannerView: View {
             allowedContentTypes: [UTType.image],
             allowsMultipleSelection: false
         ) { result in
-            let qrCode = Utils.handleQrCodeFromImage(result: result)
-            let result = String(data: qrCode, encoding: .utf8) // Set the QR code result to the binding
-            guard let url = URL(string: result ?? .empty) else {
-                return
+            do {
+                let qrCode = try Utils.handleQrCodeFromImage(result: result)
+                let result = String(data: qrCode, encoding: .utf8) // Set the QR code result to the binding
+                guard let url = URL(string: result ?? .empty) else {
+                    return
+                }
+                
+                deeplinkViewModel.extractParameters(url, vaults: vaults)
+                presetValuesForDeeplink(url)
+            } catch {
+                print(error)
             }
-            
-            deeplinkViewModel.extractParameters(url, vaults: vaults)
-            presetValuesForDeeplink(url)
         }
     }
     

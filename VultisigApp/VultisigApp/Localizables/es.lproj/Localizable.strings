@@ -223,3 +223,11 @@
 "invalidFileFormat" = "Formato de archivo no válido";
 "invalidFileFormatMessage" = "Asegúrate de haber seleccionado el archivo de respaldo correcto con extensión .dat.";
 "uploadBackupFile" = "Subir archivo de respaldo";
+"uploadQRCodeImage" = "Subir imagen de código QR";
+"uploadQRCodeImageKeygen" = "Subir código QR para unirse a Keygen";
+"uploadQRCodeImageKeysign" = "Subir código QR para unirse a Keysign";
+"joinKeysign" = "Unirse a Keysign";
+"joinKeygen" = "Unirse a Keygen";
+"URLInaccessible" = "No se pudo acceder a la URL";
+"NoQRCodesDetected" = "No se detectó ningún código QR";
+"FailedToLoadImage" = "No se pudo cargar la imagen desde la URL";
