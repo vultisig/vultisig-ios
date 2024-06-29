@@ -71,21 +71,6 @@ class DydxHelper {
             isDeposit = swapPayload.isDeposit
         }
         
-        /*
-         enum VoteOption {
-         // VOTE_OPTION_UNSPECIFIED defines a no-op vote option.
-         VOTE_OPTION_UNSPECIFIED = 0;
-         // VOTE_OPTION_YES defines a yes vote option.
-         VOTE_OPTION_YES = 1;
-         // VOTE_OPTION_ABSTAIN defines an abstain vote option.
-         VOTE_OPTION_ABSTAIN = 2;
-         // VOTE_OPTION_NO defines a no vote option.
-         VOTE_OPTION_NO = 3;
-         // VOTE_OPTION_NO_WITH_VETO defines a no with veto vote option.
-         VOTE_OPTION_NO_WITH_VETO = 4;
-         }
-         */
-        
         if isDeposit, isVote {
             let selectedOption = keysignPayload.memo?.replacingOccurrences(of: "DYDX_VOTE:", with: "") ?? ""
             let components = selectedOption.split(separator: ":")
@@ -141,8 +126,6 @@ class DydxHelper {
             }
         }
         
-        print(input.debugDescription)
-        
         do {
             let inputData = try input.serializedData()
             return .success(inputData)
@@ -158,8 +141,6 @@ class DydxHelper {
             do {
                 let hashes = TransactionCompiler.preImageHashes(coinType: self.coinType, txInputData: inputData)
                 let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
-                
-                print("ERROR preSigningOutput: \(preSigningOutput.errorMessage)")
                 return .success([preSigningOutput.dataHash.hexString])
             } catch {
                 return .failure(HelperError.runtimeError("fail to get preSignedImageHash,error:\(error.localizedDescription)"))
@@ -199,9 +180,6 @@ class DydxHelper {
         do {
             let hashes = TransactionCompiler.preImageHashes(coinType: self.coinType, txInputData: inputData)
             let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
-            
-            print(preSigningOutput.errorMessage)
-            
             let allSignatures = DataVector()
             let publicKeys = DataVector()
             let signatureProvider = SignatureProvider(signatures: signatures)

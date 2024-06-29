@@ -20,7 +20,7 @@ enum TransactionMemoType: String, CaseIterable, Identifiable {
             return [.bond, .unbond, .leave, .custom]
         case .dydx:
             return [.vote]
-        case .solana, .ethereum, .avalanche, .base, .blast, .arbitrum, .polygon, .optimism, .bscChain, .cronosChain, .zksync, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .sui, .polkadot:
+        default:
             return []
         }
     }
