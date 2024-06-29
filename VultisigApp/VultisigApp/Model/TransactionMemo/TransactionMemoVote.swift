@@ -15,7 +15,6 @@ class TransactionMemoVote: TransactionMemoAddressable, ObservableObject {
     @Published var selectedMemo: TW_Cosmos_Proto_Message.VoteOption
     @Published var proposalID: Int = 0
     
-    // Internal
     private var cancellables = Set<AnyCancellable>()
     
     var addressFields: [String: String] {
@@ -35,7 +34,6 @@ class TransactionMemoVote: TransactionMemoAddressable, ObservableObject {
     }
     
     private func setupValidation() {
-        // Implement any validation logic if needed
         $selectedMemo
             .combineLatest($proposalID)
             .map { memo, proposalID in
