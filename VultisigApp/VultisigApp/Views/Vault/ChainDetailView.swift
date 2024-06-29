@@ -2,9 +2,15 @@ import SwiftUI
 
 struct ChainDetailView: View {
     @ObservedObject var group: GroupedChain
-    let vault: Vault
     
-    @State var tokens: [CoinMeta] = []
+    let vault: Vault
+
+    var tokens: [Coin] {
+        return vault.coins
+            .filter { $0.chain == group.chain }
+            .sorted()
+    }
+
     @State var actions: [CoinAction] = []
     @StateObject var sendTx = SendTransaction()
     @State var isLoading = false
@@ -79,11 +85,6 @@ struct ChainDetailView: View {
                 await setData()
             }
         }
-        .onChange(of: vault) {
-            Task {
-                await setData()
-            }
-        }
     }
     
     var loader: some View {
@@ -96,7 +97,7 @@ struct ChainDetailView: View {
                 actionButtons
                 content
                 
-                if tokens.count > 0 {
+                if viewModel.hasTokens(chain: group.chain) {
                     addButton
                 }
             }
@@ -133,9 +134,7 @@ struct ChainDetailView: View {
     }
     
     var cells: some View {
-        ForEach(group.coins.sorted(by: {
-            $0.isNativeToken || ($0.balanceInFiatDecimal > $1.balanceInFiatDecimal)
-        }), id: \.id) { coin in
+        ForEach(tokens, id: \.id) { coin in
             getCoinCell(coin)
         }
     }
@@ -204,8 +203,6 @@ struct ChainDetailView: View {
     private func setData() async {
         isLoading = false
         viewModel.setData(for: vault)
-        tokens = viewModel.groupedAssets[group.name] ?? []
-        tokens.removeFirst()
         
         if let coin = group.coins.first {
             sendTx.reset(coin: coin)
