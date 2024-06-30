@@ -89,18 +89,17 @@ struct TokenSelectionView: View {
     }
     
     var view: some View {
-        List {
+        VStack(alignment: .leading,spacing: 24){
 #if os(macOS)
             searchBar
                 .padding(.vertical, 18)
 #endif
-            
-            VStack(alignment: .leading) {
+            List {
                 let selected = tokenViewModel.selectedTokens
                 if !selected.isEmpty {
                     Section(header: Text(NSLocalizedString("Selected", comment:"Selected"))) {
                         ForEach(selected, id: \.self) { token in
-                            TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel, tokenSelectionView: self)
+                            TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel)
                                 .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
                         }
@@ -110,7 +109,7 @@ struct TokenSelectionView: View {
                 if tokenViewModel.searchText.isEmpty {
                     Section(header: Text(NSLocalizedString("tokens", comment:"Tokens"))) {
                         ForEach(tokenViewModel.preExistTokens, id: \.self) { token in
-                            TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel, tokenSelectionView: self)
+                            TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel)
                                 .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
                         }
@@ -120,20 +119,21 @@ struct TokenSelectionView: View {
                         let filtered = tokenViewModel.searchedTokens
                         if !filtered.isEmpty {
                             ForEach(filtered, id: \.self) { token in
-                                TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel, tokenSelectionView: self)
+                                TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel)
                                     .listRowBackground(Color.clear)
                                     .listRowSeparator(.hidden)
                             }
                         }
                     }
                 }
+                
             }
-            .padding(.bottom, 50)
-        }
-        .scrollContentBackground(.hidden)
+            .scrollContentBackground(.hidden)
 #if os(iOS)
-        .listStyle(.grouped)
+            .listStyle(.grouped)
 #endif
+        }
+        .padding(.bottom, 50)
     }
     
     var searchBar: some View {
