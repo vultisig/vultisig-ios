@@ -44,24 +44,24 @@ enum MayaChainHelper {
         guard let fromAddr = AnyAddress(string: keysignPayload.coin.address, coin: .thorchain, hrp: "maya") else {
             return .failure(HelperError.runtimeError("\(keysignPayload.coin.address) is invalid"))
         }
-
+        
         guard case .MayaChain(let accountNumber, let sequence) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get account number and sequence"))
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
             return .failure(HelperError.runtimeError("invalid hex public key"))
         }
-
+        
         var mayaChainCoin = TW_Cosmos_Proto_THORChainCoin()
         var message = [CosmosMessage()]
-
+        
         var isDeposit: Bool = false
         if let memo = keysignPayload.memo, !memo.isEmpty {
             if DepositStore.PREFIXES.contains(where: { memo.hasPrefix($0) }) {
                 isDeposit = true
             }
         }
-
+        
         if isDeposit {
             mayaChainCoin = TW_Cosmos_Proto_THORChainCoin.with {
                 $0.asset = TW_Cosmos_Proto_THORChainAsset.with {
@@ -86,7 +86,7 @@ enum MayaChainHelper {
             guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .thorchain, hrp: "maya") else {
                 return .failure(HelperError.runtimeError("\(keysignPayload.toAddress) is invalid"))
             }
-
+            
             message = [CosmosMessage.with {
                 $0.thorchainSendMessage = CosmosMessage.THORChainSend.with {
                     $0.fromAddress = fromAddr.data
@@ -98,7 +98,7 @@ enum MayaChainHelper {
                 }
             }]
         }
-
+        
         let input = CosmosSigningInput.with {
             $0.publicKey = pubKeyData
             $0.signingMode = .protobuf
@@ -149,7 +149,7 @@ enum MayaChainHelper {
         switch result {
         case .success(let inputData):
             return try getSignedTransaction(vaultHexPubKey: vaultHexPubKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
-
+            
         case .failure(let error):
             throw error
         }

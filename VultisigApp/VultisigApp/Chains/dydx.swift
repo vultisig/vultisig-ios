@@ -58,17 +58,42 @@ class DydxHelper {
         }
         let coin = self.coinType
         
-        let input = CosmosSigningInput.with {
-            $0.publicKey = pubKeyData
-            $0.signingMode = .protobuf
-            $0.chainID = coin.chainId
-            $0.accountNumber = accountNumber
-            $0.sequence = sequence
-            $0.mode = .sync
-            if let memo = keysignPayload.memo {
-                $0.memo = memo
+        var message = [CosmosMessage()]
+        
+        var isDeposit: Bool = false
+        var isVote: Bool = false
+        if let memo = keysignPayload.memo, !memo.isEmpty {
+            isDeposit = DepositStore.PREFIXES.contains(where: { memo.hasPrefix($0) })
+            isVote = memo.hasPrefix("DYDX_VOTE")
+        }
+        
+        if let swapPayload = keysignPayload.swapPayload {
+            isDeposit = swapPayload.isDeposit
+        }
+        
+        if isDeposit, isVote {
+            let selectedOption = keysignPayload.memo?.replacingOccurrences(of: "DYDX_VOTE:", with: "") ?? ""
+            let components = selectedOption.split(separator: ":")
+            
+            guard components.count == 2,
+                  let proposalID = Int(components[1]),
+                  let voteOption = TW_Cosmos_Proto_Message.VoteOption.allCases.first(where: { $0.description == String(components[0]) }) else {
+                return .failure(HelperError.runtimeError("The vote option is invalid"))
             }
-            $0.messages = [CosmosMessage.with {
+            
+            message = [CosmosMessage.with {
+                $0.msgVote = CosmosMessage.MsgVote.with {
+                    $0.proposalID = UInt64(proposalID)
+                    $0.voter = keysignPayload.coin.address
+                    $0.option = voteOption
+                }
+            }]
+        } else {
+            guard AnyAddress(string: keysignPayload.toAddress, coin: coin) != nil else {
+                return .failure(HelperError.runtimeError("\(keysignPayload.toAddress) is invalid"))
+            }
+            
+            message = [CosmosMessage.with {
                 $0.sendCoinsMessage = CosmosMessage.Send.with{
                     $0.fromAddress = keysignPayload.coin.address
                     $0.amounts = [CosmosAmount.with {
@@ -78,6 +103,19 @@ class DydxHelper {
                     $0.toAddress = keysignPayload.toAddress
                 }
             }]
+        }
+        
+        let input = CosmosSigningInput.with {
+            $0.publicKey = pubKeyData
+            $0.signingMode = .protobuf
+            $0.chainID = coin.chainId
+            $0.accountNumber = accountNumber
+            $0.sequence = sequence
+            $0.mode = .sync
+            if let memo = keysignPayload.memo, !isVote {
+                $0.memo = memo
+            }
+            $0.messages = message
             
             $0.fee = CosmosFee.with {
                 $0.gas = 200000 // gas limit
@@ -88,8 +126,6 @@ class DydxHelper {
             }
         }
         
-        print(input.debugDescription)
-        
         do {
             let inputData = try input.serializedData()
             return .success(inputData)
@@ -97,6 +133,7 @@ class DydxHelper {
             return .failure(HelperError.runtimeError("fail to get plan"))
         }
     }
+    
     func getPreSignedImageHash(keysignPayload: KeysignPayload) -> Result<[String], Error> {
         let result = getPreSignedInputData(keysignPayload: keysignPayload)
         switch result {
@@ -104,8 +141,6 @@ class DydxHelper {
             do {
                 let hashes = TransactionCompiler.preImageHashes(coinType: self.coinType, txInputData: inputData)
                 let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
-                
-                print("ERROR preSigningOutput: \(preSigningOutput.errorMessage)")
                 return .success([preSigningOutput.dataHash.hexString])
             } catch {
                 return .failure(HelperError.runtimeError("fail to get preSignedImageHash,error:\(error.localizedDescription)"))
@@ -145,9 +180,6 @@ class DydxHelper {
         do {
             let hashes = TransactionCompiler.preImageHashes(coinType: self.coinType, txInputData: inputData)
             let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
-            
-            print(preSigningOutput.errorMessage)
-            
             let allSignatures = DataVector()
             let publicKeys = DataVector()
             let signatureProvider = SignatureProvider(signatures: signatures)
