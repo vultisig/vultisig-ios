@@ -18,7 +18,7 @@ struct TokenSelectionView: View {
         ZStack {
             Background()
             VStack(spacing: 0) {
-                addCustomTokenButton.background(Color.clear).padding()
+                addCustomTokenButton
                 Separator()
                 view
             }
@@ -84,56 +84,69 @@ struct TokenSelectionView: View {
             chainDetailView.chooseTokensButton(NSLocalizedString("customToken", comment: "Custom Token"))
         }
 #if os(macOS)
-        .padding(.top, 10)
+        .padding(.horizontal, 25)
 #endif
+        .background(Color.clear).padding()
     }
     
     var view: some View {
-        VStack(alignment: .leading,spacing: 24){
+        VStack(alignment: .leading, spacing: 0) {
 #if os(macOS)
             searchBar
                 .padding(.vertical, 18)
+                .padding(.horizontal, 40)
+            
+            Separator()
 #endif
-            List {
-                let selected = tokenViewModel.selectedTokens
-                if !selected.isEmpty {
-                    Section(header: Text(NSLocalizedString("Selected", comment:"Selected"))) {
-                        ForEach(selected, id: \.self) { token in
-                            TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel)
-                                .listRowBackground(Color.clear)
-                                .listRowSeparator(.hidden)
-                        }
-                    }
-                }
-                
-                if tokenViewModel.searchText.isEmpty {
-                    Section(header: Text(NSLocalizedString("tokens", comment:"Tokens"))) {
-                        ForEach(tokenViewModel.preExistTokens, id: \.self) { token in
-                            TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel)
-                                .listRowBackground(Color.clear)
-                                .listRowSeparator(.hidden)
-                        }
-                    }
-                } else {
-                    Section(header: Text(NSLocalizedString("searchResult", comment:"Search Result"))) {
-                        let filtered = tokenViewModel.searchedTokens
-                        if !filtered.isEmpty {
-                            ForEach(filtered, id: \.self) { token in
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 24, pinnedViews: []) {
+                    let selected = tokenViewModel.selectedTokens
+                    if !selected.isEmpty {
+                        Section(header: Text(NSLocalizedString("Selected", comment:"Selected")).background(Color.backgroundBlue)) {
+                            ForEach(selected, id: \.self) { token in
                                 TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel)
                                     .listRowBackground(Color.clear)
                                     .listRowSeparator(.hidden)
                             }
                         }
                     }
+                    
+                    if tokenViewModel.searchText.isEmpty {
+                        Section(header: Text(NSLocalizedString("tokens", comment:"Tokens"))) {
+                            ForEach(tokenViewModel.preExistTokens, id: \.self) { token in
+                                TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel)
+                                    .listRowBackground(Color.clear)
+                                    .listRowSeparator(.hidden)
+                            }
+                        }
+                    } else {
+                        Section(header: Text(NSLocalizedString("searchResult", comment:"Search Result"))) {
+                            let filtered = tokenViewModel.searchedTokens
+                            if !filtered.isEmpty {
+                                ForEach(filtered, id: \.self) { token in
+                                    TokenSelectionCell(chain: group.chain, address: address, asset: token, tokenSelectionViewModel: tokenViewModel)
+                                        .listRowBackground(Color.clear)
+                                        .listRowSeparator(.hidden)
+                                }
+                            }
+                        }
+                    }
+                    
                 }
-                
-            }
-            .scrollContentBackground(.hidden)
+                .scrollContentBackground(.hidden)
 #if os(iOS)
-            .listStyle(.grouped)
+                .listStyle(.grouped)
+#elseif os(macOS)
+                .padding(.horizontal, 40)
+                .padding(.top, 20)
+                .padding(.bottom, 50)
+                .colorScheme(.dark)
 #endif
+            }
         }
+#if os(iOS)
         .padding(.bottom, 50)
+#endif
     }
     
     var searchBar: some View {
@@ -150,6 +163,8 @@ struct TokenSelectionView: View {
                 .focused($isSearchFieldFocused)
                 .textInputAutocapitalization(.never)
                 .keyboardType(.default)
+#elseif os(macOS)
+                .colorScheme(.dark)
 #endif
             
             if isSearching {
