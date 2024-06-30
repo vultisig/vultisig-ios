@@ -5,7 +5,6 @@ struct TokenSelectionCell: View {
     let address: String
     let asset: TokenSelectionViewModel.Token
     let tokenSelectionViewModel: TokenSelectionViewModel
-    let tokenSelectionView: TokenSelectionView
     
     @State var isSelected = false
     
