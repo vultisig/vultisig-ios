@@ -9,3 +9,4 @@
 
 # scan temporary files
 **/fastlane/test_output
+*.pkg
