@@ -20,18 +20,18 @@ class ERC20Helper {
         return ERC20Helper(coinType: coin.coinType)
     }
     
-    func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
-       
+    func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
+
         let coin = self.coinType
         guard let intChainID = Int64(coin.chainId) else {
-            return .failure(HelperError.runtimeError("fail to get chainID"))
+            throw HelperError.runtimeError("fail to get chainID")
         }
         guard case .Ethereum(let maxFeePerGasWei,
                           let priorityFeeWei,
                           let nonce,
                           let gasLimit) = keysignPayload.chainSpecific
         else {
-            return .failure(HelperError.runtimeError("fail to get Ethereum chain specific"))
+            throw HelperError.runtimeError("fail to get Ethereum chain specific")
         }
         
         let input = EthereumSigningInput.with {
@@ -49,29 +49,15 @@ class ERC20Helper {
                 }
             }
         }
-        
-        do {
-            let inputData = try input.serializedData()
-            return .success(inputData)
-        } catch {
-            return .failure(HelperError.runtimeError("fail to get plan"))
-        }
+
+        return try input.serializedData()
     }
     
-    func getPreSignedImageHash(keysignPayload: KeysignPayload) -> Result<[String], Error> {
-        let result = getPreSignedInputData(keysignPayload: keysignPayload)
-        switch result {
-        case .success(let inputData):
-            do {
-                let hashes = TransactionCompiler.preImageHashes(coinType: self.coinType, txInputData: inputData)
-                let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
-                return .success([preSigningOutput.dataHash.hexString])
-            } catch {
-                return .failure(HelperError.runtimeError("fail to get preSignedImageHash,error:\(error.localizedDescription)"))
-            }
-        case .failure(let err):
-            return .failure(err)
-        }
+    func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
+        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
+        let hashes = TransactionCompiler.preImageHashes(coinType: coinType, txInputData: inputData)
+        let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+        return [preSigningOutput.dataHash.hexString]
     }
     
     func getSignedTransaction(vaultHexPubKey: String,
@@ -85,38 +71,33 @@ class ERC20Helper {
         else {
             throw HelperError.runtimeError("public key \(ethPublicKey) is invalid")
         }
-        let result = getPreSignedInputData(keysignPayload: keysignPayload)
-        switch result {
-        case .success(let inputData):
-            do {
-                let hashes = TransactionCompiler.preImageHashes(coinType: self.coinType, txInputData: inputData)
-                let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
-                let allSignatures = DataVector()
-                let publicKeys = DataVector()
-                let signatureProvider = SignatureProvider(signatures: signatures)
-                let signature = signatureProvider.getSignatureWithRecoveryID(preHash: preSigningOutput.dataHash)
-                
-                guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash) else {
-                    throw HelperError.runtimeError("fail to verify signature")
-                }
-                
-                allSignatures.add(data: signature)
-                
-                // it looks like the pubkey compileWithSignature accept is extended public key
-                // also , it can be empty as well , since we don't have extended public key , so just leave it empty
-                let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: self.coinType,
-                                                                                     txInputData: inputData,
-                                                                                     signatures: allSignatures,
-                                                                                     publicKeys: publicKeys)
-                let output = try EthereumSigningOutput(serializedData: compileWithSignature)
-                let result = SignedTransactionResult(rawTransaction: output.encoded.hexString,
-                                                     transactionHash: "0x"+output.encoded.sha3(.keccak256).toHexString())
-                return result
-            } catch {
-                throw HelperError.runtimeError("fail to get signed ethereum transaction,error:\(error.localizedDescription)")
+        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
+        do {
+            let hashes = TransactionCompiler.preImageHashes(coinType: self.coinType, txInputData: inputData)
+            let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+            let allSignatures = DataVector()
+            let publicKeys = DataVector()
+            let signatureProvider = SignatureProvider(signatures: signatures)
+            let signature = signatureProvider.getSignatureWithRecoveryID(preHash: preSigningOutput.dataHash)
+            
+            guard publicKey.verify(signature: signature, message: preSigningOutput.dataHash) else {
+                throw HelperError.runtimeError("fail to verify signature")
             }
-        case .failure(let error):
-            throw error
+            
+            allSignatures.add(data: signature)
+            
+            // it looks like the pubkey compileWithSignature accept is extended public key
+            // also , it can be empty as well , since we don't have extended public key , so just leave it empty
+            let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: self.coinType,
+                                                                                 txInputData: inputData,
+                                                                                 signatures: allSignatures,
+                                                                                 publicKeys: publicKeys)
+            let output = try EthereumSigningOutput(serializedData: compileWithSignature)
+            let result = SignedTransactionResult(rawTransaction: output.encoded.hexString,
+                                                 transactionHash: "0x"+output.encoded.sha3(.keccak256).toHexString())
+            return result
+        } catch {
+            throw HelperError.runtimeError("fail to get signed ethereum transaction,error:\(error.localizedDescription)")
         }
     }
 }

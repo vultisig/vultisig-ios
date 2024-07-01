@@ -193,17 +193,16 @@ class JoinKeysignViewModel: ObservableObject {
 #endif
     
     func prepareKeysignMessages(keysignPayload: KeysignPayload) {
-        let result = keysignPayload.getKeysignMessages(vault: self.vault)
-        switch result {
-        case .success(let preSignedImageHash):
+        do {
+            let preSignedImageHash = try keysignPayload.getKeysignMessages(vault: self.vault)
             self.logger.info("Successfully prepared messages for keysigning.")
             self.keysignMessages = preSignedImageHash.sorted()
             if self.keysignMessages.isEmpty {
                 self.errorMsg = "There is no messages to be signed"
                 self.status = .FailedToStart
             }
-        case .failure(let err):
-            self.errorMsg = "Failed to prepare messages for keysigning. Error: \(err.localizedDescription)"
+        } catch {
+            self.errorMsg = "Failed to prepare messages for keysigning. Error: \(error.localizedDescription)"
             self.status = .FailedToStart
         }
     }

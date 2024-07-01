@@ -28,6 +28,15 @@
       }
     },
     {
+      "identity" : "commondata",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/vultisig/commondata",
+      "state" : {
+        "branch" : "main",
+        "revision" : "d2b1395e32d116c5eb2659f7ef61ffab2cfdaed4"
+      }
+    },
+    {
       "identity" : "cryptoswift",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/krzyzanowskim/CryptoSwift.git",
