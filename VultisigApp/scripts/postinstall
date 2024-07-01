@@ -1,0 +1,13 @@
+#!/bin/bash
+# Inform the user and request to log out automatically
+osascript <<EOF
+tell app "System Events"
+    display dialog "The application requires you to log out to complete the installation. You will be logged out automatically in 60 seconds. Please save your work." buttons {"Log out now", "Cancel"} default button 1 giving up after 60
+    if the button returned of the result is "Log out now" then
+        log out
+    end if
+    if gave up of the result is true then
+        log out
+    end if
+end tell
+EOF
