@@ -32,13 +32,16 @@ platform :mac do
               configuration: "Release",
               export_method: "developer-id",
               export_team_id: ENV['APPLE_TEAM_ID'],
+              output_directory: "./pkgroot/Applications",
+              include_symbols: false,
+              clean: true,
               skip_package_pkg: false)
 
-    sh "create-dmg '../VultisigApp.dmg' '../VultisigApp.app'"
+    sh "pkgbuild --root ../pkgroot --identifier 'com.vultisig.wallet' --version '1.0' --install-location / 'VultisigApp.pkg'"
   end
   lane :notarize_mac do
      # Notarize the packaged app
-     notarize(package: "VultisigApp.dmg",
+     notarize(package: "VultisigApp.signed.pkg",
      username: ENV['APPLE_DEVELOPER_USERNAME'],
      bundle_id: "com.vultisig.wallet",
      asc_provider: ENV['APPLE_TEAM_ID'],
