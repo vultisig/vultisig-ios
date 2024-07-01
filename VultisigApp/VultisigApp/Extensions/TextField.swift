@@ -35,28 +35,17 @@ extension UITextField {
 }
 #endif
 
-struct MaxLengthTextField: View {
-    @Binding var text: String
-    var maxLength: Int = 50
-    
-    var body: some View {
-        TextField("", text: $text)
-            .onChange(of: text) { newValue in
-                if newValue.count > maxLength {
-                    text = String(newValue.prefix(maxLength))
-                }
-            }
-    }
-}
-
 struct MaxLengthModifier: ViewModifier {
     @Binding var text: String
     var maxLength: Int = 50
     
     func body(content: Content) -> some View {
         content
-            .background(Color.clear) // Set background to clear to avoid interfering with the layout
-            .overlay(MaxLengthTextField(text: $text, maxLength: maxLength).background(Color.clear)) // Ensure the inner TextField also has a clear background
+            .onChange(of: text) { newValue in
+                if newValue.count > maxLength {
+                    text = String(newValue.prefix(maxLength))
+                }
+            }
     }
 }
 
