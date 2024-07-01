@@ -21,6 +21,9 @@ struct VultisigApp: App {
     @StateObject var settingsViewModel = SettingsViewModel.shared
     @StateObject var homeViewModel = HomeViewModel()
     
+    init(){
+        //setenv("GODEBUG", "asyncpreemptoff=1",1)
+    }
     var body: some Scene {
         WindowGroup {
             ContentView()
