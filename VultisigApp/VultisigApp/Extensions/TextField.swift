@@ -10,38 +10,13 @@ import Foundation
 import SwiftUI
 import Combine
 
-#if canImport(UIKit)
-import UIKit
-
-private var maxLengthKey: UInt8 = 0
-
-extension UITextField {
-    @IBInspectable var maxLength: Int {
-        get {
-            return objc_getAssociatedObject(self, &maxLengthKey) as? Int ?? 50
-        }
-        set {
-            objc_setAssociatedObject(self, &maxLengthKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
-            addTarget(self, action: #selector(checkMaxLength), for: .editingChanged)
-        }
-    }
-    
-    @objc func checkMaxLength() {
-        guard let text = self.text, maxLength > 0 else { return }
-        if text.count > maxLength {
-            self.text = String(text.prefix(maxLength))
-        }
-    }
-}
-#endif
-
 struct MaxLengthModifier: ViewModifier {
     @Binding var text: String
     var maxLength: Int = 50
     
     func body(content: Content) -> some View {
         content
-            .onChange(of: text) { newValue in
+            .onChange(of: text) { oldValue, newValue in
                 if newValue.count > maxLength {
                     text = String(newValue.prefix(maxLength))
                 }
