@@ -8,8 +8,10 @@
 
 import Foundation
 import SwiftUI
-import UIKit
 import Combine
+
+#if canImport(UIKit)
+import UIKit
 
 private var maxLengthKey: UInt8 = 0
 
@@ -31,6 +33,7 @@ extension UITextField {
         }
     }
 }
+#endif
 
 struct MaxLengthTextField: View {
     @Binding var text: String
@@ -38,7 +41,7 @@ struct MaxLengthTextField: View {
     
     var body: some View {
         TextField("", text: $text)
-            .onChange(of: text) { oldValue, newValue in
+            .onChange(of: text) { newValue in
                 if newValue.count > maxLength {
                     text = String(newValue.prefix(maxLength))
                 }
@@ -52,7 +55,8 @@ struct MaxLengthModifier: ViewModifier {
     
     func body(content: Content) -> some View {
         content
-            .background(MaxLengthTextField(text: $text, maxLength: maxLength))
+            .background(Color.clear) // Set background to clear to avoid interfering with the layout
+            .overlay(MaxLengthTextField(text: $text, maxLength: maxLength).background(Color.clear)) // Ensure the inner TextField also has a clear background
     }
 }
 
