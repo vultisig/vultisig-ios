@@ -74,6 +74,7 @@ struct RenameVaultView: View {
             .background(Color.blue600)
             .cornerRadius(12)
             .borderlessTextFieldStyle()
+            .maxLength($name)
     }
     
     var button: some View {

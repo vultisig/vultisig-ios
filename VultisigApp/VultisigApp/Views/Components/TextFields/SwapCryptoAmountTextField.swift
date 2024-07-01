@@ -11,11 +11,11 @@ struct SwapCryptoAmountTextField: View {
     let title: String
     let fiatAmount: String
     @Binding var amount: String
-
+    
     var onChange: (String) async -> Void
-
+    
     @Environment(\.isEnabled) private var isEnabled
-
+    
     var body: some View {
         content
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -60,29 +60,33 @@ struct SwapCryptoAmountTextField: View {
     }
     
     var field: some View {
-        HStack(spacing: 0) {
-            TextField(NSLocalizedString("enterAmount", comment: "").capitalized, text: Binding<String>(
-                get: { amount },
-                set: {
-                    let newValue = $0.formatCurrency()
-
-                    guard amount != newValue else { return }
-                    amount = newValue
-
-                    DebounceHelper.shared.debounce {
-                        Task { await onChange(newValue) }
-                    }
+        
+        var customBiding = Binding<String>(
+            get: { amount },
+            set: {
+                let newValue = $0.formatCurrency()
+                
+                guard amount != newValue else { return }
+                amount = newValue
+                
+                DebounceHelper.shared.debounce {
+                    Task { await onChange(newValue) }
                 }
-            ))
-            .submitLabel(.next)
-            .disableAutocorrection(true)
-            .textFieldStyle(TappableTextFieldStyle())
-            .borderlessTextFieldStyle()
-            .foregroundColor(isEnabled ? .neutral0 : .neutral300)
+            }
+        )
+        
+        return HStack(spacing: 0) {
+            TextField(NSLocalizedString("enterAmount", comment: "").capitalized, text: customBiding)
+                .maxLength(customBiding)
+                .submitLabel(.next)
+                .disableAutocorrection(true)
+                .textFieldStyle(TappableTextFieldStyle())
+                .borderlessTextFieldStyle()
+                .foregroundColor(isEnabled ? .neutral0 : .neutral300)
 #if os(iOS)
-            .textInputAutocapitalization(.never)
-            .keyboardType(.decimalPad)
-            .textContentType(.oneTimeCode)
+                .textInputAutocapitalization(.never)
+                .keyboardType(.decimalPad)
+                .textContentType(.oneTimeCode)
 #endif
         }
     }

@@ -70,6 +70,7 @@ struct NewWalletNameView: View {
             .cornerRadius(12)
             .colorScheme(.dark)
             .borderlessTextFieldStyle()
+            .maxLength($name)
     }
     
     var button: some View {

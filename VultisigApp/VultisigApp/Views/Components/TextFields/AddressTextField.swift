@@ -53,6 +53,7 @@ struct AddressTextField: View {
                 .submitLabel(.next)
                 .disableAutocorrection(true)
                 .textContentType(.oneTimeCode)
+                .maxLength($contractAddress)
                 .onChange(of: contractAddress){oldValue,newValue in
                     validateAddress(newValue)
                 }

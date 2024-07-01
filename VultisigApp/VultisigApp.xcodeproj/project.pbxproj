@@ -236,6 +236,7 @@
 		B50E399B2BF5AB2100B9A269 /* TransactionMemoAddressable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50E399A2BF5AB2100B9A269 /* TransactionMemoAddressable.swift */; };
 		B50E399D2BF5AB4B00B9A269 /* TransactionMemoContractTypeEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50E399C2BF5AB4B00B9A269 /* TransactionMemoContractTypeEnum.swift */; };
 		B51119332C0072620020B711 /* TransactionMemoCustom.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51119322C0072620020B711 /* TransactionMemoCustom.swift */; };
+		B520B2FE2C3250230097C590 /* TextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B520B2FD2C3250230097C590 /* TextField.swift */; };
 		B52196422C1296DF0021D27A /* IntExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52196412C1296DF0021D27A /* IntExtension.swift */; };
 		B52196442C12C3540021D27A /* CustomTokenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52196432C12C3540021D27A /* CustomTokenView.swift */; };
 		B52196462C12CA2E0021D27A /* AddressTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52196452C12CA2E0021D27A /* AddressTextField.swift */; };
@@ -613,6 +614,7 @@
 		B50E399A2BF5AB2100B9A269 /* TransactionMemoAddressable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoAddressable.swift; sourceTree = "<group>"; };
 		B50E399C2BF5AB4B00B9A269 /* TransactionMemoContractTypeEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoContractTypeEnum.swift; sourceTree = "<group>"; };
 		B51119322C0072620020B711 /* TransactionMemoCustom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoCustom.swift; sourceTree = "<group>"; };
+		B520B2FD2C3250230097C590 /* TextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextField.swift; sourceTree = "<group>"; };
 		B52196412C1296DF0021D27A /* IntExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntExtension.swift; sourceTree = "<group>"; };
 		B52196432C12C3540021D27A /* CustomTokenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTokenView.swift; sourceTree = "<group>"; };
 		B52196452C12CA2E0021D27A /* AddressTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressTextField.swift; sourceTree = "<group>"; };
@@ -1200,6 +1202,7 @@
 				46AAA49C2BC3B4CF00E5BAB4 /* DecimalExtension.swift */,
 				B52196412C1296DF0021D27A /* IntExtension.swift */,
 				B590DF892C2E88F900ED934E /* VoteOption.swift */,
+				B520B2FD2C3250230097C590 /* TextField.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -2121,6 +2124,7 @@
 				A608E3792C02472C00E40B85 /* SwapCryptoAmountTextField.swift in Sources */,
 				A564ED442BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift in Sources */,
 				A5D0C9352BEE77190022D421 /* SwapPayload.swift in Sources */,
+				B520B2FE2C3250230097C590 /* TextField.swift in Sources */,
 				A6BACF1C2BC79B3100084810 /* TokenSelectionView.swift in Sources */,
 				A69069A12BCDEFD400F28A8B /* ProgressRing.swift in Sources */,
 				A6FB96B12BD086AD00D56F68 /* HomeViewModel.swift in Sources */,

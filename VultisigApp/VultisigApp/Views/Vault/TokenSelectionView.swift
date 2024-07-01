@@ -159,6 +159,7 @@ struct TokenSelectionView: View {
                 .textContentType(.oneTimeCode)
                 .padding(.horizontal, 8)
                 .borderlessTextFieldStyle()
+                .maxLength( $tokenViewModel.searchText)
 #if os(iOS)
                 .focused($isSearchFieldFocused)
                 .textInputAutocapitalization(.never)
