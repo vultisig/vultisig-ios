@@ -37,7 +37,10 @@ platform :mac do
               clean: true,
               skip_package_pkg: false)
 
-    sh "pkgbuild --root ../pkgroot --identifier 'com.vultisig.wallet' --version '1.0' --install-location / 'VultisigApp.pkg'"
+    # remove the dSYM file
+    sh "rm -f ../pkgroot/Applications/VultisigApp.app.dSYM.zip"
+
+    sh "pkgbuild --root ../pkgroot --scripts ../scripts --identifier 'com.vultisig.wallet' --version '1.0' --install-location / '../VultisigApp.pkg'"
   end
   lane :notarize_mac do
      # Notarize the packaged app
