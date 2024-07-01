@@ -16,7 +16,7 @@ class ERC20Helper {
         self.coinType = coinType
     }
     
-    static func getHelper(coin: Coin) -> ERC20Helper {
+    static func getHelper(coin: CoinMeta) -> ERC20Helper {
         return ERC20Helper(coinType: coin.coinType)
     }
     

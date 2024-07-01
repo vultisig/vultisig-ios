@@ -1,19 +1,12 @@
 //
-//  KeysignPayload.swift
+//  BlockChainSpecific.swift
 //  VultisigApp
+//
+//  Created by Artur Guseinov on 01.07.2024.
 //
 
 import Foundation
 import BigInt
-import WalletCore
-
-struct KeysignMessage: Codable, Hashable {
-    var sessionID: String
-    let serviceName: String
-    let payload: KeysignPayload
-    let encryptionKeyHex: String
-    let useVultisigRelay: Bool
-}
 
 enum BlockChainSpecific: Codable, Hashable {
     case UTXO(byteFee: BigInt, sendMaxAmount: Bool) // byteFee
@@ -24,7 +17,7 @@ enum BlockChainSpecific: Codable, Hashable {
     case Solana(recentBlockHash: String, priorityFee: BigInt) // priority fee is in microlamports
     case Sui(referenceGasPrice: BigInt, coins: [[String:String]])
     case Polkadot(recentBlockHash: String, nonce: UInt64, currentBlockNumber: BigInt, specVersion: UInt32, transactionVersion: UInt32, genesisHash: String)
-    
+
     var gas: BigInt {
         switch self {
         case .UTXO(let byteFee, _):
@@ -54,25 +47,4 @@ enum BlockChainSpecific: Codable, Hashable {
             return gas
         }
     }
-}
-
-struct KeysignPayload: Codable, Hashable {
-    let coin: Coin
-    let toAddress: String
-    let toAmount: BigInt
-    let chainSpecific: BlockChainSpecific
-    let utxos: [UtxoInfo]
-    let memo: String?
-    let swapPayload: SwapPayload?
-    let approvePayload: ERC20ApprovePayload?
-    let vaultPubKeyECDSA: String
-    let vaultLocalPartyID: String
-
-    var toAmountString: String {
-        let decimalAmount = Decimal(string: toAmount.description) ?? Decimal.zero
-        let power = Decimal(sign: .plus, exponent: -coin.decimals, significand: 1)
-        return "\(decimalAmount * power) \(coin.ticker)"
-    }
-
-    static let example = KeysignPayload(coin: Coin.example, toAddress: "toAddress", toAmount: 100, chainSpecific: BlockChainSpecific.UTXO(byteFee: 100, sendMaxAmount: false), utxos: [], memo: "Memo", swapPayload: nil, approvePayload: nil, vaultPubKeyECDSA: "12345", vaultLocalPartyID: "iPhone-100")
 }
