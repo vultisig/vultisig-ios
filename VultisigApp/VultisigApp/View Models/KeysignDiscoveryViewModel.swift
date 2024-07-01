@@ -32,7 +32,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
     
     init() {
         self.vault = Vault(name: "Main Vault")
-        self.keysignPayload = KeysignPayload(coin: Coin.example, toAddress: "", toAmount: 0, chainSpecific: BlockChainSpecific.UTXO(byteFee: 0, sendMaxAmount: false), utxos: [], memo: nil, swapPayload: nil, vaultPubKeyECDSA: vault.pubKeyECDSA, vaultLocalPartyID: vault.localPartyID)
+        self.keysignPayload = KeysignPayload(coin: Coin.example, toAddress: "", toAmount: 0, chainSpecific: BlockChainSpecific.UTXO(byteFee: 0, sendMaxAmount: false), utxos: [], memo: nil, swapPayload: nil, approvePayload: nil, vaultPubKeyECDSA: vault.pubKeyECDSA, vaultLocalPartyID: vault.localPartyID)
         self.participantDiscovery = nil
         self.encryptionKeyHex = Encryption.getEncryptionKey()
         if VultisigRelay.IsRelayEnabled {
@@ -59,7 +59,8 @@ class KeysignDiscoveryViewModel: ObservableObject {
         self.selections.insert(self.localPartyID)
 
         do {
-            let preSignedImageHash = try keysignPayload.getKeysignMessages(vault: self.vault)
+            let keysignFactory = KeysignMessageFactory(payload: keysignPayload)
+            let preSignedImageHash = try keysignFactory.getKeysignMessages(vault: vault)
             self.keysignMessages = preSignedImageHash.sorted()
             if self.keysignMessages.isEmpty {
                 self.logger.error("no meessage need to be signed")
