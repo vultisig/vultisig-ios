@@ -57,15 +57,14 @@ class SendTransaction: ObservableObject, Hashable {
     func hasEnoughNativeTokensToPayTheFees(specific: BlockChainSpecific) async -> (Bool, String) {
         var errorMessage = ""
         guard !coin.isNativeToken else { return (true, errorMessage) }
-        
-        let totalFeeWei = coin.feeDefault.toBigInt() * specific.fee
+
         if let vault = ApplicationState.shared.currentVault {
             if let nativeToken = vault.coins.nativeCoin(chain: coin.chain) {
                 await BalanceService.shared.updateBalance(for: nativeToken)
                 
                 let nativeTokenBalance = nativeToken.rawBalance.toBigInt()
                 
-                if totalFeeWei > nativeTokenBalance {
+                if specific.fee > nativeTokenBalance {
                     errorMessage = "Insufficient \(nativeToken.ticker) balance for the \(coin.ticker) transaction fees."
                     
                     return (false, errorMessage)
