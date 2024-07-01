@@ -107,7 +107,7 @@ private extension SwapService {
                 return .thorchain(quote)
             }
         }
-        catch let error as ThorchainSwapError {
+        catch _ as ThorchainSwapError {
             throw Errors.routeUnavailable
         }
         catch let error as Errors {

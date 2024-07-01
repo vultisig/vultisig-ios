@@ -305,7 +305,6 @@
 		DE4DFA7B2B7B1692004F8E73 /* ModelContainerPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE4DFA7A2B7B1692004F8E73 /* ModelContainerPreview.swift */; };
 		DE5FA58A2BAD1EF2008FD910 /* CosmosBalanceCacheEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE5FA5892BAD1EF2008FD910 /* CosmosBalanceCacheEntry.swift */; };
 		DE6325B12C2A1E97000D05B9 /* Placement.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6325B02C2A1E97000D05B9 /* Placement.swift */; };
-		DE6325B42C2C113D000D05B9 /* walletcore in Frameworks */ = {isa = PBXBuildFile; productRef = DE6325B32C2C113D000D05B9 /* walletcore */; };
 		DE6325B72C2C12FB000D05B9 /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = DE6325B62C2C12FB000D05B9 /* SwiftProtobuf */; };
 		DE63AE0E2BAD2408001BBE5C /* THORBalanceExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE63AE0D2BAD2408001BBE5C /* THORBalanceExtension.swift */; };
 		DE63AE4B2BB4D87F001BBE5C /* BscService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE63AE4A2BB4D87F001BBE5C /* BscService.swift */; };
@@ -338,7 +337,6 @@
 		DEBF93972B8D5FEF002868CD /* KeysignPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */; };
 		DED05FE42BBB824D00E0496C /* ThorchainAccountValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED05FE32BBB824D00E0496C /* ThorchainAccountValue.swift */; };
 		DED05FE62BBB82F300E0496C /* CosmosAccountsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED05FE52BBB82F300E0496C /* CosmosAccountsResponse.swift */; };
-		DED4D61C2C1BD1E70034CD3B /* walletcore in Frameworks */ = {isa = PBXBuildFile; productRef = DED4D61B2C1BD1E70034CD3B /* walletcore */; };
 		DEE2D8722C0D37A900D2F4C3 /* VaultDefaultCoinService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */; };
 		DEEADCF72B916676007978DE /* Solana.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEADCF62B916676007978DE /* Solana.swift */; };
 		DEEDAEE12B8AF7EF005170E8 /* evm.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEDAEE02B8AF7EF005170E8 /* evm.swift */; };
@@ -381,7 +379,7 @@
 /* Begin PBXFileReference section */
 		049BBB5D2B71E83D004C231F /* VultisigLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultisigLogo.swift; sourceTree = "<group>"; };
 		049BBB672B71E9C5004C231F /* WifiInstruction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WifiInstruction.swift; sourceTree = "<group>"; };
-		4600167D2B71A12D00CE17C7 /* Tss.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
+		4600167D2B71A12D00CE17C7 /* Tss.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:G8Q5XUAJD9:Cortina Ventures PTY LTD"; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
 		4606B3AF2B80465E0045094D /* UTXOTransactionsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOTransactionsService.swift; sourceTree = "<group>"; };
 		461AD1B62BC6706500959278 /* VaultPairDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultPairDetailView.swift; sourceTree = "<group>"; };
 		461AD1B82BC6858000959278 /* VaultPairDetailCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultPairDetailCell.swift; sourceTree = "<group>"; };
@@ -661,7 +659,7 @@
 		DE15729B2B70F284009BC7C5 /* JoinKeysignView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JoinKeysignView.swift; sourceTree = "<group>"; };
 		DE15729C2B70F284009BC7C5 /* KeysignDiscoveryView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeysignDiscoveryView.swift; sourceTree = "<group>"; };
 		DE15729D2B70F284009BC7C5 /* KeysignView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeysignView.swift; sourceTree = "<group>"; };
-		DE1572A12B70F873009BC7C5 /* Tss.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
+		DE1572A12B70F873009BC7C5 /* Tss.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:G8Q5XUAJD9:Cortina Ventures PTY LTD"; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
 		DE1572AB2B7174D3009BC7C5 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		DE1905262BD8CC4D0043577E /* KeysignVerify.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeysignVerify.swift; sourceTree = "<group>"; };
 		DE3D44AE2BD2487900BD64CD /* CosmosSignature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosSignature.swift; sourceTree = "<group>"; };
@@ -745,10 +743,8 @@
 				DE3D44AD2BD2445100BD64CD /* CryptoSwift in Frameworks */,
 				DE49A19A2B660D8D000F3AFB /* Mediator in Frameworks */,
 				DEEDAEE82B8B50A4005170E8 /* BigInt in Frameworks */,
-				DED4D61C2C1BD1E70034CD3B /* walletcore in Frameworks */,
 				DE8AD7402BC649A600339775 /* Tss.xcframework in Frameworks */,
 				D9A22EB72B667C41007281BF /* Mediator in Frameworks */,
-				DE6325B42C2C113D000D05B9 /* walletcore in Frameworks */,
 				DE49A1B52B6A1088000F3AFB /* CodeScanner in Frameworks */,
 				DE8554682C2CFBC10002438C /* walletcore in Frameworks */,
 				DE6325B72C2C12FB000D05B9 /* SwiftProtobuf in Frameworks */,
@@ -1719,8 +1715,6 @@
 				DE49A1B42B6A1088000F3AFB /* CodeScanner */,
 				DEEDAEE72B8B50A4005170E8 /* BigInt */,
 				DE3D44AC2BD2445100BD64CD /* CryptoSwift */,
-				DED4D61B2C1BD1E70034CD3B /* walletcore */,
-				DE6325B32C2C113D000D05B9 /* walletcore */,
 				DE6325B62C2C12FB000D05B9 /* SwiftProtobuf */,
 				DE8554672C2CFBC10002438C /* walletcore */,
 			);
@@ -2677,10 +2671,6 @@
 			package = DE49A1B32B6A1088000F3AFB /* XCRemoteSwiftPackageReference "CodeScanner" */;
 			productName = CodeScanner;
 		};
-		DE6325B32C2C113D000D05B9 /* walletcore */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = walletcore;
-		};
 		DE6325B62C2C12FB000D05B9 /* SwiftProtobuf */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = DE6325B52C2C12FB000D05B9 /* XCRemoteSwiftPackageReference "swift-protobuf" */;
@@ -2689,10 +2679,6 @@
 		DE8554672C2CFBC10002438C /* walletcore */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = DE8554662C2CFBC10002438C /* XCRemoteSwiftPackageReference "walletcore-spm" */;
-			productName = walletcore;
-		};
-		DED4D61B2C1BD1E70034CD3B /* walletcore */ = {
-			isa = XCSwiftPackageProductDependency;
 			productName = walletcore;
 		};
 		DEEDAEE72B8B50A4005170E8 /* BigInt */ = {

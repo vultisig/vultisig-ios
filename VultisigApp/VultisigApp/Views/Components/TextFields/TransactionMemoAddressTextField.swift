@@ -196,7 +196,7 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
     }
 #elseif os(macOS)
     private func handleImageQrCode(data: Data) {
-        let (address, amount, message) = Utils.parseCryptoURI(String(data: data, encoding: .utf8) ?? .empty)
+        let (address, amount, _) = Utils.parseCryptoURI(String(data: data, encoding: .utf8) ?? .empty)
         memo.addressFields[addressKey] = address
         memo.addressFields["amount"] = amount
         validateAddress(address)
