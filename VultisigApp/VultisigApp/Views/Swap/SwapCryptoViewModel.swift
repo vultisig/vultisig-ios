@@ -253,7 +253,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
                 return true
 
-            case .thorchain(let _):
+            case .thorchain(_):
                 keysignPayload = try await keysignFactory.buildTransfer(
                     coin: tx.fromCoin,
                     toAddress: toAddress,
