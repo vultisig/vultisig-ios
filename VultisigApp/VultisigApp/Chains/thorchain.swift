@@ -9,12 +9,12 @@ import WalletCore
 
 enum THORChainHelper {
 
-    static func getSwapPreSignedInputData(keysignPayload: KeysignPayload, signingInput: CosmosSigningInput) -> Result<Data, Error> {
+    static func getSwapPreSignedInputData(keysignPayload: KeysignPayload, signingInput: CosmosSigningInput) throws -> Data {
         guard case .THORChain(let accountNumber, let sequence, _) = keysignPayload.chainSpecific else {
-            return .failure(HelperError.runtimeError("fail to get account number, sequence, or fee"))
+            throw HelperError.runtimeError("fail to get account number, sequence, or fee")
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
-            return .failure(HelperError.runtimeError("invalid hex public key"))
+            throw HelperError.runtimeError("invalid hex public key")
         }
         var input = signingInput
         input.publicKey = pubKeyData
@@ -26,27 +26,21 @@ enum THORChainHelper {
         }
         // memo has been set
         // deposit message has been set
-        do {
-            let inputData = try input.serializedData()
-            return .success(inputData)
-        } catch {
-            return .failure(HelperError.runtimeError("fail to get plan"))
-        }
+        return try input.serializedData()
     }
     
-    static func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
-        guard keysignPayload.coin.chain.ticker == "RUNE" else {
-            return .failure(HelperError.runtimeError("coin is not RUNE"))
+    static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
+        guard keysignPayload.coin.chain == .thorChain else {
+            throw HelperError.runtimeError("coin is not RUNE")
         }
         guard let fromAddr = AnyAddress(string: keysignPayload.coin.address, coin: .thorchain) else {
-            return .failure(HelperError.runtimeError("\(keysignPayload.coin.address) is invalid"))
+            throw HelperError.runtimeError("\(keysignPayload.coin.address) is invalid")
         }
-        
         guard case .THORChain(let accountNumber, let sequence, _) = keysignPayload.chainSpecific else {
-            return .failure(HelperError.runtimeError("fail to get account number, sequence, or fee"))
+            throw HelperError.runtimeError("fail to get account number, sequence, or fee")
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
-            return .failure(HelperError.runtimeError("invalid hex public key"))
+            throw HelperError.runtimeError("invalid hex public key")
         }
         let coin = CoinType.thorchain
         
@@ -85,7 +79,7 @@ enum THORChainHelper {
             }]
         } else {
             guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .thorchain) else {
-                return .failure(HelperError.runtimeError("\(keysignPayload.toAddress) is invalid"))
+                throw HelperError.runtimeError("\(keysignPayload.toAddress) is invalid")
             }
             
             message = [CosmosMessage.with {
@@ -115,29 +109,15 @@ enum THORChainHelper {
                 $0.gas = 20000000
             }
         }
-        
-        do {
-            let inputData = try input.serializedData()
-            return .success(inputData)
-        } catch {
-            return .failure(HelperError.runtimeError("fail to get plan"))
-        }
+
+        return try input.serializedData()
     }
     
-    static func getPreSignedImageHash(keysignPayload: KeysignPayload) -> Result<[String], Error> {
-        let result = getPreSignedInputData(keysignPayload: keysignPayload)
-        switch result {
-        case .success(let inputData):
-            do {
-                let hashes = TransactionCompiler.preImageHashes(coinType: .thorchain, txInputData: inputData)
-                let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
-                return .success([preSigningOutput.dataHash.hexString])
-            } catch {
-                return .failure(HelperError.runtimeError("fail to get preSignedImageHash,error:\(error.localizedDescription)"))
-            }
-        case .failure(let err):
-            return .failure(err)
-        }
+    static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
+        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
+        let hashes = TransactionCompiler.preImageHashes(coinType: .thorchain, txInputData: inputData)
+        let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+        return [preSigningOutput.dataHash.hexString]
     }
     
     static func getSignedTransaction(vaultHexPubKey: String,
@@ -145,14 +125,9 @@ enum THORChainHelper {
                                      keysignPayload: KeysignPayload,
                                      signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {
-        let result = getPreSignedInputData(keysignPayload: keysignPayload)
-        switch result {
-        case .success(let inputData):
-            return try getSignedTransaction(vaultHexPubKey: vaultHexPubKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
-            
-        case .failure(let error):
-            throw error
-        }
+        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
+        let signedTransaction = try getSignedTransaction(vaultHexPubKey: vaultHexPubKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
+        return signedTransaction
     }
     
     static func getSignedTransaction(vaultHexPubKey: String,

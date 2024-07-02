@@ -22,16 +22,16 @@ enum PolkadotHelper {
      */
     static let defaultExistentialDeposit: BigInt = 10_000_000_000 // 1 DOT
     
-    static func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
-        guard keysignPayload.coin.chain.ticker == "DOT" else {
-            return .failure(HelperError.runtimeError("coin is not DOT"))
+    static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
+        guard keysignPayload.coin.chain == .polkadot else {
+            throw HelperError.runtimeError("coin is not DOT")
         }
         
         guard case .Polkadot(let recentBlockHash, let nonce, let currentBlockNumber, let specVersion, let transactionVersion, let genesisHash) = keysignPayload.chainSpecific else {
-            return .failure(HelperError.runtimeError("getPreSignedInputData fail to get DOT transaction information from RPC"))
+            throw HelperError.runtimeError("getPreSignedInputData fail to get DOT transaction information from RPC")
         }
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .polkadot) else {
-            return .failure(HelperError.runtimeError("fail to get to address"))
+            throw HelperError.runtimeError("fail to get to address")
         }
         
         let genesisHashData = Data(hexString: genesisHash)!
@@ -54,30 +54,15 @@ enum PolkadotHelper {
                 }
             }
         }
-                
-        do {
-            let inputData = try input.serializedData()
-            return .success(inputData)
-        } catch {
-            print(error.localizedDescription)
-            return .failure(HelperError.runtimeError("fail to get PreSign input data"))
-        }
+
+        return try input.serializedData()
     }
     
-    static func getPreSignedImageHash(keysignPayload: KeysignPayload) -> Result<[String], Error> {
-        let result = getPreSignedInputData(keysignPayload: keysignPayload)
-        switch result {
-        case .success(let inputData):
-            do {
-                let hashes = TransactionCompiler.preImageHashes(coinType: .polkadot, txInputData: inputData)
-                let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
-                return .success([preSigningOutput.data.hexString])
-            } catch {
-                return .failure(HelperError.runtimeError("fail to get preSignedImageHash,error:\(error.localizedDescription)"))
-            }
-        case .failure(let err):
-            return .failure(err)
-        }
+    static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
+        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
+        let hashes = TransactionCompiler.preImageHashes(coinType: .polkadot, txInputData: inputData)
+        let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+        return [preSigningOutput.data.hexString]
     }
     
     static func getSignedTransaction(vaultHexPubKey: String,
@@ -92,36 +77,27 @@ enum PolkadotHelper {
             throw HelperError.runtimeError("public key \(vaultHexPubKey) is invalid")
         }
         
-        let result = getPreSignedInputData(keysignPayload: keysignPayload)
-        switch result {
-        case .success(let inputData):
-            do {
-                let hashes = TransactionCompiler.preImageHashes(coinType: .polkadot, txInputData: inputData)
-                let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
-                let allSignatures = DataVector()
-                let publicKeys = DataVector()
-                let signatureProvider = SignatureProvider(signatures: signatures)
-                let signature = signatureProvider.getSignature(preHash: preSigningOutput.data)
-                guard publicKey.verify(signature: signature, message: preSigningOutput.data) else {
-                    throw HelperError.runtimeError("fail to verify signature")
-                }
-                
-                allSignatures.add(data: signature)
-                publicKeys.add(data: pubkeyData)
-                let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .polkadot,
-                                                                                     txInputData: inputData,
-                                                                                     signatures: allSignatures,
-                                                                                     publicKeys: publicKeys)
-                let output = try PolkadotSigningOutput(serializedData: compileWithSignature)
-                let transactionHash = Hash.blake2b(data: output.encoded, size: 32).toHexString()
-                let result = SignedTransactionResult(rawTransaction: output.encoded.hexString,
-                                                     transactionHash: transactionHash)
-                return result
-            } catch {
-                throw HelperError.runtimeError("fail to get signed polkadot transaction,error:\(error.localizedDescription)")
-            }
-        case .failure(let error):
-            throw error
+        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
+        let hashes = TransactionCompiler.preImageHashes(coinType: .polkadot, txInputData: inputData)
+        let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+        let allSignatures = DataVector()
+        let publicKeys = DataVector()
+        let signatureProvider = SignatureProvider(signatures: signatures)
+        let signature = signatureProvider.getSignature(preHash: preSigningOutput.data)
+        guard publicKey.verify(signature: signature, message: preSigningOutput.data) else {
+            throw HelperError.runtimeError("fail to verify signature")
         }
+
+        allSignatures.add(data: signature)
+        publicKeys.add(data: pubkeyData)
+        let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .polkadot,
+                                                                             txInputData: inputData,
+                                                                             signatures: allSignatures,
+                                                                             publicKeys: publicKeys)
+        let output = try PolkadotSigningOutput(serializedData: compileWithSignature)
+        let transactionHash = Hash.blake2b(data: output.encoded, size: 32).toHexString()
+        let result = SignedTransactionResult(rawTransaction: output.encoded.hexString,
+                                             transactionHash: transactionHash)
+        return result
     }
 }

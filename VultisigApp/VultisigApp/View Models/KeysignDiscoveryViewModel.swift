@@ -44,6 +44,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
         self.vault = vault
         self.keysignPayload = keysignPayload
         self.participantDiscovery = participantDiscovery
+        
         if self.sessionID.isEmpty {
             self.sessionID = UUID().uuidString
         }
@@ -56,19 +57,18 @@ class KeysignDiscoveryViewModel: ObservableObject {
             self.localPartyID = Utils.getLocalDeviceIdentity()
         }
         self.selections.insert(self.localPartyID)
-        let keysignMessageResult = self.keysignPayload.getKeysignMessages(vault: self.vault)
-        switch keysignMessageResult {
-        case .success(let preSignedImageHash):
+
+        do {
+            let preSignedImageHash = try keysignPayload.getKeysignMessages(vault: self.vault)
             self.keysignMessages = preSignedImageHash.sorted()
             if self.keysignMessages.isEmpty {
                 self.logger.error("no meessage need to be signed")
                 self.status = .FailToStart
             }
-        case .failure(let err):
-            self.logger.error("Failed to get preSignedImageHash: \(err)")
+        } catch {
+            self.logger.error("Failed to get preSignedImageHash: \(error)")
             self.status = .FailToStart
         }
-        
     }
     
     func startDiscovery() async {
