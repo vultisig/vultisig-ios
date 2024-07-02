@@ -67,6 +67,7 @@
 		A57495822BBC3FCA00D5F172 /* SwapCryptoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57495812BBC3FCA00D5F172 /* SwapCryptoViewModel.swift */; };
 		A57A03CB2BC47D4F00F6F3DF /* BlockChainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57A03CA2BC47D4F00F6F3DF /* BlockChainService.swift */; };
 		A588F2DB2BEE8090002EEC60 /* OneInchSwapPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = A588F2DA2BEE8090002EEC60 /* OneInchSwapPayload.swift */; };
+		A58CC3432C32C4EE0086D16B /* VultisigCommonData in Frameworks */ = {isa = PBXBuildFile; productRef = A58CC3422C32C4EE0086D16B /* VultisigCommonData */; };
 		A5BA15082C077A0B00AA6C07 /* OneInchToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA15072C077A0B00AA6C07 /* OneInchToken.swift */; };
 		A5BA150A2C078EED00AA6C07 /* TokenSelectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA15092C078EED00AA6C07 /* TokenSelectionCell.swift */; };
 		A5BA150C2C078FA000AA6C07 /* TokenSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA150B2C078FA000AA6C07 /* TokenSelectionViewModel.swift */; };
@@ -746,6 +747,7 @@
 				DE8AD7402BC649A600339775 /* Tss.xcframework in Frameworks */,
 				D9A22EB72B667C41007281BF /* Mediator in Frameworks */,
 				DE49A1B52B6A1088000F3AFB /* CodeScanner in Frameworks */,
+				A58CC3432C32C4EE0086D16B /* VultisigCommonData in Frameworks */,
 				DE8554682C2CFBC10002438C /* walletcore in Frameworks */,
 				DE6325B72C2C12FB000D05B9 /* SwiftProtobuf in Frameworks */,
 			);
@@ -1717,6 +1719,7 @@
 				DE3D44AC2BD2445100BD64CD /* CryptoSwift */,
 				DE6325B62C2C12FB000D05B9 /* SwiftProtobuf */,
 				DE8554672C2CFBC10002438C /* walletcore */,
+				A58CC3422C32C4EE0086D16B /* VultisigCommonData */,
 			);
 			productName = voltixApp;
 			productReference = DE49A1632B65F6D9000F3AFB /* VultisigApp.app */;
@@ -1802,6 +1805,7 @@
 				DEFF59022BD23A12005DFDF9 /* XCRemoteSwiftPackageReference "CryptoSwift" */,
 				DE6325B52C2C12FB000D05B9 /* XCRemoteSwiftPackageReference "swift-protobuf" */,
 				DE8554662C2CFBC10002438C /* XCRemoteSwiftPackageReference "walletcore-spm" */,
+				A58CC3412C32C4EE0086D16B /* XCRemoteSwiftPackageReference "commondata" */,
 			);
 			productRefGroup = DE49A1642B65F6D9000F3AFB /* Products */;
 			projectDirPath = "";
@@ -2610,6 +2614,14 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		A58CC3412C32C4EE0086D16B /* XCRemoteSwiftPackageReference "commondata" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/vultisig/commondata";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		DE49A1B32B6A1088000F3AFB /* XCRemoteSwiftPackageReference "CodeScanner" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/twostraws/CodeScanner";
@@ -2653,6 +2665,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		A58CC3422C32C4EE0086D16B /* VultisigCommonData */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A58CC3412C32C4EE0086D16B /* XCRemoteSwiftPackageReference "commondata" */;
+			productName = VultisigCommonData;
+		};
 		D9A22EB62B667C41007281BF /* Mediator */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Mediator;

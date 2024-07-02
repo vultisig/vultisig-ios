@@ -9,8 +9,9 @@ import Foundation
 import WalletCore
 
 extension Coin {
-    var coinType: CoinType{
-        return self.chain.coinType
+
+    var coinType: CoinType {
+        return chain.coinType
     }
 }
 

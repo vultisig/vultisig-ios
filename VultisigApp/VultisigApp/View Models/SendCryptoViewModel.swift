@@ -298,18 +298,11 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             vaultLocalPartyID: vault.localPartyID
         )
         
-        if let helper = UTXOChainsHelper.getHelper(vault: vault, coin: tx.coin) {
-            let transactionPlanResult = helper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
-            switch transactionPlanResult {
-            case .success(let plan):
-                return plan
-            case .failure(let error):
-                print("Error generating transaction plan: \(error.localizedDescription)")
-                return nil
-            }
+        guard let helper = UTXOChainsHelper.getHelper(vault: vault, coin: tx.coin) else {
+            return nil
         }
         
-        return nil
+        return try? helper.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
     }
     
     func handleBackTap() {

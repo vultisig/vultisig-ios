@@ -434,7 +434,6 @@ private extension SwapCryptoViewModel {
             return (maxFeePerGas + priorityFee) * gasLimit
         case .UTXO:
             let keysignFactory = KeysignPayloadFactory()
-            
             let keysignPayload = try await keysignFactory.buildTransfer(
                 coin: tx.fromCoin,
                 toAddress: tx.fromCoin.address,
@@ -444,22 +443,14 @@ private extension SwapCryptoViewModel {
                 swapPayload: nil,
                 vault: vault
             )
-            
             let utxo = UTXOChainsHelper(
                 coin: tx.fromCoin.coinType,
                 vaultHexPublicKey: vault.pubKeyECDSA,
                 vaultHexChainCode: vault.hexChainCode
             )
-            
-            let result = utxo.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
-            
-            switch result {
-            case .success(let plan):
-                return BigInt(plan.fee)
-            case .failure(let error):
-                throw error
-            }
-            
+            let plan = try utxo.getBitcoinTransactionPlan(keysignPayload: keysignPayload)
+            return BigInt(plan.fee)
+
         case .Cosmos, .THORChain, .Polkadot, .MayaChain, .Solana, .Sui:
             return chainSpecific.gas
         }
