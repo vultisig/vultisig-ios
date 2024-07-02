@@ -85,6 +85,15 @@ struct SendCryptoAddressTextField: View {
             .submitLabel(.next)
             .disableAutocorrection(true)
             .borderlessTextFieldStyle()
+            .maxLength(Binding<String>(
+                get: { tx.toAddress },
+                set: { newValue in
+                    tx.toAddress = newValue
+                    DebounceHelper.shared.debounce {
+                        validateAddress(newValue)
+                    }
+                }
+            ))
 #if os(iOS)
             .keyboardType(.default)
             .textInputAutocapitalization(.never)

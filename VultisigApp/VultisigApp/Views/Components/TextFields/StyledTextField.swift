@@ -38,6 +38,7 @@ struct StyledTextField: View {
                 .background(Color.blue600)
                 .cornerRadius(12)
                 .borderlessTextFieldStyle()
+                .maxLength(customBinding)
                 .onAppear {
                     localIsValid = isValid
                     validate(text)

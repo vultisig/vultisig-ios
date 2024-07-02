@@ -46,7 +46,7 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
 #if os(iOS)
                 .keyboardType(.decimalPad)
 #endif
-
+            
         }
     }
     

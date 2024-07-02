@@ -105,6 +105,15 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
             .submitLabel(.next)
             .disableAutocorrection(true)
             .borderlessTextFieldStyle()
+            .maxLength(Binding<String>(
+                get: { memo.addressFields[addressKey] ?? "" },
+                set: { newValue in
+                    memo.addressFields[addressKey] = newValue
+                    DebounceHelper.shared.debounce {
+                        validateAddress(newValue)
+                    }
+                }
+            ))
 #if os(iOS)
             .textInputAutocapitalization(.never)
             .keyboardType(.default)
