@@ -93,70 +93,61 @@ struct KeysignPayload: Codable, Hashable {
         return "\(decimalAmount * power) \(coin.ticker)"
     }
 
-    func getKeysignMessages(vault: Vault) -> Result<[String], Error> {
-        do {
-            var messages: [String] = []
+    func getKeysignMessages(vault: Vault) throws -> [String] {
+        var messages: [String] = []
 
-            if let approvePayload {
+        if let approvePayload {
+            let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+            messages += try swaps.getPreSignedApproveImageHash(approvePayload: approvePayload, keysignPayload: self)
+        }
+
+        if let swapPayload {
+            let incrementNonce = approvePayload != nil
+            switch swapPayload {
+            case .thorchain(let payload):
                 let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-                messages += try swaps.getPreSignedApproveImageHash(approvePayload: approvePayload, keysignPayload: self)
+                messages += try swaps.getPreSignedImageHash(swapPayload: payload, keysignPayload: self, incrementNonce: incrementNonce)
+            case .oneInch(let payload):
+                let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+                messages += try swaps.getPreSignedImageHash(payload: payload, keysignPayload: self, incrementNonce: incrementNonce)
+            case .mayachain:
+                break // No op - Regular transaction with memo
             }
+        }
 
-            if let swapPayload {
-                let incrementNonce = approvePayload != nil
-                switch swapPayload {
-                case .thorchain(let payload):
-                    let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-                    messages += try swaps.getPreSignedImageHash(swapPayload: payload, keysignPayload: self, incrementNonce: incrementNonce)
-                case .oneInch(let payload):
-                    let swaps = OneInchSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-                    messages += try swaps.getPreSignedImageHash(payload: payload, keysignPayload: self, incrementNonce: incrementNonce)
-                case .mayachain:
-                    break // No op - Regular transaction with memo
-                }
-            }
-
-            if !messages.isEmpty {
-                return .success(messages)
-            }
-        } catch {
-            return .failure(error)
+        if !messages.isEmpty {
+            return messages
         }
 
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
-            guard let coinType = CoinType.from(string: coin.chain.name.replacingOccurrences(of: "-", with: "")) else {
-                print("Coin type not found on Wallet Core")
-                return .failure("Coin type not found on Wallet Core" as! Error)
-            }
-            let utxoHelper = UTXOChainsHelper(coin: coinType, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
-            return utxoHelper.getPreSignedImageHash(keysignPayload: self)
+            let utxoHelper = UTXOChainsHelper(coin: coin.chain.coinType, vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
+            return try utxoHelper.getPreSignedImageHash(keysignPayload: self)
         case .ethereum, .arbitrum, .base, .optimism, .polygon, .avalanche, .bscChain, .blast, .cronosChain, .zksync:
             if coin.isNativeToken {
                 let helper = EVMHelper.getHelper(coin: coin.toCoinMeta())
-                return helper.getPreSignedImageHash(keysignPayload: self)
+                return try helper.getPreSignedImageHash(keysignPayload: self)
             } else {
                 let helper = ERC20Helper.getHelper(coin: coin)
-                return helper.getPreSignedImageHash(keysignPayload: self)
+                return try helper.getPreSignedImageHash(keysignPayload: self)
             }
         case .thorChain:
-            return THORChainHelper.getPreSignedImageHash(keysignPayload: self)
+            return try THORChainHelper.getPreSignedImageHash(keysignPayload: self)
         case .mayaChain:
-            return MayaChainHelper.getPreSignedImageHash(keysignPayload: self)
+            return try MayaChainHelper.getPreSignedImageHash(keysignPayload: self)
         case .solana:
-            return SolanaHelper.getPreSignedImageHash(keysignPayload: self)
+            return try SolanaHelper.getPreSignedImageHash(keysignPayload: self)
         case .sui:
-            return SuiHelper.getPreSignedImageHash(keysignPayload: self)
+            return try SuiHelper.getPreSignedImageHash(keysignPayload: self)
         case .gaiaChain:
-            return ATOMHelper().getPreSignedImageHash(keysignPayload: self)
+            return try ATOMHelper().getPreSignedImageHash(keysignPayload: self)
         case .kujira:
-            return KujiraHelper().getPreSignedImageHash(keysignPayload: self)
+            return try KujiraHelper().getPreSignedImageHash(keysignPayload: self)
         case .polkadot:
-            return PolkadotHelper.getPreSignedImageHash(keysignPayload: self)
+            return try PolkadotHelper.getPreSignedImageHash(keysignPayload: self)
         case .dydx:
-            return DydxHelper().getPreSignedImageHash(keysignPayload: self)
+            return try DydxHelper().getPreSignedImageHash(keysignPayload: self)
         }
-        
     }
     
     static let example = KeysignPayload(coin: Coin.example, toAddress: "toAddress", toAmount: 100, chainSpecific: BlockChainSpecific.UTXO(byteFee: 100, sendMaxAmount: false), utxos: [], memo: "Memo", swapPayload: nil, vaultPubKeyECDSA: "12345", vaultLocalPartyID: "iPhone-100")

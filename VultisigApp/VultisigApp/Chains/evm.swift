@@ -36,11 +36,11 @@ class EVMHelper {
         keysignPayload: KeysignPayload,
         gas: BigUInt? = nil,
         gasPrice: BigUInt? = nil,
-        incrementNonce: Bool = false) -> Result<Data, Error>
+        incrementNonce: Bool = false) throws -> Data
     {
 
         guard let intChainID = Int(coinType.chainId) else {
-            return .failure(HelperError.runtimeError("fail to get chainID"))
+            throw HelperError.runtimeError("fail to get chainID")
         }
 
         guard case .Ethereum(
@@ -49,7 +49,7 @@ class EVMHelper {
             let nonce,
             let gasLimit
         ) = keysignPayload.chainSpecific else {
-            return .failure(HelperError.runtimeError("fail to get Ethereum chain specific"))
+            throw HelperError.runtimeError("fail to get Ethereum chain specific")
         }
 
         let incrementNonceValue: Int64 = incrementNonce ? 1 : 0
@@ -69,25 +69,20 @@ class EVMHelper {
             input.txMode = .enveloped
         }
 
-        do {
-            let inputData = try input.serializedData()
-            return .success(inputData)
-        } catch {
-            return .failure(HelperError.runtimeError("fail to get plan"))
-        }
+        return try input.serializedData()
     }
     
-    func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
+    func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         let coin = self.coinType
         guard let intChainID = Int(coin.chainId) else {
-            return .failure(HelperError.runtimeError("fail to get chainID"))
+            throw HelperError.runtimeError("fail to get chainID")
         }
         guard case .Ethereum(let maxFeePerGasWei,
                              let priorityFeeWei,
                              let nonce,
                              let gasLimit) = keysignPayload.chainSpecific
         else {
-            return .failure(HelperError.runtimeError("fail to get Ethereum chain specific"))
+            throw HelperError.runtimeError("fail to get Ethereum chain specific")
         }
         let input = EthereumSigningInput.with {
             $0.chainID = Data(hexString: Int64(intChainID).hexString())!
@@ -107,28 +102,14 @@ class EVMHelper {
                 }
             }
         }
-        do {
-            let inputData = try input.serializedData()
-            return .success(inputData)
-        } catch {
-            return .failure(HelperError.runtimeError("fail to get plan"))
-        }
+        return try input.serializedData()
     }
     
-    func getPreSignedImageHash(keysignPayload: KeysignPayload) -> Result<[String], Error> {
-        let result = getPreSignedInputData(keysignPayload: keysignPayload)
-        switch result {
-        case .success(let inputData):
-            do {
-                let hashes = TransactionCompiler.preImageHashes(coinType: self.coinType, txInputData: inputData)
-                let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
-                return .success([preSigningOutput.dataHash.hexString])
-            } catch {
-                return .failure(HelperError.runtimeError("fail to get preSignedImageHash,error:\(error.localizedDescription)"))
-            }
-        case .failure(let err):
-            return .failure(err)
-        }
+    func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
+        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
+        let hashes = TransactionCompiler.preImageHashes(coinType: coinType, txInputData: inputData)
+        let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+        return [preSigningOutput.dataHash.hexString]
     }
     
     func getSignedTransaction(vaultHexPubKey: String,
@@ -136,13 +117,9 @@ class EVMHelper {
                               keysignPayload: KeysignPayload,
                               signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {
-        let result = getPreSignedInputData(keysignPayload: keysignPayload)
-        switch result {
-        case .success(let inputData):
-            return try getSignedTransaction(vaultHexPubKey: vaultHexPubKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
-        case .failure(let error):
-            throw error
-        }
+        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
+        let signedTransaction = try getSignedTransaction(vaultHexPubKey: vaultHexPubKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
+        return signedTransaction
     }
     
     func getSignedTransaction(vaultHexPubKey: String,

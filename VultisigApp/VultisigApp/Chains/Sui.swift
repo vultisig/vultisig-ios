@@ -14,17 +14,17 @@ enum SuiHelper {
     
     static let defaultFeeInSui: BigInt = 1000  // Example fee, adjust as necessary
     
-    static func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
+    static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard keysignPayload.coin.chain.ticker == "SUI" else {
-            return .failure(HelperError.runtimeError("coin is not SUI"))
+            throw HelperError.runtimeError("coin is not SUI")
         }
         
         guard case .Sui(let referenceGasPrice, let coins) = keysignPayload.chainSpecific else {
-            return .failure(HelperError.runtimeError("getPreSignedInputData fail to get SUI transaction information from RPC"))
+            throw HelperError.runtimeError("getPreSignedInputData fail to get SUI transaction information from RPC")
         }
         
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .sui) else {
-            return .failure(HelperError.runtimeError("fail to get to address"))
+            throw HelperError.runtimeError("fail to get to address")
         }
         
         let suiCoins = coins.map{
@@ -47,29 +47,15 @@ enum SuiHelper {
             $0.referenceGasPrice = UInt64(referenceGasPrice)
         }
         
-        do {
-            let inputData = try input.serializedData()
-            return .success(inputData)
-        } catch {
-            return .failure(HelperError.runtimeError("fail to get PreSign input data: \(error.localizedDescription)"))
-        }
+        return try input.serializedData()
     }
     
     
-    static func getPreSignedImageHash(keysignPayload: KeysignPayload) -> Result<[String], Error> {
-        let result = getPreSignedInputData(keysignPayload: keysignPayload)
-        switch result {
-        case .success(let inputData):
-            do {
-                let hashes = TransactionCompiler.preImageHashes(coinType: .sui, txInputData: inputData)
-                let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
-                return .success([Hash.blake2b(data: preSigningOutput.data, size: 32).hexString])
-            } catch {
-                return .failure(HelperError.runtimeError("fail to get preSignedImageHash,error:\(error.localizedDescription)"))
-            }
-        case .failure(let err):
-            return .failure(err)
-        }
+    static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
+        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
+        let hashes = TransactionCompiler.preImageHashes(coinType: .sui, txInputData: inputData)
+        let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+        return [Hash.blake2b(data: preSigningOutput.data, size: 32).hexString]
     }
     
     static func getSignedTransaction(vaultHexPubKey: String,
@@ -83,33 +69,28 @@ enum SuiHelper {
         guard let publicKey = PublicKey(data: pubkeyData, type: .ed25519) else {
             throw HelperError.runtimeError("public key \(vaultHexPubKey) is invalid")
         }
-        
-        let result = getPreSignedInputData(keysignPayload: keysignPayload)
-        switch result {
-        case .success(let inputData):
-            let hashes = TransactionCompiler.preImageHashes(coinType: .sui, txInputData: inputData)
-            let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
-            let preSigningOutputDataBlake2b = Hash.blake2b(data: preSigningOutput.data, size: 32)
-            let allSignatures = DataVector()
-            let publicKeys = DataVector()
-            let signatureProvider = SignatureProvider(signatures: signatures)
-            let signature = signatureProvider.getSignature(preHash: preSigningOutputDataBlake2b)
-            guard publicKey.verify(signature: signature, message: preSigningOutputDataBlake2b) else {
-                print("SUI signature verification failed")
-                throw HelperError.runtimeError("SUI signature verification failed")
-            }
 
-            allSignatures.add(data: signature)
-            publicKeys.add(data: pubkeyData)
-            let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .sui,
-                                                                                 txInputData: inputData,
-                                                                                 signatures: allSignatures,
-                                                                                 publicKeys: publicKeys)
-            let output = try SuiSigningOutput(serializedData: compileWithSignature)
-            let result = SignedTransactionResult(rawTransaction: output.unsignedTx, transactionHash: .empty, signature: output.signature)
-            return result
-        case .failure(let error):
-            throw error
+        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
+        let hashes = TransactionCompiler.preImageHashes(coinType: .sui, txInputData: inputData)
+        let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+        let preSigningOutputDataBlake2b = Hash.blake2b(data: preSigningOutput.data, size: 32)
+        let allSignatures = DataVector()
+        let publicKeys = DataVector()
+        let signatureProvider = SignatureProvider(signatures: signatures)
+        let signature = signatureProvider.getSignature(preHash: preSigningOutputDataBlake2b)
+
+        guard publicKey.verify(signature: signature, message: preSigningOutputDataBlake2b) else {
+            throw HelperError.runtimeError("SUI signature verification failed")
         }
+
+        allSignatures.add(data: signature)
+        publicKeys.add(data: pubkeyData)
+        let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .sui,
+                                                                             txInputData: inputData,
+                                                                             signatures: allSignatures,
+                                                                             publicKeys: publicKeys)
+        let output = try SuiSigningOutput(serializedData: compileWithSignature)
+        let result = SignedTransactionResult(rawTransaction: output.unsignedTx, transactionHash: .empty, signature: output.signature)
+        return result
     }
 }

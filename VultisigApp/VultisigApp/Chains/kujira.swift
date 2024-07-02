@@ -19,12 +19,12 @@ class KujiraHelper {
     
     static let kujiraGasLimit:UInt64 = 200000
   
-    func getSwapPreSignedInputData(keysignPayload: KeysignPayload,signingInput: CosmosSigningInput) -> Result<Data,Error> {
+    func getSwapPreSignedInputData(keysignPayload: KeysignPayload,signingInput: CosmosSigningInput) throws -> Data {
         guard case .Cosmos(let accountNumber, let sequence,let gas) = keysignPayload.chainSpecific else {
-            return .failure(HelperError.runtimeError("fail to get account number and sequence"))
+            throw HelperError.runtimeError("fail to get account number and sequence")
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
-            return .failure(HelperError.runtimeError("invalid hex public key"))
+            throw HelperError.runtimeError("invalid hex public key")
         }
         var input = signingInput
         input.publicKey = pubKeyData
@@ -41,19 +41,15 @@ class KujiraHelper {
         }
         // memo has been set
         // deposit message has been set
-        do {
-            let inputData = try input.serializedData()
-            return .success(inputData)
-        } catch {
-            return .failure(HelperError.runtimeError("fail to get plan"))
-        }
+        return try input.serializedData()
     }
-    func getPreSignedInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
+
+    func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard case .Cosmos(let accountNumber, let sequence , let gas) = keysignPayload.chainSpecific else {
-            return .failure(HelperError.runtimeError("fail to get account number and sequence"))
+            throw HelperError.runtimeError("fail to get account number and sequence")
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
-            return .failure(HelperError.runtimeError("invalid hex public key"))
+            throw HelperError.runtimeError("invalid hex public key")
         }
         let coin = self.coinType
         
@@ -86,28 +82,14 @@ class KujiraHelper {
                 }]
             }
         }
-        
-        do {
-            let inputData = try input.serializedData()
-            return .success(inputData)
-        } catch {
-            return .failure(HelperError.runtimeError("fail to get plan"))
-        }
+
+        return try input.serializedData()
     }
-    func getPreSignedImageHash(keysignPayload: KeysignPayload) -> Result<[String], Error> {
-        let result = getPreSignedInputData(keysignPayload: keysignPayload)
-        switch result {
-        case .success(let inputData):
-            do {
-                let hashes = TransactionCompiler.preImageHashes(coinType: self.coinType, txInputData: inputData)
-                let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
-                return .success([preSigningOutput.dataHash.hexString])
-            } catch {
-                return .failure(HelperError.runtimeError("fail to get preSignedImageHash,error:\(error.localizedDescription)"))
-            }
-        case .failure(let err):
-            return .failure(err)
-        }
+    func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
+        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
+        let hashes = TransactionCompiler.preImageHashes(coinType: coinType, txInputData: inputData)
+        let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+        return [preSigningOutput.dataHash.hexString]
     }
     
     func getSignedTransaction(vaultHexPubKey: String,
@@ -115,14 +97,9 @@ class KujiraHelper {
                               keysignPayload: KeysignPayload,
                               signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {
-        let result = getPreSignedInputData(keysignPayload: keysignPayload)
-        switch result {
-        case .success(let inputData):
-            return try getSignedTransaction(vaultHexPubKey: vaultHexPubKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
-            
-        case .failure(let error):
-            throw error
-        }
+        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
+        let signedTransaction = try getSignedTransaction(vaultHexPubKey: vaultHexPubKey, vaultHexChainCode: vaultHexChainCode, inputData: inputData, signatures: signatures)
+        return signedTransaction
     }
     
     func getSignedTransaction(vaultHexPubKey: String,

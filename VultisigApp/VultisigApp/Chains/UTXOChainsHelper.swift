@@ -40,25 +40,16 @@ class UTXOChainsHelper {
     }
     
     // before keysign , we need to get the preSignedImageHash , so it can be signed with TSS
-    func getPreSignedImageHash(keysignPayload: KeysignPayload) -> Result<[String], Error> {
-        let result = getBitcoinPreSigningInputData(keysignPayload: keysignPayload)
-        switch result {
-        case .success(let inputData):
-            do {
-                let preHashes = TransactionCompiler.preImageHashes(coinType: coin, txInputData: inputData)
-                let preSignOutputs = try BitcoinPreSigningOutput(serializedData: preHashes)
-                return .success(preSignOutputs.hashPublicKeys.map { $0.dataHash.hexString })
-            } catch {
-                return .failure(HelperError.runtimeError("fail to get presigned image hashes,error:\(error.localizedDescription)"))
-            }
-        case .failure(let err):
-            return .failure(err)
-        }
+    func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
+        let inputData = try getBitcoinPreSigningInputData(keysignPayload: keysignPayload)
+        let preHashes = TransactionCompiler.preImageHashes(coinType: coin, txInputData: inputData)
+        let preSignOutputs = try BitcoinPreSigningOutput(serializedData: preHashes)
+        return preSignOutputs.hashPublicKeys.map { $0.dataHash.hexString }
     }
     
-    func getSigningInputData(keysignPayload: KeysignPayload, signingInput: BitcoinSigningInput) -> Result<Data, Error> {
+    func getSigningInputData(keysignPayload: KeysignPayload, signingInput: BitcoinSigningInput) throws -> Data {
         guard case .UTXO(let byteFee, let sendMaxAmount) = keysignPayload.chainSpecific else {
-            return .failure(HelperError.runtimeError("fail to get UTXO chain specific byte fee"))
+            throw HelperError.runtimeError("fail to get UTXO chain specific byte fee")
         }
         var input = signingInput
         input.byteFee = Int64(byteFee)
@@ -71,19 +62,19 @@ class UTXOChainsHelper {
             case CoinType.bitcoin, CoinType.litecoin:
                 let keyHash = lockScript.matchPayToWitnessPublicKeyHash()
                 guard let keyHash else {
-                    return .failure(HelperError.runtimeError("fail to get key hash from lock script"))
+                    throw HelperError.runtimeError("fail to get key hash from lock script")
                 }
                 let redeemScript = BitcoinScript.buildPayToWitnessPubkeyHash(hash: keyHash)
                 input.scripts[keyHash.hexString] = redeemScript.data
             case CoinType.bitcoinCash, CoinType.dogecoin, CoinType.dash:
                 let keyHash = lockScript.matchPayToPubkeyHash()
                 guard let keyHash else {
-                    return .failure(HelperError.runtimeError("fail to get key hash from lock script"))
+                    throw HelperError.runtimeError("fail to get key hash from lock script")
                 }
                 let redeemScript = BitcoinScript.buildPayToPublicKeyHash(hash: keyHash)
                 input.scripts[keyHash.hexString] = redeemScript.data
             default:
-                return .failure(HelperError.runtimeError("doesn't support coin \(coin)"))
+                throw HelperError.runtimeError("doesn't support coin \(coin)")
             }
             
             let utxo = BitcoinUnspentTransaction.with {
@@ -98,19 +89,15 @@ class UTXOChainsHelper {
             }
             input.utxo.append(utxo)
         }
-        do {
-            let plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
-            input.plan = plan
-            let inputData = try input.serializedData()
-            return .success(inputData)
-        } catch {
-            return .failure(HelperError.runtimeError("fail to get preSignedImageHash,error:\(error.localizedDescription)"))
-        }
+       
+        let plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
+        input.plan = plan
+        return try input.serializedData()
     }
     
-    func getBitcoinSigningInput(keysignPayload: KeysignPayload) -> Result<BitcoinSigningInput, Error> {
+    func getBitcoinSigningInput(keysignPayload: KeysignPayload) throws -> BitcoinSigningInput {
         guard case .UTXO(let byteFee, let sendMaxAmount) = keysignPayload.chainSpecific else {
-            return .failure(HelperError.runtimeError("fail to get UTXO chain specific byte fee"))
+            throw HelperError.runtimeError("fail to get UTXO chain specific byte fee")
         }
         
         // Prevent from accedentally sending all balance
@@ -141,19 +128,19 @@ class UTXOChainsHelper {
                 
                 let keyHash = lockScript.matchPayToWitnessPublicKeyHash()
                 guard let keyHash else {
-                    return .failure(HelperError.runtimeError("fail to get key hash from lock script"))
+                    throw HelperError.runtimeError("fail to get key hash from lock script")
                 }
                 let redeemScript = BitcoinScript.buildPayToWitnessPubkeyHash(hash: keyHash)
                 input.scripts[keyHash.hexString] = redeemScript.data
             case CoinType.bitcoinCash, CoinType.dogecoin, CoinType.dash:
                 let keyHash = lockScript.matchPayToPubkeyHash()
                 guard let keyHash else {
-                    return .failure(HelperError.runtimeError("fail to get key hash from lock script"))
+                    throw HelperError.runtimeError("fail to get key hash from lock script")
                 }
                 let redeemScript = BitcoinScript.buildPayToPublicKeyHash(hash: keyHash)
                 input.scripts[keyHash.hexString] = redeemScript.data
             default:
-                return .failure(HelperError.runtimeError("doesn't support coin \(coin)"))
+                throw HelperError.runtimeError("doesn't support coin \(coin)")
             }
             
             let utxo = BitcoinUnspentTransaction.with {
@@ -169,51 +156,29 @@ class UTXOChainsHelper {
             input.utxo.append(utxo)
         }
         
-        return .success(input)
+        return input
     }
     
-    func getBitcoinPreSigningInputData(keysignPayload: KeysignPayload) -> Result<Data, Error> {
-        let result = getBitcoinSigningInput(keysignPayload: keysignPayload)
-        switch result {
-        case .success(var input):
-            let plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
-            input.plan = plan
-            do {
-                let inputData = try input.serializedData()
-                return .success(inputData)
-            } catch {
-                print("fail to serialize input data,err:\(error.localizedDescription)")
-                return .failure(error)
-            }
-        case .failure(let err):
-            return .failure(err)
-        }
+    func getBitcoinPreSigningInputData(keysignPayload: KeysignPayload) throws -> Data {
+        var input = try getBitcoinSigningInput(keysignPayload: keysignPayload)
+        let plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
+        input.plan = plan
+        let inputData = try input.serializedData()
+        return inputData
     }
     
-    func getBitcoinTransactionPlan(keysignPayload: KeysignPayload) -> Result<BitcoinTransactionPlan, Error> {
-        let result = getBitcoinSigningInput(keysignPayload: keysignPayload)
-        switch result {
-        case .success(let input):
-            let plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
-            return .success(plan)
-        case .failure(let err):
-            return .failure(err)
-        }
+    func getBitcoinTransactionPlan(keysignPayload: KeysignPayload) throws -> BitcoinTransactionPlan {
+        let input = try getBitcoinSigningInput(keysignPayload: keysignPayload)
+        let plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
+        return plan
     }
     
     func getSignedTransaction(
         keysignPayload: KeysignPayload,
         signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {
-        let result = getBitcoinPreSigningInputData(keysignPayload: keysignPayload)
-        switch result {
-        case .success(let inputData):
-            return try getSignedTransaction(inputData: inputData,
-                                            signatures: signatures)
-            
-        case .failure(let error):
-            throw error
-        }
+        let inputData = try getBitcoinPreSigningInputData(keysignPayload: keysignPayload)
+        return try getSignedTransaction(inputData: inputData, signatures: signatures)
     }
     
     func getSignedTransaction(
