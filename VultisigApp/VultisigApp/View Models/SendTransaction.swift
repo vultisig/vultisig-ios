@@ -11,6 +11,7 @@ import CodeScanner
 #endif
 
 class SendTransaction: ObservableObject, Hashable {
+    @Published var fromAddress: String = ""
     @Published var toAddress: String = .empty
     @Published var amount: String = .empty
     @Published var amountInFiat: String = .empty
@@ -21,12 +22,6 @@ class SendTransaction: ObservableObject, Hashable {
 
     @Published var coin: Coin = .example
 
-    private var _fromAddress: String = ""
-
-    var fromAddress: String {
-        return _fromAddress
-    }
-    
     var isAmountExceeded: Bool {
         
         if (sendMaxAmount && coin.chainType == .UTXO) || !coin.isNativeToken {
@@ -170,7 +165,7 @@ class SendTransaction: ObservableObject, Hashable {
         self.gas = gas
         self.coin = coin
         self.sendMaxAmount = false
-        self._fromAddress = coin.address
+        self.fromAddress = coin.address
     }
     
     static func == (lhs: SendTransaction, rhs: SendTransaction) -> Bool {
@@ -199,7 +194,7 @@ class SendTransaction: ObservableObject, Hashable {
         self.gas = .empty
         self.coin = coin
         self.sendMaxAmount = false
-        self._fromAddress = coin.address
+        self.fromAddress = coin.address
     }
     
     func parseCryptoURI(_ uri: String) {

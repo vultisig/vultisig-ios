@@ -101,7 +101,9 @@ struct SendCryptoDetailsView: View {
             coins: .constant(vault.coins),
             selected: $tx.coin,
             balance: coinBalance
-        )
+        ) { coin in
+            tx.fromAddress = coin.address
+        }
     }
     
     var fromField: some View {
