@@ -10,15 +10,13 @@ import SwiftUI
 
 struct SetupVaultView: View {
     let tssType: TssType
-    
-    @Query var vaults: [Vault]
-    
     @State var vault: Vault? = nil
     @State var showSheet = false
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
     @State var selectedTab: SetupVaultState = .TwoOfTwoVaults
     
+    @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var viewModel: HomeViewModel
     
     var body: some View {
@@ -124,26 +122,28 @@ struct SetupVaultView: View {
     }
     
     private func getUniqueVaultName() -> String {
-        let start = vaults.count
-        var idx = start
-        repeat {
-            let vaultName = "Vault #\(idx + 1)"
-            if !isVaultNameExist(name: vaultName) {
-                return vaultName
-            }
-            idx += 1
-        } while idx < 1000
-        
+        let fetchVaultDescriptor = FetchDescriptor<Vault>()
+        do{
+            let vaults = try modelContext.fetch(fetchVaultDescriptor)
+            let start = vaults.count
+            var idx = start
+            repeat {
+                let vaultName = "Vault #\(idx + 1)"
+                let vaultExist = vaults.contains {v in
+                    v.name == vaultName && !v.pubKeyECDSA.isEmpty
+                }
+                if !vaultExist {
+                    return vaultName
+                }
+                idx += 1
+            } while idx < 1000
+        }
+        catch {
+            print("fail to load all vaults")
+        }
         return "Main Vault"
     }
-    private func isVaultNameExist(name: String) -> Bool{
-        for item in self.vaults {
-            if item.name == name && !item.pubKeyECDSA.isEmpty {
-                return true
-            }
-        }
-        return false
-    }
+    
 }
 
 #Preview {
