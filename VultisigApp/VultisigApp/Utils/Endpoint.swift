@@ -66,6 +66,15 @@ class Endpoint {
         return "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/tokens"
     }
     
+    static func fetch1InchsTokensBalance(chain: String, address: String) -> String {
+        return "\(vultisigApiProxy)/1inch/balance/v1.2/\(chain)/balances/\(address)"
+    }
+    
+    static func fetch1InchsTokensInfo(chain: String, addresses: [String]) -> String {
+        let addresses = addresses.joined(separator: ",")
+        return "\(vultisigApiProxy)/1inch/token/v1.2/\(chain)/custom?addresses=\(addresses)"
+    }
+    
     static func fetchCoinPaprikaQuotes(_ quotes: String) -> String {
         "https://api.coinpaprika.com/v1/tickers?quotes=\(quotes)"
     }
@@ -73,11 +82,7 @@ class Endpoint {
     static let avalancheServiceRpcService = "https://avalanche-c-chain-rpc.publicnode.com"
     
     static let bscServiceRpcService = "https://bsc-rpc.publicnode.com"
-    
-    static func bscServiceToken(_ address: String) -> String {
-        "https://api.binplorer.com/getAddressInfo/\(address)?apiKey=freekey"
-    }
-    
+        
     static let baseServiceRpcService = "https://base-rpc.publicnode.com"
     
     static let arbitrumOneServiceRpcService = "https://arbitrum-one-rpc.publicnode.com"
@@ -90,17 +95,9 @@ class Endpoint {
     
     static let blastServiceRpcService = "https://rpc.ankr.com/blast"
     
-    static func blastServiceToken(_ address: String) -> String {
-        "https://api.blastplorer.info/getAddressInfo/\(address)?apiKey=freekey"
-    }
-    
     static let zksyncServiceRpcService = "https://mainnet.era.zksync.io"
     
     static let ethServiceRpcService = "https://ethereum-rpc.publicnode.com"
-    
-    static func ethServiceToken(_ address: String) -> String {
-        "https://api.ethplorer.io/getAddressInfo/\(address)?apiKey=freekey"
-    }
     
     static let solanaServiceRpc = "https://api.mainnet-beta.solana.com"
     
