@@ -12,7 +12,7 @@ import Combine
 
 struct MaxLengthModifier: ViewModifier {
     @Binding var text: String
-    var maxLength: Int = 50
+    var maxLength: Int = 100
     
     func body(content: Content) -> some View {
         content
@@ -25,7 +25,7 @@ struct MaxLengthModifier: ViewModifier {
 }
 
 extension View {
-    func maxLength(_ text: Binding<String>, _ maxLength: Int = 50) -> some View {
+    func maxLength(_ text: Binding<String>, _ maxLength: Int = 100) -> some View {
         self.modifier(MaxLengthModifier(text: text, maxLength: maxLength))
     }
 }
