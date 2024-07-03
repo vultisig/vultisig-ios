@@ -15,6 +15,11 @@ struct ChainDetailView: View {
     @StateObject var sendTx = SendTransaction()
     @State var isLoading = false
     @State var sheetType: SheetType? = nil
+
+    @State var isSendLinkActive = false
+    @State var isSwapLinkActive = false
+    @State var isMemoLinkActive = false
+
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
     enum SheetType: Int, Identifiable {
@@ -47,6 +52,21 @@ struct ChainDetailView: View {
                     refreshAction()
                 }
             }
+        }
+        .navigationDestination(isPresented: $isSendLinkActive) {
+            SendCryptoView(
+                tx: sendTx,
+                vault: vault
+            )
+        }
+        .navigationDestination(isPresented: $isSwapLinkActive) {
+            SwapCryptoView(coin: tokens.first, vault: vault)
+        }
+        .navigationDestination(isPresented: $isMemoLinkActive) {
+            TransactionMemoView(
+                tx: sendTx,
+                vault: vault
+            )
         }
         .refreshable {
             refreshAction()
@@ -115,9 +135,10 @@ struct ChainDetailView: View {
     var actionButtons: some View {
         ChainDetailActionButtons(
             group: group,
-            vault: vault,
             sendTx: sendTx,
-            coin: group.nativeCoin
+            isSendLinkActive: $isSendLinkActive,
+            isSwapLinkActive: $isSwapLinkActive,
+            isMemoLinkActive: $isMemoLinkActive
         )
     }
     

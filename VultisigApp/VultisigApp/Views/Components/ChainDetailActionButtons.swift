@@ -9,15 +9,13 @@ import SwiftUI
 
 struct ChainDetailActionButtons: View {
     @ObservedObject var group: GroupedChain
-    let vault: Vault
     @ObservedObject var sendTx: SendTransaction
-    var coin: Coin? = nil
     
     @State var actions: [CoinAction] = []
-    @State var isSendLinkActive = false
-    @State var isSwapLinkActive = false
-    @State var isMemoLinkActive = false
-    
+    @Binding var isSendLinkActive: Bool
+    @Binding var isSwapLinkActive: Bool
+    @Binding var isMemoLinkActive: Bool
+
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
     var body: some View {
@@ -46,21 +44,6 @@ struct ChainDetailActionButtons: View {
             Task {
                 await setData()
             }
-        }
-        .navigationDestination(isPresented: $isSendLinkActive) {
-            SendCryptoView(
-                tx: sendTx,
-                vault: vault
-            )
-        }
-        .navigationDestination(isPresented: $isSwapLinkActive) {
-            SwapCryptoView(coin: coin, vault: vault)
-        }
-        .navigationDestination(isPresented: $isMemoLinkActive) {
-            TransactionMemoView(
-                tx: sendTx,
-                vault: vault
-            )
         }
     }
     
@@ -96,7 +79,7 @@ struct ChainDetailActionButtons: View {
     private func setData() async {
         actions = await viewModel.actionResolver.resolveActions(for: group.chain)
         
-        guard let activeCoin = coin ?? group.coins.first(where: { $0.isNativeToken }) else {
+        guard let activeCoin = group.coins.first(where: { $0.isNativeToken }) else {
             return
         }
         
@@ -105,6 +88,6 @@ struct ChainDetailActionButtons: View {
 }
 
 #Preview {
-    ChainDetailActionButtons(group: GroupedChain.example, vault: Vault.example, sendTx: SendTransaction())
+    ChainDetailActionButtons(group: GroupedChain.example, sendTx: SendTransaction(), isSendLinkActive: .constant(false),isSwapLinkActive: .constant(false), isMemoLinkActive: .constant(false))
         .environmentObject(CoinSelectionViewModel())
 }
