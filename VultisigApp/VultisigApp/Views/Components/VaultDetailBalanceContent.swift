@@ -10,10 +10,13 @@ import SwiftUI
 struct VaultDetailBalanceContent: View {
     let vault: Vault
     
+    @State var width: CGFloat = .zero
+    @State var redactedText = ""
+    
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
-        HStack(spacing: 18) {
+        HStack(spacing: 0) {
             content
             hideButton
         }
@@ -25,16 +28,22 @@ struct VaultDetailBalanceContent: View {
 #if os(macOS)
         .padding(.vertical, 18)
 #endif
+        .onAppear {
+            setData()
+        }
     }
     
     var content: some View {
-        Text(vault.coins.totalBalanceInFiatString)
-            .font(.title32MenloBold)
-            .foregroundColor(.neutral0)
-            .padding(.top, 10)
-            .multilineTextAlignment(.center)
-            .padding(.horizontal, homeViewModel.hideVaultBalance ? 12 : 0)
-            .redacted(reason: homeViewModel.hideVaultBalance ? .placeholder : [])
+        Text(
+            homeViewModel.hideVaultBalance ?
+            redactedText :
+            vault.coins.totalBalanceInFiatString
+        )
+        .font(.title32MenloBold)
+        .foregroundColor(.neutral0)
+        .padding(.top, 10)
+        .multilineTextAlignment(.center)
+        .frame(width: width)
     }
     
     var hideButton: some View {
@@ -44,7 +53,7 @@ struct VaultDetailBalanceContent: View {
                     homeViewModel.hideVaultBalance.toggle()
                 }
             } label: {
-                Label("", systemImage: homeViewModel.hideVaultBalance ? "eye": "eye.slash")
+                Label("", systemImage: homeViewModel.hideVaultBalance ? "eye.slash" : "eye")
                     .labelsHidden()
                     .foregroundColor(.neutral0)
                     .font(.body16Menlo)
@@ -53,6 +62,22 @@ struct VaultDetailBalanceContent: View {
         }
         .font(.largeTitle)
         .offset(y: 3)
+    }
+    
+    private func setData() {
+        let balance = vault.coins.totalBalanceInFiatString
+#if os(iOS)
+        width = balance.widthOfString(usingFont: UIFont.preferredFont(forTextStyle: .extraLargeTitle))
+#elseif os(macOS)
+        width = balance.widthOfString(usingFont: NSFont.preferredFont(forTextStyle: .title1))*2
+#endif
+        
+        redactedText = "$"
+        let multiplier = Int(width/25)
+        
+        for _ in 0..<multiplier {
+            redactedText += "*"
+        }
     }
 }
 

@@ -18,7 +18,6 @@ final class CoinActionResolver {
     }
 
     func resolveActions(for chain: Chain) async -> [CoinAction] {
-
         guard let config = try? await getConfig(for: chain) else {
             return chain.defaultActions
         }

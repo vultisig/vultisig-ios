@@ -14,7 +14,11 @@ struct CoinDetailView: View {
     @ObservedObject var sendTx: SendTransaction
     
     @State var isLoading = false
-    
+
+    @State var isSendLinkActive = false
+    @State var isSwapLinkActive = false
+    @State var isMemoLinkActive = false
+
     var body: some View {
         ZStack {
             Background()
@@ -23,6 +27,21 @@ struct CoinDetailView: View {
             if isLoading {
                 loader
             }
+        }
+        .navigationDestination(isPresented: $isSendLinkActive) {
+            SendCryptoView(
+                tx: sendTx,
+                vault: vault
+            )
+        }
+        .navigationDestination(isPresented: $isSwapLinkActive) {
+            SwapCryptoView(coin: coin, vault: vault)
+        }
+        .navigationDestination(isPresented: $isMemoLinkActive) {
+            TransactionMemoView(
+                tx: sendTx,
+                vault: vault
+            )
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString(coin.ticker, comment: ""))
@@ -64,7 +83,13 @@ struct CoinDetailView: View {
     }
     
     var actionButtons: some View {
-        ChainDetailActionButtons(group: group, vault: vault, sendTx: sendTx, coin: coin)
+        ChainDetailActionButtons(
+            group: group,
+            sendTx: sendTx,
+            isSendLinkActive: $isSendLinkActive,
+            isSwapLinkActive: $isSwapLinkActive,
+            isMemoLinkActive: $isMemoLinkActive
+        )
     }
     
     var content: some View {
