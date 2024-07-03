@@ -15,6 +15,8 @@ struct ChainHeaderCell: View {
     @State var showAlert = false
     @State var showQRcode = false
     
+    @EnvironmentObject var homeViewModel: HomeViewModel
+    
     var body: some View {
         cell
             .alert(isPresented: $showAlert) {
@@ -74,7 +76,7 @@ struct ChainHeaderCell: View {
     }
     
     var fiatBalance: some View {
-        Text(group.totalBalanceInFiatString)
+        Text(homeViewModel.hideVaultBalance ? "****" : group.totalBalanceInFiatString)
             .font(.body20MenloBold)
             .foregroundColor(.neutral0)
     }
