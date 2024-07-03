@@ -13,7 +13,7 @@ struct VaultDetailBalanceContent: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
-        HStack(spacing: 18) {
+        HStack(spacing: 0) {
             content
             hideButton
         }
@@ -28,13 +28,16 @@ struct VaultDetailBalanceContent: View {
     }
     
     var content: some View {
-        Text(vault.coins.totalBalanceInFiatString)
+        let balance = vault.coins.totalBalanceInFiatString
+        
+        return Text(balance)
             .font(.title32MenloBold)
             .foregroundColor(.neutral0)
             .padding(.top, 10)
             .multilineTextAlignment(.center)
             .padding(.horizontal, homeViewModel.hideVaultBalance ? 12 : 0)
             .redacted(reason: homeViewModel.hideVaultBalance ? .placeholder : [])
+            .frame(width: balance.widthOfString(usingFont: UIFont.preferredFont(forTextStyle: .extraLargeTitle)))
     }
     
     var hideButton: some View {
@@ -44,7 +47,7 @@ struct VaultDetailBalanceContent: View {
                     homeViewModel.hideVaultBalance.toggle()
                 }
             } label: {
-                Label("", systemImage: homeViewModel.hideVaultBalance ? "eye": "eye.slash")
+                Label("", systemImage: homeViewModel.hideVaultBalance ? "eye.slash" : "eye")
                     .labelsHidden()
                     .foregroundColor(.neutral0)
                     .font(.body16Menlo)
