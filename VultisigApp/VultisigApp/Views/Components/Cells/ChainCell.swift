@@ -81,7 +81,7 @@ struct ChainCell: View {
     }
     
     var count: some View {
-        Text(viewModel.getGroupCount(group))
+        Text(homeViewModel.hideVaultBalance ? "****" : viewModel.getGroupCount(group))
             .font(.body12Menlo)
             .foregroundColor(.neutral100)
             .padding(.horizontal, 8)
@@ -91,17 +91,15 @@ struct ChainCell: View {
     }
     
     var quantity: some View {
-        return Text(group.nativeCoin.balanceString)
+        Text(homeViewModel.hideVaultBalance ? "****" : group.nativeCoin.balanceString)
             .font(.body12Menlo)
             .foregroundColor(.neutral100)
-            .redacted(reason: homeViewModel.hideVaultBalance ? .placeholder : [])
     }
     
     var balance: some View {
-        return Text(group.totalBalanceInFiatString)
+        Text(homeViewModel.hideVaultBalance ? "****" : group.totalBalanceInFiatString)
             .font(.body16MenloBold)
             .foregroundColor(.neutral100)
-            .redacted(reason: homeViewModel.hideVaultBalance ? .placeholder : [])
     }
 }
 
