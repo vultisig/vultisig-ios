@@ -61,6 +61,7 @@ struct CreateVaultView: View {
             ImportWalletView()
         } label: {
             OutlineButton(title: "importExistingVault")
+                .contentShape(Rectangle())
         }
         .buttonStyle(PlainButtonStyle())
         .background(Color.clear)
