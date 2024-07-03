@@ -53,34 +53,27 @@ struct OneInchService {
         return tokens
     }
     
-    func fetchTokensBalance(chainId: Int, walletAddress: String) async throws -> [OneInchToken] {
+    func fetchNonZeroBalanceTokens(chainId: Int, walletAddress: String) async throws -> [OneInchToken] {
         let oneInchChainId = String(describing: chainId)
         let balanceData = try await Utils.asyncGetRequest(urlString: Endpoint.fetch1InchsTokensBalance(chain: oneInchChainId, address: walletAddress), headers: [:])
         
-        if let balanceDictionary = try JSONSerialization.jsonObject(with: balanceData, options: []) as? [String: String] {
-            
-            let tokensWithNonZeroBalance = balanceDictionary.filter { tokenAddress, balance in
-                if let balanceValue = Int64(balance) {
-                    return balanceValue > 0
-                }
-                return false
-            }
-            
-            let nonZeroBalanceTokenAddresses = tokensWithNonZeroBalance.map { $0.key }
-            
-            let tokenInfoData = try await Utils.asyncGetRequest(
-                urlString: Endpoint.fetch1InchsTokensInfo(chain: oneInchChainId, addresses: nonZeroBalanceTokenAddresses), headers: [:]
-            )
-            
-            var tokens: [OneInchToken] = []
-            for tokenAddress in nonZeroBalanceTokenAddresses {
-                if let tokenInfo: OneInchToken = Utils.extractResultFromJson(fromData: tokenInfoData, path: tokenAddress, type: OneInchToken.self) {
-                    tokens.append(tokenInfo)
-                }
-            }
-            return tokens;
+        let balanceDictionary = try JSONDecoder().decode([String: String].self, from: balanceData)
+        
+        let nonZeroBalanceTokenAddresses = balanceDictionary.compactMap { tokenAddress, balance in
+            (Int64(balance) ?? 0) > 0 ? tokenAddress : nil
         }
-        return []
+        
+        guard !nonZeroBalanceTokenAddresses.isEmpty else {
+            return []
+        }
+        
+        let tokenInfoData = try await Utils.asyncGetRequest(
+            urlString: Endpoint.fetch1InchsTokensInfo(chain: oneInchChainId, addresses: nonZeroBalanceTokenAddresses), headers: [:]
+        )
+        
+        return nonZeroBalanceTokenAddresses.compactMap { tokenAddress in
+            Utils.extractResultFromJson(fromData: tokenInfoData, path: tokenAddress, type: OneInchToken.self)
+        }
     }
     
 }
