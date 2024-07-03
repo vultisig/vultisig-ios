@@ -2,9 +2,10 @@ import SwiftUI
 
 struct CoinCell: View {
     @ObservedObject var coin: Coin
-    
     @ObservedObject var group: GroupedChain
     let vault: Vault
+    
+    @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
         HStack(spacing: 12) {
@@ -41,14 +42,14 @@ struct CoinCell: View {
     }
     
     var quantity: some View {
-        Text(coin.balanceString)
+        Text(homeViewModel.hideVaultBalance ? "****" : coin.balanceString)
             .font(.body16Menlo)
             .foregroundColor(.neutral0)
             .redacted(reason: coin.rawBalance.isEmpty ? .placeholder : [])
     }
     
     var amount: some View {
-        Text(coin.balanceInFiat)
+        Text(homeViewModel.hideVaultBalance ? "****" : coin.balanceInFiat)
             .font(.body16MenloBold)
             .foregroundColor(.neutral0)
             .redacted(reason: coin.balanceInFiat.isEmpty ? .placeholder : [])

@@ -22,6 +22,11 @@ struct VaultDetailView: View {
     @State var showScanner = false
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
+
+    @State var isSendLinkActive = false
+    @State var isSwapLinkActive = false
+    @State var isMemoLinkActive = false
+
     @StateObject var sendTx = SendTransaction()
     
     var body: some View {
@@ -41,6 +46,21 @@ struct VaultDetailView: View {
         }
         .onChange(of: vault.coins) {
             setData()
+        }
+        .navigationDestination(isPresented: $isSendLinkActive) {
+            SendCryptoView(
+                tx: sendTx,
+                vault: vault
+            )
+        }
+        .navigationDestination(isPresented: $isSwapLinkActive) {
+            SwapCryptoView(coin: viewModel.selectedGroup?.nativeCoin, vault: vault)
+        }
+        .navigationDestination(isPresented: $isMemoLinkActive) {
+            TransactionMemoView(
+                tx: sendTx,
+                vault: vault
+            )
         }
         .sheet(isPresented: $showSheet, content: {
             NavigationView {
@@ -219,7 +239,7 @@ struct VaultDetailView: View {
     private func getActions() -> some View {
         let selectedGroup = viewModel.selectedGroup
         
-        return ChainDetailActionButtons(group: selectedGroup ?? GroupedChain.example, vault: vault, sendTx: sendTx)
+        return ChainDetailActionButtons(group: selectedGroup ?? GroupedChain.example, sendTx: sendTx, isSendLinkActive: $isSendLinkActive, isSwapLinkActive: $isSwapLinkActive, isMemoLinkActive: $isMemoLinkActive)
             .padding(16)
             .padding(.horizontal, 12)
             .redacted(reason: selectedGroup == nil ? .placeholder : [])
