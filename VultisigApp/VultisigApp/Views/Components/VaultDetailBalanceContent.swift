@@ -66,7 +66,11 @@ struct VaultDetailBalanceContent: View {
     
     private func setData() {
         let balance = vault.coins.totalBalanceInFiatString
+#if os(iOS)
         width = balance.widthOfString(usingFont: UIFont.preferredFont(forTextStyle: .extraLargeTitle))
+#elseif os(macOS)
+        width = balance.widthOfString(usingFont: NSFont.preferredFont(forTextStyle: .title1))*2
+#endif
         
         redactedText = "$"
         let multiplier = Int(width/25)

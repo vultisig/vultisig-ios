@@ -38,11 +38,19 @@ extension String {
         return self == .zero
     }
     
+#if os(iOS)
     func widthOfString(usingFont font: UIFont) -> CGFloat {
         let fontAttributes = [NSAttributedString.Key.font: font]
         let size = self.size(withAttributes: fontAttributes)
         return size.width
     }
+#elseif os(macOS)
+    func widthOfString(usingFont font: NSFont) -> CGFloat {
+        let fontAttributes = [NSAttributedString.Key.font: font]
+        let size = self.size(withAttributes: fontAttributes)
+        return size.width
+    }
+#endif
 }
 
 // MARK: - String constants
