@@ -255,17 +255,14 @@ class RpcEvmService: RpcService {
     }
     
     func getTokens(nativeToken: Coin) async -> [CoinMeta] {
-        
         do {
-            let oneInchTokens = try await oneInchService.fetchNonZeroBalanceTokens(chainId: nativeToken.chain.chainID ?? 0, walletAddress: nativeToken.address)
-            return oneInchTokens.map{
-                $0.toCoinMeta(nativeToken: nativeToken)
-            }
+            guard let oneInchChainId = nativeToken.chain.chainID else { return [] }
+            let oneInchTokens = try await oneInchService.fetchNonZeroBalanceTokens(chainId: oneInchChainId, walletAddress: nativeToken.address)
+            return oneInchTokens.map{ $0.toCoinMeta(nativeToken: nativeToken) }
         } catch {
-            print("error")
+            print("Error fetching tokens: \(error)")
+            return []
         }
-        
-        return []
     }
     
 }
