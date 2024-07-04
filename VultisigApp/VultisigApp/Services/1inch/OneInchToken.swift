@@ -18,3 +18,15 @@ struct OneInchToken: Codable, Hashable {
         return logoURI.flatMap { URL(string: $0) }
     }
 }
+
+extension OneInchToken {
+    func toCoinMeta(nativeToken: Coin) -> CoinMeta {
+        return CoinMeta(chain: nativeToken.chain,
+                        ticker: self.symbol,
+                        logo: self.logoURI ?? "",
+                        decimals: self.decimals,
+                        priceProviderId: .empty,
+                        contractAddress: self.address,
+                        isNativeToken: false)
+    }
+}

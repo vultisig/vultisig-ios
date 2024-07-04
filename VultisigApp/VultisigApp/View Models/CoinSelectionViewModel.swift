@@ -28,12 +28,12 @@ class CoinSelectionViewModel: ObservableObject {
         groupAssets()
         checkSelected(for: vault)
     }
-
+    
     func hasTokens(chain: Chain) -> Bool {
         guard let coins = groupedAssets[chain.name] else { return false }
         return coins.count > 1
     }
-
+    
     private func checkSelected(for vault: Vault) {
         selection = Set(vault.coins.map{$0.toCoinMeta()})
     }
@@ -103,7 +103,7 @@ class CoinSelectionViewModel: ObservableObject {
             print("fail to save asset,\(error)")
         }
     }
-
+    
     private func addToChain(assets: [CoinMeta], to vault: Vault) async throws {
         if let coin = assets.first, coin.chain.chainType == .EVM, !coin.isNativeToken {
             for asset in assets {
@@ -132,7 +132,7 @@ class CoinSelectionViewModel: ObservableObject {
     }
     
     
-    private func addDiscoveredTokens(nativeToken: Coin, to vault: Vault) async throws  {
+    public func addDiscoveredTokens(nativeToken: Coin, to vault: Vault) async throws  {
         do {
             // Only auto discovery for EVM type chains
             if nativeToken.chain.chainType != .EVM {
@@ -142,10 +142,14 @@ class CoinSelectionViewModel: ObservableObject {
             let tokens = await service.getTokens(nativeToken: nativeToken)
             
             for token in tokens {
-                _ = try await addToChain(asset: token, to: vault, priceProviderId: nil)
+                do {
+                    _ = try await addToChain(asset: token, to: vault, priceProviderId: nil)
+                } catch {
+                    print("Error adding the token \(token.ticker) service: \(error.localizedDescription)")
+                }
             }
         } catch {
-            print("Error fetching service: \(error)")
+            print("Error fetching service: \(error.localizedDescription)")
         }
     }
 }
