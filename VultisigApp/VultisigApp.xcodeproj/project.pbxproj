@@ -171,7 +171,6 @@
 		A690E00E2BC0ED290006DC0D /* URL.swift in Sources */ = {isa = PBXBuildFile; fileRef = A690E00D2BC0ED290006DC0D /* URL.swift */; };
 		A6966D1E2BA3DDAD00903CA4 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D1D2BA3DDAD00903CA4 /* OnboardingView.swift */; };
 		A6966D202BA3DF0C00903CA4 /* OnboardingView1.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D1F2BA3DF0C00903CA4 /* OnboardingView1.swift */; };
-		A6966D222BA3E1B000903CA4 /* TextStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D212BA3E1B000903CA4 /* TextStore.swift */; };
 		A6966D242BA3E2A500903CA4 /* OnboardingView2.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D232BA3E2A500903CA4 /* OnboardingView2.swift */; };
 		A6966D262BA3E2CF00903CA4 /* OnboardingView3.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D252BA3E2CF00903CA4 /* OnboardingView3.swift */; };
 		A6966D292BA400B700903CA4 /* SendCryptoAddressTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D282BA400B700903CA4 /* SendCryptoAddressTextField.swift */; };
@@ -550,7 +549,6 @@
 		A690E00D2BC0ED290006DC0D /* URL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URL.swift; sourceTree = "<group>"; };
 		A6966D1D2BA3DDAD00903CA4 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		A6966D1F2BA3DF0C00903CA4 /* OnboardingView1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView1.swift; sourceTree = "<group>"; };
-		A6966D212BA3E1B000903CA4 /* TextStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextStore.swift; sourceTree = "<group>"; };
 		A6966D232BA3E2A500903CA4 /* OnboardingView2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView2.swift; sourceTree = "<group>"; };
 		A6966D252BA3E2CF00903CA4 /* OnboardingView3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView3.swift; sourceTree = "<group>"; };
 		A6966D282BA400B700903CA4 /* SendCryptoAddressTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoAddressTextField.swift; sourceTree = "<group>"; };
@@ -1084,7 +1082,6 @@
 			children = (
 				462DCD6A2BCA11AF003D542F /* Price */,
 				A61BC8182BA2687D00484689 /* TokensStore.swift */,
-				A6966D212BA3E1B000903CA4 /* TextStore.swift */,
 				A6980C292BC0870000F452AB /* SettingsOptionsStore.swift */,
 				DEFF58F12BCBACDA005DFDF9 /* VultisigRelay.swift */,
 				B587686F2BFB0C43001AAEA5 /* DepositStore.swift */,
@@ -1897,7 +1894,6 @@
 				A6FA40212C10241700D6C6B7 /* VaultDeletionConfirmView.swift in Sources */,
 				A6980C242BC0836300F452AB /* SettingsView.swift in Sources */,
 				A6F9F7DF2B9BAA9F00790258 /* Separator.swift in Sources */,
-				A6966D222BA3E1B000903CA4 /* TextStore.swift in Sources */,
 				A6F9F7DB2B9BA2DE00790258 /* ChainCell.swift in Sources */,
 				A686965A2C1F72FF004EDE0B /* HiddenTextField.swift in Sources */,
 				049BBB682B71E9C5004C231F /* WifiInstruction.swift in Sources */,

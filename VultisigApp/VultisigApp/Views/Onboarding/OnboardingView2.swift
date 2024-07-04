@@ -35,7 +35,7 @@ struct OnboardingView2: View {
     }
     
     var text: some View {
-        Text(TextStore.OnboardingText2)
+        Text(NSLocalizedString("OnboardingView2Description", comment: ""))
             .frame(maxWidth: 500)
             .font(.body14MontserratMedium)
             .foregroundColor(.neutral0)
