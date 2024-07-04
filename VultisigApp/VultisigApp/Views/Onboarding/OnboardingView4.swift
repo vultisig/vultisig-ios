@@ -1,13 +1,13 @@
 //
-//  OnboardingView3.swift
+//  OnboardingView4.swift
 //  VultisigApp
 //
-//  Created by Amol Kumar on 2024-03-14.
+//  Created by Amol Kumar on 2024-07-04.
 //
 
 import SwiftUI
 
-struct OnboardingView3: View {
+struct OnboardingView4: View {
 #if os(macOS)
     @Binding var tabIndex: Int
 #endif
@@ -30,12 +30,12 @@ struct OnboardingView3: View {
     }
     
     var image: some View {
-        Image("OnboardingImage3")
+        Image("OnboardingImage4")
             .frame(height: 280)
     }
     
     var text: some View {
-        Text(TextStore.OnboardingText3)
+        Text(TextStore.OnboardingText4)
             .frame(maxWidth: 500)
             .font(.body14MontserratMedium)
             .foregroundColor(.neutral0)
@@ -48,7 +48,7 @@ struct OnboardingView3: View {
         HStack {
             previousButton
             Spacer()
-            nextButton
+            previousButton.opacity(0)
         }
         .padding(.horizontal, 30)
         .buttonStyle(PlainButtonStyle())
@@ -62,21 +62,13 @@ struct OnboardingView3: View {
             NavigationButton(isLeft: true)
         })
     }
-    
-    var nextButton: some View {
-        Button(action: {
-            tabIndex += 1
-        }, label: {
-            NavigationButton()
-        })
-    }
 #endif
 }
 
 #Preview {
 #if os(iOS)
-    OnboardingView3()
+    OnboardingView4()
 #elseif os(macOS)
-    OnboardingView3(tabIndex: .constant(2))
+    OnboardingView4(tabIndex: .constant(3))
 #endif
 }
