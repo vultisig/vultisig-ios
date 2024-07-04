@@ -12,6 +12,7 @@ enum Field: Int, Hashable {
     case toAddress
     case amount
     case amountInFiat
+    case memo
 }
 
 struct SendCryptoDetailsView: View {
@@ -80,7 +81,11 @@ struct SendCryptoDetailsView: View {
                 coinSelector
                 fromField
                 toField
-                memoField
+                
+                if showMemo() {
+                    memoField
+                }
+                
                 amountField
                 amountFiatField
                 
@@ -149,8 +154,8 @@ struct SendCryptoDetailsView: View {
                 memoFieldTitle
             }
 
-            SendCryptoAddressTextField(tx: tx, sendCryptoViewModel: sendCryptoViewModel)
-                .focused($focusedField, equals: .toAddress)
+            MemoTextField(memo: $tx.memo)
+                .focused($focusedField, equals: .memo)
                 .onSubmit {
                     focusNextField($focusedField)
                 }
@@ -276,6 +281,10 @@ struct SendCryptoDetailsView: View {
     private func getBalance() async {
         await BalanceService.shared.updateBalance(for: tx.coin)
         coinBalance = tx.coin.balanceString
+    }
+    
+    private func showMemo() -> Bool {
+        tx.coin.isNativeToken && tx.coin.tokenSchema != "ERC20"
     }
 }
 
