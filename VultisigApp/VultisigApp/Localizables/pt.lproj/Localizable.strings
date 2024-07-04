@@ -232,3 +232,9 @@
 "URLInaccessible" = "Falha ao acessar a URL";
 "NoQRCodesDetected" = "Nenhum código QR detectado";
 "FailedToLoadImage" = "Falha ao carregar imagem da URL";
+"OnboardingView1Description" = "Vultisig é um cofre de criptografia seguro e multi-dispositivo, compatível com todas as principais blockchains e mais de 10.000 tokens. Vultisig é totalmente auto-custodial.";
+"OnboardingView2Description" = "Vultisig não rastreia suas atividades e não requer registros. Vultisig é totalmente open-source, garantindo transparência e confiança.";
+"OnboardingView3Description" = "Vultisig é auditado e seguro. Junte-se a milhares de usuários que confiam no Vultisig com seus ativos digitais.";
+"OnboardingView4Description" = "Vultisig é uma carteira sem frases-semente.\nEle usa ações de cofre fáceis de gerenciar.";
+"NoQRCodesDetected" = "Nenhum código QR detectado";
+"FailedToLoadImage" = "Falha ao carregar imagem da URL";

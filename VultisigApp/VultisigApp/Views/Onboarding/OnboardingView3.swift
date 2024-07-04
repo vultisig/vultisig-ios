@@ -35,7 +35,7 @@ struct OnboardingView3: View {
     }
     
     var text: some View {
-        Text(TextStore.OnboardingText3)
+        Text(NSLocalizedString("OnboardingView3Description", comment: ""))
             .frame(maxWidth: 500)
             .font(.body14MontserratMedium)
             .foregroundColor(.neutral0)
@@ -48,7 +48,7 @@ struct OnboardingView3: View {
         HStack {
             previousButton
             Spacer()
-            previousButton.opacity(0)
+            nextButton
         }
         .padding(.horizontal, 30)
         .buttonStyle(PlainButtonStyle())
@@ -60,6 +60,14 @@ struct OnboardingView3: View {
             tabIndex -= 1
         }, label: {
             NavigationButton(isLeft: true)
+        })
+    }
+    
+    var nextButton: some View {
+        Button(action: {
+            tabIndex += 1
+        }, label: {
+            NavigationButton()
         })
     }
 #endif

@@ -231,3 +231,9 @@
 "URLInaccessible" = "Accesso all'URL non riuscito";
 "NoQRCodesDetected" = "Nessun codice QR rilevato";
 "FailedToLoadImage" = "Impossibile caricare l'immagine dall'URL";
+"OnboardingView1Description" = "Vultisig è una cassaforte crittografica sicura e multi-dispositivo, compatibile con tutte le principali blockchain e oltre 10.000 token. Vultisig è completamente self-custodial.";
+"OnboardingView2Description" = "Vultisig non traccia le tue attività e non richiede alcuna registrazione. Vultisig è completamente open-source, garantendo trasparenza e fiducia.";
+"OnboardingView3Description" = "Vultisig è verificato e sicuro. Unisciti a migliaia di utenti che si fidano di Vultisig per i loro beni digitali.";
+"OnboardingView4Description" = "Vultisig è un portafoglio senza frasi seed.\nUtilizza invece quote di cassaforte facili da gestire.";
+"NoQRCodesDetected" = "Nessun codice QR rilevato";
+"FailedToLoadImage" = "Impossibile caricare l'immagine dall'URL";
