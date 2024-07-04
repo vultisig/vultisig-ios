@@ -56,7 +56,11 @@ struct VaultDetailBalanceContent: View {
             .contentTransition(.symbolEffect(.replace))
         }
         .font(.largeTitle)
+#if os(iOS)
         .offset(x: width/2 + 28 , y: 3)
+#elseif os(macOS)
+        .offset(x: width/2 + 16 , y: 3)
+#endif
     }
     
     private func setData() {
