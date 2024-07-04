@@ -231,3 +231,7 @@
 "URLInaccessible" = "Zugriff auf URL fehlgeschlagen";
 "NoQRCodesDetected" = "Kein QR-Code erkannt";
 "FailedToLoadImage" = "Bild von URL konnte nicht geladen werden";
+"OnboardingView1Description" = "Vultisig ist ein sicherer, mehrgerätefähiger Krypto-Tresor, kompatibel mit allen wichtigen Blockchains und über 10.000 Tokens. Vultisig ist vollständig selbstverwahrend.";
+"OnboardingView2Description" = "Vultisig verfolgt Ihre Aktivitäten nicht und erfordert keine Registrierungen. Vultisig ist vollständig quelloffen, was Transparenz und Vertrauen gewährleistet.";
+"OnboardingView3Description" = "Vultisig ist geprüft und sicher. Schließen Sie sich Tausenden von Nutzern an, die Vultisig mit ihren digitalen Vermögenswerten vertrauen.";
+"OnboardingView4Description" = "Vultisig ist eine Wallet ohne Seed-Phrasen.\nEs verwendet stattdessen einfach zu verwaltende Tresoranteile.";

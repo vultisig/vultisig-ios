@@ -231,3 +231,7 @@
 "URLInaccessible" = "Neuspješan pristup URL-u";
 "NoQRCodesDetected" = "Nema QR kodova otkrivenih";
 "FailedToLoadImage" = "Neuspješno učitavanje slike s URL-a";
+"OnboardingView1Description" = "Vultisig je siguran kripto spremište s više uređaja, kompatibilno sa svim glavnim blockchainovima i više od 10.000 tokena. Vultisig je potpuno samostalno.";
+"OnboardingView2Description" = "Vultisig ne prati vaše aktivnosti niti zahtijeva bilo kakve registracije. Vultisig je potpuno otvorenog koda, osiguravajući transparentnost i povjerenje.";
+"OnboardingView3Description" = "Vultisig je revidiran i siguran. Pridružite se tisućama korisnika koji vjeruju Vultisigu sa svojim digitalnim sredstvima.";
+"OnboardingView4Description" = "Vultisig je novčanik bez sjemenskih fraza.\nUmjesto toga koristi lako upravljive udjele u spremištu.";
