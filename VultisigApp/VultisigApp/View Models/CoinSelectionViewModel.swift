@@ -132,7 +132,7 @@ class CoinSelectionViewModel: ObservableObject {
     }
     
     
-    private func addDiscoveredTokens(nativeToken: Coin, to vault: Vault) async throws  {
+    public func addDiscoveredTokens(nativeToken: Coin, to vault: Vault) async throws  {
         do {
             // Only auto discovery for EVM type chains
             if nativeToken.chain.chainType != .EVM {

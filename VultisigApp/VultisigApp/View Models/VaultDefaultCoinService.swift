@@ -39,6 +39,11 @@ class VaultDefaultCoinService {
             for coin in coins {
                 self.context.insert(coin)
                 vault.coins.append(coin)
+                
+                // addDiscoveredTokens
+                Task {
+                    try await CoinSelectionViewModel().addDiscoveredTokens(nativeToken: coin, to: vault)
+                }
             }
         }
     }
