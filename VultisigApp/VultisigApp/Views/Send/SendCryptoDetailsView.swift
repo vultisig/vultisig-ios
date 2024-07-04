@@ -173,6 +173,7 @@ struct SendCryptoDetailsView: View {
                 .font(.body14MontserratMedium)
                 .foregroundColor(.neutral0)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     var amountField: some View {
