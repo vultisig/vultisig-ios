@@ -40,6 +40,7 @@ struct OnboardingView: View {
             OnboardingView1().tag(0)
             OnboardingView2().tag(1)
             OnboardingView3().tag(2)
+            OnboardingView4().tag(3)
         }
         .tabViewStyle(PageTabViewStyle())
         .frame(maxHeight: .infinity)
@@ -50,8 +51,10 @@ struct OnboardingView: View {
                 OnboardingView1(tabIndex: $tabIndex)
             case 1:
                 OnboardingView2(tabIndex: $tabIndex)
-            default:
+            case 2:
                 OnboardingView3(tabIndex: $tabIndex)
+            default:
+                OnboardingView4(tabIndex: $tabIndex)
             }
         }
 #endif
@@ -90,8 +93,8 @@ struct OnboardingView: View {
                 .foregroundColor(Color.turquoise600)
                 .font(.body16MontserratMedium)
         }
-        .opacity(tabIndex==2 ? 0 : 1)
-        .disabled(tabIndex==2 ? true : false)
+        .opacity(tabIndex==3 ? 0 : 1)
+        .disabled(tabIndex==3 ? true : false)
         .animation(.easeInOut, value: tabIndex)
         .buttonStyle(PlainButtonStyle())
         .background(Color.clear)
@@ -112,7 +115,7 @@ struct OnboardingView: View {
 #endif
     
     private func nextTapped() {
-        guard tabIndex<2 else {
+        guard tabIndex<3 else {
             moveToVaultView()
             return
         }
