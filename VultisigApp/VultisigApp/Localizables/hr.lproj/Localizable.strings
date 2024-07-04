@@ -231,3 +231,5 @@
 "URLInaccessible" = "Neuspješan pristup URL-u";
 "NoQRCodesDetected" = "Nema QR kodova otkrivenih";
 "FailedToLoadImage" = "Neuspješno učitavanje slike s URL-a";
+"NoQRCodesDetected" = "Nema QR kodova otkrivenih";
+"FailedToLoadImage" = "Neuspješno učitavanje slike s URL-a";

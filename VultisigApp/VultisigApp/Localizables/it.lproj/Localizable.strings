@@ -231,3 +231,5 @@
 "URLInaccessible" = "Accesso all'URL non riuscito";
 "NoQRCodesDetected" = "Nessun codice QR rilevato";
 "FailedToLoadImage" = "Impossibile caricare l'immagine dall'URL";
+"NoQRCodesDetected" = "Nessun codice QR rilevato";
+"FailedToLoadImage" = "Impossibile caricare l'immagine dall'URL";
