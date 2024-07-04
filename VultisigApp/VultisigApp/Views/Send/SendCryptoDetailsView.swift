@@ -82,7 +82,7 @@ struct SendCryptoDetailsView: View {
                 fromField
                 toField
                 
-                if showMemo() {
+                if tx.coin.isNativeToken {
                     memoField
                 }
                 
@@ -282,10 +282,6 @@ struct SendCryptoDetailsView: View {
     private func getBalance() async {
         await BalanceService.shared.updateBalance(for: tx.coin)
         coinBalance = tx.coin.balanceString
-    }
-    
-    private func showMemo() -> Bool {
-        tx.coin.isNativeToken && tx.coin.tokenSchema != "ERC20"
     }
 }
 
