@@ -258,3 +258,5 @@
 "OnboardingView2Description" = "Vultisig does not track your activities or require any registrations. Vultisig is fully open-source, ensuring transparency and trust.";
 "OnboardingView3Description" = "Vultisig is audited and secure. Join thousands of users who trust Vultisig with their digital assets.";
 "OnboardingView4Description" = "Vultisig is a wallet without seed phrases.\nIt uses easy-to-manage vault shares instead.";
+"memo(optional)" = "MEMO (Optional)";
+"enterMemo" = "Enter Memo";

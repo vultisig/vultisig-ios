@@ -235,3 +235,5 @@
 "OnboardingView2Description" = "Vultisig no rastrea tus actividades ni requiere registros. Vultisig es completamente de código abierto, lo que garantiza transparencia y confianza.";
 "OnboardingView3Description" = "Vultisig está auditado y es seguro. Únete a miles de usuarios que confían en Vultisig con sus activos digitales.";
 "OnboardingView4Description" = "Vultisig es una billetera sin frases semilla.\nEn su lugar, utiliza acciones de bóveda fáciles de gestionar.";
+"NoQRCodesDetected" = "No se detectó ningún código QR";
+"FailedToLoadImage" = "No se pudo cargar la imagen desde la URL";
