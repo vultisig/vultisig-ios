@@ -60,7 +60,7 @@ struct OneInchService {
         let balanceDictionary = try JSONDecoder().decode([String: String].self, from: balanceData)
         
         let nonZeroBalanceTokenAddresses = balanceDictionary.compactMap { tokenAddress, balance in
-            (Int64(balance) ?? 0) > 0 ? tokenAddress : nil
+            (Int64(balance) ?? 0) > 0 && tokenAddress != nullAddress ? tokenAddress : nil
         }
         
         guard !nonZeroBalanceTokenAddresses.isEmpty else {
