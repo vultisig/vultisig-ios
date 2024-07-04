@@ -19,17 +19,17 @@ struct ContentView: View {
         ZStack {
             NavigationStack {
                 ZStack {
-//                    if accountViewModel.showSplashView {
-//                        splashView
-//                    } else if accountViewModel.showCover {
-//                        coverView
-//                    } else if accountViewModel.showOnboarding {
+                    if accountViewModel.showSplashView {
+                        splashView
+                    } else if accountViewModel.showCover {
+                        coverView
+                    } else if accountViewModel.showOnboarding {
                         onboardingView
-//                    } else if vaults.count>0 {
-//                        homeView
-//                    } else {
-//                        createVaultView
-//                    }
+                    } else if vaults.count>0 {
+                        homeView
+                    } else {
+                        createVaultView
+                    }
                 }
 #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
