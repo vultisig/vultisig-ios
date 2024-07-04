@@ -22,6 +22,7 @@ struct SendCryptoDetailsView: View {
     @State var amount = ""
     @State var nativeTokenBalance = ""
     @State var coinBalance: String? = nil
+    @State var showMemoField = false
     
     @FocusState private var focusedField: Field?
     
@@ -79,6 +80,7 @@ struct SendCryptoDetailsView: View {
                 coinSelector
                 fromField
                 toField
+                memoField
                 amountField
                 amountFiatField
                 
@@ -137,12 +139,40 @@ struct SendCryptoDetailsView: View {
         }
     }
     
+    var memoField: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Button {
+                withAnimation {
+                    showMemoField.toggle()
+                }
+            } label: {
+                memoFieldTitle
+            }
+
+            SendCryptoAddressTextField(tx: tx, sendCryptoViewModel: sendCryptoViewModel)
+                .focused($focusedField, equals: .toAddress)
+                .onSubmit {
+                    focusNextField($focusedField)
+                }
+                .frame(height: showMemoField ? nil : 0, alignment: .top)
+                .clipped()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
+    var memoFieldTitle: some View {
+        HStack(spacing: 8) {
+            getTitle(for: "memo(optional)", isExpanded: false)
+            
+            Image(systemName: showMemoField ? "chevron.up" : "chevron.down")
+                .font(.body14MontserratMedium)
+                .foregroundColor(.neutral0)
+        }
+    }
+    
     var amountField: some View {
         VStack(spacing: 8) {
-            HStack {
-                getTitle(for: "amount")
-            }
-            
+            getTitle(for: "amount")
             textField
         }
     }
@@ -221,14 +251,14 @@ struct SendCryptoDetailsView: View {
         .padding(40)
     }
     
-    private func getTitle(for text: String) -> some View {
+    private func getTitle(for text: String, isExpanded: Bool = true) -> some View {
         Text(
             NSLocalizedString(text, comment: "")
                 .replacingOccurrences(of: "Fiat", with: SettingsCurrency.current.rawValue)
         )
         .font(.body14MontserratMedium)
         .foregroundColor(.neutral0)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: isExpanded ? .infinity : nil, alignment: .leading)
     }
         
     private func setData() {

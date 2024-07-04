@@ -254,3 +254,4 @@
 "URLInaccessible" = "Failed to access URL";
 "NoQRCodesDetected" = "No QR code detected";
 "FailedToLoadImage" = "Failed to load image from URL";
+"memo(optional)" = "Memo (Optional)";
