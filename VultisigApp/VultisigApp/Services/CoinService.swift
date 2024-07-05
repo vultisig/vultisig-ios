@@ -7,6 +7,7 @@
 
 import Foundation
 
+@MainActor
 class CoinService {
     
     static let shared = CoinService()
