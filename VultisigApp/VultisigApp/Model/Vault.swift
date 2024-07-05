@@ -21,6 +21,7 @@ final class Vault: ObservableObject, Codable {
     var localPartyID: String = ""
     var resharePrefix: String? = nil
     var order: Int = 0
+    
     @Relationship(deleteRule: .cascade) var coins = [Coin]()
     
     enum CodingKeys: CodingKey {
