@@ -17,6 +17,8 @@ struct RenameVaultView: View {
     @State var showAlert: Bool = false
     @State var errorMessage: String = ""
     
+    @EnvironmentObject var homeViewModel: HomeViewModel
+    
     var body: some View {
         ZStack {
             Background()
@@ -39,7 +41,6 @@ struct RenameVaultView: View {
                 NavigationBackButton()
             }
         }
-        
     }
     
     var view: some View {
@@ -100,10 +101,13 @@ struct RenameVaultView: View {
         }
         
         vault.name = name
+        homeViewModel.selectedVault = vault
+        homeViewModel.vaultName = name
         dismiss()
     }
 }
 
 #Preview {
     RenameVaultView(vaults:[],vault: Vault.example)
+        .environmentObject(HomeViewModel())
 }
