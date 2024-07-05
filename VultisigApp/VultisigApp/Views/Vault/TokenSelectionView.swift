@@ -216,7 +216,7 @@ struct TokenSelectionView: View {
     
     private func saveAssets() {
         Task {
-            await CoinService.shared.saveAssets(for: vault,selection: coinViewModel.selection)
+            await coinViewModel.saveAssets(for: vault)
         }
     }
 }

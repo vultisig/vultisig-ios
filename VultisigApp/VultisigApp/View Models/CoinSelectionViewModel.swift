@@ -60,4 +60,8 @@ class CoinSelectionViewModel: ObservableObject {
         }
     }
     
+    public func saveAssets(for vault: Vault) async {
+        await CoinService.shared.saveAssets(for: vault, selection: selection)
+    }
+    
 }
