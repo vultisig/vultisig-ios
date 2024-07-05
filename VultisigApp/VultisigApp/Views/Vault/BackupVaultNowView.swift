@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct BackupNowTestView: View {
+struct BackupVaultNowView: View {
     let vault: Vault
     
     var body: some View {
@@ -85,5 +85,5 @@ struct BackupNowTestView: View {
 }
 
 #Preview {
-    BackupNowTestView(vault: Vault.example)
+    BackupVaultNowView(vault: Vault.example)
 }

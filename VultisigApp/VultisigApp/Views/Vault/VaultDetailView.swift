@@ -31,10 +31,9 @@ struct VaultDetailView: View {
     
     var body: some View {
         ZStack(alignment: .bottom) {
-//            Background()
-//            view
-//            scanButton
-            BackupNowTestView(vault: vault)
+            Background()
+            view
+            scanButton
         }
         .onAppear {
             appState.currentVault = homeViewModel.selectedVault
@@ -95,6 +94,11 @@ struct VaultDetailView: View {
             if isLoading {
                 loader
             } else if viewModel.coinsGroupedByChains.count >= 1 {
+                
+                if !vault.isBackedUp {
+                    BackupNowDisclaimer(vault: vault)
+                }
+                
                 balanceContent
                 getActions()
                 cells

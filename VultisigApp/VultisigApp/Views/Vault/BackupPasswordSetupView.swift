@@ -143,11 +143,13 @@ struct BackupPasswordSetupView: View {
     }
     
     private func handleSkipTap() {
+        vault.isBackedUp = true
         backupViewModel.encryptionPassword = ""
         export()
     }
     
     private func export() {
+        vault.isBackedUp = true
         backupViewModel.exportFile(vault)
     }
 }
