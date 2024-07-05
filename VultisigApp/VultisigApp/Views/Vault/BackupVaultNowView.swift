@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct BackupNowTestView: View {
-    
+    let vault: Vault
     
     var body: some View {
         ZStack {
@@ -26,7 +26,7 @@ struct BackupNowTestView: View {
             Spacer()
             buttons
         }
-        .font(.body14Menlo)
+        .font(.body14MontserratMedium)
         .foregroundColor(.neutral0)
         .multilineTextAlignment(.center)
     }
@@ -41,12 +41,12 @@ struct BackupNowTestView: View {
     }
     
     var disclaimer: some View {
-        Text("Please Backup your Vault Shares now.")
+        Text(NSLocalizedString("pleaseBackupVault", comment: ""))
             .padding(.horizontal, 80)
     }
     
     var description: some View {
-        Text("Note: Never store Vault Shares from different devices in the same location")
+        Text(NSLocalizedString("pleaseBackupVaultNote", comment: ""))
             .padding(.horizontal, 60)
     }
     
@@ -55,31 +55,35 @@ struct BackupNowTestView: View {
             backupButton
             skipButton
         }
+        .padding(.horizontal, 40)
+        .padding(.bottom, 10)
     }
     
     var backupButton: some View {
-        Button {
-            
+        NavigationLink {
+            BackupPasswordSetupView(vault: vault)
         } label: {
             FilledButton(title: "Backup")
         }
     }
     
     var skipButton: some View {
-        Button {
-            
+        NavigationLink {
+            HomeView(selectedVault: vault)
         } label: {
-            Text(NSLocalizedString("skip", comment: ""))
-                .padding(12)
-                .frame(maxWidth: .infinity)
-                .foregroundColor(Color.turquoise600)
-                .font(.body16MontserratMedium)
+            skipButtonLabel
         }
-        .buttonStyle(PlainButtonStyle())
-        .background(Color.clear)
+    }
+    
+    var skipButtonLabel: some View {
+        Text(NSLocalizedString("skip", comment: ""))
+            .padding(12)
+            .frame(maxWidth: .infinity)
+            .foregroundColor(Color.turquoise600)
+            .font(.body16MontserratMedium)
     }
 }
 
 #Preview {
-    BackupNowTestView()
+    BackupNowTestView(vault: Vault.example)
 }

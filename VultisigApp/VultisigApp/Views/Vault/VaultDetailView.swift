@@ -31,9 +31,10 @@ struct VaultDetailView: View {
     
     var body: some View {
         ZStack(alignment: .bottom) {
-            Background()
-            view
-            scanButton
+//            Background()
+//            view
+//            scanButton
+            BackupNowTestView(vault: vault)
         }
         .onAppear {
             appState.currentVault = homeViewModel.selectedVault
