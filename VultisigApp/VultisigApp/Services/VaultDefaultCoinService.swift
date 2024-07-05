@@ -41,11 +41,7 @@ class VaultDefaultCoinService {
                 vault.coins.append(coin)
                 
                 Task {
-                    do{
-                        try await CoinService.shared.addDiscoveredTokens(nativeToken: coin, to: vault)
-                    } catch {
-                        print("The coin \(coin.ticker) could not be added. \(error.localizedDescription)")
-                    }
+                    await CoinServiceFactory.getService(for: coin).addDiscoveredTokens(nativeToken: coin, to: vault)
                 }
             }
         }
