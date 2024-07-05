@@ -46,7 +46,9 @@ extension Coin {
             }
         case .base, .optimism, .polygon:
             return [.oneinch(chain)]
-        case .thorChain, .bitcoin, .dogecoin, .bitcoinCash, .litecoin, .gaiaChain:
+        case .thorChain:
+            return [.thorchain, .mayachain]
+        case .bitcoin, .dogecoin, .bitcoinCash, .litecoin, .gaiaChain:
             return [.thorchain]
         case .solana, .sui, .polkadot, .dydx, .arbitrum, .blast, .cronosChain, .zksync:
             return []
