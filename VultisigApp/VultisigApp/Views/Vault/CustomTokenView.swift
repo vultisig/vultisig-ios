@@ -206,7 +206,7 @@ struct CustomTokenView: View {
             isLoading = true
             Task {
                 coinViewModel.handleSelection(isSelected: true, asset: customToken)
-                await coinViewModel.saveAssets(for: vault)
+                await CoinService.shared.saveAssets(for: vault, selection: coinViewModel.selection)
                 
                 try await Task.sleep(nanoseconds: 1_000_000_000)
                 isLoading = false
