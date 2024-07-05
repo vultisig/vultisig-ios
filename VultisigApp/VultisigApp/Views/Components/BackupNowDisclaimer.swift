@@ -16,6 +16,8 @@ struct BackupNowDisclaimer: View {
         } label: {
             content
         }
+        .listRowInsets(EdgeInsets())
+        .listRowSeparator(.hidden)
     }
     
     var content: some View {
@@ -56,5 +58,5 @@ struct BackupNowDisclaimer: View {
 }
 
 #Preview {
-    BackupNowDisclaimer()
+    BackupNowDisclaimer(vault: Vault.example)
 }
