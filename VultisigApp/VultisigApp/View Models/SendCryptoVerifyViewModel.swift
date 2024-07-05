@@ -36,6 +36,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
     func amount(for coin: Coin, tx: SendTransaction) -> BigInt {
         return tx.amountInRaw
     }
+    
     func validateForm(tx: SendTransaction, vault: Vault) async -> KeysignPayload? {
         
         if !isValidForm {

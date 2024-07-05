@@ -70,6 +70,7 @@ class TokenSelectionViewModel: ObservableObject {
             .filter { $0.chain == groupedChain.chain && !$0.isNativeToken && !tickers.contains($0.ticker.lowercased())}
             .map { .coin($0) }
     }
+    
     func updateSearchedTokens(groupedChain: GroupedChain) {
         searchedTokens = filteredTokens(groupedChain: groupedChain)
     }
@@ -136,7 +137,6 @@ private extension TokenSelectionViewModel {
         } catch {
             self.error = Errors.networkError
         }
-        
         
         isLoading = false
     }
