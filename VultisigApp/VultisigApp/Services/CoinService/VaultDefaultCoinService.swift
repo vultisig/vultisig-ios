@@ -8,7 +8,7 @@
 import Foundation
 import SwiftData
 
-
+// Should I move this to Vault service?
 class VaultDefaultCoinService {
     let context: ModelContext
     private let semaphore = DispatchSemaphore(value: 1)

@@ -257,6 +257,11 @@
 		B54E31832BF5A73500D4FC0A /* TransactionMemoTypeEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54E31822BF5A73500D4FC0A /* TransactionMemoTypeEnum.swift */; };
 		B58768702BFB0C43001AAEA5 /* DepositStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B587686F2BFB0C43001AAEA5 /* DepositStore.swift */; };
 		B58A31732C379F4F00CEE72F /* CoinService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B58A31722C379F4F00CEE72F /* CoinService.swift */; };
+		B58A31762C37CE6700CEE72F /* VaultService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B58A31752C37CE6700CEE72F /* VaultService.swift */; };
+		B58A31782C37CEA000CEE72F /* EvmCoinService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B58A31772C37CEA000CEE72F /* EvmCoinService.swift */; };
+		B58A317A2C37CEC500CEE72F /* UtxoCoinService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B58A31792C37CEC500CEE72F /* UtxoCoinService.swift */; };
+		B58A317C2C37CEE300CEE72F /* CosmosCoinService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B58A317B2C37CEE300CEE72F /* CosmosCoinService.swift */; };
+		B58A317E2C37CEFC00CEE72F /* CoinServiceFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = B58A317D2C37CEFC00CEE72F /* CoinServiceFactory.swift */; };
 		B590DF862C2E70B800ED934E /* TransactionMemoVote.swift in Sources */ = {isa = PBXBuildFile; fileRef = B590DF852C2E70B800ED934E /* TransactionMemoVote.swift */; };
 		B590DF882C2E815A00ED934E /* GenericSelectorDropDown.swift in Sources */ = {isa = PBXBuildFile; fileRef = B590DF872C2E815A00ED934E /* GenericSelectorDropDown.swift */; };
 		B590DF8A2C2E88F900ED934E /* VoteOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = B590DF892C2E88F900ED934E /* VoteOption.swift */; };
@@ -634,6 +639,11 @@
 		B54E31822BF5A73500D4FC0A /* TransactionMemoTypeEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoTypeEnum.swift; sourceTree = "<group>"; };
 		B587686F2BFB0C43001AAEA5 /* DepositStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepositStore.swift; sourceTree = "<group>"; };
 		B58A31722C379F4F00CEE72F /* CoinService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinService.swift; sourceTree = "<group>"; };
+		B58A31752C37CE6700CEE72F /* VaultService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultService.swift; sourceTree = "<group>"; };
+		B58A31772C37CEA000CEE72F /* EvmCoinService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvmCoinService.swift; sourceTree = "<group>"; };
+		B58A31792C37CEC500CEE72F /* UtxoCoinService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtxoCoinService.swift; sourceTree = "<group>"; };
+		B58A317B2C37CEE300CEE72F /* CosmosCoinService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosCoinService.swift; sourceTree = "<group>"; };
+		B58A317D2C37CEFC00CEE72F /* CoinServiceFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinServiceFactory.swift; sourceTree = "<group>"; };
 		B590DF852C2E70B800ED934E /* TransactionMemoVote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoVote.swift; sourceTree = "<group>"; };
 		B590DF872C2E815A00ED934E /* GenericSelectorDropDown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericSelectorDropDown.swift; sourceTree = "<group>"; };
 		B590DF892C2E88F900ED934E /* VoteOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoteOption.swift; sourceTree = "<group>"; };
@@ -823,6 +833,7 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				B58A31742C37CE2200CEE72F /* CoinService */,
 				A50E79382BFE30170031DB47 /* Storage */,
 				A543B39E2BEA72BA003FB989 /* SwapService */,
 				A543B3992BEA6E3E003FB989 /* 1inch */,
@@ -845,8 +856,6 @@
 				A55BCEBA2BC59E8100D35917 /* KeysignPayloadFactory.swift */,
 				B54B019B2BDE135C00FDA472 /* RpcService.swift */,
 				B53DCB7C2C0D7327008388D4 /* EvmTokenServiceProtocol.swift */,
-				DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */,
-				B58A31722C379F4F00CEE72F /* CoinService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -1319,6 +1328,20 @@
 				B54B01992BDE0A1D00FDA472 /* PolkadotService.swift */,
 			);
 			path = Polkadot;
+			sourceTree = "<group>";
+		};
+		B58A31742C37CE2200CEE72F /* CoinService */ = {
+			isa = PBXGroup;
+			children = (
+				DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */,
+				B58A31722C379F4F00CEE72F /* CoinService.swift */,
+				B58A31752C37CE6700CEE72F /* VaultService.swift */,
+				B58A31772C37CEA000CEE72F /* EvmCoinService.swift */,
+				B58A31792C37CEC500CEE72F /* UtxoCoinService.swift */,
+				B58A317B2C37CEE300CEE72F /* CosmosCoinService.swift */,
+				B58A317D2C37CEFC00CEE72F /* CoinServiceFactory.swift */,
+			);
+			path = CoinService;
 			sourceTree = "<group>";
 		};
 		B5A51B532BD8C68B00791D78 /* Sui */ = {
@@ -1855,6 +1878,7 @@
 				A564ED422BC350520056FDC0 /* SwapTransaction.swift in Sources */,
 				A68696212C1B5575004EDE0B /* BackupPasswordSetupView.swift in Sources */,
 				463408662BA9C1D200246248 /* CoinTypeExtension.swift in Sources */,
+				B58A317C2C37CEE300CEE72F /* CosmosCoinService.swift in Sources */,
 				DE8AD7472BC78FA400339775 /* Encryption.swift in Sources */,
 				DE4DFA7B2B7B1692004F8E73 /* ModelContainerPreview.swift in Sources */,
 				A6F9E7A72BED6BD100BA36E1 /* SetupVaultTab.swift in Sources */,
@@ -1903,6 +1927,7 @@
 				A6980C342BC0A30900F452AB /* SettingFAQCell.swift in Sources */,
 				A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */,
 				469ED3942B98E776008D4951 /* ThorchainService.swift in Sources */,
+				B58A31782C37CEA000CEE72F /* EvmCoinService.swift in Sources */,
 				462DCD702BCA14F3003D542F /* CoinPaprikaQuote.swift in Sources */,
 				B5A97CF52BF4287A007574D7 /* TransactionMemoSelectorDropdown.swift in Sources */,
 				A6966D262BA3E2CF00903CA4 /* OnboardingView3.swift in Sources */,
@@ -1971,6 +1996,7 @@
 				A66A0BD92BA12DF50021A483 /* RenameVaultView.swift in Sources */,
 				A633B1252B993FE7003D1738 /* FilledButton.swift in Sources */,
 				46F47CBB2B870EE900D964EA /* UTXOTransactionMempool.swift in Sources */,
+				B58A317A2C37CEC500CEE72F /* UtxoCoinService.swift in Sources */,
 				A543B3A22BEA93D4003FB989 /* SwapQuote.swift in Sources */,
 				A5D49F5A2BE26C87001766C8 /* Coin+ChainAction.swift in Sources */,
 				A54676522C179A93004DD782 /* Coin+Swaps.swift in Sources */,
@@ -1988,6 +2014,7 @@
 				A65649F52B966F3E00E4B329 /* DecodableDefault.swift in Sources */,
 				DE491CEF2B708260007C88D5 /* KeygenView.swift in Sources */,
 				A611735B2BC8B7AB00D616F9 /* ChainNavigationCell.swift in Sources */,
+				B58A317E2C37CEFC00CEE72F /* CoinServiceFactory.swift in Sources */,
 				A6F42CC42C09598900D0431C /* VaultDetailScanButton.swift in Sources */,
 				B54E317D2BF5A19200D4FC0A /* StyledTextField.swift in Sources */,
 				A66A0BDB2BA13B570021A483 /* CoinsGrouped.swift in Sources */,
@@ -2058,6 +2085,7 @@
 				DEFC7BFB2B8D87370090B07A /* erc20.swift in Sources */,
 				B50E399B2BF5AB2100B9A269 /* TransactionMemoAddressable.swift in Sources */,
 				A61BC8122BA2407A00484689 /* SendCryptoView.swift in Sources */,
+				B58A31762C37CE6700CEE72F /* VaultService.swift in Sources */,
 				DED05FE42BBB824D00E0496C /* ThorchainAccountValue.swift in Sources */,
 				A60CA7E52BB0D37D00FDEB5C /* ContentView.swift in Sources */,
 				B5F7581D2BD8FDA20097B5B9 /* SuiCoin.swift in Sources */,
