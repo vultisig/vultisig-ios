@@ -12,7 +12,7 @@ class CoinService {
     
     static let shared = CoinService()
     
-    public func removeCoins(coins: [Coin], vault: Vault) async throws {
+    func removeCoins(coins: [Coin], vault: Vault) async throws {
         for coin in coins {
             if let idx = vault.coins.firstIndex(where: { $0.ticker == coin.ticker && $0.chain == coin.chain }) {
                 vault.coins.remove(at: idx)
@@ -22,7 +22,7 @@ class CoinService {
         }
     }
     
-    public func saveAssets(for vault: Vault, selection: Set<CoinMeta>) async {
+    func saveAssets(for vault: Vault, selection: Set<CoinMeta>) async {
         do {
             let removedCoins = vault.coins.filter { coin in
                 !selection.contains(where: { $0.ticker == coin.ticker && $0.chain == coin.chain})
@@ -57,7 +57,7 @@ class CoinService {
         }
     }
     
-    public func addToChain(assets: [CoinMeta], to vault: Vault) async throws {
+    func addToChain(assets: [CoinMeta], to vault: Vault) async throws {
         if let coin = assets.first, coin.chain.chainType == .EVM, !coin.isNativeToken {
             for asset in assets {
                 _ = try await addToChain(asset: asset, to: vault, priceProviderId: nil)
@@ -66,13 +66,13 @@ class CoinService {
             for asset in assets {
                 if let newCoin = try await addToChain(asset: asset, to: vault, priceProviderId: asset.priceProviderId) {
                     print("Add discovered tokens for \(asset.ticker) on the chain \(asset.chain.name)")
-                    try await addDiscoveredTokens(nativeToken: newCoin, to: vault)
+                    await addDiscoveredTokens(nativeToken: newCoin, to: vault)
                 }
             }
         }
     }
     
-    public func addToChain(asset: CoinMeta, to vault: Vault, priceProviderId: String?) async throws -> Coin? {
+    func addToChain(asset: CoinMeta, to vault: Vault, priceProviderId: String?) async throws -> Coin? {
         let newCoin = try CoinFactory.create(asset: asset, vault: vault)
         if let priceProviderId {
             newCoin.priceProviderId = priceProviderId
@@ -83,7 +83,7 @@ class CoinService {
         return newCoin
     }
     
-    public func addDiscoveredTokens(nativeToken: Coin, to vault: Vault) async throws  {
+    func addDiscoveredTokens(nativeToken: Coin, to vault: Vault) async  {
         do {
             // Only auto discovery for EVM type chains
             if nativeToken.chain.chainType != .EVM {
