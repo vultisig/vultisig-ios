@@ -47,7 +47,7 @@ struct KeysignMessageFactory {
             return try utxoHelper.getPreSignedImageHash(keysignPayload: payload)
         case .ethereum, .arbitrum, .base, .optimism, .polygon, .avalanche, .bscChain, .blast, .cronosChain, .zksync:
             if payload.coin.isNativeToken {
-                return try EVMHelper.getHelper(coin: payload.coin.toCoinMeta()).getPreSignedImageHash(keysignPayload: payload)
+                return try EVMHelper.getHelper(coin: payload.coin).getPreSignedImageHash(keysignPayload: payload)
             } else {
                 return try ERC20Helper.getHelper(coin: payload.coin).getPreSignedImageHash(keysignPayload: payload)
             }
