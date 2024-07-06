@@ -30,13 +30,9 @@ struct KeysignPayload: Codable, Hashable {
 
 extension KeysignPayload: ProtoMappable {
 
-    enum Errors: Error {
-        case blockchainSpecificNotFound
-    }
-
     init(protobuf: VSKeysignPayload, vault: Vault) throws {
         guard let blockchainSpecific = protobuf.blockchainSpecific else {
-            throw Errors.blockchainSpecificNotFound
+            throw ProtoMappableError.blockchainSpecificNotFound
         }
 
         self.toAddress = protobuf.toAddress
@@ -51,14 +47,12 @@ extension KeysignPayload: ProtoMappable {
         self.swapPayload = nil
         self.approvePayload = nil
 
-        self.coin = vault.coins.first(where: {
-            $0.chain.name == protobuf.coin.chain &&
-            $0.ticker == protobuf.coin.ticker
-        })!
+        self.coin = try ProtoCoinResolver.resolve(vault: vault, coin: protobuf.coin)
     }
 
     func mapToProtobuff() -> VSKeysignPayload {
         return .with {
+            $0.coin = ProtoCoinResolver.proto(from: coin)
             $0.toAddress = toAddress
             $0.toAmount = String(toAmount)
             $0.blockchainSpecific = chainSpecific.mapToProtobuff()
@@ -70,6 +64,85 @@ extension KeysignPayload: ProtoMappable {
             // TODO: Implement mapping for swapPayload & approvePayload
             $0.swapPayload = nil
             $0.erc20ApprovePayload = .with { _ in }
+        }
+    }
+}
+
+extension SwapPayload {
+
+    init(protobuf: VSKeysignPayload.OneOf_SwapPayload, vault: Vault) throws {
+        switch protobuf {
+        case .thorchainSwapPayload(let value), .mayachainSwapPayload(let value):
+            self = .thorchain(THORChainSwapPayload(
+                fromAddress: value.fromAddress,
+                fromCoin: try ProtoCoinResolver.resolve(vault: vault, coin: value.fromCoin),
+                toCoin: try ProtoCoinResolver.resolve(vault: vault, coin: value.toCoin),
+                vaultAddress: value.vaultAddress,
+                routerAddress: value.routerAddress.nilIfEmpty,
+                fromAmount: BigInt(stringLiteral: value.fromAmount),
+                toAmountDecimal: Decimal(string: value.toAmountDecimal) ?? 0,
+                toAmountLimit: value.toAmountLimit,
+                streamingInterval: value.streamingInterval,
+                streamingQuantity: value.streamingQuantity,
+                expirationTime: value.expirationTime,
+                isAffiliate: value.isAffiliate
+            ))
+        case .oneinchSwapPayload(let value):
+            self = .oneInch(OneInchSwapPayload(
+                fromCoin: try ProtoCoinResolver.resolve(vault: vault, coin: value.fromCoin),
+                toCoin: try ProtoCoinResolver.resolve(vault: vault, coin: value.toCoin),
+                fromAmount: BigInt(stringLiteral: value.fromAmount),
+                toAmountDecimal: Decimal(string: value.toAmountDecimal) ?? 0,
+                quote: OneInchQuote(
+                    dstAmount: value.quote.dstAmount,
+                    tx: OneInchQuote.Transaction(
+                        from: value.quote.tx.from,
+                        to: value.quote.tx.to,
+                        data: value.quote.tx.data,
+                        value: value.quote.tx.value,
+                        gasPrice: value.quote.tx.gasPrice,
+                        gas: value.quote.tx.gas
+                    )
+                )
+            ))
+        }
+    }
+
+    func mapToProtobuff() -> VSKeysignPayload.OneOf_SwapPayload {
+        switch self {
+        case .thorchain(let payload), .mayachain(let payload):
+            return .thorchainSwapPayload(.with {
+                $0.fromAddress = payload.fromAddress
+                $0.fromCoin = ProtoCoinResolver.proto(from: payload.fromCoin)
+                $0.toCoin = ProtoCoinResolver.proto(from: payload.toCoin)
+                $0.vaultAddress = payload.vaultAddress
+                $0.routerAddress = payload.routerAddress ?? .empty
+                $0.fromAmount = payload.fromAddress
+                $0.toAmountDecimal = payload.toAmountDecimal.description
+                $0.toAmountLimit = payload.toAmountLimit
+                $0.streamingInterval = payload.streamingInterval
+                $0.streamingQuantity = payload.streamingQuantity
+                $0.expirationTime = payload.expirationTime
+                $0.isAffiliate = payload.isAffiliate
+            })
+        case .oneInch(let payload):
+            return .oneinchSwapPayload(.with {
+                $0.fromCoin = ProtoCoinResolver.proto(from: payload.fromCoin)
+                $0.toCoin = ProtoCoinResolver.proto(from: payload.toCoin)
+                $0.fromAmount = String(payload.fromAmount)
+                $0.toAmountDecimal = payload.toAmountDecimal.description
+                $0.quote = .with {
+                    $0.dstAmount = payload.quote.dstAmount
+                    $0.tx = .with {
+                        $0.from = payload.quote.tx.from
+                        $0.to = payload.quote.tx.to
+                        $0.data = payload.quote.tx.data
+                        $0.value = payload.quote.tx.value
+                        $0.gasPrice = payload.quote.tx.gasPrice
+                        $0.gas = payload.quote.tx.gas
+                    }
+                }
+            })
         }
     }
 }
