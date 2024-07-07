@@ -35,19 +35,16 @@ extension KeysignPayload: ProtoMappable {
             throw ProtoMappableError.blockchainSpecificNotFound
         }
 
+        self.coin = try ProtoCoinResolver.resolve(vault: vault, coin: protobuf.coin)
         self.toAddress = protobuf.toAddress
         self.toAmount = BigInt(stringLiteral: protobuf.toAmount)
         self.chainSpecific = try BlockChainSpecific(protobuf: blockchainSpecific)
-        self.utxos = protobuf.utxoInfo.compactMap { try? UtxoInfo(protobuf: $0) }
+        self.utxos = try protobuf.utxoInfo.compactMap { try UtxoInfo(protobuf: $0) }
         self.memo = protobuf.memo
         self.vaultPubKeyECDSA = protobuf.vaultPublicKeyEcdsa
         self.vaultLocalPartyID = protobuf.vaultLocalPartyID
-
-        // TODO: Implement mapping for swapPayload & approvePayload
-        self.swapPayload = nil
-        self.approvePayload = nil
-
-        self.coin = try ProtoCoinResolver.resolve(vault: vault, coin: protobuf.coin)
+        self.swapPayload = try protobuf.swapPayload.map { try SwapPayload(protobuf: $0, vault: vault) }
+        self.approvePayload = protobuf.hasErc20ApprovePayload ? ERC20ApprovePayload(protobuf: protobuf.erc20ApprovePayload) : nil
     }
 
     func mapToProtobuff() -> VSKeysignPayload {
@@ -60,10 +57,26 @@ extension KeysignPayload: ProtoMappable {
             $0.memo = memo ?? .empty
             $0.vaultPublicKeyEcdsa = vaultPubKeyECDSA
             $0.vaultLocalPartyID = vaultLocalPartyID
+            $0.swapPayload = swapPayload?.mapToProtobuff()
             
-            // TODO: Implement mapping for swapPayload & approvePayload
-            $0.swapPayload = nil
-            $0.erc20ApprovePayload = .with { _ in }
+            if let approvePayload {
+                $0.erc20ApprovePayload = approvePayload.mapToProtobuff()
+            }
+        }
+    }
+}
+
+extension ERC20ApprovePayload {
+    
+    init(protobuf: VSErc20ApprovePayload) {
+        self.amount = BigInt(stringLiteral: protobuf.amount)
+        self.spender = protobuf.spender
+    }
+
+    func mapToProtobuff() -> VSErc20ApprovePayload {
+        return .with {
+            $0.amount = String(amount)
+            $0.spender = String(spender)
         }
     }
 }
