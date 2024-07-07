@@ -46,12 +46,11 @@ struct CoinDetailView: View {
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString(coin.ticker, comment: ""))
         .onAppear {
-            sendTx.coin = coin
             sendTx.reset(coin: coin)
         }
         .onChange(of: isSendLinkActive) { oldValue, newValue in
             if newValue {
-                sendTx.coin = coin
+                sendTx.reset(coin: coin)
             }
         }
         .toolbar {
