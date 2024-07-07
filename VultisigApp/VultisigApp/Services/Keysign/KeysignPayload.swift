@@ -28,6 +28,27 @@ struct KeysignPayload: Codable, Hashable {
     static let example = KeysignPayload(coin: Coin.example, toAddress: "toAddress", toAmount: 100, chainSpecific: BlockChainSpecific.UTXO(byteFee: 100, sendMaxAmount: false), utxos: [], memo: "Memo", swapPayload: nil, approvePayload: nil, vaultPubKeyECDSA: "12345", vaultLocalPartyID: "iPhone-100")
 }
 
+extension KeysignMessage: ProtoMappable {
+    
+    init(protobuf: VSKeysignMessage, vault: Vault) throws {
+        self.sessionID = protobuf.sessionID
+        self.serviceName = protobuf.serviceName
+        self.payload = try KeysignPayload(protobuf: protobuf.keysignPayload, vault: vault)
+        self.encryptionKeyHex = protobuf.encryptionKeyHex
+        self.useVultisigRelay = protobuf.useVultisigRelay
+    }
+
+    func mapToProtobuff() -> VSKeysignMessage {
+        return .with {
+            $0.sessionID = sessionID
+            $0.serviceName = serviceName
+            $0.keysignPayload = payload.mapToProtobuff()
+            $0.encryptionKeyHex = encryptionKeyHex
+            $0.useVultisigRelay = useVultisigRelay
+        }
+    }
+}
+
 extension KeysignPayload: ProtoMappable {
 
     init(protobuf: VSKeysignPayload, vault: Vault) throws {
