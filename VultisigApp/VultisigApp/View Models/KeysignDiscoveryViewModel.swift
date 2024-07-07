@@ -133,24 +133,21 @@ class KeysignDiscoveryViewModel: ObservableObject {
             logger.error("encryption key is nil")
             return Image(systemName: "xmark")
         }
-        let keysignMsg = KeysignMessage(sessionID: sessionID,
-                                        serviceName: serviceName,
-                                        payload: keysignPayload,
-                                        encryptionKeyHex: encryptionKeyHex,
-                                        useVultisigRelay: VultisigRelay.IsRelayEnabled)
+        let message = KeysignMessage(
+            sessionID: sessionID,
+            serviceName: serviceName,
+            payload: keysignPayload,
+            encryptionKeyHex: encryptionKeyHex,
+            useVultisigRelay: VultisigRelay.IsRelayEnabled
+        )
         do {
-            let encoder = JSONEncoder()
-            let jsonData = try encoder.encode(keysignMsg)
-            let compressedData = try (jsonData as NSData).compressed(using: .zlib)
-            let jsonBase64 = compressedData.base64EncodedString()
-            let data = "vultisig://vultisig.com?type=SignTransaction&vault=\(vault.pubKeyECDSA)&jsonData=\(jsonBase64)"
-            
+            let payload = try ProtoSerializer.serialize(message)
+            let data = "vultisig://vultisig.com?type=SignTransaction&vault=\(vault.pubKeyECDSA)&jsonData=\(payload)"
             return Utils.generateQRCodeImage(from: data)
         } catch {
             logger.error("fail to encode keysign messages to json,error:\(error)")
+            return Image(systemName: "xmark")
         }
-        
-        return Image(systemName: "xmark")
     }
     
 }
