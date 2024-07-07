@@ -61,6 +61,10 @@
 		A558D74C2C298060007222EB /* SwapCoinsResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A558D74B2C298060007222EB /* SwapCoinsResolver.swift */; };
 		A558D74E2C29808D007222EB /* SwapProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A558D74D2C29808D007222EB /* SwapProvider.swift */; };
 		A55BCEBB2BC59E8100D35917 /* KeysignPayloadFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A55BCEBA2BC59E8100D35917 /* KeysignPayloadFactory.swift */; };
+		A56386802C3A213B008B848E /* ProtoMappableError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A563867F2C3A213B008B848E /* ProtoMappableError.swift */; };
+		A56386822C3A2148008B848E /* ProtoCoinResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56386812C3A2148008B848E /* ProtoCoinResolver.swift */; };
+		A56386842C3A2167008B848E /* ProtoSerializer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56386832C3A2167008B848E /* ProtoSerializer.swift */; };
+		A56386862C3A21B8008B848E /* KeysignMessage+ProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56386852C3A21B8008B848E /* KeysignMessage+ProtoMappable.swift */; };
 		A564ED402BC34B690056FDC0 /* SwapVerifyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A564ED3F2BC34B690056FDC0 /* SwapVerifyView.swift */; };
 		A564ED422BC350520056FDC0 /* SwapTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = A564ED412BC350520056FDC0 /* SwapTransaction.swift */; };
 		A564ED442BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A564ED432BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift */; };
@@ -444,6 +448,10 @@
 		A558D74B2C298060007222EB /* SwapCoinsResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCoinsResolver.swift; sourceTree = "<group>"; };
 		A558D74D2C29808D007222EB /* SwapProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapProvider.swift; sourceTree = "<group>"; };
 		A55BCEBA2BC59E8100D35917 /* KeysignPayloadFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignPayloadFactory.swift; sourceTree = "<group>"; };
+		A563867F2C3A213B008B848E /* ProtoMappableError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtoMappableError.swift; sourceTree = "<group>"; };
+		A56386812C3A2148008B848E /* ProtoCoinResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtoCoinResolver.swift; sourceTree = "<group>"; };
+		A56386832C3A2167008B848E /* ProtoSerializer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtoSerializer.swift; sourceTree = "<group>"; };
+		A56386852C3A21B8008B848E /* KeysignMessage+ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "KeysignMessage+ProtoMappable.swift"; sourceTree = "<group>"; };
 		A564ED3F2BC34B690056FDC0 /* SwapVerifyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapVerifyView.swift; sourceTree = "<group>"; };
 		A564ED412BC350520056FDC0 /* SwapTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapTransaction.swift; sourceTree = "<group>"; };
 		A564ED432BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoVerifyViewModel.swift; sourceTree = "<group>"; };
@@ -834,6 +842,7 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				A563867E2C3A2121008B848E /* Protobuf */,
 				A58CC3442C32EDDB0086D16B /* Keysign */,
 				A50E79382BFE30170031DB47 /* Storage */,
 				A543B39E2BEA72BA003FB989 /* SwapService */,
@@ -1060,16 +1069,27 @@
 			path = SwapService;
 			sourceTree = "<group>";
 		};
+		A563867E2C3A2121008B848E /* Protobuf */ = {
+			isa = PBXGroup;
+			children = (
+				A58CC34A2C32FA760086D16B /* ProtoMappable.swift */,
+				A563867F2C3A213B008B848E /* ProtoMappableError.swift */,
+				A56386832C3A2167008B848E /* ProtoSerializer.swift */,
+				A56386812C3A2148008B848E /* ProtoCoinResolver.swift */,
+			);
+			path = Protobuf;
+			sourceTree = "<group>";
+		};
 		A58CC3442C32EDDB0086D16B /* Keysign */ = {
 			isa = PBXGroup;
 			children = (
 				A55BCEBA2BC59E8100D35917 /* KeysignPayloadFactory.swift */,
-				A58CC34A2C32FA760086D16B /* ProtoMappable.swift */,
 				DEBF93962B8D5FEF002868CD /* KeysignPayload.swift */,
 				A5D0C9342BEE77190022D421 /* SwapPayload.swift */,
 				A58CC3452C32EE120086D16B /* KeysignMessageFactory.swift */,
 				A58CC34E2C32FC530086D16B /* BlockChainSpecific.swift */,
 				A58CC34C2C32FB800086D16B /* KeysignMessage.swift */,
+				A56386852C3A21B8008B848E /* KeysignMessage+ProtoMappable.swift */,
 				DE6DCB942B97D88A009A39D5 /* THORChainSwapPayload.swift */,
 				A588F2DA2BEE8090002EEC60 /* OneInchSwapPayload.swift */,
 				A5D00E402BD65CE7009E025F /* ERC20ApprovePayload.swift */,
@@ -2024,6 +2044,7 @@
 				46F8F7262B99FEEC0099454E /* CosmosErrorResponse.swift in Sources */,
 				A65649EA2B96690400E4B329 /* KeyShare.swift in Sources */,
 				A564ED402BC34B690056FDC0 /* SwapVerifyView.swift in Sources */,
+				A56386842C3A2167008B848E /* ProtoSerializer.swift in Sources */,
 				A633B13C2B9A6564003D1738 /* SetupVaultView.swift in Sources */,
 				DE6325B12C2A1E97000D05B9 /* Placement.swift in Sources */,
 				A6C0D55F2BB3B73900156689 /* UTXOTransactionsView.swift in Sources */,
@@ -2083,6 +2104,7 @@
 				DEF2E2CB2B9AD5EA000737B8 /* UTXOChainsHelper.swift in Sources */,
 				DEFC7BFB2B8D87370090B07A /* erc20.swift in Sources */,
 				B50E399B2BF5AB2100B9A269 /* TransactionMemoAddressable.swift in Sources */,
+				A56386862C3A21B8008B848E /* KeysignMessage+ProtoMappable.swift in Sources */,
 				A61BC8122BA2407A00484689 /* SendCryptoView.swift in Sources */,
 				DED05FE42BBB824D00E0496C /* ThorchainAccountValue.swift in Sources */,
 				A60CA7E52BB0D37D00FDEB5C /* ContentView.swift in Sources */,
@@ -2093,6 +2115,7 @@
 				A61BC81B2BA26D9900484689 /* ChainSelectionCell.swift in Sources */,
 				A66BFCD12C134B3B004DCD4F /* QRShareSheetImage.swift in Sources */,
 				A66A1DF82C268D6400C3EAF7 /* FontStyle.swift in Sources */,
+				A56386802C3A213B008B848E /* ProtoMappableError.swift in Sources */,
 				A65649DF2B96602700E4B329 /* DecodableDefaultExtension.swift in Sources */,
 				A633B13E2B9A9E30003D1738 /* VaultDetailView.swift in Sources */,
 				A6D0BA6A2C08353700E24DC9 /* NoCameraPermissionView.swift in Sources */,
@@ -2127,6 +2150,7 @@
 				A6C9D5C12BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift in Sources */,
 				B5A97CED2BF41573007574D7 /* TransactionMemoView.swift in Sources */,
 				A611735D2BC8D94400D616F9 /* KeyGenSummaryView.swift in Sources */,
+				A56386822C3A2148008B848E /* ProtoCoinResolver.swift in Sources */,
 				A6CBF2DC2C251D4100FD8080 /* LookingForDevicesLoader.swift in Sources */,
 				A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */,
 				A5BDC7BE2C32FF4A004DBBE7 /* CoinsGrouped.swift in Sources */,
