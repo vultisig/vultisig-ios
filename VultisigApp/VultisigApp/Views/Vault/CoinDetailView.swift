@@ -14,11 +14,11 @@ struct CoinDetailView: View {
     @ObservedObject var sendTx: SendTransaction
     
     @State var isLoading = false
-
+    
     @State var isSendLinkActive = false
     @State var isSwapLinkActive = false
     @State var isMemoLinkActive = false
-
+    
     var body: some View {
         ZStack {
             Background()
@@ -46,7 +46,13 @@ struct CoinDetailView: View {
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString(coin.ticker, comment: ""))
         .onAppear {
+            sendTx.coin = coin
             sendTx.reset(coin: coin)
+        }
+        .onChange(of: isSendLinkActive) { oldValue, newValue in
+            if newValue {
+                sendTx.coin = coin
+            }
         }
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
@@ -61,7 +67,7 @@ struct CoinDetailView: View {
                 }
             }
         }
-
+        
     }
     
     var view: some View {
