@@ -11,22 +11,26 @@ struct BackupNowDisclaimer: View {
     let vault: Vault
     
     var body: some View {
-        NavigationLink {
-            BackupPasswordSetupView(vault: vault)
-        } label: {
+        ZStack {
             content
+            navigationCell.opacity(0)
         }
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
     }
     
+    var navigationCell: some View {
+        NavigationLink {
+            BackupPasswordSetupView(vault: vault)
+        } label: {
+            content
+        }
+    }
+    
     var content: some View {
-        HStack {
-            icon
-            Spacer()
+        ZStack {
             title
-            Spacer()
-            chevron
+            components
         }
         .padding(.vertical, 16)
         .padding(.horizontal, 12)
@@ -36,6 +40,14 @@ struct BackupNowDisclaimer: View {
             RoundedRectangle(cornerRadius: 10)
                 .stroke(Color.backupNowRed, lineWidth: 1)
         )
+    }
+    
+    var components: some View {
+        HStack {
+            icon
+            Spacer()
+            chevron
+        }
     }
     
     var icon: some View {
