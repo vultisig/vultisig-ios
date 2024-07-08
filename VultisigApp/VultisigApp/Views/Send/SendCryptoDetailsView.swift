@@ -25,12 +25,18 @@ struct SendCryptoDetailsView: View {
     @State var coinBalance: String? = nil
     @State var showMemoField = false
     
+    @State var isLoading = false
+    
     @FocusState private var focusedField: Field?
     
     var body: some View {
         ZStack {
             Background()
             view
+            
+            if isLoading {
+                Loader()
+            }
         }
         .gesture(DragGesture())
         .toolbar {
@@ -269,7 +275,9 @@ struct SendCryptoDetailsView: View {
         
     private func setData() {
         Task {
+            isLoading = true
             await getBalance()
+            isLoading = false
         }
     }
     
