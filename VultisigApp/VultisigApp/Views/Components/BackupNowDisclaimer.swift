@@ -37,7 +37,7 @@ struct BackupNowDisclaimer: View {
         .background(Color.backupNowRed.opacity(0.3))
         .cornerRadius(12)
         .overlay (
-            RoundedRectangle(cornerRadius: 10)
+            RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.backupNowRed, lineWidth: 1)
         )
     }
