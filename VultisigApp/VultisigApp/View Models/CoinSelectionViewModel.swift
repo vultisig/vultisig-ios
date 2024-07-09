@@ -138,7 +138,7 @@ class CoinSelectionViewModel: ObservableObject {
             if nativeToken.chain.chainType != .EVM {
                 return
             }
-            let service = try EvmServiceFactory.getService(forCoin: nativeToken)
+            let service = try EvmServiceFactory.getService(forChain: nativeToken.chain)
             let tokens = await service.getTokens(nativeToken: nativeToken)
             
             for token in tokens {
