@@ -24,12 +24,17 @@ struct BackupVaultNowView: View {
             image
             disclaimer
             description
+#if os(iOS)
             Spacer()
+#endif
             buttons
         }
         .font(.body14MontserratMedium)
         .foregroundColor(.neutral0)
         .multilineTextAlignment(.center)
+#if os(macOS)
+        .padding(.vertical, 40)
+#endif
     }
     
     var title: some View {
@@ -63,7 +68,7 @@ struct BackupVaultNowView: View {
     
     var backupButton: some View {
         NavigationLink {
-            BackupPasswordSetupView(vault: vault)
+            BackupPasswordSetupView(vault: vault, isNewVault: true)
         } label: {
             FilledButton(title: "Backup")
         }

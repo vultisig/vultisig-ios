@@ -14,7 +14,7 @@ struct HomeView: View {
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var viewModel: HomeViewModel
     
-    @Query var vaults: [Vault]
+    @State var vaults: [Vault] = []
     
     @State var showVaultsList = false
     @State var isEditingVaults = false
@@ -22,6 +22,8 @@ struct HomeView: View {
     @State var didUpdate = true
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
+    
+    @Environment(\.modelContext) private var modelContext
     
     var body: some View {
         ZStack {
@@ -140,6 +142,7 @@ struct HomeView: View {
     }
     
     private func setData() {
+        fetchVaults()
         shouldJoinKeygen = false
         shouldKeysignTransaction = false
         
@@ -194,6 +197,15 @@ struct HomeView: View {
         
         withAnimation(.easeInOut) {
             showVaultsList.toggle()
+        }
+    }
+    
+    private func fetchVaults() {
+        let fetchVaultDescriptor = FetchDescriptor<Vault>()
+        do {
+            vaults = try modelContext.fetch(fetchVaultDescriptor)
+        } catch {
+            print(error)
         }
     }
 }

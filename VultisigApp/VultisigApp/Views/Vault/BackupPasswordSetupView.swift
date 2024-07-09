@@ -160,9 +160,9 @@ struct BackupPasswordSetupView: View {
         vault.isBackedUp = true
         
         if isNewVault {
-            dismiss()
-        } else {
             navigationLinkActive = true
+        } else {
+            dismiss()
         }
     }
 }
