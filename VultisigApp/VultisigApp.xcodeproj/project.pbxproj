@@ -206,8 +206,8 @@
 		A6CBF2DC2C251D4100FD8080 /* LookingForDevicesLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CBF2DB2C251D4100FD8080 /* LookingForDevicesLoader.swift */; };
 		A6CBF2DF2C268D1400FD8080 /* Montserrat.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A633B1202B993BF5003D1738 /* Montserrat.ttf */; };
 		A6CBF2E02C268D1400FD8080 /* Montserrat-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A633B11F2B993BF5003D1738 /* Montserrat-Italic.ttf */; };
-		A6D07E432C36756700594687 /* OnboardingView4.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6D07E422C36756700594687 /* OnboardingView4.swift */; };
 		A6D07E412C366F7300594687 /* MemoTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6D07E402C366F7300594687 /* MemoTextField.swift */; };
+		A6D07E432C36756700594687 /* OnboardingView4.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6D07E422C36756700594687 /* OnboardingView4.swift */; };
 		A6D0BA6A2C08353700E24DC9 /* NoCameraPermissionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6D0BA692C08353700E24DC9 /* NoCameraPermissionView.swift */; };
 		A6E52F802BBE430600FD3785 /* TransactionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E52F7F2BBE430600FD3785 /* TransactionCell.swift */; };
 		A6E5823D2BE98C4F006DA410 /* NavigationBlankBackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6E5823C2BE98C4F006DA410 /* NavigationBlankBackButton.swift */; };
@@ -255,6 +255,7 @@
 		B54E317F2BF5A1A700D4FC0A /* StyledNumberField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54E317E2BF5A1A700D4FC0A /* StyledNumberField.swift */; };
 		B54E31812BF5A22700D4FC0A /* StyledFloatingPointField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54E31802BF5A22700D4FC0A /* StyledFloatingPointField.swift */; };
 		B54E31832BF5A73500D4FC0A /* TransactionMemoTypeEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54E31822BF5A73500D4FC0A /* TransactionMemoTypeEnum.swift */; };
+		B57DD59A2C3DA5EA00934CBB /* SolanaTokenInfoMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57DD5992C3DA5EA00934CBB /* SolanaTokenInfoMetadata.swift */; };
 		B58768702BFB0C43001AAEA5 /* DepositStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B587686F2BFB0C43001AAEA5 /* DepositStore.swift */; };
 		B590DF862C2E70B800ED934E /* TransactionMemoVote.swift in Sources */ = {isa = PBXBuildFile; fileRef = B590DF852C2E70B800ED934E /* TransactionMemoVote.swift */; };
 		B590DF882C2E815A00ED934E /* GenericSelectorDropDown.swift in Sources */ = {isa = PBXBuildFile; fileRef = B590DF872C2E815A00ED934E /* GenericSelectorDropDown.swift */; };
@@ -582,8 +583,8 @@
 		A6C9D5C02BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignVaultMismatchErrorView.swift; sourceTree = "<group>"; };
 		A6CBA8EF2BA2A629008B110C /* ImportWalletUploadSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportWalletUploadSection.swift; sourceTree = "<group>"; };
 		A6CBF2DB2C251D4100FD8080 /* LookingForDevicesLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LookingForDevicesLoader.swift; sourceTree = "<group>"; };
-		A6D07E422C36756700594687 /* OnboardingView4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView4.swift; sourceTree = "<group>"; };
 		A6D07E402C366F7300594687 /* MemoTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoTextField.swift; sourceTree = "<group>"; };
+		A6D07E422C36756700594687 /* OnboardingView4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView4.swift; sourceTree = "<group>"; };
 		A6D0BA692C08353700E24DC9 /* NoCameraPermissionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoCameraPermissionView.swift; sourceTree = "<group>"; };
 		A6E52F7F2BBE430600FD3785 /* TransactionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionCell.swift; sourceTree = "<group>"; };
 		A6E5823C2BE98C4F006DA410 /* NavigationBlankBackButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBlankBackButton.swift; sourceTree = "<group>"; };
@@ -631,6 +632,7 @@
 		B54E317E2BF5A1A700D4FC0A /* StyledNumberField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyledNumberField.swift; sourceTree = "<group>"; };
 		B54E31802BF5A22700D4FC0A /* StyledFloatingPointField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyledFloatingPointField.swift; sourceTree = "<group>"; };
 		B54E31822BF5A73500D4FC0A /* TransactionMemoTypeEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoTypeEnum.swift; sourceTree = "<group>"; };
+		B57DD5992C3DA5EA00934CBB /* SolanaTokenInfoMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolanaTokenInfoMetadata.swift; sourceTree = "<group>"; };
 		B587686F2BFB0C43001AAEA5 /* DepositStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepositStore.swift; sourceTree = "<group>"; };
 		B590DF852C2E70B800ED934E /* TransactionMemoVote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoVote.swift; sourceTree = "<group>"; };
 		B590DF872C2E815A00ED934E /* GenericSelectorDropDown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericSelectorDropDown.swift; sourceTree = "<group>"; };
@@ -876,6 +878,7 @@
 			isa = PBXGroup;
 			children = (
 				465A8D542B9E6E0A006E7457 /* SolanaRpc.swift */,
+				B57DD5992C3DA5EA00934CBB /* SolanaTokenInfoMetadata.swift */,
 			);
 			path = Solana;
 			sourceTree = "<group>";
@@ -2013,6 +2016,7 @@
 				DE15729E2B70F284009BC7C5 /* JoinKeysignView.swift in Sources */,
 				A558D74E2C29808D007222EB /* SwapProvider.swift in Sources */,
 				DEEADCF72B916676007978DE /* Solana.swift in Sources */,
+				B57DD59A2C3DA5EA00934CBB /* SolanaTokenInfoMetadata.swift in Sources */,
 				A6966D312BA4048800903CA4 /* SwapCryptoDetailsView.swift in Sources */,
 				A5F97C8E2BBF0BCF000C30DF /* BalanceService.swift in Sources */,
 				DEEDAEE12B8AF7EF005170E8 /* evm.swift in Sources */,

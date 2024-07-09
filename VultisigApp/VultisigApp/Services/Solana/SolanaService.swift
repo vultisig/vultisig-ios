@@ -44,7 +44,7 @@ class SolanaService {
             
             if let totalBalance = Utils.extractResultFromJson(fromData: data, path: "result.value") as? Int64 {
                 rawBalance = totalBalance.description
-            }            
+            }
         } catch {
             print("Error fetching balance: \(error.localizedDescription)")
             throw error
@@ -68,6 +68,18 @@ class SolanaService {
             throw error
         }
         return blockHash
+    }
+    
+    func fetchSolanaTokenInfoList() async throws -> [SolanaTokenInfoMetadata] {
+        guard let url = URL(string: "https://raw.githubusercontent.com/solana-labs/token-list/main/src/tokens/solana.tokenlist.json") else {
+            throw URLError(.badURL)
+        }
+        
+        let (data, _) = try await URLSession.shared.data(from: url)
+        
+        let tokensInfo = Utils.extractResultFromJson(fromData: data, path: "tokens", type: [SolanaTokenInfoMetadata].self)
+        
+        return tokensInfo ?? [];
     }
     
     // Token metadata https://raw.githubusercontent.com/solana-labs/token-list/main/src/tokens/solana.tokenlist.json
@@ -101,16 +113,23 @@ class SolanaService {
                        let decimals = info["tokenAmount"] as? [String: Any],
                        let decimalsValue = decimals["decimals"] as? Int {
                         
+                        // TODO: cache it!
+                        let solanaTokenInfo = try await fetchSolanaTokenInfoList().first(where: {
+                            $0.address == mint
+                        })
+                        
                         let coinMeta = CoinMeta(
                             chain: .solana,
-                            ticker: mint,
-                            logo: "",  // You may need to fetch this from a token metadata service
+                            ticker: solanaTokenInfo?.symbol ?? .empty,
+                            logo: solanaTokenInfo?.logoURI ?? .empty,
                             decimals: decimalsValue,
-                            priceProviderId: "",
+                            priceProviderId: solanaTokenInfo?.extensions?.coingeckoId?.description ?? .empty,
                             contractAddress: mint,
                             isNativeToken: info["isNative"] as? Bool ?? false
                         )
+                        
                         coinMetaList.append(coinMeta)
+                        
                     }
                 }
                 
@@ -152,7 +171,7 @@ class SolanaService {
         
         return UInt64(highPriorityFee)
     }
-
+    
     private func postRequest(with body: [String: Any]) async throws -> Data {
         var request = URLRequest(url: rpcURL)
         request.httpMethod = "POST"
