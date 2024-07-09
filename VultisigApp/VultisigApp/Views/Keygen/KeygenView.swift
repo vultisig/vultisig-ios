@@ -38,7 +38,7 @@ struct KeygenView: View {
         }
         .navigationBarBackButtonHidden()
         .navigationDestination(isPresented: $viewModel.isLinkActive) {
-            HomeView(selectedVault: vault, showVaultsList: false, shouldJoinKeygen: false)
+            BackupVaultNowView(vault: vault)
         }
         .task {
             await viewModel.startKeygen(context: context)

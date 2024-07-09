@@ -32,7 +32,7 @@ struct BackupNowDisclaimer: View {
             title
             components
         }
-        .padding(.vertical, 16)
+        .frame(height: 56)
         .padding(.horizontal, 12)
         .background(Color.backupNowRed.opacity(0.3))
         .cornerRadius(12)

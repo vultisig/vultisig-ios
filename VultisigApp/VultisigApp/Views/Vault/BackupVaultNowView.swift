@@ -15,6 +15,7 @@ struct BackupVaultNowView: View {
             Background()
             view
         }
+        .navigationBarBackButtonHidden(true)
     }
     
     var view: some View {
@@ -38,6 +39,7 @@ struct BackupVaultNowView: View {
     
     var image: some View {
         Image("BackupNowImage")
+            .offset(x: 5)
     }
     
     var disclaimer: some View {
@@ -69,7 +71,7 @@ struct BackupVaultNowView: View {
     
     var skipButton: some View {
         NavigationLink {
-            HomeView(selectedVault: vault)
+            HomeView(selectedVault: vault, showVaultsList: false, shouldJoinKeygen: false)
         } label: {
             skipButtonLabel
         }
