@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import WalletCore
 
 class SolanaService {
     static let shared = SolanaService()
@@ -67,6 +68,59 @@ class SolanaService {
             throw error
         }
         return blockHash
+    }
+    
+    // Token metadata https://raw.githubusercontent.com/solana-labs/token-list/main/src/tokens/solana.tokenlist.json
+    // Solana Token   https://solana.com/docs/rpc/http/gettokenaccountsbyowner
+    func fetchTokens(for walletAddress: String) async throws -> [CoinMeta] {
+        let requestBody: [String: Any] = [
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "getTokenAccountsByOwner",
+            "params": [
+                walletAddress,
+                ["programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"], // SPL Token Program ID
+                ["encoding": "jsonParsed"]
+            ]
+        ]
+        do {
+            let data = try await postRequest(with: requestBody)
+            
+            if let jsonResponse = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+               let result = jsonResponse["result"] as? [String: Any],
+               let value = result["value"] as? [[String: Any]] {
+                
+                var coinMetaList: [CoinMeta] = []
+                
+                for tokenAccount in value {
+                    if let accountData = tokenAccount["account"] as? [String: Any],
+                       let data = accountData["data"] as? [String: Any],
+                       let parsed = data["parsed"] as? [String: Any],
+                       let info = parsed["info"] as? [String: Any],
+                       let mint = info["mint"] as? String,
+                       let decimals = info["tokenAmount"] as? [String: Any],
+                       let decimalsValue = decimals["decimals"] as? Int {
+                        
+                        let coinMeta = CoinMeta(
+                            chain: .solana,
+                            ticker: mint,
+                            logo: "",  // You may need to fetch this from a token metadata service
+                            decimals: decimalsValue,
+                            priceProviderId: "",
+                            contractAddress: mint,
+                            isNativeToken: info["isNative"] as? Bool ?? false
+                        )
+                        coinMetaList.append(coinMeta)
+                    }
+                }
+                
+                return coinMetaList
+            }
+        } catch {
+            print("Error fetching tokens: \(error.localizedDescription)")
+            throw error
+        }
+        return []
     }
     
     func fetchHighPriorityFee(account: String) async throws -> UInt64 {
