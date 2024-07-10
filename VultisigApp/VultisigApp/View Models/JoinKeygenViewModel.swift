@@ -166,13 +166,16 @@ class JoinKeygenViewModel: ObservableObject {
         
         switch result {
         case .success(let result):
-            
-            guard let json = DeeplinkViewModel.getJsonData(URL(string: result.string)), let jsonData = json.data(using: .utf8) else {
+            let url = URL(string: result.string)
+            guard
+                let json = DeeplinkViewModel.getJsonData(url),
+                let tssTypeString = DeeplinkViewModel.getTssType(url),
+                let tssType = TssType(rawValue: tssTypeString) else {
                 status = .FailToStart
                 return
             }
-            handleQrCodeSuccessResult(scanData: jsonData)
-            
+            handleQrCodeSuccessResult(scanData: json, tssType: tssType)
+
         case .failure(_):
             errorMessage = "Unable to scan the QR code. Please import an image using the button below."
             status = .FailToStart
@@ -189,14 +192,17 @@ class JoinKeygenViewModel: ObservableObject {
         return false
     }
     
-    func handleQrCodeSuccessResult(scanData: Data, tssType: TssType) {
+    func handleQrCodeSuccessResult(scanData: String, tssType: TssType) {
+        self.tssType = tssType
+
         var useVultisigRelay = false
         do {
-            let decoder = JSONDecoder()
-            let result = try decoder.decode(PeerDiscoveryPayload.self, from: scanData)
-            switch result {
-            case .Keygen(let keygenMsg):
-                tssType = .Keygen
+            switch tssType {
+            case .Keygen:
+                let keygenMsg: KeygenMessage = try ProtoSerializer.deserialize(
+                    base64EncodedString: scanData,
+                    vault: vault
+                )
                 sessionID = keygenMsg.sessionID
                 hexChainCode = keygenMsg.hexChainCode
                 vault.hexChainCode = hexChainCode
@@ -210,8 +216,11 @@ class JoinKeygenViewModel: ObservableObject {
                     status = .FailToStart
                     return
                 }
-            case .Reshare(let reshareMsg):
-                tssType = .Reshare
+            case .Reshare:
+                let reshareMsg: ReshareMessage = try ProtoSerializer.deserialize(
+                    base64EncodedString: scanData,
+                    vault: vault
+                )
                 oldCommittee = reshareMsg.oldParties
                 sessionID = reshareMsg.sessionID
                 hexChainCode = reshareMsg.hexChainCode
@@ -262,7 +271,11 @@ class JoinKeygenViewModel: ObservableObject {
     
     func handleQrCodeFromImage(result: Result<[URL], Error>) {
         do {
-            handleQrCodeSuccessResult(scanData: try Utils.handleQrCodeFromImage(result: result), tssType: <#TssType#>)
+            let urlData = try Utils.handleQrCodeFromImage(result: result)
+            guard let urlString = String(data: urlData, encoding: .utf8) else {
+                return
+            }
+            handleDeeplinkScan(URL(string: urlString))
         } catch {
             print(error)
         }
@@ -274,10 +287,9 @@ class JoinKeygenViewModel: ObservableObject {
         }
         
         guard
-            let json = DeeplinkViewModel.getJsonData(url),
+            let jsonData = DeeplinkViewModel.getJsonData(url),
             let tssTypeString = DeeplinkViewModel.getTssType(url),
-            let tssType = TssType(rawValue: tssTypeString),
-            let jsonData = json.data(using: .utf8) else {
+            let tssType = TssType(rawValue: tssTypeString) else {
             status = .FailToStart
             return
         }
