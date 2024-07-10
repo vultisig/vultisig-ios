@@ -32,9 +32,11 @@ struct NewWalletNameView: View {
                 NavigationBackButton()
             }
         }
+#if os(iOS)
         .onTapGesture {
             hideKeyboard()
         }
+#endif
     }
     
     var view: some View {
