@@ -9,7 +9,7 @@ import WalletCore
 import BigInt
 
 enum SolanaHelper {
-
+    
     static let defaultFeeInLamports: BigInt = 1000000 //0.001
     
     static func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
@@ -23,22 +23,44 @@ enum SolanaHelper {
             throw HelperError.runtimeError("fail to get to address")
         }
         
-        let input = SolanaSigningInput.with {
-            $0.transferTransaction = SolanaTransfer.with {
-                $0.recipient = toAddress.description
-                $0.value = UInt64(keysignPayload.toAmount)
-                if let memo = keysignPayload.memo {
-                    $0.memo = memo
+        if keysignPayload.coin.isNativeToken {
+            
+            let input = SolanaSigningInput.with {
+                $0.transferTransaction = SolanaTransfer.with {
+                    $0.recipient = toAddress.description
+                    $0.value = UInt64(keysignPayload.toAmount)
+                    if let memo = keysignPayload.memo {
+                        $0.memo = memo
+                    }
+                }
+                $0.recentBlockhash = recentBlockHash
+                $0.sender = keysignPayload.coin.address
+                $0.priorityFeePrice = SolanaPriorityFeePrice.with{
+                    $0.price = UInt64(priorityFee)
                 }
             }
-            $0.recentBlockhash = recentBlockHash
-            $0.sender = keysignPayload.coin.address
-            $0.priorityFeePrice = SolanaPriorityFeePrice.with{
-                $0.price = UInt64(priorityFee)
+            
+            return try input.serializedData()
+        } else {
+            
+            let tokenTransferMessage = SolanaTokenTransfer.with {
+                $0.tokenMintAddress = keysignPayload.coin.contractAddress
+                $0.senderTokenAddress = keysignPayload.coin.address
+                $0.recipientTokenAddress = toAddress.description
+                $0.amount = UInt64(keysignPayload.toAmount) // 4000  // 0.004
+                $0.decimals = UInt32(keysignPayload.coin.decimals)
             }
+            
+            let input = SolanaSigningInput.with {
+                $0.tokenTransferTransaction = tokenTransferMessage
+                $0.recentBlockhash = recentBlockHash
+                $0.priorityFeePrice = SolanaPriorityFeePrice.with{
+                    $0.price = UInt64(priorityFee)
+                }
+            }
+            
+            return try input.serializedData()
         }
-        
-        return try input.serializedData()
     }
     
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
@@ -78,11 +100,11 @@ enum SolanaHelper {
                                                                              signatures: allSignatures,
                                                                              publicKeys: publicKeys)
         let output = try SolanaSigningOutput(serializedData: compileWithSignature)
-        let result = SignedTransactionResult(rawTransaction: output.encoded, 
+        let result = SignedTransactionResult(rawTransaction: output.encoded,
                                              transactionHash: getHashFromRawTransaction(tx:output.encoded))
         return result
     }
-
+    
     static func getHashFromRawTransaction(tx: String) -> String {
         let sig =  Data(tx.prefix(64).utf8)
         return sig.base64EncodedString()
