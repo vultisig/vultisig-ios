@@ -13,7 +13,8 @@ struct NewWalletNameView: View {
     let vault: Vault?
     let selectedTab: SetupVaultState
     
-    @State var name = ""
+    @State var didSet = false
+    @State var name = "Main Vault"
     @State var isLinkActive = false
     @State var showAlert = false
     
@@ -30,6 +31,9 @@ struct NewWalletNameView: View {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
             }
+        }
+        .onTapGesture {
+            hideKeyboard()
         }
     }
     
@@ -61,7 +65,7 @@ struct NewWalletNameView: View {
     }
     
     var textfield: some View {
-        TextField(NSLocalizedString("mainVault", comment: "").capitalized, text: $name)
+        TextField(NSLocalizedString("enterVaultName", comment: "").capitalized, text: $name)
             .font(.body16Menlo)
             .foregroundColor(.neutral0)
             .submitLabel(.done)
@@ -71,6 +75,10 @@ struct NewWalletNameView: View {
             .colorScheme(.dark)
             .borderlessTextFieldStyle()
             .maxLength($name)
+            .autocorrectionDisabled()
+            .onTapGesture {
+                resetPlaceholderName()
+            }
     }
     
     var button: some View {
@@ -114,6 +122,15 @@ struct NewWalletNameView: View {
         } else {
             return name + " "
         }
+    }
+    
+    private func resetPlaceholderName() {
+        guard !didSet else {
+            return
+        }
+        
+        name = ""
+        didSet = true
     }
 }
 

@@ -260,3 +260,4 @@
 "OnboardingView4Description" = "Vultisig is a wallet without seed phrases.\nIt uses easy-to-manage vault shares instead.";
 "memo(optional)" = "MEMO (Optional)";
 "enterMemo" = "Enter Memo";
+"enterVaultName" = "Enter vault name";
