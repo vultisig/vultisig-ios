@@ -10,53 +10,66 @@ import Foundation
 extension Chain {
 
     var defaultActions: [CoinAction] {
+        let actions: [CoinAction]
         switch self {
         case .thorChain:
-            return [.send, .swap, .memo]
+            actions = [.send, .swap, .memo]
         case .solana:
-            return [.send]
+            actions = [.send]
         case .ethereum:
-            return [.send, .swap]
+            actions = [.send, .swap]
         case .avalanche:
-            return [.send, .swap]
+            actions = [.send, .swap]
         case .base:
-            return [.send]
+            actions = [.send]
         case .blast:
-            return [.send]
+            actions = [.send]
         case .arbitrum:
-            return [.send]
+            actions = [.send]
         case .polygon:
-            return [.send]
+            actions = [.send]
         case .optimism:
-            return [.send]
+            actions = [.send]
         case .bscChain:
-            return [.send, .swap]
+            actions = [.send, .swap]
         case .bitcoin:
-            return [.send, .swap]
+            actions = [.send, .swap]
         case .bitcoinCash:
-            return [.send, .swap]
+            actions = [.send, .swap]
         case .litecoin:
-            return [.send, .swap]
+            actions = [.send, .swap]
         case .dogecoin:
-            return [.send, .swap]
+            actions = [.send, .swap]
         case .dash:
-            return [.send, .swap]
+            actions = [.send, .swap]
         case .gaiaChain:
-            return [.send, .swap]
+            actions = [.send, .swap]
         case .kujira:
-            return [.send, .swap]
+            actions = [.send, .swap]
         case .mayaChain:
-            return [.send, .swap, .memo]
+            actions = [.send, .swap, .memo]
         case .cronosChain:
-            return [.send]
+            actions = [.send]
         case .sui:
-            return [.send]
+            actions = [.send]
         case .polkadot:
-            return [.send]
+            actions = [.send]
         case .zksync:
-            return [.send]
+            actions = [.send]
         case .dydx:
-            return [.send, .memo]
+            actions = [.send, .memo]
         }
+        return actions.filtered
+    }
+}
+
+extension Array where Element == CoinAction {
+
+    var filtered: [CoinAction] {
+        #if DEBUG
+        return self
+        #else
+        return filter { $0 != .swap }
+        #endif
     }
 }
