@@ -37,10 +37,19 @@ class SolanaService {
         let priceRateFiat = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
         
         do {
-            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "getBalance", params: [coin.address])
             
-            if let totalBalance = Utils.extractResultFromJson(fromData: data, path: "result.value") as? Int64 {
-                rawBalance = totalBalance.description
+            if coin.isNativeToken {
+                
+                let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "getBalance", params: [coin.address])
+                
+                if let totalBalance = Utils.extractResultFromJson(fromData: data, path: "result.value") as? Int64 {
+                    rawBalance = totalBalance.description
+                }
+                
+            } else {
+                
+                rawBalance = try await fetchTokenBalance(for: coin.address, contractAddress: coin.contractAddress)
+                
             }
         } catch {
             print("Error fetching balance: \(error.localizedDescription)")
@@ -76,7 +85,9 @@ class SolanaService {
         return tokenInfo
     }
     
-    func fetchTokens(for walletAddress: String) async throws -> [CoinMeta] {
+    //TODO: cache the balance
+    func fetchTokenAccountsByOwner(for walletAddress: String) async throws -> [SolanaTokenAccount] {
+        
         let requestBody: [String: Any] = [
             "jsonrpc": "2.0",
             "id": 1,
@@ -93,6 +104,36 @@ class SolanaService {
             let parsedData = try parseSolanaTokenResponse(jsonData: data)
             let accounts: [SolanaTokenAccount] = parsedData.result.value
             
+            return accounts
+        } catch {
+            print("Error fetching tokens: \(error.localizedDescription)")
+            throw error
+        }
+    }
+    
+    func fetchTokenBalance(for walletAddress: String, contractAddress: String) async throws -> String {
+        
+        do {
+            
+            let accounts: [SolanaTokenAccount] = try await fetchTokenAccountsByOwner(for: walletAddress)
+            
+            if let token = accounts.first(where: { $0.account.data.parsed.info.mint == contractAddress }) {
+                return token.account.data.parsed.info.tokenAmount.amount
+            } else {
+                return .zero
+            }
+            
+        } catch {
+            print("Error fetching tokens: \(error.localizedDescription)")
+            throw error
+        }
+    }
+    
+    func fetchTokens(for walletAddress: String) async throws -> [CoinMeta] {
+        
+        do {
+            
+            let accounts: [SolanaTokenAccount] = try await fetchTokenAccountsByOwner(for: walletAddress)
             let tokenAddresses = accounts.map { $0.account.data.parsed.info.mint }
             let tokenInfos = try await fetchSolanaTokenInfoList(contractAddresses: tokenAddresses)
             
