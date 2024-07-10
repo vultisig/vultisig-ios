@@ -37,7 +37,11 @@ extension String {
     var isZero: Bool {
         return self == .zero
     }
-    
+
+    var nilIfEmpty: String? {
+        return isEmpty ? nil : self
+    }
+
 #if os(iOS)
     func widthOfString(usingFont font: UIFont) -> CGFloat {
         let fontAttributes = [NSAttributedString.Key.font: font]

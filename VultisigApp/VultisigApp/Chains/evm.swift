@@ -23,7 +23,7 @@ class EVMHelper {
         self.coinType = coinType
     }
     
-    static func getHelper(coin: CoinMeta) -> EVMHelper {
+    static func getHelper(coin: Coin) -> EVMHelper {
         return EVMHelper(coinType: coin.coinType)
     }
     

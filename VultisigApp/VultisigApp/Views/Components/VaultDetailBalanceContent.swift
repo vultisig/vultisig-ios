@@ -21,6 +21,7 @@ struct VaultDetailBalanceContent: View {
             hideButton
         }
         .frame(maxWidth: .infinity)
+        .padding(.vertical, 6)
         .background(Color.backgroundBlue)
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
