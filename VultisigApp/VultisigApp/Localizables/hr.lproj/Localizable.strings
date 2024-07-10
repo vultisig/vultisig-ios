@@ -237,3 +237,6 @@
 "OnboardingView4Description" = "Vultisig je novčanik bez sjemenskih fraza.\nUmjesto toga koristi lako upravljive udjele u spremištu.";
 "NoQRCodesDetected" = "Nema QR kodova otkrivenih";
 "FailedToLoadImage" = "Neuspješno učitavanje slike s URL-a";
+"memo(optional)" = "MEMO (Opcionalno)";
+"enterMemo" = "Unesite bilješku";
+"enterVaultName" = "Unesite naziv spremišta";

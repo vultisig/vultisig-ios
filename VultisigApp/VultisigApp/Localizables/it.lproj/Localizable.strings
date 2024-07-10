@@ -237,3 +237,6 @@
 "OnboardingView4Description" = "Vultisig è un portafoglio senza frasi seed.\nUtilizza invece quote di cassaforte facili da gestire.";
 "NoQRCodesDetected" = "Nessun codice QR rilevato";
 "FailedToLoadImage" = "Impossibile caricare l'immagine dall'URL";
+"memo(optional)" = "MEMO (Opzionale)";
+"enterMemo" = "Inserisci memo";
+"enterVaultName" = "Inserisci il nome del caveau";
