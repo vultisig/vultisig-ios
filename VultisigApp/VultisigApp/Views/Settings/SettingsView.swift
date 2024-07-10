@@ -25,7 +25,6 @@ struct SettingsView: View {
                 NavigationBackSheetButton(showSheet: $showMenu)
             }
         }
-
     }
     
     var view: some View {
@@ -47,6 +46,7 @@ struct SettingsView: View {
             vaultSettingsCell
             languageSelectionCell
             currencySelectionCell
+            addressBookCell
             faqCell
         }
     }
@@ -93,6 +93,14 @@ struct SettingsView: View {
             SettingsCurrencySelectionView()
         } label: {
             SettingCell(title: "currency", icon: "dollarsign.circle", selection: SettingsCurrency.current.rawValue)
+        }
+    }
+    
+    var addressBookCell: some View {
+        NavigationLink {
+            AddressBookView()
+        } label: {
+            SettingCell(title: "addressBook", icon: "text.book.closed")
         }
     }
     
