@@ -27,20 +27,17 @@ class SolanaService {
             return response.result
             
         } catch {
-            
-            
-            
             print("Error sending transaction: \(error.localizedDescription)")
         }
         return nil
     }
     
-    func getSolanaBalance(coin: Coin) async throws -> (rawBalance: String, priceRate: Double){
+    func getSolanaBalance(coin: Coin) async throws -> (rawBalance: String, priceRate: Double) {
         var rawBalance = "0"
         let priceRateFiat = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
         
         do {
-            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "getBalance", params:  [coin.address])
+            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "getBalance", params: [coin.address])
             
             if let totalBalance = Utils.extractResultFromJson(fromData: data, path: "result.value") as? Int64 {
                 rawBalance = totalBalance.description
@@ -49,7 +46,7 @@ class SolanaService {
             print("Error fetching balance: \(error.localizedDescription)")
             throw error
         }
-        return (rawBalance,priceRateFiat)
+        return (rawBalance, priceRateFiat)
     }
     
     func fetchRecentBlockhash() async throws -> String? {
@@ -70,20 +67,15 @@ class SolanaService {
         return blockHash
     }
     
-    func fetchSolanaTokenInfoList() async throws -> [SolanaTokenInfoMetadata] {
-        guard let url = URL(string: "https://raw.githubusercontent.com/solana-labs/token-list/main/src/tokens/solana.tokenlist.json") else {
-            throw URLError(.badURL)
-        }
-        
-        let (data, _) = try await URLSession.shared.data(from: url)
-        
-        let tokensInfo = Utils.extractResultFromJson(fromData: data, path: "tokens", type: [SolanaTokenInfoMetadata].self)
-        
-        return tokensInfo ?? [];
+    func fetchSolanaTokenInfoList(contractAddresses: [String]) async throws -> [String: SolanaFmTokenInfo] {
+        let urlString = "https://api.solana.fm/v1/tokens"
+        let body: [String: Any] = ["tokens": contractAddresses]
+        let dataPayload = try JSONSerialization.data(withJSONObject: body, options: [])
+        let dataResponse = try await Utils.asyncPostRequest(urlString: urlString, headers: [:], body: dataPayload)
+        let tokenInfo = try JSONDecoder().decode([String: SolanaFmTokenInfo].self, from: dataResponse)
+        return tokenInfo
     }
     
-    // Token metadata https://raw.githubusercontent.com/solana-labs/token-list/main/src/tokens/solana.tokenlist.json
-    // Solana Token   https://solana.com/docs/rpc/http/gettokenaccountsbyowner
     func fetchTokens(for walletAddress: String) async throws -> [CoinMeta] {
         let requestBody: [String: Any] = [
             "jsonrpc": "2.0",
@@ -103,6 +95,7 @@ class SolanaService {
                let value = result["value"] as? [[String: Any]] {
                 
                 var coinMetaList: [CoinMeta] = []
+                var contractAddresses: [String] = []
                 
                 for tokenAccount in value {
                     if let accountData = tokenAccount["account"] as? [String: Any],
@@ -110,26 +103,42 @@ class SolanaService {
                        let parsed = data["parsed"] as? [String: Any],
                        let info = parsed["info"] as? [String: Any],
                        let mint = info["mint"] as? String,
-                       let decimals = info["tokenAmount"] as? [String: Any],
-                       let decimalsValue = decimals["decimals"] as? Int {
+                       let tokenAmount = info["tokenAmount"] as? [String: Any],
+                       let decimalsValue = tokenAmount["decimals"] as? Int,
+                       let rawBalance = tokenAmount["amount"] as? String {
                         
-                        // TODO: cache it!
-                        let solanaTokenInfo = try await fetchSolanaTokenInfoList().first(where: {
-                            $0.address == mint
-                        })
+                        contractAddresses.append(mint)
                         
+                        // Add initial coinMeta with limited information
                         let coinMeta = CoinMeta(
                             chain: .solana,
-                            ticker: solanaTokenInfo?.symbol ?? .empty,
-                            logo: solanaTokenInfo?.logoURI ?? .empty,
+                            ticker: "",
+                            logo: "",
                             decimals: decimalsValue,
-                            priceProviderId: solanaTokenInfo?.extensions?.coingeckoId?.description ?? .empty,
+                            priceProviderId: "",
                             contractAddress: mint,
                             isNativeToken: info["isNative"] as? Bool ?? false
                         )
-                        
                         coinMetaList.append(coinMeta)
-                        
+                    }
+                }
+                
+                // Fetch metadata for all tokens
+                let solanaFmTokenInfo = try await fetchSolanaTokenInfoList(contractAddresses: contractAddresses)
+                
+                // Update coinMetaList with fetched metadata
+                for i in 0..<coinMetaList.count {
+                    let mint = coinMetaList[i].contractAddress
+                    if let tokenInfo = solanaFmTokenInfo[mint] {
+                        coinMetaList[i] = CoinMeta(
+                            chain: .solana,
+                            ticker: tokenInfo.tokenList.symbol,
+                            logo: tokenInfo.tokenList.image,
+                            decimals: tokenInfo.decimals,
+                            priceProviderId: tokenInfo.tokenList.extensions.coingeckoId ?? "",
+                            contractAddress: mint,
+                            isNativeToken: coinMetaList[i].isNativeToken
+                        )
                     }
                 }
                 
