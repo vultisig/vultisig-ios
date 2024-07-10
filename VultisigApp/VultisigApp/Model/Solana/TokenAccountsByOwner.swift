@@ -48,8 +48,8 @@ extension SolanaService {
         let uiAmountString: String
     }
     
-    func parseSolanaTokenResponse(jsonData: Data) throws -> SolanaService.SolanaRPCResponse2<[SolanaService.SolanaTokenAccount]> {
-        return try JSONDecoder().decode(SolanaService.SolanaRPCResponse2<[SolanaService.SolanaTokenAccount]>.self, from: jsonData)
+    func parseSolanaTokenResponse(jsonData: Data) throws -> SolanaService.SolanaDetailedRPCResult<[SolanaService.SolanaTokenAccount]> {
+        return try JSONDecoder().decode(SolanaService.SolanaDetailedRPCResult<[SolanaService.SolanaTokenAccount]>.self, from: jsonData)
     }
             
 }

@@ -14,16 +14,16 @@ extension SolanaService {
         let slot: Int
     }
     
-    class SolanaRPCResponse2<T: Decodable>: Decodable {
-        let result: SolanaResult2<T>
+    class SolanaDetailedRPCResult<T: Decodable>: Decodable {
+        let result: SolanaDetailedResult<T>
     }
     
-    class SolanaResult2<T: Decodable>: Decodable {
-        let context: SolanaContext2
+    class SolanaDetailedResult<T: Decodable>: Decodable {
+        let context: SolanaDetailedContext
         let value: T
     }
     
-    class SolanaContext2: Decodable {
+    class SolanaDetailedContext: Decodable {
         let apiVersion: String
         let slot: Int
     }
