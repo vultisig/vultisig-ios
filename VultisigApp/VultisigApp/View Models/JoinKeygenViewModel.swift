@@ -189,7 +189,7 @@ class JoinKeygenViewModel: ObservableObject {
         return false
     }
     
-    func handleQrCodeSuccessResult(scanData: Data) {
+    func handleQrCodeSuccessResult(scanData: Data, tssType: TssType) {
         var useVultisigRelay = false
         do {
             let decoder = JSONDecoder()
@@ -262,7 +262,7 @@ class JoinKeygenViewModel: ObservableObject {
     
     func handleQrCodeFromImage(result: Result<[URL], Error>) {
         do {
-            handleQrCodeSuccessResult(scanData: try Utils.handleQrCodeFromImage(result: result))
+            handleQrCodeSuccessResult(scanData: try Utils.handleQrCodeFromImage(result: result), tssType: <#TssType#>)
         } catch {
             print(error)
         }
@@ -273,10 +273,14 @@ class JoinKeygenViewModel: ObservableObject {
             return
         }
         
-        guard let json = DeeplinkViewModel.getJsonData(url), let jsonData = json.data(using: .utf8) else {
+        guard
+            let json = DeeplinkViewModel.getJsonData(url),
+            let tssTypeString = DeeplinkViewModel.getTssType(url),
+            let tssType = TssType(rawValue: tssTypeString),
+            let jsonData = json.data(using: .utf8) else {
             status = .FailToStart
             return
         }
-        handleQrCodeSuccessResult(scanData: jsonData)
+        handleQrCodeSuccessResult(scanData: jsonData, tssType: tssType)
     }
 }
