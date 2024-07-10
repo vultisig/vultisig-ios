@@ -94,6 +94,11 @@ struct VaultDetailView: View {
             if isLoading {
                 loader
             } else if viewModel.coinsGroupedByChains.count >= 1 {
+                
+                if !vault.isBackedUp {
+                    backupNowWidget
+                }
+                
                 balanceContent
                 getActions()
                 cells
@@ -216,6 +221,13 @@ struct VaultDetailView: View {
         .frame(maxWidth: .infinity)
         .multilineTextAlignment(.center)
         .background(Color.backgroundBlue)
+    }
+    
+    var backupNowWidget: some View {
+        BackupNowDisclaimer(vault: vault)
+            .padding(.horizontal, 16)
+            .padding(.top, 20)
+            .background(Color.backgroundBlue)
     }
     
     private func onAppear() {

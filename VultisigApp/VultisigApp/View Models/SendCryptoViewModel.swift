@@ -293,7 +293,8 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             chainSpecific: BlockChainSpecific.UTXO(byteFee: tx.gas.toBigInt(), sendMaxAmount: tx.sendMaxAmount),
             utxos: utxoInfo,
             memo: tx.memo,
-            swapPayload: nil,
+            swapPayload: nil, 
+            approvePayload: nil,
             vaultPubKeyECDSA: vault.pubKeyECDSA,
             vaultLocalPartyID: vault.localPartyID
         )

@@ -78,7 +78,7 @@ class BalanceService {
                 (rawBalance, priceRate) = try await sui.getBalance(coin: coin)
                 
             case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain, .zksync:
-                let service = try EvmServiceFactory.getService(forCoin: coin)
+                let service = try EvmServiceFactory.getService(forChain: coin.chain)
                 (rawBalance, priceRate) = try await service.getBalance(coin: coin)
                 
             case .gaiaChain:

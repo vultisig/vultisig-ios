@@ -261,3 +261,5 @@
 "memo(optional)" = "MEMO (Optional)";
 "enterMemo" = "Enter Memo";
 "enterVaultName" = "Enter vault name";
+"pleaseBackupVault" = "Please Backup your Vault Shares now";
+"pleaseBackupVaultNote" = "Note: Never store Vault Shares from different devices in the same location.";

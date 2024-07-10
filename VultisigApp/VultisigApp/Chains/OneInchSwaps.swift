@@ -32,7 +32,7 @@ struct OneInchSwaps {
             keysignPayload: keysignPayload,
             incrementNonce: incrementNonce
         )
-        let helper = EVMHelper.getHelper(coin: keysignPayload.coin.toCoinMeta())
+        let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
         let transaction = try helper.getSignedTransaction(
             vaultHexPubKey: vaultHexPublicKey,
             vaultHexChainCode: vaultHexChainCode,
@@ -58,7 +58,7 @@ private extension OneInchSwaps {
 
         let gasPrice = BigUInt(quote.tx.gasPrice) ?? BigUInt.zero
         let gas = BigUInt(EVMHelper.defaultETHSwapGasUnit)
-        let helper = EVMHelper.getHelper(coin: keysignPayload.coin.toCoinMeta())
+        let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
         let signed = try helper.getPreSignedInputData(signingInput: input, keysignPayload: keysignPayload, gas: gas, gasPrice: gasPrice, incrementNonce: incrementNonce)
         return signed
     }

@@ -247,7 +247,7 @@ class KeysignViewModel: ObservableObject {
 
         case .EVM:
             if keysignPayload.coin.isNativeToken {
-                let helper = EVMHelper.getHelper(coin: keysignPayload.coin.toCoinMeta())
+                let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
                 let transaction = try helper.getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
             } else {
@@ -327,7 +327,7 @@ class KeysignViewModel: ObservableObject {
                         throw error
                     }
                 case .ethereum, .avalanche,.arbitrum, .bscChain, .base, .optimism, .polygon, .blast, .cronosChain, .zksync:
-                    let service = try EvmServiceFactory.getService(forCoin: keysignPayload.coin)
+                    let service = try EvmServiceFactory.getService(forChain: keysignPayload.coin.chain)
                     self.txid = try await service.broadcastTransaction(hex: tx.rawTransaction)
                 case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
                     let chainName = keysignPayload.coin.chain.name.lowercased()
@@ -372,7 +372,7 @@ class KeysignViewModel: ObservableObject {
                 }
 
             case .regularWithApprove(let approve, let transaction):
-                let service = try EvmServiceFactory.getService(forCoin: keysignPayload.coin)
+                let service = try EvmServiceFactory.getService(forChain: keysignPayload.coin.chain)
                 let _ = try await service.broadcastTransaction(hex: approve.rawTransaction)
                 let regularTxHash = try await service.broadcastTransaction(hex: transaction.rawTransaction)
                 self.txid = regularTxHash // TODO: Display approve and regular tx hash separately

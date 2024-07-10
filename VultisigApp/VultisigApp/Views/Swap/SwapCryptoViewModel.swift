@@ -152,7 +152,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         guard tx.fromCoin.shouldApprove, let spender = tx.router else {
             return false
         }
-        let service = try EvmServiceFactory.getService(forCoin: tx.fromCoin)
+        let service = try EvmServiceFactory.getService(forChain: tx.fromCoin.chain)
         let allowance = try await service.fetchAllowance(
             contractAddress: tx.fromCoin.contractAddress,
             owner: tx.fromCoin.address,

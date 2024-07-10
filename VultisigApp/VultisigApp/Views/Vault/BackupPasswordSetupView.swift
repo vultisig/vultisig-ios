@@ -9,9 +9,12 @@ import SwiftUI
 
 struct BackupPasswordSetupView: View {
     let vault: Vault
+    var isNewVault = false
+    
+    @State var verifyPassword: String = ""
+    @State var navigationLinkActive = false
     
     @StateObject var backupViewModel = EncryptedBackupViewModel()
-    @State var verifyPassword: String = ""
     
     @Environment(\.dismiss) var dismiss
     
@@ -40,7 +43,9 @@ struct BackupPasswordSetupView: View {
                 NavigationBackButton()
             }
         }
-
+        .navigationDestination(isPresented: $navigationLinkActive) {
+            HomeView(selectedVault: vault, showVaultsList: false, shouldJoinKeygen: false)
+        }
     }
     
     var view: some View {
@@ -61,7 +66,7 @@ struct BackupPasswordSetupView: View {
             switch result {
             case .success(let url):
                 print("File saved to: \(url)")
-                dismiss()
+                fileSaved()
             case .failure(let error):
                 print("Error saving file: \(error.localizedDescription)")
                 backupViewModel.alertTitle = "errorSavingFile"
@@ -149,6 +154,16 @@ struct BackupPasswordSetupView: View {
     
     private func export() {
         backupViewModel.exportFile(vault)
+    }
+    
+    private func fileSaved() {
+        vault.isBackedUp = true
+        
+        if isNewVault {
+            navigationLinkActive = true
+        } else {
+            dismiss()
+        }
     }
 }
 
