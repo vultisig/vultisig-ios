@@ -137,7 +137,7 @@ class CoinSelectionViewModel: ObservableObject {
             var tokens: [CoinMeta] = []
             switch nativeToken.chain.chainType {
             case .EVM :
-                let service = try EvmServiceFactory.getService(forCoin: nativeToken)
+                let service = try EvmServiceFactory.getService(forChain: nativeToken.chain)
                 tokens = await service.getTokens(nativeToken: nativeToken)
             case .Solana:
                 tokens = try await SolanaService.shared.fetchTokens(for: nativeToken.address)
