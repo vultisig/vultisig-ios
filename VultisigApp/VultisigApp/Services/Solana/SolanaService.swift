@@ -68,7 +68,7 @@ class SolanaService {
     }
     
     func fetchSolanaTokenInfoList(contractAddresses: [String]) async throws -> [String: SolanaFmTokenInfo] {
-        let urlString = "https://api.solana.fm/v1/tokens"
+        let urlString = Endpoint.solanaTokenInfoServiceRpc
         let body: [String: Any] = ["tokens": contractAddresses]
         let dataPayload = try JSONSerialization.data(withJSONObject: body, options: [])
         let dataResponse = try await Utils.asyncPostRequest(urlString: urlString, headers: [:], body: dataPayload)
@@ -87,68 +87,33 @@ class SolanaService {
                 ["encoding": "jsonParsed"]
             ]
         ]
+        
         do {
             let data = try await postRequest(with: requestBody)
+            let parsedData = try parseSolanaTokenResponse(jsonData: data)
+            let accounts: [SolanaTokenAccount] = parsedData.result.value
             
-            if let jsonResponse = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
-               let result = jsonResponse["result"] as? [String: Any],
-               let value = result["value"] as? [[String: Any]] {
-                
-                var coinMetaList: [CoinMeta] = []
-                var contractAddresses: [String] = []
-                
-                for tokenAccount in value {
-                    if let accountData = tokenAccount["account"] as? [String: Any],
-                       let data = accountData["data"] as? [String: Any],
-                       let parsed = data["parsed"] as? [String: Any],
-                       let info = parsed["info"] as? [String: Any],
-                       let mint = info["mint"] as? String,
-                       let tokenAmount = info["tokenAmount"] as? [String: Any],
-                       let decimalsValue = tokenAmount["decimals"] as? Int,
-                       let rawBalance = tokenAmount["amount"] as? String {
-                        
-                        contractAddresses.append(mint)
-                        
-                        // Add initial coinMeta with limited information
-                        let coinMeta = CoinMeta(
-                            chain: .solana,
-                            ticker: "",
-                            logo: "",
-                            decimals: decimalsValue,
-                            priceProviderId: "",
-                            contractAddress: mint,
-                            isNativeToken: info["isNative"] as? Bool ?? false
-                        )
-                        coinMetaList.append(coinMeta)
-                    }
-                }
-                
-                // Fetch metadata for all tokens
-                let solanaFmTokenInfo = try await fetchSolanaTokenInfoList(contractAddresses: contractAddresses)
-                
-                // Update coinMetaList with fetched metadata
-                for i in 0..<coinMetaList.count {
-                    let mint = coinMetaList[i].contractAddress
-                    if let tokenInfo = solanaFmTokenInfo[mint] {
-                        coinMetaList[i] = CoinMeta(
-                            chain: .solana,
-                            ticker: tokenInfo.tokenList.symbol,
-                            logo: tokenInfo.tokenList.image,
-                            decimals: tokenInfo.decimals,
-                            priceProviderId: tokenInfo.tokenList.extensions.coingeckoId ?? "",
-                            contractAddress: mint,
-                            isNativeToken: coinMetaList[i].isNativeToken
-                        )
-                    }
-                }
-                
-                return coinMetaList
+            let tokenAddresses = accounts.map { $0.account.data.parsed.info.mint }
+            let tokenInfos = try await fetchSolanaTokenInfoList(contractAddresses: tokenAddresses)
+            
+            let coinMetaList = tokenInfos.map { tokenInfo in
+                CoinMeta(
+                    chain: .solana,
+                    ticker: tokenInfo.value.tokenMetadata.onChainInfo.symbol,
+                    logo: tokenInfo.value.tokenList.image.description,
+                    decimals: tokenInfo.value.decimals,
+                    priceProviderId: tokenInfo.value.tokenList.extensions.coingeckoId ?? .empty,
+                    contractAddress: tokenInfo.key,
+                    isNativeToken: false
+                )
             }
+            
+            return coinMetaList
+            
         } catch {
             print("Error fetching tokens: \(error.localizedDescription)")
             throw error
         }
-        return []
     }
     
     func fetchHighPriorityFee(account: String) async throws -> UInt64 {
