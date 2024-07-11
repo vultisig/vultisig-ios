@@ -41,44 +41,65 @@ enum SolanaHelper {
             return try input.serializedData()
         } else {
             
-            guard let fromPubKey = fromAddressPubKey else {
-                throw HelperError.runtimeError("We must have the association between the minted token and the FROM address")
-            }
-            
-            guard let toPubKey = toAddressPubKey else {
-                throw HelperError.runtimeError("We must have the association between the minted token and the TO address")
-            }
-            
-            print("Sender Address: \(keysignPayload.coin.address)")
-            print("To Amount: \(keysignPayload.toAmount)")
-            print("Decimals: \(keysignPayload.coin.decimals)")
-            print("Token Mint Address: \(keysignPayload.coin.contractAddress)")
-            print("To Address: \(toAddress.description)")
-            print("Sender PUB KEY: \(fromPubKey)")
-            print("To PUB KEY: \(toPubKey)")
-            
-            let tokenTransferMessage = SolanaTokenTransfer.with {
-                $0.tokenMintAddress = keysignPayload.coin.contractAddress
-                $0.senderTokenAddress = fromPubKey
-                $0.recipientTokenAddress = toPubKey
-                $0.amount = UInt64(keysignPayload.toAmount)
-                $0.decimals = UInt32(keysignPayload.coin.decimals)
-            }
-            
-            let input = SolanaSigningInput.with {
-                $0.tokenTransferTransaction = tokenTransferMessage
-                $0.recentBlockhash = recentBlockHash
-                $0.sender = keysignPayload.coin.address
-                $0.priorityFeePrice = SolanaPriorityFeePrice.with {
-                    $0.price = UInt64(priorityFee)
+            // We should not create a new account association if it already has.
+            // So we can can use a simple tokenTransferTransaction
+            if let fromPubKey = fromAddressPubKey, let toPubKey = toAddressPubKey {
+                
+                let tokenTransferMessage = SolanaTokenTransfer.with {
+                    $0.tokenMintAddress = keysignPayload.coin.contractAddress
+                    $0.senderTokenAddress = fromPubKey
+                    $0.recipientTokenAddress = toPubKey
+                    $0.amount = UInt64(keysignPayload.toAmount)
+                    $0.decimals = UInt32(keysignPayload.coin.decimals)
                 }
+                
+                let input = SolanaSigningInput.with {
+                    $0.tokenTransferTransaction = tokenTransferMessage
+                    $0.recentBlockhash = recentBlockHash
+                    $0.sender = keysignPayload.coin.address
+                    $0.priorityFeePrice = SolanaPriorityFeePrice.with {
+                        $0.price = UInt64(priorityFee)
+                    }
+                }
+                
+                return try input.serializedData()
+                
+            } else if let fromPubKey = fromAddressPubKey {
+                
+                // We will need to create a new account association between the mint token and the receiver
+                
+                let receiverAddress = SolanaAddress(string: toAddress.description)!
+                let generatedAssociatedAddress = receiverAddress.defaultTokenAddress(tokenMintAddress: keysignPayload.coin.contractAddress)
+                
+                guard let createdRecipientAddress = generatedAssociatedAddress else {
+                    throw HelperError.runtimeError("We must have the association between the minted token and the TO address")
+                }
+                
+                let createAndTransferTokenMessage = SolanaCreateAndTransferToken.with {
+                    $0.recipientMainAddress = toAddress.description
+                    $0.tokenMintAddress = keysignPayload.coin.contractAddress
+                    $0.recipientTokenAddress = createdRecipientAddress
+                    $0.senderTokenAddress = fromPubKey
+                    $0.amount = UInt64(keysignPayload.toAmount)
+                    $0.decimals = UInt32(keysignPayload.coin.decimals)
+                }
+                
+                let input = SolanaSigningInput.with {
+                    $0.createAndTransferTokenTransaction = createAndTransferTokenMessage
+                    $0.recentBlockhash = recentBlockHash
+                    $0.sender = keysignPayload.coin.address
+                    $0.priorityFeePrice = SolanaPriorityFeePrice.with {
+                        $0.price = UInt64(priorityFee)
+                    }
+                }
+                
+                return try input.serializedData()
             }
             
-            return try input.serializedData()
+            throw HelperError.runtimeError("To send tokens we must have the association between the minted token and the TO address")
             
         }
     }
-    
     
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
