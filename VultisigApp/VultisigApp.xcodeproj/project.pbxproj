@@ -167,6 +167,7 @@
 		A66BFCD32C135699004DCD4F /* ShareSheetViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66BFCD22C135699004DCD4F /* ShareSheetViewModel.swift */; };
 		A66BFCD52C136FB3004DCD4F /* VaultDetailBalanceContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66BFCD42C136FB3004DCD4F /* VaultDetailBalanceContent.swift */; };
 		A6725D3A2C3F9B4400D47716 /* AddAddressBookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6725D392C3F9B4400D47716 /* AddAddressBookView.swift */; };
+		A6725D3C2C3F9D6400D47716 /* AddressBookTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6725D3B2C3F9D6400D47716 /* AddressBookTextField.swift */; };
 		A67F4C5F2BE313220086ED09 /* ActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67F4C5E2BE313220086ED09 /* ActionButton.swift */; };
 		A680BAC52BF47AA9006E611D /* OpenGalleryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A680BAC42BF47AA9006E611D /* OpenGalleryButton.swift */; };
 		A683EDEB2BCF635E00BB706E /* InstructionPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = A683EDEA2BCF635E00BB706E /* InstructionPrompt.swift */; };
@@ -558,6 +559,7 @@
 		A66BFCD22C135699004DCD4F /* ShareSheetViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSheetViewModel.swift; sourceTree = "<group>"; };
 		A66BFCD42C136FB3004DCD4F /* VaultDetailBalanceContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailBalanceContent.swift; sourceTree = "<group>"; };
 		A6725D392C3F9B4400D47716 /* AddAddressBookView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddAddressBookView.swift; sourceTree = "<group>"; };
+		A6725D3B2C3F9D6400D47716 /* AddressBookTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookTextField.swift; sourceTree = "<group>"; };
 		A67F4C5E2BE313220086ED09 /* ActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionButton.swift; sourceTree = "<group>"; };
 		A680BAC42BF47AA9006E611D /* OpenGalleryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenGalleryButton.swift; sourceTree = "<group>"; };
 		A683EDEA2BCF635E00BB706E /* InstructionPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstructionPrompt.swift; sourceTree = "<group>"; };
@@ -833,6 +835,7 @@
 				B590DF872C2E815A00ED934E /* GenericSelectorDropDown.swift */,
 				A6AF960F2C2E2DC900992578 /* FileQRCodeImporterMac.swift */,
 				A63875602C386647000CF242 /* BackupNowDisclaimer.swift */,
+				A6725D3B2C3F9D6400D47716 /* AddressBookTextField.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -2112,6 +2115,7 @@
 				B5CA1A062C16C39700789B11 /* AsyncImageView.swift in Sources */,
 				A680BAC52BF47AA9006E611D /* OpenGalleryButton.swift in Sources */,
 				A65649E52B96602700E4B329 /* VaultExtension.swift in Sources */,
+				A6725D3C2C3F9D6400D47716 /* AddressBookTextField.swift in Sources */,
 				DE9EB0F82BA43388001747D9 /* KeysignViewModel.swift in Sources */,
 				DE9EB0F42BA309AB001747D9 /* MessagePuller.swift in Sources */,
 				A608E3772C01BD7A00E40B85 /* SwapDetailsSummary.swift in Sources */,

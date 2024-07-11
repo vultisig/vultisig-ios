@@ -8,6 +8,9 @@
 import SwiftUI
 
 struct AddAddressBookView: View {
+    @State var title = ""
+    @State var address = ""
+    
     var body: some View {
         ZStack {
             Background()
@@ -23,15 +26,18 @@ struct AddAddressBookView: View {
     }
     
     var view: some View {
-        VStack {
-            
+        VStack(spacing: 22) {
+            titleField
+            addressField
         }
     }
     
+    var titleField: some View {
+        AddressBookTextField(title: "title", text: $title)
+    }
+    
     var addressField: some View {
-        HStack {
-            
-        }
+        AddressBookTextField(title: "address", text: $address)
     }
 }
 
