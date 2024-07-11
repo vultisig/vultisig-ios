@@ -202,7 +202,7 @@ struct VaultDetailView: View {
             .opacity(showVaultsList ? 0 : 1)
             .buttonStyle(BorderlessButtonStyle())
 #if os(macOS)
-        .padding(.bottom, 30)
+            .padding(.bottom, 30)
 #endif
     }
     
