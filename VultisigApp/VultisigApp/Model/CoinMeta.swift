@@ -45,5 +45,7 @@ struct CoinMeta : Hashable,Codable{
     func coinId(address: String) -> String {
         return "\(chain.rawValue)-\(ticker)-\(address)"
     }
+    
+    static var example = CoinMeta(chain: .bitcoin, ticker: "BTC", logo: "btc", decimals: 1, priceProviderId: "provider", contractAddress: "123456789", isNativeToken: true)
 }
 

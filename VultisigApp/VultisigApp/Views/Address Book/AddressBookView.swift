@@ -11,9 +11,10 @@ struct AddressBookView: View {
     @State var isEditing = false
     
     var body: some View {
-        ZStack {
+        ZStack(alignment: .bottom) {
             Background()
             view
+            addAddressButton
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("addressBook", comment: ""))
@@ -44,19 +45,34 @@ struct AddressBookView: View {
     var navigationEditButton: some View {
         ZStack {
             if isEditing {
-                addButton
+                doneButton
             } else {
                 NavigationEditButton()
             }
         }
     }
     
-    var addButton: some View {
+    var doneButton: some View {
+        Text(NSLocalizedString("done", comment: ""))
+#if os(iOS)
+            .font(.body18MenloBold)
+            .foregroundColor(.neutral0)
+#elseif os(macOS)
+            .font(.body18Menlo)
+#endif
+    }
+    
+    var addAddressButton: some View {
         NavigationLink {
             AddAddressBookView()
         } label: {
-            NavigationAddButton()
+            FilledButton(title: "addAddress")
+                .padding(.horizontal, 16)
+                .padding(.vertical, 40)
         }
+        .frame(height: isEditing ? nil : 0)
+        .animation(.easeInOut, value: isEditing)
+        .clipped()
     }
 }
 
