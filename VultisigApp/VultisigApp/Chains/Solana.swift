@@ -43,7 +43,7 @@ enum SolanaHelper {
             
             // We should not create a new account association if it already has.
             // So we can can use a simple tokenTransferTransaction
-            if let fromPubKey = fromAddressPubKey, let toPubKey = toAddressPubKey {
+            if let fromPubKey = fromAddressPubKey, !fromPubKey.isEmpty, let toPubKey = toAddressPubKey, !toPubKey.isEmpty {
                 
                 let tokenTransferMessage = SolanaTokenTransfer.with {
                     $0.tokenMintAddress = keysignPayload.coin.contractAddress
