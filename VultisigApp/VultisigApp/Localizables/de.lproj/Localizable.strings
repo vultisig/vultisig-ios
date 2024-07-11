@@ -237,3 +237,6 @@
 "OnboardingView4Description" = "Vultisig ist eine Wallet ohne Seed-Phrasen.\nEs verwendet stattdessen einfach zu verwaltende Tresoranteile.";
 "NoQRCodesDetected" = "Kein QR-Code erkannt";
 "FailedToLoadImage" = "Bild von URL konnte nicht geladen werden";
+"memo(optional)" = "MEMO (Optional)";
+"enterMemo" = "Memo eingeben";
+"enterVaultName" = "Tresornamen eingeben";

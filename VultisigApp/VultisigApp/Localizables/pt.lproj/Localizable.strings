@@ -238,3 +238,6 @@
 "OnboardingView4Description" = "Vultisig é uma carteira sem frases-semente.\nEle usa ações de cofre fáceis de gerenciar.";
 "NoQRCodesDetected" = "Nenhum código QR detectado";
 "FailedToLoadImage" = "Falha ao carregar imagem da URL";
+"memo(optional)" = "MEMO (Opcional)";
+"enterMemo" = "Insira o memo";
+"enterVaultName" = "Digite o nome do cofre";
