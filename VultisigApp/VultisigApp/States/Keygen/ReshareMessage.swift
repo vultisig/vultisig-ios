@@ -5,7 +5,7 @@
 //  Created by Johnny Luo on 14/3/2024.
 //
 
-struct ReshareMessage: Codable {
+struct ReshareMessage {
     let sessionID: String
     let hexChainCode: String
     let serviceName: String
