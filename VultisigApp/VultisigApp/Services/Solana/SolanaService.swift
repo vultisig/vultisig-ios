@@ -85,6 +85,38 @@ class SolanaService {
         return tokenInfo
     }
     
+    // This method gets the association account between the sender and the token
+    // https://www.quicknode.com/guides/solana-development/spl-tokens/how-to-look-up-the-address-of-a-token-account
+    func fetchTokenAssociatedAccountByOwner(for walletAddress: String, mintAddress: String) async throws -> String {
+        
+        let requestBody: [String: Any] = [
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "getTokenAccountsByOwner",
+            "params": [
+                walletAddress,
+                ["mint": mintAddress], // SPL Token Program ID
+                ["encoding": "jsonParsed"]
+            ]
+        ]
+        
+        do {
+            let data = try await postRequest(with: requestBody)
+            let parsedData = try parseSolanaTokenResponse(jsonData: data)
+            let accounts: [SolanaTokenAccount] = parsedData.result.value
+            
+            guard let associatedAccount = accounts.first else {
+                return .empty
+            }
+            
+            // This is the address we are sending from and to
+            return associatedAccount.pubkey
+        } catch {
+            print("Error fetching tokens: \(error.localizedDescription)")
+            throw error
+        }
+    }
+    
     //TODO: cache the balance
     func fetchTokenAccountsByOwner(for walletAddress: String) async throws -> [SolanaTokenAccount] {
         

@@ -72,6 +72,8 @@ final class BlockChainService {
             async let recentBlockHashPromise = sol.fetchRecentBlockhash()
             async let highPriorityFeePromise = sol.fetchHighPriorityFee(account: coin.address)
             
+            // TODO: ADD the token association here for solana
+            
             let recentBlockHash = try await recentBlockHashPromise
             let highPriorityFee = try await highPriorityFeePromise
             

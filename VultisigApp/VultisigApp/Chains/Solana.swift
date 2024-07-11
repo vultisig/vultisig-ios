@@ -24,7 +24,6 @@ enum SolanaHelper {
         }
         
         if keysignPayload.coin.isNativeToken {
-            
             let input = SolanaSigningInput.with {
                 $0.transferTransaction = SolanaTransfer.with {
                     $0.recipient = toAddress.description
@@ -35,38 +34,55 @@ enum SolanaHelper {
                 }
                 $0.recentBlockhash = recentBlockHash
                 $0.sender = keysignPayload.coin.address
-                $0.priorityFeePrice = SolanaPriorityFeePrice.with{
+                $0.priorityFeePrice = SolanaPriorityFeePrice.with {
                     $0.price = UInt64(priorityFee)
                 }
             }
-            
             return try input.serializedData()
         } else {
             
+            print("Sender Address: \(keysignPayload.coin.address)")
+            print("To Amount: \(keysignPayload.toAmount)")
+            print("Decimals: \(keysignPayload.coin.decimals)")
+            print("Token Mint Address: \(keysignPayload.coin.contractAddress)")
+            print("To Address: \(toAddress.description)")
+            
+            //Sender PUB KEY: FcYeo7FdKWQ4BS96g4ob4uzk2bdL882ZR4SLUfRW6dze
+            // To PUB KEY: 5VtQfAZtPmtP3koCmmdsYPmgo6k2z3NabF7vwUor37k9
+            
+            let fromPubKey = "FcYeo7FdKWQ4BS96g4ob4uzk2bdL882ZR4SLUfRW6dze"
+            let toPubKey = "5VtQfAZtPmtP3koCmmdsYPmgo6k2z3NabF7vwUor37k9"
+            
             let tokenTransferMessage = SolanaTokenTransfer.with {
                 $0.tokenMintAddress = keysignPayload.coin.contractAddress
-                $0.senderTokenAddress = keysignPayload.coin.address
-                $0.recipientTokenAddress = toAddress.description
-                $0.amount = UInt64(keysignPayload.toAmount) // 4000  // 0.004
+                $0.senderTokenAddress = fromPubKey
+                $0.recipientTokenAddress = toPubKey
+                $0.amount = UInt64(keysignPayload.toAmount)
                 $0.decimals = UInt32(keysignPayload.coin.decimals)
             }
             
             let input = SolanaSigningInput.with {
                 $0.tokenTransferTransaction = tokenTransferMessage
                 $0.recentBlockhash = recentBlockHash
-                $0.priorityFeePrice = SolanaPriorityFeePrice.with{
+                $0.sender = keysignPayload.coin.address
+                $0.priorityFeePrice = SolanaPriorityFeePrice.with {
                     $0.price = UInt64(priorityFee)
                 }
             }
             
             return try input.serializedData()
+            
         }
     }
+    
     
     static func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .solana, txInputData: inputData)
         let preSigningOutput = try SolanaPreSigningOutput(serializedData: hashes)
+        
+        print(preSigningOutput.errorMessage)
+        
         return [preSigningOutput.data.hexString]
     }
     
