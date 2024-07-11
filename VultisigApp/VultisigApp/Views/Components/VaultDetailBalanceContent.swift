@@ -40,6 +40,8 @@ struct VaultDetailBalanceContent: View {
             .padding(.top, 10)
             .multilineTextAlignment(.center)
             .frame(width: width)
+            .lineLimit(1)
+            .minimumScaleFactor(0.5)
     }
     
     var hideButton: some View {
@@ -82,7 +84,6 @@ struct VaultDetailBalanceContent: View {
 }
 
 #Preview {
-    VaultDetailBalanceContent(
-        vault: Vault.example
-    )
+    VaultDetailBalanceContent(vault: Vault.example)
+        .environmentObject(HomeViewModel())
 }

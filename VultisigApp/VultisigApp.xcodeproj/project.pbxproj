@@ -55,6 +55,8 @@
 		A5125F082BEBBFAB008A79AA /* OneInchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5125F062BEBBFAB008A79AA /* OneInchService.swift */; };
 		A5199AF02BBD8C0400AA0A39 /* ThorchainSwapQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5199AEF2BBD8C0400AA0A39 /* ThorchainSwapQuote.swift */; };
 		A52313DE2BDF665E00D4D0D5 /* KeysignSwapConfirmView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52313DD2BDF665E00D4D0D5 /* KeysignSwapConfirmView.swift */; };
+		A527DD2C2C3E1CE000204464 /* KeygenMessage+ProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A527DD2B2C3E1CE000204464 /* KeygenMessage+ProtoMappable.swift */; };
+		A527DD2E2C3E1D8500204464 /* ReshareMessage+ProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A527DD2D2C3E1D8500204464 /* ReshareMessage+ProtoMappable.swift */; };
 		A543B3A22BEA93D4003FB989 /* SwapQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = A543B3A12BEA93D4003FB989 /* SwapQuote.swift */; };
 		A54676522C179A93004DD782 /* Coin+Swaps.swift in Sources */ = {isa = PBXBuildFile; fileRef = A54676512C179A93004DD782 /* Coin+Swaps.swift */; };
 		A54BBCFF2BC6E11600645C06 /* TransferViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A54BBCFE2BC6E11600645C06 /* TransferViewModel.swift */; };
@@ -341,7 +343,6 @@
 		DE9EB0EC2BA2CC3C001747D9 /* TssType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0EB2BA2CC3C001747D9 /* TssType.swift */; };
 		DE9EB0EE2BA2CF49001747D9 /* KeygenMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0ED2BA2CF49001747D9 /* KeygenMessage.swift */; };
 		DE9EB0F02BA2CFB7001747D9 /* ReshareMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0EF2BA2CFB7001747D9 /* ReshareMessage.swift */; };
-		DE9EB0F22BA2D97B001747D9 /* PeerDiscoveryPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0F12BA2D97B001747D9 /* PeerDiscoveryPayload.swift */; };
 		DE9EB0F42BA309AB001747D9 /* MessagePuller.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0F32BA309AB001747D9 /* MessagePuller.swift */; };
 		DE9EB0F62BA3F9C2001747D9 /* ParticipantDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0F52BA3F9C2001747D9 /* ParticipantDiscovery.swift */; };
 		DE9EB0F82BA43388001747D9 /* KeysignViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0F72BA43388001747D9 /* KeysignViewModel.swift */; };
@@ -444,6 +445,8 @@
 		A5125F062BEBBFAB008A79AA /* OneInchService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OneInchService.swift; sourceTree = "<group>"; };
 		A5199AEF2BBD8C0400AA0A39 /* ThorchainSwapQuote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainSwapQuote.swift; sourceTree = "<group>"; };
 		A52313DD2BDF665E00D4D0D5 /* KeysignSwapConfirmView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignSwapConfirmView.swift; sourceTree = "<group>"; };
+		A527DD2B2C3E1CE000204464 /* KeygenMessage+ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "KeygenMessage+ProtoMappable.swift"; sourceTree = "<group>"; };
+		A527DD2D2C3E1D8500204464 /* ReshareMessage+ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReshareMessage+ProtoMappable.swift"; sourceTree = "<group>"; };
 		A543B3A12BEA93D4003FB989 /* SwapQuote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapQuote.swift; sourceTree = "<group>"; };
 		A54676512C179A93004DD782 /* Coin+Swaps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Coin+Swaps.swift"; sourceTree = "<group>"; };
 		A54BBCFE2BC6E11600645C06 /* TransferViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferViewModel.swift; sourceTree = "<group>"; };
@@ -729,7 +732,6 @@
 		DE9EB0EB2BA2CC3C001747D9 /* TssType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TssType.swift; sourceTree = "<group>"; };
 		DE9EB0ED2BA2CF49001747D9 /* KeygenMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenMessage.swift; sourceTree = "<group>"; };
 		DE9EB0EF2BA2CFB7001747D9 /* ReshareMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReshareMessage.swift; sourceTree = "<group>"; };
-		DE9EB0F12BA2D97B001747D9 /* PeerDiscoveryPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerDiscoveryPayload.swift; sourceTree = "<group>"; };
 		DE9EB0F32BA309AB001747D9 /* MessagePuller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagePuller.swift; sourceTree = "<group>"; };
 		DE9EB0F52BA3F9C2001747D9 /* ParticipantDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticipantDiscovery.swift; sourceTree = "<group>"; };
 		DE9EB0F72BA43388001747D9 /* KeysignViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignViewModel.swift; sourceTree = "<group>"; };
@@ -1315,8 +1317,9 @@
 			children = (
 				DE9EB0EB2BA2CC3C001747D9 /* TssType.swift */,
 				DE9EB0ED2BA2CF49001747D9 /* KeygenMessage.swift */,
+				A527DD2B2C3E1CE000204464 /* KeygenMessage+ProtoMappable.swift */,
 				DE9EB0EF2BA2CFB7001747D9 /* ReshareMessage.swift */,
-				DE9EB0F12BA2D97B001747D9 /* PeerDiscoveryPayload.swift */,
+				A527DD2D2C3E1D8500204464 /* ReshareMessage+ProtoMappable.swift */,
 			);
 			path = Keygen;
 			sourceTree = "<group>";
@@ -1932,6 +1935,7 @@
 				DE9EB0F02BA2CFB7001747D9 /* ReshareMessage.swift in Sources */,
 				A69069B52BCF538000F28A8B /* NetworkPrompts.swift in Sources */,
 				A633B12F2B9952D8003D1738 /* OutlineButton.swift in Sources */,
+				A527DD2C2C3E1CE000204464 /* KeygenMessage+ProtoMappable.swift in Sources */,
 				A65BA9862BAA0F0D00B2D8AA /* SendCryptoVerifyViewModel.swift in Sources */,
 				A63953B22BA7CB8E000802EC /* SendCryptoKeysignView.swift in Sources */,
 				A65BA9982BAD479C00B2D8AA /* JoinKeysignDoneView.swift in Sources */,
@@ -1947,6 +1951,7 @@
 				A65BA9882BAAA0B700B2D8AA /* SendCryptoSigningErrorView.swift in Sources */,
 				DE64A4C62BA7E0E400C342E3 /* KeygenPeerDiscoveryViewModel.swift in Sources */,
 				462DCD742BCA1F45003D542F /* CoinPaprikaCoin.swift in Sources */,
+				A527DD2E2C3E1D8500204464 /* ReshareMessage+ProtoMappable.swift in Sources */,
 				465B09B52B7D8E7B00952DD9 /* CryptoPriceService.swift in Sources */,
 				B54E31812BF5A22700D4FC0A /* StyledFloatingPointField.swift in Sources */,
 				A6980C342BC0A30900F452AB /* SettingFAQCell.swift in Sources */,
@@ -2094,7 +2099,6 @@
 				DE9EB0FA2BA4491B001747D9 /* CoinExtension.swift in Sources */,
 				465A8D562B9E6E0B006E7457 /* SolanaRpc.swift in Sources */,
 				A65BA9922BAD439900B2D8AA /* KeysignDiscoverServiceView.swift in Sources */,
-				DE9EB0F22BA2D97B001747D9 /* PeerDiscoveryPayload.swift in Sources */,
 				A6980C2E2BC089F900F452AB /* SettingSelectionCell.swift in Sources */,
 				A65324302BA540ED00DDE6EB /* SendCryptoVerifyView.swift in Sources */,
 				B5E476AB2C1A13D7005DB485 /* dydx.swift in Sources */,
