@@ -44,10 +44,18 @@ struct AddressBookView: View {
     var navigationEditButton: some View {
         ZStack {
             if isEditing {
-                NavigationAddButton()
+                addButton
             } else {
                 NavigationEditButton()
             }
+        }
+    }
+    
+    var addButton: some View {
+        NavigationLink {
+            AddAddressBookView()
+        } label: {
+            NavigationAddButton()
         }
     }
 }
