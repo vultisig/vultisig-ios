@@ -16,7 +16,7 @@ enum SolanaHelper {
         guard keysignPayload.coin.chain.ticker == "SOL" else {
             throw HelperError.runtimeError("coin is not SOL")
         }
-        guard case .Solana(let recentBlockHash, let priorityFee) = keysignPayload.chainSpecific else {
+        guard case .Solana(let recentBlockHash, let priorityFee, let fromAddressPubKey, let toAddressPubKey) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get to address")
         }
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .solana) else {
@@ -41,17 +41,21 @@ enum SolanaHelper {
             return try input.serializedData()
         } else {
             
+            guard let fromPubKey = fromAddressPubKey else {
+                throw HelperError.runtimeError("We must have the association between the minted token and the FROM address")
+            }
+            
+            guard let toPubKey = toAddressPubKey else {
+                throw HelperError.runtimeError("We must have the association between the minted token and the TO address")
+            }
+            
             print("Sender Address: \(keysignPayload.coin.address)")
             print("To Amount: \(keysignPayload.toAmount)")
             print("Decimals: \(keysignPayload.coin.decimals)")
             print("Token Mint Address: \(keysignPayload.coin.contractAddress)")
             print("To Address: \(toAddress.description)")
-            
-            //Sender PUB KEY: FcYeo7FdKWQ4BS96g4ob4uzk2bdL882ZR4SLUfRW6dze
-            // To PUB KEY: 5VtQfAZtPmtP3koCmmdsYPmgo6k2z3NabF7vwUor37k9
-            
-            let fromPubKey = "FcYeo7FdKWQ4BS96g4ob4uzk2bdL882ZR4SLUfRW6dze"
-            let toPubKey = "5VtQfAZtPmtP3koCmmdsYPmgo6k2z3NabF7vwUor37k9"
+            print("Sender PUB KEY: \(fromPubKey)")
+            print("To PUB KEY: \(toPubKey)")
             
             let tokenTransferMessage = SolanaTokenTransfer.with {
                 $0.tokenMintAddress = keysignPayload.coin.contractAddress
