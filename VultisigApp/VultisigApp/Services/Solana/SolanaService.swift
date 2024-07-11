@@ -9,6 +9,12 @@ class SolanaService {
     private let rpcURL = URL(string: Endpoint.solanaServiceRpc)!
     private let jsonDecoder = JSONDecoder()
     
+    private var cacheTokenAccountsByOwner: ThreadSafeDictionary<String, (data: [SolanaTokenAccount], timestamp: Date)> = ThreadSafeDictionary()
+    
+    private var cacheTokenAccountsByOwnerMint: ThreadSafeDictionary<String, (data: String, timestamp: Date)> = ThreadSafeDictionary()
+    
+    private let CACHE_TIMEOUT_IN_SECONDS: Double = 120 // 2 minutes
+    
     func sendSolanaTransaction(encodedTransaction: String) async -> String? {
         do {
             let requestBody: [String: Any] = [
@@ -89,6 +95,11 @@ class SolanaService {
     // https://www.quicknode.com/guides/solana-development/spl-tokens/how-to-look-up-the-address-of-a-token-account
     func fetchTokenAssociatedAccountByOwner(for walletAddress: String, mintAddress: String) async throws -> String {
         
+        var cache_key = "getTokenAccountsByOwner_mint_\(mintAddress)_\(walletAddress)"
+        if let cachedValue = await Utils.getCachedData(cacheKey: cache_key, cache: cacheTokenAccountsByOwnerMint, timeInSeconds: CACHE_TIMEOUT_IN_SECONDS) {
+            return cachedValue
+        }
+        
         let requestBody: [String: Any] = [
             "jsonrpc": "2.0",
             "id": 1,
@@ -110,15 +121,24 @@ class SolanaService {
             }
             
             // This is the address we are sending from and to
-            return associatedAccount.pubkey
+            let pubkey = associatedAccount.pubkey
+            
+            cacheTokenAccountsByOwnerMint.set(cache_key, (data: pubkey, timestamp: Date()))
+            
+            return pubkey
         } catch {
             print("Error fetching tokens: \(error.localizedDescription)")
             throw error
         }
     }
     
-    //TODO: cache the balance
     func fetchTokenAccountsByOwner(for walletAddress: String) async throws -> [SolanaTokenAccount] {
+        
+        var cache_key = "getTokenAccountsByOwner_\(walletAddress)_TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        if let cachedValue = await Utils.getCachedData(cacheKey: cache_key, cache: cacheTokenAccountsByOwner, timeInSeconds: CACHE_TIMEOUT_IN_SECONDS) {
+            return cachedValue
+        }
+        
         
         let requestBody: [String: Any] = [
             "jsonrpc": "2.0",
@@ -135,6 +155,8 @@ class SolanaService {
             let data = try await postRequest(with: requestBody)
             let parsedData = try parseSolanaTokenResponse(jsonData: data)
             let accounts: [SolanaTokenAccount] = parsedData.result.value
+            
+            cacheTokenAccountsByOwner.set(cache_key, (data: accounts, timestamp: Date()))
             
             return accounts
         } catch {
