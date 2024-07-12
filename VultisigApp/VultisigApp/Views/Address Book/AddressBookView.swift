@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct AddressBookView: View {
-    @State var isEditing = false
+    @EnvironmentObject var viewModel: AddressBookViewModel
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -36,7 +36,7 @@ struct AddressBookView: View {
     
     var navigationButton: some View {
         Button {
-            isEditing.toggle()
+            viewModel.isEditing.toggle()
         } label: {
             navigationEditButton
         }
@@ -44,7 +44,7 @@ struct AddressBookView: View {
     
     var navigationEditButton: some View {
         ZStack {
-            if isEditing {
+            if viewModel.isEditing {
                 doneButton
             } else {
                 NavigationEditButton()
@@ -70,12 +70,13 @@ struct AddressBookView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 40)
         }
-        .frame(height: isEditing ? nil : 0)
-        .animation(.easeInOut, value: isEditing)
+        .frame(height: viewModel.isEditing ? nil : 0)
+        .animation(.easeInOut, value: viewModel.isEditing)
         .clipped()
     }
 }
 
 #Preview {
     AddressBookView()
+        .environmentObject(AddressBookViewModel())
 }

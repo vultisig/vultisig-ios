@@ -7,7 +7,7 @@
 
 import Foundation
 
-class AddressBookItem {
+class AddressBookItem: Equatable {
     let id = UUID()
     var title: String
     var address: String
@@ -19,5 +19,12 @@ class AddressBookItem {
         self.address = address
         self.coinMeta = coinMeta
         self.order = order
+    }
+    
+    static func == (lhs: AddressBookItem, rhs: AddressBookItem) -> Bool {
+        lhs.id == rhs.id &&
+        lhs.title == rhs.title &&
+        lhs.address == rhs.address &&
+        lhs.coinMeta == rhs.coinMeta
     }
 }

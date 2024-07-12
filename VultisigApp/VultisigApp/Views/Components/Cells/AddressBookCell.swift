@@ -11,7 +11,8 @@ struct AddressBookCell: View {
     let title: String
     let address: String
     let coin: CoinMeta
-    @Binding var isEditing: Bool
+    
+    @EnvironmentObject var viewModel: AddressBookViewModel
     
     var body: some View {
         HStack(spacing: 8) {
@@ -64,16 +65,16 @@ struct AddressBookCell: View {
             .font(.body24MontserratMedium)
             .rotationEffect(.degrees(90))
             .foregroundColor(.neutral300)
-            .scaleEffect(isEditing ? 1 : 0)
-            .frame(width: isEditing ? nil : 0)
+            .scaleEffect(viewModel.isEditing ? 1 : 0)
+            .frame(width: viewModel.isEditing ? nil : 0)
     }
     
     var deleteIcon: some View {
         Image(systemName: "trash")
             .font(.body24MontserratMedium)
             .foregroundColor(.neutral0)
-            .scaleEffect(isEditing ? 1 : 0)
-            .frame(width: isEditing ? nil : 0)
+            .scaleEffect(viewModel.isEditing ? 1 : 0)
+            .frame(width: viewModel.isEditing ? nil : 0)
     }
 }
 
@@ -84,16 +85,15 @@ struct AddressBookCell: View {
             AddressBookCell(
                 title: "Online Wallet",
                 address: "0x0cb1D4a24292bB89862f599Ac5B10F42b6DE07e4",
-                coin: CoinMeta.example,
-                isEditing: .constant(false)
+                coin: CoinMeta.example
             )
             
             AddressBookCell(
                 title: "Online Wallet",
                 address: "0x0cb1D4a24292bB89862f599Ac5B10F42b6DE07e4",
-                coin: CoinMeta.example,
-                isEditing: .constant(true)
+                coin: CoinMeta.example
             )
         }
     }
+    .environmentObject(AddressBookViewModel())
 }
