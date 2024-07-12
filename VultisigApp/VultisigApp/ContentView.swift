@@ -45,6 +45,7 @@ struct ContentView: View {
             }
         }
         .id(accountViewModel.referenceID)
+        .colorScheme(.dark)
     }
     
     var splashView: some View {
