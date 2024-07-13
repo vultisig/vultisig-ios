@@ -54,6 +54,7 @@
 		A5125F072BEBBFAB008A79AA /* OneInchQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5125F052BEBBFAB008A79AA /* OneInchQuote.swift */; };
 		A5125F082BEBBFAB008A79AA /* OneInchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5125F062BEBBFAB008A79AA /* OneInchService.swift */; };
 		A5199AF02BBD8C0400AA0A39 /* ThorchainSwapQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5199AEF2BBD8C0400AA0A39 /* ThorchainSwapQuote.swift */; };
+		A52287482C42BB0000E1CC5A /* LiFiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52287472C42BB0000E1CC5A /* LiFiService.swift */; };
 		A52313DE2BDF665E00D4D0D5 /* KeysignSwapConfirmView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52313DD2BDF665E00D4D0D5 /* KeysignSwapConfirmView.swift */; };
 		A527DD2C2C3E1CE000204464 /* KeygenMessage+ProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A527DD2B2C3E1CE000204464 /* KeygenMessage+ProtoMappable.swift */; };
 		A527DD2E2C3E1D8500204464 /* ReshareMessage+ProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A527DD2D2C3E1D8500204464 /* ReshareMessage+ProtoMappable.swift */; };
@@ -461,6 +462,7 @@
 		A5125F052BEBBFAB008A79AA /* OneInchQuote.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OneInchQuote.swift; sourceTree = "<group>"; };
 		A5125F062BEBBFAB008A79AA /* OneInchService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OneInchService.swift; sourceTree = "<group>"; };
 		A5199AEF2BBD8C0400AA0A39 /* ThorchainSwapQuote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainSwapQuote.swift; sourceTree = "<group>"; };
+		A52287472C42BB0000E1CC5A /* LiFiService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiFiService.swift; sourceTree = "<group>"; };
 		A52313DD2BDF665E00D4D0D5 /* KeysignSwapConfirmView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignSwapConfirmView.swift; sourceTree = "<group>"; };
 		A527DD2B2C3E1CE000204464 /* KeygenMessage+ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "KeygenMessage+ProtoMappable.swift"; sourceTree = "<group>"; };
 		A527DD2D2C3E1D8500204464 /* ReshareMessage+ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReshareMessage+ProtoMappable.swift"; sourceTree = "<group>"; };
@@ -886,6 +888,7 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				A52287462C42BAEB00E1CC5A /* LiFi */,
 				A563867E2C3A2121008B848E /* Protobuf */,
 				A58CC3442C32EDDB0086D16B /* Keysign */,
 				A50E79382BFE30170031DB47 /* Storage */,
@@ -1093,6 +1096,14 @@
 				A50E79392BFE30210031DB47 /* Storage.swift */,
 			);
 			path = Storage;
+			sourceTree = "<group>";
+		};
+		A52287462C42BAEB00E1CC5A /* LiFi */ = {
+			isa = PBXGroup;
+			children = (
+				A52287472C42BB0000E1CC5A /* LiFiService.swift */,
+			);
+			path = LiFi;
 			sourceTree = "<group>";
 		};
 		A543B3992BEA6E3E003FB989 /* 1inch */ = {
@@ -2153,6 +2164,7 @@
 				B5947FD52C41EA53002D6A36 /* CachedData.swift in Sources */,
 				A61BC8192BA2687E00484689 /* TokensStore.swift in Sources */,
 				DE15729E2B70F284009BC7C5 /* JoinKeysignView.swift in Sources */,
+				A52287482C42BB0000E1CC5A /* LiFiService.swift in Sources */,
 				A558D74E2C29808D007222EB /* SwapProvider.swift in Sources */,
 				DEEADCF72B916676007978DE /* Solana.swift in Sources */,
 				B57DD59A2C3DA5EA00934CBB /* SolanaFmTokenInfo.swift in Sources */,

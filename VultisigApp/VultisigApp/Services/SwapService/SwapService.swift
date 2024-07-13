@@ -14,6 +14,7 @@ struct SwapService {
     private let thorchainService: ThorchainSwapProvider = ThorchainService.shared
     private let mayachainService: ThorchainSwapProvider = MayachainService.shared
     private let oneInchService: OneInchService = OneInchService.shared
+    private let lifiService: LiFiService = LiFiService.shared
 
     func fetchQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
 
@@ -45,6 +46,11 @@ struct SwapService {
             }
             return try await fetchOneInchQuote(
                 chain: fromChainID,
+                amount: amount, fromCoin: fromCoin,
+                toCoin: toCoin, isAffiliate: isAffiliate
+            )
+        case .lifi:
+            return try await fetchLiFiQuote(
                 amount: amount, fromCoin: fromCoin,
                 toCoin: toCoin, isAffiliate: isAffiliate
             )
@@ -129,5 +135,15 @@ private extension SwapService {
             isAffiliate: isAffiliate
         )
         return .oneinch(quote)
+    }
+
+    func fetchLiFiQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
+        let fromAmount = fromCoin.raw(for: amount)
+        let quote = try await lifiService.fetchQuotes(
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            fromAmount: fromAmount
+        )
+        return .lifi(quote)
     }
 }

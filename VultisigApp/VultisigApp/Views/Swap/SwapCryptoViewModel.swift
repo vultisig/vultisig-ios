@@ -68,7 +68,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             return Endpoint.getSwapProgressURL(txid: hash)
         case .mayachain:
             return Endpoint.getMayaSwapTracker(txid: hash)
-        case .oneinch, .none:
+        case .oneinch, .lifi, .none:
             return nil
         }
     }
@@ -267,7 +267,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 
                 return true
 
-            case .oneinch(let quote):
+            case .oneinch(let quote), .lifi(let quote):
                 let keysignFactory = KeysignPayloadFactory()
                 let payload = OneInchSwapPayload(
                     fromCoin: tx.fromCoin,
@@ -380,7 +380,7 @@ private extension SwapCryptoViewModel {
             )
             
             switch quote {
-            case .oneinch(let quote):
+            case .oneinch(let quote), .lifi(let quote):
                 tx.oneInchFee = oneInchFee(quote: quote)
             case .thorchain, .mayachain: 
                 break
