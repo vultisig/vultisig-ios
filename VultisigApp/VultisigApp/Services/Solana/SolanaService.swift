@@ -172,8 +172,19 @@ class SolanaService {
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
+
+        let (data, response) = try await URLSession.shared.data(for: request)
         
-        let (data, _) = try await URLSession.shared.data(for: request)
+        if let httpResponse = response as? HTTPURLResponse,
+           let cacheControl = httpResponse.allHeaderFields["Cache-Control"] as? String,
+           cacheControl.contains("max-age") == false {
+            
+            // Set a default caching duration if none is provided
+            let userInfo = ["Cache-Control": "max-age=120"] // 2 minutes
+            let cachedResponse = CachedURLResponse(response: httpResponse, data: data, userInfo: userInfo, storagePolicy: .allowed)
+            URLCache.shared.storeCachedResponse(cachedResponse, for: request)
+        }
+        
         return data
     }
     
