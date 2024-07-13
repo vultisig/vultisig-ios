@@ -364,7 +364,7 @@ class KeysignViewModel: ObservableObject {
                         throw err
                     }
                 case .solana:
-                    self.txid = await SolanaService.shared.sendSolanaTransaction(encodedTransaction: tx.rawTransaction) ?? .empty
+                    self.txid = try await SolanaService.shared.sendSolanaTransaction(encodedTransaction: tx.rawTransaction) ?? .empty
                 case .sui:
                     self.txid = try await SuiService.shared.executeTransactionBlock(unsignedTransaction: tx.rawTransaction, signature: tx.signature ?? .empty)
                 case .polkadot:
