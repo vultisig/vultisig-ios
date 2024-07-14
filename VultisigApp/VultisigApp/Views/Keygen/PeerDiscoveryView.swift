@@ -179,8 +179,6 @@ struct PeerDiscoveryView: View {
                 )
                 .padding()
                 .frame(maxHeight: .infinity)
-                .frame(maxWidth: 512)
-                .padding(5)
 #elseif os(macOS)
                 .background(Color.blue600)
                 .aspectRatio(contentMode: .fit)
@@ -197,7 +195,9 @@ struct PeerDiscoveryView: View {
         }
         .cornerRadius(10)
         .shadow(radius: 5)
-#if os(macOS)
+#if os(iOS)
+        .padding(20)
+#elseif os(macOS)
         .padding(40)
 #endif
     }

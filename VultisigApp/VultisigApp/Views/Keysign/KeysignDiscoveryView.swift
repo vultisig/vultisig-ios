@@ -161,7 +161,11 @@ struct KeysignDiscoveryView: View {
                 .padding(3)
                 .background(Color.neutral0)
                 .cornerRadius(10)
-                .padding(24)
+#if os(iOS)
+        .padding(12)
+#elseif os(macOS)
+        .padding(24)
+#endif
                 .background(Color.blue600)
                 .cornerRadius(20)
                 .overlay (
@@ -173,7 +177,9 @@ struct KeysignDiscoveryView: View {
         .foregroundColor(.neutral0)
         .cornerRadius(10)
         .shadow(radius: 5)
-#if os(macOS)
+#if os(iOS)
+        .padding(20)
+#elseif os(macOS)
         .padding(40)
 #endif
     }
