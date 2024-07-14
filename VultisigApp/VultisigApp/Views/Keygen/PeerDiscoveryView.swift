@@ -162,7 +162,7 @@ struct PeerDiscoveryView: View {
     }
     
     var paringBarcode: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 8) {
             Text(NSLocalizedString("pairWithOtherDevices", comment: "Pair with two other devices"))
                 .font(.body18MenloBold)
                 .multilineTextAlignment(.center)
@@ -176,13 +176,15 @@ struct PeerDiscoveryView: View {
                         .fill :
                             .fit
                 )
-#elseif os(macOS)
-                .aspectRatio(contentMode: .fit)
-#endif
                 .padding()
                 .frame(maxHeight: .infinity)
                 .frame(maxWidth: 512)
                 .padding(5)
+#elseif os(macOS)
+                .aspectRatio(contentMode: .fit)
+                .frame(maxHeight: .infinity)
+                .padding(1)
+#endif
         }
         .cornerRadius(10)
         .shadow(radius: 5)
