@@ -162,7 +162,7 @@ struct PeerDiscoveryView: View {
     }
     
     var paringBarcode: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 8) {
             Text(NSLocalizedString("pairWithOtherDevices", comment: "Pair with two other devices"))
                 .font(.body18MenloBold)
                 .multilineTextAlignment(.center)
@@ -170,23 +170,34 @@ struct PeerDiscoveryView: View {
             qrCodeImage?
                 .resizable()
 #if os(iOS)
+                .background(Color.blue600)
                 .aspectRatio(
                     contentMode:
                         participantDiscovery.peersFound.count == 0 && idiom == .phone ?
                         .fill :
                             .fit
                 )
-#elseif os(macOS)
-                .aspectRatio(contentMode: .fit)
-#endif
                 .padding()
                 .frame(maxHeight: .infinity)
-                .frame(maxWidth: 512)
-                .padding(5)
+#elseif os(macOS)
+                .background(Color.blue600)
+                .aspectRatio(contentMode: .fit)
+                .frame(maxHeight: .infinity)
+                .padding(24)
+#endif
+                .cornerRadius(20)
+                .overlay (
+                    RoundedRectangle(cornerRadius: 10)
+                        .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [12]))
+                        .aspectRatio(contentMode: .fit)
+                )
+                .padding(1)
         }
         .cornerRadius(10)
         .shadow(radius: 5)
-#if os(macOS)
+#if os(iOS)
+        .padding(20)
+#elseif os(macOS)
         .padding(40)
 #endif
     }

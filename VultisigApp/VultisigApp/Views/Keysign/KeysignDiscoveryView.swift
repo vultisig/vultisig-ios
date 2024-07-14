@@ -109,9 +109,8 @@ struct KeysignDiscoveryView: View {
     }
     
     var landscapeContent: some View {
-        HStack {
+        HStack(spacing: 8) {
             paringQRCode
-                .padding(60)
             list
                 .padding(20)
         }
@@ -162,8 +161,11 @@ struct KeysignDiscoveryView: View {
                 .padding(3)
                 .background(Color.neutral0)
                 .cornerRadius(10)
-                .frame(maxWidth: 512)
-                .padding(24)
+#if os(iOS)
+        .padding(12)
+#elseif os(macOS)
+        .padding(24)
+#endif
                 .background(Color.blue600)
                 .cornerRadius(20)
                 .overlay (
@@ -175,7 +177,11 @@ struct KeysignDiscoveryView: View {
         .foregroundColor(.neutral0)
         .cornerRadius(10)
         .shadow(radius: 5)
-        .padding(.horizontal, 22)
+#if os(iOS)
+        .padding(20)
+#elseif os(macOS)
+        .padding(40)
+#endif
     }
     
     var lookingForDevices: some View {
