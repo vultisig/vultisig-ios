@@ -170,6 +170,7 @@ struct PeerDiscoveryView: View {
             qrCodeImage?
                 .resizable()
 #if os(iOS)
+                .background(Color.blue600)
                 .aspectRatio(
                     contentMode:
                         participantDiscovery.peersFound.count == 0 && idiom == .phone ?
@@ -181,10 +182,18 @@ struct PeerDiscoveryView: View {
                 .frame(maxWidth: 512)
                 .padding(5)
 #elseif os(macOS)
+                .background(Color.blue600)
                 .aspectRatio(contentMode: .fit)
                 .frame(maxHeight: .infinity)
-                .padding(1)
+                .padding(24)
 #endif
+                .cornerRadius(20)
+                .overlay (
+                    RoundedRectangle(cornerRadius: 10)
+                        .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [12]))
+                        .aspectRatio(contentMode: .fit)
+                )
+                .padding(1)
         }
         .cornerRadius(10)
         .shadow(radius: 5)
