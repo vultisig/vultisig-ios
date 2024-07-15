@@ -10,7 +10,7 @@ import BigInt
 import VultisigCommonData
 
 extension KeysignMessage: ProtoMappable {
-
+    
     init(proto: VSKeysignMessage, vault: Vault) throws {
         self.sessionID = proto.sessionID
         self.serviceName = proto.serviceName
@@ -18,7 +18,7 @@ extension KeysignMessage: ProtoMappable {
         self.encryptionKeyHex = proto.encryptionKeyHex
         self.useVultisigRelay = proto.useVultisigRelay
     }
-
+    
     func mapToProtobuff() -> VSKeysignMessage {
         return .with {
             $0.sessionID = sessionID
@@ -31,12 +31,12 @@ extension KeysignMessage: ProtoMappable {
 }
 
 extension KeysignPayload: ProtoMappable {
-
+    
     init(proto: VSKeysignPayload, vault: Vault) throws {
         guard let blockchainSpecific = proto.blockchainSpecific else {
             throw ProtoMappableError.blockchainSpecificNotFound
         }
-
+        
         self.coin = try ProtoCoinResolver.resolve(vault: vault, coin: proto.coin)
         self.toAddress = proto.toAddress
         self.toAmount = BigInt(stringLiteral: proto.toAmount)
@@ -48,7 +48,7 @@ extension KeysignPayload: ProtoMappable {
         self.swapPayload = try proto.swapPayload.map { try SwapPayload(proto: $0, vault: vault) }
         self.approvePayload = proto.hasErc20ApprovePayload ? ERC20ApprovePayload(proto: proto.erc20ApprovePayload) : nil
     }
-
+    
     func mapToProtobuff() -> VSKeysignPayload {
         return .with {
             $0.coin = ProtoCoinResolver.proto(from: coin)
@@ -60,7 +60,7 @@ extension KeysignPayload: ProtoMappable {
             $0.vaultPublicKeyEcdsa = vaultPubKeyECDSA
             $0.vaultLocalPartyID = vaultLocalPartyID
             $0.swapPayload = swapPayload?.mapToProtobuff()
-
+            
             if let approvePayload {
                 $0.erc20ApprovePayload = approvePayload.mapToProtobuff()
             }
@@ -69,12 +69,12 @@ extension KeysignPayload: ProtoMappable {
 }
 
 extension ERC20ApprovePayload {
-
+    
     init(proto: VSErc20ApprovePayload) {
         self.amount = BigInt(stringLiteral: proto.amount)
         self.spender = proto.spender
     }
-
+    
     func mapToProtobuff() -> VSErc20ApprovePayload {
         return .with {
             $0.amount = String(amount)
@@ -84,7 +84,7 @@ extension ERC20ApprovePayload {
 }
 
 extension SwapPayload {
-
+    
     init(proto: VSKeysignPayload.OneOf_SwapPayload, vault: Vault) throws {
         switch proto {
         case .thorchainSwapPayload(let value), .mayachainSwapPayload(let value):
@@ -122,7 +122,7 @@ extension SwapPayload {
             ))
         }
     }
-
+    
     func mapToProtobuff() -> VSKeysignPayload.OneOf_SwapPayload {
         switch self {
         case .thorchain(let payload), .mayachain(let payload):
@@ -163,7 +163,7 @@ extension SwapPayload {
 }
 
 extension BlockChainSpecific {
-
+    
     init(proto: VSKeysignPayload.OneOf_BlockchainSpecific) throws {
         switch proto {
         case .utxoSpecific(let value):
@@ -198,7 +198,9 @@ extension BlockChainSpecific {
         case .solanaSpecific(let value):
             self = .Solana(
                 recentBlockHash: value.recentBlockHash,
-                priorityFee: BigInt(stringLiteral: value.priorityFee)
+                priorityFee: BigInt(stringLiteral: value.priorityFee),
+                fromAddressPubKey: value.fromTokenAssociatedAddress,
+                toAddressPubKey: value.toTokenAssociatedAddress
             )
         case .polkadotSpecific(let value):
             self = .Polkadot(
@@ -216,7 +218,7 @@ extension BlockChainSpecific {
             )
         }
     }
-
+    
     func mapToProtobuff() -> VSKeysignPayload.OneOf_BlockchainSpecific {
         switch self {
         case .UTXO(let byteFee, let sendMaxAmount):
@@ -248,10 +250,12 @@ extension BlockChainSpecific {
                 $0.sequence = sequence
                 $0.gas = gas
             })
-        case .Solana(let recentBlockHash, let priorityFee):
+        case .Solana(let recentBlockHash, let priorityFee, let fromTokenAssociatedAddress, let toTokenAssociatedAddress):
             return .solanaSpecific(.with {
                 $0.recentBlockHash = recentBlockHash
                 $0.priorityFee = String(priorityFee)
+                $0.fromTokenAssociatedAddress = fromTokenAssociatedAddress ?? .empty
+                $0.toTokenAssociatedAddress = toTokenAssociatedAddress ?? .empty
             })
         case .Sui(let referenceGasPrice, let coins):
             return .suicheSpecific(.with {
@@ -279,13 +283,13 @@ extension BlockChainSpecific {
 }
 
 extension UtxoInfo {
-
+    
     init(proto: VSUtxoInfo) throws {
         self.amount = proto.amount
         self.hash = proto.hash
         self.index = proto.index
     }
-
+    
     func mapToProtobuff() -> VSUtxoInfo {
         return .with {
             $0.amount = amount
