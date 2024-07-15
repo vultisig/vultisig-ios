@@ -132,7 +132,7 @@ extension SwapPayload {
                 $0.toCoin = ProtoCoinResolver.proto(from: payload.toCoin)
                 $0.vaultAddress = payload.vaultAddress
                 $0.routerAddress = payload.routerAddress ?? .empty
-                $0.fromAmount = payload.fromAddress
+                $0.fromAmount = String(payload.fromAmount)
                 $0.toAmountDecimal = payload.toAmountDecimal.description
                 $0.toAmountLimit = payload.toAmountLimit
                 $0.streamingInterval = payload.streamingInterval
