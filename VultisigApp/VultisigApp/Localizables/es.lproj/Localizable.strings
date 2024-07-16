@@ -240,3 +240,13 @@
 "memo(optional)" = "MEMO (Opcional)";
 "enterMemo" = "Introduce el memo";
 "enterVaultName" = "Introduce el nombre del almacén";
+"pleaseBackupVault" = "Por favor, haz una copia de seguridad de tus acciones del almacén ahora";
+"pleaseBackupVaultNote" = "Nota: Nunca guardes acciones del almacén de diferentes dispositivos en el mismo lugar.";
+"addressBook" = "Libreta de direcciones";
+"addAddress" = "Agregar dirección";
+"address" = "Dirección";
+"title" = "Título";
+"saveAddress" = "Guardar dirección";
+"success" = "Éxito";
+"addressAddedToAddressBook" = "Dirección agregada exitosamente a la libreta de direcciones.";
+"noSavedAddresses" = "No hay direcciones guardadas";

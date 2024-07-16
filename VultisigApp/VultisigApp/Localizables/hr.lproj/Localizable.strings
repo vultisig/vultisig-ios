@@ -240,3 +240,13 @@
 "memo(optional)" = "MEMO (Opcionalno)";
 "enterMemo" = "Unesite bilješku";
 "enterVaultName" = "Unesite naziv spremišta";
+"pleaseBackupVault" = "Molimo, napravite sigurnosnu kopiju svojih dionica spremišta sada";
+"pleaseBackupVaultNote" = "Napomena: Nikada ne pohranjujte dionice spremišta s različitih uređaja na istom mjestu.";
+"addressBook" = "Adresar";
+"addAddress" = "Dodaj adresu";
+"address" = "Adresa";
+"title" = "Naslov";
+"saveAddress" = "Spremi adresu";
+"success" = "Uspjeh";
+"addressAddedToAddressBook" = "Adresa uspješno dodana u adresar.";
+"noSavedAddresses" = "Nema spremljenih adresa";
