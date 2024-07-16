@@ -14,10 +14,10 @@ enum BlockChainSpecific: Codable, Hashable {
     case THORChain(accountNumber: UInt64, sequence: UInt64, fee: UInt64)
     case MayaChain(accountNumber: UInt64, sequence: UInt64)
     case Cosmos(accountNumber: UInt64, sequence: UInt64, gas: UInt64)
-    case Solana(recentBlockHash: String, priorityFee: BigInt) // priority fee is in microlamports
+    case Solana(recentBlockHash: String, priorityFee: BigInt, fromAddressPubKey: String?, toAddressPubKey: String?) // priority fee is in microlamports
     case Sui(referenceGasPrice: BigInt, coins: [[String:String]])
     case Polkadot(recentBlockHash: String, nonce: UInt64, currentBlockNumber: BigInt, specVersion: UInt32, transactionVersion: UInt32, genesisHash: String)
-
+    
     var gas: BigInt {
         switch self {
         case .UTXO(let byteFee, _):
@@ -38,7 +38,7 @@ enum BlockChainSpecific: Codable, Hashable {
             return PolkadotHelper.defaultFeeInPlancks
         }
     }
-
+    
     var fee: BigInt {
         switch self {
         case .Ethereum(let baseFee, let priorityFeeWei, _, let gasLimit):

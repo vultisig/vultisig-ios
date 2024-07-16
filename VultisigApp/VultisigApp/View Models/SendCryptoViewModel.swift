@@ -129,7 +129,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         
     private func getPriceRate(tx: SendTransaction) async -> Decimal {
         do {
-            var priceRateFiat = Decimal.zero
+            var priceRateFiat = Decimal(string: tx.coin.priceRate.description) ?? .zero
             
             if tx.coin.isNativeToken {
                 let price = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
