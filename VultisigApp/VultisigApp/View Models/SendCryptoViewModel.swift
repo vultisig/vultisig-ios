@@ -88,16 +88,23 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         case .solana:
             Task{
                 do{
-                    let (rawBalance,priceRate) = try await sol.getSolanaBalance(coin: tx.coin)
-                    tx.coin.rawBalance = rawBalance
-                    tx.coin.priceRate = priceRate
-                    tx.amount = "\(tx.coin.getMaxValue(SolanaHelper.defaultFeeInLamports))"
-                    
-                    await convertToFiat(newValue: tx.amount, tx: tx)
+                    if tx.coin.isNativeToken {
+                        let (rawBalance,priceRate) = try await sol.getSolanaBalance(coin: tx.coin)
+                        tx.coin.rawBalance = rawBalance
+                        tx.coin.priceRate = priceRate
+                        tx.amount = "\(tx.coin.getMaxValue(SolanaHelper.defaultFeeInLamports))"
+                        
+                    } else {
+                        
+                        tx.amount = "\(tx.coin.getMaxValue(0))"
+                        
+                    }
                 } catch {
-                    print("fail to load solana balances,error:\(error.localizedDescription)")
+                    tx.amount = "\(tx.coin.getMaxValue(0))"
+                    print("Failed to get SOLANA balance, error: \(error.localizedDescription)")
                 }
                 
+                await convertToFiat(newValue: tx.amount, tx: tx)
                 isLoading = false
             }
         case .sui:
@@ -293,7 +300,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             chainSpecific: BlockChainSpecific.UTXO(byteFee: tx.gas.toBigInt(), sendMaxAmount: tx.sendMaxAmount),
             utxos: utxoInfo,
             memo: tx.memo,
-            swapPayload: nil, 
+            swapPayload: nil,
             approvePayload: nil,
             vaultPubKeyECDSA: vault.pubKeyECDSA,
             vaultLocalPartyID: vault.localPartyID
