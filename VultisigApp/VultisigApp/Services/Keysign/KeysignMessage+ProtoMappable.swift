@@ -87,8 +87,23 @@ extension SwapPayload {
     
     init(proto: VSKeysignPayload.OneOf_SwapPayload, vault: Vault) throws {
         switch proto {
-        case .thorchainSwapPayload(let value), .mayachainSwapPayload(let value):
+        case .thorchainSwapPayload(let value):
             self = .thorchain(THORChainSwapPayload(
+                fromAddress: value.fromAddress,
+                fromCoin: try ProtoCoinResolver.resolve(vault: vault, coin: value.fromCoin),
+                toCoin: try ProtoCoinResolver.resolve(vault: vault, coin: value.toCoin),
+                vaultAddress: value.vaultAddress,
+                routerAddress: value.routerAddress.nilIfEmpty,
+                fromAmount: BigInt(stringLiteral: value.fromAmount),
+                toAmountDecimal: Decimal(string: value.toAmountDecimal) ?? 0,
+                toAmountLimit: value.toAmountLimit,
+                streamingInterval: value.streamingInterval,
+                streamingQuantity: value.streamingQuantity,
+                expirationTime: value.expirationTime,
+                isAffiliate: value.isAffiliate
+            ))
+        case .mayachainSwapPayload(let value):
+            self = .mayachain(THORChainSwapPayload(
                 fromAddress: value.fromAddress,
                 fromCoin: try ProtoCoinResolver.resolve(vault: vault, coin: value.fromCoin),
                 toCoin: try ProtoCoinResolver.resolve(vault: vault, coin: value.toCoin),
@@ -125,8 +140,23 @@ extension SwapPayload {
     
     func mapToProtobuff() -> VSKeysignPayload.OneOf_SwapPayload {
         switch self {
-        case .thorchain(let payload), .mayachain(let payload):
+        case .thorchain(let payload):
             return .thorchainSwapPayload(.with {
+                $0.fromAddress = payload.fromAddress
+                $0.fromCoin = ProtoCoinResolver.proto(from: payload.fromCoin)
+                $0.toCoin = ProtoCoinResolver.proto(from: payload.toCoin)
+                $0.vaultAddress = payload.vaultAddress
+                $0.routerAddress = payload.routerAddress ?? .empty
+                $0.fromAmount = String(payload.fromAmount)
+                $0.toAmountDecimal = payload.toAmountDecimal.description
+                $0.toAmountLimit = payload.toAmountLimit
+                $0.streamingInterval = payload.streamingInterval
+                $0.streamingQuantity = payload.streamingQuantity
+                $0.expirationTime = payload.expirationTime
+                $0.isAffiliate = payload.isAffiliate
+            })
+        case .mayachain(let payload):
+            return .mayachainSwapPayload(.with {
                 $0.fromAddress = payload.fromAddress
                 $0.fromCoin = ProtoCoinResolver.proto(from: payload.fromCoin)
                 $0.toCoin = ProtoCoinResolver.proto(from: payload.toCoin)
