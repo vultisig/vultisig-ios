@@ -8,8 +8,16 @@
 import SwiftUI
 
 struct AddAddressBookView: View {
+    let vault: Vault?
+    
+    @EnvironmentObject var addressBookViewModel: AddressBookViewModel
+    @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
+    
     @State var title = ""
     @State var address = ""
+    @State var selectedChain: CoinMeta? = nil
+    
+    @Environment(\.dismiss) var dismiss
     
     var body: some View {
         ZStack {
@@ -22,6 +30,9 @@ struct AddAddressBookView: View {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
             }
+        }
+        .onAppear {
+            setData()
         }
     }
     
@@ -45,7 +56,7 @@ struct AddAddressBookView: View {
     }
     
     var tokenSelector: some View {
-        AddressBookTextField(title: "title", text: $title)
+        AddressBookChainSelector(selected: $selectedChain)
     }
     
     var titleField: some View {
@@ -57,11 +68,42 @@ struct AddAddressBookView: View {
     }
     
     var button: some View {
-        FilledButton(title: "saveAddress")
-            .padding(.bottom, 40)
+        Button {
+            addAddress()
+        } label: {
+            FilledButton(title: "saveAddress")
+                .padding(.bottom, 40)
+        }
+    }
+    
+    private func setData() {
+        guard let vault else {
+            return
+        }
+        
+        coinSelectionViewModel.setData(for: vault)
+        
+        let chain = coinSelectionViewModel.groupedAssets.first
+        selectedChain = chain?.value.first
+    }
+    
+    private func addAddress() {
+        guard let selectedChain else {
+            return
+        }
+        
+        addressBookViewModel.addNewAddress(
+            title: title,
+            address: address,
+            coinMeta: selectedChain
+        )
+        
+        dismiss()
     }
 }
 
 #Preview {
-    AddAddressBookView()
+    AddAddressBookView(vault: Vault.example)
+        .environmentObject(CoinSelectionViewModel())
+        .environmentObject(AddressBookViewModel())
 }

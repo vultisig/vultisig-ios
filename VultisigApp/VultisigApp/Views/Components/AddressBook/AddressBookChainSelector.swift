@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct AddressBookChainSelector: View {
-    @Binding var selected: CoinMeta
+    @Binding var selected: CoinMeta?
 
     @State var isExpanded = false
     
@@ -40,18 +40,20 @@ struct AddressBookChainSelector: View {
     var cell: some View {
         HStack(spacing: 12) {
             image
-            Text("\(selected.ticker)")
+            Text("\(selected?.ticker ?? "")")
             Spacer()
             Image(systemName: "chevron.down")
         }
-        .redacted(reason: selected.balanceString.isEmpty ? .placeholder : [])
         .font(.body16Menlo)
         .foregroundColor(.neutral0)
         .frame(height: 48)
     }
     
     var image: some View {
-        AsyncImageView(logo: selected.logo, size: CGSize(width: 32, height: 32), ticker: selected.ticker, tokenChainLogo: selected.tokenChainLogo)
+        Image(selected?.logo ?? "")
+            .resizable()
+            .frame(width: 32, height: 32)
+            .cornerRadius(30)
     }
     
     var cells: some View {
@@ -68,23 +70,20 @@ struct AddressBookChainSelector: View {
         }
     }
     
-    private func getCell(for chain: CoinMeta) -> some View {
+    private func getCell(for chain: CoinMeta?) -> some View {
         HStack(spacing: 12) {
-            AsyncImageView(logo: coin.logo, size: CGSize(width: 32, height: 32), ticker: coin.ticker, tokenChainLogo: coin.tokenChainLogo)
+            Image(chain?.logo ?? "")
+                .resizable()
+                .frame(width: 32, height: 32)
+                .cornerRadius(30)
             
-            Text(coin.ticker)
+            Text(chain?.ticker ?? "")
                 .font(.body16Menlo)
                 .foregroundColor(.neutral0)
 
-            if let schema = chain.tokenSchema {
-                Text("(\(schema))")
-                    .font(.body16Menlo)
-                    .foregroundColor(.neutral0)
-            }
-
             Spacer()
             
-            if selected == coin {
+            if selected == chain {
                 Image(systemName: "checkmark")
                     .font(.body16Menlo)
                     .foregroundColor(.neutral0)

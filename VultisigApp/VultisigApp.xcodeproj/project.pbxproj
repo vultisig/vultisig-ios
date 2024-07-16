@@ -844,7 +844,6 @@
 				B590DF872C2E815A00ED934E /* GenericSelectorDropDown.swift */,
 				A6AF960F2C2E2DC900992578 /* FileQRCodeImporterMac.swift */,
 				A63875602C386647000CF242 /* BackupNowDisclaimer.swift */,
-				A6725D3B2C3F9D6400D47716 /* AddressBookTextField.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1289,6 +1288,7 @@
 			isa = PBXGroup;
 			children = (
 				A6725D402C40C3C100D47716 /* AddressBookChainSelector.swift */,
+				A6725D3B2C3F9D6400D47716 /* AddressBookTextField.swift */,
 			);
 			path = AddressBook;
 			sourceTree = "<group>";

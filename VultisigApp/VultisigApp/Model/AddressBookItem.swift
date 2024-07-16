@@ -27,4 +27,6 @@ class AddressBookItem: Equatable {
         lhs.address == rhs.address &&
         lhs.coinMeta == rhs.coinMeta
     }
+    
+    static let example = AddressBookItem(title: "Online Wallet", address: "123456789", coinMeta: CoinMeta.example, order: 0)
 }

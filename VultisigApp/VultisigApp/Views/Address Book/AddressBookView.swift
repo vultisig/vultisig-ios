@@ -8,7 +8,13 @@
 import SwiftUI
 
 struct AddressBookView: View {
-    @EnvironmentObject var viewModel: AddressBookViewModel
+    let vault: Vault?
+    
+    @EnvironmentObject var addressBookViewModel: AddressBookViewModel
+    @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
+    
+    @State var title: String = ""
+    @State var address: String = ""
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -26,17 +32,26 @@ struct AddressBookView: View {
                 navigationButton
             }
         }
+        .onDisappear {
+            toggleEdit()
+        }
     }
     
     var view: some View {
-        VStack {
-            
+        ScrollView {
+            VStack(spacing: 24) {
+                ForEach(addressBookViewModel.savedAddresses, id: \.id) { address in
+                    AddressBookCell(address: address)
+                }
+            }
+            .padding(15)
+            .padding(.top, 10)
         }
     }
     
     var navigationButton: some View {
         Button {
-            viewModel.isEditing.toggle()
+            toggleEdit()
         } label: {
             navigationEditButton
         }
@@ -44,7 +59,7 @@ struct AddressBookView: View {
     
     var navigationEditButton: some View {
         ZStack {
-            if viewModel.isEditing {
+            if addressBookViewModel.isEditing {
                 doneButton
             } else {
                 NavigationEditButton()
@@ -64,19 +79,26 @@ struct AddressBookView: View {
     
     var addAddressButton: some View {
         NavigationLink {
-            AddAddressBookView()
+            AddAddressBookView(vault: vault)
         } label: {
             FilledButton(title: "addAddress")
                 .padding(.horizontal, 16)
                 .padding(.vertical, 40)
         }
-        .frame(height: viewModel.isEditing ? nil : 0)
-        .animation(.easeInOut, value: viewModel.isEditing)
+        .frame(height: addressBookViewModel.isEditing ? nil : 0)
+        .animation(.easeInOut, value: addressBookViewModel.isEditing)
         .clipped()
+    }
+    
+    private func toggleEdit() {
+        withAnimation {
+            addressBookViewModel.isEditing.toggle()
+        }
     }
 }
 
 #Preview {
-    AddressBookView()
+    AddressBookView(vault: Vault.example)
         .environmentObject(AddressBookViewModel())
+        .environmentObject(CoinSelectionViewModel())
 }

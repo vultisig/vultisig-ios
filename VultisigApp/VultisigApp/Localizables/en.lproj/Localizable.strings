@@ -268,3 +268,5 @@
 "address" = "Address";
 "title" = "Title";
 "saveAddress" = "Save Address";
+"success" = "Success";
+"addressAddedToAddressBook" = "Address added to the address book successfully.";

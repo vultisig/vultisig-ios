@@ -8,17 +8,21 @@
 import SwiftUI
 
 struct AddressBookCell: View {
-    let title: String
-    let address: String
-    let coin: CoinMeta
+    let address: AddressBookItem
     
     @EnvironmentObject var viewModel: AddressBookViewModel
     
     var body: some View {
         HStack(spacing: 8) {
-            rearrangeIcon
+            if viewModel.isEditing {
+                rearrangeIcon
+            }
+            
             content
-            deleteIcon
+            
+            if viewModel.isEditing {
+                deleteIcon
+            }
         }
     }
     
@@ -33,9 +37,10 @@ struct AddressBookCell: View {
     }
     
     var logo: some View {
-        Image(coin.logo)
+        Image(address.coinMeta.logo)
             .resizable()
             .frame(width: 32, height: 32)
+            .cornerRadius(30)
     }
     
     var text: some View {
@@ -47,13 +52,13 @@ struct AddressBookCell: View {
     }
     
     var titleContent: some View {
-        Text(title)
+        Text(address.title)
             .foregroundColor(.neutral0)
             .font(.body14MontserratSemiBold)
     }
     
     var addressContent: some View {
-        Text(address)
+        Text(address.address)
             .foregroundColor(.neutral0)
             .font(.body12Menlo)
             .lineLimit(1)
@@ -82,17 +87,8 @@ struct AddressBookCell: View {
     ZStack {
         Background()
         VStack {
-            AddressBookCell(
-                title: "Online Wallet",
-                address: "0x0cb1D4a24292bB89862f599Ac5B10F42b6DE07e4",
-                coin: CoinMeta.example
-            )
-            
-            AddressBookCell(
-                title: "Online Wallet",
-                address: "0x0cb1D4a24292bB89862f599Ac5B10F42b6DE07e4",
-                coin: CoinMeta.example
-            )
+            AddressBookCell(address: AddressBookItem.example)
+            AddressBookCell(address: AddressBookItem.example)
         }
     }
     .environmentObject(AddressBookViewModel())
