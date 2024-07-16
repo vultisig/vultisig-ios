@@ -13,7 +13,7 @@ struct LiFiService {
     static let shared = LiFiService()
 
     func fetchQuotes(fromCoin: Coin, toCoin: Coin, fromAmount: BigInt) async throws -> OneInchQuote {
-        guard let fromChain = fromCoin.chain.chainID, let toChain = fromCoin.chain.chainID else {
+        guard let fromChain = fromCoin.chain.chainID, let toChain = toCoin.chain.chainID else {
             throw Errors.unexpectedError
         }
         let endpoint = Endpoint.fetchLiFiQuote(
@@ -29,7 +29,8 @@ struct LiFiService {
         let response = try JSONDecoder().decode(QuoteResponse.self, from: data)
 
         guard 
-            let gasPrice = Int64(response.transactionRequest.gasPrice.stripHexPrefix(), radix: 16),
+            let value = BigInt(response.transactionRequest.value.stripHexPrefix(), radix: 16),
+            let gasPrice = BigInt(response.transactionRequest.gasPrice.stripHexPrefix(), radix: 16),
             let gas = Int64(response.transactionRequest.gasLimit.stripHexPrefix(), radix: 16) else {
             throw Errors.unexpectedError
         }
@@ -40,7 +41,7 @@ struct LiFiService {
                 from: response.transactionRequest.from,
                 to: response.transactionRequest.to,
                 data: response.transactionRequest.data,
-                value: response.transactionRequest.value,
+                value: String(value),
                 gasPrice: String(gasPrice),
                 gas: gas
             )

@@ -19,7 +19,7 @@ struct SwapService {
     func fetchQuote(amount: Decimal, fromCoin: Coin, toCoin: Coin, isAffiliate: Bool) async throws -> SwapQuote {
 
         guard let provider = SwapCoinsResolver.resolveProvider(fromCoin: fromCoin, toCoin: toCoin) else {
-            throw Errors.routeUnavailable
+            throw SwapError.routeUnavailable
         }
 
         switch provider {
@@ -42,7 +42,7 @@ struct SwapService {
         case .oneinch:
             guard let fromChainID = fromCoin.chain.chainID,
                   let toChainID = toCoin.chain.chainID, fromChainID == toChainID else {
-                  throw Errors.routeUnavailable
+                  throw SwapError.routeUnavailable
             }
             return try await fetchOneInchQuote(
                 chain: fromChainID,
@@ -59,23 +59,6 @@ struct SwapService {
 }
 
 private extension SwapService {
-
-    enum Errors: Error, LocalizedError {
-        case routeUnavailable
-        case swapAmountTooSmall
-        case lessThenMinSwapAmount(amount: String)
-
-        var errorDescription: String? {
-            switch self {
-            case .routeUnavailable:
-                return "Swap route not available"
-            case .swapAmountTooSmall:
-                return "Swap amount too small"
-            case .lessThenMinSwapAmount(let amount):
-                return "Swap amount too small. Recommended amount \(amount)"
-            }
-        }
-    }
 
     func fetchCrossChainQuote(
         provider: ThorchainSwapProvider,
@@ -96,12 +79,12 @@ private extension SwapService {
             )
 
             guard let expected = Decimal(string: quote.expectedAmountOut), !expected.isZero else {
-                throw Errors.swapAmountTooSmall
+                throw SwapError.swapAmountTooSmall
             }
 
             if let minSwapAmountDecimal = Decimal(string: quote.recommendedMinAmountIn), normalizedAmount < minSwapAmountDecimal {
                 let recommendedAmount = "\(minSwapAmountDecimal / fromCoin.thorswapMultiplier) \(fromCoin.ticker)"
-                throw Errors.lessThenMinSwapAmount(amount: recommendedAmount)
+                throw SwapError.lessThenMinSwapAmount(amount: recommendedAmount)
             }
 
             switch provider {
@@ -114,13 +97,13 @@ private extension SwapService {
             }
         }
         catch _ as ThorchainSwapError {
-            throw Errors.routeUnavailable
+            throw SwapError.routeUnavailable
         }
-        catch let error as Errors {
+        catch let error as SwapError {
             throw error
         }
         catch {
-            throw Errors.swapAmountTooSmall
+            throw SwapError.swapAmountTooSmall
         }
     }
 
