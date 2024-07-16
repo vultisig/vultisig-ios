@@ -25,4 +25,8 @@ class AddressBookViewModel: ObservableObject {
         
         savedAddresses.remove(at: index)
     }
+    
+    func move(from: IndexSet, to: Int) {
+        savedAddresses.move(fromOffsets: from, toOffset: to)
+    }
 }

@@ -22,6 +22,9 @@ struct AddressBookCell: View {
         } label: {
             label
         }
+        .listRowInsets(EdgeInsets())
+        .listRowSeparator(.hidden)
+        .padding(.vertical, 8)
     }
     
     var label: some View {
@@ -42,6 +45,7 @@ struct AddressBookCell: View {
         HStack(spacing: 12) {
             logo
             text
+            Text("\(address.order)")
         }
         .padding(12)
         .background(Color.blue600)

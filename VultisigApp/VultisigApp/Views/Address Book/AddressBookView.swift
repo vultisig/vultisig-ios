@@ -41,19 +41,24 @@ struct AddressBookView: View {
     }
     
     var view: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                ForEach(addressBookViewModel.savedAddresses, id: \.id) { address in
-                    AddressBookCell(
-                        address: address,
-                        shouldReturnAddress: shouldReturnAddress,
-                        returnAddress: $returnAddress
-                    )
-                }
+        List {
+            ForEach(addressBookViewModel.savedAddresses, id: \.id) { address in
+                AddressBookCell(
+                    address: address,
+                    shouldReturnAddress: shouldReturnAddress,
+                    returnAddress: $returnAddress
+                )
             }
-            .padding(15)
-            .padding(.top, 10)
+            .onMove(perform: addressBookViewModel.isEditing ? addressBookViewModel.move: nil)
+            .background(Color.backgroundBlue)
         }
+        .listStyle(PlainListStyle())
+        .buttonStyle(BorderlessButtonStyle())
+        .colorScheme(.dark)
+        .scrollContentBackground(.hidden)
+        .padding(15)
+        .padding(.top, 10)
+        .background(Color.backgroundBlue)
     }
     
     var navigationButton: some View {
