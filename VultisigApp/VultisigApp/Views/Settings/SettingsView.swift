@@ -98,7 +98,10 @@ struct SettingsView: View {
     
     var addressBookCell: some View {
         NavigationLink {
-            AddressBookView(vault: homeViewModel.selectedVault)
+            AddressBookView(
+                shouldReturnAddress: false,
+                returnAddress: .constant("")
+            )
         } label: {
             SettingCell(title: "addressBook", icon: "text.book.closed")
         }

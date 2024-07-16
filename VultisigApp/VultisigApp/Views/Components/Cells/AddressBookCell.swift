@@ -9,10 +9,22 @@ import SwiftUI
 
 struct AddressBookCell: View {
     let address: AddressBookItem
+    let shouldReturnAddress: Bool
+    @Binding var returnAddress: String
     
     @EnvironmentObject var viewModel: AddressBookViewModel
     
+    @Environment(\.dismiss) var dismiss
+    
     var body: some View {
+        Button {
+            handleSelection()
+        } label: {
+            label
+        }
+    }
+    
+    var label: some View {
         HStack(spacing: 8) {
             if viewModel.isEditing {
                 rearrangeIcon
@@ -89,14 +101,23 @@ struct AddressBookCell: View {
             .scaleEffect(viewModel.isEditing ? 1 : 0)
             .frame(width: viewModel.isEditing ? nil : 0)
     }
+    
+    private func handleSelection() {
+        guard shouldReturnAddress else {
+            return
+        }
+        
+        returnAddress = address.address
+        dismiss()
+    }
 }
 
 #Preview {
     ZStack {
         Background()
         VStack {
-            AddressBookCell(address: AddressBookItem.example)
-            AddressBookCell(address: AddressBookItem.example)
+            AddressBookCell(address: AddressBookItem.example, shouldReturnAddress: true, returnAddress: .constant(""))
+            AddressBookCell(address: AddressBookItem.example, shouldReturnAddress: false, returnAddress: .constant(""))
         }
     }
     .environmentObject(AddressBookViewModel())

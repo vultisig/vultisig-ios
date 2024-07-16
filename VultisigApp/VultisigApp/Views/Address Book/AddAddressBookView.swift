@@ -8,10 +8,9 @@
 import SwiftUI
 
 struct AddAddressBookView: View {
-    let vault: Vault?
-    
     @EnvironmentObject var addressBookViewModel: AddressBookViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
+    @EnvironmentObject var homeViewModel: HomeViewModel
     
     @State var title = ""
     @State var address = ""
@@ -77,7 +76,7 @@ struct AddAddressBookView: View {
     }
     
     private func setData() {
-        guard let vault else {
+        guard let vault = homeViewModel.selectedVault else {
             return
         }
         
@@ -103,7 +102,8 @@ struct AddAddressBookView: View {
 }
 
 #Preview {
-    AddAddressBookView(vault: Vault.example)
+    AddAddressBookView()
         .environmentObject(CoinSelectionViewModel())
         .environmentObject(AddressBookViewModel())
+        .environmentObject(HomeViewModel())
 }

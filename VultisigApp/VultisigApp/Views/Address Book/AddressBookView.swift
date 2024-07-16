@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct AddressBookView: View {
-    let vault: Vault?
+    var shouldReturnAddress = true
+    @Binding var returnAddress: String
     
     @EnvironmentObject var addressBookViewModel: AddressBookViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
@@ -43,7 +44,11 @@ struct AddressBookView: View {
         ScrollView {
             VStack(spacing: 24) {
                 ForEach(addressBookViewModel.savedAddresses, id: \.id) { address in
-                    AddressBookCell(address: address)
+                    AddressBookCell(
+                        address: address,
+                        shouldReturnAddress: shouldReturnAddress,
+                        returnAddress: $returnAddress
+                    )
                 }
             }
             .padding(15)
@@ -81,7 +86,7 @@ struct AddressBookView: View {
     
     var addAddressButton: some View {
         NavigationLink {
-            AddAddressBookView(vault: vault)
+            AddAddressBookView()
         } label: {
             FilledButton(title: "addAddress")
                 .padding(.horizontal, 16)
@@ -100,7 +105,8 @@ struct AddressBookView: View {
 }
 
 #Preview {
-    AddressBookView(vault: Vault.example)
+    AddressBookView(returnAddress: .constant(""))
         .environmentObject(AddressBookViewModel())
         .environmentObject(CoinSelectionViewModel())
+        .environmentObject(HomeViewModel())
 }
