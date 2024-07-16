@@ -75,6 +75,14 @@ struct AddressBookCell: View {
     }
     
     var deleteIcon: some View {
+        Button {
+            viewModel.removeAddress(address)
+        } label: {
+            deleteIconLabel
+        }
+    }
+    
+    var deleteIconLabel: some View {
         Image(systemName: "trash")
             .font(.body24MontserratMedium)
             .foregroundColor(.neutral0)

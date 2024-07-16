@@ -33,7 +33,9 @@ struct AddressBookView: View {
             }
         }
         .onDisappear {
-            toggleEdit()
+            withAnimation {
+                addressBookViewModel.isEditing = false
+            }
         }
     }
     
