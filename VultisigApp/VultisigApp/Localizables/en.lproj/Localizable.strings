@@ -270,3 +270,4 @@
 "saveAddress" = "Save Address";
 "success" = "Success";
 "addressAddedToAddressBook" = "Address added to the address book successfully.";
+"noSavedAddresses" = "No Saved Addresses";

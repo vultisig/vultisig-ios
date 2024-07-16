@@ -29,8 +29,11 @@ struct AddressBookView: View {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
             }
-            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                navigationButton
+            
+            if addressBookViewModel.savedAddresses.count != 0 {
+                ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                    navigationButton
+                }
             }
         }
         .onDisappear {
@@ -41,6 +44,24 @@ struct AddressBookView: View {
     }
     
     var view: some View {
+        ZStack {
+            if addressBookViewModel.savedAddresses.count == 0 {
+                emptyView
+            } else {
+                list
+            }
+        }
+    }
+    
+    var emptyView: some View {
+        VStack {
+            Spacer()
+            ErrorMessage(text: "noSavedAddresses")
+            Spacer()
+        }
+    }
+    
+    var list: some View {
         List {
             ForEach(addressBookViewModel.savedAddresses, id: \.id) { address in
                 AddressBookCell(
@@ -90,14 +111,16 @@ struct AddressBookView: View {
     }
     
     var addAddressButton: some View {
-        NavigationLink {
+        let condition = addressBookViewModel.isEditing || addressBookViewModel.savedAddresses.count == 0
+        
+        return NavigationLink {
             AddAddressBookView()
         } label: {
             FilledButton(title: "addAddress")
                 .padding(.horizontal, 16)
                 .padding(.vertical, 40)
         }
-        .frame(height: addressBookViewModel.isEditing ? nil : 0)
+        .frame(height: condition ? nil : 0)
         .animation(.easeInOut, value: addressBookViewModel.isEditing)
         .clipped()
     }
