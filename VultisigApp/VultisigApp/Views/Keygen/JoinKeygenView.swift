@@ -126,6 +126,7 @@ struct JoinKeygenView: View {
         VStack{
             Text(viewModel.errorMessage)
                 .font(.body15MenloBold)
+                .foregroundColor(.neutral0)
                 .multilineTextAlignment(.center)
                 .padding(.vertical, 30)
             
