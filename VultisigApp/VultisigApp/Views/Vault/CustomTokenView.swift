@@ -210,7 +210,8 @@ struct CustomTokenView: View {
                 
                 try await Task.sleep(nanoseconds: 1_000_000_000)
                 isLoading = false
-                chainDetailView.sheetType = nil
+                self.chainDetailView.sheetType = nil
+                dismiss()
             }
         }
     }
