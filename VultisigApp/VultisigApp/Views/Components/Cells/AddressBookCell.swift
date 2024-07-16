@@ -45,7 +45,6 @@ struct AddressBookCell: View {
         HStack(spacing: 12) {
             logo
             text
-            Text("\(address.order)")
         }
         .padding(12)
         .background(Color.blue600)
@@ -61,16 +60,30 @@ struct AddressBookCell: View {
     
     var text: some View {
         VStack(alignment: .leading, spacing: 8) {
-            titleContent
+            topContent
             addressContent
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
+    var topContent: some View {
+        HStack {
+            titleContent
+            Spacer()
+            networkContent
+        }
     }
     
     var titleContent: some View {
         Text(address.title)
             .foregroundColor(.neutral0)
             .font(.body14MontserratSemiBold)
+    }
+    
+    var networkContent: some View {
+        Text(address.coinMeta.chain.name + " " + NSLocalizedString("network", comment: ""))
+            .foregroundColor(.neutral300)
+            .font(.body12Menlo)
     }
     
     var addressContent: some View {
