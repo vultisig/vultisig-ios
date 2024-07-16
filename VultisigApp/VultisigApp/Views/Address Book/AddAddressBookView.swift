@@ -63,7 +63,7 @@ struct AddAddressBookView: View {
     }
     
     var addressField: some View {
-        AddressBookTextField(title: "address", text: $address)
+        AddressBookTextField(title: "address", text: $address, showActions: true)
     }
     
     var button: some View {
