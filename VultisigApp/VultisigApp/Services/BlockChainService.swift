@@ -37,6 +37,35 @@ final class BlockChainService {
     private let kuji = KujiraService.shared
     private let dydx = DydxService.shared
     
+    func fetchSpecific(for tx: SendTransaction, action: Action = .transfer, sendMaxAmount: Bool) async throws -> BlockChainSpecific {
+        
+        switch tx.coin.chain {
+        case .solana:
+            async let recentBlockHashPromise = sol.fetchRecentBlockhash()
+            async let highPriorityFeePromise = sol.fetchHighPriorityFee(account: tx.coin.address)
+            
+            let recentBlockHash = try await recentBlockHashPromise
+            let highPriorityFee = try await highPriorityFeePromise
+            
+            guard let recentBlockHash else {
+                throw Errors.failToGetRecentBlockHash
+            }
+            
+            if !tx.coin.isNativeToken {
+                async let associatedTokenAddressFromPromise = sol.fetchTokenAssociatedAccountByOwner(for: tx.fromAddress, mintAddress: tx.coin.contractAddress)
+                async let associatedTokenAddressToPromise = sol.fetchTokenAssociatedAccountByOwner(for: tx.toAddress, mintAddress: tx.coin.contractAddress)
+                let associatedTokenAddressFrom = try await associatedTokenAddressFromPromise
+                let associatedTokenAddressTo = try await associatedTokenAddressToPromise
+                
+                return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(highPriorityFee), fromAddressPubKey: associatedTokenAddressFrom, toAddressPubKey: associatedTokenAddressTo)
+            }
+            
+            return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(highPriorityFee), fromAddressPubKey: nil, toAddressPubKey: nil)
+        default:
+            return try await fetchSpecific(for: tx.coin, action: action, sendMaxAmount: sendMaxAmount)
+        }
+    }
+    
     func fetchSpecific(for coin: Coin, action: Action = .transfer, sendMaxAmount: Bool) async throws -> BlockChainSpecific {
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
@@ -78,7 +107,7 @@ final class BlockChainService {
             guard let recentBlockHash else {
                 throw Errors.failToGetRecentBlockHash
             }
-            return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(highPriorityFee))
+            return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(highPriorityFee), fromAddressPubKey: nil, toAddressPubKey: nil)
             
         case .sui:
             let (referenceGasPrice, allCoins) = try await sui.getGasInfo(coin: coin)
@@ -98,7 +127,7 @@ final class BlockChainService {
         case .zksync:
             let service = try EvmServiceFactory.getService(forChain: coin.chain)
             let (gasLimit, _, maxFeePerGas, maxPriorityFeePerGas, nonce) = try await service.getGasInfoZk(fromAddress: coin.address, toAddress: "0x0000000000000000000000000000000000000000")
-
+            
             return .Ethereum(maxFeePerGasWei: maxFeePerGas, priorityFeeWei: maxPriorityFeePerGas, nonce: nonce, gasLimit: gasLimit)
             
         case .gaiaChain:
@@ -136,7 +165,7 @@ final class BlockChainService {
             return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 2500000000000000)
         }
     }
-
+    
     func normalizeGasLimit(coin: Coin, action: Action) -> BigInt {
         switch action {
         case .transfer:
@@ -145,7 +174,7 @@ final class BlockChainService {
             return BigInt(EVMHelper.defaultETHSwapGasUnit)
         }
     }
-
+    
     func normalizePriorityFee(_ value: BigInt,_ chain: Chain) -> BigInt {
         if chain == .ethereum || chain == .avalanche {
             // BSC is very cheap , and layer two is very low priority fee as well
@@ -157,7 +186,7 @@ final class BlockChainService {
         }
         return value
     }
-
+    
     func normalize(_ value: BigInt, action: Action) -> BigInt {
         // let's do 1.5x regardless swap of send
         return value + value / 2 // x1.5 fee for swaps

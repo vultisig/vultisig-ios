@@ -145,13 +145,10 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     func getQrImage(size: CGFloat) -> Image {
         guard let encryptionKeyHex else {return Image(systemName: "xmark")}
         let jsonData: String
-        
         do {
-            let jsonEncoder = JSONEncoder()
-            var data: Data
             switch tssType {
             case .Keygen:
-                let km = keygenMessage(
+                let keygenMsg = KeygenMessage(
                     sessionID: sessionID,
                     hexChainCode: vault.hexChainCode,
                     serviceName: serviceName,
@@ -159,9 +156,8 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     useVultisigRelay: VultisigRelay.IsRelayEnabled,
                     vaultName: vault.name
                 )
-                data = try jsonEncoder.encode(PeerDiscoveryPayload.Keygen(km))
-                let json = String(decoding: data, as: UTF8.self)
-                jsonData = "vultisig://vultisig.com?type=NewVault&tssType=Keygen&jsonData=\(json)"
+                let data = try ProtoSerializer.serialize(keygenMsg)
+                jsonData = "vultisig://vultisig.com?type=NewVault&tssType=\(TssType.Keygen.rawValue)&jsonData=\(data)"
             case .Reshare:
                 let reshareMsg = ReshareMessage(
                     sessionID: sessionID,
@@ -174,9 +170,8 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                     oldResharePrefix: vault.resharePrefix ?? "",
                     vaultName: vault.name
                 )
-                data = try jsonEncoder.encode(PeerDiscoveryPayload.Reshare(reshareMsg))
-                let json = String(decoding: data, as: UTF8.self)
-                jsonData = "vultisig://vultisig.com?type=NewVault&tssType=Reshare&jsonData=\(json)"
+                let data = try ProtoSerializer.serialize(reshareMsg)
+                jsonData = "vultisig://vultisig.com?type=NewVault&tssType=\(TssType.Reshare.rawValue)&jsonData=\(data)"
             }
             return Utils.generateQRCodeImage(from: jsonData)
         } catch {

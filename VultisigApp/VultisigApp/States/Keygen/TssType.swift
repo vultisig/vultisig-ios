@@ -5,7 +5,7 @@
 
 import Foundation
 
-enum TssType {
+enum TssType: String {
     case Keygen
     case Reshare
 }

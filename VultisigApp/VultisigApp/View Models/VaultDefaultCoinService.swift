@@ -12,7 +12,7 @@ import SwiftData
 class VaultDefaultCoinService {
     let context: ModelContext
     private let semaphore = DispatchSemaphore(value: 1)
-    let defaultChains = [Chain.bitcoin, Chain.ethereum, Chain.thorChain, Chain.solana]
+    let defaultChains = [Chain.bitcoin, Chain.ethereum, Chain.thorChain, Chain.solana,Chain.bscChain]
     
     init(context:ModelContext){
         self.context = context

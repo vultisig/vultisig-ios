@@ -50,6 +50,9 @@ struct VultisigApp: App {
                 }
                 .buttonStyle(BorderlessButtonStyle())
                 .frame(minWidth: 900, minHeight: 600)
+                .onAppear{
+                    NSWindow.allowsAutomaticWindowTabbing = false
+                }
 #endif
         }
 #if os(iOS)

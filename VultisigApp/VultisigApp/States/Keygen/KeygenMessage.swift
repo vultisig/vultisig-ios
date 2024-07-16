@@ -3,7 +3,7 @@
 //  VultisigApp
 //
 
-struct keygenMessage: Codable {
+struct KeygenMessage {
     let sessionID: String
     let hexChainCode: String
     let serviceName: String
