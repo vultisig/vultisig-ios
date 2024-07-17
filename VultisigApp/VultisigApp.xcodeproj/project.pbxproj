@@ -293,6 +293,8 @@
 		D9AD8EDA2B6722CC0009F8D5 /* ApplicationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */; };
 		D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */; };
 		D9AD8EE62B6730A40009F8D5 /* PeerDiscoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8EE52B6730A40009F8D5 /* PeerDiscoveryView.swift */; };
+		DE0893522C47925A007632F7 /* Vault+ProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0893512C47925A007632F7 /* Vault+ProtoMappable.swift */; };
+		DE0893542C479350007632F7 /* VaultProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0893532C479350007632F7 /* VaultProtoMappable.swift */; };
 		DE13BB9F2C239FC90014B754 /* CoinMeta.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE13BB9E2C239FC90014B754 /* CoinMeta.swift */; };
 		DE1572962B70F254009BC7C5 /* TssMessenger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1572942B70F254009BC7C5 /* TssMessenger.swift */; };
 		DE1572972B70F254009BC7C5 /* LocalStateAccessorImp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1572952B70F254009BC7C5 /* LocalStateAccessorImp.swift */; };
@@ -682,6 +684,8 @@
 		D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ApplicationState.swift; path = "VultisigApp/View Models/ApplicationState.swift"; sourceTree = SOURCE_ROOT; };
 		D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WelcomeView.swift; path = VultisigApp/Views/WelcomeView.swift; sourceTree = SOURCE_ROOT; };
 		D9AD8EE52B6730A40009F8D5 /* PeerDiscoveryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PeerDiscoveryView.swift; path = VultisigApp/Views/Keygen/PeerDiscoveryView.swift; sourceTree = SOURCE_ROOT; };
+		DE0893512C47925A007632F7 /* Vault+ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Vault+ProtoMappable.swift"; sourceTree = "<group>"; };
+		DE0893532C479350007632F7 /* VaultProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultProtoMappable.swift; sourceTree = "<group>"; };
 		DE13BB9E2C239FC90014B754 /* CoinMeta.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinMeta.swift; sourceTree = "<group>"; };
 		DE1572942B70F254009BC7C5 /* TssMessenger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TssMessenger.swift; sourceTree = "<group>"; };
 		DE1572952B70F254009BC7C5 /* LocalStateAccessorImp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalStateAccessorImp.swift; sourceTree = "<group>"; };
@@ -1086,6 +1090,7 @@
 				A563867F2C3A213B008B848E /* ProtoMappableError.swift */,
 				A56386832C3A2167008B848E /* ProtoSerializer.swift */,
 				A56386812C3A2148008B848E /* ProtoCoinResolver.swift */,
+				DE0893532C479350007632F7 /* VaultProtoMappable.swift */,
 			);
 			path = Protobuf;
 			sourceTree = "<group>";
@@ -1469,6 +1474,7 @@
 				469ED3962B98E7B7008D4951 /* Cosmos */,
 				A65649E92B96690400E4B329 /* KeyShare.swift */,
 				DE49A19B2B67133D000F3AFB /* Vault.swift */,
+				DE0893512C47925A007632F7 /* Vault+ProtoMappable.swift */,
 				A5BDC7BD2C32FF4A004DBBE7 /* CoinsGrouped.swift */,
 				DE49A19F2B67143B000F3AFB /* Chain.swift */,
 				DE49A19D2B671416000F3AFB /* Coin.swift */,
@@ -1986,6 +1992,7 @@
 				A62758F72B97DF4A00ADE3A6 /* ColorStyle.swift in Sources */,
 				A6F2C54F2BA009420095C8E3 /* CoinSelectionViewModel.swift in Sources */,
 				46DE088C2BD087D800AE8BDE /* kujira.swift in Sources */,
+				DE0893522C47925A007632F7 /* Vault+ProtoMappable.swift in Sources */,
 				B5A97CF72BF42BE1007574D7 /* TransactionMemoVerifyView.swift in Sources */,
 				A65649E32B96602700E4B329 /* BitcoinTransactionExtension.swift in Sources */,
 				B54B019A2BDE0A1D00FDA472 /* PolkadotService.swift in Sources */,
@@ -2061,6 +2068,7 @@
 				A6F9F7E12B9BAFA700790258 /* NavigationRefreshButton.swift in Sources */,
 				469ED3A22B98F5CB008D4951 /* ThorchainAccountResult.swift in Sources */,
 				A6F9F7E72B9BB63700790258 /* VaultCell.swift in Sources */,
+				DE0893542C479350007632F7 /* VaultProtoMappable.swift in Sources */,
 				A57495822BBC3FCA00D5F172 /* SwapCryptoViewModel.swift in Sources */,
 				A58CC34D2C32FB800086D16B /* KeysignMessage.swift in Sources */,
 				46F8F7262B99FEEC0099454E /* CosmosErrorResponse.swift in Sources */,
