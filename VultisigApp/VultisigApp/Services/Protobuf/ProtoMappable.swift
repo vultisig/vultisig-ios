@@ -10,6 +10,6 @@ import SwiftProtobuf
 
 protocol ProtoMappable {
     associatedtype ProtoType: SwiftProtobuf.Message
-    init(proto: ProtoType, vault: Vault) throws
+    init(proto: ProtoType) throws
     func mapToProtobuff() -> ProtoType
 }

@@ -10,7 +10,7 @@ import VultisigCommonData
 
 extension ReshareMessage: ProtoMappable {
 
-    init(proto: VSReshareMessage, vault: Vault) throws {
+    init(proto: VSReshareMessage) throws {
         self.sessionID = proto.sessionID
         self.hexChainCode = proto.hexChainCode
         self.serviceName = proto.serviceName
