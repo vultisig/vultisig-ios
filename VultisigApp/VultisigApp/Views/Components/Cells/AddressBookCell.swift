@@ -18,14 +18,10 @@ struct AddressBookCell: View {
     @Environment(\.modelContext) var modelContext
     
     var body: some View {
-        Button {
-            handleSelection()
-        } label: {
-            label
-        }
-        .listRowInsets(EdgeInsets())
-        .listRowSeparator(.hidden)
-        .padding(.vertical, 8)
+        label
+            .listRowInsets(EdgeInsets())
+            .listRowSeparator(.hidden)
+            .padding(.vertical, 8)
     }
     
     var label: some View {
@@ -34,7 +30,12 @@ struct AddressBookCell: View {
                 rearrangeIcon
             }
             
-            content
+            Button {
+                handleSelection()
+            } label: {
+                content
+            }
+            .disabled(isEditing)
             
             if isEditing {
                 deleteIcon
