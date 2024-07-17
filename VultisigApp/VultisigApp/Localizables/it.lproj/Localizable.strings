@@ -250,3 +250,6 @@
 "success" = "Successo";
 "addressAddedToAddressBook" = "Indirizzo aggiunto con successo alla rubrica.";
 "noSavedAddresses" = "Nessun indirizzo salvato";
+"numberOfPairedDevicesTwoOfTwo" = "Numero di dispositivi accoppiati %d di 2";
+"numberOfPairedDevicesTwoOfThree" = "Numero di dispositivi accoppiati %d di 3";
+"numberOfPairedDevicesMOfN" = "Numero di dispositivi accoppiati %d di N";

@@ -250,3 +250,6 @@
 "success" = "Éxito";
 "addressAddedToAddressBook" = "Dirección agregada exitosamente a la libreta de direcciones.";
 "noSavedAddresses" = "No hay direcciones guardadas";
+"numberOfPairedDevicesTwoOfTwo" = "Número de dispositivos emparejados %d de 2";
+"numberOfPairedDevicesTwoOfThree" = "Número de dispositivos emparejados %d de 3";
+"numberOfPairedDevicesMOfN" = "Número de dispositivos emparejados %d de N";

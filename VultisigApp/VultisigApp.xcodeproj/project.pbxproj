@@ -209,6 +209,7 @@
 		A6AF96122C2E3D6100992578 /* ImportFileCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6AF96112C2E3D6100992578 /* ImportFileCell.swift */; };
 		A6AF96142C2E545800992578 /* UtilsQrCodeFromImageError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6AF96132C2E545800992578 /* UtilsQrCodeFromImageError.swift */; };
 		A6B51BE92C098DAE007FDD3C /* OnFirstAppear.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B51BE82C098DAE007FDD3C /* OnFirstAppear.swift */; };
+		A6B7F48C2C47A077006D83D1 /* InformationNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B7F48B2C47A077006D83D1 /* InformationNote.swift */; };
 		A6BACF1A2BC705DA00084810 /* ChainDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BACF192BC705DA00084810 /* ChainDetailView.swift */; };
 		A6BACF1C2BC79B3100084810 /* TokenSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BACF1B2BC79B3100084810 /* TokenSelectionView.swift */; };
 		A6BEF5C02BE2B11C007A84A1 /* DeeplinkViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BEF5BF2BE2B11C007A84A1 /* DeeplinkViewModel.swift */; };
@@ -300,6 +301,7 @@
 		D9AD8EDA2B6722CC0009F8D5 /* ApplicationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */; };
 		D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */; };
 		D9AD8EE62B6730A40009F8D5 /* PeerDiscoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9AD8EE52B6730A40009F8D5 /* PeerDiscoveryView.swift */; };
+		DE0893562C47C8FA007632F7 /* Chain+extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE0893552C47C8FA007632F7 /* Chain+extensions.swift */; };
 		DE13BB9F2C239FC90014B754 /* CoinMeta.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE13BB9E2C239FC90014B754 /* CoinMeta.swift */; };
 		DE1572962B70F254009BC7C5 /* TssMessenger.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1572942B70F254009BC7C5 /* TssMessenger.swift */; };
 		DE1572972B70F254009BC7C5 /* LocalStateAccessorImp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE1572952B70F254009BC7C5 /* LocalStateAccessorImp.swift */; };
@@ -608,6 +610,7 @@
 		A6AF96112C2E3D6100992578 /* ImportFileCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportFileCell.swift; sourceTree = "<group>"; };
 		A6AF96132C2E545800992578 /* UtilsQrCodeFromImageError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilsQrCodeFromImageError.swift; sourceTree = "<group>"; };
 		A6B51BE82C098DAE007FDD3C /* OnFirstAppear.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnFirstAppear.swift; sourceTree = "<group>"; };
+		A6B7F48B2C47A077006D83D1 /* InformationNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InformationNote.swift; sourceTree = "<group>"; };
 		A6BACF192BC705DA00084810 /* ChainDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailView.swift; sourceTree = "<group>"; };
 		A6BACF1B2BC79B3100084810 /* TokenSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionView.swift; sourceTree = "<group>"; };
 		A6BEF5BF2BE2B11C007A84A1 /* DeeplinkViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeeplinkViewModel.swift; sourceTree = "<group>"; };
@@ -696,6 +699,7 @@
 		D9AD8ED92B6722CC0009F8D5 /* ApplicationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ApplicationState.swift; path = "VultisigApp/View Models/ApplicationState.swift"; sourceTree = SOURCE_ROOT; };
 		D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WelcomeView.swift; path = VultisigApp/Views/WelcomeView.swift; sourceTree = SOURCE_ROOT; };
 		D9AD8EE52B6730A40009F8D5 /* PeerDiscoveryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PeerDiscoveryView.swift; path = VultisigApp/Views/Keygen/PeerDiscoveryView.swift; sourceTree = SOURCE_ROOT; };
+		DE0893552C47C8FA007632F7 /* Chain+extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Chain+extensions.swift"; sourceTree = "<group>"; };
 		DE13BB9E2C239FC90014B754 /* CoinMeta.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinMeta.swift; sourceTree = "<group>"; };
 		DE1572942B70F254009BC7C5 /* TssMessenger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TssMessenger.swift; sourceTree = "<group>"; };
 		DE1572952B70F254009BC7C5 /* LocalStateAccessorImp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocalStateAccessorImp.swift; sourceTree = "<group>"; };
@@ -850,6 +854,7 @@
 				B590DF872C2E815A00ED934E /* GenericSelectorDropDown.swift */,
 				A6AF960F2C2E2DC900992578 /* FileQRCodeImporterMac.swift */,
 				A63875602C386647000CF242 /* BackupNowDisclaimer.swift */,
+				A6B7F48B2C47A077006D83D1 /* InformationNote.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1507,6 +1512,7 @@
 				DE49A19B2B67133D000F3AFB /* Vault.swift */,
 				A5BDC7BD2C32FF4A004DBBE7 /* CoinsGrouped.swift */,
 				DE49A19F2B67143B000F3AFB /* Chain.swift */,
+				DE0893552C47C8FA007632F7 /* Chain+extensions.swift */,
 				DE49A19D2B671416000F3AFB /* Coin.swift */,
 				A65649F72B96701300E4B329 /* UTXOTransactionMempoolPreviousOutput.swift */,
 				DE63AE4C2BB4E94E001BBE5C /* JSONRPCResponse.swift */,
@@ -2016,6 +2022,7 @@
 				46DE08952BD0DCA200AE8BDE /* EvmL2Service.swift in Sources */,
 				A6AF96122C2E3D6100992578 /* ImportFileCell.swift in Sources */,
 				A65BA98A2BAAA7A300B2D8AA /* SendCryptoVaultErrorView.swift in Sources */,
+				A6B7F48C2C47A077006D83D1 /* InformationNote.swift in Sources */,
 				46C8CBBF2BA777BF00E68E08 /* BlockchairService.swift in Sources */,
 				A66BFCD52C136FB3004DCD4F /* VaultDetailBalanceContent.swift in Sources */,
 				DEFF58FE2BD13E5D005DFDF9 /* ThreadSafeDictionary.swift in Sources */,
@@ -2028,6 +2035,7 @@
 				B54B019A2BDE0A1D00FDA472 /* PolkadotService.swift in Sources */,
 				A65BA9822BA93A9F00B2D8AA /* DebounceHelper.swift in Sources */,
 				A690E00E2BC0ED290006DC0D /* URL.swift in Sources */,
+				DE0893562C47C8FA007632F7 /* Chain+extensions.swift in Sources */,
 				A6D07E432C36756700594687 /* OnboardingView4.swift in Sources */,
 				B52196442C12C3540021D27A /* CustomTokenView.swift in Sources */,
 				B5A97CEF2BF41779007574D7 /* TransactionMemoViewModel.swift in Sources */,

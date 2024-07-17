@@ -250,3 +250,6 @@
 "success" = "Erfolg";
 "addressAddedToAddressBook" = "Adresse erfolgreich zum Adressbuch hinzugefügt.";
 "noSavedAddresses" = "Keine gespeicherten Adressen";
+"numberOfPairedDevicesTwoOfTwo" = "Anzahl der paarweise verbundenen Geräte %d von 2";
+"numberOfPairedDevicesTwoOfThree" = "Anzahl der paarweise verbundenen Geräte %d von 3";
+"numberOfPairedDevicesMOfN" = "Anzahl der paarweise verbundenen Geräte %d von N";

@@ -214,7 +214,7 @@ class JoinKeysignViewModel: ObservableObject {
         }
 
         do {
-            let keysignMsg: KeysignMessage = try ProtoSerializer.deserialize(base64EncodedString: data, vault: vault)
+            let keysignMsg: KeysignMessage = try ProtoSerializer.deserialize(base64EncodedString: data)
             self.sessionID = keysignMsg.sessionID
             self.keysignPayload = keysignMsg.payload
             self.serviceName = keysignMsg.serviceName

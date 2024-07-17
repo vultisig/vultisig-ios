@@ -19,13 +19,13 @@ struct ProtoSerializer {
         return compressedDataBase64
     }
 
-    static func deserialize<T: ProtoMappable>(base64EncodedString: String, vault: Vault) throws -> T {
+    static func deserialize<T: ProtoMappable>(base64EncodedString: String) throws -> T {
         guard let compressedData = Data(base64Encoded: base64EncodedString) else {
             throw ProtoMappableError.base64EncodedDataNotFound
         }
         let serializedData = try (compressedData as NSData).decompressed(using: .zlib) as Data
         let proto = try T.ProtoType(serializedData: serializedData)
-        let model = try T(proto: proto, vault: vault)
+        let model = try T(proto: proto)
         return model
     }
 }

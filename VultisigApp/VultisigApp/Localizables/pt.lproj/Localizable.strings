@@ -251,3 +251,6 @@
 "success" = "Sucesso";
 "addressAddedToAddressBook" = "Endereço adicionado ao livro de endereços com sucesso.";
 "noSavedAddresses" = "Nenhum endereço salvo";
+"numberOfPairedDevicesTwoOfTwo" = "Número de dispositivos emparelhados %d de 2";
+"numberOfPairedDevicesTwoOfThree" = "Número de dispositivos emparelhados %d de 3";
+"numberOfPairedDevicesMOfN" = "Número de dispositivos emparelhados %d de N";
