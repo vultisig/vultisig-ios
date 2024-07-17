@@ -5,8 +5,10 @@
 //  Created by Amol Kumar on 2024-07-11.
 //
 
+import SwiftData
 import Foundation
 
+@Model
 class AddressBookItem: Equatable {
     let id = UUID()
     var title: String

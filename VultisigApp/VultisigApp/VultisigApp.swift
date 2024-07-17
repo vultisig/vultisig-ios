@@ -20,7 +20,6 @@ struct VultisigApp: App {
     @StateObject var deeplinkViewModel = DeeplinkViewModel()
     @StateObject var settingsViewModel = SettingsViewModel.shared
     @StateObject var homeViewModel = HomeViewModel()
-    @StateObject var addressBookViewModel = AddressBookViewModel()
     
     init(){
         //setenv("GODEBUG", "asyncpreemptoff=1",1)
@@ -35,7 +34,6 @@ struct VultisigApp: App {
                 .environmentObject(deeplinkViewModel)
                 .environmentObject(settingsViewModel)
                 .environmentObject(homeViewModel)
-                .environmentObject(addressBookViewModel)
             
 #if os(macOS)
                 .onChange(of: scenePhase) {
@@ -74,6 +72,7 @@ struct VultisigApp: App {
         let schema = Schema([
             Vault.self,
             Coin.self,
+            AddressBookItem.self
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema,

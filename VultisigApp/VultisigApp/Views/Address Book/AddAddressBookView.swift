@@ -6,9 +6,11 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct AddAddressBookView: View {
-    @EnvironmentObject var addressBookViewModel: AddressBookViewModel
+    let count: Int
+    
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
     
@@ -17,6 +19,8 @@ struct AddAddressBookView: View {
     @State var selectedChain: CoinMeta? = nil
     
     @Environment(\.dismiss) var dismiss
+    @Environment(\.modelContext) var modelContext
+//    @Query var savedAddresses: [AddressBookItem]
     
     var body: some View {
         ZStack {
@@ -82,8 +86,8 @@ struct AddAddressBookView: View {
         
         coinSelectionViewModel.setData(for: vault)
         
-        let chain = coinSelectionViewModel.groupedAssets.first
-        selectedChain = chain?.value.first
+        let key = coinSelectionViewModel.groupedAssets.keys.sorted().first ?? ""
+        selectedChain = coinSelectionViewModel.groupedAssets[key]?.first
     }
     
     private func addAddress() {
@@ -91,19 +95,20 @@ struct AddAddressBookView: View {
             return
         }
         
-        addressBookViewModel.addNewAddress(
+        let data = AddressBookItem(
             title: title,
             address: address,
-            coinMeta: selectedChain
+            coinMeta: selectedChain, 
+            order: count
         )
+        modelContext.insert(data)
         
         dismiss()
     }
 }
 
 #Preview {
-    AddAddressBookView()
+    AddAddressBookView(count: 0)
         .environmentObject(CoinSelectionViewModel())
-        .environmentObject(AddressBookViewModel())
         .environmentObject(HomeViewModel())
 }

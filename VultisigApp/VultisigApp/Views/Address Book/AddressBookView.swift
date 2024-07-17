@@ -6,16 +6,19 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct AddressBookView: View {
     var shouldReturnAddress = true
     @Binding var returnAddress: String
     
-    @EnvironmentObject var addressBookViewModel: AddressBookViewModel
+    @Query var savedAddresses: [AddressBookItem]
+    
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     
     @State var title: String = ""
     @State var address: String = ""
+    @State var isEditing = false
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -30,7 +33,7 @@ struct AddressBookView: View {
                 NavigationBackButton()
             }
             
-            if addressBookViewModel.savedAddresses.count != 0 {
+            if savedAddresses.count != 0 {
                 ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                     navigationButton
                 }
@@ -38,14 +41,14 @@ struct AddressBookView: View {
         }
         .onDisappear {
             withAnimation {
-                addressBookViewModel.isEditing = false
+                isEditing = false
             }
         }
     }
     
     var view: some View {
         ZStack {
-            if addressBookViewModel.savedAddresses.count == 0 {
+            if savedAddresses.count == 0 {
                 emptyView
             } else {
                 list
@@ -63,14 +66,17 @@ struct AddressBookView: View {
     
     var list: some View {
         List {
-            ForEach(addressBookViewModel.savedAddresses, id: \.id) { address in
+            ForEach(savedAddresses.sorted(by: {
+                $0.order < $1.order
+            }), id: \.id) { address in
                 AddressBookCell(
                     address: address,
-                    shouldReturnAddress: shouldReturnAddress,
+                    shouldReturnAddress: shouldReturnAddress, 
+                    isEditing: isEditing,
                     returnAddress: $returnAddress
                 )
             }
-            .onMove(perform: addressBookViewModel.isEditing ? addressBookViewModel.move: nil)
+            .onMove(perform: isEditing ? move: nil)
             .background(Color.backgroundBlue)
         }
         .listStyle(PlainListStyle())
@@ -92,7 +98,7 @@ struct AddressBookView: View {
     
     var navigationEditButton: some View {
         ZStack {
-            if addressBookViewModel.isEditing {
+            if isEditing {
                 doneButton
             } else {
                 NavigationEditButton()
@@ -111,30 +117,53 @@ struct AddressBookView: View {
     }
     
     var addAddressButton: some View {
-        let condition = addressBookViewModel.isEditing || addressBookViewModel.savedAddresses.count == 0
+        let condition = isEditing || savedAddresses.count == 0
         
         return NavigationLink {
-            AddAddressBookView()
+            AddAddressBookView(count: savedAddresses.count)
         } label: {
             FilledButton(title: "addAddress")
                 .padding(.horizontal, 16)
                 .padding(.vertical, 40)
         }
         .frame(height: condition ? nil : 0)
-        .animation(.easeInOut, value: addressBookViewModel.isEditing)
+        .animation(.easeInOut, value: isEditing)
         .clipped()
     }
     
     private func toggleEdit() {
         withAnimation {
-            addressBookViewModel.isEditing.toggle()
+            isEditing.toggle()
+        }
+    }
+    
+    private func move(from: IndexSet, to: Int) {
+        let fromIndex = from.first ?? 0
+        
+        if fromIndex<to {
+            moveDown(fromIndex: fromIndex, toIndex: to-1)
+        } else {
+            moveUp(fromIndex: fromIndex, toIndex: to)
+        }
+    }
+    
+    private func moveDown(fromIndex: Int, toIndex: Int) {
+        for index in fromIndex...toIndex {
+            savedAddresses[index].order = savedAddresses[index].order-1
+        }
+        savedAddresses[fromIndex].order = toIndex
+    }
+    
+    private func moveUp(fromIndex: Int, toIndex: Int) {
+        savedAddresses[fromIndex].order = toIndex
+        for index in toIndex...fromIndex {
+            savedAddresses[index].order = savedAddresses[index].order+1
         }
     }
 }
 
 #Preview {
     AddressBookView(returnAddress: .constant(""))
-        .environmentObject(AddressBookViewModel())
         .environmentObject(CoinSelectionViewModel())
         .environmentObject(HomeViewModel())
 }

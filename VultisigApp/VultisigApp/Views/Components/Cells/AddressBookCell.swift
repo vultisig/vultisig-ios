@@ -6,15 +6,16 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct AddressBookCell: View {
     let address: AddressBookItem
     let shouldReturnAddress: Bool
+    let isEditing: Bool
     @Binding var returnAddress: String
     
-    @EnvironmentObject var viewModel: AddressBookViewModel
-    
     @Environment(\.dismiss) var dismiss
+    @Environment(\.modelContext) var modelContext
     
     var body: some View {
         Button {
@@ -29,13 +30,13 @@ struct AddressBookCell: View {
     
     var label: some View {
         HStack(spacing: 8) {
-            if viewModel.isEditing {
+            if isEditing {
                 rearrangeIcon
             }
             
             content
             
-            if viewModel.isEditing {
+            if isEditing {
                 deleteIcon
             }
         }
@@ -99,13 +100,13 @@ struct AddressBookCell: View {
             .font(.body24MontserratMedium)
             .rotationEffect(.degrees(90))
             .foregroundColor(.neutral300)
-            .scaleEffect(viewModel.isEditing ? 1 : 0)
-            .frame(width: viewModel.isEditing ? nil : 0)
+            .scaleEffect(isEditing ? 1 : 0)
+            .frame(width: isEditing ? nil : 0)
     }
     
     var deleteIcon: some View {
         Button {
-            viewModel.removeAddress(address)
+            modelContext.delete(address)
         } label: {
             deleteIconLabel
         }
@@ -115,8 +116,8 @@ struct AddressBookCell: View {
         Image(systemName: "trash")
             .font(.body24MontserratMedium)
             .foregroundColor(.neutral0)
-            .scaleEffect(viewModel.isEditing ? 1 : 0)
-            .frame(width: viewModel.isEditing ? nil : 0)
+            .scaleEffect(isEditing ? 1 : 0)
+            .frame(width: isEditing ? nil : 0)
     }
     
     private func handleSelection() {
@@ -133,9 +134,8 @@ struct AddressBookCell: View {
     ZStack {
         Background()
         VStack {
-            AddressBookCell(address: AddressBookItem.example, shouldReturnAddress: true, returnAddress: .constant(""))
-            AddressBookCell(address: AddressBookItem.example, shouldReturnAddress: false, returnAddress: .constant(""))
+            AddressBookCell(address: AddressBookItem.example, shouldReturnAddress: true, isEditing: false, returnAddress: .constant(""))
+            AddressBookCell(address: AddressBookItem.example, shouldReturnAddress: false,  isEditing: false, returnAddress: .constant(""))
         }
     }
-    .environmentObject(AddressBookViewModel())
 }
