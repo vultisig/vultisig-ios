@@ -60,8 +60,7 @@ struct SwapCryptoAmountTextField: View {
     }
     
     var field: some View {
-        
-        var customBiding = Binding<String>(
+        let customBiding = Binding<String>(
             get: { amount },
             set: {
                 let newValue = $0.formatCurrency()

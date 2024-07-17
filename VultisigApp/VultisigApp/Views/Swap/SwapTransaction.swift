@@ -18,7 +18,10 @@ class SwapTransaction: ObservableObject {
     @Published var oneInchFee: BigInt = .zero
     @Published var gas: BigInt = .zero
     @Published var quote: SwapQuote?
-    @Published var isApproveRequired: Bool = false
+
+    var isApproveRequired: Bool {
+        return fromCoin.shouldApprove && router != nil
+    }
 
     var fee: BigInt {
         switch quote {

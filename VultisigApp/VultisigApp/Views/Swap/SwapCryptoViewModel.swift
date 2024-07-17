@@ -148,32 +148,13 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         }
     }
 
-    func shouldApprove(tx: SwapTransaction) async throws -> Bool {
-        guard tx.fromCoin.shouldApprove, let spender = tx.router else {
-            return false
-        }
-        let service = try EvmServiceFactory.getService(forChain: tx.fromCoin.chain)
-        let allowance = try await service.fetchAllowance(
-            contractAddress: tx.fromCoin.contractAddress,
-            owner: tx.fromCoin.address,
-            spender: spender
-        )
-        let amount = swapFromAmount(tx: tx)
-        return amount > allowance
-    }
-
-    func updateIsApproveRequired(tx: SwapTransaction) async throws {
-        isLoading = true
-        defer { isLoading = false }
-        tx.isApproveRequired = try await shouldApprove(tx: tx)
-    }
-
     func buildApprovePayload(tx: SwapTransaction) async throws -> ERC20ApprovePayload? {
-        guard let spender = tx.router else {
+        guard tx.isApproveRequired, let spender = tx.router else {
             return nil
         }
-        let payload = ERC20ApprovePayload(amount: .maxAllowance, spender: spender)
-        return try await shouldApprove(tx: tx) ? payload : nil
+        let amount = swapFromAmount(tx: tx)
+        let payload = ERC20ApprovePayload(amount: amount, spender: spender)
+        return payload
     }
 
     func durationString(tx: SwapTransaction) -> String {
