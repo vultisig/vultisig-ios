@@ -100,9 +100,11 @@ struct AddAddressBookView: View {
             coinMeta: selectedChain, 
             order: count
         )
-        modelContext.insert(data)
         
-        dismiss()
+        DispatchQueue.main.asyncAfter(deadline: .now()) {
+            modelContext.insert(data)
+            dismiss()
+        }
     }
 }
 

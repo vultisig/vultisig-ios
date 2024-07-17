@@ -126,7 +126,11 @@ struct AddressBookView: View {
         } label: {
             FilledButton(title: "addAddress")
                 .padding(.horizontal, 16)
+#if os(iOS)
                 .padding(.vertical, 30)
+#elseif os(macOS)
+                .padding(.vertical, 50)
+#endif
         }
         .frame(height: condition ? nil : 0)
         .animation(.easeInOut, value: isEditing)
