@@ -144,6 +144,7 @@ struct JoinKeygenView: View {
     
     var discoveringService: some View {
         VStack {
+            Spacer()
             HStack {
                 Text(NSLocalizedString("thisDevice", comment: "This device"))
                 Text(self.viewModel.localPartyID)
@@ -162,6 +163,8 @@ struct JoinKeygenView: View {
                         }
                 }
             }
+            Spacer()
+            informationNote
         }
         .font(.body15MenloBold)
         .foregroundColor(.neutral0)
@@ -226,6 +229,12 @@ struct JoinKeygenView: View {
     
     var cameraErrorView: some View {
         NoCameraPermissionView()
+    }
+    
+    var informationNote: some View {
+        InformationNote()
+            .padding(.bottom, 50)
+            .padding(.horizontal, 15)
     }
     
     private func setData() {
