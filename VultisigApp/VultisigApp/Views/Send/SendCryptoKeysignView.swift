@@ -100,7 +100,8 @@ struct SendCryptoKeysignView: View {
         } label: {
             FilledButton(title: "tryAgain")
         }
-        .padding(40)
+        .padding(.vertical, 40)
+        .padding(.horizontal, 15)
     }
 }
 
