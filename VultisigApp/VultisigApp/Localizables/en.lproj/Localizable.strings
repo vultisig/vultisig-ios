@@ -263,3 +263,4 @@
 "enterVaultName" = "Enter vault name";
 "pleaseBackupVault" = "Please Backup your Vault Shares now";
 "pleaseBackupVaultNote" = "Note: Never store Vault Shares from different devices in the same location.";
+"informationNote" = "Keep devices on the same WiFi Network, correct vault and pair devices.\nMake sure no other devices are running Vultisig.";
