@@ -241,6 +241,16 @@
 "memo(optional)" = "MEMO (Opcional)";
 "enterMemo" = "Insira o memo";
 "enterVaultName" = "Digite o nome do cofre";
+"pleaseBackupVault" = "Por favor, faça backup de suas Ações do Cofre agora";
+"pleaseBackupVaultNote" = "Nota: Nunca armazene Ações do Cofre de dispositivos diferentes no mesmo local.";
+"addressBook" = "Livro de endereços";
+"addAddress" = "Adicionar endereço";
+"address" = "Endereço";
+"title" = "Título";
+"saveAddress" = "Salvar endereço";
+"success" = "Sucesso";
+"addressAddedToAddressBook" = "Endereço adicionado ao livro de endereços com sucesso.";
+"noSavedAddresses" = "Nenhum endereço salvo";
 "numberOfPairedDevicesTwoOfTwo" = "Número de dispositivos emparelhados %d de 2";
 "numberOfPairedDevicesTwoOfThree" = "Número de dispositivos emparelhados %d de 3";
 "numberOfPairedDevicesMOfN" = "Número de dispositivos emparelhados %d de N";
