@@ -76,17 +76,18 @@ struct AddressBookView: View {
                     isEditing: isEditing,
                     returnAddress: $returnAddress
                 )
+                .padding(.bottom, address.id == savedAddresses.last?.id ? 100 : 0)
             }
             .onMove(perform: isEditing ? move: nil)
+            .padding(.horizontal, 15)
             .background(Color.backgroundBlue)
         }
         .listStyle(PlainListStyle())
         .buttonStyle(BorderlessButtonStyle())
         .colorScheme(.dark)
         .scrollContentBackground(.hidden)
-        .padding(15)
-        .padding(.top, 10)
-        .background(Color.backgroundBlue)
+        .padding(.top, 30)
+        .background(Color.backgroundBlue.opacity(0.9))
     }
     
     var navigationButton: some View {
@@ -125,12 +126,12 @@ struct AddressBookView: View {
         } label: {
             FilledButton(title: "addAddress")
                 .padding(.horizontal, 16)
-                .padding(.vertical, 40)
+                .padding(.vertical, 30)
         }
         .frame(height: condition ? nil : 0)
         .animation(.easeInOut, value: isEditing)
         .clipped()
-        .background(Color.backgroundBlue.opacity(0.8))
+        .background(Color.backgroundBlue)
     }
     
     private func toggleEdit() {

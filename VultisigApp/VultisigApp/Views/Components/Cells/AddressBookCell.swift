@@ -88,6 +88,8 @@ struct AddressBookCell: View {
         Text(address.coinMeta.chain.name + " " + NSLocalizedString("network", comment: ""))
             .foregroundColor(.neutral300)
             .font(.body12Menlo)
+            .lineLimit(1)
+            .truncationMode(.tail)
     }
     
     var addressContent: some View {
