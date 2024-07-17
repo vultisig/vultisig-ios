@@ -200,9 +200,7 @@ class JoinKeygenViewModel: ObservableObject {
             switch tssType {
             case .Keygen:
                 let keygenMsg: KeygenMessage = try ProtoSerializer.deserialize(
-                    base64EncodedString: scanData,
-                    vault: vault
-                )
+                    base64EncodedString: scanData)
                 sessionID = keygenMsg.sessionID
                 hexChainCode = keygenMsg.hexChainCode
                 vault.hexChainCode = hexChainCode
@@ -218,9 +216,7 @@ class JoinKeygenViewModel: ObservableObject {
                 }
             case .Reshare:
                 let reshareMsg: ReshareMessage = try ProtoSerializer.deserialize(
-                    base64EncodedString: scanData,
-                    vault: vault
-                )
+                    base64EncodedString: scanData)
                 oldCommittee = reshareMsg.oldParties
                 sessionID = reshareMsg.sessionID
                 hexChainCode = reshareMsg.hexChainCode
