@@ -12,16 +12,27 @@ struct ProtoCoinResolver {
 
     private init() { }
 
-    static func resolve(vault: Vault, coin: VSCoin) throws -> Coin {
-        guard let coin = vault.coins.first(where: { $0.chain.name == coin.chain && $0.ticker == coin.ticker }) else {
-            throw ProtoMappableError.coinNotFound
+    static func resolve(coin: VSCoin) throws -> Coin {
+        guard let chain = Chain(name: coin.chain) else {
+            throw ProtoMappableError.chainNotSupport
         }
-
-        return coin
+        let cm = CoinMeta(chain: chain, 
+                          ticker: coin.ticker,
+                          logo: coin.logo,
+                          decimals: Int(coin.decimals),
+                          priceProviderId: coin.priceProviderID,
+                          contractAddress: coin.contractAddress,
+                          isNativeToken: coin.isNativeToken)
+        return Coin(asset: cm, address: coin.address, hexPublicKey: coin.hexPublicKey)
     }
 
     static func proto(from coin: Coin) -> VSCoin {
         return .with {
+            $0.decimals = Int32(coin.decimals)
+            $0.hexPublicKey = coin.hexPublicKey
+            $0.isNativeToken = coin.isNativeToken
+            $0.priceProviderID = coin.priceProviderId
+            $0.logo = coin.logo
             $0.chain = coin.chain.name
             $0.ticker = coin.ticker
             $0.address = coin.address

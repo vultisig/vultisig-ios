@@ -11,10 +11,10 @@ import VultisigCommonData
 
 extension KeysignMessage: ProtoMappable {
     
-    init(proto: VSKeysignMessage, vault: Vault) throws {
+    init(proto: VSKeysignMessage) throws {
         self.sessionID = proto.sessionID
         self.serviceName = proto.serviceName
-        self.payload = try KeysignPayload(proto: proto.keysignPayload, vault: vault)
+        self.payload = try KeysignPayload(proto: proto.keysignPayload)
         self.encryptionKeyHex = proto.encryptionKeyHex
         self.useVultisigRelay = proto.useVultisigRelay
     }
@@ -32,12 +32,12 @@ extension KeysignMessage: ProtoMappable {
 
 extension KeysignPayload: ProtoMappable {
     
-    init(proto: VSKeysignPayload, vault: Vault) throws {
+    init(proto: VSKeysignPayload) throws {
         guard let blockchainSpecific = proto.blockchainSpecific else {
             throw ProtoMappableError.blockchainSpecificNotFound
         }
         
-        self.coin = try ProtoCoinResolver.resolve(vault: vault, coin: proto.coin)
+        self.coin = try ProtoCoinResolver.resolve(coin: proto.coin)
         self.toAddress = proto.toAddress
         self.toAmount = BigInt(stringLiteral: proto.toAmount)
         self.chainSpecific = try BlockChainSpecific(proto: blockchainSpecific)
@@ -45,7 +45,7 @@ extension KeysignPayload: ProtoMappable {
         self.memo = proto.memo
         self.vaultPubKeyECDSA = proto.vaultPublicKeyEcdsa
         self.vaultLocalPartyID = proto.vaultLocalPartyID
-        self.swapPayload = try proto.swapPayload.map { try SwapPayload(proto: $0, vault: vault) }
+        self.swapPayload = try proto.swapPayload.map { try SwapPayload(proto: $0) }
         self.approvePayload = proto.hasErc20ApprovePayload ? ERC20ApprovePayload(proto: proto.erc20ApprovePayload) : nil
     }
     
@@ -84,14 +84,13 @@ extension ERC20ApprovePayload {
 }
 
 extension SwapPayload {
-    
-    init(proto: VSKeysignPayload.OneOf_SwapPayload, vault: Vault) throws {
+    init(proto: VSKeysignPayload.OneOf_SwapPayload) throws {
         switch proto {
         case .thorchainSwapPayload(let value):
             self = .thorchain(THORChainSwapPayload(
                 fromAddress: value.fromAddress,
-                fromCoin: try ProtoCoinResolver.resolve(vault: vault, coin: value.fromCoin),
-                toCoin: try ProtoCoinResolver.resolve(vault: vault, coin: value.toCoin),
+                fromCoin: try ProtoCoinResolver.resolve(coin: value.fromCoin),
+                toCoin: try ProtoCoinResolver.resolve(coin: value.toCoin),
                 vaultAddress: value.vaultAddress,
                 routerAddress: value.routerAddress.nilIfEmpty,
                 fromAmount: BigInt(stringLiteral: value.fromAmount),
@@ -105,8 +104,8 @@ extension SwapPayload {
         case .mayachainSwapPayload(let value):
             self = .mayachain(THORChainSwapPayload(
                 fromAddress: value.fromAddress,
-                fromCoin: try ProtoCoinResolver.resolve(vault: vault, coin: value.fromCoin),
-                toCoin: try ProtoCoinResolver.resolve(vault: vault, coin: value.toCoin),
+                fromCoin: try ProtoCoinResolver.resolve(coin: value.fromCoin),
+                toCoin: try ProtoCoinResolver.resolve(coin: value.toCoin),
                 vaultAddress: value.vaultAddress,
                 routerAddress: value.routerAddress.nilIfEmpty,
                 fromAmount: BigInt(stringLiteral: value.fromAmount),
@@ -119,8 +118,8 @@ extension SwapPayload {
             ))
         case .oneinchSwapPayload(let value):
             self = .oneInch(OneInchSwapPayload(
-                fromCoin: try ProtoCoinResolver.resolve(vault: vault, coin: value.fromCoin),
-                toCoin: try ProtoCoinResolver.resolve(vault: vault, coin: value.toCoin),
+                fromCoin: try ProtoCoinResolver.resolve(coin: value.fromCoin),
+                toCoin: try ProtoCoinResolver.resolve(coin: value.toCoin),
                 fromAmount: BigInt(stringLiteral: value.fromAmount),
                 toAmountDecimal: Decimal(string: value.toAmountDecimal) ?? 0,
                 quote: OneInchQuote(

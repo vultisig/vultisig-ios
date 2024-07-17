@@ -10,7 +10,7 @@ import VultisigCommonData
 
 extension KeygenMessage: ProtoMappable {
 
-    init(proto: VSKeygenMessage, vault: Vault) throws {
+    init(proto: VSKeygenMessage) throws {
         self.sessionID = proto.sessionID
         self.hexChainCode = proto.hexChainCode
         self.serviceName = proto.serviceName
