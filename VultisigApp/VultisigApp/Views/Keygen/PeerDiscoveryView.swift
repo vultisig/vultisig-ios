@@ -18,6 +18,8 @@ struct PeerDiscoveryView: View {
     @State var qrCodeImage: Image? = nil
     @State var isLandscape: Bool = true
     
+    @State private var showInvalidNumberOfSelectedDevices = false
+    
     @Environment(\.displayScale) var displayScale
     
 #if os(iOS)
@@ -235,7 +237,7 @@ struct PeerDiscoveryView: View {
                 devices
             }
 #if os(iOS)
-        .padding(idiom == .phone ? 0 : 20)
+            .padding(idiom == .phone ? 0 : 20)
 #endif
         }
         .scrollIndicators(.hidden)
@@ -276,6 +278,17 @@ struct PeerDiscoveryView: View {
             .padding(.vertical, 10)
     }
     
+    func disableContinueButton() -> Bool {
+        switch selectedTab {
+        case .TwoOfTwoVaults:
+            return viewModel.selections.count < 2
+        case .TwoOfThreeVaults:
+            return viewModel.selections.count < 3
+        default:
+            return false
+        }
+    }
+    
     var bottomButton: some View {
         Button(action: {
             viewModel.showSummary()
@@ -285,9 +298,9 @@ struct PeerDiscoveryView: View {
         .padding(.horizontal, 40)
         .padding(.top, 20)
         .padding(.bottom, 10)
-        .disabled(viewModel.selections.count < 2)
-        .opacity(viewModel.selections.count < 2 ? 0.8 : 1)
-        .grayscale(viewModel.selections.count < 2 ? 1 : 0)
+        .disabled(disableContinueButton())
+        .opacity(disableContinueButton() ? 0.8 : 1)
+        .grayscale(disableContinueButton() ? 1 : 0)
 #if os(macOS)
         .padding(.bottom, 30)
 #endif
@@ -347,12 +360,7 @@ struct PeerDiscoveryView: View {
         } else {
             viewModel.selections.insert(peer)
         }
-        let totalSigners = viewModel.selections.count
-        
-        if totalSigners >= 2 {
-            let threshold = Int(ceil(Double(totalSigners) * 2.0 / 3.0))
-            viewModel.vaultDetail = "\(threshold)of\(totalSigners) Vault"
-        }
+        setNumberOfPairedDevices();
     }
     
     private func handleAutoSelection() {
@@ -381,6 +389,21 @@ struct PeerDiscoveryView: View {
         selectedTab.getNavigationTitle() +
         " " +
         NSLocalizedString("vault", comment: "")
+    }
+    
+    func setNumberOfPairedDevices() {
+        
+        let totalSigners = viewModel.selections.count
+        
+        switch selectedTab {
+        case .TwoOfTwoVaults:
+            viewModel.vaultDetail = String(format:  NSLocalizedString("numberOfPairedDevicesTwoOfTwo", comment: ""), totalSigners)
+        case .TwoOfThreeVaults:
+            viewModel.vaultDetail = String(format:  NSLocalizedString("numberOfPairedDevicesTwoOfThree", comment: ""), totalSigners)
+        default:
+            viewModel.vaultDetail = String(format:  NSLocalizedString("numberOfPairedDevicesMOfN", comment: ""), totalSigners)
+        }
+        
     }
 }
 

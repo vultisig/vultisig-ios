@@ -240,3 +240,6 @@
 "memo(optional)" = "MEMO (Opcionalno)";
 "enterMemo" = "Unesite bilješku";
 "enterVaultName" = "Unesite naziv spremišta";
+"numberOfPairedDevicesTwoOfTwo" = "Broj uređaja uparenih u par %d od 2";
+"numberOfPairedDevicesTwoOfThree" = "Broj uređaja uparenih u par %d od 3";
+"numberOfPairedDevicesMOfN" = "Broj uređaja uparenih u par %d od N";
