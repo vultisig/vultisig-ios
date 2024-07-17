@@ -20,7 +20,6 @@ struct AddAddressBookView: View {
     
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var modelContext
-//    @Query var savedAddresses: [AddressBookItem]
     
     var body: some View {
         ZStack {

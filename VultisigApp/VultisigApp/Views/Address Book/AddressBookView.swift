@@ -14,6 +14,7 @@ struct AddressBookView: View {
     
     @Query var savedAddresses: [AddressBookItem]
     
+    @Environment(\.modelContext) var modelContext
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     
     @State var title: String = ""
@@ -138,13 +139,12 @@ struct AddressBookView: View {
     }
     
     private func move(from: IndexSet, to: Int) {
-        let fromIndex = from.first ?? 0
-        
-        if fromIndex<to {
-            moveDown(fromIndex: fromIndex, toIndex: to-1)
-        } else {
-            moveUp(fromIndex: fromIndex, toIndex: to)
+        var s = savedAddresses.sorted(by: { $0.order < $1.order })
+        s.move(fromOffsets: from, toOffset: to)
+        for (index, item) in s.enumerated() {
+                item.order = index
         }
+        try? self.modelContext.save()
     }
     
     private func moveDown(fromIndex: Int, toIndex: Int) {
