@@ -158,7 +158,7 @@ class EncryptedBackupViewModel: ObservableObject {
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
             if let password = alert.textFields?.first?.text {
                 self.decryptionPassword = password
-                self.importFileWithPassword(from: url, password: password)
+                self.importFileWithPassword(from: data, password: password)
             }
         }))
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
