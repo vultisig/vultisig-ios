@@ -20,6 +20,7 @@ struct JoinKeygenView: View {
     @StateObject var viewModel = JoinKeygenViewModel()
     @StateObject var serviceDelegate = ServiceDelegate()
     @State var showFileImporter = false
+    @State var showInformationNote = false
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var appViewModel: ApplicationState
@@ -164,7 +165,10 @@ struct JoinKeygenView: View {
                 }
             }
             Spacer()
-            informationNote
+            
+            if showInformationNote {
+                informationNote
+            }
         }
         .font(.body15MenloBold)
         .foregroundColor(.neutral0)
@@ -173,6 +177,12 @@ struct JoinKeygenView: View {
         .onAppear {
             logger.info("Start to discover service")
             viewModel.discoverService()
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
+                withAnimation {
+                    showInformationNote = true
+                }
+            }
         }
     }
     
@@ -235,6 +245,9 @@ struct JoinKeygenView: View {
         InformationNote()
             .padding(.bottom, 50)
             .padding(.horizontal, 15)
+            .frame(height: showInformationNote ? nil : 0)
+            .clipped()
+            .padding(1)
     }
     
     private func setData() {
