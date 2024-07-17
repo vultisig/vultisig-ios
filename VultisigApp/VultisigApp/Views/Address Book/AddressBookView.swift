@@ -130,6 +130,7 @@ struct AddressBookView: View {
         .frame(height: condition ? nil : 0)
         .animation(.easeInOut, value: isEditing)
         .clipped()
+        .background(Color.backgroundBlue.opacity(0.8))
     }
     
     private func toggleEdit() {

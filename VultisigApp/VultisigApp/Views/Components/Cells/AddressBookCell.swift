@@ -80,6 +80,8 @@ struct AddressBookCell: View {
         Text(address.title)
             .foregroundColor(.neutral0)
             .font(.body14MontserratSemiBold)
+            .lineLimit(1)
+            .truncationMode(.tail)
     }
     
     var networkContent: some View {
