@@ -243,5 +243,3 @@
 "numberOfPairedDevicesTwoOfTwo" = "Broj uređaja uparenih u par %d od 2";
 "numberOfPairedDevicesTwoOfThree" = "Broj uređaja uparenih u par %d od 3";
 "numberOfPairedDevicesMOfN" = "Broj uređaja uparenih u par %d od N";
-"invalidNumberOfDevicesDetected" = "Nevaljani broj uređaja otkriven";
-"pairAllDevicesToProceed" = "Molim, povežite sve uređaje prije nego što nastavite.";

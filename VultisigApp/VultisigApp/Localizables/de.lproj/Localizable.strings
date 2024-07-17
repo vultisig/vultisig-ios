@@ -243,5 +243,3 @@
 "numberOfPairedDevicesTwoOfTwo" = "Anzahl der paarweise verbundenen Geräte %d von 2";
 "numberOfPairedDevicesTwoOfThree" = "Anzahl der paarweise verbundenen Geräte %d von 3";
 "numberOfPairedDevicesMOfN" = "Anzahl der paarweise verbundenen Geräte %d von N";
-"invalidNumberOfDevicesDetected" = "Ungültige Anzahl von Geräten erkannt";
-"pairAllDevicesToProceed" = "Bitte verbinden Sie alle Geräte, bevor Sie fortfahren.";

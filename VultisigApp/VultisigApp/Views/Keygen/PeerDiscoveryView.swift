@@ -42,9 +42,6 @@ struct PeerDiscoveryView: View {
         }
         .navigationTitle(getTitle())
         .navigationBarBackButtonHidden(true)
-        .alert(isPresented: $showInvalidNumberOfSelectedDevices) {
-            invalidNumberOfSelectedDevices
-        }
         .task {
             viewModel.startDiscovery()
         }
@@ -281,37 +278,29 @@ struct PeerDiscoveryView: View {
             .padding(.vertical, 10)
     }
     
+    func disableContinueButton() -> Bool {
+        switch selectedTab {
+        case .TwoOfTwoVaults:
+            return viewModel.selections.count < 2
+        case .TwoOfThreeVaults:
+            return viewModel.selections.count < 3
+        default:
+            return false
+        }
+    }
+    
     var bottomButton: some View {
         Button(action: {
-            
-            switch selectedTab {
-            case .TwoOfTwoVaults:
-                let totalSigners = viewModel.selections.count
-                if totalSigners > 1 {
-                    viewModel.showSummary()
-                }else {
-                    showInvalidNumberOfSelectedDevices = true
-                }
-            case .TwoOfThreeVaults:
-                let totalSigners = viewModel.selections.count
-                if totalSigners > 2 {
-                    viewModel.showSummary()
-                }else {
-                    showInvalidNumberOfSelectedDevices = true
-                }
-            default:
-                viewModel.showSummary();
-            }
-            
+            viewModel.showSummary()
         }) {
             FilledButton(title: "continue")
         }
         .padding(.horizontal, 40)
         .padding(.top, 20)
         .padding(.bottom, 10)
-        .disabled(viewModel.selections.count < 2)
-        .opacity(viewModel.selections.count < 2 ? 0.8 : 1)
-        .grayscale(viewModel.selections.count < 2 ? 1 : 0)
+        .disabled(disableContinueButton())
+        .opacity(disableContinueButton() ? 0.8 : 1)
+        .grayscale(disableContinueButton() ? 1 : 0)
 #if os(macOS)
         .padding(.bottom, 30)
 #endif
@@ -400,14 +389,6 @@ struct PeerDiscoveryView: View {
         selectedTab.getNavigationTitle() +
         " " +
         NSLocalizedString("vault", comment: "")
-    }
-    
-    var invalidNumberOfSelectedDevices: Alert {
-        Alert(
-            title: Text(NSLocalizedString("invalidNumberOfDevicesDetected", comment: "")),
-            message: Text(NSLocalizedString("pairAllDevicesToProceed", comment: "")),
-            dismissButton: .default(Text("OK"))
-        )
     }
     
     func setNumberOfPairedDevices() {

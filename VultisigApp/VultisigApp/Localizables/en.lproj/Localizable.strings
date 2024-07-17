@@ -267,5 +267,3 @@
 "numberOfPairedDevicesTwoOfTwo" = "Number of paired devices %d of 2";
 "numberOfPairedDevicesTwoOfThree" = "Number of paired devices %d of 3";
 "numberOfPairedDevicesMOfN" = "Number of paired devices %d of N";
-"invalidNumberOfDevicesDetected" = "Invalid number of devices detected";
-"pairAllDevicesToProceed" = "Please pair all devices before proceeding.";

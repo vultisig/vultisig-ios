@@ -243,5 +243,3 @@
 "numberOfPairedDevicesTwoOfTwo" = "Numero di dispositivi accoppiati %d di 2";
 "numberOfPairedDevicesTwoOfThree" = "Numero di dispositivi accoppiati %d di 3";
 "numberOfPairedDevicesMOfN" = "Numero di dispositivi accoppiati %d di N";
-"invalidNumberOfDevicesDetected" = " Numero di dispositivi non valido rilevato";
-"pairAllDevicesToProceed" = "Per favore, accoppia tutti i dispositivi prima di continuare.";

@@ -243,5 +243,3 @@
 "numberOfPairedDevicesTwoOfTwo" = "Número de dispositivos emparejados %d de 2";
 "numberOfPairedDevicesTwoOfThree" = "Número de dispositivos emparejados %d de 3";
 "numberOfPairedDevicesMOfN" = "Número de dispositivos emparejados %d de N";
-"invalidNumberOfDevicesDetected" = "Número de dispositivos inválido detectado";
-"pairAllDevicesToProceed" = "Por favor, empareja todos los dispositivos antes de continuar.";
