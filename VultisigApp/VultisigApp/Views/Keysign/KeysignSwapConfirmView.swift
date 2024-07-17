@@ -85,7 +85,11 @@ struct KeysignSwapConfirmView: View {
     }
 
     func getAmount() -> String {
-        return "UNLIMITED"
+        guard let fromCoin = viewModel.keysignPayload?.coin, let amount = viewModel.keysignPayload?.approvePayload?.amount else {
+            return .empty
+        }
+
+        return "\(fromCoin.decimal(for: amount)) \(fromCoin.ticker)"
     }
 
     func getFromAmount() -> String {
