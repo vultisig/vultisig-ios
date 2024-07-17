@@ -102,11 +102,19 @@ struct SwapVerifyView: View {
     }
 
     func getFromAmount() -> String {
-        return "\(tx.fromAmount) \(tx.fromCoin.ticker)"
+        if tx.fromCoin.chain == tx.toCoin.chain {
+            return "\(tx.fromAmount) \(tx.fromCoin.ticker)"
+        } else {
+            return "\(tx.fromAmount) \(tx.fromCoin.ticker) (\(tx.fromCoin.chain.ticker))"
+        }
     }
 
     func getToAmount() -> String {
-        return "\(tx.toAmountDecimal.description) \(tx.toCoin.ticker)"
+        if tx.fromCoin.chain == tx.toCoin.chain {
+            return "\(tx.toAmountDecimal.description) \(tx.toCoin.ticker)"
+        } else {
+            return "\(tx.toAmountDecimal.description) \(tx.toCoin.ticker) (\(tx.toCoin.chain.ticker))"
+        }
     }
 
     func getValueCell(for title: String, with value: String) -> some View {

@@ -95,13 +95,21 @@ struct KeysignSwapConfirmView: View {
     func getFromAmount() -> String {
         guard let payload = viewModel.keysignPayload?.swapPayload else { return .empty }
         let amount = payload.fromCoin.decimal(for: payload.fromAmount)
-        return "\(amount) \(payload.fromCoin.ticker)"
+        if payload.fromCoin.chain == payload.toCoin.chain {
+            return "\(amount) \(payload.fromCoin.ticker)"
+        } else {
+            return "\(amount) \(payload.fromCoin.ticker) (\(payload.fromCoin.chain.ticker))"
+        }
     }
 
     func getToAmount() -> String {
         guard let payload = viewModel.keysignPayload?.swapPayload else { return .empty }
         let amount = payload.toAmountDecimal
-        return "\(amount) \(payload.toCoin.ticker)"
+        if payload.fromCoin.chain == payload.toCoin.chain {
+            return "\(amount) \(payload.toCoin.ticker)"
+        } else {
+            return "\(amount) \(payload.toCoin.ticker) (\(payload.toCoin.chain.ticker))"
+        }
     }
 
     func getValueCell(for title: String, with value: String) -> some View {
