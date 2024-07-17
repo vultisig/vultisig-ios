@@ -18,6 +18,8 @@ struct PeerDiscoveryView: View {
     @State var qrCodeImage: Image? = nil
     @State var isLandscape: Bool = true
     
+    @State private var showInvalidNumberOfSelectedDevices = false
+    
     @Environment(\.displayScale) var displayScale
     
 #if os(iOS)
@@ -40,6 +42,9 @@ struct PeerDiscoveryView: View {
         }
         .navigationTitle(getTitle())
         .navigationBarBackButtonHidden(true)
+        .alert(isPresented: $showInvalidNumberOfSelectedDevices) {
+            invalidNumberOfSelectedDevices
+        }
         .task {
             viewModel.startDiscovery()
         }
@@ -235,7 +240,7 @@ struct PeerDiscoveryView: View {
                 devices
             }
 #if os(iOS)
-        .padding(idiom == .phone ? 0 : 20)
+            .padding(idiom == .phone ? 0 : 20)
 #endif
         }
         .scrollIndicators(.hidden)
@@ -278,7 +283,26 @@ struct PeerDiscoveryView: View {
     
     var bottomButton: some View {
         Button(action: {
-            viewModel.showSummary()
+            
+            switch selectedTab {
+            case .TwoOfTwoVaults:
+                let totalSigners = viewModel.selections.count
+                if totalSigners > 1 {
+                    viewModel.showSummary()
+                }else {
+                    showInvalidNumberOfSelectedDevices = true
+                }
+            case .TwoOfThreeVaults:
+                let totalSigners = viewModel.selections.count
+                if totalSigners > 2 {
+                    viewModel.showSummary()
+                }else {
+                    showInvalidNumberOfSelectedDevices = true
+                }
+            default:
+                viewModel.showSummary();
+            }
+            
         }) {
             FilledButton(title: "continue")
         }
@@ -347,12 +371,7 @@ struct PeerDiscoveryView: View {
         } else {
             viewModel.selections.insert(peer)
         }
-        let totalSigners = viewModel.selections.count
-        
-        if totalSigners >= 2 {
-            let threshold = Int(ceil(Double(totalSigners) * 2.0 / 3.0))
-            viewModel.vaultDetail = "\(threshold)of\(totalSigners) Vault"
-        }
+        setNumberOfPairedDevices();
     }
     
     private func handleAutoSelection() {
@@ -381,6 +400,29 @@ struct PeerDiscoveryView: View {
         selectedTab.getNavigationTitle() +
         " " +
         NSLocalizedString("vault", comment: "")
+    }
+    
+    var invalidNumberOfSelectedDevices: Alert {
+        Alert(
+            title: Text("Invalid number of devices detected"),
+            message: Text("Please pair all devices before proceeding."),
+            dismissButton: .default(Text("OK"))
+        )
+    }
+    
+    func setNumberOfPairedDevices() {
+        
+        let totalSigners = viewModel.selections.count
+        
+        switch selectedTab {
+        case .TwoOfTwoVaults:
+            viewModel.vaultDetail = "Number of paired devices \(totalSigners) of 2"
+        case .TwoOfThreeVaults:
+            viewModel.vaultDetail = "Number of paired devices \(totalSigners) of 3"
+        default:
+            viewModel.vaultDetail = "Number of paired devices \(totalSigners) of N"
+        }
+        
     }
 }
 
