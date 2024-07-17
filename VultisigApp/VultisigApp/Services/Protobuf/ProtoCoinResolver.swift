@@ -28,6 +28,11 @@ struct ProtoCoinResolver {
 
     static func proto(from coin: Coin) -> VSCoin {
         return .with {
+            $0.decimals = Int32(coin.decimals)
+            $0.hexPublicKey = coin.hexPublicKey
+            $0.isNativeToken = coin.isNativeToken
+            $0.priceProviderID = coin.priceProviderId
+            $0.logo = coin.logo
             $0.chain = coin.chain.name
             $0.ticker = coin.ticker
             $0.address = coin.address
