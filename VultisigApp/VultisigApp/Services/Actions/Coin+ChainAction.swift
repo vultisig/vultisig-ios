@@ -64,12 +64,11 @@ extension Chain {
 }
 
 extension Array where Element == CoinAction {
-
     var filtered: [CoinAction] {
-        #if DEBUG
+        // #if DEBUG
         return self
-        #else
-        return filter { $0 != .swap }
-        #endif
+        // #else
+        // return filter { $0 != .swap }
+        // #endif
     }
 }
