@@ -103,8 +103,10 @@ struct SendCryptoAddressTextField: View {
             pasteButton
 #if os(iOS)
             scanButton
-#endif
+#elseif os(macOS)
             fileButton
+#endif
+            addressBookButton
         }
     }
     
@@ -141,6 +143,17 @@ struct SendCryptoAddressTextField: View {
             showImagePicker.toggle()
         } label: {
             Image(systemName: "photo.badge.plus")
+                .font(.body16Menlo)
+                .foregroundColor(.neutral0)
+                .frame(width: 40, height: 40)
+        }
+    }
+    
+    var addressBookButton: some View {
+        NavigationLink {
+            AddressBookView(returnAddress: $tx.toAddress)
+        } label: {
+            Image(systemName: "text.book.closed")
                 .font(.body16Menlo)
                 .foregroundColor(.neutral0)
                 .frame(width: 40, height: 40)

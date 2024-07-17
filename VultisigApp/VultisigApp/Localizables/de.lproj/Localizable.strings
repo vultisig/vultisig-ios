@@ -240,6 +240,16 @@
 "memo(optional)" = "MEMO (Optional)";
 "enterMemo" = "Memo eingeben";
 "enterVaultName" = "Tresornamen eingeben";
+"pleaseBackupVault" = "Bitte sichern Sie jetzt Ihre Tresoranteile";
+"pleaseBackupVaultNote" = "Hinweis: Bewahren Sie niemals Tresoranteile von verschiedenen Geräten am selben Ort auf.";
+"addressBook" = "Adressbuch";
+"addAddress" = "Adresse hinzufügen";
+"address" = "Adresse";
+"title" = "Titel";
+"saveAddress" = "Adresse speichern";
+"success" = "Erfolg";
+"addressAddedToAddressBook" = "Adresse erfolgreich zum Adressbuch hinzugefügt.";
+"noSavedAddresses" = "Keine gespeicherten Adressen";
 "numberOfPairedDevicesTwoOfTwo" = "Anzahl der paarweise verbundenen Geräte %d von 2";
 "numberOfPairedDevicesTwoOfThree" = "Anzahl der paarweise verbundenen Geräte %d von 3";
 "numberOfPairedDevicesMOfN" = "Anzahl der paarweise verbundenen Geräte %d von N";

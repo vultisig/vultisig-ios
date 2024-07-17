@@ -284,8 +284,8 @@ struct PeerDiscoveryView: View {
             return viewModel.selections.count < 2
         case .TwoOfThreeVaults:
             return viewModel.selections.count < 3
-        default:
-            return false
+        case .MOfNVaults:
+            return viewModel.selections.count < 2
         }
     }
     
