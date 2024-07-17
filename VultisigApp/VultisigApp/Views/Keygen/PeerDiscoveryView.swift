@@ -404,8 +404,8 @@ struct PeerDiscoveryView: View {
     
     var invalidNumberOfSelectedDevices: Alert {
         Alert(
-            title: Text("Invalid number of devices detected"),
-            message: Text("Please pair all devices before proceeding."),
+            title: Text(NSLocalizedString("invalidNumberOfDevicesDetected", comment: "")),
+            message: Text(NSLocalizedString("pairAllDevicesToProceed", comment: "")),
             dismissButton: .default(Text("OK"))
         )
     }
@@ -416,11 +416,11 @@ struct PeerDiscoveryView: View {
         
         switch selectedTab {
         case .TwoOfTwoVaults:
-            viewModel.vaultDetail = "Number of paired devices \(totalSigners) of 2"
+            viewModel.vaultDetail = String(format:  NSLocalizedString("numberOfPairedDevicesTwoOfTwo", comment: ""), totalSigners)
         case .TwoOfThreeVaults:
-            viewModel.vaultDetail = "Number of paired devices \(totalSigners) of 3"
+            viewModel.vaultDetail = String(format:  NSLocalizedString("numberOfPairedDevicesTwoOfThree", comment: ""), totalSigners)
         default:
-            viewModel.vaultDetail = "Number of paired devices \(totalSigners) of N"
+            viewModel.vaultDetail = String(format:  NSLocalizedString("numberOfPairedDevicesMOfN", comment: ""), totalSigners)
         }
         
     }
