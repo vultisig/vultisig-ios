@@ -16,6 +16,7 @@ struct AddAddressBookView: View {
     
     @State var title = ""
     @State var address = ""
+    @State var showAlert = false
     @State var selectedChain: CoinMeta? = nil
     
     @Environment(\.dismiss) var dismiss
@@ -44,6 +45,9 @@ struct AddAddressBookView: View {
             button
         }
         .padding(.horizontal, 16)
+        .alert(isPresented: $showAlert) {
+            alert
+        }
     }
     
     var content: some View {
@@ -78,6 +82,14 @@ struct AddAddressBookView: View {
         }
     }
     
+    var alert: Alert {
+        Alert(
+            title: Text(NSLocalizedString("emptyField", comment: "")),
+            message: Text(NSLocalizedString("checkEmptyField", comment: "")),
+            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+        )
+    }
+    
     private func setData() {
         guard let vault = homeViewModel.selectedVault else {
             return
@@ -94,6 +106,11 @@ struct AddAddressBookView: View {
             return
         }
         
+        guard !title.isEmpty && !address.isEmpty else {
+            toggleAlert()
+            return
+        }
+        
         let data = AddressBookItem(
             title: title,
             address: address,
@@ -105,6 +122,10 @@ struct AddAddressBookView: View {
             modelContext.insert(data)
             dismiss()
         }
+    }
+    
+    private func toggleAlert() {
+        showAlert = true
     }
 }
 
