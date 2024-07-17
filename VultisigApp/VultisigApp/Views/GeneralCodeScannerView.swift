@@ -11,6 +11,7 @@ import UniformTypeIdentifiers
 
 #if os(iOS)
 import CodeScanner
+import AVFoundation
 #endif
 
 struct GeneralCodeScannerView: View {
@@ -29,7 +30,12 @@ struct GeneralCodeScannerView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             #if os(iOS)
-            CodeScannerView(codeTypes: [.qr], isGalleryPresented: $isGalleryPresented, completion: handleScan)
+            CodeScannerView(
+                codeTypes: [.qr],
+                isGalleryPresented: $isGalleryPresented,
+                videoCaptureDevice: AVCaptureDevice.zoomedCameraForQRCode(withMinimumCodeSize: 20),
+                completion: handleScan
+            )
             #endif
             HStack(spacing: 0) {
                 galleryButton
