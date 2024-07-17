@@ -80,7 +80,8 @@ struct SendCryptoKeysignView: View {
     
     var bottomBar: some View {
         VStack {
-            sameWifiInstruction
+            InformationNote()
+                .padding(.horizontal, 16)
             tryAgainButton
         }
     }

@@ -34,11 +34,8 @@ struct SendCryptoSigningErrorView: View {
     }
     
     var sameWifiInstruction: some View {
-        Text(NSLocalizedString("sameWifiEntendedInstruction", comment: "Keep devices on the same WiFi Network, correct vault and pair devices. Make sure no other devices are running Vultisig."))
-            .font(.body12Menlo)
-            .foregroundColor(.neutral0)
-            .padding(.horizontal, 50)
-            .multilineTextAlignment(.center)
+        InformationNote()
+            .padding(.horizontal, 16)
     }
     
     var tryAgainButton: some View {
