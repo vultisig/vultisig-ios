@@ -16,11 +16,14 @@ struct LiFiService {
         guard let fromChain = fromCoin.chain.chainID, let toChain = toCoin.chain.chainID else {
             throw Errors.unexpectedError
         }
+        let fromToken = fromCoin.contractAddress.isEmpty ? fromCoin.ticker : fromCoin.contractAddress
+        let toToken = toCoin.contractAddress.isEmpty ? toCoin.ticker : toCoin.contractAddress
+
         let endpoint = Endpoint.fetchLiFiQuote(
             fromChain: String(fromChain),
             toChain: String(toChain),
-            fromToken: fromCoin.ticker,
-            toToken: toCoin.ticker,
+            fromToken: fromToken,
+            toToken: toToken,
             fromAmount: String(fromAmount),
             fromAddress: fromCoin.address
         )
