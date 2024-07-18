@@ -17,7 +17,8 @@ struct VaultDetailQRCode: View {
             ECDSAKey
             EdDSAKey
         }
-        .frame(width: 300, height: 400)
+        .padding(22)
+        .frame(width: 320, height: 460)
         .background(LinearGradient.primaryGradientLinear)
         .cornerRadius(25)
     }
@@ -50,19 +51,42 @@ struct VaultDetailQRCode: View {
             .font(.body20MenloBold)
             .foregroundColor(.neutral0)
             .padding(.top, 20)
+            .lineLimit(2)
+            .multilineTextAlignment(.center)
     }
     
     var ECDSAKey: some View {
-        Text(vault.pubKeyECDSA)
-            .font(.body12MontserratSemiBold)
-            .foregroundColor(.neutral0)
+        VStack {
+            Text(NSLocalizedString("ECDSAKey", comment: ""))
+                .font(.body14MontserratSemiBold)
+                .foregroundColor(.neutral0)
+                .lineLimit(3)
+                .multilineTextAlignment(.center)
+            
+            Text(vault.pubKeyECDSA)
+                .font(.body12MontserratSemiBold)
+                .foregroundColor(.neutral0)
+                .lineLimit(3)
+                .multilineTextAlignment(.center)
+                .opacity(0.7)
+        }
     }
     
     var EdDSAKey: some View {
-        Text(vault.pubKeyEdDSA)
-            .font(.body12MontserratSemiBold)
-            .foregroundColor(.neutral0)
-            .offset(y: -8)
+        VStack {
+            Text(NSLocalizedString("EdDSAKey", comment: ""))
+                .font(.body14MontserratSemiBold)
+                .foregroundColor(.neutral0)
+                .lineLimit(3)
+                .multilineTextAlignment(.center)
+            
+            Text(vault.pubKeyEdDSA)
+                .font(.body12MontserratSemiBold)
+                .foregroundColor(.neutral0)
+                .lineLimit(3)
+                .multilineTextAlignment(.center)
+                .opacity(0.7)
+        }
     }
 }
 

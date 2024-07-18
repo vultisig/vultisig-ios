@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct VaultDetailQRCodeView: View {
+    let vault: Vault
     
     var body: some View {
         ZStack {
@@ -34,9 +35,7 @@ struct VaultDetailQRCodeView: View {
     }
     
     var qrCode: some View {
-        VStack {
-            
-        }
+        VaultDetailQRCode(vault: vault)
     }
     
     var button: some View {
@@ -46,5 +45,5 @@ struct VaultDetailQRCodeView: View {
 }
 
 #Preview {
-    VaultDetailQRCodeView()
+    VaultDetailQRCodeView(vault: Vault.example)
 }

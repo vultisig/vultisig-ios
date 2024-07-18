@@ -38,7 +38,9 @@ struct NavigationHomeEditButton: View {
     
     var vaultDetailQRCodeButton: some View {
         NavigationLink {
-            VaultDetailQRCodeView()
+            if let vault {
+                VaultDetailQRCodeView(vault: vault)
+            }
         } label: {
             NavigationQRCodeButton()
         }
