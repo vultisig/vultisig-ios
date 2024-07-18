@@ -67,8 +67,6 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                     if tx.coin.isNativeToken {
                         let evm = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: true)
                         let totalFeeWei = evm.fee
-                        
-                        tx.gas = totalFeeWei.description
                         tx.amount = "\(tx.coin.getMaxValue(totalFeeWei))" // the decimals must be truncaded otherwise the give us precisions errors
                         
                     } else {
