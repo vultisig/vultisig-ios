@@ -133,7 +133,7 @@ struct ImportWalletView: View {
             return false
         }
         
-        if fileExtension == "dat" {
+        if fileExtension == "dat" || fileExtension == "bak"{
             return true
         } else {
             return false

@@ -354,6 +354,7 @@
 		DE8AD7472BC78FA400339775 /* Encryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8AD7462BC78FA400339775 /* Encryption.swift */; };
 		DE8AD74A2BC7A86200339775 /* EncryptionTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8AD7492BC7A86200339775 /* EncryptionTest.swift */; };
 		DE8AD74C2BC8E3FE00339775 /* KeygenVerify.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8AD74B2BC8E3FE00339775 /* KeygenVerify.swift */; };
+		DE8BDCCB2C47E34300A1EDA6 /* Vault+ProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8BDCCA2C47E34300A1EDA6 /* Vault+ProtoMappable.swift */; };
 		DE9EB0EC2BA2CC3C001747D9 /* TssType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0EB2BA2CC3C001747D9 /* TssType.swift */; };
 		DE9EB0EE2BA2CF49001747D9 /* KeygenMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0ED2BA2CF49001747D9 /* KeygenMessage.swift */; };
 		DE9EB0F02BA2CFB7001747D9 /* ReshareMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0EF2BA2CFB7001747D9 /* ReshareMessage.swift */; };
@@ -757,6 +758,7 @@
 		DE8AD7462BC78FA400339775 /* Encryption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Encryption.swift; sourceTree = "<group>"; };
 		DE8AD7492BC7A86200339775 /* EncryptionTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncryptionTest.swift; sourceTree = "<group>"; };
 		DE8AD74B2BC8E3FE00339775 /* KeygenVerify.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenVerify.swift; sourceTree = "<group>"; };
+		DE8BDCCA2C47E34300A1EDA6 /* Vault+ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Vault+ProtoMappable.swift"; sourceTree = "<group>"; };
 		DE9EB0EB2BA2CC3C001747D9 /* TssType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TssType.swift; sourceTree = "<group>"; };
 		DE9EB0ED2BA2CF49001747D9 /* KeygenMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenMessage.swift; sourceTree = "<group>"; };
 		DE9EB0EF2BA2CFB7001747D9 /* ReshareMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReshareMessage.swift; sourceTree = "<group>"; };
@@ -1522,6 +1524,7 @@
 				469ED3962B98E7B7008D4951 /* Cosmos */,
 				A65649E92B96690400E4B329 /* KeyShare.swift */,
 				DE49A19B2B67133D000F3AFB /* Vault.swift */,
+				DE8BDCCA2C47E34300A1EDA6 /* Vault+ProtoMappable.swift */,
 				A5BDC7BD2C32FF4A004DBBE7 /* CoinsGrouped.swift */,
 				DE49A19F2B67143B000F3AFB /* Chain.swift */,
 				DE0893552C47C8FA007632F7 /* Chain+extensions.swift */,
@@ -2276,6 +2279,7 @@
 				DE49A1A02B67143B000F3AFB /* Chain.swift in Sources */,
 				B5F7581A2BD8E7230097B5B9 /* SuiService.swift in Sources */,
 				A5D49F582BE26C63001766C8 /* CoinActionResolver.swift in Sources */,
+				DE8BDCCB2C47E34300A1EDA6 /* Vault+ProtoMappable.swift in Sources */,
 				B5A97CF12BF41903007574D7 /* TransactionMemoVerifyViewModel.swift in Sources */,
 				A65649F02B966A1200E4B329 /* UTXOTransactionMempoolOutput.swift in Sources */,
 				A653242A2BA52A4700DDE6EB /* SendCryptoViewModel.swift in Sources */,

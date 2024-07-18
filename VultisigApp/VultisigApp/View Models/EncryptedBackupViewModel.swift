@@ -9,6 +9,7 @@ import Foundation
 import CryptoKit
 import SwiftData
 import OSLog
+import VultisigCommonData
 
 #if os(iOS)
 import UIKit
@@ -52,25 +53,26 @@ class EncryptedBackupViewModel: ObservableObject {
     // Export
     func exportFile(_ vault: Vault) {
         do {
-            let data = try JSONEncoder().encode(vault)
-            guard let hexData = data.hexString.data(using: .utf8) else {
-                throw VultisigDocumentError.customError("Could not convert data to hex")
-            }
+            var vaultContainer = VSVaultContainer()
+            vaultContainer.version = 1 // current version 1
+            let vsVault = vault.mapToProtobuff()
+            let data = try vsVault.serializedData()
             
-            let dataToSave: Data
             if encryptionPassword.isEmpty {
-                dataToSave = hexData
-            } else if let encryptedData = encrypt(data: hexData, password: encryptionPassword) {
-                dataToSave = encryptedData
+                vaultContainer.isEncrypted = false
+                vaultContainer.vault = data.base64EncodedString()
+            } else if let encryptedData = encrypt(data: data, password: encryptionPassword) {
+                vaultContainer.isEncrypted = true
+                vaultContainer.vault = encryptedData.base64EncodedString()
             } else {
                 print("Error encrypting data")
                 return
             }
-            
+            let dataToSave = try vaultContainer.serializedData().base64EncodedData()
 #if os(iOS)
-            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("file.dat")
+            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("file.bak")
 #elseif os(macOS)
-            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(vault.getExportName()).appendingPathExtension("dat")
+            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(vault.getExportName()).appendingPathExtension("bak")
 #endif
             do {
                 try dataToSave.write(to: tempURL)
@@ -107,20 +109,46 @@ class EncryptedBackupViewModel: ObservableObject {
             return
         }
         do {
+            
             let data = try Data(contentsOf: url)
+            // read the file content
+            if isBakFile() {
+                try importBakFile(data: data)
+                return
+            }
             
             if let decryptedString = decryptOrReadData(data: data, password: "") {
                 decryptedContent = decryptedString
                 isFileUploaded = true
             } else {
-                promptForPasswordAndImport(from: url)
+                promptForPasswordAndImport(from: data)
             }
         } catch {
             print("Error reading file: \(error.localizedDescription)")
         }
     }
     
-    func promptForPasswordAndImport(from url: URL) {
+    func isBakFile() -> Bool {
+        return self.importedFileName?.hasSuffix(".bak") ?? false
+    }
+    
+    func importBakFile(data: Data) throws {
+        guard let vsVaultContainer = Data(base64Encoded: data) else {
+            throw ProtoMappableError.base64EncodedDataNotFound
+        }
+        let vaultContainer = try VSVaultContainer(serializedData: vsVaultContainer)
+        guard let vaultData = Data(base64Encoded: vaultContainer.vault) else {
+            throw ProtoMappableError.base64EncodedDataNotFound
+        }
+        if vaultContainer.isEncrypted {
+            promptForPasswordAndImport(from: vaultData)
+        } else {
+            decryptedContent = vaultData.hexString
+            isFileUploaded = true
+        }
+    }
+    
+    func promptForPasswordAndImport(from data: Data) {
 #if os(iOS)
         let alert = UIAlertController(title: NSLocalizedString("enterPassword", comment: ""), message: nil, preferredStyle: .alert)
         alert.addTextField { textField in
@@ -130,7 +158,7 @@ class EncryptedBackupViewModel: ObservableObject {
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
             if let password = alert.textFields?.first?.text {
                 self.decryptionPassword = password
-                self.importFileWithPassword(from: url, password: password)
+                self.importFileWithPassword(from: data, password: password)
             }
         }))
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
@@ -163,7 +191,7 @@ class EncryptedBackupViewModel: ObservableObject {
             if response == .alertFirstButtonReturn {
                 let password = textField.stringValue
                 self.decryptionPassword = password
-                self.importFileWithPassword(from: url, password: password)
+                self.importFileWithPassword(from: data, password: password)
             }
             return
         }
@@ -173,38 +201,29 @@ class EncryptedBackupViewModel: ObservableObject {
             if response == .alertFirstButtonReturn {
                 let password = textField.stringValue
                 self.decryptionPassword = password
-                self.importFileWithPassword(from: url, password: password)
+                self.importFileWithPassword(from: data, password: password)
             }
         }
 #endif
     }
     
-    func importFileWithPassword(from url: URL, password: String) {
-        let success = url.startAccessingSecurityScopedResource()
-        defer { url.stopAccessingSecurityScopedResource() }
-        
-        guard success else {
-            alertMessage = "Permission denied for accessing the file."
-            showAlert = true
-            return
-        }
-        do {
-            let data = try Data(contentsOf: url)
-            if let decryptedData = decrypt(data: data, password: password),
-               let decryptedString = String(data: decryptedData, encoding: .utf8) {
+    func importFileWithPassword(from data: Data, password: String) {
+        if let decryptedData = decrypt(data: data, password: password) {
+            if isBakFile() {
+                decryptedContent = decryptedData.hexString
+            } else if let decryptedString = String(data: decryptedData, encoding: .utf8) {
                 decryptedContent = decryptedString
-                isFileUploaded = true
-            } else {
-                decryptedContent = ""
-                isFileUploaded = false
-                importedFileName = nil
-                alertTitle = "incorrectPassword"
-                alertMessage = "backupDecryptionFailed"
-                showAlert = true
             }
-        } catch {
-            print("Error reading file: \(error.localizedDescription)")
+            isFileUploaded = true
+        } else {
+            decryptedContent = ""
+            isFileUploaded = false
+            importedFileName = nil
+            alertTitle = "incorrectPassword"
+            alertMessage = "backupDecryptionFailed"
+            showAlert = true
         }
+        
     }
     
     func decryptOrReadData(data: Data, password: String) -> String? {
@@ -227,8 +246,32 @@ class EncryptedBackupViewModel: ObservableObject {
         }
     }
     
-    func restoreVault(modelContext: ModelContext, vaults: [Vault], defaultChains: [CoinMeta]) {
-        
+    func restoreVaultBak(modelContext: ModelContext,vaults: [Vault],vaultData: Data) {
+        do{
+            let vsVault = try VSVault(serializedData: vaultData)
+            let vault = try Vault(proto: vsVault)
+            if !isVaultUnique(backupVault: vault,vaults:vaults){
+                alertTitle = "error"
+                alertMessage = "vaultAlreadyExists"
+                showAlert = true
+                isLinkActive = false
+                return
+            }
+            VaultDefaultCoinService(context: modelContext)
+                .setDefaultCoinsOnce(vault: vault)
+            modelContext.insert(vault)
+            selectedVault = vault
+            isLinkActive = true
+        }
+        catch {
+            logger.error("fail to restore vault: \(error.localizedDescription)")
+            alertTitle = "vaultRestoreFailed"
+            alertMessage = error.localizedDescription
+            showAlert = true
+            isLinkActive = false
+        }
+    }
+    func restoreVault(modelContext: ModelContext,vaults: [Vault]) {
         guard let vaultText = decryptedContent, let vaultData = Data(hexString: vaultText) else {
             alertTitle = "error"
             alertMessage = "invalidVaultData"
@@ -236,7 +279,10 @@ class EncryptedBackupViewModel: ObservableObject {
             isLinkActive = false
             return
         }
-        
+        if isBakFile() {
+            restoreVaultBak(modelContext: modelContext, vaults: vaults, vaultData: vaultData)
+            return
+        }
         let decoder = JSONDecoder()
         do {
             let backupVault = try decoder.decode(BackupVault.self,
