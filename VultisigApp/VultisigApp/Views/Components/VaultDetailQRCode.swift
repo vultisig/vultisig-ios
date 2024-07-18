@@ -31,8 +31,12 @@ struct VaultDetailQRCode: View {
     }
     
     var qrCode: some View {
-        Rectangle()
+        getQRCode()
+            .resizable()
             .frame(width: 180, height: 180)
+            .scaledToFit()
+            .padding(3)
+            .cornerRadius(10)
             .foregroundColor(.neutral100)
     }
     
@@ -87,6 +91,26 @@ struct VaultDetailQRCode: View {
                 .multilineTextAlignment(.center)
                 .opacity(0.7)
         }
+    }
+    
+    private func getQRCode() -> Image {
+        let name = vault.name
+        let ecdsaKey = vault.pubKeyECDSA
+        let eddsaKey = vault.pubKeyEdDSA
+        let hexCode = vault.hexChainCode
+        let id = "sha256(\(name) - \(ecdsaKey) - \(eddsaKey) - \(hexCode))"
+        
+        let data = """
+        {
+            "uid": \(id),
+            "name" : \(name),
+            "public_key_ecdsa": \(ecdsaKey),
+            "public_key_eddsa": \(eddsaKey),
+            "hex_chain_code": \(hexCode)
+        }
+        """
+        
+        return Utils.generateQRCodeImage(from: data)
     }
 }
 
