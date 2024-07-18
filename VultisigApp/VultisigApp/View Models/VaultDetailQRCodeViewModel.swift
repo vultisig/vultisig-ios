@@ -13,14 +13,11 @@ class VaultDetailQRCodeViewModel: ObservableObject {
     @Published var renderedImage: Image? = nil
     
     func render(vault: Vault, displayScale: CGFloat) {
-        let renderer = ImageRenderer(
-            content:
-                VaultDetailQRCode(vault: vault)
-            #if os(macOS)
-                    .scaleEffect(3)
-                    .frame(width: 960, height: 1380)
-            #endif
-        )
+#if os(iOS)
+        let renderer = ImageRenderer(content: VaultDetailQRCode(vault: vault))
+#elseif os(macOS)
+        let renderer = ImageRenderer(content: VaultDetailMacQRCode(vault: vault))
+#endif
 
         renderer.scale = displayScale
 
