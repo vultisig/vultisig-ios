@@ -29,7 +29,7 @@ struct KeygenView: View {
     @State var progressCounter: Double = 0
     @State var showProgressRing = true
     
-    @Query var defaultChains: [CoinMeta]
+    @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     
     var body: some View {
         VStack {
@@ -45,7 +45,7 @@ struct KeygenView: View {
         .task {
             await viewModel.startKeygen(
                 context: context,
-                defaultChains: defaultChains
+                defaultChains: settingsDefaultChainViewModel.defaultChains
             )
         }
         

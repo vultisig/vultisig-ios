@@ -9,12 +9,9 @@ import SwiftUI
 import SwiftData
 
 struct SettingsDefaultChainView: View {
+    @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
-    
-    @Query var defaultChains: [CoinMeta]
-    
-    @StateObject var viewModel = SettingsDefaultChainViewModel()
     
     var body: some View {
         ZStack {
@@ -38,13 +35,13 @@ struct SettingsDefaultChainView: View {
             search
             cells
         }
-        .onChange(of: viewModel.searchText) { oldValue, newValue in
-            viewModel.search(coinSelectionViewModel.groupedAssets)
+        .onChange(of: settingsDefaultChainViewModel.searchText) { oldValue, newValue in
+            settingsDefaultChainViewModel.search()
         }
     }
     
     var search: some View {
-        Search(searchText: $viewModel.searchText)
+        Search(searchText: $settingsDefaultChainViewModel.searchText)
             .padding(.top, 30)
             .padding(.horizontal, 16)
     }
@@ -52,9 +49,8 @@ struct SettingsDefaultChainView: View {
     var cells: some View {
         ScrollView {
             VStack {
-                ForEach(viewModel.filteredAssets.keys.sorted(), id: \.self) { key in
-                    let asset = coinSelectionViewModel.groupedAssets[key]?.first
-                    ToggleSelectionCell(asset: asset, assets: defaultChains)
+                ForEach(settingsDefaultChainViewModel.filteredAssets, id: \.self) { asset in
+                    ToggleSelectionCell(asset: asset, assets: settingsDefaultChainViewModel.defaultChains)
                 }
             }
             .padding(.horizontal, 16)
@@ -68,12 +64,13 @@ struct SettingsDefaultChainView: View {
         }
         
         coinSelectionViewModel.setData(for: vault)
-        viewModel.setData(coinSelectionViewModel.groupedAssets)
+        settingsDefaultChainViewModel.setData(coinSelectionViewModel.groupedAssets)
     }
 }
 
 #Preview {
     SettingsDefaultChainView()
+        .environmentObject(SettingsDefaultChainViewModel())
         .environmentObject(CoinSelectionViewModel())
         .environmentObject(HomeViewModel())
 }

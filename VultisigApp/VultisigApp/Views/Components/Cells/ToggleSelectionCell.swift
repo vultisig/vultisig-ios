@@ -6,14 +6,14 @@
 //
 
 import SwiftUI
-import SwiftData
 
 struct ToggleSelectionCell: View {
     let asset: CoinMeta?
     let assets: [CoinMeta]
     
     @State var isSelected = false
-    @Environment(\.modelContext) var modelContext
+    
+    @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     
     var body: some View {
         HStack(spacing: 16) {
@@ -29,7 +29,7 @@ struct ToggleSelectionCell: View {
         .onAppear {
             setData()
         }
-        .onChange(of: assets, { oldValue, newValue in
+        .onChange(of: assets.count, { oldValue, newValue in
             setData()
         })
         .onTapGesture {
@@ -91,7 +91,7 @@ struct ToggleSelectionCell: View {
             return
         }
         
-        modelContext.insert(asset)
+        settingsDefaultChainViewModel.addChain(asset)
     }
     
     private func removeAsset() {
@@ -99,10 +99,11 @@ struct ToggleSelectionCell: View {
             return
         }
         
-        modelContext.delete(asset)
+        settingsDefaultChainViewModel.removeChain(asset)
     }
 }
 
 #Preview {
     ToggleSelectionCell(asset: CoinMeta.example, assets: [CoinMeta.example])
+        .environmentObject(SettingsDefaultChainViewModel())
 }

@@ -14,7 +14,7 @@ struct ImportWalletView: View {
     @StateObject var backupViewModel = EncryptedBackupViewModel()
     
     @Query var vaults: [Vault]
-    @Query var defaultChains: [CoinMeta]
+    @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     
     var body: some View {
         ZStack {
@@ -99,7 +99,7 @@ struct ImportWalletView: View {
             backupViewModel.restoreVault(
                 modelContext: context,
                 vaults: vaults,
-                defaultChains: defaultChains
+                defaultChains: settingsDefaultChainViewModel.defaultChains
             )
         } label: {
             FilledButton(title: "continue")

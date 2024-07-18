@@ -7,9 +7,7 @@
 
 import Foundation
 import WalletCore
-import SwiftData
 
-@Model
 class CoinMeta : Hashable, Codable {
     let chain: Chain
     let ticker: String
