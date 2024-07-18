@@ -254,3 +254,5 @@
 "numberOfPairedDevicesTwoOfTwo" = "Número de dispositivos emparelhados %d de 2";
 "numberOfPairedDevicesTwoOfThree" = "Número de dispositivos emparelhados %d de 3";
 "numberOfPairedDevicesMOfN" = "Número de dispositivos emparelhados %d de N";
+"defaultChains" = "Cadeias padrão";
+"search" = "Pesquisar";
