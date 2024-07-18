@@ -246,7 +246,7 @@ class EncryptedBackupViewModel: ObservableObject {
         }
     }
     
-    func restoreVaultBak(modelContext: ModelContext,vaults: [Vault],vaultData: Data) {
+    func restoreVaultBak(modelContext: ModelContext,vaults: [Vault], vaultData: Data, defaultChains: [CoinMeta]) {
         do{
             let vsVault = try VSVault(serializedData: vaultData)
             let vault = try Vault(proto: vsVault)
@@ -258,7 +258,7 @@ class EncryptedBackupViewModel: ObservableObject {
                 return
             }
             VaultDefaultCoinService(context: modelContext)
-                .setDefaultCoinsOnce(vault: vault)
+                .setDefaultCoinsOnce(vault: vault, defaultChains: defaultChains)
             modelContext.insert(vault)
             selectedVault = vault
             isLinkActive = true
@@ -271,7 +271,8 @@ class EncryptedBackupViewModel: ObservableObject {
             isLinkActive = false
         }
     }
-    func restoreVault(modelContext: ModelContext,vaults: [Vault]) {
+    
+    func restoreVault(modelContext: ModelContext,vaults: [Vault], defaultChains: [CoinMeta]) {
         guard let vaultText = decryptedContent, let vaultData = Data(hexString: vaultText) else {
             alertTitle = "error"
             alertMessage = "invalidVaultData"
@@ -280,7 +281,7 @@ class EncryptedBackupViewModel: ObservableObject {
             return
         }
         if isBakFile() {
-            restoreVaultBak(modelContext: modelContext, vaults: vaults, vaultData: vaultData)
+            restoreVaultBak(modelContext: modelContext, vaults: vaults, vaultData: vaultData, defaultChains: defaultChains)
             return
         }
         let decoder = JSONDecoder()
