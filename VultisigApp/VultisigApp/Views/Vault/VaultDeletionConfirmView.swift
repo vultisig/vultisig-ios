@@ -19,6 +19,7 @@ struct VaultDeletionConfirmView: View {
     @State var navigateBackToHome = false
     
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject var homeViewModel: HomeViewModel
     
     let vaults: [Vault]
     
@@ -113,7 +114,7 @@ struct VaultDeletionConfirmView: View {
             showAlert = true
             return
         }
-        
+        homeViewModel.selectedVault = nil
         modelContext.delete(vault)
         do {
             try modelContext.save()

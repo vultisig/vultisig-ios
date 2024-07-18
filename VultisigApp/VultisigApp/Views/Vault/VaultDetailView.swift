@@ -44,7 +44,7 @@ struct VaultDetailView: View {
             appState.currentVault = homeViewModel.selectedVault
             setData()
         }
-        .onChange(of: vault.coins) {
+        .onChange(of: homeViewModel.selectedVault?.coins) {
             setData()
         }
         .navigationDestination(isPresented: $isSendLinkActive) {
@@ -238,6 +238,9 @@ struct VaultDetailView: View {
     }
     
     private func setData() {
+        if homeViewModel.selectedVault == nil {
+            return
+        }
         viewModel.fetchCoins(for: vault)
         viewModel.setOrder()
         viewModel.updateBalance(vault: vault)
