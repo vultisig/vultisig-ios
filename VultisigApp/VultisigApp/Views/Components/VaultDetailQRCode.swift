@@ -31,7 +31,7 @@ struct VaultDetailQRCode: View {
     }
     
     var qrCode: some View {
-        getQRCode()
+        getQRCode(vault: vault)
             .resizable()
             .frame(width: 180, height: 180)
             .scaledToFit()
@@ -93,7 +93,7 @@ struct VaultDetailQRCode: View {
         }
     }
     
-    private func getQRCode() -> Image {
+    func getQRCode(vault: Vault) -> Image {
         let name = vault.name
         let ecdsaKey = vault.pubKeyECDSA
         let eddsaKey = vault.pubKeyEdDSA

@@ -10,6 +10,10 @@ import SwiftUI
 struct VaultDetailQRCodeView: View {
     let vault: Vault
     
+    @State var imageName = ""
+    @StateObject var viewModel = VaultDetailQRCodeViewModel()
+    @Environment(\.displayScale) var displayScale
+    
     var body: some View {
         ZStack {
             Background()
@@ -32,6 +36,9 @@ struct VaultDetailQRCodeView: View {
             button
         }
         .padding(15)
+        .onAppear {
+            setData()
+        }
     }
     
     var qrCode: some View {
@@ -39,8 +46,24 @@ struct VaultDetailQRCodeView: View {
     }
     
     var button: some View {
-        FilledButton(title: "saveOrShare")
-            .padding(.bottom, 10)
+        ZStack {
+            if let renderedImage = viewModel.renderedImage {
+                ShareLink(
+                    item: renderedImage,
+                    preview: SharePreview(Text(imageName), image: renderedImage)
+                ) {
+                    FilledButton(title: "saveOrShare")
+                        .padding(.bottom, 10)
+                }
+            } else {
+                ProgressView()
+            }
+        }
+    }
+    
+    private func setData() {
+        imageName = "Vultisig-\(vault.name)-\(vault.hexChainCode.suffix(3)).png"
+        viewModel.render(vault: vault, displayScale: displayScale)
     }
 }
 

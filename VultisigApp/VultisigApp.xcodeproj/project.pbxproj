@@ -213,6 +213,7 @@
 		A6B7F4962C493DD9006D83D1 /* NavigationQRCodeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B7F4952C493DD9006D83D1 /* NavigationQRCodeButton.swift */; };
 		A6B7F4982C49402F006D83D1 /* VaultDetailQRCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B7F4972C49402F006D83D1 /* VaultDetailQRCodeView.swift */; };
 		A6B7F49A2C49418A006D83D1 /* VaultDetailQRCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B7F4992C49418A006D83D1 /* VaultDetailQRCode.swift */; };
+		A6B7F49C2C4963F6006D83D1 /* VaultDetailQRCodeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B7F49B2C4963F6006D83D1 /* VaultDetailQRCodeViewModel.swift */; };
 		A6BACF1A2BC705DA00084810 /* ChainDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BACF192BC705DA00084810 /* ChainDetailView.swift */; };
 		A6BACF1C2BC79B3100084810 /* TokenSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BACF1B2BC79B3100084810 /* TokenSelectionView.swift */; };
 		A6BEF5C02BE2B11C007A84A1 /* DeeplinkViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BEF5BF2BE2B11C007A84A1 /* DeeplinkViewModel.swift */; };
@@ -618,6 +619,7 @@
 		A6B7F4952C493DD9006D83D1 /* NavigationQRCodeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationQRCodeButton.swift; sourceTree = "<group>"; };
 		A6B7F4972C49402F006D83D1 /* VaultDetailQRCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailQRCodeView.swift; sourceTree = "<group>"; };
 		A6B7F4992C49418A006D83D1 /* VaultDetailQRCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailQRCode.swift; sourceTree = "<group>"; };
+		A6B7F49B2C4963F6006D83D1 /* VaultDetailQRCodeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailQRCodeViewModel.swift; sourceTree = "<group>"; };
 		A6BACF192BC705DA00084810 /* ChainDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailView.swift; sourceTree = "<group>"; };
 		A6BACF1B2BC79B3100084810 /* TokenSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionView.swift; sourceTree = "<group>"; };
 		A6BEF5BF2BE2B11C007A84A1 /* DeeplinkViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeeplinkViewModel.swift; sourceTree = "<group>"; };
@@ -1262,6 +1264,7 @@
 				DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */,
 				A66BFCD22C135699004DCD4F /* ShareSheetViewModel.swift */,
 				A68696222C1B5DD2004EDE0B /* EncryptedBackupViewModel.swift */,
+				A6B7F49B2C4963F6006D83D1 /* VaultDetailQRCodeViewModel.swift */,
 			);
 			path = "View Models";
 			sourceTree = "<group>";
@@ -2248,6 +2251,7 @@
 				A6CBA8F02BA2A629008B110C /* ImportWalletUploadSection.swift in Sources */,
 				A65BA9902BAD402A00B2D8AA /* KeysignMessageConfirmView.swift in Sources */,
 				B590DF8A2C2E88F900ED934E /* VoteOption.swift in Sources */,
+				A6B7F49C2C4963F6006D83D1 /* VaultDetailQRCodeViewModel.swift in Sources */,
 				A5BA150C2C078FA000AA6C07 /* TokenSelectionViewModel.swift in Sources */,
 				A66A0BD52BA124D00021A483 /* EditVaultView.swift in Sources */,
 				DE49A19C2B67133D000F3AFB /* Vault.swift in Sources */,
