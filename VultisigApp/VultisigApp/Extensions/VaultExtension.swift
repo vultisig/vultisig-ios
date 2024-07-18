@@ -35,6 +35,6 @@ extension Vault {
         let totalSigners = self.signers.count
         let threshold = getThreshold()
         let lastFourOfPubKey = String(self.pubKeyECDSA.suffix(4))
-        return "vultisig-\(self.name)-\(formattedDate)-\(threshold+1)of\(totalSigners)-\(lastFourOfPubKey)-\(self.localPartyID).dat"
+        return "vultisig-\(self.name)-\(formattedDate)-\(threshold+1)of\(totalSigners)-\(lastFourOfPubKey)-\(self.localPartyID).bak"
     }
 }
