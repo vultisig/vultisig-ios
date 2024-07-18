@@ -46,8 +46,8 @@ struct SettingsView: View {
             vaultSettingsCell
             languageSelectionCell
             currencySelectionCell
-            defaultChainsSelectionCell
             addressBookCell
+            defaultChainsSelectionCell
             faqCell
         }
     }

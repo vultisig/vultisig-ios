@@ -211,6 +211,8 @@
 		A6B51BE92C098DAE007FDD3C /* OnFirstAppear.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B51BE82C098DAE007FDD3C /* OnFirstAppear.swift */; };
 		A6B7F48C2C47A077006D83D1 /* InformationNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B7F48B2C47A077006D83D1 /* InformationNote.swift */; };
 		A6B7F48E2C4893F1006D83D1 /* SettingsDefaultChainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B7F48D2C4893F1006D83D1 /* SettingsDefaultChainView.swift */; };
+		A6B7F4902C489610006D83D1 /* ToggleSelectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B7F48F2C489610006D83D1 /* ToggleSelectionCell.swift */; };
+		A6B7F4922C48D8A8006D83D1 /* SettingsDefaultChainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B7F4912C48D8A8006D83D1 /* SettingsDefaultChainViewModel.swift */; };
 		A6BACF1A2BC705DA00084810 /* ChainDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BACF192BC705DA00084810 /* ChainDetailView.swift */; };
 		A6BACF1C2BC79B3100084810 /* TokenSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BACF1B2BC79B3100084810 /* TokenSelectionView.swift */; };
 		A6BEF5C02BE2B11C007A84A1 /* DeeplinkViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BEF5BF2BE2B11C007A84A1 /* DeeplinkViewModel.swift */; };
@@ -613,6 +615,8 @@
 		A6B51BE82C098DAE007FDD3C /* OnFirstAppear.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnFirstAppear.swift; sourceTree = "<group>"; };
 		A6B7F48B2C47A077006D83D1 /* InformationNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InformationNote.swift; sourceTree = "<group>"; };
 		A6B7F48D2C4893F1006D83D1 /* SettingsDefaultChainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsDefaultChainView.swift; sourceTree = "<group>"; };
+		A6B7F48F2C489610006D83D1 /* ToggleSelectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToggleSelectionCell.swift; sourceTree = "<group>"; };
+		A6B7F4912C48D8A8006D83D1 /* SettingsDefaultChainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsDefaultChainViewModel.swift; sourceTree = "<group>"; };
 		A6BACF192BC705DA00084810 /* ChainDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailView.swift; sourceTree = "<group>"; };
 		A6BACF1B2BC79B3100084810 /* TokenSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionView.swift; sourceTree = "<group>"; };
 		A6BEF5BF2BE2B11C007A84A1 /* DeeplinkViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeeplinkViewModel.swift; sourceTree = "<group>"; };
@@ -1254,6 +1258,7 @@
 				DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */,
 				A66BFCD22C135699004DCD4F /* ShareSheetViewModel.swift */,
 				A68696222C1B5DD2004EDE0B /* EncryptedBackupViewModel.swift */,
+				A6B7F4912C48D8A8006D83D1 /* SettingsDefaultChainViewModel.swift */,
 			);
 			path = "View Models";
 			sourceTree = "<group>";
@@ -1408,6 +1413,7 @@
 				A683EDEC2BCF67D100BB706E /* NetworkPromptCell.swift */,
 				A6AF96112C2E3D6100992578 /* ImportFileCell.swift */,
 				A6725D422C40C45800D47716 /* AddressBookCell.swift */,
+				A6B7F48F2C489610006D83D1 /* ToggleSelectionCell.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -2184,6 +2190,7 @@
 				DED05FE42BBB824D00E0496C /* ThorchainAccountValue.swift in Sources */,
 				A60CA7E52BB0D37D00FDEB5C /* ContentView.swift in Sources */,
 				B5F7581D2BD8FDA20097B5B9 /* SuiCoin.swift in Sources */,
+				A6B7F4922C48D8A8006D83D1 /* SettingsDefaultChainViewModel.swift in Sources */,
 				A6C0D55C2BB3AE8600156689 /* TransactionsView.swift in Sources */,
 				4606B3B02B80465E0045094D /* UTXOTransactionsService.swift in Sources */,
 				DEEFF4FD2B9835DE0015692E /* THORChainSwapChainExtension.swift in Sources */,
@@ -2259,6 +2266,7 @@
 				A6F2C5452B9FE3A00095C8E3 /* HomeView.swift in Sources */,
 				A66A0BD72BA125C50021A483 /* EditVaultCell.swift in Sources */,
 				A6C3ABCA2C3E5A8700F13ED0 /* NavigationAddButton.swift in Sources */,
+				A6B7F4902C489610006D83D1 /* ToggleSelectionCell.swift in Sources */,
 				B590DF882C2E815A00ED934E /* GenericSelectorDropDown.swift in Sources */,
 				A63953B42BA7F120000802EC /* SendCryptoDoneView.swift in Sources */,
 				DE49A1A02B67143B000F3AFB /* Chain.swift in Sources */,
