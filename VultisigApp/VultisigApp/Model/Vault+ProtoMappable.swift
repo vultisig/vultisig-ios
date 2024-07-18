@@ -15,7 +15,6 @@ extension Vault: ProtoMappable {
         self.pubKeyECDSA = proto.publicKeyEcdsa
         self.pubKeyEdDSA = proto.publicKeyEddsa
         self.signers = proto.signers
-        self.createdAt = Date.now
         self.hexChainCode = proto.hexChainCode
         self.keyshares = proto.keyShares.map { KeyShare(pubkey: $0.publicKey, keyshare: $0.keyshare) }
         self.localPartyID = proto.localPartyID
@@ -23,7 +22,7 @@ extension Vault: ProtoMappable {
         let timeInterval = TimeInterval(proto.createdAt.seconds) + TimeInterval(proto.createdAt.nanos) / 1_000_000_000
         self.createdAt = Date(timeIntervalSince1970: timeInterval)
         self.order = 0
-        self.isBackedUp = false
+        self.isBackedUp = true
     }
     
     func mapToProtobuff() ->  VSVault {
