@@ -64,8 +64,12 @@ struct AddressTextField: View {
 #endif
             
             pasteButton
+#if os(iOS)
             scanButton
+#elseif os(macOS)
             fileButton
+#endif
+            addressBookButton
         }
     }
     
@@ -102,6 +106,17 @@ struct AddressTextField: View {
             showImagePicker.toggle()
         } label: {
             Image(systemName: "photo.badge.plus")
+                .font(.body16Menlo)
+                .foregroundColor(.neutral0)
+                .frame(width: 40, height: 40)
+        }
+    }
+    
+    var addressBookButton: some View {
+        NavigationLink {
+            AddressBookView(returnAddress: $contractAddress)
+        } label: {
+            Image(systemName: "text.book.closed")
                 .font(.body16Menlo)
                 .foregroundColor(.neutral0)
                 .frame(width: 40, height: 40)

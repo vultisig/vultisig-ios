@@ -47,6 +47,7 @@ struct SettingsView: View {
             languageSelectionCell
             currencySelectionCell
             defaultChainsSelectionCell
+            addressBookCell
             faqCell
         }
     }
@@ -101,6 +102,17 @@ struct SettingsView: View {
             SettingsDefaultChainView()
         } label: {
             SettingCell(title: "defaultChains", icon: "circle.hexagonpath")
+        }
+    }
+    
+    var addressBookCell: some View {
+        NavigationLink {
+            AddressBookView(
+                shouldReturnAddress: false,
+                returnAddress: .constant("")
+            )
+        } label: {
+            SettingCell(title: "addressBook", icon: "text.book.closed")
         }
     }
     

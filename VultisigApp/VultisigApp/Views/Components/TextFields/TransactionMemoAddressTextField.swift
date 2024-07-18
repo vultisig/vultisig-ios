@@ -123,8 +123,10 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
             pasteButton
 #if os(iOS)
             scanButton
-#endif
+#elseif os(macOS)
             fileButton
+#endif
+            addressBookButton
         }
     }
     
@@ -161,6 +163,25 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
             showImagePicker.toggle()
         } label: {
             Image(systemName: "photo.badge.plus")
+                .font(.body16Menlo)
+                .foregroundColor(.neutral0)
+                .frame(width: 40, height: 40)
+        }
+    }
+    
+    var addressBookButton: some View {
+        NavigationLink {
+            AddressBookView(returnAddress: Binding<String>(
+                get: { memo.addressFields[addressKey] ?? "" },
+                set: { newValue in
+                    memo.addressFields[addressKey] = newValue
+                    DebounceHelper.shared.debounce {
+                        validateAddress(newValue)
+                    }
+                }
+            ))
+        } label: {
+            Image(systemName: "text.book.closed")
                 .font(.body16Menlo)
                 .foregroundColor(.neutral0)
                 .frame(width: 40, height: 40)

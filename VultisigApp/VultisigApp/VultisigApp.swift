@@ -34,6 +34,7 @@ struct VultisigApp: App {
                 .environmentObject(deeplinkViewModel)
                 .environmentObject(settingsViewModel)
                 .environmentObject(homeViewModel)
+            
 #if os(macOS)
                 .onChange(of: scenePhase) {
                     switch scenePhase {
@@ -71,6 +72,7 @@ struct VultisigApp: App {
         let schema = Schema([
             Vault.self,
             Coin.self,
+            AddressBookItem.self
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema,
