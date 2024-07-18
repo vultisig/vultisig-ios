@@ -267,3 +267,4 @@
 "numberOfPairedDevicesTwoOfTwo" = "Number of paired devices %d of 2";
 "numberOfPairedDevicesTwoOfThree" = "Number of paired devices %d of 3";
 "numberOfPairedDevicesMOfN" = "Number of paired devices %d of N";
+"defaultChains" = "Default Chains";
