@@ -14,6 +14,7 @@ struct ImportWalletView: View {
     @StateObject var backupViewModel = EncryptedBackupViewModel()
     
     @Query var vaults: [Vault]
+    @Query var defaultChains: [CoinMeta]
     
     var body: some View {
         ZStack {
@@ -95,7 +96,11 @@ struct ImportWalletView: View {
     
     var continueButton: some View {
         Button {
-            backupViewModel.restoreVault(modelContext: context,vaults: vaults)
+            backupViewModel.restoreVault(
+                modelContext: context,
+                vaults: vaults,
+                defaultChains: defaultChains
+            )
         } label: {
             FilledButton(title: "continue")
                 .disabled(!backupViewModel.isFileUploaded)

@@ -82,7 +82,7 @@ class KeygenViewModel: ObservableObject {
         }
     }
     
-    func startKeygen(context: ModelContext) async {
+    func startKeygen(context: ModelContext, defaultChains: [CoinMeta]) async {
         defer {
             self.messagePuller?.stop()
         }
@@ -115,14 +115,14 @@ class KeygenViewModel: ObservableObject {
             case .Keygen:
                 // make sure the newly created vault has default coins
                 VaultDefaultCoinService(context: context)
-                    .setDefaultCoinsOnce(vault: self.vault)
+                    .setDefaultCoinsOnce(vault: self.vault, defaultChains: defaultChains)
                 context.insert(self.vault)
             case .Reshare:
                 // if local party is not in the old committee , then he is the new guy , need to add the vault
                 // otherwise , they previously have the vault
                 if !self.vaultOldCommittee.contains(self.vault.localPartyID) {
                     VaultDefaultCoinService(context: context)
-                        .setDefaultCoinsOnce(vault: self.vault)
+                        .setDefaultCoinsOnce(vault: self.vault, defaultChains: defaultChains)
                     context.insert(self.vault)
                 }
             }

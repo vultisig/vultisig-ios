@@ -227,7 +227,7 @@ class EncryptedBackupViewModel: ObservableObject {
         }
     }
     
-    func restoreVault(modelContext: ModelContext,vaults: [Vault]) {
+    func restoreVault(modelContext: ModelContext, vaults: [Vault], defaultChains: [CoinMeta]) {
         
         guard let vaultText = decryptedContent, let vaultData = Data(hexString: vaultText) else {
             alertTitle = "error"
@@ -250,7 +250,7 @@ class EncryptedBackupViewModel: ObservableObject {
                 return
             }
             VaultDefaultCoinService(context: modelContext)
-                .setDefaultCoinsOnce(vault: backupVault.vault)
+                .setDefaultCoinsOnce(vault: backupVault.vault, defaultChains: defaultChains)
             modelContext.insert(backupVault.vault)
             selectedVault = backupVault.vault
             isLinkActive = true
@@ -269,7 +269,7 @@ class EncryptedBackupViewModel: ObservableObject {
                     return
                 }
                 VaultDefaultCoinService(context: modelContext)
-                    .setDefaultCoinsOnce(vault: vault)
+                    .setDefaultCoinsOnce(vault: vault, defaultChains: defaultChains)
                 modelContext.insert(vault)
                 selectedVault = vault
                 isLinkActive = true
