@@ -6,12 +6,14 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ToggleSelectionCell: View {
     let asset: CoinMeta?
-    @Binding var assets: [CoinMeta]
+    let assets: [CoinMeta]
     
     @State var isSelected = false
+    @Environment(\.modelContext) var modelContext
     
     var body: some View {
         HStack(spacing: 16) {
@@ -89,19 +91,18 @@ struct ToggleSelectionCell: View {
             return
         }
         
-        assets.append(asset)
+        modelContext.insert(asset)
     }
     
     private func removeAsset() {
-        for index in 0..<assets.count {
-            if assets[index] == asset {
-                assets.remove(at: index)
-                return
-            }
+        guard let asset else {
+            return
         }
+        
+        modelContext.delete(asset)
     }
 }
 
 #Preview {
-    ToggleSelectionCell(asset: CoinMeta.example, assets: .constant([CoinMeta.example]))
+    ToggleSelectionCell(asset: CoinMeta.example, assets: [CoinMeta.example])
 }

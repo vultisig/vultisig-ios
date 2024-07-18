@@ -6,19 +6,20 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct SettingsDefaultChainView: View {
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
     
-    @State var assets = [CoinMeta]()
+    @Query var defaultChains: [CoinMeta]
     
     @StateObject var viewModel = SettingsDefaultChainViewModel()
     
     var body: some View {
-        VStack {
-            search
-            cells
+        ZStack {
+            Background()
+            content
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("defaultChains", comment: ""))
@@ -32,16 +33,32 @@ struct SettingsDefaultChainView: View {
         }
     }
     
+    var content: some View {
+        VStack {
+            search
+            cells
+        }
+        .onChange(of: viewModel.searchText) { oldValue, newValue in
+            viewModel.search(coinSelectionViewModel.groupedAssets)
+        }
+    }
+    
     var search: some View {
-        Text("Search")
+        Search(searchText: $viewModel.searchText)
+            .padding(.top, 30)
+            .padding(.horizontal, 16)
     }
     
     var cells: some View {
         ScrollView {
-            ForEach(coinSelectionViewModel.groupedAssets.keys.sorted(), id: \.self) { key in
-                let asset = coinSelectionViewModel.groupedAssets[key]?.first
-                ToggleSelectionCell(asset: asset, assets: $assets)
+            VStack {
+                ForEach(viewModel.filteredAssets.keys.sorted(), id: \.self) { key in
+                    let asset = coinSelectionViewModel.groupedAssets[key]?.first
+                    ToggleSelectionCell(asset: asset, assets: defaultChains)
+                }
             }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 50)
         }
     }
     
@@ -51,6 +68,7 @@ struct SettingsDefaultChainView: View {
         }
         
         coinSelectionViewModel.setData(for: vault)
+        viewModel.setData(coinSelectionViewModel.groupedAssets)
     }
 }
 
