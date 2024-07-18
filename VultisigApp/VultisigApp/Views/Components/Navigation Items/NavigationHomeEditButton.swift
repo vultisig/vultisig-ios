@@ -20,7 +20,7 @@ struct NavigationHomeEditButton: View {
         if showVaultsList {
             vaultsListEditButton
         } else {
-            vaultDetailRefreshButton
+            vaultDetailQRCodeButton
         }
     }
     
@@ -36,11 +36,11 @@ struct NavigationHomeEditButton: View {
         }
     }
     
-    var vaultDetailRefreshButton: some View {
-        NavigationRefreshButton {
-            if let vault {
-                viewModel.updateBalance(vault: vault)
-            }
+    var vaultDetailQRCodeButton: some View {
+        NavigationLink {
+            VaultDetailQRCodeView()
+        } label: {
+            NavigationQRCodeButton()
         }
     }
     
