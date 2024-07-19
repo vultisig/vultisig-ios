@@ -263,6 +263,14 @@
 "enterVaultName" = "Enter vault name";
 "pleaseBackupVault" = "Please Backup your Vault Shares now";
 "pleaseBackupVaultNote" = "Note: Never store Vault Shares from different devices in the same location.";
+"addressBook" = "Address Book";
+"addAddress" = "Add Address";
+"address" = "Address";
+"title" = "Title";
+"saveAddress" = "Save Address";
+"success" = "Success";
+"addressAddedToAddressBook" = "Address added to the address book successfully.";
+"noSavedAddresses" = "No Saved Addresses";
 "informationNote" = "Keep devices on the same WiFi Network, correct vault and pair devices.\nMake sure no other devices are running Vultisig.";
 "numberOfPairedDevicesTwoOfTwo" = "Number of paired devices %d of 2";
 "numberOfPairedDevicesTwoOfThree" = "Number of paired devices %d of 3";
