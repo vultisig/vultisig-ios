@@ -99,18 +99,14 @@ struct VaultDetailQRCode: View {
         let eddsaKey = vault.pubKeyEdDSA
         let hexCode = vault.hexChainCode
         let id = "\(name)-\(ecdsaKey)-\(eddsaKey)-\(hexCode)".sha256()
-        
-        let data = """
-        {
-            "uid": \(id),
-            "name" : \(name),
-            "public_key_ecdsa": \(ecdsaKey),
-            "public_key_eddsa": \(eddsaKey),
-            "hex_chain_code": \(hexCode)
+        let vaultPublicKeyExport = VaultPublicKeyExport(uid: id, name: name, public_key_ecdsa: ecdsaKey, public_key_eddsa: eddsaKey, hex_chain_code: hexCode)
+        do{
+            let data = try JSONEncoder().encode(vaultPublicKeyExport)
+            return Utils.generateQRCodeImage(from: String(data: data, encoding: .utf8) ?? "")
+        } catch {
+            print("failed to create vault public key export: \(error.localizedDescription)")
+            return Image(systemName: "xmark")
         }
-        """
-        
-        return Utils.generateQRCodeImage(from: data)
     }
 }
 
