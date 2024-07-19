@@ -28,6 +28,10 @@ class BalanceService {
     
     private var cache: ThreadSafeDictionary<String, (data: CachedValue, timestamp: Date)> = ThreadSafeDictionary()
     
+    func clearCache() async {
+        await cache.clear()
+    }
+    
     private let CACHE_TIMEOUT_IN_SECONDS: Double = 120 // 2 minutes
     
     private func cacheKey(coin: Coin) -> String {

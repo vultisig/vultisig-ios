@@ -10,11 +10,17 @@ import SwiftUI
 struct SettingsCurrencySelectionView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var settingsViewModel: SettingsViewModel
-
+    
+    @State var isLoading = false
+    
     var body: some View {
         ZStack {
             Background()
             view
+            
+            if isLoading {
+                Loader()
+            }
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("currency", comment: "Currency"))
@@ -53,8 +59,19 @@ struct SettingsCurrencySelectionView: View {
     }
     
     private func handleSelection(_ currency: SettingsCurrency) {
+        isLoading = true
         settingsViewModel.selectedCurrency = currency
-        dismiss()
+        
+        Task{
+            if let currentVault = ApplicationState.shared.currentVault {
+                await CryptoPriceService.shared.clearCache()
+                await BalanceService.shared.clearCache()
+                await BalanceService.shared.updateBalances(vault: currentVault)
+                dismiss()
+                isLoading = false
+            }
+        }
+        
     }
 }
 
