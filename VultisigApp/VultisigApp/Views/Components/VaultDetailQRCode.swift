@@ -98,7 +98,7 @@ struct VaultDetailQRCode: View {
         let ecdsaKey = vault.pubKeyECDSA
         let eddsaKey = vault.pubKeyEdDSA
         let hexCode = vault.hexChainCode
-        let id = "\(name) - \(ecdsaKey) - \(eddsaKey) - \(hexCode)".sha256()
+        let id = "\(name)-\(ecdsaKey)-\(eddsaKey)-\(hexCode)".sha256()
         
         let data = """
         {
