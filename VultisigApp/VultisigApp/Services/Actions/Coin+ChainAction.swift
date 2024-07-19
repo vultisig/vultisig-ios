@@ -21,15 +21,15 @@ extension Chain {
         case .avalanche:
             actions = [.send, .swap]
         case .base:
-            actions = [.send]
+            actions = [.send, .swap]
         case .blast:
             actions = [.send]
         case .arbitrum:
-            actions = [.send]
+            actions = [.send, .swap]
         case .polygon:
-            actions = [.send]
+            actions = [.send, .swap]
         case .optimism:
-            actions = [.send]
+            actions = [.send, .swap]
         case .bscChain:
             actions = [.send, .swap]
         case .bitcoin:
@@ -55,7 +55,7 @@ extension Chain {
         case .polkadot:
             actions = [.send]
         case .zksync:
-            actions = [.send]
+            actions = [.send, .swap]
         case .dydx:
             actions = [.send, .memo]
         }

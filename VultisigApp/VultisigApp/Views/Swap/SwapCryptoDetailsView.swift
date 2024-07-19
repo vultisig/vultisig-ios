@@ -147,7 +147,6 @@ struct SwapCryptoDetailsView: View {
     var continueButton: some View {
         Button {
             Task {
-                try await swapViewModel.updateIsApproveRequired(tx: tx)
                 swapViewModel.moveToNextView()
             }
         } label: {

@@ -18,13 +18,16 @@ class SwapTransaction: ObservableObject {
     @Published var oneInchFee: BigInt = .zero
     @Published var gas: BigInt = .zero
     @Published var quote: SwapQuote?
-    @Published var isApproveRequired: Bool = false
+
+    var isApproveRequired: Bool {
+        return fromCoin.shouldApprove && router != nil
+    }
 
     var fee: BigInt {
         switch quote {
         case .thorchain, .mayachain:
             return thorchainFee
-        case .oneinch:
+        case .oneinch, .lifi:
             return oneInchFee
         case nil:
             return .zero
@@ -47,7 +50,7 @@ class SwapTransaction: ObservableObject {
         case .mayachain(let quote), .thorchain(let quote):
             let expected = Decimal(string: quote.expectedAmountOut) ?? 0
             return expected / toCoin.thorswapMultiplier
-        case .oneinch(let quote):
+        case .oneinch(let quote), .lifi(let quote):
             let amount = BigInt(quote.dstAmount) ?? BigInt.zero
             return toCoin.decimal(for: amount)
         }
@@ -60,7 +63,7 @@ class SwapTransaction: ObservableObject {
         switch quote {
         case .thorchain, .mayachain:
             return toCoin.raw(for: toAmountDecimal)
-        case .oneinch(let quote):
+        case .oneinch(let quote), .lifi(let quote):
             return BigInt(quote.dstAmount) ?? BigInt.zero
         }
     }

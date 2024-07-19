@@ -11,4 +11,5 @@ enum SwapProvider: Equatable {
     case thorchain
     case mayachain
     case oneinch(Chain)
+    case lifi
 }

@@ -28,29 +28,31 @@ extension Coin {
             return [.mayachain]
         case .ethereum:
             if thorEthTokens.contains(ticker) {
-                return [.thorchain, .oneinch(chain)]
+                return [.thorchain, .oneinch(chain), .lifi]
             } else {
-                return [.oneinch(chain)]
+                return [.oneinch(chain), .lifi]
             }
         case .bscChain:
             if thorBscTokens.contains(ticker) {
-                return [.thorchain, .oneinch(chain)]
+                return [.thorchain, .oneinch(chain), .lifi]
             } else {
-                return [.oneinch(chain)]
+                return [.oneinch(chain), .lifi]
             }
         case .avalanche:
             if thorAvaxTokens.contains(ticker) {
                 return [.thorchain, .oneinch(chain)]
             } else {
-                return [.oneinch(chain)]
+                return [.oneinch(chain), .lifi]
             }
         case .base, .optimism, .polygon:
-            return [.oneinch(chain)]
+            return [.oneinch(chain), .lifi]
         case .thorChain:
             return [.thorchain, .mayachain]
         case .bitcoin, .dogecoin, .bitcoinCash, .litecoin, .gaiaChain:
             return [.thorchain]
-        case .solana, .sui, .polkadot, .dydx, .arbitrum, .blast, .cronosChain, .zksync:
+        case .blast, .arbitrum:
+            return [.lifi]
+        case .solana, .sui, .polkadot, .dydx, .cronosChain, .zksync:
             return []
         }
     }

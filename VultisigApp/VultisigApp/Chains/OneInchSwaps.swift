@@ -57,7 +57,7 @@ private extension OneInchSwaps {
         }
 
         let gasPrice = BigUInt(quote.tx.gasPrice) ?? BigUInt.zero
-        let gas = BigUInt(EVMHelper.defaultETHSwapGasUnit)
+        let gas = BigUInt(quote.tx.gas)
         let helper = EVMHelper.getHelper(coin: keysignPayload.coin)
         let signed = try helper.getPreSignedInputData(signingInput: input, keysignPayload: keysignPayload, gas: gas, gasPrice: gasPrice, incrementNonce: incrementNonce)
         return signed

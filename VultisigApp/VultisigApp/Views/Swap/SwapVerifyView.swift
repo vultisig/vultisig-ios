@@ -56,7 +56,7 @@ struct SwapVerifyView: View {
             getValueCell(for: "to", with: getToAmount())
             if swapViewModel.showAllowance(tx: tx) {
                 Separator()
-                getValueCell(for: "Allowance", with: "UNLIMITED")
+                getValueCell(for: "Allowance", with: getFromAmount())
             }
             if swapViewModel.showDuration(tx: tx) {
                 Separator()
@@ -77,7 +77,7 @@ struct SwapVerifyView: View {
             Checkbox(isChecked: $verifyViewModel.isAmountCorrect, text: "The swap amount is correct")
             Checkbox(isChecked: $verifyViewModel.isFeeCorrect, text: "I agree with the amount I will receive after the swap.")
             if showApproveCheckmark {
-                Checkbox(isChecked: $verifyViewModel.isApproveCorrect, text: "I agree with providing unlimited ERC20 allowance")
+                Checkbox(isChecked: $verifyViewModel.isApproveCorrect, text: "I agree with providing ERC20 allowance for exact swap amount")
             }
         }
     }
@@ -102,11 +102,19 @@ struct SwapVerifyView: View {
     }
 
     func getFromAmount() -> String {
-        return "\(tx.fromAmount) \(tx.fromCoin.ticker)"
+        if tx.fromCoin.chain == tx.toCoin.chain {
+            return "\(tx.fromAmount) \(tx.fromCoin.ticker)"
+        } else {
+            return "\(tx.fromAmount) \(tx.fromCoin.ticker) (\(tx.fromCoin.chain.ticker))"
+        }
     }
 
     func getToAmount() -> String {
-        return "\(tx.toAmountDecimal.description) \(tx.toCoin.ticker)"
+        if tx.fromCoin.chain == tx.toCoin.chain {
+            return "\(tx.toAmountDecimal.description) \(tx.toCoin.ticker)"
+        } else {
+            return "\(tx.toAmountDecimal.description) \(tx.toCoin.ticker) (\(tx.toCoin.chain.ticker))"
+        }
     }
 
     func getValueCell(for title: String, with value: String) -> some View {
