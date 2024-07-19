@@ -27,4 +27,10 @@ class ThreadSafeDictionary<Key: Hashable, Value> {
             return Array(dictionary.keys)
         }
     }
+    
+    func clear() async {
+        queue.async(flags: .barrier) {
+            self.dictionary.removeAll()
+        }
+    }
 }
