@@ -73,6 +73,14 @@ enum SettingsLanguage: String, CaseIterable {
 enum SettingsCurrency: String, CaseIterable {
     case USD
     case AUD
+    case EUR
+    case GBP
+    case CHF
+    case JPY
+    case CNY
+    case CAD
+    case SGD
+    case SEK
     
     static var current: SettingsCurrency {
         get {
