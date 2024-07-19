@@ -62,7 +62,13 @@ struct VaultDetailQRCodeView: View {
     }
     
     private func setData() {
-        imageName = "Vultisig-\(vault.name)-\(vault.hexChainCode.suffix(3)).png"
+        let name = vault.name
+        let ecdsaKey = vault.pubKeyECDSA
+        let eddsaKey = vault.pubKeyEdDSA
+        let hexCode = vault.hexChainCode
+        let id = "\(name) - \(ecdsaKey) - \(eddsaKey) - \(hexCode)".sha256()
+        
+        imageName = "Vultisig-\(vault.name)-\(id.suffix(3)).png"
         viewModel.render(vault: vault, displayScale: displayScale)
     }
 }
