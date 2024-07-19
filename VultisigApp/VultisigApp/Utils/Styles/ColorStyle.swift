@@ -52,12 +52,15 @@ extension Color {
     static let warningYellow = Color(hex: "#F7961B")
     static let backupNowRed = Color(hex: "#DA2E2E")
     
+    static let logoBlue = Color(hex: "#0D86BB")
+    
     // Background
     static let backgroundBlue = Color(hex: "02122B")
 }
 
 extension LinearGradient {
     static let primaryGradient = LinearGradient(colors: [Color(hex: "33E6BF"), Color(hex: "0439C7")], startPoint: .topLeading, endPoint: .bottomTrailing)
+    static let primaryGradientLinear = LinearGradient(colors: [Color(hex: "33E6BF"), Color(hex: "0439C7")], startPoint: .top, endPoint: .bottom)
     static let progressGradient = LinearGradient(colors: [Color(hex: "0439C7"), Color(hex: "33E6BF")], startPoint: .leading, endPoint: .trailing)
 }
 

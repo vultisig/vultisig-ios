@@ -12,6 +12,11 @@ public class CryptoPriceService: ObservableObject {
     
     private let CACHE_TIMEOUT_IN_SECONDS: Double = 60 * 60
     
+    func clearCache() async {
+        await cache.clear()
+        await cacheTokens.clear()
+    }
+    
     private func getCacheTokenKey(contractAddresses: [String], chain: Chain) -> String {
         let fiat = SettingsCurrency.current.rawValue.lowercased()
         let sortedAddresses = contractAddresses.sorted().joined(separator: "_")
