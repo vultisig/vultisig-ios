@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import WalletCore
 
 struct AddAddressBookView: View {
     let count: Int
@@ -17,7 +18,8 @@ struct AddAddressBookView: View {
     @State var title = ""
     @State var address = ""
     @State var showAlert = false
-    @State var selectedChain: CoinMeta? = nil
+    @State var showAlertInvalidAddress = false
+    @State var coin: CoinMeta? = nil
     
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var modelContext
@@ -48,6 +50,9 @@ struct AddAddressBookView: View {
         .alert(isPresented: $showAlert) {
             alert
         }
+        .alert(isPresented: $showAlertInvalidAddress) {
+            alertInvalidAddress
+        }
     }
     
     var content: some View {
@@ -62,7 +67,7 @@ struct AddAddressBookView: View {
     }
     
     var tokenSelector: some View {
-        AddressBookChainSelector(selected: $selectedChain)
+        AddressBookChainSelector(selected: $coin)
     }
     
     var titleField: some View {
@@ -90,6 +95,14 @@ struct AddAddressBookView: View {
         )
     }
     
+    var alertInvalidAddress: Alert {
+        Alert(
+            title: Text(""),
+            message: Text(NSLocalizedString("invalidAddress", comment: "")),
+            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+        )
+    }
+    
     private func setData() {
         guard let vault = homeViewModel.selectedVault else {
             return
@@ -98,11 +111,11 @@ struct AddAddressBookView: View {
         coinSelectionViewModel.setData(for: vault)
         
         let key = coinSelectionViewModel.groupedAssets.keys.sorted().first ?? ""
-        selectedChain = coinSelectionViewModel.groupedAssets[key]?.first
+        coin = coinSelectionViewModel.groupedAssets[key]?.first
     }
     
     private func addAddress() {
-        guard let selectedChain else {
+        guard let coin else {
             return
         }
         
@@ -111,10 +124,15 @@ struct AddAddressBookView: View {
             return
         }
         
+        guard validateAddress(coin: coin, address: address) else {
+            toggleAlertInvalidAddress()
+            return
+        }
+        
         let data = AddressBookItem(
             title: title,
             address: address,
-            coinMeta: selectedChain, 
+            coinMeta: coin, 
             order: count
         )
         
@@ -124,8 +142,19 @@ struct AddAddressBookView: View {
         }
     }
     
+    private func validateAddress(coin: CoinMeta, address: String) -> Bool {
+        if coin.chain == .mayaChain {
+            return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya")
+        }
+        return coin.coinType.validate(address: address)
+    }
+    
     private func toggleAlert() {
         showAlert = true
+    }
+    
+    private func toggleAlertInvalidAddress() {
+        showAlertInvalidAddress = true
     }
 }
 
