@@ -21,6 +21,8 @@ struct AddressBookView: View {
     @State var address: String = ""
     @State var isEditing = false
     
+    @State var coin: Coin?
+    
     var body: some View {
         ZStack(alignment: .bottom) {
             Background()
@@ -67,7 +69,13 @@ struct AddressBookView: View {
     
     var list: some View {
         List {
-            ForEach(savedAddresses.sorted(by: {
+            ForEach(savedAddresses.filter({
+                coin == nil ||
+                (
+                    coin != nil &&
+                    $0.coinMeta.chain.chainType == coin?.chainType
+                )
+            }).sorted(by: {
                 $0.order < $1.order
             }), id: \.id) { address in
                 AddressBookCell(
@@ -122,7 +130,7 @@ struct AddressBookView: View {
         let condition = isEditing || savedAddresses.count == 0
         
         return NavigationLink {
-            AddAddressBookView(count: savedAddresses.count)
+            AddAddressBookView(count: savedAddresses.count, coin: coin?.toCoinMeta())
         } label: {
             FilledButton(title: "addAddress")
                 .padding(.horizontal, 16)
@@ -169,7 +177,7 @@ struct AddressBookView: View {
 }
 
 #Preview {
-    AddressBookView(returnAddress: .constant(""))
+    AddressBookView(returnAddress: .constant(""), coin: Coin.example)
         .environmentObject(CoinSelectionViewModel())
         .environmentObject(HomeViewModel())
 }

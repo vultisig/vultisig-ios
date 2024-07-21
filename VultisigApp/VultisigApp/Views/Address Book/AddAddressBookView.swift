@@ -110,8 +110,10 @@ struct AddAddressBookView: View {
         
         coinSelectionViewModel.setData(for: vault)
         
-        let key = coinSelectionViewModel.groupedAssets.keys.sorted().first ?? ""
-        coin = coinSelectionViewModel.groupedAssets[key]?.first
+        if coin == nil {
+            let key = coinSelectionViewModel.groupedAssets.keys.sorted().first ?? ""
+            coin = coinSelectionViewModel.groupedAssets[key]?.first
+        }
     }
     
     private func addAddress() {
