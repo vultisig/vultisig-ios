@@ -130,7 +130,7 @@ struct AddressBookView: View {
         let condition = isEditing || savedAddresses.count == 0
         
         return NavigationLink {
-            AddAddressBookView(count: savedAddresses.count)
+            AddAddressBookView(count: savedAddresses.count, coin: coin?.toCoinMeta())
         } label: {
             FilledButton(title: "addAddress")
                 .padding(.horizontal, 16)
