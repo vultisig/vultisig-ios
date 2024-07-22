@@ -30,7 +30,9 @@ class Endpoint {
     static let broadcastTransactionMayachain = "https://mayanode.mayachain.info/cosmos/tx/v1beta1/txs"
     
     static func fetchBlowfishTransactions(chain: String) -> String {
-        "https://api.blowfish.xyz/\(chain)/v0/mainnet/scan/transactions"
+        let url = "https://api.blowfish.xyz/\(chain)/v0/mainnet/scan/transactions?language=en&method=eth_sendTransaction"
+        print(url)
+        return url
     }
     
     static func fetchAccountNumberThorchainNineRealms(_ address: String) -> String {

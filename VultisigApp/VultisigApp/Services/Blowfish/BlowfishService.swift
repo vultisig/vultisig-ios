@@ -18,7 +18,8 @@ struct BlowfishService {
         txObjects: [BlowfishRequest.BlowfishTxObject],
         simulatorConfig: BlowfishRequest.BlowfishSimulatorConfig? = nil
     ) async throws -> BlowfishResponse {
-        let url = URL(string: "https://api.blowfish.xyz/\(chain)/v0/mainnet/scan/transactions?language=en&method=eth_sendTransaction")!
+        
+        let url = URL(string: Endpoint.fetchBlowfishTransactions(chain: chain))!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("", forHTTPHeaderField: "X-Api-Key")
@@ -37,6 +38,8 @@ struct BlowfishService {
         
         let (data, _) = try await URLSession.shared.data(for: request)
         let response = try JSONDecoder().decode(BlowfishResponse.self, from: data)
+        
+        print(response)
         
         return response
     }
