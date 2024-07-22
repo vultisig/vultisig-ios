@@ -29,6 +29,10 @@ class Endpoint {
     static let broadcastTransactionThorchainNineRealms = "https://thornode.ninerealms.com/cosmos/tx/v1beta1/txs"
     static let broadcastTransactionMayachain = "https://mayanode.mayachain.info/cosmos/tx/v1beta1/txs"
     
+    static func fetchBlowfishTransactions(chain: String) -> String {
+        "https://api.blowfish.xyz/\(chain)/v0/mainnet/scan/transactions"
+    }
+    
     static func fetchAccountNumberThorchainNineRealms(_ address: String) -> String {
         "https://thornode.ninerealms.com/auth/accounts/\(address)"
     }
@@ -61,11 +65,11 @@ class Endpoint {
         
         return "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/swap?src=\(source)&dst=\(destination)&amount=\(amount)&from=\(from)&slippage=\(slippage)&disableEstimate=true&includeGas=true\(isAffiliateParams)".asUrl
     }
-
+    
     static func fetchLiFiQuote(fromChain: String, toChain: String, fromToken: String, toToken: String, fromAmount: String, fromAddress: String) -> URL {
         return "https://li.quest/v1/quote?fromChain=\(fromChain)&toChain=\(toChain)&fromToken=\(fromToken)&toToken=\(toToken)&fromAmount=\(fromAmount)&fromAddress=\(fromAddress)".asUrl
     }
-
+    
     static func fetchTokens(chain: Int) -> String {
         return "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/tokens"
     }
@@ -86,7 +90,7 @@ class Endpoint {
     static let avalancheServiceRpcService = "https://avalanche-c-chain-rpc.publicnode.com"
     
     static let bscServiceRpcService = "https://bsc-rpc.publicnode.com"
-        
+    
     static let baseServiceRpcService = "https://base-rpc.publicnode.com"
     
     static let arbitrumOneServiceRpcService = "https://arbitrum-one-rpc.publicnode.com"

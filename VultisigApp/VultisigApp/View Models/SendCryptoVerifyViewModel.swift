@@ -36,6 +36,33 @@ class SendCryptoVerifyViewModel: ObservableObject {
     func amount(for coin: Coin, tx: SendTransaction) -> BigInt {
         return tx.amountInRaw
     }
+    
+    func blowfishTransactionScan(tx: SendTransaction, vault: Vault) async throws -> BlowfishResponse {
+        
+        let amountDataHex = tx.amountInRaw.serializeForEvm().map { byte in String(format: "%02x", byte) }.joined()
+        let amount = "0x" + amountDataHex
+        
+        let txObjects = [
+            BlowfishRequest.BlowfishTxObject(
+                from: tx.fromAddress,
+                to: tx.toAddress,
+                value: amount,
+                data: nil
+            )
+        ]
+        
+        let response = try await BlowfishService.shared.scanTransactions(
+            userAccount: tx.fromAddress,
+            origin: "https://api.vultisig.com",
+            txObjects: txObjects
+        )
+        
+        print("Response: \(response)")
+        
+        return response
+        
+    }
+    
     func validateForm(tx: SendTransaction, vault: Vault) async -> KeysignPayload? {
         
         if !isValidForm {
@@ -44,18 +71,22 @@ class SendCryptoVerifyViewModel: ObservableObject {
             isLoading = false
             return nil
         }
+        
         var keysignPayload: KeysignPayload?
+        
         if tx.coin.chain.chainType == ChainType.UTXO {
+            
             do{
                 _ = try await utxo.fetchBlockchairData(coin: tx.coin)
-            }catch{
+            } catch {
                 print("fail to fetch utxo data from blockchair , error:\(error.localizedDescription)")
             }
         }
-        do{
+        
+        do {
             let chainSpecific = try await blockChainService.fetchSpecific(for: tx, sendMaxAmount: tx.sendMaxAmount)
             let keysignPayloadFactory = KeysignPayloadFactory()
-            keysignPayload = try await keysignPayloadFactory.buildTransfer(coin: tx.coin, 
+            keysignPayload = try await keysignPayloadFactory.buildTransfer(coin: tx.coin,
                                                                            toAddress: tx.toAddress,
                                                                            amount: amount(for:tx.coin,tx:tx),
                                                                            memo: tx.memo,
