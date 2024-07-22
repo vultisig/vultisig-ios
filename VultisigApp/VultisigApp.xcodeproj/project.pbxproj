@@ -59,6 +59,7 @@
 		A52313DE2BDF665E00D4D0D5 /* KeysignSwapConfirmView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52313DD2BDF665E00D4D0D5 /* KeysignSwapConfirmView.swift */; };
 		A527DD2C2C3E1CE000204464 /* KeygenMessage+ProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A527DD2B2C3E1CE000204464 /* KeygenMessage+ProtoMappable.swift */; };
 		A527DD2E2C3E1D8500204464 /* ReshareMessage+ProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A527DD2D2C3E1D8500204464 /* ReshareMessage+ProtoMappable.swift */; };
+		A53287B52C4DB874009FD3D3 /* CoinPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A53287B42C4DB874009FD3D3 /* CoinPickerView.swift */; };
 		A543B3A22BEA93D4003FB989 /* SwapQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = A543B3A12BEA93D4003FB989 /* SwapQuote.swift */; };
 		A54676522C179A93004DD782 /* Coin+Swaps.swift in Sources */ = {isa = PBXBuildFile; fileRef = A54676512C179A93004DD782 /* Coin+Swaps.swift */; };
 		A54BBCFF2BC6E11600645C06 /* TransferViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A54BBCFE2BC6E11600645C06 /* TransferViewModel.swift */; };
@@ -468,6 +469,7 @@
 		A52313DD2BDF665E00D4D0D5 /* KeysignSwapConfirmView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignSwapConfirmView.swift; sourceTree = "<group>"; };
 		A527DD2B2C3E1CE000204464 /* KeygenMessage+ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "KeygenMessage+ProtoMappable.swift"; sourceTree = "<group>"; };
 		A527DD2D2C3E1D8500204464 /* ReshareMessage+ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReshareMessage+ProtoMappable.swift"; sourceTree = "<group>"; };
+		A53287B42C4DB874009FD3D3 /* CoinPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinPickerView.swift; sourceTree = "<group>"; };
 		A543B3A12BEA93D4003FB989 /* SwapQuote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapQuote.swift; sourceTree = "<group>"; };
 		A54676512C179A93004DD782 /* Coin+Swaps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Coin+Swaps.swift"; sourceTree = "<group>"; };
 		A54BBCFE2BC6E11600645C06 /* TransferViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferViewModel.swift; sourceTree = "<group>"; };
@@ -1108,6 +1110,14 @@
 			path = LiFi;
 			sourceTree = "<group>";
 		};
+		A53287B32C4DB835009FD3D3 /* CoinPicker */ = {
+			isa = PBXGroup;
+			children = (
+				A53287B42C4DB874009FD3D3 /* CoinPickerView.swift */,
+			);
+			path = CoinPicker;
+			sourceTree = "<group>";
+		};
 		A543B3992BEA6E3E003FB989 /* 1inch */ = {
 			isa = PBXGroup;
 			children = (
@@ -1510,6 +1520,7 @@
 		D9AD8ED72B67225F0009F8D5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				A53287B32C4DB835009FD3D3 /* CoinPicker */,
 				A6F42CC12C09175B00D0431C /* GeneralCodeScannerView.swift */,
 				D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */,
 				A6D0BA692C08353700E24DC9 /* NoCameraPermissionView.swift */,
@@ -2190,6 +2201,7 @@
 				A69069B72BCF53B600F28A8B /* NetworkPromptType.swift in Sources */,
 				DE6DCB932B97D81C009A39D5 /* THORChainSwaps.swift in Sources */,
 				DE8AD74C2BC8E3FE00339775 /* KeygenVerify.swift in Sources */,
+				A53287B52C4DB874009FD3D3 /* CoinPickerView.swift in Sources */,
 				A60CA7EB2BB1020900FDEB5C /* DetectOrientation.swift in Sources */,
 				D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */,
 				B53D8CCA2BF7F22500B795D3 /* TransactionMemoUnbond.swift in Sources */,

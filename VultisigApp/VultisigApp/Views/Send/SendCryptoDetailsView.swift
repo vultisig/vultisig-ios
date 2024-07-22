@@ -26,7 +26,8 @@ struct SendCryptoDetailsView: View {
     @State var showMemoField = false
     
     @State var isLoading = false
-    
+    @State var isCoinPickerActive = false
+
     @FocusState private var focusedField: Field?
     
     var body: some View {
@@ -60,6 +61,12 @@ struct SendCryptoDetailsView: View {
         }
         .alert(isPresented: $sendCryptoViewModel.showAlert) {
             alert
+        }
+        .navigationDestination(isPresented: $isCoinPickerActive) {
+            CoinPickerView(coins: vault.coins) { coin in
+                tx.coin = coin
+                tx.fromAddress = coin.address
+            }
         }
     }
     
@@ -111,12 +118,11 @@ struct SendCryptoDetailsView: View {
     
     var coinSelector: some View {
         TokenSelectorDropdown(
-            coins: .constant(vault.coins),
-            selected: $tx.coin,
-            balance: coinBalance
-        ) { coin in
-            tx.fromAddress = coin.address
-        }
+            coin: tx.coin,
+            onPress: {
+                isCoinPickerActive = true
+            }
+        )
     }
     
     var fromField: some View {
