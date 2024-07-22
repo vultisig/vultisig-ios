@@ -19,14 +19,6 @@ struct BlowfishService {
         simulatorConfig: BlowfishRequest.BlowfishSimulatorConfig? = nil
     ) async throws -> BlowfishResponse {
         
-        let url = URL(string: Endpoint.fetchBlowfishTransactions(chain: chain))!
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("", forHTTPHeaderField: "X-Api-Key")
-        request.setValue("2023-06-05", forHTTPHeaderField: "X-Api-Version")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-        
         let blowfishRequest = BlowfishRequest(
             userAccount: userAccount,
             metadata: BlowfishRequest.BlowfishMetadata(origin: origin),
@@ -34,12 +26,11 @@ struct BlowfishService {
             simulatorConfig: simulatorConfig
         )
         
-        request.httpBody = try JSONEncoder().encode(blowfishRequest)
-        
-        let (data, _) = try await URLSession.shared.data(for: request)
-        let response = try JSONDecoder().decode(BlowfishResponse.self, from: data)
-        
-        print(response)
+        let endpoint = Endpoint.fetchBlowfishTransactions(chain: chain)
+        let headers = ["X-Api-Version" : "2023-06-05"]
+        let body = try JSONEncoder().encode(blowfishRequest)
+        let dataResponse = try await Utils.asyncPostRequest(urlString: endpoint, headers: headers, body: body)
+        let response = try JSONDecoder().decode(BlowfishResponse.self, from: dataResponse)
         
         return response
     }
