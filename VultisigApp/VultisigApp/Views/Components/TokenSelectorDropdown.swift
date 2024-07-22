@@ -8,70 +8,37 @@
 import SwiftUI
 
 struct TokenSelectorDropdown: View {
-    @Binding var coins: [Coin]
-    @Binding var selected: Coin
-    var balance: String? = nil
-
-    var onSelect: ((Coin) -> Void)?
-
-    @State var isExpanded = false
+    let coin: Coin
+    let balance: String? = nil
+    let onPress: (() -> Void)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            selectedCell
-            
-            if isActive && isExpanded {
-                cells
-            }
+            cell
         }
         .padding(.horizontal, 12)
         .background(Color.blue600)
         .cornerRadius(10)
-        .disabled(!isActive)
-    }
-    
-    var selectedCell: some View {
-        Button {
-            withAnimation {
-                isExpanded.toggle()
-            }
-        } label: {
-            cell
+        .onTapGesture {
+            onPress?()
         }
     }
     
     var cell: some View {
         HStack(spacing: 12) {
             image
-            Text("\(selected.ticker)")
+            Text("\(coin.ticker)")
             Spacer()
             balanceContent
-
-            if isActive {
-                Image(systemName: "chevron.down")
-            }
         }
-        .redacted(reason: selected.balanceString.isEmpty ? .placeholder : [])
+        .redacted(reason: coin.balanceString.isEmpty ? .placeholder : [])
         .font(.body16Menlo)
         .foregroundColor(.neutral0)
         .frame(height: 48)
     }
     
     var image: some View {
-        AsyncImageView(logo: selected.logo, size: CGSize(width: 32, height: 32), ticker: selected.ticker, tokenChainLogo: selected.tokenChainLogo)
-    }
-    
-    var cells: some View {
-        ForEach(coins, id: \.self) { coin in
-            Button {
-                handleSelection(for: coin)
-            } label: {
-                VStack(spacing: 0) {
-                    Separator()
-                    getCell(for: coin)
-                }
-            }
-        }
+        AsyncImageView(logo: coin.logo, size: CGSize(width: 32, height: 32), ticker: coin.ticker, tokenChainLogo: coin.tokenChainLogo)
     }
     
     var balanceContent: some View {
@@ -84,7 +51,7 @@ struct TokenSelectorDropdown: View {
             if let balance {
                 Text(balance)
             } else {
-                Text(selected.balanceString)
+                Text(coin.balanceString)
             }
         }
         .font(.body12Menlo)
@@ -106,27 +73,11 @@ struct TokenSelectorDropdown: View {
             }
 
             Spacer()
-            
-            if selected == coin {
-                Image(systemName: "checkmark")
-                    .font(.body16Menlo)
-                    .foregroundColor(.neutral0)
-            }
         }
         .frame(height: 48)
-    }
-
-    var isActive: Bool {
-        return coins.count > 1
-    }
-
-    private func handleSelection(for coin: Coin) {
-        isExpanded = false
-        selected = coin
-        onSelect?(coin)
     }
 }
 
 #Preview {
-    TokenSelectorDropdown(coins: .constant([.example]), selected: .constant(.example))
+    TokenSelectorDropdown(coin: .example, onPress: nil)
 }
