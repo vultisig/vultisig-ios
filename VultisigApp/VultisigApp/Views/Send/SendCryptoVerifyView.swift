@@ -16,6 +16,8 @@ struct SendCryptoVerifyView: View {
     
     @State var isLoading = true
     
+    @State var warnings: [BlowfishResponse.BlowfishWarning] = []
+    
     var body: some View {
         ZStack {
             Background()
@@ -36,7 +38,7 @@ struct SendCryptoVerifyView: View {
             Task{
                 do {
                     let scannerResult = try await sendCryptoVerifyViewModel.blowfishEVMTransactionScan(tx: tx)
-                    print(scannerResult)
+                    warnings = scannerResult?.warnings ?? [];
                     isLoading = false
                 } catch {
                     print(error.localizedDescription)
@@ -46,9 +48,17 @@ struct SendCryptoVerifyView: View {
         }
     }
     
+    var warning: some View {
+        VStack {
+            BlowfishWarningInformationNote(blowfishMessages: warnings)
+                .padding(.horizontal, 16)
+        }
+    }
+    
     var view: some View {
         VStack {
             fields
+            warning
             button
         }
         .blur(radius: sendCryptoVerifyViewModel.isLoading ? 1 : 0)

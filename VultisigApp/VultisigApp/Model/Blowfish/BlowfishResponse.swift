@@ -167,3 +167,7 @@ struct BlowfishResponse: Codable {
         }
     }
 }
+
+extension BlowfishResponse.BlowfishWarning: Identifiable {
+    public var id: String { self.message } // Assuming `message` is a unique identifier
+}
