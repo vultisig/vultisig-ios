@@ -29,8 +29,8 @@ class Endpoint {
     static let broadcastTransactionThorchainNineRealms = "https://thornode.ninerealms.com/cosmos/tx/v1beta1/txs"
     static let broadcastTransactionMayachain = "https://mayanode.mayachain.info/cosmos/tx/v1beta1/txs"
     
-    static func fetchBlowfishTransactions(chain: String) -> String {
-        "\(vultisigApiProxy)/blowfish/\(chain)/v0/mainnet/scan/transactions?language=en&method=eth_sendTransaction"
+    static func fetchBlowfishTransactions(chain: String, network: String) -> String {
+        "\(vultisigApiProxy)/blowfish/\(chain)/v0/\(network)/scan/transactions?language=en&method=eth_sendTransaction"
     }
     
     static func fetchAccountNumberThorchainNineRealms(_ address: String) -> String {
