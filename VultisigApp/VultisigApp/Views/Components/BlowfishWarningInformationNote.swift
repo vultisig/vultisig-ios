@@ -44,8 +44,13 @@ struct BlowfishWarningInformationNote: View {
     }
     
     var icon: some View {
-        Image(systemName: "exclamationmark.triangle")
-            .foregroundColor(Color.warningYellow)
+        if blowfishMessages.isEmpty {
+            Image(systemName: "checkmark.shield")
+                .foregroundColor(Color.green)
+        } else {
+            Image(systemName: "exclamationmark.triangle")
+                .foregroundColor(Color.warningYellow)
+        }
     }
     
     var text: some View {
