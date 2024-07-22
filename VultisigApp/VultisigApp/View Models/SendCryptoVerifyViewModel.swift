@@ -42,12 +42,15 @@ class SendCryptoVerifyViewModel: ObservableObject {
         let amountDataHex = tx.amountInRaw.serializeForEvm().map { byte in String(format: "%02x", byte) }.joined()
         let amount = "0x" + amountDataHex
         
+        let memoDataHex = tx.memo.data(using: .utf8)?.map { byte in String(format: "%02x", byte) }.joined() ?? ""
+        let memo = "0x" + memoDataHex
+        
         let txObjects = [
             BlowfishRequest.BlowfishTxObject(
                 from: tx.fromAddress,
                 to: tx.toAddress,
                 value: amount,
-                data: nil //TODO: implement the memo ENRIQUE
+                data: memo
             )
         ]
         
