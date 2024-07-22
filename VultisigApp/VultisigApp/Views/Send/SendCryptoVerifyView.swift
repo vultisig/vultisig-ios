@@ -14,10 +14,15 @@ struct SendCryptoVerifyView: View {
     @ObservedObject var tx: SendTransaction
     let vault: Vault
     
+    @State var isLoading = true
+    
     var body: some View {
         ZStack {
             Background()
             view
+            if isLoading {
+                Loader()
+            }
         }
         .gesture(DragGesture())
         .alert(isPresented: $sendCryptoVerifyViewModel.showAlert) {
@@ -25,6 +30,19 @@ struct SendCryptoVerifyView: View {
         }
         .onDisappear {
             sendCryptoVerifyViewModel.isLoading = false
+        }
+        .onAppear {
+            isLoading = true
+            Task{
+                do {
+                    let scannerResult = try await sendCryptoVerifyViewModel.blowfishEVMTransactionScan(tx: tx)
+                    print(scannerResult)
+                    isLoading = false
+                } catch {
+                    print(error.localizedDescription)
+                    isLoading = false
+                }
+            }
         }
     }
     
@@ -140,7 +158,7 @@ struct SendCryptoVerifyView: View {
     
     private func validateForm() async {
         keysignPayload = await sendCryptoVerifyViewModel.validateForm(
-            tx: tx, 
+            tx: tx,
             vault: vault
         )
         

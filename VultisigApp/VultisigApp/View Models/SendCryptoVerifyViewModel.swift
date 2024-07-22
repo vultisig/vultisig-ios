@@ -37,7 +37,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
         return tx.amountInRaw
     }
     
-    func blowfishTransactionScan(tx: SendTransaction, vault: Vault) async throws -> BlowfishResponse {
+    func blowfishEVMTransactionScan(tx: SendTransaction) async throws -> BlowfishResponse {
         
         let amountDataHex = tx.amountInRaw.serializeForEvm().map { byte in String(format: "%02x", byte) }.joined()
         let amount = "0x" + amountDataHex
@@ -52,6 +52,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
         ]
         
         let response = try await BlowfishService.shared.scanTransactions(
+            chain: tx.coin.chain.name.lowercased(),
             userAccount: tx.fromAddress,
             origin: "https://api.vultisig.com",
             txObjects: txObjects
