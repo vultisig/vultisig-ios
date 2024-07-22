@@ -47,7 +47,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 from: tx.fromAddress,
                 to: tx.toAddress,
                 value: amount,
-                data: nil
+                data: nil //TODO: implement the memo ENRIQUE
             )
         ]
         

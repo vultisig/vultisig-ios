@@ -34,16 +34,20 @@ struct SendCryptoVerifyView: View {
             sendCryptoVerifyViewModel.isLoading = false
         }
         .onAppear {
-            isLoading = true
-            Task{
-                do {
-                    let scannerResult = try await sendCryptoVerifyViewModel.blowfishEVMTransactionScan(tx: tx)
-                    warnings = scannerResult?.warnings ?? [];
-                    isLoading = false
-                } catch {
-                    print(error.localizedDescription)
-                    isLoading = false
+            if (tx.coin.chainType == .EVM) {
+                isLoading = true
+                Task{
+                    do {
+                        let scannerResult = try await sendCryptoVerifyViewModel.blowfishEVMTransactionScan(tx: tx)
+                        warnings = scannerResult?.warnings ?? [];
+                        isLoading = false
+                    } catch {
+                        print(error.localizedDescription)
+                        isLoading = false
+                    }
                 }
+            } else {
+                isLoading = false
             }
         }
     }
@@ -58,7 +62,9 @@ struct SendCryptoVerifyView: View {
     var view: some View {
         VStack {
             fields
-            warning
+            if (tx.coin.chainType == .EVM) {
+                warning
+            }
             button
         }
         .blur(radius: sendCryptoVerifyViewModel.isLoading ? 1 : 0)
