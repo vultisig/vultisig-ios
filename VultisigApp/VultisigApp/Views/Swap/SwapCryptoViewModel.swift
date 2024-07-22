@@ -32,8 +32,10 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     @MainActor @Published var error: Error?
     @MainActor @Published var isLoading = false
     @MainActor @Published var quoteLoading = false
-    
+    @MainActor @Published var dataLoaded = false
+
     func load(tx: SwapTransaction, initialFromCoin: Coin?, vault: Vault) async {
+        guard !dataLoaded else { return }
         isLoading = true
         defer { isLoading = false }
 
@@ -42,6 +44,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
        
         tx.fromCoin = fromCoin
         self.fromCoins = fromCoins
+        self.dataLoaded = true
     }
     
     var progress: Double {
@@ -280,8 +283,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     func stopMediator() {
         Mediator.shared.stop()
     }
-    
-    
+
     func switchCoins(tx: SwapTransaction, vault: Vault) {
         let fromCoin = tx.fromCoin
         let toCoin = tx.toCoin
@@ -295,12 +297,14 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         fetchQuotes(tx: tx, vault: vault)
     }
     
-    func updateFromCoin(tx: SwapTransaction, vault: Vault) {
+    func updateFromCoin(coin: Coin, tx: SwapTransaction, vault: Vault) {
+        tx.fromCoin = coin
         fetchFees(tx: tx, vault: vault)
         fetchQuotes(tx: tx, vault: vault)
     }
     
-    func updateToCoin(tx: SwapTransaction, vault: Vault) {
+    func updateToCoin(coin: Coin, tx: SwapTransaction, vault: Vault) {
+        tx.toCoin = coin
         fetchQuotes(tx: tx, vault: vault)
     }
     

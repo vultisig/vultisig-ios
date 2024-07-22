@@ -12,6 +12,8 @@ struct SwapCryptoDetailsView: View {
     @ObservedObject var swapViewModel: SwapCryptoViewModel
     
     @State var buttonRotated = false
+    @State var isFromPickerActive = false
+    @State var isToPickerActive = false
 
     let vault: Vault
 
@@ -26,6 +28,16 @@ struct SwapCryptoDetailsView: View {
         }
         .onChange(of: tx.fromCoin) { oldValue, newValue in
             swapViewModel.updateCoinLists(tx: tx)
+        }
+        .navigationDestination(isPresented: $isFromPickerActive) {
+            CoinPickerView(coins: swapViewModel.fromCoins) { coin in
+                swapViewModel.updateFromCoin(coin: coin, tx: tx, vault: vault)
+            }
+        }
+        .navigationDestination(isPresented: $isToPickerActive) {
+            CoinPickerView(coins: swapViewModel.toCoins) { coin in
+                swapViewModel.updateToCoin(coin: coin, tx: tx, vault: vault)
+            }
         }
     }
     
@@ -80,10 +92,9 @@ struct SwapCryptoDetailsView: View {
     var fromCoinField: some View {
         VStack(spacing: 8) {
             TokenSelectorDropdown(
-                coins: $swapViewModel.fromCoins,
-                selected: $tx.fromCoin,
-                onSelect: { _ in
-                    swapViewModel.updateFromCoin(tx: tx, vault: vault)
+                coin: tx.fromCoin,
+                onPress: {
+                    isFromPickerActive = true
                 }
             )
         }
@@ -121,10 +132,9 @@ struct SwapCryptoDetailsView: View {
     var toCoinField: some View {
         VStack(spacing: 8) {
             TokenSelectorDropdown(
-                coins: $swapViewModel.toCoins,
-                selected: $tx.toCoin,
-                onSelect: { _ in
-                    swapViewModel.updateToCoin(tx: tx, vault: vault)
+                coin: tx.toCoin,
+                onPress: {
+                    isToPickerActive = true
                 }
             )
         }
