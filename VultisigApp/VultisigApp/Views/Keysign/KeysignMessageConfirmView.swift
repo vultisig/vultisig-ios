@@ -10,7 +10,7 @@ import SwiftUI
 struct KeysignMessageConfirmView: View {
     @ObservedObject var viewModel: JoinKeysignViewModel
     
-    @State var warnings: [BlowfishResponse.BlowfishWarning] = []
+    @State var blowfishResponse: BlowfishResponse? = nil
     @State var isLoading = true
     
     var body: some View {
@@ -26,7 +26,7 @@ struct KeysignMessageConfirmView: View {
                 
                 HStack {
                     Spacer()
-                    if (viewModel.keysignPayload?.coin.chainType == .EVM) {
+                    if (viewModel.keysignPayload?.coin.chainType == .EVM && blowfishResponse != nil) {
                         warning
                     }
                     Spacer()
@@ -40,8 +40,7 @@ struct KeysignMessageConfirmView: View {
                     isLoading = true
                     Task{
                         do {
-                            let scannerResult = try await viewModel.blowfishEVMTransactionScan()
-                            warnings = scannerResult?.warnings ?? [];
+                            blowfishResponse = try await viewModel.blowfishEVMTransactionScan()
                             isLoading = false
                         } catch {
                             print(error.localizedDescription)
@@ -57,7 +56,7 @@ struct KeysignMessageConfirmView: View {
     
     var warning: some View {
         VStack {
-            BlowfishWarningInformationNote(blowfishMessages: warnings)
+            BlowfishWarningInformationNote(blowfishResponse: blowfishResponse)
                 .padding(.horizontal, 16)
         }
     }

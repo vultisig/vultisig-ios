@@ -15,8 +15,7 @@ struct SendCryptoVerifyView: View {
     let vault: Vault
     
     @State var isLoading = true
-    
-    @State var warnings: [BlowfishResponse.BlowfishWarning] = []
+    @State var blowfishResponse: BlowfishResponse? = nil
     
     var body: some View {
         ZStack {
@@ -38,8 +37,7 @@ struct SendCryptoVerifyView: View {
                 isLoading = true
                 Task{
                     do {
-                        let scannerResult = try await sendCryptoVerifyViewModel.blowfishEVMTransactionScan(tx: tx)
-                        warnings = scannerResult?.warnings ?? [];
+                        blowfishResponse = try await sendCryptoVerifyViewModel.blowfishEVMTransactionScan(tx: tx)
                         isLoading = false
                     } catch {
                         print(error.localizedDescription)
@@ -54,7 +52,7 @@ struct SendCryptoVerifyView: View {
     
     var warning: some View {
         VStack {
-            BlowfishWarningInformationNote(blowfishMessages: warnings)
+            BlowfishWarningInformationNote(blowfishResponse: blowfishResponse)
                 .padding(.horizontal, 16)
         }
     }
@@ -62,7 +60,7 @@ struct SendCryptoVerifyView: View {
     var view: some View {
         VStack {
             fields
-            if (tx.coin.chainType == .EVM) {
+            if (tx.coin.chainType == .EVM && blowfishResponse != nil) {
                 warning
             }
             button
