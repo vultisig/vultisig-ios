@@ -55,16 +55,15 @@ struct BlowfishWarningInformationNote: View {
     
     var text: some View {
         VStack(alignment: .leading, spacing: 8) {
-            
             if blowfishMessages.isEmpty {
-                Text("Transaction Scanned Successfully! You are cleared to proceed with safety.") // Assuming `message` has a `message` property
+                Text(NSLocalizedString("scannedByBlowfish", comment: ""))
                     .foregroundColor(.neutral0)
                     .font(.body12MontserratSemiBold)
                     .lineSpacing(8)
                     .multilineTextAlignment(.leading)
             } else {
                 ForEach(blowfishMessages) { blowfishMessage in
-                    Text(blowfishMessage.message) // Assuming `message` has a `message` property
+                    Text(blowfishMessage.message)
                         .foregroundColor(.neutral0)
                         .font(.body12MontserratSemiBold)
                         .lineSpacing(8)

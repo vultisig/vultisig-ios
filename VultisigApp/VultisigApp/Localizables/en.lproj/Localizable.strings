@@ -278,3 +278,4 @@
 "saveOrShare" = "Save or Share";
 "shareVaultQR" = "Share Vault QR";
 "invalidAddress" = "This address is invalid for this chain.";
+"scannedByBlowfish" = "Transaction verified by Blowfish.";
