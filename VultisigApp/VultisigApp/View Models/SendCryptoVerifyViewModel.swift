@@ -38,31 +38,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
     }
     
     func blowfishEVMTransactionScan(tx: SendTransaction) async throws -> BlowfishResponse? {
-        
-        let amountDataHex = tx.amountInRaw.serializeForEvm().map { byte in String(format: "%02x", byte) }.joined()
-        let amount = "0x" + amountDataHex
-        
-        let memoDataHex = tx.memo.data(using: .utf8)?.map { byte in String(format: "%02x", byte) }.joined() ?? ""
-        let memo = "0x" + memoDataHex
-        
-        let txObjects = [
-            BlowfishRequest.BlowfishTxObject(
-                from: tx.fromAddress,
-                to: tx.toAddress,
-                value: amount,
-                data: memo
-            )
-        ]
-        
-        let response = try await BlowfishService.shared.scanTransactions(
-            chain: tx.coin.chain,
-            userAccount: tx.fromAddress,
-            origin: "https://api.vultisig.com",
-            txObjects: txObjects
+        return try await BlowfishService.shared.blowfishEVMTransactionScan(
+            fromAddress: tx.fromAddress, toAddress: tx.toAddress, amountInRaw: tx.amountInRaw, memo: tx.memo, chain: tx.coin.chain
         )
-        
-        return response
-        
     }
     
     func validateForm(tx: SendTransaction, vault: Vault) async -> KeysignPayload? {

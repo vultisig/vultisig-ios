@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import BigInt
 
 struct BlowfishService {
     static let shared = BlowfishService()
@@ -41,6 +42,47 @@ struct BlowfishService {
         let response = try JSONDecoder().decode(BlowfishResponse.self, from: dataResponse)
         
         return response
+    }
+    
+    
+    func blowfishEVMTransactionScan(
+        fromAddress: String,
+        toAddress: String,
+        amountInRaw: BigInt,
+        memo: String?,
+        chain: Chain
+    ) async throws -> BlowfishResponse? {
+        
+        let amountDataHex = amountInRaw.serializeForEvm().map { byte in String(format: "%02x", byte) }.joined()
+        let amountHex = "0x" + amountDataHex
+        
+        var memoHex: String? = nil
+        
+        if memo != nil {
+            let memoDataHex = memo?.data(using: .utf8)?.map { byte in String(format: "%02x", byte) }.joined()
+            if memoDataHex != nil {
+                memoHex = "0x" + (memoDataHex ?? "")
+            }
+        }
+        
+        let txObjects = [
+            BlowfishRequest.BlowfishTxObject(
+                from: fromAddress,
+                to: toAddress,
+                value: amountHex,
+                data: memoHex
+            )
+        ]
+        
+        let response = try await scanTransactions(
+            chain: chain,
+            userAccount: fromAddress,
+            origin: "https://api.vultisig.com",
+            txObjects: txObjects
+        )
+        
+        return response
+        
     }
     
     

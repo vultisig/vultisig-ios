@@ -10,13 +10,56 @@ import SwiftUI
 struct KeysignMessageConfirmView: View {
     @ObservedObject var viewModel: JoinKeysignViewModel
     
+    @State var warnings: [BlowfishResponse.BlowfishWarning] = []
+    @State var isLoading = true
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 24) {
-            title
-            summary
-            button
+        ZStack {
+            
+            if isLoading {
+                Loader()
+            }
+            
+            VStack(alignment: .leading, spacing: 24) {
+                title
+                summary
+                
+                HStack {
+                    Spacer()
+                    if (viewModel.keysignPayload?.coin.chainType == .EVM) {
+                        warning
+                    }
+                    Spacer()
+                }
+                
+                button
+            }
+            .foregroundColor(.neutral0)
+            .onAppear {
+                if (viewModel.keysignPayload?.coin.chainType == .EVM) {
+                    isLoading = true
+                    Task{
+                        do {
+                            let scannerResult = try await viewModel.blowfishEVMTransactionScan()
+                            warnings = scannerResult?.warnings ?? [];
+                            isLoading = false
+                        } catch {
+                            print(error.localizedDescription)
+                            isLoading = false
+                        }
+                    }
+                } else {
+                    isLoading = false
+                }
+            }
         }
-        .foregroundColor(.neutral0)
+    }
+    
+    var warning: some View {
+        VStack {
+            BlowfishWarningInformationNote(blowfishMessages: warnings)
+                .padding(.horizontal, 16)
+        }
     }
     
     var title: some View {
@@ -33,13 +76,14 @@ struct KeysignMessageConfirmView: View {
                 toField
                 Separator()
                 amountField
-
+                
                 if let memo = viewModel.keysignPayload?.memo, !memo.isEmpty {
                     Separator()
                     getSummaryCell(title: "memo", value: memo)
                 }
-                    
+                
                 Separator()
+                
                 //gasField
             }
             .padding(16)
@@ -60,7 +104,7 @@ struct KeysignMessageConfirmView: View {
     var amountField: some View {
         getSummaryCell(title: "amount", value: viewModel.keysignPayload?.toAmountString ?? "")
     }
-
+    
     var gasField: some View {
         getSummaryCell(title: "gas", value: "$4.00")
     }

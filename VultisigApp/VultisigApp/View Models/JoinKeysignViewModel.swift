@@ -258,4 +258,19 @@ class JoinKeysignViewModel: ObservableObject {
         handleQrCodeSuccessResult(data: data)
         manageQrCodeStates()
     }
+    
+    func blowfishEVMTransactionScan() async throws -> BlowfishResponse? {
+        
+        guard let payload = keysignPayload else {
+            return nil
+        }
+        
+        return try await BlowfishService.shared.blowfishEVMTransactionScan(
+            fromAddress: payload.coin.address,
+            toAddress: payload.toAddress,
+            amountInRaw: payload.toAmount,
+            memo: payload.memo,
+            chain: payload.coin.chain
+        )
+    }
 }
