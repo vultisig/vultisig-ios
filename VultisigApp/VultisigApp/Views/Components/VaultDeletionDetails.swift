@@ -9,10 +9,11 @@ import SwiftUI
 
 struct VaultDeletionDetails: View {
     let vault: Vault
+    let isPhoneSE: Bool
     
     var body: some View {
 #if os(iOS)
-        let spacing: CGFloat = 32
+        let spacing: CGFloat = isPhoneSE ? 18 : 32
 #elseif os(macOS)
         let spacing: CGFloat = 12
 #endif
@@ -97,6 +98,6 @@ struct VaultDeletionDetails: View {
 #Preview {
     ZStack {
         Background()
-        VaultDeletionDetails(vault: Vault.example)
+        VaultDeletionDetails(vault: Vault.example, isPhoneSE: true)
     }
 }

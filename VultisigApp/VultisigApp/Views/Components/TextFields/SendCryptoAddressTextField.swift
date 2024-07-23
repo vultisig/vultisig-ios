@@ -151,7 +151,11 @@ struct SendCryptoAddressTextField: View {
     
     var addressBookButton: some View {
         NavigationLink {
-            AddressBookView(returnAddress: $tx.toAddress, coin: tx.coin)
+            AddressBookView(returnAddress: $tx.toAddress, coin: tx.coin).onDisappear {
+                DebounceHelper.shared.debounce {
+                    validateAddress(tx.toAddress)
+                }
+            }
         } label: {
             Image(systemName: "text.book.closed")
                 .font(.body16Menlo)
