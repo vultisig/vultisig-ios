@@ -30,11 +30,7 @@ struct VaultDeletionConfirmView: View {
             GeometryReader { proxy in
                 Background()
                     .onAppear {
-                        let screenWidth = proxy.size.width
-                        
-                        if screenWidth<380 {
-                            isPhoneSE = true
-                        }
+                        setData(proxy)
                     }
             }
             
@@ -151,6 +147,14 @@ struct VaultDeletionConfirmView: View {
             message: Text(NSLocalizedString("reviewConditionsMessage", comment: "")),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
+    }
+    
+    private func setData(_ proxy: GeometryProxy) {
+        let screenWidth = proxy.size.width
+        
+        if screenWidth<380 {
+            isPhoneSE = true
+        }
     }
 }
 
