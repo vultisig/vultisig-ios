@@ -18,6 +18,8 @@ struct VaultDeletionConfirmView: View {
     @State var showAlert = false
     @State var navigateBackToHome = false
     
+    @State var isPhoneSE = false
+    
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var homeViewModel: HomeViewModel
     
@@ -25,7 +27,13 @@ struct VaultDeletionConfirmView: View {
     
     var body: some View {
         ZStack {
-            Background()
+            GeometryReader { proxy in
+                Background()
+                    .onAppear {
+                        setData(proxy)
+                    }
+            }
+            
             view
         }
         .navigationBarBackButtonHidden(true)
@@ -41,7 +49,11 @@ struct VaultDeletionConfirmView: View {
         VStack(spacing: 32) {
             logo
             details
-            Spacer()
+            
+            if !isPhoneSE {
+                Spacer()
+            }
+            
             checkboxes
             button
         }
@@ -82,7 +94,7 @@ struct VaultDeletionConfirmView: View {
     
     var checkboxes: some View {
 #if os(iOS)
-        let spacing: CGFloat = 32
+        let spacing: CGFloat = isPhoneSE ? 16 : 32
 #elseif os(macOS)
         let spacing: CGFloat = 12
 #endif
@@ -95,7 +107,7 @@ struct VaultDeletionConfirmView: View {
     }
     
     var details: some View {
-        VaultDeletionDetails(vault: vault)
+        VaultDeletionDetails(vault: vault, isPhoneSE: isPhoneSE)
     }
     
     var button: some View {
@@ -135,6 +147,14 @@ struct VaultDeletionConfirmView: View {
             message: Text(NSLocalizedString("reviewConditionsMessage", comment: "")),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
+    }
+    
+    private func setData(_ proxy: GeometryProxy) {
+        let screenWidth = proxy.size.width
+        
+        if screenWidth<380 {
+            isPhoneSE = true
+        }
     }
 }
 

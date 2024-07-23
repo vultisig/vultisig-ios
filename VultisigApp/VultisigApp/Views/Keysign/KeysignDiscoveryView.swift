@@ -15,6 +15,7 @@ struct KeysignDiscoveryView: View {
     @StateObject var participantDiscovery = ParticipantDiscovery(isKeygen: false)
     @StateObject var viewModel = KeysignDiscoveryViewModel()
     
+    @State var isPhoneSE = false
     @State var isLoading = false
     @State var qrCodeImage: Image? = nil
     @State var selectedNetwork = NetworkPromptType.Internet
@@ -34,7 +35,13 @@ struct KeysignDiscoveryView: View {
     
     var body: some View {
         ZStack {
-            Background()
+            GeometryReader { proxy in
+                Background()
+                    .onAppear {
+                        setData(proxy)
+                    }
+            }
+            
             view
             
             if isLoading {
@@ -157,6 +164,8 @@ struct KeysignDiscoveryView: View {
             
             qrCodeImage?
                 .resizable()
+                .frame(maxWidth: isPhoneSE ? 250 : nil)
+                .frame(maxHeight: isPhoneSE ? 250 : nil)
                 .scaledToFit()
                 .padding(3)
                 .background(Color.neutral0)
@@ -279,6 +288,14 @@ struct KeysignDiscoveryView: View {
                 viewModel.selections.insert(peer)
                 isLoading = false
             }
+        }
+    }
+    
+    private func setData(_ proxy: GeometryProxy) {
+        let screenWidth = proxy.size.width
+        
+        if screenWidth<380 {
+            isPhoneSE = true
         }
     }
 }
