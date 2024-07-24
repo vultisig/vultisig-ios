@@ -27,7 +27,7 @@ struct SendCryptoDetailsView: View {
     
     @State var isLoading = false
     @State var isCoinPickerActive = false
-
+    
     @FocusState private var focusedField: Field?
     
     var body: some View {
@@ -165,7 +165,7 @@ struct SendCryptoDetailsView: View {
             } label: {
                 memoFieldTitle
             }
-
+            
             MemoTextField(memo: $tx.memo)
                 .focused($focusedField, equals: .memo)
                 .onSubmit {
@@ -188,9 +188,34 @@ struct SendCryptoDetailsView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
     
+    var percentageButtons: some View {
+        HStack(spacing: 12) {
+            Button {
+                sendCryptoViewModel.setMaxValues(tx: tx, percentage: 25)
+                let max = tx.amount.toDecimal() / 4
+                tx.amount = max.description
+            } label: {
+                getPercentageCell(for: "25")
+            }
+            
+            Button {
+                sendCryptoViewModel.setMaxValues(tx: tx, percentage: 50)
+                let max = tx.amount.toDecimal() / 2
+                tx.amount = max.description
+            } label: {
+                getPercentageCell(for: "50")
+            }
+        }
+    }
+    
     var amountField: some View {
         VStack(spacing: 8) {
-            getTitle(for: "amount")
+            HStack {
+                getTitle(for: "amount")
+                Spacer()
+                percentageButtons
+            }
+            
             textField
         }
     }
@@ -278,7 +303,17 @@ struct SendCryptoDetailsView: View {
         .foregroundColor(.neutral0)
         .frame(maxWidth: isExpanded ? .infinity : nil, alignment: .leading)
     }
-        
+    
+    private func getPercentageCell(for text: String) -> some View {
+        Text(text + "%")
+            .font(.body12Menlo)
+            .foregroundColor(.neutral0)
+            .padding(.vertical, 6)
+            .padding(.horizontal, 20)
+            .background(Color.blue600)
+            .cornerRadius(6)
+    }
+    
     private func setData() {
         Task {
             isLoading = true
