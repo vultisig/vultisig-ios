@@ -28,6 +28,7 @@ struct KeygenView: View {
     
     @State var progressCounter: Double = 0
     @State var showProgressRing = true
+    @State var didInitiateReshare = false
     
     var body: some View {
         VStack {
@@ -38,12 +39,11 @@ struct KeygenView: View {
         }
         .navigationBarBackButtonHidden()
         .navigationDestination(isPresented: $viewModel.isLinkActive) {
-            BackupVaultNowView(vault: vault)
+            destination
         }
         .task {
             await viewModel.startKeygen(context: context)
         }
-        
         .onAppear {
 #if os(iOS)
             UIApplication.shared.isIdleTimerDisabled = true
@@ -141,8 +141,7 @@ struct KeygenView: View {
         Text("DONE")
             .foregroundColor(.backgroundBlue)
             .onAppear {
-                progressCounter = 4
-                viewModel.delaySwitchToMain()
+                setDoneData()
             }
     }
     
@@ -186,6 +185,16 @@ struct KeygenView: View {
         }
     }
     
+    var destination: some View {
+        ZStack {
+            if didInitiateReshare {
+                HomeView(selectedVault: vault, showVaultsList: false, shouldJoinKeygen: false)
+            } else {
+                BackupVaultNowView(vault: vault)
+            }
+        }
+    }
+    
     private func setData() {
         viewModel.setData(
             vault: vault,
@@ -197,6 +206,16 @@ struct KeygenView: View {
             encryptionKeyHex: encryptionKeyHex,
             oldResharePrefix: oldResharePrefix
         )
+    }
+    
+    private func setDoneData() {
+        if tssType == .Reshare {
+            vault.isBackedUp = true
+        }
+        
+        didInitiateReshare = false
+        progressCounter = 4
+        viewModel.delaySwitchToMain()
     }
 }
 
