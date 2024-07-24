@@ -57,8 +57,8 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         case .bitcoin,.dogecoin,.litecoin,.bitcoinCash,.dash:
             tx.sendMaxAmount = percentage == 100 // Never set this to true if the percentage is not 100, otherwise it will wipe your wallet.
             tx.amount = utxo.blockchairData.get(key)?.address?.balanceInBTC ?? "0.0"
+            setPercentageAmount(tx: tx, for: percentage)
             Task{
-                setPercentageAmount(tx: tx, for: percentage)
                 await convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: true)
                 isLoading = false
             }
@@ -114,8 +114,14 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                     tx.coin.rawBalance = rawBalance
                     tx.coin.priceRate = priceRate
                     
-                    tx.amount = "\(tx.coin.getMaxValue(tx.coin.feeDefault.toBigInt()))"
+                    var gas = BigInt.zero
+                    if percentage == 100 {
+                        gas = tx.coin.feeDefault.toBigInt()
+                    }
+                    
+                    tx.amount = "\(tx.coin.getMaxValue(gas))"
                     setPercentageAmount(tx: tx, for: percentage)
+                    
                     await convertToFiat(newValue: tx.amount, tx: tx)
                 } catch {
                     print("fail to load solana balances,error:\(error.localizedDescription)")
@@ -126,9 +132,18 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         case .kujira, .gaiaChain, .mayaChain, .thorChain, .polkadot, .dydx:
             Task {
                 await BalanceService.shared.updateBalance(for: tx.coin)
-                tx.amount = "\(tx.coin.getMaxValue(BigInt(tx.gasDecimal.description,radix:10) ?? 0 ))"
+                
+                var gas = BigInt.zero
+                
+                if percentage == 100 {
+                    gas = BigInt(tx.gasDecimal.description,radix:10) ?? 0
+                }
+                
+                tx.amount = "\(tx.coin.getMaxValue(gas))"
                 setPercentageAmount(tx: tx, for: percentage)
+                
                 await convertToFiat(newValue: tx.amount, tx: tx)
+                
                 isLoading = false
             }
         }
