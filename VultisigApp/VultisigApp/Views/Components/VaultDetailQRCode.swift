@@ -10,6 +10,8 @@ import SwiftUI
 struct VaultDetailQRCode: View {
     let vault: Vault
     
+    @StateObject var viewModel = VaultDetailQRCodeViewModel()
+    
     var body: some View {
         VStack(spacing: 10) {
             qrCodeContent
@@ -94,12 +96,8 @@ struct VaultDetailQRCode: View {
     }
     
     func getQRCode(vault: Vault) -> Image {
-        let name = vault.name
-        let ecdsaKey = vault.pubKeyECDSA
-        let eddsaKey = vault.pubKeyEdDSA
-        let hexCode = vault.hexChainCode
-        let id = "\(name)-\(ecdsaKey)-\(eddsaKey)-\(hexCode)".sha256()
-        let vaultPublicKeyExport = VaultPublicKeyExport(uid: id, name: name, public_key_ecdsa: ecdsaKey, public_key_eddsa: eddsaKey, hex_chain_code: hexCode)
+        let vaultPublicKeyExport = viewModel.getVaultPublicKeyExport(vault: vault)
+        
         do{
             let data = try JSONEncoder().encode(vaultPublicKeyExport)
             return Utils.generateQRCodeImage(from: String(data: data, encoding: .utf8) ?? "")
