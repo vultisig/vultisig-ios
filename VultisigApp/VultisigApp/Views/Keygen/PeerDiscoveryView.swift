@@ -324,8 +324,7 @@ struct PeerDiscoveryView: View {
             mediatorURL: viewModel.serverAddr,
             sessionID: viewModel.sessionID,
             encryptionKeyHex: viewModel.encryptionKeyHex ?? "",
-            oldResharePrefix: viewModel.vault.resharePrefix ?? "",
-            didInitiateReshare: true
+            oldResharePrefix: viewModel.vault.resharePrefix ?? ""
         )
     }
     

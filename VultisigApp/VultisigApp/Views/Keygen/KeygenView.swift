@@ -28,7 +28,6 @@ struct KeygenView: View {
     
     @State var progressCounter: Double = 0
     @State var showProgressRing = true
-    @State var didInitiateReshare = false
     
     var body: some View {
         VStack {
@@ -187,7 +186,7 @@ struct KeygenView: View {
     
     var destination: some View {
         ZStack {
-            if didInitiateReshare {
+            if tssType == .Reshare {
                 HomeView(selectedVault: vault, showVaultsList: false, shouldJoinKeygen: false)
             } else {
                 BackupVaultNowView(vault: vault)
@@ -213,7 +212,6 @@ struct KeygenView: View {
             vault.isBackedUp = true
         }
         
-        didInitiateReshare = false
         progressCounter = 4
         viewModel.delaySwitchToMain()
     }
