@@ -18,6 +18,8 @@ struct KeysignDiscoveryView: View {
     @State var isLoading = false
     @State var qrCodeImage: Image? = nil
     @State var selectedNetwork = NetworkPromptType.Internet
+    @State var previewTitle: String = "send"
+    
 #if os(iOS)
     @State private var orientation = UIDevice.current.orientation
     private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
@@ -249,7 +251,7 @@ struct KeysignDiscoveryView: View {
         }
         
         shareSheetViewModel.render(
-            title: "send",
+            title: previewTitle,
             qrCodeImage: qrCodeImage,
             displayScale: displayScale
         )

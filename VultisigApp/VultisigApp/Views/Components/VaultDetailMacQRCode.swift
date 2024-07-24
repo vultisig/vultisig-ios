@@ -11,7 +11,7 @@ struct VaultDetailMacQRCode: View {
     let vault: Vault
     
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 32) {
             qrCodeContent
             name
             ECDSAKey
@@ -20,7 +20,6 @@ struct VaultDetailMacQRCode: View {
         .padding(22)
         .frame(width: 960, height: 1380)
         .background(LinearGradient.primaryGradientLinear)
-        .cornerRadius(50)
     }
     
     var qrCodeContent: some View {
@@ -34,7 +33,7 @@ struct VaultDetailMacQRCode: View {
         getQRCode(vault: vault)
             .interpolation(.none)
             .resizable()
-            .frame(width: 800, height: 800)
+            .frame(width: 700, height: 700)
             .scaledToFit()
             .padding(3)
             .cornerRadius(10)
@@ -61,7 +60,7 @@ struct VaultDetailMacQRCode: View {
     }
     
     var ECDSAKey: some View {
-        VStack {
+        VStack(spacing: 12) {
             Text(NSLocalizedString("ECDSAKey", comment: ""))
                 .font(.body24MontserratMedium)
                 .foregroundColor(.neutral0)
@@ -78,7 +77,7 @@ struct VaultDetailMacQRCode: View {
     }
     
     var EdDSAKey: some View {
-        VStack {
+        VStack(spacing: 12) {
             Text(NSLocalizedString("EdDSAKey", comment: ""))
                 .font(.body24MontserratMedium)
                 .foregroundColor(.neutral0)
