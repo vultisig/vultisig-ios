@@ -43,7 +43,6 @@ struct KeygenView: View {
         .task {
             await viewModel.startKeygen(context: context)
         }
-        
         .onAppear {
 #if os(iOS)
             UIApplication.shared.isIdleTimerDisabled = true
@@ -141,8 +140,7 @@ struct KeygenView: View {
         Text("DONE")
             .foregroundColor(.backgroundBlue)
             .onAppear {
-                progressCounter = 4
-                viewModel.delaySwitchToMain()
+                setDoneData()
             }
     }
     
@@ -197,6 +195,15 @@ struct KeygenView: View {
             encryptionKeyHex: encryptionKeyHex,
             oldResharePrefix: oldResharePrefix
         )
+    }
+    
+    private func setDoneData() {
+        if tssType == .Reshare {
+            vault.isBackedUp = false
+        }
+        
+        progressCounter = 4
+        viewModel.delaySwitchToMain()
     }
 }
 
