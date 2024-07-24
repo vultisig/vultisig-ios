@@ -38,7 +38,7 @@ struct KeygenView: View {
         }
         .navigationBarBackButtonHidden()
         .navigationDestination(isPresented: $viewModel.isLinkActive) {
-            destination
+            BackupVaultNowView(vault: vault)
         }
         .task {
             await viewModel.startKeygen(context: context)
@@ -184,16 +184,6 @@ struct KeygenView: View {
         }
     }
     
-    var destination: some View {
-        ZStack {
-            if tssType == .Reshare {
-                HomeView(selectedVault: vault, showVaultsList: false, shouldJoinKeygen: false)
-            } else {
-                BackupVaultNowView(vault: vault)
-            }
-        }
-    }
-    
     private func setData() {
         viewModel.setData(
             vault: vault,
@@ -209,7 +199,7 @@ struct KeygenView: View {
     
     private func setDoneData() {
         if tssType == .Reshare {
-            vault.isBackedUp = true
+            vault.isBackedUp = false
         }
         
         progressCounter = 4
