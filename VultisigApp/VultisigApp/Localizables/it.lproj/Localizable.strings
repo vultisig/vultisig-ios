@@ -254,3 +254,4 @@
 "numberOfPairedDevicesTwoOfThree" = "Numero di dispositivi accoppiati %d di 3";
 "numberOfPairedDevicesMOfN" = "Numero di dispositivi accoppiati %d di N";
 "invalidAddress" = "Questo indirizzo è invalido per questa catena.";
+"scannedByBlowfish" = "Transazione verificata da Blowfish.";

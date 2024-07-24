@@ -24,10 +24,14 @@ class Endpoint {
     }
     
     static let vultisigApiProxy = "https://api.vultisig.com"
-    static let supportDocumentLink = "https://docs.voltix.org/user-actions/creating-a-vault"
+    static let supportDocumentLink = "https://docs.vultisig.com/user-actions/creating-a-vault"
     static let vultisigRelay = "https://api.vultisig.com/router"
     static let broadcastTransactionThorchainNineRealms = "https://thornode.ninerealms.com/cosmos/tx/v1beta1/txs"
     static let broadcastTransactionMayachain = "https://mayanode.mayachain.info/cosmos/tx/v1beta1/txs"
+    
+    static func fetchBlowfishTransactions(chain: String, network: String) -> String {
+        "\(vultisigApiProxy)/blowfish/\(chain)/v0/\(network)/scan/transactions?language=en&method=eth_sendTransaction"
+    }
     
     static func fetchAccountNumberThorchainNineRealms(_ address: String) -> String {
         "https://thornode.ninerealms.com/auth/accounts/\(address)"
@@ -61,11 +65,11 @@ class Endpoint {
         
         return "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/swap?src=\(source)&dst=\(destination)&amount=\(amount)&from=\(from)&slippage=\(slippage)&disableEstimate=true&includeGas=true\(isAffiliateParams)".asUrl
     }
-
+    
     static func fetchLiFiQuote(fromChain: String, toChain: String, fromToken: String, toToken: String, fromAmount: String, fromAddress: String) -> URL {
         return "https://li.quest/v1/quote?fromChain=\(fromChain)&toChain=\(toChain)&fromToken=\(fromToken)&toToken=\(toToken)&fromAmount=\(fromAmount)&fromAddress=\(fromAddress)".asUrl
     }
-
+    
     static func fetchTokens(chain: Int) -> String {
         return "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/tokens"
     }
@@ -86,7 +90,7 @@ class Endpoint {
     static let avalancheServiceRpcService = "https://avalanche-c-chain-rpc.publicnode.com"
     
     static let bscServiceRpcService = "https://bsc-rpc.publicnode.com"
-        
+    
     static let baseServiceRpcService = "https://base-rpc.publicnode.com"
     
     static let arbitrumOneServiceRpcService = "https://arbitrum-one-rpc.publicnode.com"
@@ -192,7 +196,7 @@ class Endpoint {
     static let broadcastKujiraTransaction = "https://kujira-rest.publicnode.com/cosmos/tx/v1beta1/txs"
     
     static func getSwapProgressURL(txid: String) -> String {
-        return "https://track.ninerealms.com/\(txid.stripHexPrefix())"
+        return "https://runescan.io/tx/\(txid.stripHexPrefix())"
     }
     
     static func getMayaSwapTracker(txid: String) -> String {

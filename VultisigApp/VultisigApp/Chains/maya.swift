@@ -121,6 +121,9 @@ enum MayaChainHelper {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .thorchain, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+        if !preSigningOutput.errorMessage.isEmpty {
+            throw HelperError.runtimeError(preSigningOutput.errorMessage)
+        }
         return [preSigningOutput.dataHash.hexString]
     }
     

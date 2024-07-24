@@ -90,6 +90,9 @@ class ATOMHelper {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: self.coinType, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+        if !preSigningOutput.errorMessage.isEmpty {
+            throw HelperError.runtimeError(preSigningOutput.errorMessage)
+        }
         return [preSigningOutput.dataHash.hexString]
     }
     

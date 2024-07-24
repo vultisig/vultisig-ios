@@ -42,7 +42,7 @@ class KeygenVerify: ObservableObject {
                 if !result.isEmpty {
                     let decoder = JSONDecoder()
                     let peers = try decoder.decode([String].self, from: result)
-                    if Set(peers).isSubset(of: Set(self.keygenCommittee)) {
+                    if Set(self.keygenCommittee).isSubset(of: Set(peers)) {
                         self.logger.info("all parties have completed keygen successfully")
                         return true
                     }

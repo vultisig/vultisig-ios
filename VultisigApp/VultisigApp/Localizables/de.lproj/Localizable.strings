@@ -254,3 +254,4 @@
 "numberOfPairedDevicesTwoOfThree" = "Anzahl der paarweise verbundenen Geräte %d von 3";
 "numberOfPairedDevicesMOfN" = "Anzahl der paarweise verbundenen Geräte %d von N";
 "invalidAddress" = "Diese Adresse ist für diese Kette ungültig.";
+"scannedByBlowfish" = "Transaktion von Blowfish verifiziert.";
