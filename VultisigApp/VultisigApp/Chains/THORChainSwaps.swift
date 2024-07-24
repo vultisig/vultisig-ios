@@ -73,42 +73,20 @@ class THORChainSwaps {
         let inputData = try getPreSignedInputData(swapPayload: swapPayload, keysignPayload: keysignPayload, incrementNonce: incrementNonce)
 
         switch swapPayload.fromAsset.chain {
-        case .thor:
-            let hashes = TransactionCompiler.preImageHashes(coinType: .thorchain, txInputData: inputData)
+        case .thor,.eth,.bsc,.avax,.atom:
+            let hashes = TransactionCompiler.preImageHashes(coinType: swapPayload.fromCoin.coinType, txInputData: inputData)
             let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+            if !preSigningOutput.errorMessage.isEmpty {
+                throw HelperError.runtimeError(preSigningOutput.errorMessage)
+            }
             return [preSigningOutput.dataHash.hexString]
-        case .btc:
-            let hashes = TransactionCompiler.preImageHashes(coinType: .bitcoin, txInputData: inputData)
+        case .btc,.ltc,.bch,.doge:
+            let hashes = TransactionCompiler.preImageHashes(coinType: swapPayload.fromCoin.coinType, txInputData: inputData)
             let preSigningOutput = try BitcoinPreSigningOutput(serializedData: hashes)
+            if !preSigningOutput.errorMessage.isEmpty {
+                throw HelperError.runtimeError(preSigningOutput.errorMessage)
+            }
             return preSigningOutput.hashPublicKeys.map { $0.dataHash.hexString }
-        case .ltc:
-            let hashes = TransactionCompiler.preImageHashes(coinType: .litecoin, txInputData: inputData)
-            let preSigningOutput = try BitcoinPreSigningOutput(serializedData: hashes)
-            return preSigningOutput.hashPublicKeys.map { $0.dataHash.hexString }
-        case .bch:
-            let hashes = TransactionCompiler.preImageHashes(coinType: .bitcoinCash, txInputData: inputData)
-            let preSigningOutput = try BitcoinPreSigningOutput(serializedData: hashes)
-            return preSigningOutput.hashPublicKeys.map { $0.dataHash.hexString }
-        case .doge:
-            let hashes = TransactionCompiler.preImageHashes(coinType: .dogecoin, txInputData: inputData)
-            let preSigningOutput = try BitcoinPreSigningOutput(serializedData: hashes)
-            return preSigningOutput.hashPublicKeys.map { $0.dataHash.hexString }
-        case .eth:
-            let hashes = TransactionCompiler.preImageHashes(coinType: .ethereum, txInputData: inputData)
-            let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
-            return [preSigningOutput.dataHash.hexString]
-        case .bsc:
-            let hashes = TransactionCompiler.preImageHashes(coinType: .smartChain, txInputData: inputData)
-            let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
-            return [preSigningOutput.dataHash.hexString]
-        case .avax:
-            let hashes = TransactionCompiler.preImageHashes(coinType: .avalancheCChain, txInputData: inputData)
-            let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
-            return [preSigningOutput.dataHash.hexString]
-        case .atom:
-            let hashes = TransactionCompiler.preImageHashes(coinType: .cosmos, txInputData: inputData)
-            let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
-            return [preSigningOutput.dataHash.hexString]
         default:
             throw HelperError.runtimeError("not support yet")
         }

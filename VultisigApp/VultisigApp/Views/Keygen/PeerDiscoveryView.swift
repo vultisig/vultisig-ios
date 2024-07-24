@@ -17,6 +17,7 @@ struct PeerDiscoveryView: View {
     
     @State var qrCodeImage: Image? = nil
     @State var isLandscape: Bool = true
+    @State var isPhoneSE = false
     
     @State private var showInvalidNumberOfSelectedDevices = false
     
@@ -37,7 +38,13 @@ struct PeerDiscoveryView: View {
     
     var body: some View {
         ZStack {
-            Background()
+            GeometryReader { proxy in
+                Background()
+                    .onAppear {
+                        setData(proxy)
+                    }
+            }
+            
             states
         }
         .navigationTitle(getTitle())
@@ -145,7 +152,7 @@ struct PeerDiscoveryView: View {
     }
     
     var list: some View {
-        VStack {
+        VStack(spacing: isPhoneSE ? 4 : 12) {
             networkPrompts
             deviceContent
             instructions
@@ -167,7 +174,7 @@ struct PeerDiscoveryView: View {
     }
     
     var paringBarcode: some View {
-        VStack(spacing: 8) {
+        VStack {
             Text(NSLocalizedString("pairWithOtherDevices", comment: "Pair with two other devices"))
                 .font(.body18MenloBold)
                 .multilineTextAlignment(.center)
@@ -176,6 +183,8 @@ struct PeerDiscoveryView: View {
                 .resizable()
 #if os(iOS)
                 .background(Color.blue600)
+                .frame(maxWidth: isPhoneSE ? 250 : nil)
+                .frame(maxHeight: isPhoneSE ? 250 : nil)
                 .aspectRatio(
                     contentMode:
                         participantDiscovery.peersFound.count == 0 && idiom == .phone ?
@@ -201,7 +210,7 @@ struct PeerDiscoveryView: View {
         .cornerRadius(10)
         .shadow(radius: 5)
 #if os(iOS)
-        .padding(20)
+        .padding(isPhoneSE ? 8 : 20)
 #elseif os(macOS)
         .padding(40)
 #endif
@@ -275,7 +284,7 @@ struct PeerDiscoveryView: View {
     
     var instructions: some View {
         InstructionPrompt(networkType: viewModel.selectedNetwork)
-            .padding(.vertical, 10)
+            .padding(.vertical, isPhoneSE ? 0 : 10)
     }
     
     func disableContinueButton() -> Bool {
@@ -405,6 +414,14 @@ struct PeerDiscoveryView: View {
             viewModel.vaultDetail = String(format:  NSLocalizedString("numberOfPairedDevicesMOfN", comment: ""), totalSigners)
         }
         
+    }
+    
+    private func setData(_ proxy: GeometryProxy) {
+        let screenWidth = proxy.size.width
+        
+        if screenWidth<380 {
+            isPhoneSE = true
+        }
     }
 }
 

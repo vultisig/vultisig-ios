@@ -24,7 +24,7 @@ class Endpoint {
     }
     
     static let vultisigApiProxy = "https://api.vultisig.com"
-    static let supportDocumentLink = "https://docs.voltix.org/user-actions/creating-a-vault"
+    static let supportDocumentLink = "https://docs.vultisig.com/user-actions/creating-a-vault"
     static let vultisigRelay = "https://api.vultisig.com/router"
     static let broadcastTransactionThorchainNineRealms = "https://thornode.ninerealms.com/cosmos/tx/v1beta1/txs"
     static let broadcastTransactionMayachain = "https://mayanode.mayachain.info/cosmos/tx/v1beta1/txs"
@@ -192,7 +192,7 @@ class Endpoint {
     static let broadcastKujiraTransaction = "https://kujira-rest.publicnode.com/cosmos/tx/v1beta1/txs"
     
     static func getSwapProgressURL(txid: String) -> String {
-        return "https://track.ninerealms.com/\(txid.stripHexPrefix())"
+        return "https://runescan.io/tx/\(txid.stripHexPrefix())"
     }
     
     static func getMayaSwapTracker(txid: String) -> String {

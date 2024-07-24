@@ -105,9 +105,10 @@ enum SolanaHelper {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .solana, txInputData: inputData)
         let preSigningOutput = try SolanaPreSigningOutput(serializedData: hashes)
-        
-        print(preSigningOutput.errorMessage)
-        
+        if !preSigningOutput.errorMessage.isEmpty {
+            print(preSigningOutput.errorMessage)
+            throw HelperError.runtimeError(preSigningOutput.errorMessage)
+        }
         return [preSigningOutput.data.hexString]
     }
     
