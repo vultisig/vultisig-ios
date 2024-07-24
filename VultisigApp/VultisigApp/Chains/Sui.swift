@@ -55,6 +55,9 @@ enum SuiHelper {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .sui, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+        if !preSigningOutput.errorMessage.isEmpty {
+            throw HelperError.runtimeError(preSigningOutput.errorMessage)
+        }
         return [Hash.blake2b(data: preSigningOutput.data, size: 32).hexString]
     }
     
