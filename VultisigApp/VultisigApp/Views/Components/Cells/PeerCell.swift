@@ -31,10 +31,14 @@ struct PeerCell: View {
         .onAppear {
             setData()
         }
+#if os(iOS)
         .frame(
             width: isPhone ? 100 : 150,
             height: isPhone ? 140 : 200
         )
+#elseif os(macOS)
+        .frame(width: 110, height: 140)
+#endif
     }
     
     var cell: some View {
@@ -152,4 +156,5 @@ struct PeerCell: View {
             PeerCell(id: "Pro-5D2F 5D984A37erere reretgjkhgijerh gje rhgr e jhg wd wdr", isSelected: true)
         }
     }
+    .frame(minWidth: 900, minHeight: 600)
 }
