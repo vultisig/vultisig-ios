@@ -17,6 +17,7 @@ struct BackupNowDisclaimer: View {
         }
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
+        .padding(1)
     }
     
     var navigationCell: some View {

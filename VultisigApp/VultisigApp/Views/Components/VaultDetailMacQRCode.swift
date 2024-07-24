@@ -10,8 +10,10 @@ import SwiftUI
 struct VaultDetailMacQRCode: View {
     let vault: Vault
     
+    @StateObject var viewModel = VaultDetailQRCodeViewModel()
+    
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 32) {
             qrCodeContent
             name
             ECDSAKey
@@ -20,7 +22,6 @@ struct VaultDetailMacQRCode: View {
         .padding(22)
         .frame(width: 960, height: 1380)
         .background(LinearGradient.primaryGradientLinear)
-        .cornerRadius(50)
     }
     
     var qrCodeContent: some View {
@@ -34,7 +35,7 @@ struct VaultDetailMacQRCode: View {
         getQRCode(vault: vault)
             .interpolation(.none)
             .resizable()
-            .frame(width: 800, height: 800)
+            .frame(width: 700, height: 700)
             .scaledToFit()
             .padding(3)
             .cornerRadius(10)
@@ -61,7 +62,7 @@ struct VaultDetailMacQRCode: View {
     }
     
     var ECDSAKey: some View {
-        VStack {
+        VStack(spacing: 12) {
             Text(NSLocalizedString("ECDSAKey", comment: ""))
                 .font(.body24MontserratMedium)
                 .foregroundColor(.neutral0)
@@ -78,7 +79,7 @@ struct VaultDetailMacQRCode: View {
     }
     
     var EdDSAKey: some View {
-        VStack {
+        VStack(spacing: 12) {
             Text(NSLocalizedString("EdDSAKey", comment: ""))
                 .font(.body24MontserratMedium)
                 .foregroundColor(.neutral0)
@@ -95,23 +96,15 @@ struct VaultDetailMacQRCode: View {
     }
     
     func getQRCode(vault: Vault) -> Image {
-        let name = vault.name
-        let ecdsaKey = vault.pubKeyECDSA
-        let eddsaKey = vault.pubKeyEdDSA
-        let hexCode = vault.hexChainCode
-        let id = "\(name)-\(ecdsaKey)-\(eddsaKey)-\(hexCode)".sha256()
+        let vaultPublicKeyExport = viewModel.getVaultPublicKeyExport(vault: vault)
         
-        let data = """
-        {
-            "uid": \(id),
-            "name" : \(name),
-            "public_key_ecdsa": \(ecdsaKey),
-            "public_key_eddsa": \(eddsaKey),
-            "hex_chain_code": \(hexCode)
+        do{
+            let data = try JSONEncoder().encode(vaultPublicKeyExport)
+            return Utils.generateQRCodeImage(from: String(data: data, encoding: .utf8) ?? "")
+        } catch {
+            print("failed to create vault public key export: \(error.localizedDescription)")
+            return Image(systemName: "xmark")
         }
-        """
-        
-        return Utils.generateQRCodeImage(from: data)
     }
 
 }
