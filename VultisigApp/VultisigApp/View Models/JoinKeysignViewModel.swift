@@ -212,7 +212,7 @@ class JoinKeysignViewModel: ObservableObject {
         guard let data else {
             return
         }
-
+        
         do {
             let keysignMsg: KeysignMessage = try ProtoSerializer.deserialize(base64EncodedString: data)
             self.sessionID = keysignMsg.sessionID
@@ -272,5 +272,20 @@ class JoinKeysignViewModel: ObservableObject {
             memo: payload.memo,
             chain: payload.coin.chain
         )
+    }
+    
+    func blowfishSolanaTransactionScan() async throws -> BlowfishResponse? {
+        
+        guard let payload = keysignPayload else {
+            return nil
+        }
+        
+//        let unsignedTx = try SolanaHelper.getUnsignedTransaction(keysignPayload: payload);
+//        
+//        print(unsignedTx)
+//        
+//        return try await BlowfishService.shared.blowfishSolanaTransactionScan(fromAddress: payload.coin.address, unsignedTransaction: unsignedTx);
+        
+        return nil
     }
 }

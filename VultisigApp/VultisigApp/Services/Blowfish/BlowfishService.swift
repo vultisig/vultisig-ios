@@ -44,6 +44,27 @@ struct BlowfishService {
         return response
     }
     
+    func scanSolanaTransactions
+    (
+        userAccount: String,
+        origin: String,
+        transactions: [String]
+    ) async throws -> BlowfishResponse? {
+        
+        let blowfishRequest = BlowfishSolanaRequest(
+            userAccount: userAccount,
+            metadata: BlowfishSolanaRequest.BlowfishMetadata(origin: origin),
+            transactions: transactions
+        )
+        
+        let endpoint = Endpoint.fetchBlowfishSolanaTransactions()
+        let headers = ["X-Api-Version" : "2023-06-05"]
+        let body = try JSONEncoder().encode(blowfishRequest)
+        let dataResponse = try await Utils.asyncPostRequest(urlString: endpoint, headers: headers, body: body)
+        let response = try JSONDecoder().decode(BlowfishResponse.self, from: dataResponse)
+        
+        return response
+    }
     
     func blowfishEVMTransactionScan(
         fromAddress: String,
@@ -79,6 +100,19 @@ struct BlowfishService {
             userAccount: fromAddress,
             origin: "https://api.vultisig.com",
             txObjects: txObjects
+        )
+        
+        return response
+        
+    }
+    
+    func blowfishSolanaTransactionScan(fromAddress: String, unsignedTransaction: String) async throws -> BlowfishResponse? {
+        
+        let response = try await scanSolanaTransactions(
+            userAccount: fromAddress,
+            origin: "https://api.vultisig.com",
+            transactions: [unsignedTransaction]
+            
         )
         
         return response

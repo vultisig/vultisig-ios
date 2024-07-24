@@ -287,6 +287,7 @@
 		B54E317F2BF5A1A700D4FC0A /* StyledNumberField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54E317E2BF5A1A700D4FC0A /* StyledNumberField.swift */; };
 		B54E31812BF5A22700D4FC0A /* StyledFloatingPointField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54E31802BF5A22700D4FC0A /* StyledFloatingPointField.swift */; };
 		B54E31832BF5A73500D4FC0A /* TransactionMemoTypeEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54E31822BF5A73500D4FC0A /* TransactionMemoTypeEnum.swift */; };
+		B57A1E012C51173B009C4B25 /* BlowfishSolanaRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57A1E002C51173B009C4B25 /* BlowfishSolanaRequest.swift */; };
 		B57DD59A2C3DA5EA00934CBB /* SolanaFmTokenInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57DD5992C3DA5EA00934CBB /* SolanaFmTokenInfo.swift */; };
 		B57DD59E2C3E69F500934CBB /* TokenAccountsByOwner.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57DD59D2C3E69F500934CBB /* TokenAccountsByOwner.swift */; };
 		B58768702BFB0C43001AAEA5 /* DepositStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B587686F2BFB0C43001AAEA5 /* DepositStore.swift */; };
@@ -700,6 +701,7 @@
 		B54E317E2BF5A1A700D4FC0A /* StyledNumberField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyledNumberField.swift; sourceTree = "<group>"; };
 		B54E31802BF5A22700D4FC0A /* StyledFloatingPointField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyledFloatingPointField.swift; sourceTree = "<group>"; };
 		B54E31822BF5A73500D4FC0A /* TransactionMemoTypeEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoTypeEnum.swift; sourceTree = "<group>"; };
+		B57A1E002C51173B009C4B25 /* BlowfishSolanaRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlowfishSolanaRequest.swift; sourceTree = "<group>"; };
 		B57DD5992C3DA5EA00934CBB /* SolanaFmTokenInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolanaFmTokenInfo.swift; sourceTree = "<group>"; };
 		B57DD59D2C3E69F500934CBB /* TokenAccountsByOwner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenAccountsByOwner.swift; sourceTree = "<group>"; };
 		B587686F2BFB0C43001AAEA5 /* DepositStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepositStore.swift; sourceTree = "<group>"; };
@@ -1474,6 +1476,7 @@
 			children = (
 				B51097F02C4E48CD0066D560 /* BlowfishRequest.swift */,
 				B51097F22C4E48EE0066D560 /* BlowfishResponse.swift */,
+				B57A1E002C51173B009C4B25 /* BlowfishSolanaRequest.swift */,
 			);
 			path = Blowfish;
 			sourceTree = "<group>";
@@ -2263,6 +2266,7 @@
 				A60CA7E52BB0D37D00FDEB5C /* ContentView.swift in Sources */,
 				B5F7581D2BD8FDA20097B5B9 /* SuiCoin.swift in Sources */,
 				A6C0D55C2BB3AE8600156689 /* TransactionsView.swift in Sources */,
+				B57A1E012C51173B009C4B25 /* BlowfishSolanaRequest.swift in Sources */,
 				4606B3B02B80465E0045094D /* UTXOTransactionsService.swift in Sources */,
 				DEEFF4FD2B9835DE0015692E /* THORChainSwapChainExtension.swift in Sources */,
 				A61BC81B2BA26D9900484689 /* ChainSelectionCell.swift in Sources */,

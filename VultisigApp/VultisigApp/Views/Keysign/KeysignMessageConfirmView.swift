@@ -47,6 +47,17 @@ struct KeysignMessageConfirmView: View {
                             isLoading = false
                         }
                     }
+                } else if (viewModel.keysignPayload?.coin.chainType == .Solana) {
+                    isLoading = true
+                    Task{
+                        do {
+                            blowfishResponse = try await viewModel.blowfishSolanaTransactionScan()
+                            isLoading = false
+                        } catch {
+                            print(error.localizedDescription)
+                            isLoading = false
+                        }
+                    }
                 } else {
                     isLoading = false
                 }

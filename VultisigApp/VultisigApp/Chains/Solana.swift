@@ -144,6 +144,9 @@ enum SolanaHelper {
         let output = try SolanaSigningOutput(serializedData: compileWithSignature)
         let result = SignedTransactionResult(rawTransaction: output.encoded,
                                              transactionHash: getHashFromRawTransaction(tx:output.encoded))
+        
+        print("\(output.unsignedTx) -> output.unsignedTx")
+        
         return result
     }
     
