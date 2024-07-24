@@ -68,6 +68,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
             }
         } catch {
             self.logger.error("Failed to get preSignedImageHash: \(error)")
+            self.errorMessage = error.localizedDescription
             self.status = .FailToStart
         }
     }

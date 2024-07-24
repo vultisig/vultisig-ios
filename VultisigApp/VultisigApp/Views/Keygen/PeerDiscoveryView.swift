@@ -277,8 +277,6 @@ struct PeerDiscoveryView: View {
         }
 #if os(iOS)
         .padding(idiom == .phone ? 0 : 8)
-#elseif os(macOS)
-        .padding(8)
 #endif
     }
     
@@ -426,4 +424,5 @@ struct PeerDiscoveryView: View {
 
 #Preview {
     PeerDiscoveryView(tssType: .Keygen, vault: Vault.example, selectedTab: .TwoOfTwoVaults)
+        .frame(minWidth: 900, minHeight: 600)
 }

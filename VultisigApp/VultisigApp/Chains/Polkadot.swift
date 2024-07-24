@@ -62,6 +62,9 @@ enum PolkadotHelper {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .polkadot, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
+        if !preSigningOutput.errorMessage.isEmpty {
+            throw HelperError.runtimeError(preSigningOutput.errorMessage)
+        }
         return [preSigningOutput.data.hexString]
     }
     

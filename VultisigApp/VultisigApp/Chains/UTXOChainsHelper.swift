@@ -44,6 +44,9 @@ class UTXOChainsHelper {
         let inputData = try getBitcoinPreSigningInputData(keysignPayload: keysignPayload)
         let preHashes = TransactionCompiler.preImageHashes(coinType: coin, txInputData: inputData)
         let preSignOutputs = try BitcoinPreSigningOutput(serializedData: preHashes)
+        if !preSignOutputs.errorMessage.isEmpty {
+            throw HelperError.runtimeError(preSignOutputs.errorMessage)
+        }
         return preSignOutputs.hashPublicKeys.map { $0.dataHash.hexString }
     }
     
