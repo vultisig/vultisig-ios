@@ -62,10 +62,10 @@ struct SwapVerifyView: View {
                 Separator()
                 getDetailsCell(for: "Estimated Fees", with: swapViewModel.swapFeeString(tx: tx))
             }
-            if swapViewModel.showFees(tx: tx) {
-                Separator()
-                getDetailsCell(for: "Estimated Time", with: swapViewModel.durationString(tx: tx))
-            }
+//            if swapViewModel.showFees(tx: tx) {
+//                Separator()
+//                getDetailsCell(for: "Estimated Time", with: swapViewModel.durationString(tx: tx))
+//            }
         }
         .padding(16)
         .background(Color.blue600)
