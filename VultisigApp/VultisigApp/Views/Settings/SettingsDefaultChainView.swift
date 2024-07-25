@@ -9,8 +9,6 @@ import SwiftUI
 
 struct SettingsDefaultChainView: View {
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
-    @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
-    @EnvironmentObject var homeViewModel: HomeViewModel
 
     var body: some View {
         ZStack {
@@ -27,9 +25,6 @@ struct SettingsDefaultChainView: View {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
             }
-        }
-        .onAppear {
-            setData()
         }
     }
 
@@ -62,20 +57,9 @@ struct SettingsDefaultChainView: View {
             .padding(.bottom, 50)
         }
     }
-
-    private func setData() {
-//        guard let vault = homeViewModel.selectedVault else {
-//            return
-//        }
-//
-//        coinSelectionViewModel.setData(for: vault)
-//        settingsDefaultChainViewModel.setData(coinSelectionViewModel.groupedAssets)
-    }
 }
 
 #Preview {
     SettingsDefaultChainView()
         .environmentObject(SettingsDefaultChainViewModel())
-        .environmentObject(CoinSelectionViewModel())
-        .environmentObject(HomeViewModel())
 }

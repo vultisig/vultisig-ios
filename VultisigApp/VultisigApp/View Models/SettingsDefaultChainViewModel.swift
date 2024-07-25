@@ -21,8 +21,6 @@ class SettingsDefaultChainViewModel: ObservableObject {
             value.first
         })
         resetData()
-        print(savedDefaultChains)
-        print(defaultChains.count)
     }
 
     func resetData() {
@@ -58,8 +56,6 @@ class SettingsDefaultChainViewModel: ObservableObject {
     func addChain(_ chain: CoinMeta) {
         savedDefaultChains = savedDefaultChains + chain.chain.name+"$"
         defaultChains.append(chain)
-        print(savedDefaultChains)
-        print(defaultChains.count)
         toggleLoader()
     }
 
@@ -69,8 +65,6 @@ class SettingsDefaultChainViewModel: ObservableObject {
         for index in 0..<defaultChains.count {
             if defaultChains[index] == chain {
                 defaultChains.remove(at: index)
-                print(savedDefaultChains)
-                print(defaultChains.count)
                 toggleLoader()
                 return
             }
