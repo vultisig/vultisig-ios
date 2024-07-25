@@ -12,30 +12,39 @@ import SwiftData
 class VaultDefaultCoinService {
     let context: ModelContext
     private let semaphore = DispatchSemaphore(value: 1)
-    let defaultChains = [Chain.bitcoin, Chain.ethereum, Chain.thorChain, Chain.solana,Chain.bscChain]
+    let baseDefaultChains = [Chain.bitcoin, Chain.ethereum, Chain.thorChain, Chain.solana,Chain.bscChain]
     
     init(context:ModelContext){
         self.context = context
     }
     
-    func setDefaultCoinsOnce(vault: Vault) {
+    func setDefaultCoinsOnce(vault: Vault, defaultChains: [CoinMeta]) {
         semaphore.wait()
         defer {
             semaphore.signal()
         }
-        setDefaultCoins(for: vault)
+        setDefaultCoins(for: vault, defaultChains: defaultChains)
     }
-    func setDefaultCoins(for vault: Vault) {
+    
+    func setDefaultCoins(for vault: Vault, defaultChains: [CoinMeta]) {
         // Add default coins when the vault doesn't have any coins in it
         print("set default chains to vault")
         if vault.coins.count == 0 {
-            let coins = TokensStore.TokenSelectionAssets
-                .filter { asset in defaultChains.contains(where: { $0 == asset.chain }) }
-                .filter { $0.isNativeToken }
+            let chains: [CoinMeta]
+
+            if defaultChains.count==0 {
+                chains = TokensStore.TokenSelectionAssets
+                    .filter { asset in baseDefaultChains.contains(where: { $0 == asset.chain }) }
+            } else {
+                chains = defaultChains
+            }
+
+            let coins = chains
                 .compactMap { try? CoinFactory.create(
                     asset: $0,
                     vault: vault
                 )}
+                    
             for coin in coins {
                 self.context.insert(coin)
                 vault.coins.append(coin)

@@ -49,10 +49,9 @@ enum THORChainHelper {
         
         var isDeposit: Bool = false
         if let memo = keysignPayload.memo, !memo.isEmpty {
-            if DepositStore.PREFIXES.contains(where: { memo.hasPrefix($0) }) {
-                isDeposit = true
-            }
+            isDeposit = memo.contains(":");
         }
+        
         if let swapPayload = keysignPayload.swapPayload {
             isDeposit = swapPayload.isDeposit
         }
