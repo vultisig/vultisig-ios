@@ -29,6 +29,8 @@ struct KeygenView: View {
     @State var progressCounter: Double = 0
     @State var showProgressRing = true
     
+    @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
+    
     var body: some View {
         VStack {
             Spacer()
@@ -41,7 +43,10 @@ struct KeygenView: View {
             BackupVaultNowView(vault: vault)
         }
         .task {
-            await viewModel.startKeygen(context: context)
+            await viewModel.startKeygen(
+                context: context,
+                defaultChains: settingsDefaultChainViewModel.defaultChains
+            )
         }
         .onAppear {
 #if os(iOS)
