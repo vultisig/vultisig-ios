@@ -225,5 +225,6 @@ struct KeygenView: View {
             encryptionKeyHex: "",
             oldResharePrefix: ""
         )
+        .environmentObject(SettingsDefaultChainViewModel())
     }
 }

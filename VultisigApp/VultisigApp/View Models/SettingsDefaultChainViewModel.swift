@@ -21,6 +21,8 @@ class SettingsDefaultChainViewModel: ObservableObject {
             value.first
         })
         resetData()
+        print(savedDefaultChains)
+        print(defaultChains.count)
     }
 
     func resetData() {
@@ -57,6 +59,7 @@ class SettingsDefaultChainViewModel: ObservableObject {
         savedDefaultChains = savedDefaultChains + chain.chain.name+"$"
         defaultChains.append(chain)
         print(savedDefaultChains)
+        print(defaultChains.count)
         toggleLoader()
     }
 
@@ -67,6 +70,7 @@ class SettingsDefaultChainViewModel: ObservableObject {
             if defaultChains[index] == chain {
                 defaultChains.remove(at: index)
                 print(savedDefaultChains)
+                print(defaultChains.count)
                 toggleLoader()
                 return
             }

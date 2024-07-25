@@ -64,12 +64,12 @@ struct SettingsDefaultChainView: View {
     }
 
     private func setData() {
-        guard let vault = homeViewModel.selectedVault else {
-            return
-        }
-
-        coinSelectionViewModel.setData(for: vault)
-        settingsDefaultChainViewModel.setData(coinSelectionViewModel.groupedAssets)
+//        guard let vault = homeViewModel.selectedVault else {
+//            return
+//        }
+//
+//        coinSelectionViewModel.setData(for: vault)
+//        settingsDefaultChainViewModel.setData(coinSelectionViewModel.groupedAssets)
     }
 }
 
