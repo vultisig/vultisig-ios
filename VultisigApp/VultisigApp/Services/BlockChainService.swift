@@ -74,8 +74,8 @@ final class BlockChainService {
             return .UTXO(byteFee: normalized, sendMaxAmount: sendMaxAmount)
             
         case .thorChain:
+            _ = try await thor.getTHORChainChainID()
             let account = try await thor.fetchAccountNumber(coin.address)
-            
             let fee = try await thor.fetchFeePrice()
             
             guard let accountNumberString = account?.accountNumber, let accountNumber = UInt64(accountNumberString) else {
