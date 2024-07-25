@@ -124,7 +124,8 @@ struct SendCryptoView: View {
                     keysignPayload: keysignPayload,
                     transferViewModel: sendCryptoViewModel,
                     keysignView: $keysignView,
-                    shareSheetViewModel: shareSheetViewModel
+                    shareSheetViewModel: shareSheetViewModel,
+                    previewTitle: "send"
                 )
             } else {
                 SendCryptoVaultErrorView()

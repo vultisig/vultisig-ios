@@ -385,6 +385,7 @@
 		DEF2E2CB2B9AD5EA000737B8 /* UTXOChainsHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF2E2CA2B9AD5EA000737B8 /* UTXOChainsHelper.swift */; };
 		DEF2E2D02B9DA459000737B8 /* PublicKeyTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF2E2CF2B9DA459000737B8 /* PublicKeyTest.swift */; };
 		DEF2E2D32B9DC685000737B8 /* UTXOChainsHelperTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF2E2D22B9DC685000737B8 /* UTXOChainsHelperTest.swift */; };
+		DEF722602C520377002FFE8A /* THORChainNetworkStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF7225F2C520377002FFE8A /* THORChainNetworkStatus.swift */; };
 		DEFC7BFB2B8D87370090B07A /* erc20.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC7BFA2B8D87370090B07A /* erc20.swift */; };
 		DEFC7BFF2B8EC95E0090B07A /* thorchain.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC7BFE2B8EC95E0090B07A /* thorchain.swift */; };
 		DEFF58F22BCBACDA005DFDF9 /* VultisigRelay.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF58F12BCBACDA005DFDF9 /* VultisigRelay.swift */; };
@@ -798,6 +799,7 @@
 		DEF2E2CF2B9DA459000737B8 /* PublicKeyTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublicKeyTest.swift; sourceTree = "<group>"; };
 		DEF2E2D12B9DC331000737B8 /* VultisigApp.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = VultisigApp.xctestplan; sourceTree = "<group>"; };
 		DEF2E2D22B9DC685000737B8 /* UTXOChainsHelperTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOChainsHelperTest.swift; sourceTree = "<group>"; };
+		DEF7225F2C520377002FFE8A /* THORChainNetworkStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainNetworkStatus.swift; sourceTree = "<group>"; };
 		DEFC7BFA2B8D87370090B07A /* erc20.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = erc20.swift; sourceTree = "<group>"; };
 		DEFC7BFE2B8EC95E0090B07A /* thorchain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = thorchain.swift; sourceTree = "<group>"; };
 		DEFF58F12BCBACDA005DFDF9 /* VultisigRelay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultisigRelay.swift; sourceTree = "<group>"; };
@@ -1010,6 +1012,7 @@
 				A5DA62082BF79C1D00CBEAEE /* ThorchainSwapError.swift */,
 				46F8F7272B9A011B0099454E /* ThorchainBroadcastTransactionService.swift */,
 				DEFF58FB2BCFB384005DFDF9 /* MayaChainService.swift */,
+				DEF7225F2C520377002FFE8A /* THORChainNetworkStatus.swift */,
 			);
 			path = Thorchain;
 			sourceTree = "<group>";
@@ -2169,6 +2172,7 @@
 				B5E95E092BED84D9003778F0 /* ImagePicker.swift in Sources */,
 				B53DCB7D2C0D7327008388D4 /* EvmTokenServiceProtocol.swift in Sources */,
 				A5BA15082C077A0B00AA6C07 /* OneInchToken.swift in Sources */,
+				DEF722602C520377002FFE8A /* THORChainNetworkStatus.swift in Sources */,
 				DE1572962B70F254009BC7C5 /* TssMessenger.swift in Sources */,
 				A68696232C1B5DD2004EDE0B /* EncryptedBackupViewModel.swift in Sources */,
 				46B60BBE2BBA811D0043EBBA /* AvalancheService.swift in Sources */,
