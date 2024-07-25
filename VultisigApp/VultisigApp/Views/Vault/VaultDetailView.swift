@@ -16,6 +16,7 @@ struct VaultDetailView: View {
     @EnvironmentObject var viewModel: VaultDetailViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var tokenSelectionViewModel: CoinSelectionViewModel
+    @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     
     @State var showSheet = false
     @State var isLoading = true
@@ -245,6 +246,9 @@ struct VaultDetailView: View {
         viewModel.setOrder()
         viewModel.updateBalance(vault: vault)
         viewModel.getGroupAsync(tokenSelectionViewModel)
+        
+        tokenSelectionViewModel.setData(for: vault)
+        settingsDefaultChainViewModel.setData(tokenSelectionViewModel.groupedAssets)
     }
     
     private func getListHeight() -> CGFloat {
@@ -270,4 +274,5 @@ struct VaultDetailView: View {
         .environmentObject(VaultDetailViewModel())
         .environmentObject(CoinSelectionViewModel())
         .environmentObject(HomeViewModel())
+        .environmentObject(SettingsDefaultChainViewModel())
 }
