@@ -49,10 +49,9 @@ enum THORChainHelper {
         
         var isDeposit: Bool = false
         if let memo = keysignPayload.memo, !memo.isEmpty {
-            if DepositStore.PREFIXES.contains(where: { memo.hasPrefix($0) }) {
-                isDeposit = true
-            }
+            isDeposit = memo.contains(":");
         }
+        
         if let swapPayload = keysignPayload.swapPayload {
             isDeposit = swapPayload.isDeposit
         }
@@ -93,11 +92,14 @@ enum THORChainHelper {
                 }
             }]
         }
-        
+        var chainID = coin.chainId
+        if chainID != ThorchainService.shared.network {
+            chainID = ThorchainService.shared.network
+        }
         let input = CosmosSigningInput.with {
             $0.publicKey = pubKeyData
             $0.signingMode = .protobuf
-            $0.chainID = coin.chainId
+            $0.chainID = chainID
             $0.accountNumber = accountNumber
             $0.sequence = sequence
             $0.mode = .sync
