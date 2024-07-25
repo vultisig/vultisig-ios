@@ -11,10 +11,11 @@ struct BackupPasswordSetupView: View {
     let vault: Vault
     var isNewVault = false
     
-    @State var verifyPassword: String = ""
+    @State var verifyPassword: String = "12345"
     @State var navigationLinkActive = false
     
     @StateObject var backupViewModel = EncryptedBackupViewModel()
+    @State var show = false
     
     @Environment(\.dismiss) var dismiss
     
@@ -57,23 +58,23 @@ struct BackupPasswordSetupView: View {
 #if os(macOS)
         .padding(.horizontal, 25)
 #endif
-        .fileExporter(
-            isPresented: $backupViewModel.showVaultExporter,
-            document: EncryptedDataFile(url: backupViewModel.encryptedFileURL),
-            contentType: .data,
-            defaultFilename: "\(vault.getExportName())"
-        ) { result in
-            switch result {
-            case .success(let url):
-                print("File saved to: \(url)")
-                fileSaved()
-            case .failure(let error):
-                print("Error saving file: \(error.localizedDescription)")
-                backupViewModel.alertTitle = "errorSavingFile"
-                backupViewModel.alertMessage = error.localizedDescription
-                backupViewModel.showAlert = true
-            }
-        }
+//        .fileExporter(
+//            isPresented: $backupViewModel.showVaultExporter,
+//            document: EncryptedDataFile(url: backupViewModel.encryptedFileURL),
+//            contentType: .data,
+//            defaultFilename: "\(vault.getExportName())"
+//        ) { result in
+//            switch result {
+//            case .success(let url):
+//                print("File saved to: \(url)")
+//                fileSaved()
+//            case .failure(let error):
+//                print("Error saving file: \(error.localizedDescription)")
+//                backupViewModel.alertTitle = "errorSavingFile"
+//                backupViewModel.alertMessage = error.localizedDescription
+//                backupViewModel.showAlert = true
+//            }
+//        }
     }
     
     var passwordField: some View {
@@ -107,19 +108,34 @@ struct BackupPasswordSetupView: View {
     }
     
     var saveButton: some View {
-        Button {
+        ZStack {
+            if show {
+                if let fileURL = backupViewModel.encryptedFileURL {
+                    ShareLink(item: fileURL) {
+                        FilledButton(title: "save")
+                    }
+                }
+            }
+        }
+        .onAppear {
             handleSaveTap()
-        } label: {
-            FilledButton(title: "save")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                show = true
+            }
         }
     }
     
     var skipButton: some View {
-        Button {
-            handleSkipTap()
-        } label: {
-            OutlineButton(title: "skip")
-        }
+//        ZStack {
+//            if let fileURL = backupViewModel.encryptedFileURL {
+//                ShareLink(item: fileURL) {
+                    OutlineButton(title: "skip")
+//                }
+//            }
+//        }
+//        .onAppear {
+//            handleSkipTap()
+//        }
     }
     
     var alert: Alert {
