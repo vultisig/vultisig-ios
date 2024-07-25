@@ -16,6 +16,10 @@ struct SettingsDefaultChainView: View {
         ZStack {
             Background()
             content
+            
+            if settingsDefaultChainViewModel.showLoader {
+                Loader()
+            }
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("defaultChains", comment: ""))

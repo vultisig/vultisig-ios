@@ -8,10 +8,11 @@
 import SwiftUI
 
 class SettingsDefaultChainViewModel: ObservableObject {
-    @Published var filteredAssets = [CoinMeta]()
     @Published var searchText: String = ""
+    @Published var filteredAssets = [CoinMeta]()
     @Published var baseChains = [CoinMeta]()
-
+    @Published var showLoader: Bool = false
+    
     @Published var defaultChains = [CoinMeta]()
     @AppStorage("savedDefaultChains") var savedDefaultChains: String = ""
 
@@ -55,6 +56,8 @@ class SettingsDefaultChainViewModel: ObservableObject {
     func addChain(_ chain: CoinMeta) {
         savedDefaultChains = savedDefaultChains + chain.chain.name+"$"
         defaultChains.append(chain)
+        print(savedDefaultChains)
+        toggleLoader()
     }
 
     func removeChain(_ chain: CoinMeta) {
@@ -63,8 +66,18 @@ class SettingsDefaultChainViewModel: ObservableObject {
         for index in 0..<defaultChains.count {
             if defaultChains[index] == chain {
                 defaultChains.remove(at: index)
+                print(savedDefaultChains)
+                toggleLoader()
                 return
             }
+        }
+    }
+    
+    private func toggleLoader() {
+        showLoader = true
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            self.showLoader = false
         }
     }
 }
