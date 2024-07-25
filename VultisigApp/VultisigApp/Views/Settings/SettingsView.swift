@@ -28,17 +28,18 @@ struct SettingsView: View {
     }
     
     var view: some View {
-        VStack(spacing: 24) {
-            mainSection
-            otherSection
-            Spacer()
-            bottomSection
-        }
-        .padding(15)
-        .padding(.top, 30)
+        ScrollView {
+            VStack(spacing: 24) {
+                mainSection
+                otherSection
+                bottomSection
+            }
+            .padding(15)
+            .padding(.top, 30)
 #if os(macOS)
-        .padding(.horizontal, 25)
+            .padding(.horizontal, 25)
 #endif
+        }
     }
     
     var mainSection: some View {
@@ -64,9 +65,8 @@ struct SettingsView: View {
             socials
             appVersion
         }
-#if os(macOS)
-        .padding(.bottom, 20)
-#endif
+        .padding(.bottom, 30)
+        .padding(.top, 100)
     }
     
     var vaultSettingsCell: some View {

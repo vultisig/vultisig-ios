@@ -31,6 +31,7 @@ struct Search: View {
         TextField(NSLocalizedString("search", comment: ""), text: $searchText)
             .foregroundColor(.neutral700)
             .font(.body14Menlo)
+#if os(iOS)
             .toolbar {
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
@@ -42,6 +43,8 @@ struct Search: View {
                     }
                 }
             }
+#endif
+            .borderlessTextFieldStyle()
     }
 
     var searchIcon: some View {
