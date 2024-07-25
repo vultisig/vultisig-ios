@@ -8,6 +8,7 @@
 import Foundation
 
 class ThorchainService: ThorchainSwapProvider {
+    var network: String = ""
     static let shared = ThorchainService()
     
     private var cacheFeePrice: [String: (data: UInt64, timestamp: Date)] = [:]
@@ -96,5 +97,15 @@ class ThorchainService: ThorchainSwapProvider {
         }
         
         return .zero
+    }
+    
+    func getTHORChainChainID() async throws -> String  {
+        if !network.isEmpty {
+            return network
+        }
+        let (data, _) = try await URLSession.shared.data(from: Endpoint.thorchainNetworkInfo)
+        let response = try JSONDecoder().decode(THORChainNetworkStatus.self, from: data)
+        network = response.result.node_info.network
+        return response.result.node_info.network
     }
 }
