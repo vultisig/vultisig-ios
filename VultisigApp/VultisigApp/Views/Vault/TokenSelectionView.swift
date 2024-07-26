@@ -50,12 +50,7 @@ struct TokenSelectionView: View {
             }
 #if os(iOS)
             ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                Button(action: {
-                    self.chainDetailView.sheetType = nil
-                }) {
-                    Text("Save")
-                        .foregroundColor(.blue)
-                }
+                saveButton
             }
             
             ToolbarItem(placement: Placement.principal.getPlacement()) {
@@ -92,9 +87,12 @@ struct TokenSelectionView: View {
     var view: some View {
         VStack(alignment: .leading, spacing: 0) {
 #if os(macOS)
-            searchBar
-                .padding(.vertical, 18)
-                .padding(.horizontal, 40)
+            HStack {
+                searchBar
+                saveButton
+            }
+            .padding(.vertical, 18)
+            .padding(.horizontal, 40)
             
             Separator()
 #endif
@@ -188,6 +186,22 @@ struct TokenSelectionView: View {
         }
         .background(Color.blue600)
         .cornerRadius(12)
+    }
+    
+    var saveButton: some View {
+        Button(action: {
+            self.chainDetailView.sheetType = nil
+            dismiss()
+        }) {
+            Text("Save")
+                .foregroundColor(.blue)
+        }
+#if os(macOS)
+                .padding(.horizontal, 32)
+                .frame(height: 44)
+                .background(Color.blue600)
+                .cornerRadius(12)
+#endif
     }
     
     func errorView(error: Error) -> some View {
