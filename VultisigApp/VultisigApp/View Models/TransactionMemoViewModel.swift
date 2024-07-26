@@ -71,5 +71,6 @@ class TransactionMemoViewModel: ObservableObject, TransferViewModel {
     
     func handleBackTap() {
         currentIndex-=1
+        currentTitle = titles[currentIndex-1]
     }
 }
