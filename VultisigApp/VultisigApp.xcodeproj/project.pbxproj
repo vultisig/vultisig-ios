@@ -189,6 +189,10 @@
 		A69069B52BCF538000F28A8B /* NetworkPrompts.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69069B42BCF538000F28A8B /* NetworkPrompts.swift */; };
 		A69069B72BCF53B600F28A8B /* NetworkPromptType.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69069B62BCF53B600F28A8B /* NetworkPromptType.swift */; };
 		A690E00E2BC0ED290006DC0D /* URL.swift in Sources */ = {isa = PBXBuildFile; fileRef = A690E00D2BC0ED290006DC0D /* URL.swift */; };
+		A6951E862C52DAFD007292E7 /* SettingsDefaultChainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6951E852C52DAFD007292E7 /* SettingsDefaultChainView.swift */; };
+		A6951E882C52DB9D007292E7 /* Search.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6951E872C52DB9D007292E7 /* Search.swift */; };
+		A6951E8A2C52DBBD007292E7 /* ToggleSelectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6951E892C52DBBD007292E7 /* ToggleSelectionCell.swift */; };
+		A6951E8C2C52DC6B007292E7 /* SettingsDefaultChainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6951E8B2C52DC6B007292E7 /* SettingsDefaultChainViewModel.swift */; };
 		A6966D1E2BA3DDAD00903CA4 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D1D2BA3DDAD00903CA4 /* OnboardingView.swift */; };
 		A6966D202BA3DF0C00903CA4 /* OnboardingView1.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D1F2BA3DF0C00903CA4 /* OnboardingView1.swift */; };
 		A6966D242BA3E2A500903CA4 /* OnboardingView2.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D232BA3E2A500903CA4 /* OnboardingView2.swift */; };
@@ -605,6 +609,10 @@
 		A69069B42BCF538000F28A8B /* NetworkPrompts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPrompts.swift; sourceTree = "<group>"; };
 		A69069B62BCF53B600F28A8B /* NetworkPromptType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPromptType.swift; sourceTree = "<group>"; };
 		A690E00D2BC0ED290006DC0D /* URL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URL.swift; sourceTree = "<group>"; };
+		A6951E852C52DAFD007292E7 /* SettingsDefaultChainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsDefaultChainView.swift; sourceTree = "<group>"; };
+		A6951E872C52DB9D007292E7 /* Search.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Search.swift; sourceTree = "<group>"; };
+		A6951E892C52DBBD007292E7 /* ToggleSelectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToggleSelectionCell.swift; sourceTree = "<group>"; };
+		A6951E8B2C52DC6B007292E7 /* SettingsDefaultChainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsDefaultChainViewModel.swift; sourceTree = "<group>"; };
 		A6966D1D2BA3DDAD00903CA4 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		A6966D1F2BA3DF0C00903CA4 /* OnboardingView1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView1.swift; sourceTree = "<group>"; };
 		A6966D232BA3E2A500903CA4 /* OnboardingView2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView2.swift; sourceTree = "<group>"; };
@@ -888,6 +896,7 @@
 				A6B7F4992C49418A006D83D1 /* VaultDetailQRCode.swift */,
 				A6B7F49D2C496EA8006D83D1 /* VaultDetailMacQRCode.swift */,
 				B51097F42C4EB7200066D560 /* BlowfishWarningInformationNote.swift */,
+				A6951E872C52DB9D007292E7 /* Search.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1307,6 +1316,7 @@
 				A66BFCD22C135699004DCD4F /* ShareSheetViewModel.swift */,
 				A68696222C1B5DD2004EDE0B /* EncryptedBackupViewModel.swift */,
 				A6B7F49B2C4963F6006D83D1 /* VaultDetailQRCodeViewModel.swift */,
+				A6951E8B2C52DC6B007292E7 /* SettingsDefaultChainViewModel.swift */,
 			);
 			path = "View Models";
 			sourceTree = "<group>";
@@ -1395,6 +1405,7 @@
 				A6980C2B2BC0896C00F452AB /* SettingsLanguageSelectionView.swift */,
 				A6980C2F2BC0A11100F452AB /* SettingsCurrencySelectionView.swift */,
 				A6980C312BC0A2F700F452AB /* SettingsFAQView.swift */,
+				A6951E852C52DAFD007292E7 /* SettingsDefaultChainView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -1460,6 +1471,7 @@
 				A683EDEC2BCF67D100BB706E /* NetworkPromptCell.swift */,
 				A6AF96112C2E3D6100992578 /* ImportFileCell.swift */,
 				A6725D422C40C45800D47716 /* AddressBookCell.swift */,
+				A6951E892C52DBBD007292E7 /* ToggleSelectionCell.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -2061,6 +2073,7 @@
 				B52196482C12D1110021D27A /* CircularFilledButton.swift in Sources */,
 				DE9EB0FC2BA463F7001747D9 /* KeygenViewModel.swift in Sources */,
 				DEFF58F42BCBF65D005DFDF9 /* TssHelper.swift in Sources */,
+				A6951E8A2C52DBBD007292E7 /* ToggleSelectionCell.swift in Sources */,
 				A683EDED2BCF67D100BB706E /* NetworkPromptCell.swift in Sources */,
 				A6F2C54B2BA003E10095C8E3 /* CoinSelectionCell.swift in Sources */,
 				46AAA4972BBF7EBA00E5BAB4 /* EvmServiceFactory.swift in Sources */,
@@ -2130,6 +2143,7 @@
 				469ED3992B98E896008D4951 /* CosmosBalanceResponse.swift in Sources */,
 				DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */,
 				46B60BC02BBB20130043EBBA /* RpcEvmService.swift in Sources */,
+				A6951E882C52DB9D007292E7 /* Search.swift in Sources */,
 				B53D8CC82BF7F21500B795D3 /* TransactionMemoBond.swift in Sources */,
 				DEE2D8722C0D37A900D2F4C3 /* VaultDefaultCoinService.swift in Sources */,
 				DE9EB0EE2BA2CF49001747D9 /* KeygenMessage.swift in Sources */,
@@ -2311,6 +2325,7 @@
 				B5A97CED2BF41573007574D7 /* TransactionMemoView.swift in Sources */,
 				A611735D2BC8D94400D616F9 /* KeyGenSummaryView.swift in Sources */,
 				A56386822C3A2148008B848E /* ProtoCoinResolver.swift in Sources */,
+				A6951E862C52DAFD007292E7 /* SettingsDefaultChainView.swift in Sources */,
 				A6CBF2DC2C251D4100FD8080 /* LookingForDevicesLoader.swift in Sources */,
 				A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */,
 				A5BDC7BE2C32FF4A004DBBE7 /* CoinsGrouped.swift in Sources */,
@@ -2340,6 +2355,7 @@
 				A65649EE2B9669DD00E4B329 /* UTXOTransactionMempoolInput.swift in Sources */,
 				A5D00E412BD65CE7009E025F /* ERC20ApprovePayload.swift in Sources */,
 				A6966D2D2BA402A900903CA4 /* TokenSelectorDropdown.swift in Sources */,
+				A6951E8C2C52DC6B007292E7 /* SettingsDefaultChainViewModel.swift in Sources */,
 				B51097F52C4EB7200066D560 /* BlowfishWarningInformationNote.swift in Sources */,
 				A6F2C5452B9FE3A00095C8E3 /* HomeView.swift in Sources */,
 				A66A0BD72BA125C50021A483 /* EditVaultCell.swift in Sources */,

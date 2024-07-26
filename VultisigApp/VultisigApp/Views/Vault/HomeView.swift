@@ -153,6 +153,7 @@ struct HomeView: View {
         } else {
             viewModel.loadSelectedVault(for: vaults)
         }
+        
         presetValuesForDeeplink()
     }
     

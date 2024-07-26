@@ -29,7 +29,7 @@ extension Decimal {
             formatter.maximumFractionDigits = 2
             formatter.minimumFractionDigits = 2
             formatter.decimalSeparator = "."
-            formatter.groupingSeparator = ""
+            formatter.groupingSeparator = ","
         }
         
         // Convert Decimal to NSDecimalNumber before using with NumberFormatter
