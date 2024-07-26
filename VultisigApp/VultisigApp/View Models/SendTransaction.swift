@@ -35,6 +35,9 @@ class SendTransaction: ObservableObject, Hashable {
         return comparison
     }
     
+    var isDeposit: Bool {
+        !memoFunctionDictionary.allItems().isEmpty
+    }
     
     var canBeReaped: Bool {
         if coin.ticker != Chain.polkadot.ticker {

@@ -27,7 +27,7 @@ class TransactionMemoVerifyViewModel: ObservableObject {
         var keysignPayload: KeysignPayload?
         
         do{
-            let chainSpecific = try await blockChainService.fetchSpecific(for: tx.coin, sendMaxAmount: tx.sendMaxAmount)
+            let chainSpecific = try await blockChainService.fetchSpecific(for: tx.coin, sendMaxAmount: tx.sendMaxAmount, isDeposit: tx.isDeposit)
             let keysignPayloadFactory = KeysignPayloadFactory()
             keysignPayload = try await keysignPayloadFactory.buildTransfer(coin: tx.coin,
                                                                            toAddress: tx.toAddress,

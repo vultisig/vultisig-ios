@@ -18,9 +18,9 @@ class KujiraHelper {
     }
     
     static let kujiraGasLimit:UInt64 = 200000
-  
+    
     func getSwapPreSignedInputData(keysignPayload: KeysignPayload,signingInput: CosmosSigningInput) throws -> Data {
-        guard case .Cosmos(let accountNumber, let sequence,let gas) = keysignPayload.chainSpecific else {
+        guard case .Cosmos(let accountNumber, let sequence, let gas, let isDeposit) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number and sequence")
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
@@ -43,9 +43,9 @@ class KujiraHelper {
         // deposit message has been set
         return try input.serializedData()
     }
-
+    
     func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-        guard case .Cosmos(let accountNumber, let sequence , let gas) = keysignPayload.chainSpecific else {
+        guard case .Cosmos(let accountNumber, let sequence , let gas, let isDeposit) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number and sequence")
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
@@ -82,7 +82,7 @@ class KujiraHelper {
                 }]
             }
         }
-
+        
         return try input.serializedData()
     }
     func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {

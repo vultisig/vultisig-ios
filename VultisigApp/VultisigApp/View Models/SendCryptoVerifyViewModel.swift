@@ -64,7 +64,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
         }
         
         do {
-            let chainSpecific = try await blockChainService.fetchSpecific(for: tx, sendMaxAmount: tx.sendMaxAmount)
+            let chainSpecific = try await blockChainService.fetchSpecific(for: tx, sendMaxAmount: tx.sendMaxAmount, isDeposit: tx.isDeposit)
             let keysignPayloadFactory = KeysignPayloadFactory()
             keysignPayload = try await keysignPayloadFactory.buildTransfer(coin: tx.coin,
                                                                            toAddress: tx.toAddress,

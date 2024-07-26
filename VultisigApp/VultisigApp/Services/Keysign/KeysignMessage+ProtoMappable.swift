@@ -207,22 +207,25 @@ extension BlockChainSpecific {
                 nonce: value.nonce,
                 gasLimit: BigInt(stringLiteral: value.gasLimit)
             )
-        case .thorchainSpecific(let value):
+        case .thorchainSpecific(let value, let isDeposit):
             self = .THORChain(
                 accountNumber: value.accountNumber,
                 sequence: value.sequence,
-                fee: value.fee
+                fee: value.fee,
+                isDeposit: isDeposit
             )
-        case .mayaSpecific(let value):
+        case .mayaSpecific(let value, let isDeposit):
             self = .MayaChain(
                 accountNumber: value.accountNumber,
-                sequence: value.sequence
+                sequence: value.sequence,
+                isDeposit: isDeposit
             )
-        case .cosmosSpecific(let value):
+        case .cosmosSpecific(let value, let isDeposit):
             self = .Cosmos(
                 accountNumber: value.accountNumber,
                 sequence: value.sequence,
-                gas: value.gas
+                gas: value.gas,
+                isDeposit: isDeposit
             )
         case .solanaSpecific(let value):
             self = .Solana(
@@ -262,22 +265,25 @@ extension BlockChainSpecific {
                 $0.nonce = nonce
                 $0.gasLimit = String(gasLimit)
             })
-        case .THORChain(let accountNumber, let sequence, let fee):
+        case .THORChain(let accountNumber, let sequence, let fee, let isDeposit):
             return .thorchainSpecific(.with {
                 $0.accountNumber = accountNumber
                 $0.sequence = sequence
                 $0.fee = fee
+                $0.isDeposit = isDeposit
             })
-        case .MayaChain(let accountNumber, let sequence):
+        case .MayaChain(let accountNumber, let sequence, let isDeposit):
             return .mayaSpecific(.with {
                 $0.accountNumber = accountNumber
                 $0.sequence = sequence
+                $0.isDeposit = isDeposit
             })
-        case .Cosmos(let accountNumber, let sequence, let gas):
+        case .Cosmos(let accountNumber, let sequence, let gas, let isDeposit):
             return .cosmosSpecific(.with {
                 $0.accountNumber = accountNumber
                 $0.sequence = sequence
                 $0.gas = gas
+                $0.isDeposit = isDeposit
             })
         case .Solana(let recentBlockHash, let priorityFee, let fromTokenAssociatedAddress, let toTokenAssociatedAddress):
             return .solanaSpecific(.with {

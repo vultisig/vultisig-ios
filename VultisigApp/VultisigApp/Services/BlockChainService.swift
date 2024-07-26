@@ -37,7 +37,7 @@ final class BlockChainService {
     private let kuji = KujiraService.shared
     private let dydx = DydxService.shared
     
-    func fetchSpecific(for tx: SendTransaction, action: Action = .transfer, sendMaxAmount: Bool) async throws -> BlockChainSpecific {
+    func fetchSpecific(for tx: SendTransaction, action: Action = .transfer, sendMaxAmount: Bool, isDeposit: Bool) async throws -> BlockChainSpecific {
         
         switch tx.coin.chain {
         case .solana:
@@ -62,11 +62,11 @@ final class BlockChainService {
             
             return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(highPriorityFee), fromAddressPubKey: nil, toAddressPubKey: nil)
         default:
-            return try await fetchSpecific(for: tx.coin, action: action, sendMaxAmount: sendMaxAmount)
+            return try await fetchSpecific(for: tx.coin, action: action, sendMaxAmount: sendMaxAmount, isDeposit: isDeposit)
         }
     }
     
-    func fetchSpecific(for coin: Coin, action: Action = .transfer, sendMaxAmount: Bool) async throws -> BlockChainSpecific {
+    func fetchSpecific(for coin: Coin, action: Action = .transfer, sendMaxAmount: Bool, isDeposit: Bool) async throws -> BlockChainSpecific {
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             let sats = try await utxo.fetchSatsPrice(coin: coin)
@@ -85,7 +85,7 @@ final class BlockChainService {
             guard let sequence = UInt64(account?.sequence ?? "0") else {
                 throw Errors.failToGetSequenceNo
             }
-            return .THORChain(accountNumber: accountNumber, sequence: sequence, fee: fee)
+            return .THORChain(accountNumber: accountNumber, sequence: sequence, fee: fee, isDeposit: isDeposit)
         case .mayaChain:
             let account = try await maya.fetchAccountNumber(coin.address)
             
@@ -96,7 +96,7 @@ final class BlockChainService {
             guard let sequence = UInt64(account?.sequence ?? "0") else {
                 throw Errors.failToGetSequenceNo
             }
-            return .MayaChain(accountNumber: accountNumber, sequence: sequence)
+            return .MayaChain(accountNumber: accountNumber, sequence: sequence, isDeposit: isDeposit)
         case .solana:
             async let recentBlockHashPromise = sol.fetchRecentBlockhash()
             async let highPriorityFeePromise = sol.fetchHighPriorityFee(account: coin.address)
@@ -140,7 +140,7 @@ final class BlockChainService {
             guard let sequence = UInt64(account?.sequence ?? "0") else {
                 throw Errors.failToGetSequenceNo
             }
-            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500)
+            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, isDeposit: isDeposit)
         case .kujira:
             let account = try await kuji.fetchAccountNumber(coin.address)
             
@@ -151,7 +151,7 @@ final class BlockChainService {
             guard let sequence = UInt64(account?.sequence ?? "0") else {
                 throw Errors.failToGetSequenceNo
             }
-            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500)
+            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 7500, isDeposit: isDeposit)
         case .dydx:
             let account = try await dydx.fetchAccountNumber(coin.address)
             
@@ -162,7 +162,7 @@ final class BlockChainService {
             guard let sequence = UInt64(account?.sequence ?? "0") else {
                 throw Errors.failToGetSequenceNo
             }
-            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 2500000000000000)
+            return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 2500000000000000, isDeposit: isDeposit)
         }
     }
     
