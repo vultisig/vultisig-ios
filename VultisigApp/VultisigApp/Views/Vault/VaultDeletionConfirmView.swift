@@ -23,6 +23,10 @@ struct VaultDeletionConfirmView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var homeViewModel: HomeViewModel
     
+#if os(iOS)
+    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+#endif
+    
     let vaults: [Vault]
     
     var body: some View {
@@ -50,9 +54,13 @@ struct VaultDeletionConfirmView: View {
             logo
             details
             
-            if !isPhoneSE {
+#if os(iOS)
+            if idiom == .pad {
                 Spacer()
             }
+#elseif os(macOS)
+            Spacer()
+#endif
             
             checkboxes
             button

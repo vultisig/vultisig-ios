@@ -11,6 +11,8 @@ struct VaultDeletionDetails: View {
     let vault: Vault
     let isPhoneSE: Bool
     
+    @EnvironmentObject var homeViewModel: HomeViewModel
+    
     var body: some View {
 #if os(iOS)
         let spacing: CGFloat = isPhoneSE ? 18 : 32
@@ -21,6 +23,7 @@ struct VaultDeletionDetails: View {
         return VStack(alignment: .leading, spacing: spacing) {
             title
             nameCell
+            valueCell
             typeCell
             ECDSAKeyCell
             EdDSAKeyCell
@@ -46,6 +49,13 @@ struct VaultDeletionDetails: View {
         HStack(spacing: 0) {
             getTitleText("vaultName")
             getDescriptionText(vault.name)
+        }
+    }
+    
+    var valueCell: some View {
+        HStack(spacing: 0) {
+            getTitleText("vaultValue")
+            getDescriptionText(homeViewModel.selectedVault?.coins.totalBalanceInFiatString ?? "$0")
         }
     }
     
@@ -99,5 +109,6 @@ struct VaultDeletionDetails: View {
     ZStack {
         Background()
         VaultDeletionDetails(vault: Vault.example, isPhoneSE: true)
+            .environmentObject(HomeViewModel())
     }
 }
