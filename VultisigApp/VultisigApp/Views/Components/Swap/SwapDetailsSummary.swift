@@ -29,10 +29,6 @@ struct SwapDetailsSummary: View {
                 getSummaryCell(leadingText: "Estimated Fees", trailingText: swapViewModel.swapFeeString(tx: tx))
             }
             
-//            if swapViewModel.showDuration(tx: tx) {
-//                getSummaryCell(leadingText: "Estimated Time", trailingText: swapViewModel.durationString(tx: tx))
-//            }
-            
             if let error = swapViewModel.error {
                 Separator()
                 getErrorCell(text: error.localizedDescription)
