@@ -14,6 +14,8 @@ struct AddressBookCell: View {
     let isEditing: Bool
     @Binding var returnAddress: String
     
+    @State var isNavigationEnabled = false
+    
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var modelContext
     
@@ -22,6 +24,9 @@ struct AddressBookCell: View {
             .listRowInsets(EdgeInsets())
             .listRowSeparator(.hidden)
             .padding(.vertical, 8)
+            .navigationDestination(isPresented: $isNavigationEnabled) {
+                EditAddressBookView(addressBookItem: address)
+            }
     }
     
     var label: some View {
@@ -126,12 +131,12 @@ struct AddressBookCell: View {
     }
     
     private func handleSelection() {
-        guard shouldReturnAddress else {
-            return
+        if shouldReturnAddress {
+            returnAddress = address.address
+            dismiss()
+        } else {
+            isNavigationEnabled = true
         }
-        
-        returnAddress = address.address
-        dismiss()
     }
 }
 

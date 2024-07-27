@@ -1,19 +1,15 @@
 //
-//  AddAddressBookView.swift
+//  EditAddressBookView.swift
 //  VultisigApp
 //
-//  Created by Amol Kumar on 2024-07-11.
+//  Created by Amol Kumar on 2024-07-27.
 //
 
 import SwiftUI
-import SwiftData
 import WalletCore
 
-struct AddAddressBookView: View {
-    let count: Int
-    
-    @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
-    @EnvironmentObject var homeViewModel: HomeViewModel
+struct EditAddressBookView: View {
+    let addressBookItem: AddressBookItem
     
     @State var title = ""
     @State var address = ""
@@ -24,7 +20,6 @@ struct AddAddressBookView: View {
     @State var showAlert = false
     
     @Environment(\.dismiss) var dismiss
-    @Environment(\.modelContext) var modelContext
     
     var body: some View {
         ZStack {
@@ -32,7 +27,7 @@ struct AddAddressBookView: View {
             view
         }
         .navigationBarBackButtonHidden(true)
-        .navigationTitle(NSLocalizedString("addAddress", comment: ""))
+        .navigationTitle(NSLocalizedString("editAddress", comment: ""))
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
@@ -79,7 +74,7 @@ struct AddAddressBookView: View {
     
     var button: some View {
         Button {
-            addAddress()
+            saveAddress()
         } label: {
             FilledButton(title: "saveAddress")
                 .padding(.bottom, 40)
@@ -95,19 +90,12 @@ struct AddAddressBookView: View {
     }
     
     private func setData() {
-        guard let vault = homeViewModel.selectedVault else {
-            return
-        }
-        
-        coinSelectionViewModel.setData(for: vault)
-        
-        if coin == nil {
-            let key = coinSelectionViewModel.groupedAssets.keys.sorted().first ?? ""
-            coin = coinSelectionViewModel.groupedAssets[key]?.first
-        }
+        title = addressBookItem.title
+        address = addressBookItem.address
+        coin = addressBookItem.coinMeta
     }
     
-    private func addAddress() {
+    private func saveAddress() {
         guard let coin else {
             return
         }
@@ -122,17 +110,11 @@ struct AddAddressBookView: View {
             return
         }
         
-        let data = AddressBookItem(
-            title: title,
-            address: address,
-            coinMeta: coin, 
-            order: count
-        )
+        addressBookItem.title = title
+        addressBookItem.address = address
+        addressBookItem.coinMeta = coin
         
-        DispatchQueue.main.asyncAfter(deadline: .now()) {
-            modelContext.insert(data)
-            dismiss()
-        }
+        dismiss()
     }
     
     private func validateAddress(coin: CoinMeta, address: String) -> Bool {
@@ -156,7 +138,5 @@ struct AddAddressBookView: View {
 }
 
 #Preview {
-    AddAddressBookView(count: 0)
-        .environmentObject(CoinSelectionViewModel())
-        .environmentObject(HomeViewModel())
+    EditAddressBookView(addressBookItem: AddressBookItem.example)
 }

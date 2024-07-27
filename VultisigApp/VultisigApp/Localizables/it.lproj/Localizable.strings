@@ -258,3 +258,5 @@
 "defaultChains" = "Catene predefinite";
 "search" = "Cerca";
 "vaultValue" = "Valore del caveau";
+"noSavedAddressesForChain" = "Nessun indirizzo salvato trovato per questa catena.";
+"editAddress" = "Modifica indirizzo";

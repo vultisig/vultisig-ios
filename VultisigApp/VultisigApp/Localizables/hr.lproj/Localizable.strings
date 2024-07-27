@@ -258,3 +258,5 @@
 "defaultChains" = "Zadani lanci";
 "search" = "Pretraži";
 "vaultValue" = "Vrijednost spremišta";
+"noSavedAddressesForChain" = "Nema spremljenih adresa za ovaj lanac.";
+"editAddress" = "Uredi adresu";
