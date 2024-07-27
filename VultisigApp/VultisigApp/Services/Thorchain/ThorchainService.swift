@@ -101,6 +101,7 @@ class ThorchainService: ThorchainSwapProvider {
     
     func getTHORChainChainID() async throws -> String  {
         if !network.isEmpty {
+            print("network id\(network)")
             return network
         }
         let (data, _) = try await URLSession.shared.data(from: Endpoint.thorchainNetworkInfo)
