@@ -67,35 +67,49 @@ struct AddressBookView: View {
         }
     }
     
-    var list: some View {
-        List {
-            ForEach(savedAddresses.filter({
-                coin == nil ||
-                (
-                    coin != nil &&
-                    $0.coinMeta.chain.chainType == coin?.chainType
-                )
-            }).sorted(by: {
-                $0.order < $1.order
-            }), id: \.id) { address in
-                AddressBookCell(
-                    address: address,
-                    shouldReturnAddress: shouldReturnAddress, 
-                    isEditing: isEditing,
-                    returnAddress: $returnAddress
-                )
-                .padding(.bottom, address.id == savedAddresses.last?.id ? 100 : 0)
-            }
-            .onMove(perform: isEditing ? move: nil)
-            .padding(.horizontal, 15)
-            .background(Color.backgroundBlue)
+    var emptyViewChain: some View {
+        VStack {
+            Spacer()
+            ErrorMessage(text: "noSavedAddressesForChain")
+            Spacer()
         }
-        .listStyle(PlainListStyle())
-        .buttonStyle(BorderlessButtonStyle())
-        .colorScheme(.dark)
-        .scrollContentBackground(.hidden)
-        .padding(.top, 30)
-        .background(Color.backgroundBlue.opacity(0.9))
+    }
+    
+    var list: some View {
+        let filteredAddress = savedAddresses.filter {
+            coin == nil || (coin != nil && $0.coinMeta.chain.chainType == coin?.chainType)
+        }
+        
+        return ZStack {
+            if filteredAddress.count > 0 {
+                List {
+                    ForEach(filteredAddress.sorted(by: {
+                        $0.order < $1.order
+                    }), id: \.id) { address in
+                        AddressBookCell(
+                            address: address,
+                            shouldReturnAddress: shouldReturnAddress,
+                            isEditing: isEditing,
+                            returnAddress: $returnAddress
+                        )
+                        .padding(.bottom, address.id == savedAddresses.last?.id ? 100 : 0)
+                    }
+                    .onMove(perform: isEditing ? move: nil)
+                    .padding(.horizontal, 15)
+                    .background(Color.backgroundBlue)
+                }
+                .listStyle(PlainListStyle())
+                .buttonStyle(BorderlessButtonStyle())
+                .colorScheme(.dark)
+                .scrollContentBackground(.hidden)
+                .padding(.top, 30)
+                .background(Color.backgroundBlue.opacity(0.9))
+            } else {
+                emptyViewChain
+            }
+        }
+        
+       
     }
     
     var navigationButton: some View {
