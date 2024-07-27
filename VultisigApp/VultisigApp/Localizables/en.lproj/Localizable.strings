@@ -283,3 +283,4 @@
 "search" = "Search";
 "vaultValue" = "Vault Value";
 "noSavedAddressesForChain" = "No Saved Addresses found for this chain.";
+"editAddress" = "Edit Address";
