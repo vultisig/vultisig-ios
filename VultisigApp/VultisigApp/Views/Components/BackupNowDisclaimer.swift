@@ -35,11 +35,11 @@ struct BackupNowDisclaimer: View {
         }
         .frame(height: 56)
         .padding(.horizontal, 12)
-        .background(Color.backupNowRed.opacity(0.3))
+        .background(Color.alertRed.opacity(0.3))
         .cornerRadius(12)
         .overlay (
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.backupNowRed, lineWidth: 1)
+                .stroke(Color.alertRed, lineWidth: 1)
         )
     }
     
@@ -54,7 +54,7 @@ struct BackupNowDisclaimer: View {
     var icon: some View {
         Image(systemName: "exclamationmark.triangle")
             .font(.body24MontserratMedium)
-            .foregroundColor(.backupNowRed)
+            .foregroundColor(.alertRed)
     }
     
     var title: some View {
