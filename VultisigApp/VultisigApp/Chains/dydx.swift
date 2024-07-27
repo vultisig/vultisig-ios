@@ -21,7 +21,7 @@ class DydxHelper {
     static let DydxGasLimit:UInt64 = 2500000000000000
     
     func getSwapPreSignedInputData(keysignPayload: KeysignPayload,signingInput: CosmosSigningInput) -> Result<Data,Error> {
-        guard case .Cosmos(let accountNumber, let sequence,let gas, let isDeposit) = keysignPayload.chainSpecific else {
+        guard case .Cosmos(let accountNumber, let sequence,let gas, _) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get account number and sequence"))
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
@@ -120,7 +120,7 @@ class DydxHelper {
                 }]
             }
         }
-
+        
         return try input.serializedData()
     }
     
