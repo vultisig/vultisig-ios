@@ -92,7 +92,6 @@ struct AddressBookView: View {
                             isEditing: isEditing,
                             returnAddress: $returnAddress
                         )
-                        .padding(.bottom, address.id == savedAddresses.last?.id ? 100 : 0)
                     }
                     .onMove(perform: isEditing ? move: nil)
                     .padding(.horizontal, 15)
@@ -103,6 +102,7 @@ struct AddressBookView: View {
                 .colorScheme(.dark)
                 .scrollContentBackground(.hidden)
                 .padding(.top, 30)
+                .padding(.bottom, isEditing ? 100 : 0)
                 .background(Color.backgroundBlue.opacity(0.9))
             } else {
                 emptyViewChain

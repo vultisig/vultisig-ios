@@ -17,9 +17,11 @@ struct AddAddressBookView: View {
     
     @State var title = ""
     @State var address = ""
-    @State var showAlert = false
-    @State var showAlertInvalidAddress = false
     @State var coin: CoinMeta? = nil
+    
+    @State var alertTitle = ""
+    @State var alertMessage = ""
+    @State var showAlert = false
     
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var modelContext
@@ -49,9 +51,6 @@ struct AddAddressBookView: View {
         .padding(.horizontal, 16)
         .alert(isPresented: $showAlert) {
             alert
-        }
-        .alert(isPresented: $showAlertInvalidAddress) {
-            alertInvalidAddress
         }
     }
     
@@ -89,16 +88,8 @@ struct AddAddressBookView: View {
     
     var alert: Alert {
         Alert(
-            title: Text(NSLocalizedString("emptyField", comment: "")),
-            message: Text(NSLocalizedString("checkEmptyField", comment: "")),
-            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
-        )
-    }
-    
-    var alertInvalidAddress: Alert {
-        Alert(
-            title: Text(NSLocalizedString("error", comment: "")),
-            message: Text(NSLocalizedString("invalidAddress", comment: "")),
+            title: Text(NSLocalizedString(alertTitle, comment: "")),
+            message: Text(NSLocalizedString(alertMessage, comment: "")),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }
@@ -152,11 +143,15 @@ struct AddAddressBookView: View {
     }
     
     private func toggleAlert() {
+        alertTitle = "emptyField"
+        alertMessage = "checkEmptyField"
         showAlert = true
     }
     
     private func toggleAlertInvalidAddress() {
-        showAlertInvalidAddress = true
+        alertTitle = "error"
+        alertMessage = "invalidAddress"
+        showAlert = true
     }
 }
 
