@@ -258,3 +258,5 @@
 "defaultChains" = "Standardketten";
 "search" = "Suche";
 "vaultValue" = "Tresorwert";
+"noSavedAddressesForChain" = "Keine gespeicherten Adressen für diese Kette gefunden.";
+"editAddress" = "Adresse bearbeiten";
