@@ -97,7 +97,7 @@ struct AddAddressBookView: View {
     
     var alertInvalidAddress: Alert {
         Alert(
-            title: Text(""),
+            title: Text(NSLocalizedString("error", comment: "")),
             message: Text(NSLocalizedString("invalidAddress", comment: "")),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
