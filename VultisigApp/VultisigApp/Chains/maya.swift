@@ -14,7 +14,7 @@ enum MayaChainHelper {
     static let MayaChainGas: UInt64 = 2000000000
     
     static func getSwapPreSignedInputData(keysignPayload: KeysignPayload, signingInput: CosmosSigningInput) -> Result<Data, Error> {
-        guard case .MayaChain(let accountNumber, let sequence, let isDeposit) = keysignPayload.chainSpecific else {
+        guard case .MayaChain(let accountNumber, let sequence, _) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get account number and sequence"))
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
@@ -43,7 +43,7 @@ enum MayaChainHelper {
         guard let fromAddr = AnyAddress(string: keysignPayload.coin.address, coin: .thorchain, hrp: "maya") else {
             throw HelperError.runtimeError("\(keysignPayload.coin.address) is invalid")
         }
-        guard case .MayaChain(let accountNumber, let sequence, var isDeposit) = keysignPayload.chainSpecific else {
+        guard case .MayaChain(let accountNumber, let sequence, let isDeposit) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number and sequence")
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
@@ -52,12 +52,6 @@ enum MayaChainHelper {
         
         var mayaChainCoin = TW_Cosmos_Proto_THORChainCoin()
         var message = [CosmosMessage()]
-        
-        if let memo = keysignPayload.memo, !memo.isEmpty {
-            if DepositStore.PREFIXES.contains(where: { memo.hasPrefix($0) }) {
-                isDeposit = true
-            }
-        }
         
         if isDeposit {
             mayaChainCoin = TW_Cosmos_Proto_THORChainCoin.with {
@@ -112,7 +106,7 @@ enum MayaChainHelper {
                 $0.gas = MayaChainGas
             }
         }
-
+        
         return try input.serializedData()
     }
     
