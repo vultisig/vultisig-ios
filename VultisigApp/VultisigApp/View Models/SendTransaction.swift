@@ -5,6 +5,7 @@ import UniformTypeIdentifiers
 import WalletCore
 import BigInt
 import Combine
+import VultisigCommonData
 
 #if os(iOS)
 import CodeScanner
@@ -21,6 +22,7 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var memoFunctionDictionary: ThreadSafeDictionary<String, String> = ThreadSafeDictionary()
 
     @Published var coin: Coin = .example
+    @Published var transactionType: VSTransactionType = .unspecified
 
     var isAmountExceeded: Bool {
         

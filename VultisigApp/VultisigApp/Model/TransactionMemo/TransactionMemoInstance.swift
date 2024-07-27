@@ -8,6 +8,7 @@
 import SwiftUI
 import Foundation
 import Combine
+import VultisigCommonData
 
 enum TransactionMemoInstance {
     case bond(TransactionMemoBond)
@@ -73,6 +74,15 @@ enum TransactionMemoInstance {
             return memo.toDictionary()
         case .vote(let memo):
             return memo.toDictionary()
+        }
+    }
+    
+    func getTransactionType() -> VSTransactionType {
+        switch self {
+        case .vote(let memo):
+            return VSTransactionType.vote
+        default:
+            return .unspecified
         }
     }
     

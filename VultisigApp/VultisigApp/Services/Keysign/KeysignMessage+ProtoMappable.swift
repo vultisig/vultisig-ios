@@ -207,25 +207,25 @@ extension BlockChainSpecific {
                 nonce: value.nonce,
                 gasLimit: BigInt(stringLiteral: value.gasLimit)
             )
-        case .thorchainSpecific(let value, let isDeposit):
+        case .thorchainSpecific(let value):
             self = .THORChain(
                 accountNumber: value.accountNumber,
                 sequence: value.sequence,
                 fee: value.fee,
-                isDeposit: isDeposit
+                isDeposit: value.isDeposit
             )
-        case .mayaSpecific(let value, let isDeposit):
+        case .mayaSpecific(let value):
             self = .MayaChain(
                 accountNumber: value.accountNumber,
                 sequence: value.sequence,
-                isDeposit: isDeposit
+                isDeposit: value.isDeposit
             )
-        case .cosmosSpecific(let value, let isDeposit):
+        case .cosmosSpecific(let value):
             self = .Cosmos(
                 accountNumber: value.accountNumber,
                 sequence: value.sequence,
                 gas: value.gas,
-                isDeposit: isDeposit
+                transactionType: value.transactionType.rawValue
             )
         case .solanaSpecific(let value):
             self = .Solana(
@@ -278,12 +278,12 @@ extension BlockChainSpecific {
                 $0.sequence = sequence
                 $0.isDeposit = isDeposit
             })
-        case .Cosmos(let accountNumber, let sequence, let gas, let isDeposit):
+        case .Cosmos(let accountNumber, let sequence, let gas, let transactionType):
             return .cosmosSpecific(.with {
                 $0.accountNumber = accountNumber
                 $0.sequence = sequence
                 $0.gas = gas
-                $0.isDeposit = isDeposit
+                $0.transactionType = VSTransactionType(rawValue: transactionType) ?? .unspecified
             })
         case .Solana(let recentBlockHash, let priorityFee, let fromTokenAssociatedAddress, let toTokenAssociatedAddress):
             return .solanaSpecific(.with {
