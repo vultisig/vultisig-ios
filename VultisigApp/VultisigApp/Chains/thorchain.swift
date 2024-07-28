@@ -10,7 +10,7 @@ import WalletCore
 enum THORChainHelper {
 
     static func getSwapPreSignedInputData(keysignPayload: KeysignPayload, signingInput: CosmosSigningInput) throws -> Data {
-        guard case .THORChain(let accountNumber, let sequence, _, let isDeposit) = keysignPayload.chainSpecific else {
+        guard case .THORChain(let accountNumber, let sequence, _, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number, sequence, or fee")
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
