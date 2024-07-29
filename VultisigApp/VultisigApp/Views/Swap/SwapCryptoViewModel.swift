@@ -201,7 +201,9 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             let chainSpecific = try await blockchainService.fetchSpecific(
                 for: tx.fromCoin,
                 action: .swap,
-                sendMaxAmount: false
+                sendMaxAmount: false,
+                isDeposit: false,
+                transactionType: .unspecified
             )
 
             let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
@@ -386,7 +388,7 @@ private extension SwapCryptoViewModel {
         tx.thorchainFee = .zero
 
         do {
-            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin, action: .swap, sendMaxAmount: false)
+            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin, action: .swap, sendMaxAmount: false, isDeposit: false, transactionType: .unspecified)
 
             tx.thorchainFee = try await thorchainFee(for: chainSpecific, tx: tx, vault: vault)
             tx.gas = chainSpecific.gas

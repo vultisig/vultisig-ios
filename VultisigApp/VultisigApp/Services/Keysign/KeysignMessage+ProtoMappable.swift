@@ -211,18 +211,21 @@ extension BlockChainSpecific {
             self = .THORChain(
                 accountNumber: value.accountNumber,
                 sequence: value.sequence,
-                fee: value.fee
+                fee: value.fee,
+                isDeposit: value.isDeposit
             )
         case .mayaSpecific(let value):
             self = .MayaChain(
                 accountNumber: value.accountNumber,
-                sequence: value.sequence
+                sequence: value.sequence,
+                isDeposit: value.isDeposit
             )
         case .cosmosSpecific(let value):
             self = .Cosmos(
                 accountNumber: value.accountNumber,
                 sequence: value.sequence,
-                gas: value.gas
+                gas: value.gas,
+                transactionType: value.transactionType.rawValue
             )
         case .solanaSpecific(let value):
             self = .Solana(
@@ -262,22 +265,25 @@ extension BlockChainSpecific {
                 $0.nonce = nonce
                 $0.gasLimit = String(gasLimit)
             })
-        case .THORChain(let accountNumber, let sequence, let fee):
+        case .THORChain(let accountNumber, let sequence, let fee, let isDeposit):
             return .thorchainSpecific(.with {
                 $0.accountNumber = accountNumber
                 $0.sequence = sequence
                 $0.fee = fee
+                $0.isDeposit = isDeposit
             })
-        case .MayaChain(let accountNumber, let sequence):
+        case .MayaChain(let accountNumber, let sequence, let isDeposit):
             return .mayaSpecific(.with {
                 $0.accountNumber = accountNumber
                 $0.sequence = sequence
+                $0.isDeposit = isDeposit
             })
-        case .Cosmos(let accountNumber, let sequence, let gas):
+        case .Cosmos(let accountNumber, let sequence, let gas, let transactionType):
             return .cosmosSpecific(.with {
                 $0.accountNumber = accountNumber
                 $0.sequence = sequence
                 $0.gas = gas
+                $0.transactionType = VSTransactionType(rawValue: transactionType) ?? .unspecified
             })
         case .Solana(let recentBlockHash, let priorityFee, let fromTokenAssociatedAddress, let toTokenAssociatedAddress):
             return .solanaSpecific(.with {

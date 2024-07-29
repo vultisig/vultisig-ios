@@ -42,7 +42,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     
     func loadGasInfoForSending(tx: SendTransaction) async{
         do {
-            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: false)
+            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: false, isDeposit: tx.isDeposit, transactionType: tx.transactionType)
             tx.gas = chainSpecific.gas.description
         } catch {
             print("error fetching data: \(error.localizedDescription)")
@@ -66,7 +66,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             Task {
                 do {
                     if tx.coin.isNativeToken {
-                        let evm = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: true)
+                        let evm = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: true, isDeposit: tx.isDeposit, transactionType: tx.transactionType)
                         let totalFeeWei = evm.fee
                         tx.amount = "\(tx.coin.getMaxValue(totalFeeWei))" // the decimals must be truncaded otherwise the give us precisions errors
                         setPercentageAmount(tx: tx, for: percentage)
@@ -260,7 +260,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         
         if !tx.coin.isNativeToken {
             do {
-                let evmToken = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: tx.sendMaxAmount)
+                let evmToken = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: tx.sendMaxAmount, isDeposit: tx.isDeposit, transactionType: tx.transactionType)
                 let (hasEnoughFees, feeErrorMsg) = await tx.hasEnoughNativeTokensToPayTheFees(specific: evmToken)
                 if !hasEnoughFees {
                     errorMessage = feeErrorMsg
