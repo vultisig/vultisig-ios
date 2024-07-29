@@ -312,6 +312,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     
     func handleBackTap() {
         currentIndex-=1
+        currentTitle = titles[currentIndex-1]
     }
     
     func convertToFiat(amount: String, coin: Coin, tx: SwapTransaction) async -> String {
