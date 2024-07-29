@@ -92,7 +92,7 @@ class UTXOChainsHelper {
             }
             input.utxo.append(utxo)
         }
-       
+        
         let plan: BitcoinTransactionPlan = AnySigner.plan(input: input, coin: coin)
         input.plan = plan
         return try input.serializedData()
@@ -176,18 +176,12 @@ class UTXOChainsHelper {
         return plan
     }
     
-    func getSignedTransaction(
-        keysignPayload: KeysignPayload,
-        signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
-    {
+    func getSignedTransaction(keysignPayload: KeysignPayload, signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
         let inputData = try getBitcoinPreSigningInputData(keysignPayload: keysignPayload)
         return try getSignedTransaction(inputData: inputData, signatures: signatures)
     }
     
-    func getSignedTransaction(
-        inputData: Data,
-        signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
-    {
+    func getSignedTransaction(inputData: Data, signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult {
         let bitcoinPubKey = getDerivedPubKey()
         guard let pubkeyData = Data(hexString: bitcoinPubKey),
               let publicKey = PublicKey(data: pubkeyData, type: .secp256k1)
