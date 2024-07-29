@@ -9,13 +9,13 @@ import Foundation
 import WalletCore
 
 struct CoinFactory {
-
+    
     private init() { }
-
+    
     static func create(asset: CoinMeta, vault: Vault) throws -> Coin {
         let publicKey = try publicKey(asset: asset, vault: vault)
-
-        let address: String
+        
+        var address: String
         switch asset.chain {
         case .mayaChain:
             let anyAddress = AnyAddress(publicKey: publicKey, coin: .thorchain, hrp: "maya")
@@ -23,16 +23,20 @@ struct CoinFactory {
         default:
             address = asset.coinType.deriveAddressFromPublicKey(publicKey: publicKey)
         }
-
+        
+        if asset.chain == .bitcoinCash {
+            address = address.replacingOccurrences(of: "bitcoincash:", with: "")
+        }
+        
         return Coin(asset: asset, address: address, hexPublicKey: publicKey.data.hexString)
     }
 }
 
 private extension CoinFactory {
-
+    
     enum Errors: Error, LocalizedError {
         case invalidPublicKey(pubKey: String)
-
+        
         var errorDescription: String? {
             switch self {
             case .invalidPublicKey(let pubKey):
@@ -40,17 +44,17 @@ private extension CoinFactory {
             }
         }
     }
-
+    
     static func publicKey(asset: CoinMeta, vault: Vault) throws -> PublicKey {
         switch asset.chain {
         case .solana, .sui, .polkadot:
-            guard 
+            guard
                 let pubKeyData = Data(hexString: vault.pubKeyEdDSA),
                 let publicKey = PublicKey(data: pubKeyData, type: .ed25519) else {
                 throw Errors.invalidPublicKey(pubKey: vault.pubKeyEdDSA)
             }
             return publicKey
-
+            
         case .arbitrum, .avalanche, .base, .bitcoin, .bitcoinCash, .blast, .bscChain, .cronosChain, .dash, .dogecoin, .dydx, .ethereum, .gaiaChain, .kujira, .litecoin, .mayaChain, .optimism, .polygon, .thorChain, .zksync:
             let derivedKey = PublicKeyHelper.getDerivedPubKey(
                 hexPubKey: vault.pubKeyECDSA,
