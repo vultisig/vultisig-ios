@@ -37,13 +37,13 @@ class SendCryptoVerifyViewModel: ObservableObject {
         return tx.amountInRaw
     }
     
-    func blowfishEVMTransactionScan(tx: SendTransaction) async throws -> BlowfishResponse? {
+    func blowfishEVMTransactionScan(tx: SendTransaction) async throws -> BlowfishEvmResponse? {
         return try await BlowfishService.shared.blowfishEVMTransactionScan(
             fromAddress: tx.fromAddress, toAddress: tx.toAddress, amountInRaw: tx.amountInRaw, memo: tx.memo, chain: tx.coin.chain
         )
     }
     
-    func blowfishSolanaTransactionScan(tx: SendTransaction, vault: Vault) async -> KeysignPayload? {
+    func blowfishSolanaTransactionScan(tx: SendTransaction, vault: Vault) async -> BlowfishEvmResponse? {
         
         var keysignPayload: KeysignPayload?
         
@@ -64,7 +64,11 @@ class SendCryptoVerifyViewModel: ObservableObject {
             }
             
             
-            print("RAW: \(zeroSignedTransaction)")
+            return try await BlowfishService.shared.blowfishSolanaTransactionScan(
+                fromAddress: tx.fromAddress, unsignedTransaction: zeroSignedTransaction
+            )
+            
+            // print("RAW: \(zeroSignedTransaction)")
             
             
         } catch {
@@ -84,7 +88,6 @@ class SendCryptoVerifyViewModel: ObservableObject {
             isLoading = false
             return nil
         }
-        return keysignPayload
     }
     
     func validateForm(tx: SendTransaction, vault: Vault) async -> KeysignPayload? {

@@ -259,7 +259,7 @@ class JoinKeysignViewModel: ObservableObject {
         manageQrCodeStates()
     }
     
-    func blowfishEVMTransactionScan() async throws -> BlowfishResponse? {
+    func blowfishEVMTransactionScan() async throws -> BlowfishEvmResponse? {
         
         guard let payload = keysignPayload else {
             return nil
@@ -274,7 +274,7 @@ class JoinKeysignViewModel: ObservableObject {
         )
     }
     
-    func blowfishSolanaTransactionScan() async throws -> BlowfishResponse? {
+    func blowfishSolanaTransactionScan() async throws -> BlowfishEvmResponse? {
         
         guard let payload = keysignPayload else {
             return nil

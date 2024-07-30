@@ -10,7 +10,7 @@ import SwiftUI
 struct KeysignMessageConfirmView: View {
     @ObservedObject var viewModel: JoinKeysignViewModel
     
-    @State var blowfishResponse: BlowfishResponse? = nil
+    @State var blowfishResponse: BlowfishEvmResponse? = nil
     @State var isLoading = true
     
     var body: some View {

@@ -5,7 +5,7 @@
 //  Created by Enrique Souza Soares on 22/07/24.
 //
 
-struct BlowfishResponse: Codable {
+struct BlowfishEvmResponse: Codable {
     let requestId: String
     let action: String
     let warnings: [BlowfishWarning]
@@ -168,6 +168,6 @@ struct BlowfishResponse: Codable {
     }
 }
 
-extension BlowfishResponse.BlowfishWarning: Identifiable {
+extension BlowfishEvmResponse.BlowfishWarning: Identifiable {
     public var id: String { self.message } // Assuming `message` is a unique identifier
 }

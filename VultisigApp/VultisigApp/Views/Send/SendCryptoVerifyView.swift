@@ -15,7 +15,7 @@ struct SendCryptoVerifyView: View {
     let vault: Vault
     
     @State var isLoading = true
-    @State var blowfishResponse: BlowfishResponse? = nil
+    @State var blowfishResponse: BlowfishEvmResponse? = nil
     
     var body: some View {
         ZStack {
@@ -48,12 +48,12 @@ struct SendCryptoVerifyView: View {
                 
                 isLoading = true
                 Task{
-                        let response = await sendCryptoVerifyViewModel.blowfishSolanaTransactionScan(
-                            tx: tx,
-                            vault: vault
-                        )
-
-                        isLoading = false
+                    blowfishResponse = await sendCryptoVerifyViewModel.blowfishSolanaTransactionScan(
+                        tx: tx,
+                        vault: vault
+                    )
+                    
+                    isLoading = false
                     
                 }
                 
