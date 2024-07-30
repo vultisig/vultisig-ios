@@ -197,12 +197,14 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             guard let quote = tx.quote else {
                 throw Errors.unexpectedError
             }
-            
+
+            let isDeposit = tx.fromCoin.chain == .mayaChain
+
             let chainSpecific = try await blockchainService.fetchSpecific(
                 for: tx.fromCoin,
                 action: .swap,
                 sendMaxAmount: false,
-                isDeposit: false,
+                isDeposit: isDeposit,
                 transactionType: .unspecified
             )
 
