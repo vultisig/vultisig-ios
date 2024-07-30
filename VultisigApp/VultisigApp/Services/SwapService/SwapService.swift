@@ -68,12 +68,15 @@ private extension SwapService {
         isAffiliate: Bool
     ) async throws -> SwapQuote {
         do {
+            /// https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
             let normalizedAmount = amount * fromCoin.thorswapMultiplier
+            
             let quote = try await provider.fetchSwapQuotes(
                 address: toCoin.address,
                 fromAsset: fromCoin.swapAsset,
                 toAsset: toCoin.swapAsset,
-                amount: normalizedAmount.description, // https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
+                amount: normalizedAmount.description,
+                interval: fromCoin.streamingInterval,
                 isAffiliate: isAffiliate
             )
 

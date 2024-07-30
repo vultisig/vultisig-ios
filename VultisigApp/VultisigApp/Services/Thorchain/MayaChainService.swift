@@ -41,7 +41,7 @@ class MayachainService: ThorchainSwapProvider {
         return req
     }
     
-    func fetchSwapQuotes(address: String, fromAsset: String, toAsset: String, amount: String, isAffiliate: Bool) async throws -> ThorchainSwapQuote {
+    func fetchSwapQuotes(address: String, fromAsset: String, toAsset: String, amount: String, interval: Int, isAffiliate: Bool) async throws -> ThorchainSwapQuote {
 
         let url = Endpoint.fetchSwapQuoteThorchain(
             chain: .maya,
@@ -49,7 +49,7 @@ class MayachainService: ThorchainSwapProvider {
             fromAsset: fromAsset,
             toAsset: toAsset,
             amount: amount,
-            interval: "5",
+            interval: String(interval),
             isAffiliate: isAffiliate
         )
 
