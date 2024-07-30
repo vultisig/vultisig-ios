@@ -74,7 +74,6 @@ private extension SwapService {
                 fromAsset: fromCoin.swapAsset,
                 toAsset: toCoin.swapAsset,
                 amount: normalizedAmount.description, // https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
-                interval: "1",
                 isAffiliate: isAffiliate
             )
 
