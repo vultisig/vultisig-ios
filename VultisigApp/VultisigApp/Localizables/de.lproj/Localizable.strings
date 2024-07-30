@@ -255,3 +255,8 @@
 "numberOfPairedDevicesMOfN" = "Anzahl der paarweise verbundenen Geräte %d von N";
 "invalidAddress" = "Diese Adresse ist für diese Kette ungültig.";
 "scannedByBlowfish" = "Transaktion von Blowfish verifiziert.";
+"defaultChains" = "Standardketten";
+"search" = "Suche";
+"vaultValue" = "Tresorwert";
+"noSavedAddressesForChain" = "Keine gespeicherten Adressen für diese Kette gefunden.";
+"editAddress" = "Adresse bearbeiten";

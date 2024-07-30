@@ -42,7 +42,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     
     func loadGasInfoForSending(tx: SendTransaction) async{
         do {
-            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: false)
+            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: false, isDeposit: tx.isDeposit, transactionType: tx.transactionType)
             tx.gas = chainSpecific.gas.description
         } catch {
             print("error fetching data: \(error.localizedDescription)")
@@ -57,6 +57,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         case .bitcoin,.dogecoin,.litecoin,.bitcoinCash,.dash:
             tx.sendMaxAmount = percentage == 100 // Never set this to true if the percentage is not 100, otherwise it will wipe your wallet.
             tx.amount = utxo.blockchairData.get(key)?.address?.balanceInBTC ?? "0.0"
+            setPercentageAmount(tx: tx, for: percentage)
             Task{
                 await convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: true)
                 isLoading = false
@@ -65,17 +66,17 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             Task {
                 do {
                     if tx.coin.isNativeToken {
-                        let evm = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: true)
+                        let evm = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: true, isDeposit: tx.isDeposit, transactionType: tx.transactionType)
                         let totalFeeWei = evm.fee
                         tx.amount = "\(tx.coin.getMaxValue(totalFeeWei))" // the decimals must be truncaded otherwise the give us precisions errors
-                        
+                        setPercentageAmount(tx: tx, for: percentage)
                     } else {
                         tx.amount = "\(tx.coin.getMaxValue(0))"
-                        
+                        setPercentageAmount(tx: tx, for: percentage)
                     }
                 } catch {
                     tx.amount = "\(tx.coin.getMaxValue(0))"
-                    
+                    setPercentageAmount(tx: tx, for: percentage)
                     print("Failed to get EVM balance, error: \(error.localizedDescription)")
                 }
                 
@@ -91,14 +92,15 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                         tx.coin.rawBalance = rawBalance
                         tx.coin.priceRate = priceRate
                         tx.amount = "\(tx.coin.getMaxValue(SolanaHelper.defaultFeeInLamports))"
-                        
+                        setPercentageAmount(tx: tx, for: percentage)
                     } else {
                         
                         tx.amount = "\(tx.coin.getMaxValue(0))"
-                        
+                        setPercentageAmount(tx: tx, for: percentage)
                     }
                 } catch {
                     tx.amount = "\(tx.coin.getMaxValue(0))"
+                    setPercentageAmount(tx: tx, for: percentage)
                     print("Failed to get SOLANA balance, error: \(error.localizedDescription)")
                 }
                 
@@ -112,7 +114,13 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                     tx.coin.rawBalance = rawBalance
                     tx.coin.priceRate = priceRate
                     
-                    tx.amount = "\(tx.coin.getMaxValue(tx.coin.feeDefault.toBigInt()))"
+                    var gas = BigInt.zero
+                    if percentage == 100 {
+                        gas = tx.coin.feeDefault.toBigInt()
+                    }
+                    
+                    tx.amount = "\(tx.coin.getMaxValue(gas))"
+                    setPercentageAmount(tx: tx, for: percentage)
                     
                     await convertToFiat(newValue: tx.amount, tx: tx)
                 } catch {
@@ -124,14 +132,30 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         case .kujira, .gaiaChain, .mayaChain, .thorChain, .polkadot, .dydx:
             Task {
                 await BalanceService.shared.updateBalance(for: tx.coin)
-                tx.amount = "\(tx.coin.getMaxValue(BigInt(tx.gasDecimal.description,radix:10) ?? 0 ))"
+                
+                var gas = BigInt.zero
+                
+                if percentage == 100 {
+                    gas = BigInt(tx.gasDecimal.description,radix:10) ?? 0
+                }
+                
+                tx.amount = "\(tx.coin.getMaxValue(gas))"
+                setPercentageAmount(tx: tx, for: percentage)
                 
                 await convertToFiat(newValue: tx.amount, tx: tx)
+                
                 isLoading = false
             }
         }
     }
-        
+    
+    private func setPercentageAmount(tx: SendTransaction, for percentage: Double) {
+        let max = tx.amount
+        let multiplier = (Decimal(percentage) / 100)
+        let amountDecimal = (Decimal(string: max) ?? 0) * multiplier
+        tx.amount = "\(amountDecimal)"
+    }
+    
     private func getPriceRate(tx: SendTransaction) async -> Decimal {
         do {
             var priceRateFiat = Decimal(string: tx.coin.priceRate.description) ?? .zero
@@ -236,7 +260,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         
         if !tx.coin.isNativeToken {
             do {
-                let evmToken = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: tx.sendMaxAmount)
+                let evmToken = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: tx.sendMaxAmount, isDeposit: tx.isDeposit, transactionType: tx.transactionType)
                 let (hasEnoughFees, feeErrorMsg) = await tx.hasEnoughNativeTokensToPayTheFees(specific: evmToken)
                 if !hasEnoughFees {
                     errorMessage = feeErrorMsg
@@ -313,5 +337,6 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     
     func handleBackTap() {
         currentIndex-=1
+        currentTitle = titles[currentIndex-1]
     }
 }

@@ -256,3 +256,8 @@
 "numberOfPairedDevicesMOfN" = "Número de dispositivos emparelhados %d de N";
 "invalidAddress" = "Este endereço é inválido para essa cadeia.";
 "scannedByBlowfish" = "Transação verificada pelo Blowfish.";
+"defaultChains" = "Cadeias padrão";
+"search" = "Pesquisar";
+"vaultValue" = "Valor do cofre";
+"noSavedAddressesForChain" = "Nenhum endereço salvo encontrado para esta cadeia.";
+"editAddress" = "Editar endereço";

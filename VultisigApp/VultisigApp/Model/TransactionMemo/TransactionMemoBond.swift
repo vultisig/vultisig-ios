@@ -91,14 +91,6 @@ class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
     
     func getView() -> AnyView {
         AnyView(VStack {
-            StyledFloatingPointField(placeholder: "Amount", value: Binding(
-                get: { self.amount },
-                set: { self.amount = $0 }
-            ), format: .number, isValid: Binding(
-                get: { self.amountValid },
-                set: { self.amountValid = $0 }
-            ))
-
             TransactionMemoAddressTextField(
                 memo: self,
                 addressKey: "nodeAddress",
@@ -130,6 +122,13 @@ class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
                 ),
                 isOptional: true
             )
+            StyledFloatingPointField(placeholder: "Amount", value: Binding(
+                get: { self.amount },
+                set: { self.amount = $0 }
+            ), format: .number, isValid: Binding(
+                get: { self.amountValid },
+                set: { self.amountValid = $0 }
+            ))
         })
     }
 }

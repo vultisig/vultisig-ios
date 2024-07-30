@@ -445,7 +445,10 @@ enum Utils {
         return Image(uiImage: image)
             .interpolation(.none)
 #elseif os(macOS)
-        if let outputImage = filter.outputImage {
+        let scale: CGFloat = 100
+        let transform = CGAffineTransform(scaleX: scale, y: scale)
+        
+        if let outputImage = filter.outputImage?.samplingNearest().transformed(by: transform) {
             if let cgImage = context.createCGImage(outputImage, from: outputImage.extent) {
                 return Image(nsImage: NSImage(cgImage: cgImage, size: CGSize(width: 1024, height: 1024)))
                     .interpolation(.none)

@@ -100,7 +100,8 @@ struct SwapCryptoView: View {
                     keysignPayload: keysignPayload,
                     transferViewModel: swapViewModel,
                     keysignView: $keysignView, 
-                    shareSheetViewModel: shareSheetViewModel
+                    shareSheetViewModel: shareSheetViewModel,
+                    previewTitle: "swap"
                 )
             } else {
                 SendCryptoVaultErrorView()
