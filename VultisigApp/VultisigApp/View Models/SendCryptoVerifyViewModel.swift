@@ -43,6 +43,50 @@ class SendCryptoVerifyViewModel: ObservableObject {
         )
     }
     
+    func blowfishSolanaTransactionScan(tx: SendTransaction, vault: Vault) async -> KeysignPayload? {
+        
+        var keysignPayload: KeysignPayload?
+        
+        do {
+            let chainSpecific = try await blockChainService.fetchSpecific(for: tx, sendMaxAmount: tx.sendMaxAmount, isDeposit: tx.isDeposit, transactionType: tx.transactionType)
+            let keysignPayloadFactory = KeysignPayloadFactory()
+            keysignPayload = try await keysignPayloadFactory.buildTransfer(coin: tx.coin,
+                                                                           toAddress: tx.toAddress,
+                                                                           amount: amount(for:tx.coin,tx:tx),
+                                                                           memo: tx.memo,
+                                                                           chainSpecific: chainSpecific, vault: vault)
+            
+            
+            var zeroSignedTransaction: String = .empty
+            if let payload = keysignPayload {
+                zeroSignedTransaction = try SolanaHelper.getZeroSignedTransaction(vaultHexPubKey: vault.pubKeyEdDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: payload)
+                
+            }
+            
+            
+            print("RAW: \(zeroSignedTransaction)")
+            
+            
+        } catch {
+            switch error {
+            case KeysignPayloadFactory.Errors.notEnoughBalanceError:
+                self.errorMessage = "notEnoughBalanceError"
+            case KeysignPayloadFactory.Errors.failToGetSequenceNo:
+                self.errorMessage = "failToGetSequenceNo"
+            case KeysignPayloadFactory.Errors.failToGetAccountNumber:
+                self.errorMessage = "failToGetAccountNumber"
+            case KeysignPayloadFactory.Errors.failToGetRecentBlockHash:
+                self.errorMessage = "failToGetRecentBlockHash"
+            default:
+                self.errorMessage = error.localizedDescription
+            }
+            showAlert = true
+            isLoading = false
+            return nil
+        }
+        return keysignPayload
+    }
+    
     func validateForm(tx: SendTransaction, vault: Vault) async -> KeysignPayload? {
         
         if !isValidForm {

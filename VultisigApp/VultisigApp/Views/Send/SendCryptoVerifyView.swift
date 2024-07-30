@@ -44,6 +44,19 @@ struct SendCryptoVerifyView: View {
                         isLoading = false
                     }
                 }
+            } else if (tx.coin.chainType == .Solana) {
+                
+                isLoading = true
+                Task{
+                        let response = await sendCryptoVerifyViewModel.blowfishSolanaTransactionScan(
+                            tx: tx,
+                            vault: vault
+                        )
+
+                        isLoading = false
+                    
+                }
+                
             } else {
                 isLoading = false
             }

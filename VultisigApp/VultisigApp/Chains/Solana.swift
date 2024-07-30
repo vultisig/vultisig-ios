@@ -112,6 +112,42 @@ enum SolanaHelper {
         return [preSigningOutput.data.hexString]
     }
     
+    static func getZeroSignedTransaction(vaultHexPubKey: String,
+                                         vaultHexChainCode: String,
+                                         keysignPayload: KeysignPayload) throws -> String
+    {
+        guard let pubkeyData = Data(hexString: vaultHexPubKey) else {
+            throw HelperError.runtimeError("public key \(vaultHexPubKey) is invalid")
+        }
+        
+        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
+        let allSignatures = DataVector()
+        let publicKeys = DataVector()
+        
+        // Compile with zero signature
+        let signature = Data(hexString: "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
+        
+        guard let sig = signature else {
+            return .empty
+        }
+        
+        allSignatures.add(data: signature ?? Data())
+        publicKeys.add(data: pubkeyData)
+        
+        print(inputData.debugDescription)
+        
+        let compileWithSignature = TransactionCompiler.compileWithSignaturesAndPubKeyType(coinType: .solana,
+                                                                                          txInputData: inputData,
+                                                                                          signatures: allSignatures,
+                                                                                          publicKeys: publicKeys,
+                                                                                          pubKeyType: .ed25519)
+        
+        let output = try SolanaSigningOutput(serializedData: compileWithSignature)
+        print("getZeroSignedTransaction > ERROR MESSAGE: \(output.errorMessage)")
+
+        return output.encoded
+    }
+    
     static func getSignedTransaction(vaultHexPubKey: String,
                                      vaultHexChainCode: String,
                                      keysignPayload: KeysignPayload,
