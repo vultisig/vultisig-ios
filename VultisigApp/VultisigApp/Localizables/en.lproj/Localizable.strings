@@ -282,3 +282,7 @@
 "defaultChains" = "Default Chains";
 "search" = "Search";
 "vaultValue" = "Vault Value";
+"ThisDeviceIs" = "This device is the";
+"initiatingDevice" = "Initiating Device";
+"pairingDevice" = "Pairing Device";
+"createQR" = "Create QR";
