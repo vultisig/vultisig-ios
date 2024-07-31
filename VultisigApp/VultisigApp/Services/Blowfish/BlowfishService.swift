@@ -44,6 +44,13 @@ struct BlowfishService {
         return response
     }
     
+    enum DecodingCustomError: Error {
+        case dataCorrupted(DecodingError.Context)
+        case keyNotFound(CodingKey, DecodingError.Context)
+        case valueNotFound(Any.Type, DecodingError.Context)
+        case typeMismatch(Any.Type, DecodingError.Context)
+    }
+
     func scanSolanaTransactions
     (
         userAccount: String,
@@ -61,9 +68,29 @@ struct BlowfishService {
         let headers = ["X-Api-Version" : "2023-06-05"]
         let body = try JSONEncoder().encode(blowfishRequest)
         let dataResponse = try await Utils.asyncPostRequest(urlString: endpoint, headers: headers, body: body)
-        let response = try JSONDecoder().decode(BlowfishResponse.self, from: dataResponse)
         
-        return response
+        do {
+            let response = try JSONDecoder().decode(BlowfishResponse.self, from: dataResponse)
+            return response
+        } catch let DecodingError.dataCorrupted(context) {
+            print("Data corrupted: \(context)")
+            throw DecodingCustomError.dataCorrupted(context)
+        } catch let DecodingError.keyNotFound(key, context) {
+            print("Key '\(key)' not found:", context.debugDescription)
+            print("codingPath:", context.codingPath)
+            throw DecodingCustomError.keyNotFound(key, context)
+        } catch let DecodingError.valueNotFound(value, context) {
+            print("Value '\(value)' not found:", context.debugDescription)
+            print("codingPath:", context.codingPath)
+            throw DecodingCustomError.valueNotFound(value, context)
+        } catch let DecodingError.typeMismatch(type, context) {
+            print("Type '\(type)' mismatch:", context.debugDescription)
+            print("codingPath:", context.codingPath)
+            throw DecodingCustomError.typeMismatch(type, context)
+        } catch {
+            print("Error decoding JSON:", error)
+            throw error
+        }
     }
     
     func blowfishEVMTransactionScan(
