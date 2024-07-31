@@ -170,7 +170,7 @@ struct PeerDiscoveryView: View {
     }
     
     var lookingForDevices: some View {
-        LookingForDevicesLoader()
+        LookingForDevicesLoader(selectedTab: selectedTab)
     }
     
     var paringBarcode: some View {
@@ -182,7 +182,6 @@ struct PeerDiscoveryView: View {
             qrCodeImage?
                 .resizable()
 #if os(iOS)
-                .background(Color.blue600)
                 .frame(maxWidth: isPhoneSE ? 250 : nil)
                 .frame(maxHeight: isPhoneSE ? 250 : nil)
                 .aspectRatio(
@@ -194,11 +193,11 @@ struct PeerDiscoveryView: View {
                 .padding()
                 .frame(maxHeight: .infinity)
 #elseif os(macOS)
-                .background(Color.blue600)
                 .aspectRatio(contentMode: .fit)
                 .frame(maxHeight: .infinity)
                 .padding(24)
 #endif
+                .background(Color.blue600)
                 .cornerRadius(20)
                 .overlay (
                     RoundedRectangle(cornerRadius: 10)

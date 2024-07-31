@@ -291,3 +291,5 @@
 "youNeed1MoreDevice" = "You need 1 more device to pair";
 "youNeed2MoreDevice" = "You need 2 more devices to pair";
 "youNeedNMoreDevice" = "You can pair as many devices you want";
+"lookingFor1MoreDevice" = "Looking for  1  more device...";
+"lookingFor2MoreDevice" = "Looking for  2  more devices...";

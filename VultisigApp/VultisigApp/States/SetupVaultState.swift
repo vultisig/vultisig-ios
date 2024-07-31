@@ -51,4 +51,19 @@ enum SetupVaultState: String, CaseIterable {
             return "M/N"
         }
     }
+    
+    func getLoaderTitle() -> String {
+        let title: String
+        
+        switch self {
+        case .TwoOfTwoVaults:
+            title = NSLocalizedString("lookingFor1MoreDevice", comment: "")
+        case .TwoOfThreeVaults:
+            title = NSLocalizedString("lookingFor2MoreDevice", comment: "")
+        case .MOfNVaults:
+            title = NSLocalizedString("lookingForDevices", comment: "")
+        }
+        
+        return title
+    }
 }
