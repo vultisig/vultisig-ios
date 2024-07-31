@@ -1,5 +1,5 @@
 //
-//  SetupVaultView.swift
+//  SetupQRCodeView.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2024-03-07.
@@ -8,12 +8,13 @@
 import SwiftData
 import SwiftUI
 
-struct SetupVaultView: View {
+struct SetupQRCodeView: View {
     let tssType: TssType
-    @State var vault: Vault? = nil
-    @State var showSheet = false
-    @State var shouldJoinKeygen = false
-    @State var shouldKeysignTransaction = false
+    let vault: Vault
+    @Binding var showSheet: Bool
+    @Binding var shouldJoinKeygen: Bool
+    @Binding var shouldKeysignTransaction: Bool
+    
     @State var selectedTab: SetupVaultState = .TwoOfTwoVaults
     
     @Environment(\.modelContext) private var modelContext
@@ -26,9 +27,6 @@ struct SetupVaultView: View {
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("setup", comment: "Setup title"))
-        .onAppear {
-            setData()
-        }
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
@@ -45,15 +43,8 @@ struct SetupVaultView: View {
             messageModal
             buttons
         }
-        .sheet(isPresented: $showSheet, content: {
-            GeneralCodeScannerView(
-                showSheet: $showSheet,
-                shouldJoinKeygen: $shouldJoinKeygen,
-                shouldKeysignTransaction: $shouldKeysignTransaction
-            )
-        })
         .navigationDestination(isPresented: $shouldJoinKeygen) {
-            JoinKeygenView(vault: Vault(name: getUniqueVaultName()))
+            JoinKeygenView(vault: vault)
         }
         .navigationDestination(isPresented: $shouldKeysignTransaction) {
             if let vault = viewModel.selectedVault {
@@ -90,7 +81,7 @@ struct SetupVaultView: View {
             } else {
                 PeerDiscoveryView(
                     tssType: tssType,
-                    vault: vault ?? Vault(name: getUniqueVaultName()),
+                    vault: vault,
                     selectedTab: selectedTab
                 )
             }
@@ -114,39 +105,15 @@ struct SetupVaultView: View {
         }
 #endif
     }
-    
-    private func setData() {
-        if vault == nil {
-            vault = Vault(name: getUniqueVaultName())
-        }
-    }
-    
-    private func getUniqueVaultName() -> String {
-        let fetchVaultDescriptor = FetchDescriptor<Vault>()
-        do{
-            let vaults = try modelContext.fetch(fetchVaultDescriptor)
-            let start = vaults.count
-            var idx = start
-            repeat {
-                let vaultName = "Vault #\(idx + 1)"
-                let vaultExist = vaults.contains {v in
-                    v.name == vaultName && !v.pubKeyECDSA.isEmpty
-                }
-                if !vaultExist {
-                    return vaultName
-                }
-                idx += 1
-            } while idx < 1000
-        }
-        catch {
-            print("fail to load all vaults")
-        }
-        return "Main Vault"
-    }
-    
 }
 
 #Preview {
-    SetupVaultView(tssType: .Keygen)
-        .environmentObject(HomeViewModel())
+    SetupQRCodeView(
+        tssType: .Keygen, 
+        vault: Vault.example,
+        showSheet: .constant(false),
+        shouldJoinKeygen: .constant(false),
+        shouldKeysignTransaction: .constant(false)
+    )
+    .environmentObject(HomeViewModel())
 }
