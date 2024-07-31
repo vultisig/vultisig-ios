@@ -9,7 +9,7 @@ import SwiftUI
 
 struct BlowfishWarningInformationNote: View {
     
-    @State var blowfishResponse: BlowfishEvmResponse? = nil
+    @State var blowfishResponse: BlowfishResponse? = nil
     
     var body: some View {
         guard let response = blowfishResponse else {
@@ -39,12 +39,12 @@ struct BlowfishWarningInformationNote: View {
 #endif
     }
     
-    func icon(response: BlowfishEvmResponse) -> some View {
+    func icon(response: BlowfishResponse) -> some View {
         Image(systemName: response.warnings.isEmpty ? "checkmark.shield" : "exclamationmark.triangle")
             .foregroundColor(response.warnings.isEmpty ? Color.green : Color.warningYellow)
     }
     
-    func text(response: BlowfishEvmResponse) -> some View {
+    func text(response: BlowfishResponse) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             if response.warnings.isEmpty {
                 Text(NSLocalizedString("scannedByBlowfish", comment: ""))

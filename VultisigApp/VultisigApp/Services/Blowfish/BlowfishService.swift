@@ -18,7 +18,7 @@ struct BlowfishService {
         origin: String,
         txObjects: [BlowfishRequest.BlowfishTxObject],
         simulatorConfig: BlowfishRequest.BlowfishSimulatorConfig? = nil
-    ) async throws -> BlowfishEvmResponse? {
+    ) async throws -> BlowfishResponse? {
         
         guard let supportedChain = blowfishChainName(chain: chain) else {
             return nil
@@ -39,7 +39,7 @@ struct BlowfishService {
         let headers = ["X-Api-Version" : "2023-06-05"]
         let body = try JSONEncoder().encode(blowfishRequest)
         let dataResponse = try await Utils.asyncPostRequest(urlString: endpoint, headers: headers, body: body)
-        let response = try JSONDecoder().decode(BlowfishEvmResponse.self, from: dataResponse)
+        let response = try JSONDecoder().decode(BlowfishResponse.self, from: dataResponse)
         
         return response
     }
@@ -49,7 +49,7 @@ struct BlowfishService {
         userAccount: String,
         origin: String,
         transactions: [String]
-    ) async throws -> BlowfishEvmResponse? {
+    ) async throws -> BlowfishResponse? {
         
         let blowfishRequest = BlowfishSolanaRequest(
             userAccount: userAccount,
@@ -61,7 +61,7 @@ struct BlowfishService {
         let headers = ["X-Api-Version" : "2023-06-05"]
         let body = try JSONEncoder().encode(blowfishRequest)
         let dataResponse = try await Utils.asyncPostRequest(urlString: endpoint, headers: headers, body: body)
-        let response = try JSONDecoder().decode(BlowfishEvmResponse.self, from: dataResponse)
+        let response = try JSONDecoder().decode(BlowfishResponse.self, from: dataResponse)
         
         return response
     }
@@ -72,7 +72,7 @@ struct BlowfishService {
         amountInRaw: BigInt,
         memo: String?,
         chain: Chain
-    ) async throws -> BlowfishEvmResponse? {
+    ) async throws -> BlowfishResponse? {
         
         let amountDataHex = amountInRaw.serializeForEvm().map { byte in String(format: "%02x", byte) }.joined()
         let amountHex = "0x" + amountDataHex
@@ -106,19 +106,18 @@ struct BlowfishService {
         
     }
     
-    func blowfishSolanaTransactionScan(fromAddress: String, unsignedTransaction: String) async throws -> BlowfishEvmResponse? {
+    func blowfishSolanaTransactionScan(fromAddress: String, zeroSignedTransaction: String) async throws -> BlowfishResponse? {
         
         let response = try await scanSolanaTransactions(
             userAccount: fromAddress,
             origin: "https://api.vultisig.com",
-            transactions: [unsignedTransaction]
+            transactions: [zeroSignedTransaction]
             
         )
         
         return response
         
     }
-    
     
     func blowfishChainName(chain: Chain) -> String? {
         switch chain {

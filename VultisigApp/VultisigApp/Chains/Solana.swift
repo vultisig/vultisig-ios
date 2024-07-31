@@ -131,11 +131,9 @@ enum SolanaHelper {
             return .empty
         }
         
-        allSignatures.add(data: signature ?? Data())
+        allSignatures.add(data: sig)
         publicKeys.add(data: pubkeyData)
-        
-        print(inputData.debugDescription)
-        
+                
         let compileWithSignature = TransactionCompiler.compileWithSignaturesAndPubKeyType(coinType: .solana,
                                                                                           txInputData: inputData,
                                                                                           signatures: allSignatures,
@@ -143,7 +141,6 @@ enum SolanaHelper {
                                                                                           pubKeyType: .ed25519)
         
         let output = try SolanaSigningOutput(serializedData: compileWithSignature)
-        print("getZeroSignedTransaction > ERROR MESSAGE: \(output.errorMessage)")
 
         return output.encoded
     }
@@ -180,8 +177,6 @@ enum SolanaHelper {
         let output = try SolanaSigningOutput(serializedData: compileWithSignature)
         let result = SignedTransactionResult(rawTransaction: output.encoded,
                                              transactionHash: getHashFromRawTransaction(tx:output.encoded))
-        
-        print("\(output.unsignedTx) -> output.unsignedTx")
         
         return result
     }

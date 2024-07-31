@@ -15,7 +15,7 @@ struct SendCryptoVerifyView: View {
     let vault: Vault
     
     @State var isLoading = true
-    @State var blowfishResponse: BlowfishEvmResponse? = nil
+    @State var blowfishResponse: BlowfishResponse? = nil
     
     var body: some View {
         ZStack {

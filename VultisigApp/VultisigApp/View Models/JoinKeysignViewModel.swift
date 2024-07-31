@@ -259,7 +259,7 @@ class JoinKeysignViewModel: ObservableObject {
         manageQrCodeStates()
     }
     
-    func blowfishEVMTransactionScan() async throws -> BlowfishEvmResponse? {
+    func blowfishEVMTransactionScan() async throws -> BlowfishResponse? {
         
         guard let payload = keysignPayload else {
             return nil
@@ -274,18 +274,22 @@ class JoinKeysignViewModel: ObservableObject {
         )
     }
     
-    func blowfishSolanaTransactionScan() async throws -> BlowfishEvmResponse? {
+    func blowfishSolanaTransactionScan() async throws -> BlowfishResponse? {
         
-        guard let payload = keysignPayload else {
-            return nil
+        if let payload = keysignPayload {
+            let zeroSignedTransaction = try SolanaHelper.getZeroSignedTransaction(
+                vaultHexPubKey: vault.pubKeyEdDSA,
+                vaultHexChainCode: vault.hexChainCode,
+                keysignPayload: payload
+            )
+            
+            return try await BlowfishService.shared.blowfishSolanaTransactionScan(
+                fromAddress: payload.coin.address, 
+                zeroSignedTransaction: zeroSignedTransaction
+            )
         }
         
-//        let unsignedTx = try SolanaHelper.getUnsignedTransaction(keysignPayload: payload);
-//        
-//        print(unsignedTx)
-//        
-//        return try await BlowfishService.shared.blowfishSolanaTransactionScan(fromAddress: payload.coin.address, unsignedTransaction: unsignedTx);
-        
         return nil
+        
     }
 }

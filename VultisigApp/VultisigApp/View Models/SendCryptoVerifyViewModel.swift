@@ -37,13 +37,13 @@ class SendCryptoVerifyViewModel: ObservableObject {
         return tx.amountInRaw
     }
     
-    func blowfishEVMTransactionScan(tx: SendTransaction) async throws -> BlowfishEvmResponse? {
+    func blowfishEVMTransactionScan(tx: SendTransaction) async throws -> BlowfishResponse? {
         return try await BlowfishService.shared.blowfishEVMTransactionScan(
             fromAddress: tx.fromAddress, toAddress: tx.toAddress, amountInRaw: tx.amountInRaw, memo: tx.memo, chain: tx.coin.chain
         )
     }
     
-    func blowfishSolanaTransactionScan(tx: SendTransaction, vault: Vault) async -> BlowfishEvmResponse? {
+    func blowfishSolanaTransactionScan(tx: SendTransaction, vault: Vault) async -> BlowfishResponse? {
         
         var keysignPayload: KeysignPayload?
         
@@ -54,7 +54,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
                                                                            toAddress: tx.toAddress,
                                                                            amount: amount(for:tx.coin,tx:tx),
                                                                            memo: tx.memo,
-                                                                           chainSpecific: chainSpecific, vault: vault)
+                                                                           chainSpecific: chainSpecific,
+                                                                           vault: vault
+            )
             
             
             var zeroSignedTransaction: String = .empty
@@ -65,11 +67,8 @@ class SendCryptoVerifyViewModel: ObservableObject {
             
             
             return try await BlowfishService.shared.blowfishSolanaTransactionScan(
-                fromAddress: tx.fromAddress, unsignedTransaction: zeroSignedTransaction
+                fromAddress: tx.fromAddress, zeroSignedTransaction: zeroSignedTransaction
             )
-            
-            // print("RAW: \(zeroSignedTransaction)")
-            
             
         } catch {
             switch error {
