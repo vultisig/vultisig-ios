@@ -293,3 +293,4 @@
 "youNeedNMoreDevice" = "You can pair as many devices you want";
 "lookingFor1MoreDevice" = "Looking for  1  more device...";
 "lookingFor2MoreDevice" = "Looking for  2  more devices...";
+"shouldBackupVaultsSeparateLocations" = "You should backup all vault shares in separate locations.";
