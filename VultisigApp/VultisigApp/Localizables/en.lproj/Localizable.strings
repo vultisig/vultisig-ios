@@ -287,3 +287,7 @@
 "pairingDevice" = "Pairing Device";
 "createQR" = "Create QR";
 "or" = "OR";
+"selectYourVaultType" = "Select your Vault Type";
+"youNeed1MoreDevice" = "You need 1 more device to pair";
+"youNeed2MoreDevice" = "You need 2 more devices to pair";
+"youNeedNMoreDevice" = "You can pair as many devices you want";

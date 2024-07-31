@@ -16,7 +16,7 @@ struct SetupVaultTab: View {
                 getCell(for: type)
             }
         }
-        .padding(.top, 30)
+        .padding(.top, 20)
     }
     
     private func getCell(for state: SetupVaultState) -> some View {
@@ -25,16 +25,22 @@ struct SetupVaultTab: View {
                 selectedTab = state
             }
         } label: {
-            VStack(spacing: 10) {
+            getLabel(for: state)
+        }
+    }
+    
+    private func getLabel(for state: SetupVaultState) -> some View {
+        ZStack {
+            if selectedTab==state {
                 Text(NSLocalizedString(state.rawValue, comment: ""))
-                    .font(selectedTab==state ? .body14MontserratMedium : .body14Montserrat)
-                    .foregroundColor(.neutral0)
-                
-                RoundedRectangle(cornerRadius: 10)
-                    .frame(height: 1)
+                    .font(.body16MontserratBold)
+                    .foregroundColor(.blue800)
                     .frame(maxWidth: .infinity)
-                    .foregroundColor(.neutral0)
-                    .opacity(selectedTab==state ? 1 : 0)
+                    .frame(height: 44)
+                    .background(LinearGradient.primaryGradientHorizontal)
+                    .cornerRadius(30)
+            } else {
+                OutlineButton(title: state.rawValue, gradient: .primaryGradientHorizontal)
             }
         }
     }

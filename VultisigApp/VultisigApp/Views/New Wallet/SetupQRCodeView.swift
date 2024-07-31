@@ -39,9 +39,9 @@ struct SetupQRCodeView: View {
     
     var view: some View {
         VStack {
+            context
             image
-            messageModal
-            buttons
+            button
         }
         .navigationDestination(isPresented: $shouldJoinKeygen) {
             JoinKeygenView(vault: vault)
@@ -53,19 +53,20 @@ struct SetupQRCodeView: View {
         }
     }
     
+    var context: some View {
+        Text(NSLocalizedString("selectYourVaultType", comment: ""))
+            .font(.body14Menlo)
+            .foregroundColor(.neutral0)
+            .padding(.top, 10)
+    }
+    
     var image: some View {
         SetupVaultTabView(selectedTab: $selectedTab)
     }
     
-    var messageModal: some View {
-        WifiInstruction()
-            .frame(maxHeight: 80)
-    }
-    
-    var buttons: some View {
+    var button: some View {
         VStack(spacing: 20) {
             startButton
-            joinButton
         }
         .padding(40)
     }
@@ -88,22 +89,6 @@ struct SetupQRCodeView: View {
         } label: {
             FilledButton(title: "start")
         }
-    }
-    
-    var joinButton: some View {
-#if os(iOS)
-        Button {
-            showSheet = true
-        } label: {
-            OutlineButton(title: "pair")
-        }
-#elseif os(macOS)
-        NavigationLink {
-            GeneralQRImportMacView(type: .NewVault)
-        } label: {
-            OutlineButton(title: "pair")
-        }
-#endif
     }
 }
 
