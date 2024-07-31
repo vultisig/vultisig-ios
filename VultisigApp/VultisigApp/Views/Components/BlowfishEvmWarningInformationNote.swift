@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct BlowfishWarningInformationNote: View {
+struct BlowfishEvmWarningInformationNote: View {
     
     @State var blowfishResponse: BlowfishResponse? = nil
     
@@ -22,11 +22,11 @@ struct BlowfishWarningInformationNote: View {
                 text(response: response)
             }
                 .padding(12)
-                .background(response.warnings.isEmpty ? Color.green.opacity(0.35) : Color.warningYellow.opacity(0.35))
+                .background((response.warnings?.isEmpty ?? true) ? Color.green.opacity(0.35) : Color.warningYellow.opacity(0.35))
                 .cornerRadius(12)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(response.warnings.isEmpty ? Color.green : Color.warningYellow, lineWidth: lineWidth)
+                        .stroke((response.warnings?.isEmpty ?? true) ? Color.green : Color.warningYellow, lineWidth: lineWidth)
                 )
         )
     }
@@ -40,21 +40,21 @@ struct BlowfishWarningInformationNote: View {
     }
     
     func icon(response: BlowfishResponse) -> some View {
-        Image(systemName: response.warnings.isEmpty ? "checkmark.shield" : "exclamationmark.triangle")
-            .foregroundColor(response.warnings.isEmpty ? Color.green : Color.warningYellow)
+        Image(systemName: (response.warnings?.isEmpty ?? true) ? "checkmark.shield" : "exclamationmark.triangle")
+            .foregroundColor((response.warnings?.isEmpty ?? true) ? Color.green : Color.warningYellow)
     }
     
     func text(response: BlowfishResponse) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            if response.warnings.isEmpty {
+            if response.warnings?.isEmpty ?? true {
                 Text(NSLocalizedString("scannedByBlowfish", comment: ""))
                     .foregroundColor(.neutral0)
                     .font(.body12MontserratSemiBold)
                     .lineSpacing(8)
                     .multilineTextAlignment(.leading)
             } else {
-                ForEach(response.warnings) { blowfishMessage in
-                    Text(blowfishMessage.message)
+                ForEach(response.warnings ?? []) { blowfishMessage in
+                    Text(blowfishMessage.message ?? .empty)
                         .foregroundColor(.neutral0)
                         .font(.body12MontserratSemiBold)
                         .lineSpacing(8)
@@ -68,6 +68,6 @@ struct BlowfishWarningInformationNote: View {
 #Preview {
     ZStack {
         Background()
-        BlowfishWarningInformationNote()
+        BlowfishEvmWarningInformationNote()
     }
 }

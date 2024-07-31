@@ -26,7 +26,10 @@ struct KeysignMessageConfirmView: View {
                 
                 HStack {
                     Spacer()
-                    if (viewModel.keysignPayload?.coin.chainType == .EVM && blowfishResponse != nil) {
+                    if (
+                        (viewModel.keysignPayload?.coin.chainType == .EVM || viewModel.keysignPayload?.coin.chainType == .Solana) &&
+                        blowfishResponse != nil
+                    ) {
                         warning
                     }
                     Spacer()
@@ -74,8 +77,18 @@ struct KeysignMessageConfirmView: View {
     
     var warning: some View {
         VStack {
-            BlowfishWarningInformationNote(blowfishResponse: blowfishResponse)
-                .padding(.horizontal, 16)
+            
+            if (viewModel.keysignPayload?.coin.chainType == .EVM) {
+                
+                BlowfishEvmWarningInformationNote(blowfishResponse: blowfishResponse)
+                    .padding(.horizontal, 16)
+                
+            } else if (viewModel.keysignPayload?.coin.chainType == .Solana) {
+                
+                BlowfishSolanaWarningInformationNote(blowfishResponse: blowfishResponse)
+                    .padding(.horizontal, 16)
+                
+            }
         }
     }
     

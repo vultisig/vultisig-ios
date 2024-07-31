@@ -65,15 +65,24 @@ struct SendCryptoVerifyView: View {
     
     var warning: some View {
         VStack {
-            BlowfishWarningInformationNote(blowfishResponse: blowfishResponse)
-                .padding(.horizontal, 16)
+            if (tx.coin.chainType == .EVM) {
+                
+                BlowfishEvmWarningInformationNote(blowfishResponse: blowfishResponse)
+                    .padding(.horizontal, 16)
+                
+            } else {
+                
+                BlowfishSolanaWarningInformationNote(blowfishResponse: blowfishResponse)
+                    .padding(.horizontal, 16)
+                
+            }
         }
     }
     
     var view: some View {
         VStack {
             fields
-            if (tx.coin.chainType == .EVM && blowfishResponse != nil) {
+            if ((tx.coin.chainType == .EVM || tx.coin.chainType == .Solana) && blowfishResponse != nil) {
                 warning
             }
             button
