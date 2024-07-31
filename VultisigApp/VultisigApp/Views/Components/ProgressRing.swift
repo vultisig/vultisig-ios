@@ -10,7 +10,7 @@ import SwiftUI
 struct ProgressRing: View {
     let progress: Double
     var gradient: AngularGradient = .progressGradient
-    var fromSize: CGFloat = 300
+    var fromSize: CGFloat = 80
     var toSize: CGFloat = 100
     var title: String = "done"
     
@@ -27,7 +27,7 @@ struct ProgressRing: View {
  
     var ring: some View {
         Circle()
-            .stroke(style: StrokeStyle(lineWidth: 16))
+            .stroke(style: StrokeStyle(lineWidth: 8))
             .foregroundStyle(.tertiary)
             .overlay {
                 progressRing
@@ -42,7 +42,7 @@ struct ProgressRing: View {
             .trim(from: 0, to: progress)
             .stroke(
                 gradient,
-                style: StrokeStyle(lineWidth: 16, lineCap: .round)
+                style: StrokeStyle(lineWidth: 8, lineCap: .round)
             )
     }
     
@@ -91,6 +91,6 @@ struct ProgressRing: View {
 #Preview {
     ZStack {
         Background()
-        ProgressRing(progress: 0)
+        ProgressRing(progress: 0.1)
     }
 }

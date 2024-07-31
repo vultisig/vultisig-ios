@@ -294,3 +294,40 @@
 "lookingFor1MoreDevice" = "Looking for  1  more device...";
 "lookingFor2MoreDevice" = "Looking for  2  more devices...";
 "shouldBackupVaultsSeparateLocations" = "You should backup all vault shares in separate locations.";
+
+"keygenInstructionsCar1Title" = "Did You Know?";
+"keygenInstructionsCar2Title" = "Tip of the Day";
+"keygenInstructionsCar3Title" = "Fun Fact";
+"keygenInstructionsCar4Title" = "Security Insight";
+"keygenInstructionsCar5Title" = "Tech Talk";
+"keygenInstructionsCar6Title" = "Community Corner";
+"keygenInstructionsCar7Title" = "Feature Highlight";
+
+"keygenInstructionsCar1DescriptionPart1" = "Vultisig is ";
+"keygenInstructionsCar1DescriptionPart2" = "fully open-source.";
+"keygenInstructionsCar1DescriptionPart3" = " This means anyone can review the code, ensuring complete transparency and trustworthiness.";
+
+"keygenInstructionsCar2DescriptionPart1" = "";
+"keygenInstructionsCar2DescriptionPart2" = "No Seed Phrases Needed!";
+"keygenInstructionsCar2DescriptionPart3" = " Vultisig uses easy-to-manage vault shares, making it simpler and more secure than traditional wallets.";
+
+"keygenInstructionsCar3DescriptionPart1" = "Vultisig supports over ";
+"keygenInstructionsCar3DescriptionPart2" = "10,000 tokens.";
+"keygenInstructionsCar3DescriptionPart3" = " Whether you're using Bitcoin, Ethereum, or a lesser-known token, Vultisig has you covered.";
+
+"keygenInstructionsCar4DescriptionPart1" = "Your Privacy Matters. Vultisig ";
+"keygenInstructionsCar4DescriptionPart2" = "does not track";
+"keygenInstructionsCar4DescriptionPart3" = " your activities or require any registration, ensuring your anonymity and privacy.";
+
+"keygenInstructionsCar5DescriptionPart1" = "Audited and Secure. Vultisig undergoes ";
+"keygenInstructionsCar5DescriptionPart2" = "regular security audits";
+"keygenInstructionsCar5DescriptionPart3" = " to ensure your assets are protected against any threats.";
+
+"keygenInstructionsCar6DescriptionPart1" = "Join Thousands. Thousands of users trust Vultisig with their digital assets. Become a part of our ";
+"keygenInstructionsCar6DescriptionPart2" = "secure and growing community";
+"keygenInstructionsCar6DescriptionPart3" = ".";
+
+"keygenInstructionsCar7DescriptionPart1" = "Multi-Device Compatibility. Access your Vultisig vault ";
+"keygenInstructionsCar7DescriptionPart2" = "from multiple devices";
+"keygenInstructionsCar7DescriptionPart3" = ", enhancing flexibility without compromising security.";
+
