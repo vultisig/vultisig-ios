@@ -33,6 +33,7 @@ struct BlowfishResponse: Codable {
         let action: String?
         let warnings: [BlowfishWarning]?
         let simulatedSlotHeight: Int?
+        let safeguard: String?
     }
     
     struct BlowfishSimulationError: Codable {
@@ -44,6 +45,7 @@ struct BlowfishResponse: Codable {
         let value: String?
         let humanReadableDiff: String?
         let rawInfo: RawInfo?
+        let suggestedColor: String?
     }
     
     struct RawInfo: Codable {
@@ -76,12 +78,22 @@ struct BlowfishResponse: Codable {
         let verified: Bool?
         let imageUrl: String?
         let price: Price?
+        let supply: Int?
+        let metaplexTokenStandard: String?
+        let previews: Previews?
+        let lists: [String]?
     }
     
     struct Price: Codable {
         let source: String?
         let updatedAt: Int?
         let dollarValuePerToken: Double?
+    }
+    
+    struct Previews: Codable {
+        let small: String?
+        let medium: String?
+        let large: String?
     }
     
     struct Diff: Codable {
@@ -92,12 +104,13 @@ struct BlowfishResponse: Codable {
     struct BlowfishPerTransaction: Codable {
         let error: BlowfishTransactionError?
         let gas: BlowfishGas?
-        let protocolInfo: BlowfishProtocolInfo?
+        let protocolInfo: [BlowfishProtocolInfo]?
         let logs: [BlowfishLog]?
         let decodedLogs: [BlowfishDecodedLog]?
         let decodedCalldata: BlowfishDecodedCalldata?
         let isNonceValid: Bool?
         let raw: Raw?
+        let instructions: [BlowfishInstruction]?
     }
     
     struct BlowfishTransactionError: Codable {
@@ -186,5 +199,11 @@ struct BlowfishResponse: Codable {
         let logs: [String]?
         let unitsConsumed: Int?
         let returnData: String?
+    }
+
+    struct BlowfishInstruction: Codable {
+        let protocolIndex: Int?
+        let topLevelInstruction: String?
+        let flattenedInnerInstructions: [String]?
     }
 }
