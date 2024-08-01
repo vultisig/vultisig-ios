@@ -69,6 +69,7 @@ struct KeygenView: View {
                 progress
             }
             states
+            Spacer()
             keygenViewInstructions
         }
     }
@@ -96,6 +97,7 @@ struct KeygenView: View {
             maxWidth: showProgressRing ? 280 : .infinity,
             maxHeight: showProgressRing ? 50 : .infinity
         )
+        .offset(y: -20)
     }
     
     var keygenViewInstructions: some View {
@@ -109,7 +111,7 @@ struct KeygenView: View {
     
     var instructions: some View {
         WifiInstruction()
-            .padding(.bottom, 80)
+            .padding(.bottom, 50)
     }
     
     var preparingVaultText: some View {
