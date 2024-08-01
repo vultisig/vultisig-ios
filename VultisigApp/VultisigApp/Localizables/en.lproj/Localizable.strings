@@ -323,3 +323,5 @@
 "keygenInstructionsCar7DescriptionPart1" = "Multi-Device Compatibility. Access your Vultisig vault ";
 "keygenInstructionsCar7DescriptionPart2" = "from multiple devices";
 "keygenInstructionsCar7DescriptionPart3" = ", enhancing flexibility without compromising security.";
+"noSavedAddressesForChain" = "No Saved Addresses found for this chain.";
+"editAddress" = "Edit Address";

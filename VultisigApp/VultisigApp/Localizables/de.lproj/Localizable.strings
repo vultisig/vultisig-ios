@@ -299,3 +299,5 @@
 "keygenInstructionsCar7DescriptionPart1" = "Multi-Geräte-Kompatibilität. Greifen Sie auf Ihren Vultisig-Tresor";
 "keygenInstructionsCar7DescriptionPart2" = "von mehreren Geräten";
 "keygenInstructionsCar7DescriptionPart3" = " zu und verbessern Sie so die Flexibilität, ohne die Sicherheit zu beeinträchtigen.";
+"noSavedAddressesForChain" = "Keine gespeicherten Adressen für diese Kette gefunden.";
+"editAddress" = "Adresse bearbeiten";

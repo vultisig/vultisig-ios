@@ -9,6 +9,7 @@ import Foundation
 import WalletCore
 import Tss
 import CryptoSwift
+import VultisigCommonData
 
 class DydxHelper {
     let coinType: CoinType
@@ -20,7 +21,7 @@ class DydxHelper {
     static let DydxGasLimit:UInt64 = 2500000000000000
     
     func getSwapPreSignedInputData(keysignPayload: KeysignPayload,signingInput: CosmosSigningInput) -> Result<Data,Error> {
-        guard case .Cosmos(let accountNumber, let sequence,let gas) = keysignPayload.chainSpecific else {
+        guard case .Cosmos(let accountNumber, let sequence,let gas, _) = keysignPayload.chainSpecific else {
             return .failure(HelperError.runtimeError("fail to get account number and sequence"))
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
@@ -50,7 +51,7 @@ class DydxHelper {
     }
     
     func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-        guard case .Cosmos(let accountNumber, let sequence , let gas) = keysignPayload.chainSpecific else {
+        guard case .Cosmos(let accountNumber, let sequence , let gas, let transactionTypeRawValue) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number and sequence")
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
@@ -60,18 +61,12 @@ class DydxHelper {
         
         var message = [CosmosMessage()]
         
-        var isDeposit: Bool = false
-        var isVote: Bool = false
-        if let memo = keysignPayload.memo, !memo.isEmpty {
-            isDeposit = DepositStore.PREFIXES.contains(where: { memo.hasPrefix($0) })
-            isVote = memo.hasPrefix("DYDX_VOTE")
+        var transactionType: VSTransactionType = .unspecified
+        if let vsTransactionType = VSTransactionType(rawValue: transactionTypeRawValue) {
+            transactionType = vsTransactionType
         }
         
-        if let swapPayload = keysignPayload.swapPayload {
-            isDeposit = swapPayload.isDeposit
-        }
-        
-        if isDeposit, isVote {
+        if transactionType == .vote {
             let selectedOption = keysignPayload.memo?.replacingOccurrences(of: "DYDX_VOTE:", with: "") ?? ""
             let components = selectedOption.split(separator: ":")
             
@@ -112,7 +107,7 @@ class DydxHelper {
             $0.accountNumber = accountNumber
             $0.sequence = sequence
             $0.mode = .sync
-            if let memo = keysignPayload.memo, !isVote {
+            if let memo = keysignPayload.memo, transactionType != .vote {
                 $0.memo = memo
             }
             $0.messages = message
@@ -125,7 +120,7 @@ class DydxHelper {
                 }]
             }
         }
-
+        
         return try input.serializedData()
     }
     

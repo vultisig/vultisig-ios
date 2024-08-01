@@ -26,6 +26,13 @@ struct JoinKeysignView: View {
         .onAppear {
             setData()
         }
+        .task {
+            do{
+                _ = try await ThorchainService.shared.getTHORChainChainID()
+            } catch {
+                print("fail to get thorchain network id, \(error.localizedDescription)")
+            }
+        }
         .onDisappear(){
             viewModel.stopJoiningKeysign()
         }

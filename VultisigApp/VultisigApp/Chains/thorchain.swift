@@ -10,7 +10,7 @@ import WalletCore
 enum THORChainHelper {
 
     static func getSwapPreSignedInputData(keysignPayload: KeysignPayload, signingInput: CosmosSigningInput) throws -> Data {
-        guard case .THORChain(let accountNumber, let sequence, _) = keysignPayload.chainSpecific else {
+        guard case .THORChain(let accountNumber, let sequence, _, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number, sequence, or fee")
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
@@ -36,7 +36,7 @@ enum THORChainHelper {
         guard let fromAddr = AnyAddress(string: keysignPayload.coin.address, coin: .thorchain) else {
             throw HelperError.runtimeError("\(keysignPayload.coin.address) is invalid")
         }
-        guard case .THORChain(let accountNumber, let sequence, _) = keysignPayload.chainSpecific else {
+        guard case .THORChain(let accountNumber, let sequence, _, let isDeposit) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number, sequence, or fee")
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
@@ -47,15 +47,6 @@ enum THORChainHelper {
         var thorChainCoin = TW_Cosmos_Proto_THORChainCoin()
         var message = [CosmosMessage()]
         
-        var isDeposit: Bool = false
-        if let memo = keysignPayload.memo, !memo.isEmpty {
-            isDeposit = memo.contains(":");
-        }
-        
-        if let swapPayload = keysignPayload.swapPayload {
-            isDeposit = swapPayload.isDeposit
-        }
-
         if isDeposit {
             thorChainCoin = TW_Cosmos_Proto_THORChainCoin.with {
                 $0.asset = TW_Cosmos_Proto_THORChainAsset.with {
@@ -93,7 +84,7 @@ enum THORChainHelper {
             }]
         }
         var chainID = coin.chainId
-        if chainID != ThorchainService.shared.network {
+        if chainID != ThorchainService.shared.network && !ThorchainService.shared.network.isEmpty {
             chainID = ThorchainService.shared.network
         }
         let input = CosmosSigningInput.with {

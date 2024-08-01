@@ -18,9 +18,9 @@ class ATOMHelper {
     }
     
     static let ATOMGasLimit:UInt64 = 200000
- 
+    
     func getSwapPreSignedInputData(keysignPayload: KeysignPayload, signingInput: CosmosSigningInput) throws -> Data {
-        guard case .Cosmos(let accountNumber, let sequence,let gas) = keysignPayload.chainSpecific else {
+        guard case .Cosmos(let accountNumber, let sequence,let gas, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number and sequence")
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
@@ -43,9 +43,9 @@ class ATOMHelper {
         // deposit message has been set
         return try input.serializedData()
     }
-
+    
     func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
-        guard case .Cosmos(let accountNumber, let sequence , let gas) = keysignPayload.chainSpecific else {
+        guard case .Cosmos(let accountNumber, let sequence , let gas, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number and sequence")
         }
         guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
@@ -85,7 +85,7 @@ class ATOMHelper {
         
         return try input.serializedData()
     }
-
+    
     func getPreSignedImageHash(keysignPayload: KeysignPayload) throws -> [String] {
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: self.coinType, txInputData: inputData)
@@ -107,9 +107,9 @@ class ATOMHelper {
     }
     
     func getSignedTransaction(vaultHexPubKey: String,
-                                     vaultHexChainCode: String,
-                                     inputData: Data,
-                                     signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
+                              vaultHexChainCode: String,
+                              inputData: Data,
+                              signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {
         let cosmosPublicKey = PublicKeyHelper.getDerivedPubKey(hexPubKey: vaultHexPubKey, hexChainCode: vaultHexChainCode, derivePath: self.coinType.derivationPath())
         guard let pubkeyData = Data(hexString: cosmosPublicKey),

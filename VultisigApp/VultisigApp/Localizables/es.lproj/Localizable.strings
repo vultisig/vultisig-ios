@@ -299,3 +299,5 @@
 "keygenInstructionsCar7DescriptionPart1" = "Compatibilidad con múltiples dispositivos. Accede a tu almacén Vultisig";
 "keygenInstructionsCar7DescriptionPart2" = "desde múltiples dispositivos";
 "keygenInstructionsCar7DescriptionPart3" = ", mejorando la flexibilidad sin comprometer la seguridad.";
+"noSavedAddressesForChain" = "No se encontraron direcciones guardadas para esta cadena.";
+"editAddress" = "Editar dirección";

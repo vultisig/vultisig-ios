@@ -8,7 +8,7 @@
 import Foundation
 
 extension Chain {
-
+    
     var defaultActions: [CoinAction] {
         let actions: [CoinAction]
         switch self {
@@ -65,10 +65,14 @@ extension Chain {
 
 extension Array where Element == CoinAction {
     var filtered: [CoinAction] {
-        // #if DEBUG
+#if os(macOS)
         return self
-        // #else
-        // return filter { $0 != .swap }
-        // #endif
+#else
+#if DEBUG
+        return self
+#else
+        return filter { $0 != .swap }
+#endif
+#endif
     }
 }

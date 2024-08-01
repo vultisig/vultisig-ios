@@ -51,7 +51,6 @@ extension Color {
     
     static let alertRed = Color(hex: "#FF4040")
     static let warningYellow = Color(hex: "#F7961B")
-    static let backupNowRed = Color(hex: "#DA2E2E")
     
     static let logoBlue = Color(hex: "#0D86BB")
     

@@ -299,3 +299,5 @@
 "keygenInstructionsCar7DescriptionPart1" = "Compatibilità multi-dispositivo. Accedi al tuo caveau Vultisig";
 "keygenInstructionsCar7DescriptionPart2" = "da più dispositivi";
 "keygenInstructionsCar7DescriptionPart3" = ", migliorando la flessibilità senza compromettere la sicurezza.";
+"noSavedAddressesForChain" = "Nessun indirizzo salvato trovato per questa catena.";
+"editAddress" = "Modifica indirizzo";

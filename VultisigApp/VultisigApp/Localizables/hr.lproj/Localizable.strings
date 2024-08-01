@@ -297,3 +297,5 @@
 "keygenInstructionsCar6DescriptionPart2" = "sigurne i rastuće zajednice";
 "keygenInstructionsCar6DescriptionPart3" = ".";
 "keygenInstructionsCar7DescriptionPart1" = "Kompatibilnost s više uređaja. Pristupite svom Vult
+"noSavedAddressesForChain" = "Nema spremljenih adresa za ovaj lanac.";
+"editAddress" = "Uredi adresu";

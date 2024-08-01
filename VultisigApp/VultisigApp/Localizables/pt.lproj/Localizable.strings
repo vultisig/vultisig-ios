@@ -300,3 +300,5 @@
 "keygenInstructionsCar7DescriptionPart1" = "Compatibilidade com vários dispositivos. Acesse seu cofre Vultisig";
 "keygenInstructionsCar7DescriptionPart2" = "de vários dispositivos";
 "keygenInstructionsCar7DescriptionPart3" = ", aumentando a flexibilidade sem comprometer a segurança.";
+"noSavedAddressesForChain" = "Nenhum endereço salvo encontrado para esta cadeia.";
+"editAddress" = "Editar endereço";

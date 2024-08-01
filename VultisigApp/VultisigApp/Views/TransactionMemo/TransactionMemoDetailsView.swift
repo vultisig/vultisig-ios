@@ -121,6 +121,7 @@ struct TransactionMemoDetailsView: View {
                     tx.amount = txMemoInstance.amount.description
                     tx.memo = txMemoInstance.description
                     tx.memoFunctionDictionary = txMemoInstance.toDictionary()
+                    tx.transactionType = txMemoInstance.getTransactionType()
                     transactionMemoViewModel.moveToNextView()
                 } else {
                     showInvalidFormAlert = true
