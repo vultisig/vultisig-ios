@@ -27,7 +27,7 @@ struct KeysignMessageConfirmView: View {
                 HStack {
                     Spacer()
                     if viewModel.showBlowfish {
-                        warning
+                        blowfishView
                     }
                     Spacer()
                 }
@@ -52,7 +52,7 @@ struct KeysignMessageConfirmView: View {
         }
     }
     
-    var warning: some View {
+    var blowfishView: some View {
         VStack {
             
             if (viewModel.keysignPayload?.coin.chainType == .EVM) {

@@ -41,7 +41,7 @@ struct SendCryptoVerifyView: View {
         }
     }
     
-    var warning: some View {
+    var blowfishView: some View {
         VStack {
             if (tx.coin.chainType == .EVM) {
                 
@@ -61,7 +61,7 @@ struct SendCryptoVerifyView: View {
         VStack {
             fields
             if sendCryptoVerifyViewModel.showBlowfish {
-                warning
+                blowfishView
             }
             button
         }
