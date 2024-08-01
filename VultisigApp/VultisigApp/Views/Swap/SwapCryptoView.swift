@@ -28,7 +28,7 @@ struct SwapCryptoView: View {
 
     var body: some View {
         content
-            .task {
+            .onAppear {
                 swapViewModel.load(initialFromCoin: fromCoin, initialToCoin: toCoin, vault: vault, tx: tx)
             }
             .navigationBarBackButtonHidden(true)

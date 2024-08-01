@@ -61,11 +61,9 @@ class CoinSelectionViewModel: ObservableObject {
     }
 
     func selectWeweIfNeeded(vault: Vault) {
-        Task {
-            guard !selection.contains(TokensStore.Token.baseWewe) else {
-                return
-            }
+        guard !selection.contains(TokensStore.Token.baseWewe) else { return }
 
+        Task {
             selection.insert(TokensStore.Token.baseWewe)
 
             await saveAssets(for: vault)

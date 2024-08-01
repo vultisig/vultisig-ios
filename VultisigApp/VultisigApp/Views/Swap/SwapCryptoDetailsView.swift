@@ -95,7 +95,6 @@ struct SwapCryptoDetailsView: View {
                     isFromPickerActive = true
                 }
             )
-            .redacted(reason: !swapViewModel.dataLoaded ? .placeholder : [])
         }
     }
     
@@ -137,7 +136,6 @@ struct SwapCryptoDetailsView: View {
                     isToPickerActive = true
                 }
             )
-            .redacted(reason: !swapViewModel.dataLoaded ? .placeholder : [])
         }
     }
     

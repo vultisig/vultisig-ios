@@ -20,7 +20,10 @@ struct CoinPickerView: View {
     let onSelect: ((Coin) -> Void)?
 
     var filtered: [Coin] {
-        return coins.filter { $0.ticker.lowercased().contains(searchText.lowercased()) }
+        return coins.filter {
+            $0.ticker.lowercased().contains(searchText.lowercased()) ||
+            $0.chain.name.lowercased().contains(searchText.lowercased())
+        }
     }
 
     var body: some View {
