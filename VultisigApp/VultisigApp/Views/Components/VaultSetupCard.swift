@@ -28,6 +28,9 @@ struct VaultSetupCard: View {
             text
             titleContent
         }
+#if os(macOS)
+        .offset(y: -24)
+#endif
     }
     
     var button: some View {

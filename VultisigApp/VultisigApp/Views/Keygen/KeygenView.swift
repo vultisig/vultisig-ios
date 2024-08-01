@@ -101,8 +101,13 @@ struct KeygenView: View {
     }
     
     var keygenViewInstructions: some View {
+#if os(iOS)
         KeygenViewInstructions()
             .padding(.bottom, 30)
+#elseif os(macOS)
+        KeygenViewInstructionsMac()
+            .padding(.bottom, 30)
+#endif
     }
     
     var progress: some View {

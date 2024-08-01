@@ -1,38 +1,65 @@
 //
-//  KeygenViewInstructions.swift
+//  KeygenViewInstructionsMac.swift
 //  VultisigApp
 //
-//  Created by Amol Kumar on 2024-07-31.
+//  Created by Amol Kumar on 2024-08-01.
 //
 
 import SwiftUI
 
-struct KeygenViewInstructions: View {
+struct KeygenViewInstructionsMac: View {
     @State var tabIndex = 0
     
-#if os(iOS)
-    init() {
-        UIPageControl.appearance().currentPageIndicatorTintColor = UIColor(Color.turquoise400)
-        UIPageControl.appearance().pageIndicatorTintColor = UIColor(Color.blue200)
-    }
-#endif
-    
     var body: some View {
-        cards
-            .frame(maxHeight: 250)
+        content
     }
     
-    var cards: some View {
-        TabView(selection: $tabIndex) {
+    var content: some View {
+        ZStack {
             ForEach(0..<7) { index in
                 getCard(for: index)
             }
+            .allowsHitTesting(false)
+            
+            controls
         }
-#if os(iOS)
-        .tabViewStyle(PageTabViewStyle())
-#endif
         .frame(maxHeight: .infinity)
         .foregroundColor(.blue)
+    }
+    
+    var controls: some View {
+        HStack {
+            previousButton
+            Spacer()
+            nextButton
+        }
+        .padding(.horizontal, 30)
+        .buttonStyle(PlainButtonStyle())
+        .background(Color.clear)
+    }
+    
+    var previousButton: some View {
+        let isDisabled = tabIndex==0
+        
+        return Button(action: {
+            tabIndex -= 1
+        }, label: {
+            NavigationButton(isLeft: true)
+        })
+        .disabled(isDisabled)
+        .opacity(isDisabled ? 0 : 1)
+    }
+    
+    var nextButton: some View {
+        let isDisabled = tabIndex==6
+        
+        return Button(action: {
+            tabIndex += 1
+        }, label: {
+            NavigationButton()
+        })
+        .disabled(isDisabled)
+        .opacity(isDisabled ? 0 : 1)
     }
     
     private func getCard(for index: Int) -> some View {
@@ -42,6 +69,7 @@ struct KeygenViewInstructions: View {
         }
         .tag(index)
         .frame(maxWidth: 280)
+        .opacity(index==tabIndex ? 1 : 0)
     }
     
     private func getTitle(for index: Int) -> some View {
@@ -67,8 +95,5 @@ struct KeygenViewInstructions: View {
 }
 
 #Preview {
-    ZStack {
-        Background()
-        KeygenViewInstructions()
-    }
+    KeygenViewInstructionsMac()
 }

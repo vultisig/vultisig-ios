@@ -114,6 +114,7 @@
 		A625D9BE2C59F2100078FBF4 /* SetupCardsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A625D9BD2C59F2100078FBF4 /* SetupCardsView.swift */; };
 		A625D9C02C59F2FC0078FBF4 /* GradientSeparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A625D9BF2C59F2FC0078FBF4 /* GradientSeparator.swift */; };
 		A625D9C22C5AD15A0078FBF4 /* KeygenViewInstructions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A625D9C12C5AD15A0078FBF4 /* KeygenViewInstructions.swift */; };
+		A625D9C62C5B5FE30078FBF4 /* KeygenViewInstructionsMac.swift in Sources */ = {isa = PBXBuildFile; fileRef = A625D9C52C5B5FE30078FBF4 /* KeygenViewInstructionsMac.swift */; };
 		A62758F22B97B10600ADE3A6 /* Endpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62758F12B97B10600ADE3A6 /* Endpoint.swift */; };
 		A62758F72B97DF4A00ADE3A6 /* ColorStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62758F62B97DF4A00ADE3A6 /* ColorStyle.swift */; };
 		A62D6B032BFE7BF400F24E51 /* CoinDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62D6B022BFE7BF400F24E51 /* CoinDetailView.swift */; };
@@ -536,6 +537,7 @@
 		A625D9BD2C59F2100078FBF4 /* SetupCardsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupCardsView.swift; sourceTree = "<group>"; };
 		A625D9BF2C59F2FC0078FBF4 /* GradientSeparator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientSeparator.swift; sourceTree = "<group>"; };
 		A625D9C12C5AD15A0078FBF4 /* KeygenViewInstructions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenViewInstructions.swift; sourceTree = "<group>"; };
+		A625D9C52C5B5FE30078FBF4 /* KeygenViewInstructionsMac.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenViewInstructionsMac.swift; sourceTree = "<group>"; };
 		A62758F12B97B10600ADE3A6 /* Endpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endpoint.swift; sourceTree = "<group>"; };
 		A62758F42B97CE9E00ADE3A6 /* FontStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontStyle.swift; sourceTree = "<group>"; };
 		A62758F62B97DF4A00ADE3A6 /* ColorStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorStyle.swift; sourceTree = "<group>"; };
@@ -908,6 +910,7 @@
 				A686C0B12C58C3AE00BBCE9C /* VaultSetupCard.swift */,
 				A625D9BF2C59F2FC0078FBF4 /* GradientSeparator.swift */,
 				A625D9C12C5AD15A0078FBF4 /* KeygenViewInstructions.swift */,
+				A625D9C52C5B5FE30078FBF4 /* KeygenViewInstructionsMac.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -2382,6 +2385,7 @@
 				A5D49F582BE26C63001766C8 /* CoinActionResolver.swift in Sources */,
 				DE8BDCCB2C47E34300A1EDA6 /* Vault+ProtoMappable.swift in Sources */,
 				B5A97CF12BF41903007574D7 /* TransactionMemoVerifyViewModel.swift in Sources */,
+				A625D9C62C5B5FE30078FBF4 /* KeygenViewInstructionsMac.swift in Sources */,
 				A65649F02B966A1200E4B329 /* UTXOTransactionMempoolOutput.swift in Sources */,
 				A653242A2BA52A4700DDE6EB /* SendCryptoViewModel.swift in Sources */,
 				B51097F32C4E48EE0066D560 /* BlowfishResponse.swift in Sources */,

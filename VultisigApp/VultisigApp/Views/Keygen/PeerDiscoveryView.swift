@@ -193,7 +193,9 @@ struct PeerDiscoveryView: View {
                 .frame(maxHeight: .infinity)
                 .padding(24)
 #endif
+#if os(iOS)
                 .background(Color.blue600)
+#endif
                 .cornerRadius(20)
                 .overlay (
                     RoundedRectangle(cornerRadius: 10)
