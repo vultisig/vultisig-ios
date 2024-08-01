@@ -95,7 +95,7 @@ struct SwapCryptoDetailsView: View {
                     isFromPickerActive = true
                 }
             )
-            .redacted(reason: tx.fromCoin == .example ? .placeholder : [])
+            .redacted(reason: !swapViewModel.dataLoaded ? .placeholder : [])
         }
     }
     
@@ -137,7 +137,7 @@ struct SwapCryptoDetailsView: View {
                     isToPickerActive = true
                 }
             )
-            .redacted(reason: tx.toCoin == .example ? .placeholder : [])
+            .redacted(reason: !swapViewModel.dataLoaded ? .placeholder : [])
         }
     }
     

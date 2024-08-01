@@ -19,6 +19,7 @@ struct ChainDetailView: View {
     @State var isSendLinkActive = false
     @State var isSwapLinkActive = false
     @State var isMemoLinkActive = false
+    @State var isWeweLinkActive = false
 
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
@@ -65,6 +66,11 @@ struct ChainDetailView: View {
         .navigationDestination(isPresented: $isSwapLinkActive) {
             if let fromCoin = tokens.first {
                 SwapCryptoView(fromCoin: fromCoin, vault: vault)
+            }
+        }
+        .navigationDestination(isPresented: $isWeweLinkActive) {
+            if let base = vault.coin(for: TokensStore.Token.baseEth), let wewe = vault.coin(for: TokensStore.Token.baseWewe) {
+                SwapCryptoView(fromCoin: base, toCoin: wewe, vault: vault)
             }
         }
         .navigationDestination(isPresented: $isMemoLinkActive) {
@@ -218,6 +224,7 @@ struct ChainDetailView: View {
     private func weweButton() -> some View {
         Button {
             viewModel.selectWeweIfNeeded(vault: vault)
+            isWeweLinkActive = true
         } label: {
             FilledLabelButton {
                 HStack(spacing: 10) {
