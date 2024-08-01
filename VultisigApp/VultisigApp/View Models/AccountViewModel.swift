@@ -36,7 +36,7 @@ class AccountViewModel: ObservableObject {
     }
     
     private func authenticate(_ context: LAContext) {
-        if context.biometryType == .faceID {
+        if context.biometryType == .faceID && isRunningOnPhysicalDevice() {
             context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Authenticate to check Face ID") { success, error in
                 DispatchQueue.main.async {
                     if success {
@@ -111,5 +111,13 @@ class AccountViewModel: ObservableObject {
         isAuthenticated = false
         didUserCancelAuthentication = false
         showSplashView = true
+    }
+    
+    private func isRunningOnPhysicalDevice() -> Bool {
+        #if targetEnvironment(simulator)
+        return false
+        #else
+        return true
+        #endif
     }
 }
