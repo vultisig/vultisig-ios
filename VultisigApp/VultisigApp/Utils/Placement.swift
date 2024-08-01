@@ -10,7 +10,7 @@ enum Placement{
     case topBarLeading
     case topBarTrailing
     case principal
-    
+
     func getPlacement() -> ToolbarItemPlacement {
 #if os(iOS)
         switch self {

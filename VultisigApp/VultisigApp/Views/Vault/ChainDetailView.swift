@@ -53,6 +53,9 @@ struct ChainDetailView: View {
                 }
             }
         }
+        .safeAreaInset(edge: .bottom) {
+            weweButton()
+        }
         .navigationDestination(isPresented: $isSendLinkActive) {
             SendCryptoView(
                 tx: sendTx,
@@ -209,7 +212,28 @@ struct ChainDetailView: View {
         .font(.body16MenloBold)
         .foregroundColor(.turquoise600)
     }
-    
+
+    private func weweButton() -> some View {
+        Button {
+            
+        } label: {
+            FilledLabelButton {
+                HStack(spacing: 10) {
+                    Image("BuyWewe")
+                    Text("BUY $WEWE")
+                        .foregroundColor(.blue600)
+#if os(iOS)
+                        .font(.body16MontserratBold)
+#elseif os(macOS)
+                        .font(.body14MontserratBold)
+#endif
+                }
+                .frame(height: 44)
+            }
+        }
+        .padding(20)
+    }
+
     private func getCoinCell(_ coin: Coin) -> some View {
         VStack(spacing: 0) {
             Separator()
