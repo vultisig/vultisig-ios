@@ -39,6 +39,7 @@ extension Color {
     static let persianBlue200 = Color(hex: "4879FD")
     static let persianBlue400 = Color(hex: "2155DF")
     
+    static let turquoise400 = Color(hex: "81F8DE")
     static let turquoise600 = Color(hex: "33E6BF")
     
     static let mediumPurple = Color(hex: "9563FF")

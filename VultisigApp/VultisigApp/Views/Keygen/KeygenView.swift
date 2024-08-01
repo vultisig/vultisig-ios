@@ -63,11 +63,13 @@ struct KeygenView: View {
     }
     
     var content: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 0) {
+            Spacer()
             if showProgressRing {
                 progress
             }
             states
+            keygenViewInstructions
         }
     }
     
@@ -92,14 +94,17 @@ struct KeygenView: View {
         }
         .frame(
             maxWidth: showProgressRing ? 280 : .infinity,
-            maxHeight: showProgressRing ? 10 : .infinity
+            maxHeight: showProgressRing ? 50 : .infinity
         )
     }
     
+    var keygenViewInstructions: some View {
+        KeygenViewInstructions()
+            .padding(.bottom, 30)
+    }
+    
     var progress: some View {
-        VStack {
-            ProgressRing(progress: Double(progressCounter/progressTotalCount))
-        }
+        ProgressRing(progress: Double(progressCounter/progressTotalCount))
     }
     
     var instructions: some View {
