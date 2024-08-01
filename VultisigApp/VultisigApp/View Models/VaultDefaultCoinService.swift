@@ -31,29 +31,31 @@ class VaultDefaultCoinService {
         print("set default chains to vault")
         if vault.coins.count == 0 {
             let chains: [CoinMeta]
-
+            
             if defaultChains.count==0 {
                 chains = TokensStore.TokenSelectionAssets
                     .filter { asset in baseDefaultChains.contains(where: { $0 == asset.chain }) }
             } else {
                 chains = defaultChains
             }
-
+            
             let coins = chains
                 .compactMap { try? CoinFactory.create(
                     asset: $0,
                     vault: vault
                 )}
-                    
+            
             for coin in coins {
-                self.context.insert(coin)
-                vault.coins.append(coin)
-                
-                Task {
-                    do{
-                        try await CoinSelectionViewModel().addDiscoveredTokens(nativeToken: coin, to: vault)
-                    } catch {
-                        print("The coin \(coin.ticker) could not be added. \(error.localizedDescription)")
+                if coin.isNativeToken {
+                    self.context.insert(coin)
+                    vault.coins.append(coin)
+                    
+                    Task {
+                        do{
+                            try await CoinSelectionViewModel().addDiscoveredTokens(nativeToken: coin, to: vault)
+                        } catch {
+                            print("The coin \(coin.ticker) could not be added. \(error.localizedDescription)")
+                        }
                     }
                 }
             }
