@@ -51,11 +51,13 @@ extension Coin {
             }
         case .avalanche:
             if thorAvaxTokens.contains(ticker) {
-                return [.thorchain, .oneinch(chain)]
+                return [.thorchain, .oneinch(chain), .lifi]
             } else {
                 return [.oneinch(chain), .lifi]
             }
-        case .base, .optimism, .polygon:
+        case .base:
+            return [.lifi]
+        case .optimism, .polygon:
             return [.oneinch(chain), .lifi]
         case .thorChain:
             return [.thorchain, .mayachain]
