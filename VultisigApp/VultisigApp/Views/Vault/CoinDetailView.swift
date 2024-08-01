@@ -35,7 +35,7 @@ struct CoinDetailView: View {
             )
         }
         .navigationDestination(isPresented: $isSwapLinkActive) {
-            SwapCryptoView(coin: coin, vault: vault)
+            SwapCryptoView(fromCoin: coin, vault: vault)
         }
         .navigationDestination(isPresented: $isMemoLinkActive) {
             TransactionMemoView(

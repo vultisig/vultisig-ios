@@ -23,8 +23,6 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
     var keysignPayload: KeysignPayload?
     
-    @MainActor @Published var fromCoins: [Coin] = []
-    @MainActor @Published var toCoins: [Coin] = []
     @MainActor @Published var currentIndex = 1
     @MainActor @Published var currentTitle = "send"
     @MainActor @Published var hash: String?
@@ -34,23 +32,29 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     @MainActor @Published var quoteLoading = false
     @MainActor @Published var dataLoaded = false
 
-    func load(tx: SwapTransaction, initialFromCoin: Coin?, vault: Vault) async {
-        guard !dataLoaded else { return }
-        isLoading = true
-        defer { isLoading = false }
-
-        let (fromCoins, selectedFromCoin) = SwapCoinsResolver.resolveFromCoins(allCoins: vault.coins)
-        let fromCoin = initialFromCoin ?? selectedFromCoin
-       
-        tx.fromCoin = fromCoin
-        self.fromCoins = fromCoins
-        self.dataLoaded = true
-    }
-    
     var progress: Double {
         return Double(currentIndex) / Double(titles.count)
     }
-    
+
+    func load(initialFromCoin: Coin?, initialToCoin: Coin?, vault: Vault, tx: SwapTransaction) {
+        guard !dataLoaded else { return }
+        defer { dataLoaded = true }
+
+        let (fromCoins, fromCoin) = SwapCoinsResolver.resolveFromCoins(
+            allCoins: vault.coins
+        )
+
+        let resolvedFromCoin = initialFromCoin ?? fromCoin
+
+        let (toCoins, toCoin) = SwapCoinsResolver.resolveToCoins(
+            fromCoin: resolvedFromCoin,
+            allCoins: vault.coins,
+            selectedToCoin: initialToCoin ?? .example
+        )
+
+        tx.load(fromCoin: resolvedFromCoin, toCoin: toCoin, fromCoins: fromCoins, toCoins: toCoins)
+    }
+
     func explorerLink(tx: SwapTransaction, hash: String) -> String {
         return Endpoint.getExplorerURL(chainTicker: tx.fromCoin.chain.ticker, txid: hash)
     }
@@ -58,11 +62,11 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     func updateCoinLists(tx: SwapTransaction) {
         let (toCoins, toCoin) = SwapCoinsResolver.resolveToCoins(
             fromCoin: tx.fromCoin,
-            allCoins: fromCoins,
+            allCoins: tx.fromCoins,
             selectedToCoin: tx.toCoin
         )
         tx.toCoin = toCoin
-        self.toCoins = toCoins
+        tx.toCoins = toCoins
     }
 
     func progressLink(tx: SwapTransaction, hash: String) -> String? {
@@ -414,7 +418,7 @@ private extension SwapCryptoViewModel {
             return tx.fromCoin
         case .EVM:
             guard !tx.fromCoin.isNativeToken else { return tx.fromCoin }
-            return fromCoins.first(where: { $0.chain == tx.fromCoin.chain && $0.isNativeToken }) ?? tx.fromCoin
+            return tx.fromCoins.first(where: { $0.chain == tx.fromCoin.chain && $0.isNativeToken }) ?? tx.fromCoin
         }
     }
     

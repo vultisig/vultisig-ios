@@ -11,13 +11,23 @@ import BigInt
 @MainActor
 class SwapTransaction: ObservableObject {
 
-    @Published var fromCoin: Coin = .example
-    @Published var toCoin: Coin = .example
     @Published var fromAmount: String = .empty
     @Published var thorchainFee: BigInt = .zero
     @Published var oneInchFee: BigInt = .zero
     @Published var gas: BigInt = .zero
     @Published var quote: SwapQuote?
+
+    @Published var fromCoin: Coin = .example
+    @Published var toCoin: Coin = .example
+    @Published var fromCoins: [Coin] = []
+    @Published var toCoins: [Coin] = []
+
+    func load(fromCoin: Coin, toCoin: Coin, fromCoins: [Coin], toCoins: [Coin]) {
+        self.fromCoin = fromCoin
+        self.toCoin = toCoin
+        self.fromCoins = fromCoins
+        self.toCoins = toCoins
+    }
 
     var isApproveRequired: Bool {
         return fromCoin.shouldApprove && router != nil

@@ -63,7 +63,9 @@ struct ChainDetailView: View {
             )
         }
         .navigationDestination(isPresented: $isSwapLinkActive) {
-            SwapCryptoView(coin: tokens.first, vault: vault)
+            if let fromCoin = tokens.first {
+                SwapCryptoView(fromCoin: fromCoin, vault: vault)
+            }
         }
         .navigationDestination(isPresented: $isMemoLinkActive) {
             TransactionMemoView(
