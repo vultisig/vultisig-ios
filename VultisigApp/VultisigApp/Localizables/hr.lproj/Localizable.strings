@@ -296,6 +296,8 @@
 "keygenInstructionsCar6DescriptionPart1" = "Pridružite se tisućama. Tisuće korisnika vjeruju Vultisigu s njihovom digitalnom imovinom. Postanite dio naše";
 "keygenInstructionsCar6DescriptionPart2" = "sigurne i rastuće zajednice";
 "keygenInstructionsCar6DescriptionPart3" = ".";
-"keygenInstructionsCar7DescriptionPart1" = "Kompatibilnost s više uređaja. Pristupite svom Vult
+"keygenInstructionsCar7DescriptionPart1" = "Kompatibilnost s više uređaja. Pristupite svom Vultisig spremištu";
+"keygenInstructionsCar7DescriptionPart2" = "s više uređaja";
+"keygenInstructionsCar7DescriptionPart3" = ", povećavajući fleksibilnost bez ugrožavanja sigurnosti.";
 "noSavedAddressesForChain" = "Nema spremljenih adresa za ovaj lanac.";
 "editAddress" = "Uredi adresu";
