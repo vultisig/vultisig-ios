@@ -93,18 +93,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
             )
             
         } catch {
-            switch error {
-            case KeysignPayloadFactory.Errors.notEnoughBalanceError:
-                self.errorMessage = "notEnoughBalanceError"
-            case KeysignPayloadFactory.Errors.failToGetSequenceNo:
-                self.errorMessage = "failToGetSequenceNo"
-            case KeysignPayloadFactory.Errors.failToGetAccountNumber:
-                self.errorMessage = "failToGetAccountNumber"
-            case KeysignPayloadFactory.Errors.failToGetRecentBlockHash:
-                self.errorMessage = "failToGetRecentBlockHash"
-            default:
-                self.errorMessage = error.localizedDescription
-            }
+            self.errorMessage = error.localizedDescription
             showAlert = true
             isLoading = false
             return nil
@@ -140,18 +129,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
                                                                            memo: tx.memo,
                                                                            chainSpecific: chainSpecific, vault: vault)
         } catch {
-            switch error {
-            case KeysignPayloadFactory.Errors.notEnoughBalanceError:
-                self.errorMessage = "notEnoughBalanceError"
-            case KeysignPayloadFactory.Errors.failToGetSequenceNo:
-                self.errorMessage = "failToGetSequenceNo"
-            case KeysignPayloadFactory.Errors.failToGetAccountNumber:
-                self.errorMessage = "failToGetAccountNumber"
-            case KeysignPayloadFactory.Errors.failToGetRecentBlockHash:
-                self.errorMessage = "failToGetRecentBlockHash"
-            default:
-                self.errorMessage = error.localizedDescription
-            }
+            self.errorMessage = error.localizedDescription
             showAlert = true
             isLoading = false
             return nil
