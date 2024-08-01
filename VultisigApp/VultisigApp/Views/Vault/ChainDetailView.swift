@@ -55,7 +55,9 @@ struct ChainDetailView: View {
             }
         }
         .safeAreaInset(edge: .bottom) {
-            weweButton()
+            if group.chain == .base {
+                weweButton()
+            }
         }
         .navigationDestination(isPresented: $isSendLinkActive) {
             SendCryptoView(
@@ -240,7 +242,7 @@ struct ChainDetailView: View {
                 .frame(height: 44)
             }
         }
-        .padding(20)
+        .padding(40)
     }
 
     private func getCoinCell(_ coin: Coin) -> some View {

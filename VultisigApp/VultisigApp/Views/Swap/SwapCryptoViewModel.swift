@@ -38,7 +38,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
     func load(initialFromCoin: Coin?, initialToCoin: Coin?, vault: Vault, tx: SwapTransaction) {
         guard !dataLoaded else { return }
-        defer { dataLoaded = true }
+        dataLoaded = true
 
         let (fromCoins, fromCoin) = SwapCoinsResolver.resolveFromCoins(
             allCoins: vault.coins
