@@ -25,7 +25,7 @@ class AccountViewModel: ObservableObject {
         let context = LAContext()
         var error: NSError?
 
-        if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
+        if context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
             authenticate(context)
         } else {
             isAuthenticationEnabled = false
@@ -37,7 +37,7 @@ class AccountViewModel: ObservableObject {
     
     private func authenticate(_ context: LAContext) {
         if context.biometryType == .faceID {
-            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: "Authenticate to check Face ID") { success, error in
+            context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Authenticate to check Face ID") { success, error in
                 DispatchQueue.main.async {
                     if success {
                         self.isAuthenticated = true
