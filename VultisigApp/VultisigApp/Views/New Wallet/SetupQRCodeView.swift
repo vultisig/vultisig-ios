@@ -11,9 +11,6 @@ import SwiftUI
 struct SetupQRCodeView: View {
     let tssType: TssType
     let vault: Vault
-    @Binding var showSheet: Bool
-    @Binding var shouldJoinKeygen: Bool
-    @Binding var shouldKeysignTransaction: Bool
     
     @State var selectedTab: SetupVaultState = .TwoOfTwoVaults
     
@@ -42,14 +39,6 @@ struct SetupQRCodeView: View {
             context
             image
             button
-        }
-        .navigationDestination(isPresented: $shouldJoinKeygen) {
-            JoinKeygenView(vault: vault)
-        }
-        .navigationDestination(isPresented: $shouldKeysignTransaction) {
-            if let vault = viewModel.selectedVault {
-                JoinKeysignView(vault: vault)
-            }
         }
     }
     
@@ -95,10 +84,7 @@ struct SetupQRCodeView: View {
 #Preview {
     SetupQRCodeView(
         tssType: .Keygen, 
-        vault: Vault.example,
-        showSheet: .constant(false),
-        shouldJoinKeygen: .constant(false),
-        shouldKeysignTransaction: .constant(false)
+        vault: Vault.example
     )
     .environmentObject(HomeViewModel())
 }

@@ -49,16 +49,21 @@ struct SetupCardsView: View {
                 shouldKeysignTransaction: $shouldKeysignTransaction
             )
         })
+        .navigationDestination(isPresented: $shouldJoinKeygen) {
+            JoinKeygenView(vault: Vault(name: getUniqueVaultName()))
+        }
+        .navigationDestination(isPresented: $shouldKeysignTransaction) {
+            if let vault = viewModel.selectedVault {
+                JoinKeysignView(vault: vault)
+            }
+        }
     }
     
     var initiatingDeviceCard: some View {
         NavigationLink {
             SetupQRCodeView(
                 tssType: tssType,
-                vault: vault ?? Vault(name: getUniqueVaultName()),
-                showSheet: $showSheet,
-                shouldJoinKeygen: $shouldJoinKeygen,
-                shouldKeysignTransaction: $shouldKeysignTransaction
+                vault: vault ?? Vault(name: getUniqueVaultName())
             )
         } label: {
             initiatingDeviceLabel
@@ -91,9 +96,9 @@ struct SetupCardsView: View {
     
     var pairingDeviceLabel: some View {
         VaultSetupCard(
-            title: "initiatingDevice",
-            buttonTitle: "createQR",
-            icon: "InitiatingDeviceIcon"
+            title: "pairingDevice",
+            buttonTitle: "scanQR",
+            icon: "PairingDeviceIcon"
         )
     }
     

@@ -27,7 +27,7 @@ struct KeyGenSummaryView: View {
     var view: some View {
         VStack {
             content
-            button
+            buttons
         }
     }
     
@@ -36,7 +36,6 @@ struct KeyGenSummaryView: View {
             VStack(spacing: 32) {
                 header
                 devicesList
-                disclaimers
             }
             .padding(.top, 30)
             .padding(.horizontal, 22)
@@ -112,12 +111,20 @@ struct KeyGenSummaryView: View {
         getOutlinedCell(NSLocalizedString("shouldBackupVaultsSeparateLocations", comment: ""))
     }
     
+    var buttons: some View {
+        VStack(spacing: 16) {
+            disclaimers
+            button
+        }
+        .padding(.vertical, 40)
+        .padding(.horizontal, 26)
+    }
+    
     var button: some View {
         Button {
             viewModel.startKeygen()
         } label: {
             FilledButton(title: "continue")
-                .padding(40)
         }
     }
     

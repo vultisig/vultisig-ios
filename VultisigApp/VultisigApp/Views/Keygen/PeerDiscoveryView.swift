@@ -175,10 +175,6 @@ struct PeerDiscoveryView: View {
     
     var paringBarcode: some View {
         VStack {
-            Text(NSLocalizedString("pairWithOtherDevices", comment: "Pair with two other devices"))
-                .font(.body18MenloBold)
-                .multilineTextAlignment(.center)
-            
             qrCodeImage?
                 .resizable()
 #if os(iOS)
