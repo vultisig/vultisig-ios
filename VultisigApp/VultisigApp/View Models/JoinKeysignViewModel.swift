@@ -41,6 +41,9 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var useVultisigRelay = false
     @Published var isCameraPermissionGranted: Bool? = nil
     
+    @Published var showBlowfish = false
+    @Published var ShowBlowfishWarnings = false
+    
     var encryptionKeyHex: String = ""
     
     init() {
@@ -259,13 +262,36 @@ class JoinKeysignViewModel: ObservableObject {
         manageQrCodeStates()
     }
     
-    func blowfishEVMTransactionScan() async throws -> BlowfishResponse? {
+    func blowfishTransactionScan() async -> BlowfishResponse? {
         
         guard let payload = keysignPayload else {
             return nil
         }
         
-        return try await BlowfishService.shared.blowfishEVMTransactionScan(
+        switch payload.coin.chainType {
+        case .EVM:
+            let blowfishResponse = await blowfishEVMTransactionScan()
+            showBlowfish = blowfishResponse != nil
+            ShowBlowfishWarnings = blowfishResponse != nil && !(blowfishResponse?.warnings?.isEmpty ?? true)
+            return blowfishResponse
+        case .Solana:
+            let blowfishResponse = await blowfishSolanaTransactionScan()
+            showBlowfish = blowfishResponse != nil
+            ShowBlowfishWarnings = blowfishResponse != nil && !(blowfishResponse?.aggregated?.warnings?.isEmpty ?? true)
+            return blowfishResponse
+        default:
+            return nil
+        }
+        
+    }
+    
+    func blowfishEVMTransactionScan() async -> BlowfishResponse? {
+        
+        guard let payload = keysignPayload else {
+            return nil
+        }
+        
+        return await BlowfishService.shared.blowfishEVMTransactionScan(
             fromAddress: payload.coin.address,
             toAddress: payload.toAddress,
             amountInRaw: payload.toAmount,
@@ -274,22 +300,30 @@ class JoinKeysignViewModel: ObservableObject {
         )
     }
     
-    func blowfishSolanaTransactionScan() async throws -> BlowfishResponse? {
+    func blowfishSolanaTransactionScan() async -> BlowfishResponse? {
         
-        if let payload = keysignPayload {
-            let zeroSignedTransaction = try SolanaHelper.getZeroSignedTransaction(
-                vaultHexPubKey: vault.pubKeyEdDSA,
-                vaultHexChainCode: vault.hexChainCode,
-                keysignPayload: payload
-            )
+        do {
             
-            return try await BlowfishService.shared.blowfishSolanaTransactionScan(
-                fromAddress: payload.coin.address, 
-                zeroSignedTransaction: zeroSignedTransaction
-            )
+            if let payload = keysignPayload {
+                let zeroSignedTransaction = try SolanaHelper.getZeroSignedTransaction(
+                    vaultHexPubKey: vault.pubKeyEdDSA,
+                    vaultHexChainCode: vault.hexChainCode,
+                    keysignPayload: payload
+                )
+                
+                return await BlowfishService.shared.blowfishSolanaTransactionScan(
+                    fromAddress: payload.coin.address,
+                    zeroSignedTransaction: zeroSignedTransaction
+                )
+            }
+            
+        } catch {
+            
+            print(error.localizedDescription)
+            return nil
+            
         }
         
         return nil
-        
     }
 }

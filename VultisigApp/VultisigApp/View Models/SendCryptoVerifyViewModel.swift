@@ -19,6 +19,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage = ""
     
+    @Published var showBlowfish = false
+    @Published var ShowBlowfishWarnings = false
+    
     @Published var thor = ThorchainService.shared
     @Published var sol: SolanaService = SolanaService.shared
     @Published var utxo = BlockchairService.shared
@@ -37,8 +40,27 @@ class SendCryptoVerifyViewModel: ObservableObject {
         return tx.amountInRaw
     }
     
-    func blowfishEVMTransactionScan(tx: SendTransaction) async throws -> BlowfishResponse? {
-        return try await BlowfishService.shared.blowfishEVMTransactionScan(
+    func blowfishTransactionScan(tx: SendTransaction, vault: Vault) async -> BlowfishResponse? {
+        
+        switch tx.coin.chain.chainType {
+        case .EVM:
+            let blowfishResponse = await blowfishEVMTransactionScan(tx: tx)
+            showBlowfish = blowfishResponse != nil
+            ShowBlowfishWarnings = blowfishResponse != nil && !(blowfishResponse?.warnings?.isEmpty ?? true)
+            return blowfishResponse
+        case .Solana:
+            let blowfishResponse = await blowfishSolanaTransactionScan(tx: tx, vault: vault)
+            showBlowfish = blowfishResponse != nil
+            ShowBlowfishWarnings = blowfishResponse != nil && !(blowfishResponse?.aggregated?.warnings?.isEmpty ?? true)
+            return blowfishResponse
+        default:
+            return nil
+        }
+        
+    }
+    
+    func blowfishEVMTransactionScan(tx: SendTransaction) async -> BlowfishResponse? {
+        return await BlowfishService.shared.blowfishEVMTransactionScan(
             fromAddress: tx.fromAddress, toAddress: tx.toAddress, amountInRaw: tx.amountInRaw, memo: tx.memo, chain: tx.coin.chain
         )
     }
@@ -66,7 +88,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
             }
             
             
-            return try await BlowfishService.shared.blowfishSolanaTransactionScan(
+            return await BlowfishService.shared.blowfishSolanaTransactionScan(
                 fromAddress: tx.fromAddress, zeroSignedTransaction: zeroSignedTransaction
             )
             

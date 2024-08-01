@@ -33,31 +33,9 @@ struct SendCryptoVerifyView: View {
             sendCryptoVerifyViewModel.isLoading = false
         }
         .onAppear {
-            if (tx.coin.chainType == .EVM) {
-                isLoading = true
-                Task{
-                    do {
-                        blowfishResponse = try await sendCryptoVerifyViewModel.blowfishEVMTransactionScan(tx: tx)
-                        isLoading = false
-                    } catch {
-                        print(error.localizedDescription)
-                        isLoading = false
-                    }
-                }
-            } else if (tx.coin.chainType == .Solana) {
-                
-                isLoading = true
-                Task{
-                    blowfishResponse = await sendCryptoVerifyViewModel.blowfishSolanaTransactionScan(
-                        tx: tx,
-                        vault: vault
-                    )
-                    
-                    isLoading = false
-                    
-                }
-                
-            } else {
+            isLoading = true
+            Task{
+                blowfishResponse = await sendCryptoVerifyViewModel.blowfishTransactionScan(tx: tx, vault: vault)
                 isLoading = false
             }
         }
@@ -82,7 +60,7 @@ struct SendCryptoVerifyView: View {
     var view: some View {
         VStack {
             fields
-            if ((tx.coin.chainType == .EVM || tx.coin.chainType == .Solana) && blowfishResponse != nil) {
+            if sendCryptoVerifyViewModel.showBlowfish {
                 warning
             }
             button

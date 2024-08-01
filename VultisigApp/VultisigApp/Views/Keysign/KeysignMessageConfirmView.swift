@@ -26,10 +26,7 @@ struct KeysignMessageConfirmView: View {
                 
                 HStack {
                     Spacer()
-                    if (
-                        (viewModel.keysignPayload?.coin.chainType == .EVM || viewModel.keysignPayload?.coin.chainType == .Solana) &&
-                        blowfishResponse != nil
-                    ) {
+                    if viewModel.showBlowfish {
                         warning
                     }
                     Spacer()
@@ -39,29 +36,9 @@ struct KeysignMessageConfirmView: View {
             }
             .foregroundColor(.neutral0)
             .onAppear {
-                if (viewModel.keysignPayload?.coin.chainType == .EVM) {
-                    isLoading = true
-                    Task{
-                        do {
-                            blowfishResponse = try await viewModel.blowfishEVMTransactionScan()
-                            isLoading = false
-                        } catch {
-                            print(error.localizedDescription)
-                            isLoading = false
-                        }
-                    }
-                } else if (viewModel.keysignPayload?.coin.chainType == .Solana) {
-                    isLoading = true
-                    Task{
-                        do {
-                            blowfishResponse = try await viewModel.blowfishSolanaTransactionScan()
-                            isLoading = false
-                        } catch {
-                            print(error.localizedDescription)
-                            isLoading = false
-                        }
-                    }
-                } else {
+                isLoading = true
+                Task{
+                    blowfishResponse =  await viewModel.blowfishTransactionScan()
                     isLoading = false
                 }
             }

@@ -18,7 +18,7 @@ struct BlowfishService {
         origin: String,
         txObjects: [BlowfishRequest.BlowfishTxObject],
         simulatorConfig: BlowfishRequest.BlowfishSimulatorConfig? = nil
-    ) async throws -> BlowfishResponse? {
+    ) async -> BlowfishResponse? {
         
         guard let supportedChain = blowfishChainName(chain: chain) else {
             return nil
@@ -28,20 +28,29 @@ struct BlowfishService {
             return nil
         }
         
-        let blowfishRequest = BlowfishRequest(
-            userAccount: userAccount,
-            metadata: BlowfishRequest.BlowfishMetadata(origin: origin),
-            txObjects: txObjects,
-            simulatorConfig: simulatorConfig
-        )
-        
-        let endpoint = Endpoint.fetchBlowfishTransactions(chain: supportedChain, network: supportedNetwork)
-        let headers = ["X-Api-Version" : "2023-06-05"]
-        let body = try JSONEncoder().encode(blowfishRequest)
-        let dataResponse = try await Utils.asyncPostRequest(urlString: endpoint, headers: headers, body: body)
-        let response = try JSONDecoder().decode(BlowfishResponse.self, from: dataResponse)
-        
-        return response
+        do {
+            
+            let blowfishRequest = BlowfishRequest(
+                userAccount: userAccount,
+                metadata: BlowfishRequest.BlowfishMetadata(origin: origin),
+                txObjects: txObjects,
+                simulatorConfig: simulatorConfig
+            )
+            
+            let endpoint = Endpoint.fetchBlowfishTransactions(chain: supportedChain, network: supportedNetwork)
+            let headers = ["X-Api-Version" : "2023-06-05"]
+            let body = try JSONEncoder().encode(blowfishRequest)
+            let dataResponse = try await Utils.asyncPostRequest(urlString: endpoint, headers: headers, body: body)
+            let response = try JSONDecoder().decode(BlowfishResponse.self, from: dataResponse)
+            
+            return response
+            
+        } catch {
+            
+            print(error.localizedDescription)
+            return nil
+            
+        }
     }
     
     enum DecodingCustomError: Error {
@@ -50,46 +59,55 @@ struct BlowfishService {
         case valueNotFound(Any.Type, DecodingError.Context)
         case typeMismatch(Any.Type, DecodingError.Context)
     }
-
+    
     func scanSolanaTransactions
     (
         userAccount: String,
         origin: String,
         transactions: [String]
-    ) async throws -> BlowfishResponse? {
-        
-        let blowfishRequest = BlowfishSolanaRequest(
-            userAccount: userAccount,
-            metadata: BlowfishSolanaRequest.BlowfishMetadata(origin: origin),
-            transactions: transactions
-        )
-        
-        let endpoint = Endpoint.fetchBlowfishSolanaTransactions()
-        let headers = ["X-Api-Version" : "2023-06-05"]
-        let body = try JSONEncoder().encode(blowfishRequest)
-        let dataResponse = try await Utils.asyncPostRequest(urlString: endpoint, headers: headers, body: body)
+    ) async -> BlowfishResponse? {
         
         do {
-            let response = try JSONDecoder().decode(BlowfishResponse.self, from: dataResponse)
-            return response
-        } catch let DecodingError.dataCorrupted(context) {
-            print("Data corrupted: \(context)")
-            throw DecodingCustomError.dataCorrupted(context)
-        } catch let DecodingError.keyNotFound(key, context) {
-            print("Key '\(key)' not found:", context.debugDescription)
-            print("codingPath:", context.codingPath)
-            throw DecodingCustomError.keyNotFound(key, context)
-        } catch let DecodingError.valueNotFound(value, context) {
-            print("Value '\(value)' not found:", context.debugDescription)
-            print("codingPath:", context.codingPath)
-            throw DecodingCustomError.valueNotFound(value, context)
-        } catch let DecodingError.typeMismatch(type, context) {
-            print("Type '\(type)' mismatch:", context.debugDescription)
-            print("codingPath:", context.codingPath)
-            throw DecodingCustomError.typeMismatch(type, context)
+            
+            let blowfishRequest = BlowfishSolanaRequest(
+                userAccount: userAccount,
+                metadata: BlowfishSolanaRequest.BlowfishMetadata(origin: origin),
+                transactions: transactions
+            )
+            
+            let endpoint = Endpoint.fetchBlowfishSolanaTransactions()
+            let headers = ["X-Api-Version" : "2023-06-05"]
+            let body = try JSONEncoder().encode(blowfishRequest)
+            let dataResponse = try await Utils.asyncPostRequest(urlString: endpoint, headers: headers, body: body)
+            
+            do {
+                let response = try JSONDecoder().decode(BlowfishResponse.self, from: dataResponse)
+                return response
+            } catch let DecodingError.dataCorrupted(context) {
+                print("Data corrupted: \(context)")
+                throw DecodingCustomError.dataCorrupted(context)
+            } catch let DecodingError.keyNotFound(key, context) {
+                print("Key '\(key)' not found:", context.debugDescription)
+                print("codingPath:", context.codingPath)
+                throw DecodingCustomError.keyNotFound(key, context)
+            } catch let DecodingError.valueNotFound(value, context) {
+                print("Value '\(value)' not found:", context.debugDescription)
+                print("codingPath:", context.codingPath)
+                throw DecodingCustomError.valueNotFound(value, context)
+            } catch let DecodingError.typeMismatch(type, context) {
+                print("Type '\(type)' mismatch:", context.debugDescription)
+                print("codingPath:", context.codingPath)
+                throw DecodingCustomError.typeMismatch(type, context)
+            } catch {
+                print("Error decoding JSON:", error)
+                throw error
+            }
+            
         } catch {
-            print("Error decoding JSON:", error)
-            throw error
+            
+            print(error.localizedDescription)
+            return nil
+            
         }
     }
     
@@ -99,7 +117,7 @@ struct BlowfishService {
         amountInRaw: BigInt,
         memo: String?,
         chain: Chain
-    ) async throws -> BlowfishResponse? {
+    ) async -> BlowfishResponse? {
         
         let amountDataHex = amountInRaw.serializeForEvm().map { byte in String(format: "%02x", byte) }.joined()
         let amountHex = "0x" + amountDataHex
@@ -122,27 +140,23 @@ struct BlowfishService {
             )
         ]
         
-        let response = try await scanTransactions(
+        return await scanTransactions(
             chain: chain,
             userAccount: fromAddress,
             origin: "https://api.vultisig.com",
             txObjects: txObjects
         )
         
-        return response
-        
     }
     
-    func blowfishSolanaTransactionScan(fromAddress: String, zeroSignedTransaction: String) async throws -> BlowfishResponse? {
+    func blowfishSolanaTransactionScan(fromAddress: String, zeroSignedTransaction: String) async -> BlowfishResponse? {
         
-        let response = try await scanSolanaTransactions(
+        return await scanSolanaTransactions(
             userAccount: fromAddress,
             origin: "https://api.vultisig.com",
             transactions: [zeroSignedTransaction]
             
         )
-        
-        return response
         
     }
     
