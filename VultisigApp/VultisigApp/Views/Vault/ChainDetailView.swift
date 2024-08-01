@@ -215,7 +215,7 @@ struct ChainDetailView: View {
 
     private func weweButton() -> some View {
         Button {
-            
+            viewModel.selectWeweIfNeeded(vault: vault)
         } label: {
             FilledLabelButton {
                 HStack(spacing: 10) {
