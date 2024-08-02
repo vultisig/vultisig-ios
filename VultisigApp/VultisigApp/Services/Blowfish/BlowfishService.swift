@@ -80,28 +80,9 @@ struct BlowfishService {
             let body = try JSONEncoder().encode(blowfishRequest)
             let dataResponse = try await Utils.asyncPostRequest(urlString: endpoint, headers: headers, body: body)
             
-            do {
-                let response = try JSONDecoder().decode(BlowfishResponse.self, from: dataResponse)
-                return response
-            } catch let DecodingError.dataCorrupted(context) {
-                print("Data corrupted: \(context)")
-                throw DecodingCustomError.dataCorrupted(context)
-            } catch let DecodingError.keyNotFound(key, context) {
-                print("Key '\(key)' not found:", context.debugDescription)
-                print("codingPath:", context.codingPath)
-                throw DecodingCustomError.keyNotFound(key, context)
-            } catch let DecodingError.valueNotFound(value, context) {
-                print("Value '\(value)' not found:", context.debugDescription)
-                print("codingPath:", context.codingPath)
-                throw DecodingCustomError.valueNotFound(value, context)
-            } catch let DecodingError.typeMismatch(type, context) {
-                print("Type '\(type)' mismatch:", context.debugDescription)
-                print("codingPath:", context.codingPath)
-                throw DecodingCustomError.typeMismatch(type, context)
-            } catch {
-                print("Error decoding JSON:", error)
-                throw error
-            }
+            let response = try JSONDecoder().decode(BlowfishResponse.self, from: dataResponse)
+            return response
+            
             
         } catch {
             
