@@ -19,8 +19,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage = ""
     
-    @Published var showBlowfish = false
-    @Published var ShowBlowfishWarnings = false
+    @Published var blowfishShow = false
+    @Published var blowfishWarningsShow = false
+    @Published var blowfishWarnings: [String] = []
     
     @Published var thor = ThorchainService.shared
     @Published var sol: SolanaService = SolanaService.shared
@@ -40,29 +41,25 @@ class SendCryptoVerifyViewModel: ObservableObject {
         return tx.amountInRaw
     }
     
-    func blowfishTransactionScan(tx: SendTransaction, vault: Vault) async -> BlowfishResponse? {
+    func blowfishTransactionScan(tx: SendTransaction, vault: Vault) async throws {
         
-        do {
+        switch tx.coin.chain.chainType {
+        case .EVM:
+            let blowfishResponse = try await blowfishEVMTransactionScan(tx: tx)
+            blowfishShow = true
+            blowfishWarningsShow = !(blowfishResponse.warnings?.isEmpty ?? true)
+            blowfishWarnings = blowfishResponse.warnings?.compactMap { $0.message } ?? []
             
-            switch tx.coin.chain.chainType {
-            case .EVM:
-                let blowfishResponse = try await blowfishEVMTransactionScan(tx: tx)
-                showBlowfish = true
-                ShowBlowfishWarnings = !(blowfishResponse.warnings?.isEmpty ?? true)
-                return blowfishResponse
-            case .Solana:
-                let blowfishResponse = try await blowfishSolanaTransactionScan(tx: tx, vault: vault)
-                showBlowfish = true
-                ShowBlowfishWarnings = !(blowfishResponse.aggregated?.warnings?.isEmpty ?? true)
-                return blowfishResponse
-            default:
-                return nil
-            }
+        case .Solana:
+            let blowfishResponse = try await blowfishSolanaTransactionScan(tx: tx, vault: vault)
+            blowfishShow = true
+            blowfishWarningsShow = !(blowfishResponse.aggregated?.warnings?.isEmpty ?? true)
+            blowfishWarnings = blowfishResponse.aggregated?.warnings?.compactMap { $0.message } ?? []
             
-        } catch {
-            
-            print(error.localizedDescription)
-            return nil
+        default:
+            blowfishShow = false
+            blowfishWarningsShow = false
+            blowfishWarnings = []
             
         }
         

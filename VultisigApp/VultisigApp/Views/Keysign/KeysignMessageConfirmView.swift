@@ -9,8 +9,8 @@ import SwiftUI
 
 struct KeysignMessageConfirmView: View {
     @ObservedObject var viewModel: JoinKeysignViewModel
+    @StateObject private var blowfishViewModel = BlowfishWarningViewModel()
     
-    @State var blowfishResponse: BlowfishResponse? = nil
     @State var isLoading = true
     
     var body: some View {
@@ -26,7 +26,7 @@ struct KeysignMessageConfirmView: View {
                 
                 HStack {
                     Spacer()
-                    if viewModel.showBlowfish {
+                    if viewModel.blowfishShow {
                         blowfishView
                     }
                     Spacer()
@@ -37,8 +37,9 @@ struct KeysignMessageConfirmView: View {
             .foregroundColor(.neutral0)
             .onAppear {
                 isLoading = true
-                Task{
-                    blowfishResponse =  await viewModel.blowfishTransactionScan()
+                Task {
+                    try await viewModel.blowfishTransactionScan()
+                    blowfishViewModel.updateResponse(viewModel.blowfishWarnings)
                     isLoading = false
                 }
             }
@@ -54,18 +55,9 @@ struct KeysignMessageConfirmView: View {
     
     var blowfishView: some View {
         VStack {
-            
-            if (viewModel.keysignPayload?.coin.chainType == .EVM) {
-                
-                BlowfishEvmWarningInformationNote(blowfishResponse: blowfishResponse)
-                    .padding(.horizontal, 16)
-                
-            } else if (viewModel.keysignPayload?.coin.chainType == .Solana) {
-                
-                BlowfishSolanaWarningInformationNote(blowfishResponse: blowfishResponse)
-                    .padding(.horizontal, 16)
-                
-            }
+            BlowfishWarningInformationNote()
+                .environmentObject(blowfishViewModel)
+                .padding(.horizontal, 16)
         }
     }
     

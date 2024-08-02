@@ -7,54 +7,53 @@
 
 import SwiftUI
 
-struct BlowfishEvmWarningInformationNote: View {
-    
-    @State var blowfishResponse: BlowfishResponse? = nil
+struct BlowfishWarningInformationNote: View {
+    @StateObject private var viewModel = BlowfishWarningViewModel()
     
     var body: some View {
-        guard let response = blowfishResponse else {
-            return AnyView(EmptyView())
-        }
-        
-        return AnyView(
-            HStack(spacing: 12) {
-                icon(response: response)
-                text(response: response)
-            }
+        Group {
+            if viewModel.blowfishResponse != nil {
+                HStack(spacing: 12) {
+                    icon
+                    text
+                }
                 .padding(12)
-                .background((response.warnings?.isEmpty ?? true) ? Color.green.opacity(0.35) : Color.warningYellow.opacity(0.35))
+                .background(viewModel.backgroundColor)
                 .cornerRadius(12)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke((response.warnings?.isEmpty ?? true) ? Color.green : Color.warningYellow, lineWidth: lineWidth)
+                        .stroke(viewModel.borderColor, lineWidth: lineWidth)
                 )
-        )
+            } else {
+                EmptyView()
+            }
+        }
     }
     
     var lineWidth: CGFloat {
-#if os(iOS)
-        return 1
-#elseif os(macOS)
-        return 2
-#endif
+        #if os(iOS)
+        1
+        #elseif os(macOS)
+        2
+        #endif
     }
     
-    func icon(response: BlowfishResponse) -> some View {
-        Image(systemName: (response.warnings?.isEmpty ?? true) ? "checkmark.shield" : "exclamationmark.triangle")
-            .foregroundColor((response.warnings?.isEmpty ?? true) ? Color.green : Color.warningYellow)
+    var icon: some View {
+        Image(systemName: viewModel.iconName)
+            .foregroundColor(viewModel.iconColor)
     }
     
-    func text(response: BlowfishResponse) -> some View {
+    var text: some View {
         VStack(alignment: .leading, spacing: 8) {
-            if response.warnings?.isEmpty ?? true {
+            if !viewModel.hasWarnings {
                 Text(NSLocalizedString("scannedByBlowfish", comment: ""))
                     .foregroundColor(.neutral0)
                     .font(.body12MontserratSemiBold)
                     .lineSpacing(8)
                     .multilineTextAlignment(.leading)
             } else {
-                ForEach(response.warnings ?? []) { blowfishMessage in
-                    Text(blowfishMessage.message ?? .empty)
+                ForEach(viewModel.warningMessages, id: \.self) { message in
+                    Text(message)
                         .foregroundColor(.neutral0)
                         .font(.body12MontserratSemiBold)
                         .lineSpacing(8)
@@ -65,9 +64,13 @@ struct BlowfishEvmWarningInformationNote: View {
     }
 }
 
+// You can use this view for both EVM and Solana
+typealias BlowfishEvmWarningInformationNote = BlowfishWarningInformationNote
+typealias BlowfishSolanaWarningInformationNote = BlowfishWarningInformationNote
+
 #Preview {
     ZStack {
         Background()
-        BlowfishEvmWarningInformationNote()
+        BlowfishWarningInformationNote()
     }
 }

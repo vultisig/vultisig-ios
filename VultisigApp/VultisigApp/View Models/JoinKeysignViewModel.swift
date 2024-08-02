@@ -21,6 +21,7 @@ enum JoinKeysignStatus {
     case KeysignSameDeviceShare
     case KeysignNoCameraAccess
 }
+
 @MainActor
 class JoinKeysignViewModel: ObservableObject {
     private let logger = Logger(subsystem: "join-keysign", category: "viewmodel")
@@ -41,8 +42,9 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var useVultisigRelay = false
     @Published var isCameraPermissionGranted: Bool? = nil
     
-    @Published var showBlowfish = false
-    @Published var ShowBlowfishWarnings = false
+    @Published var blowfishShow = false
+    @Published var blowfishWarningsShow = false
+    @Published var blowfishWarnings: [String] = []
     
     var encryptionKeyHex: String = ""
     
@@ -56,11 +58,7 @@ class JoinKeysignViewModel: ObservableObject {
         self.serviceDelegate = serviceDelegate
         self.isCameraPermissionGranted = isCameraPermissionGranted
         
-        if !self.vault.localPartyID.isEmpty {
-            self.localPartyID = self.vault.localPartyID
-        } else {
-            self.localPartyID = Utils.getLocalDeviceIdentity()
-        }
+        self.localPartyID = self.vault.localPartyID.isEmpty ? Utils.getLocalDeviceIdentity() : self.vault.localPartyID
         
         if let isAllowed = self.isCameraPermissionGranted, !isAllowed {
             status = .KeysignNoCameraAccess
@@ -76,6 +74,7 @@ class JoinKeysignViewModel: ObservableObject {
             self.logger.error("Server URL could not be found. Please ensure you're connected to the correct network.")
             return
         }
+        
         guard !self.sessionID.isEmpty else {
             self.logger.error("Session ID has not been acquired. Please scan the QR code again.")
             return
@@ -86,9 +85,9 @@ class JoinKeysignViewModel: ObservableObject {
         
         Utils.sendRequest(urlString: urlString,
                           method: "POST",
-                          headers:TssHelper.getKeysignRequestHeader(pubKey: vault.pubKeyECDSA),
+                          headers: TssHelper.getKeysignRequestHeader(pubKey: vault.pubKeyECDSA),
                           body: body) { success in
-            DispatchQueue.main.async{
+            DispatchQueue.main.async {
                 if success {
                     self.logger.info("Successfully joined the keysign committee.")
                     self.status = .WaitingForKeysignToStart
@@ -109,9 +108,11 @@ class JoinKeysignViewModel: ObservableObject {
         self.netService?.delegate = self.serviceDelegate
         self.netService?.resolve(withTimeout: 10)
     }
-    func stopJoiningKeysign(){
+    
+    func stopJoiningKeysign() {
         self.status = .DiscoverSigningMsg
     }
+    
     func waitForKeysignStart() async {
         do {
             let t = Task {
@@ -131,6 +132,7 @@ class JoinKeysignViewModel: ObservableObject {
             self.logger.error("Server URL could not be found. Please ensure you're connected to the correct network.")
             return
         }
+        
         guard !self.sessionID.isEmpty else {
             self.logger.error("Session ID has not been acquired. Please scan the QR code again.")
             return
@@ -138,8 +140,7 @@ class JoinKeysignViewModel: ObservableObject {
         
         let urlString = "\(serverURL)/start/\(sessionID)"
         Utils.getRequest(urlString: urlString,
-                         headers: TssHelper.getKeysignRequestHeader(pubKey: vault.pubKeyECDSA),
-                         completion: { result in
+                         headers: TssHelper.getKeysignRequestHeader(pubKey: vault.pubKeyECDSA)) { result in
             switch result {
             case .success(let data):
                 DispatchQueue.main.async {
@@ -165,17 +166,16 @@ class JoinKeysignViewModel: ObservableObject {
                     self.status = .FailedToStart
                 }
             }
-        })
+        }
     }
     
 #if os(iOS)
-    // Scan the QR code and strip the data
     func handleScan(result: Result<ScanResult, ScanError>) {
         defer {
             self.isShowingScanner = false
         }
         
-        guard let isCameraPermissionGranted, isCameraPermissionGranted else {
+        guard let isCameraPermissionGranted = isCameraPermissionGranted, isCameraPermissionGranted else {
             status = .KeysignNoCameraAccess
             return
         }
@@ -183,6 +183,8 @@ class JoinKeysignViewModel: ObservableObject {
         switch result {
         case .success(let result):
             guard let data = DeeplinkViewModel.getJsonData(URL(string: result.string)) else {
+                self.errorMsg = "Failed to parse QR code data."
+                self.status = .FailedToStart
                 return
             }
             handleQrCodeSuccessResult(data: data)
@@ -202,7 +204,7 @@ class JoinKeysignViewModel: ObservableObject {
             self.logger.info("Successfully prepared messages for keysigning.")
             self.keysignMessages = preSignedImageHash.sorted()
             if self.keysignMessages.isEmpty {
-                self.errorMsg = "There is no messages to be signed"
+                self.errorMsg = "There are no messages to be signed"
                 self.status = .FailedToStart
             }
         } catch {
@@ -212,7 +214,9 @@ class JoinKeysignViewModel: ObservableObject {
     }
     
     func handleQrCodeSuccessResult(data: String?) {
-        guard let data else {
+        guard let data = data else {
+            self.errorMsg = "QR code data is empty."
+            self.status = .FailedToStart
             return
         }
         
@@ -232,12 +236,18 @@ class JoinKeysignViewModel: ObservableObject {
     }
     
     func manageQrCodeStates() {
-        if vault.pubKeyECDSA != keysignPayload?.vaultPubKeyECDSA {
+        guard let keysignPayload = keysignPayload else {
+            self.errorMsg = "Keysign payload is missing."
+            self.status = .FailedToStart
+            return
+        }
+        
+        if vault.pubKeyECDSA != keysignPayload.vaultPubKeyECDSA {
             self.status = .VaultMismatch
             return
         }
         
-        if vault.localPartyID == keysignPayload?.vaultLocalPartyID {
+        if vault.localPartyID == keysignPayload.vaultLocalPartyID {
             self.status = .KeysignSameDeviceShare
             return
         }
@@ -251,48 +261,50 @@ class JoinKeysignViewModel: ObservableObject {
     }
     
     func handleDeeplinkScan(_ url: URL?) {
-        guard let url else {
+        guard let url = url else {
+            self.errorMsg = "Invalid deeplink URL."
+            self.status = .FailedToStart
             return
         }
         
         guard let data = DeeplinkViewModel.getJsonData(url) else {
+            self.errorMsg = "Failed to parse deeplink data."
+            self.status = .FailedToStart
             return
         }
+        
         handleQrCodeSuccessResult(data: data)
         manageQrCodeStates()
     }
     
-    func blowfishTransactionScan() async -> BlowfishResponse? {
-        
+    func blowfishTransactionScan() async throws {
         guard let payload = keysignPayload else {
-            return nil
+            throw NSError(domain: "JoinKeysignViewModel", code: 1, userInfo: [NSLocalizedDescriptionKey: "Keysign payload is missing."])
         }
         
-        do {
-            switch payload.coin.chainType {
-            case .EVM:
-                let blowfishResponse = try await blowfishEVMTransactionScan()
-                showBlowfish = true
-                ShowBlowfishWarnings = !(blowfishResponse?.warnings?.isEmpty ?? true)
-                return blowfishResponse
-            case .Solana:
-                let blowfishResponse = await blowfishSolanaTransactionScan()
-                showBlowfish = true
-                ShowBlowfishWarnings = !(blowfishResponse?.aggregated?.warnings?.isEmpty ?? true)
-                return blowfishResponse
-            default:
-                return nil
-            }
-        } catch {
-            return nil
+        switch payload.coin.chainType {
+        case .EVM:
+            let blowfishResponse = try await blowfishEVMTransactionScan()
+            blowfishShow = true
+            blowfishWarningsShow = !(blowfishResponse.warnings?.isEmpty ?? true)
+            blowfishWarnings = blowfishResponse.warnings?.compactMap { $0.message } ?? []
+            
+        case .Solana:
+            let blowfishResponse = try await blowfishSolanaTransactionScan()
+            blowfishShow = true
+            blowfishWarningsShow = !(blowfishResponse.aggregated?.warnings?.isEmpty ?? true)
+            blowfishWarnings = blowfishResponse.aggregated?.warnings?.compactMap { $0.message } ?? []
+            
+        default:
+            blowfishShow = false
+            blowfishWarningsShow = false
+            blowfishWarnings = []
         }
-        
     }
     
-    func blowfishEVMTransactionScan() async throws -> BlowfishResponse? {
-        
+    func blowfishEVMTransactionScan() async throws -> BlowfishResponse {
         guard let payload = keysignPayload else {
-            return nil
+            throw NSError(domain: "JoinKeysignViewModel", code: 2, userInfo: [NSLocalizedDescriptionKey: "Keysign payload is missing for EVM transaction scan."])
         }
         
         return try await BlowfishService.shared.blowfishEVMTransactionScan(
@@ -304,30 +316,20 @@ class JoinKeysignViewModel: ObservableObject {
         )
     }
     
-    func blowfishSolanaTransactionScan() async -> BlowfishResponse? {
-        
-        do {
-            
-            if let payload = keysignPayload {
-                let zeroSignedTransaction = try SolanaHelper.getZeroSignedTransaction(
-                    vaultHexPubKey: vault.pubKeyEdDSA,
-                    vaultHexChainCode: vault.hexChainCode,
-                    keysignPayload: payload
-                )
-                
-                return try await BlowfishService.shared.blowfishSolanaTransactionScan(
-                    fromAddress: payload.coin.address,
-                    zeroSignedTransaction: zeroSignedTransaction
-                )
-            }
-            
-        } catch {
-            
-            print(error.localizedDescription)
-            return nil
-            
+    func blowfishSolanaTransactionScan() async throws -> BlowfishResponse {
+        guard let payload = keysignPayload else {
+            throw NSError(domain: "JoinKeysignViewModel", code: 3, userInfo: [NSLocalizedDescriptionKey: "Keysign payload is missing for Solana transaction scan."])
         }
         
-        return nil
+        let zeroSignedTransaction = try SolanaHelper.getZeroSignedTransaction(
+            vaultHexPubKey: vault.pubKeyEdDSA,
+            vaultHexChainCode: vault.hexChainCode,
+            keysignPayload: payload
+        )
+        
+        return try await BlowfishService.shared.blowfishSolanaTransactionScan(
+            fromAddress: payload.coin.address,
+            zeroSignedTransaction: zeroSignedTransaction
+        )
     }
 }
