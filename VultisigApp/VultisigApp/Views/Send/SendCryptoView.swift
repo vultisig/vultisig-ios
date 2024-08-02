@@ -204,6 +204,9 @@ struct SendCryptoView: View {
         tx.coin = selectedCoin
         tx.toAddress = deeplinkViewModel.address ?? ""
         selectedChain = nil
+        DebounceHelper.shared.debounce {
+            validateAddress(deeplinkViewModel.address ?? "")
+        }
     }
     
     private func handleBackTap() {
@@ -213,6 +216,10 @@ struct SendCryptoView: View {
         }
         
         sendCryptoViewModel.handleBackTap()
+    }
+    
+    private func validateAddress(_ newValue: String) {
+        sendCryptoViewModel.validateAddress(tx: tx, address: newValue)
     }
 }
 

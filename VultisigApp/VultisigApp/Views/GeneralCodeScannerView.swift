@@ -143,10 +143,13 @@ struct GeneralCodeScannerView: View {
     }
     
     private func checkForAddress() {
-        sendTX.toAddress = deeplinkViewModel.address ?? ""
+        let address = deeplinkViewModel.address ?? ""
+        sendTX.toAddress = address
         
-        for asset in settingsDefaultChainViewModel.baseChains {
-            let isValid = asset.chain.coinType.validate(address: deeplinkViewModel.address ?? "")
+        for asset in settingsDefaultChainViewModel.baseChains.sorted(by: {
+            $0.chain.name > $1.chain.name
+        }) {
+            let isValid = asset.chain.coinType.validate(address: address)
             
             if isValid {
                 selectedChain = asset.chain

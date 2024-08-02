@@ -72,7 +72,8 @@ struct SetupVaultView: View {
             if let vault = viewModel.selectedVault {
                 SendCryptoView(
                     tx: sendTx,
-                    vault: vault
+                    vault: vault,
+                    selectedChain: selectedChain
                 )
             }
         }
