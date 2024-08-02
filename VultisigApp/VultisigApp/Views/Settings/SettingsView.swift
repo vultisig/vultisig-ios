@@ -37,7 +37,6 @@ struct SettingsView: View {
     #elseif os(macOS)
         VStack(alignment: .leading, spacing: 0) {
             backButton
-//            Separator()
                 
             ScrollView(showsIndicators: false) {
                 content
@@ -192,7 +191,7 @@ struct SettingsView: View {
         Button {
             showMenu = false
         } label: {
-            NavigationMacButton(icon: "chevron.backward", title: "settings")
+            NavigationMacButton(icon: "chevron.backward", title: "back")
         }
         .padding(.horizontal, 40)
         .padding(.top, 20)

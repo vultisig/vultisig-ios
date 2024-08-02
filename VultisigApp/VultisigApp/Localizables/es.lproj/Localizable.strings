@@ -260,3 +260,4 @@
 "vaultValue" = "Valor del almacén";
 "noSavedAddressesForChain" = "No se encontraron direcciones guardadas para esta cadena.";
 "editAddress" = "Editar dirección";
+"back" = "Atrás";

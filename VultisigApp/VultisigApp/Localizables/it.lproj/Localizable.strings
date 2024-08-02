@@ -260,3 +260,4 @@
 "vaultValue" = "Valore del caveau";
 "noSavedAddressesForChain" = "Nessun indirizzo salvato trovato per questa catena.";
 "editAddress" = "Modifica indirizzo";
+"back" = "Indietro";
