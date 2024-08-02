@@ -17,6 +17,7 @@ struct SendCryptoView: View {
     
     @State var keysignPayload: KeysignPayload? = nil
     @State var keysignView: KeysignView? = nil
+    @State var selectedChain: Chain? = nil
     
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
@@ -185,24 +186,24 @@ struct SendCryptoView: View {
     }
     
     private func presetData() {
-        guard let selectedChain = deeplinkViewModel.selectedChain else {
-            deeplinkViewModel.selectedChain = nil
+        guard let chain = selectedChain else {
+            selectedChain = nil
             return
         }
         
-        let selectedCCoin = vault.coins
-            .filter { $0.chain == selectedChain }
+        let selectedCoin = vault.coins
+            .filter { $0.chain == chain }
             .filter { $0.isNativeToken }
             .first
         
-        guard let selectedCCoin else {
-            deeplinkViewModel.selectedChain = nil
+        guard let selectedCoin else {
+            selectedChain = nil
             return
         }
         
-        tx.coin = selectedCCoin
+        tx.coin = selectedCoin
         tx.toAddress = deeplinkViewModel.address ?? ""
-        deeplinkViewModel.selectedChain = nil
+        selectedChain = nil
     }
     
     private func handleBackTap() {

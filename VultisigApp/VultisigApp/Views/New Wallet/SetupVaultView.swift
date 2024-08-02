@@ -16,6 +16,7 @@ struct SetupVaultView: View {
     @State var shouldKeysignTransaction = false
     @State var shouldSendCrypto = false
     @State var selectedTab: SetupVaultState = .TwoOfTwoVaults
+    @State var selectedChain: Chain? = nil
     
     @StateObject var sendTx = SendTransaction()
     
@@ -54,7 +55,9 @@ struct SetupVaultView: View {
                 showSheet: $showSheet,
                 shouldJoinKeygen: $shouldJoinKeygen,
                 shouldKeysignTransaction: $shouldKeysignTransaction, 
-                shouldSendCrypto: $shouldSendCrypto
+                shouldSendCrypto: $shouldSendCrypto,
+                selectedChain: $selectedChain,
+                sendTX: sendTx
             )
         })
         .navigationDestination(isPresented: $shouldJoinKeygen) {

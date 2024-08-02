@@ -21,7 +21,6 @@ class DeeplinkViewModel: ObservableObject {
     @Published var jsonData: String? = nil
     @Published var receivedUrl: URL? = nil
     @Published var viewID = UUID()
-    @Published var selectedChain: Chain? = nil
     @Published var address: String? = nil
     
     func extractParameters(_ url: URL, vaults: [Vault]) {

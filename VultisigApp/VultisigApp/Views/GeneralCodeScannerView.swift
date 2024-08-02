@@ -19,6 +19,8 @@ struct GeneralCodeScannerView: View {
     @Binding var shouldJoinKeygen: Bool
     @Binding var shouldKeysignTransaction: Bool
     @Binding var shouldSendCrypto: Bool
+    @Binding var selectedChain: Chain?
+    let sendTX: SendTransaction
     
     @State var isGalleryPresented = false
     @State var isFilePresented = false
@@ -135,20 +137,21 @@ struct GeneralCodeScannerView: View {
     }
     
     private func moveToSendView() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            shouldJoinKeygen = false
-            showSheet = false
-            checkForAddress()
-        }
+        shouldJoinKeygen = false
+        showSheet = false
+        checkForAddress()
     }
     
     private func checkForAddress() {
+        sendTX.toAddress = deeplinkViewModel.address ?? ""
+        
         for asset in settingsDefaultChainViewModel.baseChains {
             let isValid = asset.chain.coinType.validate(address: deeplinkViewModel.address ?? "")
             
             if isValid {
-                deeplinkViewModel.selectedChain = asset.chain
+                selectedChain = asset.chain
                 shouldSendCrypto = true
+                return
             }
         }
         shouldSendCrypto = true
@@ -160,7 +163,9 @@ struct GeneralCodeScannerView: View {
         showSheet: .constant(true),
         shouldJoinKeygen: .constant(true),
         shouldKeysignTransaction: .constant(true), 
-        shouldSendCrypto: .constant(true)
+        shouldSendCrypto: .constant(true),
+        selectedChain: .constant(nil), 
+        sendTX: SendTransaction()
     )
     .environmentObject(DeeplinkViewModel())
     .environmentObject(SettingsDefaultChainViewModel())

@@ -28,6 +28,7 @@ struct VaultDetailView: View {
     @State var isSendLinkActive = false
     @State var isSwapLinkActive = false
     @State var isMemoLinkActive = false
+    @State var selectedChain: Chain? = nil
 
     @StateObject var sendTx = SendTransaction()
     
@@ -79,7 +80,9 @@ struct VaultDetailView: View {
                     showSheet: $showScanner,
                     shouldJoinKeygen: $shouldJoinKeygen,
                     shouldKeysignTransaction: $shouldKeysignTransaction, 
-                    shouldSendCrypto: $shouldSendCrypto
+                    shouldSendCrypto: $shouldSendCrypto,
+                    selectedChain: $selectedChain, 
+                    sendTX: sendTx
                 )
             })
             .navigationDestination(isPresented: $shouldJoinKeygen) {
@@ -93,7 +96,8 @@ struct VaultDetailView: View {
             .navigationDestination(isPresented: $shouldSendCrypto) {
                 SendCryptoView(
                     tx: sendTx,
-                    vault: vault
+                    vault: vault,
+                    selectedChain: selectedChain
                 )
             }
     }
