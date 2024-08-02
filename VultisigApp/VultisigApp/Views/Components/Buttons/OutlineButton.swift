@@ -9,12 +9,13 @@ import SwiftUI
 
 struct OutlineButton: View {
     let title: String
+    var gradient = LinearGradient.primaryGradient
     
     @State var animateGradient = false
     
     var body: some View {
         Text(NSLocalizedString(title, comment: "Button Text"))
-            .foregroundStyle(LinearGradient.primaryGradient)
+            .foregroundStyle(gradient)
             .padding(12)
             .frame(maxWidth: .infinity)
             .background(Color.clear)
@@ -22,9 +23,9 @@ struct OutlineButton: View {
             .overlay(
                 RoundedRectangle(cornerRadius: 100)
                 #if os(iOS)
-                    .stroke(LinearGradient.primaryGradient, lineWidth: 1)
+                    .stroke(gradient, lineWidth: 1)
                 #elseif os(macOS)
-                    .stroke(LinearGradient.primaryGradient, lineWidth: 2)
+                    .stroke(gradient, lineWidth: 2)
                 #endif
             )
 #if os(iOS)

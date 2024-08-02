@@ -31,17 +31,19 @@ struct SetupVaultImageManager: View {
         Image(selectedTab.getImage())
             .resizable()
             .frame(maxWidth: .infinity)
+            .clipped()
     }
     
     var image: some View {
         Image(selectedTab.getImage())
             .resizable()
             .aspectRatio(contentMode: .fit)
-            .frame(maxWidth: .infinity)
+            .frame(maxHeight: .infinity)
 #if os(macOS)
             .offset(y: 15)
             .scaleEffect(1.1)
 #endif
+            .clipped()
     }
 }
 

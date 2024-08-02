@@ -26,5 +26,8 @@ struct KeygenStatusText: View {
 }
 
 #Preview {
-    KeygenStatusText(status: "preparingVault")
+    ZStack {
+        Background()
+        KeygenStatusText(status: NSLocalizedString("preparingVault", comment: "PREPARING VAULT..."))
+    }
 }

@@ -1,20 +1,19 @@
 //
-//  SetupVaultView.swift
+//  SetupCardsView.swift
 //  VultisigApp
 //
-//  Created by Amol Kumar on 2024-03-07.
+//  Created by Amol Kumar on 2024-07-31.
 //
 
-import SwiftData
 import SwiftUI
+import SwiftData
 
-struct SetupVaultView: View {
+struct SetupCardsView: View {
     let tssType: TssType
     @State var vault: Vault? = nil
     @State var showSheet = false
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
-    @State var selectedTab: SetupVaultState = .TwoOfTwoVaults
     
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var viewModel: HomeViewModel
@@ -25,26 +24,24 @@ struct SetupVaultView: View {
             view
         }
         .navigationBarBackButtonHidden(true)
-        .navigationTitle(NSLocalizedString("setup", comment: "Setup title"))
-        .onAppear {
-            setData()
-        }
+        .navigationTitle(NSLocalizedString("setup", comment: "Setup"))
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
             }
-            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                NavigationHelpButton()
-            }
+        }
+        .onAppear {
+            setData()
         }
     }
     
     var view: some View {
-        VStack {
-            image
-            messageModal
-            buttons
+        VStack(spacing: 12) {
+            initiatingDeviceCard
+            separator
+            pairingDeviceCard
         }
+        .padding(16)
         .sheet(isPresented: $showSheet, content: {
             GeneralCodeScannerView(
                 showSheet: $showSheet,
@@ -62,57 +59,61 @@ struct SetupVaultView: View {
         }
     }
     
-    var image: some View {
-        SetupVaultTabView(selectedTab: $selectedTab)
-    }
-    
-    var messageModal: some View {
-        WifiInstruction()
-            .frame(maxHeight: 80)
-    }
-    
-    var buttons: some View {
-        VStack(spacing: 20) {
-            startButton
-            joinButton
-        }
-        .padding(40)
-    }
-    
-    var startButton: some View {
+    var initiatingDeviceCard: some View {
         NavigationLink {
-            if tssType == .Keygen {
-                NewWalletNameView(
-                    tssType: tssType,
-                    vault: vault,
-                    selectedTab: selectedTab
-                )
-            } else {
-                PeerDiscoveryView(
-                    tssType: tssType,
-                    vault: vault ?? Vault(name: getUniqueVaultName()),
-                    selectedTab: selectedTab
-                )
-            }
+            SetupQRCodeView(
+                tssType: tssType,
+                vault: vault ?? Vault(name: getUniqueVaultName())
+            )
         } label: {
-            FilledButton(title: "start")
+            initiatingDeviceLabel
         }
     }
     
-    var joinButton: some View {
+    var initiatingDeviceLabel: some View {
+        VaultSetupCard(
+            title: "initiatingDevice",
+            buttonTitle: "createQR",
+            icon: "InitiatingDeviceIcon"
+        )
+    }
+    
+    var pairingDeviceCard: some View {
 #if os(iOS)
         Button {
             showSheet = true
         } label: {
-            OutlineButton(title: "pair")
+            pairingDeviceLabel
         }
 #elseif os(macOS)
         NavigationLink {
             GeneralQRImportMacView(type: .NewVault)
         } label: {
-            OutlineButton(title: "pair")
+            pairingDeviceLabel
         }
 #endif
+    }
+    
+    var pairingDeviceLabel: some View {
+        VaultSetupCard(
+            title: "pairingDevice",
+            buttonTitle: "scanQR",
+            icon: "PairingDeviceIcon"
+        )
+    }
+    
+    var separator: some View {
+        HStack(spacing: 18) {
+            GradientSeparator(opacity: 0.1)
+            orText
+            GradientSeparator(opacity: 0.1)
+        }
+    }
+    
+    var orText: some View {
+        Text(NSLocalizedString("or", comment: ""))
+            .font(.body16MenloBold)
+            .foregroundColor(.neutral0)
     }
     
     private func setData() {
@@ -143,10 +144,9 @@ struct SetupVaultView: View {
         }
         return "Main Vault"
     }
-    
 }
 
 #Preview {
-    SetupVaultView(tssType: .Keygen)
+    SetupCardsView(tssType: .Keygen)
         .environmentObject(HomeViewModel())
 }

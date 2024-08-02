@@ -8,12 +8,23 @@
 import SwiftUI
 
 enum SetupVaultState: String, CaseIterable {
-    case TwoOfTwoVaults = "2Of2Vault"
-    case TwoOfThreeVaults = "2Of3Vault"
-    case MOfNVaults = "MOfNVault"
+    case TwoOfTwoVaults = "2 of 2"
+    case TwoOfThreeVaults = "2 of 3"
+    case MOfNVaults = "M of N"
     
     func getDescription() -> String {
-        getTitle() + getFirstDescription() + getSecondDescription()
+        let title: String
+        
+        switch self {
+        case .TwoOfTwoVaults:
+            title = NSLocalizedString("youNeed1MoreDevice", comment: "")
+        case .TwoOfThreeVaults:
+            title = NSLocalizedString("youNeed2MoreDevice", comment: "")
+        case .MOfNVaults:
+            title = NSLocalizedString("youNeedNMoreDevice", comment: "")
+        }
+        
+        return title
     }
     
     func getImage() -> String {
@@ -30,40 +41,6 @@ enum SetupVaultState: String, CaseIterable {
         return image
     }
     
-    private func getTitle() -> String {
-        let title: String
-        
-        switch self {
-        case .TwoOfTwoVaults:
-            title = NSLocalizedString("youNeedAtLeast", comment: "") + " 2 " + NSLocalizedString("devices", comment: "")
-        case .TwoOfThreeVaults:
-            title = NSLocalizedString("youNeedAtLeast", comment: "") + " 3 " + NSLocalizedString("devices", comment: "")
-        case .MOfNVaults:
-            title = NSLocalizedString("MOfNVault", comment: "")
-        }
-        
-        return title + "\n"
-    }
-    
-    private func getFirstDescription() -> String {
-        "1. " + NSLocalizedString("startFromOneDevice", comment: "") + "\n"
-    }
-    
-    private func getSecondDescription() -> String {
-        let description: String
-        
-        switch self {
-        case .TwoOfTwoVaults:
-            description = NSLocalizedString("second", comment: "")
-        case .TwoOfThreeVaults:
-            description = NSLocalizedString("secondAndThird", comment: "")
-        case .MOfNVaults:
-            description = NSLocalizedString("other", comment: "")
-        }
-        
-        return "2. " + NSLocalizedString("pairFromThe", comment: "") + " \(description) " + NSLocalizedString("device", comment: "")
-    }
-    
     func getNavigationTitle() -> String {
         switch self {
         case .TwoOfTwoVaults:
@@ -73,5 +50,20 @@ enum SetupVaultState: String, CaseIterable {
         case .MOfNVaults:
             return "M/N"
         }
+    }
+    
+    func getLoaderTitle() -> String {
+        let title: String
+        
+        switch self {
+        case .TwoOfTwoVaults:
+            title = NSLocalizedString("lookingFor1MoreDevice", comment: "")
+        case .TwoOfThreeVaults:
+            title = NSLocalizedString("lookingFor2MoreDevice", comment: "")
+        case .MOfNVaults:
+            title = NSLocalizedString("lookingForDevices", comment: "")
+        }
+        
+        return title
     }
 }

@@ -39,6 +39,7 @@ extension Color {
     static let persianBlue200 = Color(hex: "4879FD")
     static let persianBlue400 = Color(hex: "2155DF")
     
+    static let turquoise400 = Color(hex: "81F8DE")
     static let turquoise600 = Color(hex: "33E6BF")
     
     static let mediumPurple = Color(hex: "9563FF")
@@ -60,6 +61,7 @@ extension Color {
 extension LinearGradient {
     static let primaryGradient = LinearGradient(colors: [Color(hex: "33E6BF"), Color(hex: "0439C7")], startPoint: .topLeading, endPoint: .bottomTrailing)
     static let primaryGradientLinear = LinearGradient(colors: [Color(hex: "33E6BF"), Color(hex: "0439C7")], startPoint: .top, endPoint: .bottom)
+    static let primaryGradientHorizontal = LinearGradient(colors: [Color(hex: "33E6BF"), Color(hex: "0439C7")], startPoint: .leading, endPoint: .trailing)
     static let progressGradient = LinearGradient(colors: [Color(hex: "0439C7"), Color(hex: "33E6BF")], startPoint: .leading, endPoint: .trailing)
 }
 
