@@ -111,6 +111,7 @@
 		A61BC8192BA2687E00484689 /* TokensStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61BC8182BA2687D00484689 /* TokensStore.swift */; };
 		A61BC81B2BA26D9900484689 /* ChainSelectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61BC81A2BA26D9900484689 /* ChainSelectionCell.swift */; };
 		A623A09F2BF09FEE00AA2F8D /* NewWalletNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A623A09E2BF09FEE00AA2F8D /* NewWalletNameView.swift */; };
+		A625D9E62C5D32800078FBF4 /* NavigationMacButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A625D9E52C5D32800078FBF4 /* NavigationMacButton.swift */; };
 		A62758F22B97B10600ADE3A6 /* Endpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62758F12B97B10600ADE3A6 /* Endpoint.swift */; };
 		A62758F72B97DF4A00ADE3A6 /* ColorStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62758F62B97DF4A00ADE3A6 /* ColorStyle.swift */; };
 		A62D6B032BFE7BF400F24E51 /* CoinDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62D6B022BFE7BF400F24E51 /* CoinDetailView.swift */; };
@@ -530,6 +531,7 @@
 		A61BC8182BA2687D00484689 /* TokensStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokensStore.swift; sourceTree = "<group>"; };
 		A61BC81A2BA26D9900484689 /* ChainSelectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainSelectionCell.swift; sourceTree = "<group>"; };
 		A623A09E2BF09FEE00AA2F8D /* NewWalletNameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewWalletNameView.swift; sourceTree = "<group>"; };
+		A625D9E52C5D32800078FBF4 /* NavigationMacButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationMacButton.swift; sourceTree = "<group>"; };
 		A62758F12B97B10600ADE3A6 /* Endpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endpoint.swift; sourceTree = "<group>"; };
 		A62758F42B97CE9E00ADE3A6 /* FontStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontStyle.swift; sourceTree = "<group>"; };
 		A62758F62B97DF4A00ADE3A6 /* ColorStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorStyle.swift; sourceTree = "<group>"; };
@@ -1285,6 +1287,7 @@
 				A66BFCCC2C1347D5004DCD4F /* NavigationQRShareButton.swift */,
 				A6C3ABC92C3E5A8700F13ED0 /* NavigationAddButton.swift */,
 				A6B7F4952C493DD9006D83D1 /* NavigationQRCodeButton.swift */,
+				A625D9E52C5D32800078FBF4 /* NavigationMacButton.swift */,
 			);
 			path = "Navigation Items";
 			sourceTree = "<group>";
@@ -2221,6 +2224,7 @@
 				B58768702BFB0C43001AAEA5 /* DepositStore.swift in Sources */,
 				A6980C322BC0A2F700F452AB /* SettingsFAQView.swift in Sources */,
 				A67F4C5F2BE313220086ED09 /* ActionButton.swift in Sources */,
+				A625D9E62C5D32800078FBF4 /* NavigationMacButton.swift in Sources */,
 				A6F9F7DD2B9BA5F000790258 /* CoinCell.swift in Sources */,
 				DEFC7BFF2B8EC95E0090B07A /* thorchain.swift in Sources */,
 				DE8BDCCD2C4A314D00A1EDA6 /* VaultPublicKeyExport.swift in Sources */,

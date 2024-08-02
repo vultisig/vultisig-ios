@@ -20,26 +20,45 @@ struct SettingsView: View {
         }
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("settings", comment: "Settings"))
+#if os(iOS)
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackSheetButton(showSheet: $showMenu)
             }
         }
+#endif
     }
     
     var view: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                mainSection
-                otherSection
-                bottomSection
+    #if os(iOS)
+            ScrollView {
+                content
             }
-            .padding(15)
-            .padding(.top, 30)
-#if os(macOS)
-            .padding(.horizontal, 25)
-#endif
+    #elseif os(macOS)
+        VStack(alignment: .leading, spacing: 0) {
+            backButton
+//            Separator()
+                
+            ScrollView(showsIndicators: false) {
+                content
+                    .padding(.horizontal, 25)
+            }
         }
+    #endif
+    }
+    
+    var content: some View {
+        VStack(spacing: 24) {
+            mainSection
+            otherSection
+            bottomSection
+        }
+        .padding(15)
+#if os(iOS)
+        .padding(.top, 30)
+#elseif os(macOS)
+        .padding(.top, 10)
+#endif
     }
     
     var mainSection: some View {
@@ -167,6 +186,16 @@ struct SettingsView: View {
         .textCase(.uppercase)
         .font(.body14Menlo)
         .foregroundColor(.turquoise600)
+    }
+    
+    var backButton: some View {
+        Button {
+            showMenu = false
+        } label: {
+            NavigationMacButton(icon: "chevron.backward", title: "settings")
+        }
+        .padding(.horizontal, 40)
+        .padding(.top, 20)
     }
     
     private func getTitle(_ title: String) -> some View {
