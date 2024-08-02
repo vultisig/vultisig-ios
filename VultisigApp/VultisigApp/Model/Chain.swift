@@ -119,7 +119,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .bitcoinCash: return "BCH"
         case .litecoin: return "LTC"
         case .dogecoin: return "DOGE"
-        case .gaiaChain: return "COSMOS"
+        case .gaiaChain: return "GAIA"
         case .kujira: return "KUJI"
         case .solana: return "SOL"
         case .dash: return "DASH"
