@@ -21,6 +21,8 @@ class DeeplinkViewModel: ObservableObject {
     @Published var jsonData: String? = nil
     @Published var receivedUrl: URL? = nil
     @Published var viewID = UUID()
+    @Published var selectedChain: Chain? = nil
+    @Published var address: String? = nil
     
     func extractParameters(_ url: URL, vaults: [Vault]) {
         resetData()
@@ -29,6 +31,10 @@ class DeeplinkViewModel: ObservableObject {
         receivedUrl = url
         
         let queryItems = URLComponents(string: url.absoluteString)?.queryItems
+        
+        if queryItems == nil {
+            address = url.absoluteString
+        }
         
         //Flow Type
         let typeData = queryItems?.first(where: { $0.name == "type" })?.value
