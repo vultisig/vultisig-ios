@@ -18,12 +18,14 @@ struct GeneralCodeScannerView: View {
     @Binding var showSheet: Bool
     @Binding var shouldJoinKeygen: Bool
     @Binding var shouldKeysignTransaction: Bool
+    @Binding var shouldSendCrypto: Bool
     
     @State var isGalleryPresented = false
     @State var isFilePresented = false
     
     @Query var vaults: [Vault]
     
+    @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var viewModel: HomeViewModel
     
@@ -114,20 +116,42 @@ struct GeneralCodeScannerView: View {
         case .SignTransaction:
             moveToVaultsView()
         case .Unknown:
-            return
+            moveToSendView()
         }
     }
     
     private func moveToCreateVaultView() {
-        shouldJoinKeygen = true
+        shouldSendCrypto = false
         showSheet = false
+        shouldJoinKeygen = true
     }
     
     private func moveToVaultsView() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            shouldKeysignTransaction = true
             showSheet = false
+            shouldSendCrypto = false
+            shouldKeysignTransaction = true
         }
+    }
+    
+    private func moveToSendView() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            shouldJoinKeygen = false
+            showSheet = false
+            checkForAddress()
+        }
+    }
+    
+    private func checkForAddress() {
+        for asset in settingsDefaultChainViewModel.baseChains {
+            let isValid = asset.chain.coinType.validate(address: deeplinkViewModel.address ?? "")
+            
+            if isValid {
+                deeplinkViewModel.selectedChain = asset.chain
+                shouldSendCrypto = true
+            }
+        }
+        shouldSendCrypto = true
     }
 }
 
@@ -135,7 +159,10 @@ struct GeneralCodeScannerView: View {
     GeneralCodeScannerView(
         showSheet: .constant(true),
         shouldJoinKeygen: .constant(true),
-        shouldKeysignTransaction: .constant(true)
+        shouldKeysignTransaction: .constant(true), 
+        shouldSendCrypto: .constant(true)
     )
     .environmentObject(DeeplinkViewModel())
+    .environmentObject(SettingsDefaultChainViewModel())
+    .environmentObject(HomeViewModel())
 }
