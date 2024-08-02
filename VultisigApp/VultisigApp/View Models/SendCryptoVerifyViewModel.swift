@@ -42,62 +42,73 @@ class SendCryptoVerifyViewModel: ObservableObject {
     
     func blowfishTransactionScan(tx: SendTransaction, vault: Vault) async -> BlowfishResponse? {
         
-        switch tx.coin.chain.chainType {
-        case .EVM:
-            let blowfishResponse = await blowfishEVMTransactionScan(tx: tx)
-            showBlowfish = blowfishResponse != nil
-            ShowBlowfishWarnings = blowfishResponse != nil && !(blowfishResponse?.warnings?.isEmpty ?? true)
-            return blowfishResponse
-        case .Solana:
-            let blowfishResponse = await blowfishSolanaTransactionScan(tx: tx, vault: vault)
-            showBlowfish = blowfishResponse != nil
-            ShowBlowfishWarnings = blowfishResponse != nil && !(blowfishResponse?.aggregated?.warnings?.isEmpty ?? true)
-            return blowfishResponse
-        default:
+        do {
+            
+            switch tx.coin.chain.chainType {
+            case .EVM:
+                let blowfishResponse = try await blowfishEVMTransactionScan(tx: tx)
+                showBlowfish = true
+                ShowBlowfishWarnings = !(blowfishResponse.warnings?.isEmpty ?? true)
+                return blowfishResponse
+            case .Solana:
+                let blowfishResponse = try await blowfishSolanaTransactionScan(tx: tx, vault: vault)
+                showBlowfish = true
+                ShowBlowfishWarnings = !(blowfishResponse.aggregated?.warnings?.isEmpty ?? true)
+                return blowfishResponse
+            default:
+                return nil
+            }
+            
+        } catch {
+            
+            print(error.localizedDescription)
             return nil
+            
         }
         
     }
     
-    func blowfishEVMTransactionScan(tx: SendTransaction) async -> BlowfishResponse? {
-        return await BlowfishService.shared.blowfishEVMTransactionScan(
-            fromAddress: tx.fromAddress, toAddress: tx.toAddress, amountInRaw: tx.amountInRaw, memo: tx.memo, chain: tx.coin.chain
+    func blowfishEVMTransactionScan(tx: SendTransaction) async throws -> BlowfishResponse {
+        
+        return try await BlowfishService.shared.blowfishEVMTransactionScan(
+            fromAddress: tx.fromAddress,
+            toAddress: tx.toAddress,
+            amountInRaw: tx.amountInRaw,
+            memo: tx.memo,
+            chain: tx.coin.chain
         )
+        
     }
     
-    func blowfishSolanaTransactionScan(tx: SendTransaction, vault: Vault) async -> BlowfishResponse? {
+    func blowfishSolanaTransactionScan(tx: SendTransaction, vault: Vault) async throws -> BlowfishResponse {
         
-        var keysignPayload: KeysignPayload?
+        let chainSpecific = try await blockChainService.fetchSpecific(
+            for: tx,
+            sendMaxAmount: tx.sendMaxAmount,
+            isDeposit: tx.isDeposit,
+            transactionType: tx.transactionType
+        )
         
-        do {
-            let chainSpecific = try await blockChainService.fetchSpecific(for: tx, sendMaxAmount: tx.sendMaxAmount, isDeposit: tx.isDeposit, transactionType: tx.transactionType)
-            let keysignPayloadFactory = KeysignPayloadFactory()
-            keysignPayload = try await keysignPayloadFactory.buildTransfer(coin: tx.coin,
+        let keysignPayloadFactory = KeysignPayloadFactory()
+        
+        let keysignPayload = try await keysignPayloadFactory.buildTransfer(coin: tx.coin,
                                                                            toAddress: tx.toAddress,
                                                                            amount: amount(for:tx.coin,tx:tx),
                                                                            memo: tx.memo,
                                                                            chainSpecific: chainSpecific,
                                                                            vault: vault
-            )
-            
-            
-            var zeroSignedTransaction: String = .empty
-            if let payload = keysignPayload {
-                zeroSignedTransaction = try SolanaHelper.getZeroSignedTransaction(vaultHexPubKey: vault.pubKeyEdDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: payload)
-                
-            }
-            
-            
-            return await BlowfishService.shared.blowfishSolanaTransactionScan(
-                fromAddress: tx.fromAddress, zeroSignedTransaction: zeroSignedTransaction
-            )
-            
-        } catch {
-            self.errorMessage = error.localizedDescription
-            showAlert = true
-            isLoading = false
-            return nil
-        }
+        )
+        
+        let zeroSignedTransaction: String = try SolanaHelper.getZeroSignedTransaction(
+            vaultHexPubKey: vault.pubKeyEdDSA,
+            vaultHexChainCode: vault.hexChainCode,
+            keysignPayload: keysignPayload
+        )
+        
+        return try await BlowfishService.shared.blowfishSolanaTransactionScan(
+            fromAddress: tx.fromAddress, zeroSignedTransaction: zeroSignedTransaction
+        )
+        
     }
     
     func validateForm(tx: SendTransaction, vault: Vault) async -> KeysignPayload? {
@@ -121,13 +132,23 @@ class SendCryptoVerifyViewModel: ObservableObject {
         }
         
         do {
-            let chainSpecific = try await blockChainService.fetchSpecific(for: tx, sendMaxAmount: tx.sendMaxAmount, isDeposit: tx.isDeposit, transactionType: tx.transactionType)
+            
+            let chainSpecific = try await blockChainService.fetchSpecific(
+                for: tx,
+                sendMaxAmount: tx.sendMaxAmount,
+                isDeposit: tx.isDeposit,
+                transactionType: tx.transactionType
+            )
+            
             let keysignPayloadFactory = KeysignPayloadFactory()
             keysignPayload = try await keysignPayloadFactory.buildTransfer(coin: tx.coin,
                                                                            toAddress: tx.toAddress,
                                                                            amount: amount(for:tx.coin,tx:tx),
                                                                            memo: tx.memo,
-                                                                           chainSpecific: chainSpecific, vault: vault)
+                                                                           chainSpecific: chainSpecific,
+                                                                           vault: vault
+            )
+            
         } catch {
             self.errorMessage = error.localizedDescription
             showAlert = true

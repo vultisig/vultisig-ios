@@ -11,46 +11,36 @@ import BigInt
 struct BlowfishService {
     static let shared = BlowfishService()
     
-    func scanTransactions
-    (
+    enum BlowfishServiceError: Error {
+        case unsupportedChain
+        case unsupportedNetwork
+    }
+    
+    func scanTransactions(
         chain: Chain,
         userAccount: String,
         origin: String,
         txObjects: [BlowfishRequest.BlowfishTxObject],
         simulatorConfig: BlowfishRequest.BlowfishSimulatorConfig? = nil
-    ) async -> BlowfishResponse? {
+    ) async throws -> BlowfishResponse {
         
-        guard let supportedChain = blowfishChainName(chain: chain) else {
-            return nil
-        }
+        let supportedChain = try blowfishChainName(chain: chain)
+        let supportedNetwork = try blowfishNetwork(chain: chain)
         
-        guard let supportedNetwork = blowfishNetwork(chain: chain) else {
-            return nil
-        }
+        let blowfishRequest = BlowfishRequest(
+            userAccount: userAccount,
+            metadata: BlowfishRequest.BlowfishMetadata(origin: origin),
+            txObjects: txObjects,
+            simulatorConfig: simulatorConfig
+        )
         
-        do {
-            
-            let blowfishRequest = BlowfishRequest(
-                userAccount: userAccount,
-                metadata: BlowfishRequest.BlowfishMetadata(origin: origin),
-                txObjects: txObjects,
-                simulatorConfig: simulatorConfig
-            )
-            
-            let endpoint = Endpoint.fetchBlowfishTransactions(chain: supportedChain, network: supportedNetwork)
-            let headers = ["X-Api-Version" : "2023-06-05"]
-            let body = try JSONEncoder().encode(blowfishRequest)
-            let dataResponse = try await Utils.asyncPostRequest(urlString: endpoint, headers: headers, body: body)
-            let response = try JSONDecoder().decode(BlowfishResponse.self, from: dataResponse)
-            
-            return response
-            
-        } catch {
-            
-            print(error.localizedDescription)
-            return nil
-            
-        }
+        let endpoint = Endpoint.fetchBlowfishTransactions(chain: supportedChain, network: supportedNetwork)
+        let headers = ["X-Api-Version" : "2023-06-05"]
+        let body = try JSONEncoder().encode(blowfishRequest)
+        let dataResponse = try await Utils.asyncPostRequest(urlString: endpoint, headers: headers, body: body)
+        let response = try JSONDecoder().decode(BlowfishResponse.self, from: dataResponse)
+        
+        return response
     }
     
     enum DecodingCustomError: Error {
@@ -60,36 +50,25 @@ struct BlowfishService {
         case typeMismatch(Any.Type, DecodingError.Context)
     }
     
-    func scanSolanaTransactions
-    (
+    func scanSolanaTransactions(
         userAccount: String,
         origin: String,
         transactions: [String]
-    ) async -> BlowfishResponse? {
+    ) async throws -> BlowfishResponse {
         
-        do {
-            
-            let blowfishRequest = BlowfishSolanaRequest(
-                userAccount: userAccount,
-                metadata: BlowfishSolanaRequest.BlowfishMetadata(origin: origin),
-                transactions: transactions
-            )
-            
-            let endpoint = Endpoint.fetchBlowfishSolanaTransactions()
-            let headers = ["X-Api-Version" : "2023-06-05"]
-            let body = try JSONEncoder().encode(blowfishRequest)
-            let dataResponse = try await Utils.asyncPostRequest(urlString: endpoint, headers: headers, body: body)
-            
-            let response = try JSONDecoder().decode(BlowfishResponse.self, from: dataResponse)
-            return response
-            
-            
-        } catch {
-            
-            print(error.localizedDescription)
-            return nil
-            
-        }
+        let blowfishRequest = BlowfishSolanaRequest(
+            userAccount: userAccount,
+            metadata: BlowfishSolanaRequest.BlowfishMetadata(origin: origin),
+            transactions: transactions
+        )
+        
+        let endpoint = Endpoint.fetchBlowfishSolanaTransactions()
+        let headers = ["X-Api-Version" : "2023-06-05"]
+        let body = try JSONEncoder().encode(blowfishRequest)
+        let dataResponse = try await Utils.asyncPostRequest(urlString: endpoint, headers: headers, body: body)
+        
+        let response = try JSONDecoder().decode(BlowfishResponse.self, from: dataResponse)
+        return response
     }
     
     func blowfishEVMTransactionScan(
@@ -98,18 +77,16 @@ struct BlowfishService {
         amountInRaw: BigInt,
         memo: String?,
         chain: Chain
-    ) async -> BlowfishResponse? {
+    ) async throws -> BlowfishResponse {
         
         let amountDataHex = amountInRaw.serializeForEvm().map { byte in String(format: "%02x", byte) }.joined()
         let amountHex = "0x" + amountDataHex
         
-        var memoHex: String? = nil
-        
-        if memo != nil {
-            let memoDataHex = memo?.data(using: .utf8)?.map { byte in String(format: "%02x", byte) }.joined()
-            if memoDataHex != nil {
-                memoHex = "0x" + (memoDataHex ?? "")
-            }
+        let memoHex: String
+        if let memo = memo, let memoDataHex = memo.data(using: .utf8)?.map({ String(format: "%02x", $0) }).joined() {
+            memoHex = "0x" + memoDataHex
+        } else {
+            memoHex = "0x"
         }
         
         let txObjects = [
@@ -121,78 +98,55 @@ struct BlowfishService {
             )
         ]
         
-        return await scanTransactions(
+        return try await scanTransactions(
             chain: chain,
             userAccount: fromAddress,
             origin: "https://api.vultisig.com",
             txObjects: txObjects
         )
-        
     }
     
-    func blowfishSolanaTransactionScan(fromAddress: String, zeroSignedTransaction: String) async -> BlowfishResponse? {
-        
-        return await scanSolanaTransactions(
+    func blowfishSolanaTransactionScan(fromAddress: String, zeroSignedTransaction: String) async throws -> BlowfishResponse {
+        return try await scanSolanaTransactions(
             userAccount: fromAddress,
             origin: "https://api.vultisig.com",
             transactions: [zeroSignedTransaction]
-            
         )
-        
     }
     
-    func blowfishChainName(chain: Chain) -> String? {
+    func blowfishChainName(chain: Chain) throws -> String {
         switch chain {
-        case.ethereum:
+        case .ethereum:
             return "ethereum"
-        case.polygon:
+        case .polygon:
             return "polygon"
-        case.avalanche:
+        case .avalanche:
             return "avalanche"
-        case.arbitrum:
+        case .arbitrum:
             return "arbitrum"
-        case.optimism:
+        case .optimism:
             return "optimism"
-        case.base:
+        case .base:
             return "base"
-        case.blast:
+        case .blast:
             return "blast"
-        case.bscChain:
+        case .bscChain:
             return "bnb"
-        case.solana:
+        case .solana:
             return "solana"
-        case.thorChain:
-            return nil
-        case.bitcoin,.bitcoinCash,.litecoin,.dogecoin,.dash,.gaiaChain,.kujira,.mayaChain,.cronosChain,.sui,.polkadot,.zksync,.dydx:
-            return nil
+        case .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .cronosChain, .sui, .polkadot, .zksync, .dydx:
+            throw BlowfishServiceError.unsupportedChain
         }
     }
     
-    func blowfishNetwork(chain: Chain) -> String? {
+    func blowfishNetwork(chain: Chain) throws -> String {
         switch chain {
-        case .ethereum:
-            return "mainnet"
-        case .polygon:
-            return "mainnet"
-        case .avalanche:
+        case .ethereum, .polygon, .avalanche, .optimism, .base, .blast, .bscChain, .solana:
             return "mainnet"
         case .arbitrum:
             return "one"
-        case .optimism:
-            return "mainnet"
-        case .base:
-            return "mainnet"
-        case .blast:
-            return "mainnet"
-        case .bscChain:
-            return "mainnet"
-        case .solana:
-            return "mainnet"
-        case .thorChain:
-            return nil
-        case .bitcoin,.bitcoinCash,.litecoin,.dogecoin,.dash,.gaiaChain,.kujira,.mayaChain,.cronosChain,.sui,.polkadot,.zksync,.dydx:
-            return nil
+        case .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .cronosChain, .sui, .polkadot, .zksync, .dydx:
+            throw BlowfishServiceError.unsupportedNetwork
         }
     }
-    
 }

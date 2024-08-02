@@ -268,30 +268,34 @@ class JoinKeysignViewModel: ObservableObject {
             return nil
         }
         
-        switch payload.coin.chainType {
-        case .EVM:
-            let blowfishResponse = await blowfishEVMTransactionScan()
-            showBlowfish = blowfishResponse != nil
-            ShowBlowfishWarnings = blowfishResponse != nil && !(blowfishResponse?.warnings?.isEmpty ?? true)
-            return blowfishResponse
-        case .Solana:
-            let blowfishResponse = await blowfishSolanaTransactionScan()
-            showBlowfish = blowfishResponse != nil
-            ShowBlowfishWarnings = blowfishResponse != nil && !(blowfishResponse?.aggregated?.warnings?.isEmpty ?? true)
-            return blowfishResponse
-        default:
+        do {
+            switch payload.coin.chainType {
+            case .EVM:
+                let blowfishResponse = try await blowfishEVMTransactionScan()
+                showBlowfish = true
+                ShowBlowfishWarnings = !(blowfishResponse?.warnings?.isEmpty ?? true)
+                return blowfishResponse
+            case .Solana:
+                let blowfishResponse = await blowfishSolanaTransactionScan()
+                showBlowfish = true
+                ShowBlowfishWarnings = !(blowfishResponse?.aggregated?.warnings?.isEmpty ?? true)
+                return blowfishResponse
+            default:
+                return nil
+            }
+        } catch {
             return nil
         }
         
     }
     
-    func blowfishEVMTransactionScan() async -> BlowfishResponse? {
+    func blowfishEVMTransactionScan() async throws -> BlowfishResponse? {
         
         guard let payload = keysignPayload else {
             return nil
         }
         
-        return await BlowfishService.shared.blowfishEVMTransactionScan(
+        return try await BlowfishService.shared.blowfishEVMTransactionScan(
             fromAddress: payload.coin.address,
             toAddress: payload.toAddress,
             amountInRaw: payload.toAmount,
@@ -311,7 +315,7 @@ class JoinKeysignViewModel: ObservableObject {
                     keysignPayload: payload
                 )
                 
-                return await BlowfishService.shared.blowfishSolanaTransactionScan(
+                return try await BlowfishService.shared.blowfishSolanaTransactionScan(
                     fromAddress: payload.coin.address,
                     zeroSignedTransaction: zeroSignedTransaction
                 )
