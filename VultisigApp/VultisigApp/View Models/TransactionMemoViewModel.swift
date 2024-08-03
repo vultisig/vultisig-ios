@@ -36,7 +36,7 @@ class TransactionMemoViewModel: ObservableObject, TransferViewModel {
     
     func loadGasInfoForSending(tx: SendTransaction) async{
         do {
-            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: false)
+            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: false, isDeposit: tx.isDeposit, transactionType: tx.transactionType)
             tx.gas = chainSpecific.gas.description
         } catch {
             print("error fetching data: \(error.localizedDescription)")
@@ -71,5 +71,6 @@ class TransactionMemoViewModel: ObservableObject, TransferViewModel {
     
     func handleBackTap() {
         currentIndex-=1
+        currentTitle = titles[currentIndex-1]
     }
 }

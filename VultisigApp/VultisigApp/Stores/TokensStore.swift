@@ -61,6 +61,8 @@ class TokensStore {
         
         CoinMeta(chain: Chain.base, ticker: "USDC", logo: "usdc",   decimals: 6,  priceProviderId: "usd-coin", contractAddress: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",  isNativeToken: false ),
         
+        CoinMeta(chain: Chain.base, ticker: "WEWE", logo: "wewe",   decimals: 18,  priceProviderId: "", contractAddress: "0x6b9bb36519538e0C073894E964E90172E1c0B41F",  isNativeToken: false ),
+        
         CoinMeta(chain: Chain.arbitrum, ticker: "ETH", logo: "eth_arbitrum",   decimals: 18,   priceProviderId: "ethereum", contractAddress: "",  isNativeToken: true), //Arbitrum asks for more fee otherwise it says the intrinsic gas too low
         
         CoinMeta(chain: Chain.arbitrum, ticker: "ARB", logo: "arbitrum",   decimals: 18,   priceProviderId: "arbitrum", contractAddress: "0x912CE59144191C1204E64559FE8253a0e49E6548",  isNativeToken: false),

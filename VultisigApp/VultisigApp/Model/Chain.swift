@@ -46,7 +46,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .bitcoinCash: return "Bitcoin-Cash"
         case .litecoin: return "Litecoin"
         case .dogecoin: return "Dogecoin"
-        case .gaiaChain: return "Gaia"
+        case .gaiaChain: return "Cosmos"
         case .kujira: return "Kujira"
         case .dash: return "Dash"
         case .mayaChain: return "MayaChain"

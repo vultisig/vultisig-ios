@@ -31,4 +31,24 @@ class VaultDetailQRCodeViewModel: ObservableObject {
         }
 #endif
     }
+    
+    func generateName(vault: Vault) -> String {
+        let name = vault.name
+        let ecdsaKey = vault.pubKeyECDSA
+        let eddsaKey = vault.pubKeyEdDSA
+        let hexCode = vault.hexChainCode
+        let id = "\(name)-\(ecdsaKey)-\(eddsaKey)-\(hexCode)".sha256()
+        
+        return "Vultisig-\(vault.name)-\(id.suffix(3)).png"
+    }
+    
+    func getVaultPublicKeyExport(vault: Vault) -> VaultPublicKeyExport {
+        let name = vault.name
+        let ecdsaKey = vault.pubKeyECDSA
+        let eddsaKey = vault.pubKeyEdDSA
+        let hexCode = vault.hexChainCode
+        let id = "\(name)-\(ecdsaKey)-\(eddsaKey)-\(hexCode)".sha256()
+        
+        return VaultPublicKeyExport(uid: id, name: name, public_key_ecdsa: ecdsaKey, public_key_eddsa: eddsaKey, hex_chain_code: hexCode)
+    }
 }

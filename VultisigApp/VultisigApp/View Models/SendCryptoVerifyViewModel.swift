@@ -36,6 +36,13 @@ class SendCryptoVerifyViewModel: ObservableObject {
     func amount(for coin: Coin, tx: SendTransaction) -> BigInt {
         return tx.amountInRaw
     }
+    
+    func blowfishEVMTransactionScan(tx: SendTransaction) async throws -> BlowfishResponse? {
+        return try await BlowfishService.shared.blowfishEVMTransactionScan(
+            fromAddress: tx.fromAddress, toAddress: tx.toAddress, amountInRaw: tx.amountInRaw, memo: tx.memo, chain: tx.coin.chain
+        )
+    }
+    
     func validateForm(tx: SendTransaction, vault: Vault) async -> KeysignPayload? {
         
         if !isValidForm {
@@ -44,18 +51,22 @@ class SendCryptoVerifyViewModel: ObservableObject {
             isLoading = false
             return nil
         }
+        
         var keysignPayload: KeysignPayload?
+        
         if tx.coin.chain.chainType == ChainType.UTXO {
+            
             do{
                 _ = try await utxo.fetchBlockchairData(coin: tx.coin)
-            }catch{
+            } catch {
                 print("fail to fetch utxo data from blockchair , error:\(error.localizedDescription)")
             }
         }
-        do{
-            let chainSpecific = try await blockChainService.fetchSpecific(for: tx, sendMaxAmount: tx.sendMaxAmount)
+        
+        do {
+            let chainSpecific = try await blockChainService.fetchSpecific(for: tx, sendMaxAmount: tx.sendMaxAmount, isDeposit: tx.isDeposit, transactionType: tx.transactionType)
             let keysignPayloadFactory = KeysignPayloadFactory()
-            keysignPayload = try await keysignPayloadFactory.buildTransfer(coin: tx.coin, 
+            keysignPayload = try await keysignPayloadFactory.buildTransfer(coin: tx.coin,
                                                                            toAddress: tx.toAddress,
                                                                            amount: amount(for:tx.coin,tx:tx),
                                                                            memo: tx.memo,

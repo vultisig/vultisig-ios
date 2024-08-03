@@ -29,6 +29,8 @@ struct KeygenView: View {
     @State var progressCounter: Double = 0
     @State var showProgressRing = true
     
+    @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
+    
     var body: some View {
         VStack {
             Spacer()
@@ -41,9 +43,11 @@ struct KeygenView: View {
             BackupVaultNowView(vault: vault)
         }
         .task {
-            await viewModel.startKeygen(context: context)
+            await viewModel.startKeygen(
+                context: context,
+                defaultChains: settingsDefaultChainViewModel.defaultChains
+            )
         }
-        
         .onAppear {
 #if os(iOS)
             UIApplication.shared.isIdleTimerDisabled = true
@@ -141,8 +145,7 @@ struct KeygenView: View {
         Text("DONE")
             .foregroundColor(.backgroundBlue)
             .onAppear {
-                progressCounter = 4
-                viewModel.delaySwitchToMain()
+                setDoneData()
             }
     }
     
@@ -198,6 +201,15 @@ struct KeygenView: View {
             oldResharePrefix: oldResharePrefix
         )
     }
+    
+    private func setDoneData() {
+        if tssType == .Reshare {
+            vault.isBackedUp = false
+        }
+        
+        progressCounter = 4
+        viewModel.delaySwitchToMain()
+    }
 }
 
 #Preview("keygen") {
@@ -213,5 +225,6 @@ struct KeygenView: View {
             encryptionKeyHex: "",
             oldResharePrefix: ""
         )
+        .environmentObject(SettingsDefaultChainViewModel())
     }
 }

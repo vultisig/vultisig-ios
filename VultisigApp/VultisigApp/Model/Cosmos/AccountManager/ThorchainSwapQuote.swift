@@ -20,7 +20,7 @@ struct ThorchainSwapQuote: Codable {
     let outboundDelayBlocks: Int
     let outboundDelaySeconds: Int
     let recommendedMinAmountIn: String
-    let slippageBps: Int
+    let slippageBps: Int?
     let totalSwapSeconds: Int?
     let warning: String
     let router: String?

@@ -254,3 +254,9 @@
 "numberOfPairedDevicesTwoOfThree" = "Broj uređaja uparenih u par %d od 3";
 "numberOfPairedDevicesMOfN" = "Broj uređaja uparenih u par %d od N";
 "invalidAddress" = "Ova adresa je nevažeća za ovu lance.";
+"scannedByBlowfish" = "Transakcija provjerena Blowfishom.";
+"defaultChains" = "Zadani lanci";
+"search" = "Pretraži";
+"vaultValue" = "Vrijednost spremišta";
+"noSavedAddressesForChain" = "Nema spremljenih adresa za ovaj lanac.";
+"editAddress" = "Uredi adresu";

@@ -14,10 +14,16 @@ struct SendCryptoVerifyView: View {
     @ObservedObject var tx: SendTransaction
     let vault: Vault
     
+    @State var isLoading = true
+    @State var blowfishResponse: BlowfishResponse? = nil
+    
     var body: some View {
         ZStack {
             Background()
             view
+            if isLoading {
+                Loader()
+            }
         }
         .gesture(DragGesture())
         .alert(isPresented: $sendCryptoVerifyViewModel.showAlert) {
@@ -26,11 +32,37 @@ struct SendCryptoVerifyView: View {
         .onDisappear {
             sendCryptoVerifyViewModel.isLoading = false
         }
+        .onAppear {
+            if (tx.coin.chainType == .EVM) {
+                isLoading = true
+                Task{
+                    do {
+                        blowfishResponse = try await sendCryptoVerifyViewModel.blowfishEVMTransactionScan(tx: tx)
+                        isLoading = false
+                    } catch {
+                        print(error.localizedDescription)
+                        isLoading = false
+                    }
+                }
+            } else {
+                isLoading = false
+            }
+        }
+    }
+    
+    var warning: some View {
+        VStack {
+            BlowfishWarningInformationNote(blowfishResponse: blowfishResponse)
+                .padding(.horizontal, 16)
+        }
     }
     
     var view: some View {
         VStack {
             fields
+            if (tx.coin.chainType == .EVM && blowfishResponse != nil) {
+                warning
+            }
             button
         }
         .blur(radius: sendCryptoVerifyViewModel.isLoading ? 1 : 0)
@@ -140,7 +172,7 @@ struct SendCryptoVerifyView: View {
     
     private func validateForm() async {
         keysignPayload = await sendCryptoVerifyViewModel.validateForm(
-            tx: tx, 
+            tx: tx,
             vault: vault
         )
         

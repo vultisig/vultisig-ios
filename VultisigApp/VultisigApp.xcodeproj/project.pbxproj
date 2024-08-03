@@ -115,6 +115,7 @@
 		A62758F72B97DF4A00ADE3A6 /* ColorStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62758F62B97DF4A00ADE3A6 /* ColorStyle.swift */; };
 		A62D6B032BFE7BF400F24E51 /* CoinDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62D6B022BFE7BF400F24E51 /* CoinDetailView.swift */; };
 		A62D6B052BFE7C5E00F24E51 /* ChainDetailActionButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62D6B042BFE7C5E00F24E51 /* ChainDetailActionButtons.swift */; };
+		A63001B12C54AC0100D18E25 /* EditAddressBookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63001B02C54AC0100D18E25 /* EditAddressBookView.swift */; };
 		A63253C42C17BE9000D2F1B8 /* VaultDeletionDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63253C32C17BE9000D2F1B8 /* VaultDeletionDetails.swift */; };
 		A633B11C2B99273A003D1738 /* ColorExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B11B2B99273A003D1738 /* ColorExtensions.swift */; };
 		A633B1252B993FE7003D1738 /* FilledButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B1242B993FE7003D1738 /* FilledButton.swift */; };
@@ -189,6 +190,10 @@
 		A69069B52BCF538000F28A8B /* NetworkPrompts.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69069B42BCF538000F28A8B /* NetworkPrompts.swift */; };
 		A69069B72BCF53B600F28A8B /* NetworkPromptType.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69069B62BCF53B600F28A8B /* NetworkPromptType.swift */; };
 		A690E00E2BC0ED290006DC0D /* URL.swift in Sources */ = {isa = PBXBuildFile; fileRef = A690E00D2BC0ED290006DC0D /* URL.swift */; };
+		A6951E862C52DAFD007292E7 /* SettingsDefaultChainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6951E852C52DAFD007292E7 /* SettingsDefaultChainView.swift */; };
+		A6951E882C52DB9D007292E7 /* Search.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6951E872C52DB9D007292E7 /* Search.swift */; };
+		A6951E8A2C52DBBD007292E7 /* ToggleSelectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6951E892C52DBBD007292E7 /* ToggleSelectionCell.swift */; };
+		A6951E8C2C52DC6B007292E7 /* SettingsDefaultChainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6951E8B2C52DC6B007292E7 /* SettingsDefaultChainViewModel.swift */; };
 		A6966D1E2BA3DDAD00903CA4 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D1D2BA3DDAD00903CA4 /* OnboardingView.swift */; };
 		A6966D202BA3DF0C00903CA4 /* OnboardingView1.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D1F2BA3DF0C00903CA4 /* OnboardingView1.swift */; };
 		A6966D242BA3E2A500903CA4 /* OnboardingView2.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6966D232BA3E2A500903CA4 /* OnboardingView2.swift */; };
@@ -265,6 +270,10 @@
 		A6FB96B52BD0CE6700D56F68 /* NavigationHomeEditButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6FB96B42BD0CE6700D56F68 /* NavigationHomeEditButton.swift */; };
 		B50E399B2BF5AB2100B9A269 /* TransactionMemoAddressable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50E399A2BF5AB2100B9A269 /* TransactionMemoAddressable.swift */; };
 		B50E399D2BF5AB4B00B9A269 /* TransactionMemoContractTypeEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50E399C2BF5AB4B00B9A269 /* TransactionMemoContractTypeEnum.swift */; };
+		B51097EE2C4E43830066D560 /* BlowfishService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51097ED2C4E43830066D560 /* BlowfishService.swift */; };
+		B51097F12C4E48CD0066D560 /* BlowfishRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51097F02C4E48CD0066D560 /* BlowfishRequest.swift */; };
+		B51097F32C4E48EE0066D560 /* BlowfishResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51097F22C4E48EE0066D560 /* BlowfishResponse.swift */; };
+		B51097F52C4EB7200066D560 /* BlowfishWarningInformationNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51097F42C4EB7200066D560 /* BlowfishWarningInformationNote.swift */; };
 		B51119332C0072620020B711 /* TransactionMemoCustom.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51119322C0072620020B711 /* TransactionMemoCustom.swift */; };
 		B520B2FE2C3250230097C590 /* TextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B520B2FD2C3250230097C590 /* TextField.swift */; };
 		B52196422C1296DF0021D27A /* IntExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52196412C1296DF0021D27A /* IntExtension.swift */; };
@@ -381,6 +390,7 @@
 		DEF2E2CB2B9AD5EA000737B8 /* UTXOChainsHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF2E2CA2B9AD5EA000737B8 /* UTXOChainsHelper.swift */; };
 		DEF2E2D02B9DA459000737B8 /* PublicKeyTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF2E2CF2B9DA459000737B8 /* PublicKeyTest.swift */; };
 		DEF2E2D32B9DC685000737B8 /* UTXOChainsHelperTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF2E2D22B9DC685000737B8 /* UTXOChainsHelperTest.swift */; };
+		DEF722602C520377002FFE8A /* THORChainNetworkStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF7225F2C520377002FFE8A /* THORChainNetworkStatus.swift */; };
 		DEFC7BFB2B8D87370090B07A /* erc20.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC7BFA2B8D87370090B07A /* erc20.swift */; };
 		DEFC7BFF2B8EC95E0090B07A /* thorchain.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC7BFE2B8EC95E0090B07A /* thorchain.swift */; };
 		DEFF58F22BCBACDA005DFDF9 /* VultisigRelay.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFF58F12BCBACDA005DFDF9 /* VultisigRelay.swift */; };
@@ -525,6 +535,7 @@
 		A62758F62B97DF4A00ADE3A6 /* ColorStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorStyle.swift; sourceTree = "<group>"; };
 		A62D6B022BFE7BF400F24E51 /* CoinDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinDetailView.swift; sourceTree = "<group>"; };
 		A62D6B042BFE7C5E00F24E51 /* ChainDetailActionButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailActionButtons.swift; sourceTree = "<group>"; };
+		A63001B02C54AC0100D18E25 /* EditAddressBookView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditAddressBookView.swift; sourceTree = "<group>"; };
 		A63253C32C17BE9000D2F1B8 /* VaultDeletionDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDeletionDetails.swift; sourceTree = "<group>"; };
 		A633B11B2B99273A003D1738 /* ColorExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorExtensions.swift; sourceTree = "<group>"; };
 		A633B11F2B993BF5003D1738 /* Montserrat-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Montserrat-Italic.ttf"; sourceTree = "<group>"; };
@@ -600,6 +611,10 @@
 		A69069B42BCF538000F28A8B /* NetworkPrompts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPrompts.swift; sourceTree = "<group>"; };
 		A69069B62BCF53B600F28A8B /* NetworkPromptType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPromptType.swift; sourceTree = "<group>"; };
 		A690E00D2BC0ED290006DC0D /* URL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URL.swift; sourceTree = "<group>"; };
+		A6951E852C52DAFD007292E7 /* SettingsDefaultChainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsDefaultChainView.swift; sourceTree = "<group>"; };
+		A6951E872C52DB9D007292E7 /* Search.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Search.swift; sourceTree = "<group>"; };
+		A6951E892C52DBBD007292E7 /* ToggleSelectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToggleSelectionCell.swift; sourceTree = "<group>"; };
+		A6951E8B2C52DC6B007292E7 /* SettingsDefaultChainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsDefaultChainViewModel.swift; sourceTree = "<group>"; };
 		A6966D1D2BA3DDAD00903CA4 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		A6966D1F2BA3DF0C00903CA4 /* OnboardingView1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView1.swift; sourceTree = "<group>"; };
 		A6966D232BA3E2A500903CA4 /* OnboardingView2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView2.swift; sourceTree = "<group>"; };
@@ -674,6 +689,10 @@
 		A6FB96B42BD0CE6700D56F68 /* NavigationHomeEditButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationHomeEditButton.swift; sourceTree = "<group>"; };
 		B50E399A2BF5AB2100B9A269 /* TransactionMemoAddressable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoAddressable.swift; sourceTree = "<group>"; };
 		B50E399C2BF5AB4B00B9A269 /* TransactionMemoContractTypeEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoContractTypeEnum.swift; sourceTree = "<group>"; };
+		B51097ED2C4E43830066D560 /* BlowfishService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlowfishService.swift; sourceTree = "<group>"; };
+		B51097F02C4E48CD0066D560 /* BlowfishRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlowfishRequest.swift; sourceTree = "<group>"; };
+		B51097F22C4E48EE0066D560 /* BlowfishResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlowfishResponse.swift; sourceTree = "<group>"; };
+		B51097F42C4EB7200066D560 /* BlowfishWarningInformationNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlowfishWarningInformationNote.swift; sourceTree = "<group>"; };
 		B51119322C0072620020B711 /* TransactionMemoCustom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoCustom.swift; sourceTree = "<group>"; };
 		B520B2FD2C3250230097C590 /* TextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextField.swift; sourceTree = "<group>"; };
 		B52196412C1296DF0021D27A /* IntExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntExtension.swift; sourceTree = "<group>"; };
@@ -790,6 +809,7 @@
 		DEF2E2CF2B9DA459000737B8 /* PublicKeyTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublicKeyTest.swift; sourceTree = "<group>"; };
 		DEF2E2D12B9DC331000737B8 /* VultisigApp.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = VultisigApp.xctestplan; sourceTree = "<group>"; };
 		DEF2E2D22B9DC685000737B8 /* UTXOChainsHelperTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOChainsHelperTest.swift; sourceTree = "<group>"; };
+		DEF7225F2C520377002FFE8A /* THORChainNetworkStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainNetworkStatus.swift; sourceTree = "<group>"; };
 		DEFC7BFA2B8D87370090B07A /* erc20.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = erc20.swift; sourceTree = "<group>"; };
 		DEFC7BFE2B8EC95E0090B07A /* thorchain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = thorchain.swift; sourceTree = "<group>"; };
 		DEFF58F12BCBACDA005DFDF9 /* VultisigRelay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultisigRelay.swift; sourceTree = "<group>"; };
@@ -877,6 +897,8 @@
 				A6B7F48B2C47A077006D83D1 /* InformationNote.swift */,
 				A6B7F4992C49418A006D83D1 /* VaultDetailQRCode.swift */,
 				A6B7F49D2C496EA8006D83D1 /* VaultDetailMacQRCode.swift */,
+				B51097F42C4EB7200066D560 /* BlowfishWarningInformationNote.swift */,
+				A6951E872C52DB9D007292E7 /* Search.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -892,6 +914,7 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				B51097EC2C4E43660066D560 /* Blowfish */,
 				A52287462C42BAEB00E1CC5A /* LiFi */,
 				A563867E2C3A2121008B848E /* Protobuf */,
 				A58CC3442C32EDDB0086D16B /* Keysign */,
@@ -1000,6 +1023,7 @@
 				A5DA62082BF79C1D00CBEAEE /* ThorchainSwapError.swift */,
 				46F8F7272B9A011B0099454E /* ThorchainBroadcastTransactionService.swift */,
 				DEFF58FB2BCFB384005DFDF9 /* MayaChainService.swift */,
+				DEF7225F2C520377002FFE8A /* THORChainNetworkStatus.swift */,
 			);
 			path = Thorchain;
 			sourceTree = "<group>";
@@ -1294,6 +1318,7 @@
 				A66BFCD22C135699004DCD4F /* ShareSheetViewModel.swift */,
 				A68696222C1B5DD2004EDE0B /* EncryptedBackupViewModel.swift */,
 				A6B7F49B2C4963F6006D83D1 /* VaultDetailQRCodeViewModel.swift */,
+				A6951E8B2C52DC6B007292E7 /* SettingsDefaultChainViewModel.swift */,
 			);
 			path = "View Models";
 			sourceTree = "<group>";
@@ -1382,6 +1407,7 @@
 				A6980C2B2BC0896C00F452AB /* SettingsLanguageSelectionView.swift */,
 				A6980C2F2BC0A11100F452AB /* SettingsCurrencySelectionView.swift */,
 				A6980C312BC0A2F700F452AB /* SettingsFAQView.swift */,
+				A6951E852C52DAFD007292E7 /* SettingsDefaultChainView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -1412,6 +1438,7 @@
 			children = (
 				A6C3ABC72C3E595000F13ED0 /* AddressBookView.swift */,
 				A6725D392C3F9B4400D47716 /* AddAddressBookView.swift */,
+				A63001B02C54AC0100D18E25 /* EditAddressBookView.swift */,
 			);
 			path = "Address Book";
 			sourceTree = "<group>";
@@ -1447,8 +1474,26 @@
 				A683EDEC2BCF67D100BB706E /* NetworkPromptCell.swift */,
 				A6AF96112C2E3D6100992578 /* ImportFileCell.swift */,
 				A6725D422C40C45800D47716 /* AddressBookCell.swift */,
+				A6951E892C52DBBD007292E7 /* ToggleSelectionCell.swift */,
 			);
 			path = Cells;
+			sourceTree = "<group>";
+		};
+		B51097EC2C4E43660066D560 /* Blowfish */ = {
+			isa = PBXGroup;
+			children = (
+				B51097ED2C4E43830066D560 /* BlowfishService.swift */,
+			);
+			path = Blowfish;
+			sourceTree = "<group>";
+		};
+		B51097EF2C4E48BB0066D560 /* Blowfish */ = {
+			isa = PBXGroup;
+			children = (
+				B51097F02C4E48CD0066D560 /* BlowfishRequest.swift */,
+				B51097F22C4E48EE0066D560 /* BlowfishResponse.swift */,
+			);
+			path = Blowfish;
 			sourceTree = "<group>";
 		};
 		B54B01982BDE0A0F00FDA472 /* Polkadot */ = {
@@ -1544,6 +1589,7 @@
 		D9AD8ED82B6722AC0009F8D5 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				B51097EF2C4E48BB0066D560 /* Blowfish */,
 				B5947FD32C41EA43002D6A36 /* Cache */,
 				B5A97CFA2BF43653007574D7 /* TransactionMemo */,
 				B5F7581B2BD8FD970097B5B9 /* Sui */,
@@ -2023,12 +2069,14 @@
 				DE1572992B70F26A009BC7C5 /* KeyType.swift in Sources */,
 				46E98FFC2BAE407300C53D97 /* DecodingErrorExtension.swift in Sources */,
 				DEFF58FA2BCF85FA005DFDF9 /* maya.swift in Sources */,
+				B51097EE2C4E43830066D560 /* BlowfishService.swift in Sources */,
 				A633B13A2B9A5A22003D1738 /* ImportWalletView.swift in Sources */,
 				DE63AE4B2BB4D87F001BBE5C /* BscService.swift in Sources */,
 				A6F42CC22C09175B00D0431C /* GeneralCodeScannerView.swift in Sources */,
 				B52196482C12D1110021D27A /* CircularFilledButton.swift in Sources */,
 				DE9EB0FC2BA463F7001747D9 /* KeygenViewModel.swift in Sources */,
 				DEFF58F42BCBF65D005DFDF9 /* TssHelper.swift in Sources */,
+				A6951E8A2C52DBBD007292E7 /* ToggleSelectionCell.swift in Sources */,
 				A683EDED2BCF67D100BB706E /* NetworkPromptCell.swift in Sources */,
 				A6F2C54B2BA003E10095C8E3 /* CoinSelectionCell.swift in Sources */,
 				46AAA4972BBF7EBA00E5BAB4 /* EvmServiceFactory.swift in Sources */,
@@ -2098,6 +2146,7 @@
 				469ED3992B98E896008D4951 /* CosmosBalanceResponse.swift in Sources */,
 				DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */,
 				46B60BC02BBB20130043EBBA /* RpcEvmService.swift in Sources */,
+				A6951E882C52DB9D007292E7 /* Search.swift in Sources */,
 				B53D8CC82BF7F21500B795D3 /* TransactionMemoBond.swift in Sources */,
 				DEE2D8722C0D37A900D2F4C3 /* VaultDefaultCoinService.swift in Sources */,
 				DE9EB0EE2BA2CF49001747D9 /* KeygenMessage.swift in Sources */,
@@ -2140,6 +2189,7 @@
 				B5E95E092BED84D9003778F0 /* ImagePicker.swift in Sources */,
 				B53DCB7D2C0D7327008388D4 /* EvmTokenServiceProtocol.swift in Sources */,
 				A5BA15082C077A0B00AA6C07 /* OneInchToken.swift in Sources */,
+				DEF722602C520377002FFE8A /* THORChainNetworkStatus.swift in Sources */,
 				DE1572962B70F254009BC7C5 /* TssMessenger.swift in Sources */,
 				A68696232C1B5DD2004EDE0B /* EncryptedBackupViewModel.swift in Sources */,
 				46B60BBE2BBA811D0043EBBA /* AvalancheService.swift in Sources */,
@@ -2278,6 +2328,7 @@
 				B5A97CED2BF41573007574D7 /* TransactionMemoView.swift in Sources */,
 				A611735D2BC8D94400D616F9 /* KeyGenSummaryView.swift in Sources */,
 				A56386822C3A2148008B848E /* ProtoCoinResolver.swift in Sources */,
+				A6951E862C52DAFD007292E7 /* SettingsDefaultChainView.swift in Sources */,
 				A6CBF2DC2C251D4100FD8080 /* LookingForDevicesLoader.swift in Sources */,
 				A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */,
 				A5BDC7BE2C32FF4A004DBBE7 /* CoinsGrouped.swift in Sources */,
@@ -2303,10 +2354,13 @@
 				A6980C2C2BC0896C00F452AB /* SettingsLanguageSelectionView.swift in Sources */,
 				A5125F042BEBBE43008A79AA /* SwapService.swift in Sources */,
 				A50E793A2BFE30210031DB47 /* Storage.swift in Sources */,
+				A63001B12C54AC0100D18E25 /* EditAddressBookView.swift in Sources */,
 				DEFF58F82BCF4E11005DFDF9 /* BackupVault.swift in Sources */,
 				A65649EE2B9669DD00E4B329 /* UTXOTransactionMempoolInput.swift in Sources */,
 				A5D00E412BD65CE7009E025F /* ERC20ApprovePayload.swift in Sources */,
 				A6966D2D2BA402A900903CA4 /* TokenSelectorDropdown.swift in Sources */,
+				A6951E8C2C52DC6B007292E7 /* SettingsDefaultChainViewModel.swift in Sources */,
+				B51097F52C4EB7200066D560 /* BlowfishWarningInformationNote.swift in Sources */,
 				A6F2C5452B9FE3A00095C8E3 /* HomeView.swift in Sources */,
 				A66A0BD72BA125C50021A483 /* EditVaultCell.swift in Sources */,
 				A6C3ABCA2C3E5A8700F13ED0 /* NavigationAddButton.swift in Sources */,
@@ -2319,6 +2373,7 @@
 				B5A97CF12BF41903007574D7 /* TransactionMemoVerifyViewModel.swift in Sources */,
 				A65649F02B966A1200E4B329 /* UTXOTransactionMempoolOutput.swift in Sources */,
 				A653242A2BA52A4700DDE6EB /* SendCryptoViewModel.swift in Sources */,
+				B51097F32C4E48EE0066D560 /* BlowfishResponse.swift in Sources */,
 				A54BBCFF2BC6E11600645C06 /* TransferViewModel.swift in Sources */,
 				46DE08902BD0D03E00AE8BDE /* CosmosService.swift in Sources */,
 				465B09A92B7C176700952DD9 /* SendTransaction.swift in Sources */,
@@ -2337,6 +2392,7 @@
 				B5F758182BD8E65D0097B5B9 /* Sui.swift in Sources */,
 				A633B1362B997D57003D1738 /* NavigationBackButton.swift in Sources */,
 				B52196462C12CA2E0021D27A /* AddressTextField.swift in Sources */,
+				B51097F12C4E48CD0066D560 /* BlowfishRequest.swift in Sources */,
 				B5E476AD2C1A556D005DB485 /* DydxService.swift in Sources */,
 				B54B01972BDCEB8E00FDA472 /* Polkadot.swift in Sources */,
 				A6AF960C2C2E2D6400992578 /* GeneralQRImportMacView.swift in Sources */,
@@ -2551,7 +2607,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 41;
+				CURRENT_PROJECT_VERSION = 42;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
@@ -2606,7 +2662,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 41;
+				CURRENT_PROJECT_VERSION = 42;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
@@ -2656,7 +2712,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 41;
+				CURRENT_PROJECT_VERSION = 42;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2682,7 +2738,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 41;
+				CURRENT_PROJECT_VERSION = 42;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
@@ -2706,7 +2762,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 41;
+				CURRENT_PROJECT_VERSION = 42;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
@@ -2728,7 +2784,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 41;
+				CURRENT_PROJECT_VERSION = 42;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;

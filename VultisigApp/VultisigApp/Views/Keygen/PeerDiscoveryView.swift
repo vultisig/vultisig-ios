@@ -277,8 +277,6 @@ struct PeerDiscoveryView: View {
         }
 #if os(iOS)
         .padding(idiom == .phone ? 0 : 8)
-#elseif os(macOS)
-        .padding(8)
 #endif
     }
     
@@ -320,12 +318,12 @@ struct PeerDiscoveryView: View {
             vault: viewModel.vault,
             tssType: tssType,
             keygenCommittee: viewModel.selections.map { $0 },
-            vaultOldCommittee: viewModel.vault.signers.filter { viewModel.selections.contains($0)
-            },
+            vaultOldCommittee: viewModel.vault.signers.filter { viewModel.selections.contains($0)},
             mediatorURL: viewModel.serverAddr,
             sessionID: viewModel.sessionID,
             encryptionKeyHex: viewModel.encryptionKeyHex ?? "",
-            oldResharePrefix: viewModel.vault.resharePrefix ?? "")
+            oldResharePrefix: viewModel.vault.resharePrefix ?? ""
+        )
     }
     
     var failureText: some View {
@@ -426,4 +424,5 @@ struct PeerDiscoveryView: View {
 
 #Preview {
     PeerDiscoveryView(tssType: .Keygen, vault: Vault.example, selectedTab: .TwoOfTwoVaults)
+        .frame(minWidth: 900, minHeight: 600)
 }

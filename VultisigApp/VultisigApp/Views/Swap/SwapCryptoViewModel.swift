@@ -197,11 +197,15 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             guard let quote = tx.quote else {
                 throw Errors.unexpectedError
             }
-            
+
+            let isDeposit = tx.fromCoin.chain == .mayaChain
+
             let chainSpecific = try await blockchainService.fetchSpecific(
                 for: tx.fromCoin,
                 action: .swap,
-                sendMaxAmount: false
+                sendMaxAmount: false,
+                isDeposit: isDeposit,
+                transactionType: .unspecified
             )
 
             let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
@@ -310,6 +314,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     
     func handleBackTap() {
         currentIndex-=1
+        currentTitle = titles[currentIndex-1]
     }
     
     func convertToFiat(amount: String, coin: Coin, tx: SwapTransaction) async -> String {
@@ -386,7 +391,7 @@ private extension SwapCryptoViewModel {
         tx.thorchainFee = .zero
 
         do {
-            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin, action: .swap, sendMaxAmount: false)
+            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.fromCoin, action: .swap, sendMaxAmount: false, isDeposit: false, transactionType: .unspecified)
 
             tx.thorchainFee = try await thorchainFee(for: chainSpecific, tx: tx, vault: vault)
             tx.gas = chainSpecific.gas

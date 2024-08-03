@@ -23,7 +23,7 @@ struct CoinCell: View {
     var content: some View {
         VStack(alignment: .leading, spacing: 15) {
             header
-            amount
+            quantity
         }
     }
     
@@ -31,7 +31,7 @@ struct CoinCell: View {
         HStack {
             title
             Spacer()
-            quantity
+            amount
         }
     }
     

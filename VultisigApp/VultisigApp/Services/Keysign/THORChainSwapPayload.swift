@@ -91,7 +91,7 @@ private extension THORChainSwapPayload {
                 if source {
                     $0.tokenID = coin.contractAddress
                 } else {
-                    $0.tokenID = "\(coin.ticker)-\(coin.contractAddress)"
+                    $0.tokenID = "\(coin.ticker)-\(coin.contractAddress.suffix(6).uppercased())"
                 }
             }
         }

@@ -8,6 +8,10 @@
 import SwiftUI
 
 struct InformationNote: View {
+    
+    @State var message: String? = nil
+    
+    
     var body: some View {
         HStack(spacing: 12) {
             icon
@@ -32,11 +36,19 @@ struct InformationNote: View {
     }
     
     var text: some View {
-        Text(NSLocalizedString("informationNote", comment: ""))
-            .foregroundColor(.neutral0)
-            .font(.body12MontserratSemiBold)
-            .lineSpacing(8)
-            .multilineTextAlignment(.leading)
+        if message == nil {
+            Text(NSLocalizedString("informationNote", comment: ""))
+                .foregroundColor(.neutral0)
+                .font(.body12MontserratSemiBold)
+                .lineSpacing(8)
+                .multilineTextAlignment(.leading)
+        } else {
+            Text(message ?? "")
+                .foregroundColor(.neutral0)
+                .font(.body12MontserratSemiBold)
+                .lineSpacing(8)
+                .multilineTextAlignment(.leading)
+        }
     }
 }
 

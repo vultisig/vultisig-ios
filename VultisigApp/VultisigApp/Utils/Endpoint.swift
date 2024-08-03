@@ -29,11 +29,16 @@ class Endpoint {
     static let broadcastTransactionThorchainNineRealms = "https://thornode.ninerealms.com/cosmos/tx/v1beta1/txs"
     static let broadcastTransactionMayachain = "https://mayanode.mayachain.info/cosmos/tx/v1beta1/txs"
     
+    static func fetchBlowfishTransactions(chain: String, network: String) -> String {
+        "\(vultisigApiProxy)/blowfish/\(chain)/v0/\(network)/scan/transactions?language=en&method=eth_sendTransaction"
+    }
+    
     static func fetchAccountNumberThorchainNineRealms(_ address: String) -> String {
         "https://thornode.ninerealms.com/auth/accounts/\(address)"
     }
     
     static let fetchThorchainNetworkInfoNineRealms = "https://thornode.ninerealms.com/thorchain/network"
+    static let thorchainNetworkInfo = "https://rpc.ninerealms.com/status".asUrl
     
     static func fetchAccountNumberMayachain(_ address: String) -> String {
         "https://mayanode.mayachain.info/auth/accounts/\(address)"
@@ -61,11 +66,11 @@ class Endpoint {
         
         return "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/swap?src=\(source)&dst=\(destination)&amount=\(amount)&from=\(from)&slippage=\(slippage)&disableEstimate=true&includeGas=true\(isAffiliateParams)".asUrl
     }
-
+    
     static func fetchLiFiQuote(fromChain: String, toChain: String, fromToken: String, toToken: String, fromAmount: String, fromAddress: String) -> URL {
         return "https://li.quest/v1/quote?fromChain=\(fromChain)&toChain=\(toChain)&fromToken=\(fromToken)&toToken=\(toToken)&fromAmount=\(fromAmount)&fromAddress=\(fromAddress)".asUrl
     }
-
+    
     static func fetchTokens(chain: Int) -> String {
         return "\(vultisigApiProxy)/1inch/swap/v6.0/\(chain)/tokens"
     }
@@ -86,7 +91,7 @@ class Endpoint {
     static let avalancheServiceRpcService = "https://avalanche-c-chain-rpc.publicnode.com"
     
     static let bscServiceRpcService = "https://bsc-rpc.publicnode.com"
-        
+    
     static let baseServiceRpcService = "https://base-rpc.publicnode.com"
     
     static let arbitrumOneServiceRpcService = "https://arbitrum-one-rpc.publicnode.com"
@@ -130,7 +135,7 @@ class Endpoint {
     }
     
     static func blockchairDashboard(_ address: String, _ coinName: String) -> URL {
-        "\(vultisigApiProxy)/blockchair/\(coinName)/dashboards/address/\(address)".asUrl
+        "\(vultisigApiProxy)/blockchair/\(coinName)/dashboards/address/\(address)?state=latest".asUrl
     }
     
     static func ethereumLabelTxHash(_ value: String) -> String {

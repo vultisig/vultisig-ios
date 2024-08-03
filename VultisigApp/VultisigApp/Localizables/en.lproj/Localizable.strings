@@ -278,3 +278,9 @@
 "saveOrShare" = "Save or Share";
 "shareVaultQR" = "Share Vault QR";
 "invalidAddress" = "This address is invalid for this chain.";
+"scannedByBlowfish" = "Transaction verified by Blowfish.";
+"defaultChains" = "Default Chains";
+"search" = "Search";
+"vaultValue" = "Vault Value";
+"noSavedAddressesForChain" = "No Saved Addresses found for this chain.";
+"editAddress" = "Edit Address";
