@@ -33,6 +33,10 @@ class Endpoint {
         "\(vultisigApiProxy)/blowfish/\(chain)/v0/\(network)/scan/transactions?language=en&method=eth_sendTransaction"
     }
     
+    static func fetchBlowfishSolanaTransactions() -> String {
+        "\(vultisigApiProxy)/blowfish/solana/v0/mainnet/scan/transactions?language=en"
+    }
+    
     static func fetchAccountNumberThorchainNineRealms(_ address: String) -> String {
         "https://thornode.ninerealms.com/auth/accounts/\(address)"
     }

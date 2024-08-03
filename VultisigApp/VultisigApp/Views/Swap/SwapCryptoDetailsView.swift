@@ -26,16 +26,14 @@ struct SwapCryptoDetailsView: View {
                 Loader()
             }
         }
-        .onChange(of: tx.fromCoin) { oldValue, newValue in
-            swapViewModel.updateCoinLists(tx: tx)
-        }
         .navigationDestination(isPresented: $isFromPickerActive) {
-            CoinPickerView(coins: swapViewModel.fromCoins) { coin in
+            CoinPickerView(coins: tx.fromCoins) { coin in
                 swapViewModel.updateFromCoin(coin: coin, tx: tx, vault: vault)
+                swapViewModel.updateCoinLists(tx: tx)
             }
         }
         .navigationDestination(isPresented: $isToPickerActive) {
-            CoinPickerView(coins: swapViewModel.toCoins) { coin in
+            CoinPickerView(coins: tx.toCoins) { coin in
                 swapViewModel.updateToCoin(coin: coin, tx: tx, vault: vault)
             }
         }
@@ -114,6 +112,7 @@ struct SwapCryptoDetailsView: View {
         Button {
             buttonRotated.toggle()
             swapViewModel.switchCoins(tx: tx, vault: vault)
+            swapViewModel.updateCoinLists(tx: tx)
         } label: {
             Image(systemName: "arrow.up.arrow.down")
                 .font(.body16MontserratMedium)

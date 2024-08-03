@@ -66,7 +66,7 @@ private extension LiFiService {
         struct Estimate: Codable {
             let toAmount: String
             let toAmountMin: String
-            let executionDuration: Int
+            let executionDuration: Decimal
         }
         struct TransactionRequest: Codable {
             let data: String

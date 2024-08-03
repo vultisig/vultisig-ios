@@ -19,6 +19,7 @@ struct ChainDetailView: View {
     @State var isSendLinkActive = false
     @State var isSwapLinkActive = false
     @State var isMemoLinkActive = false
+    @State var isWeweLinkActive = false
 
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
@@ -53,6 +54,11 @@ struct ChainDetailView: View {
                 }
             }
         }
+        .safeAreaInset(edge: .bottom) {
+            if group.chain == .base {
+                weweButton()
+            }
+        }
         .navigationDestination(isPresented: $isSendLinkActive) {
             SendCryptoView(
                 tx: sendTx,
@@ -60,7 +66,14 @@ struct ChainDetailView: View {
             )
         }
         .navigationDestination(isPresented: $isSwapLinkActive) {
-            SwapCryptoView(coin: tokens.first, vault: vault)
+            if let fromCoin = tokens.first {
+                SwapCryptoView(fromCoin: fromCoin, vault: vault)
+            }
+        }
+        .navigationDestination(isPresented: $isWeweLinkActive) {
+            if let base = vault.coin(for: TokensStore.Token.baseEth), let wewe = vault.coin(for: TokensStore.Token.baseWewe) {
+                SwapCryptoView(fromCoin: base, toCoin: wewe, vault: vault)
+            }
         }
         .navigationDestination(isPresented: $isMemoLinkActive) {
             TransactionMemoView(
@@ -209,7 +222,29 @@ struct ChainDetailView: View {
         .font(.body16MenloBold)
         .foregroundColor(.turquoise600)
     }
-    
+
+    private func weweButton() -> some View {
+        Button {
+            viewModel.selectWeweIfNeeded(vault: vault)
+            isWeweLinkActive = true
+        } label: {
+            FilledLabelButton {
+                HStack(spacing: 10) {
+                    Image("BuyWewe")
+                    Text("BUY $WEWE")
+                        .foregroundColor(.blue600)
+#if os(iOS)
+                        .font(.body16MontserratBold)
+#elseif os(macOS)
+                        .font(.body14MontserratBold)
+#endif
+                }
+                .frame(height: 44)
+            }
+        }
+        .padding(40)
+    }
+
     private func getCoinCell(_ coin: Coin) -> some View {
         VStack(spacing: 0) {
             Separator()

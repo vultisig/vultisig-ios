@@ -59,7 +59,17 @@ class CoinSelectionViewModel: ObservableObject {
             }
         }
     }
-    
+
+    func selectWeweIfNeeded(vault: Vault) {
+        guard !selection.contains(TokensStore.Token.baseWewe) else { return }
+
+        Task {
+            selection.insert(TokensStore.Token.baseWewe)
+
+            await saveAssets(for: vault)
+        }
+    }
+
     private func removeCoins(coins: [Coin], vault: Vault) async throws {
         for coin in coins {
             if let idx = vault.coins.firstIndex(where: { $0.ticker == coin.ticker && $0.chain == coin.chain }) {

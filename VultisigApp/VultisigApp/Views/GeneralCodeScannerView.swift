@@ -18,12 +18,16 @@ struct GeneralCodeScannerView: View {
     @Binding var showSheet: Bool
     @Binding var shouldJoinKeygen: Bool
     @Binding var shouldKeysignTransaction: Bool
+    @Binding var shouldSendCrypto: Bool
+    @Binding var selectedChain: Chain?
+    let sendTX: SendTransaction
     
     @State var isGalleryPresented = false
     @State var isFilePresented = false
     
     @Query var vaults: [Vault]
     
+    @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var viewModel: HomeViewModel
     
@@ -114,20 +118,48 @@ struct GeneralCodeScannerView: View {
         case .SignTransaction:
             moveToVaultsView()
         case .Unknown:
-            return
+            moveToSendView()
         }
     }
     
     private func moveToCreateVaultView() {
-        shouldJoinKeygen = true
+        shouldSendCrypto = false
         showSheet = false
+        shouldJoinKeygen = true
     }
     
     private func moveToVaultsView() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            shouldKeysignTransaction = true
             showSheet = false
+            shouldSendCrypto = false
+            shouldKeysignTransaction = true
         }
+    }
+    
+    private func moveToSendView() {
+        shouldJoinKeygen = false
+        showSheet = false
+        checkForAddress()
+    }
+    
+    private func checkForAddress() {
+        let address = deeplinkViewModel.address ?? ""
+        sendTX.toAddress = address
+        
+        let sortedAssets = settingsDefaultChainViewModel.baseChains.sorted(by: {
+            $0.chain.name > $1.chain.name
+        })
+        
+        for asset in sortedAssets {
+            let isValid = asset.chain.coinType.validate(address: address)
+            
+            if isValid {
+                selectedChain = asset.chain
+                shouldSendCrypto = true
+                return
+            }
+        }
+        shouldSendCrypto = true
     }
 }
 
@@ -135,7 +167,12 @@ struct GeneralCodeScannerView: View {
     GeneralCodeScannerView(
         showSheet: .constant(true),
         shouldJoinKeygen: .constant(true),
-        shouldKeysignTransaction: .constant(true)
+        shouldKeysignTransaction: .constant(true), 
+        shouldSendCrypto: .constant(true),
+        selectedChain: .constant(nil), 
+        sendTX: SendTransaction()
     )
     .environmentObject(DeeplinkViewModel())
+    .environmentObject(SettingsDefaultChainViewModel())
+    .environmentObject(HomeViewModel())
 }

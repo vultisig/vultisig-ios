@@ -9,8 +9,8 @@ import SwiftUI
 
 struct KeysignMessageConfirmView: View {
     @ObservedObject var viewModel: JoinKeysignViewModel
+    @StateObject var blowfishViewModel = BlowfishWarningViewModel()
     
-    @State var blowfishResponse: BlowfishResponse? = nil
     @State var isLoading = true
     
     var body: some View {
@@ -26,8 +26,8 @@ struct KeysignMessageConfirmView: View {
                 
                 HStack {
                     Spacer()
-                    if (viewModel.keysignPayload?.coin.chainType == .EVM && blowfishResponse != nil) {
-                        warning
+                    if viewModel.blowfishShow {
+                        blowfishView
                     }
                     Spacer()
                 }
@@ -36,19 +36,16 @@ struct KeysignMessageConfirmView: View {
             }
             .foregroundColor(.neutral0)
             .onAppear {
-                if (viewModel.keysignPayload?.coin.chainType == .EVM) {
-                    isLoading = true
-                    Task{
-                        do {
-                            blowfishResponse = try await viewModel.blowfishEVMTransactionScan()
-                            isLoading = false
-                        } catch {
-                            print(error.localizedDescription)
-                            isLoading = false
-                        }
+                isLoading = true
+                Task {
+                    do {
+                        try await viewModel.blowfishTransactionScan()
+                        blowfishViewModel.updateResponse(viewModel.blowfishWarnings)
+                        isLoading = false
+                    } catch {
+                        print("fail to scan the transaction on Blowfish, \(error.localizedDescription)")
+                        isLoading = false
                     }
-                } else {
-                    isLoading = false
                 }
             }
             .task {
@@ -61,9 +58,9 @@ struct KeysignMessageConfirmView: View {
         }
     }
     
-    var warning: some View {
+    var blowfishView: some View {
         VStack {
-            BlowfishWarningInformationNote(blowfishResponse: blowfishResponse)
+            BlowfishWarningInformationNote(viewModel: blowfishViewModel)
                 .padding(.horizontal, 16)
         }
     }
