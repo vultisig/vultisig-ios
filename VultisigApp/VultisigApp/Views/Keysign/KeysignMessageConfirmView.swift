@@ -38,9 +38,14 @@ struct KeysignMessageConfirmView: View {
             .onAppear {
                 isLoading = true
                 Task {
-                    try await viewModel.blowfishTransactionScan()
-                    blowfishViewModel.updateResponse(viewModel.blowfishWarnings)
-                    isLoading = false
+                    do {
+                        try await viewModel.blowfishTransactionScan()
+                        blowfishViewModel.updateResponse(viewModel.blowfishWarnings)
+                        isLoading = false
+                    } catch {
+                        print("fail to scan the transaction on Blowfish, \(error.localizedDescription)")
+                        isLoading = false
+                    }
                 }
             }
             .task {
