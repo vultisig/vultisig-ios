@@ -11,7 +11,7 @@ struct BackupPasswordSetupView: View {
     let vault: Vault
     var isNewVault = false
     
-    @State var verifyPassword: String = "12345"
+    @State var verifyPassword: String = ""
     @State var navigationLinkActive = false
     
     @StateObject var backupViewModel = EncryptedBackupViewModel()
@@ -28,9 +28,14 @@ struct BackupPasswordSetupView: View {
             }
             .onAppear {
                 backupViewModel.resetData()
+                handleSaveTap()
+                handleSkipTap()
             }
             .onDisappear {
                 backupViewModel.resetData()
+            }
+            .onChange(of: verifyPassword) { oldValue, newValue in
+                handleSaveTap()
             }
     }
     
@@ -58,23 +63,6 @@ struct BackupPasswordSetupView: View {
 #if os(macOS)
         .padding(.horizontal, 25)
 #endif
-//        .fileExporter(
-//            isPresented: $backupViewModel.showVaultExporter,
-//            document: EncryptedDataFile(url: backupViewModel.encryptedFileURL),
-//            contentType: .data,
-//            defaultFilename: "\(vault.getExportName())"
-//        ) { result in
-//            switch result {
-//            case .success(let url):
-//                print("File saved to: \(url)")
-//                fileSaved()
-//            case .failure(let error):
-//                print("Error saving file: \(error.localizedDescription)")
-//                backupViewModel.alertTitle = "errorSavingFile"
-//                backupViewModel.alertMessage = error.localizedDescription
-//                backupViewModel.showAlert = true
-//            }
-//        }
     }
     
     var passwordField: some View {
@@ -109,33 +97,42 @@ struct BackupPasswordSetupView: View {
     
     var saveButton: some View {
         ZStack {
-            if show {
-                if let fileURL = backupViewModel.encryptedFileURL {
+            if backupViewModel.encryptionPassword.isEmpty && verifyPassword.isEmpty {
+                proxySaveButton
+            } else if backupViewModel.encryptionPassword != verifyPassword {
+                proxySaveButton
+            } else {
+                if let fileURL = backupViewModel.encryptedFileURLWithPassowrd {
                     ShareLink(item: fileURL) {
                         FilledButton(title: "save")
                     }
+                    .simultaneousGesture(TapGesture().onEnded() {
+                        fileSaved()
+                    })
                 }
-            }
-        }
-        .onAppear {
-            handleSaveTap()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                show = true
             }
         }
     }
     
     var skipButton: some View {
-//        ZStack {
-//            if let fileURL = backupViewModel.encryptedFileURL {
-//                ShareLink(item: fileURL) {
+        ZStack {
+            if let fileURL = backupViewModel.encryptedFileURLWithoutPassowrd {
+                ShareLink(item: fileURL) {
                     OutlineButton(title: "skip")
-//                }
-//            }
-//        }
-//        .onAppear {
-//            handleSkipTap()
-//        }
+                }
+                .simultaneousGesture(TapGesture().onEnded() {
+                    fileSaved()
+                })
+            }
+        }
+    }
+    
+    var proxySaveButton: some View {
+        Button {
+            handleProxyTap()
+        } label: {
+            FilledButton(title: "save")
+        }
     }
     
     var alert: Alert {
@@ -147,6 +144,15 @@ struct BackupPasswordSetupView: View {
     }
     
     private func handleSaveTap() {
+        export()
+    }
+    
+    private func handleSkipTap() {
+        backupViewModel.encryptionPassword = ""
+        export()
+    }
+    
+    private func handleProxyTap() {
         guard !backupViewModel.encryptionPassword.isEmpty && !verifyPassword.isEmpty else {
             backupViewModel.alertTitle = "emptyField"
             backupViewModel.alertMessage = "checkEmptyField"
@@ -160,12 +166,6 @@ struct BackupPasswordSetupView: View {
             backupViewModel.showAlert = true
             return
         }
-        export()
-    }
-    
-    private func handleSkipTap() {
-        backupViewModel.encryptionPassword = ""
-        export()
     }
     
     private func export() {

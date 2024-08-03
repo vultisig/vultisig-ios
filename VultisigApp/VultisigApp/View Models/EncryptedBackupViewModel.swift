@@ -20,9 +20,10 @@ import AppKit
 class EncryptedBackupViewModel: ObservableObject {
     @Published var showVaultExporter = false
     @Published var showVaultImporter = false
-    @Published var encryptedFileURL: URL? = nil
+    @Published var encryptedFileURLWithPassowrd: URL? = nil
+    @Published var encryptedFileURLWithoutPassowrd: URL? = nil
     @Published var decryptedContent: String? = nil
-    @Published var encryptionPassword: String = "12345"
+    @Published var encryptionPassword: String = ""
     @Published var decryptionPassword: String = ""
     
     @Published var isLinkActive: Bool = false
@@ -44,9 +45,10 @@ class EncryptedBackupViewModel: ObservableObject {
         showVaultImporter = false
         isFileUploaded = false
         importedFileName = nil
-        encryptedFileURL = nil
+        encryptedFileURLWithPassowrd = nil
+        encryptedFileURLWithoutPassowrd = nil
         decryptedContent = ""
-//        encryptionPassword = ""
+        encryptionPassword = ""
         decryptionPassword = ""
     }
     
@@ -76,8 +78,8 @@ class EncryptedBackupViewModel: ObservableObject {
 #endif
             do {
                 try dataToSave.write(to: tempURL)
-                encryptedFileURL = tempURL
-                print(encryptedFileURL?.absoluteString)
+                encryptedFileURLWithPassowrd = tempURL
+                encryptedFileURLWithoutPassowrd = tempURL
                 print(tempURL.absoluteString)
                 showVaultExporter = true
             } catch {
