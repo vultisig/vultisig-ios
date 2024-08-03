@@ -58,7 +58,11 @@ class JoinKeysignViewModel: ObservableObject {
         self.serviceDelegate = serviceDelegate
         self.isCameraPermissionGranted = isCameraPermissionGranted
         
-        self.localPartyID = self.vault.localPartyID.isEmpty ? Utils.getLocalDeviceIdentity() : self.vault.localPartyID
+        if !self.vault.localPartyID.isEmpty {
+            self.localPartyID = self.vault.localPartyID
+        } else {
+            self.localPartyID = Utils.getLocalDeviceIdentity()
+        }
         
         if let isAllowed = self.isCameraPermissionGranted, !isAllowed {
             status = .KeysignNoCameraAccess
@@ -74,7 +78,6 @@ class JoinKeysignViewModel: ObservableObject {
             self.logger.error("Server URL could not be found. Please ensure you're connected to the correct network.")
             return
         }
-        
         guard !self.sessionID.isEmpty else {
             self.logger.error("Session ID has not been acquired. Please scan the QR code again.")
             return
@@ -85,9 +88,9 @@ class JoinKeysignViewModel: ObservableObject {
         
         Utils.sendRequest(urlString: urlString,
                           method: "POST",
-                          headers: TssHelper.getKeysignRequestHeader(pubKey: vault.pubKeyECDSA),
+                          headers:TssHelper.getKeysignRequestHeader(pubKey: vault.pubKeyECDSA),
                           body: body) { success in
-            DispatchQueue.main.async {
+            DispatchQueue.main.async{
                 if success {
                     self.logger.info("Successfully joined the keysign committee.")
                     self.status = .WaitingForKeysignToStart
@@ -108,11 +111,9 @@ class JoinKeysignViewModel: ObservableObject {
         self.netService?.delegate = self.serviceDelegate
         self.netService?.resolve(withTimeout: 10)
     }
-    
-    func stopJoiningKeysign() {
+    func stopJoiningKeysign(){
         self.status = .DiscoverSigningMsg
     }
-    
     func waitForKeysignStart() async {
         do {
             let t = Task {
@@ -132,7 +133,6 @@ class JoinKeysignViewModel: ObservableObject {
             self.logger.error("Server URL could not be found. Please ensure you're connected to the correct network.")
             return
         }
-        
         guard !self.sessionID.isEmpty else {
             self.logger.error("Session ID has not been acquired. Please scan the QR code again.")
             return
@@ -140,7 +140,8 @@ class JoinKeysignViewModel: ObservableObject {
         
         let urlString = "\(serverURL)/start/\(sessionID)"
         Utils.getRequest(urlString: urlString,
-                         headers: TssHelper.getKeysignRequestHeader(pubKey: vault.pubKeyECDSA)) { result in
+                         headers: TssHelper.getKeysignRequestHeader(pubKey: vault.pubKeyECDSA),
+                         completion: { result in
             switch result {
             case .success(let data):
                 DispatchQueue.main.async {
@@ -166,16 +167,17 @@ class JoinKeysignViewModel: ObservableObject {
                     self.status = .FailedToStart
                 }
             }
-        }
+        })
     }
     
 #if os(iOS)
+    // Scan the QR code and strip the data
     func handleScan(result: Result<ScanResult, ScanError>) {
         defer {
             self.isShowingScanner = false
         }
         
-        guard let isCameraPermissionGranted = isCameraPermissionGranted, isCameraPermissionGranted else {
+        guard let isCameraPermissionGranted, isCameraPermissionGranted else {
             status = .KeysignNoCameraAccess
             return
         }
@@ -183,8 +185,6 @@ class JoinKeysignViewModel: ObservableObject {
         switch result {
         case .success(let result):
             guard let data = DeeplinkViewModel.getJsonData(URL(string: result.string)) else {
-                self.errorMsg = "Failed to parse QR code data."
-                self.status = .FailedToStart
                 return
             }
             handleQrCodeSuccessResult(data: data)
@@ -204,7 +204,7 @@ class JoinKeysignViewModel: ObservableObject {
             self.logger.info("Successfully prepared messages for keysigning.")
             self.keysignMessages = preSignedImageHash.sorted()
             if self.keysignMessages.isEmpty {
-                self.errorMsg = "There are no messages to be signed"
+                self.errorMsg = "There is no messages to be signed"
                 self.status = .FailedToStart
             }
         } catch {
@@ -214,9 +214,7 @@ class JoinKeysignViewModel: ObservableObject {
     }
     
     func handleQrCodeSuccessResult(data: String?) {
-        guard let data = data else {
-            self.errorMsg = "QR code data is empty."
-            self.status = .FailedToStart
+        guard let data else {
             return
         }
         
@@ -236,18 +234,12 @@ class JoinKeysignViewModel: ObservableObject {
     }
     
     func manageQrCodeStates() {
-        guard let keysignPayload = keysignPayload else {
-            self.errorMsg = "Keysign payload is missing."
-            self.status = .FailedToStart
-            return
-        }
-        
-        if vault.pubKeyECDSA != keysignPayload.vaultPubKeyECDSA {
+        if vault.pubKeyECDSA != keysignPayload?.vaultPubKeyECDSA {
             self.status = .VaultMismatch
             return
         }
         
-        if vault.localPartyID == keysignPayload.vaultLocalPartyID {
+        if vault.localPartyID == keysignPayload?.vaultLocalPartyID {
             self.status = .KeysignSameDeviceShare
             return
         }
@@ -261,18 +253,13 @@ class JoinKeysignViewModel: ObservableObject {
     }
     
     func handleDeeplinkScan(_ url: URL?) {
-        guard let url = url else {
-            self.errorMsg = "Invalid deeplink URL."
-            self.status = .FailedToStart
+        guard let url else {
             return
         }
         
         guard let data = DeeplinkViewModel.getJsonData(url) else {
-            self.errorMsg = "Failed to parse deeplink data."
-            self.status = .FailedToStart
             return
         }
-        
         handleQrCodeSuccessResult(data: data)
         manageQrCodeStates()
     }
