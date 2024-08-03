@@ -22,6 +22,7 @@ struct SwapCoinsResolver {
     }
 
     static func resolveToCoins(fromCoin: Coin, allCoins: [Coin], selectedToCoin: Coin) -> (coins: [Coin], selected: Coin) {
+        
         let coins = allCoins
             .filter { $0.swapProviders.contains(where: fromCoin.swapProviders.contains) }
             .filter { $0 != fromCoin }
