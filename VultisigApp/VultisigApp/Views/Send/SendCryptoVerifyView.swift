@@ -49,8 +49,7 @@ struct SendCryptoVerifyView: View {
     }
     
     var blowfishView: some View {
-        BlowfishWarningInformationNote()
-            .environmentObject(blowfishViewModel)
+        BlowfishWarningInformationNote(viewModel: blowfishViewModel)
             .padding(.horizontal, 16)
     }
     

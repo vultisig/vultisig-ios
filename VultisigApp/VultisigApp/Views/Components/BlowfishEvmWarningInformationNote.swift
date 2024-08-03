@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct BlowfishWarningInformationNote: View {
-    @StateObject private var viewModel = BlowfishWarningViewModel()
+    @StateObject var viewModel: BlowfishWarningViewModel
     
     var body: some View {
         Group {
@@ -67,10 +67,3 @@ struct BlowfishWarningInformationNote: View {
 // You can use this view for both EVM and Solana
 typealias BlowfishEvmWarningInformationNote = BlowfishWarningInformationNote
 typealias BlowfishSolanaWarningInformationNote = BlowfishWarningInformationNote
-
-#Preview {
-    ZStack {
-        Background()
-        BlowfishWarningInformationNote()
-    }
-}

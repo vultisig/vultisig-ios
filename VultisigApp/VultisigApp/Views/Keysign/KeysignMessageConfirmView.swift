@@ -9,7 +9,7 @@ import SwiftUI
 
 struct KeysignMessageConfirmView: View {
     @ObservedObject var viewModel: JoinKeysignViewModel
-    @StateObject private var blowfishViewModel = BlowfishWarningViewModel()
+    @StateObject var blowfishViewModel = BlowfishWarningViewModel()
     
     @State var isLoading = true
     
@@ -60,8 +60,7 @@ struct KeysignMessageConfirmView: View {
     
     var blowfishView: some View {
         VStack {
-            BlowfishWarningInformationNote()
-                .environmentObject(blowfishViewModel)
+            BlowfishWarningInformationNote(viewModel: blowfishViewModel)
                 .padding(.horizontal, 16)
         }
     }
