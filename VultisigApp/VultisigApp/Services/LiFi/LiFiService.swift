@@ -38,6 +38,8 @@ struct LiFiService {
             throw Errors.unexpectedError
         }
 
+        let normalizedGas = gas == 0 ? EVMHelper.defaultETHSwapGasUnit : gas
+
         let quote = OneInchQuote(
             dstAmount: response.estimate.toAmount,
             tx: OneInchQuote.Transaction(
@@ -46,7 +48,7 @@ struct LiFiService {
                 data: response.transactionRequest.data,
                 value: String(value),
                 gasPrice: String(gasPrice),
-                gas: gas
+                gas: normalizedGas
             )
         )
 
