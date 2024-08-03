@@ -49,9 +49,6 @@ struct BackupPasswordSetupView: View {
                 NavigationBackButton()
             }
         }
-        .navigationDestination(isPresented: $navigationLinkActive) {
-            HomeView(selectedVault: vault, showVaultsList: false, shouldJoinKeygen: false)
-        }
     }
     
     var view: some View {
@@ -174,12 +171,6 @@ struct BackupPasswordSetupView: View {
     
     private func fileSaved() {
         vault.isBackedUp = true
-        
-        if isNewVault {
-            navigationLinkActive = true
-        } else {
-            dismiss()
-        }
     }
 }
 

@@ -71,11 +71,8 @@ class EncryptedBackupViewModel: ObservableObject {
                 return
             }
             let dataToSave = try vaultContainer.serializedData().base64EncodedData()
-#if os(iOS)
-            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("file.bak")
-#elseif os(macOS)
             let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(vault.getExportName()).appendingPathExtension("bak")
-#endif
+            
             do {
                 try dataToSave.write(to: tempURL)
                 encryptedFileURLWithPassowrd = tempURL
