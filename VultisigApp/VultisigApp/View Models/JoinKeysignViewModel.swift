@@ -21,6 +21,7 @@ enum JoinKeysignStatus {
     case KeysignSameDeviceShare
     case KeysignNoCameraAccess
 }
+
 @MainActor
 class JoinKeysignViewModel: ObservableObject {
     private let logger = Logger(subsystem: "join-keysign", category: "viewmodel")
@@ -40,6 +41,10 @@ class JoinKeysignViewModel: ObservableObject {
     @Published var serverAddress: String? = nil
     @Published var useVultisigRelay = false
     @Published var isCameraPermissionGranted: Bool? = nil
+    
+    @Published var blowfishShow = false
+    @Published var blowfishWarningsShow = false
+    @Published var blowfishWarnings: [String] = []
     
     var encryptionKeyHex: String = ""
     
@@ -212,7 +217,7 @@ class JoinKeysignViewModel: ObservableObject {
         guard let data else {
             return
         }
-
+        
         do {
             let keysignMsg: KeysignMessage = try ProtoSerializer.deserialize(base64EncodedString: data)
             self.sessionID = keysignMsg.sessionID
@@ -259,10 +264,34 @@ class JoinKeysignViewModel: ObservableObject {
         manageQrCodeStates()
     }
     
-    func blowfishEVMTransactionScan() async throws -> BlowfishResponse? {
-        
+    func blowfishTransactionScan() async throws {
         guard let payload = keysignPayload else {
-            return nil
+            throw NSError(domain: "JoinKeysignViewModel", code: 1, userInfo: [NSLocalizedDescriptionKey: "Keysign payload is missing."])
+        }
+        
+        switch payload.coin.chainType {
+        case .EVM:
+            let blowfishResponse = try await blowfishEVMTransactionScan()
+            blowfishShow = true
+            blowfishWarningsShow = !(blowfishResponse.warnings?.isEmpty ?? true)
+            blowfishWarnings = blowfishResponse.warnings?.compactMap { $0.message } ?? []
+            
+        case .Solana:
+            let blowfishResponse = try await blowfishSolanaTransactionScan()
+            blowfishShow = true
+            blowfishWarningsShow = !(blowfishResponse.aggregated?.warnings?.isEmpty ?? true)
+            blowfishWarnings = blowfishResponse.aggregated?.warnings?.compactMap { $0.message } ?? []
+            
+        default:
+            blowfishShow = false
+            blowfishWarningsShow = false
+            blowfishWarnings = []
+        }
+    }
+    
+    func blowfishEVMTransactionScan() async throws -> BlowfishResponse {
+        guard let payload = keysignPayload else {
+            throw NSError(domain: "JoinKeysignViewModel", code: 2, userInfo: [NSLocalizedDescriptionKey: "Keysign payload is missing for EVM transaction scan."])
         }
         
         return try await BlowfishService.shared.blowfishEVMTransactionScan(
@@ -271,6 +300,23 @@ class JoinKeysignViewModel: ObservableObject {
             amountInRaw: payload.toAmount,
             memo: payload.memo,
             chain: payload.coin.chain
+        )
+    }
+    
+    func blowfishSolanaTransactionScan() async throws -> BlowfishResponse {
+        guard let payload = keysignPayload else {
+            throw NSError(domain: "JoinKeysignViewModel", code: 3, userInfo: [NSLocalizedDescriptionKey: "Keysign payload is missing for Solana transaction scan."])
+        }
+        
+        let zeroSignedTransaction = try SolanaHelper.getZeroSignedTransaction(
+            vaultHexPubKey: vault.pubKeyEdDSA,
+            vaultHexChainCode: vault.hexChainCode,
+            keysignPayload: payload
+        )
+        
+        return try await BlowfishService.shared.blowfishSolanaTransactionScan(
+            fromAddress: payload.coin.address,
+            zeroSignedTransaction: zeroSignedTransaction
         )
     }
 }
