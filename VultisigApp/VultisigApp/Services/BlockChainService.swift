@@ -42,21 +42,21 @@ final class BlockChainService {
         
         switch tx.coin.chain {
         case .solana:
-            async let recentBlockHashPromise = sol.fetchRecentBlockhash()
-            async let highPriorityFeePromise = sol.fetchHighPriorityFee(account: tx.coin.address)
             
-            let recentBlockHash = try await recentBlockHashPromise
-            let highPriorityFee = try await highPriorityFeePromise
+            let recentBlockHash = try await sol.fetchRecentBlockhash()
+            try await Task.sleep(nanoseconds: 1_000_000_000 / 2)
+            let highPriorityFee = try await sol.fetchHighPriorityFee(account: tx.coin.address)
+            try await Task.sleep(nanoseconds: 1_000_000_000 / 2)
             
             guard let recentBlockHash else {
                 throw Errors.failToGetRecentBlockHash
             }
             
             if !tx.coin.isNativeToken {
-                async let associatedTokenAddressFromPromise = sol.fetchTokenAssociatedAccountByOwner(for: tx.fromAddress, mintAddress: tx.coin.contractAddress)
-                async let associatedTokenAddressToPromise = sol.fetchTokenAssociatedAccountByOwner(for: tx.toAddress, mintAddress: tx.coin.contractAddress)
-                let associatedTokenAddressFrom = try await associatedTokenAddressFromPromise
-                let associatedTokenAddressTo = try await associatedTokenAddressToPromise
+                let associatedTokenAddressFrom = try await sol.fetchTokenAssociatedAccountByOwner(for: tx.fromAddress, mintAddress: tx.coin.contractAddress)
+                try await Task.sleep(nanoseconds: 1_000_000_000 / 2)
+                let associatedTokenAddressTo = try await sol.fetchTokenAssociatedAccountByOwner(for: tx.toAddress, mintAddress: tx.coin.contractAddress)
+                try await Task.sleep(nanoseconds: 1_000_000_000 / 2)
                 
                 return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(highPriorityFee), fromAddressPubKey: associatedTokenAddressFrom, toAddressPubKey: associatedTokenAddressTo)
             }
@@ -99,11 +99,10 @@ final class BlockChainService {
             }
             return .MayaChain(accountNumber: accountNumber, sequence: sequence, isDeposit: isDeposit)
         case .solana:
-            async let recentBlockHashPromise = sol.fetchRecentBlockhash()
-            async let highPriorityFeePromise = sol.fetchHighPriorityFee(account: coin.address)
-            
-            let recentBlockHash = try await recentBlockHashPromise
-            let highPriorityFee = try await highPriorityFeePromise
+            let recentBlockHash = try await sol.fetchRecentBlockhash()
+            try await Task.sleep(nanoseconds: 1_000_000_000 / 2)
+            let highPriorityFee = try await sol.fetchHighPriorityFee(account: coin.address)
+            try await Task.sleep(nanoseconds: 1_000_000_000 / 2)
             
             guard let recentBlockHash else {
                 throw Errors.failToGetRecentBlockHash

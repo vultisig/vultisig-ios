@@ -109,19 +109,20 @@ class SendCryptoVerifyViewModel: ObservableObject {
     }
     
     func validateForm(tx: SendTransaction, vault: Vault) async -> KeysignPayload? {
+        defer {
+            isLoading = false
+        }
         
         if !isValidForm {
             self.errorMessage = "mustAgreeTermsError"
             showAlert = true
-            isLoading = false
             return nil
         }
         
         var keysignPayload: KeysignPayload?
         
         if tx.coin.chain.chainType == ChainType.UTXO {
-            
-            do{
+            do {
                 _ = try await utxo.fetchBlockchairData(coin: tx.coin)
             } catch {
                 print("fail to fetch utxo data from blockchair , error:\(error.localizedDescription)")
@@ -129,7 +130,6 @@ class SendCryptoVerifyViewModel: ObservableObject {
         }
         
         do {
-            
             let chainSpecific = try await blockChainService.fetchSpecific(
                 for: tx,
                 sendMaxAmount: tx.sendMaxAmount,
@@ -149,7 +149,6 @@ class SendCryptoVerifyViewModel: ObservableObject {
         } catch {
             self.errorMessage = error.localizedDescription
             showAlert = true
-            isLoading = false
             return nil
         }
         return keysignPayload

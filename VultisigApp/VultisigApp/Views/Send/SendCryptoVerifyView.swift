@@ -16,15 +16,10 @@ struct SendCryptoVerifyView: View {
     
     let vault: Vault
     
-    @State var isLoading = true
-    
     var body: some View {
         ZStack {
             Background()
             view
-            if isLoading {
-                Loader()
-            }
         }
         .gesture(DragGesture())
         .alert(isPresented: $sendCryptoVerifyViewModel.showAlert) {
@@ -34,15 +29,15 @@ struct SendCryptoVerifyView: View {
             sendCryptoVerifyViewModel.isLoading = false
         }
         .onAppear {
-            isLoading = true
+            sendCryptoVerifyViewModel.isLoading = true
             Task {
                 do {
                     try await sendCryptoVerifyViewModel.blowfishTransactionScan(tx: tx, vault: vault)
                     blowfishViewModel.updateResponse(sendCryptoVerifyViewModel.blowfishWarnings)
-                    isLoading = false
+                    sendCryptoVerifyViewModel.isLoading = false
                 } catch {
                     print("Error scanning transaction: \(error)")
-                    isLoading = false
+                    sendCryptoVerifyViewModel.isLoading = false
                 }
             }
         }
