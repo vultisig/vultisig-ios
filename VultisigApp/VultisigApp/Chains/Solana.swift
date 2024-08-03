@@ -125,7 +125,7 @@ enum SolanaHelper {
         let publicKeys = DataVector()
         
         // Compile with zero signature
-        let signature = Data(hexString: "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
+        let signature = Data(hexString: String(repeating: "0", count: 128))
         
         guard let sig = signature else {
             return .empty
