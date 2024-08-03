@@ -23,10 +23,12 @@ struct VaultDetailView: View {
     @State var showScanner = false
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
+    @State var shouldSendCrypto = false
 
     @State var isSendLinkActive = false
     @State var isSwapLinkActive = false
     @State var isMemoLinkActive = false
+    @State var selectedChain: Chain? = nil
 
     @StateObject var sendTx = SendTransaction()
     
@@ -77,7 +79,10 @@ struct VaultDetailView: View {
                 GeneralCodeScannerView(
                     showSheet: $showScanner,
                     shouldJoinKeygen: $shouldJoinKeygen,
-                    shouldKeysignTransaction: $shouldKeysignTransaction
+                    shouldKeysignTransaction: $shouldKeysignTransaction, 
+                    shouldSendCrypto: $shouldSendCrypto,
+                    selectedChain: $selectedChain, 
+                    sendTX: sendTx
                 )
             })
             .navigationDestination(isPresented: $shouldJoinKeygen) {
@@ -87,6 +92,13 @@ struct VaultDetailView: View {
                 if let vault = homeViewModel.selectedVault {
                     JoinKeysignView(vault: vault)
                 }
+            }
+            .navigationDestination(isPresented: $shouldSendCrypto) {
+                SendCryptoView(
+                    tx: sendTx,
+                    vault: vault,
+                    selectedChain: selectedChain
+                )
             }
     }
     

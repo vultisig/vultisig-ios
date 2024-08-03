@@ -14,10 +14,15 @@ struct SetupVaultView: View {
     @State var showSheet = false
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
+    @State var shouldSendCrypto = false
     @State var selectedTab: SetupVaultState = .TwoOfTwoVaults
+    @State var selectedChain: Chain? = nil
+    
+    @StateObject var sendTx = SendTransaction()
     
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var viewModel: HomeViewModel
+    @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
     
     var body: some View {
         ZStack {
@@ -49,7 +54,10 @@ struct SetupVaultView: View {
             GeneralCodeScannerView(
                 showSheet: $showSheet,
                 shouldJoinKeygen: $shouldJoinKeygen,
-                shouldKeysignTransaction: $shouldKeysignTransaction
+                shouldKeysignTransaction: $shouldKeysignTransaction, 
+                shouldSendCrypto: $shouldSendCrypto,
+                selectedChain: $selectedChain,
+                sendTX: sendTx
             )
         })
         .navigationDestination(isPresented: $shouldJoinKeygen) {
@@ -58,6 +66,15 @@ struct SetupVaultView: View {
         .navigationDestination(isPresented: $shouldKeysignTransaction) {
             if let vault = viewModel.selectedVault {
                 JoinKeysignView(vault: vault)
+            }
+        }
+        .navigationDestination(isPresented: $shouldSendCrypto) {
+            if let vault = viewModel.selectedVault {
+                SendCryptoView(
+                    tx: sendTx,
+                    vault: vault,
+                    selectedChain: selectedChain
+                )
             }
         }
     }
@@ -119,6 +136,7 @@ struct SetupVaultView: View {
         if vault == nil {
             vault = Vault(name: getUniqueVaultName())
         }
+        setupTransaction()
     }
     
     private func getUniqueVaultName() -> String {
@@ -144,6 +162,15 @@ struct SetupVaultView: View {
         return "Main Vault"
     }
     
+    private func setupTransaction() {
+        let selectedGroup = vaultDetailViewModel.selectedGroup
+        
+        guard let selectedGroup, let activeCoin = selectedGroup.coins.first(where: { $0.isNativeToken }) else {
+            return
+        }
+        
+        sendTx.reset(coin: activeCoin)
+    }
 }
 
 #Preview {
