@@ -37,17 +37,19 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     }
 
     func load(initialFromCoin: Coin?, initialToCoin: Coin?, vault: Vault, tx: SwapTransaction) {
-        guard !dataLoaded else { return }
+        let allCoins = vault.coins
+
+        guard !dataLoaded, !allCoins.isEmpty else { return }
 
         let (fromCoins, fromCoin) = SwapCoinsResolver.resolveFromCoins(
-            allCoins: vault.coins
+            allCoins: allCoins
         )
 
         let resolvedFromCoin = initialFromCoin ?? fromCoin
 
         let (toCoins, toCoin) = SwapCoinsResolver.resolveToCoins(
             fromCoin: resolvedFromCoin,
-            allCoins: vault.coins,
+            allCoins: allCoins,
             selectedToCoin: initialToCoin ?? .example
         )
 
