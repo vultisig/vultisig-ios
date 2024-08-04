@@ -114,6 +114,8 @@ class Endpoint {
     
     static let solanaServiceRpc = "https://api.mainnet-beta.solana.com"
     
+    static let solanaServiceRpc2 = "https://solana-rpc.publicnode.com"
+    
     static let solanaTokenInfoServiceRpc = "https://api.solana.fm/v1/tokens"
     
     static let suiServiceRpc = "https://sui-rpc.publicnode.com"
