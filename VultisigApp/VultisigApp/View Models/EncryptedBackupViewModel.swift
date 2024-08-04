@@ -20,7 +20,8 @@ import AppKit
 class EncryptedBackupViewModel: ObservableObject {
     @Published var showVaultExporter = false
     @Published var showVaultImporter = false
-    @Published var encryptedFileURL: URL? = nil
+    @Published var encryptedFileURLWithPassowrd: URL? = nil
+    @Published var encryptedFileURLWithoutPassowrd: URL? = nil
     @Published var decryptedContent: String? = nil
     @Published var encryptionPassword: String = ""
     @Published var decryptionPassword: String = ""
@@ -44,7 +45,8 @@ class EncryptedBackupViewModel: ObservableObject {
         showVaultImporter = false
         isFileUploaded = false
         importedFileName = nil
-        encryptedFileURL = nil
+        encryptedFileURLWithPassowrd = nil
+        encryptedFileURLWithoutPassowrd = nil
         decryptedContent = ""
         encryptionPassword = ""
         decryptionPassword = ""
@@ -69,14 +71,13 @@ class EncryptedBackupViewModel: ObservableObject {
                 return
             }
             let dataToSave = try vaultContainer.serializedData().base64EncodedData()
-#if os(iOS)
-            let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("file.bak")
-#elseif os(macOS)
             let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(vault.getExportName()).appendingPathExtension("bak")
-#endif
+            
             do {
                 try dataToSave.write(to: tempURL)
-                encryptedFileURL = tempURL
+                encryptedFileURLWithPassowrd = tempURL
+                encryptedFileURLWithoutPassowrd = tempURL
+                print(tempURL.absoluteString)
                 showVaultExporter = true
             } catch {
                 print("Error writing file: \(error.localizedDescription)")
