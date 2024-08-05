@@ -17,18 +17,10 @@ class SwapTransaction: ObservableObject {
     @Published var gas: BigInt = .zero
     @Published var quote: SwapQuote?
 
-    @Published var fromCoin: Coin = .example {
-        didSet {
-            print("DIDSET fromCOIN: \(fromCoin.ticker)")
-        }
-    }
-    @Published var toCoin: Coin = .example {
-        didSet {
-            print("DIDSET toCoin: \(toCoin.ticker)")
-        }
-    }
+    @Published var fromCoin: Coin = .example
+    @Published var toCoin: Coin = .example
     @Published var fromCoins: [Coin] = []
-    @Published var toCoins: [Coin] = []
+    @Published var toCoins: [Coin] = [] 
 
     func load(fromCoin: Coin, toCoin: Coin, fromCoins: [Coin], toCoins: [Coin]) {
         self.fromCoin = fromCoin
