@@ -28,14 +28,33 @@ struct BackupPasswordSetupView: View {
             }
             .onAppear {
                 backupViewModel.resetData()
-                handleSaveTap()
                 handleSkipTap()
             }
             .onDisappear {
                 backupViewModel.resetData()
             }
             .onChange(of: verifyPassword) { oldValue, newValue in
-                handleSaveTap()
+                if backupViewModel.encryptionPassword == verifyPassword {
+                    handleSaveTap()
+                }
+            }
+            .fileExporter(isPresented: $backupViewModel.showVaultExporter,
+                          document: EncryptedDataFile(url: backupViewModel.encryptedFileURLWithPassowrd),
+                          contentType: .data,
+                          defaultFilename: "\(vault.getExportName())"
+            ) { result in
+                switch result {
+                case .success(let url):
+                    print("File saved to: \(url)")
+                    fileSaved()
+                    dismiss()
+                case .failure(let error):
+                    print("Error saving file: \(error.localizedDescription)")
+                    backupViewModel.alertTitle = "errorSavingFile"
+                    backupViewModel.alertMessage = error.localizedDescription
+                    backupViewModel.showAlert = true
+                }
+                
             }
     }
     
@@ -100,12 +119,21 @@ struct BackupPasswordSetupView: View {
                 proxySaveButton
             } else {
                 if let fileURL = backupViewModel.encryptedFileURLWithPassowrd {
+                    #if os(iOS)
                     ShareLink(item: fileURL) {
                         FilledButton(title: "save")
                     }
                     .simultaneousGesture(TapGesture().onEnded() {
                         fileSaved()
                     })
+                    #elseif  os(macOS)
+                    Button{
+                        backupViewModel.showVaultExporter = true
+                    } label: {
+                        FilledButton(title: "save")
+                    }
+                    
+                    #endif
                 }
             }
         }
@@ -114,12 +142,21 @@ struct BackupPasswordSetupView: View {
     var skipButton: some View {
         ZStack {
             if let fileURL = backupViewModel.encryptedFileURLWithoutPassowrd {
+                #if os(iOS)
                 ShareLink(item: fileURL) {
                     OutlineButton(title: "skip")
                 }
                 .simultaneousGesture(TapGesture().onEnded() {
+                    print("set file saved")
                     fileSaved()
                 })
+                #elseif os(macOS)
+                Button{
+                    backupViewModel.showVaultExporter = true
+                } label: {
+                    OutlineButton(title: "skip")
+                }
+                #endif
             }
         }
     }
@@ -172,6 +209,7 @@ struct BackupPasswordSetupView: View {
     private func fileSaved() {
         vault.isBackedUp = true
     }
+    
 }
 
 #Preview {
