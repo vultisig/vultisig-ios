@@ -118,6 +118,11 @@ struct EditAddressBookView: View {
     }
     
     private func validateAddress(coin: CoinMeta, address: String) -> Bool {
+        
+        if address.isNameService() {
+            return true
+        }
+        
         if coin.chain == .mayaChain {
             return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya")
         }

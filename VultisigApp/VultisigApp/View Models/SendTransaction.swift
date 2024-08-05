@@ -20,10 +20,37 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var gas: String = .empty
     @Published var sendMaxAmount: Bool = false
     @Published var memoFunctionDictionary: ThreadSafeDictionary<String, String> = ThreadSafeDictionary()
-
+    
     @Published var coin: Coin = .example
     @Published var transactionType: VSTransactionType = .unspecified
-
+    
+    func resolveDomaninAddress() async -> String {
+        
+        do {
+            
+            guard toAddress.isNameService() else {
+                return toAddress
+            }
+            
+            let ensName = toAddress
+            let namehash = ensName.namehash()
+            print("Namehash for \(ensName): \(namehash)")
+            
+            let factory = try EvmServiceFactory.getService(forChain: coin.chain)
+            let address = try await factory.resolveENS(ensName: ensName)
+            
+            print("Resolved address \(address)")
+            
+            return address
+            
+        } catch {
+            
+            print("Error to extract the DOMAIN ADDRESS: \(error.localizedDescription)")
+            return ""
+            
+        }
+    }
+    
     var isAmountExceeded: Bool {
         
         if (sendMaxAmount && coin.chainType == .UTXO) || !coin.isNativeToken {
@@ -57,7 +84,7 @@ class SendTransaction: ObservableObject, Hashable {
     func hasEnoughNativeTokensToPayTheFees(specific: BlockChainSpecific) async -> (Bool, String) {
         var errorMessage = ""
         guard !coin.isNativeToken else { return (true, errorMessage) }
-
+        
         if let vault = ApplicationState.shared.currentVault {
             if let nativeToken = vault.coins.nativeCoin(chain: coin.chain) {
                 await BalanceService.shared.updateBalance(for: nativeToken)

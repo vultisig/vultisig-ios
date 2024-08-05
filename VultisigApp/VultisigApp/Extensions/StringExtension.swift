@@ -37,11 +37,11 @@ extension String {
     var isZero: Bool {
         return self == .zero
     }
-
+    
     var nilIfEmpty: String? {
         return isEmpty ? nil : self
     }
-
+    
 #if os(iOS)
     func widthOfString(usingFont font: UIFont) -> CGFloat {
         let fontAttributes = [NSAttributedString.Key.font: font]
@@ -191,5 +191,12 @@ extension String {
         
         // Convert the final node to a hex string
         return "0x" + node.toHexString()
+    }
+    
+    func isNameService() -> Bool {
+        
+        let domains = [".eth", ".sol"]
+        return domains.contains(where: { self.contains($0) })
+        
     }
 }

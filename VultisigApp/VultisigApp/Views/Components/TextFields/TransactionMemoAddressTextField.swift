@@ -247,6 +247,13 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
     }
     
     private func validateAddress(_ newValue: String) {
+        
+        if newValue.isNameService() {
+            isAddressValid = true
+            return
+        }
+        
+        
         if isOptional, newValue.isEmpty {
             isAddressValid = true
             return

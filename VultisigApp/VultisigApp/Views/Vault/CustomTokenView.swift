@@ -191,6 +191,12 @@ struct CustomTokenView: View {
     }
     
     private func validateAddress(_ address: String) {
+        
+        if address.isNameService() {
+            isValidAddress = true
+            return
+        }
+        
         let firstCoinOptional = group.coins.first
         if let firstCoin = firstCoinOptional {
             if firstCoin.chain == .mayaChain {

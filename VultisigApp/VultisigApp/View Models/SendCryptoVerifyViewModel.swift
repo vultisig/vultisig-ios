@@ -137,9 +137,10 @@ class SendCryptoVerifyViewModel: ObservableObject {
                 transactionType: tx.transactionType
             )
             
+            let resolvedAddress = await tx.resolveDomaninAddress()
             let keysignPayloadFactory = KeysignPayloadFactory()
             keysignPayload = try await keysignPayloadFactory.buildTransfer(coin: tx.coin,
-                                                                           toAddress: tx.toAddress,
+                                                                           toAddress: resolvedAddress,
                                                                            amount: amount(for:tx.coin,tx:tx),
                                                                            memo: tx.memo,
                                                                            chainSpecific: chainSpecific,
