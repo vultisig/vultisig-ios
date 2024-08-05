@@ -61,7 +61,9 @@ extension Coin {
             return [.oneinch(chain), .lifi]
         case .thorChain:
             return [.thorchain, .mayachain]
-        case .bitcoin, .dogecoin, .bitcoinCash, .litecoin, .gaiaChain:
+        case .bitcoin:
+            return [.thorchain, .mayachain]
+        case .dogecoin, .bitcoinCash, .litecoin, .gaiaChain:
             return [.thorchain]
         case .blast, .arbitrum:
             return [.lifi]
