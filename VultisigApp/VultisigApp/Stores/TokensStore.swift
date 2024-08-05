@@ -123,6 +123,54 @@ class TokensStore {
         static var baseWewe: CoinMeta {
             CoinMeta(chain: Chain.base, ticker: "WEWE", logo: "wewe", decimals: 18, priceProviderId: "", contractAddress: "0x6b9bb36519538e0C073894E964E90172E1c0B41F", isNativeToken: false)
         }
+        static var arbETH: CoinMeta {
+            CoinMeta(chain: Chain.arbitrum, ticker: "ETH", logo: "eth_arbitrum", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
+        }
+        static var arbArb: CoinMeta {
+            CoinMeta(chain: Chain.arbitrum, ticker: "WEWE", logo: "arbitrum", decimals: 18, priceProviderId: "arbitrum", contractAddress: "0x912CE59144191C1204E64559FE8253a0e49E6548", isNativeToken: false)
+        }
+        static var arbTGT: CoinMeta {
+            CoinMeta(chain: Chain.arbitrum, ticker: "TGT", logo: "tgt", decimals: 18, priceProviderId: "thorwallet", contractAddress: "0x429fEd88f10285E61b12BDF00848315fbDfCC341", isNativeToken: false)
+        }
+        static var arbFox: CoinMeta {
+            CoinMeta(chain: Chain.arbitrum, ticker: "FOX", logo: "fox", decimals: 18, priceProviderId: "shapeshift-fox-token", contractAddress: "0xf929de51D91C77E42f5090069E0AD7A09e513c73", isNativeToken: false)
+        }
+        static var optETH: CoinMeta {
+            CoinMeta(chain: Chain.optimism, ticker: "ETH", logo: "eth_optimism", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
+        }
+        static var optOP: CoinMeta {
+            CoinMeta(chain: Chain.optimism, ticker: "OP", logo: "optimism", decimals: 18, priceProviderId: "arbitrum", contractAddress: "0x4200000000000000000000000000000000000042", isNativeToken: false)
+        }
+        static var optFox: CoinMeta {
+            CoinMeta(chain: Chain.optimism, ticker: "FOX", logo: "fox", decimals: 18, priceProviderId: "shapeshift-fox-token", contractAddress: "0xf1a0da3367bc7aa04f8d94ba57b862ff37ced174", isNativeToken: false)
+        }
+        static var matic: CoinMeta {
+            CoinMeta(chain: Chain.polygon, ticker: "MATIC", logo: "matic", decimals: 18, priceProviderId: "matic-network", contractAddress: "", isNativeToken: true)
+        }
+        static var maticWETH: CoinMeta {
+            CoinMeta(chain: Chain.polygon, ticker: "WETH", logo: "wETH", decimals: 18, priceProviderId: "ethereum", contractAddress: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619", isNativeToken: false)
+        }
+        static var maticFox: CoinMeta {
+            CoinMeta(chain: Chain.polygon, ticker: "FOX", logo: "fox", decimals: 18, priceProviderId: "shapeshift-fox-token", contractAddress: "0x65a05db8322701724c197af82c9cae41195b0aa8", isNativeToken: false)
+        }
+        static var blastETH: CoinMeta {
+            CoinMeta(chain: Chain.blast, ticker: "ETH", logo: "eth_blast", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
+        }
+        static var blastWETH: CoinMeta {
+            CoinMeta(chain: Chain.blast, ticker: "WETH", logo: "wETH", decimals: 18, priceProviderId: "ethereum", contractAddress: "0x4300000000000000000000000000000000000004", isNativeToken: false)
+        }
+        static var cronosCRO: CoinMeta {
+            CoinMeta(chain: Chain.cronosChain, ticker: "CRO", logo: "cro", decimals: 18, priceProviderId: "crypto-com-chain", contractAddress: "", isNativeToken: true)
+        }
+        static var suiSUI: CoinMeta {
+            CoinMeta(chain: Chain.sui, ticker: "SUI", logo: "sui", decimals: 9, priceProviderId: "sui", contractAddress: "", isNativeToken: true)
+        }
+        static var dotDOT: CoinMeta {
+            CoinMeta(chain: Chain.polkadot, ticker: "DOT", logo: "dot", decimals: 10, priceProviderId: "polkadot", contractAddress: "", isNativeToken: true)
+        }
+        static var zksyncETH: CoinMeta {
+            CoinMeta(chain: Chain.zksync, ticker: "ETH", logo: "zsync_era", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
+        }
     }
 
     static var TokenSelectionAssets = [
@@ -155,7 +203,23 @@ class TokensStore {
         TokensStore.Token.dydx,
         TokensStore.Token.baseEth,
         TokensStore.Token.baseUsdc,
-        TokensStore.Token.baseWewe
+        TokensStore.Token.baseWewe,
+        TokensStore.Token.arbETH,
+        TokensStore.Token.arbArb,
+        TokensStore.Token.arbFox,
+        TokensStore.Token.arbTGT,
+        TokensStore.Token.optETH,
+        TokensStore.Token.optOP,
+        TokensStore.Token.optFox,
+        TokensStore.Token.matic,
+        TokensStore.Token.maticWETH,
+        TokensStore.Token.maticFox,
+        TokensStore.Token.blastETH,
+        TokensStore.Token.blastWETH,
+        TokensStore.Token.cronosCRO,
+        TokensStore.Token.suiSUI,
+        TokensStore.Token.dotDOT,
+        TokensStore.Token.zksyncETH,
     ]
 
     enum TokenSelectionAssetError: Error {
