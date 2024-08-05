@@ -170,3 +170,26 @@ extension String {
         return formattedString
     }
 }
+
+// Used only for ENS Names Eg.: vitalik.eth
+extension String {
+    func namehash() -> String {
+        // Split the ENS name into labels
+        let labels = self.split(separator: ".").reversed()
+        
+        // Initialize the node as 32 bytes of zero data
+        var node: Data = Data(repeating: 0, count: 32)
+        
+        for label in labels {
+            // Convert the label to Data, hash it, and get the hex representation
+            let labelData = Data(label.utf8)
+            let labelHash = labelData.sha3(.keccak256)
+            
+            // Combine the current node hash with the label hash and hash again
+            node = (node + labelHash).sha3(.keccak256)
+        }
+        
+        // Convert the final node to a hex string
+        return "0x" + node.toHexString()
+    }
+}

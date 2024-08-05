@@ -281,6 +281,7 @@
 		B52196442C12C3540021D27A /* CustomTokenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52196432C12C3540021D27A /* CustomTokenView.swift */; };
 		B52196462C12CA2E0021D27A /* AddressTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52196452C12CA2E0021D27A /* AddressTextField.swift */; };
 		B52196482C12D1110021D27A /* CircularFilledButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B52196472C12D1110021D27A /* CircularFilledButton.swift */; };
+		B530F8742C5FFF0A00C2E523 /* RpcEvmServiceEnsServiceExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B530F8732C5FFF0A00C2E523 /* RpcEvmServiceEnsServiceExtension.swift */; };
 		B53D8CC82BF7F21500B795D3 /* TransactionMemoBond.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53D8CC72BF7F21500B795D3 /* TransactionMemoBond.swift */; };
 		B53D8CCA2BF7F22500B795D3 /* TransactionMemoUnbond.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53D8CC92BF7F22500B795D3 /* TransactionMemoUnbond.swift */; };
 		B53D8CCC2BF7F22F00B795D3 /* TransactionMemoLeave.swift in Sources */ = {isa = PBXBuildFile; fileRef = B53D8CCB2BF7F22F00B795D3 /* TransactionMemoLeave.swift */; };
@@ -703,6 +704,7 @@
 		B52196432C12C3540021D27A /* CustomTokenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTokenView.swift; sourceTree = "<group>"; };
 		B52196452C12CA2E0021D27A /* AddressTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressTextField.swift; sourceTree = "<group>"; };
 		B52196472C12D1110021D27A /* CircularFilledButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircularFilledButton.swift; sourceTree = "<group>"; };
+		B530F8732C5FFF0A00C2E523 /* RpcEvmServiceEnsServiceExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RpcEvmServiceEnsServiceExtension.swift; sourceTree = "<group>"; };
 		B53D8CC72BF7F21500B795D3 /* TransactionMemoBond.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoBond.swift; sourceTree = "<group>"; };
 		B53D8CC92BF7F22500B795D3 /* TransactionMemoUnbond.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoUnbond.swift; sourceTree = "<group>"; };
 		B53D8CCB2BF7F22F00B795D3 /* TransactionMemoLeave.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoLeave.swift; sourceTree = "<group>"; };
@@ -1354,6 +1356,7 @@
 				B52196412C1296DF0021D27A /* IntExtension.swift */,
 				B590DF892C2E88F900ED934E /* VoteOption.swift */,
 				B520B2FD2C3250230097C590 /* TextField.swift */,
+				B530F8732C5FFF0A00C2E523 /* RpcEvmServiceEnsServiceExtension.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -2342,6 +2345,7 @@
 				A6951E862C52DAFD007292E7 /* SettingsDefaultChainView.swift in Sources */,
 				A6CBF2DC2C251D4100FD8080 /* LookingForDevicesLoader.swift in Sources */,
 				A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */,
+				B530F8742C5FFF0A00C2E523 /* RpcEvmServiceEnsServiceExtension.swift in Sources */,
 				A5BDC7BE2C32FF4A004DBBE7 /* CoinsGrouped.swift in Sources */,
 				DE64A4CA2BA7F90E00C342E3 /* ServiceDelegate.swift in Sources */,
 				A5D49F562BE26BB9001766C8 /* ChainAction.swift in Sources */,
