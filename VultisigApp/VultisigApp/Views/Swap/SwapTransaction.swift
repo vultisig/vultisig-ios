@@ -17,37 +17,16 @@ class SwapTransaction: ObservableObject {
     @Published var gas: BigInt = .zero
     @Published var quote: SwapQuote?
 
-    @Published var fromCoin: Coin = .example {
-        didSet {
-            assert(fromCoin != .example)
-            print("DIDSET fromCOIN: \(fromCoin.ticker)")
-        }
-    }
-    @Published var toCoin: Coin = .example {
-        didSet {
-            assert(toCoin != .example)
-            print("DIDSET toCoin: \(toCoin.ticker)")
-        }
-    }
-    @Published var fromCoins: [Coin] = [] {
-        didSet {
-            assert(!fromCoins.isEmpty)
-        }
-    }
-    @Published var toCoins: [Coin] = [] {
-        didSet {
-            assert(!toCoins.isEmpty)
-        }
-    }
+    @Published var fromCoin: Coin = .example
+    @Published var toCoin: Coin = .example
+    @Published var fromCoins: [Coin] = []
+    @Published var toCoins: [Coin] = [] 
 
     func load(fromCoin: Coin, toCoin: Coin, fromCoins: [Coin], toCoins: [Coin]) {
         self.fromCoin = fromCoin
         self.toCoin = toCoin
         self.fromCoins = fromCoins
         self.toCoins = toCoins
-
-        assert(!fromCoins.isEmpty)
-        assert(!toCoins.isEmpty)
     }
 
     var isApproveRequired: Bool {
