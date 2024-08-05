@@ -78,7 +78,6 @@ class EncryptedBackupViewModel: ObservableObject {
                 encryptedFileURLWithPassowrd = tempURL
                 encryptedFileURLWithoutPassowrd = tempURL
                 print(tempURL.absoluteString)
-                showVaultExporter = true
             } catch {
                 print("Error writing file: \(error.localizedDescription)")
             }
