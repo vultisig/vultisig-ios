@@ -28,14 +28,15 @@ struct BackupPasswordSetupView: View {
             }
             .onAppear {
                 backupViewModel.resetData()
-                handleSaveTap()
                 handleSkipTap()
             }
             .onDisappear {
                 backupViewModel.resetData()
             }
             .onChange(of: verifyPassword) { oldValue, newValue in
-                handleSaveTap()
+                if backupViewModel.encryptionPassword == verifyPassword {
+                    handleSaveTap()
+                }
             }
     }
     
@@ -106,6 +107,7 @@ struct BackupPasswordSetupView: View {
                     .simultaneousGesture(TapGesture().onEnded() {
                         fileSaved()
                     })
+                    .onDisappear()
                 }
             }
         }
