@@ -12,9 +12,9 @@ struct SwapCryptoView: View {
     let toCoin: Coin?
     let vault: Vault
     
-    @ObservedObject var tx = SwapTransaction()
-    @ObservedObject var swapViewModel = SwapCryptoViewModel()
-    @ObservedObject var shareSheetViewModel = ShareSheetViewModel()
+    @StateObject var tx = SwapTransaction()
+    @StateObject var swapViewModel = SwapCryptoViewModel()
+    @StateObject var shareSheetViewModel = ShareSheetViewModel()
 
     @State var keysignView: KeysignView?
     
