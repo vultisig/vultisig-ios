@@ -46,7 +46,7 @@ class SendTransaction: ObservableObject, Hashable {
         } catch {
             
             print("Error to extract the DOMAIN ADDRESS: \(error.localizedDescription)")
-            return ""
+            return toAddress
             
         }
     }
