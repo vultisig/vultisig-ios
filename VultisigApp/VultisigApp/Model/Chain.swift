@@ -225,7 +225,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .base:
             return 8453
         case .blast:
-            return 238
+            return 81457
         case .arbitrum:
             return 42161
         case .polygon:
