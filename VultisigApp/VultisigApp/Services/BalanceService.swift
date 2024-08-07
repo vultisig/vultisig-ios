@@ -123,7 +123,7 @@ private extension BalanceService {
         coin.rawBalance = rawBalance
         coin.priceRate = priceRate
         // Swift Data persists on disk io, that is slower than the cache on KEY VALUE RAM
-        try await Storage.shared.save(coin)
+        try await Storage.shared.save()
         cache.set(cacheKey(coin: coin), (data: CachedValue(rawBalance: rawBalance, priceRate: priceRate), timestamp: Date()))
     }
 }

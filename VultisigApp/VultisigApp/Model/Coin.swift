@@ -96,8 +96,7 @@ class Coin: ObservableObject, Codable, Hashable {
     }
     
     var balanceInFiat: String {
-        let balanceInFiat = balanceDecimal * Decimal(priceRate)
-        return balanceInFiat.formatToFiat()
+        return balanceInFiatDecimal.formatToFiat()
     }
     
     var chainType: ChainType {
@@ -172,11 +171,11 @@ class Coin: ObservableObject, Codable, Hashable {
     
     func fiat(value: BigInt) -> Decimal {
         let decimal = decimal(for: value)
-        return decimal * Decimal(priceRate)
+        return RateProvider.shared.fiatBalance(value: decimal, coin: self)
     }
     
     func fiat(decimal: Decimal) -> Decimal {
-        return decimal * Decimal(priceRate)
+        return RateProvider.shared.fiatBalance(value: decimal, coin: self)
     }
     
     var swapAsset: String {
@@ -203,8 +202,7 @@ class Coin: ObservableObject, Codable, Hashable {
     }
     
     var balanceInFiatDecimal: Decimal {
-        let balanceInFiat = balanceDecimal * Decimal(priceRate)
-        return balanceInFiat
+        return RateProvider.shared.fiatBalance(for: self)
     }
     
     var blockchairKey: String {
