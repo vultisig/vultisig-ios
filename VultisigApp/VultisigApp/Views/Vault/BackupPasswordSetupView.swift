@@ -5,7 +5,6 @@
 //  Created by Amol Kumar on 2024-06-13.
 //
 
-import UIKit
 import SwiftUI
 
 struct BackupPasswordSetupView: View {
@@ -14,6 +13,7 @@ struct BackupPasswordSetupView: View {
     
     @State var verifyPassword: String = ""
     @State var navigationLinkActive = false
+    @State var alreadyShowingPopup = false
     
     @StateObject var backupViewModel = EncryptedBackupViewModel()
     @State var showSkipShareSheet = false
@@ -101,6 +101,7 @@ struct BackupPasswordSetupView: View {
         }) {
             FilledButton(title: "save")
         }
+#if os(iOS)
         .sheet(isPresented: $showSaveShareSheet, onDismiss: {
             dismissView()
         }) {
@@ -110,6 +111,19 @@ struct BackupPasswordSetupView: View {
                     .ignoresSafeArea(.all)
             }
         }
+#elseif os(macOS)
+        .background(
+            ZStack {
+                if showSaveShareSheet, let fileURL = backupViewModel.encryptedFileURLWithPassowrd {
+                    ShareSheetViewController(items: [fileURL], onDismiss: {
+                        dismissView()
+                    }, alreadyShowingPopup: $alreadyShowingPopup)
+                } else {
+                    EmptyView()
+                }
+            }
+        )
+#endif
     }
     
     var skipButton: some View {
@@ -119,6 +133,7 @@ struct BackupPasswordSetupView: View {
         }) {
             OutlineButton(title: "skip")
         }
+#if os(iOS)
         .sheet(isPresented: $showSkipShareSheet, onDismiss: {
             dismissView()
         }) {
@@ -128,6 +143,19 @@ struct BackupPasswordSetupView: View {
                     .ignoresSafeArea(.all)
             }
         }
+#elseif os(macOS)
+        .background(
+            ZStack {
+                if showSkipShareSheet, let fileURL = backupViewModel.encryptedFileURLWithoutPassowrd {
+                    ShareSheetViewController(items: [fileURL], onDismiss: {
+                        dismissView()
+                    }, alreadyShowingPopup: $alreadyShowingPopup)
+                } else {
+                    EmptyView()
+                }
+            }
+        )
+#endif
     }
     
     var alert: Alert {
@@ -175,6 +203,7 @@ struct BackupPasswordSetupView: View {
     }
     
     private func dismissView() {
+        alreadyShowingPopup = false
         if isNewVault {
             navigationLinkActive = true
         } else {
