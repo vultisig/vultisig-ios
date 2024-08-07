@@ -79,7 +79,7 @@ enum TransactionMemoInstance {
     
     func getTransactionType() -> VSTransactionType {
         switch self {
-        case .vote(let memo):
+        case .vote(_):
             return VSTransactionType.vote
         default:
             return .unspecified
