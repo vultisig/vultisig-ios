@@ -12,6 +12,8 @@ import WalletCore
 struct AddAddressBookView: View {
     let count: Int
     
+    private let addressService = AddressService.shared
+    
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
     
@@ -117,7 +119,7 @@ struct AddAddressBookView: View {
             return
         }
         
-        guard validateAddress(coin: coin, address: address) else {
+        guard addressService.validateAddress(address: address, chain: coin.chain) else {
             toggleAlertInvalidAddress()
             return
         }
@@ -133,19 +135,6 @@ struct AddAddressBookView: View {
             modelContext.insert(data)
             dismiss()
         }
-    }
-    
-    private func validateAddress(coin: CoinMeta, address: String) -> Bool {
-        
-        if address.isNameService() {
-            return true
-        }
-        
-        
-        if coin.chain == .mayaChain {
-            return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya")
-        }
-        return coin.coinType.validate(address: address)
     }
     
     private func toggleAlert() {

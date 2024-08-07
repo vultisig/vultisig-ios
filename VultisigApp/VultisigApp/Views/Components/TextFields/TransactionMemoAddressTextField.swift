@@ -19,6 +19,8 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
     var addressKey: String
     var isOptional: Bool = false
     
+    let addressService: AddressService = AddressService.shared
+    
     @Binding var isAddressValid: Bool
     @State var showScanner = false
     @State var showImagePicker = false
@@ -248,18 +250,12 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
     
     private func validateAddress(_ newValue: String) {
         
-        if newValue.isNameService() {
-            isAddressValid = true
-            return
-        }
-        
-        
         if isOptional, newValue.isEmpty {
             isAddressValid = true
             return
         }
         
-        isAddressValid = CoinType.thorchain.validate(address: newValue) ||
-        AnyAddress.isValidBech32(string: newValue, coin: .thorchain, hrp: "maya")
+        isAddressValid = addressService.validateAddress(address: newValue, chain: .thorChain) ||
+        addressService.validateAddress(address: newValue, chain: .mayaChain)
     }
 }

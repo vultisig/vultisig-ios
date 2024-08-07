@@ -32,6 +32,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     let atom = GaiaService.shared
     let kujira = KujiraService.shared
     let blockchainService = BlockChainService.shared
+    let addressService: AddressService = AddressService.shared
     
     private let mediator = Mediator.shared
     
@@ -210,17 +211,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func validateAddress(tx: SendTransaction, address: String) {
-        
-        if tx.toAddress.isNameService() {
-            isValidAddress = true
-            return
-        }
-        
-        if tx.coin.chain == .mayaChain {
-            isValidAddress = AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya")
-            return
-        }
-        isValidAddress = tx.coin.coinType.validate(address: address)
+        isValidAddress = addressService.validateAddress(address: address, chain: tx.coin.chain)
     }
     
     func validateForm(tx: SendTransaction) async -> Bool {
