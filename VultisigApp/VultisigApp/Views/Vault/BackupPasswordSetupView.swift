@@ -38,16 +38,17 @@ struct BackupPasswordSetupView: View {
                     handleSaveTap()
                 }
             }
-            .fileExporter(isPresented: $backupViewModel.showVaultExporter,
-                          document: EncryptedDataFile(url: backupViewModel.encryptedFileURLWithPassowrd),
-                          contentType: .data,
-                          defaultFilename: "\(vault.getExportName())"
+            .fileExporter(
+                isPresented: $backupViewModel.showVaultExporter,
+                document: EncryptedDataFile(url: backupViewModel.encryptedFileURLWithPassowrd),
+                contentType: .data,
+                defaultFilename: "\(vault.getExportName())"
             ) { result in
                 switch result {
                 case .success(let url):
                     print("File saved to: \(url)")
                     fileSaved()
-                    dismiss()
+                    dismissView()
                 case .failure(let error):
                     print("Error saving file: \(error.localizedDescription)")
                     backupViewModel.alertTitle = "errorSavingFile"
@@ -210,6 +211,13 @@ struct BackupPasswordSetupView: View {
         vault.isBackedUp = true
     }
     
+    private func dismissView() {
+        if isNewVault {
+            navigationLinkActive = true
+        } else {
+            dismiss()
+        }
+    }
 }
 
 #Preview {
