@@ -56,7 +56,9 @@ struct ChainDetailView: View {
         }
         .safeAreaInset(edge: .bottom) {
             if group.chain == .base {
+                #if os(macOS) || DEBUG
                 weweButton()
+                #endif
             }
         }
         .navigationDestination(isPresented: $isSendLinkActive) {
