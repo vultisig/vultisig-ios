@@ -19,6 +19,9 @@ struct PeerDiscoveryView: View {
     @State var isLandscape: Bool = true
     @State var isPhoneSE = false
     
+    @State var screenWidth: CGFloat = .zero
+    @State var screenHeight: CGFloat = .zero
+    
     @State private var showInvalidNumberOfSelectedDevices = false
     
     @Environment(\.displayScale) var displayScale
@@ -345,7 +348,7 @@ struct PeerDiscoveryView: View {
     
     private func setData() {
 #if os(iOS)
-        isLandscape = (orientation == .landscapeLeft || orientation == .landscapeRight) && idiom == .pad
+        updateScreenSize()
 #endif
         
         qrCodeImage = viewModel.getQrImage(size: 100)
@@ -422,6 +425,19 @@ struct PeerDiscoveryView: View {
             isPhoneSE = true
         }
     }
+    
+#if os(iOS)
+    private func updateScreenSize() {
+        screenWidth = UIScreen.main.bounds.size.width
+        screenHeight = UIScreen.main.bounds.size.height
+        
+        if screenWidth>1100 && idiom == .pad {
+            isLandscape = true
+        } else {
+            isLandscape = false
+        }
+    }
+#endif
 }
 
 #Preview {
