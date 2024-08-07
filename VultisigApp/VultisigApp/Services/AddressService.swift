@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 import WalletCore
 
-public class AddressService {
+public struct AddressService {
         
     static func resolveDomaninAddress(address: String, chain: Chain) async -> String {
         
@@ -65,7 +65,7 @@ public class AddressService {
         return coin.coinType.validate(address: address)
     }
     
-    func validateAddress(address: String, group: GroupedChain) -> Bool {
+    static func validateAddress(address: String, group: GroupedChain) -> Bool {
         
         if address.isNameService() {
             return true

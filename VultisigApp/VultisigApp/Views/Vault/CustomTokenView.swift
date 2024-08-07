@@ -192,7 +192,7 @@ struct CustomTokenView: View {
     }
     
     private func validateAddress(_ address: String) {
-        isValidAddress = addressService.validateAddress(address: address, group: group)
+        isValidAddress = AddressService.validateAddress(address: address, group: group)
     }
     
     private func saveAssets() {
