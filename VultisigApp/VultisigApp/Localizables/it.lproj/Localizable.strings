@@ -260,3 +260,4 @@
 "vaultValue" = "Valore del caveau";
 "noSavedAddressesForChain" = "Nessun indirizzo salvato trovato per questa catena.";
 "editAddress" = "Modifica indirizzo";
+"validAddressDomainError" = "Non è stato possibile risolvere l'indirizzo di questo dominio di servizio in questa catena.";

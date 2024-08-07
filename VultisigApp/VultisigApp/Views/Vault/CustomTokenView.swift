@@ -10,6 +10,7 @@ import SwiftUI
 import WalletCore
 
 struct CustomTokenView: View {
+    let addressService: AddressService = AddressService()
     let chainDetailView: ChainDetailView
     let vault: Vault
     @ObservedObject var group: GroupedChain
@@ -191,14 +192,7 @@ struct CustomTokenView: View {
     }
     
     private func validateAddress(_ address: String) {
-        let firstCoinOptional = group.coins.first
-        if let firstCoin = firstCoinOptional {
-            if firstCoin.chain == .mayaChain {
-                isValidAddress = AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya")
-                return
-            }
-            isValidAddress = firstCoin.coinType.validate(address: address)
-        }
+        isValidAddress = AddressService.validateAddress(address: address, group: group)
     }
     
     private func saveAssets() {

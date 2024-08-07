@@ -284,3 +284,4 @@
 "vaultValue" = "Vault Value";
 "noSavedAddressesForChain" = "No Saved Addresses found for this chain.";
 "editAddress" = "Edit Address";
+"validAddressDomainError" = "We were unable to resolve the address of this domain service on this chain.";
