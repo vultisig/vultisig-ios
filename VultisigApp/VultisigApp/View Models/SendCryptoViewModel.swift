@@ -210,17 +210,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func validateAddress(tx: SendTransaction, address: String) {
-        
-        if tx.toAddress.isNameService() {
-            isValidAddress = true
-            return
-        }
-        
-        if tx.coin.chain == .mayaChain {
-            isValidAddress = AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya")
-            return
-        }
-        isValidAddress = tx.coin.coinType.validate(address: address)
+        isValidAddress = AddressService.validateAddress(address: address, chain: tx.coin.chain)
     }
     
     func validateForm(tx: SendTransaction) async -> Bool {
@@ -234,6 +224,21 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             showAlert = true
             logger.log("Invalid address.")
             isValidForm = false
+        }
+        
+        if tx.toAddress.isNameService() {
+            let resolvedAddress = await AddressService.resolveDomaninAddress(address: tx.toAddress, chain: tx.coin.chain)
+            // it means it didnt resolve it
+            if resolvedAddress == tx.toAddress {
+                errorMessage = "validAddressDomainError"
+                showAlert = true
+                logger.log("We were unable to resolve the address of this domain service on this chain.")
+                isValidForm = false
+                return isValidForm
+            }
+            
+            // Set the HEX address to send directly
+            tx.toAddress = resolvedAddress
         }
         
         let amount = tx.amountDecimal

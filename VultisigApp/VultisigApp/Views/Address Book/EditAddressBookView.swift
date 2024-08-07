@@ -105,7 +105,7 @@ struct EditAddressBookView: View {
             return
         }
         
-        guard validateAddress(coin: coin, address: address) else {
+        guard AddressService.validateAddress(address: address, chain: coin.chain) else {
             toggleAlertInvalidAddress()
             return
         }
@@ -115,18 +115,6 @@ struct EditAddressBookView: View {
         addressBookItem.coinMeta = coin
         
         dismiss()
-    }
-    
-    private func validateAddress(coin: CoinMeta, address: String) -> Bool {
-        
-        if address.isNameService() {
-            return true
-        }
-        
-        if coin.chain == .mayaChain {
-            return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya")
-        }
-        return coin.coinType.validate(address: address)
     }
     
     private func toggleAlert() {
