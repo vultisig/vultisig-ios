@@ -244,7 +244,7 @@
 "devicesOnSameNetwork" = "Connect all devices to the same\nNetwork with Vultisig App open.";
 "devicesOnSameInternet" = "Connect all devices to the\nInternet with the Vultisig App open.";
 "invalidFileFormat" = "Invalid File Format";
-"invalidFileFormatMessage" = "Please make sure that you selected the correct backup file with .dat extension.";
+"invalidFileFormatMessage" = "Please make sure that you selected the correct backup file with .dat/.bak extension.";
 "uploadBackupFile" = "Upload backup file";
 "uploadQRCodeImage" = "Upload QR-Code Image";
 "uploadQRCodeImageKeygen" = "Upload QR-Code to join Keygen";
