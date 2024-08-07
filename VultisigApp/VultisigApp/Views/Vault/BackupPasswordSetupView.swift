@@ -5,6 +5,7 @@
 //  Created by Amol Kumar on 2024-06-13.
 //
 
+import UIKit
 import SwiftUI
 
 struct BackupPasswordSetupView: View {
@@ -15,7 +16,8 @@ struct BackupPasswordSetupView: View {
     @State var navigationLinkActive = false
     
     @StateObject var backupViewModel = EncryptedBackupViewModel()
-    @State var show = false
+    @State var showSkipShareSheet = false
+    @State var showSaveShareSheet = false
     
     @Environment(\.dismiss) var dismiss
     
@@ -37,25 +39,6 @@ struct BackupPasswordSetupView: View {
                 if backupViewModel.encryptionPassword == verifyPassword {
                     handleSaveTap()
                 }
-            }
-            .fileExporter(
-                isPresented: $backupViewModel.showVaultExporter,
-                document: EncryptedDataFile(url: backupViewModel.encryptedFileURLWithPassowrd),
-                contentType: .data,
-                defaultFilename: "\(vault.getExportName())"
-            ) { result in
-                switch result {
-                case .success(let url):
-                    print("File saved to: \(url)")
-                    fileSaved()
-                    dismissView()
-                case .failure(let error):
-                    print("Error saving file: \(error.localizedDescription)")
-                    backupViewModel.alertTitle = "errorSavingFile"
-                    backupViewModel.alertMessage = error.localizedDescription
-                    backupViewModel.showAlert = true
-                }
-                
             }
     }
     
@@ -113,60 +96,37 @@ struct BackupPasswordSetupView: View {
     }
     
     var saveButton: some View {
-        ZStack {
-            if backupViewModel.encryptionPassword.isEmpty && verifyPassword.isEmpty {
-                proxySaveButton
-            } else if backupViewModel.encryptionPassword != verifyPassword {
-                proxySaveButton
-            } else {
-                if let fileURL = backupViewModel.encryptedFileURLWithPassowrd {
-                    #if os(iOS)
-                    ShareLink(item: fileURL) {
-                        FilledButton(title: "save")
-                    }
-                    .simultaneousGesture(TapGesture().onEnded() {
-                        fileSaved()
-                    })
-                    #elseif  os(macOS)
-                    Button{
-                        backupViewModel.showVaultExporter = true
-                    } label: {
-                        FilledButton(title: "save")
-                    }
-                    
-                    #endif
-                }
+        Button(action: {
+            handleProxyTap()
+        }) {
+            FilledButton(title: "save")
+        }
+        .sheet(isPresented: $showSaveShareSheet, onDismiss: {
+            dismissView()
+        }) {
+            if let fileURL = backupViewModel.encryptedFileURLWithPassowrd {
+                ShareSheetViewController(activityItems: [fileURL])
+                    .presentationDetents([.medium])
+                    .ignoresSafeArea(.all)
             }
         }
     }
     
     var skipButton: some View {
-        ZStack {
-            if let fileURL = backupViewModel.encryptedFileURLWithoutPassowrd {
-                #if os(iOS)
-                ShareLink(item: fileURL) {
-                    OutlineButton(title: "skip")
-                }
-                .simultaneousGesture(TapGesture().onEnded() {
-                    print("set file saved")
-                    fileSaved()
-                })
-                #elseif os(macOS)
-                Button{
-                    backupViewModel.showVaultExporter = true
-                } label: {
-                    OutlineButton(title: "skip")
-                }
-                #endif
-            }
+        Button(action: {
+            showSkipShareSheet = true
+            fileSaved()
+        }) {
+            OutlineButton(title: "skip")
         }
-    }
-    
-    var proxySaveButton: some View {
-        Button {
-            handleProxyTap()
-        } label: {
-            FilledButton(title: "save")
+        .sheet(isPresented: $showSkipShareSheet, onDismiss: {
+            dismissView()
+        }) {
+            if let fileURL = backupViewModel.encryptedFileURLWithoutPassowrd {
+                ShareSheetViewController(activityItems: [fileURL])
+                    .presentationDetents([.medium])
+                    .ignoresSafeArea(.all)
+            }
         }
     }
     
@@ -201,6 +161,9 @@ struct BackupPasswordSetupView: View {
             backupViewModel.showAlert = true
             return
         }
+        
+        showSaveShareSheet = true
+        fileSaved()
     }
     
     private func export() {
