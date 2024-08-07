@@ -10,7 +10,6 @@ import WalletCore
 
 struct EditAddressBookView: View {
     let addressBookItem: AddressBookItem
-    private let addressService = AddressService.shared
     
     @State var title = ""
     @State var address = ""
@@ -106,7 +105,7 @@ struct EditAddressBookView: View {
             return
         }
         
-        guard addressService.validateAddress(address: address, chain: coin.chain) else {
+        guard AddressService.validateAddress(address: address, chain: coin.chain) else {
             toggleAlertInvalidAddress()
             return
         }

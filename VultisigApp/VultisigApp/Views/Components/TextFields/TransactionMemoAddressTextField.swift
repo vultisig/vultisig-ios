@@ -18,9 +18,7 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
     @ObservedObject var memo: MemoType
     var addressKey: String
     var isOptional: Bool = false
-    
-    let addressService: AddressService = AddressService.shared
-    
+        
     @Binding var isAddressValid: Bool
     @State var showScanner = false
     @State var showImagePicker = false
@@ -255,7 +253,7 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
             return
         }
         
-        isAddressValid = addressService.validateAddress(address: newValue, chain: .thorChain) ||
-        addressService.validateAddress(address: newValue, chain: .mayaChain)
+        isAddressValid = AddressService.validateAddress(address: newValue, chain: .thorChain) ||
+        AddressService.validateAddress(address: newValue, chain: .mayaChain)
     }
 }

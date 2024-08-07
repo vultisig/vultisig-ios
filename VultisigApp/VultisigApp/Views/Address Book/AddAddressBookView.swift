@@ -12,8 +12,6 @@ import WalletCore
 struct AddAddressBookView: View {
     let count: Int
     
-    private let addressService = AddressService.shared
-    
     @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
     @EnvironmentObject var homeViewModel: HomeViewModel
     
@@ -119,7 +117,7 @@ struct AddAddressBookView: View {
             return
         }
         
-        guard addressService.validateAddress(address: address, chain: coin.chain) else {
+        guard AddressService.validateAddress(address: address, chain: coin.chain) else {
             toggleAlertInvalidAddress()
             return
         }

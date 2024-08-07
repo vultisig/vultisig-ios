@@ -26,9 +26,7 @@ class TransactionMemoViewModel: ObservableObject, TransferViewModel {
     @Published var hash: String? = nil
     
     let blockchainService = BlockChainService.shared
-    
-    let addressService: AddressService = AddressService.shared
-    
+        
     private let mediator = Mediator.shared
     
     let totalViews = 5
@@ -46,7 +44,7 @@ class TransactionMemoViewModel: ObservableObject, TransferViewModel {
     }
     
     func validateAddress(tx: SendTransaction, address: String) {
-        isValidAddress = addressService.validateAddress(address: address, chain: tx.coin.chain)
+        isValidAddress = AddressService.validateAddress(address: address, chain: tx.coin.chain)
     }
     
     func setHash(_ hash: String) {

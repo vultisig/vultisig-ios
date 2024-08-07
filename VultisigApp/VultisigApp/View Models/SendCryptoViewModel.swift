@@ -32,7 +32,6 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     let atom = GaiaService.shared
     let kujira = KujiraService.shared
     let blockchainService = BlockChainService.shared
-    let addressService: AddressService = AddressService.shared
     
     private let mediator = Mediator.shared
     
@@ -211,7 +210,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func validateAddress(tx: SendTransaction, address: String) {
-        isValidAddress = addressService.validateAddress(address: address, chain: tx.coin.chain)
+        isValidAddress = AddressService.validateAddress(address: address, chain: tx.coin.chain)
     }
     
     func validateForm(tx: SendTransaction) async -> Bool {
@@ -228,7 +227,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         }
         
         if tx.toAddress.isNameService() {
-            let resolvedAddress = await addressService.resolveDomaninAddress(address: tx.toAddress, chain: tx.coin.chain)
+            let resolvedAddress = await AddressService.resolveDomaninAddress(address: tx.toAddress, chain: tx.coin.chain)
             // it means it didnt resolve it
             if resolvedAddress == tx.toAddress {
                 errorMessage = "validAddressError"

@@ -9,13 +9,9 @@ import Foundation
 import SwiftUI
 import WalletCore
 
-public class AddressService: ObservableObject {
-    
-    static let shared = AddressService()
-    
-    init(){}
-    
-    func resolveDomaninAddress(address: String, chain: Chain) async -> String {
+public class AddressService {
+        
+    static func resolveDomaninAddress(address: String, chain: Chain) async -> String {
         
         do {
             
@@ -42,7 +38,7 @@ public class AddressService: ObservableObject {
         }
     }
     
-    func validateAddress(address: String, chain: Chain) -> Bool {
+    static func validateAddress(address: String, chain: Chain) -> Bool {
         
         if address.isNameService() {
             return true
@@ -56,7 +52,7 @@ public class AddressService: ObservableObject {
         
     }
     
-    func validateAddress(coin: CoinMeta, address: String) -> Bool {
+    static func validateAddress(coin: CoinMeta, address: String) -> Bool {
         
         if address.isNameService() {
             return true
