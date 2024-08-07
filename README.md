@@ -1,4 +1,4 @@
-# Voltix
+# Vultisig - secure crypto vault
 
 ## Third party services
 
