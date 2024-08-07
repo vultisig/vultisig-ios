@@ -227,6 +227,21 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             isValidForm = false
         }
         
+        if tx.toAddress.isNameService() {
+            let resolvedAddress = await addressService.resolveDomaninAddress(address: tx.toAddress, chain: tx.coin.chain)
+            // it means it didnt resolve it
+            if resolvedAddress == tx.toAddress {
+                errorMessage = "validAddressError"
+                showAlert = true
+                logger.log("We could not resolve the Domain Service.")
+                isValidForm = false
+                return isValidForm
+            }
+            
+            // Set the HEX address to send directly
+            tx.toAddress = resolvedAddress
+        }
+        
         let amount = tx.amountDecimal
         let gasFee = tx.gasDecimal
         

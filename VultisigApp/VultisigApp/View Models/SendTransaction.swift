@@ -24,33 +24,6 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var coin: Coin = .example
     @Published var transactionType: VSTransactionType = .unspecified
     
-    func resolveDomaninAddress() async -> String {
-        
-        do {
-            
-            guard toAddress.isNameService() else {
-                return toAddress
-            }
-            
-            let ensName = toAddress
-            let namehash = ensName.namehash()
-            print("Namehash for \(ensName): \(namehash)")
-            
-            let factory = try EvmServiceFactory.getService(forChain: coin.chain)
-            let address = try await factory.resolveENS(ensName: ensName)
-            
-            print("Resolved address \(address)")
-            
-            return address
-            
-        } catch {
-            
-            print("Error to extract the DOMAIN ADDRESS: \(error.localizedDescription)")
-            return toAddress
-            
-        }
-    }
-    
     var isAmountExceeded: Bool {
         
         if (sendMaxAmount && coin.chainType == .UTXO) || !coin.isNativeToken {
