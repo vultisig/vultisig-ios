@@ -21,10 +21,10 @@ final class Rate {
     let crypto: String
     var value: Double
 
-    init(fiat: String, crypto: String) {
+    init(fiat: String, crypto: String, value: Double) {
         self.id = Rate.identifier(fiat: fiat, crypto: crypto)
         self.fiat = fiat
         self.crypto = crypto
-        self.value = 0.0
+        self.value = value
     }
 }

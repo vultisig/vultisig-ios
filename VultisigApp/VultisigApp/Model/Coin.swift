@@ -17,7 +17,6 @@ class Coin: ObservableObject, Codable, Hashable {
     var logo: String
     var priceProviderId: String
     var rawBalance: String = ""
-    var priceRate: Double = 0
     
     var decimals: Int {
         get {
@@ -39,7 +38,6 @@ class Coin: ObservableObject, Codable, Hashable {
         self.id = asset.coinId(address: address)
         
         self.rawBalance = .zero
-        self.priceRate = .zero
         self.address = address
         self.hexPublicKey = hexPublicKey
     }
@@ -158,7 +156,11 @@ class Coin: ObservableObject, Codable, Hashable {
             return "10000000000"
         }
     }
-    
+
+    var price: Double {
+        return RateProvider.shared.rate(for: self)?.value ?? 0
+    }
+
     func decimal(for value: BigInt) -> Decimal {
         let decimalValue = Decimal(string: String(value)) ?? 0
         return decimalValue / pow(Decimal(10), decimals)

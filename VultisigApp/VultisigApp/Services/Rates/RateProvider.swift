@@ -6,16 +6,35 @@
 //
 
 import Foundation
-import SwiftUI
+import Combine
 import SwiftData
 
 final class RateProvider {
 
     static let shared = RateProvider()
 
-    @Query var rates: [Rate]
+    private var rates: [Rate] = []
 
-    private init() { }
+    private var cancallables = Set<AnyCancellable>()
+
+    private init() {
+        let descriptor = FetchDescriptor<Rate>()
+
+        do {
+            self.rates = try Storage.shared.modelContext.fetch(descriptor)
+
+            try Storage.shared.modelContext
+                .fetch(descriptor)
+                .publisher
+                .collect()
+                .sink { [weak self] rates in
+                    self?.rates = rates
+                }.store(in: &cancallables)
+
+        } catch {
+            fatalError(error.localizedDescription)
+        }
+    }
 
     func fiatBalance(value: Decimal, coin: Coin, currency: SettingsCurrency = .current) -> Decimal {
         guard let rate = rate(for: coin, currency: currency) else {
@@ -34,22 +53,12 @@ final class RateProvider {
         return balanceString
     }
 
-    func rate(for coin: Coin, currency: SettingsCurrency) -> Rate? {
-        let identifier = Rate.identifier(fiat: currency.rawValue, crypto: coin.priceProviderId)
+    func rate(for coin: Coin, currency: SettingsCurrency = .current) -> Rate? {
+        let identifier = Rate.identifier(fiat: currency.rawValue.lowercased(), crypto: coin.priceProviderId)
         return rates.first(where: { $0.id == identifier })
     }
 
-    @MainActor func save(value: Double, coin: Coin, currency: SettingsCurrency) async throws {
-        let rate = rate(for: coin, currency: currency) ?? makeRate(coin: coin, currency: currency)
-        rate.value = value
-
-        try Storage.shared.modelContext.save()
-    }
-}
-
-private extension RateProvider {
-
-    func makeRate(coin: Coin, currency: SettingsCurrency) -> Rate {
-        return Rate(fiat: currency.rawValue, crypto: coin.priceProviderId)
+    @MainActor func save(rates: [Rate]) async throws {
+        await Storage.shared.insert(rates)
     }
 }

@@ -73,6 +73,7 @@ struct VultisigApp: App {
         let schema = Schema([
             Vault.self,
             Coin.self,
+            Rate.self,
             AddressBookItem.self
         ])
         let modelConfiguration = ModelConfiguration(
