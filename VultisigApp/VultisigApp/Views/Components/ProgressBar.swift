@@ -32,12 +32,16 @@ struct ProgressBar: View {
     
     func loadingBar(for width: CGFloat) -> some View {
         RoundedRectangle(cornerRadius: 30)
+#if os(iOS)
             .frame(width: width*progress, height: 10)
+#elseif os(macOS)
+            .frame(width: width*progress-50, height: 10)
+#endif
             .foregroundStyle(LinearGradient.progressGradient)
             .animation(.easeInOut, value: progress)
     }
 }
 
 #Preview {
-    ProgressBar(progress: 0.25)
+    ProgressBar(progress: 1)
 }
