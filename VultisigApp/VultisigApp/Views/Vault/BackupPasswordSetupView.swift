@@ -112,17 +112,24 @@ struct BackupPasswordSetupView: View {
             }
         }
 #elseif os(macOS)
-        .background(
-            ZStack {
-                if showSaveShareSheet, let fileURL = backupViewModel.encryptedFileURLWithPassowrd {
-                    ShareSheetViewController(items: [fileURL], onDismiss: {
-                        dismissView()
-                    }, alreadyShowingPopup: $alreadyShowingPopup)
-                } else {
-                    EmptyView()
-                }
+        .fileExporter(
+            isPresented: $showSaveShareSheet,
+            document: EncryptedDataFile(url: backupViewModel.encryptedFileURLWithPassowrd),
+            contentType: .data,
+            defaultFilename: "\(vault.getExportName())"
+        ) { result in
+            switch result {
+            case .success(let url):
+                print("File saved to: \(url)")
+                dismissView()
+            case .failure(let error):
+                print("Error saving file: \(error.localizedDescription)")
+                backupViewModel.alertTitle = "errorSavingFile"
+                backupViewModel.alertMessage = error.localizedDescription
+                backupViewModel.showAlert = true
             }
-        )
+            
+        }
 #endif
     }
     
@@ -144,17 +151,23 @@ struct BackupPasswordSetupView: View {
             }
         }
 #elseif os(macOS)
-        .background(
-            ZStack {
-                if showSkipShareSheet, let fileURL = backupViewModel.encryptedFileURLWithoutPassowrd {
-                    ShareSheetViewController(items: [fileURL], onDismiss: {
-                        dismissView()
-                    }, alreadyShowingPopup: $alreadyShowingPopup)
-                } else {
-                    EmptyView()
-                }
+        .fileExporter(
+            isPresented: $showSkipShareSheet,
+            document: EncryptedDataFile(url: backupViewModel.encryptedFileURLWithoutPassowrd),
+            contentType: .data,
+            defaultFilename: "\(vault.getExportName())"
+        ) { result in
+            switch result {
+            case .success(let url):
+                print("File saved to: \(url)")
+                dismissView()
+            case .failure(let error):
+                print("Error saving file: \(error.localizedDescription)")
+                backupViewModel.alertTitle = "errorSavingFile"
+                backupViewModel.alertMessage = error.localizedDescription
+                backupViewModel.showAlert = true
             }
-        )
+        }
 #endif
     }
     
