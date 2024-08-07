@@ -28,7 +28,7 @@ class BalanceService {
         do {
             try await cryptoPriceService.fetchPrices(vault: vault)
         } catch {
-            fatalError(error.localizedDescription)
+            print(error)
         }
 
         await withTaskGroup(of: Void.self) { group in

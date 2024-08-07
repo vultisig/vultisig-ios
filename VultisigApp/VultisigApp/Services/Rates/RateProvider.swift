@@ -13,24 +13,17 @@ final class RateProvider {
 
     static let shared = RateProvider()
 
-    private var rates: [Rate] = []
+    /// Should be updated manually
+    private var rates: Set<Rate> = []
 
     private var cancallables = Set<AnyCancellable>()
 
     private init() {
-        let descriptor = FetchDescriptor<Rate>()
+        let descriptor = FetchDescriptor<DatabaseRate>()
 
         do {
-            self.rates = try Storage.shared.modelContext.fetch(descriptor)
-
-            try Storage.shared.modelContext
-                .fetch(descriptor)
-                .publisher
-                .collect()
-                .sink { [weak self] rates in
-                    self?.rates = rates
-                }.store(in: &cancallables)
-
+            let objects = try Storage.shared.modelContext.fetch(descriptor)
+            self.rates = Set(objects.map { Rate(object: $0) })
         } catch {
             fatalError(error.localizedDescription)
         }
@@ -58,7 +51,8 @@ final class RateProvider {
         return rates.first(where: { $0.id == identifier })
     }
 
-    @MainActor func save(rates: [Rate]) async throws {
-        await Storage.shared.insert(rates)
+    @MainActor func save(rates newRates: [Rate]) async throws {
+        rates = rates.union(newRates)
+        await Storage.shared.insert(newRates.map { $0.mapToObject() })
     }
 }
