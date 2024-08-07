@@ -12,7 +12,7 @@ struct BlowfishWarningInformationNote: View {
     
     var body: some View {
         Group {
-            if viewModel.blowfishResponse != nil {
+            if !viewModel.blowfishResponse.isEmpty {
                 HStack(spacing: 12) {
                     icon
                     text

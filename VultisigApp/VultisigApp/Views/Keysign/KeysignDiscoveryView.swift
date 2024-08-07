@@ -221,6 +221,11 @@ struct KeysignDiscoveryView: View {
     
     var networkPrompts: some View {
         NetworkPrompts(selectedNetwork: $selectedNetwork)
+            .onChange(of: selectedNetwork) {
+                print("selected network changed: \(selectedNetwork)")
+                viewModel.restartParticipantDiscovery()
+                setData()
+            }
     }
     
     var instructions: some View {
