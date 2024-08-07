@@ -260,3 +260,4 @@
 "vaultValue" = "Vrijednost spremišta";
 "noSavedAddressesForChain" = "Nema spremljenih adresa za ovaj lanac.";
 "editAddress" = "Uredi adresu";
+"validAddressDomainError" = "Nismo mogli razrijesti adresu ovog domena usluge u ovom lancu.";

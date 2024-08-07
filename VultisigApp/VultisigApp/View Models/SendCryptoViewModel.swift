@@ -230,9 +230,9 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             let resolvedAddress = await AddressService.resolveDomaninAddress(address: tx.toAddress, chain: tx.coin.chain)
             // it means it didnt resolve it
             if resolvedAddress == tx.toAddress {
-                errorMessage = "validAddressError"
+                errorMessage = "validAddressDomainError"
                 showAlert = true
-                logger.log("We could not resolve the Domain Service.")
+                logger.log("We were unable to resolve the address of this domain service on this chain.")
                 isValidForm = false
                 return isValidForm
             }
