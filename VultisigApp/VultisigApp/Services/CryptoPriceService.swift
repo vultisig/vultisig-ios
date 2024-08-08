@@ -13,19 +13,30 @@ public class CryptoPriceService: ObservableObject {
     private init() {}
 
     func fetchPrices(vault: Vault) async throws {
-        RateProvider.shared.subscribe {
-            vault.objectWillChange.send()
-        }
-
         try await fetchPrices(coins: vault.coins)
+
+        await refresh(vault: vault)
+        await refresh(coins: vault.coins)
     }
 
     func fetchPrice(coin: Coin) async throws {
         try await fetchPrices(coins: [coin])
+
+        await refresh(coins: [coin])
     }
 }
 
 private extension CryptoPriceService {
+
+    @MainActor func refresh(vault: Vault) {
+        vault.objectWillChange.send()
+    }
+
+    @MainActor func refresh(coins: [Coin]) {
+        for coin in coins {
+            coin.objectWillChange.send()
+        }
+    }
 
     func fetchPrices(coins: [Coin]) async throws {
         let sources = resolveSources(coins: coins)

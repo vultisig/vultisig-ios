@@ -9,6 +9,7 @@ import Foundation
 import SwiftData
 
 class BalanceService {
+
     static let shared = BalanceService()
 
     private let utxo = BlockchairService.shared
@@ -24,26 +25,27 @@ class BalanceService {
     private let cryptoPriceService = CryptoPriceService.shared
 
     func updateBalances(vault: Vault) async {
-
         do {
             try await cryptoPriceService.fetchPrices(vault: vault)
-        } catch {
-            print("Fetch Rates error: \(error.localizedDescription)")
-        }
 
-        await withTaskGroup(of: Void.self) { group in
-            for coin in vault.coins {
-                group.addTask { [unowned self]  in
-                    if !Task.isCancelled {
-                        do {
-                            let rawBalance = try await fetchBalance(for: coin)
-                            try await updateCoin(coin, rawBalance: rawBalance)
-                        } catch {
-                            print("Fetch Balances error: \(error.localizedDescription)")
+            await withTaskGroup(of: Void.self) { group in
+                for coin in vault.coins {
+                    group.addTask { [unowned self]  in
+                        if !Task.isCancelled {
+                            do {
+                                let rawBalance = try await fetchBalance(for: coin)
+                                try await updateCoin(coin, rawBalance: rawBalance)
+                            } catch {
+                                print("Fetch Balances error: \(error.localizedDescription)")
+                            }
                         }
                     }
                 }
             }
+
+            try await Storage.shared.save()
+        } catch {
+            print("Fetch Rates error: \(error.localizedDescription)")
         }
     }
     
@@ -52,6 +54,7 @@ class BalanceService {
             try await cryptoPriceService.fetchPrice(coin: coin)
             let rawBalance = try await fetchBalance(for: coin)
             try await updateCoin(coin, rawBalance: rawBalance)
+            try await Storage.shared.save()
         } catch {
             print("Fetch Balance error: \(error.localizedDescription)")
         }
@@ -102,9 +105,10 @@ private extension BalanceService {
     }
 
     @MainActor func updateCoin(_ coin: Coin, rawBalance: String) async throws {
-        guard coin.rawBalance != rawBalance else { return }
+        guard coin.rawBalance != rawBalance else {
+            return
+        }
+        
         coin.rawBalance = rawBalance
-        // Swift Data persists on disk io, that is slower than the cache on KEY VALUE RAM
-        try await Storage.shared.save()
     }
 }
