@@ -52,7 +52,7 @@ class VaultDefaultCoinService {
                     
                     Task {
                         do{
-                            try await CoinSelectionViewModel().addDiscoveredTokens(nativeToken: coin, to: vault)
+                            try await CoinService.addDiscoveredTokens(nativeToken: coin, to: vault)
                         } catch {
                             print("The coin \(coin.ticker) could not be added. \(error.localizedDescription)")
                         }
