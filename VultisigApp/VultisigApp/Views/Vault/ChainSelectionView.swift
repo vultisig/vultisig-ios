@@ -86,7 +86,7 @@ struct ChainSelectionView: View {
     
     private func saveAssets() {
         Task{
-            await viewModel.saveAssets(for: vault)
+            await CoinService.saveAssets(for: vault, selection: viewModel.selection)
         }
     }
 }

@@ -303,6 +303,7 @@
 		B590DF862C2E70B800ED934E /* TransactionMemoVote.swift in Sources */ = {isa = PBXBuildFile; fileRef = B590DF852C2E70B800ED934E /* TransactionMemoVote.swift */; };
 		B590DF882C2E815A00ED934E /* GenericSelectorDropDown.swift in Sources */ = {isa = PBXBuildFile; fileRef = B590DF872C2E815A00ED934E /* GenericSelectorDropDown.swift */; };
 		B590DF8A2C2E88F900ED934E /* VoteOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = B590DF892C2E88F900ED934E /* VoteOption.swift */; };
+		B59173312C641F3D007100E3 /* CoinService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B59173302C641F3D007100E3 /* CoinService.swift */; };
 		B5947FD52C41EA53002D6A36 /* CachedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5947FD42C41EA53002D6A36 /* CachedData.swift */; };
 		B5A97CED2BF41573007574D7 /* TransactionMemoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CEC2BF41573007574D7 /* TransactionMemoView.swift */; };
 		B5A97CEF2BF41779007574D7 /* TransactionMemoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CEE2BF41779007574D7 /* TransactionMemoViewModel.swift */; };
@@ -728,6 +729,7 @@
 		B590DF852C2E70B800ED934E /* TransactionMemoVote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoVote.swift; sourceTree = "<group>"; };
 		B590DF872C2E815A00ED934E /* GenericSelectorDropDown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericSelectorDropDown.swift; sourceTree = "<group>"; };
 		B590DF892C2E88F900ED934E /* VoteOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoteOption.swift; sourceTree = "<group>"; };
+		B59173302C641F3D007100E3 /* CoinService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinService.swift; sourceTree = "<group>"; };
 		B5947FD42C41EA53002D6A36 /* CachedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedData.swift; sourceTree = "<group>"; };
 		B5A97CEC2BF41573007574D7 /* TransactionMemoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoView.swift; sourceTree = "<group>"; };
 		B5A97CEE2BF41779007574D7 /* TransactionMemoViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoViewModel.swift; sourceTree = "<group>"; };
@@ -949,9 +951,11 @@
 				A5F97C8D2BBF0BCF000C30DF /* BalanceService.swift */,
 				A57A03CA2BC47D4F00F6F3DF /* BlockChainService.swift */,
 				46AAA4962BBF7EBA00E5BAB4 /* EvmServiceFactory.swift */,
+				DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */,
 				B54B019B2BDE135C00FDA472 /* RpcService.swift */,
 				B53DCB7C2C0D7327008388D4 /* EvmTokenServiceProtocol.swift */,
 				B5C4A42B2C62EC6500AF9B8B /* AddressService.swift */,
+				B59173302C641F3D007100E3 /* CoinService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -1328,7 +1332,6 @@
 				A6BEF5BF2BE2B11C007A84A1 /* DeeplinkViewModel.swift */,
 				B5A97CEE2BF41779007574D7 /* TransactionMemoViewModel.swift */,
 				B5A97CF02BF41903007574D7 /* TransactionMemoVerifyViewModel.swift */,
-				DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */,
 				A66BFCD22C135699004DCD4F /* ShareSheetViewModel.swift */,
 				A68696222C1B5DD2004EDE0B /* EncryptedBackupViewModel.swift */,
 				A6B7F49B2C4963F6006D83D1 /* VaultDetailQRCodeViewModel.swift */,
@@ -2400,6 +2403,7 @@
 				A54BBCFF2BC6E11600645C06 /* TransferViewModel.swift in Sources */,
 				46DE08902BD0D03E00AE8BDE /* CosmosService.swift in Sources */,
 				465B09A92B7C176700952DD9 /* SendTransaction.swift in Sources */,
+				B59173312C641F3D007100E3 /* CoinService.swift in Sources */,
 				A633B12D2B994E92003D1738 /* CreateVaultView.swift in Sources */,
 				A68696252C1B777A004EDE0B /* EncryptedDataFile.swift in Sources */,
 				A63953B02BA7BEDA000802EC /* Checkbox.swift in Sources */,

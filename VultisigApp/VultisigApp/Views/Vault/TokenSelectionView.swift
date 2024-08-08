@@ -230,7 +230,7 @@ struct TokenSelectionView: View {
     
     private func saveAssets() {
         Task {
-            await coinViewModel.saveAssets(for: vault)
+            await CoinService.saveAssets(for: vault, selection: coinViewModel.selection)
         }
     }
 }
