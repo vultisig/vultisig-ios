@@ -7,6 +7,7 @@
 
 import Foundation
 
+@MainActor
 struct CoinService {
     
     static func removeCoins(coins: [Coin], vault: Vault) async throws {
