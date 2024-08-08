@@ -13,11 +13,22 @@ public class CryptoPriceService: ObservableObject {
     private init() {}
 
     func fetchPrices(vault: Vault) async throws {
-        let sources = resolveSources(coins: vault.coins)
-
         RateProvider.shared.subscribe {
             vault.objectWillChange.send()
         }
+
+        try await fetchPrices(coins: vault.coins)
+    }
+
+    func fetchPrice(coin: Coin) async throws {
+        try await fetchPrices(coins: [coin])
+    }
+}
+
+private extension CryptoPriceService {
+
+    func fetchPrices(coins: [Coin]) async throws {
+        let sources = resolveSources(coins: coins)
 
         if !sources.providerIds.isEmpty {
             try await fetchPrices(ids: sources.providerIds)
@@ -29,14 +40,6 @@ public class CryptoPriceService: ObservableObject {
             }
         }
     }
-
-    func fetchPrice(coin: Coin) async throws {
-        let ids = coin.priceProviderId.lowercased()
-        try await fetchPrices(ids: [ids])
-    }
-}
-
-private extension CryptoPriceService {
 
     func resolveSources(coins: [Coin]) -> ResolvedSources {
         var providerIds: [String] = []
