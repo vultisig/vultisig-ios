@@ -35,12 +35,13 @@ struct ChainDetailView: View {
     var body: some View {
         ZStack {
             Background()
-            view
+            main
             
             if isLoading {
                 Loader()
             }
         }
+#if os(iOS)
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString(group.name, comment: ""))
         .toolbar {
@@ -54,6 +55,7 @@ struct ChainDetailView: View {
                 }
             }
         }
+#endif
         .safeAreaInset(edge: .bottom) {
             if group.chain == .base {
                 #if os(macOS) || DEBUG
@@ -126,6 +128,21 @@ struct ChainDetailView: View {
         Loader()
     }
     
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            view
+        }
+    }
+    
+    var headerMac: some View {
+        ChainDetailHeader(title: group.name, refreshAction: refreshAction)
+            .padding(.horizontal, 40)
+            .padding(.top, 8)
+    }
+    
     var view: some View {
         ScrollView {
             VStack(spacing: 20) {
@@ -140,10 +157,12 @@ struct ChainDetailView: View {
             .background(Color.backgroundBlue)
             .colorScheme(.dark)
             .padding(.horizontal, 16)
+    #if os(iOS)
             .padding(.vertical, 30)
-#if os(macOS)
-            .padding(24)
-#endif
+    #elseif os(macOS)
+            .padding(.horizontal, 24)
+            .padding(.vertical, 8)
+    #endif
         }
     }
     
@@ -223,6 +242,7 @@ struct ChainDetailView: View {
         }
         .font(.body16MenloBold)
         .foregroundColor(.turquoise600)
+        .padding(.bottom, 32)
     }
 
     private func weweButton() -> some View {

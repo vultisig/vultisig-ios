@@ -178,6 +178,7 @@
 		A6725D3E2C3FB61900D47716 /* AddressBookItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6725D3D2C3FB61900D47716 /* AddressBookItem.swift */; };
 		A6725D412C40C3C100D47716 /* AddressBookChainSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6725D402C40C3C100D47716 /* AddressBookChainSelector.swift */; };
 		A6725D432C40C45800D47716 /* AddressBookCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6725D422C40C45800D47716 /* AddressBookCell.swift */; };
+		A67AA1C42C64715000D06C7E /* ChainDetailHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67AA1C32C64715000D06C7E /* ChainDetailHeader.swift */; };
 		A67F4C5F2BE313220086ED09 /* ActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67F4C5E2BE313220086ED09 /* ActionButton.swift */; };
 		A680BAC52BF47AA9006E611D /* OpenGalleryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A680BAC42BF47AA9006E611D /* OpenGalleryButton.swift */; };
 		A683EDEB2BCF635E00BB706E /* InstructionPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = A683EDEA2BCF635E00BB706E /* InstructionPrompt.swift */; };
@@ -606,6 +607,7 @@
 		A6725D3D2C3FB61900D47716 /* AddressBookItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookItem.swift; sourceTree = "<group>"; };
 		A6725D402C40C3C100D47716 /* AddressBookChainSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookChainSelector.swift; sourceTree = "<group>"; };
 		A6725D422C40C45800D47716 /* AddressBookCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookCell.swift; sourceTree = "<group>"; };
+		A67AA1C32C64715000D06C7E /* ChainDetailHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailHeader.swift; sourceTree = "<group>"; };
 		A67F4C5E2BE313220086ED09 /* ActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionButton.swift; sourceTree = "<group>"; };
 		A680BAC42BF47AA9006E611D /* OpenGalleryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenGalleryButton.swift; sourceTree = "<group>"; };
 		A683EDEA2BCF635E00BB706E /* InstructionPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstructionPrompt.swift; sourceTree = "<group>"; };
@@ -879,6 +881,7 @@
 				A633B1232B993FCC003D1738 /* Buttons */,
 				A6966D272BA4009B00903CA4 /* TextFields */,
 				A633B1342B997D35003D1738 /* Navigation Items */,
+				A67AA1C22C64713A00D06C7E /* Navigation Header */,
 				A6F9E7A32BED6BA200BA36E1 /* New Wallet */,
 				A608E3752C01BD6800E40B85 /* Swap */,
 				049BBB5D2B71E83D004C231F /* VultisigLogo.swift */,
@@ -1389,6 +1392,14 @@
 				A6725D3B2C3F9D6400D47716 /* AddressBookTextField.swift */,
 			);
 			path = AddressBook;
+			sourceTree = "<group>";
+		};
+		A67AA1C22C64713A00D06C7E /* Navigation Header */ = {
+			isa = PBXGroup;
+			children = (
+				A67AA1C32C64715000D06C7E /* ChainDetailHeader.swift */,
+			);
+			path = "Navigation Header";
 			sourceTree = "<group>";
 		};
 		A6966D1C2BA3DD9900903CA4 /* Onboarding */ = {
@@ -2354,6 +2365,7 @@
 				A611735D2BC8D94400D616F9 /* KeyGenSummaryView.swift in Sources */,
 				A56386822C3A2148008B848E /* ProtoCoinResolver.swift in Sources */,
 				A6951E862C52DAFD007292E7 /* SettingsDefaultChainView.swift in Sources */,
+				A67AA1C42C64715000D06C7E /* ChainDetailHeader.swift in Sources */,
 				A6CBF2DC2C251D4100FD8080 /* LookingForDevicesLoader.swift in Sources */,
 				A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */,
 				B530F8742C5FFF0A00C2E523 /* RpcEvmServiceEnsServiceExtension.swift in Sources */,

@@ -12,12 +12,8 @@ struct NavigationBlankBackButton: View {
     
     var body: some View {
         Image(systemName: "chevron.backward")
-#if os(iOS)
             .font(.body18MenloBold)
             .foregroundColor(tint)
-#elseif os(macOS)
-            .font(.body18Menlo)
-#endif
     }
 }
 

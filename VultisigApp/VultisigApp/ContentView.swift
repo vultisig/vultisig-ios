@@ -34,6 +34,8 @@ struct ContentView: View {
 #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
                 .navigationBarTitleTextColor(.neutral0)
+#elseif os(macOS)
+                .navigationTitle("Vultisig")
 #endif
             }
             .onOpenURL { incomingURL in
