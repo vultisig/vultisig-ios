@@ -2,19 +2,32 @@ import Foundation
 import SwiftUI
 
 public class CryptoPriceService: ObservableObject {
-    
+
+    struct ResolvedSources {
+        let providerIds: [String]
+        let contracts: [Chain: [String]]
+    }
+
     public static let shared = CryptoPriceService()
     
     private init() {}
 
     func fetchPrices(vault: Vault) async throws {
-        let ids = vault.coins.map { $0.priceProviderId }
+        let sources = resolveSources(coins: vault.coins)
 
         RateProvider.shared.subscribe {
             vault.objectWillChange.send()
         }
 
-        try await fetchPrices(ids: ids)
+        if !sources.providerIds.isEmpty {
+            try await fetchPrices(ids: sources.providerIds)
+        }
+
+        if !sources.contracts.isEmpty {
+            for (chain, contracts) in sources.contracts {
+                try await fetchPrices(contracts: contracts, chain: chain)
+            }
+        }
     }
 
     func fetchPrice(coin: Coin) async throws {
@@ -24,6 +37,26 @@ public class CryptoPriceService: ObservableObject {
 }
 
 private extension CryptoPriceService {
+
+    func resolveSources(coins: [Coin]) -> ResolvedSources {
+        var providerIds: [String] = []
+        var contracts: [Chain: [String]] = [:]
+
+        for coin in coins {
+            switch coin.chain.chainType {
+            case .EVM:
+                if coin.isNativeToken {
+                    providerIds.append(coin.priceProviderId)
+                } else {
+                    contracts[coin.chain, default: []].append(coin.contractAddress)
+                }
+            default:
+                providerIds.append(coin.priceProviderId)
+            }
+        }
+
+        return ResolvedSources(providerIds: providerIds, contracts: contracts)
+    }
 
     func fetchPrices(ids: [String]) async throws {
         let idsQuery = ids
