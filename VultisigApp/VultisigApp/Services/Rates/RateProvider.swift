@@ -84,7 +84,7 @@ final class RateProvider {
 
     func rate(for coin: Coin, currency: SettingsCurrency = .current) -> Rate? {
         let cryptoId = RateProvider.cryptoId(for: coin)
-        let identifier = Rate.identifier(fiat: currency.rawValue.lowercased(), crypto: cryptoId.id)
+        let identifier = Rate.identifier(fiat: currency.rawValue, crypto: cryptoId.id)
         return rates.first(where: { $0.id == identifier })
     }
 

@@ -10,7 +10,7 @@ import Foundation
 struct Rate: DatabaseMappable, Hashable {
 
     static func identifier(fiat: String, crypto: String) -> String {
-        return "\(fiat)-\(crypto)"
+        return "\(fiat.lowercased())-\(crypto.lowercased())"
     }
 
     let id: String
