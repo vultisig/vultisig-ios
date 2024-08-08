@@ -14,7 +14,9 @@ struct ContentView: View {
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var accountViewModel: AccountViewModel
     @EnvironmentObject var appViewModel: ApplicationState
-    
+
+    @ObservedObject var ratesUpdater = RatesUpdater.shared
+
     var body: some View {
         ZStack {
             NavigationStack {

@@ -14,8 +14,13 @@ final class RateProvider {
     static let shared = RateProvider()
 
     /// Should be updated manually
-    private var rates: Set<Rate> = []
+    private var rates: Set<Rate> = [] {
+        didSet {
+            updater?()
+        }
+    }
 
+    private var updater: (() -> Void)?
     private var cancallables = Set<AnyCancellable>()
 
     private init() {
@@ -27,6 +32,10 @@ final class RateProvider {
         } catch {
             fatalError(error.localizedDescription)
         }
+    }
+
+    func subscribe(_ updater: @escaping () -> Void) {
+        self.updater = updater
     }
 
     func fiatBalance(value: Decimal, coin: Coin, currency: SettingsCurrency = .current) -> Decimal {

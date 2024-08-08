@@ -84,6 +84,7 @@
 		A58CC34F2C32FC530086D16B /* BlockChainSpecific.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58CC34E2C32FC530086D16B /* BlockChainSpecific.swift */; };
 		A594A9EB2C64364600A3D09E /* Rate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A594A9EA2C64364600A3D09E /* Rate.swift */; };
 		A594A9ED2C6436A800A3D09E /* DBMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A594A9EC2C6436A800A3D09E /* DBMappable.swift */; };
+		A594A9EF2C6442E700A3D09E /* RatesUpdater.swift in Sources */ = {isa = PBXBuildFile; fileRef = A594A9EE2C6442E700A3D09E /* RatesUpdater.swift */; };
 		A5BA15082C077A0B00AA6C07 /* OneInchToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA15072C077A0B00AA6C07 /* OneInchToken.swift */; };
 		A5BA150A2C078EED00AA6C07 /* TokenSelectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA15092C078EED00AA6C07 /* TokenSelectionCell.swift */; };
 		A5BA150C2C078FA000AA6C07 /* TokenSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA150B2C078FA000AA6C07 /* TokenSelectionViewModel.swift */; };
@@ -514,6 +515,7 @@
 		A58CC34E2C32FC530086D16B /* BlockChainSpecific.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockChainSpecific.swift; sourceTree = "<group>"; };
 		A594A9EA2C64364600A3D09E /* Rate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rate.swift; sourceTree = "<group>"; };
 		A594A9EC2C6436A800A3D09E /* DBMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBMappable.swift; sourceTree = "<group>"; };
+		A594A9EE2C6442E700A3D09E /* RatesUpdater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatesUpdater.swift; sourceTree = "<group>"; };
 		A5BA15072C077A0B00AA6C07 /* OneInchToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneInchToken.swift; sourceTree = "<group>"; };
 		A5BA15092C078EED00AA6C07 /* TokenSelectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionCell.swift; sourceTree = "<group>"; };
 		A5BA150B2C078FA000AA6C07 /* TokenSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionViewModel.swift; sourceTree = "<group>"; };
@@ -1244,6 +1246,7 @@
 				A594A9EA2C64364600A3D09E /* Rate.swift */,
 				A5E841CC2C63A987009325CB /* RateProvider.swift */,
 				A594A9EC2C6436A800A3D09E /* DBMappable.swift */,
+				A594A9EE2C6442E700A3D09E /* RatesUpdater.swift */,
 			);
 			path = Rates;
 			sourceTree = "<group>";
@@ -2270,6 +2273,7 @@
 				DE8BDCCD2C4A314D00A1EDA6 /* VaultPublicKeyExport.swift in Sources */,
 				A5125F082BEBBFAB008A79AA /* OneInchService.swift in Sources */,
 				A522C34A2C46948A00BC4311 /* SwapError.swift in Sources */,
+				A594A9EF2C6442E700A3D09E /* RatesUpdater.swift in Sources */,
 				B5947FD52C41EA53002D6A36 /* CachedData.swift in Sources */,
 				A61BC8192BA2687E00484689 /* TokensStore.swift in Sources */,
 				DE15729E2B70F284009BC7C5 /* JoinKeysignView.swift in Sources */,
