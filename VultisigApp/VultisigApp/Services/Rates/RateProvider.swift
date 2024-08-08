@@ -11,7 +11,34 @@ import SwiftData
 
 final class RateProvider {
 
+    enum CryptoId {
+        case priceProvider(String)
+        case contract(String)
+
+        var id: String {
+            switch self {
+            case .priceProvider(let value):
+                return value
+            case .contract(let value):
+                return value
+            }
+        }
+    }
+
     static let shared = RateProvider()
+
+    static func cryptoId(for coin: Coin) -> CryptoId {
+        switch coin.chain.chainType {
+        case .EVM:
+            if coin.isNativeToken {
+                return .priceProvider(coin.priceProviderId)
+            } else {
+                return .contract(coin.contractAddress)
+            }
+        default:
+            return .priceProvider(coin.priceProviderId)
+        }
+    }
 
     /// Should be updated manually
     private var rates: Set<Rate> = [] {
@@ -56,7 +83,8 @@ final class RateProvider {
     }
 
     func rate(for coin: Coin, currency: SettingsCurrency = .current) -> Rate? {
-        let identifier = Rate.identifier(fiat: currency.rawValue.lowercased(), crypto: coin.priceProviderId)
+        let cryptoId = RateProvider.cryptoId(for: coin)
+        let identifier = Rate.identifier(fiat: currency.rawValue.lowercased(), crypto: cryptoId.id)
         return rates.first(where: { $0.id == identifier })
     }
 

@@ -46,15 +46,11 @@ private extension CryptoPriceService {
         var contracts: [Chain: [String]] = [:]
 
         for coin in coins {
-            switch coin.chain.chainType {
-            case .EVM:
-                if coin.isNativeToken {
-                    providerIds.append(coin.priceProviderId)
-                } else {
-                    contracts[coin.chain, default: []].append(coin.contractAddress)
-                }
-            default:
-                providerIds.append(coin.priceProviderId)
+            switch RateProvider.cryptoId(for: coin) {
+            case .priceProvider(let id):
+                providerIds.append(id)
+            case .contract(let id):
+                contracts[coin.chain, default: []].append(id)
             }
         }
 
