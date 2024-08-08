@@ -37,21 +37,6 @@ public class CryptoPriceService: ObservableObject {
         try await RateProvider.shared.save(rates: Array(rates.joined()))
     }
 
-    func getPrice(priceProviderId: String) async -> Double {
-        return 0
-//        if priceProviderId.isEmpty {
-//            return Double.zero
-//        }
-//        
-//        var price = Double.zero
-//        
-//        if let priceCoinGecko = await getAllCryptoPricesCoinGecko() {
-//            price = priceCoinGecko.prices[priceProviderId]?[SettingsCurrency.current.rawValue.lowercased()] ?? Double.zero
-//        }
-//        
-//        return price
-    }
-
 //    // This function should prevent any rate limit on the CoinGecko API
 //    // It fetches the prices of all tokens in the vault in bulk per chain
 //    private func getAllTokenPricesCoinGecko() async -> CryptoPrice? {
