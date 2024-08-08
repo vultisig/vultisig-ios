@@ -30,6 +30,10 @@ public class CryptoPriceService: ObservableObject {
             }
         }
 
+        RateProvider.shared.subscribe {
+            vault.objectWillChange.send()
+        }
+
         try await RateProvider.shared.save(rates: Array(rates.joined()))
     }
 

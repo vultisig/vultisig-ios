@@ -26,7 +26,7 @@ class Coin: ObservableObject, Codable, Hashable {
             strDecimals = String(newValue)
         }
     }
-    
+
     init(asset: CoinMeta, address: String, hexPublicKey: String) {
         self.chain = asset.chain
         self.ticker = asset.ticker
