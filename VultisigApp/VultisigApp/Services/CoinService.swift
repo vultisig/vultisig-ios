@@ -64,7 +64,7 @@ struct CoinService {
             for asset in assets {
                 if let newCoin = try await addToChain(asset: asset, to: vault, priceProviderId: asset.priceProviderId) {
                     print("Add discovered tokens for \(asset.ticker) on the chain \(asset.chain.name)")
-                    try await addDiscoveredTokens(nativeToken: newCoin, to: vault)
+                    await addDiscoveredTokens(nativeToken: newCoin, to: vault)
                 }
             }
         }
@@ -81,7 +81,7 @@ struct CoinService {
         return newCoin
     }
     
-    static func addDiscoveredTokens(nativeToken: Coin, to vault: Vault) async throws  {
+    static func addDiscoveredTokens(nativeToken: Coin, to vault: Vault) async {
         do {
             var tokens: [CoinMeta] = []
             switch nativeToken.chain.chainType {

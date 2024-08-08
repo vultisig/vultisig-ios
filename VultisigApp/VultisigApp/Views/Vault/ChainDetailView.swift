@@ -275,7 +275,7 @@ struct ChainDetailView: View {
             }
             
             for coin in group.coins where coin.isNativeToken {
-                try await CoinService.addDiscoveredTokens(nativeToken: coin, to: vault)
+                await CoinService.addDiscoveredTokens(nativeToken: coin, to: vault)
             }
             isLoading = false
         }
