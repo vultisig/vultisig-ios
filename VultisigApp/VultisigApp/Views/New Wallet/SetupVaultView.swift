@@ -27,13 +27,11 @@ struct SetupVaultView: View {
     var body: some View {
         ZStack {
             Background()
-            view
+            main
         }
+#if os(iOS)
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("setup", comment: "Setup title"))
-        .onAppear {
-            setData()
-        }
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
@@ -42,6 +40,23 @@ struct SetupVaultView: View {
                 NavigationHelpButton()
             }
         }
+#endif
+        .onAppear {
+            setData()
+        }
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            view
+        }
+    }
+    
+    var headerMac: some View {
+        GeneralMacHeader(title: "setup")
     }
     
     var view: some View {
