@@ -15,7 +15,12 @@ struct ChainSelectionView: View {
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
     var body: some View {
-        content
+        ZStack {
+            ZStack {
+                Background()
+                main
+            }
+        }
             .navigationBarBackButtonHidden(true)
             .navigationTitle(NSLocalizedString("chooseChains", comment: "Choose Chains"))
             .onAppear {
@@ -27,18 +32,26 @@ struct ChainSelectionView: View {
             .onDisappear {
                 saveAssets()
             }
-            .toolbar {
 #if os(iOS)
-            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                NavigationBackSheetButton(showSheet: $showChainSelectionSheet)
-            }
-#elseif os(macOS)
-            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                NavigationBackButton()
+            .toolbar {
+                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
+                    NavigationBackSheetButton(showSheet: $showChainSelectionSheet)
+                }
             }
 #endif
-            }
-        
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            content
+        }
+    }
+    
+    var headerMac: some View {
+        ChainSelectionHeader()
     }
     
     var content: some View {
