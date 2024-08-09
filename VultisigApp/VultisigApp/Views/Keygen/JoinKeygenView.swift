@@ -30,23 +30,11 @@ struct JoinKeygenView: View {
     var body: some View {
         ZStack {
             Background()
-            states
+            main
         }
+#if os(iOS)
         .navigationTitle(NSLocalizedString("joinKeygen", comment: "Join keygen/reshare"))
         .navigationBarBackButtonHidden(true)
-        .fileImporter(
-            isPresented: $showFileImporter,
-            allowedContentTypes: [UTType.image], // Ensure only images can be picked
-            allowsMultipleSelection: false
-        ) { result in
-            viewModel.handleQrCodeFromImage(result: result)
-        }
-        .onAppear {
-            setData()
-        }
-        .onDisappear {
-            viewModel.stopJoinKeygen()
-        }
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
@@ -54,6 +42,20 @@ struct JoinKeygenView: View {
             ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 NavigationHelpButton()
             }
+        }
+#endif
+        .onAppear {
+            setData()
+        }
+        .onDisappear {
+            viewModel.stopJoinKeygen()
+        }
+        .fileImporter(
+            isPresented: $showFileImporter,
+            allowedContentTypes: [UTType.image], // Ensure only images can be picked
+            allowsMultipleSelection: false
+        ) { result in
+            viewModel.handleQrCodeFromImage(result: result)
         }
     }
     
@@ -79,6 +81,21 @@ struct JoinKeygenView: View {
         .padding()
         .cornerRadius(10)
         .shadow(radius: 5)
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            Spacer()
+            states
+            Spacer()
+        }
+    }
+    
+    var headerMac: some View {
+        JoinKeygenHeader()
     }
     
     var scanButton: some View {
