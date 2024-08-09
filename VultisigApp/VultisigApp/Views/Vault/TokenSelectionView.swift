@@ -17,11 +17,7 @@ struct TokenSelectionView: View {
     var body: some View {
         ZStack {
             Background()
-            VStack(spacing: 0) {
-                addCustomTokenButton
-                Separator()
-                view
-            }
+            main
             
             if let error = tokenViewModel.error {
                 errorView(error: error)
@@ -31,6 +27,7 @@ struct TokenSelectionView: View {
                 Loader()
             }
         }
+#if os(iOS)
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("chooseTokens", comment: "Choose Tokens"))
         .toolbar {
@@ -40,15 +37,10 @@ struct TokenSelectionView: View {
                     dismiss()
                 }) {
                     Image(systemName: "chevron.backward")
-#if os(iOS)
                         .font(.body18MenloBold)
-#elseif os(macOS)
-                        .font(.body18Menlo)
-#endif
                         .foregroundColor(Color.neutral0)
                 }
             }
-#if os(iOS)
             ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 saveButton
             }
@@ -56,8 +48,8 @@ struct TokenSelectionView: View {
             ToolbarItem(placement: Placement.principal.getPlacement()) {
                 searchBar
             }
-#endif
         }
+#endif
         .task {
             await tokenViewModel.loadData(groupedChain: group)
         }
@@ -72,29 +64,38 @@ struct TokenSelectionView: View {
         }
     }
     
+    var main: some View {
+        VStack(spacing: 0) {
+#if os(macOS)
+            headerMac
+#endif
+            view
+        }
+    }
+    
+    var headerMac: some View {
+        TokenSelectionHeader(chainDetailView: chainDetailView)
+            .padding(.horizontal, 40)
+            .padding(.top, 8)
+    }
+    
     var addCustomTokenButton: some View {
         Button {
             chainDetailView.sheetType = .customToken
         } label: {
             chainDetailView.chooseTokensButton(NSLocalizedString("customToken", comment: "Custom Token"))
         }
+        .background(Color.clear)
 #if os(macOS)
-        .padding(.horizontal, 25)
+        .padding(.horizontal, 40)
 #endif
-        .background(Color.clear).padding()
     }
     
     var view: some View {
         VStack(alignment: .leading, spacing: 0) {
 #if os(macOS)
-            HStack {
-                searchBar
-                saveButton
-            }
-            .padding(.vertical, 18)
-            .padding(.horizontal, 40)
-            
-            Separator()
+            search
+            addCustomTokenButton
 #endif
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 24, pinnedViews: []) {
@@ -129,14 +130,13 @@ struct TokenSelectionView: View {
                             }
                         }
                     }
-                    
                 }
                 .scrollContentBackground(.hidden)
 #if os(iOS)
+                .padding(.horizontal, 25)
                 .listStyle(.grouped)
 #elseif os(macOS)
                 .padding(.horizontal, 40)
-                .padding(.top, 20)
                 .padding(.bottom, 50)
                 .colorScheme(.dark)
 #endif
@@ -145,6 +145,15 @@ struct TokenSelectionView: View {
 #if os(iOS)
         .padding(.bottom, 50)
 #endif
+    }
+    
+    var search: some View {
+        HStack {
+            searchBar
+            saveButton
+        }
+        .padding(.vertical, 18)
+        .padding(.horizontal, 40)
     }
     
     var searchBar: some View {
