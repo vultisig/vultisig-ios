@@ -26,9 +26,10 @@ struct AddressBookView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             Background()
-            view
+            main
             addAddressButton
         }
+#if os(iOS)
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("addressBook", comment: ""))
         .toolbar {
@@ -42,11 +43,30 @@ struct AddressBookView: View {
                 }
             }
         }
+#endif
         .onDisappear {
             withAnimation {
                 isEditing = false
             }
         }
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            view
+        }
+    }
+    
+    var headerMac: some View {
+        AddressBookHeader(
+            count: savedAddresses.count, 
+            isEditing: $isEditing
+        )
+        .padding(.horizontal, 40)
+        .padding(.top, 8)
     }
     
     var view: some View {
@@ -132,12 +152,8 @@ struct AddressBookView: View {
     
     var doneButton: some View {
         Text(NSLocalizedString("done", comment: ""))
-#if os(iOS)
             .font(.body18MenloBold)
             .foregroundColor(.neutral0)
-#elseif os(macOS)
-            .font(.body18Menlo)
-#endif
     }
     
     var addAddressButton: some View {

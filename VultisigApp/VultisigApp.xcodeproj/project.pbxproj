@@ -184,6 +184,7 @@
 		A680BAC52BF47AA9006E611D /* OpenGalleryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A680BAC42BF47AA9006E611D /* OpenGalleryButton.swift */; };
 		A6833D7E2C659283002029E1 /* TokenSelectionHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6833D7D2C659283002029E1 /* TokenSelectionHeader.swift */; };
 		A6833D802C65980D002029E1 /* GeneralMacHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6833D7F2C65980D002029E1 /* GeneralMacHeader.swift */; };
+		A6833D822C65B199002029E1 /* AddressBookHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6833D812C65B199002029E1 /* AddressBookHeader.swift */; };
 		A683EDEB2BCF635E00BB706E /* InstructionPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = A683EDEA2BCF635E00BB706E /* InstructionPrompt.swift */; };
 		A683EDED2BCF67D100BB706E /* NetworkPromptCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A683EDEC2BCF67D100BB706E /* NetworkPromptCell.swift */; };
 		A68696212C1B5575004EDE0B /* BackupPasswordSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68696202C1B5575004EDE0B /* BackupPasswordSetupView.swift */; };
@@ -616,6 +617,7 @@
 		A680BAC42BF47AA9006E611D /* OpenGalleryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenGalleryButton.swift; sourceTree = "<group>"; };
 		A6833D7D2C659283002029E1 /* TokenSelectionHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionHeader.swift; sourceTree = "<group>"; };
 		A6833D7F2C65980D002029E1 /* GeneralMacHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralMacHeader.swift; sourceTree = "<group>"; };
+		A6833D812C65B199002029E1 /* AddressBookHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookHeader.swift; sourceTree = "<group>"; };
 		A683EDEA2BCF635E00BB706E /* InstructionPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstructionPrompt.swift; sourceTree = "<group>"; };
 		A683EDEC2BCF67D100BB706E /* NetworkPromptCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPromptCell.swift; sourceTree = "<group>"; };
 		A68696202C1B5575004EDE0B /* BackupPasswordSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupPasswordSetupView.swift; sourceTree = "<group>"; };
@@ -1407,6 +1409,7 @@
 				A67AA1C52C64784F00D06C7E /* CoinDetailHeader.swift */,
 				A6833D7D2C659283002029E1 /* TokenSelectionHeader.swift */,
 				A6833D7F2C65980D002029E1 /* GeneralMacHeader.swift */,
+				A6833D812C65B199002029E1 /* AddressBookHeader.swift */,
 			);
 			path = "Navigation Header";
 			sourceTree = "<group>";
@@ -2331,6 +2334,7 @@
 				B5F7581D2BD8FDA20097B5B9 /* SuiCoin.swift in Sources */,
 				A6C0D55C2BB3AE8600156689 /* TransactionsView.swift in Sources */,
 				B57A1E012C51173B009C4B25 /* BlowfishSolanaRequest.swift in Sources */,
+				A6833D822C65B199002029E1 /* AddressBookHeader.swift in Sources */,
 				4606B3B02B80465E0045094D /* UTXOTransactionsService.swift in Sources */,
 				DEEFF4FD2B9835DE0015692E /* THORChainSwapChainExtension.swift in Sources */,
 				A61BC81B2BA26D9900484689 /* ChainSelectionCell.swift in Sources */,
