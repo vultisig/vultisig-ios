@@ -305,48 +305,48 @@ class TokensStore {
         static var optETH: CoinMeta {
             CoinMeta(chain: Chain.optimism, ticker: "ETH", logo: "eth_optimism", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
         }
+        
         static var optOP: CoinMeta {
-            CoinMeta(chain: Chain.optimism, ticker: "OP", logo: "optimism", decimals: 18, priceProviderId: "arbitrum", contractAddress: "0x4200000000000000000000000000000000000042", isNativeToken: false)
+            CoinMeta(chain: Chain.optimism, ticker: "OP", logo: "optimism", decimals: 18, priceProviderId: "", contractAddress: "0x4200000000000000000000000000000000000042", isNativeToken: false)
         }
         static var optFox: CoinMeta {
-            CoinMeta(chain: Chain.optimism, ticker: "FOX", logo: "fox", decimals: 18, priceProviderId: "shapeshift-fox-token", contractAddress: "0xf1a0da3367bc7aa04f8d94ba57b862ff37ced174", isNativeToken: false)
+            CoinMeta(chain: Chain.optimism, ticker: "FOX", logo: "fox", decimals: 18, priceProviderId: "", contractAddress: "0xf1a0da3367bc7aa04f8d94ba57b862ff37ced174", isNativeToken: false)
         }
         
-        
         static var optUSDT: CoinMeta {
-            CoinMeta(chain: Chain.optimism, ticker: "USDT", logo: "USDT", decimals: 18, priceProviderId: "USDT", contractAddress: "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58", isNativeToken: false)
+            CoinMeta(chain: Chain.optimism, ticker: "USDT", logo: "USDT", decimals: 18, priceProviderId: "", contractAddress: "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58", isNativeToken: false)
         }
         
         static var optUSDC: CoinMeta {
-            CoinMeta(chain: Chain.optimism, ticker: "USDC", logo: "USDC", decimals: 18, priceProviderId: "USDC", contractAddress: "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85", isNativeToken: false)
+            CoinMeta(chain: Chain.optimism, ticker: "USDC", logo: "USDC", decimals: 18, priceProviderId: "", contractAddress: "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85", isNativeToken: false)
         }
         
         static var optUSDCe: CoinMeta {
-            CoinMeta(chain: Chain.optimism, ticker: "USDC.e", logo: "USDC.e", decimals: 18, priceProviderId: "USDC.e", contractAddress: "0x7F5c764cBc14f9669B88837ca1490cCa17c31607", isNativeToken: false)
+            CoinMeta(chain: Chain.optimism, ticker: "USDC.e", logo: "USDC.e", decimals: 18, priceProviderId: "", contractAddress: "0x7F5c764cBc14f9669B88837ca1490cCa17c31607", isNativeToken: false)
         }
         
         static var optWBTC: CoinMeta {
-            CoinMeta(chain: Chain.optimism, ticker: "WBTC", logo: "WBTC", decimals: 18, priceProviderId: "WBTC", contractAddress: "0x68f180fcCe6836688e9084f035309E29Bf0A2095", isNativeToken: false)
+            CoinMeta(chain: Chain.optimism, ticker: "WBTC", logo: "WBTC", decimals: 18, priceProviderId: "", contractAddress: "0x68f180fcCe6836688e9084f035309E29Bf0A2095", isNativeToken: false)
         }
         
         static var optLINK: CoinMeta {
-            CoinMeta(chain: Chain.optimism, ticker: "LINK", logo: "LINK", decimals: 18, priceProviderId: "LINK", contractAddress: "0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6", isNativeToken: false)
+            CoinMeta(chain: Chain.optimism, ticker: "LINK", logo: "LINK", decimals: 18, priceProviderId: "", contractAddress: "0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6", isNativeToken: false)
         }
         
         static var optDAI: CoinMeta {
-            CoinMeta(chain: Chain.optimism, ticker: "DAI", logo: "DAI", decimals: 18, priceProviderId: "DAI", contractAddress: "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1", isNativeToken: false)
+            CoinMeta(chain: Chain.optimism, ticker: "DAI", logo: "DAI", decimals: 18, priceProviderId: "", contractAddress: "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1", isNativeToken: false)
         }
         
         static var optEZETH: CoinMeta {
-            CoinMeta(chain: Chain.optimism, ticker: "ezETH", logo: "ezETH", decimals: 18, priceProviderId: "ezETH", contractAddress: "0x2416092f143378750bb29b79eD961ab195CcEea5", isNativeToken: false)
+            CoinMeta(chain: Chain.optimism, ticker: "ezETH", logo: "ezETH", decimals: 18, priceProviderId: "", contractAddress: "0x2416092f143378750bb29b79eD961ab195CcEea5", isNativeToken: false)
         }
         
         static var optPYTH: CoinMeta {
-            CoinMeta(chain: Chain.optimism, ticker: "PYTH", logo: "PYTH", decimals: 18, priceProviderId: "PYTH", contractAddress: "0x99C59ACeBFEF3BBFB7129DC90D1a11DB0E91187f", isNativeToken: false)
+            CoinMeta(chain: Chain.optimism, ticker: "PYTH", logo: "PYTH", decimals: 18, priceProviderId: "", contractAddress: "0x99C59ACeBFEF3BBFB7129DC90D1a11DB0E91187f", isNativeToken: false)
         }
         
         static var optLDO: CoinMeta {
-            CoinMeta(chain: Chain.optimism, ticker: "LDO", logo: "LDO", decimals: 18, priceProviderId: "LDO", contractAddress: "0xFdb794692724153d1488CcdBE0C56c252596735F", isNativeToken: false)
+            CoinMeta(chain: Chain.optimism, ticker: "LDO", logo: "LDO", decimals: 18, priceProviderId: "", contractAddress: "0xFdb794692724153d1488CcdBE0C56c252596735F", isNativeToken: false)
         }
         
         //
@@ -354,27 +354,33 @@ class TokensStore {
         static var matic: CoinMeta {
             CoinMeta(chain: Chain.polygon, ticker: "MATIC", logo: "matic", decimals: 18, priceProviderId: "matic-network", contractAddress: "", isNativeToken: true)
         }
+        
         static var maticWETH: CoinMeta {
-            CoinMeta(chain: Chain.polygon, ticker: "WETH", logo: "wETH", decimals: 18, priceProviderId: "ethereum", contractAddress: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619", isNativeToken: false)
+            CoinMeta(chain: Chain.polygon, ticker: "WETH", logo: "wETH", decimals: 18, priceProviderId: "", contractAddress: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619", isNativeToken: false)
         }
         static var maticFox: CoinMeta {
-            CoinMeta(chain: Chain.polygon, ticker: "FOX", logo: "fox", decimals: 18, priceProviderId: "shapeshift-fox-token", contractAddress: "0x65a05db8322701724c197af82c9cae41195b0aa8", isNativeToken: false)
+            CoinMeta(chain: Chain.polygon, ticker: "FOX", logo: "fox", decimals: 18, priceProviderId: "", contractAddress: "0x65a05db8322701724c197af82c9cae41195b0aa8", isNativeToken: false)
         }
+        
         static var blastETH: CoinMeta {
             CoinMeta(chain: Chain.blast, ticker: "ETH", logo: "eth_blast", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
         }
         static var blastWETH: CoinMeta {
             CoinMeta(chain: Chain.blast, ticker: "WETH", logo: "wETH", decimals: 18, priceProviderId: "ethereum", contractAddress: "0x4300000000000000000000000000000000000004", isNativeToken: false)
         }
+        
         static var cronosCRO: CoinMeta {
             CoinMeta(chain: Chain.cronosChain, ticker: "CRO", logo: "cro", decimals: 18, priceProviderId: "crypto-com-chain", contractAddress: "", isNativeToken: true)
         }
+        
         static var suiSUI: CoinMeta {
             CoinMeta(chain: Chain.sui, ticker: "SUI", logo: "sui", decimals: 9, priceProviderId: "sui", contractAddress: "", isNativeToken: true)
         }
+        
         static var dotDOT: CoinMeta {
             CoinMeta(chain: Chain.polkadot, ticker: "DOT", logo: "dot", decimals: 10, priceProviderId: "polkadot", contractAddress: "", isNativeToken: true)
         }
+        
         static var zksyncETH: CoinMeta {
             CoinMeta(chain: Chain.zksync, ticker: "ETH", logo: "zsync_era", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
         }
