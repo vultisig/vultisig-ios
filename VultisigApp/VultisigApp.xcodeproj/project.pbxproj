@@ -13,7 +13,6 @@
 		461AD1B72BC6706500959278 /* VaultPairDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 461AD1B62BC6706500959278 /* VaultPairDetailView.swift */; };
 		461AD1B92BC6858000959278 /* VaultPairDetailCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 461AD1B82BC6858000959278 /* VaultPairDetailCell.swift */; };
 		461AD1BB2BC7239C00959278 /* DeviceInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 461AD1BA2BC7239C00959278 /* DeviceInfo.swift */; };
-		462DCD6C2BCA1229003D542F /* coinpaprika.json in Resources */ = {isa = PBXBuildFile; fileRef = 462DCD6B2BCA1228003D542F /* coinpaprika.json */; };
 		462DCD702BCA14F3003D542F /* CoinPaprikaQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 462DCD6F2BCA14F3003D542F /* CoinPaprikaQuote.swift */; };
 		462DCD742BCA1F45003D542F /* CoinPaprikaCoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 462DCD732BCA1F45003D542F /* CoinPaprikaCoin.swift */; };
 		463408662BA9C1D200246248 /* CoinTypeExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 463408652BA9C1D200246248 /* CoinTypeExtension.swift */; };
@@ -435,7 +434,6 @@
 		461AD1B62BC6706500959278 /* VaultPairDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultPairDetailView.swift; sourceTree = "<group>"; };
 		461AD1B82BC6858000959278 /* VaultPairDetailCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultPairDetailCell.swift; sourceTree = "<group>"; };
 		461AD1BA2BC7239C00959278 /* DeviceInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceInfo.swift; sourceTree = "<group>"; };
-		462DCD6B2BCA1228003D542F /* coinpaprika.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = coinpaprika.json; sourceTree = "<group>"; };
 		462DCD6F2BCA14F3003D542F /* CoinPaprikaQuote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinPaprikaQuote.swift; sourceTree = "<group>"; };
 		462DCD732BCA1F45003D542F /* CoinPaprikaCoin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinPaprikaCoin.swift; sourceTree = "<group>"; };
 		463408652BA9C1D200246248 /* CoinTypeExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinTypeExtension.swift; sourceTree = "<group>"; };
@@ -960,14 +958,6 @@
 			path = Services;
 			sourceTree = "<group>";
 		};
-		462DCD6A2BCA11AF003D542F /* Price */ = {
-			isa = PBXGroup;
-			children = (
-				462DCD6B2BCA1228003D542F /* coinpaprika.json */,
-			);
-			path = Price;
-			sourceTree = "<group>";
-		};
 		462DCD6E2BCA14D9003D542F /* Coinpaprika */ = {
 			isa = PBXGroup;
 			children = (
@@ -1239,7 +1229,6 @@
 		A61BC8172BA2685E00484689 /* Stores */ = {
 			isa = PBXGroup;
 			children = (
-				462DCD6A2BCA11AF003D542F /* Price */,
 				A61BC8182BA2687D00484689 /* TokensStore.swift */,
 				A6980C292BC0870000F452AB /* SettingsOptionsStore.swift */,
 				DEFF58F12BCBACDA005DFDF9 /* VultisigRelay.swift */,
@@ -2037,7 +2026,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				462DCD6C2BCA1229003D542F /* coinpaprika.json in Resources */,
 				DE8AD7432BC64A4C00339775 /* PrivacyInfo.xcprivacy in Resources */,
 				DE49A1712B65F6DB000F3AFB /* Preview Assets.xcassets in Resources */,
 				A6CBF2E02C268D1400FD8080 /* Montserrat-Italic.ttf in Resources */,
