@@ -38,8 +38,9 @@ struct VaultDeletionConfirmView: View {
                     }
             }
             
-            view
+            main
         }
+#if os(iOS)
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("deleteVaultTitle", comment: "Delete Vault"))
         .toolbar {
@@ -47,6 +48,20 @@ struct VaultDeletionConfirmView: View {
                 NavigationBackButton()
             }
         }
+#endif
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            view
+        }
+    }
+    
+    var headerMac: some View {
+        GeneralMacHeader(title: "deleteVaultTitle")
     }
     
     var view: some View {
@@ -65,9 +80,10 @@ struct VaultDeletionConfirmView: View {
             checkboxes
             button
         }
+#if os(iOS)
         .padding(18)
         .padding(.top, 12)
-#if os(macOS)
+#elseif os(macOS)
         .padding(.horizontal, 25)
 #endif
         .navigationDestination(isPresented: $navigateBackToHome) {
@@ -87,14 +103,20 @@ struct VaultDeletionConfirmView: View {
                 
         return VStack(spacing: spacing) {
             Image(systemName: "exclamationmark.triangle.fill")
+#if os(iOS)
                 .font(.title80Menlo)
+#elseif os(macOS)
+                .font(.title40MenloBold)
+#endif
                 .symbolRenderingMode(.palette)
                 .foregroundStyle(Color.neutral0, Color.alertRed)
             
             Text(NSLocalizedString("youArePermanentlyDeletingVault", comment: ""))
                 .font(.body16MenloBold)
                 .foregroundColor(.neutral0)
+#if os(iOS)
                 .frame(maxWidth: 200)
+#endif
                 .multilineTextAlignment(.center)
                 .fixedSize()
         }
