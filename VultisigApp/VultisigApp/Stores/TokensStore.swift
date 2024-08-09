@@ -328,7 +328,7 @@ class TokensStore {
             CoinMeta(chain: Chain.arbitrum, ticker: "LDO", logo: "LDO", decimals: 18, priceProviderId: "LDO", contractAddress: "0x13Ad51ed4F1B7e9Dc168d8a00cB3f4dDD85EfA60", isNativeToken: false)
         }
         
-        //
+        // OPTIMUM
         
         static var optETH: CoinMeta {
             CoinMeta(chain: Chain.optimism, ticker: "ETH", logo: "eth_optimism", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
@@ -377,7 +377,7 @@ class TokensStore {
             CoinMeta(chain: Chain.optimism, ticker: "LDO", logo: "LDO", decimals: 18, priceProviderId: "", contractAddress: "0xFdb794692724153d1488CcdBE0C56c252596735F", isNativeToken: false)
         }
         
-        //
+        // MATIC POLYGON
         
         static var matic: CoinMeta {
             CoinMeta(chain: Chain.polygon, ticker: "MATIC", logo: "matic", decimals: 18, priceProviderId: "matic-network", contractAddress: "", isNativeToken: true)
@@ -386,16 +386,106 @@ class TokensStore {
         static var maticWETH: CoinMeta {
             CoinMeta(chain: Chain.polygon, ticker: "WETH", logo: "wETH", decimals: 18, priceProviderId: "", contractAddress: "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619", isNativeToken: false)
         }
+        
         static var maticFox: CoinMeta {
             CoinMeta(chain: Chain.polygon, ticker: "FOX", logo: "fox", decimals: 18, priceProviderId: "", contractAddress: "0x65a05db8322701724c197af82c9cae41195b0aa8", isNativeToken: false)
         }
         
+        static var maticUSDT: CoinMeta {
+            CoinMeta(chain: Chain.polygon, ticker: "USDT", logo: "USDT", decimals: 6, priceProviderId: "", contractAddress: "0xc2132D05D31c914a87C6611C10748AEb04B58e8F", isNativeToken: false)
+        }
+        
+        static var maticBNB: CoinMeta {
+            CoinMeta(chain: Chain.polygon, ticker: "BNB", logo: "BNB", decimals: 18, priceProviderId: "", contractAddress: "0x3BA4c387f786bFEE076A58914F5Bd38d668B42c3", isNativeToken: false)
+        }
+        
+        static var maticSOL: CoinMeta {
+            CoinMeta(chain: Chain.polygon, ticker: "SOL", logo: "SOL", decimals: 9, priceProviderId: "", contractAddress: "0xd93f7E271cB87c23AaA73edC008A79646d1F9912", isNativeToken: false)
+        }
+        
+        static var maticUSDC: CoinMeta {
+            CoinMeta(chain: Chain.polygon, ticker: "USDC", logo: "USDC", decimals: 6, priceProviderId: "", contractAddress: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359", isNativeToken: false)
+        }
+        
+        static var maticUSDCe: CoinMeta {
+            CoinMeta(chain: Chain.polygon, ticker: "USDC.e", logo: "USDC.e", decimals: 6, priceProviderId: "", contractAddress: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174", isNativeToken: false)
+        }
+        
+        static var maticBUSD: CoinMeta {
+            CoinMeta(chain: Chain.polygon, ticker: "BUSD", logo: "BUSD", decimals: 18, priceProviderId: "", contractAddress: "0xdAb529f40E671A1D4bF91361c21bf9f0C9712ab7", isNativeToken: false)
+        }
+        
+        static var maticWBTC: CoinMeta {
+            CoinMeta(chain: Chain.polygon, ticker: "WBTC", logo: "WBTC", decimals: 8, priceProviderId: "", contractAddress: "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6", isNativeToken: false)
+        }
+        
+        static var maticAVAX: CoinMeta {
+            CoinMeta(chain: Chain.polygon, ticker: "AVAX", logo: "AVAX", decimals: 18, priceProviderId: "", contractAddress: "0x2C89bbc92BD86F8075d1DEcc58C7F4E0107f286b", isNativeToken: false)
+        }
+        
+        static var maticSHIB: CoinMeta {
+            CoinMeta(chain: Chain.polygon, ticker: "SHIB", logo: "SHIB", decimals: 18, priceProviderId: "", contractAddress: "0x6f8a06447Ff6FcF75d803135a7de15CE88C1d4ec", isNativeToken: false)
+        }
+        
+        static var maticLINK: CoinMeta {
+            CoinMeta(chain: Chain.polygon, ticker: "LINK", logo: "LINK", decimals: 18, priceProviderId: "", contractAddress: "0xb0897686c545045aFc77CF20eC7A532E3120E0F1", isNativeToken: false)
+        }
+        
+        // BLAST
+        
         static var blastETH: CoinMeta {
             CoinMeta(chain: Chain.blast, ticker: "ETH", logo: "eth_blast", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
         }
+        
         static var blastWETH: CoinMeta {
             CoinMeta(chain: Chain.blast, ticker: "WETH", logo: "wETH", decimals: 18, priceProviderId: "ethereum", contractAddress: "0x4300000000000000000000000000000000000004", isNativeToken: false)
         }
+        
+        static var blastWBTC: CoinMeta {
+            CoinMeta(chain: Chain.blast, ticker: "WBTC", logo: "WBTC", decimals: 18, priceProviderId: "", contractAddress: "0xF7bc58b8D8f97ADC129cfC4c9f45Ce3C0E1D2692", isNativeToken: false)
+        }
+        
+        static var blastUSDB: CoinMeta {
+            CoinMeta(chain: Chain.blast, ticker: "USDB", logo: "USDB", decimals: 18, priceProviderId: "", contractAddress: "0x4300000000000000000000000000000000000003", isNativeToken: false)
+        }
+        
+        static var blastBLAST: CoinMeta {
+            CoinMeta(chain: Chain.blast, ticker: "BLAST", logo: "BLAST", decimals: 18, priceProviderId: "", contractAddress: "0xb1a5700fA2358173Fe465e6eA4Ff52E36e88E2ad", isNativeToken: false)
+        }
+        
+        static var blastMIM: CoinMeta {
+            CoinMeta(chain: Chain.blast, ticker: "MIM", logo: "MIM", decimals: 18, priceProviderId: "", contractAddress: "0x76DA31D7C9CbEAE102aff34D3398bC450c8374c1", isNativeToken: false)
+        }
+        
+        static var blastBLOOKS: CoinMeta {
+            CoinMeta(chain: Chain.blast, ticker: "bLOOKS", logo: "bLOOKS", decimals: 18, priceProviderId: "", contractAddress: "0x406F10d635be12ad33D6B133C6DA89180f5B999e", isNativeToken: false)
+        }
+        
+        static var blastBAG: CoinMeta {
+            CoinMeta(chain: Chain.blast, ticker: "BAG", logo: "BAG", decimals: 18, priceProviderId: "", contractAddress: "0xb9dfCd4CF589bB8090569cb52FaC1b88Dbe4981F", isNativeToken: false)
+        }
+        
+        static var blastZERO: CoinMeta {
+            CoinMeta(chain: Chain.blast, ticker: "ZERO", logo: "ZERO", decimals: 18, priceProviderId: "", contractAddress: "0x357f93E17FdabEcd3fEFc488a2d27dff8065d00f", isNativeToken: false)
+        }
+        
+        static var blastAI: CoinMeta {
+            CoinMeta(chain: Chain.blast, ticker: "AI", logo: "AI", decimals: 18, priceProviderId: "", contractAddress: "0x764933fbAd8f5D04Ccd088602096655c2ED9879F", isNativeToken: false)
+        }
+        
+        static var blastJUICE: CoinMeta {
+            CoinMeta(chain: Chain.blast, ticker: "JUICE", logo: "JUICE", decimals: 18, priceProviderId: "", contractAddress: "0x818a92bc81Aad0053d72ba753fb5Bc3d0C5C0923", isNativeToken: false)
+        }
+        
+        static var blastOMNI: CoinMeta {
+            CoinMeta(chain: Chain.blast, ticker: "OMNI", logo: "OMNI", decimals: 18, priceProviderId: "", contractAddress: "0x9e20461bc2c4c980f62f1B279D71734207a6A356", isNativeToken: false)
+        }
+        
+        static var blastDACKIE: CoinMeta {
+            CoinMeta(chain: Chain.blast, ticker: "DACKIE", logo: "DACKIE", decimals: 18, priceProviderId: "", contractAddress: "0x47C337Bd5b9344a6F3D6f58C474D9D8cd419D8cA", isNativeToken: false)
+        }
+        
+        //
         
         static var cronosCRO: CoinMeta {
             CoinMeta(chain: Chain.cronosChain, ticker: "CRO", logo: "cro", decimals: 18, priceProviderId: "crypto-com-chain", contractAddress: "", isNativeToken: true)
@@ -543,11 +633,32 @@ class TokensStore {
         TokensStore.Token.matic,
         TokensStore.Token.maticWETH,
         TokensStore.Token.maticFox,
+        TokensStore.Token.maticUSDT,
+        TokensStore.Token.maticBNB,
+        TokensStore.Token.maticSOL,
+        TokensStore.Token.maticUSDC,
+        TokensStore.Token.maticUSDCe,
+        TokensStore.Token.maticBUSD,
+        TokensStore.Token.maticWBTC,
+        TokensStore.Token.maticAVAX,
+        TokensStore.Token.maticSHIB,
+        TokensStore.Token.maticLINK,
         
         // BLAST
         TokensStore.Token.blastETH,
         TokensStore.Token.blastWETH,
-        
+        TokensStore.Token.blastWBTC,
+        TokensStore.Token.blastUSDB,
+        TokensStore.Token.blastBLAST,
+        TokensStore.Token.blastMIM,
+        TokensStore.Token.blastBLOOKS,
+        TokensStore.Token.blastBAG,
+        TokensStore.Token.blastZERO,
+        TokensStore.Token.blastAI,
+        TokensStore.Token.blastJUICE,
+        TokensStore.Token.blastOMNI,
+        TokensStore.Token.blastDACKIE,
+
         // CRONOS
         TokensStore.Token.cronosCRO,
         
