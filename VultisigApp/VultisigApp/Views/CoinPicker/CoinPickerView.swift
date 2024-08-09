@@ -31,8 +31,8 @@ struct CoinPickerView: View {
             Background()
             main
         }
-#if os(iOS)
         .navigationBarBackButtonHidden(true)
+#if os(iOS)
         .navigationTitle(NSLocalizedString("chooseTokens", comment: "Choose Tokens"))
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {

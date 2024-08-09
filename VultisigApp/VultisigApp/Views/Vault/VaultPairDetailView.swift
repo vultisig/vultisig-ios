@@ -16,8 +16,8 @@ struct VaultPairDetailView: View {
             Background()
             main
         }
-#if os(iOS)
         .navigationBarBackButtonHidden(true)
+#if os(iOS)
         .navigationTitle(NSLocalizedString("vaultDetailsTitle", comment: "View your vault details"))
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {

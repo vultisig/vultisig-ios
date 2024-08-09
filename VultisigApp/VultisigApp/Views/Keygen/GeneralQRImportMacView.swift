@@ -31,9 +31,9 @@ struct GeneralQRImportMacView: View {
             Background()
             main
         }
+        .navigationBarBackButtonHidden(true)
 #if os(iOS)
         .navigationTitle(getTitle())
-        .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()

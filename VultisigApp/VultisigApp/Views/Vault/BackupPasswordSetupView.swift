@@ -26,8 +26,8 @@ struct BackupPasswordSetupView: View {
             Background()
             main
         }
+        .navigationBarBackButtonHidden(true)
 #if os(iOS)
-            .navigationBarBackButtonHidden(true)
             .navigationTitle(NSLocalizedString("backup", comment: "Backup"))
             .toolbar {
                 ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {

@@ -65,8 +65,8 @@ struct HomeView: View {
                 VaultsView(viewModel: viewModel, showVaultsList: $showVaultsList, isEditingVaults: $isEditingVaults)
             }
         }
-#if os(iOS)
         .navigationBarBackButtonHidden(true)
+#if os(iOS)
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 menuButton

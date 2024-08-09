@@ -21,8 +21,8 @@ struct ChainSelectionView: View {
                 main
             }
         }
-#if os(iOS)
         .navigationBarBackButtonHidden(true)
+#if os(iOS)
         .navigationTitle(NSLocalizedString("chooseChains", comment: "Choose Chains"))
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {

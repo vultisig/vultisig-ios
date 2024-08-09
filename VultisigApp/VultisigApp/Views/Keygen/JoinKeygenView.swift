@@ -32,9 +32,9 @@ struct JoinKeygenView: View {
             Background()
             main
         }
+        .navigationBarBackButtonHidden(true)
 #if os(iOS)
         .navigationTitle(NSLocalizedString("joinKeygen", comment: "Join keygen/reshare"))
-        .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()

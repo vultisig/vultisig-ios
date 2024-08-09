@@ -21,8 +21,8 @@ struct ImportWalletView: View {
             Background()
             main
         }
-#if os(iOS)
         .navigationBarBackButtonHidden(true)
+#if os(iOS)
         .navigationTitle(NSLocalizedString("import", comment: "Import title"))
         .toolbar {
             ToolbarItem(placement: .navigation) {

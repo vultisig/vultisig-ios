@@ -50,9 +50,9 @@ struct PeerDiscoveryView: View {
             
             main
         }
+        .navigationBarBackButtonHidden(true)
 #if os(iOS)
         .navigationTitle(getTitle())
-        .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
         .detectOrientation($orientation)
         .onChange(of: orientation) { oldValue, newValue in

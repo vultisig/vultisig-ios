@@ -29,8 +29,8 @@ struct SetupVaultView: View {
             Background()
             main
         }
-#if os(iOS)
         .navigationBarBackButtonHidden(true)
+#if os(iOS)
         .navigationTitle(NSLocalizedString("setup", comment: "Setup title"))
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {

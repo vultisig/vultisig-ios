@@ -51,8 +51,8 @@ struct CustomTokenView: View {
         .task {
             await tokenViewModel.loadData(groupedChain: group)
         }
-#if os(iOS)
         .navigationBarBackButtonHidden(true)
+#if os(iOS)
         .navigationTitle(NSLocalizedString("findCustomTokens", comment: "Find Your Custom Token"))
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {

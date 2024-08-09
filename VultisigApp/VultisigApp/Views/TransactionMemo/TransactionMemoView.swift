@@ -18,8 +18,8 @@ struct TransactionMemoView: View {
             Background()
             main
         }
-#if os(iOS)
         .navigationBarBackButtonHidden(true)
+#if os(iOS)
         .navigationTitle(NSLocalizedString(transactionMemoViewModel.currentTitle, comment: "SendCryptoView title"))
         .navigationBarTitleDisplayMode(.inline)
         .ignoresSafeArea(.keyboard)

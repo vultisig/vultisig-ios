@@ -21,9 +21,9 @@ struct JoinKeysignView: View {
             Background()
             main
         }
+        .navigationBarBackButtonHidden(true)
 #if os(iOS)
         .navigationTitle(NSLocalizedString("joinKeySign", comment: "Join Keysign"))
-        .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()

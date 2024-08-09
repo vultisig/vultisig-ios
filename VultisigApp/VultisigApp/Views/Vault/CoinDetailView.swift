@@ -43,8 +43,8 @@ struct CoinDetailView: View {
                 vault: vault
             )
         }
-#if os(iOS)
         .navigationBarBackButtonHidden(true)
+#if os(iOS)
         .navigationTitle(NSLocalizedString(coin.ticker, comment: ""))
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
