@@ -20,12 +20,26 @@ struct EditVaultView: View {
     var base: some View {
         ZStack {
             Background()
+            main
+        }
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
             view
         }
     }
     
+    var headerMac: some View {
+        ChainSelectionHeader()
+    }
+    
     var navigation: some View {
         base
+#if os(iOS)
             .navigationBarBackButtonHidden(true)
             .navigationTitle(NSLocalizedString("editVault", comment: "Edit Vault View title"))
             .toolbar {
@@ -33,7 +47,7 @@ struct EditVaultView: View {
                     NavigationBackButton()
                 }
             }
-        
+#endif
     }
     
     var alert: some View {
