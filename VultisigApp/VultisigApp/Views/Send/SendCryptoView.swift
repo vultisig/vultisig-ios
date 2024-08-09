@@ -23,50 +23,64 @@ struct SendCryptoView: View {
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     
     var body: some View {
-        content
-            .ignoresSafeArea(.keyboard)
-            .onAppear {
-                Task {
-                    await setData()
-                }
-            }
-            .onChange(of: tx.coin) {
-                Task {
-                    await setData()
-                }
-            }
-            .onDisappear(){
-                sendCryptoViewModel.stopMediator()
-            }
-            .navigationBarBackButtonHidden(true)
-            .navigationTitle(NSLocalizedString(sendCryptoViewModel.currentTitle, comment: "SendCryptoView title"))
-            .toolbar {
-                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                    backButton
-                }
-                
-                if sendCryptoViewModel.currentIndex==3 {
-                    ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                        NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
-                    }
-                }
-            }
-
-    }
-    
-    var content: some View {
         ZStack {
             Background()
-            view
+            main
             
             if sendCryptoViewModel.isLoading || sendCryptoVerifyViewModel.isLoading {
                 loader
             }
         }
-#if os(iOS)
-        .onTapGesture {
-            hideKeyboard()
+        .ignoresSafeArea(.keyboard)
+        .onAppear {
+            Task {
+                await setData()
+            }
         }
+        .onChange(of: tx.coin) {
+            Task {
+                await setData()
+            }
+        }
+        .onDisappear(){
+            sendCryptoViewModel.stopMediator()
+        }
+        .navigationBarBackButtonHidden(true)
+#if os(iOS)
+        .navigationTitle(NSLocalizedString(sendCryptoViewModel.currentTitle, comment: "SendCryptoView title"))
+        .toolbar {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
+                backButton
+            }
+            
+            if sendCryptoViewModel.currentIndex==3 {
+                ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                    NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
+                }
+            }
+        }
+#endif
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            view
+        }
+    }
+    
+    var headerMac: some View {
+        SendCryptoHeader(sendCryptoViewModel: sendCryptoViewModel, shareSheetViewModel: shareSheetViewModel)
+    }
+    
+    var content: some View {
+        view
+#if os(iOS)
+            .onTapGesture {
+                hideKeyboard()
+            }
 #endif
     }
     
