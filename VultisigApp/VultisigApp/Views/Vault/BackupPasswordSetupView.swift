@@ -22,9 +22,19 @@ struct BackupPasswordSetupView: View {
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
-        content
+        ZStack {
+            Background()
+            main
+        }
+#if os(iOS)
             .navigationBarBackButtonHidden(true)
             .navigationTitle(NSLocalizedString("backup", comment: "Backup"))
+            .toolbar {
+                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
+                    NavigationBackButton()
+                }
+            }
+#endif
             .alert(isPresented: $backupViewModel.showAlert) {
                 alert
             }
@@ -42,16 +52,17 @@ struct BackupPasswordSetupView: View {
             }
     }
     
-    var content: some View {
-        ZStack {
-            Background()
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
             view
         }
-        .toolbar {
-            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                NavigationBackButton()
-            }
-        }
+    }
+    
+    var headerMac: some View {
+        GeneralMacHeader(title: "backup")
     }
     
     var view: some View {
