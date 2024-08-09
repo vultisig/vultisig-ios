@@ -183,6 +183,8 @@ class TokensStore {
             CoinMeta(chain: Chain.dydx, ticker: "DYDX", logo: "dydx", decimals: 18, priceProviderId: "dydx-chain", contractAddress: "", isNativeToken: true)
         }
         
+        // BASE
+        
         static var baseEth: CoinMeta {
             CoinMeta(chain: Chain.base, ticker: "ETH", logo: "eth_base", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
         }
@@ -194,18 +196,112 @@ class TokensStore {
         static var baseWewe: CoinMeta {
             CoinMeta(chain: Chain.base, ticker: "WEWE", logo: "wewe", decimals: 18, priceProviderId: "", contractAddress: "0x6b9bb36519538e0C073894E964E90172E1c0B41F", isNativeToken: false)
         }
+        
+        static var baseDai: CoinMeta {
+            CoinMeta(chain: Chain.base, ticker: "DAI", logo: "dai", decimals: 18, priceProviderId: "dai", contractAddress: "0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb", isNativeToken: false)
+        }
+        
+        static var baseRETH: CoinMeta {
+            CoinMeta(chain: Chain.base, ticker: "rETH", logo: "reth", decimals: 18, priceProviderId: "reth", contractAddress: "0xB6fe221Fe9EeF5aBa221c348bA20A1Bf5e73624c", isNativeToken: false)
+        }
+        
+        static var baseEZETH: CoinMeta {
+            CoinMeta(chain: Chain.base, ticker: "ezETH", logo: "ezeth", decimals: 18, priceProviderId: "ezeth", contractAddress: "0x2416092f143378750bb29b79eD961ab195CcEea5", isNativeToken: false)
+        }
+        
+        static var basePYTH: CoinMeta {
+            CoinMeta(chain: Chain.base, ticker: "PYTH", logo: "pyth", decimals: 18, priceProviderId: "pyth", contractAddress: "0x4c5d8A75F3762c1561D96f177694f67378705E98", isNativeToken: false)
+        }
+        
+        static var baseOM: CoinMeta {
+            CoinMeta(chain: Chain.base, ticker: "OM", logo: "om", decimals: 18, priceProviderId: "om", contractAddress: "0x3992B27dA26848C2b19CeA6Fd25ad5568B68AB98", isNativeToken: false)
+        }
+        
+        static var baseW: CoinMeta {
+            CoinMeta(chain: Chain.base, ticker: "W", logo: "w", decimals: 18, priceProviderId: "w", contractAddress: "0xB0fFa8000886e57F86dd5264b9582b2Ad87b2b91", isNativeToken: false)
+        }
+        
+        static var baseCBETH: CoinMeta {
+            CoinMeta(chain: Chain.base, ticker: "cbETH", logo: "cbETH", decimals: 18, priceProviderId: "cbETH", contractAddress: "0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22", isNativeToken: false)
+        }
+        
+        static var baseSNX: CoinMeta {
+            CoinMeta(chain: Chain.base, ticker: "SNX", logo: "SNX", decimals: 18, priceProviderId: "SNX", contractAddress: "0x22e6966B799c4D5B13BE962E1D117b56327FDa66", isNativeToken: false)
+        }
+        
+        static var baseAERO: CoinMeta {
+            CoinMeta(chain: Chain.base, ticker: "AERO", logo: "AERO", decimals: 18, priceProviderId: "AERO", contractAddress: "0x940181a94A35A4569E4529A3CDfB74e38FD98631", isNativeToken: false)
+        }
+        
+        //
+        
         static var arbETH: CoinMeta {
             CoinMeta(chain: Chain.arbitrum, ticker: "ETH", logo: "eth_arbitrum", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
         }
+        
         static var arbArb: CoinMeta {
-            CoinMeta(chain: Chain.arbitrum, ticker: "WEWE", logo: "arbitrum", decimals: 18, priceProviderId: "arbitrum", contractAddress: "0x912CE59144191C1204E64559FE8253a0e49E6548", isNativeToken: false)
+            CoinMeta(chain: Chain.arbitrum, ticker: "ARB", logo: "arbitrum", decimals: 18, priceProviderId: "arbitrum", contractAddress: "0x912ce59144191c1204e64559fe8253a0e49e6548", isNativeToken: false)
         }
+        
         static var arbTGT: CoinMeta {
             CoinMeta(chain: Chain.arbitrum, ticker: "TGT", logo: "tgt", decimals: 18, priceProviderId: "thorwallet", contractAddress: "0x429fEd88f10285E61b12BDF00848315fbDfCC341", isNativeToken: false)
         }
+        
         static var arbFox: CoinMeta {
             CoinMeta(chain: Chain.arbitrum, ticker: "FOX", logo: "fox", decimals: 18, priceProviderId: "shapeshift-fox-token", contractAddress: "0xf929de51D91C77E42f5090069E0AD7A09e513c73", isNativeToken: false)
         }
+        
+        
+        static var arbUSDT: CoinMeta {
+            CoinMeta(chain: Chain.arbitrum, ticker: "USDT", logo: "USDT", decimals: 18, priceProviderId: "USDT", contractAddress: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9", isNativeToken: false)
+        }
+        
+        static var arbUSDCe: CoinMeta {
+            CoinMeta(chain: Chain.arbitrum, ticker: "USDC.e", logo: "USDC.e", decimals: 18, priceProviderId: "USDC.e", contractAddress: "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8", isNativeToken: false)
+        }
+        
+        static var arbUSDC: CoinMeta {
+            CoinMeta(chain: Chain.arbitrum, ticker: "USDC", logo: "USDC", decimals: 18, priceProviderId: "USDC", contractAddress: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831", isNativeToken: false)
+        }
+        
+        static var arbWBTC: CoinMeta {
+            CoinMeta(chain: Chain.arbitrum, ticker: "WBTC", logo: "WBTC", decimals: 18, priceProviderId: "WBTC", contractAddress: "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f", isNativeToken: false)
+        }
+        
+        static var arbLINK: CoinMeta {
+            CoinMeta(chain: Chain.arbitrum, ticker: "LINK", logo: "LINK", decimals: 18, priceProviderId: "LINK", contractAddress: "0xf97f4df75117a78c1A5a0DBb814Af92458539FB4", isNativeToken: false)
+        }
+        
+        static var arbDAI: CoinMeta {
+            CoinMeta(chain: Chain.arbitrum, ticker: "DAI", logo: "DAI", decimals: 18, priceProviderId: "DAI", contractAddress: "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1", isNativeToken: false)
+        }
+        
+        static var arbUNI: CoinMeta {
+            CoinMeta(chain: Chain.arbitrum, ticker: "UNI", logo: "UNI", decimals: 18, priceProviderId: "UNI", contractAddress: "0xFa7F8980b0f1E64A2062791cc3b0871572f1F7f0", isNativeToken: false)
+        }
+        
+        static var arbPEPE: CoinMeta {
+            CoinMeta(chain: Chain.arbitrum, ticker: "PEPE", logo: "PEPE", decimals: 18, priceProviderId: "PEPE", contractAddress: "0x25d887Ce7a35172C62FeBFD67a1856F20FaEbB00", isNativeToken: false)
+        }
+        
+        static var arbGRT: CoinMeta {
+            CoinMeta(chain: Chain.arbitrum, ticker: "GRT", logo: "GRT", decimals: 18, priceProviderId: "GRT", contractAddress: "0x9623063377AD1B27544C965cCd7342f7EA7e88C7", isNativeToken: false)
+        }
+        
+        static var arbEZETH: CoinMeta {
+            CoinMeta(chain: Chain.arbitrum, ticker: "ezETH", logo: "ezETH", decimals: 18, priceProviderId: "ezETH", contractAddress: "0x2416092f143378750bb29b79eD961ab195CcEea5", isNativeToken: false)
+        }
+        
+        static var arbPYTH: CoinMeta {
+            CoinMeta(chain: Chain.arbitrum, ticker: "PYTH", logo: "PYTH", decimals: 18, priceProviderId: "PYTH", contractAddress: "0xE4D5c6aE46ADFAF04313081e8C0052A30b6Dd724", isNativeToken: false)
+        }
+        
+        static var arbLDO: CoinMeta {
+            CoinMeta(chain: Chain.arbitrum, ticker: "LDO", logo: "LDO", decimals: 18, priceProviderId: "LDO", contractAddress: "0x13Ad51ed4F1B7e9Dc168d8a00cB3f4dDD85EfA60", isNativeToken: false)
+        }
+        
+        //
+        
         static var optETH: CoinMeta {
             CoinMeta(chain: Chain.optimism, ticker: "ETH", logo: "eth_optimism", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
         }
@@ -215,6 +311,46 @@ class TokensStore {
         static var optFox: CoinMeta {
             CoinMeta(chain: Chain.optimism, ticker: "FOX", logo: "fox", decimals: 18, priceProviderId: "shapeshift-fox-token", contractAddress: "0xf1a0da3367bc7aa04f8d94ba57b862ff37ced174", isNativeToken: false)
         }
+        
+        
+        static var optUSDT: CoinMeta {
+            CoinMeta(chain: Chain.optimism, ticker: "USDT", logo: "USDT", decimals: 18, priceProviderId: "USDT", contractAddress: "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58", isNativeToken: false)
+        }
+        
+        static var optUSDC: CoinMeta {
+            CoinMeta(chain: Chain.optimism, ticker: "USDC", logo: "USDC", decimals: 18, priceProviderId: "USDC", contractAddress: "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85", isNativeToken: false)
+        }
+        
+        static var optUSDCe: CoinMeta {
+            CoinMeta(chain: Chain.optimism, ticker: "USDC.e", logo: "USDC.e", decimals: 18, priceProviderId: "USDC.e", contractAddress: "0x7F5c764cBc14f9669B88837ca1490cCa17c31607", isNativeToken: false)
+        }
+        
+        static var optWBTC: CoinMeta {
+            CoinMeta(chain: Chain.optimism, ticker: "WBTC", logo: "WBTC", decimals: 18, priceProviderId: "WBTC", contractAddress: "0x68f180fcCe6836688e9084f035309E29Bf0A2095", isNativeToken: false)
+        }
+        
+        static var optLINK: CoinMeta {
+            CoinMeta(chain: Chain.optimism, ticker: "LINK", logo: "LINK", decimals: 18, priceProviderId: "LINK", contractAddress: "0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6", isNativeToken: false)
+        }
+        
+        static var optDAI: CoinMeta {
+            CoinMeta(chain: Chain.optimism, ticker: "DAI", logo: "DAI", decimals: 18, priceProviderId: "DAI", contractAddress: "0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1", isNativeToken: false)
+        }
+        
+        static var optEZETH: CoinMeta {
+            CoinMeta(chain: Chain.optimism, ticker: "ezETH", logo: "ezETH", decimals: 18, priceProviderId: "ezETH", contractAddress: "0x2416092f143378750bb29b79eD961ab195CcEea5", isNativeToken: false)
+        }
+        
+        static var optPYTH: CoinMeta {
+            CoinMeta(chain: Chain.optimism, ticker: "PYTH", logo: "PYTH", decimals: 18, priceProviderId: "PYTH", contractAddress: "0x99C59ACeBFEF3BBFB7129DC90D1a11DB0E91187f", isNativeToken: false)
+        }
+        
+        static var optLDO: CoinMeta {
+            CoinMeta(chain: Chain.optimism, ticker: "LDO", logo: "LDO", decimals: 18, priceProviderId: "LDO", contractAddress: "0xFdb794692724153d1488CcdBE0C56c252596735F", isNativeToken: false)
+        }
+        
+        //
+        
         static var matic: CoinMeta {
             CoinMeta(chain: Chain.polygon, ticker: "MATIC", logo: "matic", decimals: 18, priceProviderId: "matic-network", contractAddress: "", isNativeToken: true)
         }
@@ -297,16 +433,55 @@ class TokensStore {
         TokensStore.Token.gaiaChainAtom,
         TokensStore.Token.kujira,
         TokensStore.Token.dydx,
+        
+        // Token tracker top 10 https://basescan.org/tokens
         TokensStore.Token.baseEth,
         TokensStore.Token.baseUsdc,
         TokensStore.Token.baseWewe,
+        TokensStore.Token.baseDai,
+        TokensStore.Token.baseRETH,
+        TokensStore.Token.baseEZETH,
+        TokensStore.Token.basePYTH,
+        TokensStore.Token.baseOM,
+        TokensStore.Token.baseW,
+        TokensStore.Token.baseCBETH,
+        TokensStore.Token.baseSNX,
+        TokensStore.Token.baseAERO,
+        
+        // Token tracker top 10 https://arbiscan.io/tokens
         TokensStore.Token.arbETH,
         TokensStore.Token.arbArb,
         TokensStore.Token.arbFox,
         TokensStore.Token.arbTGT,
+        TokensStore.Token.arbUSDT,
+        TokensStore.Token.arbUSDCe,
+        TokensStore.Token.arbUSDC,
+        TokensStore.Token.arbWBTC,
+        TokensStore.Token.arbLINK,
+        TokensStore.Token.arbDAI,
+        TokensStore.Token.arbUNI,
+        TokensStore.Token.arbPEPE,
+        TokensStore.Token.arbGRT,
+        TokensStore.Token.arbEZETH,
+        TokensStore.Token.arbPYTH,
+        TokensStore.Token.arbLDO,
+        
+        // Token tracker top 10 https://optimistic.etherscan.io/tokens
         TokensStore.Token.optETH,
         TokensStore.Token.optOP,
         TokensStore.Token.optFox,
+        TokensStore.Token.optUSDT,
+        TokensStore.Token.optUSDCe,
+        TokensStore.Token.optUSDC,
+        TokensStore.Token.optWBTC,
+        TokensStore.Token.optLINK,
+        TokensStore.Token.optDAI,
+        TokensStore.Token.optEZETH,
+        TokensStore.Token.optPYTH,
+        TokensStore.Token.optLDO,
+        
+        //
+        
         TokensStore.Token.matic,
         TokensStore.Token.maticWETH,
         TokensStore.Token.maticFox,
