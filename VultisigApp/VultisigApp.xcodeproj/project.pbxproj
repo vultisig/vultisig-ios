@@ -191,6 +191,7 @@
 		A6833D8A2C65CF07002029E1 /* HomeHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6833D892C65CF07002029E1 /* HomeHeader.swift */; };
 		A6833D8D2C65D2A1002029E1 /* AddressQRCodeHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6833D8C2C65D2A1002029E1 /* AddressQRCodeHeader.swift */; };
 		A6833D912C66A0B5002029E1 /* CreateVaultHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6833D902C66A0B5002029E1 /* CreateVaultHeader.swift */; };
+		A6833D932C66A4EA002029E1 /* SwapCryptoHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6833D922C66A4EA002029E1 /* SwapCryptoHeader.swift */; };
 		A683EDEB2BCF635E00BB706E /* InstructionPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = A683EDEA2BCF635E00BB706E /* InstructionPrompt.swift */; };
 		A683EDED2BCF67D100BB706E /* NetworkPromptCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A683EDEC2BCF67D100BB706E /* NetworkPromptCell.swift */; };
 		A68696212C1B5575004EDE0B /* BackupPasswordSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A68696202C1B5575004EDE0B /* BackupPasswordSetupView.swift */; };
@@ -630,6 +631,7 @@
 		A6833D892C65CF07002029E1 /* HomeHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeHeader.swift; sourceTree = "<group>"; };
 		A6833D8C2C65D2A1002029E1 /* AddressQRCodeHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressQRCodeHeader.swift; sourceTree = "<group>"; };
 		A6833D902C66A0B5002029E1 /* CreateVaultHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateVaultHeader.swift; sourceTree = "<group>"; };
+		A6833D922C66A4EA002029E1 /* SwapCryptoHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoHeader.swift; sourceTree = "<group>"; };
 		A683EDEA2BCF635E00BB706E /* InstructionPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstructionPrompt.swift; sourceTree = "<group>"; };
 		A683EDEC2BCF67D100BB706E /* NetworkPromptCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkPromptCell.swift; sourceTree = "<group>"; };
 		A68696202C1B5575004EDE0B /* BackupPasswordSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupPasswordSetupView.swift; sourceTree = "<group>"; };
@@ -1428,6 +1430,7 @@
 				A6833D892C65CF07002029E1 /* HomeHeader.swift */,
 				A6833D8C2C65D2A1002029E1 /* AddressQRCodeHeader.swift */,
 				A6833D902C66A0B5002029E1 /* CreateVaultHeader.swift */,
+				A6833D922C66A4EA002029E1 /* SwapCryptoHeader.swift */,
 			);
 			path = "Navigation Header";
 			sourceTree = "<group>";
@@ -2284,6 +2287,7 @@
 				A6C0D55F2BB3B73900156689 /* UTXOTransactionsView.swift in Sources */,
 				B5A97CF92BF42E72007574D7 /* TransactionMemoAddressTextField.swift in Sources */,
 				A6B51BE92C098DAE007FDD3C /* OnFirstAppear.swift in Sources */,
+				A6833D932C66A4EA002029E1 /* SwapCryptoHeader.swift in Sources */,
 				DE49A1B22B6A0F77000F3AFB /* JoinKeygenView.swift in Sources */,
 				DE9EB0F62BA3F9C2001747D9 /* ParticipantDiscovery.swift in Sources */,
 				B58768702BFB0C43001AAEA5 /* DepositStore.swift in Sources */,
