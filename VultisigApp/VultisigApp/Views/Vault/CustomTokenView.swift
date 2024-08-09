@@ -35,9 +35,7 @@ struct CustomTokenView: View {
         ZStack {
             Background()
             VStack(alignment: .leading) {
-                view
-                    .padding(.top, 16)
-                    .padding(.horizontal, 16)
+                main
                 
                 if let error = error {
                     errorView(error: error)
@@ -50,11 +48,12 @@ struct CustomTokenView: View {
                 Spacer()
             }
         }
-        .navigationBarBackButtonHidden(true)
-        .navigationTitle(NSLocalizedString("findCustomTokens", comment: "Find Your Custom Token"))
         .task {
             await tokenViewModel.loadData(groupedChain: group)
         }
+#if os(iOS)
+        .navigationBarBackButtonHidden(true)
+        .navigationTitle(NSLocalizedString("findCustomTokens", comment: "Find Your Custom Token"))
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 Button(action: {
@@ -62,15 +61,29 @@ struct CustomTokenView: View {
                     dismiss()
                 }) {
                     Image(systemName: "chevron.backward")
-#if os(iOS)
-                        .font(.body18MenloBold)
-#elseif os(macOS)
                         .font(.body18Menlo)
-#endif
                         .foregroundColor(Color.neutral0)
                 }
             }
         }
+#endif
+    }
+    
+    var main: some View {
+        VStack(spacing: 0) {
+#if os(macOS)
+            headerMac
+#endif
+            view
+                .padding(.top, 16)
+                .padding(.horizontal, 16)
+        }
+    }
+    
+    var headerMac: some View {
+        TokenSelectionHeader(title: "findCustomTokens", chainDetailView: chainDetailView)
+            .padding(.horizontal, 40)
+            .padding(.top, 8)
     }
     
     var view: some View {

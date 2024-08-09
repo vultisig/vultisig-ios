@@ -74,7 +74,7 @@ struct TokenSelectionView: View {
     }
     
     var headerMac: some View {
-        TokenSelectionHeader(chainDetailView: chainDetailView)
+        TokenSelectionHeader(title: "chooseTokens", chainDetailView: chainDetailView)
             .padding(.horizontal, 40)
             .padding(.top, 8)
     }
@@ -86,7 +86,9 @@ struct TokenSelectionView: View {
             chainDetailView.chooseTokensButton(NSLocalizedString("customToken", comment: "Custom Token"))
         }
         .background(Color.clear)
-#if os(macOS)
+#if os(iOS)
+        .padding(.horizontal, 25)
+#elseif os(macOS)
         .padding(.horizontal, 40)
 #endif
     }
@@ -95,8 +97,9 @@ struct TokenSelectionView: View {
         VStack(alignment: .leading, spacing: 0) {
 #if os(macOS)
             search
-            addCustomTokenButton
 #endif
+            addCustomTokenButton
+            
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 24, pinnedViews: []) {
                     let selected = tokenViewModel.selectedTokens

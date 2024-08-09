@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct TokenSelectionHeader: View {
+    let title: String
     let chainDetailView: ChainDetailView
     
     @Environment(\.dismiss) var dismiss
@@ -35,12 +36,15 @@ struct TokenSelectionHeader: View {
     }
     
     var text: some View {
-        Text(NSLocalizedString("chooseTokens", comment: "Choose Tokens"))
+        Text(NSLocalizedString(title, comment: ""))
             .foregroundColor(.neutral0)
             .font(.title3)
     }
 }
 
 #Preview {
-    TokenSelectionHeader(chainDetailView: ChainDetailView(group: GroupedChain.example, vault: Vault.example))
+    TokenSelectionHeader(
+        title: "choose",
+        chainDetailView: ChainDetailView(group: GroupedChain.example, vault: Vault.example)
+    )
 }
