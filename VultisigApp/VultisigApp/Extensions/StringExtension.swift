@@ -152,6 +152,22 @@ extension String {
     func toBigInt(decimals: Int) -> BigInt {
         self.toDecimal().truncated(toPlaces: decimals).description.toBigInt()
     }
+    
+    func isValidDecimal() -> Bool {
+        
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = .decimal
+        numberFormatter.locale = Locale.current // Use the current locale for decimal separator
+        
+        // Check for both dot and comma as decimal separators
+        let dotSeparator = numberFormatter.decimalSeparator == "."
+        let modifiedSelf = dotSeparator ? self : self.replacingOccurrences(of: ".", with: ",")
+        
+        let number = numberFormatter.number(from: modifiedSelf) != nil
+        
+        return number
+        
+    }
 }
 
 extension String {

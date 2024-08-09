@@ -180,6 +180,18 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         isValidAddress = AddressService.validateAddress(address: address, chain: tx.coin.chain)
     }
     
+    func validateAmount(amount: String) {
+        errorMessage = ""
+        isValidForm = true
+        
+        isValidForm = amount.isValidDecimal()
+        
+        if !isValidForm {
+            errorMessage = "The amount must be decimal."
+            showAlert = true
+        }
+    }
+    
     func validateForm(tx: SendTransaction) async -> Bool {
         // Reset validation state at the beginning
         errorMessage = ""
