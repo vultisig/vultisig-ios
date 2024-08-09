@@ -24,8 +24,6 @@ struct SendCryptoView: View {
     
     var body: some View {
         content
-            .navigationBarBackButtonHidden(true)
-            .navigationTitle(NSLocalizedString(sendCryptoViewModel.currentTitle, comment: "SendCryptoView title"))
             .ignoresSafeArea(.keyboard)
             .onAppear {
                 Task {
@@ -40,6 +38,8 @@ struct SendCryptoView: View {
             .onDisappear(){
                 sendCryptoViewModel.stopMediator()
             }
+            .navigationBarBackButtonHidden(true)
+            .navigationTitle(NSLocalizedString(sendCryptoViewModel.currentTitle, comment: "SendCryptoView title"))
             .toolbar {
                 ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                     backButton

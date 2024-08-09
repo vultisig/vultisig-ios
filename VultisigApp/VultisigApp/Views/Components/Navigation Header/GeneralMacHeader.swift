@@ -28,7 +28,7 @@ struct GeneralMacHeader: View {
     }
     
     var text: some View {
-        Text(title)
+        Text(NSLocalizedString(title, comment: ""))
             .foregroundColor(.neutral0)
             .font(.title3)
     }

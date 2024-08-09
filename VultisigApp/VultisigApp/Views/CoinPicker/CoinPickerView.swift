@@ -29,10 +29,9 @@ struct CoinPickerView: View {
     var body: some View {
         ZStack {
             Background()
-            VStack(spacing: 0) {
-                view
-            }
+            main
         }
+#if os(iOS)
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("chooseTokens", comment: "Choose Tokens"))
         .toolbar {
@@ -41,21 +40,31 @@ struct CoinPickerView: View {
                     dismiss()
                 }) {
                     Image(systemName: "chevron.backward")
-#if os(iOS)
                         .font(.body18MenloBold)
-#elseif os(macOS)
-                        .font(.body18Menlo)
-#endif
                         .foregroundColor(Color.neutral0)
                 }
             }
         }
-#if os(iOS)
         .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always))
 #endif
         .onAppear {
             isSearchFieldFocused = true
         }
+    }
+    
+    var main: some View {
+        VStack(spacing: 0) {
+#if os(macOS)
+            headerMac
+#endif
+            view
+        }
+    }
+    
+    var headerMac: some View {
+        GeneralMacHeader(title: "chooseTokens")
+            .padding(.horizontal, 40)
+            .padding(.top, 8)
     }
 
     var view: some View {
