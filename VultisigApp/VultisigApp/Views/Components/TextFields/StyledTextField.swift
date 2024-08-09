@@ -11,7 +11,7 @@ import SwiftUI
 struct StyledTextField: View {
     let placeholder: String
     @Binding var text: String
-    
+    var maxLengthSize: Int
     @Binding var isValid: Bool
     var isOptional: Bool = false
     
@@ -38,7 +38,7 @@ struct StyledTextField: View {
                 .background(Color.blue600)
                 .cornerRadius(12)
                 .borderlessTextFieldStyle()
-                .maxLength(customBinding)
+                .maxLength(customBinding, maxLengthSize)
                 .onAppear {
                     localIsValid = isValid
                     validate(text)

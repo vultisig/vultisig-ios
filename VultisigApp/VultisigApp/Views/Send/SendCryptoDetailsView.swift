@@ -219,7 +219,10 @@ struct SendCryptoDetailsView: View {
     var textField: some View {
         SendCryptoAmountTextField(
             amount: $tx.amount,
-            onChange: { await sendCryptoViewModel.convertToFiat(newValue: $0, tx: tx) },
+            onChange: {
+                sendCryptoViewModel.validateAmount(amount: tx.amount.description)
+                await sendCryptoViewModel.convertToFiat(newValue: $0, tx: tx)
+            },
             onMaxPressed: { sendCryptoViewModel.setMaxValues(tx: tx) }
         )
         .focused($focusedField, equals: .amount)
