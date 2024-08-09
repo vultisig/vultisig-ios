@@ -14,36 +14,51 @@ struct TransactionMemoView: View {
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
-        content
-            .navigationBarBackButtonHidden(true)
-            .navigationTitle(NSLocalizedString(transactionMemoViewModel.currentTitle, comment: "SendCryptoView title"))
-            .onAppear {
-                Task {
-                    await setData()
-                }
-            }
-            .onChange(of: tx.coin) {
-                Task {
-                    await setData()
-                }
-            }
-            .onDisappear(){
-                transactionMemoViewModel.stopMediator()
-            }
+        ZStack {
+            Background()
+            main
+        }
 #if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
-            .ignoresSafeArea(.keyboard)
-#endif
-            .toolbar {
-                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                    Button {
-                        handleBackTap()
-                    } label: {
-                        NavigationBlankBackButton()
-                    }
+        .navigationBarBackButtonHidden(true)
+        .navigationTitle(NSLocalizedString(transactionMemoViewModel.currentTitle, comment: "SendCryptoView title"))
+        .navigationBarTitleDisplayMode(.inline)
+        .ignoresSafeArea(.keyboard)
+        .toolbar {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
+                Button {
+                    handleBackTap()
+                } label: {
+                    NavigationBlankBackButton()
                 }
             }
-
+        }
+#endif
+        .onAppear {
+            Task {
+                await setData()
+            }
+        }
+        .onChange(of: tx.coin) {
+            Task {
+                await setData()
+            }
+        }
+        .onDisappear(){
+            transactionMemoViewModel.stopMediator()
+        }
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            content
+        }
+    }
+    
+    var headerMac: some View {
+        TransactionMemoHeader(transactionMemoViewModel: transactionMemoViewModel)
     }
     
     var content: some View {
