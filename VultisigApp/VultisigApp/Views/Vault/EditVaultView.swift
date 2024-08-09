@@ -34,7 +34,7 @@ struct EditVaultView: View {
     }
     
     var headerMac: some View {
-        ChainSelectionHeader()
+        GeneralMacHeader(title: "editVault")
     }
     
     var navigation: some View {

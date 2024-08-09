@@ -22,25 +22,33 @@ struct RenameVaultView: View {
     var body: some View {
         ZStack {
             Background()
-            view
+            main
         }
+#if os(iOS)
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("renameVault", comment: "Edit Rename Vault View title"))
-        .onAppear {
-            setData()
-        }
-        .alert(isPresented: $showAlert) {
-            Alert(
-                title: Text(NSLocalizedString("error", comment: "")),
-                message: Text(errorMessage),
-                dismissButton: .default(Text("ok"))
-            )
-        }
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
             }
         }
+#endif
+        .onAppear {
+            setData()
+        }
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            view
+        }
+    }
+    
+    var headerMac: some View {
+        GeneralMacHeader(title: "renameVault")
     }
     
     var view: some View {
@@ -48,6 +56,13 @@ struct RenameVaultView: View {
             content
             Spacer()
             button
+        }
+        .alert(isPresented: $showAlert) {
+            Alert(
+                title: Text(NSLocalizedString("error", comment: "")),
+                message: Text(errorMessage),
+                dismissButton: .default(Text("ok"))
+            )
         }
 #if os(macOS)
         .padding(.horizontal, 25)

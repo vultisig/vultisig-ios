@@ -51,7 +51,7 @@ struct ChainSelectionView: View {
     }
     
     var headerMac: some View {
-        ChainSelectionHeader()
+        GeneralMacHeader(title: "chooseChains")
     }
     
     var content: some View {
