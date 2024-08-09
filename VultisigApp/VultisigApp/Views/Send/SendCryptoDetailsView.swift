@@ -40,19 +40,19 @@ struct SendCryptoDetailsView: View {
             }
         }
         .gesture(DragGesture())
+#if os(iOS)
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
                 
-#if os(iOS)
                 Button {
                     hideKeyboard()
                 } label: {
                     Text(NSLocalizedString("done", comment: "Done"))
                 }
-#endif
             }
         }
+#endif
         .onAppear {
             setData()
         }
