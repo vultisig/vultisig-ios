@@ -139,8 +139,6 @@ struct ChainDetailView: View {
     
     var headerMac: some View {
         ChainDetailHeader(title: group.name, refreshAction: refreshAction)
-            .padding(.horizontal, 40)
-            .padding(.top, 8)
     }
     
     var view: some View {

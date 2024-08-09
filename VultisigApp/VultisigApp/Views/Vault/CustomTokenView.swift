@@ -82,8 +82,6 @@ struct CustomTokenView: View {
     
     var headerMac: some View {
         TokenSelectionHeader(title: "findCustomTokens", chainDetailView: chainDetailView)
-            .padding(.horizontal, 40)
-            .padding(.top, 8)
     }
     
     var view: some View {

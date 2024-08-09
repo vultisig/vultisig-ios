@@ -63,8 +63,6 @@ struct CoinPickerView: View {
     
     var headerMac: some View {
         GeneralMacHeader(title: "chooseTokens")
-            .padding(.horizontal, 40)
-            .padding(.top, 8)
     }
 
     var view: some View {

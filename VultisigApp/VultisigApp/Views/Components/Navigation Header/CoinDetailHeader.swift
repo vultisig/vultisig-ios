@@ -20,6 +20,8 @@ struct CoinDetailHeader: View {
             trailingAction
         }
         .padding(.vertical, 8)
+        .padding(.horizontal, 40)
+        .padding(.top, 8)
     }
     
     var leadingAction: some View {

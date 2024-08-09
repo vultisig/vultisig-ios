@@ -75,8 +75,6 @@ struct TokenSelectionView: View {
     
     var headerMac: some View {
         TokenSelectionHeader(title: "chooseTokens", chainDetailView: chainDetailView)
-            .padding(.horizontal, 40)
-            .padding(.top, 8)
     }
     
     var addCustomTokenButton: some View {

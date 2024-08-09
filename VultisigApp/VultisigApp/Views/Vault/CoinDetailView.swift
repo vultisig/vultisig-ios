@@ -81,8 +81,6 @@ struct CoinDetailView: View {
     
     var headerMac: some View {
         CoinDetailHeader(title: group.name, refreshData: refreshData)
-            .padding(.horizontal, 40)
-            .padding(.top, 8)
     }
     
     var view: some View {

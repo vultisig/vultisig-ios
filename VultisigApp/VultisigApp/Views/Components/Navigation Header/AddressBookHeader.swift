@@ -20,6 +20,8 @@ struct AddressBookHeader: View {
             trailingAction
         }
         .padding(.vertical, 8)
+        .padding(.horizontal, 40)
+        .padding(.top, 8)
     }
     
     var leadingAction: some View {
@@ -49,13 +51,14 @@ struct AddressBookHeader: View {
     }
     
     var navigationEditButton: some View {
-        ZStack {
+        ZStack(alignment: .trailing) {
             if isEditing {
                 doneButton
             } else {
                 NavigationEditButton()
             }
         }
+        .frame(width: 50)
     }
     
     var doneButton: some View {

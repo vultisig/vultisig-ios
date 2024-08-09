@@ -65,8 +65,6 @@ struct AddressBookView: View {
             count: savedAddresses.count, 
             isEditing: $isEditing
         )
-        .padding(.horizontal, 40)
-        .padding(.top, 8)
     }
     
     var view: some View {
@@ -128,8 +126,9 @@ struct AddressBookView: View {
                 emptyViewChain
             }
         }
-        
-       
+#if os(macOS)
+        .padding(.horizontal, 18)
+#endif
     }
     
     var navigationButton: some View {
@@ -168,6 +167,7 @@ struct AddressBookView: View {
                 .padding(.vertical, 30)
 #elseif os(macOS)
                 .padding(.vertical, 50)
+                .padding(.horizontal, 24)
 #endif
         }
         .frame(height: condition ? nil : 0)
