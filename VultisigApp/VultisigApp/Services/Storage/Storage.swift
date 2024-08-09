@@ -14,11 +14,7 @@ final class Storage {
     
     var modelContext: ModelContext!
     
-    @MainActor func save<T>(_ model: T) async throws where T : PersistentModel {
-        try modelContext.save()
-    }
-
-    @MainActor func save<T>(_ models: [T]) async throws where T : PersistentModel {
+    @MainActor func save() async throws {
         try modelContext.save()
     }
 

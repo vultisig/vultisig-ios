@@ -76,7 +76,7 @@ struct CoinService {
             newCoin.priceProviderId = priceProviderId
         }
         // Save the new coin first
-        try await Storage.shared.save(newCoin)
+        try await Storage.shared.save()
         vault.coins.append(newCoin)
         return newCoin
     }

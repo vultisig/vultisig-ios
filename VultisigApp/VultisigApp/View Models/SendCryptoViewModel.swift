@@ -85,12 +85,11 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             }
             
         case .solana:
-            Task{
+            Task {
                 do{
                     if tx.coin.isNativeToken {
-                        let (rawBalance,priceRate) = try await sol.getSolanaBalance(coin: tx.coin)
+                        let rawBalance = try await sol.getSolanaBalance(coin: tx.coin)
                         tx.coin.rawBalance = rawBalance
-                        tx.coin.priceRate = priceRate
                         tx.amount = "\(tx.coin.getMaxValue(SolanaHelper.defaultFeeInLamports))"
                         setPercentageAmount(tx: tx, for: percentage)
                     } else {
@@ -108,11 +107,10 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 isLoading = false
             }
         case .sui:
-            Task{
-                do{
-                    let (rawBalance,priceRate) = try await sui.getBalance(coin: tx.coin)
+            Task {
+                do {
+                    let rawBalance = try await sui.getBalance(coin: tx.coin)
                     tx.coin.rawBalance = rawBalance
-                    tx.coin.priceRate = priceRate
                     
                     var gas = BigInt.zero
                     if percentage == 100 {
@@ -156,39 +154,9 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         tx.amount = "\(amountDecimal)"
     }
     
-    private func getPriceRate(tx: SendTransaction) async -> Decimal {
-        do {
-            var priceRateFiat = Decimal(string: tx.coin.priceRate.description) ?? .zero
-            
-            if tx.coin.isNativeToken {
-                let price = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
-                priceRateFiat = Decimal(price)
-            } else {
-                if tx.coin.chainType == .EVM {
-                    let tokenPrice = await CryptoPriceService.shared.getTokenPrice(coin: tx.coin)
-                    if tokenPrice != .zero {
-                        return Decimal(tokenPrice)
-                    }
-                    
-                    if SettingsCurrency.current == .USD {
-                        let poolInfo = try await CryptoPriceService.shared.fetchCoingeckoPoolPrice(chain: tx.coin.chain, contractAddress: tx.coin.contractAddress)
-                        if let priceUsd = poolInfo.price_usd {
-                            return Decimal(priceUsd)
-                        }
-                    }
-                }
-            }
-            
-            return priceRateFiat
-        } catch {
-            return Decimal.zero
-        }
-    }
-    
     func convertFiatToCoin(newValue: String, tx: SendTransaction) async {
-        let priceRateFiat = await getPriceRate(tx: tx)
         if let newValueDecimal = Decimal(string: newValue) {
-            let newValueCoin = newValueDecimal / priceRateFiat
+            let newValueCoin = newValueDecimal / Decimal(tx.coin.price)
             let truncatedValueCoin = newValueCoin.truncated(toPlaces: tx.coin.decimals)
             tx.amount = NSDecimalNumber(decimal: truncatedValueCoin).stringValue
             tx.sendMaxAmount = false
@@ -198,9 +166,8 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func convertToFiat(newValue: String, tx: SendTransaction, setMaxValue: Bool = false) async {
-        let priceRateFiat = await getPriceRate(tx: tx)
         if let newValueDecimal = Decimal(string: newValue) {
-            let newValueFiat = newValueDecimal * priceRateFiat
+            let newValueFiat = newValueDecimal * Decimal(tx.coin.price)
             let truncatedValueFiat = newValueFiat.truncated(toPlaces: 2) // Assuming 2 decimal places for fiat
             tx.amountInFiat = NSDecimalNumber(decimal: truncatedValueFiat).stringValue
             tx.sendMaxAmount = setMaxValue

@@ -17,7 +17,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     private let swapService = SwapService.shared
     private let blockchainService = BlockChainService.shared
     private let balanceService = BalanceService.shared
-    
+    private let rateProvider = RateProvider.shared
+
     private var updateQuoteTask: Task<Void, Never>?
     private var updateFeesTask: Task<Void, Never>?
 
@@ -322,16 +323,6 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     func handleBackTap() {
         currentIndex-=1
         currentTitle = titles[currentIndex-1]
-    }
-    
-    func convertToFiat(amount: String, coin: Coin, tx: SwapTransaction) async -> String {
-        let priceRateFiat = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
-        if let newValueDouble = Double(amount) {
-            let newValueFiat = String(format: "%.2f", newValueDouble * priceRateFiat)
-            return newValueFiat.isEmpty ? "" : newValueFiat
-        } else {
-            return ""
-        }
     }
 }
 

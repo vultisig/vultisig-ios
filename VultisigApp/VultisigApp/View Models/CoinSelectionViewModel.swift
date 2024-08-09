@@ -69,5 +69,4 @@ class CoinSelectionViewModel: ObservableObject {
             await CoinService.saveAssets(for: vault, selection: selection)
         }
     }
-    
 }

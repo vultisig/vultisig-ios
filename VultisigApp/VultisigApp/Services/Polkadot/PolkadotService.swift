@@ -107,12 +107,10 @@ class PolkadotService: RpcService {
         return try await strRpcCall(method: "author_submitExtrinsic", params: [hexWithPrefix])
     }
     
-    func getBalance(coin: Coin) async throws -> (rawBalance: String, priceRate: Double) {
+    func getBalance(coin: Coin) async throws -> String {
         // Start fetching all information concurrently
         do {
-            let cryptoPrice = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
-            let rawBalance = String(try await fetchBalance(address: coin.address))
-            return (rawBalance,cryptoPrice)
+            return String(try await fetchBalance(address: coin.address))
         } catch {
             print("getBalance:: \(error.localizedDescription)")
             throw error

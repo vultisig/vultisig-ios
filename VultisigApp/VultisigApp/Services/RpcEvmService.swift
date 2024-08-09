@@ -16,44 +16,18 @@ class RpcEvmService: RpcService {
     
     private let oneInchService = OneInchService.shared
     
-    func getBalance(coin: Coin) async throws ->(rawBalance: String,priceRate: Double){
+    func getBalance(coin: Coin) async throws -> String {
         // Start fetching all information concurrently
-        var cryptoPrice = Double(0)
-        var rawBalance = ""
-        do{
-            if !coin.priceProviderId.isEmpty, coin.isNativeToken {
-                cryptoPrice = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
-            } else {
-                cryptoPrice = await CryptoPriceService.shared.getTokenPrice(coin: coin)
-            }
-            
+        do {
             if coin.isNativeToken {
-                rawBalance = String(try await fetchBalance(address: coin.address))
+                return String(try await fetchBalance(address: coin.address))
             } else {
-                rawBalance = String(try await fetchERC20TokenBalance(contractAddress: coin.contractAddress, walletAddress: coin.address))
-                
-                // Probably a custom token, let's try to get the price from the pool
-                // It only works in USD
-                if cryptoPrice == .zero, coin.priceProviderId.isEmpty {
-                    if SettingsCurrency.current == .USD {
-                        let poolInfo = try await CryptoPriceService.shared.fetchCoingeckoPoolPrice(chain: coin.chain, contractAddress: coin.contractAddress)
-                        
-                        if let priceUsd = poolInfo.price_usd {
-                            coin.priceRate = priceUsd
-                            cryptoPrice = priceUsd
-                        }
-                        
-                        if let image = poolInfo.image_url, !image.contains("missing.png") {
-                            coin.logo = image
-                        }
-                    }
-                }
+                return String(try await fetchERC20TokenBalance(contractAddress: coin.contractAddress, walletAddress: coin.address))
             }
         } catch {
             print("getBalance:: \(error.localizedDescription)")
-            return (.zero,.zero)
+            return .zero
         }
-        return (rawBalance,cryptoPrice)
     }
     
     func getGasInfo(fromAddress: String) async throws -> (gasPrice: BigInt, priorityFee: BigInt, nonce: Int64) {
