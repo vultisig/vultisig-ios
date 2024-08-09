@@ -41,8 +41,8 @@ struct ChainDetailView: View {
                 Loader()
             }
         }
-#if os(iOS)
         .navigationBarBackButtonHidden(true)
+#if os(iOS)
         .navigationTitle(NSLocalizedString(group.name, comment: ""))
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
