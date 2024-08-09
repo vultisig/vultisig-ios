@@ -21,24 +21,25 @@ struct ChainSelectionView: View {
                 main
             }
         }
-            .navigationBarBackButtonHidden(true)
-            .navigationTitle(NSLocalizedString("chooseChains", comment: "Choose Chains"))
-            .onAppear {
-                setData()
-            }
-            .onChange(of: vault) {
-                setData()
-            }
-            .onDisappear {
-                saveAssets()
-            }
 #if os(iOS)
-            .toolbar {
-                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                    NavigationBackSheetButton(showSheet: $showChainSelectionSheet)
-                }
+        .navigationBarBackButtonHidden(true)
+        .navigationTitle(NSLocalizedString("chooseChains", comment: "Choose Chains"))
+        .toolbar {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
+                NavigationBackSheetButton(showSheet: $showChainSelectionSheet)
             }
+        }
 #endif
+        .onAppear {
+            setData()
+        }
+        .onChange(of: vault) {
+            setData()
+        }
+        .onDisappear {
+            saveAssets()
+        }
+
     }
     
     var main: some View {
