@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct JoinKeygenHeader: View {
+    let title: String
+    
     var body: some View {
         HStack {
             leadingAction
@@ -26,7 +28,7 @@ struct JoinKeygenHeader: View {
     }
     
     var text: some View {
-        Text(NSLocalizedString("joinKeygen", comment: "Join keygen/reshare"))
+        Text(NSLocalizedString(title, comment: ""))
             .foregroundColor(.neutral0)
             .font(.title3)
     }
@@ -37,5 +39,5 @@ struct JoinKeygenHeader: View {
 }
 
 #Preview {
-    JoinKeygenHeader()
+    JoinKeygenHeader(title: "joinKeygen")
 }

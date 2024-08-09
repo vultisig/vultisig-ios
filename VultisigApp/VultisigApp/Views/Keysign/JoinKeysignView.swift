@@ -19,10 +19,21 @@ struct JoinKeysignView: View {
     var body: some View {
         ZStack {
             Background()
-            states
+            main
         }
+#if os(iOS)
         .navigationTitle(NSLocalizedString("joinKeySign", comment: "Join Keysign"))
         .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
+                NavigationBackButton()
+            }
+            
+            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                NavigationHelpButton()
+            }
+        }
+#endif
         .onAppear {
             setData()
         }
@@ -36,16 +47,21 @@ struct JoinKeysignView: View {
         .onDisappear(){
             viewModel.stopJoiningKeysign()
         }
-
-        .toolbar {
-            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                NavigationBackButton()
-            }
-            
-            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                NavigationHelpButton()
-            }
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            Spacer()
+            states
+            Spacer()
         }
+    }
+    
+    var headerMac: some View {
+        JoinKeygenHeader(title: "joinKeySign")
     }
     
     var states: some View {

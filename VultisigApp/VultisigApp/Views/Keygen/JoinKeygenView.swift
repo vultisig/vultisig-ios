@@ -95,7 +95,7 @@ struct JoinKeygenView: View {
     }
     
     var headerMac: some View {
-        JoinKeygenHeader()
+        JoinKeygenHeader(title: "joinKeygen")
     }
     
     var scanButton: some View {
