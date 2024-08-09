@@ -10,7 +10,7 @@ import SwiftUI
 struct GeneralMacHeader: View {
     let title: String
     
-    @Environment(\.dismiss) var dismiss
+    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         HStack {
