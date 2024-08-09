@@ -23,8 +23,9 @@ struct NewWalletNameView: View {
     var body: some View {
         ZStack {
             Background()
-            view
+            main
         }
+#if os(iOS)
         .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("nameYourVault", comment: "Name your Vault"))
         .toolbar {
@@ -32,11 +33,23 @@ struct NewWalletNameView: View {
                 NavigationBackButton()
             }
         }
-#if os(iOS)
         .onTapGesture {
             hideKeyboard()
         }
 #endif
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            view
+        }
+    }
+    
+    var headerMac: some View {
+        GeneralMacHeader(title: "nameYourVault")
     }
     
     var view: some View {
