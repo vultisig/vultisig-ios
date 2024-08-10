@@ -27,24 +27,42 @@ struct SwapCryptoView: View {
     }
 
     var body: some View {
-        content
-            .onAppear {
-                swapViewModel.load(initialFromCoin: fromCoin, initialToCoin: toCoin, vault: vault, tx: tx)
+        ZStack {
+            Background()
+            main
+        }
+        .onAppear {
+            swapViewModel.load(initialFromCoin: fromCoin, initialToCoin: toCoin, vault: vault, tx: tx)
+        }
+        .navigationBarBackButtonHidden(true)
+#if os(iOS)
+        .navigationTitle(NSLocalizedString("swap", comment: "SendCryptoView title"))
+        .ignoresSafeArea(.keyboard)
+        .toolbar {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
+                backButton
             }
-            .navigationBarBackButtonHidden(true)
-            .navigationTitle(NSLocalizedString("swap", comment: "SendCryptoView title"))
-            .ignoresSafeArea(.keyboard)
-            .toolbar {
-                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                    backButton
-                }
-                
-                if swapViewModel.currentIndex==3 {
-                    ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                        NavigationQRShareButton(title: "swap", renderedImage: shareSheetViewModel.renderedImage)
-                    }
+            
+            if swapViewModel.currentIndex==3 {
+                ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                    NavigationQRShareButton(title: "swap", renderedImage: shareSheetViewModel.renderedImage)
                 }
             }
+        }
+#endif
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            content
+        }
+    }
+    
+    var headerMac: some View {
+        SwapCryptoHeader(swapViewModel: swapViewModel, shareSheetViewModel: shareSheetViewModel)
     }
     
     var content: some View {

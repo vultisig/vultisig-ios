@@ -14,21 +14,35 @@ struct VaultPairDetailView: View {
     var body: some View {
         ZStack {
             Background()
-            view
+            main
         }
         .navigationBarBackButtonHidden(true)
+#if os(iOS)
         .navigationTitle(NSLocalizedString("vaultDetailsTitle", comment: "View your vault details"))
-        .onAppear {
-            self.devicesInfo = vault.signers.enumerated().map { index, signer in
-                DeviceInfo(Index: index, Signer: signer)
-            }
-        }
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
             }
         }
-
+#endif
+        .onAppear {
+            self.devicesInfo = vault.signers.enumerated().map { index, signer in
+                DeviceInfo(Index: index, Signer: signer)
+            }
+        }
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            view
+        }
+    }
+    
+    var headerMac: some View {
+        GeneralMacHeader(title: "vaultDetailsTitle")
     }
     
     var view: some View {

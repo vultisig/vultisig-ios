@@ -29,15 +29,30 @@ struct GeneralQRImportMacView: View {
     var body: some View {
         ZStack {
             Background()
-            content
+            main
         }
-        .navigationTitle(getTitle())
         .navigationBarBackButtonHidden(true)
+#if os(iOS)
+        .navigationTitle(getTitle())
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
             }
         }
+#endif
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            content
+        }
+    }
+    
+    var headerMac: some View {
+        GeneralMacHeader(title: getTitle())
     }
     
     var content: some View {

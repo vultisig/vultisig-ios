@@ -16,20 +16,35 @@ struct SettingsCurrencySelectionView: View {
     var body: some View {
         ZStack {
             Background()
-            view
+            main
             
             if isLoading {
                 Loader()
             }
         }
         .navigationBarBackButtonHidden(true)
+#if os(iOS)
         .navigationTitle(NSLocalizedString("currency", comment: "Currency"))
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
             }
         }
-
+#endif
+    }
+    
+    var main: some View {
+        VStack(spacing: 0) {
+#if os(macOS)
+            headerMac
+#endif
+            view
+        }
+    }
+    
+    var headerMac: some View {
+        GeneralMacHeader(title: "currency")
+            .padding(.bottom, 8)
     }
     
     var view: some View {

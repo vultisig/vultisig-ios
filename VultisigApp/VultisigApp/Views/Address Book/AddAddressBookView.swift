@@ -29,18 +29,33 @@ struct AddAddressBookView: View {
     var body: some View {
         ZStack {
             Background()
-            view
+            main
         }
         .navigationBarBackButtonHidden(true)
+#if os(iOS)
         .navigationTitle(NSLocalizedString("addAddress", comment: ""))
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
             }
         }
+#endif
         .onAppear {
             setData()
         }
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            view
+        }
+    }
+    
+    var headerMac: some View {
+        GeneralMacHeader(title: "addAddress")
     }
     
     var view: some View {
@@ -49,6 +64,9 @@ struct AddAddressBookView: View {
             button
         }
         .padding(.horizontal, 16)
+#if os(macOS)
+        .padding(.horizontal, 24)
+#endif
         .alert(isPresented: $showAlert) {
             alert
         }
