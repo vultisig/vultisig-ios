@@ -279,21 +279,20 @@ class TokensStore {
             CoinMeta(chain: Chain.arbitrum, ticker: "FOX", logo: "fox", decimals: 18, priceProviderId: "shapeshift-fox-token", contractAddress: "0xf929de51D91C77E42f5090069E0AD7A09e513c73", isNativeToken: false)
         }
         
-        
         static var arbUSDT: CoinMeta {
-            CoinMeta(chain: Chain.arbitrum, ticker: "USDT", logo: "USDT", decimals: 18, priceProviderId: "USDT", contractAddress: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9", isNativeToken: false)
+            CoinMeta(chain: Chain.arbitrum, ticker: "USDT", logo: "USDT", decimals: 6, priceProviderId: "USDT", contractAddress: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9", isNativeToken: false)
         }
         
         static var arbUSDCe: CoinMeta {
-            CoinMeta(chain: Chain.arbitrum, ticker: "USDC.e", logo: "USDC.e", decimals: 18, priceProviderId: "USDC.e", contractAddress: "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8", isNativeToken: false)
+            CoinMeta(chain: Chain.arbitrum, ticker: "USDC.e", logo: "USDC.e", decimals: 6, priceProviderId: "USDC.e", contractAddress: "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8", isNativeToken: false)
         }
         
         static var arbUSDC: CoinMeta {
-            CoinMeta(chain: Chain.arbitrum, ticker: "USDC", logo: "USDC", decimals: 18, priceProviderId: "USDC", contractAddress: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831", isNativeToken: false)
+            CoinMeta(chain: Chain.arbitrum, ticker: "USDC", logo: "USDC", decimals: 6, priceProviderId: "USDC", contractAddress: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831", isNativeToken: false)
         }
         
         static var arbWBTC: CoinMeta {
-            CoinMeta(chain: Chain.arbitrum, ticker: "WBTC", logo: "WBTC", decimals: 18, priceProviderId: "WBTC", contractAddress: "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f", isNativeToken: false)
+            CoinMeta(chain: Chain.arbitrum, ticker: "WBTC", logo: "WBTC", decimals: 8, priceProviderId: "WBTC", contractAddress: "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f", isNativeToken: false)
         }
         
         static var arbLINK: CoinMeta {
@@ -321,7 +320,7 @@ class TokensStore {
         }
         
         static var arbPYTH: CoinMeta {
-            CoinMeta(chain: Chain.arbitrum, ticker: "PYTH", logo: "PYTH", decimals: 18, priceProviderId: "PYTH", contractAddress: "0xE4D5c6aE46ADFAF04313081e8C0052A30b6Dd724", isNativeToken: false)
+            CoinMeta(chain: Chain.arbitrum, ticker: "PYTH", logo: "PYTH", decimals: 6, priceProviderId: "PYTH", contractAddress: "0xE4D5c6aE46ADFAF04313081e8C0052A30b6Dd724", isNativeToken: false)
         }
         
         static var arbLDO: CoinMeta {
@@ -337,24 +336,25 @@ class TokensStore {
         static var optOP: CoinMeta {
             CoinMeta(chain: Chain.optimism, ticker: "OP", logo: "optimism", decimals: 18, priceProviderId: "", contractAddress: "0x4200000000000000000000000000000000000042", isNativeToken: false)
         }
+        
         static var optFox: CoinMeta {
             CoinMeta(chain: Chain.optimism, ticker: "FOX", logo: "fox", decimals: 18, priceProviderId: "", contractAddress: "0xf1a0da3367bc7aa04f8d94ba57b862ff37ced174", isNativeToken: false)
         }
         
         static var optUSDT: CoinMeta {
-            CoinMeta(chain: Chain.optimism, ticker: "USDT", logo: "USDT", decimals: 18, priceProviderId: "", contractAddress: "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58", isNativeToken: false)
+            CoinMeta(chain: Chain.optimism, ticker: "USDT", logo: "USDT", decimals: 6, priceProviderId: "", contractAddress: "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58", isNativeToken: false)
         }
         
         static var optUSDC: CoinMeta {
-            CoinMeta(chain: Chain.optimism, ticker: "USDC", logo: "USDC", decimals: 18, priceProviderId: "", contractAddress: "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85", isNativeToken: false)
+            CoinMeta(chain: Chain.optimism, ticker: "USDC", logo: "USDC", decimals: 6, priceProviderId: "", contractAddress: "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85", isNativeToken: false)
         }
         
         static var optUSDCe: CoinMeta {
-            CoinMeta(chain: Chain.optimism, ticker: "USDC.e", logo: "USDC.e", decimals: 18, priceProviderId: "", contractAddress: "0x7F5c764cBc14f9669B88837ca1490cCa17c31607", isNativeToken: false)
+            CoinMeta(chain: Chain.optimism, ticker: "USDC.e", logo: "USDC.e", decimals: 6, priceProviderId: "", contractAddress: "0x7F5c764cBc14f9669B88837ca1490cCa17c31607", isNativeToken: false)
         }
         
         static var optWBTC: CoinMeta {
-            CoinMeta(chain: Chain.optimism, ticker: "WBTC", logo: "WBTC", decimals: 18, priceProviderId: "", contractAddress: "0x68f180fcCe6836688e9084f035309E29Bf0A2095", isNativeToken: false)
+            CoinMeta(chain: Chain.optimism, ticker: "WBTC", logo: "WBTC", decimals: 8, priceProviderId: "", contractAddress: "0x68f180fcCe6836688e9084f035309E29Bf0A2095", isNativeToken: false)
         }
         
         static var optLINK: CoinMeta {
@@ -370,7 +370,7 @@ class TokensStore {
         }
         
         static var optPYTH: CoinMeta {
-            CoinMeta(chain: Chain.optimism, ticker: "PYTH", logo: "PYTH", decimals: 18, priceProviderId: "", contractAddress: "0x99C59ACeBFEF3BBFB7129DC90D1a11DB0E91187f", isNativeToken: false)
+            CoinMeta(chain: Chain.optimism, ticker: "PYTH", logo: "PYTH", decimals: 6, priceProviderId: "", contractAddress: "0x99C59ACeBFEF3BBFB7129DC90D1a11DB0E91187f", isNativeToken: false)
         }
         
         static var optLDO: CoinMeta {
@@ -442,7 +442,7 @@ class TokensStore {
         }
         
         static var blastWBTC: CoinMeta {
-            CoinMeta(chain: Chain.blast, ticker: "WBTC", logo: "WBTC", decimals: 18, priceProviderId: "", contractAddress: "0xF7bc58b8D8f97ADC129cfC4c9f45Ce3C0E1D2692", isNativeToken: false)
+            CoinMeta(chain: Chain.blast, ticker: "WBTC", logo: "WBTC", decimals: 8, priceProviderId: "", contractAddress: "0xF7bc58b8D8f97ADC129cfC4c9f45Ce3C0E1D2692", isNativeToken: false)
         }
         
         static var blastUSDB: CoinMeta {
