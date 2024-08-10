@@ -82,6 +82,8 @@
 		A58CC34B2C32FA760086D16B /* ProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58CC34A2C32FA760086D16B /* ProtoMappable.swift */; };
 		A58CC34D2C32FB800086D16B /* KeysignMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58CC34C2C32FB800086D16B /* KeysignMessage.swift */; };
 		A58CC34F2C32FC530086D16B /* BlockChainSpecific.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58CC34E2C32FC530086D16B /* BlockChainSpecific.swift */; };
+		A594A9EB2C64364600A3D09E /* Rate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A594A9EA2C64364600A3D09E /* Rate.swift */; };
+		A594A9ED2C6436A800A3D09E /* DBMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A594A9EC2C6436A800A3D09E /* DBMappable.swift */; };
 		A5BA15082C077A0B00AA6C07 /* OneInchToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA15072C077A0B00AA6C07 /* OneInchToken.swift */; };
 		A5BA150A2C078EED00AA6C07 /* TokenSelectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA15092C078EED00AA6C07 /* TokenSelectionCell.swift */; };
 		A5BA150C2C078FA000AA6C07 /* TokenSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA150B2C078FA000AA6C07 /* TokenSelectionViewModel.swift */; };
@@ -96,6 +98,8 @@
 		A5D49F582BE26C63001766C8 /* CoinActionResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D49F572BE26C63001766C8 /* CoinActionResolver.swift */; };
 		A5D49F5A2BE26C87001766C8 /* Coin+ChainAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D49F592BE26C87001766C8 /* Coin+ChainAction.swift */; };
 		A5DA62092BF79C1D00CBEAEE /* ThorchainSwapError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5DA62082BF79C1D00CBEAEE /* ThorchainSwapError.swift */; };
+		A5E841CB2C639556009325CB /* DatabaseRate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E841CA2C639556009325CB /* DatabaseRate.swift */; };
+		A5E841CD2C63A987009325CB /* RateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E841CC2C63A987009325CB /* RateProvider.swift */; };
 		A5F97C8E2BBF0BCF000C30DF /* BalanceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F97C8D2BBF0BCF000C30DF /* BalanceService.swift */; };
 		A608E3772C01BD7A00E40B85 /* SwapDetailsSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = A608E3762C01BD7A00E40B85 /* SwapDetailsSummary.swift */; };
 		A608E3792C02472C00E40B85 /* SwapCryptoAmountTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A608E3782C02472C00E40B85 /* SwapCryptoAmountTextField.swift */; };
@@ -522,6 +526,8 @@
 		A58CC34A2C32FA760086D16B /* ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtoMappable.swift; sourceTree = "<group>"; };
 		A58CC34C2C32FB800086D16B /* KeysignMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignMessage.swift; sourceTree = "<group>"; };
 		A58CC34E2C32FC530086D16B /* BlockChainSpecific.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockChainSpecific.swift; sourceTree = "<group>"; };
+		A594A9EA2C64364600A3D09E /* Rate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rate.swift; sourceTree = "<group>"; };
+		A594A9EC2C6436A800A3D09E /* DBMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBMappable.swift; sourceTree = "<group>"; };
 		A5BA15072C077A0B00AA6C07 /* OneInchToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneInchToken.swift; sourceTree = "<group>"; };
 		A5BA15092C078EED00AA6C07 /* TokenSelectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionCell.swift; sourceTree = "<group>"; };
 		A5BA150B2C078FA000AA6C07 /* TokenSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionViewModel.swift; sourceTree = "<group>"; };
@@ -536,6 +542,8 @@
 		A5D49F572BE26C63001766C8 /* CoinActionResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinActionResolver.swift; sourceTree = "<group>"; };
 		A5D49F592BE26C87001766C8 /* Coin+ChainAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Coin+ChainAction.swift"; sourceTree = "<group>"; };
 		A5DA62082BF79C1D00CBEAEE /* ThorchainSwapError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainSwapError.swift; sourceTree = "<group>"; };
+		A5E841CA2C639556009325CB /* DatabaseRate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseRate.swift; sourceTree = "<group>"; };
+		A5E841CC2C63A987009325CB /* RateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RateProvider.swift; sourceTree = "<group>"; };
 		A5F97C8D2BBF0BCF000C30DF /* BalanceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BalanceService.swift; sourceTree = "<group>"; };
 		A608E3762C01BD7A00E40B85 /* SwapDetailsSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapDetailsSummary.swift; sourceTree = "<group>"; };
 		A608E3782C02472C00E40B85 /* SwapCryptoAmountTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoAmountTextField.swift; sourceTree = "<group>"; };
@@ -957,6 +965,7 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				A5E841C92C639550009325CB /* Rates */,
 				B51097EC2C4E43660066D560 /* Blowfish */,
 				A52287462C42BAEB00E1CC5A /* LiFi */,
 				A563867E2C3A2121008B848E /* Protobuf */,
@@ -1255,6 +1264,17 @@
 				A5D49F572BE26C63001766C8 /* CoinActionResolver.swift */,
 			);
 			path = Actions;
+			sourceTree = "<group>";
+		};
+		A5E841C92C639550009325CB /* Rates */ = {
+			isa = PBXGroup;
+			children = (
+				A5E841CA2C639556009325CB /* DatabaseRate.swift */,
+				A594A9EA2C64364600A3D09E /* Rate.swift */,
+				A5E841CC2C63A987009325CB /* RateProvider.swift */,
+				A594A9EC2C6436A800A3D09E /* DBMappable.swift */,
+			);
+			path = Rates;
 			sourceTree = "<group>";
 		};
 		A608E3752C01BD6800E40B85 /* Swap */ = {
@@ -2122,6 +2142,7 @@
 				46AAA49D2BC3B4CF00E5BAB4 /* DecimalExtension.swift in Sources */,
 				B51119332C0072620020B711 /* TransactionMemoCustom.swift in Sources */,
 				A564ED422BC350520056FDC0 /* SwapTransaction.swift in Sources */,
+				A594A9ED2C6436A800A3D09E /* DBMappable.swift in Sources */,
 				A68696212C1B5575004EDE0B /* BackupPasswordSetupView.swift in Sources */,
 				463408662BA9C1D200246248 /* CoinTypeExtension.swift in Sources */,
 				DE8AD7472BC78FA400339775 /* Encryption.swift in Sources */,
@@ -2178,6 +2199,7 @@
 				A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */,
 				469ED3942B98E776008D4951 /* ThorchainService.swift in Sources */,
 				462DCD702BCA14F3003D542F /* CoinPaprikaQuote.swift in Sources */,
+				A5E841CD2C63A987009325CB /* RateProvider.swift in Sources */,
 				A6B7F49A2C49418A006D83D1 /* VaultDetailQRCode.swift in Sources */,
 				B5A97CF52BF4287A007574D7 /* TransactionMemoSelectorDropdown.swift in Sources */,
 				A58CC34B2C32FA760086D16B /* ProtoMappable.swift in Sources */,
@@ -2340,6 +2362,7 @@
 				A6AF96102C2E2DC900992578 /* FileQRCodeImporterMac.swift in Sources */,
 				DE9EB0FA2BA4491B001747D9 /* CoinExtension.swift in Sources */,
 				465A8D562B9E6E0B006E7457 /* SolanaRpc.swift in Sources */,
+				A594A9EB2C64364600A3D09E /* Rate.swift in Sources */,
 				A65BA9922BAD439900B2D8AA /* KeysignDiscoverServiceView.swift in Sources */,
 				A6980C2E2BC089F900F452AB /* SettingSelectionCell.swift in Sources */,
 				A65324302BA540ED00DDE6EB /* SendCryptoVerifyView.swift in Sources */,
@@ -2370,6 +2393,7 @@
 				4606B3B02B80465E0045094D /* UTXOTransactionsService.swift in Sources */,
 				DEEFF4FD2B9835DE0015692E /* THORChainSwapChainExtension.swift in Sources */,
 				A61BC81B2BA26D9900484689 /* ChainSelectionCell.swift in Sources */,
+				A5E841CB2C639556009325CB /* DatabaseRate.swift in Sources */,
 				A6725D412C40C3C100D47716 /* AddressBookChainSelector.swift in Sources */,
 				A66BFCD12C134B3B004DCD4F /* QRShareSheetImage.swift in Sources */,
 				A66A1DF82C268D6400C3EAF7 /* FontStyle.swift in Sources */,

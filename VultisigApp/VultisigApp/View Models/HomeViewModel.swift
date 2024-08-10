@@ -14,7 +14,7 @@ class HomeViewModel: ObservableObject {
     @AppStorage("showVaultBalance") var hideVaultBalance: Bool = false
     
     @Published var selectedVault: Vault? = nil
-    
+
     func loadSelectedVault(for vaults: [Vault]) {
         if vaultName.isEmpty || selectedPubKeyECDSA.isEmpty {
             setSelectedVault(vaults.first)

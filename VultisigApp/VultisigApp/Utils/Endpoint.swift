@@ -148,14 +148,14 @@ class Endpoint {
         "https://etherscan.io/tx/\(value)"
     }
     
-    static func fetchCryptoPrices(coin: String, fiat: String) -> String {
-        "\(vultisigApiProxy)/coingeicko/api/v3/simple/price?ids=\(coin)&vs_currencies=\(fiat)"
+    static func fetchCryptoPrices(ids: String, currencies: String) -> URL {
+        "\(vultisigApiProxy)/coingeicko/api/v3/simple/price?ids=\(ids)&vs_currencies=\(currencies)".asUrl
     }
     
-    static func fetchTokenPrice(network: String, addresses: [String], fiat: String) -> String {
+    static func fetchTokenPrice(network: String, addresses: [String], currencies: String) -> URL {
         let addresses = addresses.joined(separator: ",")
-        let url = "\(vultisigApiProxy)/coingeicko/api/v3/simple/token_price/\(network.lowercased())?contract_addresses=\(addresses)&vs_currencies=\(fiat)"
-        return url
+        let url = "\(vultisigApiProxy)/coingeicko/api/v3/simple/token_price/\(network.lowercased())?contract_addresses=\(addresses)&vs_currencies=\(currencies)"
+        return url.asUrl
     }
     
     static func fetchTokensInfo(network: String, addresses: [String]) -> String {

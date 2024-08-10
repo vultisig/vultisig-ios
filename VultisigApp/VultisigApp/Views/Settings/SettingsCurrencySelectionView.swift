@@ -77,10 +77,8 @@ struct SettingsCurrencySelectionView: View {
         isLoading = true
         settingsViewModel.selectedCurrency = currency
         
-        Task{
+        Task {
             if let currentVault = ApplicationState.shared.currentVault {
-                await CryptoPriceService.shared.clearCache()
-                await BalanceService.shared.clearCache()
                 await BalanceService.shared.updateBalances(vault: currentVault)
                 dismiss()
                 isLoading = false
