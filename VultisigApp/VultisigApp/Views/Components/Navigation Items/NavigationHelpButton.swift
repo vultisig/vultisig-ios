@@ -18,12 +18,8 @@ struct NavigationHelpButton: View {
     
     var image: some View {
         Image(systemName: "questionmark.circle")
-#if os(iOS)
             .font(.body18MenloBold)
             .foregroundColor(tint)
-#elseif os(macOS)
-            .font(.body18Menlo)
-#endif
     }
 }
 
