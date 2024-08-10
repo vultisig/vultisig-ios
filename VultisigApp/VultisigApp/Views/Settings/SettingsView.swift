@@ -40,7 +40,7 @@ struct SettingsView: View {
     }
     
     var headerMac: some View {
-        GeneralMacHeader(title: "settings")
+        SettingsHeader(showMenu: $showMenu)
             .padding(.bottom, 8)
     }
     
