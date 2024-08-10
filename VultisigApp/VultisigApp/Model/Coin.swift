@@ -17,7 +17,6 @@ class Coin: ObservableObject, Codable, Hashable {
     var logo: String
     var priceProviderId: String
     var rawBalance: String = ""
-    var priceRate: Double = 0
     
     var decimals: Int {
         get {
@@ -27,7 +26,7 @@ class Coin: ObservableObject, Codable, Hashable {
             strDecimals = String(newValue)
         }
     }
-    
+
     init(asset: CoinMeta, address: String, hexPublicKey: String) {
         self.chain = asset.chain
         self.ticker = asset.ticker
@@ -39,7 +38,6 @@ class Coin: ObservableObject, Codable, Hashable {
         self.id = asset.coinId(address: address)
         
         self.rawBalance = .zero
-        self.priceRate = .zero
         self.address = address
         self.hexPublicKey = hexPublicKey
     }
@@ -96,8 +94,7 @@ class Coin: ObservableObject, Codable, Hashable {
     }
     
     var balanceInFiat: String {
-        let balanceInFiat = balanceDecimal * Decimal(priceRate)
-        return balanceInFiat.formatToFiat()
+        return balanceInFiatDecimal.formatToFiat()
     }
     
     var chainType: ChainType {
@@ -159,7 +156,11 @@ class Coin: ObservableObject, Codable, Hashable {
             return "10000000000"
         }
     }
-    
+
+    var price: Double {
+        return RateProvider.shared.rate(for: self)?.value ?? 0
+    }
+
     func decimal(for value: BigInt) -> Decimal {
         let decimalValue = Decimal(string: String(value)) ?? 0
         return decimalValue / pow(Decimal(10), decimals)
@@ -172,11 +173,11 @@ class Coin: ObservableObject, Codable, Hashable {
     
     func fiat(value: BigInt) -> Decimal {
         let decimal = decimal(for: value)
-        return decimal * Decimal(priceRate)
+        return RateProvider.shared.fiatBalance(value: decimal, coin: self)
     }
     
     func fiat(decimal: Decimal) -> Decimal {
-        return decimal * Decimal(priceRate)
+        return RateProvider.shared.fiatBalance(value: decimal, coin: self)
     }
     
     var swapAsset: String {
@@ -203,8 +204,7 @@ class Coin: ObservableObject, Codable, Hashable {
     }
     
     var balanceInFiatDecimal: Decimal {
-        let balanceInFiat = balanceDecimal * Decimal(priceRate)
-        return balanceInFiat
+        return RateProvider.shared.fiatBalance(for: self)
     }
     
     var blockchairKey: String {

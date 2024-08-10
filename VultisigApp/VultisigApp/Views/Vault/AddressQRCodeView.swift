@@ -22,29 +22,34 @@ struct AddressQRCodeView: View {
     var body: some View {
         ZStack {
             Background()
-            view
+            main
         }
+        .navigationBarBackButtonHidden(true)
 #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
-#endif
-        .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("address", comment: "AddressQRCodeView title"))
         .toolbar {
-#if os(iOS)
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackSheetButton(showSheet: $showSheet)
             }
-#elseif os(macOS)
-            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                NavigationBackButton()
-            }
-#endif
-            
             ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
             }
         }
-
+#endif
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            view
+        }
+    }
+    
+    var headerMac: some View {
+        AddressQRCodeHeader(shareSheetViewModel: shareSheetViewModel)
     }
     
     var view: some View {

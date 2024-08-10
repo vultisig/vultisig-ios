@@ -48,28 +48,16 @@ struct PeerDiscoveryView: View {
                     }
             }
             
-            states
+            main
         }
-        .navigationTitle(getTitle())
         .navigationBarBackButtonHidden(true)
-        .task {
-            viewModel.startDiscovery()
-        }
-        .onAppear {
-            viewModel.setData(vault: vault, tssType: tssType, participantDiscovery: participantDiscovery)
-            setData()
-        }
-        .onDisappear {
-            viewModel.stopMediator()
-        }
-        
 #if os(iOS)
+        .navigationTitle(getTitle())
         .navigationBarTitleDisplayMode(.inline)
         .detectOrientation($orientation)
         .onChange(of: orientation) { oldValue, newValue in
             setData()
         }
-#endif
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
@@ -81,8 +69,34 @@ struct PeerDiscoveryView: View {
                 }
             }
         }
-        
-        
+#endif
+        .task {
+            viewModel.startDiscovery()
+        }
+        .onAppear {
+            viewModel.setData(vault: vault, tssType: tssType, participantDiscovery: participantDiscovery)
+            setData()
+        }
+        .onDisappear {
+            viewModel.stopMediator()
+        }
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            states
+        }
+    }
+    
+    var headerMac: some View {
+        PeerDiscoveryHeader(
+            selectedTab: selectedTab, 
+            viewModel: viewModel,
+            shareSheetViewModel: shareSheetViewModel
+        )
     }
     
     var states: some View {

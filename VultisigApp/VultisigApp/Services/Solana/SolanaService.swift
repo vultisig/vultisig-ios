@@ -35,11 +35,10 @@ class SolanaService {
         }
     }
     
-    func getSolanaBalance(coin: Coin) async throws -> (rawBalance: String, priceRate: Double) {
+    func getSolanaBalance(coin: Coin) async throws -> String {
         do {
             var rawBalance = "0"
-            let priceRateFiat = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
-            
+
             if coin.isNativeToken {
                 let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "getBalance", params: [coin.address])
                 if let totalBalance = Utils.extractResultFromJson(fromData: data, path: "result.value") as? Int64 {
@@ -49,7 +48,7 @@ class SolanaService {
                 rawBalance = try await fetchTokenBalance(for: coin.address, contractAddress: coin.contractAddress) ?? "0"
             }
             
-            return (rawBalance, priceRateFiat)
+            return rawBalance
         } catch {
             print("Error in getSolanaBalance:")
             throw error

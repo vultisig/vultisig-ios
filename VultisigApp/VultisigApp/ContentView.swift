@@ -14,7 +14,7 @@ struct ContentView: View {
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var accountViewModel: AccountViewModel
     @EnvironmentObject var appViewModel: ApplicationState
-    
+
     var body: some View {
         ZStack {
             NavigationStack {
@@ -34,6 +34,8 @@ struct ContentView: View {
 #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
                 .navigationBarTitleTextColor(.neutral0)
+#elseif os(macOS)
+                .navigationTitle("Vultisig")
 #endif
             }
             .onOpenURL { incomingURL in

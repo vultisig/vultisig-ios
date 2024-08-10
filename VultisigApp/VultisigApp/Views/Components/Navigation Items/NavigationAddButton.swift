@@ -12,12 +12,8 @@ struct NavigationAddButton: View {
     
     var body: some View {
         Image(systemName: "plus")
-#if os(iOS)
             .font(.body18MenloBold)
             .foregroundColor(tint)
-#elseif os(macOS)
-            .font(.body18Menlo)
-#endif
     }
 }
 

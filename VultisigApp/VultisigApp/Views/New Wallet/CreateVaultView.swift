@@ -13,9 +13,10 @@ struct CreateVaultView: View {
     var body: some View {
         ZStack {
             Background()
-            view
+            main
         }
         .navigationBarBackButtonHidden(true)
+#if os(iOS)
         .toolbar {
             if showBackButton {
                 ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
@@ -27,6 +28,20 @@ struct CreateVaultView: View {
                 NavigationHelpButton()
             }
         }
+#endif
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            view
+        }
+    }
+    
+    var headerMac: some View {
+        CreateVaultHeader(showBackButton: showBackButton)
     }
     
     var view: some View {

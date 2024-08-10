@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct VaultDetailBalanceContent: View {
-    let vault: Vault
-    
+    @ObservedObject var vault: Vault
+
     @State var width: CGFloat = .zero
     @State var redactedText = ""
     
