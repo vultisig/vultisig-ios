@@ -19,15 +19,17 @@ struct ImportWalletView: View {
     var body: some View {
         ZStack {
             Background()
-            view
+            main
         }
         .navigationBarBackButtonHidden(true)
+#if os(iOS)
         .navigationTitle(NSLocalizedString("import", comment: "Import title"))
         .toolbar {
             ToolbarItem(placement: .navigation) {
                 NavigationBackButton()
             }
         }
+#endif
         .fileImporter(
             isPresented: $backupViewModel.showVaultImporter,
             allowedContentTypes: [.data],
@@ -57,6 +59,19 @@ struct ImportWalletView: View {
         .onDisappear {
             resetData()
         }
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            view
+        }
+    }
+    
+    var headerMac: some View {
+        GeneralMacHeader(title: "import")
     }
     
     var view: some View {

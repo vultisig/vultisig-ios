@@ -17,15 +17,30 @@ struct VaultDetailQRCodeView: View {
     var body: some View {
         ZStack {
             Background()
-            content
+            main
         }
         .navigationBarBackButtonHidden(true)
+#if os(iOS)
         .navigationTitle(NSLocalizedString("shareVaultQR", comment: ""))
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
             }
         }
+#endif
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            content
+        }
+    }
+    
+    var headerMac: some View {
+        GeneralMacHeader(title: "backup")
     }
     
     var content: some View {

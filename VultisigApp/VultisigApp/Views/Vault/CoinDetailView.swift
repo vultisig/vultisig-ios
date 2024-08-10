@@ -22,7 +22,7 @@ struct CoinDetailView: View {
     var body: some View {
         ZStack {
             Background()
-            view
+            main
             
             if isLoading {
                 loader
@@ -44,15 +44,8 @@ struct CoinDetailView: View {
             )
         }
         .navigationBarBackButtonHidden(true)
+#if os(iOS)
         .navigationTitle(NSLocalizedString(coin.ticker, comment: ""))
-        .onAppear {
-            sendTx.reset(coin: coin)
-        }
-        .onChange(of: isSendLinkActive) { oldValue, newValue in
-            if newValue {
-                sendTx.reset(coin: coin)
-            }
-        }
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
@@ -66,7 +59,28 @@ struct CoinDetailView: View {
                 }
             }
         }
-        
+#endif
+        .onAppear {
+            sendTx.reset(coin: coin)
+        }
+        .onChange(of: isSendLinkActive) { oldValue, newValue in
+            if newValue {
+                sendTx.reset(coin: coin)
+            }
+        }
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            view
+        }
+    }
+    
+    var headerMac: some View {
+        CoinDetailHeader(title: group.name, refreshData: refreshData)
     }
     
     var view: some View {
@@ -76,9 +90,11 @@ struct CoinDetailView: View {
                 content
             }
             .padding(.horizontal, 16)
+#if os(iOS)
             .padding(.vertical, 30)
-#if os(macOS)
-            .padding(24)
+#elseif os(macOS)
+            .padding(.horizontal, 24)
+            .padding(.vertical, 8)
 #endif
         }
     }

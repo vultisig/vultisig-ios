@@ -15,30 +15,44 @@ struct ChainSelectionView: View {
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
     var body: some View {
-        content
-            .navigationBarBackButtonHidden(true)
-            .navigationTitle(NSLocalizedString("chooseChains", comment: "Choose Chains"))
-            .onAppear {
-                setData()
+        ZStack {
+            ZStack {
+                Background()
+                main
             }
-            .onChange(of: vault) {
-                setData()
-            }
-            .onDisappear {
-                saveAssets()
-            }
-            .toolbar {
+        }
+        .navigationBarBackButtonHidden(true)
 #if os(iOS)
+        .navigationTitle(NSLocalizedString("chooseChains", comment: "Choose Chains"))
+        .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackSheetButton(showSheet: $showChainSelectionSheet)
             }
-#elseif os(macOS)
-            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                NavigationBackButton()
-            }
+        }
 #endif
-            }
-        
+        .onAppear {
+            setData()
+        }
+        .onChange(of: vault) {
+            setData()
+        }
+        .onDisappear {
+            saveAssets()
+        }
+
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            content
+        }
+    }
+    
+    var headerMac: some View {
+        GeneralMacHeader(title: "chooseChains")
     }
     
     var content: some View {

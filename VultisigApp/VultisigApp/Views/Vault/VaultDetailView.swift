@@ -10,7 +10,7 @@ import SwiftUI
 
 struct VaultDetailView: View {
     @Binding var showVaultsList: Bool
-    let vault: Vault
+    @ObservedObject var vault: Vault
     
     @EnvironmentObject var appState: ApplicationState
     @EnvironmentObject var viewModel: VaultDetailViewModel

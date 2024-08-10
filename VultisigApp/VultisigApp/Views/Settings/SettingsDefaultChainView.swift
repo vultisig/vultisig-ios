@@ -13,19 +13,35 @@ struct SettingsDefaultChainView: View {
     var body: some View {
         ZStack {
             Background()
-            content
+            main
             
             if settingsDefaultChainViewModel.showLoader {
                 Loader()
             }
         }
         .navigationBarBackButtonHidden(true)
+#if os(iOS)
         .navigationTitle(NSLocalizedString("defaultChains", comment: ""))
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
             }
         }
+#endif
+    }
+    
+    var main: some View {
+        VStack(spacing: 0) {
+#if os(macOS)
+            headerMac
+#endif
+            content
+        }
+    }
+    
+    var headerMac: some View {
+        GeneralMacHeader(title: "defaultChains")
+            .padding(.bottom, 8)
     }
 
     var content: some View {

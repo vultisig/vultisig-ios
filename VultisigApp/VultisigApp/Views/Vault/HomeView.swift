@@ -32,17 +32,31 @@ struct HomeView: View {
             if showMenu {
                 SettingsView(showMenu: $showMenu, homeViewModel: viewModel)
             } else {
-                view
+                main
             }
         }
     }
     
-    var view: some View {
+    var main: some View {
         VStack(spacing: 0) {
 #if os(macOS)
-            navigationContent
+            headerMac
+            Separator()
 #endif
-            
+            view
+        }
+    }
+    
+    var headerMac: some View {
+        HomeHeader(
+            showMenu: $showMenu,
+            showVaultsList: $showVaultsList,
+            isEditingVaults: $isEditingVaults
+        )
+    }
+    
+    var view: some View {
+        VStack(spacing: 0) {
             ZStack {
                 if let vault = viewModel.selectedVault {
                     VaultDetailView(showVaultsList: $showVaultsList, vault: vault)
@@ -52,6 +66,19 @@ struct HomeView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
+#if os(iOS)
+        .toolbar {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
+                menuButton
+            }
+            ToolbarItem(placement: Placement.principal.getPlacement()) {
+                navigationTitle
+            }
+            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                editButton
+            }
+        }
+#endif
         .onAppear {
             setData()
         }
@@ -61,21 +88,6 @@ struct HomeView: View {
         .navigationDestination(isPresented: $shouldKeysignTransaction) {
             if let vault = viewModel.selectedVault {
                 JoinKeysignView(vault: vault)
-            }
-        }
-        .toolbar {
-            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                menuButton
-            }
-            
-#if os(iOS)
-            ToolbarItem(placement: Placement.principal.getPlacement()) {
-                navigationTitle
-            }
-#endif
-            
-            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                editButton
             }
         }
     }
@@ -99,14 +111,6 @@ struct HomeView: View {
         }
     }
     
-    var navigationContent: some View {
-        VStack(spacing: 0) {
-            navigationTitle
-                .padding(.vertical, 12)
-            Separator()
-        }
-    }
-    
     var title: some View {
         VStack(spacing: 0) {
             Text(NSLocalizedString("vaults", comment: "Vaults"))
@@ -117,11 +121,7 @@ struct HomeView: View {
         .clipped()
         .bold()
         .foregroundColor(.neutral0)
-#if os(iOS)
         .font(.body)
-#elseif os(macOS)
-        .font(.title2)
-#endif
     }
     
     var menuButton: some View {
