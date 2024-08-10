@@ -59,6 +59,9 @@ struct BackupPasswordSetupView: View {
 #endif
             view
         }
+        .navigationDestination(isPresented: $navigationLinkActive) {
+            HomeView(selectedVault: vault, showVaultsList: false, shouldJoinKeygen: false)
+        }
     }
     
     var headerMac: some View {
