@@ -127,7 +127,7 @@ class TokensStore {
             CoinMeta(chain: Chain.arbitrum, ticker: "ETH", logo: "eth_arbitrum", decimals: 18, priceProviderId: "ethereum", contractAddress: "", isNativeToken: true)
         }
         static var arbArb: CoinMeta {
-            CoinMeta(chain: Chain.arbitrum, ticker: "WEWE", logo: "arbitrum", decimals: 18, priceProviderId: "arbitrum", contractAddress: "0x912CE59144191C1204E64559FE8253a0e49E6548", isNativeToken: false)
+            CoinMeta(chain: Chain.arbitrum, ticker: "ARB", logo: "arbitrum", decimals: 18, priceProviderId: "arbitrum", contractAddress: "0x912CE59144191C1204E64559FE8253a0e49E6548", isNativeToken: false)
         }
         static var arbTGT: CoinMeta {
             CoinMeta(chain: Chain.arbitrum, ticker: "TGT", logo: "tgt", decimals: 18, priceProviderId: "thorwallet", contractAddress: "0x429fEd88f10285E61b12BDF00848315fbDfCC341", isNativeToken: false)
