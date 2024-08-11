@@ -163,7 +163,7 @@ class TokensStore {
         }
         
         static var avalancheAAvaUSDC: CoinMeta {
-            CoinMeta(chain: Chain.avalanche, ticker: "aAvaUSDC", logo: "aAvaUSDC", decimals: 6, priceProviderId: "", contractAddress: "0x625E7708f30cA75bfd92586e17077590C60eb4cD", isNativeToken: false)
+            CoinMeta(chain: Chain.avalanche, ticker: "aAvaUSDC", logo: "usdc", decimals: 6, priceProviderId: "", contractAddress: "0x625E7708f30cA75bfd92586e17077590C60eb4cD", isNativeToken: false)
         }
         
         static var avalancheBLS: CoinMeta {
@@ -280,15 +280,15 @@ class TokensStore {
         }
         
         static var arbUSDT: CoinMeta {
-            CoinMeta(chain: Chain.arbitrum, ticker: "USDT", logo: "USDT", decimals: 6, priceProviderId: "USDT", contractAddress: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9", isNativeToken: false)
+            CoinMeta(chain: Chain.arbitrum, ticker: "USDT", logo: "usdt", decimals: 6, priceProviderId: "USDT", contractAddress: "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9", isNativeToken: false)
         }
         
         static var arbUSDCe: CoinMeta {
-            CoinMeta(chain: Chain.arbitrum, ticker: "USDC.e", logo: "USDC.e", decimals: 6, priceProviderId: "USDC.e", contractAddress: "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8", isNativeToken: false)
+            CoinMeta(chain: Chain.arbitrum, ticker: "USDC.e", logo: "usdc", decimals: 6, priceProviderId: "USDC.e", contractAddress: "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8", isNativeToken: false)
         }
         
         static var arbUSDC: CoinMeta {
-            CoinMeta(chain: Chain.arbitrum, ticker: "USDC", logo: "USDC", decimals: 6, priceProviderId: "USDC", contractAddress: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831", isNativeToken: false)
+            CoinMeta(chain: Chain.arbitrum, ticker: "USDC", logo: "usdc", decimals: 6, priceProviderId: "USDC", contractAddress: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831", isNativeToken: false)
         }
         
         static var arbWBTC: CoinMeta {
@@ -342,15 +342,15 @@ class TokensStore {
         }
         
         static var optUSDT: CoinMeta {
-            CoinMeta(chain: Chain.optimism, ticker: "USDT", logo: "USDT", decimals: 6, priceProviderId: "", contractAddress: "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58", isNativeToken: false)
+            CoinMeta(chain: Chain.optimism, ticker: "USDT", logo: "usdt", decimals: 6, priceProviderId: "", contractAddress: "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58", isNativeToken: false)
         }
         
         static var optUSDC: CoinMeta {
-            CoinMeta(chain: Chain.optimism, ticker: "USDC", logo: "USDC", decimals: 6, priceProviderId: "", contractAddress: "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85", isNativeToken: false)
+            CoinMeta(chain: Chain.optimism, ticker: "USDC", logo: "usdc", decimals: 6, priceProviderId: "", contractAddress: "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85", isNativeToken: false)
         }
         
         static var optUSDCe: CoinMeta {
-            CoinMeta(chain: Chain.optimism, ticker: "USDC.e", logo: "USDC.e", decimals: 6, priceProviderId: "", contractAddress: "0x7F5c764cBc14f9669B88837ca1490cCa17c31607", isNativeToken: false)
+            CoinMeta(chain: Chain.optimism, ticker: "USDC.e", logo: "usdc", decimals: 6, priceProviderId: "", contractAddress: "0x7F5c764cBc14f9669B88837ca1490cCa17c31607", isNativeToken: false)
         }
         
         static var optWBTC: CoinMeta {
@@ -392,7 +392,7 @@ class TokensStore {
         }
         
         static var maticUSDT: CoinMeta {
-            CoinMeta(chain: Chain.polygon, ticker: "USDT", logo: "USDT", decimals: 6, priceProviderId: "", contractAddress: "0xc2132D05D31c914a87C6611C10748AEb04B58e8F", isNativeToken: false)
+            CoinMeta(chain: Chain.polygon, ticker: "USDT", logo: "usdt", decimals: 6, priceProviderId: "", contractAddress: "0xc2132D05D31c914a87C6611C10748AEb04B58e8F", isNativeToken: false)
         }
         
         static var maticBNB: CoinMeta {
@@ -404,11 +404,11 @@ class TokensStore {
         }
         
         static var maticUSDC: CoinMeta {
-            CoinMeta(chain: Chain.polygon, ticker: "USDC", logo: "USDC", decimals: 6, priceProviderId: "", contractAddress: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359", isNativeToken: false)
+            CoinMeta(chain: Chain.polygon, ticker: "USDC", logo: "usdc", decimals: 6, priceProviderId: "", contractAddress: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359", isNativeToken: false)
         }
         
         static var maticUSDCe: CoinMeta {
-            CoinMeta(chain: Chain.polygon, ticker: "USDC.e", logo: "USDC.e", decimals: 6, priceProviderId: "", contractAddress: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174", isNativeToken: false)
+            CoinMeta(chain: Chain.polygon, ticker: "USDC.e", logo: "usdc", decimals: 6, priceProviderId: "", contractAddress: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174", isNativeToken: false)
         }
         
         static var maticBUSD: CoinMeta {
