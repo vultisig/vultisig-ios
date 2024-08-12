@@ -16,6 +16,8 @@ enum TransactionMemoInstance {
     case leave(TransactionMemoLeave)
     case custom(TransactionMemoCustom)
     case vote(TransactionMemoVote)
+    case addPool(TransactionMemoAddPool)
+    case withdrawPool(TransactionMemoWithdrawPool)
     
     var view: AnyView {
         switch self {
@@ -28,6 +30,10 @@ enum TransactionMemoInstance {
         case .custom(let memo):
             return memo.getView()
         case .vote(let memo):
+            return memo.getView()
+        case .addPool(let memo):
+            return memo.getView()
+        case .withdrawPool(let memo):
             return memo.getView()
         }
     }
@@ -44,6 +50,10 @@ enum TransactionMemoInstance {
             return memo.description
         case .vote(let memo):
             return memo.description
+        case .addPool(let memo):
+            return memo.description
+        case .withdrawPool(let memo):
+            return memo.description
         }
     }
     
@@ -59,6 +69,10 @@ enum TransactionMemoInstance {
             return memo.amount
         case .vote:
             return .zero
+        case .addPool(let memo):
+            return memo.amount
+        case .withdrawPool(let memo):
+            return .zero
         }
     }
     
@@ -73,6 +87,10 @@ enum TransactionMemoInstance {
         case .custom(let memo):
             return memo.toDictionary()
         case .vote(let memo):
+            return memo.toDictionary()
+        case .addPool(let memo):
+            return memo.toDictionary()
+        case .withdrawPool(let memo):
             return memo.toDictionary()
         }
     }
@@ -97,6 +115,10 @@ enum TransactionMemoInstance {
         case .custom(let memo):
             return memo.isTheFormValid
         case .vote(let memo):
+            return memo.isTheFormValid
+        case .addPool(let memo):
+            return memo.isTheFormValid
+        case .withdrawPool(let memo):
             return memo.isTheFormValid
         }
     }

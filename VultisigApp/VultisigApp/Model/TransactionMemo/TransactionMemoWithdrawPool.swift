@@ -1,0 +1,118 @@
+////
+////  TransactionMemoWithdrawPool.swift
+////  VultisigApp
+////
+////  Created by Enrique Souza Soares on 12/08/24.
+////
+
+import SwiftUI
+import Foundation
+import Combine
+
+class TransactionMemoWithdrawPool: TransactionMemoAddressable, ObservableObject {
+    @Published var basisPoint: Int64 = .zero
+    @Published var affiliate: String = ""
+    @Published var fee: Int64 = .zero
+    
+    // Internal
+    @Published var basisPointValid: Bool = false
+    @Published var affiliateValid: Bool = true
+    @Published var feeValid: Bool = true
+    
+    @Published var isTheFormValid: Bool = false
+    
+    var addressFields: [String: String] {
+        get {
+            ["affiliate": affiliate]
+        }
+        set {
+            if let value = newValue["affiliate"] {
+                affiliate = value
+            }
+        }
+    }
+    
+    private var cancellables = Set<AnyCancellable>()
+    
+    required init() {
+        setupValidation()
+    }
+    
+    init(affiliate: String = "", fee: Int64 = .zero) {
+        self.affiliate = affiliate
+        self.fee = fee
+        setupValidation()
+    }
+    
+    private func setupValidation() {
+        Publishers.CombineLatest3($basisPointValid, $affiliateValid, $feeValid)
+            .map { $0 && $1 && $2 }
+            .assign(to: \.isTheFormValid, on: self)
+            .store(in: &cancellables)
+    }
+    
+    var description: String {
+        toString()
+    }
+    
+    func toString() -> String {
+        var memo = "POOL-:\(self.basisPoint)"
+        if !self.affiliate.isEmpty {
+            memo += ":\(self.affiliate)"
+        }
+        if self.fee != .zero {
+            memo += self.affiliate.isEmpty ? "::\(self.fee)" : ":\(self.fee)"
+        }
+        return memo
+    }
+    
+    func toDictionary() -> ThreadSafeDictionary<String, String> {
+        let dict = ThreadSafeDictionary<String, String>()
+        dict.set("basisPoint", self.basisPoint.description)
+        dict.set("affiliate", self.affiliate)
+        dict.set("fee", "\(self.fee)")
+        dict.set("memo", self.toString())
+        return dict
+    }
+    
+    func getView() -> AnyView {
+        AnyView(VStack {
+            TransactionMemoAddressTextField(
+                memo: self,
+                addressKey: "affiliate",
+                isOptional: true,
+                isAddressValid: Binding(
+                    get: { self.affiliateValid },
+                    set: { self.affiliateValid = $0 }
+                )
+            )
+            
+            StyledIntegerField(
+                placeholder: "Affiliate's Fee",
+                value: Binding(
+                    get: { self.fee },
+                    set: { self.fee = $0 }
+                ),
+                format: .number,
+                isValid: Binding(
+                    get: { self.feeValid },
+                    set: { self.feeValid = $0 }
+                ),
+                isOptional: true
+            )
+            
+            StyledFloatingPointField(
+                placeholder: "Basis Point",
+                value: Binding(
+                    get: { Double(self.basisPoint) },
+                    set: { self.basisPoint = Int64($0) }
+                ),
+                format: .number,
+                isValid: Binding(
+                    get: { self.basisPointValid },
+                    set: { self.basisPointValid = $0 }
+                )
+            )
+        })
+    }
+}

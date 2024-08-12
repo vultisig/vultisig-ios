@@ -10,14 +10,14 @@ import Foundation
 import Combine
 
 enum TransactionMemoType: String, CaseIterable, Identifiable {
-    case bond, unbond, leave, custom, vote
+    case bond, unbond, leave, custom, vote, addPool, withdrawPool
     
     var id: String { self.rawValue }
     
     static func getCases(for coin: Coin) -> [TransactionMemoType] {
         switch coin.chain {
         case .thorChain, .mayaChain:
-            return [.bond, .unbond, .leave, .custom]
+            return [.bond, .unbond, .leave, .custom, .addPool, .withdrawPool]
         case .dydx:
             return [.vote]
         default:
