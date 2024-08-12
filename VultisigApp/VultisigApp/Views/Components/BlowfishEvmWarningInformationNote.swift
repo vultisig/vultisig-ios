@@ -12,30 +12,26 @@ struct BlowfishWarningInformationNote: View {
     
     var body: some View {
         Group {
-            if !viewModel.blowfishResponse.isEmpty {
-                HStack(spacing: 12) {
-                    icon
-                    text
-                }
-                .padding(12)
-                .background(viewModel.backgroundColor)
-                .cornerRadius(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(viewModel.borderColor, lineWidth: lineWidth)
-                )
-            } else {
-                EmptyView()
+            HStack(spacing: 12) {
+                icon
+                text
             }
+            .padding(12)
+            .background(viewModel.backgroundColor)
+            .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(viewModel.borderColor, lineWidth: lineWidth)
+            )
         }
     }
     
     var lineWidth: CGFloat {
-        #if os(iOS)
+#if os(iOS)
         1
-        #elseif os(macOS)
+#elseif os(macOS)
         2
-        #endif
+#endif
     }
     
     var icon: some View {
