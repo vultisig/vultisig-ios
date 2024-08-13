@@ -27,7 +27,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     @MainActor @Published var currentIndex = 1
     @MainActor @Published var currentTitle = "send"
     @MainActor @Published var hash: String?
-    
+    @MainActor @Published var approveHash: String?
+
     @MainActor @Published var error: Error?
     @MainActor @Published var isLoading = false
     @MainActor @Published var quoteLoading = false
@@ -57,10 +58,6 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         tx.load(fromCoin: resolvedFromCoin, toCoin: toCoin, fromCoins: fromCoins, toCoins: toCoins)
 
         dataLoaded = true
-    }
-
-    func explorerLink(tx: SwapTransaction, hash: String) -> String {
-        return Endpoint.getExplorerURL(chainTicker: tx.fromCoin.chain.ticker, txid: hash)
     }
 
     func updateCoinLists(tx: SwapTransaction) {

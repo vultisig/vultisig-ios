@@ -152,8 +152,8 @@ struct TransactionMemoView: View {
     
     var doneView: some View {
         ZStack {
-            if let hash = transactionMemoViewModel.hash {
-                SendCryptoDoneView(vault:vault,hash: hash,explorerLink: Endpoint.getExplorerURL(chainTicker: keysignPayload?.coin.chain.ticker ?? "", txid: hash))
+            if let hash = transactionMemoViewModel.hash, let chain = keysignPayload?.coin.chain  {
+                SendCryptoDoneView(vault: vault, hash: hash, approveHash: nil, chain: chain)
             } else {
                 SendCryptoSigningErrorView()
             }

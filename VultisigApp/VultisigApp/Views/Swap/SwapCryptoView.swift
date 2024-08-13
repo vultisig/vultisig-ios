@@ -148,8 +148,8 @@ struct SwapCryptoView: View {
         ZStack {
             if let hash = swapViewModel.hash {
                 SendCryptoDoneView(
-                    vault: vault, hash: hash, 
-                    explorerLink: swapViewModel.explorerLink(tx: tx, hash: hash),
+                    vault: vault, hash: hash, approveHash: swapViewModel.approveHash, 
+                    chain: tx.fromCoin.chain,
                     progressLink: swapViewModel.progressLink(tx: tx, hash: hash)
                 )
             } else {
