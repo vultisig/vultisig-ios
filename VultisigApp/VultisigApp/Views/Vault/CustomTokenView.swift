@@ -88,7 +88,12 @@ struct CustomTokenView: View {
         VStack(alignment: .leading, spacing: 16) {
             
             HStack {
-                AddressTextField(contractAddress: $contractAddress, validateAddress: validateAddress)
+                AddressTextField(
+                    contractAddress: $contractAddress,
+                    validateAddress: validateAddress,
+                    showScanIcon: false,
+                    showAddressBookIcon: false
+                )
                 
                 Button(action: {
                     Task {
