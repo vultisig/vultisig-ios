@@ -19,6 +19,10 @@ struct AddressQRCodeView: View {
     
     @Environment(\.displayScale) var displayScale
     
+#if os(iOS)
+    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+#endif
+    
     var body: some View {
         ZStack {
             Background()
@@ -73,29 +77,19 @@ struct AddressQRCodeView: View {
     }
     
     var qrCode: some View {
-        GeometryReader { geometry in
-            qrCodeImage?
-                .resizable()
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-                .padding(24)
-#if os(iOS)
-                .frame(maxWidth: .infinity)
-                .frame(height: geometry.size.width-(2*padding))
-#elseif os(macOS)
-                .frame(maxHeight: .infinity)
-                .frame(width: geometry.size.height)
-#endif
-                .background(Color.turquoise600.opacity(0.15))
-                .cornerRadius(10)
-                .overlay (
-                    RoundedRectangle(cornerRadius: 10)
-                        .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [56]))
-                )
-                .padding(.horizontal, padding)
-#if os(macOS)
-                .frame(maxWidth: .infinity, alignment: .center)
-#endif
-        }
+        qrCodeImage?
+            .resizable()
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .padding(24)
+            .aspectRatio(contentMode: .fit)
+            .background(Color.turquoise600.opacity(0.15))
+            .cornerRadius(10)
+            .overlay (
+                RoundedRectangle(cornerRadius: 10)
+                    .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [56]))
+            )
+            .padding(.horizontal, padding)
+            .frame(maxWidth: .infinity, alignment: .center)
     }
     
     private func setData() {
