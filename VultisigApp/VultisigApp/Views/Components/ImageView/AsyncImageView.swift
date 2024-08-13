@@ -40,7 +40,6 @@ struct AsyncImageView: View {
                     Image(uiImage: image)
                         .resizable()
                         .frame(width: size.width, height: size.height)
-                        .cornerRadius(100)
                 } else {
                     fallbackText
                 }
@@ -49,7 +48,6 @@ struct AsyncImageView: View {
                     Image(nsImage: image)
                         .resizable()
                         .frame(width: size.width, height: size.height)
-                        .cornerRadius(100)
                 } else {
                     fallbackText
                 }
