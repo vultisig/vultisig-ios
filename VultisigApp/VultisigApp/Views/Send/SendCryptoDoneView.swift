@@ -23,13 +23,7 @@ struct SendCryptoDoneView: View {
         ZStack {
             Background()
             view
-        }
-        .alert(isPresented: $showAlert) {
-            Alert(
-                title: Text(NSLocalizedString("urlCopied", comment: "")),
-                message: Text(explorerLink),
-                dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
-            )
+            PopupCapsule(text: "urlCopied", showPopup: $showAlert)
         }
     }
     

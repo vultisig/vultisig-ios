@@ -20,6 +20,7 @@ struct ChainDetailView: View {
     @State var isSwapLinkActive = false
     @State var isMemoLinkActive = false
     @State var isWeweLinkActive = false
+    @State var showAlert = false
 
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
@@ -40,6 +41,8 @@ struct ChainDetailView: View {
             if isLoading {
                 Loader()
             }
+            
+            PopupCapsule(text: "addressCopied", showPopup: $showAlert)
         }
         .navigationBarBackButtonHidden(true)
 #if os(iOS)
@@ -183,7 +186,7 @@ struct ChainDetailView: View {
     }
     
     var header: some View {
-        ChainHeaderCell(group: group, isLoading: $isLoading)
+        ChainHeaderCell(group: group, isLoading: $isLoading, showAlert: $showAlert)
     }
     
     var cells: some View {
