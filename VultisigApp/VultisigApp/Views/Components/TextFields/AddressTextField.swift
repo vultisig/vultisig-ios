@@ -13,6 +13,9 @@ struct AddressTextField: View {
     @State private var showScanner = false
     @State private var showImagePicker = false
     
+    @State var showScanIcon = true
+    @State var showAddressBookIcon = true
+    
 #if os(iOS)
     @State private var selectedImage: UIImage?
 #elseif os(macOS)
@@ -64,12 +67,18 @@ struct AddressTextField: View {
 #endif
             
             pasteButton
+            
+            if showScanIcon {
 #if os(iOS)
             scanButton
 #elseif os(macOS)
             fileButton
 #endif
-            addressBookButton
+            }
+
+            if showAddressBookIcon {
+                addressBookButton
+            }
         }
     }
     
