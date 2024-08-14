@@ -21,7 +21,7 @@ extension Coin {
     var streamingInterval: Int {
         switch chain {
         case .mayaChain:
-            return 5
+            return 3
         case .thorChain:
             return 1
         default:

@@ -450,8 +450,12 @@ private extension SwapCryptoViewModel {
     }
     
     func isAlliliate(tx: SwapTransaction) -> Bool {
-        let rawAmount = tx.fromCoin.raw(for: tx.fromAmountDecimal)
-        let fiatAmount = tx.fromCoin.fiat(value: rawAmount)
+        let fiatAmount = RateProvider.shared.fiatBalance(
+            value: tx.fromAmountDecimal,
+            coin: tx.fromCoin,
+            currency: .USD
+        )
+
         return fiatAmount >= 100
     }
 
