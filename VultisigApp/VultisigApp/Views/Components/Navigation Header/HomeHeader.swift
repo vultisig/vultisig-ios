@@ -13,14 +13,17 @@ struct HomeHeader: View {
     @Binding var isEditingVaults: Bool
     
     @EnvironmentObject var viewModel: HomeViewModel
+    @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
     
     var body: some View {
-        HStack {
+        HStack(spacing: 22) {
             menuButton
+            menuButton.opacity(0)
             Spacer()
             navigationTitle
             Spacer()
             editButton
+            refreshButton
         }
         .padding(.vertical, 16)
         .padding(.horizontal, 40)
@@ -41,6 +44,16 @@ struct HomeHeader: View {
             showVaultsList: showVaultsList,
             isEditingVaults: $isEditingVaults
         )
+    }
+    
+    var refreshButton: some View {
+        ZStack {
+            if let vault = viewModel.selectedVault {
+                NavigationRefreshButton {
+                    vaultDetailViewModel.updateBalance(vault: vault)
+                }
+            }
+        }
     }
     
     var navigationTitle: some View {
@@ -93,4 +106,5 @@ struct HomeHeader: View {
         isEditingVaults: .constant(false)
     )
     .environmentObject(HomeViewModel())
+    .environmentObject(VaultDetailViewModel())
 }
