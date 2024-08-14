@@ -10,22 +10,14 @@ import SwiftUI
 struct JoinKeysignDoneView: View {
     let vault: Vault
     @ObservedObject var viewModel: KeysignViewModel
+    @Binding var showAlert: Bool
     
     @Environment(\.openURL) var openURL
     @Environment(\.dismiss) var dismiss
     
-    @State var showAlert = false
-    
     var body: some View {
         view
             .redacted(reason: viewModel.txid.isEmpty ? .placeholder : [])
-            .alert(isPresented: $showAlert) {
-                Alert(
-                    title: Text(NSLocalizedString("urlCopied", comment: "")),
-                    message: Text(viewModel.getTransactionExplorerURL(txid: viewModel.txid)),
-                    dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
-                )
-            }
     }
     
     var view: some View {
@@ -160,6 +152,6 @@ struct JoinKeysignDoneView: View {
 #Preview {
     ZStack {
         Background()
-        JoinKeysignDoneView(vault: Vault.example, viewModel: KeysignViewModel())
+        JoinKeysignDoneView(vault: Vault.example, viewModel: KeysignViewModel(), showAlert: .constant(false))
     }
 }
