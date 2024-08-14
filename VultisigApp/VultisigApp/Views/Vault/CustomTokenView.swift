@@ -54,6 +54,7 @@ struct CustomTokenView: View {
         .navigationBarBackButtonHidden(true)
 #if os(iOS)
         .navigationTitle(NSLocalizedString("findCustomTokens", comment: "Find Your Custom Token"))
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 Button(action: {
@@ -88,7 +89,12 @@ struct CustomTokenView: View {
         VStack(alignment: .leading, spacing: 16) {
             
             HStack {
-                AddressTextField(contractAddress: $contractAddress, validateAddress: validateAddress)
+                AddressTextField(
+                    contractAddress: $contractAddress,
+                    validateAddress: validateAddress,
+                    showScanIcon: false,
+                    showAddressBookIcon: false
+                )
                 
                 Button(action: {
                     Task {
