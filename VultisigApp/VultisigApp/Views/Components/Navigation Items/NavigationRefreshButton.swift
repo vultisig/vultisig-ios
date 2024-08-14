@@ -11,11 +11,29 @@ struct NavigationRefreshButton: View {
     var tint: Color = Color.neutral0
     var action: () -> Void
     
+    @State var animate: Bool = false
+    @State var enableTransition: Bool = true
+    
     var body: some View {
-        Button(action: action) {
+        Button {
+            handleTap()
+        } label: {
             Image(systemName: "arrow.clockwise.circle")
                 .font(.body18MenloBold)
                 .foregroundColor(tint)
+                .rotationEffect(.degrees(animate ? 360 : 0))
+                .animation(enableTransition ? .easeInOut(duration: 1) : nil, value: animate)
+        }
+    }
+    
+    private func handleTap() {
+        animate = true
+        enableTransition = true
+        action()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            enableTransition = false
+            animate = false
         }
     }
 }

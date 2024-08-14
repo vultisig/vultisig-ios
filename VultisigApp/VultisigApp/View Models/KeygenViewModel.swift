@@ -172,11 +172,7 @@ class KeygenViewModel: ObservableObject {
                 reshareReq.resharePrefix = self.vault.resharePrefix ?? self.oldResharePrefix
                 reshareReq.chainCodeHex = self.vault.hexChainCode
                 self.logger.info("chaincode:\(self.vault.hexChainCode)")
-                
                 let ecdsaResp = try await tssReshare(service: tssIns, req: reshareReq, keyType: .ECDSA)
-                self.vault.pubKeyECDSA = ecdsaResp.pubKey
-                self.vault.resharePrefix = ecdsaResp.resharePrefix
-                
                 // continue to generate EdDSA Keys
                 self.status = .ReshareEdDSA
                 try await Task.sleep(for: .seconds(1)) // Sleep one sec to allow other parties to get in the same step
@@ -184,6 +180,8 @@ class KeygenViewModel: ObservableObject {
                 reshareReq.newResharePrefix = ecdsaResp.resharePrefix
                 let eddsaResp = try await tssReshare(service: tssIns, req: reshareReq, keyType: .EdDSA)
                 self.vault.pubKeyEdDSA = eddsaResp.pubKey
+                self.vault.pubKeyECDSA = ecdsaResp.pubKey
+                self.vault.resharePrefix = ecdsaResp.resharePrefix
             }
             // start an additional step to make sure all parties involved in the keygen committee complete successfully
             // avoid to create a partial vault, meaning some parties finished create the vault successfully, and one still in failed state
