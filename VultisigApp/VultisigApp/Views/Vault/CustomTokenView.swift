@@ -54,6 +54,7 @@ struct CustomTokenView: View {
         .navigationBarBackButtonHidden(true)
 #if os(iOS)
         .navigationTitle(NSLocalizedString("findCustomTokens", comment: "Find Your Custom Token"))
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 Button(action: {
