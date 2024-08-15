@@ -205,20 +205,15 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             logger.log("Invalid address.")
             isValidForm = false
         }
-        
-        if tx.toAddress.isNameService() {
-            let resolvedAddress = await AddressService.resolveDomaninAddress(address: tx.toAddress, chain: tx.coin.chain)
-            // it means it didnt resolve it
-            if resolvedAddress == tx.toAddress {
-                errorMessage = "validAddressDomainError"
-                showAlert = true
-                logger.log("We were unable to resolve the address of this domain service on this chain.")
-                isValidForm = false
-                return isValidForm
-            }
-            
-            // Set the HEX address to send directly
-            tx.toAddress = resolvedAddress
+
+        do {
+            tx.toAddress = try await AddressService.resolveInput(tx.toAddress, chain: tx.coin.chain)
+        } catch {
+            errorMessage = "validAddressDomainError"
+            showAlert = true
+            logger.log("We were unable to resolve the address of this domain service on this chain.")
+            isValidForm = false
+            return false
         }
         
         let amount = tx.amountDecimal
