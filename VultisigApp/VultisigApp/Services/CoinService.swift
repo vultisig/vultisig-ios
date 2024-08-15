@@ -96,6 +96,10 @@ struct CoinService {
             
             for token in tokens {
                 do {
+                    let existingCoin =  vault.coin(for: token)
+                    if let existingCoin {
+                        continue
+                    }
                     _ = try await addToChain(asset: token, to: vault, priceProviderId: nil)
                 } catch {
                     print("Error adding the token \(token.ticker) service: \(error.localizedDescription)")
