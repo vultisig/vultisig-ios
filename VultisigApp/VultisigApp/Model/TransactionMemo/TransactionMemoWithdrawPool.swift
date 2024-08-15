@@ -11,7 +11,7 @@ import Combine
 
 class TransactionMemoWithdrawPool: TransactionMemoAddressable, ObservableObject {
     @Published var basisPoint: Int64 = .zero
-    @Published var affiliate: String = ""
+    @Published var affiliate: String = "vi"
     @Published var fee: Int64 = .zero
     
     // Internal
@@ -22,14 +22,8 @@ class TransactionMemoWithdrawPool: TransactionMemoAddressable, ObservableObject 
     @Published var isTheFormValid: Bool = false
     
     var addressFields: [String: String] {
-        get {
-            ["affiliate": affiliate]
-        }
-        set {
-            if let value = newValue["affiliate"] {
-                affiliate = value
-            }
-        }
+        get { [:] }
+        set { }
     }
     
     private var cancellables = Set<AnyCancellable>()
@@ -77,15 +71,6 @@ class TransactionMemoWithdrawPool: TransactionMemoAddressable, ObservableObject 
     
     func getView() -> AnyView {
         AnyView(VStack {
-            TransactionMemoAddressTextField(
-                memo: self,
-                addressKey: "affiliate",
-                isOptional: true,
-                isAddressValid: Binding(
-                    get: { self.affiliateValid },
-                    set: { self.affiliateValid = $0 }
-                )
-            )
             
             StyledIntegerField(
                 placeholder: "Affiliate's Fee",
