@@ -427,13 +427,19 @@ enum Utils {
         return data
     }
     
-    public static func generateQRCodeImage(from string: String) -> Image {
+    public static func generateQRCodeImage(from string: String, tint: Color = .neutral900, background: Color = .neutral0) -> Image {
         let context = CIContext()
         let filter = CIFilter.qrCodeGenerator()
         filter.message = Data(string.utf8)
         
 #if os(iOS)
-        if let outputImage = filter.outputImage {
+        let tintColor = UIColor(tint)
+        let backgroundColor = UIColor(background)
+        
+        if let outputImage = filter.outputImage?.applyingFilter("CIFalseColor", parameters: [
+            "inputColor0": CIColor(color: tintColor),
+            "inputColor1": CIColor(color: backgroundColor)
+        ]) {
             if let cgImage = context.createCGImage(outputImage, from: outputImage.extent) {
                 return Image(uiImage: UIImage(cgImage: cgImage))
                     .interpolation(.none)
@@ -445,15 +451,23 @@ enum Utils {
         return Image(uiImage: image)
             .interpolation(.none)
 #elseif os(macOS)
+        let tintColor = NSColor(tint)
+        let backgroundColor = NSColor(background)
+        
         let scale: CGFloat = 100
         let transform = CGAffineTransform(scaleX: scale, y: scale)
         
-        if let outputImage = filter.outputImage?.samplingNearest().transformed(by: transform) {
-            if let cgImage = context.createCGImage(outputImage, from: outputImage.extent) {
-                return Image(nsImage: NSImage(cgImage: cgImage, size: CGSize(width: 1024, height: 1024)))
-                    .interpolation(.none)
+        if let outputImage = filter.outputImage?.samplingNearest()
+            .applyingFilter("CIFalseColor", parameters: [
+                "inputColor0": CIColor(color: tintColor) ?? .black,
+                "inputColor1": CIColor(color: backgroundColor) ?? .white
+            ])
+            .transformed(by: transform) {
+                if let cgImage = context.createCGImage(outputImage, from: outputImage.extent) {
+                    return Image(nsImage: NSImage(cgImage: cgImage, size: CGSize(width: 1024, height: 1024)))
+                        .interpolation(.none)
+                }
             }
-        }
         
         let image = NSImage(systemSymbolName: "xmark.circle", accessibilityDescription: nil) ?? NSImage()
         return Image(nsImage: image)
