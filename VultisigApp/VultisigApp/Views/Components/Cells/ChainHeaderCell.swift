@@ -11,21 +11,14 @@ import SwiftUI
 struct ChainHeaderCell: View {
     @ObservedObject var group: GroupedChain
     @Binding var isLoading: Bool
+    @Binding var showAlert: Bool
     
-    @State var showAlert = false
     @State var showQRcode = false
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
         cell
-            .alert(isPresented: $showAlert) {
-                Alert(
-                    title: Text(NSLocalizedString("addressCopied", comment: "")),
-                    message: Text(group.address),
-                    dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
-                )
-            }
             .sheet(isPresented: $showQRcode) {
                 NavigationView {
                     AddressQRCodeView(addressData: group.address, showSheet: $showQRcode, isLoading: $isLoading)
@@ -165,5 +158,5 @@ struct ChainHeaderCell: View {
 }
 
 #Preview {
-    ChainHeaderCell(group: GroupedChain.example, isLoading: .constant(false))
+    ChainHeaderCell(group: GroupedChain.example, isLoading: .constant(false), showAlert: .constant(false))
 }

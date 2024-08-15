@@ -20,6 +20,8 @@ struct KeysignView: View {
     
     @StateObject var viewModel = KeysignViewModel()
     
+    @State var showAlert = false
+    
     var body: some View {
         ZStack {
             switch viewModel.status {
@@ -36,6 +38,8 @@ struct KeysignView: View {
             case .KeysignVaultMismatch:
                 KeysignVaultMismatchErrorView()
             }
+            
+            PopupCapsule(text: "urlCopied", showPopup: $showAlert)
         }
         .onAppear {
             setData()
@@ -72,7 +76,7 @@ struct KeysignView: View {
     }
     
     var forJoinKeysign: some View {
-        JoinKeysignDoneView(vault: vault, viewModel: viewModel)
+        JoinKeysignDoneView(vault: vault, viewModel: viewModel, showAlert: $showAlert)
     }
     
     private func setData() {
@@ -100,6 +104,7 @@ struct KeysignView: View {
         
         transferViewModel.moveToNextView()
         transferViewModel.hash = viewModel.txid
+        transferViewModel.approveHash = viewModel.approveTxid
     }
 }
 

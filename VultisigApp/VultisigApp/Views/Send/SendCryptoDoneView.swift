@@ -10,7 +10,8 @@ import SwiftUI
 struct SendCryptoDoneView: View {
     let vault: Vault
     let hash: String
-    let explorerLink: String
+    let approveHash: String?
+    let chain: Chain
 
     var progressLink: String? = nil
 
@@ -23,13 +24,7 @@ struct SendCryptoDoneView: View {
         ZStack {
             Background()
             view
-        }
-        .alert(isPresented: $showAlert) {
-            Alert(
-                title: Text(NSLocalizedString("urlCopied", comment: "")),
-                message: Text(explorerLink),
-                dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
-            )
+            PopupCapsule(text: "urlCopied", showPopup: $showAlert)
         }
     }
     
@@ -45,19 +40,23 @@ struct SendCryptoDoneView: View {
     
     var cards: some View {
         ScrollView {
-            card
+            if let approveHash {
+                card(title: NSLocalizedString("Approve", comment: ""), hash: approveHash)
+            }
+
+            card(title: NSLocalizedString("transaction", comment: "Transaction"), hash: hash)
         }
     }
     
-    var card: some View {
+    func card(title: String, hash: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            titleSection
-            
+            titleSection(title: title, hash: hash)
+
             Text(hash)
                 .font(.body13Menlo)
                 .foregroundColor(.turquoise600)
 
-            if showProgress {
+            if showProgress, hash == self.hash {
                 HStack {
                     Spacer()
                     progressbutton
@@ -71,20 +70,20 @@ struct SendCryptoDoneView: View {
         .padding(.horizontal, 16)
     }
     
-    var titleSection: some View {
+    func titleSection(title: String, hash: String) -> some View {
         HStack(spacing: 12) {
-            Text(NSLocalizedString("transaction", comment: "Transaction"))
+            Text(title)
                 .font(.body20MontserratSemiBold)
                 .foregroundColor(.neutral0)
             
-            copyButton
-            linkButton
+            copyButton(hash: hash)
+            linkButton(hash: hash)
         }
     }
     
-    var copyButton: some View {
+    func copyButton(hash: String) -> some View {
         Button {
-            copyHash()
+            copyHash(hash: hash)
         } label: {
             Image(systemName: "square.on.square")
                 .font(.body18Menlo)
@@ -93,9 +92,9 @@ struct SendCryptoDoneView: View {
         
     }
     
-    var linkButton: some View {
+    func linkButton(hash: String) -> some View {
         Button {
-            shareLink()
+            shareLink(hash: hash)
         } label: {
             Image(systemName: "link")
                 .font(.body18Menlo)
@@ -124,10 +123,15 @@ struct SendCryptoDoneView: View {
     }
 
     var showProgress: Bool {
-        return progressLink != nil && progressLink != explorerLink
+        return progressLink != nil
     }
 
-    private func copyHash() {
+    func explorerLink(hash: String) -> String {
+        return Endpoint.getExplorerURL(chainTicker: chain.ticker, txid: hash)
+    }
+
+    private func copyHash(hash: String) {
+        let explorerLink = explorerLink(hash: hash)
         if !explorerLink.isEmpty {
             showAlert = true
 #if os(iOS)
@@ -141,7 +145,8 @@ struct SendCryptoDoneView: View {
         }
     }
     
-    private func shareLink() {
+    private func shareLink(hash: String) {
+        let explorerLink = explorerLink(hash: hash)
         if !explorerLink.isEmpty, let url = URL(string: explorerLink) {
             openURL(url)
         }
@@ -158,7 +163,8 @@ struct SendCryptoDoneView: View {
     SendCryptoDoneView(
         vault:Vault.example,
         hash: "bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7v6w",
-        explorerLink: "https://blockstream.info/tx/",
+        approveHash: "123bc1psrjtwm7682v6nhx2uwfgcfelrennd7pcvqq7",
+        chain: .thorChain,
         progressLink: "https://blockstream.info/tx/"
     )
     .previewDevice("iPhone 13 Pro")

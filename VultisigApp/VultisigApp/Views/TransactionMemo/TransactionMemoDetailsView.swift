@@ -58,6 +58,12 @@ struct TransactionMemoDetailsView: View {
                 txMemoInstance = .custom(TransactionMemoCustom())
             case .vote:
                 txMemoInstance = .vote(TransactionMemoVote())
+            case .addPool:
+                txMemoInstance = .addPool(TransactionMemoAddPool())
+            case .withdrawPool:
+                txMemoInstance = .withdrawPool(TransactionMemoWithdrawPool())
+                
+                
                 
             }
         }

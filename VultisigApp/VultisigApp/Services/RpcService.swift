@@ -15,6 +15,7 @@ enum RpcServiceError: Error {
 class RpcService {
     
     private let session = URLSession.shared
+
     internal let rpcEndpoint: String // Modificado para `internal` para permitir acesso pela subclass
     
     init(_ rpcEndpoint: String) {
@@ -53,6 +54,7 @@ class RpcService {
                     || message.contains("already known")
                     || message.contains("Transaction is temporarily banned")
                     || message.contains("nonce too low")
+                    || message.contains("nonce too high")
                     || message.contains("transaction already exists")
                     || message.contains("many requests for a specific RPC call")
                 {
