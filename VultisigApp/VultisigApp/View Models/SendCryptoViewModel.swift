@@ -23,6 +23,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     @Published var coinBalance: String = "0"
     @Published var errorMessage = ""
     @Published var hash: String? = nil
+    @Published var approveHash: String? = nil
     @Published var thor = ThorchainService.shared
     @Published var sol: SolanaService = SolanaService.shared
     @Published var sui: SuiService = SuiService.shared
