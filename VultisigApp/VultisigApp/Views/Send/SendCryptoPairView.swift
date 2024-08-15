@@ -49,10 +49,10 @@ struct SendCryptoPairView: View {
             .frame(maxWidth: .infinity)
             .frame(height: geometry.size.width-(2*padding))
             .background(Color.turquoise600.opacity(0.15))
-            .cornerRadius(10)
+            .cornerRadius(20)
             .overlay (
-                RoundedRectangle(cornerRadius: 10)
-                    .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [56]))
+                RoundedRectangle(cornerRadius: 20)
+                    .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [72]))
             )
             .padding(.horizontal, padding)
         }

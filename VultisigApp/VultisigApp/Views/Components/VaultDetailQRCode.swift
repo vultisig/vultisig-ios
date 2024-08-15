@@ -35,11 +35,10 @@ struct VaultDetailQRCode: View {
     var qrCode: some View {
         getQRCode(vault: vault)
             .resizable()
-            .frame(width: 180, height: 180)
+            .frame(width: 240, height: 240)
             .scaledToFit()
             .padding(3)
             .cornerRadius(10)
-            .foregroundColor(.neutral100)
     }
     
     var logo: some View {
@@ -56,7 +55,7 @@ struct VaultDetailQRCode: View {
         Text(vault.name)
             .font(.body20MenloBold)
             .foregroundColor(.neutral0)
-            .padding(.top, 20)
+            .padding(.top, 10)
             .lineLimit(2)
             .multilineTextAlignment(.center)
     }
@@ -100,7 +99,11 @@ struct VaultDetailQRCode: View {
         
         do{
             let data = try JSONEncoder().encode(vaultPublicKeyExport)
-            return Utils.generateQRCodeImage(from: String(data: data, encoding: .utf8) ?? "")
+            return Utils.generateQRCodeImage(
+                from: String(data: data, encoding: .utf8) ?? "",
+                tint: .white,
+                background: .clear
+            )
         } catch {
             print("failed to create vault public key export: \(error.localizedDescription)")
             return Image(systemName: "xmark")

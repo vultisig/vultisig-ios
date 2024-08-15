@@ -79,14 +79,14 @@ struct AddressQRCodeView: View {
     var qrCode: some View {
         qrCodeImage?
             .resizable()
-            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .clipShape(RoundedRectangle(cornerRadius: 20))
             .padding(24)
             .aspectRatio(contentMode: .fit)
-            .background(Color.turquoise600.opacity(0.15))
-            .cornerRadius(10)
+            .background(Color.blue600)
+            .cornerRadius(20)
             .overlay (
-                RoundedRectangle(cornerRadius: 10)
-                    .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [56]))
+                RoundedRectangle(cornerRadius: 20)
+                    .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [100]))
             )
             .padding(.horizontal, padding)
             .frame(maxWidth: .infinity, alignment: .center)
@@ -110,5 +110,5 @@ struct AddressQRCodeView: View {
 }
 
 #Preview {
-    AddressQRCodeView(addressData: "", showSheet: .constant(true), isLoading: .constant(false))
+    AddressQRCodeView(addressData: "123456789", showSheet: .constant(true), isLoading: .constant(false))
 }
