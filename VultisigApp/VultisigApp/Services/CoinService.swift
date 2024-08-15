@@ -96,7 +96,7 @@ struct CoinService {
             
             for token in tokens {
                 do {
-                    let existingCoin =  vault.coins.first{$0.chain == token.chain && $0.ticker == token.ticker}
+                    let existingCoin =  vault.coin(for: token)
                     if let existingCoin {
                         continue
                     }
