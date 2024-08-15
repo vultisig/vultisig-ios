@@ -24,7 +24,8 @@ class TransactionMemoViewModel: ObservableObject, TransferViewModel {
     @Published var coinBalance: String = "0"
     @Published var errorMessage = ""
     @Published var hash: String? = nil
-    
+    @Published var approveHash: String? = nil
+
     let blockchainService = BlockChainService.shared
         
     private let mediator = Mediator.shared

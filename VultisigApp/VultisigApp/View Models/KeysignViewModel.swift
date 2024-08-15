@@ -23,9 +23,10 @@ enum KeysignStatus {
 class KeysignViewModel: ObservableObject {
     private let logger = Logger(subsystem: "keysign", category: "tss")
     @Published var status: KeysignStatus = .CreatingInstance
-    @Published var keysignError: String = ""
+    @Published var keysignError: String = .empty
     @Published var signatures = [String: TssKeysignResponse]()
-    @Published var txid: String = ""
+    @Published var txid: String = .empty
+    @Published var approveTxid: String?
 
     private var tssService: TssServiceImpl? = nil
     private var tssMessenger: TssMessengerImpl? = nil
@@ -373,9 +374,10 @@ class KeysignViewModel: ObservableObject {
 
             case .regularWithApprove(let approve, let transaction):
                 let service = try EvmServiceFactory.getService(forChain: keysignPayload.coin.chain)
-                let _ = try await service.broadcastTransaction(hex: approve.rawTransaction)
+                let approveTxHash = try await service.broadcastTransaction(hex: approve.rawTransaction)
                 let regularTxHash = try await service.broadcastTransaction(hex: transaction.rawTransaction)
-                self.txid = regularTxHash // TODO: Display approve and regular tx hash separately
+                self.approveTxid = approveTxHash
+                self.txid = regularTxHash
             }
         } catch {
             handleBroadcastError(error: error, transactionType: transactionType)
@@ -383,6 +385,7 @@ class KeysignViewModel: ObservableObject {
 
         if txid == "Transaction already broadcasted." {
             txid = transactionType.transactionHash
+            approveTxid = transactionType.approveTransactionHash
         }
     }
 

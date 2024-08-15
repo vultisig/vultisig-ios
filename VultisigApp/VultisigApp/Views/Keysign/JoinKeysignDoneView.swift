@@ -33,20 +33,24 @@ struct JoinKeysignDoneView: View {
             if viewModel.txid.isEmpty {
                 transactionComplete
             } else {
-                card
+                if let approveTxid = viewModel.approveTxid {
+                    card(title: NSLocalizedString("Approve", comment: ""), txid: approveTxid)
+                }
+
+                card(title: NSLocalizedString("transaction", comment: "Transaction"), txid: viewModel.txid)
             }
         }
     }
-    
-    var card: some View {
+
+    func card(title: String, txid: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            titleSection
-            
-            Text(viewModel.txid)
+            titleSection(title: title, txid: txid)
+
+            Text(txid)
                 .font(.body13Menlo)
                 .foregroundColor(.turquoise600)
 
-            if let link = viewModel.getSwapProgressURL(txid: viewModel.txid) {
+            if viewModel.txid == txid, let link = viewModel.getSwapProgressURL(txid: viewModel.txid) {
                 HStack {
                     Spacer()
                     progressButton(link: link)
@@ -66,20 +70,20 @@ struct JoinKeysignDoneView: View {
             .foregroundColor(.neutral0)
     }
     
-    var titleSection: some View {
+    func titleSection(title: String, txid: String) -> some View {
         HStack(spacing: 12) {
-            Text(NSLocalizedString("transaction", comment: "Transaction"))
+            Text(title)
                 .font(.body20MontserratSemiBold)
                 .foregroundColor(.neutral0)
             
-            copyButton
-            linkButton
+            copyButton(txid: txid)
+            linkButton(txid: txid)
         }
     }
     
-    var copyButton: some View {
+    func copyButton(txid: String) -> some View {
         Button {
-            copyHash()
+            copyHash(txid: txid)
         } label: {
             Image(systemName: "square.on.square")
                 .font(.body18Menlo)
@@ -88,9 +92,9 @@ struct JoinKeysignDoneView: View {
         
     }
     
-    var linkButton: some View {
+    func linkButton(txid: String) -> some View {
         Button {
-            shareLink()
+            shareLink(txid: txid)
         } label: {
             Image(systemName: "link")
                 .font(.body18Menlo)
@@ -126,8 +130,8 @@ struct JoinKeysignDoneView: View {
             .foregroundColor(.neutral0)
     }
     
-    private func copyHash() {
-        let urlStr = viewModel.getTransactionExplorerURL(txid: viewModel.txid)
+    private func copyHash(txid: String) {
+        let urlStr = viewModel.getTransactionExplorerURL(txid: txid)
         showAlert = true
 #if os(iOS)
         let pasteboard = UIPasteboard.general
@@ -135,9 +139,9 @@ struct JoinKeysignDoneView: View {
 #endif
     }
     
-    private func shareLink() {
-        let urlStr = viewModel.getTransactionExplorerURL(txid: viewModel.txid)
-        if !urlStr.isEmpty, let url = URL(string:urlStr) {
+    private func shareLink(txid: String) {
+        let urlString = viewModel.getTransactionExplorerURL(txid: txid)
+        if !urlString.isEmpty, let url = URL(string: urlString) {
             openURL(url)
         }
     }

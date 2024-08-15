@@ -104,6 +104,7 @@ struct KeysignView: View {
         
         transferViewModel.moveToNextView()
         transferViewModel.hash = viewModel.txid
+        transferViewModel.approveHash = viewModel.approveTxid
     }
 }
 
