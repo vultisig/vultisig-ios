@@ -10,7 +10,7 @@ import SwiftUI
 struct MacScannerView: View {
     let navigationTitle: String
     
-    @StateObject private var cameraService = MacCameraService()
+    @StateObject private var viewModel = MacCameraServiceViewModel()
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -29,20 +29,64 @@ struct MacScannerView: View {
     
     var headerMac: some View {
         GeneralMacHeader(title: navigationTitle)
+            .padding(.bottom, 8)
     }
     
     var view: some View {
         ZStack {
-            if let session = cameraService.getSession() {
+            if viewModel.showPlaceholderError {
+                errorView
+            }
+            
+            if !viewModel.showCamera {
+                loader
+            } else if viewModel.isCameraUnavailable {
+                errorView
+            } else if let session = viewModel.getSession() {
                 MacCameraPreview(session: session)
                     .onAppear {
-                        cameraService.startSession()
+                        viewModel.startSession()
                     }
                     .onDisappear {
-                        cameraService.stopSession()
+                        viewModel.stopSession()
                     }
             }
         }
+    }
+    
+    var loader: some View {
+        VStack {
+            Spacer()
+            
+            HStack(spacing: 20) {
+                Text(NSLocalizedString("initializingCamera", comment: ""))
+                    .font(.body16MenloBold)
+                    .foregroundColor(.neutral0)
+                
+                ProgressView()
+                    .preferredColorScheme(.dark)
+            }
+            
+            Spacer()
+        }
+    }
+    
+    var errorView: some View {
+        VStack {
+            Spacer()
+            ErrorMessage(text: "noCameraFound")
+            Spacer()
+            button
+        }
+    }
+    
+    var button: some View {
+        Button {
+            viewModel.setupSession()
+        } label: {
+            FilledButton(title: "tryAgain")
+        }
+        .padding(40)
     }
 }
 

@@ -1,5 +1,5 @@
 //
-//  MacCameraService.swift
+//  MacCameraServiceViewModel.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2024-08-15.
@@ -8,8 +8,11 @@
 import AVFoundation
 import AppKit
 
-class MacCameraService: NSObject, ObservableObject {
+class MacCameraServiceViewModel: NSObject, ObservableObject {
+    @Published var showCamera = false
     @Published var detectedQRCode: String?
+    @Published var isCameraUnavailable = false
+    @Published var showPlaceholderError = false
     
     private var session: AVCaptureSession?
     private var videoOutput: AVCaptureVideoDataOutput?
@@ -20,12 +23,25 @@ class MacCameraService: NSObject, ObservableObject {
         setupSession()
     }
     
-    private func setupSession() {
+    private func resetData() {
+        showCamera = false
+        detectedQRCode = nil
+        isCameraUnavailable = false
+        session = nil
+        videoOutput = nil
+    }
+    
+    func setupSession() {
+        resetData()
         session = AVCaptureSession()
         session?.sessionPreset = .high
         
-        // Check if the camera device is available
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.showCamera = true
+        }
+        
         guard let device = AVCaptureDevice.default(for: .video) else {
+            isCameraUnavailable = true
             print("No video device found")
             return
         }
@@ -56,9 +72,13 @@ class MacCameraService: NSObject, ObservableObject {
     
     func startSession() {
         session?.startRunning()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            self.showPlaceholderError = true
+        }
     }
     
     func stopSession() {
+        showPlaceholderError = false
         session?.stopRunning()
     }
     
@@ -67,7 +87,7 @@ class MacCameraService: NSObject, ObservableObject {
     }
 }
 
-extension MacCameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
+extension MacCameraServiceViewModel: AVCaptureVideoDataOutputSampleBufferDelegate {
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
         
