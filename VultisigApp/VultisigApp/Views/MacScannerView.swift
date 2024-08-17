@@ -22,8 +22,7 @@ struct MacScannerView: View {
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
-    
-    @StateObject private var macCameraServiceViewModel = MacCameraServiceViewModel()
+    @EnvironmentObject var macCameraServiceViewModel: MacCameraServiceViewModel
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -208,5 +207,6 @@ struct MacScannerView: View {
     MacScannerView(type: .NewVault)
         .environmentObject(HomeViewModel())
         .environmentObject(DeeplinkViewModel())
+        .environmentObject(MacCameraServiceViewModel())
 }
 #endif
