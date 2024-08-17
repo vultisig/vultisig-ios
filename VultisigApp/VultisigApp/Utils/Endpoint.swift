@@ -174,7 +174,11 @@ class Endpoint {
     static func bscLabelTxHash(_ value: String) -> String {
         "https://bscscan.com/tx/\(value)"
     }
-    
+
+    static func resolveTNS(name: String) -> URL {
+        "https://midgard.ninerealms.com/v2/thorname/lookup/\(name)".asUrl
+    }
+
     static func fetchCosmosAccountBalance(address: String) -> String{
         "https://cosmos-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
     }
