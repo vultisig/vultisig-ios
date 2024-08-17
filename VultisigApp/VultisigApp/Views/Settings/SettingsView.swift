@@ -49,6 +49,7 @@ struct SettingsView: View {
             VStack(spacing: 24) {
                 mainSection
                 otherSection
+                legalSection
                 bottomSection
             }
             .padding(15)
@@ -74,6 +75,14 @@ struct SettingsView: View {
         VStack(spacing: 16) {
             getTitle("other")
             shareAppCell
+        }
+    }
+    
+    var legalSection: some View {
+        VStack(spacing: 16) {
+            getTitle("legal")
+            privacyPolicyCell
+            termsOfServiceCell
         }
     }
     
@@ -170,6 +179,18 @@ struct SettingsView: View {
     var discordButton: some View {
         Link(destination: StaticURL.DiscordVultisigURL) {
             Image("DiscordLogo")
+        }
+    }
+    
+    var privacyPolicyCell: some View {
+        Link(destination: StaticURL.PrivacyPolicyURL) {
+            SettingCell(title: "privacyPolicy", icon: "checkmark.shield")
+        }
+    }
+    
+    var termsOfServiceCell: some View {
+        Link(destination: StaticURL.TermsOfServiceURL) {
+            SettingCell(title: "termsOfService", icon: "doc.text")
         }
     }
     
