@@ -209,10 +209,8 @@ extension String {
         return "0x" + node.toHexString()
     }
     
-    func isNameService() -> Bool {
-        
+    func isENSNameService() -> Bool {
         let domains = [".eth", ".sol"]
         return domains.contains(where: { self.contains($0) })
-        
     }
 }

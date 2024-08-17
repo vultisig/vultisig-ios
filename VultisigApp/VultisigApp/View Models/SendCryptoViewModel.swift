@@ -16,6 +16,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     @Published var isLoading = false
     @Published var isValidAddress = false
     @Published var isValidForm = true
+    @Published var isNamespaceResolved = false
     @Published var showAlert = false
     @Published var currentIndex = 1
     @Published var currentTitle = "send"
@@ -178,6 +179,9 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func validateAddress(tx: SendTransaction, address: String) {
+        guard !isNamespaceResolved else {
+            return isValidAddress = true
+        }
         isValidAddress = AddressService.validateAddress(address: address, chain: tx.coin.chain)
     }
     
@@ -197,30 +201,27 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         // Reset validation state at the beginning
         errorMessage = ""
         isValidForm = true
-        
+        isNamespaceResolved = false
+
+        do {
+            tx.toAddress = try await AddressService.resolveInput(tx.toAddress, chain: tx.coin.chain)
+            isNamespaceResolved = true
+        } catch {
+            errorMessage = "validAddressDomainError"
+            showAlert = true
+            logger.log("We were unable to resolve the address of this domain service on this chain.")
+            isValidForm = false
+            return false
+        }
+
         // Validate the "To" address
-        if !isValidAddress {
+        if !isValidAddress && !isNamespaceResolved {
             errorMessage = "validAddressError"
             showAlert = true
             logger.log("Invalid address.")
             isValidForm = false
         }
-        
-        if tx.toAddress.isNameService() {
-            let resolvedAddress = await AddressService.resolveDomaninAddress(address: tx.toAddress, chain: tx.coin.chain)
-            // it means it didnt resolve it
-            if resolvedAddress == tx.toAddress {
-                errorMessage = "validAddressDomainError"
-                showAlert = true
-                logger.log("We were unable to resolve the address of this domain service on this chain.")
-                isValidForm = false
-                return isValidForm
-            }
-            
-            // Set the HEX address to send directly
-            tx.toAddress = resolvedAddress
-        }
-        
+
         let amount = tx.amountDecimal
         let gasFee = tx.gasDecimal
         
