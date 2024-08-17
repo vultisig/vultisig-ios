@@ -9,7 +9,6 @@ import SwiftUI
 import AVFoundation
 
 struct MacScannerView: View {
-    let navigationTitle: String
     let type: DeeplinkFlowType
     
     @StateObject private var viewModel = MacCameraServiceViewModel()
@@ -30,7 +29,7 @@ struct MacScannerView: View {
     }
     
     var headerMac: some View {
-        GeneralMacHeader(title: navigationTitle)
+        GeneralMacHeader(title: getTitle())
             .padding(.bottom, 8)
     }
     
@@ -114,8 +113,19 @@ struct MacScannerView: View {
                 .padding(40)
         }
     }
+    
+    private func getTitle() -> String {
+        let text: String
+        
+        if type == .NewVault {
+            text = "pair"
+        } else {
+            text = "keysign"
+        }
+        return NSLocalizedString(text, comment: "")
+    }
 }
 
 #Preview {
-    MacScannerView(navigationTitle: "Scanner", type: .NewVault)
+    MacScannerView(type: .NewVault)
 }
