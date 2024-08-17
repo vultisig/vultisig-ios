@@ -104,9 +104,6 @@ extension MacCameraServiceViewModel: AVCaptureVideoDataOutputSampleBufferDelegat
             for feature in features {
                 DispatchQueue.main.async {
                     self.detectedQRCode = feature.messageString
-                    print("----------")
-                    print(self.detectedQRCode ?? "NIL")
-                    print("----------")
                 }
             }
         }

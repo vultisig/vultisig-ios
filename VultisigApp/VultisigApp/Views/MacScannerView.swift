@@ -15,8 +15,6 @@ struct MacScannerView: View {
     
     @Query var vaults: [Vault]
     
-    @State var showAlert = false
-    @State var alertDescription = ""
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
     
@@ -44,9 +42,6 @@ struct MacScannerView: View {
         VStack(spacing: 0) {
             headerMac
             view
-        }
-        .alert(isPresented: $showAlert) {
-            alert
         }
         .onChange(of: macCameraServiceViewModel.detectedQRCode) { oldValue, newValue in
             handleScan()
@@ -124,14 +119,6 @@ struct MacScannerView: View {
         }
     }
     
-    var alert: Alert {
-        Alert(
-            title: Text(NSLocalizedString("error", comment: "")),
-            message: Text(NSLocalizedString(alertDescription, comment: "")),
-            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
-        )
-    }
-    
     private func getScanner(_ session: AVCaptureSession) -> some View {
         ZStack(alignment: .bottom) {
             MacCameraPreview(session: session)
@@ -160,8 +147,6 @@ struct MacScannerView: View {
     
     private func handleScan() {
         guard let result = macCameraServiceViewModel.detectedQRCode, !result.isEmpty else {
-            alertDescription = NSLocalizedString("errorFetchingValuesTryAgain", comment: "")
-            showAlert = true
             return
         }
         
@@ -185,10 +170,15 @@ struct MacScannerView: View {
         switch type {
         case .NewVault:
             moveToCreateVaultView()
+            moveToCreateVaultView()
         case .SignTransaction:
             moveToVaultsView()
         case .Unknown:
             return
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            macCameraServiceViewModel.detectedQRCode = ""
         }
     }
     
