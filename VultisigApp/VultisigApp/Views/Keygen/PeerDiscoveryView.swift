@@ -208,21 +208,16 @@ struct PeerDiscoveryView: View {
                         .fill :
                             .fit
                 )
-                .padding()
+                .padding(2)
                 .frame(maxHeight: .infinity)
 #elseif os(macOS)
                 .background(Color.blue600)
                 .aspectRatio(contentMode: .fit)
                 .frame(maxHeight: .infinity)
-                .padding(24)
+                .padding(3)
 #endif
-                .cornerRadius(20)
-                .overlay (
-                    RoundedRectangle(cornerRadius: 10)
-                        .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [12]))
-                        .aspectRatio(contentMode: .fit)
-                )
-                .padding(1)
+                .background(Color.neutral0)
+                .cornerRadius(10)
         }
         .cornerRadius(10)
         .shadow(radius: 5)
@@ -456,5 +451,7 @@ struct PeerDiscoveryView: View {
 
 #Preview {
     PeerDiscoveryView(tssType: .Keygen, vault: Vault.example, selectedTab: .TwoOfTwoVaults)
+#if os(macOS)
         .frame(minWidth: 900, minHeight: 600)
+#endif
 }
