@@ -8,11 +8,17 @@
 import AVFoundation
 import AppKit
 
+@MainActor
 class MacCameraServiceViewModel: NSObject, ObservableObject {
     @Published var showCamera = false
     @Published var detectedQRCode: String?
     @Published var isCameraUnavailable = false
     @Published var showPlaceholderError = false
+    
+    @Published var selectedChain: Chain? = nil
+    @Published var shouldSendCrypto = false
+    @Published var shouldJoinKeygen = false
+    @Published var shouldKeysignTransaction = false
     
     private var session: AVCaptureSession?
     private var videoOutput: AVCaptureVideoDataOutput?
@@ -107,5 +113,96 @@ extension MacCameraServiceViewModel: AVCaptureVideoDataOutputSampleBufferDelegat
                 }
             }
         }
+    }
+}
+
+// Deeplink
+extension MacCameraServiceViewModel {
+    func getTitle(_ type: DeeplinkFlowType) -> String {
+        let text: String
+        
+        if type == .NewVault {
+            text = "pair"
+        } else {
+            text = "keysign"
+        }
+        return NSLocalizedString(text, comment: "")
+    }
+    
+    func handleScan(vaults: [Vault], sendTx: SendTransaction, cameraViewModel: MacCameraServiceViewModel, deeplinkViewModel: DeeplinkViewModel, settingsDefaultChainViewModel: SettingsDefaultChainViewModel) {
+        guard let result = cameraViewModel.detectedQRCode, !result.isEmpty else {
+            return
+        }
+        
+        guard let url = URL(string: result) else {
+            return
+        }
+        
+        deeplinkViewModel.extractParameters(url, vaults: vaults)
+        presetValuesForDeeplink(url, sendTx: sendTx, cameraViewModel: cameraViewModel, deeplinkViewModel: deeplinkViewModel, settingsDefaultChainViewModel: settingsDefaultChainViewModel)
+    }
+    
+    func presetValuesForDeeplink(_ url: URL, sendTx: SendTransaction, cameraViewModel: MacCameraServiceViewModel, deeplinkViewModel: DeeplinkViewModel, settingsDefaultChainViewModel: SettingsDefaultChainViewModel) {
+        shouldJoinKeygen = false
+        shouldKeysignTransaction = false
+        
+        guard let type = deeplinkViewModel.type else {
+            return
+        }
+        deeplinkViewModel.type = nil
+        
+        switch type {
+        case .NewVault:
+            moveToCreateVaultView()
+            moveToCreateVaultView()
+        case .SignTransaction:
+            moveToVaultsView()
+        case .Unknown:
+            moveToSendView(sendTx: sendTx, deeplinkViewModel: deeplinkViewModel, settingsDefaultChainViewModel: settingsDefaultChainViewModel)
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            cameraViewModel.detectedQRCode = ""
+        }
+    }
+    
+    private func moveToCreateVaultView() {
+        shouldSendCrypto = false
+        shouldKeysignTransaction = false
+        shouldJoinKeygen = true
+    }
+    
+    private func moveToVaultsView() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.shouldJoinKeygen = false
+            self.shouldSendCrypto = false
+            self.shouldKeysignTransaction = true
+        }
+    }
+    
+    private func moveToSendView(sendTx: SendTransaction, deeplinkViewModel: DeeplinkViewModel, settingsDefaultChainViewModel: SettingsDefaultChainViewModel) {
+        shouldJoinKeygen = false
+        shouldKeysignTransaction = false
+        checkForAddress(sendTx: sendTx, deeplinkViewModel: deeplinkViewModel, settingsDefaultChainViewModel: settingsDefaultChainViewModel)
+    }
+    
+    private func checkForAddress(sendTx: SendTransaction, deeplinkViewModel: DeeplinkViewModel, settingsDefaultChainViewModel: SettingsDefaultChainViewModel) {
+        let address = deeplinkViewModel.address ?? ""
+        sendTx.toAddress = address
+        
+        let sortedAssets = settingsDefaultChainViewModel.baseChains.sorted(by: {
+            $0.chain.name > $1.chain.name
+        })
+        
+        for asset in sortedAssets {
+            let isValid = asset.chain.coinType.validate(address: address)
+            
+            if isValid {
+                selectedChain = asset.chain
+                shouldSendCrypto = true
+                return
+            }
+        }
+        shouldSendCrypto = true
     }
 }

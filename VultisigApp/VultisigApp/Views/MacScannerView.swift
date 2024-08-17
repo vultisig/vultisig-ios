@@ -16,14 +16,9 @@ struct MacScannerView: View {
     
     @Query var vaults: [Vault]
     
-    @State var selectedChain: Chain? = nil
-    @State var shouldSendCrypto = false
-    @State var shouldJoinKeygen = false
-    @State var shouldKeysignTransaction = false
-    
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
-    @EnvironmentObject var macCameraServiceViewModel: MacCameraServiceViewModel
+    @EnvironmentObject var cameraViewModel: MacCameraServiceViewModel
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     
     var body: some View {
@@ -32,20 +27,20 @@ struct MacScannerView: View {
             main
         }
         .navigationBarBackButtonHidden(true)
-        .navigationDestination(isPresented: $shouldJoinKeygen) {
+        .navigationDestination(isPresented: $cameraViewModel.shouldJoinKeygen) {
             JoinKeygenView(vault: Vault(name: "Main Vault"))
         }
-        .navigationDestination(isPresented: $shouldKeysignTransaction) {
+        .navigationDestination(isPresented: $cameraViewModel.shouldKeysignTransaction) {
             if let vault = homeViewModel.selectedVault {
                 JoinKeysignView(vault: vault)
             }
         }
-        .navigationDestination(isPresented: $shouldSendCrypto) {
+        .navigationDestination(isPresented: $cameraViewModel.shouldSendCrypto) {
             if let vault = homeViewModel.selectedVault {
                 SendCryptoView(
                     tx: sendTx,
                     vault: vault,
-                    selectedChain: selectedChain
+                    selectedChain: cameraViewModel.selectedChain
                 )
             }
         }
@@ -56,27 +51,33 @@ struct MacScannerView: View {
             headerMac
             view
         }
-        .onChange(of: macCameraServiceViewModel.detectedQRCode) { oldValue, newValue in
-            handleScan()
+        .onChange(of: cameraViewModel.detectedQRCode) { oldValue, newValue in
+            cameraViewModel.handleScan(
+                vaults: vaults,
+                sendTx: sendTx,
+                cameraViewModel: cameraViewModel,
+                deeplinkViewModel: deeplinkViewModel,
+                settingsDefaultChainViewModel: settingsDefaultChainViewModel
+            )
         }
     }
     
     var headerMac: some View {
-        GeneralMacHeader(title: getTitle())
+        GeneralMacHeader(title: cameraViewModel.getTitle(type))
             .padding(.bottom, 8)
     }
     
     var view: some View {
         ZStack {
-            if macCameraServiceViewModel.showPlaceholderError {
+            if cameraViewModel.showPlaceholderError {
                 errorView
             }
             
-            if !macCameraServiceViewModel.showCamera {
+            if !cameraViewModel.showCamera {
                 loader
-            } else if macCameraServiceViewModel.isCameraUnavailable {
+            } else if cameraViewModel.isCameraUnavailable {
                 errorView
-            } else if let session = macCameraServiceViewModel.getSession() {
+            } else if let session = cameraViewModel.getSession() {
                 getScanner(session)
             }
         }
@@ -126,7 +127,7 @@ struct MacScannerView: View {
     
     var tryAgainButton: some View {
         Button {
-            macCameraServiceViewModel.setupSession()
+            cameraViewModel.setupSession()
         } label: {
             OutlineButton(title: "tryAgain")
         }
@@ -136,103 +137,15 @@ struct MacScannerView: View {
         ZStack(alignment: .bottom) {
             MacCameraPreview(session: session)
                 .onAppear {
-                    macCameraServiceViewModel.startSession()
+                    cameraViewModel.startSession()
                 }
                 .onDisappear {
-                    macCameraServiceViewModel.stopSession()
+                    cameraViewModel.stopSession()
                 }
             
             uploadQRCodeButton
                 .padding(40)
         }
-    }
-    
-    private func getTitle() -> String {
-        let text: String
-        
-        if type == .NewVault {
-            text = "pair"
-        } else {
-            text = "keysign"
-        }
-        return NSLocalizedString(text, comment: "")
-    }
-    
-    private func handleScan() {
-        guard let result = macCameraServiceViewModel.detectedQRCode, !result.isEmpty else {
-            return
-        }
-        
-        guard let url = URL(string: result) else {
-            return
-        }
-        
-        deeplinkViewModel.extractParameters(url, vaults: vaults)
-        presetValuesForDeeplink(url)
-    }
-    
-    private func presetValuesForDeeplink(_ url: URL) {
-        shouldJoinKeygen = false
-        shouldKeysignTransaction = false
-        
-        guard let type = deeplinkViewModel.type else {
-            return
-        }
-        deeplinkViewModel.type = nil
-        
-        switch type {
-        case .NewVault:
-            moveToCreateVaultView()
-            moveToCreateVaultView()
-        case .SignTransaction:
-            moveToVaultsView()
-        case .Unknown:
-            moveToSendView()
-        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            macCameraServiceViewModel.detectedQRCode = ""
-        }
-    }
-    
-    private func moveToCreateVaultView() {
-        shouldSendCrypto = false
-        shouldKeysignTransaction = false
-        shouldJoinKeygen = true
-    }
-    
-    private func moveToVaultsView() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            shouldJoinKeygen = false
-            shouldSendCrypto = false
-            shouldKeysignTransaction = true
-        }
-    }
-    
-    private func moveToSendView() {
-        shouldJoinKeygen = false
-        shouldKeysignTransaction = false
-        checkForAddress()
-    }
-    
-    private func checkForAddress() {
-        let address = deeplinkViewModel.address ?? ""
-        sendTx.toAddress = address
-        
-        let sortedAssets = settingsDefaultChainViewModel.baseChains.sorted(by: {
-            $0.chain.name > $1.chain.name
-        })
-        
-        for asset in sortedAssets {
-            let isValid = asset.chain.coinType.validate(address: address)
-            
-            if isValid {
-                selectedChain = asset.chain
-                shouldSendCrypto = true
-                return
-            }
-        }
-        shouldSendCrypto = true
     }
 }
 
