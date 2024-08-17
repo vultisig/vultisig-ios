@@ -12,15 +12,19 @@ import AVFoundation
 
 struct MacScannerView: View {
     let type: DeeplinkFlowType
+    let sendTx: SendTransaction
     
     @Query var vaults: [Vault]
     
+    @State var selectedChain: Chain? = nil
+    @State var shouldSendCrypto = false
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var macCameraServiceViewModel: MacCameraServiceViewModel
+    @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -34,6 +38,15 @@ struct MacScannerView: View {
         .navigationDestination(isPresented: $shouldKeysignTransaction) {
             if let vault = homeViewModel.selectedVault {
                 JoinKeysignView(vault: vault)
+            }
+        }
+        .navigationDestination(isPresented: $shouldSendCrypto) {
+            if let vault = homeViewModel.selectedVault {
+                SendCryptoView(
+                    tx: sendTx,
+                    vault: vault,
+                    selectedChain: selectedChain
+                )
             }
         }
     }
@@ -174,7 +187,7 @@ struct MacScannerView: View {
         case .SignTransaction:
             moveToVaultsView()
         case .Unknown:
-            return
+            moveToSendView()
         }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
@@ -183,20 +196,51 @@ struct MacScannerView: View {
     }
     
     private func moveToCreateVaultView() {
+        shouldSendCrypto = false
+        shouldKeysignTransaction = false
         shouldJoinKeygen = true
     }
     
     private func moveToVaultsView() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            shouldJoinKeygen = false
+            shouldSendCrypto = false
             shouldKeysignTransaction = true
         }
+    }
+    
+    private func moveToSendView() {
+        shouldJoinKeygen = false
+        shouldKeysignTransaction = false
+        checkForAddress()
+    }
+    
+    private func checkForAddress() {
+        let address = deeplinkViewModel.address ?? ""
+        sendTx.toAddress = address
+        
+        let sortedAssets = settingsDefaultChainViewModel.baseChains.sorted(by: {
+            $0.chain.name > $1.chain.name
+        })
+        
+        for asset in sortedAssets {
+            let isValid = asset.chain.coinType.validate(address: address)
+            
+            if isValid {
+                selectedChain = asset.chain
+                shouldSendCrypto = true
+                return
+            }
+        }
+        shouldSendCrypto = true
     }
 }
 
 #Preview {
-    MacScannerView(type: .NewVault)
+    MacScannerView(type: .NewVault, sendTx: SendTransaction())
         .environmentObject(HomeViewModel())
         .environmentObject(DeeplinkViewModel())
         .environmentObject(MacCameraServiceViewModel())
+        .environmentObject(SettingsDefaultChainViewModel())
 }
 #endif

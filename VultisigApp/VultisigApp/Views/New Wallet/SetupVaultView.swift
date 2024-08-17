@@ -140,7 +140,7 @@ struct SetupVaultView: View {
         }
 #elseif os(macOS)
         NavigationLink {
-            MacScannerView(type: .NewVault)
+            MacScannerView(type: .NewVault, sendTx: sendTx)
         } label: {
             OutlineButton(title: "pair")
         }

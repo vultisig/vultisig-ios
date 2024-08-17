@@ -216,7 +216,7 @@ struct VaultDetailView: View {
     }
     
     var scanButton: some View {
-        VaultDetailScanButton(showSheet: $showScanner)
+        VaultDetailScanButton(showSheet: $showScanner, sendTx: sendTx)
             .opacity(showVaultsList ? 0 : 1)
             .buttonStyle(BorderlessButtonStyle())
 #if os(macOS)
