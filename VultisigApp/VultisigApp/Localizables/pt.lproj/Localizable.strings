@@ -262,3 +262,6 @@
 "noSavedAddressesForChain" = "Nenhum endereço salvo encontrado para esta cadeia.";
 "editAddress" = "Editar endereço";
 "validAddressDomainError" = "Não foi possível resolver o endereço deste domínio de serviço nesta cadeia.";
+"privacyPolicy" = "Política de Privacidade";
+"termsOfService" = "Termos de Serviço";
+"legal" = "Legal";
