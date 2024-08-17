@@ -287,3 +287,4 @@
 "validAddressDomainError" = "We were unable to resolve the address of this domain service on this chain.";
 "noCameraFound" = "No linked camera found.";
 "initializingCamera" = "Initializing Camera";
+"uploadQRCodeImage" = "Upload QR Code Image";
