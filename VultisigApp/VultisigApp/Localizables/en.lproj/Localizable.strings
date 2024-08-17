@@ -288,3 +288,4 @@
 "noCameraFound" = "No linked camera found.";
 "initializingCamera" = "Initializing Camera";
 "uploadQRCodeImage" = "Upload QR Code Image";
+"errorFetchingValuesTryAgain" = "Error fetching values. Please try again.";

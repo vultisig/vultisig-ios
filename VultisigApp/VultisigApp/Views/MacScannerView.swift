@@ -5,13 +5,25 @@
 //  Created by Amol Kumar on 2024-08-15.
 //
 
+#if os(macOS)
 import SwiftUI
+import SwiftData
 import AVFoundation
 
 struct MacScannerView: View {
     let type: DeeplinkFlowType
     
-    @StateObject private var viewModel = MacCameraServiceViewModel()
+    @Query var vaults: [Vault]
+    
+    @State var showAlert = false
+    @State var alertDescription = ""
+    @State var shouldJoinKeygen = false
+    @State var shouldKeysignTransaction = false
+    
+    @EnvironmentObject var homeViewModel: HomeViewModel
+    @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
+    
+    @StateObject private var macCameraServiceViewModel = MacCameraServiceViewModel()
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -19,12 +31,26 @@ struct MacScannerView: View {
             main
         }
         .navigationBarBackButtonHidden(true)
+        .navigationDestination(isPresented: $shouldJoinKeygen) {
+            JoinKeygenView(vault: Vault(name: "Main Vault"))
+        }
+        .navigationDestination(isPresented: $shouldKeysignTransaction) {
+            if let vault = homeViewModel.selectedVault {
+                JoinKeysignView(vault: vault)
+            }
+        }
     }
     
     var main: some View {
         VStack(spacing: 0) {
             headerMac
             view
+        }
+        .alert(isPresented: $showAlert) {
+            alert
+        }
+        .onChange(of: macCameraServiceViewModel.detectedQRCode) { oldValue, newValue in
+            handleScan()
         }
     }
     
@@ -35,15 +61,15 @@ struct MacScannerView: View {
     
     var view: some View {
         ZStack {
-            if viewModel.showPlaceholderError {
+            if macCameraServiceViewModel.showPlaceholderError {
                 errorView
             }
             
-            if !viewModel.showCamera {
+            if !macCameraServiceViewModel.showCamera {
                 loader
-            } else if viewModel.isCameraUnavailable {
+            } else if macCameraServiceViewModel.isCameraUnavailable {
                 errorView
-            } else if let session = viewModel.getSession() {
+            } else if let session = macCameraServiceViewModel.getSession() {
                 getScanner(session)
             }
         }
@@ -93,20 +119,28 @@ struct MacScannerView: View {
     
     var tryAgainButton: some View {
         Button {
-            viewModel.setupSession()
+            macCameraServiceViewModel.setupSession()
         } label: {
             OutlineButton(title: "tryAgain")
         }
+    }
+    
+    var alert: Alert {
+        Alert(
+            title: Text(NSLocalizedString("error", comment: "")),
+            message: Text(NSLocalizedString(alertDescription, comment: "")),
+            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+        )
     }
     
     private func getScanner(_ session: AVCaptureSession) -> some View {
         ZStack(alignment: .bottom) {
             MacCameraPreview(session: session)
                 .onAppear {
-                    viewModel.startSession()
+                    macCameraServiceViewModel.startSession()
                 }
                 .onDisappear {
-                    viewModel.stopSession()
+                    macCameraServiceViewModel.stopSession()
                 }
             
             uploadQRCodeButton
@@ -124,8 +158,55 @@ struct MacScannerView: View {
         }
         return NSLocalizedString(text, comment: "")
     }
+    
+    private func handleScan() {
+        guard let result = macCameraServiceViewModel.detectedQRCode, !result.isEmpty else {
+            alertDescription = NSLocalizedString("errorFetchingValuesTryAgain", comment: "")
+            showAlert = true
+            return
+        }
+        
+        guard let url = URL(string: result) else {
+            return
+        }
+        
+        deeplinkViewModel.extractParameters(url, vaults: vaults)
+        presetValuesForDeeplink(url)
+    }
+    
+    private func presetValuesForDeeplink(_ url: URL) {
+        shouldJoinKeygen = false
+        shouldKeysignTransaction = false
+        
+        guard let type = deeplinkViewModel.type else {
+            return
+        }
+        deeplinkViewModel.type = nil
+        
+        switch type {
+        case .NewVault:
+            moveToCreateVaultView()
+        case .SignTransaction:
+            moveToVaultsView()
+        case .Unknown:
+            return
+        }
+    }
+    
+    private func moveToCreateVaultView() {
+        shouldJoinKeygen = true
+    }
+    
+    private func moveToVaultsView() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            shouldKeysignTransaction = true
+        }
+    }
 }
 
 #Preview {
     MacScannerView(type: .NewVault)
+        .environmentObject(HomeViewModel())
+        .environmentObject(DeeplinkViewModel())
 }
+#endif

@@ -23,12 +23,13 @@ class MacCameraServiceViewModel: NSObject, ObservableObject {
         setupSession()
     }
     
-    private func resetData() {
+    func resetData() {
         showCamera = false
         detectedQRCode = nil
         isCameraUnavailable = false
         session = nil
         videoOutput = nil
+        showPlaceholderError = false
     }
     
     func setupSession() {
@@ -103,6 +104,9 @@ extension MacCameraServiceViewModel: AVCaptureVideoDataOutputSampleBufferDelegat
             for feature in features {
                 DispatchQueue.main.async {
                     self.detectedQRCode = feature.messageString
+                    print("----------")
+                    print(self.detectedQRCode ?? "NIL")
+                    print("----------")
                 }
             }
         }
