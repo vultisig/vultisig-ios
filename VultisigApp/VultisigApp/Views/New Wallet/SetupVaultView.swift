@@ -65,6 +65,7 @@ struct SetupVaultView: View {
             messageModal
             buttons
         }
+#if os(iOS)
         .sheet(isPresented: $showSheet, content: {
             GeneralCodeScannerView(
                 showSheet: $showSheet,
@@ -75,6 +76,7 @@ struct SetupVaultView: View {
                 sendTX: sendTx
             )
         })
+#endif
         .navigationDestination(isPresented: $shouldJoinKeygen) {
             JoinKeygenView(vault: Vault(name: getUniqueVaultName()))
         }

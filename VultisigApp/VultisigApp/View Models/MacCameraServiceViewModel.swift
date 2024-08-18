@@ -5,6 +5,7 @@
 //  Created by Amol Kumar on 2024-08-15.
 //
 
+#if os(macOS)
 import AVFoundation
 import AppKit
 
@@ -206,3 +207,4 @@ extension MacCameraServiceViewModel {
         shouldSendCrypto = true
     }
 }
+#endif

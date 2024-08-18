@@ -4,15 +4,12 @@
 //
 //  Created by Amol Kumar on 2024-05-30.
 //
-
+#if os(iOS)
 import SwiftUI
 import SwiftData
 import UniformTypeIdentifiers
-
-#if os(iOS)
 import CodeScanner
 import AVFoundation
-#endif
 
 struct GeneralCodeScannerView: View {
     @Binding var showSheet: Bool
@@ -33,14 +30,13 @@ struct GeneralCodeScannerView: View {
     
     var body: some View {
         ZStack(alignment: .bottom) {
-            #if os(iOS)
             CodeScannerView(
                 codeTypes: [.qr],
                 isGalleryPresented: $isGalleryPresented,
                 videoCaptureDevice: AVCaptureDevice.zoomedCameraForQRCode(withMinimumCodeSize: 20),
                 completion: handleScan
             )
-            #endif
+            
             HStack(spacing: 0) {
                 galleryButton
                     .frame(maxWidth: .infinity)
@@ -88,7 +84,6 @@ struct GeneralCodeScannerView: View {
         .padding(.bottom, 50)
     }
     
-    #if os(iOS)
     private func handleScan(result: Result<ScanResult, ScanError>) {
         switch result {
         case .success(let result):
@@ -101,7 +96,6 @@ struct GeneralCodeScannerView: View {
             return
         }
     }
-    #endif
     
     private func presetValuesForDeeplink(_ url: URL) {
         shouldJoinKeygen = false
@@ -176,3 +170,4 @@ struct GeneralCodeScannerView: View {
     .environmentObject(SettingsDefaultChainViewModel())
     .environmentObject(HomeViewModel())
 }
+#endif

@@ -79,6 +79,7 @@ struct VaultDetailView: View {
     var view: some View {
         list
             .opacity(showVaultsList ? 0 : 1)
+#if os(iOS)
             .sheet(isPresented: $showScanner, content: {
                 GeneralCodeScannerView(
                     showSheet: $showScanner,
@@ -89,6 +90,7 @@ struct VaultDetailView: View {
                     sendTX: sendTx
                 )
             })
+#endif
             .navigationDestination(isPresented: $shouldJoinKeygen) {
                 JoinKeygenView(vault: Vault(name: "Main Vault"))
             }

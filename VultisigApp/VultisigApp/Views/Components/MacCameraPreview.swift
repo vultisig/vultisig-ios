@@ -4,7 +4,7 @@
 //
 //  Created by Amol Kumar on 2024-08-15.
 //
-
+#if os(macOS)
 import SwiftUI
 import AVFoundation
 
@@ -30,3 +30,4 @@ struct MacCameraPreview: NSViewRepresentable {
 #Preview {
     MacCameraPreview(session: AVCaptureSession())
 }
+#endif
