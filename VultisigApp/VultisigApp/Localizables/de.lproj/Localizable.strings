@@ -261,3 +261,6 @@
 "noSavedAddressesForChain" = "Keine gespeicherten Adressen für diese Kette gefunden.";
 "editAddress" = "Adresse bearbeiten";
 "validAddressDomainError" = "Wir konnten die Adresse dieses Domain-Dienstes in dieser Kette nicht auflösen.";
+"privacyPolicy" = "Datenschutzerklärung";
+"termsOfService" = "Nutzungsbedingungen";
+"legal" = "Rechtliches";

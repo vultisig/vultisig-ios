@@ -261,3 +261,6 @@
 "noSavedAddressesForChain" = "Nema spremljenih adresa za ovaj lanac.";
 "editAddress" = "Uredi adresu";
 "validAddressDomainError" = "Nismo mogli razrijesti adresu ovog domena usluge u ovom lancu.";
+"privacyPolicy" = "Pravila o privatnosti";
+"termsOfService" = "Uvjeti korištenja";
+"legal" = "Pravno";

@@ -12,4 +12,6 @@ class StaticURL {
     static let XVultisigURL = URL(string: "https://twitter.com/vultisig")!
     static let AppStoreVultisigURL = URL(string: "https://www.apple.com/")!
     static let DiscordVultisigURL = URL(string: "https://discord.gg/ngvW8tRRfB")!
+    static let PrivacyPolicyURL = URL(string: "https://vultisig.com/privacy")!
+    static let TermsOfServiceURL = URL(string: "https://vultisig.com/termofservice")!
 }

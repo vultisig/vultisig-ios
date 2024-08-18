@@ -289,3 +289,6 @@
 "initializingCamera" = "Initializing Camera";
 "uploadQRCodeImage" = "Upload QR Code Image";
 "errorFetchingValuesTryAgain" = "Error fetching values. Please try again.";
+"privacyPolicy" = "Privacy Policy";
+"termsOfService" = "Terms of Service";
+"legal" = "Legal";
