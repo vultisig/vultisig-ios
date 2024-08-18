@@ -76,6 +76,9 @@ struct CoinService {
             newCoin.priceProviderId = priceProviderId
         }
         // Save the new coin first
+        // On IOS / IpadOS 18 , we have to user insert to insert the newCoin into modelcontext
+        // otherwise it report an error "Illegal attempt to map a relationship containing temporary objects to its identifiers."
+        await Storage.shared.insert([newCoin])
         try await Storage.shared.save()
         vault.coins.append(newCoin)
         return newCoin
@@ -97,7 +100,7 @@ struct CoinService {
             for token in tokens {
                 do {
                     let existingCoin =  vault.coin(for: token)
-                    if let existingCoin {
+                    if existingCoin != nil {
                         continue
                     }
                     _ = try await addToChain(asset: token, to: vault, priceProviderId: nil)
