@@ -61,14 +61,14 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             tx.amount = utxo.blockchairData.get(key)?.address?.balanceInBTC ?? "0.0"
             setPercentageAmount(tx: tx, for: percentage)
             Task{
-                await convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: true)
+                await convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
                 isLoading = false
             }
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain, .zksync:
             Task {
                 do {
                     if tx.coin.isNativeToken {
-                        let evm = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: true, isDeposit: tx.isDeposit, transactionType: tx.transactionType)
+                        let evm = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: tx.sendMaxAmount, isDeposit: tx.isDeposit, transactionType: tx.transactionType)
                         let totalFeeWei = evm.fee
                         tx.amount = "\(tx.coin.getMaxValue(totalFeeWei))" // the decimals must be truncaded otherwise the give us precisions errors
                         setPercentageAmount(tx: tx, for: percentage)
