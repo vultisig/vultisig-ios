@@ -264,3 +264,7 @@
 "privacyPolicy" = "Pravila o privatnosti";
 "termsOfService" = "Uvjeti korištenja";
 "legal" = "Pravno";
+"noCameraFound" = "Nije pronađena povezana kamera.";
+"initializingCamera" = "Inicijalizacija kamere";
+"uploadQRCodeImage" = "Učitaj sliku QR koda";
+"errorFetchingValuesTryAgain" = "Greška pri dohvaćanju vrijednosti. Molimo pokušajte ponovo.";
