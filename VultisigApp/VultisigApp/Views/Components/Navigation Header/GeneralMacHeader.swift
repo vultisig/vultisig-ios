@@ -23,6 +23,7 @@ struct GeneralMacHeader: View {
         .padding(.vertical, 8)
         .padding(.horizontal, 40)
         .padding(.top, 8)
+        .background(Color.backgroundBlue)
     }
     
     var leadingAction: some View {

@@ -22,9 +22,10 @@ struct MacScannerView: View {
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     
     var body: some View {
-        ZStack(alignment: .bottom) {
+        ZStack(alignment: .top) {
             Background()
             main
+            headerMac
         }
         .navigationBarBackButtonHidden(true)
         .navigationDestination(isPresented: $cameraViewModel.shouldJoinKeygen) {
@@ -48,7 +49,6 @@ struct MacScannerView: View {
     
     var main: some View {
         VStack(spacing: 0) {
-            headerMac
             view
         }
         .onChange(of: cameraViewModel.detectedQRCode) { oldValue, newValue in
@@ -70,7 +70,7 @@ struct MacScannerView: View {
     var view: some View {
         ZStack {
             if cameraViewModel.showPlaceholderError {
-                errorView
+                fallbackErrorView
             }
             
             if !cameraViewModel.showCamera {
@@ -106,6 +106,14 @@ struct MacScannerView: View {
             ErrorMessage(text: "noCameraFound")
             Spacer()
             buttons
+        }
+    }
+    
+    var fallbackErrorView: some View {
+        VStack {
+            Spacer()
+            ErrorMessage(text: "noCameraFound")
+            Spacer()
         }
     }
     
