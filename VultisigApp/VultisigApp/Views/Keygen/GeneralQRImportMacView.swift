@@ -32,21 +32,11 @@ struct GeneralQRImportMacView: View {
             main
         }
         .navigationBarBackButtonHidden(true)
-#if os(iOS)
-        .navigationTitle(getTitle())
-        .toolbar {
-            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                NavigationBackButton()
-            }
-        }
-#endif
     }
     
     var main: some View {
         VStack {
-#if os(macOS)
             headerMac
-#endif
             content
         }
     }

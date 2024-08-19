@@ -9,6 +9,7 @@ import SwiftUI
 
 struct VaultDetailScanButton: View {
     @Binding var showSheet: Bool
+    let sendTx: SendTransaction
     
     var body: some View {
 #if os(iOS)
@@ -19,7 +20,7 @@ struct VaultDetailScanButton: View {
         }
 #elseif os(macOS)
         NavigationLink {
-            GeneralQRImportMacView(type: .SignTransaction)
+            MacScannerView(type: .SignTransaction, sendTx: sendTx)
         } label: {
             label
         }
@@ -45,5 +46,5 @@ struct VaultDetailScanButton: View {
 }
 
 #Preview {
-    VaultDetailScanButton(showSheet: .constant(true))
+    VaultDetailScanButton(showSheet: .constant(true), sendTx: SendTransaction())
 }

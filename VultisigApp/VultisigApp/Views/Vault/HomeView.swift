@@ -13,6 +13,9 @@ struct HomeView: View {
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var viewModel: HomeViewModel
+#if os(macOS)
+    @EnvironmentObject var macCameraServiceViewModel: MacCameraServiceViewModel
+#endif
     
     @State var vaults: [Vault] = []
     
@@ -146,6 +149,10 @@ struct HomeView: View {
         shouldJoinKeygen = false
         shouldKeysignTransaction = false
         
+#if os(macOS)
+        macCameraServiceViewModel.stopSession()
+#endif
+        
         if let vault = selectedVault {
             viewModel.setSelectedVault(vault)
             selectedVault = nil
@@ -215,4 +222,7 @@ struct HomeView: View {
     HomeView()
         .environmentObject(DeeplinkViewModel())
         .environmentObject(HomeViewModel())
+#if os(macOS)
+        .environmentObject(MacCameraServiceViewModel())
+#endif
 }

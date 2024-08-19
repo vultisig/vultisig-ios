@@ -21,6 +21,9 @@ struct VultisigApp: App {
     @StateObject var settingsViewModel = SettingsViewModel.shared
     @StateObject var homeViewModel = HomeViewModel()
     @StateObject var settingsDefaultChainViewModel = SettingsDefaultChainViewModel()
+#if os(macOS)
+    @StateObject var macCameraServiceViewModel = MacCameraServiceViewModel()
+#endif
     
     init(){
         //setenv("GODEBUG", "asyncpreemptoff=1",1)
@@ -37,6 +40,7 @@ struct VultisigApp: App {
                 .environmentObject(homeViewModel)
                 .environmentObject(settingsDefaultChainViewModel)
 #if os(macOS)
+                .environmentObject(macCameraServiceViewModel)
                 .onChange(of: scenePhase) {
                     switch scenePhase {
                     case .active:

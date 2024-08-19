@@ -264,3 +264,7 @@
 "privacyPolicy" = "Informativa sulla privacy";
 "termsOfService" = "Termini di servizio";
 "legal" = "Legale";
+"noCameraFound" = "Nessuna fotocamera collegata trovata.";
+"initializingCamera" = "Inizializzazione della fotocamera";
+"uploadQRCodeImage" = "Carica immagine del codice QR";
+"errorFetchingValuesTryAgain" = "Errore nel recupero dei valori. Si prega di riprovare.";
