@@ -221,7 +221,7 @@
 "devicesOnSameNetwork" = "Povežite sve uređaje na istu\nmrežu s otvorenom aplikacijom Vultisig.";
 "devicesOnSameInternet" = "Povežite sve uređaje na\ninternet s otvorenom aplikacijom Vultisig.";
 "invalidFileFormat" = "Nevažeći format datoteke";
-"invalidFileFormatMessage" = "Molimo vas provjerite jeste li odabrali ispravnu sigurnosnu kopiju s ekstenzijom .dat.";
+"invalidFileFormatMessage" = "Molimo vas provjerite jeste li odabrali ispravnu sigurnosnu kopiju s ekstenzijom .dat/.bak.";
 "uploadBackupFile" = "Prenesite sigurnosnu kopiju datoteke";
 "uploadQRCodeImage" = "Prenesite QR kod sliku";
 "uploadQRCodeImageKeygen" = "Prenesite QR kod za pridruživanje Keygen-u";
@@ -301,3 +301,11 @@
 "keygenInstructionsCar7DescriptionPart3" = ", povećavajući fleksibilnost bez ugrožavanja sigurnosti.";
 "noSavedAddressesForChain" = "Nema spremljenih adresa za ovaj lanac.";
 "editAddress" = "Uredi adresu";
+"validAddressDomainError" = "Nismo mogli razrijesti adresu ovog domena usluge u ovom lancu.";
+"privacyPolicy" = "Pravila o privatnosti";
+"termsOfService" = "Uvjeti korištenja";
+"legal" = "Pravno";
+"noCameraFound" = "Nije pronađena povezana kamera.";
+"initializingCamera" = "Inicijalizacija kamere";
+"uploadQRCodeImage" = "Učitaj sliku QR koda";
+"errorFetchingValuesTryAgain" = "Greška pri dohvaćanju vrijednosti. Molimo pokušajte ponovo.";

@@ -37,11 +37,11 @@ extension String {
     var isZero: Bool {
         return self == .zero
     }
-
+    
     var nilIfEmpty: String? {
         return isEmpty ? nil : self
     }
-
+    
 #if os(iOS)
     func widthOfString(usingFont font: UIFont) -> CGFloat {
         let fontAttributes = [NSAttributedString.Key.font: font]
@@ -152,6 +152,22 @@ extension String {
     func toBigInt(decimals: Int) -> BigInt {
         self.toDecimal().truncated(toPlaces: decimals).description.toBigInt()
     }
+    
+    func isValidDecimal() -> Bool {
+        
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = .decimal
+        numberFormatter.locale = Locale.current // Use the current locale for decimal separator
+        
+        // Check for both dot and comma as decimal separators
+        let dotSeparator = numberFormatter.decimalSeparator == "."
+        let modifiedSelf = dotSeparator ? self : self.replacingOccurrences(of: ".", with: ",")
+        
+        let number = numberFormatter.number(from: modifiedSelf) != nil
+        
+        return number
+        
+    }
 }
 
 extension String {
@@ -168,5 +184,33 @@ extension String {
             .joined()
             .capitalized
         return formattedString
+    }
+}
+
+// Used only for ENS Names Eg.: vitalik.eth
+extension String {
+    func namehash() -> String {
+        // Split the ENS name into labels
+        let labels = self.split(separator: ".").reversed()
+        
+        // Initialize the node as 32 bytes of zero data
+        var node: Data = Data(repeating: 0, count: 32)
+        
+        for label in labels {
+            // Convert the label to Data, hash it, and get the hex representation
+            let labelData = Data(label.utf8)
+            let labelHash = labelData.sha3(.keccak256)
+            
+            // Combine the current node hash with the label hash and hash again
+            node = (node + labelHash).sha3(.keccak256)
+        }
+        
+        // Convert the final node to a hex string
+        return "0x" + node.toHexString()
+    }
+    
+    func isENSNameService() -> Bool {
+        let domains = [".eth", ".sol"]
+        return domains.contains(where: { self.contains($0) })
     }
 }

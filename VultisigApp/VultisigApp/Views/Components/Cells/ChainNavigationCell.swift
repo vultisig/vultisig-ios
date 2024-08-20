@@ -10,12 +10,11 @@ import SwiftUI
 struct ChainNavigationCell: View {
     @ObservedObject var group: GroupedChain
     let vault: Vault
+    @Binding var showAlert: Bool
     
     @State private var isActive = false
     @State var isEditingChains: Bool = false
     @EnvironmentObject var viewModel: VaultDetailViewModel
-    
-    @State var showAlert = false
     
     var body: some View {
         ZStack {
@@ -27,9 +26,6 @@ struct ChainNavigationCell: View {
         .listRowSeparator(.hidden)
         .disabled(isEditingChains ? true : false)
         .padding(.vertical, 8)
-        .alert(isPresented: $showAlert) {
-            alert
-        }
     }
     
     var cell: some View {
@@ -51,14 +47,6 @@ struct ChainNavigationCell: View {
         }
     }
     
-    var alert: Alert {
-        Alert(
-            title: Text(NSLocalizedString("addressCopied", comment: "")),
-            message: Text(group.address),
-            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
-        )
-    }
-    
     private func copyAddress() {
         showAlert = true
 #if os(iOS)
@@ -75,7 +63,8 @@ struct ChainNavigationCell: View {
 #Preview {
     ChainNavigationCell(
         group: GroupedChain.example,
-        vault: Vault.example
+        vault: Vault.example, 
+        showAlert: .constant(false)
     )
     .environmentObject(VaultDetailViewModel())
 }

@@ -221,7 +221,7 @@
 "devicesOnSameNetwork" = "Conecta todos los dispositivos a la misma\nred con la aplicación Vultisig abierta.";
 "devicesOnSameInternet" = "Conecta todos los dispositivos a Internet\ncon la aplicación Vultisig abierta.";
 "invalidFileFormat" = "Formato de archivo no válido";
-"invalidFileFormatMessage" = "Asegúrate de haber seleccionado el archivo de respaldo correcto con extensión .dat.";
+"invalidFileFormatMessage" = "Asegúrate de haber seleccionado el archivo de respaldo correcto con extensión .dat/.bak.";
 "uploadBackupFile" = "Subir archivo de respaldo";
 "uploadQRCodeImage" = "Subir imagen de código QR";
 "uploadQRCodeImageKeygen" = "Subir código QR para unirse a Keygen";
@@ -301,3 +301,11 @@
 "keygenInstructionsCar7DescriptionPart3" = ", mejorando la flexibilidad sin comprometer la seguridad.";
 "noSavedAddressesForChain" = "No se encontraron direcciones guardadas para esta cadena.";
 "editAddress" = "Editar dirección";
+"validAddressDomainError" = "No pudimos resolver la dirección de este dominio de servicio en esta cadena.";
+"privacyPolicy" = "Política de Privacidad";
+"termsOfService" = "Términos de Servicio";
+"legal" = "Legal";
+"noCameraFound" = "No se encontró ninguna cámara vinculada.";
+"initializingCamera" = "Inicializando la cámara";
+"uploadQRCodeImage" = "Subir imagen del código QR";
+"errorFetchingValuesTryAgain" = "Error al obtener valores. Por favor, inténtalo de nuevo.";

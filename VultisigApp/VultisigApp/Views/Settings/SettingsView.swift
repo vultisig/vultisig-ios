@@ -16,15 +16,32 @@ struct SettingsView: View {
     var body: some View {
         ZStack {
             Background()
-            view
+            main
         }
         .navigationBarBackButtonHidden(true)
+#if os(iOS)
         .navigationTitle(NSLocalizedString("settings", comment: "Settings"))
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackSheetButton(showSheet: $showMenu)
             }
         }
+#endif
+    }
+    
+    var main: some View {
+        VStack(spacing: 0) {
+#if os(macOS)
+            headerMac
+            Separator()
+#endif
+            view
+        }
+    }
+    
+    var headerMac: some View {
+        SettingsHeader(showMenu: $showMenu)
+            .padding(.bottom, 8)
     }
     
     var view: some View {
@@ -32,6 +49,7 @@ struct SettingsView: View {
             VStack(spacing: 24) {
                 mainSection
                 otherSection
+                legalSection
                 bottomSection
             }
             .padding(15)
@@ -57,6 +75,14 @@ struct SettingsView: View {
         VStack(spacing: 16) {
             getTitle("other")
             shareAppCell
+        }
+    }
+    
+    var legalSection: some View {
+        VStack(spacing: 16) {
+            getTitle("legal")
+            privacyPolicyCell
+            termsOfServiceCell
         }
     }
     
@@ -153,6 +179,18 @@ struct SettingsView: View {
     var discordButton: some View {
         Link(destination: StaticURL.DiscordVultisigURL) {
             Image("DiscordLogo")
+        }
+    }
+    
+    var privacyPolicyCell: some View {
+        Link(destination: StaticURL.PrivacyPolicyURL) {
+            SettingCell(title: "privacyPolicy", icon: "checkmark.shield")
+        }
+    }
+    
+    var termsOfServiceCell: some View {
+        Link(destination: StaticURL.TermsOfServiceURL) {
+            SettingCell(title: "termsOfService", icon: "doc.text")
         }
     }
     

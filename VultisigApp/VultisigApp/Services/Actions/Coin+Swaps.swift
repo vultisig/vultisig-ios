@@ -21,7 +21,7 @@ extension Coin {
     var streamingInterval: Int {
         switch chain {
         case .mayaChain:
-            return 5
+            return 3
         case .thorChain:
             return 1
         default:
@@ -51,15 +51,19 @@ extension Coin {
             }
         case .avalanche:
             if thorAvaxTokens.contains(ticker) {
-                return [.thorchain, .oneinch(chain)]
+                return [.thorchain, .oneinch(chain), .lifi]
             } else {
                 return [.oneinch(chain), .lifi]
             }
-        case .base, .optimism, .polygon:
+        case .base:
+            return [.lifi]
+        case .optimism, .polygon:
             return [.oneinch(chain), .lifi]
         case .thorChain:
             return [.thorchain, .mayachain]
-        case .bitcoin, .dogecoin, .bitcoinCash, .litecoin, .gaiaChain:
+        case .bitcoin:
+            return [.thorchain, .mayachain]
+        case .dogecoin, .bitcoinCash, .litecoin, .gaiaChain:
             return [.thorchain]
         case .blast, .arbitrum:
             return [.lifi]

@@ -169,9 +169,10 @@ struct KeysignDiscoveryView: View {
                 .frame(maxWidth: isPhoneSE ? 250 : nil)
                 .frame(maxHeight: isPhoneSE ? 250 : nil)
                 .scaledToFit()
-                .padding(3)
+                .padding(2)
                 .background(Color.neutral0)
                 .cornerRadius(10)
+                .padding(4)
 #if os(iOS)
         .padding(12)
 #elseif os(macOS)
@@ -180,8 +181,8 @@ struct KeysignDiscoveryView: View {
                 .background(Color.blue600)
                 .cornerRadius(20)
                 .overlay (
-                    RoundedRectangle(cornerRadius: 10)
-                        .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [12]))
+                    RoundedRectangle(cornerRadius: 20)
+                        .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [52]))
                 )
                 .padding(1)
         }
@@ -221,6 +222,11 @@ struct KeysignDiscoveryView: View {
     
     var networkPrompts: some View {
         NetworkPrompts(selectedNetwork: $selectedNetwork)
+            .onChange(of: selectedNetwork) {
+                print("selected network changed: \(selectedNetwork)")
+                viewModel.restartParticipantDiscovery()
+                setData()
+            }
     }
     
     var instructions: some View {

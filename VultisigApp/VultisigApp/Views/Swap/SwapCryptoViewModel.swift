@@ -17,52 +17,57 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
     private let swapService = SwapService.shared
     private let blockchainService = BlockChainService.shared
     private let balanceService = BalanceService.shared
-    
+    private let rateProvider = RateProvider.shared
+
     private var updateQuoteTask: Task<Void, Never>?
     private var updateFeesTask: Task<Void, Never>?
 
     var keysignPayload: KeysignPayload?
     
-    @MainActor @Published var fromCoins: [Coin] = []
-    @MainActor @Published var toCoins: [Coin] = []
     @MainActor @Published var currentIndex = 1
     @MainActor @Published var currentTitle = "send"
     @MainActor @Published var hash: String?
-    
+    @MainActor @Published var approveHash: String?
+
     @MainActor @Published var error: Error?
     @MainActor @Published var isLoading = false
     @MainActor @Published var quoteLoading = false
     @MainActor @Published var dataLoaded = false
 
-    func load(tx: SwapTransaction, initialFromCoin: Coin?, vault: Vault) async {
-        guard !dataLoaded else { return }
-        isLoading = true
-        defer { isLoading = false }
-
-        let (fromCoins, selectedFromCoin) = SwapCoinsResolver.resolveFromCoins(allCoins: vault.coins)
-        let fromCoin = initialFromCoin ?? selectedFromCoin
-       
-        tx.fromCoin = fromCoin
-        self.fromCoins = fromCoins
-        self.dataLoaded = true
-    }
-    
     var progress: Double {
         return Double(currentIndex) / Double(titles.count)
     }
-    
-    func explorerLink(tx: SwapTransaction, hash: String) -> String {
-        return Endpoint.getExplorerURL(chainTicker: tx.fromCoin.chain.ticker, txid: hash)
+
+    func load(initialFromCoin: Coin?, initialToCoin: Coin?, vault: Vault, tx: SwapTransaction) {
+        let allCoins = vault.coins
+
+        guard !dataLoaded, !allCoins.isEmpty else { return }
+
+        let (fromCoins, fromCoin) = SwapCoinsResolver.resolveFromCoins(
+            allCoins: allCoins
+        )
+
+        let resolvedFromCoin = initialFromCoin ?? fromCoin
+
+        let (toCoins, toCoin) = SwapCoinsResolver.resolveToCoins(
+            fromCoin: resolvedFromCoin,
+            allCoins: allCoins,
+            selectedToCoin: initialToCoin ?? .example
+        )
+
+        tx.load(fromCoin: resolvedFromCoin, toCoin: toCoin, fromCoins: fromCoins, toCoins: toCoins)
+
+        dataLoaded = true
     }
 
     func updateCoinLists(tx: SwapTransaction) {
         let (toCoins, toCoin) = SwapCoinsResolver.resolveToCoins(
             fromCoin: tx.fromCoin,
-            allCoins: fromCoins,
+            allCoins: tx.fromCoins,
             selectedToCoin: tx.toCoin
         )
         tx.toCoin = toCoin
-        self.toCoins = toCoins
+        tx.toCoins = toCoins
     }
 
     func progressLink(tx: SwapTransaction, hash: String) -> String? {
@@ -316,16 +321,6 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         currentIndex-=1
         currentTitle = titles[currentIndex-1]
     }
-    
-    func convertToFiat(amount: String, coin: Coin, tx: SwapTransaction) async -> String {
-        let priceRateFiat = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
-        if let newValueDouble = Double(amount) {
-            let newValueFiat = String(format: "%.2f", newValueDouble * priceRateFiat)
-            return newValueFiat.isEmpty ? "" : newValueFiat
-        } else {
-            return ""
-        }
-    }
 }
 
 private extension SwapCryptoViewModel {
@@ -414,7 +409,7 @@ private extension SwapCryptoViewModel {
             return tx.fromCoin
         case .EVM:
             guard !tx.fromCoin.isNativeToken else { return tx.fromCoin }
-            return fromCoins.first(where: { $0.chain == tx.fromCoin.chain && $0.isNativeToken }) ?? tx.fromCoin
+            return tx.fromCoins.first(where: { $0.chain == tx.fromCoin.chain && $0.isNativeToken }) ?? tx.fromCoin
         }
     }
     
@@ -452,8 +447,12 @@ private extension SwapCryptoViewModel {
     }
     
     func isAlliliate(tx: SwapTransaction) -> Bool {
-        let rawAmount = tx.fromCoin.raw(for: tx.fromAmountDecimal)
-        let fiatAmount = tx.fromCoin.fiat(value: rawAmount)
+        let fiatAmount = RateProvider.shared.fiatBalance(
+            value: tx.fromAmountDecimal,
+            coin: tx.fromCoin,
+            currency: .USD
+        )
+
         return fiatAmount >= 100
     }
 

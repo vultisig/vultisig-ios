@@ -19,6 +19,9 @@ struct PeerDiscoveryView: View {
     @State var isLandscape: Bool = true
     @State var isPhoneSE = false
     
+    @State var screenWidth: CGFloat = .zero
+    @State var screenHeight: CGFloat = .zero
+    
     @State private var showInvalidNumberOfSelectedDevices = false
     
     @Environment(\.displayScale) var displayScale
@@ -45,28 +48,16 @@ struct PeerDiscoveryView: View {
                     }
             }
             
-            states
+            main
         }
-        .navigationTitle(getTitle())
         .navigationBarBackButtonHidden(true)
-        .task {
-            viewModel.startDiscovery()
-        }
-        .onAppear {
-            viewModel.setData(vault: vault, tssType: tssType, participantDiscovery: participantDiscovery)
-            setData()
-        }
-        .onDisappear {
-            viewModel.stopMediator()
-        }
-        
 #if os(iOS)
+        .navigationTitle(getTitle())
         .navigationBarTitleDisplayMode(.inline)
         .detectOrientation($orientation)
         .onChange(of: orientation) { oldValue, newValue in
             setData()
         }
-#endif
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
@@ -78,8 +69,34 @@ struct PeerDiscoveryView: View {
                 }
             }
         }
-        
-        
+#endif
+        .task {
+            viewModel.startDiscovery()
+        }
+        .onAppear {
+            viewModel.setData(vault: vault, tssType: tssType, participantDiscovery: participantDiscovery)
+            setData()
+        }
+        .onDisappear {
+            viewModel.stopMediator()
+        }
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            states
+        }
+    }
+    
+    var headerMac: some View {
+        PeerDiscoveryHeader(
+            selectedTab: selectedTab, 
+            viewModel: viewModel,
+            shareSheetViewModel: shareSheetViewModel
+        )
     }
     
     var states: some View {
@@ -186,13 +203,14 @@ struct PeerDiscoveryView: View {
                         .fill :
                             .fit
                 )
-                .padding()
+                .padding(2)
                 .frame(maxHeight: .infinity)
 #elseif os(macOS)
                 .aspectRatio(contentMode: .fit)
                 .frame(maxHeight: .infinity)
-                .padding(24)
+                .padding(3)
 #endif
+
 #if os(iOS)
                 .background(Color.blue600)
 #endif
@@ -203,6 +221,8 @@ struct PeerDiscoveryView: View {
                         .aspectRatio(contentMode: .fit)
                 )
                 .padding(1)
+                .background(Color.neutral0)
+                .cornerRadius(10)
         }
         .cornerRadius(10)
         .shadow(radius: 5)
@@ -252,7 +272,9 @@ struct PeerDiscoveryView: View {
     var networkPrompts: some View {
         NetworkPrompts(selectedNetwork: $viewModel.selectedNetwork)
             .onChange(of: viewModel.selectedNetwork) {
+                print("selected network changed: \(viewModel.selectedNetwork)")
                 viewModel.restartParticipantDiscovery()
+                setData()
             }
 #if os(iOS)
             .padding(.top, idiom == .pad ? 10 : 0)
@@ -340,7 +362,7 @@ struct PeerDiscoveryView: View {
     
     private func setData() {
 #if os(iOS)
-        isLandscape = (orientation == .landscapeLeft || orientation == .landscapeRight) && idiom == .pad
+        updateScreenSize()
 #endif
         
         qrCodeImage = viewModel.getQrImage(size: 100)
@@ -417,9 +439,24 @@ struct PeerDiscoveryView: View {
             isPhoneSE = true
         }
     }
+    
+#if os(iOS)
+    private func updateScreenSize() {
+        screenWidth = UIScreen.main.bounds.size.width
+        screenHeight = UIScreen.main.bounds.size.height
+        
+        if screenWidth>1100 && idiom == .pad {
+            isLandscape = true
+        } else {
+            isLandscape = false
+        }
+    }
+#endif
 }
 
 #Preview {
     PeerDiscoveryView(tssType: .Keygen, vault: Vault.example, selectedTab: .TwoOfTwoVaults)
+#if os(macOS)
         .frame(minWidth: 900, minHeight: 600)
+#endif
 }

@@ -51,7 +51,7 @@ struct FileQRCodeImporterMac: View {
                 placeholderImage
             }
         }
-        .frame(height: 300)
+        .frame(height: 250)
         .frame(maxWidth: .infinity)
         .background(Color.turquoise600.opacity(0.15))
         .cornerRadius(10)

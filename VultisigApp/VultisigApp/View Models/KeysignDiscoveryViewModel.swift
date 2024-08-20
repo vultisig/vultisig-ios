@@ -110,10 +110,25 @@ class KeysignDiscoveryViewModel: ObservableObject {
             self.logger.info("kicked off keysign successfully")
         }
     }
+    
     func stopDiscovery() {
         self.participantDiscovery?.stop()
     }
     
+    func restartParticipantDiscovery(){
+        self.participantDiscovery?.stop()
+        if VultisigRelay.IsRelayEnabled {
+            serverAddr = Endpoint.vultisigRelay
+        } else {
+            serverAddr = "http://127.0.0.1:18080"
+        }
+        self.participantDiscovery?.peersFound = [String]()
+        self.startKeysignSession()
+        self.participantDiscovery?.getParticipants(serverAddr: self.serverAddr,
+                                                   sessionID: self.sessionID,
+                                                   localParty: self.localPartyID,
+                                                   pubKeyECDSA: vault.pubKeyECDSA)
+    }
     private func startKeysignSession() {
         let urlString = "\(self.serverAddr)/\(self.sessionID)"
         let body = [self.localPartyID]

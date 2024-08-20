@@ -40,19 +40,19 @@ struct SendCryptoDetailsView: View {
             }
         }
         .gesture(DragGesture())
+#if os(iOS)
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
                 
-#if os(iOS)
                 Button {
                     hideKeyboard()
                 } label: {
                     Text(NSLocalizedString("done", comment: "Done"))
                 }
-#endif
             }
         }
+#endif
         .onAppear {
             setData()
         }
@@ -219,7 +219,10 @@ struct SendCryptoDetailsView: View {
     var textField: some View {
         SendCryptoAmountTextField(
             amount: $tx.amount,
-            onChange: { await sendCryptoViewModel.convertToFiat(newValue: $0, tx: tx) },
+            onChange: {
+                sendCryptoViewModel.validateAmount(amount: tx.amount.description)
+                await sendCryptoViewModel.convertToFiat(newValue: $0, tx: tx)
+            },
             onMaxPressed: { sendCryptoViewModel.setMaxValues(tx: tx) }
         )
         .focused($focusedField, equals: .amount)

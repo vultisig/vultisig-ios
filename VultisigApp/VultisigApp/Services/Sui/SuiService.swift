@@ -27,10 +27,9 @@ class SuiService {
         return await (try gasPrice, try allCoins)
     }
     
-    func getBalance(coin: Coin) async throws -> (rawBalance: String, priceRate: Double){
+    func getBalance(coin: Coin) async throws -> String {
         var rawBalance = "0"
-        let priceRateFiat = await CryptoPriceService.shared.getPrice(priceProviderId: coin.priceProviderId)
-        
+
         do {
             let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getBalance", params:  [coin.address])
             
@@ -42,7 +41,7 @@ class SuiService {
             print("Error fetching balance: \(error.localizedDescription)")
             throw error
         }
-        return (rawBalance,priceRateFiat)
+        return rawBalance
     }
     
     func getReferenceGasPrice(coin: Coin) async throws -> BigInt{

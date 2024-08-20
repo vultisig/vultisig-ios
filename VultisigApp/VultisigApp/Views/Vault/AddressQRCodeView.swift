@@ -19,32 +19,41 @@ struct AddressQRCodeView: View {
     
     @Environment(\.displayScale) var displayScale
     
+#if os(iOS)
+    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+#endif
+    
     var body: some View {
         ZStack {
             Background()
-            view
+            main
         }
+        .navigationBarBackButtonHidden(true)
 #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
-#endif
-        .navigationBarBackButtonHidden(true)
         .navigationTitle(NSLocalizedString("address", comment: "AddressQRCodeView title"))
         .toolbar {
-#if os(iOS)
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackSheetButton(showSheet: $showSheet)
             }
-#elseif os(macOS)
-            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                NavigationBackButton()
-            }
-#endif
-            
             ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
             }
         }
-
+#endif
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            view
+        }
+    }
+    
+    var headerMac: some View {
+        AddressQRCodeHeader(shareSheetViewModel: shareSheetViewModel)
     }
     
     var view: some View {
@@ -68,29 +77,19 @@ struct AddressQRCodeView: View {
     }
     
     var qrCode: some View {
-        GeometryReader { geometry in
-            qrCodeImage?
-                .resizable()
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-                .padding(24)
-#if os(iOS)
-                .frame(maxWidth: .infinity)
-                .frame(height: geometry.size.width-(2*padding))
-#elseif os(macOS)
-                .frame(maxHeight: .infinity)
-                .frame(width: geometry.size.height)
-#endif
-                .background(Color.turquoise600.opacity(0.15))
-                .cornerRadius(10)
-                .overlay (
-                    RoundedRectangle(cornerRadius: 10)
-                        .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [56]))
-                )
-                .padding(.horizontal, padding)
-#if os(macOS)
-                .frame(maxWidth: .infinity, alignment: .center)
-#endif
-        }
+        qrCodeImage?
+            .resizable()
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .padding(24)
+            .aspectRatio(contentMode: .fit)
+            .background(Color.blue600)
+            .cornerRadius(20)
+            .overlay (
+                RoundedRectangle(cornerRadius: 20)
+                    .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [100]))
+            )
+            .padding(.horizontal, padding)
+            .frame(maxWidth: .infinity, alignment: .center)
     }
     
     private func setData() {
@@ -111,5 +110,5 @@ struct AddressQRCodeView: View {
 }
 
 #Preview {
-    AddressQRCodeView(addressData: "", showSheet: .constant(true), isLoading: .constant(false))
+    AddressQRCodeView(addressData: "123456789", showSheet: .constant(true), isLoading: .constant(false))
 }

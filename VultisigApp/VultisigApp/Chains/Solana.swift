@@ -112,6 +112,39 @@ enum SolanaHelper {
         return [preSigningOutput.data.hexString]
     }
     
+    static func getZeroSignedTransaction(vaultHexPubKey: String,
+                                         vaultHexChainCode: String,
+                                         keysignPayload: KeysignPayload) throws -> String
+    {
+        guard let pubkeyData = Data(hexString: vaultHexPubKey) else {
+            throw HelperError.runtimeError("public key \(vaultHexPubKey) is invalid")
+        }
+        
+        let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
+        let allSignatures = DataVector()
+        let publicKeys = DataVector()
+        
+        // Compile with zero signature
+        let signature = Data(hexString: String(repeating: "0", count: 128))
+        
+        guard let sig = signature else {
+            return .empty
+        }
+        
+        allSignatures.add(data: sig)
+        publicKeys.add(data: pubkeyData)
+                
+        let compileWithSignature = TransactionCompiler.compileWithSignaturesAndPubKeyType(coinType: .solana,
+                                                                                          txInputData: inputData,
+                                                                                          signatures: allSignatures,
+                                                                                          publicKeys: publicKeys,
+                                                                                          pubKeyType: .ed25519)
+        
+        let output = try SolanaSigningOutput(serializedData: compileWithSignature)
+
+        return output.encoded
+    }
+    
     static func getSignedTransaction(vaultHexPubKey: String,
                                      vaultHexChainCode: String,
                                      keysignPayload: KeysignPayload,
@@ -144,6 +177,7 @@ enum SolanaHelper {
         let output = try SolanaSigningOutput(serializedData: compileWithSignature)
         let result = SignedTransactionResult(rawTransaction: output.encoded,
                                              transactionHash: getHashFromRawTransaction(tx:output.encoded))
+        
         return result
     }
     

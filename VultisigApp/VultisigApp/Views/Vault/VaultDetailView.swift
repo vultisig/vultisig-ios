@@ -10,7 +10,7 @@ import SwiftUI
 
 struct VaultDetailView: View {
     @Binding var showVaultsList: Bool
-    let vault: Vault
+    @ObservedObject var vault: Vault
     
     @EnvironmentObject var appState: ApplicationState
     @EnvironmentObject var viewModel: VaultDetailViewModel
@@ -23,10 +23,13 @@ struct VaultDetailView: View {
     @State var showScanner = false
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
+    @State var shouldSendCrypto = false
 
     @State var isSendLinkActive = false
     @State var isSwapLinkActive = false
     @State var isMemoLinkActive = false
+    @State var showAlert: Bool = false
+    @State var selectedChain: Chain? = nil
 
     @StateObject var sendTx = SendTransaction()
     
@@ -35,6 +38,7 @@ struct VaultDetailView: View {
             Background()
             view
             scanButton
+            PopupCapsule(text: "addressCopied", showPopup: $showAlert)
         }
         .onAppear {
             appState.currentVault = homeViewModel.selectedVault
@@ -55,7 +59,9 @@ struct VaultDetailView: View {
             )
         }
         .navigationDestination(isPresented: $isSwapLinkActive) {
-            SwapCryptoView(coin: viewModel.selectedGroup?.nativeCoin, vault: vault)
+            if let fromCoin = viewModel.selectedGroup?.nativeCoin {
+                SwapCryptoView(fromCoin: fromCoin, vault: vault)
+            }
         }
         .navigationDestination(isPresented: $isMemoLinkActive) {
             TransactionMemoView(
@@ -73,13 +79,18 @@ struct VaultDetailView: View {
     var view: some View {
         list
             .opacity(showVaultsList ? 0 : 1)
+#if os(iOS)
             .sheet(isPresented: $showScanner, content: {
                 GeneralCodeScannerView(
                     showSheet: $showScanner,
                     shouldJoinKeygen: $shouldJoinKeygen,
-                    shouldKeysignTransaction: $shouldKeysignTransaction
+                    shouldKeysignTransaction: $shouldKeysignTransaction, 
+                    shouldSendCrypto: $shouldSendCrypto,
+                    selectedChain: $selectedChain, 
+                    sendTX: sendTx
                 )
             })
+#endif
             .navigationDestination(isPresented: $shouldJoinKeygen) {
                 JoinKeygenView(vault: Vault(name: "Main Vault"))
             }
@@ -87,6 +98,13 @@ struct VaultDetailView: View {
                 if let vault = homeViewModel.selectedVault {
                     JoinKeysignView(vault: vault)
                 }
+            }
+            .navigationDestination(isPresented: $shouldSendCrypto) {
+                SendCryptoView(
+                    tx: sendTx,
+                    vault: vault,
+                    selectedChain: selectedChain
+                )
             }
     }
     
@@ -128,7 +146,8 @@ struct VaultDetailView: View {
         return ForEach(sortedGroups, id: \.id) { group in
             ChainNavigationCell(
                 group: group,
-                vault: vault
+                vault: vault, 
+                showAlert: $showAlert
             )
         }
         .background(Color.backgroundBlue)
@@ -199,7 +218,7 @@ struct VaultDetailView: View {
     }
     
     var scanButton: some View {
-        VaultDetailScanButton(showSheet: $showScanner)
+        VaultDetailScanButton(showSheet: $showScanner, sendTx: sendTx)
             .opacity(showVaultsList ? 0 : 1)
             .buttonStyle(BorderlessButtonStyle())
 #if os(macOS)

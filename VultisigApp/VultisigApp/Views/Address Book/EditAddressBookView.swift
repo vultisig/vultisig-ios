@@ -24,18 +24,33 @@ struct EditAddressBookView: View {
     var body: some View {
         ZStack {
             Background()
-            view
+            main
         }
         .navigationBarBackButtonHidden(true)
+#if os(iOS)
         .navigationTitle(NSLocalizedString("editAddress", comment: ""))
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
             }
         }
+#endif
         .onAppear {
             setData()
         }
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            view
+        }
+    }
+    
+    var headerMac: some View {
+        GeneralMacHeader(title: "editAddress")
     }
     
     var view: some View {
@@ -44,6 +59,9 @@ struct EditAddressBookView: View {
             button
         }
         .padding(.horizontal, 16)
+#if os(macOS)
+        .padding(.horizontal, 24)
+#endif
         .alert(isPresented: $showAlert) {
             alert
         }
@@ -105,7 +123,7 @@ struct EditAddressBookView: View {
             return
         }
         
-        guard validateAddress(coin: coin, address: address) else {
+        guard AddressService.validateAddress(address: address, chain: coin.chain) else {
             toggleAlertInvalidAddress()
             return
         }
@@ -115,13 +133,6 @@ struct EditAddressBookView: View {
         addressBookItem.coinMeta = coin
         
         dismiss()
-    }
-    
-    private func validateAddress(coin: CoinMeta, address: String) -> Bool {
-        if coin.chain == .mayaChain {
-            return AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya")
-        }
-        return coin.coinType.validate(address: address)
     }
     
     private func toggleAlert() {

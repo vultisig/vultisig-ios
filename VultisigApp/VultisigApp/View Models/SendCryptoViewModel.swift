@@ -16,6 +16,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     @Published var isLoading = false
     @Published var isValidAddress = false
     @Published var isValidForm = true
+    @Published var isNamespaceResolved = false
     @Published var showAlert = false
     @Published var currentIndex = 1
     @Published var currentTitle = "send"
@@ -23,6 +24,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     @Published var coinBalance: String = "0"
     @Published var errorMessage = ""
     @Published var hash: String? = nil
+    @Published var approveHash: String? = nil
     @Published var thor = ThorchainService.shared
     @Published var sol: SolanaService = SolanaService.shared
     @Published var sui: SuiService = SuiService.shared
@@ -59,14 +61,14 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             tx.amount = utxo.blockchairData.get(key)?.address?.balanceInBTC ?? "0.0"
             setPercentageAmount(tx: tx, for: percentage)
             Task{
-                await convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: true)
+                await convertToFiat(newValue: tx.amount, tx: tx, setMaxValue: tx.sendMaxAmount)
                 isLoading = false
             }
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain, .zksync:
             Task {
                 do {
                     if tx.coin.isNativeToken {
-                        let evm = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: true, isDeposit: tx.isDeposit, transactionType: tx.transactionType)
+                        let evm = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: tx.sendMaxAmount, isDeposit: tx.isDeposit, transactionType: tx.transactionType)
                         let totalFeeWei = evm.fee
                         tx.amount = "\(tx.coin.getMaxValue(totalFeeWei))" // the decimals must be truncaded otherwise the give us precisions errors
                         setPercentageAmount(tx: tx, for: percentage)
@@ -85,12 +87,11 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             }
             
         case .solana:
-            Task{
+            Task {
                 do{
                     if tx.coin.isNativeToken {
-                        let (rawBalance,priceRate) = try await sol.getSolanaBalance(coin: tx.coin)
+                        let rawBalance = try await sol.getSolanaBalance(coin: tx.coin)
                         tx.coin.rawBalance = rawBalance
-                        tx.coin.priceRate = priceRate
                         tx.amount = "\(tx.coin.getMaxValue(SolanaHelper.defaultFeeInLamports))"
                         setPercentageAmount(tx: tx, for: percentage)
                     } else {
@@ -108,11 +109,10 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 isLoading = false
             }
         case .sui:
-            Task{
-                do{
-                    let (rawBalance,priceRate) = try await sui.getBalance(coin: tx.coin)
+            Task {
+                do {
+                    let rawBalance = try await sui.getBalance(coin: tx.coin)
                     tx.coin.rawBalance = rawBalance
-                    tx.coin.priceRate = priceRate
                     
                     var gas = BigInt.zero
                     if percentage == 100 {
@@ -156,39 +156,9 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         tx.amount = "\(amountDecimal)"
     }
     
-    private func getPriceRate(tx: SendTransaction) async -> Decimal {
-        do {
-            var priceRateFiat = Decimal(string: tx.coin.priceRate.description) ?? .zero
-            
-            if tx.coin.isNativeToken {
-                let price = await CryptoPriceService.shared.getPrice(priceProviderId: tx.coin.priceProviderId)
-                priceRateFiat = Decimal(price)
-            } else {
-                if tx.coin.chainType == .EVM {
-                    let tokenPrice = await CryptoPriceService.shared.getTokenPrice(coin: tx.coin)
-                    if tokenPrice != .zero {
-                        return Decimal(tokenPrice)
-                    }
-                    
-                    if SettingsCurrency.current == .USD {
-                        let poolInfo = try await CryptoPriceService.shared.fetchCoingeckoPoolPrice(chain: tx.coin.chain, contractAddress: tx.coin.contractAddress)
-                        if let priceUsd = poolInfo.price_usd {
-                            return Decimal(priceUsd)
-                        }
-                    }
-                }
-            }
-            
-            return priceRateFiat
-        } catch {
-            return Decimal.zero
-        }
-    }
-    
     func convertFiatToCoin(newValue: String, tx: SendTransaction) async {
-        let priceRateFiat = await getPriceRate(tx: tx)
         if let newValueDecimal = Decimal(string: newValue) {
-            let newValueCoin = newValueDecimal / priceRateFiat
+            let newValueCoin = newValueDecimal / Decimal(tx.coin.price)
             let truncatedValueCoin = newValueCoin.truncated(toPlaces: tx.coin.decimals)
             tx.amount = NSDecimalNumber(decimal: truncatedValueCoin).stringValue
             tx.sendMaxAmount = false
@@ -198,9 +168,8 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func convertToFiat(newValue: String, tx: SendTransaction, setMaxValue: Bool = false) async {
-        let priceRateFiat = await getPriceRate(tx: tx)
         if let newValueDecimal = Decimal(string: newValue) {
-            let newValueFiat = newValueDecimal * priceRateFiat
+            let newValueFiat = newValueDecimal * Decimal(tx.coin.price)
             let truncatedValueFiat = newValueFiat.truncated(toPlaces: 2) // Assuming 2 decimal places for fiat
             tx.amountInFiat = NSDecimalNumber(decimal: truncatedValueFiat).stringValue
             tx.sendMaxAmount = setMaxValue
@@ -210,26 +179,49 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func validateAddress(tx: SendTransaction, address: String) {
-        if tx.coin.chain == .mayaChain {
-            isValidAddress = AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya")
-            return
+        guard !isNamespaceResolved else {
+            return isValidAddress = true
         }
-        isValidAddress = tx.coin.coinType.validate(address: address)
+        isValidAddress = AddressService.validateAddress(address: address, chain: tx.coin.chain)
+    }
+    
+    func validateAmount(amount: String) {
+        errorMessage = ""
+        isValidForm = true
+        
+        isValidForm = amount.isValidDecimal()
+        
+        if !isValidForm {
+            errorMessage = "The amount must be decimal."
+            showAlert = true
+        }
     }
     
     func validateForm(tx: SendTransaction) async -> Bool {
         // Reset validation state at the beginning
         errorMessage = ""
         isValidForm = true
-        
+        isNamespaceResolved = false
+
+        do {
+            tx.toAddress = try await AddressService.resolveInput(tx.toAddress, chain: tx.coin.chain)
+            isNamespaceResolved = true
+        } catch {
+            errorMessage = "validAddressDomainError"
+            showAlert = true
+            logger.log("We were unable to resolve the address of this domain service on this chain.")
+            isValidForm = false
+            return false
+        }
+
         // Validate the "To" address
-        if !isValidAddress {
+        if !isValidAddress && !isNamespaceResolved {
             errorMessage = "validAddressError"
             showAlert = true
             logger.log("Invalid address.")
             isValidForm = false
         }
-        
+
         let amount = tx.amountDecimal
         let gasFee = tx.gasDecimal
         

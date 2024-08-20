@@ -33,6 +33,10 @@ class Endpoint {
         "\(vultisigApiProxy)/blowfish/\(chain)/v0/\(network)/scan/transactions?language=en&method=eth_sendTransaction"
     }
     
+    static func fetchBlowfishSolanaTransactions() -> String {
+        "\(vultisigApiProxy)/blowfish/solana/v0/mainnet/scan/transactions?language=en"
+    }
+    
     static func fetchAccountNumberThorchainNineRealms(_ address: String) -> String {
         "https://thornode.ninerealms.com/auth/accounts/\(address)"
     }
@@ -110,6 +114,8 @@ class Endpoint {
     
     static let solanaServiceRpc = "https://api.mainnet-beta.solana.com"
     
+    static let solanaServiceRpc2 = "https://solana-rpc.publicnode.com"
+    
     static let solanaTokenInfoServiceRpc = "https://api.solana.fm/v1/tokens"
     
     static let suiServiceRpc = "https://sui-rpc.publicnode.com"
@@ -142,14 +148,14 @@ class Endpoint {
         "https://etherscan.io/tx/\(value)"
     }
     
-    static func fetchCryptoPrices(coin: String, fiat: String) -> String {
-        "\(vultisigApiProxy)/coingeicko/api/v3/simple/price?ids=\(coin)&vs_currencies=\(fiat)"
+    static func fetchCryptoPrices(ids: String, currencies: String) -> URL {
+        "\(vultisigApiProxy)/coingeicko/api/v3/simple/price?ids=\(ids)&vs_currencies=\(currencies)".asUrl
     }
     
-    static func fetchTokenPrice(network: String, addresses: [String], fiat: String) -> String {
+    static func fetchTokenPrice(network: String, addresses: [String], currencies: String) -> URL {
         let addresses = addresses.joined(separator: ",")
-        let url = "\(vultisigApiProxy)/coingeicko/api/v3/simple/token_price/\(network.lowercased())?contract_addresses=\(addresses)&vs_currencies=\(fiat)"
-        return url
+        let url = "\(vultisigApiProxy)/coingeicko/api/v3/simple/token_price/\(network.lowercased())?contract_addresses=\(addresses)&vs_currencies=\(currencies)"
+        return url.asUrl
     }
     
     static func fetchTokensInfo(network: String, addresses: [String]) -> String {
@@ -168,7 +174,11 @@ class Endpoint {
     static func bscLabelTxHash(_ value: String) -> String {
         "https://bscscan.com/tx/\(value)"
     }
-    
+
+    static func resolveTNS(name: String) -> URL {
+        "https://midgard.ninerealms.com/v2/thorname/lookup/\(name)".asUrl
+    }
+
     static func fetchCosmosAccountBalance(address: String) -> String{
         "https://cosmos-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
     }

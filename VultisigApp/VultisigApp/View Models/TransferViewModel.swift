@@ -9,5 +9,6 @@ import Foundation
 
 @MainActor protocol TransferViewModel: AnyObject {
     var hash: String? { get set }
+    var approveHash: String? { get set }
     func moveToNextView()
 }

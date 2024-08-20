@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct SwapCryptoView: View {
-    let coin: Coin?
+    let fromCoin: Coin?
+    let toCoin: Coin?
     let vault: Vault
     
     @StateObject var tx = SwapTransaction()
@@ -19,25 +20,49 @@ struct SwapCryptoView: View {
     
     @Environment(\.dismiss) var dismiss
 
+    init(fromCoin: Coin? = nil, toCoin: Coin? = nil, vault: Vault) {
+        self.fromCoin = fromCoin
+        self.toCoin = toCoin
+        self.vault = vault
+    }
+
     var body: some View {
-        content
-            .navigationBarBackButtonHidden(true)
-            .navigationTitle(NSLocalizedString("swap", comment: "SendCryptoView title"))
-            .task {
-                await swapViewModel.load(tx: tx, initialFromCoin: coin, vault: vault)
+        ZStack {
+            Background()
+            main
+        }
+        .onAppear {
+            swapViewModel.load(initialFromCoin: fromCoin, initialToCoin: toCoin, vault: vault, tx: tx)
+        }
+        .navigationBarBackButtonHidden(true)
+#if os(iOS)
+        .navigationTitle(NSLocalizedString("swap", comment: "SendCryptoView title"))
+        .ignoresSafeArea(.keyboard)
+        .toolbar {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
+                backButton
             }
-            .ignoresSafeArea(.keyboard)
-            .toolbar {
-                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                    backButton
-                }
-                
-                if swapViewModel.currentIndex==3 {
-                    ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                        NavigationQRShareButton(title: "swap", renderedImage: shareSheetViewModel.renderedImage)
-                    }
+            
+            if swapViewModel.currentIndex==3 {
+                ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                    NavigationQRShareButton(title: "swap", renderedImage: shareSheetViewModel.renderedImage)
                 }
             }
+        }
+#endif
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            content
+        }
+    }
+    
+    var headerMac: some View {
+        SwapCryptoHeader(swapViewModel: swapViewModel, shareSheetViewModel: shareSheetViewModel)
     }
     
     var content: some View {
@@ -123,8 +148,8 @@ struct SwapCryptoView: View {
         ZStack {
             if let hash = swapViewModel.hash {
                 SendCryptoDoneView(
-                    vault: vault, hash: hash, 
-                    explorerLink: swapViewModel.explorerLink(tx: tx, hash: hash),
+                    vault: vault, hash: hash, approveHash: swapViewModel.approveHash, 
+                    chain: tx.fromCoin.chain,
                     progressLink: swapViewModel.progressLink(tx: tx, hash: hash)
                 )
             } else {
@@ -165,5 +190,5 @@ struct SwapCryptoView: View {
 }
 
 #Preview {
-    SwapCryptoView(coin: .example, vault: .example)
+    SwapCryptoView(vault: .example)
 }

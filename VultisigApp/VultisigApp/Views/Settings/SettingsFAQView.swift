@@ -11,16 +11,31 @@ struct SettingsFAQView: View {
     var body: some View {
         ZStack {
             Background()
-            view
+            main
         }
         .navigationBarBackButtonHidden(true)
+#if os(iOS)
         .navigationTitle(NSLocalizedString("faq", comment: "FAQ"))
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
             }
         }
-
+#endif
+    }
+    
+    var main: some View {
+        VStack(spacing: 0) {
+#if os(macOS)
+            headerMac
+#endif
+            view
+        }
+    }
+    
+    var headerMac: some View {
+        GeneralMacHeader(title: "faq")
+            .padding(.bottom, 8)
     }
     
     var view: some View {

@@ -17,54 +17,70 @@ struct SendCryptoView: View {
     
     @State var keysignPayload: KeysignPayload? = nil
     @State var keysignView: KeysignView? = nil
+    @State var selectedChain: Chain? = nil
     
     @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     
     var body: some View {
-        content
-            .navigationBarBackButtonHidden(true)
-            .navigationTitle(NSLocalizedString(sendCryptoViewModel.currentTitle, comment: "SendCryptoView title"))
-            .ignoresSafeArea(.keyboard)
-            .onAppear {
-                Task {
-                    await setData()
-                }
-            }
-            .onChange(of: tx.coin) {
-                Task {
-                    await setData()
-                }
-            }
-            .onDisappear(){
-                sendCryptoViewModel.stopMediator()
-            }
-            .toolbar {
-                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                    backButton
-                }
-                
-                if sendCryptoViewModel.currentIndex==3 {
-                    ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                        NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
-                    }
-                }
-            }
-
-    }
-    
-    var content: some View {
         ZStack {
             Background()
-            view
+            main
             
             if sendCryptoViewModel.isLoading || sendCryptoVerifyViewModel.isLoading {
                 loader
             }
         }
-#if os(iOS)
-        .onTapGesture {
-            hideKeyboard()
+        .ignoresSafeArea(.keyboard)
+        .onAppear {
+            Task {
+                await setData()
+            }
         }
+        .onChange(of: tx.coin) {
+            Task {
+                await setData()
+            }
+        }
+        .onDisappear(){
+            sendCryptoViewModel.stopMediator()
+        }
+        .navigationBarBackButtonHidden(true)
+#if os(iOS)
+        .navigationTitle(NSLocalizedString(sendCryptoViewModel.currentTitle, comment: "SendCryptoView title"))
+        .toolbar {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
+                backButton
+            }
+            
+            if sendCryptoViewModel.currentIndex==3 {
+                ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                    NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
+                }
+            }
+        }
+#endif
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            view
+        }
+    }
+    
+    var headerMac: some View {
+        SendCryptoHeader(sendCryptoViewModel: sendCryptoViewModel, shareSheetViewModel: shareSheetViewModel)
+    }
+    
+    var content: some View {
+        view
+#if os(iOS)
+            .onTapGesture {
+                hideKeyboard()
+            }
 #endif
     }
     
@@ -145,8 +161,8 @@ struct SendCryptoView: View {
     
     var doneView: some View {
         ZStack {
-            if let hash = sendCryptoViewModel.hash {
-                SendCryptoDoneView(vault:vault,hash: hash,explorerLink: Endpoint.getExplorerURL(chainTicker: keysignPayload?.coin.chain.ticker ?? "", txid: hash))
+            if let hash = sendCryptoViewModel.hash, let chain = keysignPayload?.coin.chain {
+                SendCryptoDoneView(vault: vault, hash: hash, approveHash: nil, chain: chain)
             } else {
                 SendCryptoSigningErrorView()
             }
@@ -157,7 +173,7 @@ struct SendCryptoView: View {
             }
         }
     }
-    
+
     var errorView: some View {
         SendCryptoSigningErrorView()
     }
@@ -179,7 +195,27 @@ struct SendCryptoView: View {
     }
     
     private func setData() async {
+        presetData()
         await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
+    }
+    
+    private func presetData() {
+        guard let chain = selectedChain else {
+            selectedChain = nil
+            return
+        }
+        
+        guard let selectedCoin = vault.coins.first(where: { $0.chain == chain && $0.isNativeToken }) else {
+            selectedChain = nil
+            return
+        }
+        
+        tx.coin = selectedCoin
+        tx.toAddress = deeplinkViewModel.address ?? ""
+        selectedChain = nil
+        DebounceHelper.shared.debounce {
+            validateAddress(deeplinkViewModel.address ?? "")
+        }
     }
     
     private func handleBackTap() {
@@ -190,6 +226,10 @@ struct SendCryptoView: View {
         
         sendCryptoViewModel.handleBackTap()
     }
+    
+    private func validateAddress(_ newValue: String) {
+        sendCryptoViewModel.validateAddress(tx: tx, address: newValue)
+    }
 }
 
 #Preview {
@@ -197,4 +237,5 @@ struct SendCryptoView: View {
         tx: SendTransaction(),
         vault: Vault.example
     )
+    .environmentObject(DeeplinkViewModel())
 }

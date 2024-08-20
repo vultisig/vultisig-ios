@@ -76,6 +76,7 @@ class TransactionMemoCustom: TransactionMemoAddressable, ObservableObject {
                     get: { self.custom },
                     set: { self.custom = $0 }
                 ),
+                maxLengthSize: Int.max,
                 isValid: Binding(
                     get: { self.customValid },
                     set: { self.customValid = $0 }

@@ -29,7 +29,29 @@ class ThorchainService: ThorchainSwapProvider {
         self.cacheBalances(balanceResponse.balances, forAddress: address)
         return balanceResponse.balances
     }
-    
+
+    func resolveTNS(name: String, chain: Chain) async throws -> String {
+        struct Response: Codable {
+            struct Entry: Codable {
+                let address: String
+                let chain: String
+            }
+            let entries: [Entry]
+        }
+
+        let url = Endpoint.resolveTNS(name: name)
+        let (data, _) = try await URLSession.shared.data(from: url)
+        let response = try JSONDecoder().decode(Response.self, from: data)
+
+        guard let entry = response.entries.first(where: { 
+            $0.chain.lowercased() == chain.swapAsset.lowercased()
+        }) else {
+            throw Errors.tnsEntryNotFound
+        }
+
+        return entry.address
+    }
+
     func fetchAccountNumber(_ address: String) async throws -> THORChainAccountValue? {
         guard let url = URL(string: Endpoint.fetchAccountNumberThorchainNineRealms(address)) else {
             return nil
@@ -119,5 +141,13 @@ class ThorchainService: ThorchainSwapProvider {
         let response = try JSONDecoder().decode(THORChainNetworkStatus.self, from: data)
         network = response.result.node_info.network
         return response.result.node_info.network
+    }
+}
+
+
+private extension ThorchainService {
+
+    enum Errors: Error {
+        case tnsEntryNotFound
     }
 }

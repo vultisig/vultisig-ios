@@ -10,6 +10,7 @@ import SwiftUI
 import WalletCore
 
 struct CustomTokenView: View {
+    let addressService: AddressService = AddressService()
     let chainDetailView: ChainDetailView
     let vault: Vault
     @ObservedObject var group: GroupedChain
@@ -34,9 +35,7 @@ struct CustomTokenView: View {
         ZStack {
             Background()
             VStack(alignment: .leading) {
-                view
-                    .padding(.top, 16)
-                    .padding(.horizontal, 16)
+                main
                 
                 if let error = error {
                     errorView(error: error)
@@ -49,11 +48,13 @@ struct CustomTokenView: View {
                 Spacer()
             }
         }
-        .navigationBarBackButtonHidden(true)
-        .navigationTitle(NSLocalizedString("findCustomTokens", comment: "Find Your Custom Token"))
         .task {
             await tokenViewModel.loadData(groupedChain: group)
         }
+        .navigationBarBackButtonHidden(true)
+#if os(iOS)
+        .navigationTitle(NSLocalizedString("findCustomTokens", comment: "Find Your Custom Token"))
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 Button(action: {
@@ -61,22 +62,39 @@ struct CustomTokenView: View {
                     dismiss()
                 }) {
                     Image(systemName: "chevron.backward")
-#if os(iOS)
-                        .font(.body18MenloBold)
-#elseif os(macOS)
                         .font(.body18Menlo)
-#endif
                         .foregroundColor(Color.neutral0)
                 }
             }
         }
+#endif
+    }
+    
+    var main: some View {
+        VStack(spacing: 0) {
+#if os(macOS)
+            headerMac
+#endif
+            view
+                .padding(.top, 16)
+                .padding(.horizontal, 16)
+        }
+    }
+    
+    var headerMac: some View {
+        TokenSelectionHeader(title: "findCustomTokens", chainDetailView: chainDetailView)
     }
     
     var view: some View {
         VStack(alignment: .leading, spacing: 16) {
             
             HStack {
-                AddressTextField(contractAddress: $contractAddress, validateAddress: validateAddress)
+                AddressTextField(
+                    contractAddress: $contractAddress,
+                    validateAddress: validateAddress,
+                    showScanIcon: false,
+                    showAddressBookIcon: false
+                )
                 
                 Button(action: {
                     Task {
@@ -191,14 +209,7 @@ struct CustomTokenView: View {
     }
     
     private func validateAddress(_ address: String) {
-        let firstCoinOptional = group.coins.first
-        if let firstCoin = firstCoinOptional {
-            if firstCoin.chain == .mayaChain {
-                isValidAddress = AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya")
-                return
-            }
-            isValidAddress = firstCoin.coinType.validate(address: address)
-        }
+        isValidAddress = AddressService.validateAddress(address: address, group: group)
     }
     
     private func saveAssets() {
@@ -206,7 +217,7 @@ struct CustomTokenView: View {
             isLoading = true
             Task {
                 coinViewModel.handleSelection(isSelected: true, asset: customToken)
-                await coinViewModel.saveAssets(for: vault)
+                await CoinService.saveAssets(for: vault, selection: coinViewModel.selection)
                 
                 try await Task.sleep(nanoseconds: 1_000_000_000)
                 isLoading = false

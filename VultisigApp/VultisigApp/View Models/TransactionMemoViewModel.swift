@@ -24,9 +24,10 @@ class TransactionMemoViewModel: ObservableObject, TransferViewModel {
     @Published var coinBalance: String = "0"
     @Published var errorMessage = ""
     @Published var hash: String? = nil
-    
+    @Published var approveHash: String? = nil
+
     let blockchainService = BlockChainService.shared
-    
+        
     private let mediator = Mediator.shared
     
     let totalViews = 5
@@ -44,11 +45,7 @@ class TransactionMemoViewModel: ObservableObject, TransferViewModel {
     }
     
     func validateAddress(tx: SendTransaction, address: String) {
-        if tx.coin.chain == .mayaChain {
-            isValidAddress = AnyAddress.isValidBech32(string: address, coin: .thorchain, hrp: "maya")
-            return
-        }
-        isValidAddress = tx.coin.coinType.validate(address: address)
+        isValidAddress = AddressService.validateAddress(address: address, chain: tx.coin.chain)
     }
     
     func setHash(_ hash: String) {

@@ -19,6 +19,8 @@ struct ChainDetailView: View {
     @State var isSendLinkActive = false
     @State var isSwapLinkActive = false
     @State var isMemoLinkActive = false
+    @State var isWeweLinkActive = false
+    @State var showAlert = false
 
     @EnvironmentObject var viewModel: CoinSelectionViewModel
     
@@ -34,13 +36,16 @@ struct ChainDetailView: View {
     var body: some View {
         ZStack {
             Background()
-            view
+            main
             
             if isLoading {
                 Loader()
             }
+            
+            PopupCapsule(text: "addressCopied", showPopup: $showAlert)
         }
         .navigationBarBackButtonHidden(true)
+#if os(iOS)
         .navigationTitle(NSLocalizedString(group.name, comment: ""))
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
@@ -53,6 +58,14 @@ struct ChainDetailView: View {
                 }
             }
         }
+#endif
+        .safeAreaInset(edge: .bottom) {
+            if group.chain == .base {
+                #if os(macOS) || DEBUG
+                weweButton()
+                #endif
+            }
+        }
         .navigationDestination(isPresented: $isSendLinkActive) {
             SendCryptoView(
                 tx: sendTx,
@@ -60,7 +73,14 @@ struct ChainDetailView: View {
             )
         }
         .navigationDestination(isPresented: $isSwapLinkActive) {
-            SwapCryptoView(coin: tokens.first, vault: vault)
+            if let fromCoin = tokens.first {
+                SwapCryptoView(fromCoin: fromCoin, vault: vault)
+            }
+        }
+        .navigationDestination(isPresented: $isWeweLinkActive) {
+            if let base = vault.coin(for: TokensStore.Token.baseEth), let wewe = vault.coin(for: TokensStore.Token.baseWewe) {
+                SwapCryptoView(fromCoin: base, toCoin: wewe, vault: vault)
+            }
         }
         .navigationDestination(isPresented: $isMemoLinkActive) {
             TransactionMemoView(
@@ -111,6 +131,19 @@ struct ChainDetailView: View {
         Loader()
     }
     
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            view
+        }
+    }
+    
+    var headerMac: some View {
+        ChainDetailHeader(title: group.name, refreshAction: refreshAction)
+    }
+    
     var view: some View {
         ScrollView {
             VStack(spacing: 20) {
@@ -125,10 +158,12 @@ struct ChainDetailView: View {
             .background(Color.backgroundBlue)
             .colorScheme(.dark)
             .padding(.horizontal, 16)
+    #if os(iOS)
             .padding(.vertical, 30)
-#if os(macOS)
-            .padding(24)
-#endif
+    #elseif os(macOS)
+            .padding(.horizontal, 24)
+            .padding(.vertical, 8)
+    #endif
         }
     }
     
@@ -151,7 +186,7 @@ struct ChainDetailView: View {
     }
     
     var header: some View {
-        ChainHeaderCell(group: group, isLoading: $isLoading)
+        ChainHeaderCell(group: group, isLoading: $isLoading, showAlert: $showAlert)
     }
     
     var cells: some View {
@@ -208,8 +243,31 @@ struct ChainDetailView: View {
         }
         .font(.body16MenloBold)
         .foregroundColor(.turquoise600)
+        .padding(.bottom, 32)
     }
-    
+
+    private func weweButton() -> some View {
+        Button {
+            viewModel.selectWeweIfNeeded(vault: vault)
+            isWeweLinkActive = true
+        } label: {
+            FilledLabelButton {
+                HStack(spacing: 10) {
+                    Image("BuyWewe")
+                    Text("BUY $WEWE")
+                        .foregroundColor(.blue600)
+#if os(iOS)
+                        .font(.body16MontserratBold)
+#elseif os(macOS)
+                        .font(.body14MontserratBold)
+#endif
+                }
+                .frame(height: 44)
+            }
+        }
+        .padding(40)
+    }
+
     private func getCoinCell(_ coin: Coin) -> some View {
         VStack(spacing: 0) {
             Separator()
@@ -235,6 +293,10 @@ struct ChainDetailView: View {
             isLoading = true
             for coin in group.coins {
                 await viewModel.loadData(coin: coin)
+            }
+            
+            for coin in group.coins where coin.isNativeToken {
+                await CoinService.addDiscoveredTokens(nativeToken: coin, to: vault)
             }
             isLoading = false
         }

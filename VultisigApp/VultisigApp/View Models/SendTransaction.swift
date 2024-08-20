@@ -20,10 +20,10 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var gas: String = .empty
     @Published var sendMaxAmount: Bool = false
     @Published var memoFunctionDictionary: ThreadSafeDictionary<String, String> = ThreadSafeDictionary()
-
+    
     @Published var coin: Coin = .example
     @Published var transactionType: VSTransactionType = .unspecified
-
+    
     var isAmountExceeded: Bool {
         
         if (sendMaxAmount && coin.chainType == .UTXO) || !coin.isNativeToken {
@@ -57,7 +57,7 @@ class SendTransaction: ObservableObject, Hashable {
     func hasEnoughNativeTokensToPayTheFees(specific: BlockChainSpecific) async -> (Bool, String) {
         var errorMessage = ""
         guard !coin.isNativeToken else { return (true, errorMessage) }
-
+        
         if let vault = ApplicationState.shared.currentVault {
             if let nativeToken = vault.coins.nativeCoin(chain: coin.chain) {
                 await BalanceService.shared.updateBalance(for: nativeToken)

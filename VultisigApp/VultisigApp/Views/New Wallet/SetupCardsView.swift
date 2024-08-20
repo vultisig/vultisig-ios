@@ -14,17 +14,31 @@ struct SetupCardsView: View {
     @State var showSheet = false
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
+<<<<<<< HEAD:VultisigApp/VultisigApp/Views/New Wallet/SetupCardsView.swift
+=======
+    @State var shouldSendCrypto = false
+    @State var selectedTab: SetupVaultState = .TwoOfTwoVaults
+    @State var selectedChain: Chain? = nil
+    
+    @StateObject var sendTx = SendTransaction()
+>>>>>>> main:VultisigApp/VultisigApp/Views/New Wallet/SetupVaultView.swift
     
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var viewModel: HomeViewModel
+    @EnvironmentObject var vaultDetailViewModel: VaultDetailViewModel
     
     var body: some View {
         ZStack {
             Background()
-            view
+            main
         }
         .navigationBarBackButtonHidden(true)
+<<<<<<< HEAD:VultisigApp/VultisigApp/Views/New Wallet/SetupCardsView.swift
         .navigationTitle(NSLocalizedString("setup", comment: "Setup"))
+=======
+#if os(iOS)
+        .navigationTitle(NSLocalizedString("setup", comment: "Setup title"))
+>>>>>>> main:VultisigApp/VultisigApp/Views/New Wallet/SetupVaultView.swift
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
@@ -33,6 +47,23 @@ struct SetupCardsView: View {
         .onAppear {
             setData()
         }
+#endif
+        .onAppear {
+            setData()
+        }
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            view
+        }
+    }
+    
+    var headerMac: some View {
+        GeneralMacHeader(title: "setup")
     }
     
     var view: some View {
@@ -41,20 +72,37 @@ struct SetupCardsView: View {
             separator
             pairingDeviceCard
         }
+<<<<<<< HEAD:VultisigApp/VultisigApp/Views/New Wallet/SetupCardsView.swift
         .padding(16)
+=======
+#if os(iOS)
+>>>>>>> main:VultisigApp/VultisigApp/Views/New Wallet/SetupVaultView.swift
         .sheet(isPresented: $showSheet, content: {
             GeneralCodeScannerView(
                 showSheet: $showSheet,
                 shouldJoinKeygen: $shouldJoinKeygen,
-                shouldKeysignTransaction: $shouldKeysignTransaction
+                shouldKeysignTransaction: $shouldKeysignTransaction, 
+                shouldSendCrypto: $shouldSendCrypto,
+                selectedChain: $selectedChain,
+                sendTX: sendTx
             )
         })
+#endif
         .navigationDestination(isPresented: $shouldJoinKeygen) {
             JoinKeygenView(vault: Vault(name: getUniqueVaultName()))
         }
         .navigationDestination(isPresented: $shouldKeysignTransaction) {
             if let vault = viewModel.selectedVault {
                 JoinKeysignView(vault: vault)
+            }
+        }
+        .navigationDestination(isPresented: $shouldSendCrypto) {
+            if let vault = viewModel.selectedVault {
+                SendCryptoView(
+                    tx: sendTx,
+                    vault: vault,
+                    selectedChain: selectedChain
+                )
             }
         }
     }
@@ -87,7 +135,7 @@ struct SetupCardsView: View {
         }
 #elseif os(macOS)
         NavigationLink {
-            GeneralQRImportMacView(type: .NewVault)
+            MacScannerView(type: .NewVault, sendTx: sendTx)
         } label: {
             pairingDeviceLabel
         }
@@ -120,6 +168,7 @@ struct SetupCardsView: View {
         if vault == nil {
             vault = Vault(name: getUniqueVaultName())
         }
+        setupTransaction()
     }
     
     private func getUniqueVaultName() -> String {
@@ -144,6 +193,19 @@ struct SetupCardsView: View {
         }
         return "Main Vault"
     }
+<<<<<<< HEAD:VultisigApp/VultisigApp/Views/New Wallet/SetupCardsView.swift
+=======
+    
+    private func setupTransaction() {
+        let selectedGroup = vaultDetailViewModel.selectedGroup
+        
+        guard let selectedGroup, let activeCoin = selectedGroup.coins.first(where: { $0.isNativeToken }) else {
+            return
+        }
+        
+        sendTx.reset(coin: activeCoin)
+    }
+>>>>>>> main:VultisigApp/VultisigApp/Views/New Wallet/SetupVaultView.swift
 }
 
 #Preview {

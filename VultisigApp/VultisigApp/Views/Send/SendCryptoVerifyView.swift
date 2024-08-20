@@ -12,10 +12,11 @@ struct SendCryptoVerifyView: View {
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @ObservedObject var sendCryptoVerifyViewModel: SendCryptoVerifyViewModel
     @ObservedObject var tx: SendTransaction
+    @StateObject private var blowfishViewModel = BlowfishWarningViewModel()
+    
     let vault: Vault
     
     @State var isLoading = true
-    @State var blowfishResponse: BlowfishResponse? = nil
     
     var body: some View {
         ZStack {
@@ -33,35 +34,30 @@ struct SendCryptoVerifyView: View {
             sendCryptoVerifyViewModel.isLoading = false
         }
         .onAppear {
-            if (tx.coin.chainType == .EVM) {
-                isLoading = true
-                Task{
-                    do {
-                        blowfishResponse = try await sendCryptoVerifyViewModel.blowfishEVMTransactionScan(tx: tx)
-                        isLoading = false
-                    } catch {
-                        print(error.localizedDescription)
-                        isLoading = false
-                    }
+            isLoading = true
+            Task {
+                do {
+                    try await sendCryptoVerifyViewModel.blowfishTransactionScan(tx: tx, vault: vault)
+                    blowfishViewModel.updateResponse(sendCryptoVerifyViewModel.blowfishWarnings)
+                    isLoading = false
+                } catch {
+                    print("Error scanning transaction: \(error)")
+                    isLoading = false
                 }
-            } else {
-                isLoading = false
             }
         }
     }
     
-    var warning: some View {
-        VStack {
-            BlowfishWarningInformationNote(blowfishResponse: blowfishResponse)
-                .padding(.horizontal, 16)
-        }
+    var blowfishView: some View {
+        BlowfishWarningInformationNote(viewModel: blowfishViewModel)
+            .padding(.horizontal, 16)
     }
     
     var view: some View {
         VStack {
             fields
-            if (tx.coin.chainType == .EVM && blowfishResponse != nil) {
-                warning
+            if sendCryptoVerifyViewModel.blowfishShow {
+                blowfishView
             }
             button
         }
@@ -138,10 +134,6 @@ struct SendCryptoVerifyView: View {
             FilledButton(title: "sign")
         }
         .padding(40)
-    }
-    
-    var loader: some View {
-        Loader()
     }
     
     private func getAddressCell(for title: String, with address: String) -> some View {
