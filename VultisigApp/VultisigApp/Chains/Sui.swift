@@ -27,6 +27,10 @@ enum SuiHelper {
             throw HelperError.runtimeError("fail to get to address")
         }
         
+        // We expect an array like a JSON
+        // [["objectDigest": "", "objectID": "", "version": ""]]
+        // NOT key value pair object
+        // [[["objectDigest": ""], ["objectID": ""], ["version": ""]]]
         let suiCoins = coins.map{
             var obj = SuiObjectRef()
             obj.objectID = $0["objectID"] ?? .empty
