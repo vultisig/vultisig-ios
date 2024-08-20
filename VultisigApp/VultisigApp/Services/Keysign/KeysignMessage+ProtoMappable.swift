@@ -244,9 +244,23 @@ extension BlockChainSpecific {
                 genesisHash: value.genesisHash
             )
         case .suicheSpecific(let value):
+            // I will leave this commented so we don't forget
+            // coinKeyValuePairs, results on this [["objectDigest":""], ["objectID":""],["version":""]]
+            // But we expect this, example:
+            // [
+            //     [
+            //        "objectDigest": "Ev46yomfjAPN29mNomVNbJRZLtaZUZ6xajg7LcXU3M4H",
+            //        "objectID": "0x722f75f09fd78f2b9ebc309dcc681f44035e6e32a6de8dd24a73168f08a22657",
+            //        "version": "97801387"
+            //     ]
+            //]
+            let coinsDic = value.coinKeyValuePairs.reduce(into: [String: String]()) { (result, coin) in
+                result[coin.key] = coin.value
+            }
+            
             self = .Sui(
                 referenceGasPrice: BigInt(stringLiteral: value.referenceGasPrice),
-                coins: value.coinKeyValuePairs.map { [$0.key: $0.value] }
+                coins: [coinsDic]
             )
         }
     }
@@ -295,15 +309,16 @@ extension BlockChainSpecific {
         case .Sui(let referenceGasPrice, let coins):
             return .suicheSpecific(.with {
                 $0.referenceGasPrice = String(referenceGasPrice)
-                $0.coinKeyValuePairs = coins.compactMap { coin in
-                    guard let key = coin.keys.first, let value = coin.values.first else {
-                        return nil
+                $0.coinKeyValuePairs = coins.flatMap { coin in
+                    coin.map { key, value in
+                        VSCoinKeyValuePair.with {
+                            $0.key = key
+                            $0.value = value
+                        }
                     }
-                    return .with {
-                        $0.key = key
-                        $0.value = value
-                    }}
+                }.sorted { $0.key < $1.key }
             })
+
         case .Polkadot(let recentBlockHash, let nonce, let currentBlockNumber, let specVersion, let transactionVersion, let genesisHash):
             return .polkadotSpecific(.with {
                 $0.recentBlockHash = recentBlockHash
