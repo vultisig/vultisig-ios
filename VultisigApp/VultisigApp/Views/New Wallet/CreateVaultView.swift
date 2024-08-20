@@ -23,10 +23,6 @@ struct CreateVaultView: View {
                     NavigationBackButton()
                 }
             }
-            
-            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                NavigationHelpButton()
-            }
         }
 #endif
     }

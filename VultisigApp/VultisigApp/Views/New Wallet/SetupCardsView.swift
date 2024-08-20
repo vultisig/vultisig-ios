@@ -14,14 +14,11 @@ struct SetupCardsView: View {
     @State var showSheet = false
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
-<<<<<<< HEAD:VultisigApp/VultisigApp/Views/New Wallet/SetupCardsView.swift
-=======
     @State var shouldSendCrypto = false
     @State var selectedTab: SetupVaultState = .TwoOfTwoVaults
     @State var selectedChain: Chain? = nil
     
     @StateObject var sendTx = SendTransaction()
->>>>>>> main:VultisigApp/VultisigApp/Views/New Wallet/SetupVaultView.swift
     
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var viewModel: HomeViewModel
@@ -33,15 +30,15 @@ struct SetupCardsView: View {
             main
         }
         .navigationBarBackButtonHidden(true)
-<<<<<<< HEAD:VultisigApp/VultisigApp/Views/New Wallet/SetupCardsView.swift
-        .navigationTitle(NSLocalizedString("setup", comment: "Setup"))
-=======
 #if os(iOS)
         .navigationTitle(NSLocalizedString("setup", comment: "Setup title"))
->>>>>>> main:VultisigApp/VultisigApp/Views/New Wallet/SetupVaultView.swift
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
                 NavigationBackButton()
+            }
+            
+            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                NavigationHelpButton()
             }
         }
         .onAppear {
@@ -72,11 +69,9 @@ struct SetupCardsView: View {
             separator
             pairingDeviceCard
         }
-<<<<<<< HEAD:VultisigApp/VultisigApp/Views/New Wallet/SetupCardsView.swift
         .padding(16)
-=======
+        
 #if os(iOS)
->>>>>>> main:VultisigApp/VultisigApp/Views/New Wallet/SetupVaultView.swift
         .sheet(isPresented: $showSheet, content: {
             GeneralCodeScannerView(
                 showSheet: $showSheet,
@@ -193,8 +188,6 @@ struct SetupCardsView: View {
         }
         return "Main Vault"
     }
-<<<<<<< HEAD:VultisigApp/VultisigApp/Views/New Wallet/SetupCardsView.swift
-=======
     
     private func setupTransaction() {
         let selectedGroup = vaultDetailViewModel.selectedGroup
@@ -205,7 +198,6 @@ struct SetupCardsView: View {
         
         sendTx.reset(coin: activeCoin)
     }
->>>>>>> main:VultisigApp/VultisigApp/Views/New Wallet/SetupVaultView.swift
 }
 
 #Preview {

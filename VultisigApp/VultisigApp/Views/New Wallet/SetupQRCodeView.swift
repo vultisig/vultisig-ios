@@ -76,7 +76,7 @@ struct SetupQRCodeView: View {
                 )
             }
         } label: {
-            FilledButton(title: "start")
+            FilledButton(title: "start".uppercased())
         }
     }
 }

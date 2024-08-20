@@ -191,10 +191,11 @@ struct PeerDiscoveryView: View {
     }
     
     var paringBarcode: some View {
-        VStack {
+        ZStack {
             qrCodeImage?
                 .resizable()
 #if os(iOS)
+                .background(Color.blue600)
                 .frame(maxWidth: isPhoneSE ? 250 : nil)
                 .frame(maxHeight: isPhoneSE ? 250 : nil)
                 .aspectRatio(
@@ -206,23 +207,21 @@ struct PeerDiscoveryView: View {
                 .padding(2)
                 .frame(maxHeight: .infinity)
 #elseif os(macOS)
+                .background(Color.blue600)
                 .aspectRatio(contentMode: .fit)
                 .frame(maxHeight: .infinity)
                 .padding(3)
 #endif
-
-#if os(iOS)
-                .background(Color.blue600)
-#endif
-                .cornerRadius(20)
-                .overlay (
-                    RoundedRectangle(cornerRadius: 10)
-                        .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [12]))
-                        .aspectRatio(contentMode: .fit)
-                )
-                .padding(1)
                 .background(Color.neutral0)
                 .cornerRadius(10)
+                .padding()
+                .background(Color.blue600)
+                .cornerRadius(15)
+                .overlay (
+                    RoundedRectangle(cornerRadius: 15)
+                        .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [58]))
+                )
+                .padding(1)
         }
         .cornerRadius(10)
         .shadow(radius: 5)
@@ -277,7 +276,7 @@ struct PeerDiscoveryView: View {
                 setData()
             }
 #if os(iOS)
-            .padding(.top, idiom == .pad ? 10 : 0)
+            .padding(.top, idiom == .pad ? 10 : 2)
 #elseif os(macOS)
             .padding(.top, 10)
 #endif

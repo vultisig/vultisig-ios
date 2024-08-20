@@ -108,6 +108,7 @@ class KeygenViewModel: ObservableObject {
             try await keygenWithRetry(tssIns: tssService, attempt: 1)
             // if keygenWithRetry return without exception, it means keygen finished successfully
             self.status = .KeygenFinished
+            
             self.vault.signers = self.keygenCommittee
             // save the vault
             if let stateAccess {

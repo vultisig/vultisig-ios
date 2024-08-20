@@ -18,7 +18,7 @@ struct KeyGenSummaryView: View {
             Background()
             view
         }
-        .navigationTitle(NSLocalizedString("summary", comment: "Summary"))
+        .navigationTitle(NSLocalizedString("keygen", comment: "Keygen"))
         .onAppear {
             setData()
         }

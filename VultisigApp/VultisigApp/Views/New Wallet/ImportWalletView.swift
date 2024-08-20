@@ -28,6 +28,10 @@ struct ImportWalletView: View {
             ToolbarItem(placement: .navigation) {
                 NavigationBackButton()
             }
+            
+            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                NavigationHelpButton()
+            }
         }
 #endif
         .fileImporter(

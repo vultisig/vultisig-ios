@@ -52,7 +52,7 @@
 "keysign" = "Keysign";
 "done" = "Done";
 "gas(auto)" = "Gas (auto)";
-"enterPreviousVault" = "Enter your previously created vault share";
+"enterPreviousVault" = "Upload your previously created vault share :";
 "uploadFile" = "Upload file, text or image";
 "devicesOnSameWifi" = "Keep devices on the same Network with Vultisig open";
 "need3Devices" = "You need at least 2 devices";
@@ -67,7 +67,7 @@
 "scanQrCode" = "Scan QR Code";
 "mainDevice" = "Main Device";
 "pleaseWait" = "Please wait...";
-"joinKeygen" = "JOIN KEYGEN/RESHARE";
+"joinKeygen" = "JOIN KEYGEN";
 "failToStartKeygen" = "Unable to start key generation due to missing information";
 "scanQRCodeJoinKeygen" = "Scan the QR Code on another Vultisig app to start.";
 "discoveringMediator" = "Discovering mediator service, please wait...";
@@ -245,7 +245,7 @@
 "devicesOnSameInternet" = "Connect all devices to the\nInternet with the Vultisig App open.";
 "invalidFileFormat" = "Invalid File Format";
 "invalidFileFormatMessage" = "Please make sure that you selected the correct backup file with .dat/.bak extension.";
-"uploadBackupFile" = "Upload backup file";
+"uploadBackupFile" = "Select a .bak or .dat backup file";
 "uploadQRCodeImage" = "Upload QR-Code Image";
 "uploadQRCodeImageKeygen" = "Upload QR-Code to join Keygen";
 "uploadQRCodeImageKeysign" = "Upload QR-Code to join Keysign";
@@ -333,3 +333,4 @@
 "initializingCamera" = "Initializing Camera";
 "uploadQRCodeImage" = "Upload QR Code Image";
 "errorFetchingValuesTryAgain" = "Error fetching values. Please try again.";
+"keygen" = "Keygen";
