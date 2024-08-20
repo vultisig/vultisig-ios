@@ -26,7 +26,7 @@ struct FeeService {
 
         let service = try EvmServiceFactory.getService(forChain: tx.coin.chain)
         let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(fromAddress: tx.coin.address)
-        let gasLimit = try estemateERC20GasLimit(tx: tx, gasPrice: gasPrice, priorityFee: priorityFee, nonce: nonce)
+        let gasLimit = try await estemateERC20GasLimit(tx: tx, gasPrice: gasPrice, priorityFee: priorityFee, nonce: nonce)
 
         return try await blockchainService.fetchSpecific(
             for: tx.coin, sendMaxAmount: false,
@@ -41,28 +41,15 @@ struct FeeService {
         gasPrice: BigInt,
         priorityFee: BigInt,
         nonce: Int64
-    ) throws -> BigInt {
-
-        guard let chainID = tx.coin.chain.chainID else {
-            throw Errors.failToGetChainID
-        }
-
-        let input = EthereumSigningInput.with {
-            $0.chainID = Data(hexString: Int64(chainID).hexString())!
-            $0.nonce = Data(hexString: nonce.hexString())!
-            $0.maxFeePerGas = gasPrice.magnitude.serialize()
-            $0.maxInclusionFeePerGas = priorityFee.magnitude.serialize()
-            $0.toAddress = tx.coin.contractAddress
-            $0.txMode = .enveloped
-            $0.transaction = EthereumTransaction.with {
-                $0.erc20Transfer = EthereumTransaction.ERC20Transfer.with {
-                    $0.to = tx.toAddress
-                    $0.amount = tx.amountInRaw.serializeForEvm()
-                }
-            }
-        }
-
-        fatalError(input.debugDescription)
+    ) async throws -> BigInt {
+        let service = try EvmServiceFactory.getService(forChain: tx.coin.chain)
+        let gas = try await service.estimateGasForERC20Transfer(
+            senderAddress: tx.coin.address,
+            contractAddress: tx.coin.contractAddress,
+            recipientAddress: tx.toAddress,
+            value: tx.amountInRaw
+        )
+        return gas
     }
 }
 

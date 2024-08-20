@@ -45,6 +45,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     
     func loadGasInfoForSending(tx: SendTransaction) async {
         do {
+            guard tx.toAddress != .empty else { return }
             tx.fee = try await feeService.fetchFee(tx: tx)
         } catch {
             print("error fetching data: \(error.localizedDescription)")
