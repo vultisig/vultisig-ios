@@ -67,7 +67,7 @@ final class BlockChainService {
         }
     }
     
-    func fetchSpecific(for coin: Coin, action: Action = .transfer, sendMaxAmount: Bool, isDeposit: Bool, transactionType: VSTransactionType) async throws -> BlockChainSpecific {
+    func fetchSpecific(for coin: Coin, action: Action = .transfer, sendMaxAmount: Bool, isDeposit: Bool, transactionType: VSTransactionType, gasLimit: BigInt? = nil) async throws -> BlockChainSpecific {
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             let sats = try await utxo.fetchSatsPrice(coin: coin)
@@ -121,7 +121,7 @@ final class BlockChainService {
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain:
             let service = try EvmServiceFactory.getService(forChain: coin.chain)
             let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(fromAddress: coin.address)
-            let gasLimit = normalizeGasLimit(coin: coin, action: action)
+            let gasLimit = gasLimit ?? normalizeGasLimit(coin: coin, action: action)
             let normalizedGasPrice = normalize(gasPrice, action: action)
             return .Ethereum(maxFeePerGasWei: normalizedGasPrice, priorityFeeWei: normalizePriorityFee(priorityFee,coin.chain), nonce: nonce, gasLimit: gasLimit)
             

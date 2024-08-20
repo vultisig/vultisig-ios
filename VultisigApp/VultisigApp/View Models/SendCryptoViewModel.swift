@@ -34,7 +34,8 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     let atom = GaiaService.shared
     let kujira = KujiraService.shared
     let blockchainService = BlockChainService.shared
-    
+    let feeService = FeeService.shared
+
     private let mediator = Mediator.shared
     
     let totalViews = 5
@@ -42,10 +43,9 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     
     let logger = Logger(subsystem: "send-input-details", category: "transaction")
     
-    func loadGasInfoForSending(tx: SendTransaction) async{
+    func loadGasInfoForSending(tx: SendTransaction) async {
         do {
-            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: false, isDeposit: tx.isDeposit, transactionType: tx.transactionType)
-            tx.gas = chainSpecific.gas.description
+            tx.fee = try await feeService.fetchFee(tx: tx)
         } catch {
             print("error fetching data: \(error.localizedDescription)")
         }

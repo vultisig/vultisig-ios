@@ -83,6 +83,7 @@
 		A58CC34F2C32FC530086D16B /* BlockChainSpecific.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58CC34E2C32FC530086D16B /* BlockChainSpecific.swift */; };
 		A594A9EB2C64364600A3D09E /* Rate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A594A9EA2C64364600A3D09E /* Rate.swift */; };
 		A594A9ED2C6436A800A3D09E /* DBMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A594A9EC2C6436A800A3D09E /* DBMappable.swift */; };
+		A5A6969E2C74D0E20075AA45 /* FeeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5A6969D2C74D0E20075AA45 /* FeeService.swift */; };
 		A5BA15082C077A0B00AA6C07 /* OneInchToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA15072C077A0B00AA6C07 /* OneInchToken.swift */; };
 		A5BA150A2C078EED00AA6C07 /* TokenSelectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA15092C078EED00AA6C07 /* TokenSelectionCell.swift */; };
 		A5BA150C2C078FA000AA6C07 /* TokenSelectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BA150B2C078FA000AA6C07 /* TokenSelectionViewModel.swift */; };
@@ -538,6 +539,7 @@
 		A58CC34E2C32FC530086D16B /* BlockChainSpecific.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockChainSpecific.swift; sourceTree = "<group>"; };
 		A594A9EA2C64364600A3D09E /* Rate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rate.swift; sourceTree = "<group>"; };
 		A594A9EC2C6436A800A3D09E /* DBMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DBMappable.swift; sourceTree = "<group>"; };
+		A5A6969D2C74D0E20075AA45 /* FeeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeService.swift; sourceTree = "<group>"; };
 		A5BA15072C077A0B00AA6C07 /* OneInchToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneInchToken.swift; sourceTree = "<group>"; };
 		A5BA15092C078EED00AA6C07 /* TokenSelectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionCell.swift; sourceTree = "<group>"; };
 		A5BA150B2C078FA000AA6C07 /* TokenSelectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenSelectionViewModel.swift; sourceTree = "<group>"; };
@@ -994,6 +996,7 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				A5A6969C2C74D0DB0075AA45 /* Fee */,
 				A5E841C92C639550009325CB /* Rates */,
 				B51097EC2C4E43660066D560 /* Blowfish */,
 				A52287462C42BAEB00E1CC5A /* LiFi */,
@@ -1265,6 +1268,14 @@
 				A5D00E402BD65CE7009E025F /* ERC20ApprovePayload.swift */,
 			);
 			path = Keysign;
+			sourceTree = "<group>";
+		};
+		A5A6969C2C74D0DB0075AA45 /* Fee */ = {
+			isa = PBXGroup;
+			children = (
+				A5A6969D2C74D0E20075AA45 /* FeeService.swift */,
+			);
+			path = Fee;
 			sourceTree = "<group>";
 		};
 		A5BA150D2C085ED300AA6C07 /* ImageView */ = {
@@ -2480,6 +2491,7 @@
 				A6CBA8F02BA2A629008B110C /* ImportWalletUploadSection.swift in Sources */,
 				A6833D862C65BF6D002029E1 /* JoinKeygenHeader.swift in Sources */,
 				A65BA9902BAD402A00B2D8AA /* KeysignMessageConfirmView.swift in Sources */,
+				A5A6969E2C74D0E20075AA45 /* FeeService.swift in Sources */,
 				B590DF8A2C2E88F900ED934E /* VoteOption.swift in Sources */,
 				A6B7F49C2C4963F6006D83D1 /* VaultDetailQRCodeViewModel.swift in Sources */,
 				A5BA150C2C078FA000AA6C07 /* TokenSelectionViewModel.swift in Sources */,

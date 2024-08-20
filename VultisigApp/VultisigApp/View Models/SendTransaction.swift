@@ -18,6 +18,7 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var amountInFiat: String = .empty
     @Published var memo: String = .empty
     @Published var gas: String = .empty
+    @Published var fee: BigInt = .zero
     @Published var sendMaxAmount: Bool = false
     @Published var memoFunctionDictionary: ThreadSafeDictionary<String, String> = ThreadSafeDictionary()
     
