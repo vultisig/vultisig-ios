@@ -117,7 +117,7 @@ struct JoinKeysignDoneView: View {
         NavigationLink(destination: {
             HomeView(selectedVault: vault, showVaultsList: false)
         }, label: {
-            FilledButton(title: "DONE")
+            FilledButton(title: "complete")
         })
         .id(UUID())
         .padding(20)
