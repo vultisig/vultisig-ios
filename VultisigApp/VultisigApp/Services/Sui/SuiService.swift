@@ -78,7 +78,7 @@ class SuiService {
         do {
             let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getAllCoins", params: [coin.address])
             if let coins: [SuiCoin] = Utils.extractResultFromJson(fromData: data, path: "result.data", type: [SuiCoin].self) {
-                let allCoins = coins.map { coin in
+                let allCoins = coins.filter{ $0.coinType == "0x2::sui::SUI" }.map { coin in
                     var coinDict = [String: String]()
                     coinDict["objectID"] = coin.coinObjectId.description
                     coinDict["version"] = String(coin.version) // Converted version to String directly
