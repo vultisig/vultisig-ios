@@ -72,6 +72,7 @@ struct BackupPasswordSetupView: View {
         VStack {
             passwordField
             Spacer()
+            disclaimer
             buttons
         }
 #if os(macOS)
@@ -101,12 +102,19 @@ struct BackupPasswordSetupView: View {
         HiddenTextField(placeholder: "verifyPassword", password: $verifyPassword)
     }
     
+    var disclaimer: some View {
+        OutlinedDisclaimer(text: NSLocalizedString("backupPasswordDisclaimer", comment: ""))
+            .padding(.horizontal, 16)
+    }
+    
     var buttons: some View {
         VStack(spacing: 20) {
             saveButton
             skipButton
         }
-        .padding(40)
+        .padding(.top, 16)
+        .padding(.bottom, 40)
+        .padding(.horizontal, 16)
     }
     
     var saveButton: some View {

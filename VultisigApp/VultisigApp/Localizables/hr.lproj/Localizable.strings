@@ -309,3 +309,4 @@
 "initializingCamera" = "Inicijalizacija kamere";
 "uploadQRCodeImage" = "Učitaj sliku QR koda";
 "errorFetchingValuesTryAgain" = "Greška pri dohvaćanju vrijednosti. Molimo pokušajte ponovo.";
+"backupPasswordDisclaimer" = "Nikada ne pohranjujte dionice Vaulta s različitih uređaja na istom mjestu";

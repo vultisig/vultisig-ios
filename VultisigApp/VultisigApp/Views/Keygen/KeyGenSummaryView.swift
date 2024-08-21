@@ -146,26 +146,7 @@ struct KeyGenSummaryView: View {
     }
     
     private func getOutlinedCell(_ text: String) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: "info.circle")
-                .foregroundStyle(LinearGradient.primaryGradient)
-                .font(.body14Menlo)
-            
-            Text(text)
-                .font(.body12Menlo)
-                .foregroundColor(.neutral0)
-                .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-            #if os(iOS)
-                .stroke(LinearGradient.primaryGradient, lineWidth: 1)
-            #elseif os(macOS)
-                .stroke(LinearGradient.primaryGradient, lineWidth: 2)
-            #endif
-        )
+        OutlinedDisclaimer(text: text)
     }
     
     private func setData() {
