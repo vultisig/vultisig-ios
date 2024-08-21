@@ -13,6 +13,7 @@ struct StyledIntegerField<Value: BinaryInteger & Codable>: View {
     let format: IntegerFormatStyle<Value>
     
     @Binding var isValid: Bool
+    var isEnabled: Bool = true
     var isOptional: Bool = false
     
     @State private var localIsValid: Bool = true
@@ -32,7 +33,7 @@ struct StyledIntegerField<Value: BinaryInteger & Codable>: View {
             
             TextField(placeholder.capitalized, value: customBinding, format: format)
                 .font(.body16Menlo)
-                .foregroundColor(.neutral0)
+                .foregroundColor(foregroundColor)
                 .submitLabel(.done)
                 .padding(12)
                 .background(Color.blue600)
@@ -42,12 +43,17 @@ struct StyledIntegerField<Value: BinaryInteger & Codable>: View {
                     localIsValid = isValid
                     validate(String(describing: value))
                 }
+                .disabled(!isEnabled)
 #if os(iOS)
                 .keyboardType(.numberPad)
 #endif
         }
     }
-    
+
+    var foregroundColor: Color {
+        isEnabled ? .neutral0 : .neutral500
+    }
+
     var customBinding: Binding<Value> {
         Binding<Value>(
             get: { value },
