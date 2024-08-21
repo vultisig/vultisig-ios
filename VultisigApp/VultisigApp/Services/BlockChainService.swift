@@ -127,7 +127,7 @@ final class BlockChainService {
             
         case .zksync:
             let service = try EvmServiceFactory.getService(forChain: coin.chain)
-            let (gasLimit, _, maxFeePerGas, maxPriorityFeePerGas, nonce) = try await service.getGasInfoZk(fromAddress: coin.address, toAddress: "0x0000000000000000000000000000000000000000")
+            let (gasLimit, _, maxFeePerGas, maxPriorityFeePerGas, nonce) = try await service.getGasInfoZk(fromAddress: coin.address, toAddress: .zeroAddress)
             
             return .Ethereum(maxFeePerGasWei: maxFeePerGas, priorityFeeWei: maxPriorityFeePerGas, nonce: nonce, gasLimit: gasLimit)
             

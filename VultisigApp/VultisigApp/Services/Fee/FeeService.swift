@@ -45,13 +45,12 @@ struct FeeService {
         priorityFee: BigInt,
         nonce: Int64
     ) async throws -> BigInt {
-        let recipientAddress = tx.toAddress.isEmpty ? tx.coin.address : tx.toAddress
         let service = try EvmServiceFactory.getService(forChain: tx.coin.chain)
         let gas = try await service.estimateGasForERC20Transfer(
             senderAddress: tx.coin.address,
             contractAddress: tx.coin.contractAddress,
-            recipientAddress: recipientAddress,
-            value: tx.amountInRaw
+            recipientAddress: .anyAddress,
+            value: BigInt(stringLiteral: tx.coin.rawBalance)
         )
         return gas
     }
