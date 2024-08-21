@@ -27,7 +27,6 @@ struct AddressBookView: View {
         ZStack(alignment: .bottom) {
             Background()
             main
-            addAddressButton
         }
         .navigationBarBackButtonHidden(true)
 #if os(iOS)
@@ -52,11 +51,12 @@ struct AddressBookView: View {
     }
     
     var main: some View {
-        VStack {
+        VStack(spacing: 0) {
 #if os(macOS)
             headerMac
 #endif
             view
+            addAddressButton
         }
     }
     
@@ -120,7 +120,6 @@ struct AddressBookView: View {
                 .colorScheme(.dark)
                 .scrollContentBackground(.hidden)
                 .padding(.top, 30)
-                .padding(.bottom, isEditing ? 100 : 0)
                 .background(Color.backgroundBlue.opacity(0.9))
             } else {
                 emptyViewChain
@@ -156,9 +155,7 @@ struct AddressBookView: View {
     }
     
     var addAddressButton: some View {
-        let condition = isEditing || savedAddresses.count == 0
-        
-        return NavigationLink {
+        NavigationLink {
             AddAddressBookView(count: savedAddresses.count, coin: coin?.toCoinMeta())
         } label: {
             FilledButton(title: "addAddress")
@@ -170,9 +167,6 @@ struct AddressBookView: View {
                 .padding(.horizontal, 24)
 #endif
         }
-        .frame(height: condition ? nil : 0)
-        .animation(.easeInOut, value: isEditing)
-        .clipped()
         .background(Color.backgroundBlue)
     }
     
