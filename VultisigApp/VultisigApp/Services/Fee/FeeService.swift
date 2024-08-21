@@ -15,25 +15,28 @@ struct FeeService {
 
     private let blockchainService = BlockChainService.shared
 
-    func fetchFee(tx: SendTransaction) async throws -> BigInt {
+    func fetchFee(tx: SendTransaction) async throws -> (gas: BigInt, fee: BigInt) {
         guard !tx.coin.isNativeToken, tx.coin.chainType == .EVM else {
-            return try await blockchainService.fetchSpecific(
+            let specific =  try await blockchainService.fetchSpecific(
                 for: tx.coin, sendMaxAmount: false,
                 isDeposit: tx.isDeposit,
                 transactionType: tx.transactionType
-            ).fee
+            )
+            return (specific.gas, specific.fee)
         }
 
         let service = try EvmServiceFactory.getService(forChain: tx.coin.chain)
         let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(fromAddress: tx.coin.address)
         let gasLimit = try await estemateERC20GasLimit(tx: tx, gasPrice: gasPrice, priorityFee: priorityFee, nonce: nonce)
 
-        return try await blockchainService.fetchSpecific(
+        let specific = try await blockchainService.fetchSpecific(
             for: tx.coin, sendMaxAmount: false,
             isDeposit: tx.isDeposit,
             transactionType: tx.transactionType,
             gasLimit: gasLimit
-        ).fee
+        )
+
+        return (specific.gas, specific.fee)
     }
 
     func estemateERC20GasLimit(
@@ -42,11 +45,12 @@ struct FeeService {
         priorityFee: BigInt,
         nonce: Int64
     ) async throws -> BigInt {
+        let recipientAddress = tx.toAddress.isEmpty ? tx.coin.address : tx.toAddress
         let service = try EvmServiceFactory.getService(forChain: tx.coin.chain)
         let gas = try await service.estimateGasForERC20Transfer(
             senderAddress: tx.coin.address,
             contractAddress: tx.coin.contractAddress,
-            recipientAddress: tx.toAddress,
+            recipientAddress: recipientAddress,
             value: tx.amountInRaw
         )
         return gas

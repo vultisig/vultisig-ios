@@ -17,7 +17,7 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var amount: String = .empty
     @Published var amountInFiat: String = .empty
     @Published var memo: String = .empty
-    @Published var gas: String = .empty
+    @Published var gas: BigInt = .zero
     @Published var fee: BigInt = .zero
     @Published var sendMaxAmount: Bool = false
     @Published var memoFunctionDictionary: ThreadSafeDictionary<String, String> = ThreadSafeDictionary()
@@ -31,9 +31,8 @@ class SendTransaction: ObservableObject, Hashable {
             let comparison = amountInRaw > coin.rawBalance.toBigInt(decimals: coin.decimals)
             return comparison
         }
-        
-        let gasBigInt = gas.toBigInt()
-        let totalTransactionCost = amountInRaw + gasBigInt
+
+        let totalTransactionCost = amountInRaw + gas
         let comparison = totalTransactionCost > coin.rawBalance.toBigInt(decimals: coin.decimals)
         return comparison
     }
@@ -48,8 +47,7 @@ class SendTransaction: ObservableObject, Hashable {
         }
         
         let totalBalance = BigInt(coin.rawBalance) ?? BigInt.zero
-        let gasInt = BigInt(gas) ?? BigInt.zero
-        let totalTransactionCost = amountInRaw + gasInt
+        let totalTransactionCost = amountInRaw + gas
         let remainingBalance = totalBalance - totalTransactionCost
         
         return remainingBalance < PolkadotHelper.defaultExistentialDeposit
@@ -117,8 +115,7 @@ class SendTransaction: ObservableObject, Hashable {
     }
     
     var gasDecimal: Decimal {
-        let gasString = gas.replacingOccurrences(of: ",", with: ".")
-        return Decimal(string:gasString) ?? 0
+        return Decimal(gas)
     }
     
     var gasInReadable: String {
@@ -142,13 +139,13 @@ class SendTransaction: ObservableObject, Hashable {
         
         return "\((gasDecimal / pow(10,decimals)).formatToDecimal(digits: decimals).description) \(coin.chain.feeUnit)"
     }
-    
+
     init() {
         self.toAddress = .empty
         self.amount = .empty
         self.amountInFiat = .empty
         self.memo = .empty
-        self.gas = .empty
+        self.gas = .zero
         self.sendMaxAmount = false
     }
     
@@ -156,7 +153,7 @@ class SendTransaction: ObservableObject, Hashable {
         self.reset(coin: coin)
     }
     
-    init(toAddress: String, amount: String, memo: String, gas: String) {
+    init(toAddress: String, amount: String, memo: String, gas: BigInt) {
         self.toAddress = toAddress
         self.amount = amount
         self.memo = memo
@@ -164,7 +161,7 @@ class SendTransaction: ObservableObject, Hashable {
         self.sendMaxAmount = false
     }
     
-    init(toAddress: String, amount: String, memo: String, gas: String, coin: Coin) {
+    init(toAddress: String, amount: String, memo: String, gas: BigInt, coin: Coin) {
         self.toAddress = toAddress
         self.amount = amount
         self.memo = memo
@@ -197,7 +194,7 @@ class SendTransaction: ObservableObject, Hashable {
         self.amount = .empty
         self.amountInFiat = .empty
         self.memo = .empty
-        self.gas = .empty
+        self.gas = .zero
         self.coin = coin
         self.sendMaxAmount = false
         self.fromAddress = coin.address

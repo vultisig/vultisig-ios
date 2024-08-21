@@ -106,8 +106,9 @@ struct SendCryptoDetailsView: View {
                     balanceNativeTokenField
                 }
                 
-                gasField
-                
+                getSummaryCell(leadingText: NSLocalizedString("gas(auto)", comment: ""), trailingText: tx.gasInReadable)
+                getSummaryCell(leadingText: NSLocalizedString("Estimated Fees", comment: ""), trailingText: sendCryptoViewModel.feesInReadable(tx: tx, vault: vault))
+
                 if tx.canBeReaped {
                     existentialDepositTextMessage
                 }
@@ -115,7 +116,7 @@ struct SendCryptoDetailsView: View {
             .padding(.horizontal, 16)
         }
     }
-    
+
     var coinSelector: some View {
         TokenSelectorDropdown(
             coin: tx.coin,
@@ -271,17 +272,17 @@ struct SendCryptoDetailsView: View {
         )
         .focused($focusedField, equals: .amountInFiat)
     }
-    
-    var gasField: some View {
+
+    func getSummaryCell(leadingText: String, trailingText: String) -> some View {
         HStack {
-            Text(NSLocalizedString("gas(auto)", comment: ""))
+            Text(leadingText)
             Spacer()
-            Text(tx.gasInReadable)
+            Text(trailingText)
         }
         .font(.body16Menlo)
         .foregroundColor(.neutral0)
     }
-    
+
     var button: some View {
         Button {
             Task{
