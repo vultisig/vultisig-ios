@@ -67,9 +67,12 @@ final class RateProvider {
     }
 
     func fiatBalanceString(for coin: Coin, currency: SettingsCurrency = .current) -> String {
-        let balance = fiatBalance(for: coin, currency: currency)
-        let balanceString = "\(balance) \(coin.ticker)"
-        return balanceString
+        return fiatBalanceString(value: coin.balanceDecimal, coin: coin, currency: currency)
+    }
+
+    func fiatBalanceString(value: Decimal, coin: Coin, currency: SettingsCurrency = .current) -> String {
+        let balance = fiatBalance(value: value, coin: coin, currency: currency)
+        return balance.formatToFiat(includeCurrencySymbol: true)
     }
 
     func rate(for coin: Coin, currency: SettingsCurrency = .current) -> Rate? {

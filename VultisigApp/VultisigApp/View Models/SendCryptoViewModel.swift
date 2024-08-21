@@ -34,7 +34,8 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     let atom = GaiaService.shared
     let kujira = KujiraService.shared
     let blockchainService = BlockChainService.shared
-    
+    let feeService = FeeService.shared
+
     private let mediator = Mediator.shared
     
     let totalViews = 5
@@ -42,10 +43,11 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     
     let logger = Logger(subsystem: "send-input-details", category: "transaction")
     
-    func loadGasInfoForSending(tx: SendTransaction) async{
+    func loadGasInfoForSending(tx: SendTransaction) async {
         do {
-            let chainSpecific = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: false, isDeposit: tx.isDeposit, transactionType: tx.transactionType)
-            tx.gas = chainSpecific.gas.description
+            let gasInfo = try await feeService.fetchFee(tx: tx)
+            tx.gas = gasInfo.gas
+            tx.fee = gasInfo.fee
         } catch {
             print("error fetching data: \(error.localizedDescription)")
         }
@@ -289,7 +291,13 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         self.mediator.stop()
         logger.info("mediator server stopped.")
     }
-    
+
+    func feesInReadable(tx: SendTransaction, vault: Vault) -> String {
+        guard let nativeCoin = vault.nativeCoin(for: tx.coin) else { return .empty }
+        let fee = nativeCoin.decimal(for: tx.fee)
+        return RateProvider.shared.fiatBalanceString(value: fee, coin: nativeCoin)
+    }
+
     private func getTransactionPlan(tx: SendTransaction, key:String) -> TW_Bitcoin_Proto_TransactionPlan? {
         guard let utxoInfo = utxo.blockchairData.get(key)?.selectUTXOsForPayment().map({
             UtxoInfo(
@@ -311,7 +319,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             coin: tx.coin,
             toAddress: tx.toAddress,
             toAmount: BigInt(totalSelectedAmount),
-            chainSpecific: BlockChainSpecific.UTXO(byteFee: tx.gas.toBigInt(), sendMaxAmount: tx.sendMaxAmount),
+            chainSpecific: BlockChainSpecific.UTXO(byteFee: tx.gas, sendMaxAmount: tx.sendMaxAmount),
             utxos: utxoInfo,
             memo: tx.memo,
             swapPayload: nil,
