@@ -27,7 +27,6 @@ struct AddressBookView: View {
         ZStack(alignment: .bottom) {
             Background()
             main
-            addAddressButton
         }
         .navigationBarBackButtonHidden(true)
 #if os(iOS)
@@ -52,11 +51,12 @@ struct AddressBookView: View {
     }
     
     var main: some View {
-        VStack {
+        VStack(spacing: 0) {
 #if os(macOS)
             headerMac
 #endif
             view
+            addAddressButton
         }
     }
     
@@ -113,6 +113,9 @@ struct AddressBookView: View {
                     }
                     .onMove(perform: isEditing ? move: nil)
                     .padding(.horizontal, 15)
+#if os(macOS)
+                    .padding(.horizontal, 18)
+#endif
                     .background(Color.backgroundBlue)
                 }
                 .listStyle(PlainListStyle())
@@ -120,15 +123,11 @@ struct AddressBookView: View {
                 .colorScheme(.dark)
                 .scrollContentBackground(.hidden)
                 .padding(.top, 30)
-                .padding(.bottom, isEditing ? 100 : 0)
                 .background(Color.backgroundBlue.opacity(0.9))
             } else {
                 emptyViewChain
             }
         }
-#if os(macOS)
-        .padding(.horizontal, 18)
-#endif
     }
     
     var navigationButton: some View {
@@ -156,23 +155,16 @@ struct AddressBookView: View {
     }
     
     var addAddressButton: some View {
-        let condition = isEditing || savedAddresses.count == 0
-        
-        return NavigationLink {
+        NavigationLink {
             AddAddressBookView(count: savedAddresses.count, coin: coin?.toCoinMeta())
         } label: {
             FilledButton(title: "addAddress")
                 .padding(.horizontal, 16)
-#if os(iOS)
                 .padding(.vertical, 30)
-#elseif os(macOS)
-                .padding(.vertical, 50)
+#if os(macOS)
                 .padding(.horizontal, 24)
 #endif
         }
-        .frame(height: condition ? nil : 0)
-        .animation(.easeInOut, value: isEditing)
-        .clipped()
         .background(Color.backgroundBlue)
     }
     
