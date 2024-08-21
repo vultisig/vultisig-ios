@@ -8,16 +8,12 @@
 import SwiftUI
 
 struct LookingForDevicesLoader: View {
+    var selectedTab: SetupVaultState? = nil
     @State var didSwitch = false
     
     var body: some View {
         VStack {
-            Text(NSLocalizedString("lookingForDevices", comment: "Looking for devices"))
-                .font(.body14Montserrat)
-                .foregroundColor(.neutral0)
-                .bold()
-                .multilineTextAlignment(.center)
-            
+            title
             loader
         }
         .padding()
@@ -29,6 +25,20 @@ struct LookingForDevicesLoader: View {
                 didSwitch.toggle()
             }
         }
+    }
+    
+    var title: some View {
+        ZStack {
+            if let selectedTab {
+                Text(selectedTab.getLoaderTitle())
+            } else {
+                Text(NSLocalizedString("lookingForDevices", comment: "Looking for devices"))
+            }
+        }
+        .font(.body14Montserrat)
+        .foregroundColor(.neutral0)
+        .bold()
+        .multilineTextAlignment(.center)
     }
     
     var loader: some View {
@@ -49,5 +59,8 @@ struct LookingForDevicesLoader: View {
 }
 
 #Preview {
-    LookingForDevicesLoader()
+    ZStack {
+        Background()
+        LookingForDevicesLoader(selectedTab: .TwoOfTwoVaults)
+    }
 }

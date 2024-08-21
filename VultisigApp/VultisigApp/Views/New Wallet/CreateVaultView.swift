@@ -23,10 +23,6 @@ struct CreateVaultView: View {
                     NavigationBackButton()
                 }
             }
-            
-            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                NavigationHelpButton()
-            }
         }
 #endif
     }
@@ -63,7 +59,7 @@ struct CreateVaultView: View {
     
     var newVaultButton: some View {
         NavigationLink {
-            SetupVaultView(tssType: .Keygen)
+            SetupCardsView(tssType: .Keygen)
         } label: {
             FilledButton(title: "createNewVault")
         }

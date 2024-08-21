@@ -39,6 +39,7 @@ struct KeygenView: View {
             instructions
         }
         .navigationBarBackButtonHidden()
+        .navigationTitle(NSLocalizedString("joinKeygen", comment: ""))
         .navigationDestination(isPresented: $viewModel.isLinkActive) {
             BackupVaultNowView(vault: vault)
         }
@@ -63,12 +64,14 @@ struct KeygenView: View {
     }
     
     var content: some View {
-        ZStack {
-            states
-            
+        VStack(spacing: 0) {
+            Spacer()
             if showProgressRing {
                 progress
             }
+            states
+            Spacer()
+            keygenViewInstructions
         }
     }
     
@@ -93,8 +96,19 @@ struct KeygenView: View {
         }
         .frame(
             maxWidth: showProgressRing ? 280 : .infinity,
-            maxHeight: showProgressRing ? 280 : .infinity
+            maxHeight: showProgressRing ? 50 : .infinity
         )
+        .offset(y: -20)
+    }
+    
+    var keygenViewInstructions: some View {
+#if os(iOS)
+        KeygenViewInstructions()
+            .padding(.bottom, 30)
+#elseif os(macOS)
+        KeygenViewInstructionsMac()
+            .padding(.bottom, 30)
+#endif
     }
     
     var progress: some View {
@@ -103,7 +117,7 @@ struct KeygenView: View {
     
     var instructions: some View {
         WifiInstruction()
-            .padding(.bottom, 80)
+            .padding(.bottom, 50)
     }
     
     var preparingVaultText: some View {

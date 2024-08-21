@@ -18,7 +18,7 @@ struct KeyGenSummaryView: View {
             Background()
             view
         }
-        .navigationTitle(NSLocalizedString("summary", comment: "Summary"))
+        .navigationTitle(NSLocalizedString("keygen", comment: "Keygen"))
         .onAppear {
             setData()
         }
@@ -27,7 +27,7 @@ struct KeyGenSummaryView: View {
     var view: some View {
         VStack {
             content
-            button
+            buttons
         }
     }
     
@@ -36,7 +36,6 @@ struct KeyGenSummaryView: View {
             VStack(spacing: 32) {
                 header
                 devicesList
-                disclaimers
             }
             .padding(.top, 30)
             .padding(.horizontal, 22)
@@ -103,23 +102,22 @@ struct KeyGenSummaryView: View {
     }
     
     var pairDeviceDisclaimers: some View {
-        Group {
-            Text(NSLocalizedString("pairDeviceDisclaimersFirst", comment: "")) +
-            Text(" ") +
-            Text(getCountInWords()).bold() +
-            Text(" ") +
-            Text(NSLocalizedString("pairDeviceDisclaimersSecond", comment: ""))
-        }
+        let text = NSLocalizedString("pairDeviceDisclaimersFirst", comment: "") + " " + getCountInWords() + " "  + NSLocalizedString("pairDeviceDisclaimersSecond", comment: "")
+        
+        return getOutlinedCell(text)
     }
     
     var backupDeviceDisclaimers: some View {
-        ZStack {
-            if viewModel.selections.count > 2 {
-                Text(NSLocalizedString("backupNotNeededDisclaimer", comment: ""))
-            } else {
-                Text(NSLocalizedString("noBackupDeviceDisclaimer", comment: ""))
-            }
+        getOutlinedCell(NSLocalizedString("shouldBackupVaultsSeparateLocations", comment: ""))
+    }
+    
+    var buttons: some View {
+        VStack(spacing: 16) {
+            disclaimers
+            button
         }
+        .padding(.vertical, 40)
+        .padding(.horizontal, 26)
     }
     
     var button: some View {
@@ -127,7 +125,6 @@ struct KeyGenSummaryView: View {
             viewModel.startKeygen()
         } label: {
             FilledButton(title: "continue")
-                .padding(40)
         }
     }
     
@@ -146,6 +143,29 @@ struct KeyGenSummaryView: View {
         .padding(.vertical, 24)
         .background(Color.blue600)
         .cornerRadius(10)
+    }
+    
+    private func getOutlinedCell(_ text: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: "info.circle")
+                .foregroundStyle(LinearGradient.primaryGradient)
+                .font(.body14Menlo)
+            
+            Text(text)
+                .font(.body12Menlo)
+                .foregroundColor(.neutral0)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+            #if os(iOS)
+                .stroke(LinearGradient.primaryGradient, lineWidth: 1)
+            #elseif os(macOS)
+                .stroke(LinearGradient.primaryGradient, lineWidth: 2)
+            #endif
+        )
     }
     
     private func setData() {

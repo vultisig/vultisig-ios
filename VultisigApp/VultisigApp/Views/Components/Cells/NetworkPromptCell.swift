@@ -39,11 +39,6 @@ struct NetworkPromptCell: View {
         .padding(.vertical, 8)
         .background(isSelected ? Color.blue200 : Color.blue400)
         .cornerRadius(20)
-        .overlay (
-            RoundedRectangle(cornerRadius: 20)
-                .stroke(Color.neutral0, lineWidth: 2)
-                .opacity(isSelected ? 1 : 0)
-        )
         .padding(.horizontal, 8)
     }
     

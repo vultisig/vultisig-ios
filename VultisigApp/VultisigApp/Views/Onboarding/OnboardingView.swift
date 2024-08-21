@@ -11,6 +11,13 @@ struct OnboardingView: View {
     @State var tabIndex = 0
     @EnvironmentObject var accountViewModel: AccountViewModel
     
+#if os(iOS)
+    init() {
+       UIPageControl.appearance().currentPageIndicatorTintColor = UIColor(Color.turquoise600)
+        UIPageControl.appearance().pageIndicatorTintColor = UIColor(Color.turquoise600).withAlphaComponent(0.2)
+   }
+#endif
+    
     var body: some View {
         ZStack {
             Background()
