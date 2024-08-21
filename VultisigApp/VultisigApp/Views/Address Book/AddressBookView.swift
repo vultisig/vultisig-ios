@@ -113,6 +113,9 @@ struct AddressBookView: View {
                     }
                     .onMove(perform: isEditing ? move: nil)
                     .padding(.horizontal, 15)
+#if os(macOS)
+                    .padding(.horizontal, 18)
+#endif
                     .background(Color.backgroundBlue)
                 }
                 .listStyle(PlainListStyle())
@@ -125,9 +128,6 @@ struct AddressBookView: View {
                 emptyViewChain
             }
         }
-#if os(macOS)
-        .padding(.horizontal, 18)
-#endif
     }
     
     var navigationButton: some View {
@@ -160,10 +160,8 @@ struct AddressBookView: View {
         } label: {
             FilledButton(title: "addAddress")
                 .padding(.horizontal, 16)
-#if os(iOS)
                 .padding(.vertical, 30)
-#elseif os(macOS)
-                .padding(.vertical, 50)
+#if os(macOS)
                 .padding(.horizontal, 24)
 #endif
         }
