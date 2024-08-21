@@ -27,7 +27,9 @@ struct FeeService {
 
         let service = try EvmServiceFactory.getService(forChain: tx.coin.chain)
         let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(fromAddress: tx.coin.address)
-        let gasLimit = try await estemateERC20GasLimit(tx: tx, gasPrice: gasPrice, priorityFee: priorityFee, nonce: nonce)
+        let estimateGasLimit = try await estemateERC20GasLimit(tx: tx, gasPrice: gasPrice, priorityFee: priorityFee, nonce: nonce)
+        let defaultGasLimit = BigInt(EVMHelper.defaultERC20TransferGasUnit)
+        let gasLimit = max(defaultGasLimit, estimateGasLimit)
 
         let specific = try await blockchainService.fetchSpecific(
             for: tx.coin, sendMaxAmount: false,
