@@ -11,9 +11,9 @@ import Combine
 
 class TransactionMemoWithdrawPool: TransactionMemoAddressable, ObservableObject {
     @Published var basisPoint: Int64 = .zero
-    @Published var affiliate: String = "vi"
-    @Published var fee: Int64 = .zero
-    
+    @Published var affiliate: String
+    @Published var fee: Int64
+
     // Internal
     @Published var basisPointValid: Bool = false
     @Published var affiliateValid: Bool = true
@@ -28,11 +28,7 @@ class TransactionMemoWithdrawPool: TransactionMemoAddressable, ObservableObject 
     
     private var cancellables = Set<AnyCancellable>()
     
-    required init() {
-        setupValidation()
-    }
-    
-    init(affiliate: String = "", fee: Int64 = .zero) {
+    init(affiliate: String = "vi", fee: Int64 = 50) {
         self.affiliate = affiliate
         self.fee = fee
         setupValidation()
@@ -83,6 +79,7 @@ class TransactionMemoWithdrawPool: TransactionMemoAddressable, ObservableObject 
                     get: { self.feeValid },
                     set: { self.feeValid = $0 }
                 ),
+                isEnabled: false,
                 isOptional: true
             )
             

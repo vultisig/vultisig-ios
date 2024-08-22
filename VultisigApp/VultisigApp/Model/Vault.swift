@@ -98,6 +98,10 @@ final class Vault: ObservableObject, Codable {
         return coins.first(where: { $0.chain == meta.chain && $0.ticker == meta.ticker })
     }
 
+    func nativeCoin(for coin: Coin) -> Coin? {
+        return coins.first(where: { $0.chain == coin.chain && $0.isNativeToken })
+    }
+
     static func predicate(searchName: String) -> Predicate<Vault> {
         #Predicate<Vault> { vault in
             searchName.isEmpty || vault.name == searchName

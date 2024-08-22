@@ -309,3 +309,4 @@
 "initializingCamera" = "Inizializzazione della fotocamera";
 "uploadQRCodeImage" = "Carica immagine del codice QR";
 "errorFetchingValuesTryAgain" = "Errore nel recupero dei valori. Si prega di riprovare.";
+"backupPasswordDisclaimer" = "Non memorizzare mai le quote del Vault di dispositivi diversi nello stesso luogo";

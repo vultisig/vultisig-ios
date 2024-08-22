@@ -37,10 +37,6 @@ class SendCryptoVerifyViewModel: ObservableObject {
         return isAddressCorrect && isAmountCorrect && isHackedOrPhished
     }
     
-    func amount(for coin: Coin, tx: SendTransaction) -> BigInt {
-        return tx.amountInRaw
-    }
-    
     func blowfishTransactionScan(tx: SendTransaction, vault: Vault) async throws {
         
         switch tx.coin.chain.chainType {
@@ -66,7 +62,6 @@ class SendCryptoVerifyViewModel: ObservableObject {
     }
     
     func blowfishEVMTransactionScan(tx: SendTransaction) async throws -> BlowfishResponse {
-        
         return try await BlowfishService.shared.blowfishEVMTransactionScan(
             fromAddress: tx.fromAddress,
             toAddress: tx.toAddress,
@@ -74,11 +69,9 @@ class SendCryptoVerifyViewModel: ObservableObject {
             memo: tx.memo,
             chain: tx.coin.chain
         )
-        
     }
     
     func blowfishSolanaTransactionScan(tx: SendTransaction, vault: Vault) async throws -> BlowfishResponse {
-        
         let chainSpecific = try await blockChainService.fetchSpecific(
             for: tx,
             sendMaxAmount: tx.sendMaxAmount,
@@ -86,14 +79,13 @@ class SendCryptoVerifyViewModel: ObservableObject {
             transactionType: tx.transactionType
         )
         
-        let keysignPayloadFactory = KeysignPayloadFactory()
-        
-        let keysignPayload = try await keysignPayloadFactory.buildTransfer(coin: tx.coin,
-                                                                           toAddress: tx.toAddress,
-                                                                           amount: amount(for:tx.coin,tx:tx),
-                                                                           memo: tx.memo,
-                                                                           chainSpecific: chainSpecific,
-                                                                           vault: vault
+        let keysignPayload = try await KeysignPayloadFactory().buildTransfer(
+            coin: tx.coin,
+            toAddress: tx.toAddress,
+            amount: tx.amountInRaw,
+            memo: tx.memo,
+            chainSpecific: chainSpecific,
+            vault: vault
         )
         
         let zeroSignedTransaction: String = try SolanaHelper.getZeroSignedTransaction(
@@ -105,7 +97,6 @@ class SendCryptoVerifyViewModel: ObservableObject {
         return try await BlowfishService.shared.blowfishSolanaTransactionScan(
             fromAddress: tx.fromAddress, zeroSignedTransaction: zeroSignedTransaction
         )
-        
     }
     
     func validateForm(tx: SendTransaction, vault: Vault) async -> KeysignPayload? {
@@ -120,8 +111,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
         var keysignPayload: KeysignPayload?
         
         if tx.coin.chain.chainType == ChainType.UTXO {
-            
-            do{
+            do {
                 _ = try await utxo.fetchBlockchairData(coin: tx.coin)
             } catch {
                 print("fail to fetch utxo data from blockchair , error:\(error.localizedDescription)")
@@ -129,23 +119,22 @@ class SendCryptoVerifyViewModel: ObservableObject {
         }
         
         do {
-            
             let chainSpecific = try await blockChainService.fetchSpecific(
                 for: tx,
                 sendMaxAmount: tx.sendMaxAmount,
                 isDeposit: tx.isDeposit,
                 transactionType: tx.transactionType
             )
-            
-            let keysignPayloadFactory = KeysignPayloadFactory()
-            keysignPayload = try await keysignPayloadFactory.buildTransfer(coin: tx.coin,
-                                                                           toAddress: tx.toAddress,
-                                                                           amount: amount(for:tx.coin,tx:tx),
-                                                                           memo: tx.memo,
-                                                                           chainSpecific: chainSpecific,
-                                                                           vault: vault
+
+            let keysignPayload = try await KeysignPayloadFactory().buildTransfer(
+                coin: tx.coin,
+                toAddress: tx.toAddress,
+                amount: tx.amountInRaw,
+                memo: tx.memo,
+                chainSpecific: chainSpecific,
+                vault: vault
             )
-            
+
         } catch {
             self.errorMessage = error.localizedDescription
             showAlert = true

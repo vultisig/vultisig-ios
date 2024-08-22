@@ -213,4 +213,12 @@ extension String {
         let domains = [".eth", ".sol"]
         return domains.contains(where: { self.contains($0) })
     }
+
+    static var zeroAddress: String {
+        return "0x0000000000000000000000000000000000000000"
+    }
+
+    static var anyAddress: String {
+        return "0x1111111111111111111111111111111111111111"
+    }
 }
