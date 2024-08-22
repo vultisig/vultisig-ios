@@ -262,7 +262,7 @@
 "enterMemo" = "Enter Memo";
 "enterVaultName" = "Enter vault name";
 "pleaseBackupVault" = "Each device has its own unique share.";
-"pleaseBackupVaultNote" = "Please Backup all of your Vault Shares now. ";
+"pleaseBackupVaultNote" = "Please Backup all of your Vault Shares now.";
 "addressBook" = "Address Book";
 "addAddress" = "Add Address";
 "address" = "Address";

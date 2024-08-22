@@ -240,8 +240,8 @@
 "memo(optional)" = "MEMO (Optional)";
 "enterMemo" = "Memo eingeben";
 "enterVaultName" = "Tresornamen eingeben";
-"pleaseBackupVault" = "Bitte sichern Sie jetzt Ihre Tresoranteile";
-"pleaseBackupVaultNote" = "Hinweis: Bewahren Sie niemals Tresoranteile von verschiedenen Geräten am selben Ort auf.";
+"pleaseBackupVault" = "Jedes Gerät hat seinen eigenen, einzigartigen Anteil.";
+"pleaseBackupVaultNote" = "Bitte sichern Sie jetzt alle Ihre Tresoranteile.";
 "addressBook" = "Adressbuch";
 "addAddress" = "Adresse hinzufügen";
 "address" = "Adresse";
