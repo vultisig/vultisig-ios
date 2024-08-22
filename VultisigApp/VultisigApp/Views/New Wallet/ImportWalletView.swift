@@ -13,6 +13,8 @@ struct ImportWalletView: View {
     @Environment(\.modelContext) private var context
     @StateObject var backupViewModel = EncryptedBackupViewModel()
     
+    @State var isUploading: Bool = false
+    
     @Query var vaults: [Vault]
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     
@@ -54,6 +56,11 @@ struct ImportWalletView: View {
                 print("Error importing file: \(error.localizedDescription)")
             }
         }
+        .onDrop(of: [.data], isTargeted: $isUploading, perform: { providers in
+            print("SDFIKJHD")
+
+            return true
+        })
         .navigationDestination(isPresented: $backupViewModel.isLinkActive) {
             HomeView(selectedVault: backupViewModel.selectedVault)
         }
@@ -107,7 +114,7 @@ struct ImportWalletView: View {
         Button {
             backupViewModel.showVaultImporter.toggle()
         } label: {
-            ImportWalletUploadSection(viewModel: backupViewModel)
+            ImportWalletUploadSection(viewModel: backupViewModel, isUploading: isUploading)
         }
         .buttonStyle(PlainButtonStyle())
         .background(Color.clear)
