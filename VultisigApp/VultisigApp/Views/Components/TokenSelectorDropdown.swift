@@ -25,11 +25,12 @@ struct TokenSelectorDropdown: View {
     }
     
     var cell: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
             image
             Text("\(coin.ticker)")
             Spacer()
             balanceContent
+            arrow
         }
         .redacted(reason: coin.balanceString.isEmpty ? .placeholder : [])
         .font(.body16Menlo)
@@ -40,7 +41,12 @@ struct TokenSelectorDropdown: View {
     var image: some View {
         AsyncImageView(logo: coin.logo, size: CGSize(width: 32, height: 32), ticker: coin.ticker, tokenChainLogo: coin.tokenChainLogo)
     }
-    
+
+    var arrow: some View {
+        Image("arrow")
+            .frame(width: 20, height: 20)
+    }
+
     var balanceContent: some View {
         HStack(spacing: 0) {
             Group {
