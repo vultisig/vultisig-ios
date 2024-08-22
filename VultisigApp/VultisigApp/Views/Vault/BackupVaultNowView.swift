@@ -78,16 +78,8 @@ struct BackupVaultNowView: View {
         NavigationLink {
             HomeView(selectedVault: vault, showVaultsList: false, shouldJoinKeygen: false)
         } label: {
-            skipButtonLabel
+            OutlineButton(title: "skip")
         }
-    }
-    
-    var skipButtonLabel: some View {
-        Text(NSLocalizedString("skip", comment: ""))
-            .padding(12)
-            .frame(maxWidth: .infinity)
-            .foregroundColor(Color.turquoise600)
-            .font(.body16MontserratMedium)
     }
 }
 

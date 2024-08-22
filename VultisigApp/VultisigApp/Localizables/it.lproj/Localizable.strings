@@ -240,8 +240,8 @@
 "memo(optional)" = "MEMO (Opzionale)";
 "enterMemo" = "Inserisci memo";
 "enterVaultName" = "Inserisci il nome del caveau";
-"pleaseBackupVault" = "Si prega di eseguire il backup delle quote del caveau ora";
-"pleaseBackupVaultNote" = "Nota: Non memorizzare mai le quote del caveau di dispositivi diversi nello stesso luogo.";
+"pleaseBackupVault" = "Ogni dispositivo ha la propria quota unica.";
+"pleaseBackupVaultNote" = "Effettua subito il backup di tutte le tue quote del Vault.";
 "addressBook" = "Rubrica";
 "addAddress" = "Aggiungi indirizzo";
 "address" = "Indirizzo";

@@ -241,8 +241,8 @@
 "memo(optional)" = "MEMO (Opcional)";
 "enterMemo" = "Insira o memo";
 "enterVaultName" = "Digite o nome do cofre";
-"pleaseBackupVault" = "Por favor, faça backup de suas Ações do Cofre agora";
-"pleaseBackupVaultNote" = "Nota: Nunca armazene Ações do Cofre de dispositivos diferentes no mesmo local.";
+"pleaseBackupVault" = "Cada dispositivo tem sua própria participação única.";
+"pleaseBackupVaultNote" = "Por favor, faça backup de todas as suas ações do Vault agora.";
 "addressBook" = "Livro de endereços";
 "addAddress" = "Adicionar endereço";
 "address" = "Endereço";
