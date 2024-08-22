@@ -56,11 +56,9 @@ struct ImportWalletView: View {
                 print("Error importing file: \(error.localizedDescription)")
             }
         }
-        .onDrop(of: [.data], isTargeted: $isUploading, perform: { providers in
-            print("SDFIKJHD")
-
-            return true
-        })
+        .onDrop(of: ["public.data"], isTargeted: nil) { providers in
+            handleDrop(providers: providers)
+        }
         .navigationDestination(isPresented: $backupViewModel.isLinkActive) {
             HomeView(selectedVault: backupViewModel.selectedVault)
         }
@@ -70,6 +68,38 @@ struct ImportWalletView: View {
         .onDisappear {
             resetData()
         }
+    }
+    
+    private func handleDrop(providers: [NSItemProvider]) -> Bool {
+        var fileUrl: URL? = nil
+        var fileError: Error? = nil
+
+        let group = DispatchGroup()
+
+        let provider = providers.first
+            group.enter()
+        provider?.loadItem(forTypeIdentifier: "public.data", options: nil) { (item, error) in
+                if let error = error {
+                    fileError = error
+                } else if let data = item as? Data, let url = URL(dataRepresentation: data, relativeTo: nil) {
+                    fileUrl = url
+                } else if let url = item as? URL {
+                    fileUrl = url
+                } else {
+                    fileError = NSError(domain: "Invalid URL", code: -1, userInfo: nil)
+                }
+                group.leave()
+            
+            if let fileUrl {
+                backupViewModel.importedFileName = fileUrl.lastPathComponent
+                backupViewModel.importFile(from: fileUrl)
+            } else {
+                print(fileError ?? "ERROR")
+                showInvalidFormatAlert()
+            }
+        }
+
+            return true
     }
     
     var main: some View {

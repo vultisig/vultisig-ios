@@ -17,6 +17,7 @@ import UIKit
 import AppKit
 #endif
 
+@MainActor
 class EncryptedBackupViewModel: ObservableObject {
     @Published var showVaultExporter = false
     @Published var showVaultImporter = false
