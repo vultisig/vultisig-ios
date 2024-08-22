@@ -176,9 +176,9 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .avalanche:
             return "avax"
         case .base:
-            return "eth_base"
+            return "base"
         case .blast:
-            return "eth_blast"
+            return "blast"
         case .arbitrum:
             return "arbitrum"
         case .polygon:
