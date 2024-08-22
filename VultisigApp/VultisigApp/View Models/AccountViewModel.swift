@@ -36,7 +36,7 @@ class AccountViewModel: ObservableObject {
     }
     
     private func authenticate(_ context: LAContext) {
-        if context.biometryType == .faceID && isRunningOnPhysicalDevice() {
+        if (context.biometryType == .faceID || context.biometryType == .touchID || context.biometryType == .opticID) && isRunningOnPhysicalDevice() {
             context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Authenticate to check Face ID") { success, error in
                 DispatchQueue.main.async {
                     if success {
