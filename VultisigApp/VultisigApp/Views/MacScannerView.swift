@@ -27,7 +27,6 @@ struct MacScannerView: View {
             main
             headerMac
         }
-        .navigationBarBackButtonHidden(true)
         .navigationDestination(isPresented: $cameraViewModel.shouldJoinKeygen) {
             JoinKeygenView(vault: Vault(name: "Main Vault"))
         }

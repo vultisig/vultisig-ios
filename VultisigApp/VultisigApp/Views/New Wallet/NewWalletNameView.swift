@@ -25,14 +25,9 @@ struct NewWalletNameView: View {
             Background()
             main
         }
-        .navigationBarBackButtonHidden(true)
 #if os(iOS)
         .navigationTitle(NSLocalizedString("setup", comment: "Setup"))
         .toolbar {
-            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                NavigationBackButton()
-            }
-            
             ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 NavigationHelpButton()
             }

@@ -19,14 +19,8 @@ struct VaultDetailQRCodeView: View {
             Background()
             main
         }
-        .navigationBarBackButtonHidden(true)
 #if os(iOS)
         .navigationTitle(NSLocalizedString("shareVaultQR", comment: ""))
-        .toolbar {
-            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                NavigationBackButton()
-            }
-        }
 #endif
     }
     
