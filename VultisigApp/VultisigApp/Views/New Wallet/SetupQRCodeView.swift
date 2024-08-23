@@ -20,9 +20,10 @@ struct SetupQRCodeView: View {
     var body: some View {
         ZStack {
             Background()
-            view
+            main
         }
         .navigationBarBackButtonHidden(true)
+#if os(iOS)
         .navigationTitle(NSLocalizedString("setup", comment: "Setup title"))
         .toolbar {
             ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
@@ -32,6 +33,20 @@ struct SetupQRCodeView: View {
                 NavigationHelpButton()
             }
         }
+#endif
+    }
+    
+    var main: some View {
+        VStack {
+#if os(macOS)
+            headerMac
+#endif
+            view
+        }
+    }
+    
+    var headerMac: some View {
+        GeneralMacHeader(title: "setup")
     }
     
     var view: some View {
