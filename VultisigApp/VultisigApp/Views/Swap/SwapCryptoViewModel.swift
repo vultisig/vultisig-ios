@@ -160,7 +160,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         guard tx.isApproveRequired, let spender = tx.router else {
             return nil
         }
-        let amount = swapFromAmount(tx: tx)
+        let amount = tx.amountInCoinDecimal
         let payload = ERC20ApprovePayload(amount: amount, spender: spender)
         return payload
     }
@@ -214,46 +214,36 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
             )
 
             let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
-            let vaultAddress = quote.inboundAddress ?? tx.fromCoin.address
-            let expirationTime = Date().addingTimeInterval(60 * 15) // 15 mins
-            let keysignFactory = KeysignPayloadFactory()
-
-            let swapPayload = THORChainSwapPayload(
-                fromAddress: tx.fromCoin.address,
-                fromCoin: tx.fromCoin,
-                toCoin: tx.toCoin,
-                vaultAddress: vaultAddress,
-                routerAddress: quote.router,
-                fromAmount: swapFromAmount(tx: tx),
-                toAmountDecimal: tx.toAmountDecimal,
-                toAmountLimit: "0", streamingInterval: "1", streamingQuantity: "0",
-                expirationTime: UInt64(expirationTime.timeIntervalSince1970),
-                isAffiliate: isAlliliate(tx: tx)
-            )
 
             switch quote {
-            case .mayachain(_):
-                keysignPayload = try await keysignFactory.buildTransfer(
+            case .mayachain(let quote):
+                keysignPayload = try await KeysignPayloadFactory().buildTransfer(
                     coin: tx.fromCoin,
                     toAddress: toAddress,
                     amount: tx.amountInCoinDecimal,
                     memo: tx.quote?.memo,
                     chainSpecific: chainSpecific,
-                    swapPayload: .mayachain(swapPayload),
+                    swapPayload: .mayachain(tx.buildThorchainSwapPayload(
+                        quote: quote,
+                        provider: .mayachain
+                    )),
                     approvePayload: buildApprovePayload(tx: tx),
                     vault: vault
                 )
 
                 return true
 
-            case .thorchain(_):
-                keysignPayload = try await keysignFactory.buildTransfer(
+            case .thorchain(let quote):
+                keysignPayload = try await KeysignPayloadFactory().buildTransfer(
                     coin: tx.fromCoin,
                     toAddress: toAddress,
                     amount: tx.amountInCoinDecimal,
                     memo: tx.quote?.memo,
                     chainSpecific: chainSpecific,
-                    swapPayload: .thorchain(swapPayload),
+                    swapPayload: .thorchain(tx.buildThorchainSwapPayload(
+                        quote: quote,
+                        provider: .thorchain
+                    )),
                     approvePayload: buildApprovePayload(tx: tx),
                     vault: vault
                 )
@@ -265,7 +255,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 let payload = OneInchSwapPayload(
                     fromCoin: tx.fromCoin,
                     toCoin: tx.toCoin,
-                    fromAmount: swapFromAmount(tx: tx),
+                    fromAmount: tx.amountInCoinDecimal,
                     toAmountDecimal: tx.toAmountDecimal,
                     quote: quote
                 )
@@ -361,7 +351,7 @@ private extension SwapCryptoViewModel {
                 amount: tx.fromAmountDecimal,
                 fromCoin: tx.fromCoin,
                 toCoin: tx.toCoin,
-                isAffiliate: isAlliliate(tx: tx)
+                isAffiliate: tx.isAlliliate
             )
             
             switch quote {
@@ -397,10 +387,6 @@ private extension SwapCryptoViewModel {
     
     func clearQuote(tx: SwapTransaction) {
         tx.quote = nil
-    }
-    
-    func swapFromAmount(tx: SwapTransaction) -> BigInt {
-        return BigInt(tx.amountInCoinDecimal)
     }
     
     func feeCoin(tx: SwapTransaction) -> Coin {
@@ -444,16 +430,6 @@ private extension SwapCryptoViewModel {
     func oneInchFee(quote: OneInchQuote) -> BigInt {
         let gasPrice = BigInt(quote.tx.gasPrice) ?? BigInt.zero
         return gasPrice * BigInt(EVMHelper.defaultETHSwapGasUnit)
-    }
-    
-    func isAlliliate(tx: SwapTransaction) -> Bool {
-        let fiatAmount = RateProvider.shared.fiatBalance(
-            value: tx.fromAmountDecimal,
-            coin: tx.fromCoin,
-            currency: .USD
-        )
-
-        return fiatAmount >= 100
     }
 
     func fetchFees(tx: SwapTransaction, vault: Vault) {
