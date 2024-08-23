@@ -56,7 +56,7 @@ struct ImportWalletView: View {
                 print("Error importing file: \(error.localizedDescription)")
             }
         }
-        .onDrop(of: ["public.data"], isTargeted: nil) { providers in
+        .onDrop(of: ["public.data"], isTargeted: $isUploading) { providers in
             handleDrop(providers: providers)
         }
         .navigationDestination(isPresented: $backupViewModel.isLinkActive) {
