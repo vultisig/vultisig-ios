@@ -85,6 +85,16 @@ class SwapTransaction: ObservableObject {
     var inboundFeeDecimal: Decimal? {
         return quote?.inboundFeeDecimal(toCoin: toCoin)
     }
+
+    var isAlliliate: Bool {
+        let fiatAmount = RateProvider.shared.fiatBalance(
+            value: fromAmountDecimal,
+            coin: fromCoin,
+            currency: .USD
+        )
+
+        return fiatAmount >= 100
+    }
 }
 
 extension SwapTransaction {
@@ -96,5 +106,25 @@ extension SwapTransaction {
 
     var amountInCoinDecimal: BigInt {
         return fromCoin.raw(for: fromAmountDecimal)
+    }
+
+    func buildThorchainSwapPayload(quote: ThorchainSwapQuote, provider: SwapProvider) -> THORChainSwapPayload {
+        let vaultAddress = quote.inboundAddress ?? fromCoin.address
+        let expirationTime = Date().addingTimeInterval(60 * 15) // 15 mins
+        let swapPayload = THORChainSwapPayload(
+            fromAddress: fromCoin.address,
+            fromCoin: fromCoin,
+            toCoin: toCoin,
+            vaultAddress: vaultAddress,
+            routerAddress: quote.router,
+            fromAmount: amountInCoinDecimal,
+            toAmountDecimal: toAmountDecimal,
+            toAmountLimit: "0",
+            streamingInterval: String(provider.streamingInterval),
+            streamingQuantity: "0",
+            expirationTime: UInt64(expirationTime.timeIntervalSince1970),
+            isAffiliate: isAlliliate
+        )
+        return swapPayload
     }
 }
