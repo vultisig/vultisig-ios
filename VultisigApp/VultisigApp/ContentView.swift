@@ -38,6 +38,7 @@ struct ContentView: View {
                 .navigationTitle("Vultisig")
 #endif
             }
+            .accentColor(.white)
             .onOpenURL { incomingURL in
                 deeplinkViewModel.extractParameters(incomingURL, vaults: vaults)
             }
