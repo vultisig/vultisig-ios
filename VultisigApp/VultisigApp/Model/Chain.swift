@@ -182,7 +182,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .arbitrum:
             return "arbitrum"
         case .polygon:
-            return "polygon"
+            return "matic"
         case .optimism:
             return "optimism"
         case .bscChain:
@@ -208,9 +208,9 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .sui:
             return "sui"
         case .polkadot:
-            return "polkadot"
+            return "dot"
         case .zksync:
-            return "eth_zksync"
+            return "zsync_era"
         case .dydx:
             return "dydx"
         }
