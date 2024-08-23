@@ -68,7 +68,7 @@ struct AsyncImageView: View {
                 }
             }
             
-            if let chainIcon = tokenChainLogo {
+            if let chainIcon = tokenChainLogo, logo != tokenChainLogo {
                 Image(chainIcon)
                     .resizable()
                     .frame(width: 16, height: 16)
