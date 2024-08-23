@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct HomeHeader: View {
-    @Binding var showMenu: Bool
     @Binding var showVaultsList: Bool
     @Binding var isEditingVaults: Bool
     
@@ -30,12 +29,11 @@ struct HomeHeader: View {
     }
     
     var menuButton: some View {
-        Button {
-            showMenu.toggle()
+        NavigationLink {
+            SettingsView()
         } label: {
             NavigationMenuButton()
         }
-        
     }
     
     var editButton: some View {
@@ -101,7 +99,6 @@ struct HomeHeader: View {
 
 #Preview {
     HomeHeader(
-        showMenu: .constant(false),
         showVaultsList: .constant(false),
         isEditingVaults: .constant(false)
     )
