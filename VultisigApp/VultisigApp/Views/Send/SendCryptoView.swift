@@ -191,7 +191,7 @@ struct SendCryptoView: View {
             sendCryptoViewModel.handleBackTap()
         } label: {
             NavigationBlankBackButton()
-                .offset(x: -7)
+                .offset(x: -8)
         }
         .opacity(isDone ? 0 : 1)
         .disabled(isDone)
