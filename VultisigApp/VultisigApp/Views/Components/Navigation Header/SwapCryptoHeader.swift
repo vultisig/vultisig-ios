@@ -31,16 +31,16 @@ struct SwapCryptoHeader: View {
     }
     
     var text: some View {
-        Text(NSLocalizedString("swap", comment: "SendCryptoView title"))
+        Text(NSLocalizedString(swapViewModel.currentTitle, comment: "SendCryptoView title"))
             .foregroundColor(.neutral0)
             .font(.title3)
     }
     
     var trailingAction: some View {
         ZStack {
-            if swapViewModel.currentIndex==3 {
-                NavigationQRShareButton(title: "swap", renderedImage: shareSheetViewModel.renderedImage)
-            }
+            NavigationQRShareButton(title: "swap", renderedImage: shareSheetViewModel.renderedImage)
+                .opacity(swapViewModel.currentIndex==3 ? 1 : 0)
+                .disabled(swapViewModel.currentIndex != 3)
         }
     }
     
