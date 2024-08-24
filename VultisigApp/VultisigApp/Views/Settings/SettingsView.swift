@@ -32,7 +32,7 @@ struct SettingsView: View {
     }
     
     var headerMac: some View {
-        SettingsHeader()
+        GeneralMacHeader(title: "settings")
             .padding(.bottom, 8)
     }
     
