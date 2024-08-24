@@ -35,7 +35,7 @@ struct CoinSelectionCell: View {
     }
     
     var image: some View {
-        AsyncImageView(logo: asset.logo, size: CGSize(width: 32, height: 32), ticker: asset.ticker, tokenChainLogo: asset.tokenChainLogo)
+        AsyncImageView(logo: asset.chain.logo, size: CGSize(width: 32, height: 32), ticker: asset.ticker, tokenChainLogo: nil)
     }
 
     var text: some View {

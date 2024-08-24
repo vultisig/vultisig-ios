@@ -25,7 +25,8 @@ struct SwapService {
         switch provider {
         case .thorchain:
             return try await fetchCrossChainQuote(
-                provider: thorchainService,
+                service: thorchainService, 
+                provider: provider,
                 amount: amount,
                 fromCoin: fromCoin,
                 toCoin: toCoin,
@@ -33,7 +34,8 @@ struct SwapService {
             )
         case .mayachain:
             return try await fetchCrossChainQuote(
-                provider: mayachainService,
+                service: mayachainService,
+                provider: provider,
                 amount: amount,
                 fromCoin: fromCoin,
                 toCoin: toCoin,
@@ -61,7 +63,8 @@ struct SwapService {
 private extension SwapService {
 
     func fetchCrossChainQuote(
-        provider: ThorchainSwapProvider,
+        service: ThorchainSwapProvider,
+        provider: SwapProvider,
         amount: Decimal,
         fromCoin: Coin,
         toCoin: Coin,
@@ -71,12 +74,12 @@ private extension SwapService {
             /// https://dev.thorchain.org/swap-guide/quickstart-guide.html#admonition-info-2
             let normalizedAmount = amount * fromCoin.thorswapMultiplier
             
-            let quote = try await provider.fetchSwapQuotes(
+            let quote = try await service.fetchSwapQuotes(
                 address: toCoin.address,
                 fromAsset: fromCoin.swapAsset,
                 toAsset: toCoin.swapAsset,
                 amount: normalizedAmount.description,
-                interval: fromCoin.streamingInterval,
+                interval: provider.streamingInterval,
                 isAffiliate: isAffiliate
             )
 
@@ -89,7 +92,7 @@ private extension SwapService {
                 throw SwapError.lessThenMinSwapAmount(amount: recommendedAmount)
             }
 
-            switch provider {
+            switch service {
             case _ as ThorchainService:
                 return .thorchain(quote)
             case _ as MayachainService:
