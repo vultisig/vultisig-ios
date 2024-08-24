@@ -34,13 +34,15 @@ struct SwapCryptoView: View {
         .onAppear {
             swapViewModel.load(initialFromCoin: fromCoin, initialToCoin: toCoin, vault: vault, tx: tx)
         }
-        .navigationBarBackButtonHidden(true)
+        .navigationBarBackButtonHidden(swapViewModel.currentIndex != 1 ? true : false)
 #if os(iOS)
         .navigationTitle(NSLocalizedString("swap", comment: "SendCryptoView title"))
         .ignoresSafeArea(.keyboard)
         .toolbar {
-            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                backButton
+            if swapViewModel.currentIndex != 1 {
+                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
+                    backButton
+                }
             }
             
             if swapViewModel.currentIndex==3 {
@@ -171,21 +173,13 @@ struct SwapCryptoView: View {
         let isDone = swapViewModel.currentIndex==5
         
         return Button {
-            handleBackTap()
+            swapViewModel.handleBackTap()
         } label: {
             NavigationBlankBackButton()
+                .offset(x: -8)
         }
         .opacity(isDone ? 0 : 1)
         .disabled(isDone)
-    }
-    
-    private func handleBackTap() {
-        guard swapViewModel.currentIndex>1 else {
-            dismiss()
-            return
-        }
-        
-        swapViewModel.handleBackTap()
     }
 }
 

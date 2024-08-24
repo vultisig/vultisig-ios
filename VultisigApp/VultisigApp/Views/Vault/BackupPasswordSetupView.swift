@@ -26,14 +26,8 @@ struct BackupPasswordSetupView: View {
             Background()
             main
         }
-        .navigationBarBackButtonHidden(true)
 #if os(iOS)
             .navigationTitle(NSLocalizedString("backup", comment: "Backup"))
-            .toolbar {
-                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                    NavigationBackButton()
-                }
-            }
 #endif
             .alert(isPresented: $backupViewModel.showAlert) {
                 alert

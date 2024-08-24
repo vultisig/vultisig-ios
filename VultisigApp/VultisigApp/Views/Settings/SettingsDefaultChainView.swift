@@ -19,14 +19,8 @@ struct SettingsDefaultChainView: View {
                 Loader()
             }
         }
-        .navigationBarBackButtonHidden(true)
 #if os(iOS)
         .navigationTitle(NSLocalizedString("defaultChains", comment: ""))
-        .toolbar {
-            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                NavigationBackButton()
-            }
-        }
 #endif
     }
     

@@ -18,17 +18,20 @@ struct TransactionMemoView: View {
             Background()
             main
         }
-        .navigationBarBackButtonHidden(true)
+        .navigationBarBackButtonHidden(transactionMemoViewModel.currentIndex != 1 ? true : false)
 #if os(iOS)
         .navigationTitle(NSLocalizedString(transactionMemoViewModel.currentTitle, comment: "SendCryptoView title"))
         .navigationBarTitleDisplayMode(.inline)
         .ignoresSafeArea(.keyboard)
         .toolbar {
-            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                Button {
-                    handleBackTap()
-                } label: {
-                    NavigationBlankBackButton()
+            if transactionMemoViewModel.currentIndex != 1 {
+                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
+                    Button {
+                        transactionMemoViewModel.handleBackTap()
+                    } label: {
+                        NavigationBlankBackButton()
+                            .offset(x: -8)
+                    }
                 }
             }
         }
@@ -175,14 +178,5 @@ struct TransactionMemoView: View {
     
     private func setData() async {
         await transactionMemoViewModel.loadGasInfoForSending(tx: tx)
-    }
-    
-    private func handleBackTap() {
-        guard transactionMemoViewModel.currentIndex>1 else {
-            dismiss()
-            return
-        }
-        
-        transactionMemoViewModel.handleBackTap()
     }
 }

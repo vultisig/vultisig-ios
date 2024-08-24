@@ -28,14 +28,9 @@ struct AddressBookView: View {
             Background()
             main
         }
-        .navigationBarBackButtonHidden(true)
 #if os(iOS)
         .navigationTitle(NSLocalizedString("addressBook", comment: ""))
         .toolbar {
-            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                NavigationBackButton()
-            }
-            
             if savedAddresses.count != 0 {
                 ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                     navigationButton
