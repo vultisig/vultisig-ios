@@ -8,24 +8,16 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @Binding var showMenu: Bool
-    @ObservedObject var homeViewModel: HomeViewModel
-    
     @EnvironmentObject var settingsViewModel: SettingsViewModel
+    @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
         ZStack {
             Background()
             main
         }
-        .navigationBarBackButtonHidden(true)
 #if os(iOS)
         .navigationTitle(NSLocalizedString("settings", comment: "Settings"))
-        .toolbar {
-            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                NavigationBackSheetButton(showSheet: $showMenu)
-            }
-        }
 #endif
     }
     
@@ -40,7 +32,7 @@ struct SettingsView: View {
     }
     
     var headerMac: some View {
-        SettingsHeader(showMenu: $showMenu)
+        GeneralMacHeader(title: "settings")
             .padding(.bottom, 8)
     }
     
@@ -216,6 +208,7 @@ struct SettingsView: View {
 }
 
 #Preview {
-    SettingsView(showMenu: .constant(true), homeViewModel: HomeViewModel())
+    SettingsView()
         .environmentObject(SettingsViewModel())
+        .environmentObject(HomeViewModel())
 }

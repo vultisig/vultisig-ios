@@ -16,14 +16,8 @@ struct VaultPairDetailView: View {
             Background()
             main
         }
-        .navigationBarBackButtonHidden(true)
 #if os(iOS)
         .navigationTitle(NSLocalizedString("vaultDetailsTitle", comment: "View your vault details"))
-        .toolbar {
-            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                NavigationBackButton()
-            }
-        }
 #endif
         .onAppear {
             self.devicesInfo = vault.signers.enumerated().map { index, signer in

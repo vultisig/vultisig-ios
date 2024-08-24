@@ -50,7 +50,6 @@ struct PeerDiscoveryView: View {
             
             main
         }
-        .navigationBarBackButtonHidden(true)
 #if os(iOS)
         .navigationTitle(getTitle())
         .navigationBarTitleDisplayMode(.inline)
@@ -59,9 +58,6 @@ struct PeerDiscoveryView: View {
             setData()
         }
         .toolbar {
-            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                NavigationBackButton()
-            }
             // only show the QR share button when it is in peer discovery
             if viewModel.status == .WaitingForDevices {
                 ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {

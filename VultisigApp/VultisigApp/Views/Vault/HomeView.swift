@@ -31,12 +31,7 @@ struct HomeView: View {
     var body: some View {
         ZStack {
             Background()
-            
-            if showMenu {
-                SettingsView(showMenu: $showMenu, homeViewModel: viewModel)
-            } else {
-                main
-            }
+            main
         }
     }
     
@@ -52,7 +47,6 @@ struct HomeView: View {
     
     var headerMac: some View {
         HomeHeader(
-            showMenu: $showMenu,
             showVaultsList: $showVaultsList,
             isEditingVaults: $isEditingVaults
         )
@@ -128,12 +122,11 @@ struct HomeView: View {
     }
     
     var menuButton: some View {
-        Button {
-            showMenu.toggle()
+        NavigationLink {
+            SettingsView()
         } label: {
             NavigationMenuButton()
         }
-        
     }
     
     var editButton: some View {

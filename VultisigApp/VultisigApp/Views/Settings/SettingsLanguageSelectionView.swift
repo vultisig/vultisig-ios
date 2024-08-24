@@ -17,14 +17,8 @@ struct SettingsLanguageSelectionView: View {
             Background()
             main
         }
-        .navigationBarBackButtonHidden(true)
 #if os(iOS)
         .navigationTitle(NSLocalizedString("language", comment: "Language"))
-        .toolbar {
-            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                NavigationBackButton()
-            }
-        }
 #endif
         .alert(isPresented: $showAlert) {
             Alert(
