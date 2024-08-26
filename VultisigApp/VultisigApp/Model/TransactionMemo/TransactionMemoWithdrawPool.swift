@@ -84,7 +84,7 @@ class TransactionMemoWithdrawPool: TransactionMemoAddressable, ObservableObject 
             )
             
             StyledFloatingPointField(
-                placeholder: "Basis Point",
+                placeholder: "Percentage",
                 value: Binding(
                     get: { Double(self.basisPoint) },
                     set: { self.basisPoint = Int64($0) }
