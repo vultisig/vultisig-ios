@@ -20,7 +20,8 @@ struct FeeService {
             let specific =  try await blockchainService.fetchSpecific(
                 for: tx.coin, sendMaxAmount: false,
                 isDeposit: tx.isDeposit,
-                transactionType: tx.transactionType
+                transactionType: tx.transactionType,
+                feeMode: tx.feeMode
             )
             return (specific.gas, specific.fee)
         }
@@ -35,7 +36,8 @@ struct FeeService {
             for: tx.coin, sendMaxAmount: false,
             isDeposit: tx.isDeposit,
             transactionType: tx.transactionType,
-            gasLimit: gasLimit
+            gasLimit: gasLimit, 
+            feeMode: tx.feeMode
         )
 
         return (specific.gas, specific.fee)

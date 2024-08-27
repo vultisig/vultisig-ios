@@ -32,7 +32,8 @@ class TransactionMemoVerifyViewModel: ObservableObject {
                 for: tx.coin,
                 sendMaxAmount: tx.sendMaxAmount,
                 isDeposit: tx.isDeposit,
-                transactionType: tx.transactionType
+                transactionType: tx.transactionType,
+                feeMode: tx.feeMode
             )
             
             let keysignPayloadFactory = KeysignPayloadFactory()

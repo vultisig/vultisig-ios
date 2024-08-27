@@ -70,7 +70,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             Task {
                 do {
                     if tx.coin.isNativeToken {
-                        let evm = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: tx.sendMaxAmount, isDeposit: tx.isDeposit, transactionType: tx.transactionType)
+                        let evm = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: tx.sendMaxAmount, isDeposit: tx.isDeposit, transactionType: tx.transactionType, feeMode: tx.feeMode)
                         let totalFeeWei = evm.fee
                         tx.amount = "\(tx.coin.getMaxValue(totalFeeWei))" // the decimals must be truncaded otherwise the give us precisions errors
                         setPercentageAmount(tx: tx, for: percentage)
@@ -254,7 +254,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         
         if !tx.coin.isNativeToken {
             do {
-                let evmToken = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: tx.sendMaxAmount, isDeposit: tx.isDeposit, transactionType: tx.transactionType)
+                let evmToken = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: tx.sendMaxAmount, isDeposit: tx.isDeposit, transactionType: tx.transactionType, feeMode: tx.feeMode)
                 let (hasEnoughFees, feeErrorMsg) = await tx.hasEnoughNativeTokensToPayTheFees(specific: evmToken)
                 if !hasEnoughFees {
                     errorMessage = feeErrorMsg

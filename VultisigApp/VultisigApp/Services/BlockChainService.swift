@@ -63,11 +63,11 @@ final class BlockChainService {
             
             return .Solana(recentBlockHash: recentBlockHash, priorityFee: BigInt(highPriorityFee), fromAddressPubKey: nil, toAddressPubKey: nil)
         default:
-            return try await fetchSpecific(for: tx.coin, action: action, sendMaxAmount: sendMaxAmount, isDeposit: isDeposit, transactionType: transactionType)
+            return try await fetchSpecific(for: tx.coin, action: action, sendMaxAmount: sendMaxAmount, isDeposit: isDeposit, transactionType: transactionType, feeMode: tx.feeMode)
         }
     }
     
-    func fetchSpecific(for coin: Coin, action: Action = .transfer, sendMaxAmount: Bool, isDeposit: Bool, transactionType: VSTransactionType, gasLimit: BigInt? = nil) async throws -> BlockChainSpecific {
+    func fetchSpecific(for coin: Coin, action: Action = .transfer, sendMaxAmount: Bool, isDeposit: Bool, transactionType: VSTransactionType, gasLimit: BigInt? = nil, feeMode: FeeMode) async throws -> BlockChainSpecific {
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             let sats = try await utxo.fetchSatsPrice(coin: coin)
