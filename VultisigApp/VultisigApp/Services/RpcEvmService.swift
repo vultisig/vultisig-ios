@@ -15,7 +15,7 @@ enum RpcEvmServiceError: Error {
 class RpcEvmService: RpcService {
     
     private let oneInchService = OneInchService.shared
-    
+
     func getBalance(coin: Coin) async throws -> String {
         // Start fetching all information concurrently
         do {
@@ -33,14 +33,64 @@ class RpcEvmService: RpcService {
     func getGasInfo(fromAddress: String) async throws -> (gasPrice: BigInt, priorityFee: BigInt, nonce: Int64) {
         async let gasPrice = fetchGasPrice()
         async let nonce = fetchNonce(address: fromAddress)
-        async let priorityFee = fetchMaxPriorityFeePerGas()
+        async let priorityFee = fetchMaxPriorityFeePerGas(mode: .normal)
         
         let gasPriceValue = try await gasPrice
         let priorityFeeValue = try await priorityFee
         
         return (gasPriceValue, priorityFeeValue, Int64(try await nonce))
     }
-    
+
+    func fetchMaxPriorityFeePerGas(mode: FeeMode) async throws -> BigInt {
+        let history = try await getFeeHistory()
+
+        guard history.count > 0 else {
+            return try await fetchMaxPriorityFeePerGas()
+        }
+
+        let maxPriorityFeePerGas: BigInt
+        switch mode {
+        case .safeLow:
+            maxPriorityFeePerGas = history[0]
+        case .normal:
+            maxPriorityFeePerGas = history[history.count / 2]
+        case .fast:
+            maxPriorityFeePerGas = history[history.count - 1]
+        }
+
+        return maxPriorityFeePerGas
+    }
+
+    func getFeeHistory() async throws -> [BigInt] {
+        return try await sendRPCRequest(method: "eth_feeHistory", params: [10, "latest", [5]]) { result in
+            guard
+                let result = result as? [String: Any],
+                let rewards = result["reward"] as? [[String]] else {
+                throw RpcEvmServiceError.rpcError(code: -1, message: "Invalid response from eth_feeHistory")
+            }
+
+            let reward = rewards
+                .compactMap { $0.first }
+                .compactMap { BigInt($0.stripHexPrefix(), radix: 16) }
+                .sorted()
+
+            return reward
+        }
+    }
+
+
+    func getBaseFee() async throws -> BigInt {
+        return try await sendRPCRequest(method: "eth_getBlockByNumber", params: ["latest", true]) { result in
+            guard
+                let result = result as? [String: Any],
+                let baseFeeString = result["baseFeePerGas"] as? String else {
+                throw RpcEvmServiceError.rpcError(code: -1, message: "Invalid response from eth_getBlockByNumber")
+            }
+
+            return BigInt(stringLiteral: baseFeeString)
+        }
+    }
+
     func getGasInfoZk(fromAddress: String, toAddress: String, memo: String = "0xffffffff") async throws -> (gasLimit: BigInt, gasPerPubdataLimit: BigInt, maxFeePerGas: BigInt, maxPriorityFeePerGas: BigInt, nonce: Int64) {
         let memoDataHex = memo.data(using: .utf8)?.map { byte in String(format: "%02x", byte) }.joined() ?? ""
         let data = "0x" + memoDataHex
@@ -113,7 +163,7 @@ class RpcEvmService: RpcService {
         
         return try await intRpcCall(method: "eth_call", params: params)
     }
-    
+
     func getTokenInfo(contractAddress: String) async throws -> (name: String, symbol: String, decimals: Int) {
         do {
             // Define ABI for ERC20 functions
@@ -182,7 +232,7 @@ class RpcEvmService: RpcService {
     func fetchMaxPriorityFeePerGas() async throws -> BigInt {
         return try await intRpcCall(method: "eth_maxPriorityFeePerGas", params: []) //WEI
     }
-    
+
     private func fetchNonce(address: String) async throws -> BigInt {
         return try await intRpcCall(method: "eth_getTransactionCount", params: [address, "latest"])
     }
