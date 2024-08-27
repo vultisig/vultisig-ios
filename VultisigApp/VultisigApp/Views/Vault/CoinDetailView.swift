@@ -43,14 +43,9 @@ struct CoinDetailView: View {
                 vault: vault
             )
         }
-        .navigationBarBackButtonHidden(true)
 #if os(iOS)
         .navigationTitle(NSLocalizedString(coin.ticker, comment: ""))
         .toolbar {
-            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                NavigationBackButton()
-            }
-            
             ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 NavigationRefreshButton() {
                     Task {

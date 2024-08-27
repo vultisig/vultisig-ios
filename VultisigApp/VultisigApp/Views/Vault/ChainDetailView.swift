@@ -44,14 +44,9 @@ struct ChainDetailView: View {
             
             PopupCapsule(text: "addressCopied", showPopup: $showAlert)
         }
-        .navigationBarBackButtonHidden(true)
 #if os(iOS)
         .navigationTitle(NSLocalizedString(group.name, comment: ""))
         .toolbar {
-            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                NavigationBackButton()
-            }
-            
             ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 NavigationRefreshButton() {
                     refreshAction()

@@ -38,9 +38,9 @@ struct SendCryptoHeader: View {
     
     var trailingAction: some View {
         ZStack {
-            if sendCryptoViewModel.currentIndex==3 {
-                NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
-            }
+            NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
+                .opacity(sendCryptoViewModel.currentIndex==3 ? 1 : 0)
+                .disabled(sendCryptoViewModel.currentIndex != 3)
         }
     }
     

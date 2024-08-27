@@ -12,4 +12,15 @@ enum SwapProvider: Equatable {
     case mayachain
     case oneinch(Chain)
     case lifi
+
+    var streamingInterval: Int {
+        switch self {
+        case .mayachain:
+            return 3
+        case .thorchain:
+            return 1
+        default:
+            return 0
+        }
+    }
 }

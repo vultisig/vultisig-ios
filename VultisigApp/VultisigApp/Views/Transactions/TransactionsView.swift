@@ -15,14 +15,8 @@ struct TransactionsView: View {
             Background()
             main
         }
-        .navigationBarBackButtonHidden(true)
 #if os(iOS)
         .navigationTitle(NSLocalizedString("transactions", comment: "Transactions"))
-        .toolbar {
-            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                NavigationBackButton()
-            }
-        }
 #endif
     }
     

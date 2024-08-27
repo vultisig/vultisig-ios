@@ -15,16 +15,7 @@ struct CreateVaultView: View {
             Background()
             main
         }
-        .navigationBarBackButtonHidden(true)
-#if os(iOS)
-        .toolbar {
-            if showBackButton {
-                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                    NavigationBackButton()
-                }
-            }
-        }
-#endif
+        .navigationBarBackButtonHidden(showBackButton ? false : true)
     }
     
     var main: some View {

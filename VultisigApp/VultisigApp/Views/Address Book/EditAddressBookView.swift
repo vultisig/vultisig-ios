@@ -26,14 +26,8 @@ struct EditAddressBookView: View {
             Background()
             main
         }
-        .navigationBarBackButtonHidden(true)
 #if os(iOS)
         .navigationTitle(NSLocalizedString("editAddress", comment: ""))
-        .toolbar {
-            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                NavigationBackButton()
-            }
-        }
 #endif
         .onAppear {
             setData()

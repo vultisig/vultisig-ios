@@ -24,14 +24,8 @@ struct RenameVaultView: View {
             Background()
             main
         }
-        .navigationBarBackButtonHidden(true)
 #if os(iOS)
         .navigationTitle(NSLocalizedString("renameVault", comment: "Edit Rename Vault View title"))
-        .toolbar {
-            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                NavigationBackButton()
-            }
-        }
 #endif
         .onAppear {
             setData()

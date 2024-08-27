@@ -75,7 +75,6 @@ private extension AddressService {
 
     static func resolveENSDomaninAddress(input: String, chain: Chain) async throws -> String {
         let ensName = input
-        let namehash = ensName.namehash()
         let factory = try EvmServiceFactory.getService(forChain: chain)
         let address = try await factory.resolveENS(ensName: ensName)
         return address

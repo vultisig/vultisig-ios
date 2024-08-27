@@ -45,12 +45,14 @@ struct SendCryptoView: View {
         .onDisappear(){
             sendCryptoViewModel.stopMediator()
         }
-        .navigationBarBackButtonHidden(true)
+        .navigationBarBackButtonHidden(sendCryptoViewModel.currentIndex != 1 ? true : false)
 #if os(iOS)
         .navigationTitle(NSLocalizedString(sendCryptoViewModel.currentTitle, comment: "SendCryptoView title"))
         .toolbar {
-            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                backButton
+            if sendCryptoViewModel.currentIndex != 1 {
+                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
+                    backButton
+                }
             }
             
             if sendCryptoViewModel.currentIndex==3 {
@@ -186,9 +188,10 @@ struct SendCryptoView: View {
         let isDone = sendCryptoViewModel.currentIndex==5
         
         return Button {
-            handleBackTap()
+            sendCryptoViewModel.handleBackTap()
         } label: {
             NavigationBlankBackButton()
+                .offset(x: -8)
         }
         .opacity(isDone ? 0 : 1)
         .disabled(isDone)
@@ -216,15 +219,6 @@ struct SendCryptoView: View {
         DebounceHelper.shared.debounce {
             validateAddress(deeplinkViewModel.address ?? "")
         }
-    }
-    
-    private func handleBackTap() {
-        guard sendCryptoViewModel.currentIndex>1 else {
-            dismiss()
-            return
-        }
-        
-        sendCryptoViewModel.handleBackTap()
     }
     
     private func validateAddress(_ newValue: String) {

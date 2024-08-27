@@ -176,13 +176,13 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .avalanche:
             return "avax"
         case .base:
-            return "eth_base"
+            return "base"
         case .blast:
-            return "eth_blast"
+            return "blast"
         case .arbitrum:
             return "arbitrum"
         case .polygon:
-            return "polygon"
+            return "matic"
         case .optimism:
             return "optimism"
         case .bscChain:
@@ -208,9 +208,9 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .sui:
             return "sui"
         case .polkadot:
-            return "polkadot"
+            return "dot"
         case .zksync:
-            return "eth_zksync"
+            return "zsync_era"
         case .dydx:
             return "dydx"
         }
