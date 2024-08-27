@@ -38,7 +38,6 @@ struct KeygenView: View {
             Spacer()
             instructions
         }
-        .navigationBarBackButtonHidden()
         .navigationTitle(NSLocalizedString("joinKeygen", comment: ""))
         .navigationDestination(isPresented: $viewModel.isLinkActive) {
             BackupVaultNowView(vault: vault)
