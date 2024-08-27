@@ -204,7 +204,6 @@ struct PeerDiscoveryView: View {
                 .frame(maxHeight: .infinity)
 #elseif os(macOS)
                 .background(Color.blue600)
-                .aspectRatio(contentMode: .fit)
                 .frame(maxHeight: .infinity)
                 .padding(3)
 #endif
@@ -218,6 +217,9 @@ struct PeerDiscoveryView: View {
                         .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [58]))
                 )
                 .padding(1)
+#if os(macOS)
+                .aspectRatio(contentMode: .fit)
+#endif
         }
         .cornerRadius(10)
         .shadow(radius: 5)
