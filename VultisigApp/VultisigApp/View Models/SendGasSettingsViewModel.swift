@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import BigInt
 
 final class SendGasSettingsViewModel: ObservableObject {
 
@@ -20,7 +21,12 @@ final class SendGasSettingsViewModel: ObservableObject {
         self.totalFee = totalFee
         self.selectedMode = selectedMode
     }
-    
+
+    init(gasLimit: BigInt, selectedMode: FeeMode) {
+        self.gasLimit = gasLimit.description
+        self.selectedMode = selectedMode
+    }
+
     var totalFeeFiat: String {
         return "$3.4"
     }

@@ -25,11 +25,13 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     @Published var errorMessage = ""
     @Published var hash: String? = nil
     @Published var approveHash: String? = nil
+
     @Published var thor = ThorchainService.shared
     @Published var sol: SolanaService = SolanaService.shared
     @Published var sui: SuiService = SuiService.shared
     @Published var cryptoPrice = CryptoPriceService.shared
     @Published var utxo = BlockchairService.shared
+
     let maya = MayachainService.shared
     let atom = GaiaService.shared
     let kujira = KujiraService.shared
@@ -46,7 +48,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     func loadGasInfoForSending(tx: SendTransaction) async {
         do {
             let gasInfo = try await feeService.fetchFee(tx: tx)
-            tx.gas = gasInfo.gas
+            tx.estematedGas = gasInfo.gas
             tx.fee = gasInfo.fee
         } catch {
             print("error fetching data: \(error.localizedDescription)")

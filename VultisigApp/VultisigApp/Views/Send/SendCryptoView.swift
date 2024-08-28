@@ -18,7 +18,8 @@ struct SendCryptoView: View {
     @State var keysignPayload: KeysignPayload? = nil
     @State var keysignView: KeysignView? = nil
     @State var selectedChain: Chain? = nil
-    
+    @State var settingsPresented = false
+
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     
@@ -54,8 +55,12 @@ struct SendCryptoView: View {
                     backButton
                 }
             }
-            
-            if sendCryptoViewModel.currentIndex==3 {
+            if showFeeSettings {
+                ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                    settingsButton
+                }
+            }
+            if sendCryptoViewModel.currentIndex == 3 {
                 ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                     NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
                 }
@@ -174,6 +179,28 @@ struct SendCryptoView: View {
                 self.sendCryptoViewModel.stopMediator()
             }
         }
+    }
+
+    var settingsButton: some View {
+        Button {
+            settingsPresented = true
+        } label: {
+            Image(systemName: "gearshape")
+        }
+        .foregroundColor(.neutral0)
+        .sheet(isPresented: $settingsPresented) {
+            SendGasSettingsView(
+                viewModel: SendGasSettingsViewModel(
+                    gasLimit: tx.gas,
+                    selectedMode: tx.feeMode
+                ),
+                output: tx
+            )
+        }
+    }
+
+    var showFeeSettings: Bool {
+        return sendCryptoViewModel.currentIndex == 1 && tx.coin.chainType == .EVM
     }
 
     var errorView: some View {
