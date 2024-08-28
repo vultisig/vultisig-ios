@@ -19,6 +19,8 @@ struct AddressBookTextField: View {
     @State var showScanner = false
     @State var showImagePicker = false
     
+    @State var isUploading: Bool = false
+    
 #if os(iOS)
     @State var selectedImage: UIImage?  // Store the selected image
 #elseif os(macOS)
@@ -28,7 +30,7 @@ struct AddressBookTextField: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             titleContent
-            textField
+            content
         }
         .frame(maxWidth: .infinity, alignment: .leading)
 #if os(iOS)
@@ -47,6 +49,37 @@ struct AddressBookTextField: View {
             } catch {
                 print(error)
             }
+        }
+        .onDrop(of: [.image], isTargeted: $isUploading) { providers -> Bool in
+            handleOnDrop(providers: providers)
+        }
+    }
+    
+    var content: some View {
+        textField
+            .overlay {
+                ZStack {
+                    if isUploading {
+                        overlay
+                    }
+                }
+            }
+    }
+    
+    var overlay: some View {
+        ZStack {
+            Color.turquoise600.opacity(0.2)
+                .frame(height: 48)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .cornerRadius(10)
+            
+            RoundedRectangle(cornerRadius: 10)
+                .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 1, dash: [10]))
+                .padding(5)
+            
+            Text(NSLocalizedString("dropFileHere", comment: ""))
+                .font(.body12MontserratSemiBold)
+                .foregroundColor(.neutral0)
         }
     }
     
@@ -167,6 +200,49 @@ struct AddressBookTextField: View {
     private func handleImageQrCode(data: Data) {
         text = String(data: data, encoding: .utf8) ?? ""
         showImagePicker = false
+    }
+    
+    private func handleOnDrop(providers: [NSItemProvider]) -> Bool {
+        guard let provider = providers.first(where: { $0.hasItemConformingToTypeIdentifier("public.image") }) else {
+            print("Invalid file type. Please drop an image.")
+            return false
+        }
+
+        provider.loadDataRepresentation(forTypeIdentifier: "public.image") { data, error in
+            guard let data = data, let image = NSImage(data: data) else {
+                print(error?.localizedDescription ?? "Failed to load image.")
+                return
+            }
+
+            // Extract QR code data from the image
+            if let qrData = extractQRCode(from: image) {
+                handleImageQrCode(data: qrData)
+            } else {
+                print("No QR code detected in the image.")
+            }
+        }
+
+        return true
+    }
+
+    private func extractQRCode(from nsImage: NSImage) -> Data? {
+        guard let tiffData = nsImage.tiffRepresentation,
+              let ciImage = CIImage(data: tiffData) else {
+            return nil
+        }
+
+        let context = CIContext()
+        let detector = CIDetector(ofType: CIDetectorTypeQRCode, context: context, options: [CIDetectorAccuracy: CIDetectorAccuracyHigh])
+
+        if let features = detector?.features(in: ciImage), !features.isEmpty {
+            for feature in features {
+                if let qrFeature = feature as? CIQRCodeFeature, let qrString = qrFeature.messageString {
+                    return Data(qrString.utf8)
+                }
+            }
+        }
+
+        return nil
     }
 }
 
