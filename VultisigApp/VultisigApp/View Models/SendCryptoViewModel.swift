@@ -36,7 +36,6 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     let atom = GaiaService.shared
     let kujira = KujiraService.shared
     let blockchainService = BlockChainService.shared
-    let feeService = FeeService.shared
 
     private let mediator = Mediator.shared
     
@@ -47,9 +46,9 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     
     func loadGasInfoForSending(tx: SendTransaction) async {
         do {
-            let gasInfo = try await feeService.fetchFee(tx: tx)
-            tx.estematedGas = gasInfo.gas
-            tx.fee = gasInfo.fee
+            let specific = try await blockchainService.fetchSpecific(tx: tx)
+            tx.gas = specific.gas
+            tx.fee = specific.fee
         } catch {
             print("error fetching data: \(error.localizedDescription)")
         }
@@ -72,7 +71,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             Task {
                 do {
                     if tx.coin.isNativeToken {
-                        let evm = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: tx.sendMaxAmount, isDeposit: tx.isDeposit, transactionType: tx.transactionType, feeMode: tx.feeMode)
+                        let evm = try await blockchainService.fetchSpecific(tx: tx)
                         let totalFeeWei = evm.fee
                         tx.amount = "\(tx.coin.getMaxValue(totalFeeWei))" // the decimals must be truncaded otherwise the give us precisions errors
                         setPercentageAmount(tx: tx, for: percentage)
@@ -256,7 +255,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         
         if !tx.coin.isNativeToken {
             do {
-                let evmToken = try await blockchainService.fetchSpecific(for: tx.coin, sendMaxAmount: tx.sendMaxAmount, isDeposit: tx.isDeposit, transactionType: tx.transactionType, feeMode: tx.feeMode)
+                let evmToken = try await blockchainService.fetchSpecific(tx: tx)
                 let (hasEnoughFees, feeErrorMsg) = await tx.hasEnoughNativeTokensToPayTheFees(specific: evmToken)
                 if !hasEnoughFees {
                     errorMessage = feeErrorMsg
