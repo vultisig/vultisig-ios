@@ -7,8 +7,19 @@
 
 import Foundation
 
-enum FeeMode {
+enum FeeMode: CaseIterable {
     case safeLow
     case normal
     case fast
+
+    var title: String {
+        switch self {
+        case .safeLow:
+            return "Low"
+        case .normal:
+            return "Normal"
+        case .fast:
+            return "Fast"
+        }
+    }
 }
