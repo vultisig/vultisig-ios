@@ -5,6 +5,7 @@
 //  Created by Amol Kumar on 2024-08-28.
 //
 
+#if os(macOS)
 import AppKit
 
 enum OnDropQRError: Error {
@@ -96,3 +97,4 @@ class OnDropQRUtils {
         return nil
     }
 }
+#endif

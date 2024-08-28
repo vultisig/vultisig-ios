@@ -37,6 +37,10 @@ struct AddressBookTextField: View {
         .sheet(isPresented: $showScanner) {
             codeScanner
         }
+#elseif os(macOS)
+        .onDrop(of: [.image], isTargeted: $isUploading) { providers -> Bool in
+            OnDropQRUtils.handleOnDrop(providers: providers, handleImageQrCode: handleImageQrCode)
+        }
 #endif
         .fileImporter(
             isPresented: $showImagePicker,
@@ -49,9 +53,6 @@ struct AddressBookTextField: View {
             } catch {
                 print(error)
             }
-        }
-        .onDrop(of: [.image], isTargeted: $isUploading) { providers -> Bool in
-            OnDropQRUtils.handleOnDrop(providers: providers, handleImageQrCode: handleImageQrCode)
         }
     }
     
