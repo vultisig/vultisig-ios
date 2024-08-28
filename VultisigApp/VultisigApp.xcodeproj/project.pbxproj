@@ -102,6 +102,7 @@
 		A5DA62092BF79C1D00CBEAEE /* ThorchainSwapError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5DA62082BF79C1D00CBEAEE /* ThorchainSwapError.swift */; };
 		A5E841CB2C639556009325CB /* DatabaseRate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E841CA2C639556009325CB /* DatabaseRate.swift */; };
 		A5E841CD2C63A987009325CB /* RateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E841CC2C63A987009325CB /* RateProvider.swift */; };
+		A5F596BF2C7FB0C5008D5339 /* SendGasSettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F596BE2C7FB0C5008D5339 /* SendGasSettingsViewModel.swift */; };
 		A5F97C8E2BBF0BCF000C30DF /* BalanceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F97C8D2BBF0BCF000C30DF /* BalanceService.swift */; };
 		A608E3772C01BD7A00E40B85 /* SwapDetailsSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = A608E3762C01BD7A00E40B85 /* SwapDetailsSummary.swift */; };
 		A608E3792C02472C00E40B85 /* SwapCryptoAmountTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A608E3782C02472C00E40B85 /* SwapCryptoAmountTextField.swift */; };
@@ -565,6 +566,7 @@
 		A5DA62082BF79C1D00CBEAEE /* ThorchainSwapError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainSwapError.swift; sourceTree = "<group>"; };
 		A5E841CA2C639556009325CB /* DatabaseRate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseRate.swift; sourceTree = "<group>"; };
 		A5E841CC2C63A987009325CB /* RateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RateProvider.swift; sourceTree = "<group>"; };
+		A5F596BE2C7FB0C5008D5339 /* SendGasSettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendGasSettingsViewModel.swift; sourceTree = "<group>"; };
 		A5F97C8D2BBF0BCF000C30DF /* BalanceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BalanceService.swift; sourceTree = "<group>"; };
 		A608E3762C01BD7A00E40B85 /* SwapDetailsSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapDetailsSummary.swift; sourceTree = "<group>"; };
 		A608E3782C02472C00E40B85 /* SwapCryptoAmountTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoAmountTextField.swift; sourceTree = "<group>"; };
@@ -1433,6 +1435,7 @@
 				A6951E8B2C52DC6B007292E7 /* SettingsDefaultChainViewModel.swift */,
 				B58156342C5D4DC9006164BF /* BlowfishViewModel.swift */,
 				A6521C592C6ECA62002D5C5F /* MacCameraServiceViewModel.swift */,
+				A5F596BE2C7FB0C5008D5339 /* SendGasSettingsViewModel.swift */,
 			);
 			path = "View Models";
 			sourceTree = "<group>";
@@ -2529,6 +2532,7 @@
 				A608E3792C02472C00E40B85 /* SwapCryptoAmountTextField.swift in Sources */,
 				A564ED442BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift in Sources */,
 				A5D0C9352BEE77190022D421 /* SwapPayload.swift in Sources */,
+				A5F596BF2C7FB0C5008D5339 /* SendGasSettingsViewModel.swift in Sources */,
 				B520B2FE2C3250230097C590 /* TextField.swift in Sources */,
 				A6BACF1C2BC79B3100084810 /* TokenSelectionView.swift in Sources */,
 				A69069A12BCDEFD400F28A8B /* ProgressRing.swift in Sources */,

@@ -6,19 +6,19 @@
 //
 
 import SwiftUI
+import BigInt
+
+protocol SendGasSettingsOutput {
+    func didSetFeeSettings(gasLimit: BigInt, mode: FeeMode)
+}
 
 struct SendGasSettingsView: View {
 
     @Environment(\.presentationMode) var presentationMode
 
-    @Binding var gasLimit: String
-    @Binding var baseFee: String
-    @Binding var totalFee: String
-    @Binding var selectedMode: FeeMode
+    @ObservedObject var viewModel: SendGasSettingsViewModel
 
-    var totalFeeFiat: String {
-        return "$3.4"
-    }
+    let output: SendGasSettingsOutput
 
     var body: some View {
         NavigationView {
@@ -26,20 +26,10 @@ struct SendGasSettingsView: View {
                 Background()
                 view
             }
-            .toolbar {
-                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                    Button(action: {
-                        presentationMode.wrappedValue.dismiss()
-                    }) {
-                        Image(systemName: "chevron.backward")
-                            .font(.body18MenloBold)
-                            .foregroundColor(Color.neutral0)
-                    }
-                }
-                ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                    saveButton
-                }
-            }
+            .navigationBarItems(leading: backButton, trailing: saveButton)
+            .navigationTitle("Advanced")
+            .navigationBarTitleTextColor(.neutral0)
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 
@@ -52,19 +42,20 @@ struct SendGasSettingsView: View {
 
             Spacer()
         }
+        .padding(.top, 16)
     }
 
     var baseFeeRow: some View {
         VStack {
             title(text: "Current Base Fee (Gwei)")
-            textField(title: "Base Fee", text: $baseFee)
+            textField(title: "Base Fee", text: $viewModel.baseFee)
         }
     }
 
     var gasLimitRow: some View {
         VStack {
             title(text: "Gas Limit")
-            textField(title: "Gas Limit", text: $gasLimit)
+            textField(title: "Gas Limit", text: $viewModel.gasLimit)
         }
     }
 
@@ -85,7 +76,7 @@ struct SendGasSettingsView: View {
     var totalFeeRow: some View {
         VStack {
             title(text: "Total Fee (Gwei)")
-            textField(title: "Total Fee", text: $totalFee, label: totalFeeFiat)
+            textField(title: "Total Fee", text: $viewModel.totalFee, label: viewModel.totalFeeFiat)
         }
     }
 
@@ -126,7 +117,7 @@ struct SendGasSettingsView: View {
 
     func modeTab(mode: FeeMode) -> some View {
         ZStack {
-            if selectedMode == mode {
+            if viewModel.selectedMode == mode {
                 Text(mode.title)
                     .font(.body16MontserratBold)
                     .foregroundColor(.blue800)
@@ -139,8 +130,26 @@ struct SendGasSettingsView: View {
             }
         }
     }
+
+    var backButton: some View {
+        Button(action: {
+            presentationMode.wrappedValue.dismiss()
+        }) {
+            Image(systemName: "chevron.backward")
+                .font(.body18MenloBold)
+                .foregroundColor(Color.neutral0)
+        }
+    }
+
+    var saveButton: some View {
+        Button("Save", action: { presentationMode.wrappedValue.dismiss() })
+    }
 }
 
 #Preview {
-    SendGasSettingsView(gasLimit: .constant("21000"), baseFee: .constant("6.559000"), totalFee: .constant("11.25"), selectedMode: .constant(.normal))
+    struct Output: SendGasSettingsOutput {
+        func didSetFeeSettings(gasLimit: BigInt, mode: FeeMode) { }
+    }
+    let viewModel = SendGasSettingsViewModel(gasLimit: "21000", baseFee: "6.559000", totalFee: "11.25", selectedMode: .normal)
+    return SendGasSettingsView(viewModel: viewModel, output: Output())
 }
