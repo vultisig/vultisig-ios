@@ -48,7 +48,7 @@ struct JoinKeygenView: View {
         }
         .fileImporter(
             isPresented: $showFileImporter,
-            allowedContentTypes: [UTType.image], // Ensure only images can be picked
+            allowedContentTypes: [UTType.image],
             allowsMultipleSelection: false
         ) { result in
             viewModel.handleQrCodeFromImage(result: result)

@@ -7,7 +7,13 @@
 
 import AppKit
 
+enum OnDropQRError: Error {
+    case noItems
+    case invalidData
+}
+
 class OnDropQRUtils {
+    
     public static func handleOnDrop(providers: [NSItemProvider], handleImageQrCode: @escaping (Data) -> ()) -> Bool {
         guard let provider = providers.first(where: { $0.hasItemConformingToTypeIdentifier("public.image") }) else {
             print("Invalid file type. Please drop an image.")
@@ -31,6 +37,43 @@ class OnDropQRUtils {
         }
 
         return true
+    }
+    
+    public static func handleFileQRCodeImporterMacDrop(providers: [NSItemProvider], completion: @escaping (Result<[URL], Error>) -> Void) {
+        var urls = [URL]()
+        var dropError: Error? = nil
+
+        let dispatchGroup = DispatchGroup()
+        
+        for provider in providers {
+            dispatchGroup.enter()
+            provider.loadItem(forTypeIdentifier: "public.data", options: nil) { (item, error) in
+                if let error = error {
+                    dropError = error
+                    dispatchGroup.leave()
+                    return
+                }
+                
+                if let data = item as? Data, let url = URL(dataRepresentation: data, relativeTo: nil) {
+                    urls.append(url)
+                } else if let url = item as? URL {
+                    urls.append(url)
+                } else {
+                    dropError = OnDropQRError.invalidData
+                }
+                dispatchGroup.leave()
+            }
+        }
+
+        dispatchGroup.notify(queue: .main) {
+            if let error = dropError {
+                completion(.failure(error))
+            } else if urls.isEmpty {
+                completion(.failure(OnDropQRError.noItems))
+            } else {
+                completion(.success(urls))
+            }
+        }
     }
 
     private static func extractQRCode(from nsImage: NSImage) -> Data? {
