@@ -48,4 +48,13 @@ enum BlockChainSpecific: Codable, Hashable {
             return gas
         }
     }
+
+    var gasLimit: BigInt? {
+        switch self {
+        case .Ethereum(_, _, _, let gasLimit):
+            return gasLimit
+        case .UTXO, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot:
+            return nil
+        }
+    }
 }

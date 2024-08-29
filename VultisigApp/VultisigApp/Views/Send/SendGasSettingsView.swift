@@ -95,11 +95,17 @@ struct SendGasSettingsView: View {
     func textField(title: String, text: Binding<String>, label: String? = nil) -> some View {
         VStack {
             HStack {
-                TextField(title, text: text)
-                    .foregroundColor(.white)
+                TextField("", text: text, prompt: Text(title).foregroundColor(.neutral300))
+                    .borderlessTextFieldStyle()
+                    .foregroundColor(.neutral0)
+                    .tint(.neutral0)
                     .font(.body16Menlo)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 16)
+                    .submitLabel(.next)
+                    .disableAutocorrection(true)
+                    .textFieldStyle(TappableTextFieldStyle())
+                    .textInputAutocapitalization(.never)
+                    .keyboardType(.decimalPad)
+                    .textContentType(.oneTimeCode)
 
                 if let label {
                     Text(label)
@@ -107,6 +113,8 @@ struct SendGasSettingsView: View {
                         .font(.body16Menlo)
                 }
             }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 16)
         }
         .background(
             RoundedRectangle(cornerSize: .init(width: 5, height: 5))
@@ -116,17 +124,21 @@ struct SendGasSettingsView: View {
     }
 
     func modeTab(mode: FeeMode) -> some View {
-        ZStack {
-            if viewModel.selectedMode == mode {
-                Text(mode.title)
-                    .font(.body16MontserratBold)
-                    .foregroundColor(.blue800)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 44)
-                    .background(LinearGradient.primaryGradientHorizontal)
-                    .cornerRadius(30)
-            } else {
-                OutlineButton(title: mode.title, gradient: .primaryGradientHorizontal)
+        Button {
+            viewModel.selectedMode = mode
+        } label: {
+            ZStack {
+                if viewModel.selectedMode == mode {
+                    Text(mode.title)
+                        .font(.body16MontserratBold)
+                        .foregroundColor(.blue800)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 44)
+                        .background(LinearGradient.primaryGradientHorizontal)
+                        .cornerRadius(30)
+                } else {
+                    OutlineButton(title: mode.title, gradient: .primaryGradientHorizontal)
+                }
             }
         }
     }
@@ -142,7 +154,17 @@ struct SendGasSettingsView: View {
     }
 
     var saveButton: some View {
-        Button("Save", action: { presentationMode.wrappedValue.dismiss() })
+        Button("Save", action: {
+            save()
+            presentationMode.wrappedValue.dismiss()
+        })
+    }
+
+    func save() {
+        guard let gasLimit = BigInt(viewModel.gasLimit, radix: 10) else {
+            return
+        }
+        output.didSetFeeSettings(gasLimit: gasLimit, mode: viewModel.selectedMode)
     }
 }
 

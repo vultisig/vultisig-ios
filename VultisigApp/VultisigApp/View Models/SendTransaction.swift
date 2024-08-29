@@ -19,6 +19,7 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var amountInFiat: String = .empty
     @Published var memo: String = .empty
     @Published var gas: BigInt = .zero
+    @Published var estematedGasLimit: BigInt?
     @Published var customGasLimit: BigInt?
     @Published var fee: BigInt = .zero
     @Published var feeMode: FeeMode = .normal
@@ -27,6 +28,10 @@ class SendTransaction: ObservableObject, Hashable {
     
     @Published var coin: Coin = .example
     @Published var transactionType: VSTransactionType = .unspecified
+
+    var gasLimit: BigInt {
+        return estematedGasLimit ?? customGasLimit ?? BigInt(EVMHelper.defaultETHTransferGasUnit)
+    }
 
     var isAmountExceeded: Bool {
         if (sendMaxAmount && coin.chainType == .UTXO) || !coin.isNativeToken {
@@ -172,6 +177,7 @@ class SendTransaction: ObservableObject, Hashable {
         self.amountInFiat = .empty
         self.memo = .empty
         self.gas = .zero
+        self.estematedGasLimit = nil
         self.customGasLimit = nil
         self.feeMode = .normal
         self.coin = coin

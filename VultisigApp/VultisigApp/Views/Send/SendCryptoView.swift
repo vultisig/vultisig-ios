@@ -191,7 +191,7 @@ struct SendCryptoView: View {
         .sheet(isPresented: $settingsPresented) {
             SendGasSettingsView(
                 viewModel: SendGasSettingsViewModel(
-                    gasLimit: tx.gas,
+                    gasLimit: tx.gasLimit,
                     selectedMode: tx.feeMode
                 ),
                 output: tx

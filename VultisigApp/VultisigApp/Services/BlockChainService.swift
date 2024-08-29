@@ -46,7 +46,7 @@ final class BlockChainService {
                 sendMaxAmount: tx.sendMaxAmount,
                 isDeposit: tx.isDeposit,
                 transactionType: tx.transactionType, 
-                gasLimit: nil,
+                gasLimit: tx.gasLimit,
                 fromAddress: tx.fromAddress,
                 toAddress: tx.toAddress,
                 feeMode: tx.feeMode

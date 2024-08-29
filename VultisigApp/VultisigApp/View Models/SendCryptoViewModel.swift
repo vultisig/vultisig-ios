@@ -49,6 +49,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             let specific = try await blockchainService.fetchSpecific(tx: tx)
             tx.gas = specific.gas
             tx.fee = specific.fee
+            tx.estematedGasLimit = specific.gasLimit
         } catch {
             print("error fetching data: \(error.localizedDescription)")
         }
