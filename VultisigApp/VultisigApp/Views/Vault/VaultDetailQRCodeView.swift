@@ -60,7 +60,7 @@ struct VaultDetailQRCodeView: View {
 #if os(iOS)
         shareButton
 #elseif os(macOS)
-        VStack(spacing: 12) {
+        HStack(spacing: 12) {
             saveButton
             shareButton
         }
@@ -76,6 +76,7 @@ struct VaultDetailQRCodeView: View {
                     isExporting = true
                 } label: {
                     FilledButton(title: "save")
+                        .padding(.bottom, 22)
                 }
                 .fileExporter(
                     isPresented: $isExporting,
@@ -106,8 +107,8 @@ struct VaultDetailQRCodeView: View {
                     FilledButton(title: "saveOrShare")
                         .padding(.bottom, 10)
 #elseif os(macOS)
-                    OutlineButton(title: "share")
-                        .padding(.bottom, 10)
+                    FilledButton(title: "share")
+                        .padding(.bottom, 22)
 #endif
                 }
             } else {
