@@ -36,7 +36,7 @@ struct SwapCryptoView: View {
         }
         .navigationBarBackButtonHidden(swapViewModel.currentIndex != 1 ? true : false)
 #if os(iOS)
-        .navigationTitle(NSLocalizedString("swap", comment: "SendCryptoView title"))
+        .navigationTitle(NSLocalizedString(swapViewModel.currentTitle, comment: "SendCryptoView title"))
         .ignoresSafeArea(.keyboard)
         .toolbar {
             if swapViewModel.currentIndex != 1 {

@@ -34,7 +34,7 @@ struct VaultDetailQRCodeView: View {
     }
     
     var headerMac: some View {
-        GeneralMacHeader(title: "backup")
+        GeneralMacHeader(title: "shareVaultQR")
     }
     
     var content: some View {
