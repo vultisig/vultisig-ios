@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import BigInt
 
 struct SendCryptoView: View {
     @ObservedObject var tx: SendTransaction
@@ -194,7 +195,7 @@ struct SendCryptoView: View {
                     gasLimit: tx.gasLimit,
                     selectedMode: tx.feeMode
                 ),
-                output: tx
+                output: self
             )
         }
     }
@@ -252,6 +253,20 @@ struct SendCryptoView: View {
         sendCryptoViewModel.validateAddress(tx: tx, address: newValue)
     }
 }
+
+extension SendCryptoView: SendGasSettingsOutput {
+
+    func didSetFeeSettings(gasLimit: BigInt, mode: FeeMode) {
+        tx.customGasLimit = gasLimit
+        tx.feeMode = mode
+
+        Task {
+            await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
+        }
+    }
+}
+
+
 
 #Preview {
     SendCryptoView(

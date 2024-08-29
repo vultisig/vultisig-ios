@@ -30,7 +30,7 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var transactionType: VSTransactionType = .unspecified
 
     var gasLimit: BigInt {
-        return estematedGasLimit ?? customGasLimit ?? BigInt(EVMHelper.defaultETHTransferGasUnit)
+        return customGasLimit ?? estematedGasLimit ?? BigInt(EVMHelper.defaultETHTransferGasUnit)
     }
 
     var isAmountExceeded: Bool {
@@ -209,12 +209,3 @@ class SendTransaction: ObservableObject, Hashable {
         }
     }
 }
-
-extension SendTransaction: SendGasSettingsOutput {
-
-    func didSetFeeSettings(gasLimit: BigInt, mode: FeeMode) {
-        self.customGasLimit = gasLimit
-        self.feeMode = mode
-    }
-}
-

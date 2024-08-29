@@ -147,7 +147,7 @@ struct SendGasSettingsView: View {
         Button(action: {
             presentationMode.wrappedValue.dismiss()
         }) {
-            Image(systemName: "chevron.backward")
+            Image("x")
                 .font(.body18MenloBold)
                 .foregroundColor(Color.neutral0)
         }
