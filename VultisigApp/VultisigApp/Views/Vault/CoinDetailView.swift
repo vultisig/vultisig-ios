@@ -75,7 +75,7 @@ struct CoinDetailView: View {
     }
     
     var headerMac: some View {
-        CoinDetailHeader(title: group.name, refreshData: refreshData)
+        CoinDetailHeader(title: coin.ticker, refreshData: refreshData)
     }
     
     var view: some View {

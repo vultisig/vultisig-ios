@@ -335,4 +335,5 @@
 "errorFetchingValuesTryAgain" = "Error fetching values. Please try again.";
 "keygen" = "Keygen";
 "backupPasswordDisclaimer" = "Never store Vault Shares from different devices in the same location";
+"share" = "Share";
 "dropFileHere" = "Drop the file here...";
