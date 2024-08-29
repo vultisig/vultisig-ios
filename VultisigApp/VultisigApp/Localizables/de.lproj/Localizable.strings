@@ -310,4 +310,5 @@
 "uploadQRCodeImage" = "QR-Code-Bild hochladen";
 "errorFetchingValuesTryAgain" = "Fehler beim Abrufen der Werte. Bitte versuchen Sie es erneut.";
 "backupPasswordDisclaimer" = "Speichern Sie niemals Tresoranteile von verschiedenen Geräten am selben Ort";
+"share" = "Teilen";
 "dropFileHere" = "Datei hier ablegen...";

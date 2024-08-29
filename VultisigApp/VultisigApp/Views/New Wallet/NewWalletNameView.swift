@@ -48,7 +48,7 @@ struct NewWalletNameView: View {
     }
     
     var headerMac: some View {
-        GeneralMacHeader(title: "nameYourVault")
+        GeneralMacHeader(title: "setup")
     }
     
     var view: some View {
