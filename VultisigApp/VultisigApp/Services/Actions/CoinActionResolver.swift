@@ -21,7 +21,6 @@ final class CoinActionResolver {
         guard let config = try? await getConfig(for: chain) else {
             return chain.defaultActions
         }
-
         guard let disabled = config.disabled[chain.rawValue] else {
             return chain.defaultActions
         }
@@ -44,7 +43,7 @@ private extension CoinActionResolver {
     }
 
     private func fetchConfig() async throws -> Config {
-        let url = URL(string: "https://api.voltix.org/actions/default.json")!
+        let url = URL(string: "https://api.vultisig.com/actions/default.json")!
 
         let (jsonData, _) = try await URLSession.shared.data(from: url)
         let config = try JSONDecoder().decode(Config.self, from: jsonData)
