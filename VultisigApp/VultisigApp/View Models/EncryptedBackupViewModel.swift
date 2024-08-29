@@ -10,6 +10,7 @@ import CryptoKit
 import SwiftData
 import OSLog
 import VultisigCommonData
+import UniformTypeIdentifiers
 
 #if os(iOS)
 import UIKit
@@ -17,6 +18,7 @@ import UIKit
 import AppKit
 #endif
 
+@MainActor
 class EncryptedBackupViewModel: ObservableObject {
     @Published var showVaultExporter = false
     @Published var showVaultImporter = false
@@ -338,6 +340,65 @@ class EncryptedBackupViewModel: ObservableObject {
             }
             
         }
+        return true
+    }
+    
+    private func isValidFormat(_ url: URL) -> Bool {
+        let fileExtension = url.pathExtension.lowercased()
+        
+        if fileExtension == "dat" || fileExtension == "bak"{
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    private func showInvalidFormatAlert() {
+        alertTitle = "invalidFileFormat"
+        alertMessage = "invalidFileFormatMessage"
+        showAlert = true
+    }
+    
+    func handleFileImporter(_ result: Result<[URL], Error>) {
+        switch result {
+        case .success(let urls):
+            if let url = urls.first {
+                guard isValidFormat(url) else {
+                    showInvalidFormatAlert()
+                    return
+                }
+                
+                importedFileName = url.lastPathComponent
+                importFile(from: url)
+            }
+        case .failure(let error):
+            print("Error importing file: \(error.localizedDescription)")
+        }
+    }
+    
+    func handleOnDrop(providers: [NSItemProvider]) -> Bool {
+        guard let provider = providers.first(where: { $0.hasItemConformingToTypeIdentifier(UTType.data.identifier) }) else {
+            print("Invalid file type.")
+            return false
+        }
+
+        provider.loadInPlaceFileRepresentation(forTypeIdentifier: UTType.data.identifier) { url, success, error in
+            guard let url = url else {
+                print(error?.localizedDescription ?? "Failed to load file.")
+                return
+            }
+            
+            DispatchQueue.main.async {
+                guard self.isValidFormat(url) else {
+                    self.showInvalidFormatAlert()
+                    return
+                }
+                
+                self.importedFileName = url.lastPathComponent
+                self.importFile(from: url)
+            }
+        }
+
         return true
     }
 }
