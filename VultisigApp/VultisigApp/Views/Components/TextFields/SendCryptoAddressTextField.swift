@@ -18,56 +18,75 @@ struct SendCryptoAddressTextField: View {
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     
     @State var showScanner = false
-    @State var showImagePicker = false  // State for showing the ImagePicker
+    @State var showImagePicker = false
+    @State var isUploading: Bool = false
     
 #if os(iOS)
-    @State var selectedImage: UIImage?  // Store the selected image
+    @State var selectedImage: UIImage?
 #elseif os(macOS)
     @State var selectedImage: NSImage?
 #endif
     
     var body: some View {
-        ZStack(alignment: .trailing) {
-            if tx.toAddress.isEmpty {
-                placeholder
-            }
-            
-            field
-        }
-        .font(.body12Menlo)
-        .foregroundColor(.neutral0)
-        .frame(height: 48)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 12)
-        .background(Color.blue600)
-        .cornerRadius(10)
+        content
+            .font(.body12Menlo)
+            .foregroundColor(.neutral0)
+            .frame(height: 48)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.blue600)
+            .cornerRadius(10)
 #if os(iOS)
-        .sheet(isPresented: $showScanner) {
-            codeScanner
-        }
-        .sheet(isPresented: $showImagePicker, onDismiss: processImage) {
-            ImagePicker(selectedImage: $selectedImage)
-        }
-#elseif os(macOS)
-        .fileImporter(
-            isPresented: $showImagePicker,
-            allowedContentTypes: [UTType.image],
-            allowsMultipleSelection: false
-        ) { result in
-            do {
-                let qrCode = try Utils.handleQrCodeFromImage(result: result)
-                handleImageQrCode(data: qrCode)
-            } catch {
-                print(error)
+            .sheet(isPresented: $showScanner) {
+                codeScanner
             }
-        }
+            .sheet(isPresented: $showImagePicker, onDismiss: processImage) {
+                ImagePicker(selectedImage: $selectedImage)
+            }
+#elseif os(macOS)
+            .fileImporter(
+                isPresented: $showImagePicker,
+                allowedContentTypes: [UTType.image],
+                allowsMultipleSelection: false
+            ) { result in
+                do {
+                    let qrCode = try Utils.handleQrCodeFromImage(result: result)
+                    handleImageQrCode(data: qrCode)
+                } catch {
+                    print(error)
+                }
+            }
+            .onDrop(of: [.image], isTargeted: $isUploading) { providers -> Bool in
+                OnDropQRUtils.handleOnDrop(providers: providers, handleImageQrCode: handleImageQrCode)
+            }
 #endif
     }
     
-    var placeholder: some View {
-        Text(NSLocalizedString("enterAddress", comment: ""))
-            .foregroundColor(Color.neutral0)
-            .frame(maxWidth: .infinity, alignment: .leading)
+    var content: some View {
+        field
+            .overlay {
+                ZStack {
+                    if isUploading {
+                        overlay
+                    }
+                }
+            }
+    }
+    
+    var overlay: some View {
+        ZStack {
+            Color.turquoise600.opacity(0.2)
+                .frame(height: 48)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .cornerRadius(10)
+            
+            RoundedRectangle(cornerRadius: 10)
+                .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 1, dash: [10]))
+                .padding(5)
+            
+            Text(NSLocalizedString("dropFileHere", comment: ""))
+                .font(.body12MontserratSemiBold)
+                .foregroundColor(.neutral0)
+        }
     }
     
     var field: some View {
@@ -108,6 +127,7 @@ struct SendCryptoAddressTextField: View {
 #endif
             addressBookButton
         }
+        .padding(.horizontal, 12)
     }
     
 #if os(iOS)

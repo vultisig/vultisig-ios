@@ -312,3 +312,4 @@
 "errorFetchingValuesTryAgain" = "Erro ao buscar valores. Por favor, tente novamente.";
 "backupPasswordDisclaimer" = "Nunca armazene ações do Vault de diferentes dispositivos no mesmo local";
 "share" = "Compartilhar";
+"dropFileHere" = "Solte o arquivo aqui...";

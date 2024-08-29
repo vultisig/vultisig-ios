@@ -311,3 +311,4 @@
 "errorFetchingValuesTryAgain" = "Greška pri dohvaćanju vrijednosti. Molimo pokušajte ponovo.";
 "backupPasswordDisclaimer" = "Nikada ne pohranjujte dionice Vaulta s različitih uređaja na istom mjestu";
 "share" = "Podijeli";
+"dropFileHere" = "Ispusti datoteku ovdje...";

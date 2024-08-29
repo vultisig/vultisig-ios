@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ImportWalletUploadSection: View {
     @ObservedObject var viewModel: EncryptedBackupViewModel
+    let isUploading: Bool
     
     var body: some View {
         uploadSection
@@ -21,9 +22,13 @@ struct ImportWalletUploadSection: View {
             .background(Color.turquoise600.opacity(0.15))
             .cornerRadius(10)
             .overlay (
-                RoundedRectangle(cornerRadius: 10)
-                    .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 1, dash: [10]))
+                ZStack {
+                    getOverlay(isUploading ? 2 : 1)
+                    getOverlay(1)
+                        .padding(isUploading ? 8 : 0)
+                }
             )
+            .animation(.easeInOut, value: isUploading)
     }
     
     var section: some View {
@@ -44,9 +49,10 @@ struct ImportWalletUploadSection: View {
     }
     
     var uploadText: some View {
-        Text(NSLocalizedString("uploadBackupFile", comment: "Upload backup file"))
+        Text(NSLocalizedString(isUploading ? "dropFileHere" : "uploadBackupFile", comment: "Upload backup file"))
             .font(.body12MontserratSemiBold)
             .foregroundColor(.neutral0)
+            .animation(.none, value: isUploading)
     }
     
     private func textFile(for text: String) -> some View {
@@ -55,8 +61,13 @@ struct ImportWalletUploadSection: View {
             .foregroundColor(.neutral0)
             .padding(12)
     }
+    
+    private func getOverlay(_ lineWidth: CGFloat) -> some View {
+        RoundedRectangle(cornerRadius: 10)
+            .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: lineWidth, dash: [10]))
+    }
 }
 
 #Preview {
-    ImportWalletUploadSection(viewModel: EncryptedBackupViewModel())
+    ImportWalletUploadSection(viewModel: EncryptedBackupViewModel(), isUploading: false)
 }
