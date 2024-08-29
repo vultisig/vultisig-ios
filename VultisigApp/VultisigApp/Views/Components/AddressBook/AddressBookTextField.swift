@@ -19,6 +19,8 @@ struct AddressBookTextField: View {
     @State var showScanner = false
     @State var showImagePicker = false
     
+    @State var isUploading: Bool = false
+    
 #if os(iOS)
     @State var selectedImage: UIImage?  // Store the selected image
 #elseif os(macOS)
@@ -28,12 +30,16 @@ struct AddressBookTextField: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             titleContent
-            textField
+            content
         }
         .frame(maxWidth: .infinity, alignment: .leading)
 #if os(iOS)
         .sheet(isPresented: $showScanner) {
             codeScanner
+        }
+#elseif os(macOS)
+        .onDrop(of: [.image], isTargeted: $isUploading) { providers -> Bool in
+            OnDropQRUtils.handleOnDrop(providers: providers, handleImageQrCode: handleImageQrCode)
         }
 #endif
         .fileImporter(
@@ -47,6 +53,34 @@ struct AddressBookTextField: View {
             } catch {
                 print(error)
             }
+        }
+    }
+    
+    var content: some View {
+        textField
+            .overlay {
+                ZStack {
+                    if isUploading {
+                        overlay
+                    }
+                }
+            }
+    }
+    
+    var overlay: some View {
+        ZStack {
+            Color.turquoise600.opacity(0.2)
+                .frame(height: 48)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .cornerRadius(10)
+            
+            RoundedRectangle(cornerRadius: 10)
+                .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 1, dash: [10]))
+                .padding(5)
+            
+            Text(NSLocalizedString("dropFileHere", comment: ""))
+                .font(.body12MontserratSemiBold)
+                .foregroundColor(.neutral0)
         }
     }
     
