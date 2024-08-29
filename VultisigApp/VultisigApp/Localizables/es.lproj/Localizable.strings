@@ -310,3 +310,4 @@
 "uploadQRCodeImage" = "Subir imagen del código QR";
 "errorFetchingValuesTryAgain" = "Error al obtener valores. Por favor, inténtalo de nuevo.";
 "backupPasswordDisclaimer" = "Nunca almacene las partes del Vault de diferentes dispositivos en la misma ubicación";
+"share" = "Compartir";
