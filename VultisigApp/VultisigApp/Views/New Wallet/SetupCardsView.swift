@@ -11,7 +11,6 @@ import SwiftData
 struct SetupCardsView: View {
     let tssType: TssType
     @State var vault: Vault? = nil
-    @State var showSheet = false
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
     @State var shouldSendCrypto = false
@@ -66,19 +65,6 @@ struct SetupCardsView: View {
             pairingDeviceCard
         }
         .padding(16)
-        
-#if os(iOS)
-        .sheet(isPresented: $showSheet, content: {
-            GeneralCodeScannerView(
-                showSheet: $showSheet,
-                shouldJoinKeygen: $shouldJoinKeygen,
-                shouldKeysignTransaction: $shouldKeysignTransaction, 
-                shouldSendCrypto: $shouldSendCrypto,
-                selectedChain: $selectedChain,
-                sendTX: sendTx
-            )
-        })
-#endif
         .navigationDestination(isPresented: $shouldJoinKeygen) {
             JoinKeygenView(vault: Vault(name: getUniqueVaultName()))
         }
