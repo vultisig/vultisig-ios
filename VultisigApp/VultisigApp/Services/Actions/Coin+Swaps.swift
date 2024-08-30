@@ -28,9 +28,9 @@ extension Coin {
             return [.mayachain]
         case .ethereum:
             if thorEthTokens.contains(ticker) {
-                return [.thorchain, .oneinch(chain), .lifi]
+                return [.thorchain, .oneinch(chain), .lifi, .mayachain]
             } else {
-                return [.oneinch(chain), .lifi]
+                return [.oneinch(chain), .lifi, .mayachain]
             }
         case .bscChain:
             if thorBscTokens.contains(ticker) {
