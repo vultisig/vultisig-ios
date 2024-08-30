@@ -4,7 +4,7 @@
 //
 //  Created by Amol Kumar on 2024-08-30.
 //
-
+#if os(iOS)
 import SwiftUI
 
 struct PhoneScannerView: View {
@@ -54,3 +54,4 @@ struct PhoneScannerView: View {
         selectedChain: .constant(nil)
     )
 }
+#endif

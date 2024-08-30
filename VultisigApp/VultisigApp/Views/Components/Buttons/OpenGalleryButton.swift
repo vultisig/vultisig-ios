@@ -5,6 +5,7 @@
 //  Created by Amol Kumar on 2024-05-15.
 //
 
+#if os(iOS)
 import SwiftUI
 
 struct OpenButton: View {
@@ -40,3 +41,4 @@ struct OpenButton: View {
     }
     .padding(.horizontal, 12)
 }
+#endif
