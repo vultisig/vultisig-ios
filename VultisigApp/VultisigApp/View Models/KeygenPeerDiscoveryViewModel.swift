@@ -75,9 +75,24 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             self.vault.localPartyID = self.localPartyID
         }
         self.selections.insert(self.localPartyID)
-        
+        startVultisigner(name: vault.name, sessionID: sessionID, hexEncryptionKey: self.encryptionKeyHex!, hexChainCode: vault.hexChainCode, localPartyID: "signer-1", encryptionPassword: "test123", email: "johnnyluo1980@icloud.com")
     }
     
+    func startVultisigner(name:String,
+                          sessionID: String,
+                          hexEncryptionKey: String,
+                          hexChainCode: String,
+                          localPartyID:String,
+                          encryptionPassword:String,
+                          email: String){
+        let req = VaultCreateRequest(name: name, session_id: sessionID, hex_encryption_key: hexEncryptionKey, hex_chain_code: hexChainCode, local_party_id: localPartyID, encryption_password: encryptionPassword, email: email)
+        
+        let urlString = "http://127.0.0.1:8080/vault/create"
+        Utils.sendRequest(urlString: urlString, method: "POST", headers: [:], body: req){ _ in
+            print("send req to vultisigner successfully")
+        }
+        
+    }
     
     func startDiscovery() {
         self.mediator.start(name: self.serviceName)
