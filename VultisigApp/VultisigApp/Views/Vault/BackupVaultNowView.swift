@@ -19,7 +19,7 @@ struct BackupVaultNowView: View {
     }
     
     var view: some View {
-        VStack(spacing: 36) {
+        VStack(spacing: 22) {
             title
             image
             disclaimer
@@ -83,4 +83,5 @@ struct BackupVaultNowView: View {
 
 #Preview {
     BackupVaultNowView(vault: Vault.example)
+        .frame(height: 600)
 }

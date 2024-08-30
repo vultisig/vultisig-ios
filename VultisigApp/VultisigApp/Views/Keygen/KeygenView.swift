@@ -37,9 +37,7 @@ struct KeygenView: View {
     
     var body: some View {
         VStack {
-            Spacer()
             content
-            Spacer()
             instructions
             appVersion
         }
@@ -112,6 +110,7 @@ struct KeygenView: View {
 #elseif os(macOS)
         KeygenViewInstructionsMac()
             .padding(.bottom, 30)
+            .padding(.vertical, 50)
 #endif
     }
     
@@ -257,4 +256,5 @@ struct KeygenView: View {
         )
         .environmentObject(SettingsDefaultChainViewModel())
     }
+    .frame(height: 1000)
 }

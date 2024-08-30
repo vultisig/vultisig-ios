@@ -23,7 +23,7 @@ struct KeygenViewInstructionsMac: View {
             
             controls
         }
-        .frame(maxHeight: .infinity)
+        .frame(maxWidth: .infinity)
         .foregroundColor(.blue)
     }
     
