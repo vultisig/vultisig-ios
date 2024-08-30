@@ -20,7 +20,7 @@ struct GeneralCodeScannerView: View {
     let sendTX: SendTransaction
     var showButtons: Bool = true
     
-    @State var isGalleryPresented = true
+    @State var isGalleryPresented = false
     @State var isFilePresented = false
     
     @Query var vaults: [Vault]

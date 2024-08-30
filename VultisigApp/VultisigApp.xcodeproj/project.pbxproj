@@ -251,7 +251,6 @@
 		A6AF96122C2E3D6100992578 /* ImportFileCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6AF96112C2E3D6100992578 /* ImportFileCell.swift */; };
 		A6AF96142C2E545800992578 /* UtilsQrCodeFromImageError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6AF96132C2E545800992578 /* UtilsQrCodeFromImageError.swift */; };
 		A6B51BE92C098DAE007FDD3C /* OnFirstAppear.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B51BE82C098DAE007FDD3C /* OnFirstAppear.swift */; };
-		A6B6309F2C824FB600AA8193 /* PhoneScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B6309E2C824FB600AA8193 /* PhoneScannerView.swift */; };
 		A6B7F48C2C47A077006D83D1 /* InformationNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B7F48B2C47A077006D83D1 /* InformationNote.swift */; };
 		A6B7F4962C493DD9006D83D1 /* NavigationQRCodeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B7F4952C493DD9006D83D1 /* NavigationQRCodeButton.swift */; };
 		A6B7F4982C49402F006D83D1 /* VaultDetailQRCodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6B7F4972C49402F006D83D1 /* VaultDetailQRCodeView.swift */; };
@@ -714,7 +713,6 @@
 		A6AF96112C2E3D6100992578 /* ImportFileCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportFileCell.swift; sourceTree = "<group>"; };
 		A6AF96132C2E545800992578 /* UtilsQrCodeFromImageError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilsQrCodeFromImageError.swift; sourceTree = "<group>"; };
 		A6B51BE82C098DAE007FDD3C /* OnFirstAppear.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnFirstAppear.swift; sourceTree = "<group>"; };
-		A6B6309E2C824FB600AA8193 /* PhoneScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneScannerView.swift; sourceTree = "<group>"; };
 		A6B7F48B2C47A077006D83D1 /* InformationNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InformationNote.swift; sourceTree = "<group>"; };
 		A6B7F4952C493DD9006D83D1 /* NavigationQRCodeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationQRCodeButton.swift; sourceTree = "<group>"; };
 		A6B7F4972C49402F006D83D1 /* VaultDetailQRCodeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailQRCodeView.swift; sourceTree = "<group>"; };
@@ -1718,7 +1716,6 @@
 				A6980C222BC0834E00F452AB /* Settings */,
 				A6966D1C2BA3DD9900903CA4 /* Onboarding */,
 				049BBB4E2B71E37B004C231F /* Components */,
-				A6B6309E2C824FB600AA8193 /* PhoneScannerView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -2413,7 +2410,6 @@
 				DE8AD74C2BC8E3FE00339775 /* KeygenVerify.swift in Sources */,
 				A6A41CAE2C63512D00C6858D /* ShareSheetViewController.swift in Sources */,
 				A53287B52C4DB874009FD3D3 /* CoinPickerView.swift in Sources */,
-				A6B6309F2C824FB600AA8193 /* PhoneScannerView.swift in Sources */,
 				A60CA7EB2BB1020900FDEB5C /* DetectOrientation.swift in Sources */,
 				B5C4A42C2C62EC6500AF9B8B /* AddressService.swift in Sources */,
 				D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */,
