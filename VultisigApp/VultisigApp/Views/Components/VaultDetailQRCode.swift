@@ -13,14 +13,14 @@ struct VaultDetailQRCode: View {
     @StateObject var viewModel = VaultDetailQRCodeViewModel()
     
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 8) {
             qrCodeContent
             name
             ECDSAKey
             EdDSAKey
         }
-        .padding(22)
-        .frame(width: 320, height: 460)
+        .padding(16)
+        .frame(width: 278, height: 400)
         .background(LinearGradient.primaryGradientLinear)
         .cornerRadius(25)
     }
@@ -35,7 +35,7 @@ struct VaultDetailQRCode: View {
     var qrCode: some View {
         getQRCode(vault: vault)
             .resizable()
-            .frame(width: 240, height: 240)
+            .frame(width: 200, height: 200)
             .scaledToFit()
             .padding(3)
             .cornerRadius(10)
@@ -69,7 +69,7 @@ struct VaultDetailQRCode: View {
                 .multilineTextAlignment(.center)
             
             Text(vault.pubKeyECDSA)
-                .font(.body12MontserratSemiBold)
+                .font(.body10MontserratSemiBold)
                 .foregroundColor(.neutral0)
                 .lineLimit(3)
                 .multilineTextAlignment(.center)
@@ -86,7 +86,7 @@ struct VaultDetailQRCode: View {
                 .multilineTextAlignment(.center)
             
             Text(vault.pubKeyEdDSA)
-                .font(.body12MontserratSemiBold)
+                .font(.body10MontserratSemiBold)
                 .foregroundColor(.neutral0)
                 .lineLimit(3)
                 .multilineTextAlignment(.center)

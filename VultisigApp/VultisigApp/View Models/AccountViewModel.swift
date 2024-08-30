@@ -25,7 +25,6 @@ class AccountViewModel: ObservableObject {
         let context = LAContext()
         var error: NSError?
 
-#if os(iOS)
         if context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
             authenticate(context)
         } else {
@@ -34,12 +33,6 @@ class AccountViewModel: ObservableObject {
             showSplashView = false
             didUserCancelAuthentication = false
         }
-#elseif os(macOS)
-        isAuthenticationEnabled = false
-        isAuthenticated = false
-        showSplashView = false
-        didUserCancelAuthentication = false
-#endif
     }
     
     private func authenticate(_ context: LAContext) {
