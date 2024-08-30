@@ -26,10 +26,12 @@ struct SendGasSettingsView: View {
                 Background()
                 view
             }
-            .navigationBarItems(leading: backButton, trailing: saveButton)
             .navigationTitle("Advanced")
+#if os(iOS)
+            .navigationBarItems(leading: backButton, trailing: saveButton)
             .navigationBarTitleTextColor(.neutral0)
             .navigationBarTitleDisplayMode(.inline)
+#endif
         }
         .task {
             try? await viewModel.fetch(chain: viewModel.chain)
@@ -106,8 +108,12 @@ struct SendGasSettingsView: View {
                     .submitLabel(.next)
                     .disableAutocorrection(true)
                     .textFieldStyle(TappableTextFieldStyle())
+#if os(iOS)
                     .textInputAutocapitalization(.never)
                     .keyboardType(.decimalPad)
+#elseif os(macOS)
+                    .colorScheme(.dark)
+#endif
                     .textContentType(.oneTimeCode)
                     .disabled(disabled)
 
