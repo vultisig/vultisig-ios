@@ -17,53 +17,46 @@ struct SendCryptoAmountTextField: View {
     @Environment(\.isEnabled) private var isEnabled
     
     var body: some View {
-        ZStack(alignment: .trailing) {
-            if amount.isEmpty {
-                Text(NSLocalizedString("enterAmount", comment: ""))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            
-            HStack(spacing: 0) {
-                TextField(NSLocalizedString("enterAmount", comment: "").capitalized, text: Binding<String>(
-                    get: { amount },
-                    set: {
-                        let newValue = $0.formatCurrency()
-                        
-                        guard amount != newValue else { return }
-                        amount = newValue
-                        
-                        DebounceHelper.shared.debounce {
-                            Task { await onChange(newValue) }
-                        }
+        HStack(spacing: 0) {
+            TextField(NSLocalizedString("enterAmount", comment: "").capitalized, text: Binding<String>(
+                get: { amount },
+                set: {
+                    let newValue = $0.formatCurrency()
+                    
+                    guard amount != newValue else { return }
+                    amount = newValue
+                    
+                    DebounceHelper.shared.debounce {
+                        Task { await onChange(newValue) }
                     }
-                ))
-                .borderlessTextFieldStyle()
-                .submitLabel(.next)
-                .disableAutocorrection(true)
-                .textFieldStyle(TappableTextFieldStyle())
-                .foregroundColor(isEnabled ? .neutral0 : .neutral300)
-                .maxLength(Binding<String>(
-                    get: { amount },
-                    set: {
-                        let newValue = $0.formatCurrency()
-                        
-                        guard amount != newValue else { return }
-                        amount = newValue
-                        
-                        DebounceHelper.shared.debounce {
-                            Task { await onChange(newValue) }
-                        }
-                    }
-                ))
-#if os(iOS)
-                .textInputAutocapitalization(.never)
-                .keyboardType(.decimalPad)
-                .textContentType(.oneTimeCode)
-#endif
-                
-                if showButton {
-                    maxButton
                 }
+            ))
+            .borderlessTextFieldStyle()
+            .submitLabel(.next)
+            .disableAutocorrection(true)
+            .textFieldStyle(TappableTextFieldStyle())
+            .foregroundColor(isEnabled ? .neutral0 : .neutral300)
+            .maxLength(Binding<String>(
+                get: { amount },
+                set: {
+                    let newValue = $0.formatCurrency()
+                    
+                    guard amount != newValue else { return }
+                    amount = newValue
+                    
+                    DebounceHelper.shared.debounce {
+                        Task { await onChange(newValue) }
+                    }
+                }
+            ))
+#if os(iOS)
+            .textInputAutocapitalization(.never)
+            .keyboardType(.decimalPad)
+            .textContentType(.oneTimeCode)
+#endif
+            
+            if showButton {
+                maxButton
             }
         }
         .font(.body12Menlo)
