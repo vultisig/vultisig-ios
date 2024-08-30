@@ -36,6 +36,7 @@ struct SetupCardsView: View {
                 NavigationHelpButton()
             }
         }
+        .toolbarBackground(Color.backgroundBlue)
         .onAppear {
             setData()
         }
@@ -117,19 +118,21 @@ struct SetupCardsView: View {
     }
     
     var pairingDeviceCard: some View {
-#if os(iOS)
-        Button {
-            showSheet = true
-        } label: {
-            pairingDeviceLabel
-        }
-#elseif os(macOS)
         NavigationLink {
+#if os(iOS)
+            PhoneScannerView(
+                sendTx: sendTx,
+                shouldJoinKeygen: $shouldJoinKeygen,
+                shouldKeysignTransaction: $shouldKeysignTransaction,
+                shouldSendCrypto: $shouldSendCrypto,
+                selectedChain: $selectedChain
+            )
+#elseif os(macOS)
             MacScannerView(type: .NewVault, sendTx: sendTx)
+#endif
         } label: {
             pairingDeviceLabel
         }
-#endif
     }
     
     var pairingDeviceLabel: some View {

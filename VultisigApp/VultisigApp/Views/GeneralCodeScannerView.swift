@@ -18,8 +18,9 @@ struct GeneralCodeScannerView: View {
     @Binding var shouldSendCrypto: Bool
     @Binding var selectedChain: Chain?
     let sendTX: SendTransaction
+    var showButtons: Bool = true
     
-    @State var isGalleryPresented = false
+    @State var isGalleryPresented = true
     @State var isFilePresented = false
     
     @Query var vaults: [Vault]
@@ -29,7 +30,7 @@ struct GeneralCodeScannerView: View {
     @EnvironmentObject var viewModel: HomeViewModel
     
     var body: some View {
-        ZStack(alignment: .bottom) {
+        ZStack {
             CodeScannerView(
                 codeTypes: [.qr],
                 isGalleryPresented: $isGalleryPresented,
@@ -37,12 +38,10 @@ struct GeneralCodeScannerView: View {
                 completion: handleScan
             )
             
-            HStack(spacing: 0) {
-                galleryButton
-                    .frame(maxWidth: .infinity)
-
-                fileButton
-                    .frame(maxWidth: .infinity)
+            overlay
+            
+            if showButtons {
+                buttonsStack
             }
         }
         .ignoresSafeArea()
@@ -66,13 +65,39 @@ struct GeneralCodeScannerView: View {
         }
     }
     
+    var overlay: some View {
+        Image("QRScannerOutline")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .padding(60)
+            .offset(y: -50)
+    }
+    
+    var buttonsStack: some View {
+        VStack {
+            Spacer()
+            buttons
+        }
+    }
+    
+    var buttons: some View {
+        HStack(spacing: 0) {
+            galleryButton
+                .frame(maxWidth: .infinity)
+
+            fileButton
+                .frame(maxWidth: .infinity)
+        }
+        .padding(.horizontal, 12)
+        .padding(.bottom, 50)
+    }
+    
     var galleryButton: some View {
         Button {
             isGalleryPresented.toggle()
         } label: {
             OpenButton(buttonIcon: "photo.stack", buttonLabel: "uploadFromGallery")
         }
-        .padding(.bottom, 50)
     }
     
     var fileButton: some View {
@@ -81,7 +106,6 @@ struct GeneralCodeScannerView: View {
         } label: {
             OpenButton(buttonIcon: "folder", buttonLabel: "uploadFromFiles")
         }
-        .padding(.bottom, 50)
     }
     
     private func handleScan(result: Result<ScanResult, ScanError>) {
