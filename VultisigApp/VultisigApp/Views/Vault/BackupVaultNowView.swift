@@ -24,9 +24,7 @@ struct BackupVaultNowView: View {
             image
             disclaimer
             description
-#if os(iOS)
             Spacer()
-#endif
             buttons
         }
         .font(.body14MontserratMedium)

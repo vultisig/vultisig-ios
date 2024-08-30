@@ -25,6 +25,10 @@ struct KeygenView: View {
     @StateObject var viewModel = KeygenViewModel()
     
     let progressTotalCount: Double = 4
+    let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+#if os(iOS)
+    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+#endif
     
     @State var progressCounter: Double = 0
     @State var showProgressRing = true
@@ -37,6 +41,7 @@ struct KeygenView: View {
             content
             Spacer()
             instructions
+            appVersion
         }
         .navigationTitle(NSLocalizedString("joinKeygen", comment: ""))
         .navigationDestination(isPresented: $viewModel.isLinkActive) {
@@ -106,6 +111,18 @@ struct KeygenView: View {
             .padding(.bottom, 30)
 #elseif os(macOS)
         KeygenViewInstructionsMac()
+            .padding(.bottom, 30)
+#endif
+    }
+    
+    var appVersion: some View {
+        Text("Vultisig APP V\(version ?? "1")")
+            .textCase(.uppercase)
+            .font(.body14Menlo)
+            .foregroundColor(.turquoise600)
+#if os(iOS)
+            .padding(.bottom, idiom == .pad ? 30 : 0)
+#elseif os(macOS)
             .padding(.bottom, 30)
 #endif
     }

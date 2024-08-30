@@ -68,7 +68,7 @@ struct KeygenViewInstructionsMac: View {
             getDescription(for: index)
         }
         .tag(index)
-        .frame(maxWidth: 280)
+        .frame(maxWidth: 420)
         .opacity(index==tabIndex ? 1 : 0)
     }
     
@@ -82,13 +82,13 @@ struct KeygenViewInstructionsMac: View {
         Group {
             Text(NSLocalizedString("keygenInstructionsCar\(index+1)DescriptionPart1", comment: ""))
                 .foregroundColor(.neutral0)
-                .font(.body14MontserratSemiBold) +
+                .font(.body12MontserratSemiBold) +
             Text(NSLocalizedString("keygenInstructionsCar\(index+1)DescriptionPart2", comment: ""))
                 .foregroundColor(.turquoise400)
-                .font(.body14MontserratSemiBold) +
+                .font(.body12MontserratSemiBold) +
             Text(NSLocalizedString("keygenInstructionsCar\(index+1)DescriptionPart3", comment: ""))
                 .foregroundColor(.neutral0)
-                .font(.body14MontserratSemiBold)
+                .font(.body12MontserratSemiBold)
         }
         .multilineTextAlignment(.center)
     }
