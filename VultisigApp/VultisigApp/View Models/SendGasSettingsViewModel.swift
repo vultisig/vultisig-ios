@@ -10,24 +10,55 @@ import BigInt
 
 final class SendGasSettingsViewModel: ObservableObject {
 
+    private let coin: Coin
+
     @Published var gasLimit: String = .empty
     @Published var baseFee: String = .empty
-    @Published var totalFee: String = .empty
+    @Published var priorityFeesMap: [FeeMode: BigInt] = [:]
     @Published var selectedMode: FeeMode = .normal
 
-    init(gasLimit: String, baseFee: String, totalFee: String, selectedMode: FeeMode) {
+    init(coin: Coin, gasLimit: String, baseFee: String, selectedMode: FeeMode) {
+        self.coin = coin
         self.gasLimit = gasLimit
         self.baseFee = baseFee
-        self.totalFee = totalFee
         self.selectedMode = selectedMode
     }
 
-    init(gasLimit: BigInt, selectedMode: FeeMode) {
+    init(coin: Coin, gasLimit: BigInt, selectedMode: FeeMode) {
+        self.coin = coin
         self.gasLimit = gasLimit.description
+        self.baseFee = baseFee.description
         self.selectedMode = selectedMode
+    }
+
+    var chain: Chain {
+        return coin.chain
+    }
+
+    var totalFee: String {
+        let multiplier: Decimal = 1.5 // Fee multiplier from BlockchainService
+        let gasLimit = Decimal(string: gasLimit) ?? .zero
+        let baseFeeGwei = Decimal(string: baseFee) ?? .zero * multiplier
+        let baseFeeWei = baseFeeGwei * Decimal(EVMHelper.weiPerGWei)
+        let priorityFee = Decimal(priorityFeesMap[selectedMode] ?? .zero)
+        let totalFee = gasLimit * (baseFeeWei + priorityFee)
+        let totalFeeGwei = totalFee / Decimal(EVMHelper.weiPerGWei)
+        return totalFeeGwei.description
     }
 
     var totalFeeFiat: String {
-        return "$3.4"
+        let totalFeeGwei = Decimal(string: totalFee) ?? .zero
+        let totalFeeWei = totalFeeGwei * Decimal(EVMHelper.weiPerGWei)
+        let totalFee = coin.decimal(for: BigInt(stringLiteral: totalFeeWei.description))
+        return RateProvider.shared.fiatBalanceString(value: totalFee, coin: coin)
+    }
+
+    @MainActor func fetch(chain: Chain) async throws {
+        let service = try EvmServiceFactory.getService(forChain: chain)
+        let baseFeeWei = try await service.getBaseFee()
+        let baseFeeGwei = Decimal(baseFeeWei) / Decimal(EVMHelper.weiPerGWei)
+
+        baseFee = baseFeeGwei.description
+        priorityFeesMap = try await service.fetchMaxPriorityFeesPerGas()
     }
 }

@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum FeeMode: CaseIterable {
+enum FeeMode: CaseIterable, Hashable {
     case safeLow
     case normal
     case fast

@@ -31,6 +31,9 @@ struct SendGasSettingsView: View {
             .navigationBarTitleTextColor(.neutral0)
             .navigationBarTitleDisplayMode(.inline)
         }
+        .task {
+            try? await viewModel.fetch(chain: viewModel.chain)
+        }
     }
 
     var view: some View {
@@ -48,7 +51,7 @@ struct SendGasSettingsView: View {
     var baseFeeRow: some View {
         VStack {
             title(text: "Current Base Fee (Gwei)")
-            textField(title: "Base Fee", text: $viewModel.baseFee)
+            textField(title: "Base Fee", text: $viewModel.baseFee, disabled: true)
         }
     }
 
@@ -76,7 +79,7 @@ struct SendGasSettingsView: View {
     var totalFeeRow: some View {
         VStack {
             title(text: "Total Fee (Gwei)")
-            textField(title: "Total Fee", text: $viewModel.totalFee, label: viewModel.totalFeeFiat)
+            textField(title: "Total Fee", text: .constant(viewModel.totalFee), label: viewModel.totalFeeFiat)
         }
     }
 
@@ -92,12 +95,12 @@ struct SendGasSettingsView: View {
         .padding(.horizontal, 16)
     }
 
-    func textField(title: String, text: Binding<String>, label: String? = nil) -> some View {
+    func textField(title: String, text: Binding<String>, label: String? = nil, disabled: Bool = false) -> some View {
         VStack {
             HStack {
                 TextField("", text: text, prompt: Text(title).foregroundColor(.neutral300))
                     .borderlessTextFieldStyle()
-                    .foregroundColor(.neutral0)
+                    .foregroundColor(disabled ? .neutral300 : .neutral0)
                     .tint(.neutral0)
                     .font(.body16Menlo)
                     .submitLabel(.next)
@@ -106,6 +109,7 @@ struct SendGasSettingsView: View {
                     .textInputAutocapitalization(.never)
                     .keyboardType(.decimalPad)
                     .textContentType(.oneTimeCode)
+                    .disabled(disabled)
 
                 if let label {
                     Text(label)
@@ -172,6 +176,6 @@ struct SendGasSettingsView: View {
     struct Output: SendGasSettingsOutput {
         func didSetFeeSettings(gasLimit: BigInt, mode: FeeMode) { }
     }
-    let viewModel = SendGasSettingsViewModel(gasLimit: "21000", baseFee: "6.559000", totalFee: "11.25", selectedMode: .normal)
+    let viewModel = SendGasSettingsViewModel(coin: .example, gasLimit: "21000", baseFee: "6.559000", selectedMode: .normal)
     return SendGasSettingsView(viewModel: viewModel, output: Output())
 }

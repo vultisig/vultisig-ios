@@ -10,7 +10,11 @@ import BigInt
 import VultisigCommonData
 
 final class BlockChainService {
-    
+
+    static func normalizeFee(_ value: BigInt, action: Action) -> BigInt {
+        return value + value / 2 // x1.5 fee
+    }
+
     enum Action {
         case transfer
         case swap
@@ -55,7 +59,7 @@ final class BlockChainService {
         }
 
         let service = try EvmServiceFactory.getService(forChain: tx.coin.chain)
-        let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(fromAddress: tx.coin.address)
+        let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(fromAddress: tx.coin.address, mode: tx.feeMode)
         let estimateGasLimit = try await estemateERC20GasLimit(tx: tx, gasPrice: gasPrice, priorityFee: priorityFee, nonce: nonce)
         let defaultGasLimit = BigInt(EVMHelper.defaultERC20TransferGasUnit)
         let gasLimit = max(defaultGasLimit, estimateGasLimit)
@@ -98,7 +102,7 @@ private extension BlockChainService {
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             let sats = try await utxo.fetchSatsPrice(coin: coin)
-            let normalized = normalize(sats, action: action)
+            let normalized = Self.normalizeFee(sats, action: action)
             return .UTXO(byteFee: normalized, sendMaxAmount: sendMaxAmount)
 
         case .thorChain:
@@ -157,10 +161,12 @@ private extension BlockChainService {
 
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain:
             let service = try EvmServiceFactory.getService(forChain: coin.chain)
-            let (gasPrice, priorityFee, nonce) = try await service.getGasInfo(fromAddress: coin.address)
+            let baseFee = try await service.getBaseFee()
+            let (_, priorityFee, nonce) = try await service.getGasInfo(fromAddress: coin.address, mode: feeMode)
             let gasLimit = gasLimit ?? normalizeGasLimit(coin: coin, action: action)
-            let normalizedGasPrice = normalize(gasPrice, action: action)
-            return .Ethereum(maxFeePerGasWei: normalizedGasPrice, priorityFeeWei: normalizePriorityFee(priorityFee,coin.chain), nonce: nonce, gasLimit: gasLimit)
+            let normalizedBaseFee = Self.normalizeFee(baseFee, action: action)
+            let maxFeePerGasWei = normalizedBaseFee + priorityFee
+            return .Ethereum(maxFeePerGasWei: maxFeePerGasWei, priorityFeeWei: normalizePriorityFee(priorityFee,coin.chain), nonce: nonce, gasLimit: gasLimit)
 
         case .zksync:
             let service = try EvmServiceFactory.getService(forChain: coin.chain)
@@ -223,11 +229,6 @@ private extension BlockChainService {
             }
         }
         return value
-    }
-
-    func normalize(_ value: BigInt, action: Action) -> BigInt {
-        // let's do 1.5x regardless swap of send
-        return value + value / 2 // x1.5 fee for swaps
     }
 
     func estemateERC20GasLimit(

@@ -30,35 +30,37 @@ class RpcEvmService: RpcService {
         }
     }
     
-    func getGasInfo(fromAddress: String) async throws -> (gasPrice: BigInt, priorityFee: BigInt, nonce: Int64) {
+    func getGasInfo(fromAddress: String, mode: FeeMode) async throws -> (gasPrice: BigInt, priorityFee: BigInt, nonce: Int64) {
         async let gasPrice = fetchGasPrice()
         async let nonce = fetchNonce(address: fromAddress)
-        async let priorityFee = fetchMaxPriorityFeePerGas(mode: .normal)
-        
+        async let priorityFeeMap = fetchMaxPriorityFeesPerGas()
+
         let gasPriceValue = try await gasPrice
-        let priorityFeeValue = try await priorityFee
-        
-        return (gasPriceValue, priorityFeeValue, Int64(try await nonce))
+        let priorityFeeMapValue = try await priorityFeeMap
+        let nonceValue = try await nonce
+
+        let priorityFee = priorityFeeMapValue[mode] ?? .zero
+
+        return (gasPriceValue, priorityFee, Int64(nonceValue))
     }
 
-    func fetchMaxPriorityFeePerGas(mode: FeeMode) async throws -> BigInt {
+    func fetchMaxPriorityFeesPerGas() async throws -> [FeeMode: BigInt] {
         let history = try await getFeeHistory()
 
+        func priorityFeesMap(low: BigInt, normal: BigInt, fast: BigInt) -> [FeeMode: BigInt] {
+            return [.safeLow: low, .normal: normal, .fast: fast]
+        }
+
         guard history.count > 0 else {
-            return try await fetchMaxPriorityFeePerGas()
+            let value = try await fetchMaxPriorityFeePerGas()
+            return priorityFeesMap(low: value, normal: value, fast: value)
         }
 
-        let maxPriorityFeePerGas: BigInt
-        switch mode {
-        case .safeLow:
-            maxPriorityFeePerGas = history[0]
-        case .normal:
-            maxPriorityFeePerGas = history[history.count / 2]
-        case .fast:
-            maxPriorityFeePerGas = history[history.count - 1]
-        }
+        let low = history[0]
+        let normal = history[history.count / 2]
+        let fast = history[history.count - 1]
 
-        return maxPriorityFeePerGas
+        return priorityFeesMap(low: low, normal: normal, fast: fast)
     }
 
     func getFeeHistory() async throws -> [BigInt] {
@@ -83,11 +85,12 @@ class RpcEvmService: RpcService {
         return try await sendRPCRequest(method: "eth_getBlockByNumber", params: ["latest", true]) { result in
             guard
                 let result = result as? [String: Any],
-                let baseFeeString = result["baseFeePerGas"] as? String else {
+                let baseFeeString = result["baseFeePerGas"] as? String,
+                let baseFee = BigInt(baseFeeString.stripHexPrefix(), radix: 16) else {
                 throw RpcEvmServiceError.rpcError(code: -1, message: "Invalid response from eth_getBlockByNumber")
             }
 
-            return BigInt(stringLiteral: baseFeeString)
+            return baseFee
         }
     }
 
