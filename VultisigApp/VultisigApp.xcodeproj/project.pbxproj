@@ -193,6 +193,7 @@
 		A6725D3E2C3FB61900D47716 /* AddressBookItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6725D3D2C3FB61900D47716 /* AddressBookItem.swift */; };
 		A6725D412C40C3C100D47716 /* AddressBookChainSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6725D402C40C3C100D47716 /* AddressBookChainSelector.swift */; };
 		A6725D432C40C45800D47716 /* AddressBookCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6725D422C40C45800D47716 /* AddressBookCell.swift */; };
+		A679D2A02C81951100FFCDA1 /* KeyboardObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A679D29F2C81951100FFCDA1 /* KeyboardObserver.swift */; };
 		A67AA1C42C64715000D06C7E /* ChainDetailHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67AA1C32C64715000D06C7E /* ChainDetailHeader.swift */; };
 		A67AA1C62C64784F00D06C7E /* CoinDetailHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67AA1C52C64784F00D06C7E /* CoinDetailHeader.swift */; };
 		A67F4C5F2BE313220086ED09 /* ActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67F4C5E2BE313220086ED09 /* ActionButton.swift */; };
@@ -654,6 +655,7 @@
 		A6725D3D2C3FB61900D47716 /* AddressBookItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookItem.swift; sourceTree = "<group>"; };
 		A6725D402C40C3C100D47716 /* AddressBookChainSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookChainSelector.swift; sourceTree = "<group>"; };
 		A6725D422C40C45800D47716 /* AddressBookCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookCell.swift; sourceTree = "<group>"; };
+		A679D29F2C81951100FFCDA1 /* KeyboardObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardObserver.swift; sourceTree = "<group>"; };
 		A67AA1C32C64715000D06C7E /* ChainDetailHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailHeader.swift; sourceTree = "<group>"; };
 		A67AA1C52C64784F00D06C7E /* CoinDetailHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinDetailHeader.swift; sourceTree = "<group>"; };
 		A67F4C5E2BE313220086ED09 /* ActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionButton.swift; sourceTree = "<group>"; };
@@ -1865,6 +1867,7 @@
 				A6AF96132C2E545800992578 /* UtilsQrCodeFromImageError.swift */,
 				A6A831D52C803EBF00E28662 /* ImageFileDocument.swift */,
 				A6477D002C7EE13500672A1A /* OnDropQRUtils.swift */,
+				A679D29F2C81951100FFCDA1 /* KeyboardObserver.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -2322,6 +2325,7 @@
 				A62758F22B97B10600ADE3A6 /* Endpoint.swift in Sources */,
 				465A8D532B9E689B006E7457 /* SolanaService.swift in Sources */,
 				A66A0BD92BA12DF50021A483 /* RenameVaultView.swift in Sources */,
+				A679D2A02C81951100FFCDA1 /* KeyboardObserver.swift in Sources */,
 				A633B1252B993FE7003D1738 /* FilledButton.swift in Sources */,
 				46F47CBB2B870EE900D964EA /* UTXOTransactionMempool.swift in Sources */,
 				A638752F2C38570F000CF242 /* BackupVaultNowView.swift in Sources */,
