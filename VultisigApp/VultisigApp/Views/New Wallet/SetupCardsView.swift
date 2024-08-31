@@ -36,6 +36,7 @@ struct SetupCardsView: View {
                 NavigationHelpButton()
             }
         }
+        .toolbarBackground(Color.backgroundBlue)
         .onAppear {
             setData()
         }
@@ -65,13 +66,12 @@ struct SetupCardsView: View {
             pairingDeviceCard
         }
         .padding(16)
-        
 #if os(iOS)
         .sheet(isPresented: $showSheet, content: {
             GeneralCodeScannerView(
                 showSheet: $showSheet,
                 shouldJoinKeygen: $shouldJoinKeygen,
-                shouldKeysignTransaction: $shouldKeysignTransaction, 
+                shouldKeysignTransaction: $shouldKeysignTransaction,
                 shouldSendCrypto: $shouldSendCrypto,
                 selectedChain: $selectedChain,
                 sendTX: sendTx
