@@ -11,21 +11,24 @@ import BigInt
 final class SendGasSettingsViewModel: ObservableObject {
 
     private let coin: Coin
+    private let vault: Vault
 
     @Published var gasLimit: String = .empty
     @Published var baseFee: String = .empty
     @Published var priorityFeesMap: [FeeMode: BigInt] = [:]
     @Published var selectedMode: FeeMode = .normal
 
-    init(coin: Coin, gasLimit: String, baseFee: String, selectedMode: FeeMode) {
+    init(coin: Coin, vault: Vault, gasLimit: String, baseFee: String, selectedMode: FeeMode) {
         self.coin = coin
+        self.vault = vault
         self.gasLimit = gasLimit
         self.baseFee = baseFee
         self.selectedMode = selectedMode
     }
 
-    init(coin: Coin, gasLimit: BigInt, selectedMode: FeeMode) {
+    init(coin: Coin, vault: Vault, gasLimit: BigInt, selectedMode: FeeMode) {
         self.coin = coin
+        self.vault = vault
         self.gasLimit = gasLimit.description
         self.baseFee = baseFee.description
         self.selectedMode = selectedMode
@@ -47,10 +50,11 @@ final class SendGasSettingsViewModel: ObservableObject {
     }
 
     var totalFeeFiat: String {
+        guard let nativeCoin = vault.nativeCoin(for: coin) else { return .zero }
         let totalFeeGwei = Decimal(string: totalFee) ?? .zero
         let totalFeeWei = totalFeeGwei * Decimal(EVMHelper.weiPerGWei)
-        let totalFee = coin.decimal(for: BigInt(stringLiteral: totalFeeWei.description))
-        return RateProvider.shared.fiatBalanceString(value: totalFee, coin: coin)
+        let totalFee = nativeCoin.decimal(for: BigInt(stringLiteral: totalFeeWei.description))
+        return RateProvider.shared.fiatBalanceString(value: totalFee, coin: nativeCoin)
     }
 
     @MainActor func fetch(chain: Chain) async throws {
