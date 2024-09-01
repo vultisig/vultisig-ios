@@ -27,6 +27,9 @@ struct SendCryptoDetailsView: View {
     
     @State var isLoading = false
     @State var isCoinPickerActive = false
+#if os(iOS)
+    @StateObject private var keyboardObserver = KeyboardObserver()
+#endif
     
     @FocusState private var focusedField: Field?
     
@@ -89,31 +92,43 @@ struct SendCryptoDetailsView: View {
     }
     
     var fields: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                coinSelector
-                fromField
-                toField
-                
-                if tx.coin.isNativeToken {
-                    memoField
+        ScrollViewReader { value in
+            ScrollView {
+                VStack(spacing: 16) {
+                    coinSelector
+                    fromField
+                    toField
+                    
+                    if tx.coin.isNativeToken {
+                        memoField
+                    }
+                    
+                    amountField
+                    amountFiatField
+                    
+                    if !tx.coin.isNativeToken {
+                        balanceNativeTokenField
+                    }
+                    
+                    getSummaryCell(leadingText: NSLocalizedString("gas(auto)", comment: ""), trailingText: tx.gasInReadable)
+                    getSummaryCell(leadingText: NSLocalizedString("Estimated Fees", comment: ""), trailingText: sendCryptoViewModel.feesInReadable(tx: tx, vault: vault))
+                    
+                    if tx.canBeReaped {
+                        existentialDepositTextMessage
+                    }
+                    
+#if os(iOS)
+                    Spacer()
+                        .frame(height: keyboardObserver.keyboardHeight)
+#endif
                 }
-                
-                amountField
-                amountFiatField
-                
-                if !tx.coin.isNativeToken {
-                    balanceNativeTokenField
-                }
-                
-                getSummaryCell(leadingText: NSLocalizedString("gas(auto)", comment: ""), trailingText: tx.gasInReadable)
-                getSummaryCell(leadingText: NSLocalizedString("Estimated Fees", comment: ""), trailingText: sendCryptoViewModel.feesInReadable(tx: tx, vault: vault))
-
-                if tx.canBeReaped {
-                    existentialDepositTextMessage
-                }
+                .padding(.horizontal, 16)
             }
-            .padding(.horizontal, 16)
+#if os(iOS)
+            .onChange(of: keyboardObserver.keyboardHeight) { oldValue, newValue in
+                scrollToField(value)
+            }
+#endif
         }
     }
 
@@ -151,6 +166,7 @@ struct SendCryptoDetailsView: View {
             getTitle(for: "to")
             SendCryptoAddressTextField(tx: tx, sendCryptoViewModel: sendCryptoViewModel)
                 .focused($focusedField, equals: .toAddress)
+                .id(Field.toAddress)
                 .onSubmit {
                     focusNextField($focusedField)
                 }
@@ -169,6 +185,7 @@ struct SendCryptoDetailsView: View {
             
             MemoTextField(memo: $tx.memo)
                 .focused($focusedField, equals: .memo)
+                .id(Field.memo)
                 .onSubmit {
                     focusNextField($focusedField)
                 }
@@ -227,6 +244,7 @@ struct SendCryptoDetailsView: View {
             onMaxPressed: { sendCryptoViewModel.setMaxValues(tx: tx) }
         )
         .focused($focusedField, equals: .amount)
+        .id(Field.amount)
         .onChange(of: tx.coin) { oldValue, newValue in
             Task {
                 await sendCryptoViewModel.convertToFiat(newValue: tx.amount, tx: tx)
@@ -271,6 +289,7 @@ struct SendCryptoDetailsView: View {
             onChange: { await sendCryptoViewModel.convertFiatToCoin(newValue: $0, tx: tx) }
         )
         .focused($focusedField, equals: .amountInFiat)
+        .id(Field.amountInFiat)
     }
 
     func getSummaryCell(leadingText: String, trailingText: String) -> some View {
@@ -315,6 +334,10 @@ struct SendCryptoDetailsView: View {
     }
     
     private func setData() {
+#if os(iOS)
+        keyboardObserver.keyboardHeight = 0
+#endif
+        
         Task {
             isLoading = true
             await getBalance()
@@ -332,6 +355,14 @@ struct SendCryptoDetailsView: View {
         await BalanceService.shared.updateBalance(for: tx.coin)
         coinBalance = tx.coin.balanceString
     }
+    
+#if os(iOS)
+    private func scrollToField(_ value: ScrollViewProxy) {
+        withAnimation {
+            value.scrollTo(focusedField, anchor: .top)
+        }
+    }
+#endif
 }
 
 #Preview {

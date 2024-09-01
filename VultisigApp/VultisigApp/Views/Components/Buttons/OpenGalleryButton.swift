@@ -5,35 +5,40 @@
 //  Created by Amol Kumar on 2024-05-15.
 //
 
+#if os(iOS)
 import SwiftUI
 
 struct OpenButton: View {
-    
     @State var buttonIcon: String
     @State var buttonLabel: String
     
+    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
     
     var body: some View {
         content
-            .padding(12)
-            .padding(.horizontal, 12)
+            .frame(width: 180, height: 54)
             .background(Color.turquoise600)
             .cornerRadius(100)
     }
     
     var content: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 6) {
             Image(systemName: buttonIcon)
-                .font(.body16Menlo)
+                .font(idiom == .phone ? .body12Menlo : .body16MontserratBold)
                 .foregroundColor(.blue600)
             
             Text(NSLocalizedString(buttonLabel, comment: ""))
-                .font(.body16MontserratBold)
+                .font(idiom == .phone ? .body12MontserratBold : .body16MontserratBold)
                 .foregroundColor(.blue600)
         }
     }
 }
 
 #Preview {
-    OpenButton(buttonIcon: "photo.stack", buttonLabel: "uploadFromGallery")
+    HStack {
+        OpenButton(buttonIcon: "photo.stack", buttonLabel: "uploadFromGallery")
+        OpenButton(buttonIcon: "folder", buttonLabel: "uploadFromFiles")
+    }
+    .padding(.horizontal, 12)
 }
+#endif
