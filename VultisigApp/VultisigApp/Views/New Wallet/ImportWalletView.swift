@@ -18,46 +18,26 @@ struct ImportWalletView: View {
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     
     var body: some View {
-        ZStack {
-            Background()
-            main
-        }
-#if os(iOS)
-        .navigationTitle(NSLocalizedString("import", comment: "Import title"))
-        .toolbar {
-            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                NavigationHelpButton()
+        content
+            .fileImporter(
+                isPresented: $backupViewModel.showVaultImporter,
+                allowedContentTypes: [.data],
+                allowsMultipleSelection: false
+            ) { result in
+                backupViewModel.handleFileImporter(result)
             }
-        }
-#endif
-        .fileImporter(
-            isPresented: $backupViewModel.showVaultImporter,
-            allowedContentTypes: [.data],
-            allowsMultipleSelection: false
-        ) { result in
-            backupViewModel.handleFileImporter(result)
-        }
-        .onDrop(of: [.data], isTargeted: $isUploading) { providers -> Bool in
-            backupViewModel.handleOnDrop(providers: providers)
-        }
-        .navigationDestination(isPresented: $backupViewModel.isLinkActive) {
-            HomeView(selectedVault: backupViewModel.selectedVault)
-        }
-        .onAppear {
-            resetData()
-        }
-        .onDisappear {
-            resetData()
-        }
-    }
-    
-    var main: some View {
-        VStack {
-#if os(macOS)
-            headerMac
-#endif
-            view
-        }
+            .onDrop(of: [.data], isTargeted: $isUploading) { providers -> Bool in
+                backupViewModel.handleOnDrop(providers: providers)
+            }
+            .navigationDestination(isPresented: $backupViewModel.isLinkActive) {
+                HomeView(selectedVault: backupViewModel.selectedVault)
+            }
+            .onAppear {
+                resetData()
+            }
+            .onDisappear {
+                resetData()
+            }
     }
     
     var headerMac: some View {

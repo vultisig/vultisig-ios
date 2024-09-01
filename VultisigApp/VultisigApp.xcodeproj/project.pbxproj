@@ -124,6 +124,8 @@
 		A625D9C62C5B5FE30078FBF4 /* KeygenViewInstructionsMac.swift in Sources */ = {isa = PBXBuildFile; fileRef = A625D9C52C5B5FE30078FBF4 /* KeygenViewInstructionsMac.swift */; };
 		A62758F22B97B10600ADE3A6 /* Endpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62758F12B97B10600ADE3A6 /* Endpoint.swift */; };
 		A62758F72B97DF4A00ADE3A6 /* ColorStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62758F62B97DF4A00ADE3A6 /* ColorStyle.swift */; };
+		A62766512C85275F002C666A /* ImportWalletViewPhone.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62766502C85275F002C666A /* ImportWalletViewPhone.swift */; };
+		A62766532C852765002C666A /* ImportWalletViewMac.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62766522C852765002C666A /* ImportWalletViewMac.swift */; };
 		A62D6B032BFE7BF400F24E51 /* CoinDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62D6B022BFE7BF400F24E51 /* CoinDetailView.swift */; };
 		A62D6B052BFE7C5E00F24E51 /* ChainDetailActionButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62D6B042BFE7C5E00F24E51 /* ChainDetailActionButtons.swift */; };
 		A63001B12C54AC0100D18E25 /* EditAddressBookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63001B02C54AC0100D18E25 /* EditAddressBookView.swift */; };
@@ -584,6 +586,8 @@
 		A62758F12B97B10600ADE3A6 /* Endpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endpoint.swift; sourceTree = "<group>"; };
 		A62758F42B97CE9E00ADE3A6 /* FontStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontStyle.swift; sourceTree = "<group>"; };
 		A62758F62B97DF4A00ADE3A6 /* ColorStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorStyle.swift; sourceTree = "<group>"; };
+		A62766502C85275F002C666A /* ImportWalletViewPhone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportWalletViewPhone.swift; sourceTree = "<group>"; };
+		A62766522C852765002C666A /* ImportWalletViewMac.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportWalletViewMac.swift; sourceTree = "<group>"; };
 		A62D6B022BFE7BF400F24E51 /* CoinDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinDetailView.swift; sourceTree = "<group>"; };
 		A62D6B042BFE7C5E00F24E51 /* ChainDetailActionButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailActionButtons.swift; sourceTree = "<group>"; };
 		A63001B02C54AC0100D18E25 /* EditAddressBookView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditAddressBookView.swift; sourceTree = "<group>"; };
@@ -1343,6 +1347,22 @@
 			path = Styles;
 			sourceTree = "<group>";
 		};
+		A627664E2C85273B002C666A /* iOS Specific */ = {
+			isa = PBXGroup;
+			children = (
+				A62766502C85275F002C666A /* ImportWalletViewPhone.swift */,
+			);
+			path = "iOS Specific";
+			sourceTree = "<group>";
+		};
+		A627664F2C852745002C666A /* macOS Specific */ = {
+			isa = PBXGroup;
+			children = (
+				A62766522C852765002C666A /* ImportWalletViewMac.swift */,
+			);
+			path = "macOS Specific";
+			sourceTree = "<group>";
+		};
 		A633B11D2B993BCD003D1738 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
@@ -1696,6 +1716,8 @@
 		D9AD8ED72B67225F0009F8D5 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				A627664F2C852745002C666A /* macOS Specific */,
+				A627664E2C85273B002C666A /* iOS Specific */,
 				A6F42CC12C09175B00D0431C /* GeneralCodeScannerView.swift */,
 				D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */,
 				A6D0BA692C08353700E24DC9 /* NoCameraPermissionView.swift */,
@@ -2405,6 +2427,7 @@
 				DE6DCB932B97D81C009A39D5 /* THORChainSwaps.swift in Sources */,
 				DE8AD74C2BC8E3FE00339775 /* KeygenVerify.swift in Sources */,
 				A6A41CAE2C63512D00C6858D /* ShareSheetViewController.swift in Sources */,
+				A62766512C85275F002C666A /* ImportWalletViewPhone.swift in Sources */,
 				A53287B52C4DB874009FD3D3 /* CoinPickerView.swift in Sources */,
 				A60CA7EB2BB1020900FDEB5C /* DetectOrientation.swift in Sources */,
 				B5C4A42C2C62EC6500AF9B8B /* AddressService.swift in Sources */,
@@ -2466,6 +2489,7 @@
 				A57A03CB2BC47D4F00F6F3DF /* BlockChainService.swift in Sources */,
 				DE5FA58A2BAD1EF2008FD910 /* CosmosBalanceCacheEntry.swift in Sources */,
 				A69069A32BCE2FD300F28A8B /* KeygenStatusText.swift in Sources */,
+				A62766532C852765002C666A /* ImportWalletViewMac.swift in Sources */,
 				A52313DE2BDF665E00D4D0D5 /* KeysignSwapConfirmView.swift in Sources */,
 				DEEDAEE32B8AF8B1005170E8 /* publickey.swift in Sources */,
 				A65C754D2BBF5A250076F30A /* PeerCell.swift in Sources */,
