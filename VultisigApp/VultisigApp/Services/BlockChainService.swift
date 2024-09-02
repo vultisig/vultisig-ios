@@ -164,10 +164,9 @@ private extension BlockChainService {
             let baseFee = try await service.getBaseFee()
             let (_, defaultPriorityFee, nonce) = try await service.getGasInfo(fromAddress: coin.address, mode: feeMode)
             let gasLimit = gasLimit ?? normalizeGasLimit(coin: coin, action: action)
-            let normalizedBaseFee = Self.normalizeFee(baseFee, action: action)
             let priorityFeesMap = try await service.fetchMaxPriorityFeesPerGas()
             let priorityFee = priorityFeesMap[feeMode] ?? defaultPriorityFee
-            return .Ethereum(baseFee: normalizedBaseFee, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: gasLimit)
+            return .Ethereum(baseFee: baseFee, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: gasLimit)
 
         case .zksync:
             let service = try EvmServiceFactory.getService(forChain: coin.chain)

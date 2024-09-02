@@ -59,8 +59,7 @@ final class SendGasSettingsViewModel: ObservableObject {
     @MainActor func fetch(chain: Chain) async throws {
         let service = try EvmServiceFactory.getService(forChain: chain)
         let baseFeeWei = try await service.getBaseFee()
-        let normalizedBaseFeeWei = BlockChainService.normalizeFee(BigInt(baseFeeWei), action: .transfer)
-        let baseFeeGwei = Decimal(normalizedBaseFeeWei) / Decimal(EVMHelper.weiPerGWei)
+        let baseFeeGwei = Decimal(baseFeeWei) / Decimal(EVMHelper.weiPerGWei)
 
         baseFee = baseFeeGwei.description
         priorityFeesMap = try await service.fetchMaxPriorityFeesPerGas()
