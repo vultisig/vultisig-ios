@@ -77,18 +77,19 @@ class EVMHelper {
         guard let intChainID = Int(coin.chainId) else {
             throw HelperError.runtimeError("fail to get chainID")
         }
-        guard case .Ethereum(let maxFeePerGasWei,
+        guard case .Ethereum(let baseFee,
                              let priorityFeeWei,
                              let nonce,
                              let gasLimit) = keysignPayload.chainSpecific
         else {
             throw HelperError.runtimeError("fail to get Ethereum chain specific")
         }
+        let maxFeePerGas = baseFee + priorityFeeWei
         let input = EthereumSigningInput.with {
             $0.chainID = Data(hexString: Int64(intChainID).hexString())!
             $0.nonce = Data(hexString: nonce.hexString())!
             $0.gasLimit = gasLimit.magnitude.serialize()
-            $0.maxFeePerGas = maxFeePerGasWei.magnitude.serialize()
+            $0.maxFeePerGas = maxFeePerGas.magnitude.serialize()
             $0.maxInclusionFeePerGas = priorityFeeWei.magnitude.serialize()
             $0.toAddress = keysignPayload.toAddress
             $0.txMode = .enveloped
