@@ -9,10 +9,10 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-@MainActor
 struct ImageFileDocument: FileDocument {
     var image: NSImage
     
+    @MainActor
     init(image: Image) {
         // Convert the SwiftUI Image to an NSImage without using 'self'
         let renderer = ImageRenderer(content: image)
@@ -28,8 +28,6 @@ struct ImageFileDocument: FileDocument {
         }
         
         nsImage.unlockFocus()
-
-        // Assign the NSImage to self.image
         self.image = nsImage
     }
 
