@@ -202,7 +202,7 @@ extension BlockChainSpecific {
             )
         case .ethereumSpecific(let value):
             self = .Ethereum(
-                maxFeePerGasWei: BigInt(stringLiteral: value.maxFeePerGasWei),
+                baseFee: BigInt(stringLiteral: value.maxFeePerGasWei),
                 priorityFeeWei: BigInt(stringLiteral: value.priorityFee),
                 nonce: value.nonce,
                 gasLimit: BigInt(stringLiteral: value.gasLimit)

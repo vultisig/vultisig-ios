@@ -162,17 +162,18 @@ private extension BlockChainService {
         case .ethereum, .avalanche, .bscChain, .arbitrum, .base, .optimism, .polygon, .blast, .cronosChain:
             let service = try EvmServiceFactory.getService(forChain: coin.chain)
             let baseFee = try await service.getBaseFee()
-            let (_, priorityFee, nonce) = try await service.getGasInfo(fromAddress: coin.address, mode: feeMode)
+            let (_, defaultPriorityFee, nonce) = try await service.getGasInfo(fromAddress: coin.address, mode: feeMode)
             let gasLimit = gasLimit ?? normalizeGasLimit(coin: coin, action: action)
             let normalizedBaseFee = Self.normalizeFee(baseFee, action: action)
-            let maxFeePerGasWei = normalizedBaseFee + priorityFee
-            return .Ethereum(maxFeePerGasWei: maxFeePerGasWei, priorityFeeWei: normalizePriorityFee(priorityFee,coin.chain), nonce: nonce, gasLimit: gasLimit)
+            let priorityFeesMap = try await service.fetchMaxPriorityFeesPerGas()
+            let priorityFee = priorityFeesMap[feeMode] ?? defaultPriorityFee
+            return .Ethereum(baseFee: normalizedBaseFee, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: gasLimit)
 
         case .zksync:
             let service = try EvmServiceFactory.getService(forChain: coin.chain)
             let (gasLimit, _, maxFeePerGas, maxPriorityFeePerGas, nonce) = try await service.getGasInfoZk(fromAddress: coin.address, toAddress: .zeroAddress)
 
-            return .Ethereum(maxFeePerGasWei: maxFeePerGas, priorityFeeWei: maxPriorityFeePerGas, nonce: nonce, gasLimit: gasLimit)
+            return .Ethereum(baseFee: maxFeePerGas, priorityFeeWei: maxPriorityFeePerGas, nonce: nonce, gasLimit: gasLimit)
 
         case .gaiaChain:
             let account = try await atom.fetchAccountNumber(coin.address)

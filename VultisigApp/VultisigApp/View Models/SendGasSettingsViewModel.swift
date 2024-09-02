@@ -41,7 +41,7 @@ final class SendGasSettingsViewModel: ObservableObject {
     var totalFee: String {
         let multiplier: Decimal = 1.5 // Fee multiplier from BlockchainService
         let gasLimit = Decimal(string: gasLimit) ?? .zero
-        let baseFeeGwei = Decimal(string: baseFee) ?? .zero * multiplier
+        let baseFeeGwei = (Decimal(string: baseFee) ?? .zero) * multiplier
         let baseFeeWei = baseFeeGwei * Decimal(EVMHelper.weiPerGWei)
         let priorityFee = Decimal(priorityFeesMap[selectedMode] ?? .zero)
         let totalFee = gasLimit * (baseFeeWei + priorityFee)

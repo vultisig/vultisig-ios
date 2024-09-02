@@ -11,7 +11,7 @@ import VultisigCommonData
 
 enum BlockChainSpecific: Codable, Hashable {
     case UTXO(byteFee: BigInt, sendMaxAmount: Bool) // byteFee
-    case Ethereum(maxFeePerGasWei: BigInt, priorityFeeWei: BigInt, nonce: Int64, gasLimit: BigInt) // maxFeePerGasWei, priorityFeeWei, nonce , gasLimit
+    case Ethereum(baseFee: BigInt, priorityFeeWei: BigInt, nonce: Int64, gasLimit: BigInt) // maxFeePerGasWei, priorityFeeWei, nonce , gasLimit
     case THORChain(accountNumber: UInt64, sequence: UInt64, fee: UInt64, isDeposit: Bool)
     case MayaChain(accountNumber: UInt64, sequence: UInt64, isDeposit: Bool)
     case Cosmos(accountNumber: UInt64, sequence: UInt64, gas: UInt64, transactionType: Int)
