@@ -312,3 +312,4 @@
 "backupPasswordDisclaimer" = "Nikada ne pohranjujte dionice Vaulta s različitih uređaja na istom mjestu";
 "share" = "Podijeli";
 "dropFileHere" = "Ispusti datoteku ovdje...";
+"deviceID" = "ID uređaja";

@@ -63,13 +63,9 @@ struct VaultDeletionConfirmView: View {
             logo
             details
             
-#if os(iOS)
-            if idiom == .pad {
+            if !isPhoneSE {
                 Spacer()
             }
-#elseif os(macOS)
-            Spacer()
-#endif
             
             checkboxes
             button
@@ -118,7 +114,7 @@ struct VaultDeletionConfirmView: View {
     
     var checkboxes: some View {
 #if os(iOS)
-        let spacing: CGFloat = isPhoneSE ? 16 : 32
+        let spacing: CGFloat = isPhoneSE ? 16 : 24
 #elseif os(macOS)
         let spacing: CGFloat = 12
 #endif
@@ -141,7 +137,7 @@ struct VaultDeletionConfirmView: View {
             FilledButton(title: "deleteVaultTitle", background: Color.alertRed)
         }
 #if os(macOS)
-        .padding(.bottom, 20)
+        .padding(.bottom, 40)
 #endif
     }
     
@@ -184,4 +180,5 @@ struct VaultDeletionConfirmView: View {
 
 #Preview {
     VaultDeletionConfirmView(vault: Vault.example, vaults: [])
+        .environmentObject(HomeViewModel())
 }
