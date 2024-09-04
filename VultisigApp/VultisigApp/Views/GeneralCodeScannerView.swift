@@ -71,6 +71,7 @@ struct GeneralCodeScannerView: View {
             .aspectRatio(contentMode: .fit)
             .padding(60)
             .offset(y: -50)
+            .allowsHitTesting(false)
     }
     
     var buttonsStack: some View {
