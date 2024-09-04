@@ -70,7 +70,7 @@ final class BlockChainService {
             sendMaxAmount: tx.sendMaxAmount,
             isDeposit: tx.isDeposit,
             transactionType: tx.transactionType,
-            gasLimit: gasLimit, 
+            gasLimit: max(gasLimit, tx.gasLimit), 
             fromAddress: tx.fromAddress,
             toAddress: tx.toAddress,
             feeMode: tx.feeMode
@@ -166,7 +166,8 @@ private extension BlockChainService {
             let gasLimit = gasLimit ?? normalizeGasLimit(coin: coin, action: action)
             let priorityFeesMap = try await service.fetchMaxPriorityFeesPerGas()
             let priorityFee = priorityFeesMap[feeMode] ?? defaultPriorityFee
-            let maxFeePerGasWei = baseFee + priorityFee
+            let normalizedBaseFee = Self.normalizeFee(baseFee, action: .transfer)
+            let maxFeePerGasWei = normalizedBaseFee + priorityFee
             return .Ethereum(maxFeePerGasWei: maxFeePerGasWei, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: gasLimit)
 
         case .zksync:
