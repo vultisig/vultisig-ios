@@ -166,13 +166,14 @@ private extension BlockChainService {
             let gasLimit = gasLimit ?? normalizeGasLimit(coin: coin, action: action)
             let priorityFeesMap = try await service.fetchMaxPriorityFeesPerGas()
             let priorityFee = priorityFeesMap[feeMode] ?? defaultPriorityFee
-            return .Ethereum(baseFee: baseFee, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: gasLimit)
+            let maxFeePerGasWei = baseFee + priorityFee
+            return .Ethereum(maxFeePerGasWei: baseFee, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: gasLimit)
 
         case .zksync:
             let service = try EvmServiceFactory.getService(forChain: coin.chain)
             let (gasLimit, _, maxFeePerGas, maxPriorityFeePerGas, nonce) = try await service.getGasInfoZk(fromAddress: coin.address, toAddress: .zeroAddress)
 
-            return .Ethereum(baseFee: maxFeePerGas, priorityFeeWei: maxPriorityFeePerGas, nonce: nonce, gasLimit: gasLimit)
+            return .Ethereum(maxFeePerGasWei: maxFeePerGas, priorityFeeWei: maxPriorityFeePerGas, nonce: nonce, gasLimit: gasLimit)
 
         case .gaiaChain:
             let account = try await atom.fetchAccountNumber(coin.address)

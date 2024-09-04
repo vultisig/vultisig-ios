@@ -10,8 +10,8 @@ import BigInt
 import VultisigCommonData
 
 enum BlockChainSpecific: Codable, Hashable {
-    case UTXO(byteFee: BigInt, sendMaxAmount: Bool) // byteFee
-    case Ethereum(baseFee: BigInt, priorityFeeWei: BigInt, nonce: Int64, gasLimit: BigInt) // maxFeePerGasWei, priorityFeeWei, nonce , gasLimit
+    case UTXO(byteFee: BigInt, sendMaxAmount: Bool)
+    case Ethereum(maxFeePerGasWei: BigInt, priorityFeeWei: BigInt, nonce: Int64, gasLimit: BigInt)
     case THORChain(accountNumber: UInt64, sequence: UInt64, fee: UInt64, isDeposit: Bool)
     case MayaChain(accountNumber: UInt64, sequence: UInt64, isDeposit: Bool)
     case Cosmos(accountNumber: UInt64, sequence: UInt64, gas: UInt64, transactionType: Int)
@@ -42,8 +42,8 @@ enum BlockChainSpecific: Codable, Hashable {
     
     var fee: BigInt {
         switch self {
-        case .Ethereum(let baseFee, let priorityFeeWei, _, let gasLimit):
-            return (baseFee + priorityFeeWei) * gasLimit
+        case .Ethereum(let maxFeePerGas, let priorityFeeWei, _, let gasLimit):
+            return maxFeePerGas * gasLimit
         case .UTXO, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot:
             return gas
         }
@@ -51,8 +51,8 @@ enum BlockChainSpecific: Codable, Hashable {
 
     var baseFee: BigInt? {
         switch self {
-        case .Ethereum(let baseFee, _, _, _):
-            return baseFee
+        case .Ethereum(let maxFeePerGas, let priorityFee, _, _):
+            return maxFeePerGas - priorityFee
         case .UTXO, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot:
             return nil
         }
