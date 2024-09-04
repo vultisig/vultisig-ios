@@ -27,6 +27,7 @@ struct KeysignMessageFactory {
             let incrementNonce = payload.approvePayload != nil
             switch swapPayload {
             case .thorchain(let swapPayload):
+                _ = ThorchainService.shared.ensureTHORChainChainID()
                 let swaps = THORChainSwaps(vaultHexPublicKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode)
                 messages += try swaps.getPreSignedImageHash(swapPayload: swapPayload, keysignPayload: payload, incrementNonce: incrementNonce)
             case .oneInch(let swapPayload):
@@ -52,6 +53,7 @@ struct KeysignMessageFactory {
                 return try ERC20Helper.getHelper(coin: payload.coin).getPreSignedImageHash(keysignPayload: payload)
             }
         case .thorChain:
+            _ = ThorchainService.shared.ensureTHORChainChainID()
             return try THORChainHelper.getPreSignedImageHash(keysignPayload: payload)
         case .mayaChain:
             return try MayaChainHelper.getPreSignedImageHash(keysignPayload: payload)
