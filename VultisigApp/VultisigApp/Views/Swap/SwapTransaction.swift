@@ -33,6 +33,10 @@ class SwapTransaction: ObservableObject {
         return fromCoin.shouldApprove && router != nil
     }
 
+    var isDeposit: Bool {
+        return fromCoin.chain == .mayaChain
+    }
+
     var fee: BigInt {
         switch quote {
         case .thorchain, .mayachain:

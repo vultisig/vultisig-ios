@@ -12,21 +12,28 @@ import CodeScanner
 #endif
 
 class SendTransaction: ObservableObject, Hashable {
+
     @Published var fromAddress: String = ""
     @Published var toAddress: String = .empty
     @Published var amount: String = .empty
     @Published var amountInFiat: String = .empty
     @Published var memo: String = .empty
     @Published var gas: BigInt = .zero
+    @Published var estematedGasLimit: BigInt?
+    @Published var customGasLimit: BigInt?
     @Published var fee: BigInt = .zero
+    @Published var feeMode: FeeMode = .normal
     @Published var sendMaxAmount: Bool = false
     @Published var memoFunctionDictionary: ThreadSafeDictionary<String, String> = ThreadSafeDictionary()
     
     @Published var coin: Coin = .example
     @Published var transactionType: VSTransactionType = .unspecified
-    
+
+    var gasLimit: BigInt {
+        return customGasLimit ?? estematedGasLimit ?? BigInt(EVMHelper.defaultETHTransferGasUnit)
+    }
+
     var isAmountExceeded: Bool {
-        
         if (sendMaxAmount && coin.chainType == .UTXO) || !coin.isNativeToken {
             let comparison = amountInRaw > coin.rawBalance.toBigInt(decimals: coin.decimals)
             return comparison
@@ -140,35 +147,10 @@ class SendTransaction: ObservableObject, Hashable {
         return "\((gasDecimal / pow(10,decimals)).formatToDecimal(digits: decimals).description) \(coin.chain.feeUnit)"
     }
 
-    init() {
-        self.toAddress = .empty
-        self.amount = .empty
-        self.amountInFiat = .empty
-        self.memo = .empty
-        self.gas = .zero
-        self.sendMaxAmount = false
-    }
-    
+    init() { }
+
     init(coin: Coin) {
         self.reset(coin: coin)
-    }
-    
-    init(toAddress: String, amount: String, memo: String, gas: BigInt) {
-        self.toAddress = toAddress
-        self.amount = amount
-        self.memo = memo
-        self.gas = gas
-        self.sendMaxAmount = false
-    }
-    
-    init(toAddress: String, amount: String, memo: String, gas: BigInt, coin: Coin) {
-        self.toAddress = toAddress
-        self.amount = amount
-        self.memo = memo
-        self.gas = gas
-        self.coin = coin
-        self.sendMaxAmount = false
-        self.fromAddress = coin.address
     }
     
     static func == (lhs: SendTransaction, rhs: SendTransaction) -> Bool {
@@ -195,6 +177,9 @@ class SendTransaction: ObservableObject, Hashable {
         self.amountInFiat = .empty
         self.memo = .empty
         self.gas = .zero
+        self.estematedGasLimit = nil
+        self.customGasLimit = nil
+        self.feeMode = .normal
         self.coin = coin
         self.sendMaxAmount = false
         self.fromAddress = coin.address

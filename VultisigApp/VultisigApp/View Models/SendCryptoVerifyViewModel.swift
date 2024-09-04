@@ -72,12 +72,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
     }
     
     func blowfishSolanaTransactionScan(tx: SendTransaction, vault: Vault) async throws -> BlowfishResponse {
-        let chainSpecific = try await blockChainService.fetchSpecific(
-            for: tx,
-            sendMaxAmount: tx.sendMaxAmount,
-            isDeposit: tx.isDeposit,
-            transactionType: tx.transactionType
-        )
+        let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
         
         let keysignPayload = try await KeysignPayloadFactory().buildTransfer(
             coin: tx.coin,
@@ -119,12 +114,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
         }
         
         do {
-            let chainSpecific = try await blockChainService.fetchSpecific(
-                for: tx,
-                sendMaxAmount: tx.sendMaxAmount,
-                isDeposit: tx.isDeposit,
-                transactionType: tx.transactionType
-            )
+            let chainSpecific = try await blockChainService.fetchSpecific(tx: tx)
 
             keysignPayload = try await KeysignPayloadFactory().buildTransfer(
                 coin: tx.coin,
