@@ -57,18 +57,13 @@ struct VaultDetailQRCodeView: View {
     }
     
     var buttons: some View {
-#if os(iOS)
-        shareButton
-#elseif os(macOS)
         HStack(spacing: 12) {
             saveButton
             shareButton
         }
         .padding(.horizontal, 25)
-#endif
     }
     
-#if os(macOS)
     var saveButton: some View {
         ZStack {
             if let renderedImage = viewModel.renderedImage {
@@ -94,7 +89,6 @@ struct VaultDetailQRCodeView: View {
             }
         }
     }
-#endif
     
     var shareButton: some View {
         ZStack {
@@ -103,13 +97,8 @@ struct VaultDetailQRCodeView: View {
                     item: renderedImage,
                     preview: SharePreview(imageName, image: renderedImage)
                 ) {
-#if os(iOS)
-                    FilledButton(title: "saveOrShare")
-                        .padding(.bottom, 10)
-#elseif os(macOS)
                     FilledButton(title: "share")
                         .padding(.bottom, 22)
-#endif
                 }
             } else {
                 ProgressView()
