@@ -17,6 +17,11 @@ enum THORChainHelper {
             throw HelperError.runtimeError("invalid hex public key")
         }
         var input = signingInput
+        var chainID = keysignPayload.coin.coinType.chainId
+        if chainID != ThorchainService.shared.network && !ThorchainService.shared.network.isEmpty {
+            chainID = ThorchainService.shared.network
+        }
+        input.chainID = chainID
         input.publicKey = pubKeyData
         input.accountNumber = accountNumber
         input.sequence = sequence
