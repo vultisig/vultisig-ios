@@ -26,6 +26,7 @@ struct KeygenView: View {
     
     let progressTotalCount: Double = 4
     let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+    let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
 #if os(iOS)
     private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 #endif
@@ -115,14 +116,17 @@ struct KeygenView: View {
     }
     
     var appVersion: some View {
-        Text("Vultisig APP V\(version ?? "1")")
-            .textCase(.uppercase)
-            .font(.body14Menlo)
-            .foregroundColor(.turquoise600)
+        return VStack {
+            Text("Vultisig APP V\(version ?? "1")")
+            Text("(Build \(build ?? "1"))")
+        }
+        .textCase(.uppercase)
+        .font(.body14Menlo)
+        .foregroundColor(.turquoise600)
 #if os(iOS)
-            .padding(.bottom, idiom == .pad ? 30 : 0)
+        .padding(.bottom, idiom == .pad ? 30 : 0)
 #elseif os(macOS)
-            .padding(.bottom, 30)
+        .padding(.bottom, 30)
 #endif
     }
     
