@@ -63,7 +63,7 @@ struct PeerDiscoveryView: View {
                 ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                     NavigationQRShareButton(
                         vault: vault, 
-                        type: .Keysign,
+                        type: .Keygen,
                         renderedImage: shareSheetViewModel.renderedImage
                     )
                 }

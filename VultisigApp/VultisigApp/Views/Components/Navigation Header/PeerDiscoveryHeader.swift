@@ -41,7 +41,7 @@ struct PeerDiscoveryHeader: View {
             if viewModel.status == .WaitingForDevices {
                 NavigationQRShareButton(
                     vault: vault, 
-                    type: .Keysign,
+                    type: .Keygen,
                     renderedImage: shareSheetViewModel.renderedImage
                 )
             }
