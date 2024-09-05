@@ -265,9 +265,6 @@
 "scanQR" = "QR scannen / Gerät koppeln";
 "or" = "ODER";
 "selectYourVaultType" = "Wählen Sie Ihren Tresortyp";
-"youNeed1MoreDevice" = "Sie benötigen ein weiteres Gerät zum Koppeln";
-"youNeed2MoreDevice" = "Sie benötigen zwei weitere Geräte zum Koppeln";
-"youNeedNMoreDevice" = "Sie können so viele Geräte koppeln, wie Sie möchten";
 "lookingFor1MoreDevice" = "Suche nach einem weiteren Gerät...";
 "lookingFor2MoreDevice" = "Suche nach zwei weiteren Geräten...";
 "shouldBackupVaultsSeparateLocations" = "Sie sollten alle Tresoranteile an verschiedenen Orten sichern.";

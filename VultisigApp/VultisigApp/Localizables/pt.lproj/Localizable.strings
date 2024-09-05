@@ -266,9 +266,6 @@
 "scanQR" = "Digitalizar QR / Emparelhar dispositivo";
 "or" = "OU";
 "selectYourVaultType" = "Selecione o tipo de cofre";
-"youNeed1MoreDevice" = "Você precisa de mais um dispositivo para emparelhar";
-"youNeed2MoreDevice" = "Você precisa de mais dois dispositivos para emparelhar";
-"youNeedNMoreDevice" = "Você pode emparelhar quantos dispositivos quiser";
 "lookingFor1MoreDevice" = "Procurando por mais um dispositivo...";
 "lookingFor2MoreDevice" = "Procurando por mais dois dispositivos...";
 "shouldBackupVaultsSeparateLocations" = "Você deve fazer backup de todas as ações do cofre em locais separados.";

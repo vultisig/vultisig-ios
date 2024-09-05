@@ -265,9 +265,6 @@
 "scanQR" = "Skeniraj QR / Upari uređaj";
 "or" = "ILI";
 "selectYourVaultType" = "Odaberite vrstu spremišta";
-"youNeed1MoreDevice" = "Trebate još jedan uređaj za uparivanje";
-"youNeed2MoreDevice" = "Trebate još dva uređaja za uparivanje";
-"youNeedNMoreDevice" = "Možete upariti koliko god uređaja želite";
 "lookingFor1MoreDevice" = "Tražim još jedan uređaj...";
 "lookingFor2MoreDevice" = "Tražim još dva uređaja...";
 "shouldBackupVaultsSeparateLocations" = "Trebali biste napraviti sigurnosnu kopiju svih dijelova spremišta na različitim lokacijama.";

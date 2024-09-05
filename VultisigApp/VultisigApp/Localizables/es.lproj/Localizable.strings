@@ -265,9 +265,6 @@
 "scanQR" = "Escanear QR / Emparejar dispositivo";
 "or" = "O";
 "selectYourVaultType" = "Selecciona tu tipo de almacén";
-"youNeed1MoreDevice" = "Necesitas un dispositivo más para emparejar";
-"youNeed2MoreDevice" = "Necesitas dos dispositivos más para emparejar";
-"youNeedNMoreDevice" = "Puedes emparejar tantos dispositivos como quieras";
 "lookingFor1MoreDevice" = "Buscando un dispositivo más...";
 "lookingFor2MoreDevice" = "Buscando dos dispositivos más...";
 "shouldBackupVaultsSeparateLocations" = "Debes respaldar todas las acciones del almacén en ubicaciones separadas.";

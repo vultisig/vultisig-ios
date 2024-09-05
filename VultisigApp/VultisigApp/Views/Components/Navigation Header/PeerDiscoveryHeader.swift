@@ -51,7 +51,7 @@ struct PeerDiscoveryHeader: View {
     private func getTitle() -> String {
         NSLocalizedString("keygenFor", comment: "") +
         " " +
-        selectedTab.getNavigationTitle() +
+        selectedTab.title +
         " " +
         NSLocalizedString("vault", comment: "")
     }

@@ -48,20 +48,12 @@ struct SetupQRCodeView: View {
     
     var view: some View {
         VStack {
-            context
-            image
+            tabView
             button
         }
     }
     
-    var context: some View {
-        Text(NSLocalizedString("selectYourVaultType", comment: ""))
-            .font(.body14Menlo)
-            .foregroundColor(.neutral0)
-            .padding(.top, 10)
-    }
-    
-    var image: some View {
+    var tabView: some View {
         SetupVaultTabView(selectedTab: $selectedTab)
     }
     

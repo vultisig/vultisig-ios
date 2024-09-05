@@ -7,63 +7,71 @@
 
 import SwiftUI
 
-enum SetupVaultState: String, CaseIterable {
-    case TwoOfTwoVaults = "2 of 2"
-    case TwoOfThreeVaults = "2 of 3"
-    case MOfNVaults = "M of N"
-    
-    func getDescription() -> String {
-        let title: String
-        
+enum SetupVaultState: CaseIterable {
+    case TwoOfTwoVaults
+    case TwoOfThreeVaults
+    case MOfNVaults
+
+    var title: String {
         switch self {
         case .TwoOfTwoVaults:
-            title = NSLocalizedString("youNeed1MoreDevice", comment: "")
+            return "FAST"
         case .TwoOfThreeVaults:
-            title = NSLocalizedString("youNeed2MoreDevice", comment: "")
+            return "ACTIVE"
         case .MOfNVaults:
-            title = NSLocalizedString("youNeedNMoreDevice", comment: "")
-        }
-        
-        return title
-    }
-    
-    func getImage() -> String {
-        let image: String
-        
-        switch self {
-        case .TwoOfTwoVaults:
-            image = "SetupVaultImage1"
-        case .TwoOfThreeVaults:
-            image = "SetupVaultImage2"
-        case .MOfNVaults:
-            image = "SetupVaultImage3"
-        }
-        return image
-    }
-    
-    func getNavigationTitle() -> String {
-        switch self {
-        case .TwoOfTwoVaults:
-            return "2/2"
-        case .TwoOfThreeVaults:
-            return "2/3"
-        case .MOfNVaults:
-            return "M/N"
+            return "SECURE"
         }
     }
-    
-    func getLoaderTitle() -> String {
-        let title: String
-        
+
+    var label: String {
         switch self {
         case .TwoOfTwoVaults:
-            title = NSLocalizedString("lookingFor1MoreDevice", comment: "")
+            return """
+            • Single Device Setup
+            • Transaction Alerts & Policies
+            • Vault Backup Emailed
+
+            Use as a “hot vault”
+            """
         case .TwoOfThreeVaults:
-            title = NSLocalizedString("lookingFor2MoreDevice", comment: "")
+            return """
+            • Fast Signing On The Move
+            • Transaction Alerts & Policies
+            • Fully self-custodial
+
+            Use as a “main vault”
+            """
         case .MOfNVaults:
-            title = NSLocalizedString("lookingForDevices", comment: "")
+            return """
+            • Only Your Devices
+            • No Alerts or Policies
+            • Fully self-custodial
+
+            Use as a “cold vault”
+            """
         }
-        
-        return title
+    }
+    
+    var image: String {
+        switch self {
+        case .TwoOfTwoVaults:
+            return "SetupVaultImage1"
+        case .TwoOfThreeVaults:
+            return "SetupVaultImage2"
+        case .MOfNVaults:
+            return "SetupVaultImage3"
+        }
+    }
+    
+    var loaderTitle: String {
+        // TODO: Change loader titles
+        switch self {
+        case .TwoOfTwoVaults:
+            return NSLocalizedString("lookingFor1MoreDevice", comment: "")
+        case .TwoOfThreeVaults:
+            return NSLocalizedString("lookingFor2MoreDevice", comment: "")
+        case .MOfNVaults:
+            return NSLocalizedString("lookingForDevices", comment: "")
+        }
     }
 }

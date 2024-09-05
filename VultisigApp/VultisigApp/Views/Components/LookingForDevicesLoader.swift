@@ -30,7 +30,7 @@ struct LookingForDevicesLoader: View {
     var title: some View {
         ZStack {
             if let selectedTab {
-                Text(selectedTab.getLoaderTitle())
+                Text(selectedTab.loaderTitle)
             } else {
                 Text(NSLocalizedString("lookingForDevices", comment: "Looking for devices"))
             }

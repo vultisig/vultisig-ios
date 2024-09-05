@@ -265,9 +265,6 @@
 "scanQR" = "Scansiona QR / Accoppia dispositivo";
 "or" = "OPPURE";
 "selectYourVaultType" = "Seleziona il tipo di caveau";
-"youNeed1MoreDevice" = "Hai bisogno di un altro dispositivo per accoppiare";
-"youNeed2MoreDevice" = "Hai bisogno di altri due dispositivi per accoppiare";
-"youNeedNMoreDevice" = "Puoi accoppiare quanti dispositivi vuoi";
 "lookingFor1MoreDevice" = "Cerco un altro dispositivo...";
 "lookingFor2MoreDevice" = "Cerco due altri dispositivi...";
 "shouldBackupVaultsSeparateLocations" = "Dovresti eseguire il backup di tutte le quote del caveau in luoghi separati.";
