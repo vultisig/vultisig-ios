@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct SendCryptoHeader: View {
+    let vault: Vault
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @ObservedObject var shareSheetViewModel: ShareSheetViewModel
     
@@ -38,9 +39,13 @@ struct SendCryptoHeader: View {
     
     var trailingAction: some View {
         ZStack {
-            NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
-                .opacity(sendCryptoViewModel.currentIndex==3 ? 1 : 0)
-                .disabled(sendCryptoViewModel.currentIndex != 3)
+            NavigationQRShareButton(
+                vault: vault, 
+                type: .Keysign,
+                renderedImage: shareSheetViewModel.renderedImage
+            )
+            .opacity(sendCryptoViewModel.currentIndex==3 ? 1 : 0)
+            .disabled(sendCryptoViewModel.currentIndex != 3)
         }
     }
     
@@ -67,5 +72,9 @@ struct SendCryptoHeader: View {
 }
 
 #Preview {
-    SendCryptoHeader(sendCryptoViewModel: SendCryptoViewModel(), shareSheetViewModel: ShareSheetViewModel())
+    SendCryptoHeader(
+        vault: Vault.example,
+        sendCryptoViewModel: SendCryptoViewModel(),
+        shareSheetViewModel: ShareSheetViewModel()
+    )
 }

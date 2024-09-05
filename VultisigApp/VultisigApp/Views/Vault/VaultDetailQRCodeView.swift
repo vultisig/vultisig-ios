@@ -90,6 +90,16 @@ struct VaultDetailQRCodeView: View {
         }
     }
     
+#if os(iOS)
+    var shareButton: some View {
+        Button {
+            viewModel.shareImage(imageName)
+        } label: {
+            FilledButton(title: "share")
+                .padding(.bottom, 22)
+        }
+    }
+#elseif os(macOS)
     var shareButton: some View {
         ZStack {
             if let renderedImage = viewModel.renderedImage {
@@ -105,6 +115,7 @@ struct VaultDetailQRCodeView: View {
             }
         }
     }
+#endif
     
     private func setData() {
         imageName = viewModel.generateName(vault: vault)

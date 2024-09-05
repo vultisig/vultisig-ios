@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct PeerDiscoveryHeader: View {
+    let vault: Vault
     let selectedTab: SetupVaultState
     @ObservedObject var viewModel: KeygenPeerDiscoveryViewModel
     @ObservedObject var shareSheetViewModel: ShareSheetViewModel
@@ -38,7 +39,11 @@ struct PeerDiscoveryHeader: View {
     var trailingAction: some View {
         ZStack {
             if viewModel.status == .WaitingForDevices {
-                NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
+                NavigationQRShareButton(
+                    vault: vault, 
+                    type: .Keygen,
+                    renderedImage: shareSheetViewModel.renderedImage
+                )
             }
         }
     }
@@ -54,6 +59,7 @@ struct PeerDiscoveryHeader: View {
 
 #Preview {
     PeerDiscoveryHeader(
+        vault: Vault.example,
         selectedTab: .TwoOfTwoVaults,
         viewModel: KeygenPeerDiscoveryViewModel(),
         shareSheetViewModel: ShareSheetViewModel()
