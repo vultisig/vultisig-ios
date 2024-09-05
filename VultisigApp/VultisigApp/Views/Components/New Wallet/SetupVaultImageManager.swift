@@ -51,6 +51,6 @@ struct SetupVaultImageManager: View {
 #Preview {
     ZStack {
         Background()
-        SetupVaultImageManager(selectedTab: .constant(.MOfNVaults))
+        SetupVaultImageManager(selectedTab: .constant(.secure))
     }
 }

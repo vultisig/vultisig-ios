@@ -8,24 +8,24 @@
 import SwiftUI
 
 enum SetupVaultState: CaseIterable {
-    case TwoOfTwoVaults
-    case TwoOfThreeVaults
-    case MOfNVaults
+    case fast
+    case active
+    case secure
 
     var title: String {
         switch self {
-        case .TwoOfTwoVaults:
+        case .fast:
             return "FAST"
-        case .TwoOfThreeVaults:
+        case .active:
             return "ACTIVE"
-        case .MOfNVaults:
+        case .secure:
             return "SECURE"
         }
     }
 
     var label: String {
         switch self {
-        case .TwoOfTwoVaults:
+        case .fast:
             return """
             • Single Device Setup
             • Transaction Alerts & Policies
@@ -33,7 +33,7 @@ enum SetupVaultState: CaseIterable {
 
             Use as a “hot vault”
             """
-        case .TwoOfThreeVaults:
+        case .active:
             return """
             • Fast Signing On The Move
             • Transaction Alerts & Policies
@@ -41,7 +41,7 @@ enum SetupVaultState: CaseIterable {
 
             Use as a “main vault”
             """
-        case .MOfNVaults:
+        case .secure:
             return """
             • Only Your Devices
             • No Alerts or Policies
@@ -54,11 +54,11 @@ enum SetupVaultState: CaseIterable {
     
     var image: String {
         switch self {
-        case .TwoOfTwoVaults:
+        case .fast:
             return "SetupVaultImage1"
-        case .TwoOfThreeVaults:
+        case .active:
             return "SetupVaultImage2"
-        case .MOfNVaults:
+        case .secure:
             return "SetupVaultImage3"
         }
     }
@@ -66,11 +66,11 @@ enum SetupVaultState: CaseIterable {
     var loaderTitle: String {
         // TODO: Change loader titles
         switch self {
-        case .TwoOfTwoVaults:
+        case .fast:
             return NSLocalizedString("lookingFor1MoreDevice", comment: "")
-        case .TwoOfThreeVaults:
+        case .active:
             return NSLocalizedString("lookingFor2MoreDevice", comment: "")
-        case .MOfNVaults:
+        case .secure:
             return NSLocalizedString("lookingForDevices", comment: "")
         }
     }

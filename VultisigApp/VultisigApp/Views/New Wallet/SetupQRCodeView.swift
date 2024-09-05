@@ -12,7 +12,7 @@ struct SetupQRCodeView: View {
     let tssType: TssType
     let vault: Vault
     
-    @State var selectedTab: SetupVaultState = .TwoOfTwoVaults
+    @State var selectedTab: SetupVaultState = .fast
     
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var viewModel: HomeViewModel

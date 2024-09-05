@@ -149,5 +149,5 @@ struct NewWalletNameView: View {
 }
 
 #Preview {
-    NewWalletNameView(tssType: .Keygen, vault: nil, selectedTab: .TwoOfTwoVaults)
+    NewWalletNameView(tssType: .Keygen, vault: nil, selectedTab: .fast)
 }

@@ -308,11 +308,11 @@ struct PeerDiscoveryView: View {
     
     func disableContinueButton() -> Bool {
         switch selectedTab {
-        case .TwoOfTwoVaults:
+        case .fast:
             return viewModel.selections.count < 2
-        case .TwoOfThreeVaults:
+        case .active:
             return viewModel.selections.count < 3
-        case .MOfNVaults:
+        case .secure:
             return viewModel.selections.count < 2
         }
     }
@@ -396,12 +396,12 @@ struct PeerDiscoveryView: View {
             return
         }
         
-        if selectedTab == .TwoOfTwoVaults {
+        if selectedTab == .fast {
             if participantDiscovery.peersFound.count == 1 {
                 handleSelection(participantDiscovery.peersFound[0])
                 viewModel.showSummary()
             }
-        } else if selectedTab == .TwoOfThreeVaults {
+        } else if selectedTab == .active {
             if participantDiscovery.peersFound.count == 1 {
                 handleSelection(participantDiscovery.peersFound[0])
             } else if participantDiscovery.peersFound.count == 2 {
@@ -424,9 +424,9 @@ struct PeerDiscoveryView: View {
         let totalSigners = viewModel.selections.count
         
         switch selectedTab {
-        case .TwoOfTwoVaults:
+        case .fast:
             viewModel.vaultDetail = String(format:  NSLocalizedString("numberOfPairedDevicesTwoOfTwo", comment: ""), totalSigners)
-        case .TwoOfThreeVaults:
+        case .active:
             viewModel.vaultDetail = String(format:  NSLocalizedString("numberOfPairedDevicesTwoOfThree", comment: ""), totalSigners)
         default:
             viewModel.vaultDetail = String(format:  NSLocalizedString("numberOfPairedDevicesMOfN", comment: ""), totalSigners)
@@ -457,7 +457,7 @@ struct PeerDiscoveryView: View {
 }
 
 #Preview {
-    PeerDiscoveryView(tssType: .Keygen, vault: Vault.example, selectedTab: .TwoOfTwoVaults)
+    PeerDiscoveryView(tssType: .Keygen, vault: Vault.example, selectedTab: .fast)
 #if os(macOS)
         .frame(minWidth: 900, minHeight: 600)
 #endif

@@ -61,6 +61,6 @@ struct LookingForDevicesLoader: View {
 #Preview {
     ZStack {
         Background()
-        LookingForDevicesLoader(selectedTab: .TwoOfTwoVaults)
+        LookingForDevicesLoader(selectedTab: .fast)
     }
 }

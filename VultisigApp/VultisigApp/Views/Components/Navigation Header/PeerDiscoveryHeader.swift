@@ -60,7 +60,7 @@ struct PeerDiscoveryHeader: View {
 #Preview {
     PeerDiscoveryHeader(
         vault: Vault.example,
-        selectedTab: .TwoOfTwoVaults,
+        selectedTab: .fast,
         viewModel: KeygenPeerDiscoveryViewModel(),
         shareSheetViewModel: ShareSheetViewModel()
     )
