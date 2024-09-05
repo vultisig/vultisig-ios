@@ -47,6 +47,7 @@ struct NavigationQRShareButton: View {
         }
     }
     
+#if os(iOS)
     var button: some View {
         Button {
             shareImage()
@@ -54,6 +55,7 @@ struct NavigationQRShareButton: View {
             content
         }
     }
+#endif
     
     private func getLink(image: Image) -> some View {
         ShareLink(
@@ -94,6 +96,7 @@ struct NavigationQRShareButton: View {
         }
     }
     
+#if os(iOS)
     func shareImage() {
         guard let image = renderedImage else {
             return
@@ -133,6 +136,7 @@ struct NavigationQRShareButton: View {
             view?.drawHierarchy(in: controller.view.bounds, afterScreenUpdates: true)
         }
     }
+#endif
 }
 
 #Preview {

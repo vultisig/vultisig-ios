@@ -101,7 +101,13 @@ struct ChainHeaderCell: View {
                 })
         #elseif os(macOS)
                 NavigationLink {
-                    AddressQRCodeView(addressData: group.address, showSheet: $showQRcode, isLoading: $isLoading)
+                    AddressQRCodeView(
+                        addressData: group.address,
+                        vault: vault,
+                        groupedChain: group,
+                        showSheet: $showQRcode,
+                        isLoading: $isLoading
+                    )
                 } label: {
                     qrCodeLabel
                 }
