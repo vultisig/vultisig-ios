@@ -39,7 +39,7 @@ class VaultDetailQRCodeViewModel: ObservableObject {
         let hexCode = vault.hexChainCode
         let id = "\(name)-\(ecdsaKey)-\(eddsaKey)-\(hexCode)".sha256()
         
-        return "Vultisig-\(vault.name)-\(id.suffix(3)).png"
+        return "VultisigQR-\(vault.name)-\(id.suffix(3)).png"
     }
     
     func getVaultPublicKeyExport(vault: Vault) -> VaultPublicKeyExport {
