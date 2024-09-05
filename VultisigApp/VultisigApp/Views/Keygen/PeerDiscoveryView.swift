@@ -61,7 +61,11 @@ struct PeerDiscoveryView: View {
             // only show the QR share button when it is in peer discovery
             if viewModel.status == .WaitingForDevices {
                 ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                    NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
+                    NavigationQRShareButton(
+                        vault: vault, 
+                        type: .Keygen,
+                        renderedImage: shareSheetViewModel.renderedImage
+                    )
                 }
             }
         }
@@ -89,6 +93,7 @@ struct PeerDiscoveryView: View {
     
     var headerMac: some View {
         PeerDiscoveryHeader(
+            vault: vault,
             selectedTab: selectedTab, 
             viewModel: viewModel,
             shareSheetViewModel: shareSheetViewModel

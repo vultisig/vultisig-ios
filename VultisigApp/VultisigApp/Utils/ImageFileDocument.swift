@@ -11,15 +11,21 @@ import UniformTypeIdentifiers
 #if os(iOS)
 struct ImageFileDocument: FileDocument {
     var image: UIImage
-
+    
     @MainActor
     init(image: Image) {
-        // Convert the SwiftUI Image to a UIImage
         let renderer = ImageRenderer(content: image)
-        let size = CGSize(width: 960, height: 1380)  // Adjust the size according to your needs
-
-        let uiImage = renderer.uiImage?.resized(to: size) ?? UIImage()
-        self.image = uiImage
+        
+        // Set the scale to match the device's screen scale for better quality
+        renderer.scale = 3
+        
+        // Render the image to a UIImage
+        if let uiImage = renderer.uiImage {
+            self.image = uiImage
+        } else {
+            // Fallback to an empty image if rendering fails
+            self.image = UIImage()
+        }
     }
 
     // FileDocument required methods
@@ -40,27 +46,27 @@ struct ImageFileDocument: FileDocument {
         return FileWrapper(regularFileWithContents: pngData)
     }
 }
+
 #elseif os(macOS)
 struct ImageFileDocument: FileDocument {
     var image: NSImage
     
     @MainActor
     init(image: Image) {
-        // Convert the SwiftUI Image to an NSImage without using 'self'
-        let renderer = ImageRenderer(content: image)
         let size = NSSize(width: 960, height: 1380)  // Adjust the size according to your needs
-
-        let nsImage = NSImage(size: size)
+        let renderer = ImageRenderer(content: image)
         
-        nsImage.lockFocus()
+        // Set the scale to match the device's screen scale for better quality
+        renderer.scale = NSScreen.main?.backingScaleFactor ?? 2.0
         
+        // Create an NSImage from the rendered CGImage
         if let cgImage = renderer.cgImage {
-            let context = NSGraphicsContext.current?.cgContext
-            context?.draw(cgImage, in: NSRect(origin: .zero, size: size))
+            let nsImage = NSImage(cgImage: cgImage, size: size)
+            self.image = nsImage
+        } else {
+            // Fallback to an empty image if rendering fails
+            self.image = NSImage(size: size)
         }
-        
-        nsImage.unlockFocus()
-        self.image = nsImage
     }
 
     // FileDocument required methods
