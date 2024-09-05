@@ -32,9 +32,13 @@ extension Decimal {
             formatter.groupingSeparator = ","
         }
         
+        let abbrevation = getAbbrevationValues()
+        let value = abbrevation.value
+        let prefix = abbrevation.prefix
+        
         // Convert Decimal to NSDecimalNumber before using with NumberFormatter
-        let number = NSDecimalNumber(decimal: self)
-        return formatter.string(from: number) ?? ""
+        let number = NSDecimalNumber(decimal: value)
+        return (formatter.string(from: number) ?? "") + prefix
     }
     
     func formatToDecimal(digits: Int) -> String {
@@ -45,10 +49,35 @@ extension Decimal {
         formatter.groupingSeparator = ""
         formatter.decimalSeparator = "."
         
-        // Convert Decimal to NSDecimalNumber before using with NumberFormatter
-        let number = NSDecimalNumber(decimal: self)
+        let abbrevation = getAbbrevationValues()
+        let value = abbrevation.value
+        let prefix = abbrevation.prefix
         
-        return formatter.string(from: number) ?? ""
+        // Convert Decimal to NSDecimalNumber before using with NumberFormatter
+        let number = NSDecimalNumber(decimal: value)
+        
+        return (formatter.string(from: number) ?? "") + prefix
+    }
+    
+    private func getAbbrevationValues() -> (value: Decimal, prefix: String) {
+        let millionValue: Decimal = 1_000_000
+        let billionValue: Decimal = 1_000_000_000
+        
+        let value: Decimal
+        let prefix: String
+        
+        if self > billionValue {
+            value = self/billionValue
+            prefix = "B"
+        } else if self > millionValue {
+            value = self/millionValue
+            prefix = "M"
+        } else {
+            value = self
+            prefix = ""
+        }
+        
+        return (value: value, prefix: prefix)
     }
 
     init(_ bigInt: BigInt) {
