@@ -9,6 +9,7 @@ import SwiftUI
 
 
 struct ChainHeaderCell: View {
+    let vault: Vault
     @ObservedObject var group: GroupedChain
     @Binding var isLoading: Bool
     @Binding var showAlert: Bool
@@ -21,7 +22,13 @@ struct ChainHeaderCell: View {
         cell
             .sheet(isPresented: $showQRcode) {
                 NavigationView {
-                    AddressQRCodeView(addressData: group.address, showSheet: $showQRcode, isLoading: $isLoading)
+                    AddressQRCodeView(
+                        addressData: group.address, 
+                        vault: vault, 
+                        groupedChain: group,
+                        showSheet: $showQRcode,
+                        isLoading: $isLoading
+                    )
                 }
             }
     }
@@ -158,5 +165,10 @@ struct ChainHeaderCell: View {
 }
 
 #Preview {
-    ChainHeaderCell(group: GroupedChain.example, isLoading: .constant(false), showAlert: .constant(false))
+    ChainHeaderCell(
+        vault: Vault.example,
+        group: GroupedChain.example,
+        isLoading: .constant(false),
+        showAlert: .constant(false)
+    )
 }

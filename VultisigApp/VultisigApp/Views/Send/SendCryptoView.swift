@@ -63,7 +63,11 @@ struct SendCryptoView: View {
             }
             if sendCryptoViewModel.currentIndex == 3 {
                 ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                    NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
+                    NavigationQRShareButton(
+                        vault: vault,
+                        type: .Keysign,
+                        renderedImage: shareSheetViewModel.renderedImage
+                    )
                 }
             }
         }
@@ -80,7 +84,11 @@ struct SendCryptoView: View {
     }
     
     var headerMac: some View {
-        SendCryptoHeader(sendCryptoViewModel: sendCryptoViewModel, shareSheetViewModel: shareSheetViewModel)
+        SendCryptoHeader(
+            vault: vault,
+            sendCryptoViewModel: sendCryptoViewModel,
+            shareSheetViewModel: shareSheetViewModel
+        )
     }
     
     var content: some View {
