@@ -251,6 +251,8 @@
 		A6980C342BC0A30900F452AB /* SettingFAQCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6980C332BC0A30900F452AB /* SettingFAQCell.swift */; };
 		A69FBB9A2C8AD63C00A4B78B /* CreateVaultView+MacOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69FBB992C8AD63C00A4B78B /* CreateVaultView+MacOS.swift */; };
 		A69FBB9C2C8AD68E00A4B78B /* CreateVaultView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69FBB9B2C8AD68E00A4B78B /* CreateVaultView+iOS.swift */; };
+		A69FBB9E2C8AD7BD00A4B78B /* ContentView+MacOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69FBB9D2C8AD7BD00A4B78B /* ContentView+MacOS.swift */; };
+		A69FBBA02C8AD7C700A4B78B /* ContentView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69FBB9F2C8AD7C700A4B78B /* ContentView+iOS.swift */; };
 		A6A41CAE2C63512D00C6858D /* ShareSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A41CAD2C63512D00C6858D /* ShareSheetViewController.swift */; };
 		A6A831D62C803EBF00E28662 /* ImageFileDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A831D52C803EBF00E28662 /* ImageFileDocument.swift */; };
 		A6AF960C2C2E2D6400992578 /* GeneralQRImportMacView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6AF960B2C2E2D6400992578 /* GeneralQRImportMacView.swift */; };
@@ -720,6 +722,8 @@
 		A6980C332BC0A30900F452AB /* SettingFAQCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingFAQCell.swift; sourceTree = "<group>"; };
 		A69FBB992C8AD63C00A4B78B /* CreateVaultView+MacOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CreateVaultView+MacOS.swift"; sourceTree = "<group>"; };
 		A69FBB9B2C8AD68E00A4B78B /* CreateVaultView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CreateVaultView+iOS.swift"; sourceTree = "<group>"; };
+		A69FBB9D2C8AD7BD00A4B78B /* ContentView+MacOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ContentView+MacOS.swift"; sourceTree = "<group>"; };
+		A69FBB9F2C8AD7C700A4B78B /* ContentView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ContentView+iOS.swift"; sourceTree = "<group>"; };
 		A6A41CAD2C63512D00C6858D /* ShareSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSheetViewController.swift; sourceTree = "<group>"; };
 		A6A831D52C803EBF00E28662 /* ImageFileDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageFileDocument.swift; sourceTree = "<group>"; };
 		A6AF960B2C2E2D6400992578 /* GeneralQRImportMacView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralQRImportMacView.swift; sourceTree = "<group>"; };
@@ -1364,6 +1368,7 @@
 			children = (
 				A62766502C85275F002C666A /* ImportWalletView+iOS.swift */,
 				A69FBB9B2C8AD68E00A4B78B /* CreateVaultView+iOS.swift */,
+				A69FBB9F2C8AD7C700A4B78B /* ContentView+iOS.swift */,
 			);
 			path = iOS;
 			sourceTree = "<group>";
@@ -1373,6 +1378,7 @@
 			children = (
 				A62766522C852765002C666A /* ImportWalletView+MacOS.swift */,
 				A69FBB992C8AD63C00A4B78B /* CreateVaultView+MacOS.swift */,
+				A69FBB9D2C8AD7BD00A4B78B /* ContentView+MacOS.swift */,
 			);
 			path = macOS;
 			sourceTree = "<group>";
@@ -2411,6 +2417,7 @@
 				A6B51BE92C098DAE007FDD3C /* OnFirstAppear.swift in Sources */,
 				A6833D932C66A4EA002029E1 /* SwapCryptoHeader.swift in Sources */,
 				DE49A1B22B6A0F77000F3AFB /* JoinKeygenView.swift in Sources */,
+				A69FBB9E2C8AD7BD00A4B78B /* ContentView+MacOS.swift in Sources */,
 				DE9EB0F62BA3F9C2001747D9 /* ParticipantDiscovery.swift in Sources */,
 				B58768702BFB0C43001AAEA5 /* DepositStore.swift in Sources */,
 				A6833D952C66A697002029E1 /* SendCryptoHeader.swift in Sources */,
@@ -2502,6 +2509,7 @@
 				A6B7F49E2C496EA8006D83D1 /* VaultDetailMacQRCode.swift in Sources */,
 				A633B13E2B9A9E30003D1738 /* VaultDetailView.swift in Sources */,
 				A6D0BA6A2C08353700E24DC9 /* NoCameraPermissionView.swift in Sources */,
+				A69FBBA02C8AD7C700A4B78B /* ContentView+iOS.swift in Sources */,
 				B57DD59E2C3E69F500934CBB /* TokenAccountsByOwner.swift in Sources */,
 				A66BFCCD2C1347D5004DCD4F /* NavigationQRShareButton.swift in Sources */,
 				A5CBA32C2BCD747C00088CC3 /* TappableTextFieldStyle.swift in Sources */,

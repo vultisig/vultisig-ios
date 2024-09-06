@@ -18,25 +18,7 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             NavigationStack {
-                ZStack {
-                    if accountViewModel.showSplashView {
-                        splashView
-                    } else if accountViewModel.showCover {
-                        coverView
-                    } else if accountViewModel.showOnboarding {
-                        onboardingView
-                    } else if vaults.count>0 {
-                        homeView
-                    } else {
-                        createVaultView
-                    }
-                }
-#if os(iOS)
-                .navigationBarTitleDisplayMode(.inline)
-                .navigationBarTitleTextColor(.neutral0)
-#elseif os(macOS)
-                .navigationTitle("Vultisig")
-#endif
+                container
             }
             .accentColor(.white)
             .onOpenURL { incomingURL in
@@ -49,6 +31,22 @@ struct ContentView: View {
         }
         .id(accountViewModel.referenceID)
         .colorScheme(.dark)
+    }
+    
+    var content: some View {
+        ZStack {
+            if accountViewModel.showSplashView {
+                splashView
+            } else if accountViewModel.showCover {
+                coverView
+            } else if accountViewModel.showOnboarding {
+                onboardingView
+            } else if vaults.count>0 {
+                homeView
+            } else {
+                createVaultView
+            }
+        }
     }
     
     var splashView: some View {

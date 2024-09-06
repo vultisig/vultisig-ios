@@ -5,9 +5,9 @@
 //  Created by Amol Kumar on 2024-09-06.
 //
 
+#if os(iOS)
 import SwiftUI
 
-#if os(iOS)
 extension CreateVaultView {
     var main: some View {
         view
