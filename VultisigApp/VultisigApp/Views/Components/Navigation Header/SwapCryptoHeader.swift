@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct SwapCryptoHeader: View {
+    let vault: Vault
     @ObservedObject var swapViewModel: SwapCryptoViewModel
     @ObservedObject var shareSheetViewModel: ShareSheetViewModel
     
@@ -38,9 +39,13 @@ struct SwapCryptoHeader: View {
     
     var trailingAction: some View {
         ZStack {
-            NavigationQRShareButton(title: "swap", renderedImage: shareSheetViewModel.renderedImage)
-                .opacity(swapViewModel.currentIndex==3 ? 1 : 0)
-                .disabled(swapViewModel.currentIndex != 3)
+            NavigationQRShareButton(
+                vault: vault, 
+                type: .Keysign,
+                renderedImage: shareSheetViewModel.renderedImage
+            )
+            .opacity(swapViewModel.currentIndex==3 ? 1 : 0)
+            .disabled(swapViewModel.currentIndex != 3)
         }
     }
     
@@ -67,5 +72,9 @@ struct SwapCryptoHeader: View {
 }
 
 #Preview {
-    SwapCryptoHeader(swapViewModel: SwapCryptoViewModel(), shareSheetViewModel: ShareSheetViewModel())
+    SwapCryptoHeader(
+        vault: Vault.example,
+        swapViewModel: SwapCryptoViewModel(),
+        shareSheetViewModel: ShareSheetViewModel()
+    )
 }
