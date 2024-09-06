@@ -257,6 +257,8 @@
 		A69FBBA82C8ADC4600A4B78B /* WelcomeView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69FBBA72C8ADC4600A4B78B /* WelcomeView+macOS.swift */; };
 		A69FBBC42C8BB5AD00A4B78B /* NoCameraPermissionView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69FBBC32C8BB5AD00A4B78B /* NoCameraPermissionView+iOS.swift */; };
 		A69FBBC62C8BB5B700A4B78B /* NoCameraPermissionView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69FBBC52C8BB5B700A4B78B /* NoCameraPermissionView+macOS.swift */; };
+		A69FBBC82C8BB76000A4B78B /* CoverView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69FBBC72C8BB76000A4B78B /* CoverView+macOS.swift */; };
+		A69FBBCA2C8BB77900A4B78B /* CoverView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69FBBC92C8BB77900A4B78B /* CoverView+iOS.swift */; };
 		A6A41CAE2C63512D00C6858D /* ShareSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A41CAD2C63512D00C6858D /* ShareSheetViewController.swift */; };
 		A6A831D62C803EBF00E28662 /* ImageFileDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A831D52C803EBF00E28662 /* ImageFileDocument.swift */; };
 		A6AF960C2C2E2D6400992578 /* GeneralQRImportMacView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6AF960B2C2E2D6400992578 /* GeneralQRImportMacView.swift */; };
@@ -732,6 +734,8 @@
 		A69FBBA72C8ADC4600A4B78B /* WelcomeView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WelcomeView+macOS.swift"; sourceTree = "<group>"; };
 		A69FBBC32C8BB5AD00A4B78B /* NoCameraPermissionView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NoCameraPermissionView+iOS.swift"; sourceTree = "<group>"; };
 		A69FBBC52C8BB5B700A4B78B /* NoCameraPermissionView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NoCameraPermissionView+macOS.swift"; sourceTree = "<group>"; };
+		A69FBBC72C8BB76000A4B78B /* CoverView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoverView+macOS.swift"; sourceTree = "<group>"; };
+		A69FBBC92C8BB77900A4B78B /* CoverView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoverView+iOS.swift"; sourceTree = "<group>"; };
 		A6A41CAD2C63512D00C6858D /* ShareSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSheetViewController.swift; sourceTree = "<group>"; };
 		A6A831D52C803EBF00E28662 /* ImageFileDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageFileDocument.swift; sourceTree = "<group>"; };
 		A6AF960B2C2E2D6400992578 /* GeneralQRImportMacView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralQRImportMacView.swift; sourceTree = "<group>"; };
@@ -1596,6 +1600,7 @@
 				A6F42CC12C09175B00D0431C /* GeneralCodeScannerView.swift */,
 				A69FBBA52C8ADC2E00A4B78B /* WelcomeView+iOS.swift */,
 				A69FBBC32C8BB5AD00A4B78B /* NoCameraPermissionView+iOS.swift */,
+				A69FBBC92C8BB77900A4B78B /* CoverView+iOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -1607,6 +1612,7 @@
 				A69FBB992C8AD63C00A4B78B /* CreateVaultView+macOS.swift */,
 				A69FBBA72C8ADC4600A4B78B /* WelcomeView+macOS.swift */,
 				A69FBBC52C8BB5B700A4B78B /* NoCameraPermissionView+macOS.swift */,
+				A69FBBC72C8BB76000A4B78B /* CoverView+macOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -2365,6 +2371,7 @@
 				46DE088E2BD08C9900AE8BDE /* KujiraService.swift in Sources */,
 				DE63AE4F2BB4E96E001BBE5C /* JSONRPCError.swift in Sources */,
 				469ED3992B98E896008D4951 /* CosmosBalanceResponse.swift in Sources */,
+				A69FBBC82C8BB76000A4B78B /* CoverView+macOS.swift in Sources */,
 				DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */,
 				46B60BC02BBB20130043EBBA /* RpcEvmService.swift in Sources */,
 				A6951E882C52DB9D007292E7 /* Search.swift in Sources */,
@@ -2502,6 +2509,7 @@
 				B5E476AB2C1A13D7005DB485 /* dydx.swift in Sources */,
 				B5CA1A062C16C39700789B11 /* AsyncImageView.swift in Sources */,
 				B55C10782C6AC0820095D274 /* TransactionMemoWithdrawPool.swift in Sources */,
+				A69FBBCA2C8BB77900A4B78B /* CoverView+iOS.swift in Sources */,
 				A680BAC52BF47AA9006E611D /* OpenGalleryButton.swift in Sources */,
 				A65649E52B96602700E4B329 /* VaultExtension.swift in Sources */,
 				A6725D3C2C3F9D6400D47716 /* AddressBookTextField.swift in Sources */,
