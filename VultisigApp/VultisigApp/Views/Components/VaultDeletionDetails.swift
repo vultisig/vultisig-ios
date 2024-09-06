@@ -15,7 +15,7 @@ struct VaultDeletionDetails: View {
     
     var body: some View {
 #if os(iOS)
-        let spacing: CGFloat = isPhoneSE ? 18 : 32
+        let spacing: CGFloat = 18
 #elseif os(macOS)
         let spacing: CGFloat = 12
 #endif
@@ -25,6 +25,7 @@ struct VaultDeletionDetails: View {
             nameCell
             valueCell
             typeCell
+            deviceCell
             ECDSAKeyCell
             EdDSAKeyCell
         }
@@ -66,6 +67,13 @@ struct VaultDeletionDetails: View {
         }
     }
     
+    var deviceCell: some View {
+        HStack(spacing: 0) {
+            getTitleText("deviceID")
+            getDescriptionText(vault.localPartyID)
+        }
+    }
+    
     var ECDSAKeyCell: some View {
         HStack(spacing: 0) {
             getTitleText("ECDSAKey")
@@ -92,7 +100,7 @@ struct VaultDeletionDetails: View {
     private func getDescriptionText(_ description: String, shouldShrink: Bool = false) -> some View {
         Text(NSLocalizedString(description, comment: ""))
 #if os(iOS)
-            .font(shouldShrink ? .body8Menlo : .body12Menlo)
+            .font(shouldShrink ? .body10Menlo : .body12Menlo)
 #elseif os(macOS)
             .font(.body12Menlo)
 #endif

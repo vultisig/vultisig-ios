@@ -312,3 +312,4 @@
 "backupPasswordDisclaimer" = "Non memorizzare mai le quote del Vault di dispositivi diversi nello stesso luogo";
 "share" = "Compartilhar";
 "dropFileHere" = "Rilascia il file qui...";
+"deviceID" = "ID dispositivo";

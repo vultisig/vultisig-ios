@@ -15,6 +15,10 @@ struct SendCryptoKeysignView: View {
     
     @Environment(\.dismiss) var dismiss
     
+    let progressTotalCount: Double = 4
+    let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+    let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
+    
     var body: some View {
         if showError {
             errorView
@@ -29,6 +33,7 @@ struct SendCryptoKeysignView: View {
             signingAnimation
             Spacer()
             wifiInstructions
+            appVersion
         }
     }
     
@@ -102,6 +107,17 @@ struct SendCryptoKeysignView: View {
         }
         .padding(.vertical, 40)
         .padding(.horizontal, 15)
+    }
+    
+    var appVersion: some View {
+        return VStack {
+            Text("Vultisig APP V\(version ?? "1")")
+            Text("(Build \(build ?? "1"))")
+        }
+        .textCase(.uppercase)
+        .font(.body14Menlo)
+        .foregroundColor(.turquoise600)
+        .padding(.bottom, 30)
     }
 }
 

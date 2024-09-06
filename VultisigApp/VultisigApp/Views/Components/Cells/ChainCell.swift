@@ -67,7 +67,7 @@ struct ChainCell: View {
     }
     
     var title: some View {
-        Text(group.name.capitalized)
+        Text(group.name)
             .font(.body16MontserratBold)
             .foregroundColor(.neutral0)
     }

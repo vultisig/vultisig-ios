@@ -47,7 +47,11 @@ struct SwapCryptoView: View {
             
             if swapViewModel.currentIndex==3 {
                 ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                    NavigationQRShareButton(title: "swap", renderedImage: shareSheetViewModel.renderedImage)
+                    NavigationQRShareButton(
+                        vault: vault,
+                        type: .Keysign,
+                        renderedImage: shareSheetViewModel.renderedImage
+                    )
                 }
             }
         }
@@ -64,7 +68,11 @@ struct SwapCryptoView: View {
     }
     
     var headerMac: some View {
-        SwapCryptoHeader(swapViewModel: swapViewModel, shareSheetViewModel: shareSheetViewModel)
+        SwapCryptoHeader(
+            vault: vault,
+            swapViewModel: swapViewModel,
+            shareSheetViewModel: shareSheetViewModel
+        )
     }
     
     var content: some View {

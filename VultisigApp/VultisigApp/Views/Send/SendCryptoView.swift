@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import BigInt
 
 struct SendCryptoView: View {
     @ObservedObject var tx: SendTransaction
@@ -18,7 +19,8 @@ struct SendCryptoView: View {
     @State var keysignPayload: KeysignPayload? = nil
     @State var keysignView: KeysignView? = nil
     @State var selectedChain: Chain? = nil
-    
+    @State var settingsPresented = false
+
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     
@@ -54,10 +56,18 @@ struct SendCryptoView: View {
                     backButton
                 }
             }
-            
-            if sendCryptoViewModel.currentIndex==3 {
+            if showFeeSettings {
                 ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                    NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
+                    settingsButton
+                }
+            }
+            if sendCryptoViewModel.currentIndex == 3 {
+                ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                    NavigationQRShareButton(
+                        vault: vault,
+                        type: .Keysign,
+                        renderedImage: shareSheetViewModel.renderedImage
+                    )
                 }
             }
         }
@@ -74,7 +84,11 @@ struct SendCryptoView: View {
     }
     
     var headerMac: some View {
-        SendCryptoHeader(sendCryptoViewModel: sendCryptoViewModel, shareSheetViewModel: shareSheetViewModel)
+        SendCryptoHeader(
+            vault: vault,
+            sendCryptoViewModel: sendCryptoViewModel,
+            shareSheetViewModel: shareSheetViewModel
+        )
     }
     
     var content: some View {
@@ -176,6 +190,30 @@ struct SendCryptoView: View {
         }
     }
 
+    var settingsButton: some View {
+        Button {
+            settingsPresented = true
+        } label: {
+            Image(systemName: "gearshape")
+        }
+        .foregroundColor(.neutral0)
+        .sheet(isPresented: $settingsPresented) {
+            SendGasSettingsView(
+                viewModel: SendGasSettingsViewModel(
+                    coin: tx.coin, 
+                    vault: vault,
+                    gasLimit: tx.gasLimit,
+                    selectedMode: tx.feeMode
+                ),
+                output: self
+            )
+        }
+    }
+
+    var showFeeSettings: Bool {
+        return sendCryptoViewModel.currentIndex == 1 && tx.coin.chainType == .EVM
+    }
+
     var errorView: some View {
         SendCryptoSigningErrorView()
     }
@@ -225,6 +263,20 @@ struct SendCryptoView: View {
         sendCryptoViewModel.validateAddress(tx: tx, address: newValue)
     }
 }
+
+extension SendCryptoView: SendGasSettingsOutput {
+
+    func didSetFeeSettings(gasLimit: BigInt, mode: FeeMode) {
+        tx.customGasLimit = gasLimit
+        tx.feeMode = mode
+
+        Task {
+            await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
+        }
+    }
+}
+
+
 
 #Preview {
     SendCryptoView(

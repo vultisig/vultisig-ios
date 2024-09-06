@@ -29,7 +29,7 @@ class ThorchainService: ThorchainSwapProvider {
         self.cacheBalances(balanceResponse.balances, forAddress: address)
         return balanceResponse.balances
     }
-
+    
     func resolveTNS(name: String, chain: Chain) async throws -> String {
         struct Response: Codable {
             struct Entry: Codable {
@@ -38,20 +38,20 @@ class ThorchainService: ThorchainSwapProvider {
             }
             let entries: [Entry]
         }
-
+        
         let url = Endpoint.resolveTNS(name: name)
         let (data, _) = try await URLSession.shared.data(from: url)
         let response = try JSONDecoder().decode(Response.self, from: data)
-
-        guard let entry = response.entries.first(where: { 
+        
+        guard let entry = response.entries.first(where: {
             $0.chain.lowercased() == chain.swapAsset.lowercased()
         }) else {
             throw Errors.tnsEntryNotFound
         }
-
+        
         return entry.address
     }
-
+    
     func fetchAccountNumber(_ address: String) async throws -> THORChainAccountValue? {
         guard let url = URL(string: Endpoint.fetchAccountNumberThorchainNineRealms(address)) else {
             return nil
@@ -68,7 +68,7 @@ class ThorchainService: ThorchainSwapProvider {
     }
     
     func fetchSwapQuotes(address: String, fromAsset: String, toAsset: String, amount: String, interval: Int, isAffiliate: Bool) async throws -> ThorchainSwapQuote {
-
+        
         let url = Endpoint.fetchSwapQuoteThorchain(
             chain: .thorchain,
             address: address,
@@ -78,7 +78,7 @@ class ThorchainService: ThorchainSwapProvider {
             interval: String(interval),
             isAffiliate: isAffiliate
         )
-
+        
         let (data, _) = try await URLSession.shared.data(for: get9RRequest(url: url))
         
         do {
@@ -142,11 +142,31 @@ class ThorchainService: ThorchainSwapProvider {
         network = response.result.node_info.network
         return response.result.node_info.network
     }
+    
+    func ensureTHORChainChainID() -> String {
+        if !network.isEmpty {
+            return network
+        }
+        let group = DispatchGroup()
+        group.enter()
+        DispatchQueue.global().async {
+            Task {
+                do{
+                    _ =  try await self.getTHORChainChainID()
+                } catch {
+                    print("fail to get thorchain id \(error.localizedDescription)")
+                }
+                group.leave()
+            }
+        }
+        group.wait()
+        return network
+    }
 }
 
 
 private extension ThorchainService {
-
+    
     enum Errors: Error {
         case tnsEntryNotFound
     }

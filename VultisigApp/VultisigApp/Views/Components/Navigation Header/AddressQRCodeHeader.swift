@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct AddressQRCodeHeader: View {
+    let vault: Vault
+    let groupedChain: GroupedChain
     @ObservedObject var shareSheetViewModel: ShareSheetViewModel
     
     var body: some View {
@@ -34,10 +36,19 @@ struct AddressQRCodeHeader: View {
     }
     
     var trailingAction: some View {
-        NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
+        NavigationQRShareButton(
+            vault: vault,
+            type: .Address,
+            renderedImage: shareSheetViewModel.renderedImage,
+            title: groupedChain.name
+        )
     }
 }
 
 #Preview {
-    AddressQRCodeHeader(shareSheetViewModel: ShareSheetViewModel())
+    AddressQRCodeHeader(
+        vault: Vault.example,
+        groupedChain: GroupedChain.example,
+        shareSheetViewModel: ShareSheetViewModel()
+    )
 }

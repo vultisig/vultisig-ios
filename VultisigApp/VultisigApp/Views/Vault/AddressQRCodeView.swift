@@ -9,6 +9,8 @@ import SwiftUI
 
 struct AddressQRCodeView: View {
     let addressData: String
+    let vault: Vault
+    let groupedChain: GroupedChain
     @Binding var showSheet: Bool
     @Binding var isLoading: Bool
     
@@ -37,7 +39,12 @@ struct AddressQRCodeView: View {
                 NavigationBackSheetButton(showSheet: $showSheet)
             }
             ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                NavigationQRShareButton(title: "joinKeygen", renderedImage: shareSheetViewModel.renderedImage)
+                NavigationQRShareButton(
+                    vault: vault,
+                    type: .Address,
+                    renderedImage: shareSheetViewModel.renderedImage,
+                    title: groupedChain.name
+                )
             }
         }
 #endif
@@ -53,7 +60,11 @@ struct AddressQRCodeView: View {
     }
     
     var headerMac: some View {
-        AddressQRCodeHeader(shareSheetViewModel: shareSheetViewModel)
+        AddressQRCodeHeader(
+            vault: vault,
+            groupedChain: groupedChain,
+            shareSheetViewModel: shareSheetViewModel
+        )
     }
     
     var view: some View {
@@ -110,5 +121,11 @@ struct AddressQRCodeView: View {
 }
 
 #Preview {
-    AddressQRCodeView(addressData: "123456789", showSheet: .constant(true), isLoading: .constant(false))
+    AddressQRCodeView(
+        addressData: "123456789", 
+        vault: Vault.example, 
+        groupedChain: GroupedChain.example,
+        showSheet: .constant(true),
+        isLoading: .constant(false)
+    )
 }

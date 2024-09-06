@@ -181,7 +181,12 @@ struct ChainDetailView: View {
     }
     
     var header: some View {
-        ChainHeaderCell(group: group, isLoading: $isLoading, showAlert: $showAlert)
+        ChainHeaderCell(
+            vault: vault,
+            group: group,
+            isLoading: $isLoading,
+            showAlert: $showAlert
+        )
     }
     
     var cells: some View {
