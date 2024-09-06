@@ -1,5 +1,5 @@
 //
-//  ImportWalletViewMac.swift
+//  ImportWalletView+MacOS.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2024-09-01.

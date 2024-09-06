@@ -64,22 +64,3 @@ struct CreateVaultView: View {
 #Preview {
     CreateVaultView()
 }
-
-#if os(macOS)
-extension CreateVaultView {
-    var main: some View {
-        VStack {
-            headerMac
-            view
-        }
-    }
-}
-#endif
-
-#if os(iOS)
-extension CreateVaultView {
-    var main: some View {
-        view
-    }
-}
-#endif
