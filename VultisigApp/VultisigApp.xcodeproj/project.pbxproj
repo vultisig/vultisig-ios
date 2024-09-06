@@ -255,6 +255,8 @@
 		A69FBBA02C8AD7C700A4B78B /* ContentView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69FBB9F2C8AD7C700A4B78B /* ContentView+iOS.swift */; };
 		A69FBBA62C8ADC2E00A4B78B /* WelcomeView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69FBBA52C8ADC2E00A4B78B /* WelcomeView+iOS.swift */; };
 		A69FBBA82C8ADC4600A4B78B /* WelcomeView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69FBBA72C8ADC4600A4B78B /* WelcomeView+macOS.swift */; };
+		A69FBBC42C8BB5AD00A4B78B /* NoCameraPermissionView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69FBBC32C8BB5AD00A4B78B /* NoCameraPermissionView+iOS.swift */; };
+		A69FBBC62C8BB5B700A4B78B /* NoCameraPermissionView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69FBBC52C8BB5B700A4B78B /* NoCameraPermissionView+macOS.swift */; };
 		A6A41CAE2C63512D00C6858D /* ShareSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A41CAD2C63512D00C6858D /* ShareSheetViewController.swift */; };
 		A6A831D62C803EBF00E28662 /* ImageFileDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A831D52C803EBF00E28662 /* ImageFileDocument.swift */; };
 		A6AF960C2C2E2D6400992578 /* GeneralQRImportMacView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6AF960B2C2E2D6400992578 /* GeneralQRImportMacView.swift */; };
@@ -728,6 +730,8 @@
 		A69FBB9F2C8AD7C700A4B78B /* ContentView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ContentView+iOS.swift"; sourceTree = "<group>"; };
 		A69FBBA52C8ADC2E00A4B78B /* WelcomeView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WelcomeView+iOS.swift"; sourceTree = "<group>"; };
 		A69FBBA72C8ADC4600A4B78B /* WelcomeView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WelcomeView+macOS.swift"; sourceTree = "<group>"; };
+		A69FBBC32C8BB5AD00A4B78B /* NoCameraPermissionView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NoCameraPermissionView+iOS.swift"; sourceTree = "<group>"; };
+		A69FBBC52C8BB5B700A4B78B /* NoCameraPermissionView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NoCameraPermissionView+macOS.swift"; sourceTree = "<group>"; };
 		A6A41CAD2C63512D00C6858D /* ShareSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSheetViewController.swift; sourceTree = "<group>"; };
 		A6A831D52C803EBF00E28662 /* ImageFileDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageFileDocument.swift; sourceTree = "<group>"; };
 		A6AF960B2C2E2D6400992578 /* GeneralQRImportMacView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralQRImportMacView.swift; sourceTree = "<group>"; };
@@ -1591,6 +1595,7 @@
 				A69FBB9B2C8AD68E00A4B78B /* CreateVaultView+iOS.swift */,
 				A6F42CC12C09175B00D0431C /* GeneralCodeScannerView.swift */,
 				A69FBBA52C8ADC2E00A4B78B /* WelcomeView+iOS.swift */,
+				A69FBBC32C8BB5AD00A4B78B /* NoCameraPermissionView+iOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -1601,6 +1606,7 @@
 				A62766522C852765002C666A /* ImportWalletView+macOS.swift */,
 				A69FBB992C8AD63C00A4B78B /* CreateVaultView+macOS.swift */,
 				A69FBBA72C8ADC4600A4B78B /* WelcomeView+macOS.swift */,
+				A69FBBC52C8BB5B700A4B78B /* NoCameraPermissionView+macOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -2391,6 +2397,7 @@
 				46AC40A82B920061001704E6 /* EtherscanService.swift in Sources */,
 				A62758F22B97B10600ADE3A6 /* Endpoint.swift in Sources */,
 				465A8D532B9E689B006E7457 /* SolanaService.swift in Sources */,
+				A69FBBC42C8BB5AD00A4B78B /* NoCameraPermissionView+iOS.swift in Sources */,
 				A66A0BD92BA12DF50021A483 /* RenameVaultView.swift in Sources */,
 				A679D2A02C81951100FFCDA1 /* KeyboardObserver.swift in Sources */,
 				A633B1252B993FE7003D1738 /* FilledButton.swift in Sources */,
@@ -2587,6 +2594,7 @@
 				DE49A19C2B67133D000F3AFB /* Vault.swift in Sources */,
 				A6F9E7AB2BED6CCC00BA36E1 /* SetupVaultState.swift in Sources */,
 				A55BCEBB2BC59E8100D35917 /* KeysignPayloadFactory.swift in Sources */,
+				A69FBBC62C8BB5B700A4B78B /* NoCameraPermissionView+macOS.swift in Sources */,
 				A608E3792C02472C00E40B85 /* SwapCryptoAmountTextField.swift in Sources */,
 				A564ED442BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift in Sources */,
 				A5D0C9352BEE77190022D421 /* SwapPayload.swift in Sources */,
