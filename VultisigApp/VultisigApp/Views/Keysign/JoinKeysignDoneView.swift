@@ -130,15 +130,6 @@ struct JoinKeysignDoneView: View {
             .foregroundColor(.neutral0)
     }
     
-    private func copyHash(txid: String) {
-        let urlStr = viewModel.getTransactionExplorerURL(txid: txid)
-        showAlert = true
-#if os(iOS)
-        let pasteboard = UIPasteboard.general
-        pasteboard.string = urlStr
-#endif
-    }
-    
     private func shareLink(txid: String) {
         let urlString = viewModel.getTransactionExplorerURL(txid: txid)
         if !urlString.isEmpty, let url = URL(string: urlString) {
