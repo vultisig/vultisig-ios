@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct SwapVerifyView: View {
-
     @StateObject var verifyViewModel = SwapCryptoVerifyViewModel()
 
     @ObservedObject var tx: SwapTransaction
@@ -30,13 +29,14 @@ struct SwapVerifyView: View {
     }
 
     var view: some View {
+        container
+    }
+    
+    var content: some View {
         VStack {
             fields
             button
         }
-#if os(macOS)
-        .padding(.horizontal, 25)
-#endif
     }
 
     var fields: some View {

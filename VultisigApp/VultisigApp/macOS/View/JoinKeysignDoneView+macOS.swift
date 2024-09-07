@@ -7,11 +7,16 @@
 
 #if os(macOS)
 import SwiftUI
+import Cocoa
 
 extension JoinKeysignDoneView {
     func copyHash(txid: String) {
         let urlStr = viewModel.getTransactionExplorerURL(txid: txid)
         showAlert = true
+
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(urlStr, forType: .string)
     }
 }
 #endif
