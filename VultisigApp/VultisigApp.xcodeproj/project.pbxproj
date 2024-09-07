@@ -143,6 +143,8 @@
 		A633B13E2B9A9E30003D1738 /* VaultDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A633B13D2B9A9E30003D1738 /* VaultDetailView.swift */; };
 		A6386D882C8BBB7200DDD58E /* JoinKeysignDoneView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6386D872C8BBB7200DDD58E /* JoinKeysignDoneView+iOS.swift */; };
 		A6386D8A2C8BBB7C00DDD58E /* JoinKeysignDoneView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6386D892C8BBB7C00DDD58E /* JoinKeysignDoneView+macOS.swift */; };
+		A6386D8C2C8C274200DDD58E /* BackupVaultNowView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6386D8B2C8C274200DDD58E /* BackupVaultNowView+iOS.swift */; };
+		A6386D8E2C8C274C00DDD58E /* BackupVaultNowView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6386D8D2C8C274C00DDD58E /* BackupVaultNowView+macOS.swift */; };
 		A638752F2C38570F000CF242 /* BackupVaultNowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A638752E2C38570F000CF242 /* BackupVaultNowView.swift */; };
 		A63875612C386647000CF242 /* BackupNowDisclaimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63875602C386647000CF242 /* BackupNowDisclaimer.swift */; };
 		A63953B02BA7BEDA000802EC /* Checkbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63953AF2BA7BEDA000802EC /* Checkbox.swift */; };
@@ -625,6 +627,8 @@
 		A633B13D2B9A9E30003D1738 /* VaultDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailView.swift; sourceTree = "<group>"; };
 		A6386D872C8BBB7200DDD58E /* JoinKeysignDoneView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JoinKeysignDoneView+iOS.swift"; sourceTree = "<group>"; };
 		A6386D892C8BBB7C00DDD58E /* JoinKeysignDoneView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JoinKeysignDoneView+macOS.swift"; sourceTree = "<group>"; };
+		A6386D8B2C8C274200DDD58E /* BackupVaultNowView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackupVaultNowView+iOS.swift"; sourceTree = "<group>"; };
+		A6386D8D2C8C274C00DDD58E /* BackupVaultNowView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BackupVaultNowView+macOS.swift"; sourceTree = "<group>"; };
 		A638752E2C38570F000CF242 /* BackupVaultNowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupVaultNowView.swift; sourceTree = "<group>"; };
 		A63875602C386647000CF242 /* BackupNowDisclaimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupNowDisclaimer.swift; sourceTree = "<group>"; };
 		A63953AF2BA7BEDA000802EC /* Checkbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checkbox.swift; sourceTree = "<group>"; };
@@ -1611,6 +1615,7 @@
 				A69FBBC92C8BB77900A4B78B /* CoverView+iOS.swift */,
 				A69FBBCF2C8BBA2100A4B78B /* TransactionMemoVerifyView+iOS.swift */,
 				A6386D872C8BBB7200DDD58E /* JoinKeysignDoneView+iOS.swift */,
+				A6386D8B2C8C274200DDD58E /* BackupVaultNowView+iOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -1625,6 +1630,7 @@
 				A69FBBC72C8BB76000A4B78B /* CoverView+macOS.swift */,
 				A69FBBCD2C8BBA1900A4B78B /* TransactionMemoVerifyView+macOS.swift */,
 				A6386D892C8BBB7C00DDD58E /* JoinKeysignDoneView+macOS.swift */,
+				A6386D8D2C8C274C00DDD58E /* BackupVaultNowView+macOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -2341,6 +2347,7 @@
 				A6980C242BC0836300F452AB /* SettingsView.swift in Sources */,
 				A6F9F7DF2B9BAA9F00790258 /* Separator.swift in Sources */,
 				A6F9F7DB2B9BA2DE00790258 /* ChainCell.swift in Sources */,
+				A6386D8E2C8C274C00DDD58E /* BackupVaultNowView+macOS.swift in Sources */,
 				A686965A2C1F72FF004EDE0B /* HiddenTextField.swift in Sources */,
 				049BBB682B71E9C5004C231F /* WifiInstruction.swift in Sources */,
 				465B09B72B7D909400952DD9 /* CryptoPrice.swift in Sources */,
@@ -2353,6 +2360,7 @@
 				465B09B52B7D8E7B00952DD9 /* CryptoPriceService.swift in Sources */,
 				B54E31812BF5A22700D4FC0A /* StyledFloatingPointField.swift in Sources */,
 				A6980C342BC0A30900F452AB /* SettingFAQCell.swift in Sources */,
+				A6386D8C2C8C274200DDD58E /* BackupVaultNowView+iOS.swift in Sources */,
 				A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */,
 				469ED3942B98E776008D4951 /* ThorchainService.swift in Sources */,
 				462DCD702BCA14F3003D542F /* CoinPaprikaQuote.swift in Sources */,
