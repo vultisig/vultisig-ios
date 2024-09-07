@@ -40,25 +40,14 @@ struct SwapCryptoDetailsView: View {
     }
     
     var view: some View {
+       container
+    }
+    
+    var content: some View {
         VStack {
             fields
             continueButton
         }
-#if os(iOS)
-        .toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                
-                Button {
-                    hideKeyboard()
-                } label: {
-                    Text(NSLocalizedString("done", comment: "Done"))
-                }
-            }
-        }
-#elseif os(macOS)
-        .padding(.horizontal, 25)
-#endif
     }
     
     var fields: some View {
@@ -75,12 +64,12 @@ struct SwapCryptoDetailsView: View {
     
     var swapContent: some View {
         ZStack {
-            content
+            amountFields
             swapButton
         }
     }
     
-    var content: some View {
+    var amountFields: some View {
         VStack(spacing: 8) {
             fromAmountField
             toAmountField

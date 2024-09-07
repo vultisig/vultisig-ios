@@ -19,6 +19,10 @@ struct BackupVaultNowView: View {
     }
     
     var view: some View {
+        container
+    }
+    
+    var content: some View {
         VStack(spacing: 22) {
             title
             image
@@ -30,9 +34,6 @@ struct BackupVaultNowView: View {
         .font(.body14MontserratMedium)
         .foregroundColor(.neutral0)
         .multilineTextAlignment(.center)
-#if os(macOS)
-        .padding(.vertical, 40)
-#endif
     }
     
     var title: some View {

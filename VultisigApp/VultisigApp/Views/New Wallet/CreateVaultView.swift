@@ -18,15 +18,6 @@ struct CreateVaultView: View {
         .navigationBarBackButtonHidden(showBackButton ? false : true)
     }
     
-    var main: some View {
-        VStack {
-#if os(macOS)
-            headerMac
-#endif
-            view
-        }
-    }
-    
     var headerMac: some View {
         CreateVaultHeader(showBackButton: showBackButton)
     }

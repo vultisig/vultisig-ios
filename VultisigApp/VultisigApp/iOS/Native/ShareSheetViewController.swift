@@ -4,10 +4,8 @@
 //
 //  Created by Amol Kumar on 2024-08-07.
 //
-
-import SwiftUI
-
 #if os(iOS)
+import SwiftUI
     struct ShareSheetViewController: UIViewControllerRepresentable {
         var activityItems: [Any]
         var applicationActivities: [UIActivity]? = nil

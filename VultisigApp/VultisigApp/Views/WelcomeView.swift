@@ -7,6 +7,10 @@ struct WelcomeView: View {
     @State var didAppear = false
     
     var body: some View {
+        container
+    }
+    
+    var content: some View {
         ZStack {
             Background()
             view
@@ -14,15 +18,12 @@ struct WelcomeView: View {
         .onAppear {
             setData()
         }
-#if os(iOS)
-        .toolbar(.hidden, for: .navigationBar)
-#endif
     }
     
     var view: some View {
         VStack(spacing: 32) {
             Spacer()
-            content
+            logo
             Spacer()
             loader
         }
@@ -39,7 +40,7 @@ struct WelcomeView: View {
         .padding(40)
     }
     
-    var content: some View {
+    var logo: some View {
         VultisigLogo()
             .offset(y: 20)
     }

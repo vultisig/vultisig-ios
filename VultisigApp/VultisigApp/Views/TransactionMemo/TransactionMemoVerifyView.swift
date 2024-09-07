@@ -30,14 +30,15 @@ struct TransactionMemoVerifyView: View {
     }
     
     var view: some View {
+        container
+    }
+    
+    var content: some View {
         VStack {
             fields
             button
         }
         .blur(radius: depositVerifyViewModel.isLoading ? 1 : 0)
-#if os(macOS)
-        .padding(.horizontal, 25)
-#endif
     }
     
     var alert: Alert {
