@@ -1638,6 +1638,7 @@
 		A69FBBCB2C8BB85600A4B78B /* Native */ = {
 			isa = PBXGroup;
 			children = (
+				A6A41CAD2C63512D00C6858D /* ShareSheetViewController.swift */,
 				A6F42CC12C09175B00D0431C /* GeneralCodeScannerView.swift */,
 			);
 			path = Native;
@@ -1923,7 +1924,6 @@
 				B52196432C12C3540021D27A /* CustomTokenView.swift */,
 				A638752E2C38570F000CF242 /* BackupVaultNowView.swift */,
 				A6B7F4972C49402F006D83D1 /* VaultDetailQRCodeView.swift */,
-				A6A41CAD2C63512D00C6858D /* ShareSheetViewController.swift */,
 			);
 			path = Vault;
 			sourceTree = "<group>";
