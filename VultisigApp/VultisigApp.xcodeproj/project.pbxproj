@@ -155,6 +155,8 @@
 		A6386D9E2C90225000DDD58E /* SendCryptoSigningErrorView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6386D9D2C90225000DDD58E /* SendCryptoSigningErrorView+iOS.swift */; };
 		A6386DA12C90235200DDD58E /* CoinSelectionCell+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6386DA02C90235200DDD58E /* CoinSelectionCell+iOS.swift */; };
 		A6386DA42C90236100DDD58E /* CoinSelectionCell+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6386DA32C90236100DDD58E /* CoinSelectionCell+macOS.swift */; };
+		A6386DA62C90243C00DDD58E /* TokenSelectionCell+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6386DA52C90243C00DDD58E /* TokenSelectionCell+iOS.swift */; };
+		A6386DA82C90244800DDD58E /* TokenSelectionCell+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6386DA72C90244800DDD58E /* TokenSelectionCell+macOS.swift */; };
 		A638752F2C38570F000CF242 /* BackupVaultNowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A638752E2C38570F000CF242 /* BackupVaultNowView.swift */; };
 		A63875612C386647000CF242 /* BackupNowDisclaimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63875602C386647000CF242 /* BackupNowDisclaimer.swift */; };
 		A63953B02BA7BEDA000802EC /* Checkbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63953AF2BA7BEDA000802EC /* Checkbox.swift */; };
@@ -649,6 +651,8 @@
 		A6386D9D2C90225000DDD58E /* SendCryptoSigningErrorView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SendCryptoSigningErrorView+iOS.swift"; sourceTree = "<group>"; };
 		A6386DA02C90235200DDD58E /* CoinSelectionCell+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoinSelectionCell+iOS.swift"; sourceTree = "<group>"; };
 		A6386DA32C90236100DDD58E /* CoinSelectionCell+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoinSelectionCell+macOS.swift"; sourceTree = "<group>"; };
+		A6386DA52C90243C00DDD58E /* TokenSelectionCell+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TokenSelectionCell+iOS.swift"; sourceTree = "<group>"; };
+		A6386DA72C90244800DDD58E /* TokenSelectionCell+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TokenSelectionCell+macOS.swift"; sourceTree = "<group>"; };
 		A638752E2C38570F000CF242 /* BackupVaultNowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupVaultNowView.swift; sourceTree = "<group>"; };
 		A63875602C386647000CF242 /* BackupNowDisclaimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupNowDisclaimer.swift; sourceTree = "<group>"; };
 		A63953AF2BA7BEDA000802EC /* Checkbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checkbox.swift; sourceTree = "<group>"; };
@@ -1480,6 +1484,7 @@
 			isa = PBXGroup;
 			children = (
 				A6386DA02C90235200DDD58E /* CoinSelectionCell+iOS.swift */,
+				A6386DA52C90243C00DDD58E /* TokenSelectionCell+iOS.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1488,6 +1493,7 @@
 			isa = PBXGroup;
 			children = (
 				A6386DA32C90236100DDD58E /* CoinSelectionCell+macOS.swift */,
+				A6386DA72C90244800DDD58E /* TokenSelectionCell+macOS.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -2505,6 +2511,7 @@
 				A6C3ABC82C3E595000F13ED0 /* AddressBookView.swift in Sources */,
 				A6F9E7A92BED6BDB00BA36E1 /* SetupVaultImageManager.swift in Sources */,
 				D9AD8EDA2B6722CC0009F8D5 /* ApplicationState.swift in Sources */,
+				A6386DA82C90244800DDD58E /* TokenSelectionCell+macOS.swift in Sources */,
 				A6C0D55A2BB3AAA200156689 /* ChainHeaderCell.swift in Sources */,
 				B5E95E092BED84D9003778F0 /* ImagePicker.swift in Sources */,
 				B53DCB7D2C0D7327008388D4 /* EvmTokenServiceProtocol.swift in Sources */,
@@ -2614,6 +2621,7 @@
 				A65BA98C2BABD1AA00B2D8AA /* SendCryptoStartErrorView.swift in Sources */,
 				DEF2E2CB2B9AD5EA000737B8 /* UTXOChainsHelper.swift in Sources */,
 				A6B7F4982C49402F006D83D1 /* VaultDetailQRCodeView.swift in Sources */,
+				A6386DA62C90243C00DDD58E /* TokenSelectionCell+iOS.swift in Sources */,
 				DEFC7BFB2B8D87370090B07A /* erc20.swift in Sources */,
 				B50E399B2BF5AB2100B9A269 /* TransactionMemoAddressable.swift in Sources */,
 				A6521C562C6EC769002D5C5F /* MacScannerView.swift in Sources */,
