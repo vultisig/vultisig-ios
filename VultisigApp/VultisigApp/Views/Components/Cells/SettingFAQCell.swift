@@ -14,6 +14,17 @@ struct SettingFAQCell: View {
     @State var isExpanded = false
     
     var body: some View {
+        container
+            .background(Color.blue600)
+            .cornerRadius(10)
+            .onTapGesture {
+                withAnimation {
+                    isExpanded.toggle()
+                }
+            }
+    }
+    
+    var content: some View {
         VStack(alignment: .leading, spacing: 12) {
             questionBlock
             
@@ -24,16 +35,6 @@ struct SettingFAQCell: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
-#if os(macOS)
-        .padding(8)
-#endif
-        .background(Color.blue600)
-        .cornerRadius(10)
-        .onTapGesture {
-            withAnimation {
-                isExpanded.toggle()
-            }
-        }
     }
     
     var questionBlock: some View {

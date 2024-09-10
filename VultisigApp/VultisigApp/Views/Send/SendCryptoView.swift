@@ -276,8 +276,6 @@ extension SendCryptoView: SendGasSettingsOutput {
     }
 }
 
-
-
 #Preview {
     SendCryptoView(
         tx: SendTransaction(),
