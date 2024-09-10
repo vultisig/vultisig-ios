@@ -4,10 +4,9 @@
 //
 //  Created by Amol Kumar on 2024-03-15.
 //
-
+#if os(iOS)
 import SwiftUI
 
-#if os(iOS)
 import CodeScanner
 import AVFoundation
 
@@ -61,14 +60,12 @@ struct QRCodeScannerView: View {
     
     var codeScanner: some View {
         ZStack(alignment: .bottom) {
-#if os(iOS)
             CodeScannerView(
                 codeTypes: [.qr],
                 isGalleryPresented: $isGalleryPresented,
                 videoCaptureDevice: AVCaptureDevice.zoomedCameraForQRCode(withMinimumCodeSize: 20),
                 completion: handleScan
             )
-#endif
             galleryButton
         }
     }

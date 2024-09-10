@@ -1652,6 +1652,7 @@
 		A69FBBCB2C8BB85600A4B78B /* Native */ = {
 			isa = PBXGroup;
 			children = (
+				A65324272BA51E8700DDE6EB /* QRCodeScannerView.swift */,
 				A6A41CAD2C63512D00C6858D /* ShareSheetViewController.swift */,
 				A6F42CC12C09175B00D0431C /* GeneralCodeScannerView.swift */,
 			);
@@ -1893,7 +1894,6 @@
 				A61BC8112BA2407A00484689 /* SendCryptoView.swift */,
 				A61BC8132BA240FC00484689 /* SendCryptoDetailsView.swift */,
 				A571F46B2C7E9218000F46D3 /* SendGasSettingsView.swift */,
-				A65324272BA51E8700DDE6EB /* QRCodeScannerView.swift */,
 				A653242D2BA53D0900DDE6EB /* SendCryptoPairView.swift */,
 				A653242F2BA540ED00DDE6EB /* SendCryptoVerifyView.swift */,
 				A63953B12BA7CB8E000802EC /* SendCryptoKeysignView.swift */,
