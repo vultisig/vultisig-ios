@@ -122,10 +122,7 @@ struct KeyGenSummaryView: View {
     
     var button: some View {
         Button {
-            FastVaultPasswordView(
-                password: $viewModel.fastVaultPassword,
-                onSubmit: { viewModel.startKeygen() }
-            )
+            viewModel.startKeygen()
         } label: {
             FilledButton(title: "continue")
         }

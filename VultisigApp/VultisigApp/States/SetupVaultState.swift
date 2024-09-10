@@ -12,6 +12,15 @@ enum SetupVaultState: CaseIterable {
     case active
     case secure
 
+    var isFastVault: Bool {
+        switch self {
+        case .fast, .active:
+            return true
+        case .secure:
+            return false
+        }
+    }
+
     var title: String {
         switch self {
         case .fast:

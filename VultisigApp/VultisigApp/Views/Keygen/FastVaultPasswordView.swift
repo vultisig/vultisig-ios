@@ -8,10 +8,13 @@
 import SwiftUI
 
 struct FastVaultPasswordView: View {
-    @Binding var password: String
-    @State var verifyPassword: String = ""
+    let tssType: TssType
+    let vault: Vault
+    let selectedTab: SetupVaultState
 
-    let onSubmit: (() -> Void)?
+    @State var password: String = ""
+    @State var verifyPassword: String = ""
+    @State var isLinkActive = false
 
     var body: some View {
         ZStack {
@@ -19,7 +22,7 @@ struct FastVaultPasswordView: View {
             main
         }
 #if os(iOS)
-            .navigationTitle(NSLocalizedString("password", comment: "Password"))
+            .navigationTitle("Password")
 #endif
     }
 
@@ -29,6 +32,9 @@ struct FastVaultPasswordView: View {
             headerMac
 #endif
             view
+        }
+        .navigationDestination(isPresented: $isLinkActive) {
+            PeerDiscoveryView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastVaultPassword: password)
         }
     }
 
@@ -50,7 +56,7 @@ struct FastVaultPasswordView: View {
 
     var passwordField: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(NSLocalizedString("Protect your vault.", comment: ""))
+            Text("Protect your FastVault.")
                 .font(.body14MontserratMedium)
                 .foregroundColor(.neutral0)
 
@@ -86,10 +92,15 @@ struct FastVaultPasswordView: View {
 
     var saveButton: some View {
         Button(action: {
-            onSubmit?()
+            isLinkActive = true
         }) {
             FilledButton(title: "save")
         }
-        .disabled(password != verifyPassword)
+        .opacity(isSaveButtonDisabled ? 0.5 : 1)
+        .disabled(isSaveButtonDisabled)
+    }
+
+    var isSaveButtonDisabled: Bool {
+        return password != verifyPassword
     }
 }

@@ -73,11 +73,21 @@ struct SetupQRCodeView: View {
                     selectedTab: selectedTab
                 )
             } else {
-                PeerDiscoveryView(
-                    tssType: tssType,
-                    vault: vault,
-                    selectedTab: selectedTab
-                )
+                if selectedTab.isFastVault {
+                    FastVaultPasswordView(
+                        tssType: tssType,
+                        vault: vault,
+                        selectedTab: selectedTab
+                    )
+                } else {
+                    PeerDiscoveryView(
+                        tssType: tssType,
+                        vault: vault,
+                        selectedTab: selectedTab,
+                        fastVaultPassword: nil
+                    )
+                }
+
             }
         } label: {
             FilledButton(title: "start".uppercased())
