@@ -33,7 +33,8 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     @Published var selectedNetwork = NetworkPromptType.Internet
     
     private let mediator = Mediator.shared
-    
+    private let fastVaultService = FastVaultService.shared
+
     init() {
         self.tssType = .Keygen
         self.vault = Vault(name: "Main Vault")
@@ -75,43 +76,13 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             self.vault.localPartyID = self.localPartyID
         }
         self.selections.insert(self.localPartyID)
+        
         switch tssType {
         case .Keygen:
-            startVultisigner(name: vault.name, sessionID: sessionID, hexEncryptionKey: self.encryptionKeyHex!, hexChainCode: vault.hexChainCode, localPartyID: "signer-1", encryptionPassword: "test123", email: "johnnyluo1980@icloud.com")
+            fastVaultService.create(name: vault.name, sessionID: sessionID, hexEncryptionKey: self.encryptionKeyHex!, hexChainCode: vault.hexChainCode, localPartyID: "FastVaultServer-1", encryptionPassword: "test123", email: "flypaper000@gmail.com")
         case .Reshare:
-            startVultisignerReshare(name: vault.name, publicKeyECDSA: vault.pubKeyECDSA, sessionID: sessionID, hexEncryptionKey: self.encryptionKeyHex!, hexChainCode: vault.hexChainCode, localPartyID: "signer-1", encryptionPassword: "test123", email: "johnny@vultisig.com")
+            fastVaultService.reshare(name: vault.name, publicKeyECDSA: vault.pubKeyECDSA, sessionID: sessionID, hexEncryptionKey: self.encryptionKeyHex!, hexChainCode: vault.hexChainCode, localPartyID: "FastVaultServer-1", encryptionPassword: "test123", email: "flypaper000@gmail.com")
         }
-    }
-    func startVultisignerReshare(name: String,
-                                 publicKeyECDSA: String,
-                          sessionID: String,
-                          hexEncryptionKey: String,
-                          hexChainCode: String,
-                          localPartyID:String,
-                          encryptionPassword:String,
-                          email: String){
-        let req = ReshareRequest(name: name,public_key: publicKeyECDSA, session_id: sessionID, hex_encryption_key: hexEncryptionKey, hex_chain_code: hexChainCode, local_party_id: localPartyID, encryption_password: encryptionPassword, email: email)
-        
-        let urlString = "https://api.vultisig.com/vault/reshare"
-        Utils.sendRequest(urlString: urlString, method: "POST", headers: [:], body: req){ _ in
-            print("send req to vultisigner successfully")
-        }
-        
-    }
-    func startVultisigner(name:String,
-                          sessionID: String,
-                          hexEncryptionKey: String,
-                          hexChainCode: String,
-                          localPartyID:String,
-                          encryptionPassword:String,
-                          email: String){
-        let req = VaultCreateRequest(name: name, session_id: sessionID, hex_encryption_key: hexEncryptionKey, hex_chain_code: hexChainCode, local_party_id: localPartyID, encryption_password: encryptionPassword, email: email)
-        
-        let urlString = "https://api.vultisig.com/vault/create"
-        Utils.sendRequest(urlString: urlString, method: "POST", headers: [:], body: req){ _ in
-            print("send req to vultisigner successfully")
-        }
-        
     }
     
     func startDiscovery() {

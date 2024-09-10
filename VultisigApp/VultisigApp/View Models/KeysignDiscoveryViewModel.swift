@@ -14,13 +14,17 @@ enum KeysignDiscoveryStatus {
 }
 
 class KeysignDiscoveryViewModel: ObservableObject {
+    
     private let logger = Logger(subsystem: "keysign-discovery", category: "viewmodel")
+
     var vault: Vault
     var keysignPayload: KeysignPayload
     var participantDiscovery: ParticipantDiscovery?
     var encryptionKeyHex: String?
-    private let mediator = Mediator.shared
     
+    private let mediator = Mediator.shared
+    private let fastVaultService = FastVaultService.shared
+
     @Published var serverAddr = "http://127.0.0.1:18080"
     @Published var selections = Set<String>()
     @Published var sessionID = ""
@@ -62,17 +66,21 @@ class KeysignDiscoveryViewModel: ObservableObject {
             let keysignFactory = KeysignMessageFactory(payload: keysignPayload)
             let preSignedImageHash = try keysignFactory.getKeysignMessages(vault: vault)
             self.keysignMessages = preSignedImageHash.sorted()
+
             if self.keysignMessages.isEmpty {
                 self.logger.error("no meessage need to be signed")
                 self.status = .FailToStart
             }
-            startKeysignWithVultisigner(publicKeyEcdsa: vault.pubKeyECDSA,
-                                        keysignMessages:self.keysignMessages,
-                                        sessionID:sessionID,
-                                        hexEncryptionKey:self.encryptionKeyHex!,
-                                        derivePath:keysignPayload.coin.coinType.derivationPath(),
-                                        isECDSA:true,
-                                        vaultPassword: "test123")
+
+            fastVaultService.sign(
+                publicKeyEcdsa: vault.pubKeyECDSA,
+                keysignMessages: self.keysignMessages,
+                sessionID: self.sessionID,
+                hexEncryptionKey: self.encryptionKeyHex!,
+                derivePath: keysignPayload.coin.coinType.derivationPath(),
+                isECDSA: true,
+                vaultPassword: "test123"
+            )
         } catch {
             self.logger.error("Failed to get preSignedImageHash: \(error)")
             self.errorMessage = error.localizedDescription
@@ -81,27 +89,6 @@ class KeysignDiscoveryViewModel: ObservableObject {
         
     }
     
-    func startKeysignWithVultisigner(publicKeyEcdsa: String,
-                                     keysignMessages: [String],
-                                     sessionID: String,
-                                     hexEncryptionKey: String,
-                                     derivePath:String,
-                                     isECDSA: Bool,
-                                     vaultPassword: String){
-        let req = KeysignRequest(public_key: publicKeyEcdsa, 
-                                 messages: keysignMessages,
-                                 session: sessionID,
-                                 hex_encryption_key: hexEncryptionKey,
-                                 derive_path: derivePath,
-                                 is_ecdsa: isECDSA,
-                                 vault_password: vaultPassword)
-        let urlString = "http://127.0.0.1:8080/vault/sign"
-        Utils.sendRequest(urlString: urlString,
-                          method: "POST", headers: [:],
-                          body: req){ _ in
-            print("send req to vultisigner to keysign")
-        }
-    }
     func startDiscovery() async {
         self.mediator.start(name: self.serviceName)
         self.logger.info("mediator server started")
