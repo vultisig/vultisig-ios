@@ -25,6 +25,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     @Published var status = PeerDiscoveryStatus.WaitingForDevices
     @Published var serviceName = ""
     @Published var errorMessage = ""
+    @Published var fastVaultPassword = ""
     @Published var sessionID = ""
     @Published var localPartyID = ""
     @Published var selections = Set<String>()
