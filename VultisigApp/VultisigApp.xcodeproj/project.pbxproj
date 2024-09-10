@@ -153,6 +153,8 @@
 		A6386D9A2C901DAA00DDD58E /* SendCryptoVerifyView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6386D992C901DAA00DDD58E /* SendCryptoVerifyView+macOS.swift */; };
 		A6386D9C2C90224300DDD58E /* SendCryptoSigningErrorView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6386D9B2C90224200DDD58E /* SendCryptoSigningErrorView+macOS.swift */; };
 		A6386D9E2C90225000DDD58E /* SendCryptoSigningErrorView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6386D9D2C90225000DDD58E /* SendCryptoSigningErrorView+iOS.swift */; };
+		A6386DA12C90235200DDD58E /* CoinSelectionCell+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6386DA02C90235200DDD58E /* CoinSelectionCell+iOS.swift */; };
+		A6386DA42C90236100DDD58E /* CoinSelectionCell+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6386DA32C90236100DDD58E /* CoinSelectionCell+macOS.swift */; };
 		A638752F2C38570F000CF242 /* BackupVaultNowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A638752E2C38570F000CF242 /* BackupVaultNowView.swift */; };
 		A63875612C386647000CF242 /* BackupNowDisclaimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63875602C386647000CF242 /* BackupNowDisclaimer.swift */; };
 		A63953B02BA7BEDA000802EC /* Checkbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63953AF2BA7BEDA000802EC /* Checkbox.swift */; };
@@ -645,6 +647,8 @@
 		A6386D992C901DAA00DDD58E /* SendCryptoVerifyView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SendCryptoVerifyView+macOS.swift"; sourceTree = "<group>"; };
 		A6386D9B2C90224200DDD58E /* SendCryptoSigningErrorView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SendCryptoSigningErrorView+macOS.swift"; sourceTree = "<group>"; };
 		A6386D9D2C90225000DDD58E /* SendCryptoSigningErrorView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SendCryptoSigningErrorView+iOS.swift"; sourceTree = "<group>"; };
+		A6386DA02C90235200DDD58E /* CoinSelectionCell+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoinSelectionCell+iOS.swift"; sourceTree = "<group>"; };
+		A6386DA32C90236100DDD58E /* CoinSelectionCell+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoinSelectionCell+macOS.swift"; sourceTree = "<group>"; };
 		A638752E2C38570F000CF242 /* BackupVaultNowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupVaultNowView.swift; sourceTree = "<group>"; };
 		A63875602C386647000CF242 /* BackupNowDisclaimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupNowDisclaimer.swift; sourceTree = "<group>"; };
 		A63953AF2BA7BEDA000802EC /* Checkbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checkbox.swift; sourceTree = "<group>"; };
@@ -1472,6 +1476,22 @@
 			path = "Navigation Items";
 			sourceTree = "<group>";
 		};
+		A6386D9F2C90234400DDD58E /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				A6386DA02C90235200DDD58E /* CoinSelectionCell+iOS.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		A6386DA22C90235600DDD58E /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				A6386DA32C90236100DDD58E /* CoinSelectionCell+macOS.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
 		A65649D52B965FC400E4B329 /* View Models */ = {
 			isa = PBXGroup;
 			children = (
@@ -1638,6 +1658,7 @@
 				A6386D932C8C2A9800DDD58E /* SwapCryptoDetailsView+iOS.swift */,
 				A6386D972C901D9F00DDD58E /* SendCryptoVerifyView+iOS.swift */,
 				A6386D9D2C90225000DDD58E /* SendCryptoSigningErrorView+iOS.swift */,
+				A6386D9F2C90234400DDD58E /* Components */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -1657,6 +1678,7 @@
 				A6386D952C8C2AA200DDD58E /* SwapCryptoDetailsView+macOS.swift */,
 				A6386D992C901DAA00DDD58E /* SendCryptoVerifyView+macOS.swift */,
 				A6386D9B2C90224200DDD58E /* SendCryptoSigningErrorView+macOS.swift */,
+				A6386DA22C90235600DDD58E /* Components */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -2533,6 +2555,7 @@
 				B5947FD52C41EA53002D6A36 /* CachedData.swift in Sources */,
 				A69FBBD02C8BBA2100A4B78B /* TransactionMemoVerifyView+iOS.swift in Sources */,
 				A61BC8192BA2687E00484689 /* TokensStore.swift in Sources */,
+				A6386DA12C90235200DDD58E /* CoinSelectionCell+iOS.swift in Sources */,
 				DE15729E2B70F284009BC7C5 /* JoinKeysignView.swift in Sources */,
 				A52287482C42BB0000E1CC5A /* LiFiService.swift in Sources */,
 				A558D74E2C29808D007222EB /* SwapProvider.swift in Sources */,
@@ -2597,6 +2620,7 @@
 				A56386862C3A21B8008B848E /* KeysignMessage+ProtoMappable.swift in Sources */,
 				A61BC8122BA2407A00484689 /* SendCryptoView.swift in Sources */,
 				DED05FE42BBB824D00E0496C /* ThorchainAccountValue.swift in Sources */,
+				A6386DA42C90236100DDD58E /* CoinSelectionCell+macOS.swift in Sources */,
 				A60CA7E52BB0D37D00FDEB5C /* ContentView.swift in Sources */,
 				B5F7581D2BD8FDA20097B5B9 /* SuiCoin.swift in Sources */,
 				A6C0D55C2BB3AE8600156689 /* TransactionsView.swift in Sources */,
