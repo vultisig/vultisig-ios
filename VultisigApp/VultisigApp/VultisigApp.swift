@@ -21,6 +21,7 @@ struct VultisigApp: App {
     @StateObject var settingsViewModel = SettingsViewModel.shared
     @StateObject var homeViewModel = HomeViewModel()
     @StateObject var settingsDefaultChainViewModel = SettingsDefaultChainViewModel()
+    @StateObject var checkUpdateViewModel = CheckUpdateViewModel()
 #if os(macOS)
     @StateObject var macCameraServiceViewModel = MacCameraServiceViewModel()
 #endif
@@ -39,6 +40,7 @@ struct VultisigApp: App {
                 .environmentObject(settingsViewModel)
                 .environmentObject(homeViewModel)
                 .environmentObject(settingsDefaultChainViewModel)
+                .environmentObject(checkUpdateViewModel)
 #if os(macOS)
                 .environmentObject(macCameraServiceViewModel)
                 .onChange(of: scenePhase) {

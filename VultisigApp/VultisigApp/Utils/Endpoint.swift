@@ -29,6 +29,9 @@ class Endpoint {
     static let broadcastTransactionThorchainNineRealms = "https://thornode.ninerealms.com/cosmos/tx/v1beta1/txs"
     static let broadcastTransactionMayachain = "https://mayanode.mayachain.info/cosmos/tx/v1beta1/txs"
     
+    static let updateVersionCheck = "https://api.github.com/repos/vultisig/vultisig-ios/releases"
+    static let githubMacUpdate = "https://github.com/vultisig/vultisig-ios/releases/download/v1.0.50/VultisigApp.v1.0.50.signed.pkg"
+    
     static func fetchBlowfishTransactions(chain: String, network: String) -> String {
         "\(vultisigApiProxy)/blowfish/\(chain)/v0/\(network)/scan/transactions?language=en&method=eth_sendTransaction"
     }

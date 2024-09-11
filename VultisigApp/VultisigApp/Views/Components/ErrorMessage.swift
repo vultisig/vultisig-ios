@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ErrorMessage: View {
     let text: String
+    var width: CGFloat = 200
     
     var body: some View {
         VStack(spacing: 24) {
@@ -27,7 +28,7 @@ struct ErrorMessage: View {
         Text(NSLocalizedString(text, comment: ""))
             .font(.body16MenloBold)
             .foregroundColor(.neutral0)
-            .frame(maxWidth: 200)
+            .frame(maxWidth: width)
             .multilineTextAlignment(.center)
     }
 }
