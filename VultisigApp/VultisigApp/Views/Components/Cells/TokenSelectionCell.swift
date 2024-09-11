@@ -49,13 +49,13 @@ struct TokenSelectionCell: View {
     }
     
     var toggle: some View {
+        container
+    }
+    
+    var content: some View {
         Toggle("Is selected", isOn: $isSelected)
             .labelsHidden()
             .scaleEffect(0.6)
-#if os(macOS)
-            .scaleEffect(2)
-            .offset(x: -12)
-#endif
     }
     
     private func setData() {

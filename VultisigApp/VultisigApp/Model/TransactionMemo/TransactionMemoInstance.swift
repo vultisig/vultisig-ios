@@ -62,9 +62,9 @@ enum TransactionMemoInstance {
         case .bond(let memo):
             return memo.amount
         case .unbond:
-            return .zero
+            return 1 / pow(10, 8)
         case .leave:
-            return .zero
+            return 1 / pow(10, 8)
         case .custom(let memo):
             return memo.amount
         case .vote:
@@ -72,7 +72,7 @@ enum TransactionMemoInstance {
         case .addPool(let memo):
             return memo.amount
         case .withdrawPool(_):
-            return .zero
+            return 1 / pow(10, 8)
         }
     }
     

@@ -11,15 +11,16 @@ struct SendCryptoSigningErrorView: View {
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
+        container
+    }
+    
+    var content: some View {
         VStack(spacing: 22) {
             Spacer()
             errorMessage
             Spacer()
             bottomBar
         }
-#if os(macOS)
-        .padding(.horizontal, 25)
-#endif
     }
     
     var errorMessage: some View {
