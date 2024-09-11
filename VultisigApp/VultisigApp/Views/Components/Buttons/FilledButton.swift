@@ -25,16 +25,6 @@ struct FilledButton: View {
         .cornerRadius(100)
     }
     
-    var text: some View {
-        Text(NSLocalizedString(title, comment: "Button Text"))
-            .foregroundColor(.blue600)
-#if os(iOS)
-            .font(.body16MontserratBold)
-#elseif os(macOS)
-            .font(.body14MontserratBold)
-#endif
-    }
-    
     var image: some View {
         Image(systemName: icon)
             .font(.body16Menlo)
