@@ -132,11 +132,11 @@ struct SendCryptoVerifyView: View {
                 }
             }
         } label: {
-            FilledButton(title: "sign")
+            FilledButton(title: tx.isFastVault ? "Fast Sign" : "sign")
         }
         .padding(40)
     }
-    
+
     private func getAddressCell(for title: String, with address: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(NSLocalizedString(title, comment: ""))

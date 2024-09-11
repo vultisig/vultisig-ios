@@ -238,6 +238,7 @@ struct SendCryptoView: View {
     private func setData() async {
         presetData()
         await sendCryptoViewModel.loadGasInfoForSending(tx: tx)
+        await sendCryptoViewModel.loadFastVault(tx: tx, vault: vault)
     }
     
     private func presetData() {

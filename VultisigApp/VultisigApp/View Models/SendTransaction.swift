@@ -24,6 +24,7 @@ class SendTransaction: ObservableObject, Hashable {
     @Published var fee: BigInt = .zero
     @Published var feeMode: FeeMode = .normal
     @Published var sendMaxAmount: Bool = false
+    @Published var isFastVault: Bool = false
     @Published var memoFunctionDictionary: ThreadSafeDictionary<String, String> = ThreadSafeDictionary()
     
     @Published var coin: Coin = .example
