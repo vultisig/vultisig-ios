@@ -116,6 +116,8 @@
 		A611CCCF2C7816EC00D64C9D /* UINavigationControllerExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A611CCCE2C7816EC00D64C9D /* UINavigationControllerExtension.swift */; };
 		A6182F2F2C922B6B0059BFDD /* AsyncImageView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F2E2C922B6B0059BFDD /* AsyncImageView+iOS.swift */; };
 		A6182F312C922B750059BFDD /* AsyncImageView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F302C922B750059BFDD /* AsyncImageView+macOS.swift */; };
+		A6182F332C922CCC0059BFDD /* ChainHeaderCell+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F322C922CCC0059BFDD /* ChainHeaderCell+iOS.swift */; };
+		A6182F352C922CD70059BFDD /* ChainHeaderCell+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F342C922CD70059BFDD /* ChainHeaderCell+macOS.swift */; };
 		A61BC8122BA2407A00484689 /* SendCryptoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61BC8112BA2407A00484689 /* SendCryptoView.swift */; };
 		A61BC8142BA240FC00484689 /* SendCryptoDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61BC8132BA240FC00484689 /* SendCryptoDetailsView.swift */; };
 		A61BC8162BA256C600484689 /* ProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61BC8152BA256C600484689 /* ProgressBar.swift */; };
@@ -617,6 +619,8 @@
 		A611CCCE2C7816EC00D64C9D /* UINavigationControllerExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UINavigationControllerExtension.swift; sourceTree = "<group>"; };
 		A6182F2E2C922B6B0059BFDD /* AsyncImageView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AsyncImageView+iOS.swift"; sourceTree = "<group>"; };
 		A6182F302C922B750059BFDD /* AsyncImageView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AsyncImageView+macOS.swift"; sourceTree = "<group>"; };
+		A6182F322C922CCC0059BFDD /* ChainHeaderCell+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ChainHeaderCell+iOS.swift"; sourceTree = "<group>"; };
+		A6182F342C922CD70059BFDD /* ChainHeaderCell+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ChainHeaderCell+macOS.swift"; sourceTree = "<group>"; };
 		A61BC8112BA2407A00484689 /* SendCryptoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoView.swift; sourceTree = "<group>"; };
 		A61BC8132BA240FC00484689 /* SendCryptoDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDetailsView.swift; sourceTree = "<group>"; };
 		A61BC8152BA256C600484689 /* ProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressBar.swift; sourceTree = "<group>"; };
@@ -1502,6 +1506,7 @@
 				A6386DA02C90235200DDD58E /* CoinSelectionCell+iOS.swift */,
 				A6386DA52C90243C00DDD58E /* TokenSelectionCell+iOS.swift */,
 				A6182F2E2C922B6B0059BFDD /* AsyncImageView+iOS.swift */,
+				A6182F322C922CCC0059BFDD /* ChainHeaderCell+iOS.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1512,6 +1517,7 @@
 				A6386DA32C90236100DDD58E /* CoinSelectionCell+macOS.swift */,
 				A6386DA72C90244800DDD58E /* TokenSelectionCell+macOS.swift */,
 				A6182F302C922B750059BFDD /* AsyncImageView+macOS.swift */,
+				A6182F342C922CD70059BFDD /* ChainHeaderCell+macOS.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -2381,6 +2387,7 @@
 				A68696212C1B5575004EDE0B /* BackupPasswordSetupView.swift in Sources */,
 				463408662BA9C1D200246248 /* CoinTypeExtension.swift in Sources */,
 				DE8AD7472BC78FA400339775 /* Encryption.swift in Sources */,
+				A6182F332C922CCC0059BFDD /* ChainHeaderCell+iOS.swift in Sources */,
 				DE4DFA7B2B7B1692004F8E73 /* ModelContainerPreview.swift in Sources */,
 				A6F9E7A72BED6BD100BA36E1 /* SetupVaultTab.swift in Sources */,
 				A6F9F7E52B9BB4D100790258 /* NavigationMenuButton.swift in Sources */,
@@ -2412,6 +2419,7 @@
 				A6951E8A2C52DBBD007292E7 /* ToggleSelectionCell.swift in Sources */,
 				A683EDED2BCF67D100BB706E /* NetworkPromptCell.swift in Sources */,
 				A6F2C54B2BA003E10095C8E3 /* CoinSelectionCell.swift in Sources */,
+				A6182F352C922CD70059BFDD /* ChainHeaderCell+macOS.swift in Sources */,
 				A571F4682C7E48A1000F46D3 /* FeeMode.swift in Sources */,
 				46AAA4972BBF7EBA00E5BAB4 /* EvmServiceFactory.swift in Sources */,
 				A571F46C2C7E9218000F46D3 /* SendGasSettingsView.swift in Sources */,
