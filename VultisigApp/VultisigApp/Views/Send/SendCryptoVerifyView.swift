@@ -8,7 +8,9 @@
 import SwiftUI
 
 struct SendCryptoVerifyView: View {
+
     @Binding var keysignPayload: KeysignPayload?
+
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @ObservedObject var sendCryptoVerifyViewModel: SendCryptoVerifyViewModel
     @ObservedObject var tx: SendTransaction
@@ -17,7 +19,8 @@ struct SendCryptoVerifyView: View {
     let vault: Vault
     
     @State var isLoading = true
-    
+    @State var fastPasswordPresented = false
+
     var body: some View {
         ZStack {
             Background()
@@ -124,17 +127,38 @@ struct SendCryptoVerifyView: View {
     
     var button: some View {
         Button {
-            sendCryptoVerifyViewModel.isLoading = true
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                Task {
-                    await validateForm()
-                }
+            if tx.isFastVault {
+                fastPasswordPresented = true
+            } else {
+                signPressed()
             }
         } label: {
             FilledButton(title: tx.isFastVault ? "Fast Sign" : "sign")
         }
         .padding(40)
+        .sheet(isPresented: $fastPasswordPresented) {
+            FastVaultEnterPasswordView(
+                password: $tx.fastVaultPassword,
+                onSubmit: { signPressed() }
+            )
+        }
+    }
+
+    private func signPressed() {
+        sendCryptoVerifyViewModel.isLoading = true
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            Task {
+                keysignPayload = await sendCryptoVerifyViewModel.validateForm(
+                    tx: tx,
+                    vault: vault
+                )
+
+                if keysignPayload != nil {
+                    sendCryptoViewModel.moveToNextView()
+                }
+            }
+        }
     }
 
     private func getAddressCell(for title: String, with address: String) -> some View {
@@ -161,17 +185,6 @@ struct SendCryptoVerifyView: View {
         }
         .font(.body16MenloBold)
         .foregroundColor(.neutral100)
-    }
-    
-    private func validateForm() async {
-        keysignPayload = await sendCryptoVerifyViewModel.validateForm(
-            tx: tx,
-            vault: vault
-        )
-        
-        if keysignPayload != nil {
-            sendCryptoViewModel.moveToNextView()
-        }
     }
     
     private func getAmount() -> String {

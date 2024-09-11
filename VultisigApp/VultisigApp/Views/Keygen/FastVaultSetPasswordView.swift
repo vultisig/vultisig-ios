@@ -1,18 +1,20 @@
 //
-//  FastVaultEmailView.swift
+//  FastVaultPasswordView.swift
 //  VultisigApp
 //
-//  Created by Artur Guseinov on 11.09.2024.
+//  Created by Artur Guseinov on 10.09.2024.
 //
 
 import SwiftUI
 
-struct FastVaultEmailView: View {
+struct FastVaultSetPasswordView: View {
     let tssType: TssType
     let vault: Vault
     let selectedTab: SetupVaultState
+    let fastVaultEmail: String
 
-    @State var email: String = ""
+    @State var password: String = ""
+    @State var verifyPassword: String = ""
     @State var isLinkActive = false
 
     var body: some View {
@@ -21,7 +23,7 @@ struct FastVaultEmailView: View {
             main
         }
 #if os(iOS)
-            .navigationTitle("Email")
+            .navigationTitle("Password")
 #endif
     }
 
@@ -33,7 +35,7 @@ struct FastVaultEmailView: View {
             view
         }
         .navigationDestination(isPresented: $isLinkActive) {
-            FastVaultSetPasswordView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastVaultEmail: email)
+            PeerDiscoveryView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastVaultEmail: fastVaultEmail, fastVaultPassword: password)
         }
     }
 
@@ -45,6 +47,7 @@ struct FastVaultEmailView: View {
         VStack {
             passwordField
             Spacer()
+            disclaimer
             buttons
         }
 #if os(macOS)
@@ -54,52 +57,51 @@ struct FastVaultEmailView: View {
 
     var passwordField: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Enter your email to receive your backup")
+            Text("Protect your FastVault.")
                 .font(.body14MontserratMedium)
                 .foregroundColor(.neutral0)
 
             textfield
+            verifyTextfield
         }
         .padding(.horizontal, 16)
         .padding(.top, 30)
     }
 
     var textfield: some View {
-        TextField("Email", text: $email)
-            .font(.body16Menlo)
-            .foregroundColor(.neutral0)
-            .submitLabel(.done)
-            .padding(12)
-            .background(Color.blue600)
-            .cornerRadius(12)
-            .textInputAutocapitalization(.never)
-            .autocorrectionDisabled()
-            .keyboardType(.emailAddress)
-            .borderlessTextFieldStyle()
+        HiddenTextField(placeholder: "enterPassword", password: $password)
+            .padding(.top, 8)
+    }
+
+    var verifyTextfield: some View {
+        HiddenTextField(placeholder: "verifyPassword", password: $verifyPassword)
+    }
+
+    var disclaimer: some View {
+        OutlinedDisclaimer(text: "This Password encrypts your FastVault Share")
+            .padding(.horizontal, 16)
     }
 
     var buttons: some View {
         VStack(spacing: 20) {
-            continueButton
+            saveButton
         }
         .padding(.top, 16)
         .padding(.bottom, 40)
         .padding(.horizontal, 16)
     }
 
-    var continueButton: some View {
+    var saveButton: some View {
         Button(action: {
             isLinkActive = true
         }) {
             FilledButton(title: "Continue")
         }
-        .opacity(isValid ? 1 : 0.5)
-        .disabled(!isValid)
+        .opacity(isSaveButtonDisabled ? 0.5 : 1)
+        .disabled(isSaveButtonDisabled)
     }
 
-    var isValid: Bool {
-        return !email.trimmingCharacters(in: .whitespaces).isEmpty && 
-               !email.isEmpty &&
-                email.isValidEmail
+    var isSaveButtonDisabled: Bool {
+        return password != verifyPassword
     }
 }

@@ -1,21 +1,17 @@
 //
-//  FastVaultPasswordView.swift
+//  FastVaultEnterPasswordView.swift
 //  VultisigApp
 //
-//  Created by Artur Guseinov on 10.09.2024.
+//  Created by Artur Guseinov on 12.09.2024.
 //
 
 import SwiftUI
 
-struct FastVaultPasswordView: View {
-    let tssType: TssType
-    let vault: Vault
-    let selectedTab: SetupVaultState
-    let fastVaultEmail: String
+struct FastVaultEnterPasswordView: View {
 
-    @State var password: String = ""
-    @State var verifyPassword: String = ""
-    @State var isLinkActive = false
+    @Binding var password: String
+
+    let onSubmit: (() -> Void)?
 
     var body: some View {
         ZStack {
@@ -33,9 +29,6 @@ struct FastVaultPasswordView: View {
             headerMac
 #endif
             view
-        }
-        .navigationDestination(isPresented: $isLinkActive) {
-            PeerDiscoveryView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastVaultEmail: fastVaultEmail, fastVaultPassword: password)
         }
     }
 
@@ -57,12 +50,11 @@ struct FastVaultPasswordView: View {
 
     var passwordField: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Protect your FastVault.")
+            Text("FastVault password")
                 .font(.body14MontserratMedium)
                 .foregroundColor(.neutral0)
 
             textfield
-            verifyTextfield
         }
         .padding(.horizontal, 16)
         .padding(.top, 30)
@@ -73,12 +65,8 @@ struct FastVaultPasswordView: View {
             .padding(.top, 8)
     }
 
-    var verifyTextfield: some View {
-        HiddenTextField(placeholder: "verifyPassword", password: $verifyPassword)
-    }
-
     var disclaimer: some View {
-        OutlinedDisclaimer(text: "This Password encrypts your FastVault Share")
+        OutlinedDisclaimer(text: "This Password decrypt your FastVault Share")
             .padding(.horizontal, 16)
     }
 
@@ -93,7 +81,7 @@ struct FastVaultPasswordView: View {
 
     var saveButton: some View {
         Button(action: {
-            isLinkActive = true
+            onSubmit?()
         }) {
             FilledButton(title: "Continue")
         }
@@ -102,6 +90,7 @@ struct FastVaultPasswordView: View {
     }
 
     var isSaveButtonDisabled: Bool {
-        return password != verifyPassword
+        return password.isEmpty
     }
 }
+

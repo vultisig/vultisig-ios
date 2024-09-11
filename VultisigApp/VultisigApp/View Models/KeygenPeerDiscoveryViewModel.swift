@@ -51,6 +51,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     func setData(
         vault: Vault,
         tssType: TssType,
+        state: SetupVaultState,
         participantDiscovery: ParticipantDiscovery,
         fastVaultPassword: String?,
         fastVaultEmail: String?
@@ -84,7 +85,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         }
         self.selections.insert(self.localPartyID)
         
-        if let fastVaultPassword, let fastVaultEmail {
+        if let fastVaultPassword, let fastVaultEmail, state.isFastVault {
             switch tssType {
             case .Keygen:
                 fastVaultService.create(name: vault.name, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, hexChainCode: vault.hexChainCode, encryptionPassword: fastVaultPassword, email: fastVaultEmail)

@@ -78,7 +78,8 @@ struct PeerDiscoveryView: View {
         .onAppear {
             viewModel.setData(
                 vault: vault,
-                tssType: tssType,
+                tssType: tssType, 
+                state: selectedTab,
                 participantDiscovery: participantDiscovery,
                 fastVaultPassword: fastVaultPassword, 
                 fastVaultEmail: fastVaultEmail
