@@ -107,9 +107,9 @@ struct NewWalletNameView: View {
             let vault = Vault(name: vaultName)
 
             if selectedTab.isFastVault {
-                FastVaultPasswordView(tssType: tssType, vault: vault, selectedTab: selectedTab)
+                FastVaultEmailView(tssType: tssType, vault: vault, selectedTab: selectedTab)
             } else {
-                PeerDiscoveryView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastVaultPassword: nil)
+                PeerDiscoveryView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastVaultEmail: nil, fastVaultPassword: nil)
             }
         }
     }

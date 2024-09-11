@@ -74,7 +74,7 @@ struct SetupQRCodeView: View {
                 )
             } else {
                 if selectedTab.isFastVault {
-                    FastVaultPasswordView(
+                    FastVaultEmailView(
                         tssType: tssType,
                         vault: vault,
                         selectedTab: selectedTab
@@ -83,7 +83,8 @@ struct SetupQRCodeView: View {
                     PeerDiscoveryView(
                         tssType: tssType,
                         vault: vault,
-                        selectedTab: selectedTab,
+                        selectedTab: selectedTab, 
+                        fastVaultEmail: nil,
                         fastVaultPassword: nil
                     )
                 }

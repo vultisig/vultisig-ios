@@ -78,6 +78,7 @@
 		A57495822BBC3FCA00D5F172 /* SwapCryptoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57495812BBC3FCA00D5F172 /* SwapCryptoViewModel.swift */; };
 		A5768D8A2C90840B004BBEF8 /* FastVaultService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5768D892C90840B004BBEF8 /* FastVaultService.swift */; };
 		A5768D8C2C9094F8004BBEF8 /* FastVaultPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5768D8B2C9094F8004BBEF8 /* FastVaultPasswordView.swift */; };
+		A5768D8E2C91D487004BBEF8 /* FastVaultEmailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5768D8D2C91D487004BBEF8 /* FastVaultEmailView.swift */; };
 		A57A03CB2BC47D4F00F6F3DF /* BlockChainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57A03CA2BC47D4F00F6F3DF /* BlockChainService.swift */; };
 		A588F2DB2BEE8090002EEC60 /* OneInchSwapPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = A588F2DA2BEE8090002EEC60 /* OneInchSwapPayload.swift */; };
 		A58CC3432C32C4EE0086D16B /* VultisigCommonData in Frameworks */ = {isa = PBXBuildFile; productRef = A58CC3422C32C4EE0086D16B /* VultisigCommonData */; };
@@ -611,6 +612,7 @@
 		A57495812BBC3FCA00D5F172 /* SwapCryptoViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoViewModel.swift; sourceTree = "<group>"; };
 		A5768D892C90840B004BBEF8 /* FastVaultService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FastVaultService.swift; sourceTree = "<group>"; };
 		A5768D8B2C9094F8004BBEF8 /* FastVaultPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FastVaultPasswordView.swift; sourceTree = "<group>"; };
+		A5768D8D2C91D487004BBEF8 /* FastVaultEmailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FastVaultEmailView.swift; sourceTree = "<group>"; };
 		A57A03CA2BC47D4F00F6F3DF /* BlockChainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockChainService.swift; sourceTree = "<group>"; };
 		A588F2DA2BEE8090002EEC60 /* OneInchSwapPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneInchSwapPayload.swift; sourceTree = "<group>"; };
 		A58CC3452C32EE120086D16B /* KeysignMessageFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignMessageFactory.swift; sourceTree = "<group>"; };
@@ -1329,6 +1331,7 @@
 				DE9EB0F32BA309AB001747D9 /* MessagePuller.swift */,
 				A611735C2BC8D94400D616F9 /* KeyGenSummaryView.swift */,
 				A5768D8B2C9094F8004BBEF8 /* FastVaultPasswordView.swift */,
+				A5768D8D2C91D487004BBEF8 /* FastVaultEmailView.swift */,
 			);
 			path = Keygen;
 			sourceTree = "<group>";
@@ -2884,6 +2887,7 @@
 				A625D9C22C5AD15A0078FBF4 /* KeygenViewInstructions.swift in Sources */,
 				A63001B12C54AC0100D18E25 /* EditAddressBookView.swift in Sources */,
 				DEFF58F82BCF4E11005DFDF9 /* BackupVault.swift in Sources */,
+				A5768D8E2C91D487004BBEF8 /* FastVaultEmailView.swift in Sources */,
 				A65649EE2B9669DD00E4B329 /* UTXOTransactionMempoolInput.swift in Sources */,
 				A5D00E412BD65CE7009E025F /* ERC20ApprovePayload.swift in Sources */,
 				A6966D2D2BA402A900903CA4 /* TokenSelectorDropdown.swift in Sources */,

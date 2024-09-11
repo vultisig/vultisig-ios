@@ -13,15 +13,24 @@ final class FastVaultService {
 
     private let endpoint = "https://api.vultisig.com/vault"
 
+    static func localPartyID(sessionID: String) -> String {
+        guard let data = sessionID.data(using: .utf8) else {
+            return .empty
+        }
+
+        let hash = String(data.hashValue).suffix(5)
+        return "Server-\(hash)"
+    }
+
     func create(
         name: String,
         sessionID: String,
         hexEncryptionKey: String,
         hexChainCode: String,
-        localPartyID: String,
         encryptionPassword: String,
         email: String
     ) {
+        let localPartyID = Self.localPartyID(sessionID: sessionID)
         let req = VaultCreateRequest(name: name, session_id: sessionID, hex_encryption_key: hexEncryptionKey, hex_chain_code: hexChainCode, local_party_id: localPartyID, encryption_password: encryptionPassword, email: email)
 
         Utils.sendRequest(urlString: "\(endpoint)/create", method: "POST", headers: [:], body: req) { _ in
@@ -35,10 +44,10 @@ final class FastVaultService {
         sessionID: String,
         hexEncryptionKey: String,
         hexChainCode: String,
-        localPartyID:String,
         encryptionPassword:String,
         email: String
     ) {
+        let localPartyID = Self.localPartyID(sessionID: sessionID)
         let req = ReshareRequest(name: name,public_key: publicKeyECDSA, session_id: sessionID, hex_encryption_key: hexEncryptionKey, hex_chain_code: hexChainCode, local_party_id: localPartyID, encryption_password: encryptionPassword, email: email)
 
         Utils.sendRequest(urlString: "\(endpoint)/reshare", method: "POST", headers: [:], body: req) { _ in

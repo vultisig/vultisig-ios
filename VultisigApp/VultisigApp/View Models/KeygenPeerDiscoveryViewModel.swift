@@ -52,7 +52,8 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         vault: Vault,
         tssType: TssType,
         participantDiscovery: ParticipantDiscovery,
-        fastVaultPassword: String?
+        fastVaultPassword: String?,
+        fastVaultEmail: String?
     ) {
         self.vault = vault
         self.tssType = tssType
@@ -83,12 +84,12 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         }
         self.selections.insert(self.localPartyID)
         
-        if let fastVaultPassword {
+        if let fastVaultPassword, let fastVaultEmail {
             switch tssType {
             case .Keygen:
-                fastVaultService.create(name: vault.name, sessionID: sessionID, hexEncryptionKey: self.encryptionKeyHex!, hexChainCode: vault.hexChainCode, localPartyID: "FastVaultServer-1", encryptionPassword: fastVaultPassword, email: "flypaper000@gmail.com")
+                fastVaultService.create(name: vault.name, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, hexChainCode: vault.hexChainCode, encryptionPassword: fastVaultPassword, email: fastVaultEmail)
             case .Reshare:
-                fastVaultService.reshare(name: vault.name, publicKeyECDSA: vault.pubKeyECDSA, sessionID: sessionID, hexEncryptionKey: self.encryptionKeyHex!, hexChainCode: vault.hexChainCode, localPartyID: "FastVaultServer-1", encryptionPassword: fastVaultPassword, email: "flypaper000@gmail.com")
+                fastVaultService.reshare(name: vault.name, publicKeyECDSA: vault.pubKeyECDSA, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, hexChainCode: vault.hexChainCode, encryptionPassword: fastVaultPassword, email: fastVaultEmail)
             }
         }
     }
@@ -193,6 +194,4 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             return Image(systemName: "xmark")
         }
     }
-    
-    
 }
