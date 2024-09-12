@@ -313,3 +313,10 @@
 "share" = "Compartilhar";
 "dropFileHere" = "Rilascia il file qui...";
 "deviceID" = "ID dispositivo";
+"checkForUpdate" = "Verifica aggiornamenti";
+"checkUpdate" = "Controlla aggiornamento";
+"updateNow" = "Aggiorna ora";
+"checkingForUpdate" = "Verifica aggiornamenti in corso...";
+"somethingWentWrongTryAgain" = "Qualcosa è andato storto, riprova.";
+"newUpdateAvailable" = "Nuovo aggiornamento disponibile";
+"appUpToDate" = "L'applicazione è aggiornata";

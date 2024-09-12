@@ -338,3 +338,10 @@
 "share" = "Share";
 "dropFileHere" = "Drop the file here...";
 "deviceID" = "Device ID";
+"checkForUpdate" = "Check For Update";
+"checkUpdate" = "Check Update";
+"updateNow" = "Update Now";
+"checkingForUpdate" = "Checking for update...";
+"somethingWentWrongTryAgain" = "Something went wrong, please try again.";
+"newUpdateAvailable" = "New Update Available";
+"appUpToDate" = "Application is up to date";

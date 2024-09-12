@@ -313,3 +313,10 @@
 "share" = "Podijeli";
 "dropFileHere" = "Ispusti datoteku ovdje...";
 "deviceID" = "ID uređaja";
+"checkForUpdate" = "Provjeri ažuriranje";
+"checkUpdate" = "Provjeri ažuriranje";
+"updateNow" = "Ažuriraj sada";
+"checkingForUpdate" = "Provjeravanje ažuriranja...";
+"somethingWentWrongTryAgain" = "Nešto je pošlo po zlu, pokušajte ponovo.";
+"newUpdateAvailable" = "Dostupno novo ažuriranje";
+"appUpToDate" = "Aplikacija je ažurirana";
