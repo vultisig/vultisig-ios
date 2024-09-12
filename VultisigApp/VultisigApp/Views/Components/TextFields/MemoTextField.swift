@@ -19,17 +19,7 @@ struct MemoTextField: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             
-            HStack(spacing: 0) {
-                TextField(NSLocalizedString("enterMemo", comment: "").capitalized, text: $memo)
-                    .borderlessTextFieldStyle()
-                    .submitLabel(.next)
-                    .disableAutocorrection(true)
-                    .textFieldStyle(TappableTextFieldStyle())
-                    .foregroundColor(isEnabled ? .neutral0 : .neutral300)
-#if os(iOS)
-                    .textInputAutocapitalization(.never)
-#endif
-            }
+            container
         }
         .font(.body12Menlo)
         .foregroundColor(.neutral0)
@@ -38,6 +28,15 @@ struct MemoTextField: View {
         .padding(.horizontal, 12)
         .background(Color.blue600)
         .cornerRadius(10)
+    }
+    
+    var textField: some View {
+        TextField(NSLocalizedString("enterMemo", comment: "").capitalized, text: $memo)
+            .borderlessTextFieldStyle()
+            .submitLabel(.next)
+            .disableAutocorrection(true)
+            .textFieldStyle(TappableTextFieldStyle())
+            .foregroundColor(isEnabled ? .neutral0 : .neutral300)
     }
 }
 
