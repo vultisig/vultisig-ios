@@ -12,19 +12,7 @@ struct VaultDetailScanButton: View {
     let sendTx: SendTransaction
     
     var body: some View {
-#if os(iOS)
-        Button {
-            showSheet.toggle()
-        } label: {
-            label
-        }
-#elseif os(macOS)
-        NavigationLink {
-            MacScannerView(type: .SignTransaction, sendTx: sendTx)
-        } label: {
-            label
-        }
-#endif
+        content
     }
     
     var label: some View {

@@ -124,6 +124,8 @@
 		A6182F3D2C92332A0059BFDD /* FilledButton+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F3C2C92332A0059BFDD /* FilledButton+macOS.swift */; };
 		A6182F3F2C9290C80059BFDD /* OutlineButton+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F3E2C9290C80059BFDD /* OutlineButton+iOS.swift */; };
 		A6182F412C9290DF0059BFDD /* OutlineButton+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F402C9290DF0059BFDD /* OutlineButton+macOS.swift */; };
+		A6182F432C9291900059BFDD /* VaultDetailScanButton+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F422C9291900059BFDD /* VaultDetailScanButton+iOS.swift */; };
+		A6182F452C92919D0059BFDD /* VaultDetailScanButton+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F442C92919D0059BFDD /* VaultDetailScanButton+macOS.swift */; };
 		A61BC8122BA2407A00484689 /* SendCryptoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61BC8112BA2407A00484689 /* SendCryptoView.swift */; };
 		A61BC8142BA240FC00484689 /* SendCryptoDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61BC8132BA240FC00484689 /* SendCryptoDetailsView.swift */; };
 		A61BC8162BA256C600484689 /* ProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61BC8152BA256C600484689 /* ProgressBar.swift */; };
@@ -633,6 +635,8 @@
 		A6182F3C2C92332A0059BFDD /* FilledButton+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FilledButton+macOS.swift"; sourceTree = "<group>"; };
 		A6182F3E2C9290C80059BFDD /* OutlineButton+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OutlineButton+iOS.swift"; sourceTree = "<group>"; };
 		A6182F402C9290DF0059BFDD /* OutlineButton+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OutlineButton+macOS.swift"; sourceTree = "<group>"; };
+		A6182F422C9291900059BFDD /* VaultDetailScanButton+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VaultDetailScanButton+iOS.swift"; sourceTree = "<group>"; };
+		A6182F442C92919D0059BFDD /* VaultDetailScanButton+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VaultDetailScanButton+macOS.swift"; sourceTree = "<group>"; };
 		A61BC8112BA2407A00484689 /* SendCryptoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoView.swift; sourceTree = "<group>"; };
 		A61BC8132BA240FC00484689 /* SendCryptoDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDetailsView.swift; sourceTree = "<group>"; };
 		A61BC8152BA256C600484689 /* ProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressBar.swift; sourceTree = "<group>"; };
@@ -1515,6 +1519,7 @@
 		A6386D9F2C90234400DDD58E /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				A6182F422C9291900059BFDD /* VaultDetailScanButton+iOS.swift */,
 				A6386DA02C90235200DDD58E /* CoinSelectionCell+iOS.swift */,
 				A6386DA52C90243C00DDD58E /* TokenSelectionCell+iOS.swift */,
 				A6182F2E2C922B6B0059BFDD /* AsyncImageView+iOS.swift */,
@@ -1538,6 +1543,7 @@
 				A6182F382C9232990059BFDD /* NetworkPromptCell+macOS.swift */,
 				A6182F3C2C92332A0059BFDD /* FilledButton+macOS.swift */,
 				A6182F402C9290DF0059BFDD /* OutlineButton+macOS.swift */,
+				A6182F442C92919D0059BFDD /* VaultDetailScanButton+macOS.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -2574,6 +2580,7 @@
 				DEF722602C520377002FFE8A /* THORChainNetworkStatus.swift in Sources */,
 				DE1572962B70F254009BC7C5 /* TssMessenger.swift in Sources */,
 				A68696232C1B5DD2004EDE0B /* EncryptedBackupViewModel.swift in Sources */,
+				A6182F432C9291900059BFDD /* VaultDetailScanButton+iOS.swift in Sources */,
 				46B60BBE2BBA811D0043EBBA /* AvalancheService.swift in Sources */,
 				A683EDEB2BCF635E00BB706E /* InstructionPrompt.swift in Sources */,
 				A6833D8A2C65CF07002029E1 /* HomeHeader.swift in Sources */,
@@ -2826,6 +2833,7 @@
 				A633B1362B997D57003D1738 /* NavigationBackButton.swift in Sources */,
 				A67AA1C62C64784F00D06C7E /* CoinDetailHeader.swift in Sources */,
 				A6833D972C671F11002029E1 /* SettingsHeader.swift in Sources */,
+				A6182F452C92919D0059BFDD /* VaultDetailScanButton+macOS.swift in Sources */,
 				B52196462C12CA2E0021D27A /* AddressTextField.swift in Sources */,
 				B51097F12C4E48CD0066D560 /* BlowfishRequest.swift in Sources */,
 				B5E476AD2C1A556D005DB485 /* DydxService.swift in Sources */,
