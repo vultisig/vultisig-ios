@@ -10,6 +10,7 @@ import SwiftUI
 class CheckUpdateViewModel: ObservableObject {
     @Published var showError: Bool = false
     @Published var showDetails: Bool = false
+    @Published var showUpdateAlert: Bool = false
     @Published var isUpdateAvailable: Bool = false
     
     @Published var latestVersion: String = ""
@@ -21,12 +22,12 @@ class CheckUpdateViewModel: ObservableObject {
         showDetails = false
     }
     
-    func checkForUpdates() {
+    func checkForUpdates(isAutoCheck: Bool = false) {
         resetData()
         
         fetchGitHubReleases { releases in
             if let releases = releases {
-                self.checkCurrentVersion(releases)
+                self.checkCurrentVersion(releases, isAutoCheck: isAutoCheck)
             } else {
                 self.showErrorMessage()
                 print("Failed to fetch or decode GitHub releases.")
@@ -34,7 +35,7 @@ class CheckUpdateViewModel: ObservableObject {
         }
     }
     
-    func checkCurrentVersion(_ releases: [UpdateVersion]) {
+    func checkCurrentVersion(_ releases: [UpdateVersion], isAutoCheck: Bool) {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
         
@@ -46,7 +47,7 @@ class CheckUpdateViewModel: ObservableObject {
         let latest = latestRelease.replacingOccurrences(of: "release-", with: "v")
         let current = "v" + currentRelease.replacingOccurrences(of: "release-", with: "v") + "." + currentBuild
         
-        showDetailView(latest: latest, current: current)
+        showDetailView(latest: latest, current: current, isAutoCheck: isAutoCheck)
     }
     
     func fetchGitHubReleases(completion: @escaping ([UpdateVersion]?) -> Void) {
@@ -59,7 +60,6 @@ class CheckUpdateViewModel: ObservableObject {
         }
         
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
-            // Step 3: Handle any errors
             if let error = error {
                 print("Error fetching data: \(error.localizedDescription)")
                 self.showErrorMessage()
@@ -94,14 +94,21 @@ class CheckUpdateViewModel: ObservableObject {
         }
     }
     
-    func showDetailView(latest: String, current: String) {
+    func showDetailView(latest: String, current: String, isAutoCheck: Bool) {
         DispatchQueue.main.async {
             self.latestVersionBase = latest
             self.latestVersion = latest.replacingOccurrences(of: "v", with: "Version ")
             self.currentVersion = current.replacingOccurrences(of: "v", with: "Version ")
             
             self.isUpdateAvailable = latest > current
-            self.showDetails = true
+            
+            if isAutoCheck {
+                if self.isUpdateAvailable {
+                    self.showUpdateAlert = true
+                }
+            } else {
+                self.showDetails = true
+            }
         }
     }
 }
