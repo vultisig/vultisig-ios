@@ -13,13 +13,14 @@ struct NavigationButton: View {
     var isLeft: Bool = false
     
     var body: some View {
-        Image(systemName: "arrow.right.circle.fill")
-            .font(font)
-        #if os(iOS)
-            .foregroundColor(tint)
-        #endif
+        container
             .opacity(0.5)
             .rotationEffect(.degrees(isLeft ? 180 : 0))
+    }
+    
+    var content: some View {
+        Image(systemName: "arrow.right.circle.fill")
+            .font(font)
     }
 }
 
