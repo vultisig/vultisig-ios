@@ -122,6 +122,8 @@
 		A6182F392C9232990059BFDD /* NetworkPromptCell+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F382C9232990059BFDD /* NetworkPromptCell+macOS.swift */; };
 		A6182F3B2C92331D0059BFDD /* FilledButton+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F3A2C92331D0059BFDD /* FilledButton+iOS.swift */; };
 		A6182F3D2C92332A0059BFDD /* FilledButton+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F3C2C92332A0059BFDD /* FilledButton+macOS.swift */; };
+		A6182F3F2C9290C80059BFDD /* OutlineButton+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F3E2C9290C80059BFDD /* OutlineButton+iOS.swift */; };
+		A6182F412C9290DF0059BFDD /* OutlineButton+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F402C9290DF0059BFDD /* OutlineButton+macOS.swift */; };
 		A61BC8122BA2407A00484689 /* SendCryptoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61BC8112BA2407A00484689 /* SendCryptoView.swift */; };
 		A61BC8142BA240FC00484689 /* SendCryptoDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61BC8132BA240FC00484689 /* SendCryptoDetailsView.swift */; };
 		A61BC8162BA256C600484689 /* ProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61BC8152BA256C600484689 /* ProgressBar.swift */; };
@@ -629,6 +631,8 @@
 		A6182F382C9232990059BFDD /* NetworkPromptCell+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NetworkPromptCell+macOS.swift"; sourceTree = "<group>"; };
 		A6182F3A2C92331D0059BFDD /* FilledButton+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FilledButton+iOS.swift"; sourceTree = "<group>"; };
 		A6182F3C2C92332A0059BFDD /* FilledButton+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FilledButton+macOS.swift"; sourceTree = "<group>"; };
+		A6182F3E2C9290C80059BFDD /* OutlineButton+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OutlineButton+iOS.swift"; sourceTree = "<group>"; };
+		A6182F402C9290DF0059BFDD /* OutlineButton+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OutlineButton+macOS.swift"; sourceTree = "<group>"; };
 		A61BC8112BA2407A00484689 /* SendCryptoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoView.swift; sourceTree = "<group>"; };
 		A61BC8132BA240FC00484689 /* SendCryptoDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDetailsView.swift; sourceTree = "<group>"; };
 		A61BC8152BA256C600484689 /* ProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressBar.swift; sourceTree = "<group>"; };
@@ -1517,6 +1521,9 @@
 				A6182F322C922CCC0059BFDD /* ChainHeaderCell+iOS.swift */,
 				A6182F362C92328E0059BFDD /* NetworkPromptCell+iOS.swift */,
 				A6182F3A2C92331D0059BFDD /* FilledButton+iOS.swift */,
+				A6386DAD2C9025B000DDD58E /* ChainNavigationCell+iOS.swift */,
+				A6386DB12C90263400DDD58E /* ToggleSelectionCell+iOS.swift */,
+				A6182F3E2C9290C80059BFDD /* OutlineButton+iOS.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1530,6 +1537,7 @@
 				A6182F342C922CD70059BFDD /* ChainHeaderCell+macOS.swift */,
 				A6182F382C9232990059BFDD /* NetworkPromptCell+macOS.swift */,
 				A6182F3C2C92332A0059BFDD /* FilledButton+macOS.swift */,
+				A6182F402C9290DF0059BFDD /* OutlineButton+macOS.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1702,8 +1710,6 @@
 				A6386D9D2C90225000DDD58E /* SendCryptoSigningErrorView+iOS.swift */,
 				A6386DA92C9024F500DDD58E /* SettingFAQCell+iOS.swift */,
 				A6386D9F2C90234400DDD58E /* Components */,
-				A6386DAD2C9025B000DDD58E /* ChainNavigationCell+iOS.swift */,
-				A6386DB12C90263400DDD58E /* ToggleSelectionCell+iOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -2595,6 +2601,7 @@
 				A633B13C2B9A6564003D1738 /* SetupQRCodeView.swift in Sources */,
 				DE6325B12C2A1E97000D05B9 /* Placement.swift in Sources */,
 				A6C0D55F2BB3B73900156689 /* UTXOTransactionsView.swift in Sources */,
+				A6182F3F2C9290C80059BFDD /* OutlineButton+iOS.swift in Sources */,
 				B5A97CF92BF42E72007574D7 /* TransactionMemoAddressTextField.swift in Sources */,
 				A6B51BE92C098DAE007FDD3C /* OnFirstAppear.swift in Sources */,
 				A6833D932C66A4EA002029E1 /* SwapCryptoHeader.swift in Sources */,
@@ -2662,6 +2669,7 @@
 				A69FBBCA2C8BB77900A4B78B /* CoverView+iOS.swift in Sources */,
 				A680BAC52BF47AA9006E611D /* OpenGalleryButton.swift in Sources */,
 				A65649E52B96602700E4B329 /* VaultExtension.swift in Sources */,
+				A6182F412C9290DF0059BFDD /* OutlineButton+macOS.swift in Sources */,
 				A6725D3C2C3F9D6400D47716 /* AddressBookTextField.swift in Sources */,
 				DE9EB0F82BA43388001747D9 /* KeysignViewModel.swift in Sources */,
 				DE9EB0F42BA309AB001747D9 /* MessagePuller.swift in Sources */,
