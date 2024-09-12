@@ -72,9 +72,11 @@ struct FastVaultEmailView: View {
             .padding(12)
             .background(Color.blue600)
             .cornerRadius(12)
+#if os(iOS)
             .textInputAutocapitalization(.never)
-            .autocorrectionDisabled()
             .keyboardType(.emailAddress)
+#endif
+            .autocorrectionDisabled()
             .borderlessTextFieldStyle()
     }
 
