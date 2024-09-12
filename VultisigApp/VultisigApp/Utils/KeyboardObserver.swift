@@ -10,7 +10,9 @@ import Combine
 
 #if os(iOS)
 final class KeyboardObserver: ObservableObject {
-    @Published var keyboardHeight: CGFloat = 0
+    
+    @MainActor @Published var keyboardHeight: CGFloat = 0
+
     private var cancellables: Set<AnyCancellable> = []
 
     init() {

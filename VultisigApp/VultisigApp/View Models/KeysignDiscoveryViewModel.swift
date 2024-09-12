@@ -44,7 +44,12 @@ class KeysignDiscoveryViewModel: ObservableObject {
         }
     }
     
-    func setData(vault: Vault, keysignPayload: KeysignPayload, participantDiscovery: ParticipantDiscovery) {
+    func setData(
+        vault: Vault,
+        keysignPayload: KeysignPayload,
+        participantDiscovery: ParticipantDiscovery,
+        fastVaultPassword: String?
+    ) {
         self.vault = vault
         self.keysignPayload = keysignPayload
         self.participantDiscovery = participantDiscovery
@@ -72,15 +77,17 @@ class KeysignDiscoveryViewModel: ObservableObject {
                 self.status = .FailToStart
             }
 
-            fastVaultService.sign(
-                publicKeyEcdsa: vault.pubKeyECDSA,
-                keysignMessages: self.keysignMessages,
-                sessionID: self.sessionID,
-                hexEncryptionKey: self.encryptionKeyHex!,
-                derivePath: keysignPayload.coin.coinType.derivationPath(),
-                isECDSA: true,
-                vaultPassword: "test123"
-            )
+            if let fastVaultPassword {
+                fastVaultService.sign(
+                    publicKeyEcdsa: vault.pubKeyECDSA,
+                    keysignMessages: self.keysignMessages,
+                    sessionID: self.sessionID,
+                    hexEncryptionKey: self.encryptionKeyHex!,
+                    derivePath: keysignPayload.coin.coinType.derivationPath(),
+                    isECDSA: true,
+                    vaultPassword: fastVaultPassword
+                )
+            }
         } catch {
             self.logger.error("Failed to get preSignedImageHash: \(error)")
             self.errorMessage = error.localizedDescription

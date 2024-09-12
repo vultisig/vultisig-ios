@@ -133,8 +133,9 @@ struct TransactionMemoView: View {
                 KeysignDiscoveryView(
                     vault: vault,
                     keysignPayload: keysignPayload,
-                    transferViewModel: transactionMemoViewModel,
-                    keysignView: $keysignView, 
+                    transferViewModel: transactionMemoViewModel, 
+                    fastVaultPassword: tx.fastVaultPassword.nilIfEmpty,
+                    keysignView: $keysignView,
                     shareSheetViewModel: shareSheetViewModel
                 )
             } else {

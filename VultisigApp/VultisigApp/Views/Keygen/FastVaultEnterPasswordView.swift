@@ -11,16 +11,22 @@ struct FastVaultEnterPasswordView: View {
 
     @Binding var password: String
 
+    @Environment(\.dismiss) var dismiss
+
     let onSubmit: (() -> Void)?
 
     var body: some View {
-        ZStack {
-            Background()
-            main
-        }
+        NavigationView {
+            ZStack {
+                Background()
+                main
+            }
 #if os(iOS)
+            .navigationBarTitleTextColor(.neutral0)
+            .navigationBarTitleDisplayMode(.inline)
             .navigationTitle("Password")
 #endif
+        }
     }
 
     var main: some View {
@@ -82,6 +88,7 @@ struct FastVaultEnterPasswordView: View {
     var saveButton: some View {
         Button(action: {
             onSubmit?()
+            dismiss()
         }) {
             FilledButton(title: "Continue")
         }

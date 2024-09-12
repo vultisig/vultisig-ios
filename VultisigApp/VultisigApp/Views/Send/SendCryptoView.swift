@@ -154,7 +154,8 @@ struct SendCryptoView: View {
                 KeysignDiscoveryView(
                     vault: vault,
                     keysignPayload: keysignPayload,
-                    transferViewModel: sendCryptoViewModel,
+                    transferViewModel: sendCryptoViewModel, 
+                    fastVaultPassword: tx.fastVaultPassword.nilIfEmpty,
                     keysignView: $keysignView,
                     shareSheetViewModel: shareSheetViewModel,
                     previewTitle: "send"

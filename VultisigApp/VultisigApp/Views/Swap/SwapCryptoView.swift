@@ -133,8 +133,9 @@ struct SwapCryptoView: View {
                 KeysignDiscoveryView(
                     vault: vault,
                     keysignPayload: keysignPayload,
-                    transferViewModel: swapViewModel,
-                    keysignView: $keysignView, 
+                    transferViewModel: swapViewModel, 
+                    fastVaultPassword: nil, // TODO: Add FastVult support for swaps
+                    keysignView: $keysignView,
                     shareSheetViewModel: shareSheetViewModel,
                     previewTitle: "swap"
                 )
