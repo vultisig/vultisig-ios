@@ -15,6 +15,7 @@ struct HomeView: View {
     @EnvironmentObject var viewModel: HomeViewModel
 #if os(macOS)
     @EnvironmentObject var macCameraServiceViewModel: MacCameraServiceViewModel
+    @EnvironmentObject var checkUpdateViewModel: CheckUpdateViewModel
 #endif
     
     @State var vaults: [Vault] = []
@@ -33,6 +34,20 @@ struct HomeView: View {
             Background()
             main
         }
+#if os(macOS)
+        .alert(
+            NSLocalizedString("newUpdateAvailable", comment: ""),
+            isPresented: $checkUpdateViewModel.showUpdateAlert
+        ) {
+            Link(destination: URL(string: Endpoint.githubMacUpdateBase + checkUpdateViewModel.latestVersionBase)!) {
+                Text(NSLocalizedString("updateNow", comment: ""))
+            }
+            
+            Button(NSLocalizedString("dismiss", comment: ""), role: .cancel) {}
+        } message: {
+            Text(checkUpdateViewModel.latestVersion)
+        }
+#endif
     }
     
     var main: some View {
@@ -144,6 +159,7 @@ struct HomeView: View {
         
 #if os(macOS)
         macCameraServiceViewModel.stopSession()
+        checkUpdateViewModel.checkForUpdates(isAutoCheck: true)
 #endif
         
         if let vault = selectedVault {
@@ -217,5 +233,6 @@ struct HomeView: View {
         .environmentObject(HomeViewModel())
 #if os(macOS)
         .environmentObject(MacCameraServiceViewModel())
+        .environmentObject(CheckUpdateViewModel())
 #endif
 }
