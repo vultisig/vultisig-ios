@@ -74,7 +74,11 @@ struct SwapCryptoAmountTextField: View {
             }
         )
         
-        return HStack(spacing: 0) {
+        return container(customBiding)
+    }
+    
+    func content(_ customBiding: Binding<String>) -> some View {
+        HStack(spacing: 0) {
             TextField(NSLocalizedString("enterAmount", comment: "").capitalized, text: customBiding)
                 .maxLength(customBiding)
                 .submitLabel(.next)
@@ -82,11 +86,6 @@ struct SwapCryptoAmountTextField: View {
                 .textFieldStyle(TappableTextFieldStyle())
                 .borderlessTextFieldStyle()
                 .foregroundColor(isEnabled ? .neutral0 : .neutral300)
-#if os(iOS)
-                .textInputAutocapitalization(.never)
-                .keyboardType(.decimalPad)
-                .textContentType(.oneTimeCode)
-#endif
         }
     }
     

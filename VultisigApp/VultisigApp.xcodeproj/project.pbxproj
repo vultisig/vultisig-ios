@@ -134,6 +134,8 @@
 		A6182F512C9296430059BFDD /* StyledIntegerField+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F502C9296430059BFDD /* StyledIntegerField+macOS.swift */; };
 		A6182F532C9296CF0059BFDD /* StyledFloatingPointField+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F522C9296CF0059BFDD /* StyledFloatingPointField+iOS.swift */; };
 		A6182F552C9296DB0059BFDD /* StyledFloatingPointField+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F542C9296DB0059BFDD /* StyledFloatingPointField+macOS.swift */; };
+		A6182F572C9299370059BFDD /* SwapCryptoAmountTextField+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F562C9299370059BFDD /* SwapCryptoAmountTextField+iOS.swift */; };
+		A6182F592C9299410059BFDD /* SwapCryptoAmountTextField+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F582C9299410059BFDD /* SwapCryptoAmountTextField+macOS.swift */; };
 		A61BC8122BA2407A00484689 /* SendCryptoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61BC8112BA2407A00484689 /* SendCryptoView.swift */; };
 		A61BC8142BA240FC00484689 /* SendCryptoDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61BC8132BA240FC00484689 /* SendCryptoDetailsView.swift */; };
 		A61BC8162BA256C600484689 /* ProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61BC8152BA256C600484689 /* ProgressBar.swift */; };
@@ -653,6 +655,8 @@
 		A6182F502C9296430059BFDD /* StyledIntegerField+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StyledIntegerField+macOS.swift"; sourceTree = "<group>"; };
 		A6182F522C9296CF0059BFDD /* StyledFloatingPointField+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StyledFloatingPointField+iOS.swift"; sourceTree = "<group>"; };
 		A6182F542C9296DB0059BFDD /* StyledFloatingPointField+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StyledFloatingPointField+macOS.swift"; sourceTree = "<group>"; };
+		A6182F562C9299370059BFDD /* SwapCryptoAmountTextField+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SwapCryptoAmountTextField+iOS.swift"; sourceTree = "<group>"; };
+		A6182F582C9299410059BFDD /* SwapCryptoAmountTextField+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SwapCryptoAmountTextField+macOS.swift"; sourceTree = "<group>"; };
 		A61BC8112BA2407A00484689 /* SendCryptoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoView.swift; sourceTree = "<group>"; };
 		A61BC8132BA240FC00484689 /* SendCryptoDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDetailsView.swift; sourceTree = "<group>"; };
 		A61BC8152BA256C600484689 /* ProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressBar.swift; sourceTree = "<group>"; };
@@ -1549,6 +1553,7 @@
 				A6182F4A2C9294390059BFDD /* SendCryptoAmountTextField+iOS.swift */,
 				A6182F4E2C9296350059BFDD /* StyledIntegerField+iOS.swift */,
 				A6182F522C9296CF0059BFDD /* StyledFloatingPointField+iOS.swift */,
+				A6182F562C9299370059BFDD /* SwapCryptoAmountTextField+iOS.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1568,6 +1573,7 @@
 				A6182F4C2C92944A0059BFDD /* SendCryptoAmountTextField+macOS.swift */,
 				A6182F502C9296430059BFDD /* StyledIntegerField+macOS.swift */,
 				A6182F542C9296DB0059BFDD /* StyledFloatingPointField+macOS.swift */,
+				A6182F582C9299410059BFDD /* SwapCryptoAmountTextField+macOS.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -2638,6 +2644,7 @@
 				A6182F3F2C9290C80059BFDD /* OutlineButton+iOS.swift in Sources */,
 				B5A97CF92BF42E72007574D7 /* TransactionMemoAddressTextField.swift in Sources */,
 				A6B51BE92C098DAE007FDD3C /* OnFirstAppear.swift in Sources */,
+				A6182F572C9299370059BFDD /* SwapCryptoAmountTextField+iOS.swift in Sources */,
 				A6833D932C66A4EA002029E1 /* SwapCryptoHeader.swift in Sources */,
 				DE49A1B22B6A0F77000F3AFB /* JoinKeygenView.swift in Sources */,
 				A69FBB9E2C8AD7BD00A4B78B /* ContentView+macOS.swift in Sources */,
@@ -2683,6 +2690,7 @@
 				A6386D962C8C2AA200DDD58E /* SwapCryptoDetailsView+macOS.swift in Sources */,
 				A62766512C85275F002C666A /* ImportWalletView+iOS.swift in Sources */,
 				A6182F472C9292EC0059BFDD /* NavigationButton+iOS.swift in Sources */,
+				A6182F592C9299410059BFDD /* SwapCryptoAmountTextField+macOS.swift in Sources */,
 				A6386DAE2C9025B000DDD58E /* ChainNavigationCell+iOS.swift in Sources */,
 				A53287B52C4DB874009FD3D3 /* CoinPickerView.swift in Sources */,
 				A60CA7EB2BB1020900FDEB5C /* DetectOrientation.swift in Sources */,
