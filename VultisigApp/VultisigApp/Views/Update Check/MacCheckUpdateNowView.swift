@@ -41,7 +41,9 @@ struct MacCheckUpdateNowView: View {
     }
     
     var updateButton: some View {
-        Link(destination: URL(string: Endpoint.githubMacUpdate)!) {
+        let url = Endpoint.githubMacUpdateBase + checkUpdateViewModel.latestVersionBase
+        
+        return Link(destination: URL(string: url)!) {
             FilledButton(title: "updateNow")
         }
         .padding(40)

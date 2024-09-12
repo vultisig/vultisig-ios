@@ -13,6 +13,7 @@ class CheckUpdateViewModel: ObservableObject {
     @Published var isUpdateAvailable: Bool = false
     
     @Published var latestVersion: String = ""
+    @Published var latestVersionBase: String = ""
     @Published var currentVersion: String = ""
     
     func resetData() {
@@ -95,6 +96,7 @@ class CheckUpdateViewModel: ObservableObject {
     
     func showDetailView(latest: String, current: String) {
         DispatchQueue.main.async {
+            self.latestVersionBase = latest
             self.latestVersion = latest.replacingOccurrences(of: "v", with: "Version ")
             self.currentVersion = current.replacingOccurrences(of: "v", with: "Version ")
             
