@@ -31,23 +31,23 @@ struct StyledFloatingPointField<Value: BinaryFloatingPoint & Codable>: View {
                 }
             }
             
-            TextField(placeholder.capitalized, value: customBinding, format: format)
-                .font(.body16Menlo)
-                .foregroundColor(.neutral0)
-                .submitLabel(.done)
-                .padding(12)
-                .background(Color.blue600)
-                .cornerRadius(12)
-                .borderlessTextFieldStyle()
-                .onAppear {
-                    localIsValid = isValid
-                    validate(value)
-                }
-#if os(iOS)
-                .keyboardType(.decimalPad)
-#endif
-            
+            container
         }
+    }
+    
+    var textField: some View {
+        TextField(placeholder.capitalized, value: customBinding, format: format)
+            .font(.body16Menlo)
+            .foregroundColor(.neutral0)
+            .submitLabel(.done)
+            .padding(12)
+            .background(Color.blue600)
+            .cornerRadius(12)
+            .borderlessTextFieldStyle()
+            .onAppear {
+                localIsValid = isValid
+                validate(value)
+            }
     }
     
     var customBinding: Binding<Value> {

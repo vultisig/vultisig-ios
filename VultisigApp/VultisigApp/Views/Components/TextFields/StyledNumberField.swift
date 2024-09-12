@@ -31,23 +31,24 @@ struct StyledIntegerField<Value: BinaryInteger & Codable>: View {
                 }
             }
             
-            TextField(placeholder.capitalized, value: customBinding, format: format)
-                .font(.body16Menlo)
-                .foregroundColor(foregroundColor)
-                .submitLabel(.done)
-                .padding(12)
-                .background(Color.blue600)
-                .cornerRadius(12)
-                .borderlessTextFieldStyle()
-                .onAppear {
-                    localIsValid = isValid
-                    validate(String(describing: value))
-                }
-                .disabled(!isEnabled)
-#if os(iOS)
-                .keyboardType(.numberPad)
-#endif
+            container
         }
+    }
+    
+    var textField: some View {
+        TextField(placeholder.capitalized, value: customBinding, format: format)
+            .font(.body16Menlo)
+            .foregroundColor(foregroundColor)
+            .submitLabel(.done)
+            .padding(12)
+            .background(Color.blue600)
+            .cornerRadius(12)
+            .borderlessTextFieldStyle()
+            .onAppear {
+                localIsValid = isValid
+                validate(String(describing: value))
+            }
+            .disabled(!isEnabled)
     }
 
     var foregroundColor: Color {

@@ -14,6 +14,10 @@ struct OutlineButton: View {
     @State var animateGradient = false
     
     var body: some View {
+        container
+    }
+    
+    var content: some View {
         Text(NSLocalizedString(title, comment: "Button Text"))
             .foregroundStyle(gradient)
             .padding(12)
@@ -28,11 +32,6 @@ struct OutlineButton: View {
                     .stroke(gradient, lineWidth: 2)
                 #endif
             )
-#if os(iOS)
-            .font(.body16MontserratBold)
-#elseif os(macOS)
-            .font(.body14MontserratBold)
-#endif
     }
 }
 

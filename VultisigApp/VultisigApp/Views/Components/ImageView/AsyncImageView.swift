@@ -35,23 +35,7 @@ struct AsyncImageView: View {
         ZStack {
             switch source {
             case .resource(let logoName):
-#if os(iOS)
-                if let image = UIImage(named: logoName) {
-                    Image(uiImage: image)
-                        .resizable()
-                        .frame(width: size.width, height: size.height)
-                } else {
-                    fallbackText
-                }
-#elseif os(macOS)
-                if let image = NSImage(named: logoName) {
-                    Image(nsImage: image)
-                        .resizable()
-                        .frame(width: size.width, height: size.height)
-                } else {
-                    fallbackText
-                }
-#endif
+                imageContainer(logoName)
             case .remote(let url):
                 if let url = url {
                     CachedAsyncImage(url: url, urlCache: .imageCache) { image in

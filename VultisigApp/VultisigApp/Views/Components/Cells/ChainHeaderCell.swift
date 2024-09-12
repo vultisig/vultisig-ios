@@ -91,29 +91,6 @@ struct ChainHeaderCell: View {
         }
     }
     
-    var showQRButton: some View {
-        #if os(iOS)
-                Button(action: {
-                    isLoading = true
-                    showQRcode.toggle()
-                }, label: {
-                    qrCodeLabel
-                })
-        #elseif os(macOS)
-                NavigationLink {
-                    AddressQRCodeView(
-                        addressData: group.address,
-                        vault: vault,
-                        groupedChain: group,
-                        showSheet: $showQRcode,
-                        isLoading: $isLoading
-                    )
-                } label: {
-                    qrCodeLabel
-                }
-        #endif
-    }
-    
     var qrCodeLabel: some View {
         Image(systemName: "qrcode")
             .foregroundColor(.neutral0)
@@ -154,19 +131,6 @@ struct ChainHeaderCell: View {
             .font(.body12Menlo)
             .foregroundColor(.turquoise600)
             .lineLimit(1)
-    }
-    
-    private func copyAddress() {
-        showAlert = true
-        
-#if os(iOS)
-        let pasteboard = UIPasteboard.general
-        pasteboard.string = group.address
-#elseif os(macOS)
-        let pasteboard = NSPasteboard.general
-        pasteboard.clearContents()
-        pasteboard.setString(group.address, forType: .string)
-#endif
     }
 }
 

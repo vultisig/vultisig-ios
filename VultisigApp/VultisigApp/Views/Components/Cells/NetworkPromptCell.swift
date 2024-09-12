@@ -12,17 +12,7 @@ struct NetworkPromptCell: View {
     let isSelected: Bool
     
     var body: some View {
-        ZStack {
-#if os(iOS)
-            if UIDevice.current.userInterfaceIdiom == .phone {
-                phoneCell
-            } else {
-                padCell
-            }
-#elseif os(macOS)
-            padCell
-#endif
-        }
+        content
     }
     
     var phoneCell: some View {
