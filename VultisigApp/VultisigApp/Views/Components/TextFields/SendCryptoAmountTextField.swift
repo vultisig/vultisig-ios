@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct SendCryptoAmountTextField: View {
-    
     @Binding var amount: String
     
     var onChange: (String) async -> Void
@@ -18,42 +17,7 @@ struct SendCryptoAmountTextField: View {
     
     var body: some View {
         HStack(spacing: 0) {
-            TextField(NSLocalizedString("enterAmount", comment: "").capitalized, text: Binding<String>(
-                get: { amount },
-                set: {
-                    let newValue = $0.formatCurrency()
-                    
-                    guard amount != newValue else { return }
-                    amount = newValue
-                    
-                    DebounceHelper.shared.debounce {
-                        Task { await onChange(newValue) }
-                    }
-                }
-            ))
-            .borderlessTextFieldStyle()
-            .submitLabel(.next)
-            .disableAutocorrection(true)
-            .textFieldStyle(TappableTextFieldStyle())
-            .foregroundColor(isEnabled ? .neutral0 : .neutral300)
-            .maxLength(Binding<String>(
-                get: { amount },
-                set: {
-                    let newValue = $0.formatCurrency()
-                    
-                    guard amount != newValue else { return }
-                    amount = newValue
-                    
-                    DebounceHelper.shared.debounce {
-                        Task { await onChange(newValue) }
-                    }
-                }
-            ))
-#if os(iOS)
-            .textInputAutocapitalization(.never)
-            .keyboardType(.decimalPad)
-            .textContentType(.oneTimeCode)
-#endif
+            container
             
             if showButton {
                 maxButton
@@ -66,6 +30,40 @@ struct SendCryptoAmountTextField: View {
         .padding(.horizontal, 12)
         .background(Color.blue600)
         .cornerRadius(10)
+    }
+    
+    var container: some View {
+        TextField(NSLocalizedString("enterAmount", comment: "").capitalized, text: Binding<String>(
+            get: { amount },
+            set: {
+                let newValue = $0.formatCurrency()
+                
+                guard amount != newValue else { return }
+                amount = newValue
+                
+                DebounceHelper.shared.debounce {
+                    Task { await onChange(newValue) }
+                }
+            }
+        ))
+        .borderlessTextFieldStyle()
+        .submitLabel(.next)
+        .disableAutocorrection(true)
+        .textFieldStyle(TappableTextFieldStyle())
+        .foregroundColor(isEnabled ? .neutral0 : .neutral300)
+        .maxLength(Binding<String>(
+            get: { amount },
+            set: {
+                let newValue = $0.formatCurrency()
+                
+                guard amount != newValue else { return }
+                amount = newValue
+                
+                DebounceHelper.shared.debounce {
+                    Task { await onChange(newValue) }
+                }
+            }
+        ))
     }
     
     var maxButton: some View {

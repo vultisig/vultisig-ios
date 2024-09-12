@@ -128,6 +128,8 @@
 		A6182F452C92919D0059BFDD /* VaultDetailScanButton+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F442C92919D0059BFDD /* VaultDetailScanButton+macOS.swift */; };
 		A6182F472C9292EC0059BFDD /* NavigationButton+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F462C9292EC0059BFDD /* NavigationButton+iOS.swift */; };
 		A6182F492C9292F70059BFDD /* NavigationButton+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F482C9292F70059BFDD /* NavigationButton+macOS.swift */; };
+		A6182F4B2C9294390059BFDD /* SendCryptoAmountTextField+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F4A2C9294390059BFDD /* SendCryptoAmountTextField+iOS.swift */; };
+		A6182F4D2C92944A0059BFDD /* SendCryptoAmountTextField+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F4C2C92944A0059BFDD /* SendCryptoAmountTextField+macOS.swift */; };
 		A61BC8122BA2407A00484689 /* SendCryptoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61BC8112BA2407A00484689 /* SendCryptoView.swift */; };
 		A61BC8142BA240FC00484689 /* SendCryptoDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61BC8132BA240FC00484689 /* SendCryptoDetailsView.swift */; };
 		A61BC8162BA256C600484689 /* ProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61BC8152BA256C600484689 /* ProgressBar.swift */; };
@@ -641,6 +643,8 @@
 		A6182F442C92919D0059BFDD /* VaultDetailScanButton+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VaultDetailScanButton+macOS.swift"; sourceTree = "<group>"; };
 		A6182F462C9292EC0059BFDD /* NavigationButton+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NavigationButton+iOS.swift"; sourceTree = "<group>"; };
 		A6182F482C9292F70059BFDD /* NavigationButton+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NavigationButton+macOS.swift"; sourceTree = "<group>"; };
+		A6182F4A2C9294390059BFDD /* SendCryptoAmountTextField+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SendCryptoAmountTextField+iOS.swift"; sourceTree = "<group>"; };
+		A6182F4C2C92944A0059BFDD /* SendCryptoAmountTextField+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SendCryptoAmountTextField+macOS.swift"; sourceTree = "<group>"; };
 		A61BC8112BA2407A00484689 /* SendCryptoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoView.swift; sourceTree = "<group>"; };
 		A61BC8132BA240FC00484689 /* SendCryptoDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendCryptoDetailsView.swift; sourceTree = "<group>"; };
 		A61BC8152BA256C600484689 /* ProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressBar.swift; sourceTree = "<group>"; };
@@ -1534,6 +1538,7 @@
 				A6386DB12C90263400DDD58E /* ToggleSelectionCell+iOS.swift */,
 				A6182F3E2C9290C80059BFDD /* OutlineButton+iOS.swift */,
 				A6182F462C9292EC0059BFDD /* NavigationButton+iOS.swift */,
+				A6182F4A2C9294390059BFDD /* SendCryptoAmountTextField+iOS.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1550,6 +1555,7 @@
 				A6182F402C9290DF0059BFDD /* OutlineButton+macOS.swift */,
 				A6182F442C92919D0059BFDD /* VaultDetailScanButton+macOS.swift */,
 				A6182F482C9292F70059BFDD /* NavigationButton+macOS.swift */,
+				A6182F4C2C92944A0059BFDD /* SendCryptoAmountTextField+macOS.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -2443,6 +2449,7 @@
 				DE63AE4B2BB4D87F001BBE5C /* BscService.swift in Sources */,
 				A6F42CC22C09175B00D0431C /* GeneralCodeScannerView.swift in Sources */,
 				A6386D9A2C901DAA00DDD58E /* SendCryptoVerifyView+macOS.swift in Sources */,
+				A6182F4D2C92944A0059BFDD /* SendCryptoAmountTextField+macOS.swift in Sources */,
 				B52196482C12D1110021D27A /* CircularFilledButton.swift in Sources */,
 				DE9EB0FC2BA463F7001747D9 /* KeygenViewModel.swift in Sources */,
 				DEFF58F42BCBF65D005DFDF9 /* TssHelper.swift in Sources */,
@@ -2457,6 +2464,7 @@
 				A69069B52BCF538000F28A8B /* NetworkPrompts.swift in Sources */,
 				A633B12F2B9952D8003D1738 /* OutlineButton.swift in Sources */,
 				A527DD2C2C3E1CE000204464 /* KeygenMessage+ProtoMappable.swift in Sources */,
+				A6182F4B2C9294390059BFDD /* SendCryptoAmountTextField+iOS.swift in Sources */,
 				A65BA9862BAA0F0D00B2D8AA /* SendCryptoVerifyViewModel.swift in Sources */,
 				A63953B22BA7CB8E000802EC /* SendCryptoKeysignView.swift in Sources */,
 				A65BA9982BAD479C00B2D8AA /* JoinKeysignDoneView.swift in Sources */,
