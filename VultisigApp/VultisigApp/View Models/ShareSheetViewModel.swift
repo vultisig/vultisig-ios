@@ -16,14 +16,6 @@ class ShareSheetViewModel: ObservableObject {
 
         renderer.scale = displayScale
 
-#if os(iOS)
-        if let uiImage = renderer.uiImage {
-            renderedImage = Image(uiImage: uiImage)
-        }
-#elseif os(macOS)
-        if let nsImage = renderer.nsImage {
-            renderedImage = Image(nsImage: nsImage)
-        }
-#endif
+        setImage(renderer)
     }
 }
