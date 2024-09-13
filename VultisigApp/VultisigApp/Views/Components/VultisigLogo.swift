@@ -13,17 +13,21 @@ struct VultisigLogo: View {
     @State var didAppear = false
     
     var body: some View {
-        VStack(spacing: 0) {
-            logo
-            title
-            description
-        }
+        container
 #if os(macOS)
         .scaleEffect(0.9)
         .offset(y: 12)
 #endif
         .onAppear {
             setData()
+        }
+    }
+    
+    var content: some View {
+        VStack(spacing: 0) {
+            logo
+            title
+            description
         }
     }
     

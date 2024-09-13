@@ -350,6 +350,8 @@
 		A6ECA1862C93F37200456110 /* NavigationQRShareButton+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1852C93F37200456110 /* NavigationQRShareButton+macOS.swift */; };
 		A6ECA1882C93F4E800456110 /* SetupVaultImageManager+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1872C93F4E800456110 /* SetupVaultImageManager+iOS.swift */; };
 		A6ECA18A2C93F4F400456110 /* SetupVaultImageManager+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1892C93F4F400456110 /* SetupVaultImageManager+macOS.swift */; };
+		A6ECA18C2C93F65D00456110 /* VultisigLogo+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA18B2C93F65D00456110 /* VultisigLogo+iOS.swift */; };
+		A6ECA18E2C93F6CF00456110 /* VultisigLogo+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA18D2C93F6CF00456110 /* VultisigLogo+macOS.swift */; };
 		A6F2C5452B9FE3A00095C8E3 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */; };
 		A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5462B9FFC560095C8E3 /* NavigationBackSheetButton.swift */; };
 		A6F2C5492BA001460095C8E3 /* ChainSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5482BA001460095C8E3 /* ChainSelectionView.swift */; };
@@ -882,6 +884,8 @@
 		A6ECA1852C93F37200456110 /* NavigationQRShareButton+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NavigationQRShareButton+macOS.swift"; sourceTree = "<group>"; };
 		A6ECA1872C93F4E800456110 /* SetupVaultImageManager+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SetupVaultImageManager+iOS.swift"; sourceTree = "<group>"; };
 		A6ECA1892C93F4F400456110 /* SetupVaultImageManager+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SetupVaultImageManager+macOS.swift"; sourceTree = "<group>"; };
+		A6ECA18B2C93F65D00456110 /* VultisigLogo+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VultisigLogo+iOS.swift"; sourceTree = "<group>"; };
+		A6ECA18D2C93F6CF00456110 /* VultisigLogo+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VultisigLogo+macOS.swift"; sourceTree = "<group>"; };
 		A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		A6F2C5462B9FFC560095C8E3 /* NavigationBackSheetButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBackSheetButton.swift; sourceTree = "<group>"; };
 		A6F2C5482BA001460095C8E3 /* ChainSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainSelectionView.swift; sourceTree = "<group>"; };
@@ -1589,6 +1593,7 @@
 				A6182F5A2C9299DC0059BFDD /* MemoTextField+iOS.swift */,
 				A6ECA1832C93F36200456110 /* NavigationQRShareButton+iOS.swift */,
 				A6ECA1872C93F4E800456110 /* SetupVaultImageManager+iOS.swift */,
+				A6ECA18B2C93F65D00456110 /* VultisigLogo+iOS.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1612,6 +1617,7 @@
 				A6182F5C2C9299ED0059BFDD /* MemoTextField+imacOS.swift */,
 				A6ECA1852C93F37200456110 /* NavigationQRShareButton+macOS.swift */,
 				A6ECA1892C93F4F400456110 /* SetupVaultImageManager+macOS.swift */,
+				A6ECA18D2C93F6CF00456110 /* VultisigLogo+macOS.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -2595,6 +2601,7 @@
 				DE64A4C82BA7EBEC00C342E3 /* JoinKeygenViewModel.swift in Sources */,
 				A6D07E412C366F7300594687 /* MemoTextField.swift in Sources */,
 				46DE088E2BD08C9900AE8BDE /* KujiraService.swift in Sources */,
+				A6ECA18E2C93F6CF00456110 /* VultisigLogo+macOS.swift in Sources */,
 				DE63AE4F2BB4E96E001BBE5C /* JSONRPCError.swift in Sources */,
 				469ED3992B98E896008D4951 /* CosmosBalanceResponse.swift in Sources */,
 				A69FBBC82C8BB76000A4B78B /* CoverView+macOS.swift in Sources */,
@@ -2917,6 +2924,7 @@
 				A61BC8142BA240FC00484689 /* SendCryptoDetailsView.swift in Sources */,
 				B5A97CF32BF426D4007574D7 /* TransactionMemoDetailsView.swift in Sources */,
 				DEFF58F62BCCB573005DFDF9 /* RegisterVault.swift in Sources */,
+				A6ECA18C2C93F65D00456110 /* VultisigLogo+iOS.swift in Sources */,
 				B54E317B2BF57D9300D4FC0A /* TransactionMemoContractSelectorDropDown.swift in Sources */,
 				B5F758182BD8E65D0097B5B9 /* Sui.swift in Sources */,
 				A633B1362B997D57003D1738 /* NavigationBackButton.swift in Sources */,
