@@ -6,7 +6,6 @@
 //
 
 #if os(iOS)
-
 import UIKit
 import SwiftUI
 
@@ -23,5 +22,4 @@ struct QRCodeShareSheet: UIViewControllerRepresentable {
         // No update needed
     }
 }
-
 #endif

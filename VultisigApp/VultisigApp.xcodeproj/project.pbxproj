@@ -356,6 +356,8 @@
 		A6ECA1922C93F83B00456110 /* ProgressBar+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1912C93F83B00456110 /* ProgressBar+macOS.swift */; };
 		A6ECA1942C93F98D00456110 /* InstructionPrompt+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1932C93F98D00456110 /* InstructionPrompt+iOS.swift */; };
 		A6ECA1962C93F99700456110 /* InstructionPrompt+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1952C93F99700456110 /* InstructionPrompt+macOS.swift */; };
+		A6ECA1982C93FB0400456110 /* BlowfishWarningInformationNote+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1972C93FB0400456110 /* BlowfishWarningInformationNote+iOS.swift */; };
+		A6ECA19A2C93FB0E00456110 /* BlowfishWarningInformationNote+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1992C93FB0E00456110 /* BlowfishWarningInformationNote+macOS.swift */; };
 		A6F2C5452B9FE3A00095C8E3 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */; };
 		A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5462B9FFC560095C8E3 /* NavigationBackSheetButton.swift */; };
 		A6F2C5492BA001460095C8E3 /* ChainSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5482BA001460095C8E3 /* ChainSelectionView.swift */; };
@@ -894,6 +896,8 @@
 		A6ECA1912C93F83B00456110 /* ProgressBar+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProgressBar+macOS.swift"; sourceTree = "<group>"; };
 		A6ECA1932C93F98D00456110 /* InstructionPrompt+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstructionPrompt+iOS.swift"; sourceTree = "<group>"; };
 		A6ECA1952C93F99700456110 /* InstructionPrompt+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstructionPrompt+macOS.swift"; sourceTree = "<group>"; };
+		A6ECA1972C93FB0400456110 /* BlowfishWarningInformationNote+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlowfishWarningInformationNote+iOS.swift"; sourceTree = "<group>"; };
+		A6ECA1992C93FB0E00456110 /* BlowfishWarningInformationNote+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BlowfishWarningInformationNote+macOS.swift"; sourceTree = "<group>"; };
 		A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		A6F2C5462B9FFC560095C8E3 /* NavigationBackSheetButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBackSheetButton.swift; sourceTree = "<group>"; };
 		A6F2C5482BA001460095C8E3 /* ChainSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainSelectionView.swift; sourceTree = "<group>"; };
@@ -1125,13 +1129,11 @@
 				B54E317A2BF57D9300D4FC0A /* TransactionMemoContractSelectorDropDown.swift */,
 				A62D6B042BFE7C5E00F24E51 /* ChainDetailActionButtons.swift */,
 				A66BFCD42C136FB3004DCD4F /* VaultDetailBalanceContent.swift */,
-				A66BFCCE2C1348E4004DCD4F /* QRCodeShareSheet.swift */,
 				A66BFCD02C134B3B004DCD4F /* QRShareSheetImage.swift */,
 				A63253C32C17BE9000D2F1B8 /* VaultDeletionDetails.swift */,
 				A68696592C1F72FF004EDE0B /* HiddenTextField.swift */,
 				A6CBF2DB2C251D4100FD8080 /* LookingForDevicesLoader.swift */,
 				B590DF872C2E815A00ED934E /* GenericSelectorDropDown.swift */,
-				A6AF960F2C2E2DC900992578 /* FileQRCodeImporterMac.swift */,
 				A63875602C386647000CF242 /* BackupNowDisclaimer.swift */,
 				A6B7F48B2C47A077006D83D1 /* InformationNote.swift */,
 				A6B7F4992C49418A006D83D1 /* VaultDetailQRCode.swift */,
@@ -1604,6 +1606,7 @@
 				A6ECA18B2C93F65D00456110 /* VultisigLogo+iOS.swift */,
 				A6ECA18F2C93F7EF00456110 /* ProgressBar+iOS.swift */,
 				A6ECA1932C93F98D00456110 /* InstructionPrompt+iOS.swift */,
+				A6ECA1972C93FB0400456110 /* BlowfishWarningInformationNote+iOS.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1630,6 +1633,7 @@
 				A6ECA18D2C93F6CF00456110 /* VultisigLogo+macOS.swift */,
 				A6ECA1912C93F83B00456110 /* ProgressBar+macOS.swift */,
 				A6ECA1952C93F99700456110 /* InstructionPrompt+macOS.swift */,
+				A6ECA1992C93FB0E00456110 /* BlowfishWarningInformationNote+macOS.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1833,6 +1837,7 @@
 		A69FBBCB2C8BB85600A4B78B /* Native */ = {
 			isa = PBXGroup;
 			children = (
+				A66BFCCE2C1348E4004DCD4F /* QRCodeShareSheet.swift */,
 				A65324272BA51E8700DDE6EB /* QRCodeScannerView.swift */,
 				A6A41CAD2C63512D00C6858D /* ShareSheetViewController.swift */,
 				A6F42CC12C09175B00D0431C /* GeneralCodeScannerView.swift */,
@@ -1844,6 +1849,7 @@
 			isa = PBXGroup;
 			children = (
 				A6521C552C6EC769002D5C5F /* MacScannerView.swift */,
+				A6AF960F2C2E2DC900992578 /* FileQRCodeImporterMac.swift */,
 				A6AF960B2C2E2D6400992578 /* GeneralQRImportMacView.swift */,
 			);
 			path = Native;
@@ -2569,6 +2575,7 @@
 				462DCD702BCA14F3003D542F /* CoinPaprikaQuote.swift in Sources */,
 				A5E841CD2C63A987009325CB /* RateProvider.swift in Sources */,
 				A6B7F49A2C49418A006D83D1 /* VaultDetailQRCode.swift in Sources */,
+				A6ECA1982C93FB0400456110 /* BlowfishWarningInformationNote+iOS.swift in Sources */,
 				B5A97CF52BF4287A007574D7 /* TransactionMemoSelectorDropdown.swift in Sources */,
 				A58CC34B2C32FA760086D16B /* ProtoMappable.swift in Sources */,
 				A6966D262BA3E2CF00903CA4 /* OnboardingView3.swift in Sources */,
@@ -2687,6 +2694,7 @@
 				DE491CEF2B708260007C88D5 /* KeygenView.swift in Sources */,
 				A611735B2BC8B7AB00D616F9 /* ChainNavigationCell.swift in Sources */,
 				A6F42CC42C09598900D0431C /* VaultDetailScanButton.swift in Sources */,
+				A6ECA19A2C93FB0E00456110 /* BlowfishWarningInformationNote+macOS.swift in Sources */,
 				B54E317D2BF5A19200D4FC0A /* StyledTextField.swift in Sources */,
 				DED05FE62BBB82F300E0496C /* CosmosAccountsResponse.swift in Sources */,
 				A6477D012C7EE13500672A1A /* OnDropQRUtils.swift in Sources */,
