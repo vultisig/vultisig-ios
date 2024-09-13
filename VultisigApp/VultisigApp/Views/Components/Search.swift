@@ -27,26 +27,6 @@ struct Search: View {
         .colorScheme(.dark)
     }
 
-    var textField: some View {
-        TextField(NSLocalizedString("search", comment: ""), text: $searchText)
-            .foregroundColor(.neutral700)
-            .font(.body14Menlo)
-#if os(iOS)
-            .toolbar {
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-
-                    Button {
-                        hideKeyboard()
-                    } label: {
-                        Text(NSLocalizedString("done", comment: ""))
-                    }
-                }
-            }
-#endif
-            .borderlessTextFieldStyle()
-    }
-
     var searchIcon: some View {
         Image(systemName: "magnifyingglass")
             .resizable()
