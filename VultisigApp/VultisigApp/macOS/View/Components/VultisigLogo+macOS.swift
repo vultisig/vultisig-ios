@@ -14,5 +14,10 @@ extension VultisigLogo {
             .scaleEffect(0.9)
             .offset(y: 12)
     }
+    
+    var descriptionContainer: some View {
+        descriptionContent
+            .padding(.top, 5)
+    }
 }
 #endif

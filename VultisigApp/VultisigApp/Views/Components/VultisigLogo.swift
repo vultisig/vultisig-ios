@@ -14,13 +14,9 @@ struct VultisigLogo: View {
     
     var body: some View {
         container
-#if os(macOS)
-        .scaleEffect(0.9)
-        .offset(y: 12)
-#endif
-        .onAppear {
-            setData()
-        }
+            .onAppear {
+                setData()
+            }
     }
     
     var content: some View {
@@ -98,15 +94,14 @@ struct VultisigLogo: View {
     }
     
     var description: some View {
+        descriptionContainer
+    }
+    
+    var descriptionContent: some View {
         Text("secureCryptoVault")
             .foregroundColor(.neutral0)
             .opacity(didAppear ? 1 : 0)
             .font(.body16MontserratBold)
-#if os(iOS)
-            .padding(.top, 10)
-#elseif os(macOS)
-            .padding(.top, 5)
-#endif
     }
     
     private func setData() {
