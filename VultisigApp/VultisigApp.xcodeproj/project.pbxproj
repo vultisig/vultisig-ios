@@ -354,6 +354,8 @@
 		A6ECA18E2C93F6CF00456110 /* VultisigLogo+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA18D2C93F6CF00456110 /* VultisigLogo+macOS.swift */; };
 		A6ECA1902C93F7EF00456110 /* ProgressBar+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA18F2C93F7EF00456110 /* ProgressBar+iOS.swift */; };
 		A6ECA1922C93F83B00456110 /* ProgressBar+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1912C93F83B00456110 /* ProgressBar+macOS.swift */; };
+		A6ECA1942C93F98D00456110 /* InstructionPrompt+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1932C93F98D00456110 /* InstructionPrompt+iOS.swift */; };
+		A6ECA1962C93F99700456110 /* InstructionPrompt+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1952C93F99700456110 /* InstructionPrompt+macOS.swift */; };
 		A6F2C5452B9FE3A00095C8E3 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */; };
 		A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5462B9FFC560095C8E3 /* NavigationBackSheetButton.swift */; };
 		A6F2C5492BA001460095C8E3 /* ChainSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5482BA001460095C8E3 /* ChainSelectionView.swift */; };
@@ -890,6 +892,8 @@
 		A6ECA18D2C93F6CF00456110 /* VultisigLogo+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VultisigLogo+macOS.swift"; sourceTree = "<group>"; };
 		A6ECA18F2C93F7EF00456110 /* ProgressBar+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProgressBar+iOS.swift"; sourceTree = "<group>"; };
 		A6ECA1912C93F83B00456110 /* ProgressBar+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProgressBar+macOS.swift"; sourceTree = "<group>"; };
+		A6ECA1932C93F98D00456110 /* InstructionPrompt+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstructionPrompt+iOS.swift"; sourceTree = "<group>"; };
+		A6ECA1952C93F99700456110 /* InstructionPrompt+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "InstructionPrompt+macOS.swift"; sourceTree = "<group>"; };
 		A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		A6F2C5462B9FFC560095C8E3 /* NavigationBackSheetButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBackSheetButton.swift; sourceTree = "<group>"; };
 		A6F2C5482BA001460095C8E3 /* ChainSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainSelectionView.swift; sourceTree = "<group>"; };
@@ -1599,6 +1603,7 @@
 				A6ECA1872C93F4E800456110 /* SetupVaultImageManager+iOS.swift */,
 				A6ECA18B2C93F65D00456110 /* VultisigLogo+iOS.swift */,
 				A6ECA18F2C93F7EF00456110 /* ProgressBar+iOS.swift */,
+				A6ECA1932C93F98D00456110 /* InstructionPrompt+iOS.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1624,6 +1629,7 @@
 				A6ECA1892C93F4F400456110 /* SetupVaultImageManager+macOS.swift */,
 				A6ECA18D2C93F6CF00456110 /* VultisigLogo+macOS.swift */,
 				A6ECA1912C93F83B00456110 /* ProgressBar+macOS.swift */,
+				A6ECA1952C93F99700456110 /* InstructionPrompt+macOS.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -2596,6 +2602,7 @@
 				A6D07E432C36756700594687 /* OnboardingView4.swift in Sources */,
 				B52196442C12C3540021D27A /* CustomTokenView.swift in Sources */,
 				B5A97CEF2BF41779007574D7 /* TransactionMemoViewModel.swift in Sources */,
+				A6ECA1962C93F99700456110 /* InstructionPrompt+macOS.swift in Sources */,
 				DE1572972B70F254009BC7C5 /* LocalStateAccessorImp.swift in Sources */,
 				A6386DAC2C90250000DDD58E /* SettingFAQCell+macOS.swift in Sources */,
 				A6833D8D2C65D2A1002029E1 /* AddressQRCodeHeader.swift in Sources */,
@@ -2932,6 +2939,7 @@
 				A61BC8142BA240FC00484689 /* SendCryptoDetailsView.swift in Sources */,
 				B5A97CF32BF426D4007574D7 /* TransactionMemoDetailsView.swift in Sources */,
 				DEFF58F62BCCB573005DFDF9 /* RegisterVault.swift in Sources */,
+				A6ECA1942C93F98D00456110 /* InstructionPrompt+iOS.swift in Sources */,
 				A6ECA18C2C93F65D00456110 /* VultisigLogo+iOS.swift in Sources */,
 				B54E317B2BF57D9300D4FC0A /* TransactionMemoContractSelectorDropDown.swift in Sources */,
 				B5F758182BD8E65D0097B5B9 /* Sui.swift in Sources */,

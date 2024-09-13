@@ -11,19 +11,7 @@ struct InstructionPrompt: View {
     let networkType: NetworkPromptType
     
     var body: some View {
-        ZStack {
-#if os(iOS)
-            if UIDevice.current.userInterfaceIdiom == .phone {
-                phoneContent
-            } else {
-                padContent
-            }
-#elseif os(macOS)
-            padContent
-#endif
-        }
-        .frame(maxWidth: .infinity)
-        .frame(maxWidth: 350)
+        content
     }
     
     var phoneContent: some View {
