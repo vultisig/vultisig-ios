@@ -12,12 +12,6 @@ import OSLog
 import VultisigCommonData
 import UniformTypeIdentifiers
 
-#if os(iOS)
-import UIKit
-#elseif os(macOS)
-import AppKit
-#endif
-
 @MainActor
 class EncryptedBackupViewModel: ObservableObject {
     @Published var showVaultExporter = false
@@ -148,65 +142,6 @@ class EncryptedBackupViewModel: ObservableObject {
             decryptedContent = vaultData.hexString
             isFileUploaded = true
         }
-    }
-    
-    func promptForPasswordAndImport(from data: Data) {
-#if os(iOS)
-        let alert = UIAlertController(title: NSLocalizedString("enterPassword", comment: ""), message: nil, preferredStyle: .alert)
-        alert.addTextField { textField in
-            textField.isSecureTextEntry = true
-            textField.placeholder = NSLocalizedString("password", comment: "").capitalized
-        }
-        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
-            if let password = alert.textFields?.first?.text {
-                self.decryptionPassword = password
-                self.importFileWithPassword(from: data, password: password)
-            }
-        }))
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-        
-        if let rootViewController = UIApplication.shared.windows.first?.rootViewController {
-            rootViewController.present(alert, animated: true, completion: nil)
-        }
-#elseif os(macOS)
-        let alert = NSAlert()
-        alert.messageText = NSLocalizedString("enterPassword", comment: "")
-        alert.informativeText = ""
-        alert.alertStyle = .informational
-        
-        let textField = NSSecureTextField(frame: NSRect(x: 0, y: 0, width: 200, height: 24))
-        textField.placeholderString = NSLocalizedString("password", comment: "").capitalized
-        alert.accessoryView = textField
-        
-        alert.addButton(withTitle: "OK")
-        alert.addButton(withTitle: "Cancel")
-        
-        guard let mainWindow = NSApplication.shared.mainWindow else {
-            let alertWindow = alert.window
-            let screenFrame = NSScreen.main?.frame ?? NSRect.zero
-            let alertFrame = alertWindow.frame
-            let centerX = screenFrame.midX - alertFrame.width / 2
-            let centerY = screenFrame.midY - alertFrame.height / 2
-            alertWindow.setFrameOrigin(NSPoint(x: centerX, y: centerY))
-            
-            let response = alert.runModal()
-            if response == .alertFirstButtonReturn {
-                let password = textField.stringValue
-                self.decryptionPassword = password
-                self.importFileWithPassword(from: data, password: password)
-            }
-            return
-        }
-
-        // Show the alert as a sheet attached to the main window
-        alert.beginSheetModal(for: mainWindow) { response in
-            if response == .alertFirstButtonReturn {
-                let password = textField.stringValue
-                self.decryptionPassword = password
-                self.importFileWithPassword(from: data, password: password)
-            }
-        }
-#endif
     }
     
     func importFileWithPassword(from data: Data, password: String) {

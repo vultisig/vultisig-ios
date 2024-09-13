@@ -366,6 +366,8 @@
 		A6ECA1A72C94106700456110 /* JoinKeysignViewModel+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1A62C94106700456110 /* JoinKeysignViewModel+iOS.swift */; };
 		A6ECA1A92C9410D100456110 /* ShareSheetViewModel+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1A82C9410D100456110 /* ShareSheetViewModel+iOS.swift */; };
 		A6ECA1AC2C9410EA00456110 /* ShareSheetViewModel+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1AB2C9410EA00456110 /* ShareSheetViewModel+macOS.swift */; };
+		A6ECA1AE2C9411DA00456110 /* EncryptedBackupViewModel+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1AD2C9411DA00456110 /* EncryptedBackupViewModel+iOS.swift */; };
+		A6ECA1B02C9411E200456110 /* EncryptedBackupViewModel+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1AF2C9411E200456110 /* EncryptedBackupViewModel+macOS.swift */; };
 		A6F2C5452B9FE3A00095C8E3 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */; };
 		A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5462B9FFC560095C8E3 /* NavigationBackSheetButton.swift */; };
 		A6F2C5492BA001460095C8E3 /* ChainSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5482BA001460095C8E3 /* ChainSelectionView.swift */; };
@@ -914,6 +916,8 @@
 		A6ECA1A62C94106700456110 /* JoinKeysignViewModel+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JoinKeysignViewModel+iOS.swift"; sourceTree = "<group>"; };
 		A6ECA1A82C9410D100456110 /* ShareSheetViewModel+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ShareSheetViewModel+iOS.swift"; sourceTree = "<group>"; };
 		A6ECA1AB2C9410EA00456110 /* ShareSheetViewModel+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ShareSheetViewModel+macOS.swift"; sourceTree = "<group>"; };
+		A6ECA1AD2C9411DA00456110 /* EncryptedBackupViewModel+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EncryptedBackupViewModel+iOS.swift"; sourceTree = "<group>"; };
+		A6ECA1AF2C9411E200456110 /* EncryptedBackupViewModel+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EncryptedBackupViewModel+macOS.swift"; sourceTree = "<group>"; };
 		A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		A6F2C5462B9FFC560095C8E3 /* NavigationBackSheetButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBackSheetButton.swift; sourceTree = "<group>"; };
 		A6F2C5482BA001460095C8E3 /* ChainSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainSelectionView.swift; sourceTree = "<group>"; };
@@ -1914,6 +1918,7 @@
 				A6ECA1A42C940FDA00456110 /* JoinKeygenViewModel+iOS.swift */,
 				A6ECA1A62C94106700456110 /* JoinKeysignViewModel+iOS.swift */,
 				A6ECA1A82C9410D100456110 /* ShareSheetViewModel+iOS.swift */,
+				A6ECA1AD2C9411DA00456110 /* EncryptedBackupViewModel+iOS.swift */,
 			);
 			path = "View Model";
 			sourceTree = "<group>";
@@ -1922,6 +1927,7 @@
 			isa = PBXGroup;
 			children = (
 				A6ECA1AB2C9410EA00456110 /* ShareSheetViewModel+macOS.swift */,
+				A6ECA1AF2C9411E200456110 /* EncryptedBackupViewModel+macOS.swift */,
 			);
 			path = "View Model";
 			sourceTree = "<group>";
@@ -2793,6 +2799,7 @@
 				A63875612C386647000CF242 /* BackupNowDisclaimer.swift in Sources */,
 				A62D6B032BFE7BF400F24E51 /* CoinDetailView.swift in Sources */,
 				A65649E12B96602700E4B329 /* Int64Extension.swift in Sources */,
+				A6ECA1B02C9411E200456110 /* EncryptedBackupViewModel+macOS.swift in Sources */,
 				A558D74C2C298060007222EB /* SwapCoinsResolver.swift in Sources */,
 				A6ECA1A52C940FDA00456110 /* JoinKeygenViewModel+iOS.swift in Sources */,
 				DEFF58FC2BCFB384005DFDF9 /* MayaChainService.swift in Sources */,
@@ -3005,6 +3012,7 @@
 				A6ECA1882C93F4E800456110 /* SetupVaultImageManager+iOS.swift in Sources */,
 				A6182F452C92919D0059BFDD /* VaultDetailScanButton+macOS.swift in Sources */,
 				B52196462C12CA2E0021D27A /* AddressTextField.swift in Sources */,
+				A6ECA1AE2C9411DA00456110 /* EncryptedBackupViewModel+iOS.swift in Sources */,
 				B51097F12C4E48CD0066D560 /* BlowfishRequest.swift in Sources */,
 				B5E476AD2C1A556D005DB485 /* DydxService.swift in Sources */,
 				B54B01972BDCEB8E00FDA472 /* Polkadot.swift in Sources */,
