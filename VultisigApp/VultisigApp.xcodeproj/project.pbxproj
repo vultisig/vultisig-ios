@@ -362,6 +362,7 @@
 		A6ECA19E2C93FB7B00456110 /* Search+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA19D2C93FB7B00456110 /* Search+macOS.swift */; };
 		A6ECA1A02C93FC0000456110 /* VaultSetupCard+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA19F2C93FC0000456110 /* VaultSetupCard+iOS.swift */; };
 		A6ECA1A22C93FC0D00456110 /* VaultSetupCard+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1A12C93FC0D00456110 /* VaultSetupCard+macOS.swift */; };
+		A6ECA1A52C940FDA00456110 /* JoinKeygenViewModel+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6ECA1A42C940FDA00456110 /* JoinKeygenViewModel+iOS.swift */; };
 		A6F2C5452B9FE3A00095C8E3 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */; };
 		A6F2C5472B9FFC560095C8E3 /* NavigationBackSheetButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5462B9FFC560095C8E3 /* NavigationBackSheetButton.swift */; };
 		A6F2C5492BA001460095C8E3 /* ChainSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F2C5482BA001460095C8E3 /* ChainSelectionView.swift */; };
@@ -906,6 +907,7 @@
 		A6ECA19D2C93FB7B00456110 /* Search+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Search+macOS.swift"; sourceTree = "<group>"; };
 		A6ECA19F2C93FC0000456110 /* VaultSetupCard+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VaultSetupCard+iOS.swift"; sourceTree = "<group>"; };
 		A6ECA1A12C93FC0D00456110 /* VaultSetupCard+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VaultSetupCard+macOS.swift"; sourceTree = "<group>"; };
+		A6ECA1A42C940FDA00456110 /* JoinKeygenViewModel+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JoinKeygenViewModel+iOS.swift"; sourceTree = "<group>"; };
 		A6F2C5442B9FE3A00095C8E3 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		A6F2C5462B9FFC560095C8E3 /* NavigationBackSheetButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBackSheetButton.swift; sourceTree = "<group>"; };
 		A6F2C5482BA001460095C8E3 /* ChainSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainSelectionView.swift; sourceTree = "<group>"; };
@@ -1153,7 +1155,6 @@
 				A625D9C12C5AD15A0078FBF4 /* KeygenViewInstructions.swift */,
 				A625D9C52C5B5FE30078FBF4 /* KeygenViewInstructionsMac.swift */,
 				A649AB9D2C6C54AA004710A9 /* PopupCapsule.swift */,
-				A6521C572C6ECA19002D5C5F /* MacCameraPreview.swift */,
 				A611CCC12C765F3000D64C9D /* OutlinedDisclaimer.swift */,
 			);
 			path = Components;
@@ -1526,6 +1527,7 @@
 				A69FBB9F2C8AD7C700A4B78B /* ContentView+iOS.swift */,
 				A69FBBA12C8AD9F500A4B78B /* View */,
 				A69FBBCB2C8BB85600A4B78B /* Native */,
+				A6ECA1A32C940FC900456110 /* View Model */,
 			);
 			path = iOS;
 			sourceTree = "<group>";
@@ -1861,6 +1863,7 @@
 			isa = PBXGroup;
 			children = (
 				A6521C552C6EC769002D5C5F /* MacScannerView.swift */,
+				A6521C572C6ECA19002D5C5F /* MacCameraPreview.swift */,
 				A6AF960F2C2E2DC900992578 /* FileQRCodeImporterMac.swift */,
 				A6AF960B2C2E2D6400992578 /* GeneralQRImportMacView.swift */,
 			);
@@ -1896,6 +1899,14 @@
 				A63001B02C54AC0100D18E25 /* EditAddressBookView.swift */,
 			);
 			path = "Address Book";
+			sourceTree = "<group>";
+		};
+		A6ECA1A32C940FC900456110 /* View Model */ = {
+			isa = PBXGroup;
+			children = (
+				A6ECA1A42C940FDA00456110 /* JoinKeygenViewModel+iOS.swift */,
+			);
+			path = "View Model";
 			sourceTree = "<group>";
 		};
 		A6F9E7A32BED6BA200BA36E1 /* New Wallet */ = {
@@ -2765,6 +2776,7 @@
 				A62D6B032BFE7BF400F24E51 /* CoinDetailView.swift in Sources */,
 				A65649E12B96602700E4B329 /* Int64Extension.swift in Sources */,
 				A558D74C2C298060007222EB /* SwapCoinsResolver.swift in Sources */,
+				A6ECA1A52C940FDA00456110 /* JoinKeygenViewModel+iOS.swift in Sources */,
 				DEFF58FC2BCFB384005DFDF9 /* MayaChainService.swift in Sources */,
 				DE63AE562BBA788D001BBE5C /* GaiaService.swift in Sources */,
 				A6966D202BA3DF0C00903CA4 /* OnboardingView1.swift in Sources */,

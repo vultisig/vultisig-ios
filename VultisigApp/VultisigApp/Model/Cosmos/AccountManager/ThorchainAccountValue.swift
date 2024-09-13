@@ -7,7 +7,6 @@
 
 import Foundation
 
-
 class THORChainAccountValue: Codable {
     var address: String?
     var publicKey: THORChainAccountValuePublicKey?

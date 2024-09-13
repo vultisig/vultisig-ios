@@ -7,10 +7,6 @@ import BigInt
 import Combine
 import VultisigCommonData
 
-#if os(iOS)
-import CodeScanner
-#endif
-
 class SendTransaction: ObservableObject, Hashable {
 
     @Published var fromAddress: String = ""
