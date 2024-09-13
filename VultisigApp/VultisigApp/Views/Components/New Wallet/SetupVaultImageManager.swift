@@ -27,23 +27,16 @@ struct SetupVaultImageManager: View {
             .multilineTextAlignment(.center)
     }
     
-    var imageContent: some View {
-        Image(selectedTab.getImage())
-            .resizable()
-            .frame(maxWidth: .infinity)
+    var image: some View {
+        imageContainer
             .clipped()
     }
     
-    var image: some View {
+    var imageContent: some View {
         Image(selectedTab.getImage())
             .resizable()
             .aspectRatio(contentMode: .fit)
             .frame(maxHeight: .infinity)
-#if os(macOS)
-            .offset(y: 15)
-            .scaleEffect(1.1)
-#endif
-            .clipped()
     }
 }
 
