@@ -1691,7 +1691,6 @@
 				A6B7F49B2C4963F6006D83D1 /* VaultDetailQRCodeViewModel.swift */,
 				A6951E8B2C52DC6B007292E7 /* SettingsDefaultChainViewModel.swift */,
 				B58156342C5D4DC9006164BF /* BlowfishViewModel.swift */,
-				A6521C592C6ECA62002D5C5F /* MacCameraServiceViewModel.swift */,
 				A5F596BE2C7FB0C5008D5339 /* SendGasSettingsViewModel.swift */,
 				A6182F2A2C9225EA0059BFDD /* CheckUpdateViewModel.swift */,
 			);
@@ -1870,6 +1869,7 @@
 			isa = PBXGroup;
 			children = (
 				A6521C552C6EC769002D5C5F /* MacScannerView.swift */,
+				A6521C592C6ECA62002D5C5F /* MacCameraServiceViewModel.swift */,
 				A6521C572C6ECA19002D5C5F /* MacCameraPreview.swift */,
 				A6AF960F2C2E2DC900992578 /* FileQRCodeImporterMac.swift */,
 				A6AF960B2C2E2D6400992578 /* GeneralQRImportMacView.swift */,

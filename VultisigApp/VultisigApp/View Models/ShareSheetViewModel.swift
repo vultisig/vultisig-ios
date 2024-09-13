@@ -15,7 +15,6 @@ class ShareSheetViewModel: ObservableObject {
         let renderer = ImageRenderer(content: QRShareSheetImage(title: title, image: qrCodeImage))
 
         renderer.scale = displayScale
-
         setImage(renderer)
     }
 }
