@@ -39,12 +39,6 @@ struct SetupVaultImageManager: View {
         Image(selectedTab.image)
             .resizable()
             .aspectRatio(contentMode: .fit)
-            .frame(maxHeight: .infinity)
-#if os(macOS)
-            .offset(y: 15)
-            .scaleEffect(1.1)
-#endif
-            .clipped()
     }
 }
 
