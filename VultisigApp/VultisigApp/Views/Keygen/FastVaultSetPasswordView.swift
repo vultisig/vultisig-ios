@@ -95,7 +95,7 @@ struct FastVaultSetPasswordView: View {
         Button(action: {
             isLinkActive = true
         }) {
-            FilledButton(title: "Continue")
+            FilledButton(title: "continue")
         }
         .opacity(isSaveButtonDisabled ? 0.5 : 1)
         .disabled(isSaveButtonDisabled)

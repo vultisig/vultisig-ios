@@ -60,7 +60,7 @@ struct FastVaultEnterPasswordView: View {
             onSubmit?()
             dismiss()
         }) {
-            FilledButton(title: "Continue")
+            FilledButton(title: "continue")
         }
         .opacity(isSaveButtonDisabled ? 0.5 : 1)
         .disabled(isSaveButtonDisabled)

@@ -93,7 +93,7 @@ struct FastVaultEmailView: View {
         Button(action: {
             isLinkActive = true
         }) {
-            FilledButton(title: "Continue")
+            FilledButton(title: "continue")
         }
         .opacity(isValid ? 1 : 0.5)
         .disabled(!isValid)

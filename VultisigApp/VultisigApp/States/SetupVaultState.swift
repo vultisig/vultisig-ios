@@ -24,40 +24,22 @@ enum SetupVaultState: CaseIterable {
     var title: String {
         switch self {
         case .fast:
-            return "FAST"
+            return NSLocalizedString("fastModeTitle", comment: "")
         case .active:
-            return "ACTIVE"
+            return NSLocalizedString("activeModeTitle", comment: "")
         case .secure:
-            return "SECURE"
+            return NSLocalizedString("secureModeTitle", comment: "")
         }
     }
 
     var label: String {
         switch self {
         case .fast:
-            return """
-            • Single Device Setup
-            • Transaction Alerts & Policies
-            • Vault Backup Emailed
-
-            Use as a “hot vault”
-            """
+            return NSLocalizedString("fastModeDescription", comment: "")
         case .active:
-            return """
-            • Fast Signing On The Move
-            • Transaction Alerts & Policies
-            • Fully self-custodial
-
-            Use as a “main vault”
-            """
+            return NSLocalizedString("activeModeDescription", comment: "")
         case .secure:
-            return """
-            • Only Your Devices
-            • No Alerts or Policies
-            • Fully self-custodial
-
-            Use as a “cold vault”
-            """
+            return NSLocalizedString("secureModeDescription", comment: "")
         }
     }
     
@@ -76,11 +58,11 @@ enum SetupVaultState: CaseIterable {
         // TODO: Change loader titles
         switch self {
         case .fast:
-            return NSLocalizedString("lookingFor1MoreDevice", comment: "")
+            return NSLocalizedString("fastLoaderTitle", comment: "")
         case .active:
-            return NSLocalizedString("lookingFor2MoreDevice", comment: "")
+            return NSLocalizedString("activeLoaderTitle", comment: "")
         case .secure:
-            return NSLocalizedString("lookingForDevices", comment: "")
+            return NSLocalizedString("secureLoaderTitle", comment: "")
         }
     }
 }

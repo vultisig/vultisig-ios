@@ -83,6 +83,15 @@
 "reshareFailed" = "Ponovno dijeljenje ključa nije uspjelo";
 "joinKeyshare" = "Pridruži se dijeljenju ključa";
 "lookingForDevices" = "Traženje uređaja... ";
+"fastModeTitle" = "BRZO";
+"activeModeTitle" = "AKTIVNO";
+"secureModeTitle" = "SIGURNO";
+"fastModeDescription" = "• Postavljanje na jednom uređaju\n• Upozorenja i politike transakcija\n• Sigurnosna kopija Vaulta poslana e-mailom\n\nKoristiti kao “vrući vault”";
+"activeModeDescription" = "• Brzo potpisivanje u pokretu\n• Upozorenja i politike transakcija\n• Potpuno samostalno skrbništvo\n\nKoristiti kao “glavni vault”";
+"secureModeDescription" = "• Samo vaši uređaji\n• Bez upozorenja i politika\n• Potpuno samostalno skrbništvo\n\nKoristiti kao “hladni vault”";
+"fastLoaderTitle" = "Tražim FastVaultServer";
+"activeLoaderTitle" = "Tražim još 1 uređaj...";
+"secureLoaderTitle" = "Tražim uređaje...";
 "sign" = "Potpiši";
 "amount" = "Iznos";
 "amount(inFiat)" = "Iznos (u Fiatu)";
@@ -267,8 +276,6 @@
 "scanQR" = "Skeniraj QR / Upari uređaj";
 "or" = "ILI";
 "selectYourVaultType" = "Odaberite vrstu spremišta";
-"lookingFor1MoreDevice" = "Tražim još jedan uređaj...";
-"lookingFor2MoreDevice" = "Tražim još dva uređaja...";
 "shouldBackupVaultsSeparateLocations" = "Trebali biste napraviti sigurnosnu kopiju svih dijelova spremišta na različitim lokacijama.";
 "keygenInstructionsCar1Title" = "Jeste li znali?";
 "keygenInstructionsCar2Title" = "Savjet dana";

@@ -83,6 +83,15 @@
 "reshareFailed" = "Schlüsselteilung fehlgeschlagen";
 "joinKeyshare" = "Dem Schlüsselteilungsprozess beitreten";
 "lookingForDevices" = "Suche nach Geräten...";
+"fastModeTitle" = "SCHNELL";
+"activeModeTitle" = "AKTIV";
+"secureModeTitle" = "SICHER";
+"fastModeDescription" = "• Einfache Einrichtung auf einem Gerät\n• Transaktionsbenachrichtigungen & -richtlinien\n• Tresor-Backup per E-Mail gesendet\n\nAls „heißen Tresor“ verwenden";
+"activeModeDescription" = "• Schnelles Signieren unterwegs\n• Transaktionsbenachrichtigungen & -richtlinien\n• Vollständig selbstverwahrend\n\nAls „Haupttresor“ verwenden";
+"secureModeDescription" = "• Nur Ihre Geräte\n• Keine Benachrichtigungen oder Richtlinien\n• Vollständig selbstverwahrend\n\nAls „kalten Tresor“ verwenden";
+"fastLoaderTitle" = "Suche nach FastVaultServer";
+"activeLoaderTitle" = "Suche nach 1 weiterem Gerät...";
+"secureLoaderTitle" = "Suche nach Geräten...";
 "sign" = "Unterschreiben";
 "amount" = "Menge";
 "amount(inFiat)" = "Menge (in Fiat)";
@@ -267,8 +276,6 @@
 "scanQR" = "QR scannen / Gerät koppeln";
 "or" = "ODER";
 "selectYourVaultType" = "Wählen Sie Ihren Tresortyp";
-"lookingFor1MoreDevice" = "Suche nach einem weiteren Gerät...";
-"lookingFor2MoreDevice" = "Suche nach zwei weiteren Geräten...";
 "shouldBackupVaultsSeparateLocations" = "Sie sollten alle Tresoranteile an verschiedenen Orten sichern.";
 "keygenInstructionsCar1Title" = "Wussten Sie schon?";
 "keygenInstructionsCar2Title" = "Tipp des Tages";

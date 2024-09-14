@@ -83,6 +83,15 @@
 "reshareFailed" = "A recompartilha de chave falhou";
 "joinKeyshare" = "Juntar-se ao Compartilhamento de Chave";
 "lookingForDevices" = "Procurando dispositivos... ";
+"fastModeTitle" = "RÁPIDO";
+"activeModeTitle" = "ATIVO";
+"secureModeTitle" = "SEGURO";
+"fastModeDescription" = "• Configuração em um único dispositivo\n• Alertas e políticas de transação\n• Backup do Vault enviado por e-mail\n\nUsar como um “vault quente”";
+"activeModeDescription" = "• Assinatura rápida em movimento\n• Alertas e políticas de transação\n• Completamente auto-custodial\n\nUsar como “vault principal”";
+"secureModeDescription" = "• Apenas seus dispositivos\n• Sem alertas ou políticas\n• Completamente auto-custodial\n\nUsar como um “vault frio”";
+"fastLoaderTitle" = "Procurando FastVaultServer";
+"activeLoaderTitle" = "Procurando por mais 1 dispositivo...";
+"secureLoaderTitle" = "Procurando dispositivos...";
 "sign" = "Assinar";
 "amount" = "Quantidade";
 "amount(inFiat)" = "Quantidade (em Fiat)";
@@ -268,8 +277,6 @@
 "scanQR" = "Digitalizar QR / Emparelhar dispositivo";
 "or" = "OU";
 "selectYourVaultType" = "Selecione o tipo de cofre";
-"lookingFor1MoreDevice" = "Procurando por mais um dispositivo...";
-"lookingFor2MoreDevice" = "Procurando por mais dois dispositivos...";
 "shouldBackupVaultsSeparateLocations" = "Você deve fazer backup de todas as ações do cofre em locais separados.";
 "keygenInstructionsCar1Title" = "Você sabia?";
 "keygenInstructionsCar2Title" = "Dica do dia";

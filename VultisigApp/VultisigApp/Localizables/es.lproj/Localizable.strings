@@ -83,6 +83,15 @@
 "reshareFailed" = "La recompartición de clave falló";
 "joinKeyshare" = "Unirse a la Compartición de Clave";
 "lookingForDevices" = "Buscando dispositivos... ";
+"fastModeTitle" = "RÁPIDO";
+"activeModeTitle" = "ACTIVO";
+"secureModeTitle" = "SEGURO";
+"fastModeDescription" = "• Configuración en un solo dispositivo\n• Alertas y políticas de transacciones\n• Respaldo del Vault enviado por correo electrónico\n\nUsar como un “vault caliente”";
+"activeModeDescription" = "• Firma rápida en movimiento\n• Alertas y políticas de transacciones\n• Completamente auto-custodial\n\nUsar como “vault principal”";
+"secureModeDescription" = "• Solo tus dispositivos\n• Sin alertas ni políticas\n• Completamente auto-custodial\n\nUsar como un “vault frío”";
+"fastLoaderTitle" = "Buscando FastVaultServer";
+"activeLoaderTitle" = "Buscando 1 dispositivo más...";
+"secureLoaderTitle" = "Buscando dispositivos...";
 "sign" = "Firmar";
 "amount" = "Cantidad";
 "amount(inFiat)" = "Cantidad (en Fiat)";
@@ -267,8 +276,6 @@
 "scanQR" = "Escanear QR / Emparejar dispositivo";
 "or" = "O";
 "selectYourVaultType" = "Selecciona tu tipo de almacén";
-"lookingFor1MoreDevice" = "Buscando un dispositivo más...";
-"lookingFor2MoreDevice" = "Buscando dos dispositivos más...";
 "shouldBackupVaultsSeparateLocations" = "Debes respaldar todas las acciones del almacén en ubicaciones separadas.";
 "keygenInstructionsCar1Title" = "¿Sabías que?";
 "keygenInstructionsCar2Title" = "Consejo del día";

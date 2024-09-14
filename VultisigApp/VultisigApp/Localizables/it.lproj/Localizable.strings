@@ -83,6 +83,15 @@
 "reshareFailed" = "Ricondivisione della chiave fallita";
 "joinKeyshare" = "Unisciti alla Condivisione Chiave";
 "lookingForDevices" = "Ricerca dispositivi... ";
+"fastModeTitle" = "VELOCE";
+"activeModeTitle" = "ATTIVO";
+"secureModeTitle" = "SICURO";
+"fastModeDescription" = "• Configurazione su un solo dispositivo\n• Avvisi e politiche sulle transazioni\n• Backup del Vault inviato via email\n\nUsa come “hot vault”";
+"activeModeDescription" = "• Firma rapida in movimento\n• Avvisi e politiche sulle transazioni\n• Completamente auto-custodiale\n\nUsa come “vault principale”";
+"secureModeDescription" = "• Solo i tuoi dispositivi\n• Nessun avviso o politica\n• Completamente auto-custodiale\n\nUsa come “cold vault”";
+"fastLoaderTitle" = "Ricerca del FastVaultServer";
+"activeLoaderTitle" = "Ricerca di 1 altro dispositivo...";
+"secureLoaderTitle" = "Ricerca di dispositivi...";
 "sign" = "Firma";
 "amount" = "Quantità";
 "amount(inFiat)" = "Quantità (in Fiat)";
@@ -267,8 +276,6 @@
 "scanQR" = "Scansiona QR / Accoppia dispositivo";
 "or" = "OPPURE";
 "selectYourVaultType" = "Seleziona il tipo di caveau";
-"lookingFor1MoreDevice" = "Cerco un altro dispositivo...";
-"lookingFor2MoreDevice" = "Cerco due altri dispositivi...";
 "shouldBackupVaultsSeparateLocations" = "Dovresti eseguire il backup di tutte le quote del caveau in luoghi separati.";
 "keygenInstructionsCar1Title" = "Lo sapevi?";
 "keygenInstructionsCar2Title" = "Consiglio del giorno";
