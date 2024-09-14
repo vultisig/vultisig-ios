@@ -34,6 +34,9 @@ struct SwapCryptoView: View {
         .onAppear {
             swapViewModel.load(initialFromCoin: fromCoin, initialToCoin: toCoin, vault: vault, tx: tx)
         }
+        .task {
+            await swapViewModel.loadFastVault(tx: tx, vault: vault)
+        }
         .navigationBarBackButtonHidden(swapViewModel.currentIndex != 1 ? true : false)
 #if os(iOS)
         .navigationTitle(NSLocalizedString(swapViewModel.currentTitle, comment: "SendCryptoView title"))
@@ -134,7 +137,7 @@ struct SwapCryptoView: View {
                     vault: vault,
                     keysignPayload: keysignPayload,
                     transferViewModel: swapViewModel, 
-                    fastVaultPassword: nil, // TODO: Add FastVult support for swaps
+                    fastVaultPassword: tx.fastVaultPassword.nilIfEmpty,
                     keysignView: $keysignView,
                     shareSheetViewModel: shareSheetViewModel,
                     previewTitle: "swap"

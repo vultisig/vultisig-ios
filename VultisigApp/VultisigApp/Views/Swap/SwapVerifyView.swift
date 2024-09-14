@@ -12,7 +12,10 @@ struct SwapVerifyView: View {
 
     @ObservedObject var tx: SwapTransaction
     @ObservedObject var swapViewModel: SwapCryptoViewModel
+
     let vault: Vault
+
+    @State var fastPasswordPresented = false
 
     var body: some View {
         ZStack {
@@ -33,9 +36,12 @@ struct SwapVerifyView: View {
     }
     
     var content: some View {
-        VStack {
+        VStack(spacing: 16) {
             fields
-            button
+            if tx.isFastVault {
+                fastVaultButton
+            }
+            pairedSignButton
         }
     }
 
@@ -78,19 +84,41 @@ struct SwapVerifyView: View {
         }
     }
 
-    var button: some View {
+    var fastVaultButton: some View {
         Button {
-            Task {
-                if await swapViewModel.buildSwapKeysignPayload(tx: tx, vault: vault) {
-                    swapViewModel.moveToNextView()
-                }
-            }
+            fastPasswordPresented = true
         } label: {
-            FilledButton(title: "sign")
+            FilledButton(title: "Fast Sign")
         }
         .disabled(!verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired))
         .opacity(verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired) ? 1 : 0.5)
-        .padding(40)
+        .padding(.horizontal, 40)
+        .sheet(isPresented: $fastPasswordPresented) {
+            FastVaultEnterPasswordView(
+                password: $tx.fastVaultPassword,
+                onSubmit: { signPressed() }
+            )
+        }
+    }
+
+    var pairedSignButton: some View {
+        Button {
+            signPressed()
+        } label: {
+            OutlineButton(title: tx.isFastVault ? "Paired sign" : "sign")
+        }
+        .disabled(!verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired))
+        .opacity(verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired) ? 1 : 0.5)
+        .padding(.horizontal, 40)
+        .padding(.bottom, 24)
+    }
+
+    func signPressed() {
+        Task {
+            if await swapViewModel.buildSwapKeysignPayload(tx: tx, vault: vault) {
+                swapViewModel.moveToNextView()
+            }
+        }
     }
 
     var showApproveCheckmark: Bool {
