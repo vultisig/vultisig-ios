@@ -1,3 +1,4 @@
+"password" = "Senha";
 "secureCryptoVault" = "COFRE SEGURO DE CRIPTO";
 "thisDevice" = "Este Dispositivo:";
 "start" = "Iniciar";
@@ -83,6 +84,15 @@
 "reshareFailed" = "A recompartilha de chave falhou";
 "joinKeyshare" = "Juntar-se ao Compartilhamento de Chave";
 "lookingForDevices" = "Procurando dispositivos... ";
+"fastModeTitle" = "RÁPIDO";
+"activeModeTitle" = "ATIVO";
+"secureModeTitle" = "SEGURO";
+"fastModeDescription" = "• Configuração em um único dispositivo\n• Alertas e políticas de transação\n• Backup do Vault enviado por e-mail\n\nUsar como um “vault quente”";
+"activeModeDescription" = "• Assinatura rápida em movimento\n• Alertas e políticas de transação\n• Completamente auto-custodial\n\nUsar como “vault principal”";
+"secureModeDescription" = "• Apenas seus dispositivos\n• Sem alertas ou políticas\n• Completamente auto-custodial\n\nUsar como um “vault frio”";
+"fastLoaderTitle" = "Procurando FastVaultServer";
+"activeLoaderTitle" = "Procurando por mais 1 dispositivo...";
+"secureLoaderTitle" = "Procurando dispositivos...";
 "sign" = "Assinar";
 "amount" = "Quantidade";
 "amount(inFiat)" = "Quantidade (em Fiat)";
@@ -196,6 +206,8 @@
 "reviewConditionsMessage" = "Por favor, reveja e concorde com todas as condições listadas.";
 "deposit" = "Depósito";
 "enterPassword" = "Digite a senha";
+"fastVaultEnterDisclaimer" = "Esta palavra-passe desencripta o seu compartilhamento FastVault";
+"fastVaultSetDisclaimer" = "Esta palavra-passe encripta o seu FastVault Share";
 "passwordProtectBackup" = "Proteja seu backup com uma senha";
 "errorSavingFile" = "Erro ao salvar o arquivo";
 "invalidVaultData" = "Dados do cofre inválidos";
@@ -266,11 +278,6 @@
 "scanQR" = "Digitalizar QR / Emparelhar dispositivo";
 "or" = "OU";
 "selectYourVaultType" = "Selecione o tipo de cofre";
-"youNeed1MoreDevice" = "Você precisa de mais um dispositivo para emparelhar";
-"youNeed2MoreDevice" = "Você precisa de mais dois dispositivos para emparelhar";
-"youNeedNMoreDevice" = "Você pode emparelhar quantos dispositivos quiser";
-"lookingFor1MoreDevice" = "Procurando por mais um dispositivo...";
-"lookingFor2MoreDevice" = "Procurando por mais dois dispositivos...";
 "shouldBackupVaultsSeparateLocations" = "Você deve fazer backup de todas as ações do cofre em locais separados.";
 "keygenInstructionsCar1Title" = "Você sabia?";
 "keygenInstructionsCar2Title" = "Dica do dia";

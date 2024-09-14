@@ -12,7 +12,7 @@ struct SetupQRCodeView: View {
     let tssType: TssType
     let vault: Vault
     
-    @State var selectedTab: SetupVaultState = .TwoOfTwoVaults
+    @State var selectedTab: SetupVaultState = .fast
     
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var viewModel: HomeViewModel
@@ -48,20 +48,12 @@ struct SetupQRCodeView: View {
     
     var view: some View {
         VStack {
-            context
-            image
+            tabView
             button
         }
     }
     
-    var context: some View {
-        Text(NSLocalizedString("selectYourVaultType", comment: ""))
-            .font(.body14Menlo)
-            .foregroundColor(.neutral0)
-            .padding(.top, 10)
-    }
-    
-    var image: some View {
+    var tabView: some View {
         SetupVaultTabView(selectedTab: $selectedTab)
     }
     
@@ -69,7 +61,8 @@ struct SetupQRCodeView: View {
         VStack(spacing: 20) {
             startButton
         }
-        .padding(40)
+        .padding(.horizontal, 40)
+        .padding(.bottom, 40)
     }
     
     var startButton: some View {
@@ -81,11 +74,22 @@ struct SetupQRCodeView: View {
                     selectedTab: selectedTab
                 )
             } else {
-                PeerDiscoveryView(
-                    tssType: tssType,
-                    vault: vault,
-                    selectedTab: selectedTab
-                )
+                if selectedTab.isFastVault {
+                    FastVaultEmailView(
+                        tssType: tssType,
+                        vault: vault,
+                        selectedTab: selectedTab
+                    )
+                } else {
+                    PeerDiscoveryView(
+                        tssType: tssType,
+                        vault: vault,
+                        selectedTab: selectedTab, 
+                        fastVaultEmail: nil,
+                        fastVaultPassword: nil
+                    )
+                }
+
             }
         } label: {
             FilledButton(title: "start".uppercased())

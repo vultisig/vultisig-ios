@@ -7,63 +7,62 @@
 
 import SwiftUI
 
-enum SetupVaultState: String, CaseIterable {
-    case TwoOfTwoVaults = "2 of 2"
-    case TwoOfThreeVaults = "2 of 3"
-    case MOfNVaults = "M of N"
-    
-    func getDescription() -> String {
-        let title: String
-        
+enum SetupVaultState: CaseIterable {
+    case fast
+    case active
+    case secure
+
+    var isFastVault: Bool {
         switch self {
-        case .TwoOfTwoVaults:
-            title = NSLocalizedString("youNeed1MoreDevice", comment: "")
-        case .TwoOfThreeVaults:
-            title = NSLocalizedString("youNeed2MoreDevice", comment: "")
-        case .MOfNVaults:
-            title = NSLocalizedString("youNeedNMoreDevice", comment: "")
+        case .fast, .active:
+            return true
+        case .secure:
+            return false
         }
-        
-        return title
     }
-    
-    func getImage() -> String {
-        let image: String
-        
+
+    var title: String {
         switch self {
-        case .TwoOfTwoVaults:
-            image = "SetupVaultImage1"
-        case .TwoOfThreeVaults:
-            image = "SetupVaultImage2"
-        case .MOfNVaults:
-            image = "SetupVaultImage3"
+        case .fast:
+            return NSLocalizedString("fastModeTitle", comment: "")
+        case .active:
+            return NSLocalizedString("activeModeTitle", comment: "")
+        case .secure:
+            return NSLocalizedString("secureModeTitle", comment: "")
         }
-        return image
     }
-    
-    func getNavigationTitle() -> String {
+
+    var label: String {
         switch self {
-        case .TwoOfTwoVaults:
-            return "2/2"
-        case .TwoOfThreeVaults:
-            return "2/3"
-        case .MOfNVaults:
-            return "M/N"
+        case .fast:
+            return NSLocalizedString("fastModeDescription", comment: "")
+        case .active:
+            return NSLocalizedString("activeModeDescription", comment: "")
+        case .secure:
+            return NSLocalizedString("secureModeDescription", comment: "")
         }
     }
     
-    func getLoaderTitle() -> String {
-        let title: String
-        
+    var image: String {
         switch self {
-        case .TwoOfTwoVaults:
-            title = NSLocalizedString("lookingFor1MoreDevice", comment: "")
-        case .TwoOfThreeVaults:
-            title = NSLocalizedString("lookingFor2MoreDevice", comment: "")
-        case .MOfNVaults:
-            title = NSLocalizedString("lookingForDevices", comment: "")
+        case .fast:
+            return "SetupVaultImage1"
+        case .active:
+            return "SetupVaultImage2"
+        case .secure:
+            return "SetupVaultImage3"
         }
-        
-        return title
+    }
+    
+    var loaderTitle: String {
+        // TODO: Change loader titles
+        switch self {
+        case .fast:
+            return NSLocalizedString("fastLoaderTitle", comment: "")
+        case .active:
+            return NSLocalizedString("activeLoaderTitle", comment: "")
+        case .secure:
+            return NSLocalizedString("secureLoaderTitle", comment: "")
+        }
     }
 }

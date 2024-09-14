@@ -8,7 +8,9 @@
 import SwiftUI
 
 struct SendCryptoVerifyView: View {
+
     @Binding var keysignPayload: KeysignPayload?
+
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @ObservedObject var sendCryptoVerifyViewModel: SendCryptoVerifyViewModel
     @ObservedObject var tx: SendTransaction
@@ -17,7 +19,8 @@ struct SendCryptoVerifyView: View {
     let vault: Vault
     
     @State var isLoading = true
-    
+    @State var fastPasswordPresented = false
+
     var body: some View {
         ZStack {
             Background()
@@ -51,6 +54,7 @@ struct SendCryptoVerifyView: View {
     var blowfishView: some View {
         BlowfishWarningInformationNote(viewModel: blowfishViewModel)
             .padding(.horizontal, 16)
+            .padding(.vertical, 8)
     }
     
     var view: some View {
@@ -58,12 +62,15 @@ struct SendCryptoVerifyView: View {
     }
     
     var content: some View {
-        VStack {
+        VStack(spacing: 16) {
             fields
             if sendCryptoVerifyViewModel.blowfishShow {
                 blowfishView
             }
-            button
+            if tx.isFastVault {
+                fastVaultButton
+            }
+            pairedSignButton
         }
         .blur(radius: sendCryptoVerifyViewModel.isLoading ? 1 : 0)
     }
@@ -122,21 +129,47 @@ struct SendCryptoVerifyView: View {
         }
     }
     
-    var button: some View {
+    var fastVaultButton: some View {
         Button {
-            sendCryptoVerifyViewModel.isLoading = true
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                Task {
-                    await validateForm()
+            fastPasswordPresented = true
+        } label: {
+            FilledButton(title: "Fast Sign")
+        }
+        .padding(.horizontal, 40)
+        .sheet(isPresented: $fastPasswordPresented) {
+            FastVaultEnterPasswordView(
+                password: $tx.fastVaultPassword,
+                onSubmit: { signPressed() }
+            )
+        }
+    }
+
+    var pairedSignButton: some View {
+        Button {
+            signPressed()
+        } label: {
+            OutlineButton(title: tx.isFastVault ? "Paired sign" : "sign")
+        }
+        .padding(.horizontal, 40)
+    }
+
+    private func signPressed() {
+        sendCryptoVerifyViewModel.isLoading = true
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            Task {
+                keysignPayload = await sendCryptoVerifyViewModel.validateForm(
+                    tx: tx,
+                    vault: vault
+                )
+
+                if keysignPayload != nil {
+                    sendCryptoViewModel.moveToNextView()
                 }
             }
-        } label: {
-            FilledButton(title: "sign")
         }
-        .padding(40)
     }
-    
+
     private func getAddressCell(for title: String, with address: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(NSLocalizedString(title, comment: ""))
@@ -161,17 +194,6 @@ struct SendCryptoVerifyView: View {
         }
         .font(.body16MenloBold)
         .foregroundColor(.neutral100)
-    }
-    
-    private func validateForm() async {
-        keysignPayload = await sendCryptoVerifyViewModel.validateForm(
-            tx: tx,
-            vault: vault
-        )
-        
-        if keysignPayload != nil {
-            sendCryptoViewModel.moveToNextView()
-        }
     }
     
     private func getAmount() -> String {

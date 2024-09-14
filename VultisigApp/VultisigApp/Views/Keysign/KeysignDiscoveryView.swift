@@ -9,6 +9,7 @@ struct KeysignDiscoveryView: View {
     let vault: Vault
     let keysignPayload: KeysignPayload
     let transferViewModel: TransferViewModel
+    let fastVaultPassword: String?
     @Binding var keysignView: KeysignView?
     @ObservedObject var shareSheetViewModel: ShareSheetViewModel
     
@@ -257,7 +258,7 @@ struct KeysignDiscoveryView: View {
         if VultisigRelay.IsRelayEnabled {
             self.selectedNetwork = .Internet
         }
-        viewModel.setData(vault: vault, keysignPayload: keysignPayload, participantDiscovery: participantDiscovery)
+        viewModel.setData(vault: vault, keysignPayload: keysignPayload, participantDiscovery: participantDiscovery, fastVaultPassword: fastVaultPassword)
         
         qrCodeImage = viewModel.getQrImage(size: 100)
         
@@ -309,5 +310,5 @@ struct KeysignDiscoveryView: View {
 }
 
 #Preview {
-    KeysignDiscoveryView(vault: Vault.example, keysignPayload: KeysignPayload.example, transferViewModel: SendCryptoViewModel(), keysignView: .constant(nil), shareSheetViewModel: ShareSheetViewModel())
+    KeysignDiscoveryView(vault: Vault.example, keysignPayload: KeysignPayload.example, transferViewModel: SendCryptoViewModel(), fastVaultPassword: nil, keysignView: .constant(nil), shareSheetViewModel: ShareSheetViewModel())
 }

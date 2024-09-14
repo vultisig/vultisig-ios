@@ -62,6 +62,7 @@ struct HiddenTextField: View {
             Image(systemName: isPasswordVisible ? "eye": "eye.slash")
                 .foregroundColor(.neutral0)
         }
+        .buttonStyle(.plain)
         .contentTransition(.symbolEffect(.replace))
     }
 }

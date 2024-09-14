@@ -16,6 +16,8 @@ class SwapTransaction: ObservableObject {
     @Published var oneInchFee: BigInt = .zero
     @Published var gas: BigInt = .zero
     @Published var quote: SwapQuote?
+    @Published var isFastVault: Bool = false
+    @Published var fastVaultPassword: String = .empty
 
     @Published var fromCoin: Coin = .example
     @Published var toCoin: Coin = .example
