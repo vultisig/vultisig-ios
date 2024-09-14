@@ -24,7 +24,7 @@ struct SetupVaultImageManager: View {
         Text(selectedTab.label)
             .font(.body12MontserratSemiBold)
             .foregroundColor(.neutral0)
-            .lineSpacing(5)
+            .lineSpacing(8)
             .multilineTextAlignment(.center)
     }
     
