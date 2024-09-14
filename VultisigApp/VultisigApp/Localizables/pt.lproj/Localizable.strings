@@ -196,6 +196,7 @@
 "reviewConditionsMessage" = "Por favor, reveja e concorde com todas as condições listadas.";
 "deposit" = "Depósito";
 "enterPassword" = "Digite a senha";
+"fastVaultEnterDisclaimer" = "Esta palavra-passe desencripta o seu compartilhamento FastVault";
 "passwordProtectBackup" = "Proteja seu backup com uma senha";
 "errorSavingFile" = "Erro ao salvar o arquivo";
 "invalidVaultData" = "Dados do cofre inválidos";

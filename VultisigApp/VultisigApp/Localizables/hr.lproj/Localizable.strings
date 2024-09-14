@@ -196,6 +196,7 @@
 "reviewConditionsMessage" = "Molimo pregledajte i prihvatite sve navedene uvjete.";
 "deposit" = "Polog";
 "enterPassword" = "Unesite lozinku";
+"fastVaultEnterDisclaimer" = "Ova lozinka dešifrira vaš udio u FastVaultu";
 "passwordProtectBackup" = "Zaštitite svoju sigurnosnu kopiju lozinkom";
 "errorSavingFile" = "Pogreška pri spremanju datoteke";
 "invalidVaultData" = "Nevažeći podaci spremišta";
