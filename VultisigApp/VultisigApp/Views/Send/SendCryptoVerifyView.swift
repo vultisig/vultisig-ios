@@ -20,6 +20,7 @@ struct SendCryptoVerifyView: View {
     
     @State var isLoading = true
     @State var fastPasswordPresented = false
+    @State var isMacOSFastSign = false
 
     var body: some View {
         ZStack {
@@ -48,6 +49,13 @@ struct SendCryptoVerifyView: View {
                     isLoading = false
                 }
             }
+        }
+        .navigationDestination(isPresented: $isMacOSFastSign){
+            FastVaultEnterPasswordView(
+                showFastVaultPassword:$fastPasswordPresented,
+                password: $tx.fastVaultPassword,
+                onSubmit: { signPressed() }
+            )
         }
     }
     
@@ -128,7 +136,11 @@ struct SendCryptoVerifyView: View {
     var button: some View {
         Button {
             if tx.isFastVault {
+                #if os(iOS)
                 fastPasswordPresented = true
+                #elseif os(macOS)
+                self.isMacOSFastSign = true
+                #endif
             } else {
                 signPressed()
             }
@@ -136,12 +148,17 @@ struct SendCryptoVerifyView: View {
             FilledButton(title: tx.isFastVault ? "Fast Sign" : "sign")
         }
         .padding(40)
+        #if os(iOS)
         .sheet(isPresented: $fastPasswordPresented) {
-            FastVaultEnterPasswordView(
-                password: $tx.fastVaultPassword,
-                onSubmit: { signPressed() }
-            )
+            NavigationView{
+                FastVaultEnterPasswordView(
+                    showFastVaultPassword: $fastPasswordPresented,
+                    password: $tx.fastVaultPassword,
+                    onSubmit: { signPressed() }
+                )
+            }
         }
+        #endif
     }
 
     private func signPressed() {

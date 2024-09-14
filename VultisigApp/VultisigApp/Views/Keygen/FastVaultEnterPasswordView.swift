@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct FastVaultEnterPasswordView: View {
-
+    @Binding var showFastVaultPassword: Bool
     @Binding var password: String
 
     @Environment(\.dismiss) var dismiss
@@ -16,17 +16,23 @@ struct FastVaultEnterPasswordView: View {
     let onSubmit: (() -> Void)?
 
     var body: some View {
-        NavigationView {
+        ZStack {
             ZStack {
                 Background()
                 main
             }
-#if os(iOS)
-            .navigationBarTitleTextColor(.neutral0)
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationTitle("Password")
-#endif
         }
+        .navigationBarBackButtonHidden(true)
+#if os(iOS)
+        .navigationBarTitleTextColor(.neutral0)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
+                NavigationBackSheetButton(showSheet: $showFastVaultPassword)
+            }
+        }
+#endif
+
     }
 
     var main: some View {
