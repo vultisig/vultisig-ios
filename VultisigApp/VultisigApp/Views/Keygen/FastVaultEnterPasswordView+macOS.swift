@@ -22,7 +22,7 @@ extension FastVaultEnterPasswordView {
     }
 
     var headerMac: some View {
-        GeneralMacHeader(title: "Password")
+        GeneralMacHeader(title: "password")
     }
 #endif
 }

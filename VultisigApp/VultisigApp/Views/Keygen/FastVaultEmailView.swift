@@ -38,7 +38,7 @@ struct FastVaultEmailView: View {
     }
 
     var headerMac: some View {
-        GeneralMacHeader(title: "Password")
+        GeneralMacHeader(title: "password")
     }
 
     var view: some View {

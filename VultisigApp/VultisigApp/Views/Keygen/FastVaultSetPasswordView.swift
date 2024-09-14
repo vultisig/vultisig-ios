@@ -23,7 +23,7 @@ struct FastVaultSetPasswordView: View {
             main
         }
 #if os(iOS)
-            .navigationTitle("Password")
+            .navigationTitle(NSLocalizedString("password", comment: ""))
 #endif
     }
 
@@ -40,7 +40,7 @@ struct FastVaultSetPasswordView: View {
     }
 
     var headerMac: some View {
-        GeneralMacHeader(title: "Password")
+        GeneralMacHeader(title: "password")
     }
 
     var view: some View {
