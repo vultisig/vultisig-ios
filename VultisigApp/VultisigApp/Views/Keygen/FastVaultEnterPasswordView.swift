@@ -48,14 +48,14 @@ struct FastVaultEnterPasswordView: View {
 
     var buttons: some View {
         VStack(spacing: 20) {
-            saveButton
+            continueButton
         }
         .padding(.top, 16)
         .padding(.bottom, 40)
         .padding(.horizontal, 16)
     }
 
-    var saveButton: some View {
+    var continueButton: some View {
         Button(action: {
             onSubmit?()
             dismiss()
