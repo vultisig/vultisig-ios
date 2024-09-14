@@ -197,6 +197,7 @@
 "deposit" = "Polog";
 "enterPassword" = "Unesite lozinku";
 "fastVaultEnterDisclaimer" = "Ova lozinka dešifrira vaš udio u FastVaultu";
+"fastVaultSetDisclaimer" = "Ova lozinka šifrira vaš FastVault Share";
 "passwordProtectBackup" = "Zaštitite svoju sigurnosnu kopiju lozinkom";
 "errorSavingFile" = "Pogreška pri spremanju datoteke";
 "invalidVaultData" = "Nevažeći podaci spremišta";

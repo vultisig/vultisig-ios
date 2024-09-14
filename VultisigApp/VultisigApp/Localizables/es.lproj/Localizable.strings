@@ -197,6 +197,7 @@
 "deposit" = "Depósito";
 "enterPassword" = "Introduce la contraseña";
 "fastVaultEnterDisclaimer" = "Esta contraseña descifra su recurso compartido de FastVault";
+"fastVaultSetDisclaimer" = "Esta contraseña encripta su FastVault Share";
 "passwordProtectBackup" = "Protege tu copia de seguridad con una contraseña";
 "errorSavingFile" = "Error al guardar el archivo";
 "invalidVaultData" = "Datos del almacén no válidos";

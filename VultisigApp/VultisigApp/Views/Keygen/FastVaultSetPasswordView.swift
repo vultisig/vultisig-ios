@@ -78,7 +78,7 @@ struct FastVaultSetPasswordView: View {
     }
 
     var disclaimer: some View {
-        OutlinedDisclaimer(text: "This Password encrypts your FastVault Share")
+        OutlinedDisclaimer(text: NSLocalizedString("fastVaultSetDisclaimer", comment: ""))
             .padding(.horizontal, 16)
     }
 

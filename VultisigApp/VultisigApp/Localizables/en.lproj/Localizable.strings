@@ -218,6 +218,7 @@
 "deposit" = "Deposit";
 "enterPassword" = "Enter Password";
 "fastVaultEnterDisclaimer" = "This Password decrypt your FastVault Share";
+"fastVaultSetDisclaimer" = "This password encrypts your FastVault Share";
 "passwordProtectBackup" = "Password protect your backup";
 "errorSavingFile" = "Error saving file";
 "invalidVaultData" = "Invalid vault data";

@@ -196,7 +196,8 @@
 "reviewConditionsMessage" = "Bitte überprüfen und stimmen Sie allen aufgeführten Bedingungen zu.";
 "deposit" = "Einzahlung";
 "enterPassword" = "Passwort eingeben";
-"fastVaultEnterDisclaimer" = "Dieses Passwort entschlüsselt Ihre FastVault Freigabe";
+"fastVaultEnterDisclaimer" = "Dieses Passwort entschlüsselt Ihre FastVault Share";
+"fastVaultSetDisclaimer" = "Dieses Passwort verschlüsselt Ihren FastVault Share";
 "passwordProtectBackup" = "Sichern Sie Ihre Sicherung mit einem Passwort";
 "errorSavingFile" = "Fehler beim Speichern der Datei";
 "invalidVaultData" = "Ungültige Tresordaten";
