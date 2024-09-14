@@ -61,7 +61,8 @@ struct SetupQRCodeView: View {
         VStack(spacing: 20) {
             startButton
         }
-        .padding(40)
+        .padding(.horizontal, 40)
+        .padding(.bottom, 40)
     }
     
     var startButton: some View {

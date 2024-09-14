@@ -16,15 +16,15 @@ struct SetupVaultImageManager: View {
             Spacer()
             text
         }
-        .padding(24)
         .clipped()
+        .padding(.vertical, 16)
     }
     
     var text: some View {
         Text(selectedTab.label)
             .font(.body12MontserratSemiBold)
             .foregroundColor(.neutral0)
-            .lineSpacing(8)
+            .lineSpacing(5)
             .multilineTextAlignment(.center)
     }
     
