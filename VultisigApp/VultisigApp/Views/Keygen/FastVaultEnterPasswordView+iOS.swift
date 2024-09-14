@@ -18,9 +18,20 @@ extension FastVaultEnterPasswordView {
                     view
                 }
             }
+            .navigationBarItems(leading: backButton)
             .navigationBarTitleTextColor(.neutral0)
             .navigationBarTitleDisplayMode(.inline)
             .navigationTitle("Password")
+        }
+    }
+
+    var backButton: some View {
+        Button(action: {
+            dismiss()
+        }) {
+            Image("x")
+                .font(.body18MenloBold)
+                .foregroundColor(Color.neutral0)
         }
     }
 #endif

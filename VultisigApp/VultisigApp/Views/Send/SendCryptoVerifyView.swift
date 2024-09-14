@@ -54,6 +54,7 @@ struct SendCryptoVerifyView: View {
     var blowfishView: some View {
         BlowfishWarningInformationNote(viewModel: blowfishViewModel)
             .padding(.horizontal, 16)
+            .padding(.vertical, 8)
     }
     
     var view: some View {
@@ -61,12 +62,15 @@ struct SendCryptoVerifyView: View {
     }
     
     var content: some View {
-        VStack {
+        VStack(spacing: 16) {
             fields
             if sendCryptoVerifyViewModel.blowfishShow {
                 blowfishView
             }
-            button
+            if tx.isFastVault {
+                fastVaultButton
+            }
+            pairedSignButton
         }
         .blur(radius: sendCryptoVerifyViewModel.isLoading ? 1 : 0)
     }
@@ -125,23 +129,28 @@ struct SendCryptoVerifyView: View {
         }
     }
     
-    var button: some View {
+    var fastVaultButton: some View {
         Button {
-            if tx.isFastVault {
-                fastPasswordPresented = true
-            } else {
-                signPressed()
-            }
+            fastPasswordPresented = true
         } label: {
-            FilledButton(title: tx.isFastVault ? "Fast Sign" : "sign")
+            FilledButton(title: "Fast Sign")
         }
-        .padding(40)
+        .padding(.horizontal, 40)
         .sheet(isPresented: $fastPasswordPresented) {
             FastVaultEnterPasswordView(
                 password: $tx.fastVaultPassword,
                 onSubmit: { signPressed() }
             )
         }
+    }
+
+    var pairedSignButton: some View {
+        Button {
+            signPressed()
+        } label: {
+            OutlineButton(title: tx.isFastVault ? "Paired sign" : "sign")
+        }
+        .padding(.horizontal, 40)
     }
 
     private func signPressed() {
