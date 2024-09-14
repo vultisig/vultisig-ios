@@ -15,43 +15,13 @@ struct FastVaultEnterPasswordView: View {
 
     let onSubmit: (() -> Void)?
 
-    var body: some View {
-        NavigationView {
-            ZStack {
-                Background()
-                main
-            }
-#if os(iOS)
-            .navigationBarTitleTextColor(.neutral0)
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationTitle("Password")
-#endif
-        }
-    }
-
-    var main: some View {
-        VStack {
-#if os(macOS)
-            headerMac
-#endif
-            view
-        }
-    }
-
-    var headerMac: some View {
-        GeneralMacHeader(title: "Password")
-    }
-
     var view: some View {
         VStack {
             passwordField
-            Spacer()
+            Spacer(minLength: 20)
             disclaimer
             buttons
         }
-#if os(macOS)
-        .padding(.horizontal, 25)
-#endif
     }
 
     var passwordField: some View {
@@ -94,6 +64,7 @@ struct FastVaultEnterPasswordView: View {
         }
         .opacity(isSaveButtonDisabled ? 0.5 : 1)
         .disabled(isSaveButtonDisabled)
+        .buttonStyle(.plain)
     }
 
     var isSaveButtonDisabled: Bool {

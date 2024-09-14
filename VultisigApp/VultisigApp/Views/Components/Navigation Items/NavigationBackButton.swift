@@ -20,6 +20,7 @@ struct NavigationBackButton: View {
                 .font(.body18MenloBold)
                 .foregroundColor(tint)
         }
+        .buttonStyle(.plain)
     }
 }
 
