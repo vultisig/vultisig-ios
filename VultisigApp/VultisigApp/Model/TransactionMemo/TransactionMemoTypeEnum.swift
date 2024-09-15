@@ -13,6 +13,24 @@ enum TransactionMemoType: String, CaseIterable, Identifiable {
     case bond, unbond, leave, custom, vote, addPool, withdrawPool
     
     var id: String { self.rawValue }
+    var display: String {
+        switch self {
+        case .bond:
+            return "Bond"
+        case .unbond:
+            return "Unbond"
+        case .leave:
+            return "Leave"
+        case .custom:
+            return "Custom"
+        case .addPool:
+            return "Add to RUNEPool"
+        case .withdrawPool:
+            return "Remove from RUNEPool"
+        case .vote:
+            return "Vote"
+        }
+    }
     
     static func getCases(for coin: Coin) -> [TransactionMemoType] {
         switch coin.chain {
