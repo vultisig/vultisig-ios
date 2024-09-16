@@ -1027,6 +1027,7 @@
 		DE1572A12B70F873009BC7C5 /* Tss.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:G8Q5XUAJD9:Cortina Ventures PTY LTD"; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
 		DE1572AB2B7174D3009BC7C5 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		DE1905262BD8CC4D0043577E /* KeysignVerify.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeysignVerify.swift; sourceTree = "<group>"; };
+		DE2B4E4A2C97DA9200FF4C49 /* VultisigApp.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = VultisigApp.xctestplan; sourceTree = "<group>"; };
 		DE320E6D2C846C610068D0E1 /* ReshareRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReshareRequest.swift; sourceTree = "<group>"; };
 		DE3D44AE2BD2487900BD64CD /* CosmosSignature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosSignature.swift; sourceTree = "<group>"; };
 		DE491CEE2B708260007C88D5 /* KeygenView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeygenView.swift; sourceTree = "<group>"; };
@@ -1090,7 +1091,6 @@
 		DEEFF4FC2B9835DE0015692E /* THORChainSwapChainExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainSwapChainExtension.swift; sourceTree = "<group>"; };
 		DEF2E2CA2B9AD5EA000737B8 /* UTXOChainsHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOChainsHelper.swift; sourceTree = "<group>"; };
 		DEF2E2CF2B9DA459000737B8 /* PublicKeyTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublicKeyTest.swift; sourceTree = "<group>"; };
-		DEF2E2D12B9DC331000737B8 /* VultisigApp.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = VultisigApp.xctestplan; sourceTree = "<group>"; };
 		DEF2E2D22B9DC685000737B8 /* UTXOChainsHelperTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOChainsHelperTest.swift; sourceTree = "<group>"; };
 		DEF7225F2C520377002FFE8A /* THORChainNetworkStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainNetworkStatus.swift; sourceTree = "<group>"; };
 		DEFC7BFA2B8D87370090B07A /* erc20.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = erc20.swift; sourceTree = "<group>"; };
@@ -2293,8 +2293,8 @@
 		DE49A15A2B65F6D9000F3AFB = {
 			isa = PBXGroup;
 			children = (
+				DE2B4E4A2C97DA9200FF4C49 /* VultisigApp.xctestplan */,
 				DE8AD73F2BC1600800339775 /* PrivacyInfo.xcprivacy */,
-				DEF2E2D12B9DC331000737B8 /* VultisigApp.xctestplan */,
 				DE1572A12B70F873009BC7C5 /* Tss.xcframework */,
 				DE49A1932B65F7B6000F3AFB /* Mediator */,
 				DE49A1652B65F6D9000F3AFB /* VultisigApp */,
@@ -3399,13 +3399,13 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.voltix.voltixAppTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VoltixApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/VoltixApp";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VultisigApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/VultisigApp";
 			};
 			name = Debug;
 		};
@@ -3424,13 +3424,13 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.voltix.voltixAppTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VoltixApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/VoltixApp";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VultisigApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/VultisigApp";
 			};
 			name = Release;
 		};
