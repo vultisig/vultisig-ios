@@ -148,7 +148,11 @@ struct SendCryptoVerifyView: View {
         Button {
             signPressed()
         } label: {
-            OutlineButton(title: tx.isFastVault ? "Paired sign" : "sign")
+            if tx.isFastVault {
+                OutlineButton(title: "Paired sign")
+            } else {
+                FilledButton(title: "sign")
+            }
         }
         .padding(.horizontal, 40)
     }

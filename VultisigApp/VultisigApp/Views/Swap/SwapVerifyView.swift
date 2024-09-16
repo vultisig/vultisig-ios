@@ -105,7 +105,12 @@ struct SwapVerifyView: View {
         Button {
             signPressed()
         } label: {
-            OutlineButton(title: tx.isFastVault ? "Paired sign" : "sign")
+            if tx.isFastVault {
+                OutlineButton(title: "Paired sign")
+            } else {
+                FilledButton(title: "sign")
+            }
+            
         }
         .disabled(!verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired))
         .opacity(verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired) ? 1 : 0.5)
