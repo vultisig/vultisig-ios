@@ -16,6 +16,10 @@ struct VaultDetailQRCodeView: View {
     @StateObject var viewModel = VaultDetailQRCodeViewModel()
     @Environment(\.displayScale) var displayScale
     
+#if os(iOS)
+    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+#endif
+    
     var body: some View {
         ZStack {
             Background()
@@ -92,15 +96,26 @@ struct VaultDetailQRCodeView: View {
     
 #if os(iOS)
     var shareButton: some View {
-        Button {
-            viewModel.shareImage(imageName)
-        } label: {
-            FilledButton(title: "share")
-                .padding(.bottom, 22)
+        ZStack {
+            if idiom == .phone {
+                Button {
+                    viewModel.shareImage(imageName)
+                } label: {
+                    FilledButton(title: "share")
+                        .padding(.bottom, 22)
+                }
+            } else {
+                shareLinkButton
+            }
         }
     }
 #elseif os(macOS)
     var shareButton: some View {
+        shareLinkButton
+    }
+#endif
+    
+    var shareLinkButton: some View {
         ZStack {
             if let renderedImage = viewModel.renderedImage {
                 ShareLink(
@@ -115,7 +130,6 @@ struct VaultDetailQRCodeView: View {
             }
         }
     }
-#endif
     
     private func setData() {
         imageName = viewModel.generateName(vault: vault)
