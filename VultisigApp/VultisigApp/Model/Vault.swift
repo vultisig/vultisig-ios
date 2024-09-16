@@ -108,5 +108,28 @@ final class Vault: ObservableObject, Codable {
         }
     }
 
+    static func getUniqueVaultName(modelContext: ModelContext) -> String {
+        let fetchVaultDescriptor = FetchDescriptor<Vault>()
+        do{
+            let vaults = try modelContext.fetch(fetchVaultDescriptor)
+            let start = vaults.count
+            var idx = start
+            repeat {
+                let vaultName = "Vault #\(idx + 1)"
+                let vaultExist = vaults.contains {v in
+                    v.name == vaultName && !v.pubKeyECDSA.isEmpty
+                }
+                if !vaultExist {
+                    return vaultName
+                }
+                idx += 1
+            } while idx < 1000
+        }
+        catch {
+            print("fail to load all vaults")
+        }
+        return "Main Vault"
+    }
+
     static let example = Vault(name: "Bitcoin", signers: [], pubKeyECDSA: "ECDSAKey", pubKeyEdDSA: "EdDSAKey", keyshares: [], localPartyID: "partyID", hexChainCode: "hexCode", resharePrefix: nil)
 }
