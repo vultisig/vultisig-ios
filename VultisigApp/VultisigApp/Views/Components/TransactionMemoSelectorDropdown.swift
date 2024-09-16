@@ -35,7 +35,7 @@ struct TransactionMemoSelectorDropdown: View {
     
     var cell: some View {
         HStack(spacing: 12) {
-            Text(selected.rawValue.toFormattedTitleCase())
+            Text(selected.display)
             Spacer()
             
             Image(systemName: "chevron.down")
@@ -61,7 +61,7 @@ struct TransactionMemoSelectorDropdown: View {
     
     private func getCell(for item: TransactionMemoType) -> some View {
         HStack(spacing: 12) {
-            Text(item.rawValue.toFormattedTitleCase())
+            Text(item.display)
                 .font(.body16Menlo)
                 .foregroundColor(.neutral0)
             

@@ -26,6 +26,6 @@ struct SetupVaultTabView: View {
 #Preview {
     ZStack {
         Background()
-        SetupVaultTabView(selectedTab: .constant(.TwoOfTwoVaults))
+        SetupVaultTabView(selectedTab: .constant(.fast))
     }
 }

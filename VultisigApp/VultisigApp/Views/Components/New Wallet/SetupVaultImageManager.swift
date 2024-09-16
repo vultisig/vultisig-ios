@@ -12,19 +12,27 @@ struct SetupVaultImageManager: View {
     
     var body: some View {
         VStack(spacing: 12) {
-            text
             image
+            Spacer()
+            text
         }
-        .padding(24)
         .clipped()
+        .padding(.vertical, 16)
     }
     
     var text: some View {
-        Text(selectedTab.getDescription())
+        Text(selectedTab.label)
             .font(.body12MontserratSemiBold)
             .foregroundColor(.neutral0)
             .lineSpacing(8)
             .multilineTextAlignment(.center)
+    }
+    
+    var imageContent: some View {
+        Image(selectedTab.image)
+            .resizable()
+            .frame(maxWidth: .infinity)
+            .clipped()
     }
     
     var image: some View {
@@ -43,6 +51,6 @@ struct SetupVaultImageManager: View {
 #Preview {
     ZStack {
         Background()
-        SetupVaultImageManager(selectedTab: .constant(.MOfNVaults))
+        SetupVaultImageManager(selectedTab: .constant(.secure))
     }
 }

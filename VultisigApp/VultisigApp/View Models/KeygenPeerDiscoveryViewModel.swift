@@ -25,6 +25,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     @Published var status = PeerDiscoveryStatus.WaitingForDevices
     @Published var serviceName = ""
     @Published var errorMessage = ""
+    @Published var fastVaultPassword = ""
     @Published var sessionID = ""
     @Published var localPartyID = ""
     @Published var selections = Set<String>()
@@ -33,7 +34,8 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     @Published var selectedNetwork = NetworkPromptType.Internet
     
     private let mediator = Mediator.shared
-    
+    private let fastVaultService = FastVaultService.shared
+
     init() {
         self.tssType = .Keygen
         self.vault = Vault(name: "Main Vault")
@@ -46,7 +48,14 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         }
     }
     
-    func setData(vault: Vault, tssType: TssType, participantDiscovery: ParticipantDiscovery) {
+    func setData(
+        vault: Vault,
+        tssType: TssType,
+        state: SetupVaultState,
+        participantDiscovery: ParticipantDiscovery,
+        fastVaultPassword: String?,
+        fastVaultEmail: String?
+    ) {
         self.vault = vault
         self.tssType = tssType
         self.participantDiscovery = participantDiscovery
@@ -76,8 +85,15 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         }
         self.selections.insert(self.localPartyID)
         
+        if let fastVaultPassword, let fastVaultEmail, state.isFastVault {
+            switch tssType {
+            case .Keygen:
+                fastVaultService.create(name: vault.name, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, hexChainCode: vault.hexChainCode, encryptionPassword: fastVaultPassword, email: fastVaultEmail)
+            case .Reshare:
+                fastVaultService.reshare(name: vault.name, publicKeyECDSA: vault.pubKeyECDSA, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, hexChainCode: vault.hexChainCode, encryptionPassword: fastVaultPassword, email: fastVaultEmail)
+            }
+        }
     }
-    
     
     func startDiscovery() {
         self.mediator.start(name: self.serviceName)
@@ -179,6 +195,4 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             return Image(systemName: "xmark")
         }
     }
-    
-    
 }

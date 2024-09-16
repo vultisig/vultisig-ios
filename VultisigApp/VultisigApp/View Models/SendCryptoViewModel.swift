@@ -38,7 +38,8 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     let blockchainService = BlockChainService.shared
 
     private let mediator = Mediator.shared
-    
+    private let fastVaultService = FastVaultService.shared
+
     let totalViews = 5
     let titles = ["send", "verify", "pair", "keysign", "done"]
     
@@ -54,7 +55,11 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             print("error fetching data: \(error.localizedDescription)")
         }
     }
-    
+
+    func loadFastVault(tx: SendTransaction, vault: Vault) async {
+        tx.isFastVault = await fastVaultService.exist(pubKeyECDSA: vault.pubKeyECDSA)
+    }
+
     func setMaxValues(tx: SendTransaction, percentage: Double = 100)  {
         let coinName = tx.coin.chain.name.lowercased()
         let key: String = "\(tx.fromAddress)-\(coinName)"

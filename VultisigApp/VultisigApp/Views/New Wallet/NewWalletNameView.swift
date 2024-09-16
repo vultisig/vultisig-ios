@@ -104,7 +104,13 @@ struct NewWalletNameView: View {
         .padding(40)
         .navigationDestination(isPresented: $isLinkActive) {
             let vaultName = name.isEmpty ? "Main Vault" : name
-            PeerDiscoveryView(tssType: tssType, vault: Vault(name: vaultName), selectedTab: selectedTab)
+            let vault = Vault(name: vaultName)
+
+            if selectedTab.isFastVault {
+                FastVaultEmailView(tssType: tssType, vault: vault, selectedTab: selectedTab)
+            } else {
+                PeerDiscoveryView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastVaultEmail: nil, fastVaultPassword: nil)
+            }
         }
     }
     
@@ -115,7 +121,7 @@ struct NewWalletNameView: View {
             dismissButton: .default(Text(NSLocalizedString("dismiss", comment: "")))
         )
     }
-    
+
     private func verifyVault() {
         for vault in vaults {
             if name.isEmpty && vault.name == "Main Vault" {
@@ -149,5 +155,5 @@ struct NewWalletNameView: View {
 }
 
 #Preview {
-    NewWalletNameView(tssType: .Keygen, vault: nil, selectedTab: .TwoOfTwoVaults)
+    NewWalletNameView(tssType: .Keygen, vault: nil, selectedTab: .fast)
 }
