@@ -1,32 +1,22 @@
 {
   "configurations" : [
     {
-      "id" : "4B8F6C63-D013-447B-B3E4-7CAFEE386091",
-      "name" : "Test Scheme Action",
+      "id" : "B6086672-6C48-48A4-B369-55FE94648776",
+      "name" : "Configuration 1",
       "options" : {
 
       }
     }
   ],
   "defaultOptions" : {
-    "environmentVariableEntries" : [
-      {
-        "key" : "GODEBUG",
-        "value" : "asyncpreemptoff=1"
-      }
-    ],
-    "targetForVariableExpansion" : {
-      "containerPath" : "container:VultisigApp.xcodeproj",
-      "identifier" : "DE49A1622B65F6D9000F3AFB",
-      "name" : "VoltixApp"
-    }
+
   },
   "testTargets" : [
     {
       "target" : {
         "containerPath" : "container:VultisigApp.xcodeproj",
         "identifier" : "DE49A1752B65F6DB000F3AFB",
-        "name" : "VoltixAppTests"
+        "name" : "VultisigAppTests"
       }
     }
   ],
