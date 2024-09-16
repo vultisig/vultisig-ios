@@ -21,9 +21,7 @@ struct SetupVaultTab: View {
     
     private func getCell(for state: SetupVaultState) -> some View {
         Button {
-            withAnimation {
-                selectedTab = state
-            }
+            selectedTab = state
         } label: {
             getLabel(for: state)
         }

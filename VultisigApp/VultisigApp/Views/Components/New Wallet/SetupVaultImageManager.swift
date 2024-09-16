@@ -12,7 +12,7 @@ struct SetupVaultImageManager: View {
     
     var body: some View {
         VStack(spacing: 12) {
-            image
+            imageContent
             Spacer()
             text
         }
@@ -32,11 +32,7 @@ struct SetupVaultImageManager: View {
         Image(selectedTab.image)
             .resizable()
             .frame(maxWidth: .infinity)
-            .clipped()
-    }
-    
-    var image: some View {
-        imageContainer
+            .aspectRatio(contentMode: .fit)
             .clipped()
     }
 }
