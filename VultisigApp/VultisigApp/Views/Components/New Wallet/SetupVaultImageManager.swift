@@ -39,13 +39,6 @@ struct SetupVaultImageManager: View {
         imageContainer
             .clipped()
     }
-    
-    var imageContent: some View {
-        Image(selectedTab.getImage())
-            .resizable()
-            .aspectRatio(contentMode: .fit)
-            .frame(maxHeight: .infinity)
-    }
 }
 
 #Preview {
