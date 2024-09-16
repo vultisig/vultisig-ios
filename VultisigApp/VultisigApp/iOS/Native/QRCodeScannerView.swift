@@ -63,7 +63,7 @@ struct QRCodeScannerView: View {
             CodeScannerView(
                 codeTypes: [.qr],
                 isGalleryPresented: $isGalleryPresented,
-                videoCaptureDevice: AVCaptureDevice.zoomedCameraForQRCode(withMinimumCodeSize: 20),
+                videoCaptureDevice: AVCaptureDevice.zoomedCameraForQRCode(withMinimumCodeSize: 100),
                 completion: handleScan
             )
             galleryButton
