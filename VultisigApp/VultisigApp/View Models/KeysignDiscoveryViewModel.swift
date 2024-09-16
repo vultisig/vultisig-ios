@@ -84,7 +84,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
                     sessionID: self.sessionID,
                     hexEncryptionKey: self.encryptionKeyHex!,
                     derivePath: keysignPayload.coin.coinType.derivationPath(),
-                    isECDSA: true,
+                    isECDSA: keysignPayload.coin.chain.isECDSA,
                     vaultPassword: fastVaultPassword
                 )
             }
