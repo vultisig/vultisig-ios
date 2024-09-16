@@ -31,8 +31,8 @@ struct SetupVaultTab: View {
     
     private func getLabel(for state: SetupVaultState) -> some View {
         ZStack {
-            if selectedTab==state {
-                Text(NSLocalizedString(state.rawValue, comment: ""))
+            if selectedTab == state {
+                Text(NSLocalizedString(state.title, comment: ""))
                     .font(.body16MontserratBold)
                     .foregroundColor(.blue800)
                     .frame(maxWidth: .infinity)
@@ -40,7 +40,7 @@ struct SetupVaultTab: View {
                     .background(LinearGradient.primaryGradientHorizontal)
                     .cornerRadius(30)
             } else {
-                OutlineButton(title: state.rawValue, gradient: .primaryGradientHorizontal)
+                OutlineButton(title: state.title, gradient: .primaryGradientHorizontal)
             }
         }
     }
@@ -49,6 +49,6 @@ struct SetupVaultTab: View {
 #Preview {
     ZStack {
         Background()
-        SetupVaultTab(selectedTab: .constant(.TwoOfTwoVaults))
+        SetupVaultTab(selectedTab: .constant(.fast))
     }
 }

@@ -16,6 +16,7 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
     private let swapService = SwapService.shared
     private let blockchainService = BlockChainService.shared
+    private let fastVaultService = FastVaultService.shared
     private let balanceService = BalanceService.shared
     private let rateProvider = RateProvider.shared
 
@@ -58,6 +59,10 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
         tx.load(fromCoin: resolvedFromCoin, toCoin: toCoin, fromCoins: fromCoins, toCoins: toCoins)
 
         dataLoaded = true
+    }
+
+    func loadFastVault(tx: SwapTransaction, vault: Vault) async {
+        tx.isFastVault = await fastVaultService.exist(pubKeyECDSA: vault.pubKeyECDSA)
     }
 
     func updateCoinLists(tx: SwapTransaction) {

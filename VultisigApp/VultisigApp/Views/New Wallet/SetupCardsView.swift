@@ -15,7 +15,7 @@ struct SetupCardsView: View {
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
     @State var shouldSendCrypto = false
-    @State var selectedTab: SetupVaultState = .TwoOfTwoVaults
+    @State var selectedTab: SetupVaultState = .fast
     @State var selectedChain: Chain? = nil
     
     @StateObject var sendTx = SendTransaction()
