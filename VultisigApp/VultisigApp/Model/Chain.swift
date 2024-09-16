@@ -319,16 +319,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         }
     }
 
-    var curve: Curve {
-        switch self {
-        case .solana, .sui, .polkadot:
-            return .EdDSA
-        case .arbitrum, .avalanche, .base, .bitcoin, .bitcoinCash, .blast, .bscChain, .cronosChain, .dash, .dogecoin, .dydx, .ethereum, .gaiaChain, .kujira, .litecoin, .mayaChain, .optimism, .polygon, .thorChain, .zksync:
-            return .ECDSA
-        }
-    }
-
     var isECDSA: Bool {
-        return curve == .ECDSA
+        return signingKeyType == .ECDSA
     }
 }

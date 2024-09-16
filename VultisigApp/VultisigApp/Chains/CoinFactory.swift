@@ -46,7 +46,7 @@ private extension CoinFactory {
     }
     
     static func publicKey(asset: CoinMeta, vault: Vault) throws -> PublicKey {
-        switch asset.chain.curve {
+        switch asset.chain.signingKeyType {
         case .EdDSA:
             guard
                 let pubKeyData = Data(hexString: vault.pubKeyEdDSA),
