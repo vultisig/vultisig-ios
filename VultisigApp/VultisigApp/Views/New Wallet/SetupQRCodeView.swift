@@ -119,8 +119,9 @@ struct SetupQRCodeView: View {
             )
         })
         .navigationDestination(isPresented: $shouldJoinKeygen) {
-            let vaultName = Vault.getUniqueVaultName(modelContext: modelContext)
-            JoinKeygenView(vault: Vault(name: vaultName))
+            JoinKeygenView(vault: Vault(
+                name: Vault.getUniqueVaultName(modelContext: modelContext)
+            ))
         }
 #endif
     }

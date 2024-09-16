@@ -44,8 +44,12 @@ struct CreateVaultView: View {
     
     var newVaultButton: some View {
         NavigationLink {
-            let vaultName = Vault.getUniqueVaultName(modelContext: modelContext)
-            SetupQRCodeView(tssType: .Keygen, vault: Vault(name: vaultName))
+            SetupQRCodeView(
+                tssType: .Keygen,
+                vault: Vault(
+                    name: Vault.getUniqueVaultName(modelContext: modelContext)
+                )
+            )
         } label: {
             FilledButton(title: "createNewVault")
         }
