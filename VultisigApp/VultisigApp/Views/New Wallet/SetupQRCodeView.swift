@@ -13,7 +13,9 @@ struct SetupQRCodeView: View {
     let vault: Vault
     
     @State var selectedTab: SetupVaultState = .fast
-    
+    @State var showSheet: Bool = false
+    @State var shouldJoinKeygen = false
+
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var viewModel: HomeViewModel
     
@@ -49,7 +51,7 @@ struct SetupQRCodeView: View {
     var view: some View {
         VStack {
             tabView
-            button
+            buttons
         }
     }
     
@@ -57,9 +59,12 @@ struct SetupQRCodeView: View {
         SetupVaultTabView(selectedTab: $selectedTab)
     }
     
-    var button: some View {
-        VStack(spacing: 20) {
+    var buttons: some View {
+        VStack(spacing: 16) {
             startButton
+            if showPairButton {
+                pairButton
+            }
         }
         .padding(.horizontal, 40)
         .padding(.bottom, 40)
@@ -93,6 +98,40 @@ struct SetupQRCodeView: View {
             }
         } label: {
             FilledButton(title: "start".uppercased())
+        }
+    }
+
+    var pairButton: some View {
+        Button(action: {
+            showSheet = true
+        }) {
+            OutlineButton(title: "pair")
+        }
+#if os(iOS)
+        .sheet(isPresented: $showSheet, content: {
+            GeneralCodeScannerView(
+                showSheet: $showSheet,
+                shouldJoinKeygen: $shouldJoinKeygen,
+                shouldKeysignTransaction: .constant(false), // CodeScanner used for keygen only
+                shouldSendCrypto: .constant(false),         // -
+                selectedChain: .constant(nil),              // -
+                sendTX: SendTransaction()                   // -
+            )
+        })
+        .navigationDestination(isPresented: $shouldJoinKeygen) {
+            JoinKeygenView(vault: Vault(
+                name: Vault.getUniqueVaultName(modelContext: modelContext)
+            ))
+        }
+#endif
+    }
+
+    var showPairButton: Bool {
+        switch selectedTab {
+        case .fast:
+            return false
+        case .active, .secure:
+            return true
         }
     }
 }
