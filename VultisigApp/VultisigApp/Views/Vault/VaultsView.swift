@@ -14,8 +14,6 @@ struct VaultsView: View {
     @Binding var isEditingVaults: Bool
     
     @Query(sort: \Vault.order, order: .forward) var vaults: [Vault]
-        
-    @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     
     var body: some View {
         VStack {

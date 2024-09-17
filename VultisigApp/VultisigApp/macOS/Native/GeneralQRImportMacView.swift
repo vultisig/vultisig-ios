@@ -169,7 +169,7 @@ struct GeneralQRImportMacView: View {
             }
             
             deeplinkViewModel.extractParameters(url, vaults: vaults)
-            presetValuesForDeeplink(url)
+            presetValuesForDeeplink()
         } catch {
             if let description = error as? UtilsQrCodeFromImageError {
                 alertDescription = description.localizedDescription
@@ -179,7 +179,7 @@ struct GeneralQRImportMacView: View {
         }
     }
     
-    private func presetValuesForDeeplink(_ url: URL) {
+    private func presetValuesForDeeplink() {
         shouldJoinKeygen = false
         shouldKeysignTransaction = false
         
