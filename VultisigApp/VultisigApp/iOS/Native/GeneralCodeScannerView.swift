@@ -97,7 +97,7 @@ struct GeneralCodeScannerView: View {
         Button {
             isGalleryPresented.toggle()
         } label: {
-            OpenButton(buttonIcon: "photo.stack", buttonLabel: "uploadFromGallery")
+            OpenButton(buttonIcon: "photo", buttonLabel: "uploadFromGallery")
         }
     }
     
