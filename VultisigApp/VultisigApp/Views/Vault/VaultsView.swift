@@ -16,7 +16,7 @@ struct VaultsView: View {
     @Query(sort: \Vault.order, order: .forward) var vaults: [Vault]
         
     @Environment(\.modelContext) var modelContext
-    @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
+
     
     var body: some View {
         VStack {

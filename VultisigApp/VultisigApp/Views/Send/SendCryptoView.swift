@@ -90,16 +90,7 @@ struct SendCryptoView: View {
             shareSheetViewModel: shareSheetViewModel
         )
     }
-    
-    var content: some View {
-        view
-#if os(iOS)
-            .onTapGesture {
-                hideKeyboard()
-            }
-#endif
-    }
-    
+
     var view: some View {
         VStack(spacing: 30) {
             ProgressBar(progress: sendCryptoViewModel.getProgress())

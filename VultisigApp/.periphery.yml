@@ -1,7 +1,7 @@
-project: VoltixApp.xcodeproj
+project: VultisigApp.xcodeproj
 retain_objc_accessible: true
 retain_public: true
 schemes:
-- VoltixApp
+- VultisigApp
 targets:
-- VoltixApp
+- VultisigApp
