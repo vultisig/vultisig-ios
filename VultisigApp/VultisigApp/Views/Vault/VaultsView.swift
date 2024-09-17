@@ -14,6 +14,9 @@ struct VaultsView: View {
     @Binding var isEditingVaults: Bool
     
     @Query(sort: \Vault.order, order: .forward) var vaults: [Vault]
+        
+    @Environment(\.modelContext) var modelContext
+
     
     var body: some View {
         VStack {
@@ -40,7 +43,7 @@ struct VaultsView: View {
         VStack {
             list
             Spacer()
-            addVaultButton
+            buttons
         }
     }
     
@@ -59,12 +62,35 @@ struct VaultsView: View {
         .background(Color.backgroundBlue)
     }
     
+    var buttons: some View {
+        VStack(spacing: 14) {
+            addVaultButton
+            importVaultButton
+        }
+        .padding(16)
+    }
+    
     var addVaultButton: some View {
         NavigationLink {
-            CreateVaultView(showBackButton: true)
+            SetupQRCodeView(
+                tssType: .Keygen,
+                vault: Vault(
+                    name: Vault.getUniqueVaultName(modelContext: modelContext)
+                )
+            )
         } label: {
             FilledButton(title: "addNewVault", icon: "plus")
-                .padding(16)
+        }
+        .scaleEffect(showVaultsList ? 1 : 0)
+        .opacity(showVaultsList ? 1 : 0)
+        .buttonStyle(BorderlessButtonStyle())
+    }
+    
+    var importVaultButton: some View {
+        NavigationLink {
+            ImportWalletView()
+        } label: {
+            OutlineButton(title: "importExistingVault")
         }
         .scaleEffect(showVaultsList ? 1 : 0)
         .opacity(showVaultsList ? 1 : 0)
@@ -122,7 +148,8 @@ struct VaultsView: View {
 #Preview {
     ZStack {
         Background()
-        VaultsView(viewModel: HomeViewModel(), showVaultsList: .constant(false), isEditingVaults: .constant(true))
+        VaultsView(viewModel: HomeViewModel(), showVaultsList: .constant(true), isEditingVaults: .constant(true))
             .environmentObject(DeeplinkViewModel())
+            .environmentObject(HomeViewModel())
     }
 }
