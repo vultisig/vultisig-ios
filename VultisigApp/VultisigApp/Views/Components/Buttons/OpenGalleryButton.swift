@@ -12,24 +12,26 @@ struct OpenButton: View {
     @State var buttonIcon: String
     @State var buttonLabel: String
     
-    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-    
     var body: some View {
         content
-            .frame(width: 180, height: 54)
+            .padding(.vertical, 5)
+            .padding(.horizontal, 20)
+            .frame(width: 170, height: 54)
             .background(Color.turquoise600)
             .cornerRadius(100)
     }
     
     var content: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 10) {
             Image(systemName: buttonIcon)
-                .font(idiom == .phone ? .body12Menlo : .body16MontserratBold)
+                .font(.body18MontserratMedium)
                 .foregroundColor(.blue600)
             
             Text(NSLocalizedString(buttonLabel, comment: ""))
-                .font(idiom == .phone ? .body12MontserratBold : .body16MontserratBold)
+                .font(.body14MontserratBold)
                 .foregroundColor(.blue600)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
         }
     }
 }

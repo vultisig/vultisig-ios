@@ -106,9 +106,9 @@ struct SendCryptoDoneView: View {
         Button {
             checkProgressLink()
         } label: {
-            Text(NSLocalizedString("Swap progress", comment: ""))
+            Text(NSLocalizedString("swapProgress", comment: ""))
                 .font(.body14Menlo)
-                .foregroundColor(.neutral0)
+                .foregroundColor(.turquoise600)
         }
     }
 
