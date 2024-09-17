@@ -110,8 +110,7 @@ struct KeygenView: View {
             .padding(.bottom, 30)
 #elseif os(macOS)
         KeygenViewInstructionsMac()
-            .padding(.bottom, 30)
-            .padding(.vertical, 50)
+            .padding(.vertical, 30)
 #endif
     }
     
@@ -136,7 +135,7 @@ struct KeygenView: View {
     
     var instructions: some View {
         WifiInstruction()
-            .padding(.bottom, 50)
+            .padding(.vertical, 20)
     }
     
     var preparingVaultText: some View {
@@ -260,5 +259,5 @@ struct KeygenView: View {
         )
         .environmentObject(SettingsDefaultChainViewModel())
     }
-    .frame(height: 1000)
+    .frame(height: 600)
 }
