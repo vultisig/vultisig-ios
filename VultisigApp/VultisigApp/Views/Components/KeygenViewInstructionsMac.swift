@@ -42,7 +42,9 @@ struct KeygenViewInstructionsMac: View {
         let isDisabled = tabIndex==0
         
         return Button(action: {
-            tabIndex -= 1
+            withAnimation {
+                tabIndex -= 1
+            }
         }, label: {
             NavigationButton(isLeft: true)
         })
@@ -54,7 +56,9 @@ struct KeygenViewInstructionsMac: View {
         let isDisabled = tabIndex==6
         
         return Button(action: {
-            tabIndex += 1
+            withAnimation {
+                tabIndex += 1
+            }
         }, label: {
             NavigationButton()
         })

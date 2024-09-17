@@ -46,8 +46,8 @@ private extension CoinFactory {
     }
     
     static func publicKey(asset: CoinMeta, vault: Vault) throws -> PublicKey {
-        switch asset.chain {
-        case .solana, .sui, .polkadot:
+        switch asset.chain.signingKeyType {
+        case .EdDSA:
             guard
                 let pubKeyData = Data(hexString: vault.pubKeyEdDSA),
                 let publicKey = PublicKey(data: pubKeyData, type: .ed25519) else {
@@ -55,7 +55,7 @@ private extension CoinFactory {
             }
             return publicKey
             
-        case .arbitrum, .avalanche, .base, .bitcoin, .bitcoinCash, .blast, .bscChain, .cronosChain, .dash, .dogecoin, .dydx, .ethereum, .gaiaChain, .kujira, .litecoin, .mayaChain, .optimism, .polygon, .thorChain, .zksync:
+        case .ECDSA:
             let derivedKey = PublicKeyHelper.getDerivedPubKey(
                 hexPubKey: vault.pubKeyECDSA,
                 hexChainCode: vault.hexChainCode,
@@ -64,7 +64,7 @@ private extension CoinFactory {
             guard
                 let pubKeyData = Data(hexString: derivedKey),
                 let publicKey = PublicKey(data: pubKeyData, type: .secp256k1) else {
-                throw Errors.invalidPublicKey(pubKey: vault.pubKeyEdDSA)
+                throw Errors.invalidPublicKey(pubKey: vault.pubKeyECDSA)
             }
             return publicKey
         }
