@@ -202,8 +202,8 @@
 "secondAndThird" = "Second and Third";
 "typeHere" = "Type Here";
 "nameYourVault" = "Name your Vault";
-"uploadFromGallery" = "Upload from Gallery";
-"uploadFromFiles" = "Upload from Files";
+"uploadFromGallery" = "Upload from\nGallery";
+"uploadFromFiles" = "Upload from\nFiles";
 "goToHomeView" = "Go to Home View";
 "sameDeviceShareError" = "Same vault share, use a different device.";
 "errorFetchingVault" = "Error with fetching the vault.";
