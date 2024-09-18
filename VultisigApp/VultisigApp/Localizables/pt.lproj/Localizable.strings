@@ -1,3 +1,4 @@
+"fastVaultEmailBackup" = "Insira seu e-mail para receber o backup";
 "password" = "Senha";
 "secureCryptoVault" = "COFRE SEGURO DE CRIPTO";
 "thisDevice" = "Este Dispositivo:";
@@ -224,6 +225,8 @@
 "Selected" = "Selecionado";
 "searchResult" = "Resultado da pesquisa";
 "verifyPassword" = "Verificar senha";
+"email" = "e-mail";
+"verifyEmail" = "Verificar e-mail";
 "passwordMismatch" = "Senhas não coincidem";
 "verifyPasswordMismatch" = "Certifique-se de que suas senhas coincidem.";
 "emptyField" = "Campo(s) vazio(s)";

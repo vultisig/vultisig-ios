@@ -1,3 +1,4 @@
+"fastVaultEmailBackup" = "Enter your email to receive your backup";
 "password" = "Password";
 "secureCryptoVault" = "SECURE CRYPTO VAULT";
 "thisDevice" = "This Device:";
@@ -246,6 +247,8 @@
 "Selected" = "Selected";
 "searchResult" = "Search Result";
 "verifyPassword" = "Verify Password";
+"email" = "Email";
+"verifyEmail" = "Verify Email";
 "passwordMismatch" = "Password Mismatch";
 "verifyPasswordMismatch" = "Please make sure your passwords match.";
 "emptyField" = "Empty Field(s)";
