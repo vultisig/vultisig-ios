@@ -8,8 +8,10 @@
 import SwiftUI
 
 struct KeyGenSummaryView: View {
+    let state: SetupVaultState
+
     @ObservedObject var viewModel: KeygenPeerDiscoveryViewModel
-    
+
     @State var numberOfMainDevices = 0
     @State var numberOfBackupDevices = 0
     
@@ -126,8 +128,14 @@ struct KeyGenSummaryView: View {
         } label: {
             FilledButton(title: "continue")
         }
+        .disabled(!isButtonEnabled)
+        .opacity(isButtonEnabled ? 1.0 : 0.5)
     }
-    
+
+    var isButtonEnabled: Bool {
+        return viewModel.isValidPeers(state: state)
+    }
+
     private func getCell(index: Int, title: String, isPairDevice: Bool) -> some View {
         Group {
             Text(String(describing: index)) +
@@ -177,5 +185,5 @@ struct KeyGenSummaryView: View {
 }
 
 #Preview {
-    KeyGenSummaryView(viewModel: KeygenPeerDiscoveryViewModel())
+    KeyGenSummaryView(state: .fast, viewModel: KeygenPeerDiscoveryViewModel())
 }

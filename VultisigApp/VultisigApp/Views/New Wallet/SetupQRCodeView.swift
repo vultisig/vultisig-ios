@@ -62,7 +62,7 @@ struct SetupQRCodeView: View {
     var buttons: some View {
         VStack(spacing: 16) {
             startButton
-            if showPairButton {
+            if selectedTab.hasOtherDevices {
                 pairButton
             }
         }
@@ -123,15 +123,6 @@ struct SetupQRCodeView: View {
             ))
         }
 #endif
-    }
-
-    var showPairButton: Bool {
-        switch selectedTab {
-        case .fast:
-            return false
-        case .active, .secure:
-            return true
-        }
     }
 }
 
