@@ -13,6 +13,7 @@ struct FastVaultEmailView: View {
     let selectedTab: SetupVaultState
 
     @State var email: String = ""
+    @State var verifyEmail: String = ""
     @State var isLinkActive = false
 
     var body: some View {
@@ -21,7 +22,7 @@ struct FastVaultEmailView: View {
             main
         }
 #if os(iOS)
-            .navigationTitle("Email")
+            .navigationTitle(NSLocalizedString("email", comment: ""))
 #endif
     }
 
@@ -38,12 +39,12 @@ struct FastVaultEmailView: View {
     }
 
     var headerMac: some View {
-        GeneralMacHeader(title: "password")
+        GeneralMacHeader(title: "email")
     }
 
     var view: some View {
         VStack {
-            passwordField
+            emailField
             Spacer()
             buttons
         }
@@ -52,32 +53,36 @@ struct FastVaultEmailView: View {
 #endif
     }
 
-    var passwordField: some View {
+    var emailField: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Enter your email to receive your backup")
+            Text(NSLocalizedString("fastVaultEmailBackup", comment: ""))
                 .font(.body14MontserratMedium)
                 .foregroundColor(.neutral0)
 
-            textfield
+            textfield(title: NSLocalizedString("email", comment: ""), text: $email)
+            textfield(title: NSLocalizedString("verifyEmail", comment: ""), text: $verifyEmail)
         }
         .padding(.horizontal, 16)
         .padding(.top, 30)
     }
 
-    var textfield: some View {
-        TextField("Email", text: $email)
-            .font(.body16Menlo)
-            .foregroundColor(.neutral0)
-            .submitLabel(.done)
-            .padding(12)
-            .background(Color.blue600)
-            .cornerRadius(12)
+    func textfield(title: String, text: Binding<String>) -> some View {
+        TextField("", text: text, prompt: Text(NSLocalizedString(title, comment: ""))
+            .foregroundColor(Color.neutral500)
+            .font(.body12Menlo)
+        )
+        .font(.body16Menlo)
+        .foregroundColor(.neutral0)
+        .submitLabel(.done)
+        .padding(12)
+        .background(Color.blue600)
+        .cornerRadius(12)
 #if os(iOS)
-            .textInputAutocapitalization(.never)
-            .keyboardType(.emailAddress)
+        .textInputAutocapitalization(.never)
+        .keyboardType(.emailAddress)
 #endif
-            .autocorrectionDisabled()
-            .borderlessTextFieldStyle()
+        .autocorrectionDisabled()
+        .borderlessTextFieldStyle()
     }
 
     var buttons: some View {
@@ -102,6 +107,7 @@ struct FastVaultEmailView: View {
     var isValid: Bool {
         return !email.trimmingCharacters(in: .whitespaces).isEmpty && 
                !email.isEmpty &&
-                email.isValidEmail
+                email.isValidEmail &&
+                email == verifyEmail
     }
 }

@@ -15,17 +15,14 @@ struct SwapCryptoView: View {
     @StateObject var tx = SwapTransaction()
     @StateObject var swapViewModel = SwapCryptoViewModel()
     @StateObject var shareSheetViewModel = ShareSheetViewModel()
-
     @State var keysignView: KeysignView?
     
-    @Environment(\.dismiss) var dismiss
-
     init(fromCoin: Coin? = nil, toCoin: Coin? = nil, vault: Vault) {
         self.fromCoin = fromCoin
         self.toCoin = toCoin
         self.vault = vault
     }
-
+    
     var body: some View {
         ZStack {
             Background()
@@ -101,7 +98,7 @@ struct SwapCryptoView: View {
             tabView
         }
     }
-
+    
     @ViewBuilder
     var tabView: some View {
         ZStack {
@@ -121,15 +118,15 @@ struct SwapCryptoView: View {
             }
         }
     }
-
+    
     var detailsView: some View {
         SwapCryptoDetailsView(tx: tx, swapViewModel: swapViewModel, vault: vault)
     }
-
+    
     var verifyView: some View {
         SwapVerifyView(tx: tx, swapViewModel: swapViewModel, vault: vault)
     }
-
+    
     var pairView: some View {
         ZStack {
             if let keysignPayload = swapViewModel.keysignPayload {
@@ -147,7 +144,7 @@ struct SwapCryptoView: View {
             }
         }
     }
-
+    
     var keysign: some View {
         ZStack {
             if let keysignView = keysignView {
@@ -157,7 +154,7 @@ struct SwapCryptoView: View {
             }
         }
     }
-
+    
     var doneView: some View {
         ZStack {
             if let hash = swapViewModel.hash {
@@ -176,7 +173,7 @@ struct SwapCryptoView: View {
             }
         }
     }
-
+    
     var errorView: some View {
         SendCryptoSigningErrorView()
     }

@@ -125,16 +125,4 @@ struct KeysignSwapConfirmView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func getDetailsCell(for title: String, with value: String) -> some View {
-        HStack {
-            Text(
-                NSLocalizedString(title, comment: "")
-                    .replacingOccurrences(of: "Fiat", with: SettingsCurrency.current.rawValue)
-            )
-            Spacer()
-            Text(value)
-        }
-        .font(.body16MenloBold)
-        .foregroundColor(.neutral100)
-    }
 }

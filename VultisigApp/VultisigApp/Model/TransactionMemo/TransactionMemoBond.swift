@@ -47,13 +47,6 @@ class TransactionMemoBond: TransactionMemoAddressable, ObservableObject {
         setupValidation()
     }
     
-    init(nodeAddress: String, provider: String = "", fee: Int64 = .zero) {
-        self.nodeAddress = nodeAddress
-        self.provider = provider
-        self.fee = fee
-        setupValidation()
-    }
-    
     private func setupValidation() {
         Publishers.CombineLatest4($amountValid, $nodeAddressValid, $providerValid, $feeValid)
             .map { $0 && $1 && $2 && $3 && (!self.provider.isEmpty ? self.fee != .zero : true) }

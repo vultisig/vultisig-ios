@@ -1,3 +1,4 @@
+"fastVaultEmailBackup" = "Unesite svoju e-mail adresu kako biste primili sigurnosnu kopiju";
 "password" = "Lozinka";
 "secureCryptoVault" = "SIGURNO KRIPTO SEF";
 "thisDevice" = "Ovaj uređaj:";
@@ -224,6 +225,8 @@
 "Selected" = "Odabrano";
 "searchResult" = "Rezultat pretraživanja";
 "verifyPassword" = "Potvrdite lozinku";
+"email" = "E-mail";
+"verifyEmail" = "Potvrdi e-mail";
 "passwordMismatch" = "Lozinke se ne podudaraju";
 "verifyPasswordMismatch" = "Molimo vas provjerite da su vaše lozinke iste.";
 "emptyField" = "Prazno polje(a)";

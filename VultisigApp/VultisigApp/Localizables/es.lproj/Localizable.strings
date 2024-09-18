@@ -1,3 +1,4 @@
+"fastVaultEmailBackup" = "Introduce tu correo electrónico para recibir tu copia de seguridad";
 "password" = "Contraseña";
 "secureCryptoVault" = "CAJA FUERTE DE CRIPTO";
 "thisDevice" = "Este Dispositivo:";
@@ -224,6 +225,8 @@
 "Selected" = "Seleccionado";
 "searchResult" = "Resultado de la búsqueda";
 "verifyPassword" = "Verificar contraseña";
+"email" = "Сorreo electrónico";
+"verifyEmail" = "Verificar correo electrónico";
 "passwordMismatch" = "Las contraseñas no coinciden";
 "verifyPasswordMismatch" = "Por favor, asegúrate de que tus contraseñas coinciden.";
 "emptyField" = "Campo(s) vacío(s)";

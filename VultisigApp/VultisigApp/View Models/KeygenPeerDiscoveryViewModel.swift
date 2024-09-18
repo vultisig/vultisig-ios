@@ -7,6 +7,7 @@ import Foundation
 import Mediator
 import OSLog
 import SwiftUI
+import Combine
 
 enum PeerDiscoveryStatus {
     case WaitingForDevices
@@ -16,7 +17,9 @@ enum PeerDiscoveryStatus {
 }
 
 class KeygenPeerDiscoveryViewModel: ObservableObject {
+    
     private let logger = Logger(subsystem: "peers-discory-viewmodel", category: "communication")
+
     var tssType: TssType
     var vault: Vault
     var participantDiscovery: ParticipantDiscovery?
@@ -33,6 +36,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     @Published var vaultDetail = String.empty
     @Published var selectedNetwork = NetworkPromptType.Internet
     
+    private var cancellables = Set<AnyCancellable>()
     private let mediator = Mediator.shared
     private let fastVaultService = FastVaultService.shared
 
@@ -42,6 +46,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         self.status = .WaitingForDevices
         self.participantDiscovery = nil
         self.encryptionKeyHex = Encryption.getEncryptionKey()
+        
         if VultisigRelay.IsRelayEnabled {
             serverAddr = Endpoint.vultisigRelay
             selectedNetwork = .Internet
@@ -93,8 +98,33 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                 fastVaultService.reshare(name: vault.name, publicKeyECDSA: vault.pubKeyECDSA, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, hexChainCode: vault.hexChainCode, encryptionPassword: fastVaultPassword, email: fastVaultEmail)
             }
         }
+
+        participantDiscovery.$peersFound.sink {
+                $0.forEach { [weak self] peer in
+                    self?.handleSelection(peer)
+                }
+            }
+            .store(in: &cancellables)
     }
-    
+
+    func handleSelection(_ peer: String) {
+        if selections.contains(peer) {
+            if peer != localPartyID {
+                selections.remove(peer)
+            }
+        } else {
+            selections.insert(peer)
+        }
+    }
+
+    func isValidPeers(state: SetupVaultState) -> Bool {
+        guard state.isFastVault else {
+            return true
+        }
+        let isValid = selections.contains(where: { $0.contains("Server-") })
+        return isValid
+    }
+
     func startDiscovery() {
         self.mediator.start(name: self.serviceName)
         self.logger.info("mediator server started")
@@ -105,7 +135,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
                                                    pubKeyECDSA: vault.pubKeyECDSA)
     }
     
-    func restartParticipantDiscovery(){
+    func restartParticipantDiscovery() {
         self.participantDiscovery?.stop()
         if VultisigRelay.IsRelayEnabled {
             serverAddr = Endpoint.vultisigRelay

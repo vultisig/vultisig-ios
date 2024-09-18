@@ -94,18 +94,6 @@ struct JoinKeygenView: View {
         JoinKeygenHeader(title: "joinKeygen")
     }
     
-    var scanButton: some View {
-        ZStack {
-            Circle()
-                .foregroundColor(.turquoise600)
-                .frame(width: 60, height: 60)
-            
-            Image(systemName: "camera")
-                .font(.title30MenloUltraLight)
-                .foregroundColor(.blue600)
-        }
-    }
-    
     var keygenStarted: some View {
         HStack {
             if viewModel.serverAddress != nil && self.viewModel.sessionID != nil {
