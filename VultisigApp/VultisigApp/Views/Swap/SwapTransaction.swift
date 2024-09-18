@@ -50,14 +50,6 @@ class SwapTransaction: ObservableObject {
         }
     }
 
-    var fromBalance: String {
-        return fromCoin.balanceString
-    }
-
-    var toBalance: String {
-        return toCoin.balanceString
-    }
-
     var toAmountDecimal: Decimal {
         guard let quote else {
             return .zero
@@ -69,18 +61,6 @@ class SwapTransaction: ObservableObject {
         case .oneinch(let quote), .lifi(let quote):
             let amount = BigInt(quote.dstAmount) ?? BigInt.zero
             return toCoin.decimal(for: amount)
-        }
-    }
-
-    var toAmountRaw: BigInt {
-        guard let quote else {
-            return .zero
-        }
-        switch quote {
-        case .thorchain, .mayachain:
-            return toCoin.raw(for: toAmountDecimal)
-        case .oneinch(let quote), .lifi(let quote):
-            return BigInt(quote.dstAmount) ?? BigInt.zero
         }
     }
 

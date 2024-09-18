@@ -75,7 +75,6 @@ struct SetupQRCodeView: View {
             if tssType == .Keygen {
                 NewWalletNameView(
                     tssType: tssType,
-                    vault: vault,
                     selectedTab: selectedTab
                 )
             } else {

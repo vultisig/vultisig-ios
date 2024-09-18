@@ -16,7 +16,6 @@ struct KeysignView: View {
     let transferViewModel: TransferViewModel?
     let encryptionKeyHex: String
     
-    let logger = Logger(subsystem: "keysign", category: "tss")
     
     @StateObject var viewModel = KeysignViewModel()
     
@@ -26,15 +25,15 @@ struct KeysignView: View {
         ZStack {
             switch viewModel.status {
             case .CreatingInstance:
-                SendCryptoKeysignView(vault:vault,title: "creatingTssInstance")
+                SendCryptoKeysignView(title: "creatingTssInstance")
             case .KeysignECDSA:
-                SendCryptoKeysignView(vault:vault,title: "signingWithECDSA")
+                SendCryptoKeysignView(title: "signingWithECDSA")
             case .KeysignEdDSA:
-                SendCryptoKeysignView(vault:vault,title: "signingWithEdDSA")
+                SendCryptoKeysignView(title: "signingWithEdDSA")
             case .KeysignFinished:
                 keysignFinished
             case .KeysignFailed:
-                SendCryptoKeysignView(vault:vault,title: "Sorry keysign failed, you can retry it,error: \(viewModel.keysignError)", showError: true)
+                SendCryptoKeysignView(title: "Sorry keysign failed, you can retry it,error: \(viewModel.keysignError)", showError: true)
             case .KeysignVaultMismatch:
                 KeysignVaultMismatchErrorView()
             }

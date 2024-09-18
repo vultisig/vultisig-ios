@@ -10,7 +10,6 @@ import SwiftUI
 import WalletCore
 
 struct CustomTokenView: View {
-    let addressService: AddressService = AddressService()
     let chainDetailView: ChainDetailView
     let vault: Vault
     @ObservedObject var group: GroupedChain

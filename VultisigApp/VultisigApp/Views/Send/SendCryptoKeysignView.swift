@@ -8,14 +8,12 @@
 import SwiftUI
 
 struct SendCryptoKeysignView: View {
-    let vault: Vault
     let title: String
     var showError = false
     @State var didSwitch = false
     
     @Environment(\.dismiss) var dismiss
     
-    let progressTotalCount: Double = 4
     let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
     let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
     
@@ -91,14 +89,6 @@ struct SendCryptoKeysignView: View {
         }
     }
     
-    var sameWifiInstruction: some View {
-        Text(NSLocalizedString("sameWifiEntendedInstruction", comment: "Keep devices on the same WiFi Network, correct vault and pair devices. Make sure no other devices are running Vultisig."))
-            .font(.body12Menlo)
-            .foregroundColor(.neutral0)
-            .padding(.horizontal, 50)
-            .multilineTextAlignment(.center)
-    }
-    
     var tryAgainButton: some View {
         NavigationLink {
             HomeView()
@@ -126,6 +116,6 @@ struct SendCryptoKeysignView: View {
         Color.blue800
             .ignoresSafeArea()
         
-        SendCryptoKeysignView(vault:Vault.example,title: "signing")
+        SendCryptoKeysignView(title: "signing")
     }
 }
