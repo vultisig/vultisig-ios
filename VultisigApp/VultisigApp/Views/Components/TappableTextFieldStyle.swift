@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct TappableTextFieldStyle: TextFieldStyle {
-
     @FocusState private var textFieldFocused: Bool
 
     func _body(configuration: TextField<Self._Label>) -> some View {

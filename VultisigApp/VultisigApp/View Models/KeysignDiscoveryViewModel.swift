@@ -100,10 +100,12 @@ class KeysignDiscoveryViewModel: ObservableObject {
         self.mediator.start(name: self.serviceName)
         self.logger.info("mediator server started")
         self.startKeysignSession()
-        self.participantDiscovery?.getParticipants(serverAddr: self.serverAddr,
-                                                   sessionID: self.sessionID,
-                                                   localParty: self.localPartyID,
-                                                   pubKeyECDSA: vault.pubKeyECDSA)
+        self.participantDiscovery?.getParticipants(
+            serverAddr: self.serverAddr,          
+            sessionID: self.sessionID,
+            localParty: self.localPartyID,
+            pubKeyECDSA: vault.pubKeyECDSA
+        )
     }
     
     @MainActor func startKeysign(vault: Vault, viewModel: TransferViewModel) -> KeysignView {

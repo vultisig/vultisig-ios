@@ -20,36 +20,6 @@ class DydxHelper {
     
     static let DydxGasLimit:UInt64 = 2500000000000000
     
-    func getSwapPreSignedInputData(keysignPayload: KeysignPayload,signingInput: CosmosSigningInput) -> Result<Data,Error> {
-        guard case .Cosmos(let accountNumber, let sequence,let gas, _) = keysignPayload.chainSpecific else {
-            return .failure(HelperError.runtimeError("fail to get account number and sequence"))
-        }
-        guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
-            return .failure(HelperError.runtimeError("invalid hex public key"))
-        }
-        var input = signingInput
-        input.publicKey = pubKeyData
-        input.accountNumber = accountNumber
-        input.sequence = sequence
-        input.mode = .sync
-        
-        input.fee = CosmosFee.with {
-            $0.gas = 200000
-            $0.amounts = [CosmosAmount.with {
-                $0.denom = "adydx"
-                $0.amount = String(gas)
-            }]
-        }
-        // memo has been set
-        // deposit message has been set
-        do {
-            let inputData = try input.serializedData()
-            return .success(inputData)
-        } catch {
-            return .failure(HelperError.runtimeError("fail to get plan"))
-        }
-    }
-    
     func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard case .Cosmos(let accountNumber, let sequence , let gas, let transactionTypeRawValue) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number and sequence")

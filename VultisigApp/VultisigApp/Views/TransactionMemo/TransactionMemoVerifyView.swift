@@ -109,10 +109,6 @@ struct TransactionMemoVerifyView: View {
         .padding(40)
     }
     
-    var loader: some View {
-        Loader()
-    }
-    
     private func getAddressCell(for title: String, with address: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(NSLocalizedString(title, comment: ""))
@@ -143,10 +139,6 @@ struct TransactionMemoVerifyView: View {
     
     private func getAmount() -> String {
         tx.amount + " " + tx.coin.ticker
-    }
-    
-    private func getFiatAmount() -> String {
-        tx.amountInFiat.formatToFiat()
     }
 }
 

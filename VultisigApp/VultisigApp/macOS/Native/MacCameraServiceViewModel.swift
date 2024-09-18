@@ -140,10 +140,10 @@ extension MacCameraServiceViewModel {
         }
         
         deeplinkViewModel.extractParameters(url, vaults: vaults)
-        presetValuesForDeeplink(url, sendTx: sendTx, cameraViewModel: cameraViewModel, deeplinkViewModel: deeplinkViewModel, settingsDefaultChainViewModel: settingsDefaultChainViewModel)
+        presetValuesForDeeplink(sendTx: sendTx, cameraViewModel: cameraViewModel, deeplinkViewModel: deeplinkViewModel, settingsDefaultChainViewModel: settingsDefaultChainViewModel)
     }
     
-    func presetValuesForDeeplink(_ url: URL, sendTx: SendTransaction, cameraViewModel: MacCameraServiceViewModel, deeplinkViewModel: DeeplinkViewModel, settingsDefaultChainViewModel: SettingsDefaultChainViewModel) {
+    func presetValuesForDeeplink(sendTx: SendTransaction, cameraViewModel: MacCameraServiceViewModel, deeplinkViewModel: DeeplinkViewModel, settingsDefaultChainViewModel: SettingsDefaultChainViewModel) {
         shouldJoinKeygen = false
         shouldKeysignTransaction = false
         
