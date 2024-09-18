@@ -19,31 +19,6 @@ class KujiraHelper {
     
     static let kujiraGasLimit:UInt64 = 200000
     
-    func getSwapPreSignedInputData(keysignPayload: KeysignPayload,signingInput: CosmosSigningInput) throws -> Data {
-        guard case .Cosmos(let accountNumber, let sequence, let gas, _) = keysignPayload.chainSpecific else {
-            throw HelperError.runtimeError("fail to get account number and sequence")
-        }
-        guard let pubKeyData = Data(hexString: keysignPayload.coin.hexPublicKey) else {
-            throw HelperError.runtimeError("invalid hex public key")
-        }
-        var input = signingInput
-        input.publicKey = pubKeyData
-        input.accountNumber = accountNumber
-        input.sequence = sequence
-        input.mode = .sync
-        
-        input.fee = CosmosFee.with {
-            $0.gas = KujiraHelper.kujiraGasLimit
-            $0.amounts = [CosmosAmount.with {
-                $0.denom = "ukuji"
-                $0.amount = String(gas)
-            }]
-        }
-        // memo has been set
-        // deposit message has been set
-        return try input.serializedData()
-    }
-    
     func getPreSignedInputData(keysignPayload: KeysignPayload) throws -> Data {
         guard case .Cosmos(let accountNumber, let sequence , let gas, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get account number and sequence")

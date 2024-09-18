@@ -146,7 +146,6 @@ enum SolanaHelper {
     }
     
     static func getSignedTransaction(vaultHexPubKey: String,
-                                     vaultHexChainCode: String,
                                      keysignPayload: KeysignPayload,
                                      signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
     {
