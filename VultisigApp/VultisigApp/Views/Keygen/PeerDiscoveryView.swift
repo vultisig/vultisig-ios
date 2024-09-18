@@ -56,6 +56,9 @@ struct PeerDiscoveryView: View {
         .navigationTitle(getTitle())
         .navigationBarTitleDisplayMode(.inline)
         .detectOrientation($orientation)
+        .onChange(of: viewModel.selections) {
+            setNumberOfPairedDevices()
+        }
         .onChange(of: orientation) { oldValue, newValue in
             setData()
         }
@@ -111,14 +114,16 @@ struct PeerDiscoveryView: View {
     
     var states: some View {
         VStack {
-            switch viewModel.status {
-            case .WaitingForDevices:
+            switch (viewModel.status, selectedTab.hasOtherDevices) {
+            case (.WaitingForDevices, true):
                 waitingForDevices
-            case .Summary:
+            case (.WaitingForDevices, false):
                 summary
-            case .Keygen:
+            case (.Summary, _):
+                summary
+            case (.Keygen, _):
                 keygenView
-            case .Failure:
+            case (.Failure, _):
                 failureText
             }
         }
@@ -297,12 +302,9 @@ struct PeerDiscoveryView: View {
     var devices: some View {
         ForEach(participantDiscovery.peersFound, id: \.self) { peer in
             Button {
-                handleSelection(peer)
+                viewModel.handleSelection(peer)
             } label: {
                 PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
-            }
-            .onAppear {
-                handleAutoSelection()
             }
         }
 #if os(iOS)
@@ -389,37 +391,6 @@ struct PeerDiscoveryView: View {
         )
     }
     
-    private func handleSelection(_ peer: String) {
-        if viewModel.selections.contains(peer) {
-            if peer != viewModel.localPartyID {
-                viewModel.selections.remove(peer)
-            }
-        } else {
-            viewModel.selections.insert(peer)
-        }
-        setNumberOfPairedDevices();
-    }
-    
-    private func handleAutoSelection() {
-        guard tssType == .Keygen else {
-            return
-        }
-        
-        if selectedTab == .fast {
-            if participantDiscovery.peersFound.count == 1 {
-                handleSelection(participantDiscovery.peersFound[0])
-                viewModel.showSummary()
-            }
-        } else if selectedTab == .active {
-            if participantDiscovery.peersFound.count == 1 {
-                handleSelection(participantDiscovery.peersFound[0])
-            } else if participantDiscovery.peersFound.count == 2 {
-                handleSelection(participantDiscovery.peersFound[1])
-                viewModel.showSummary()
-            }
-        }
-    }
-    
     private func getTitle() -> String {
         NSLocalizedString("keygenFor", comment: "") +
         " " +
@@ -440,7 +411,6 @@ struct PeerDiscoveryView: View {
         default:
             viewModel.vaultDetail = String(format:  NSLocalizedString("numberOfPairedDevicesMOfN", comment: ""), totalSigners)
         }
-        
     }
     
     private func setData(_ proxy: GeometryProxy) {
