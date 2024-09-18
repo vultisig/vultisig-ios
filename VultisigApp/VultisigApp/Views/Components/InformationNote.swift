@@ -8,9 +8,7 @@
 import SwiftUI
 
 struct InformationNote: View {
-    
     @State var message: String? = nil
-    
     
     var body: some View {
         HStack(spacing: 12) {

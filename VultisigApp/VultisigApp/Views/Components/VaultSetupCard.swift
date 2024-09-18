@@ -22,17 +22,6 @@ struct VaultSetupCard: View {
         .cornerRadius(20)
     }
     
-    var content: some View {
-        VStack(spacing: 8) {
-            logo
-            text
-            titleContent
-        }
-#if os(macOS)
-        .offset(y: -24)
-#endif
-    }
-    
     var button: some View {
         VStack {
             Spacer()

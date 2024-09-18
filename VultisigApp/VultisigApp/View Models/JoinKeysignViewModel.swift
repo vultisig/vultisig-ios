@@ -6,10 +6,6 @@
 import Foundation
 import OSLog
 
-#if os(iOS)
-import CodeScanner
-#endif
-
 enum JoinKeysignStatus {
     case DiscoverSigningMsg
     case DiscoverService
@@ -169,33 +165,6 @@ class JoinKeysignViewModel: ObservableObject {
             }
         })
     }
-    
-#if os(iOS)
-    // Scan the QR code and strip the data
-    func handleScan(result: Result<ScanResult, ScanError>) {
-        defer {
-            self.isShowingScanner = false
-        }
-        
-        guard let isCameraPermissionGranted, isCameraPermissionGranted else {
-            status = .KeysignNoCameraAccess
-            return
-        }
-        
-        switch result {
-        case .success(let result):
-            guard let data = DeeplinkViewModel.getJsonData(URL(string: result.string)) else {
-                return
-            }
-            handleQrCodeSuccessResult(data: data)
-        case .failure(let err):
-            self.errorMsg = "QR code scanning failed: \(err.localizedDescription)"
-            self.status = .FailedToStart
-        }
-        
-        manageQrCodeStates()
-    }
-#endif
     
     func prepareKeysignMessages(keysignPayload: KeysignPayload) {
         do {
