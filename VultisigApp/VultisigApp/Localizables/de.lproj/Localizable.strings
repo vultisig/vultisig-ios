@@ -1,3 +1,4 @@
+"fastVaultEmailBackup" = "Geben Sie Ihre E-Mail-Adresse ein, um Ihre Sicherung zu erhalten";
 "password" = "Passwort";
 "secureCryptoVault" = "SICHERER KRYPTO-TRESOR";
 "thisDevice" = "Dieses Gerät:";
@@ -224,6 +225,8 @@
 "Selected" = "Ausgewählt";
 "searchResult" = "Suchergebnis";
 "verifyPassword" = "Passwort bestätigen";
+"email" = "E-Mail";
+"verifyEmail" = "E-Mail bestätigen";
 "passwordMismatch" = "Passwort stimmt nicht überein";
 "verifyPasswordMismatch" = "Bitte stellen Sie sicher, dass Ihre Passwörter übereinstimmen.";
 "emptyField" = "Leeres Feld(er)";
