@@ -22,8 +22,6 @@ class TransactionMemoAddPool: TransactionMemoAddressable, ObservableObject {
         set { }
     }
     
-    private var cancellables = Set<AnyCancellable>()
-    
     required init() {
         setupValidation()
     }
