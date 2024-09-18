@@ -138,7 +138,7 @@ struct PeerDiscoveryView: View {
     }
     
     var summary: some View {
-        KeyGenSummaryView(viewModel: viewModel)
+        KeyGenSummaryView(state: selectedTab, viewModel: viewModel)
     }
     
     var content: some View {

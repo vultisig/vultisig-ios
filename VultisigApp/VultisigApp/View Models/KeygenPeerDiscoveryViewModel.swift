@@ -117,6 +117,14 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         }
     }
 
+    func isValidPeers(state: SetupVaultState) -> Bool {
+        guard state.isFastVault else {
+            return true
+        }
+        let isValid = selections.contains(where: { $0.contains("Server-") })
+        return isValid
+    }
+
     func startDiscovery() {
         self.mediator.start(name: self.serviceName)
         self.logger.info("mediator server started")
