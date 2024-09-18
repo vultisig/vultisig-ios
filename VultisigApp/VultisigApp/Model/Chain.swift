@@ -318,4 +318,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return CoinType.dydx
         }
     }
+
+    var isECDSA: Bool {
+        return signingKeyType == .ECDSA
+    }
 }

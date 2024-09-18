@@ -9,10 +9,13 @@ import SwiftUI
 import SwiftData
 
 struct EditVaultView: View {
-    let vault: Vault
-    @Query var vaults: [Vault]
-    @Environment(\.dismiss) var dismiss
     
+    let vault: Vault
+
+    @Query var vaults: [Vault]
+
+    @Environment(\.dismiss) var dismiss
+
     var body: some View {
         exporter
     }
@@ -93,7 +96,7 @@ struct EditVaultView: View {
     
     var editVault: some View {
         NavigationLink {
-            RenameVaultView(vaults:vaults,vault: vault)
+            RenameVaultView(vaults: vaults, vault: vault)
         } label: {
             EditVaultCell(title: "rename", description: "renameVault", icon: "square.and.pencil")
         }
@@ -110,7 +113,7 @@ struct EditVaultView: View {
     
     var reshareVault: some View {
         NavigationLink {
-            SetupCardsView(tssType: .Reshare, vault: vault)
+            SetupQRCodeView(tssType: .Reshare, vault: vault)
         } label: {
             EditVaultCell(title: "reshare", description: "reshareVault", icon: "tray.and.arrow.up")
         }

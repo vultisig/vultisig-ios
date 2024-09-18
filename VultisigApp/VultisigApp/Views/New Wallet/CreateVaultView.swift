@@ -8,8 +8,11 @@
 import SwiftUI
 
 struct CreateVaultView: View {
-    var showBackButton = false
     
+    var showBackButton = false
+
+    @Environment(\.modelContext) var modelContext
+
     var body: some View {
         ZStack {
             Background()
@@ -41,7 +44,12 @@ struct CreateVaultView: View {
     
     var newVaultButton: some View {
         NavigationLink {
-            SetupCardsView(tssType: .Keygen)
+            SetupQRCodeView(
+                tssType: .Keygen,
+                vault: Vault(
+                    name: Vault.getUniqueVaultName(modelContext: modelContext)
+                )
+            )
         } label: {
             FilledButton(title: "createNewVault")
         }

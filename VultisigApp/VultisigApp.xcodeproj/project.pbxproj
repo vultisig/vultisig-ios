@@ -155,7 +155,6 @@
 		A61BC8192BA2687E00484689 /* TokensStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61BC8182BA2687D00484689 /* TokensStore.swift */; };
 		A61BC81B2BA26D9900484689 /* ChainSelectionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A61BC81A2BA26D9900484689 /* ChainSelectionCell.swift */; };
 		A623A09F2BF09FEE00AA2F8D /* NewWalletNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A623A09E2BF09FEE00AA2F8D /* NewWalletNameView.swift */; };
-		A625D9BE2C59F2100078FBF4 /* SetupCardsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A625D9BD2C59F2100078FBF4 /* SetupCardsView.swift */; };
 		A625D9C02C59F2FC0078FBF4 /* GradientSeparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A625D9BF2C59F2FC0078FBF4 /* GradientSeparator.swift */; };
 		A625D9C22C5AD15A0078FBF4 /* KeygenViewInstructions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A625D9C12C5AD15A0078FBF4 /* KeygenViewInstructions.swift */; };
 		A625D9C62C5B5FE30078FBF4 /* KeygenViewInstructionsMac.swift in Sources */ = {isa = PBXBuildFile; fileRef = A625D9C52C5B5FE30078FBF4 /* KeygenViewInstructionsMac.swift */; };
@@ -715,7 +714,6 @@
 		A61BC8182BA2687D00484689 /* TokensStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokensStore.swift; sourceTree = "<group>"; };
 		A61BC81A2BA26D9900484689 /* ChainSelectionCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainSelectionCell.swift; sourceTree = "<group>"; };
 		A623A09E2BF09FEE00AA2F8D /* NewWalletNameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewWalletNameView.swift; sourceTree = "<group>"; };
-		A625D9BD2C59F2100078FBF4 /* SetupCardsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupCardsView.swift; sourceTree = "<group>"; };
 		A625D9BF2C59F2FC0078FBF4 /* GradientSeparator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientSeparator.swift; sourceTree = "<group>"; };
 		A625D9C12C5AD15A0078FBF4 /* KeygenViewInstructions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenViewInstructions.swift; sourceTree = "<group>"; };
 		A625D9C52C5B5FE30078FBF4 /* KeygenViewInstructionsMac.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenViewInstructionsMac.swift; sourceTree = "<group>"; };
@@ -1027,6 +1025,7 @@
 		DE1572A12B70F873009BC7C5 /* Tss.xcframework */ = {isa = PBXFileReference; expectedSignature = "AppleDeveloperProgram:G8Q5XUAJD9:Cortina Ventures PTY LTD"; lastKnownFileType = wrapper.xcframework; path = Tss.xcframework; sourceTree = "<group>"; };
 		DE1572AB2B7174D3009BC7C5 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		DE1905262BD8CC4D0043577E /* KeysignVerify.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeysignVerify.swift; sourceTree = "<group>"; };
+		DE2B4E4A2C97DA9200FF4C49 /* VultisigApp.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = VultisigApp.xctestplan; sourceTree = "<group>"; };
 		DE320E6D2C846C610068D0E1 /* ReshareRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReshareRequest.swift; sourceTree = "<group>"; };
 		DE3D44AE2BD2487900BD64CD /* CosmosSignature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CosmosSignature.swift; sourceTree = "<group>"; };
 		DE491CEE2B708260007C88D5 /* KeygenView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeygenView.swift; sourceTree = "<group>"; };
@@ -1090,7 +1089,6 @@
 		DEEFF4FC2B9835DE0015692E /* THORChainSwapChainExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainSwapChainExtension.swift; sourceTree = "<group>"; };
 		DEF2E2CA2B9AD5EA000737B8 /* UTXOChainsHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOChainsHelper.swift; sourceTree = "<group>"; };
 		DEF2E2CF2B9DA459000737B8 /* PublicKeyTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublicKeyTest.swift; sourceTree = "<group>"; };
-		DEF2E2D12B9DC331000737B8 /* VultisigApp.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = VultisigApp.xctestplan; sourceTree = "<group>"; };
 		DEF2E2D22B9DC685000737B8 /* UTXOChainsHelperTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOChainsHelperTest.swift; sourceTree = "<group>"; };
 		DEF7225F2C520377002FFE8A /* THORChainNetworkStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainNetworkStatus.swift; sourceTree = "<group>"; };
 		DEFC7BFA2B8D87370090B07A /* erc20.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = erc20.swift; sourceTree = "<group>"; };
@@ -2156,7 +2154,6 @@
 				A633B13B2B9A6564003D1738 /* SetupQRCodeView.swift */,
 				A6F9E7A42BED6BC800BA36E1 /* SetupVaultTabView.swift */,
 				A623A09E2BF09FEE00AA2F8D /* NewWalletNameView.swift */,
-				A625D9BD2C59F2100078FBF4 /* SetupCardsView.swift */,
 			);
 			path = "New Wallet";
 			sourceTree = "<group>";
@@ -2293,8 +2290,8 @@
 		DE49A15A2B65F6D9000F3AFB = {
 			isa = PBXGroup;
 			children = (
+				DE2B4E4A2C97DA9200FF4C49 /* VultisigApp.xctestplan */,
 				DE8AD73F2BC1600800339775 /* PrivacyInfo.xcprivacy */,
-				DEF2E2D12B9DC331000737B8 /* VultisigApp.xctestplan */,
 				DE1572A12B70F873009BC7C5 /* Tss.xcframework */,
 				DE49A1932B65F7B6000F3AFB /* Mediator */,
 				DE49A1652B65F6D9000F3AFB /* VultisigApp */,
@@ -3092,7 +3089,6 @@
 				A6725D3A2C3F9B4400D47716 /* AddAddressBookView.swift in Sources */,
 				A6ECA18A2C93F4F400456110 /* SetupVaultImageManager+macOS.swift in Sources */,
 				A588F2DB2BEE8090002EEC60 /* OneInchSwapPayload.swift in Sources */,
-				A625D9BE2C59F2100078FBF4 /* SetupCardsView.swift in Sources */,
 				A6725D3E2C3FB61900D47716 /* AddressBookItem.swift in Sources */,
 				A62D6B052BFE7C5E00F24E51 /* ChainDetailActionButtons.swift in Sources */,
 				A6F9E7A52BED6BC800BA36E1 /* SetupVaultTabView.swift in Sources */,
@@ -3284,7 +3280,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 51;
+				CURRENT_PROJECT_VERSION = 0;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
@@ -3314,7 +3310,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.vultisig.wallet;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -3339,7 +3335,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 51;
+				CURRENT_PROJECT_VERSION = 0;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
@@ -3369,7 +3365,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.vultisig.wallet;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -3389,7 +3385,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 51;
+				CURRENT_PROJECT_VERSION = 0;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3399,13 +3395,13 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.voltix.voltixAppTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VoltixApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/VoltixApp";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VultisigApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/VultisigApp";
 			};
 			name = Debug;
 		};
@@ -3415,7 +3411,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 51;
+				CURRENT_PROJECT_VERSION = 0;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
@@ -3424,13 +3420,13 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.voltix.voltixAppTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VoltixApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/VoltixApp";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VultisigApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/VultisigApp";
 			};
 			name = Release;
 		};
@@ -3439,7 +3435,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 51;
+				CURRENT_PROJECT_VERSION = 0;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
@@ -3461,7 +3457,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 51;
+				CURRENT_PROJECT_VERSION = 0;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
