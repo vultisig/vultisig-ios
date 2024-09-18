@@ -12,7 +12,6 @@ import SwiftUI
 import Tss
 
 struct KeygenView: View {
-    private let logger = Logger(subsystem: "keygen", category: "tss")
     @Environment(\.modelContext) private var context
     let vault: Vault
     let tssType: TssType // keygen or reshare

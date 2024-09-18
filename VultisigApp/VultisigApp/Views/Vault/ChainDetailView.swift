@@ -122,10 +122,6 @@ struct ChainDetailView: View {
         }
     }
     
-    var loader: some View {
-        Loader()
-    }
-    
     var main: some View {
         VStack {
 #if os(macOS)

@@ -270,10 +270,6 @@ struct VaultDetailView: View {
         settingsDefaultChainViewModel.setData(tokenSelectionViewModel.groupedAssets)
     }
     
-    private func getListHeight() -> CGFloat {
-        CGFloat(viewModel.coinsGroupedByChains.count * 86)
-    }
-    
     private func getActions() -> some View {
         let selectedGroup = viewModel.selectedGroup
         
