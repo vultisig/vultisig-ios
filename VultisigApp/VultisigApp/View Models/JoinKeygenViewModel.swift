@@ -8,10 +8,6 @@
 import Foundation
 import OSLog
 
-#if os(iOS)
-import CodeScanner
-#endif
-
 import CoreImage
 import Vision
 
@@ -153,36 +149,6 @@ class JoinKeygenViewModel: ObservableObject {
         })
     }
     
-#if os(iOS)
-    func handleScan(result: Result<ScanResult, ScanError>) {
-        defer {
-            isShowingScanner = false
-        }
-        
-        guard let isCameraPermissionGranted, isCameraPermissionGranted else {
-            status = .NoCameraAccess
-            return
-        }
-        
-        switch result {
-        case .success(let result):
-            let url = URL(string: result.string)
-            guard
-                let json = DeeplinkViewModel.getJsonData(url),
-                let tssTypeString = DeeplinkViewModel.getTssType(url),
-                let tssType = TssType(rawValue: tssTypeString) else {
-                status = .FailToStart
-                return
-            }
-            handleQrCodeSuccessResult(scanData: json, tssType: tssType)
-
-        case .failure(_):
-            errorMessage = "Unable to scan the QR code. Please import an image using the button below."
-            status = .FailToStart
-            return
-        }
-    }
-#endif
     func isVaultNameAlreadyExist(name: String) -> Bool  {
         for v in self.vaults {
             if v.name == name && !v.pubKeyECDSA.isEmpty {

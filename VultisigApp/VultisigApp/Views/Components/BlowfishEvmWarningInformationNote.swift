@@ -26,14 +26,6 @@ struct BlowfishWarningInformationNote: View {
         }
     }
     
-    var lineWidth: CGFloat {
-#if os(iOS)
-        1
-#elseif os(macOS)
-        2
-#endif
-    }
-    
     var icon: some View {
         Image(systemName: viewModel.iconName)
             .foregroundColor(viewModel.iconColor)
