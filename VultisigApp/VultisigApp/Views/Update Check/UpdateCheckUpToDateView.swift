@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct MacCheckUpToDateView: View {
+struct UpdateCheckUpToDateView: View {
     let currentVersion: String
     
     var body: some View {
@@ -41,5 +41,5 @@ struct MacCheckUpToDateView: View {
 }
 
 #Preview {
-    MacCheckUpToDateView(currentVersion: "v1.0.1")
+    UpdateCheckUpToDateView(currentVersion: "v1.0.1")
 }

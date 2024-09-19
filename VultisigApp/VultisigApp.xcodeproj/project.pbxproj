@@ -120,8 +120,8 @@
 		A611735D2BC8D94400D616F9 /* KeyGenSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A611735C2BC8D94400D616F9 /* KeyGenSummaryView.swift */; };
 		A611CCC22C765F3000D64C9D /* OutlinedDisclaimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A611CCC12C765F3000D64C9D /* OutlinedDisclaimer.swift */; };
 		A611CCCF2C7816EC00D64C9D /* UINavigationControllerExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A611CCCE2C7816EC00D64C9D /* UINavigationControllerExtension.swift */; };
-		A6182F252C9225B60059BFDD /* MacCheckUpToDateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F242C9225B60059BFDD /* MacCheckUpToDateView.swift */; };
-		A6182F272C9225CB0059BFDD /* MacCheckUpdateNowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F262C9225CB0059BFDD /* MacCheckUpdateNowView.swift */; };
+		A6182F252C9225B60059BFDD /* UpdateCheckUpToDateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F242C9225B60059BFDD /* UpdateCheckUpToDateView.swift */; };
+		A6182F272C9225CB0059BFDD /* UpdateCheckUpdateNowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F262C9225CB0059BFDD /* UpdateCheckUpdateNowView.swift */; };
 		A6182F292C9225DA0059BFDD /* MacCheckUpdateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F282C9225DA0059BFDD /* MacCheckUpdateView.swift */; };
 		A6182F2B2C9225EA0059BFDD /* MacCheckUpdateViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F2A2C9225EA0059BFDD /* MacCheckUpdateViewModel.swift */; };
 		A6182F2D2C9226310059BFDD /* UpdateVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6182F2C2C9226310059BFDD /* UpdateVersion.swift */; };
@@ -704,8 +704,8 @@
 		A611735C2BC8D94400D616F9 /* KeyGenSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyGenSummaryView.swift; sourceTree = "<group>"; };
 		A611CCC12C765F3000D64C9D /* OutlinedDisclaimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutlinedDisclaimer.swift; sourceTree = "<group>"; };
 		A611CCCE2C7816EC00D64C9D /* UINavigationControllerExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UINavigationControllerExtension.swift; sourceTree = "<group>"; };
-		A6182F242C9225B60059BFDD /* MacCheckUpToDateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCheckUpToDateView.swift; sourceTree = "<group>"; };
-		A6182F262C9225CB0059BFDD /* MacCheckUpdateNowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCheckUpdateNowView.swift; sourceTree = "<group>"; };
+		A6182F242C9225B60059BFDD /* UpdateCheckUpToDateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCheckUpToDateView.swift; sourceTree = "<group>"; };
+		A6182F262C9225CB0059BFDD /* UpdateCheckUpdateNowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCheckUpdateNowView.swift; sourceTree = "<group>"; };
 		A6182F282C9225DA0059BFDD /* MacCheckUpdateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCheckUpdateView.swift; sourceTree = "<group>"; };
 		A6182F2A2C9225EA0059BFDD /* MacCheckUpdateViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCheckUpdateViewModel.swift; sourceTree = "<group>"; };
 		A6182F2C2C9226310059BFDD /* UpdateVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateVersion.swift; sourceTree = "<group>"; };
@@ -1584,10 +1584,10 @@
 		A6182F232C9224D10059BFDD /* Update Check */ = {
 			isa = PBXGroup;
 			children = (
-				A6182F242C9225B60059BFDD /* MacCheckUpToDateView.swift */,
-				A6182F262C9225CB0059BFDD /* MacCheckUpdateNowView.swift */,
-				A6182F282C9225DA0059BFDD /* MacCheckUpdateView.swift */,
 				A622C8632C9BED5100908332 /* PhoneCheckUpdateView.swift */,
+				A6182F282C9225DA0059BFDD /* MacCheckUpdateView.swift */,
+				A6182F242C9225B60059BFDD /* UpdateCheckUpToDateView.swift */,
+				A6182F262C9225CB0059BFDD /* UpdateCheckUpdateNowView.swift */,
 			);
 			path = "Update Check";
 			sourceTree = "<group>";
@@ -2839,7 +2839,7 @@
 				A6F9E7A92BED6BDB00BA36E1 /* SetupVaultImageManager.swift in Sources */,
 				D9AD8EDA2B6722CC0009F8D5 /* ApplicationState.swift in Sources */,
 				A6386DA82C90244800DDD58E /* TokenSelectionCell+macOS.swift in Sources */,
-				A6182F252C9225B60059BFDD /* MacCheckUpToDateView.swift in Sources */,
+				A6182F252C9225B60059BFDD /* UpdateCheckUpToDateView.swift in Sources */,
 				A6C0D55A2BB3AAA200156689 /* ChainHeaderCell.swift in Sources */,
 				B5E95E092BED84D9003778F0 /* ImagePicker.swift in Sources */,
 				B53DCB7D2C0D7327008388D4 /* EvmTokenServiceProtocol.swift in Sources */,
@@ -3067,7 +3067,7 @@
 				A55BCEBB2BC59E8100D35917 /* KeysignPayloadFactory.swift in Sources */,
 				A69FBBC62C8BB5B700A4B78B /* NoCameraPermissionView+macOS.swift in Sources */,
 				A608E3792C02472C00E40B85 /* SwapCryptoAmountTextField.swift in Sources */,
-				A6182F272C9225CB0059BFDD /* MacCheckUpdateNowView.swift in Sources */,
+				A6182F272C9225CB0059BFDD /* UpdateCheckUpdateNowView.swift in Sources */,
 				A622C8642C9BED5100908332 /* PhoneCheckUpdateView.swift in Sources */,
 				A564ED442BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift in Sources */,
 				A5D0C9352BEE77190022D421 /* SwapPayload.swift in Sources */,

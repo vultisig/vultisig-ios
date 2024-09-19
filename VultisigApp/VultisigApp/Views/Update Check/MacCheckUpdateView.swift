@@ -88,13 +88,13 @@ struct MacCheckUpdateView: View {
     }
     
     var appUpToDateMessage: some View {
-        MacCheckUpToDateView(currentVersion: macCheckUpdateViewModel.currentVersion)
+        UpdateCheckUpToDateView(currentVersion: macCheckUpdateViewModel.currentVersion)
     }
     
     var updateAppMessage: some View {
         let url = Endpoint.githubMacUpdateBase + macCheckUpdateViewModel.latestVersionBase
         
-        return MacCheckUpdateNowView(
+        return UpdateCheckUpdateNowView(
             latestVersion: macCheckUpdateViewModel.latestVersion,
             link: url
         )

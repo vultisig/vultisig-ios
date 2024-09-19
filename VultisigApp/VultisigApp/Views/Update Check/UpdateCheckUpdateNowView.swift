@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct MacCheckUpdateNowView: View {
+struct UpdateCheckUpdateNowView: View {
     let latestVersion: String
     let link: String
     
@@ -50,5 +50,5 @@ struct MacCheckUpdateNowView: View {
 }
 
 #Preview {
-    MacCheckUpdateNowView(latestVersion: "v1.2.2", link: Endpoint.appStoreLink)
+    UpdateCheckUpdateNowView(latestVersion: "v1.2.2", link: Endpoint.appStoreLink)
 }
