@@ -21,7 +21,8 @@ struct VultisigApp: App {
     @StateObject var settingsViewModel = SettingsViewModel.shared
     @StateObject var homeViewModel = HomeViewModel()
     @StateObject var settingsDefaultChainViewModel = SettingsDefaultChainViewModel()
-    @StateObject var checkUpdateViewModel = CheckUpdateViewModel()
+    @StateObject var macCheckUpdateViewModel = MacCheckUpdateViewModel()
+    @StateObject var phoneCheckUpdateViewModel = PhoneCheckUpdateViewModel()
     
     // Mac specific
     @StateObject var macCameraServiceViewModel = MacCameraServiceViewModel()

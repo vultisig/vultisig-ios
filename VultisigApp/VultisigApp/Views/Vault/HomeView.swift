@@ -13,9 +13,11 @@ struct HomeView: View {
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var viewModel: HomeViewModel
-#if os(macOS)
+#if os(iOS)
+    @EnvironmentObject var phoneCheckUpdateViewModel: PhoneCheckUpdateViewModel
+#elseif os(macOS)
     @EnvironmentObject var macCameraServiceViewModel: MacCameraServiceViewModel
-    @EnvironmentObject var checkUpdateViewModel: CheckUpdateViewModel
+    @EnvironmentObject var macCheckUpdateViewModel: MacCheckUpdateViewModel
 #endif
     
     @State var vaults: [Vault] = []
@@ -34,18 +36,31 @@ struct HomeView: View {
             Background()
             main
         }
-#if os(macOS)
+#if os(iOS)
         .alert(
             NSLocalizedString("newUpdateAvailable", comment: ""),
-            isPresented: $checkUpdateViewModel.showUpdateAlert
+            isPresented: $phoneCheckUpdateViewModel.showUpdateAlert
         ) {
-            Link(destination: URL(string: Endpoint.githubMacUpdateBase + checkUpdateViewModel.latestVersionBase)!) {
+            Link(destination: StaticURL.AppStoreVultisigURL) {
                 Text(NSLocalizedString("updateNow", comment: ""))
             }
             
             Button(NSLocalizedString("dismiss", comment: ""), role: .cancel) {}
         } message: {
-            Text(checkUpdateViewModel.latestVersion)
+            Text(phoneCheckUpdateViewModel.latestVersionString)
+        }
+#elseif os(macOS)
+        .alert(
+            NSLocalizedString("newUpdateAvailable", comment: ""),
+            isPresented: $macCheckUpdateViewModel.showUpdateAlert
+        ) {
+            Link(destination: URL(string: Endpoint.githubMacUpdateBase + macCheckUpdateViewModel.latestVersionBase)!) {
+                Text(NSLocalizedString("updateNow", comment: ""))
+            }
+            
+            Button(NSLocalizedString("dismiss", comment: ""), role: .cancel) {}
+        } message: {
+            Text(macCheckUpdateViewModel.latestVersion)
         }
 #endif
     }
@@ -156,10 +171,12 @@ struct HomeView: View {
         fetchVaults()
         shouldJoinKeygen = false
         shouldKeysignTransaction = false
-        
-#if os(macOS)
+     
+#if os(iOS)
+        phoneCheckUpdateViewModel.checkForUpdates(isAutoCheck: true)
+#elseif os(macOS)
         macCameraServiceViewModel.stopSession()
-        checkUpdateViewModel.checkForUpdates(isAutoCheck: true)
+        macCheckUpdateViewModel.checkForUpdates(isAutoCheck: true)
 #endif
         
         if let vault = selectedVault {
@@ -233,6 +250,6 @@ struct HomeView: View {
         .environmentObject(HomeViewModel())
 #if os(macOS)
         .environmentObject(MacCameraServiceViewModel())
-        .environmentObject(CheckUpdateViewModel())
+        .environmentObject(MacCheckUpdateViewModel())
 #endif
 }
