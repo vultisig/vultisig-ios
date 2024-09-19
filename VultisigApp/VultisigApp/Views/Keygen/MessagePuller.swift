@@ -109,11 +109,13 @@ class MessagePuller: ObservableObject {
         })
     }
     
-    private func deleteMessageFromServer(mediatorURL: String,
-                                         sessionID: String,
-                                         localPartyKey: String,
-                                         hash: String,
-                                         headers: [String:String]) {
+    private func deleteMessageFromServer(
+        mediatorURL: String,
+        sessionID: String,
+        localPartyKey: String,
+        hash: String,
+        headers: [String:String]
+    ) {
         let urlString = "\(mediatorURL)/message/\(sessionID)/\(localPartyKey)/\(hash)"
         Utils.deleteFromServer(urlString: urlString,headers: headers)
     }

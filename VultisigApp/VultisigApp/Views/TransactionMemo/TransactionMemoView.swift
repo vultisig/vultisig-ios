@@ -14,70 +14,24 @@ struct TransactionMemoView: View {
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
-        ZStack {
-            Background()
-            main
-        }
-        .navigationBarBackButtonHidden(transactionMemoViewModel.currentIndex != 1 ? true : false)
-#if os(iOS)
-        .navigationTitle(NSLocalizedString(transactionMemoViewModel.currentTitle, comment: "SendCryptoView title"))
-        .navigationBarTitleDisplayMode(.inline)
-        .ignoresSafeArea(.keyboard)
-        .toolbar {
-            if transactionMemoViewModel.currentIndex != 1 {
-                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                    Button {
-                        transactionMemoViewModel.handleBackTap()
-                    } label: {
-                        NavigationBlankBackButton()
-                            .offset(x: -8)
-                    }
+        content
+            .onAppear {
+                Task {
+                    await setData()
                 }
             }
-        }
-#endif
-        .onAppear {
-            Task {
-                await setData()
+            .onChange(of: tx.coin) {
+                Task {
+                    await setData()
+                }
             }
-        }
-        .onChange(of: tx.coin) {
-            Task {
-                await setData()
+            .onDisappear(){
+                transactionMemoViewModel.stopMediator()
             }
-        }
-        .onDisappear(){
-            transactionMemoViewModel.stopMediator()
-        }
-    }
-    
-    var main: some View {
-        VStack {
-#if os(macOS)
-            headerMac
-#endif
-            content
-        }
     }
     
     var headerMac: some View {
         TransactionMemoHeader(transactionMemoViewModel: transactionMemoViewModel)
-    }
-    
-    var content: some View {
-        ZStack {
-            Background()
-            view
-            
-            if transactionMemoViewModel.isLoading || transactionMemoVerifyViewModel.isLoading {
-                loader
-            }
-        }
-#if os(iOS)
-        .onTapGesture {
-            hideKeyboard()
-        }
-#endif
     }
     
     var view: some View {

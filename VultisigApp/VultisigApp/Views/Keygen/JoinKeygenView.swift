@@ -8,10 +8,6 @@ import SwiftUI
 import UniformTypeIdentifiers
 import SwiftData
 
-#if os(iOS)
-import CodeScanner
-#endif
-
 struct JoinKeygenView: View {
     let vault: Vault
     
@@ -28,31 +24,20 @@ struct JoinKeygenView: View {
     let logger = Logger(subsystem: "join-keygen", category: "communication")
     
     var body: some View {
-        ZStack {
-            Background()
-            main
-        }
-#if os(iOS)
-        .navigationTitle(NSLocalizedString("joinKeygen", comment: "Join keygen/reshare"))
-        .toolbar {
-            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                NavigationHelpButton()
+        content
+            .onAppear {
+                setData()
             }
-        }
-#endif
-        .onAppear {
-            setData()
-        }
-        .onDisappear {
-            viewModel.stopJoinKeygen()
-        }
-        .fileImporter(
-            isPresented: $showFileImporter,
-            allowedContentTypes: [UTType.image],
-            allowsMultipleSelection: false
-        ) { result in
-            viewModel.handleQrCodeFromImage(result: result)
-        }
+            .onDisappear {
+                viewModel.stopJoinKeygen()
+            }
+            .fileImporter(
+                isPresented: $showFileImporter,
+                allowedContentTypes: [UTType.image],
+                allowsMultipleSelection: false
+            ) { result in
+                viewModel.handleQrCodeFromImage(result: result)
+            }
     }
     
     var states: some View {
@@ -77,21 +62,6 @@ struct JoinKeygenView: View {
         .padding()
         .cornerRadius(10)
         .shadow(radius: 5)
-    }
-    
-    var main: some View {
-        VStack {
-#if os(macOS)
-            headerMac
-#endif
-            Spacer()
-            states
-            Spacer()
-        }
-    }
-    
-    var headerMac: some View {
-        JoinKeygenHeader(title: "joinKeygen")
     }
     
     var keygenStarted: some View {

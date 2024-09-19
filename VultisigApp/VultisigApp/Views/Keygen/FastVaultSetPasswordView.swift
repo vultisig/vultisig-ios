@@ -18,41 +18,7 @@ struct FastVaultSetPasswordView: View {
     @State var isLinkActive = false
 
     var body: some View {
-        ZStack {
-            Background()
-            main
-        }
-#if os(iOS)
-            .navigationTitle(NSLocalizedString("password", comment: ""))
-#endif
-    }
-
-    var main: some View {
-        VStack {
-#if os(macOS)
-            headerMac
-#endif
-            view
-        }
-        .navigationDestination(isPresented: $isLinkActive) {
-            PeerDiscoveryView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastVaultEmail: fastVaultEmail, fastVaultPassword: password)
-        }
-    }
-
-    var headerMac: some View {
-        GeneralMacHeader(title: "password")
-    }
-
-    var view: some View {
-        VStack {
-            passwordField
-            Spacer()
-            disclaimer
-            buttons
-        }
-#if os(macOS)
-        .padding(.horizontal, 25)
-#endif
+        content
     }
 
     var passwordField: some View {

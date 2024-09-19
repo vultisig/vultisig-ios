@@ -12,7 +12,7 @@ import SwiftUI
 import Tss
 
 struct KeygenView: View {
-    @Environment(\.modelContext) private var context
+    @Environment(\.modelContext) var context
     let vault: Vault
     let tssType: TssType // keygen or reshare
     let keygenCommittee: [String]
@@ -26,9 +26,6 @@ struct KeygenView: View {
     let progressTotalCount: Double = 4
     let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
     let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
-#if os(iOS)
-    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-#endif
     
     @State var progressCounter: Double = 0
     @State var showProgressRing = true
@@ -36,36 +33,10 @@ struct KeygenView: View {
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
     
     var body: some View {
-        VStack {
-            content
-            instructions
-            appVersion
-        }
-        .navigationTitle(NSLocalizedString("joinKeygen", comment: ""))
-        .navigationDestination(isPresented: $viewModel.isLinkActive) {
-            BackupVaultNowView(vault: vault)
-        }
-        .task {
-            await viewModel.startKeygen(
-                context: context,
-                defaultChains: settingsDefaultChainViewModel.defaultChains
-            )
-        }
-        .onAppear {
-#if os(iOS)
-            UIApplication.shared.isIdleTimerDisabled = true
-#endif
-            setData()
-        }
-        .onDisappear(){
-#if os(iOS)
-            UIApplication.shared.isIdleTimerDisabled = false
-#endif
-        }
-        
+        content
     }
     
-    var content: some View {
+    var fields: some View {
         VStack(spacing: 0) {
             Spacer()
             if showProgressRing {
@@ -101,31 +72,6 @@ struct KeygenView: View {
             maxHeight: showProgressRing ? 50 : .infinity
         )
         .offset(y: -20)
-    }
-    
-    var keygenViewInstructions: some View {
-#if os(iOS)
-        KeygenViewInstructions()
-            .padding(.bottom, 30)
-#elseif os(macOS)
-        KeygenViewInstructionsMac()
-            .padding(.vertical, 30)
-#endif
-    }
-    
-    var appVersion: some View {
-        return VStack {
-            Text("Vultisig APP V\(version ?? "1")")
-            Text("(Build \(build ?? "1"))")
-        }
-        .textCase(.uppercase)
-        .font(.body14Menlo)
-        .foregroundColor(.turquoise600)
-#if os(iOS)
-        .padding(.bottom, idiom == .pad ? 30 : 0)
-#elseif os(macOS)
-        .padding(.bottom, 30)
-#endif
     }
     
     var progress: some View {
@@ -220,7 +166,7 @@ struct KeygenView: View {
         }
     }
     
-    private func setData() {
+    func setData() {
         viewModel.setData(
             vault: vault,
             tssType: tssType,

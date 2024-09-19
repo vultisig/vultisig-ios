@@ -27,46 +27,13 @@ struct AddAddressBookView: View {
     @Environment(\.modelContext) var modelContext
     
     var body: some View {
-        ZStack {
-            Background()
-            main
-        }
-#if os(iOS)
-        .navigationTitle(NSLocalizedString("addAddress", comment: ""))
-#endif
-        .onAppear {
-            setData()
-        }
+        content
+            .onAppear {
+                setData()
+            }
     }
     
-    var main: some View {
-        VStack {
-#if os(macOS)
-            headerMac
-#endif
-            view
-        }
-    }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: "addAddress")
-    }
-    
-    var view: some View {
-        VStack(spacing: 22) {
-            content
-            button
-        }
-        .padding(.horizontal, 16)
-#if os(macOS)
-        .padding(.horizontal, 24)
-#endif
-        .alert(isPresented: $showAlert) {
-            alert
-        }
-    }
-    
-    var content: some View {
+    var fields: some View {
         ScrollView {
             VStack(spacing: 22) {
                 tokenSelector
