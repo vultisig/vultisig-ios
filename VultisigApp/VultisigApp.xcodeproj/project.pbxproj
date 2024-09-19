@@ -164,6 +164,8 @@
 		A622C8402C9BBB2E00908332 /* AddAddressBookView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C83F2C9BBB2E00908332 /* AddAddressBookView+macOS.swift */; };
 		A622C8422C9BBC0100908332 /* EditAddressBookView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8412C9BBC0100908332 /* EditAddressBookView+iOS.swift */; };
 		A622C8442C9BBC0C00908332 /* EditAddressBookView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8432C9BBC0C00908332 /* EditAddressBookView+macOS.swift */; };
+		A622C8462C9BBD2F00908332 /* TransactionMemoView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8452C9BBD2F00908332 /* TransactionMemoView+iOS.swift */; };
+		A622C8482C9BBD3900908332 /* TransactionMemoView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8472C9BBD3900908332 /* TransactionMemoView+macOS.swift */; };
 		A623A09F2BF09FEE00AA2F8D /* NewWalletNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A623A09E2BF09FEE00AA2F8D /* NewWalletNameView.swift */; };
 		A625D9C02C59F2FC0078FBF4 /* GradientSeparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A625D9BF2C59F2FC0078FBF4 /* GradientSeparator.swift */; };
 		A625D9C22C5AD15A0078FBF4 /* KeygenViewInstructions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A625D9C12C5AD15A0078FBF4 /* KeygenViewInstructions.swift */; };
@@ -732,6 +734,8 @@
 		A622C83F2C9BBB2E00908332 /* AddAddressBookView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AddAddressBookView+macOS.swift"; sourceTree = "<group>"; };
 		A622C8412C9BBC0100908332 /* EditAddressBookView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditAddressBookView+iOS.swift"; sourceTree = "<group>"; };
 		A622C8432C9BBC0C00908332 /* EditAddressBookView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditAddressBookView+macOS.swift"; sourceTree = "<group>"; };
+		A622C8452C9BBD2F00908332 /* TransactionMemoView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TransactionMemoView+iOS.swift"; sourceTree = "<group>"; };
+		A622C8472C9BBD3900908332 /* TransactionMemoView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TransactionMemoView+macOS.swift"; sourceTree = "<group>"; };
 		A623A09E2BF09FEE00AA2F8D /* NewWalletNameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewWalletNameView.swift; sourceTree = "<group>"; };
 		A625D9BF2C59F2FC0078FBF4 /* GradientSeparator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientSeparator.swift; sourceTree = "<group>"; };
 		A625D9C12C5AD15A0078FBF4 /* KeygenViewInstructions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenViewInstructions.swift; sourceTree = "<group>"; };
@@ -1886,6 +1890,7 @@
 				A622C8392C9BB9B400908332 /* AddressBookView+iOS.swift */,
 				A622C83D2C9BBB2500908332 /* AddAddressBookView+iOS.swift */,
 				A622C8412C9BBC0100908332 /* EditAddressBookView+iOS.swift */,
+				A622C8452C9BBD2F00908332 /* TransactionMemoView+iOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -1914,6 +1919,7 @@
 				A622C83B2C9BB9C100908332 /* AddressBookView+macOS.swift */,
 				A622C83F2C9BBB2E00908332 /* AddAddressBookView+macOS.swift */,
 				A622C8432C9BBC0C00908332 /* EditAddressBookView+macOS.swift */,
+				A622C8472C9BBD3900908332 /* TransactionMemoView+macOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -2948,6 +2954,7 @@
 				A622C83A2C9BB9B400908332 /* AddressBookView+iOS.swift in Sources */,
 				B57DD59E2C3E69F500934CBB /* TokenAccountsByOwner.swift in Sources */,
 				A66BFCCD2C1347D5004DCD4F /* NavigationQRShareButton.swift in Sources */,
+				A622C8482C9BBD3900908332 /* TransactionMemoView+macOS.swift in Sources */,
 				A5CBA32C2BCD747C00088CC3 /* TappableTextFieldStyle.swift in Sources */,
 				DE1905272BD8CC4D0043577E /* KeysignVerify.swift in Sources */,
 				469ED39B2B98E8B5008D4951 /* CosmosBalance.swift in Sources */,
@@ -3051,6 +3058,7 @@
 				B51097F32C4E48EE0066D560 /* BlowfishResponse.swift in Sources */,
 				A54BBCFF2BC6E11600645C06 /* TransferViewModel.swift in Sources */,
 				46DE08902BD0D03E00AE8BDE /* CosmosService.swift in Sources */,
+				A622C8462C9BBD2F00908332 /* TransactionMemoView+iOS.swift in Sources */,
 				465B09A92B7C176700952DD9 /* SendTransaction.swift in Sources */,
 				A622C83C2C9BB9C100908332 /* AddressBookView+macOS.swift in Sources */,
 				A69FBB9A2C8AD63C00A4B78B /* CreateVaultView+macOS.swift in Sources */,
