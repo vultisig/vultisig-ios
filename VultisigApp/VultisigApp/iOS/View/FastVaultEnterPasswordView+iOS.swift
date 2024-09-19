@@ -4,12 +4,10 @@
 //
 //  Created by Artur Guseinov on 14.09.2024.
 //
-
+#if os(iOS)
 import SwiftUI
 
 extension FastVaultEnterPasswordView {
-
-#if os(iOS)
     var body: some View {
         NavigationView {
             ZStack {
@@ -34,5 +32,5 @@ extension FastVaultEnterPasswordView {
                 .foregroundColor(Color.neutral0)
         }
     }
-#endif
 }
+#endif

@@ -17,40 +17,7 @@ struct FastVaultEmailView: View {
     @State var isLinkActive = false
 
     var body: some View {
-        ZStack {
-            Background()
-            main
-        }
-#if os(iOS)
-            .navigationTitle(NSLocalizedString("email", comment: ""))
-#endif
-    }
-
-    var main: some View {
-        VStack {
-#if os(macOS)
-            headerMac
-#endif
-            view
-        }
-        .navigationDestination(isPresented: $isLinkActive) {
-            FastVaultSetPasswordView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastVaultEmail: email)
-        }
-    }
-
-    var headerMac: some View {
-        GeneralMacHeader(title: "email")
-    }
-
-    var view: some View {
-        VStack {
-            emailField
-            Spacer()
-            buttons
-        }
-#if os(macOS)
-        .padding(.horizontal, 25)
-#endif
+        content
     }
 
     var emailField: some View {
@@ -64,25 +31,6 @@ struct FastVaultEmailView: View {
         }
         .padding(.horizontal, 16)
         .padding(.top, 30)
-    }
-
-    func textfield(title: String, text: Binding<String>) -> some View {
-        TextField("", text: text, prompt: Text(NSLocalizedString(title, comment: ""))
-            .foregroundColor(Color.neutral500)
-            .font(.body12Menlo)
-        )
-        .font(.body16Menlo)
-        .foregroundColor(.neutral0)
-        .submitLabel(.done)
-        .padding(12)
-        .background(Color.blue600)
-        .cornerRadius(12)
-#if os(iOS)
-        .textInputAutocapitalization(.never)
-        .keyboardType(.emailAddress)
-#endif
-        .autocorrectionDisabled()
-        .borderlessTextFieldStyle()
     }
 
     var buttons: some View {

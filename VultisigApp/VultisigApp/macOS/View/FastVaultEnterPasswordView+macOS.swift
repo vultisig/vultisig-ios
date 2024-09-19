@@ -5,11 +5,10 @@
 //  Created by Artur Guseinov on 14.09.2024.
 //
 
+#if os(macOS)
 import SwiftUI
 
 extension FastVaultEnterPasswordView {
-
-#if os(macOS)
     var body: some View {
         ZStack {
             Background()
@@ -24,5 +23,5 @@ extension FastVaultEnterPasswordView {
     var headerMac: some View {
         GeneralMacHeader(title: "password")
     }
-#endif
 }
+#endif
