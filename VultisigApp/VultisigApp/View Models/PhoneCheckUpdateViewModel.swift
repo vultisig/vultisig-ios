@@ -34,22 +34,22 @@ class PhoneCheckUpdateViewModel: ObservableObject {
             
             let comparisonResult = self.compareVersions(currentVersion, latestVersion)
             DispatchQueue.main.async {
-//                switch comparisonResult {
-//                case .orderedAscending:
-//                    self.isUpdateAvailable = true
-//                    
-//                    if isAutoCheck {
-//                        self.showUpdateAlert = true
-//                    } else {
-//                        self.showDetails = true
-//                    }
-//                case .orderedSame:
-//                    self.isUpdateAvailable = false
-//                    self.showDetails = true
-//                case .orderedDescending:
+                switch comparisonResult {
+                case .orderedAscending:
+                    self.isUpdateAvailable = true
+                    
+                    if isAutoCheck {
+                        self.showUpdateAlert = true
+                    } else {
+                        self.showDetails = true
+                    }
+                case .orderedSame:
                     self.isUpdateAvailable = false
                     self.showDetails = true
-//                }
+                case .orderedDescending:
+                    self.isUpdateAvailable = false
+                    self.showDetails = true
+                }
                 
                 self.updateTextValues(currentVersion, latestVersion)
             }

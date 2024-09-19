@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct MacCheckUpdateNowView: View {
-    @EnvironmentObject var macCheckUpdateViewModel: MacCheckUpdateViewModel
+    let latestVersion: String
+    let link: String
     
     var body: some View {
         VStack(spacing: 8) {
@@ -35,15 +36,13 @@ struct MacCheckUpdateNowView: View {
     }
     
     var updateDescription: some View {
-        Text(macCheckUpdateViewModel.latestVersion)
+        Text(latestVersion)
             .font(.body12Montserrat)
             .foregroundColor(.neutral0)
     }
     
     var updateButton: some View {
-        let url = Endpoint.githubMacUpdateBase + macCheckUpdateViewModel.latestVersionBase
-        
-        return Link(destination: URL(string: url)!) {
+        return Link(destination: URL(string: link)!) {
             FilledButton(title: "updateNow")
         }
         .padding(40)
@@ -51,6 +50,5 @@ struct MacCheckUpdateNowView: View {
 }
 
 #Preview {
-    MacCheckUpdateNowView()
-        .environmentObject(MacCheckUpdateViewModel())
+    MacCheckUpdateNowView(latestVersion: "v1.2.2", link: Endpoint.appStoreLink)
 }

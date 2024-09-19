@@ -85,7 +85,10 @@ struct PhoneCheckUpdateView: View {
     }
     
     var updateAppMessage: some View {
-        MacCheckUpdateNowView()
+        MacCheckUpdateNowView(
+            latestVersion: "v" + phoneCheckUpdateViewModel.latestVersionString + ".0",
+            link: Endpoint.appStoreLink
+        )
     }
     
     private func setData() {
