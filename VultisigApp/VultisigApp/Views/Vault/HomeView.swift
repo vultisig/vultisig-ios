@@ -13,7 +13,9 @@ struct HomeView: View {
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var viewModel: HomeViewModel
-#if os(macOS)
+#if os(iOS)
+    @EnvironmentObject var phoneCheckUpdateViewModel: PhoneCheckUpdateViewModel
+#elseif os(macOS)
     @EnvironmentObject var macCameraServiceViewModel: MacCameraServiceViewModel
     @EnvironmentObject var macCheckUpdateViewModel: MacCheckUpdateViewModel
 #endif
@@ -34,7 +36,20 @@ struct HomeView: View {
             Background()
             main
         }
-#if os(macOS)
+#if os(iOS)
+        .alert(
+            NSLocalizedString("newUpdateAvailable", comment: ""),
+            isPresented: $phoneCheckUpdateViewModel.showUpdateAlert
+        ) {
+            Link(destination: URL(string: Endpoint.appStoreLink)!) {
+                Text(NSLocalizedString("updateNow", comment: ""))
+            }
+            
+            Button(NSLocalizedString("dismiss", comment: ""), role: .cancel) {}
+        } message: {
+            Text(phoneCheckUpdateViewModel.latestVersionString)
+        }
+#elseif os(macOS)
         .alert(
             NSLocalizedString("newUpdateAvailable", comment: ""),
             isPresented: $macCheckUpdateViewModel.showUpdateAlert
@@ -156,8 +171,10 @@ struct HomeView: View {
         fetchVaults()
         shouldJoinKeygen = false
         shouldKeysignTransaction = false
-        
-#if os(macOS)
+     
+#if os(iOS)
+        phoneCheckUpdateViewModel.checkForUpdates(isAutoCheck: true)
+#elseif os(macOS)
         macCameraServiceViewModel.stopSession()
         macCheckUpdateViewModel.checkForUpdates(isAutoCheck: true)
 #endif

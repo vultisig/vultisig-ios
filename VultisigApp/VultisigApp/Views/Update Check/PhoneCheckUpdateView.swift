@@ -81,12 +81,12 @@ struct PhoneCheckUpdateView: View {
     }
     
     var appUpToDateMessage: some View {
-        MacCheckUpToDateView(currentVersion: "Version " + phoneCheckUpdateViewModel.currentVersionString)
+        MacCheckUpToDateView(currentVersion: phoneCheckUpdateViewModel.currentVersionString)
     }
     
     var updateAppMessage: some View {
         MacCheckUpdateNowView(
-            latestVersion: "v" + phoneCheckUpdateViewModel.latestVersionString + ".0",
+            latestVersion: phoneCheckUpdateViewModel.latestVersionString,
             link: Endpoint.appStoreLink
         )
     }
