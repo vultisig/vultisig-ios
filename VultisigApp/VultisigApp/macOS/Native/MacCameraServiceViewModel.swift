@@ -5,12 +5,14 @@
 //  Created by Amol Kumar on 2024-08-15.
 //
 
-#if os(macOS)
 import AVFoundation
+#if os(macOS)
 import AppKit
+#endif
 
 @MainActor
 class MacCameraServiceViewModel: NSObject, ObservableObject {
+#if os(macOS)
     @Published var showCamera = false
     @Published var detectedQRCode: String?
     @Published var isCameraUnavailable = false
@@ -93,8 +95,10 @@ class MacCameraServiceViewModel: NSObject, ObservableObject {
     func getSession() -> AVCaptureSession? {
         return session
     }
+#endif
 }
 
+#if os(macOS)
 extension MacCameraServiceViewModel: AVCaptureVideoDataOutputSampleBufferDelegate {
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }

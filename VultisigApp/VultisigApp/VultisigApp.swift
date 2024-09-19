@@ -11,7 +11,7 @@ import WalletCore
 @main
 
 struct VultisigApp: App {
-    @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.scenePhase) var scenePhase
     
     @StateObject var applicationState = ApplicationState.shared
     @StateObject var vaultDetailViewModel = VaultDetailViewModel()
@@ -22,57 +22,16 @@ struct VultisigApp: App {
     @StateObject var homeViewModel = HomeViewModel()
     @StateObject var settingsDefaultChainViewModel = SettingsDefaultChainViewModel()
     @StateObject var checkUpdateViewModel = CheckUpdateViewModel()
-#if os(macOS)
+    
+    // Mac specific
     @StateObject var macCameraServiceViewModel = MacCameraServiceViewModel()
-#endif
     
     init(){
         //setenv("GODEBUG", "asyncpreemptoff=1",1)
     }
+    
     var body: some Scene {
-        WindowGroup {
-            ContentView()
-                .environmentObject(applicationState) // Shared monolithic mutable state
-                .environmentObject(vaultDetailViewModel)
-                .environmentObject(coinSelectionViewModel)
-                .environmentObject(accountViewModel)
-                .environmentObject(deeplinkViewModel)
-                .environmentObject(settingsViewModel)
-                .environmentObject(homeViewModel)
-                .environmentObject(settingsDefaultChainViewModel)
-                .environmentObject(checkUpdateViewModel)
-#if os(macOS)
-                .environmentObject(macCameraServiceViewModel)
-                .onChange(of: scenePhase) {
-                    switch scenePhase {
-                    case .active:
-                        continueLogin()
-                    case .background:
-                        resetLogin()
-                    default:
-                        break
-                    }
-                }
-                .buttonStyle(BorderlessButtonStyle())
-                .frame(minWidth: 900, minHeight: 600)
-                .onAppear{
-                    NSWindow.allowsAutomaticWindowTabbing = false
-                }
-#endif
-        }
-#if os(iOS)
-        .onChange(of: scenePhase) {
-            switch scenePhase {
-            case .active:
-                continueLogin()
-            case .background:
-                resetLogin()
-            default:
-                break
-            }
-        }
-#endif
-        .modelContainer(sharedModelContainer)
+        content
     }
     
     var sharedModelContainer: ModelContainer = {
@@ -100,11 +59,11 @@ struct VultisigApp: App {
         }
     }()
     
-    private func continueLogin() {
+    func continueLogin() {
         accountViewModel.enableAuth()
     }
     
-    private func resetLogin() {
+    func resetLogin() {
         accountViewModel.revokeAuth()
     }
 }
