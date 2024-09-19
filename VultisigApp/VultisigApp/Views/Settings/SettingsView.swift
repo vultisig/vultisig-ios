@@ -66,9 +66,7 @@ struct SettingsView: View {
     var otherSection: some View {
         VStack(spacing: 16) {
             getTitle("other")
-#if os(macOS)
             checkUpdateCell
-#endif
             shareAppCell
         }
     }
@@ -147,9 +145,19 @@ struct SettingsView: View {
     
     var checkUpdateCell: some View {
         NavigationLink {
-            MacCheckUpdateView()
+            checkUpdateView
         } label: {
             SettingCell(title: "checkForUpdate", icon: "arrow.down.circle.dotted")
+        }
+    }
+    
+    var checkUpdateView: some View {
+        ZStack {
+#if os(iOS)
+            PhoneCheckUpdateView()
+#elseif os(macOS)
+            MacCheckUpdateView()
+#endif
         }
     }
     
