@@ -170,6 +170,8 @@
 		A622C84C2C9BBE3100908332 /* TransactionMemoDetailsView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C84B2C9BBE3100908332 /* TransactionMemoDetailsView+macOS.swift */; };
 		A622C84E2C9BC7C300908332 /* FastVaultEmailView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C84D2C9BC7C300908332 /* FastVaultEmailView+iOS.swift */; };
 		A622C8502C9BC7D600908332 /* FastVaultEmailView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C84F2C9BC7D600908332 /* FastVaultEmailView+macOS.swift */; };
+		A622C8522C9BC9D200908332 /* FastVaultSetPasswordView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8512C9BC9D200908332 /* FastVaultSetPasswordView+iOS.swift */; };
+		A622C8542C9BC9E500908332 /* FastVaultSetPasswordView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8532C9BC9E500908332 /* FastVaultSetPasswordView+macOS.swift */; };
 		A623A09F2BF09FEE00AA2F8D /* NewWalletNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A623A09E2BF09FEE00AA2F8D /* NewWalletNameView.swift */; };
 		A625D9C02C59F2FC0078FBF4 /* GradientSeparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A625D9BF2C59F2FC0078FBF4 /* GradientSeparator.swift */; };
 		A625D9C22C5AD15A0078FBF4 /* KeygenViewInstructions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A625D9C12C5AD15A0078FBF4 /* KeygenViewInstructions.swift */; };
@@ -744,6 +746,8 @@
 		A622C84B2C9BBE3100908332 /* TransactionMemoDetailsView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TransactionMemoDetailsView+macOS.swift"; sourceTree = "<group>"; };
 		A622C84D2C9BC7C300908332 /* FastVaultEmailView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FastVaultEmailView+iOS.swift"; sourceTree = "<group>"; };
 		A622C84F2C9BC7D600908332 /* FastVaultEmailView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FastVaultEmailView+macOS.swift"; sourceTree = "<group>"; };
+		A622C8512C9BC9D200908332 /* FastVaultSetPasswordView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FastVaultSetPasswordView+iOS.swift"; sourceTree = "<group>"; };
+		A622C8532C9BC9E500908332 /* FastVaultSetPasswordView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FastVaultSetPasswordView+macOS.swift"; sourceTree = "<group>"; };
 		A623A09E2BF09FEE00AA2F8D /* NewWalletNameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewWalletNameView.swift; sourceTree = "<group>"; };
 		A625D9BF2C59F2FC0078FBF4 /* GradientSeparator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientSeparator.swift; sourceTree = "<group>"; };
 		A625D9C12C5AD15A0078FBF4 /* KeygenViewInstructions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenViewInstructions.swift; sourceTree = "<group>"; };
@@ -1900,6 +1904,7 @@
 				A622C8452C9BBD2F00908332 /* TransactionMemoView+iOS.swift */,
 				A622C8492C9BBE2800908332 /* TransactionMemoDetailsView+iOS.swift */,
 				A622C84D2C9BC7C300908332 /* FastVaultEmailView+iOS.swift */,
+				A622C8512C9BC9D200908332 /* FastVaultSetPasswordView+iOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -1932,6 +1937,7 @@
 				A622C8472C9BBD3900908332 /* TransactionMemoView+macOS.swift */,
 				A622C84B2C9BBE3100908332 /* TransactionMemoDetailsView+macOS.swift */,
 				A622C84F2C9BC7D600908332 /* FastVaultEmailView+macOS.swift */,
+				A622C8532C9BC9E500908332 /* FastVaultSetPasswordView+macOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -2683,6 +2689,7 @@
 				A622C8362C9BB76A00908332 /* CoinPickerView+iOS.swift in Sources */,
 				A622C8342C9BB28000908332 /* VultisigApp+macOS.swift in Sources */,
 				A6980C262BC0848F00F452AB /* SettingCell.swift in Sources */,
+				A622C8522C9BC9D200908332 /* FastVaultSetPasswordView+iOS.swift in Sources */,
 				A60CA7E92BB0F60100FDEB5C /* ViewExtension.swift in Sources */,
 				A65BA9882BAAA0B700B2D8AA /* SendCryptoSigningErrorView.swift in Sources */,
 				DE64A4C62BA7E0E400C342E3 /* KeygenPeerDiscoveryViewModel.swift in Sources */,
@@ -3076,6 +3083,7 @@
 				46DE08902BD0D03E00AE8BDE /* CosmosService.swift in Sources */,
 				A622C8462C9BBD2F00908332 /* TransactionMemoView+iOS.swift in Sources */,
 				465B09A92B7C176700952DD9 /* SendTransaction.swift in Sources */,
+				A622C8542C9BC9E500908332 /* FastVaultSetPasswordView+macOS.swift in Sources */,
 				A622C83C2C9BB9C100908332 /* AddressBookView+macOS.swift in Sources */,
 				A69FBB9A2C8AD63C00A4B78B /* CreateVaultView+macOS.swift in Sources */,
 				B59173312C641F3D007100E3 /* CoinService.swift in Sources */,
