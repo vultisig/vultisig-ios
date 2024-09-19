@@ -14,52 +14,16 @@ struct AddressBookView: View {
     
     @Query var savedAddresses: [AddressBookItem]
     
-    @Environment(\.modelContext) var modelContext
-    @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
-    
     @State var title: String = ""
     @State var address: String = ""
     @State var isEditing = false
-    
     @State var coin: Coin?
     
+    @Environment(\.modelContext) var modelContext
+    @EnvironmentObject var coinSelectionViewModel: CoinSelectionViewModel
+    
     var body: some View {
-        ZStack(alignment: .bottom) {
-            Background()
-            main
-        }
-#if os(iOS)
-        .navigationTitle(NSLocalizedString("addressBook", comment: ""))
-        .toolbar {
-            if savedAddresses.count != 0 {
-                ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                    navigationButton
-                }
-            }
-        }
-#endif
-        .onDisappear {
-            withAnimation {
-                isEditing = false
-            }
-        }
-    }
-    
-    var main: some View {
-        VStack(spacing: 0) {
-#if os(macOS)
-            headerMac
-#endif
-            view
-            addAddressButton
-        }
-    }
-    
-    var headerMac: some View {
-        AddressBookHeader(
-            count: savedAddresses.count, 
-            isEditing: $isEditing
-        )
+        content
     }
     
     var view: some View {
@@ -88,43 +52,6 @@ struct AddressBookView: View {
         }
     }
     
-    var list: some View {
-        let filteredAddress = savedAddresses.filter {
-            coin == nil || (coin != nil && $0.coinMeta.chain.chainType == coin?.chainType)
-        }
-        
-        return ZStack {
-            if filteredAddress.count > 0 {
-                List {
-                    ForEach(filteredAddress.sorted(by: {
-                        $0.order < $1.order
-                    }), id: \.id) { address in
-                        AddressBookCell(
-                            address: address,
-                            shouldReturnAddress: shouldReturnAddress,
-                            isEditing: isEditing,
-                            returnAddress: $returnAddress
-                        )
-                    }
-                    .onMove(perform: isEditing ? move: nil)
-                    .padding(.horizontal, 15)
-#if os(macOS)
-                    .padding(.horizontal, 18)
-#endif
-                    .background(Color.backgroundBlue)
-                }
-                .listStyle(PlainListStyle())
-                .buttonStyle(BorderlessButtonStyle())
-                .colorScheme(.dark)
-                .scrollContentBackground(.hidden)
-                .padding(.top, 30)
-                .background(Color.backgroundBlue.opacity(0.9))
-            } else {
-                emptyViewChain
-            }
-        }
-    }
-    
     var navigationButton: some View {
         Button {
             toggleEdit()
@@ -149,27 +76,13 @@ struct AddressBookView: View {
             .foregroundColor(.neutral0)
     }
     
-    var addAddressButton: some View {
-        NavigationLink {
-            AddAddressBookView(count: savedAddresses.count, coin: coin?.toCoinMeta())
-        } label: {
-            FilledButton(title: "addAddress")
-                .padding(.horizontal, 16)
-                .padding(.vertical, 30)
-#if os(macOS)
-                .padding(.horizontal, 24)
-#endif
-        }
-        .background(Color.backgroundBlue)
-    }
-    
     private func toggleEdit() {
         withAnimation {
             isEditing.toggle()
         }
     }
     
-    private func move(from: IndexSet, to: Int) {
+    func move(from: IndexSet, to: Int) {
         var s = savedAddresses.sorted(by: { $0.order < $1.order })
         s.move(fromOffsets: from, toOffset: to)
         for (index, item) in s.enumerated() {
