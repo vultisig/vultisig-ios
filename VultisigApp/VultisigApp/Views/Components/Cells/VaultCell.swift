@@ -11,19 +11,19 @@ struct VaultCell: View {
     let vault: Vault
     let isEditing: Bool
     
-    @State var isFastVault: Bool = false
-    @State var devicesInfo: [DeviceInfo] = []
+    @StateObject var viewModel = VaultCellViewModel()
     
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 4) {
             rearrange
             title
-            Spacer()
             
-            if isFastVault {
+            if viewModel.isFastVault {
                 fastVaultLabel
             }
             
+            Spacer()
+            partAssignedCell
             actions
         }
         .frame(height: 48)
@@ -49,12 +49,21 @@ struct VaultCell: View {
         Text(vault.name.capitalized)
             .font(.body16MenloBold)
             .foregroundColor(.neutral100)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .multilineTextAlignment(.leading)
+            .lineLimit(1)
     }
     
     var actions: some View {
         HStack(spacing: 8) {
             selectOption
         }
+    }
+    
+    var partAssignedCell: some View {
+        Text("Part \(viewModel.order)of\(viewModel.totalSigners)")
+            .font(.body14Menlo)
+            .foregroundColor(.body)
     }
     
     var fastVaultLabel: some View {
@@ -65,6 +74,7 @@ struct VaultCell: View {
             .padding(.horizontal, 2)
             .background(Color.blue200)
             .cornerRadius(5)
+            .lineLimit(1)
     }
     
     var selectOption: some View {
@@ -74,16 +84,7 @@ struct VaultCell: View {
     }
     
     private func setData() {
-        devicesInfo = vault.signers.enumerated().map { index, signer in
-            DeviceInfo(Index: index, Signer: signer)
-        }
-        
-        for device in devicesInfo {
-            if device.Signer.lowercased().hasPrefix("server-") {
-                isFastVault = true
-                return
-            }
-        }
+        viewModel.setupCell(vault)
     }
 }
 
