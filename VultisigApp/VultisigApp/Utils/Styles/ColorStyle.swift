@@ -22,6 +22,7 @@ extension Color {
     static let gray500 = Color(red: 0.96, green: 0.96, blue: 0.96)
     static let gray400 = Color(red: 0.92, green: 0.92, blue: 0.93)
     
+    static let body = Color(hex: "BBC1C7")
     static let neutral0 = Color(hex: "FFFFFF")
     static let neutral100 = Color(hex: "F3F4F5")
     static let neutral200 = Color(hex: "EBECED")
