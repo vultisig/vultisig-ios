@@ -108,14 +108,14 @@ final class Vault: ObservableObject, Codable {
         }
     }
 
-    static func getUniqueVaultName(modelContext: ModelContext) -> String {
+    static func getUniqueVaultName(modelContext: ModelContext, state: SetupVaultState) -> String {
         let fetchVaultDescriptor = FetchDescriptor<Vault>()
         do{
             let vaults = try modelContext.fetch(fetchVaultDescriptor)
             let start = vaults.count
             var idx = start
             repeat {
-                let vaultName = "Vault #\(idx + 1)"
+                let vaultName = "\(state.title.capitalized) Vault #\(idx + 1)"
                 let vaultExist = vaults.contains {v in
                     v.name == vaultName && !v.pubKeyECDSA.isEmpty
                 }
