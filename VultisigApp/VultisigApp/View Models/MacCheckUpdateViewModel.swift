@@ -1,5 +1,5 @@
 //
-//  CheckUpdateViewModel.swift
+//  MacCheckUpdateViewModel.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2024-09-11.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-class CheckUpdateViewModel: ObservableObject {
+class MacCheckUpdateViewModel: ObservableObject {
     @Published var showError: Bool = false
     @Published var showDetails: Bool = false
     @Published var showUpdateAlert: Bool = false

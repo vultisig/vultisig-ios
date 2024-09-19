@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct MacCheckUpToDateView: View {
-    @EnvironmentObject var checkUpdateViewModel: CheckUpdateViewModel
+    let currentVersion: String
     
     var body: some View {
         VStack(spacing: 8) {
@@ -34,13 +34,12 @@ struct MacCheckUpToDateView: View {
     }
     
     var upToDateDescription: some View {
-        Text(checkUpdateViewModel.currentVersion)
+        Text(currentVersion)
             .font(.body12Montserrat)
             .foregroundColor(.neutral0)
     }
 }
 
 #Preview {
-    MacCheckUpToDateView()
-        .environmentObject(CheckUpdateViewModel())
+    MacCheckUpToDateView(currentVersion: "v1.0.1")
 }
