@@ -87,7 +87,7 @@ struct PhoneCheckUpdateView: View {
     var updateAppMessage: some View {
         UpdateCheckUpdateNowView(
             latestVersion: phoneCheckUpdateViewModel.latestVersionString,
-            link: Endpoint.appStoreLink
+            link: StaticURL.AppStoreVultisigURL
         )
     }
     

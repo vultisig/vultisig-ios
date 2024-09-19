@@ -9,7 +9,7 @@ import SwiftUI
 
 struct UpdateCheckUpdateNowView: View {
     let latestVersion: String
-    let link: String
+    let link: URL
     
     var body: some View {
         VStack(spacing: 8) {
@@ -42,7 +42,7 @@ struct UpdateCheckUpdateNowView: View {
     }
     
     var updateButton: some View {
-        return Link(destination: URL(string: link)!) {
+        return Link(destination: link) {
             FilledButton(title: "updateNow")
         }
         .padding(40)
@@ -50,5 +50,5 @@ struct UpdateCheckUpdateNowView: View {
 }
 
 #Preview {
-    UpdateCheckUpdateNowView(latestVersion: "v1.2.2", link: Endpoint.appStoreLink)
+    UpdateCheckUpdateNowView(latestVersion: "v1.2.2", link: StaticURL.AppStoreVultisigURL)
 }

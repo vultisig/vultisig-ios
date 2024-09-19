@@ -96,7 +96,7 @@ struct MacCheckUpdateView: View {
         
         return UpdateCheckUpdateNowView(
             latestVersion: macCheckUpdateViewModel.latestVersion,
-            link: url
+            link: URL(string: url)!
         )
     }
     

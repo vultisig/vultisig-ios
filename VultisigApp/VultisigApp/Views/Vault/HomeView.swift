@@ -41,7 +41,7 @@ struct HomeView: View {
             NSLocalizedString("newUpdateAvailable", comment: ""),
             isPresented: $phoneCheckUpdateViewModel.showUpdateAlert
         ) {
-            Link(destination: URL(string: Endpoint.appStoreLink)!) {
+            Link(destination: StaticURL.AppStoreVultisigURL) {
                 Text(NSLocalizedString("updateNow", comment: ""))
             }
             
