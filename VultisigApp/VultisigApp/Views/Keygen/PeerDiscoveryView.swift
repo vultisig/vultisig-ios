@@ -29,8 +29,7 @@ struct PeerDiscoveryView: View {
     @Environment(\.displayScale) var displayScale
     
 #if os(iOS)
-    @State private var orientation = UIDevice.current.orientation
-    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+    @State var orientation = UIDevice.current.orientation
 #endif
     
     let columns = [
@@ -42,74 +41,24 @@ struct PeerDiscoveryView: View {
     let logger = Logger(subsystem: "peers-discory", category: "communication")
     
     var body: some View {
-        ZStack {
-            GeometryReader { proxy in
-                Background()
-                    .onAppear {
-                        setData(proxy)
-                    }
+        content
+            .task {
+                viewModel.startDiscovery()
             }
-            
-            main
-        }
-#if os(iOS)
-        .navigationTitle(getTitle())
-        .navigationBarTitleDisplayMode(.inline)
-        .detectOrientation($orientation)
-        .onChange(of: viewModel.selections) {
-            setNumberOfPairedDevices()
-        }
-        .onChange(of: orientation) { oldValue, newValue in
-            setData()
-        }
-        .toolbar {
-            // only show the QR share button when it is in peer discovery
-            if viewModel.status == .WaitingForDevices {
-                ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                    NavigationQRShareButton(
-                        vault: vault, 
-                        type: .Keygen,
-                        renderedImage: shareSheetViewModel.renderedImage
-                    )
-                }
+            .onAppear {
+                viewModel.setData(
+                    vault: vault,
+                    tssType: tssType, 
+                    state: selectedTab,
+                    participantDiscovery: participantDiscovery,
+                    fastVaultPassword: fastVaultPassword, 
+                    fastVaultEmail: fastVaultEmail
+                )
+                setData()
             }
-        }
-#endif
-        .task {
-            viewModel.startDiscovery()
-        }
-        .onAppear {
-            viewModel.setData(
-                vault: vault,
-                tssType: tssType, 
-                state: selectedTab,
-                participantDiscovery: participantDiscovery,
-                fastVaultPassword: fastVaultPassword, 
-                fastVaultEmail: fastVaultEmail
-            )
-            setData()
-        }
-        .onDisappear {
-            viewModel.stopMediator()
-        }
-    }
-    
-    var main: some View {
-        VStack {
-#if os(macOS)
-            headerMac
-#endif
-            states
-        }
-    }
-    
-    var headerMac: some View {
-        PeerDiscoveryHeader(
-            vault: vault,
-            selectedTab: selectedTab, 
-            viewModel: viewModel,
-            shareSheetViewModel: shareSheetViewModel
-        )
+            .onDisappear {
+                viewModel.stopMediator()
+            }
     }
     
     var states: some View {
@@ -132,7 +81,7 @@ struct PeerDiscoveryView: View {
     
     var waitingForDevices: some View {
         VStack(spacing: 0) {
-            content
+            views
             bottomButton
         }
     }
@@ -141,33 +90,13 @@ struct PeerDiscoveryView: View {
         KeyGenSummaryView(state: selectedTab, viewModel: viewModel)
     }
     
-    var content: some View {
+    var views: some View {
         ZStack {
             if isLandscape {
                 landscapeContent
             } else {
                 portraitContent
             }
-        }
-    }
-    
-    var landscapeContent: some View {
-        HStack {
-            qrCode
-            
-#if os(iOS)
-            VStack {
-                list
-                    .padding(20)
-                vaultDetail
-            }
-#elseif os(macOS)
-            VStack {
-                vaultDetail
-                list
-            }
-            .padding(40)
-#endif
         }
     }
     
@@ -205,50 +134,6 @@ struct PeerDiscoveryView: View {
         LookingForDevicesLoader(selectedTab: selectedTab)
     }
     
-    var paringBarcode: some View {
-        ZStack {
-            qrCodeImage?
-                .resizable()
-#if os(iOS)
-                .background(Color.blue600)
-                .frame(maxWidth: isPhoneSE ? 250 : nil)
-                .frame(maxHeight: isPhoneSE ? 250 : nil)
-                .aspectRatio(
-                    contentMode:
-                        participantDiscovery.peersFound.count == 0 && idiom == .phone ?
-                        .fill :
-                            .fit
-                )
-                .padding(2)
-                .frame(maxHeight: .infinity)
-#elseif os(macOS)
-                .background(Color.blue600)
-                .frame(maxHeight: .infinity)
-                .padding(3)
-#endif
-                .background(Color.neutral0)
-                .cornerRadius(10)
-                .padding()
-                .background(Color.blue600)
-                .cornerRadius(15)
-                .overlay (
-                    RoundedRectangle(cornerRadius: 15)
-                        .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [58]))
-                )
-                .padding(1)
-#if os(macOS)
-                .aspectRatio(contentMode: .fit)
-#endif
-        }
-        .cornerRadius(10)
-        .shadow(radius: 5)
-#if os(iOS)
-        .padding(isPhoneSE ? 8 : 20)
-#elseif os(macOS)
-        .padding(40)
-#endif
-    }
-    
     var deviceList: some View {
         ZStack {
             if isLandscape {
@@ -257,59 +142,6 @@ struct PeerDiscoveryView: View {
                 scrollList
             }
         }
-    }
-    
-    var scrollList: some View {
-        ScrollView(.horizontal) {
-            HStack(spacing: 18) {
-                devices
-            }
-            .padding(.horizontal, 30)
-        }
-#if os(iOS)
-        .padding(idiom == .phone ? 0 : 20)
-#elseif os(macOS)
-        .padding(20)
-#endif
-    }
-    
-    var gridList: some View {
-        ScrollView {
-            LazyVGrid(columns: columns, spacing: 8) {
-                devices
-            }
-#if os(iOS)
-            .padding(idiom == .phone ? 0 : 20)
-#endif
-        }
-        .scrollIndicators(.hidden)
-    }
-    
-    var networkPrompts: some View {
-        NetworkPrompts(selectedNetwork: $viewModel.selectedNetwork)
-            .onChange(of: viewModel.selectedNetwork) {
-                print("selected network changed: \(viewModel.selectedNetwork)")
-                viewModel.restartParticipantDiscovery()
-                setData()
-            }
-#if os(iOS)
-            .padding(.top, idiom == .pad ? 10 : 2)
-#elseif os(macOS)
-            .padding(.top, 10)
-#endif
-    }
-    
-    var devices: some View {
-        ForEach(participantDiscovery.peersFound, id: \.self) { peer in
-            Button {
-                viewModel.handleSelection(peer)
-            } label: {
-                PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
-            }
-        }
-#if os(iOS)
-        .padding(idiom == .phone ? 0 : 8)
-#endif
     }
     
     var instructions: some View {
@@ -326,23 +158,6 @@ struct PeerDiscoveryView: View {
         case .secure:
             return viewModel.selections.count < 2
         }
-    }
-    
-    var bottomButton: some View {
-        Button(action: {
-            viewModel.showSummary()
-        }) {
-            FilledButton(title: "continue")
-        }
-        .padding(.horizontal, 40)
-        .padding(.top, 20)
-        .padding(.bottom, 10)
-        .disabled(disableContinueButton())
-        .opacity(disableContinueButton() ? 0.8 : 1)
-        .grayscale(disableContinueButton() ? 1 : 0)
-#if os(macOS)
-        .padding(.bottom, 30)
-#endif
     }
     
     var keygenView: some View {
@@ -373,25 +188,7 @@ struct PeerDiscoveryView: View {
             .multilineTextAlignment(.center)
     }
     
-    private func setData() {
-#if os(iOS)
-        updateScreenSize()
-#endif
-        
-        qrCodeImage = viewModel.getQrImage(size: 100)
-        
-        guard let qrCodeImage else {
-            return
-        }
-        
-        shareSheetViewModel.render(
-            title: "joinKeygen",
-            qrCodeImage: qrCodeImage,
-            displayScale: displayScale
-        )
-    }
-    
-    private func getTitle() -> String {
+    func getTitle() -> String {
         NSLocalizedString("keygenFor", comment: "") +
         " " +
         selectedTab.title +
@@ -413,31 +210,15 @@ struct PeerDiscoveryView: View {
         }
     }
     
-    private func setData(_ proxy: GeometryProxy) {
+    func setData(_ proxy: GeometryProxy) {
         let screenWidth = proxy.size.width
         
         if screenWidth<380 {
             isPhoneSE = true
         }
     }
-    
-#if os(iOS)
-    private func updateScreenSize() {
-        screenWidth = UIScreen.main.bounds.size.width
-        screenHeight = UIScreen.main.bounds.size.height
-        
-        if screenWidth>1100 && idiom == .pad {
-            isLandscape = true
-        } else {
-            isLandscape = false
-        }
-    }
-#endif
 }
 
 #Preview {
     PeerDiscoveryView(tssType: .Keygen, vault: Vault.example, selectedTab: .fast, fastVaultEmail: nil, fastVaultPassword: nil)
-#if os(macOS)
-        .frame(minWidth: 900, minHeight: 600)
-#endif
 }
