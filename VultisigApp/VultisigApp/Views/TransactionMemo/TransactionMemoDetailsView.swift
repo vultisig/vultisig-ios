@@ -21,60 +21,31 @@ struct TransactionMemoDetailsView: View {
     }
     
     var body: some View {
-        ZStack {
-            Background()
-            view
-        }
-        .gesture(DragGesture())
-#if os(iOS)
-        .toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                Button {
-                    hideKeyboard()
-                } label: {
-                    Text(NSLocalizedString("done", comment: "Done"))
+        content
+            .alert(isPresented: $transactionMemoViewModel.showAlert) {
+                alert
+            }
+            .alert(isPresented: $showInvalidFormAlert) {
+                invalidFormAlert
+            }
+            .onChange(of: selectedFunctionMemoType) {
+                switch selectedFunctionMemoType {
+                case .bond:
+                    txMemoInstance = .bond(TransactionMemoBond())
+                case .unbond:
+                    txMemoInstance = .unbond(TransactionMemoUnbond())
+                case .leave:
+                    txMemoInstance = .leave(TransactionMemoLeave())
+                case .custom:
+                    txMemoInstance = .custom(TransactionMemoCustom())
+                case .vote:
+                    txMemoInstance = .vote(TransactionMemoVote())
+                case .addPool:
+                    txMemoInstance = .addPool(TransactionMemoAddPool())
+                case .withdrawPool:
+                    txMemoInstance = .withdrawPool(TransactionMemoWithdrawPool())
                 }
             }
-        }
-#endif
-        .alert(isPresented: $transactionMemoViewModel.showAlert) {
-            alert
-        }
-        .alert(isPresented: $showInvalidFormAlert) {
-            invalidFormAlert
-        }
-        .onChange(of: selectedFunctionMemoType) {
-            switch selectedFunctionMemoType {
-            case .bond:
-                txMemoInstance = .bond(TransactionMemoBond())
-            case .unbond:
-                txMemoInstance = .unbond(TransactionMemoUnbond())
-            case .leave:
-                txMemoInstance = .leave(TransactionMemoLeave())
-            case .custom:
-                txMemoInstance = .custom(TransactionMemoCustom())
-            case .vote:
-                txMemoInstance = .vote(TransactionMemoVote())
-            case .addPool:
-                txMemoInstance = .addPool(TransactionMemoAddPool())
-            case .withdrawPool:
-                txMemoInstance = .withdrawPool(TransactionMemoWithdrawPool())
-                
-                
-                
-            }
-        }
-    }
-    
-    var view: some View {
-        VStack {
-            fields
-            button
-        }
-#if os(macOS)
-        .padding(.horizontal, 25)
-#endif
     }
     
     var alert: Alert {

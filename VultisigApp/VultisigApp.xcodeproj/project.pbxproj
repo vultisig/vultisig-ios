@@ -166,6 +166,8 @@
 		A622C8442C9BBC0C00908332 /* EditAddressBookView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8432C9BBC0C00908332 /* EditAddressBookView+macOS.swift */; };
 		A622C8462C9BBD2F00908332 /* TransactionMemoView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8452C9BBD2F00908332 /* TransactionMemoView+iOS.swift */; };
 		A622C8482C9BBD3900908332 /* TransactionMemoView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8472C9BBD3900908332 /* TransactionMemoView+macOS.swift */; };
+		A622C84A2C9BBE2800908332 /* TransactionMemoDetailsView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8492C9BBE2800908332 /* TransactionMemoDetailsView+iOS.swift */; };
+		A622C84C2C9BBE3100908332 /* TransactionMemoDetailsView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C84B2C9BBE3100908332 /* TransactionMemoDetailsView+macOS.swift */; };
 		A623A09F2BF09FEE00AA2F8D /* NewWalletNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A623A09E2BF09FEE00AA2F8D /* NewWalletNameView.swift */; };
 		A625D9C02C59F2FC0078FBF4 /* GradientSeparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A625D9BF2C59F2FC0078FBF4 /* GradientSeparator.swift */; };
 		A625D9C22C5AD15A0078FBF4 /* KeygenViewInstructions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A625D9C12C5AD15A0078FBF4 /* KeygenViewInstructions.swift */; };
@@ -736,6 +738,8 @@
 		A622C8432C9BBC0C00908332 /* EditAddressBookView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditAddressBookView+macOS.swift"; sourceTree = "<group>"; };
 		A622C8452C9BBD2F00908332 /* TransactionMemoView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TransactionMemoView+iOS.swift"; sourceTree = "<group>"; };
 		A622C8472C9BBD3900908332 /* TransactionMemoView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TransactionMemoView+macOS.swift"; sourceTree = "<group>"; };
+		A622C8492C9BBE2800908332 /* TransactionMemoDetailsView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TransactionMemoDetailsView+iOS.swift"; sourceTree = "<group>"; };
+		A622C84B2C9BBE3100908332 /* TransactionMemoDetailsView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TransactionMemoDetailsView+macOS.swift"; sourceTree = "<group>"; };
 		A623A09E2BF09FEE00AA2F8D /* NewWalletNameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewWalletNameView.swift; sourceTree = "<group>"; };
 		A625D9BF2C59F2FC0078FBF4 /* GradientSeparator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientSeparator.swift; sourceTree = "<group>"; };
 		A625D9C12C5AD15A0078FBF4 /* KeygenViewInstructions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenViewInstructions.swift; sourceTree = "<group>"; };
@@ -1891,6 +1895,7 @@
 				A622C83D2C9BBB2500908332 /* AddAddressBookView+iOS.swift */,
 				A622C8412C9BBC0100908332 /* EditAddressBookView+iOS.swift */,
 				A622C8452C9BBD2F00908332 /* TransactionMemoView+iOS.swift */,
+				A622C8492C9BBE2800908332 /* TransactionMemoDetailsView+iOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -1920,6 +1925,7 @@
 				A622C83F2C9BBB2E00908332 /* AddAddressBookView+macOS.swift */,
 				A622C8432C9BBC0C00908332 /* EditAddressBookView+macOS.swift */,
 				A622C8472C9BBD3900908332 /* TransactionMemoView+macOS.swift */,
+				A622C84B2C9BBE3100908332 /* TransactionMemoDetailsView+macOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -2738,6 +2744,7 @@
 				A69FBBC82C8BB76000A4B78B /* CoverView+macOS.swift in Sources */,
 				DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */,
 				46B60BC02BBB20130043EBBA /* RpcEvmService.swift in Sources */,
+				A622C84A2C9BBE2800908332 /* TransactionMemoDetailsView+iOS.swift in Sources */,
 				A6ECA19C2C93FB7200456110 /* Search+iOS.swift in Sources */,
 				A6951E882C52DB9D007292E7 /* Search.swift in Sources */,
 				B53D8CC82BF7F21500B795D3 /* TransactionMemoBond.swift in Sources */,
@@ -2937,6 +2944,7 @@
 				A6833D822C65B199002029E1 /* AddressBookHeader.swift in Sources */,
 				4606B3B02B80465E0045094D /* UTXOTransactionsService.swift in Sources */,
 				DEEFF4FD2B9835DE0015692E /* THORChainSwapChainExtension.swift in Sources */,
+				A622C84C2C9BBE3100908332 /* TransactionMemoDetailsView+macOS.swift in Sources */,
 				A622C8382C9BB83800908332 /* CoinPickerView+macOS.swift in Sources */,
 				A61BC81B2BA26D9900484689 /* ChainSelectionCell.swift in Sources */,
 				A6182F4F2C9296350059BFDD /* StyledIntegerField+iOS.swift in Sources */,
