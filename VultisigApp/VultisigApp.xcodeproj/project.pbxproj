@@ -160,6 +160,8 @@
 		A622C8382C9BB83800908332 /* CoinPickerView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8372C9BB83800908332 /* CoinPickerView+macOS.swift */; };
 		A622C83A2C9BB9B400908332 /* AddressBookView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8392C9BB9B400908332 /* AddressBookView+iOS.swift */; };
 		A622C83C2C9BB9C100908332 /* AddressBookView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C83B2C9BB9C100908332 /* AddressBookView+macOS.swift */; };
+		A622C83E2C9BBB2500908332 /* AddAddressBookView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C83D2C9BBB2500908332 /* AddAddressBookView+iOS.swift */; };
+		A622C8402C9BBB2E00908332 /* AddAddressBookView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C83F2C9BBB2E00908332 /* AddAddressBookView+macOS.swift */; };
 		A623A09F2BF09FEE00AA2F8D /* NewWalletNameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A623A09E2BF09FEE00AA2F8D /* NewWalletNameView.swift */; };
 		A625D9C02C59F2FC0078FBF4 /* GradientSeparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A625D9BF2C59F2FC0078FBF4 /* GradientSeparator.swift */; };
 		A625D9C22C5AD15A0078FBF4 /* KeygenViewInstructions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A625D9C12C5AD15A0078FBF4 /* KeygenViewInstructions.swift */; };
@@ -724,6 +726,8 @@
 		A622C8372C9BB83800908332 /* CoinPickerView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoinPickerView+macOS.swift"; sourceTree = "<group>"; };
 		A622C8392C9BB9B400908332 /* AddressBookView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AddressBookView+iOS.swift"; sourceTree = "<group>"; };
 		A622C83B2C9BB9C100908332 /* AddressBookView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AddressBookView+macOS.swift"; sourceTree = "<group>"; };
+		A622C83D2C9BBB2500908332 /* AddAddressBookView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AddAddressBookView+iOS.swift"; sourceTree = "<group>"; };
+		A622C83F2C9BBB2E00908332 /* AddAddressBookView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AddAddressBookView+macOS.swift"; sourceTree = "<group>"; };
 		A623A09E2BF09FEE00AA2F8D /* NewWalletNameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewWalletNameView.swift; sourceTree = "<group>"; };
 		A625D9BF2C59F2FC0078FBF4 /* GradientSeparator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientSeparator.swift; sourceTree = "<group>"; };
 		A625D9C12C5AD15A0078FBF4 /* KeygenViewInstructions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenViewInstructions.swift; sourceTree = "<group>"; };
@@ -1876,6 +1880,7 @@
 				A622C8352C9BB76A00908332 /* CoinPickerView+iOS.swift */,
 				A6386D9F2C90234400DDD58E /* Components */,
 				A622C8392C9BB9B400908332 /* AddressBookView+iOS.swift */,
+				A622C83D2C9BBB2500908332 /* AddAddressBookView+iOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -1902,6 +1907,7 @@
 				A6386DA22C90235600DDD58E /* Components */,
 				A622C8372C9BB83800908332 /* CoinPickerView+macOS.swift */,
 				A622C83B2C9BB9C100908332 /* AddressBookView+macOS.swift */,
+				A622C83F2C9BBB2E00908332 /* AddAddressBookView+macOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -2842,6 +2848,7 @@
 				A6966D312BA4048800903CA4 /* SwapCryptoDetailsView.swift in Sources */,
 				A5F97C8E2BBF0BCF000C30DF /* BalanceService.swift in Sources */,
 				DEEDAEE12B8AF7EF005170E8 /* evm.swift in Sources */,
+				A622C83E2C9BBB2500908332 /* AddAddressBookView+iOS.swift in Sources */,
 				465036BB2BCF968E00856B34 /* BigInt.swift in Sources */,
 				A6966D2F2BA4045C00903CA4 /* SwapCryptoView.swift in Sources */,
 				46F8F7282B9A011B0099454E /* ThorchainBroadcastTransactionService.swift in Sources */,
@@ -3102,6 +3109,7 @@
 				A588F2DB2BEE8090002EEC60 /* OneInchSwapPayload.swift in Sources */,
 				A6725D3E2C3FB61900D47716 /* AddressBookItem.swift in Sources */,
 				A62D6B052BFE7C5E00F24E51 /* ChainDetailActionButtons.swift in Sources */,
+				A622C8402C9BBB2E00908332 /* AddAddressBookView+macOS.swift in Sources */,
 				A6F9E7A52BED6BC800BA36E1 /* SetupVaultTabView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
