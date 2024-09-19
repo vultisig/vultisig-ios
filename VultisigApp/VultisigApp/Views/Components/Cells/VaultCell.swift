@@ -79,7 +79,7 @@ struct VaultCell: View {
         }
         
         for device in devicesInfo {
-            if device.Signer.contains("Server-") {
+            if device.Signer.lowercased().hasPrefix("server-") {
                 isFastVault = true
                 return
             }
