@@ -17,47 +17,20 @@ struct JoinKeysignView: View {
     let logger = Logger(subsystem: "join-keysign", category: "communication")
 
     var body: some View {
-        ZStack {
-            Background()
-            main
-        }
-#if os(iOS)
-        .navigationTitle(NSLocalizedString("joinKeySign", comment: "Join Keysign"))
-        .toolbar {
-            
-            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                NavigationHelpButton()
+        content
+            .onAppear {
+                setData()
             }
-        }
-#endif
-        .onAppear {
-            setData()
-        }
-        .task {
-            do{
-                _ = try await ThorchainService.shared.getTHORChainChainID()
-            } catch {
-                print("fail to get thorchain network id, \(error.localizedDescription)")
+            .task {
+                do{
+                    _ = try await ThorchainService.shared.getTHORChainChainID()
+                } catch {
+                    print("fail to get thorchain network id, \(error.localizedDescription)")
+                }
             }
-        }
-        .onDisappear(){
-            viewModel.stopJoiningKeysign()
-        }
-    }
-    
-    var main: some View {
-        VStack {
-#if os(macOS)
-            headerMac
-#endif
-            Spacer()
-            states
-            Spacer()
-        }
-    }
-    
-    var headerMac: some View {
-        JoinKeygenHeader(title: "joinKeySign")
+            .onDisappear(){
+                viewModel.stopJoiningKeysign()
+            }
     }
     
     var states: some View {

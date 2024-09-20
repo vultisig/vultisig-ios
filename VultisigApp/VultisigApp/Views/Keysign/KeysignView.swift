@@ -16,12 +16,15 @@ struct KeysignView: View {
     let transferViewModel: TransferViewModel?
     let encryptionKeyHex: String
     
-    
     @StateObject var viewModel = KeysignViewModel()
     
     @State var showAlert = false
     
     var body: some View {
+        container
+    }
+    
+    var content: some View {
         ZStack {
             switch viewModel.status {
             case .CreatingInstance:
@@ -40,23 +43,11 @@ struct KeysignView: View {
             
             PopupCapsule(text: "urlCopied", showPopup: $showAlert)
         }
-        .onAppear {
-            setData()
-#if os(iOS)
-            UIApplication.shared.isIdleTimerDisabled = true
-#endif
-        }
         .task {
             await viewModel.startKeysign()
         }
         .onChange(of: viewModel.txid) {
             movetoDoneView()
-        }
-        .onDisappear(){
-            viewModel.stopMessagePuller()
-#if os(iOS)
-            UIApplication.shared.isIdleTimerDisabled = false
-#endif
         }
     }
     
@@ -78,7 +69,7 @@ struct KeysignView: View {
         JoinKeysignDoneView(vault: vault, viewModel: viewModel, showAlert: $showAlert)
     }
     
-    private func setData() {
+    func setData() {
         guard let keysignPayload, keysignPayload.vaultPubKeyECDSA == vault.pubKeyECDSA else {
             viewModel.status = .KeysignVaultMismatch
             return
@@ -117,5 +108,6 @@ struct KeysignView: View {
         messsageToSign: ["message"],
         keysignPayload: nil,
         transferViewModel: nil,
-        encryptionKeyHex: "")
+        encryptionKeyHex: ""
+    )
 }
