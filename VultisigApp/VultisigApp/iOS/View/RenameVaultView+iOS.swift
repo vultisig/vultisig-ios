@@ -23,7 +23,7 @@ extension RenameVaultView {
     
     var view: some View {
         VStack {
-            content
+            fields
             Spacer()
             button
         }

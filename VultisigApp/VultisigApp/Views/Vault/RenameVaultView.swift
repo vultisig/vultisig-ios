@@ -26,7 +26,7 @@ struct RenameVaultView: View {
             }
     }
     
-    var content: some View {
+    var fields: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(NSLocalizedString("vaultName", comment: ""))
                 .font(.body14MontserratMedium)
