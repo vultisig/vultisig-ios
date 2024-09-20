@@ -64,10 +64,10 @@ struct PeerDiscoveryView: View {
     var states: some View {
         VStack {
             switch (viewModel.status, selectedTab.hasOtherDevices) {
+            case (.WaitingForDevices, false): /// Direct to Keygen for FastVaults
+                keygenView
             case (.WaitingForDevices, true):
                 waitingForDevices
-            case (.WaitingForDevices, false):
-                summary
             case (.Summary, _):
                 summary
             case (.Keygen, _):

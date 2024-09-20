@@ -27,7 +27,7 @@ struct KeygenView: View {
     let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
     let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
     
-    @State var progressCounter: Double = 0
+    @State var progressCounter: Double = 1
     @State var showProgressRing = true
     
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
