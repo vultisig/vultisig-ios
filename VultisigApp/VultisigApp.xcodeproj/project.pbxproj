@@ -373,6 +373,8 @@
 		A6C6708E2C9CFD0A00F59B6A /* KeysignView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C6708D2C9CFD0A00F59B6A /* KeysignView+macOS.swift */; };
 		A6C670902C9CFE0B00F59B6A /* HomeView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C6708F2C9CFE0B00F59B6A /* HomeView+iOS.swift */; };
 		A6C670922C9CFE1600F59B6A /* HomeView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C670912C9CFE1600F59B6A /* HomeView+macOS.swift */; };
+		A6C670942C9D080600F59B6A /* VaultDetailView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C670932C9D080600F59B6A /* VaultDetailView+iOS.swift */; };
+		A6C670962C9D081000F59B6A /* VaultDetailView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C670952C9D081000F59B6A /* VaultDetailView+macOS.swift */; };
 		A6C9D5C12BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C9D5C02BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift */; };
 		A6CBA8F02BA2A629008B110C /* ImportWalletUploadSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CBA8EF2BA2A629008B110C /* ImportWalletUploadSection.swift */; };
 		A6CBF2DC2C251D4100FD8080 /* LookingForDevicesLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CBF2DB2C251D4100FD8080 /* LookingForDevicesLoader.swift */; };
@@ -965,6 +967,8 @@
 		A6C6708D2C9CFD0A00F59B6A /* KeysignView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "KeysignView+macOS.swift"; sourceTree = "<group>"; };
 		A6C6708F2C9CFE0B00F59B6A /* HomeView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeView+iOS.swift"; sourceTree = "<group>"; };
 		A6C670912C9CFE1600F59B6A /* HomeView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HomeView+macOS.swift"; sourceTree = "<group>"; };
+		A6C670932C9D080600F59B6A /* VaultDetailView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VaultDetailView+iOS.swift"; sourceTree = "<group>"; };
+		A6C670952C9D081000F59B6A /* VaultDetailView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VaultDetailView+macOS.swift"; sourceTree = "<group>"; };
 		A6C9D5C02BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignVaultMismatchErrorView.swift; sourceTree = "<group>"; };
 		A6CBA8EF2BA2A629008B110C /* ImportWalletUploadSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportWalletUploadSection.swift; sourceTree = "<group>"; };
 		A6CBF2DB2C251D4100FD8080 /* LookingForDevicesLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LookingForDevicesLoader.swift; sourceTree = "<group>"; };
@@ -1940,6 +1944,7 @@
 				A6C670872C9CFA9B00F59B6A /* KeysignDiscoveryView+iOS.swift */,
 				A6C6708B2C9CFD0100F59B6A /* KeysignView+iOS.swift */,
 				A6C6708F2C9CFE0B00F59B6A /* HomeView+iOS.swift */,
+				A6C670932C9D080600F59B6A /* VaultDetailView+iOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -1980,6 +1985,7 @@
 				A6C670892C9CFAA800F59B6A /* KeysignDiscoveryView+macOS.swift */,
 				A6C6708D2C9CFD0A00F59B6A /* KeysignView+macOS.swift */,
 				A6C670912C9CFE1600F59B6A /* HomeView+macOS.swift */,
+				A6C670952C9D081000F59B6A /* VaultDetailView+macOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -3110,6 +3116,7 @@
 				A5D00E412BD65CE7009E025F /* ERC20ApprovePayload.swift in Sources */,
 				A6966D2D2BA402A900903CA4 /* TokenSelectorDropdown.swift in Sources */,
 				A6951E8C2C52DC6B007292E7 /* SettingsDefaultChainViewModel.swift in Sources */,
+				A6C670962C9D081000F59B6A /* VaultDetailView+macOS.swift in Sources */,
 				A6182F552C9296DB0059BFDD /* StyledFloatingPointField+macOS.swift in Sources */,
 				B51097F52C4EB7200066D560 /* BlowfishEvmWarningInformationNote.swift in Sources */,
 				A68125D62C8812B60049660E /* UIImageExtension.swift in Sources */,
@@ -3148,6 +3155,7 @@
 				A6182F2B2C9225EA0059BFDD /* CheckUpdateViewModel.swift in Sources */,
 				A63953B02BA7BEDA000802EC /* Checkbox.swift in Sources */,
 				A6966D1E2BA3DDAD00903CA4 /* OnboardingView.swift in Sources */,
+				A6C670942C9D080600F59B6A /* VaultDetailView+iOS.swift in Sources */,
 				A6ECA1B42C94129D00456110 /* VaultDetailQRCodeViewModel+macOS.swift in Sources */,
 				DE320E6E2C846C610068D0E1 /* ReshareRequest.swift in Sources */,
 				A633B1382B997F39003D1738 /* NavigationHelpButton.swift in Sources */,
