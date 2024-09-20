@@ -12,40 +12,12 @@ struct VaultPairDetailView: View {
     @State var devicesInfo: [DeviceInfo] = []
     
     var body: some View {
-        ZStack {
-            Background()
-            main
-        }
-#if os(iOS)
-        .navigationTitle(NSLocalizedString("vaultDetailsTitle", comment: "View your vault details"))
-#endif
-        .onAppear {
-            self.devicesInfo = vault.signers.enumerated().map { index, signer in
-                DeviceInfo(Index: index, Signer: signer)
+        content
+            .onAppear {
+                self.devicesInfo = vault.signers.enumerated().map { index, signer in
+                    DeviceInfo(Index: index, Signer: signer)
+                }
             }
-        }
-    }
-    
-    var main: some View {
-        VStack {
-#if os(macOS)
-            headerMac
-#endif
-            view
-        }
-    }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: "vaultDetailsTitle")
-    }
-    
-    var view: some View {
-        VStack {
-            content
-        }
-#if os(macOS)
-        .padding(.horizontal, 25)
-#endif
     }
     
     var content: some View {
