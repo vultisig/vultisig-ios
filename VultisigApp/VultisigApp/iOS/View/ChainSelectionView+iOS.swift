@@ -26,7 +26,7 @@ extension ChainSelectionView {
     }
     
     var main: some View {
-        content
+        views
     }
     
     var view: some View {

@@ -22,7 +22,7 @@ extension ChainSelectionView {
     var main: some View {
         VStack {
             headerMac
-            content
+            views
         }
     }
     

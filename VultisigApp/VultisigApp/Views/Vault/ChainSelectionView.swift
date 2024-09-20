@@ -27,7 +27,7 @@ struct ChainSelectionView: View {
             }
     }
     
-    var content: some View {
+    var views: some View {
         ZStack {
             Background()
             view
