@@ -31,57 +31,7 @@ struct CustomTokenView: View {
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
-        ZStack {
-            Background()
-            VStack(alignment: .leading) {
-                main
-                
-                if let error = error {
-                    errorView(error: error)
-                }
-                
-                if isLoading {
-                    Loader()
-                }
-                
-                Spacer()
-            }
-        }
-        .task {
-            await tokenViewModel.loadData(groupedChain: group)
-        }
-        .navigationBarBackButtonHidden(true)
-#if os(iOS)
-        .navigationTitle(NSLocalizedString("findCustomTokens", comment: "Find Your Custom Token"))
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                Button(action: {
-                    self.chainDetailView.sheetType = nil
-                    dismiss()
-                }) {
-                    Image(systemName: "chevron.backward")
-                        .font(.body18Menlo)
-                        .foregroundColor(Color.neutral0)
-                }
-            }
-        }
-#endif
-    }
-    
-    var main: some View {
-        VStack(spacing: 0) {
-#if os(macOS)
-            headerMac
-#endif
-            view
-                .padding(.top, 16)
-                .padding(.horizontal, 16)
-        }
-    }
-    
-    var headerMac: some View {
-        TokenSelectionHeader(title: "findCustomTokens", chainDetailView: chainDetailView)
+        content
     }
     
     var view: some View {
