@@ -16,15 +16,15 @@ extension HomeView {
         }
         .alert(
             NSLocalizedString("newUpdateAvailable", comment: ""),
-            isPresented: $checkUpdateViewModel.showUpdateAlert
+            isPresented: $macCheckUpdateViewModel.showUpdateAlert
         ) {
-            Link(destination: URL(string: Endpoint.githubMacUpdateBase + checkUpdateViewModel.latestVersionBase)!) {
+            Link(destination: URL(string: Endpoint.githubMacUpdateBase + macCheckUpdateViewModel.latestVersionBase)!) {
                 Text(NSLocalizedString("updateNow", comment: ""))
             }
             
             Button(NSLocalizedString("dismiss", comment: ""), role: .cancel) {}
         } message: {
-            Text(checkUpdateViewModel.latestVersion)
+            Text(macCheckUpdateViewModel.latestVersion)
         }
     }
     
@@ -67,13 +67,13 @@ extension HomeView {
         }
     }
     
-    private func setData() {
+    func setData() {
         fetchVaults()
         shouldJoinKeygen = false
         shouldKeysignTransaction = false
-        
+     
         macCameraServiceViewModel.stopSession()
-        checkUpdateViewModel.checkForUpdates(isAutoCheck: true)
+        macCheckUpdateViewModel.checkForUpdates(isAutoCheck: true)
         
         if let vault = selectedVault {
             viewModel.setSelectedVault(vault)

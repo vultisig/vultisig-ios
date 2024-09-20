@@ -13,12 +13,9 @@ struct HomeView: View {
     
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var viewModel: HomeViewModel
-#if os(iOS)
     @EnvironmentObject var phoneCheckUpdateViewModel: PhoneCheckUpdateViewModel
-#elseif os(macOS)
     @EnvironmentObject var macCameraServiceViewModel: MacCameraServiceViewModel
     @EnvironmentObject var macCheckUpdateViewModel: MacCheckUpdateViewModel
-#endif
     
     @State var vaults: [Vault] = []
     
@@ -32,91 +29,7 @@ struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
     
     var body: some View {
-        ZStack {
-            Background()
-            main
-        }
-#if os(iOS)
-        .alert(
-            NSLocalizedString("newUpdateAvailable", comment: ""),
-            isPresented: $phoneCheckUpdateViewModel.showUpdateAlert
-        ) {
-            Link(destination: StaticURL.AppStoreVultisigURL) {
-                Text(NSLocalizedString("updateNow", comment: ""))
-            }
-            
-            Button(NSLocalizedString("dismiss", comment: ""), role: .cancel) {}
-        } message: {
-            Text(phoneCheckUpdateViewModel.latestVersionString)
-        }
-#elseif os(macOS)
-        .alert(
-            NSLocalizedString("newUpdateAvailable", comment: ""),
-            isPresented: $macCheckUpdateViewModel.showUpdateAlert
-        ) {
-            Link(destination: URL(string: Endpoint.githubMacUpdateBase + macCheckUpdateViewModel.latestVersionBase)!) {
-                Text(NSLocalizedString("updateNow", comment: ""))
-            }
-            
-            Button(NSLocalizedString("dismiss", comment: ""), role: .cancel) {}
-        } message: {
-            Text(macCheckUpdateViewModel.latestVersion)
-        }
-#endif
-    }
-    
-    var main: some View {
-        VStack(spacing: 0) {
-#if os(macOS)
-            headerMac
-            Separator()
-#endif
-            view
-        }
-    }
-    
-    var headerMac: some View {
-        HomeHeader(
-            showVaultsList: $showVaultsList,
-            isEditingVaults: $isEditingVaults
-        )
-    }
-    
-    var view: some View {
-    func presetValuesForDeeplink() {
-            ZStack {
-                if let vault = viewModel.selectedVault {
-                    VaultDetailView(showVaultsList: $showVaultsList, vault: vault)
-                }
-                
-                VaultsView(viewModel: viewModel, showVaultsList: $showVaultsList, isEditingVaults: $isEditingVaults)
-            }
-        }
-        .navigationBarBackButtonHidden(true)
-#if os(iOS)
-        .toolbar {
-            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                menuButton
-            }
-            ToolbarItem(placement: Placement.principal.getPlacement()) {
-                navigationTitle
-            }
-            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                editButton
-            }
-        }
-#endif
-        .onAppear {
-            setData()
-        }
-        .navigationDestination(isPresented: $shouldJoinKeygen) {
-            JoinKeygenView(vault: Vault(name: "Main Vault"))
-        }
-        .navigationDestination(isPresented: $shouldKeysignTransaction) {
-            if let vault = viewModel.selectedVault {
-                JoinKeysignView(vault: vault)
-            }
-        }
+        content
     }
     
     var navigationTitle: some View {
@@ -142,9 +55,7 @@ struct HomeView: View {
         VStack(spacing: 0) {
             Text(NSLocalizedString("vaults", comment: "Vaults"))
             Text(viewModel.selectedVault?.name ?? NSLocalizedString("vault", comment: "Home view title"))
-        .environmentObject(CheckUpdateViewModel())
-        .environmentObject(MacCheckUpdateViewModel())
-#endif
+        }
         .offset(y: showVaultsList ? 9 : -10)
         .frame(height: 20)
         .clipped()
@@ -169,30 +80,7 @@ struct HomeView: View {
         )
     }
     
-    private func setData() {
-        fetchVaults()
-        shouldJoinKeygen = false
-        shouldKeysignTransaction = false
-     
-#if os(iOS)
-        phoneCheckUpdateViewModel.checkForUpdates(isAutoCheck: true)
-#elseif os(macOS)
-        macCameraServiceViewModel.stopSession()
-        macCheckUpdateViewModel.checkForUpdates(isAutoCheck: true)
-#endif
-        
-        if let vault = selectedVault {
-            viewModel.setSelectedVault(vault)
-            selectedVault = nil
-            return
-        } else {
-            viewModel.loadSelectedVault(for: vaults)
-        }
-        
-        presetValuesForDeeplink()
-    }
-    
-    private func presetValuesForDeeplink() {
+    func presetValuesForDeeplink() {
         guard let type = deeplinkViewModel.type else {
             return
         }
@@ -236,7 +124,7 @@ struct HomeView: View {
         }
     }
     
-    private func fetchVaults() {
+    func fetchVaults() {
         let fetchVaultDescriptor = FetchDescriptor<Vault>()
         do {
             vaults = try modelContext.fetch(fetchVaultDescriptor)
@@ -250,8 +138,6 @@ struct HomeView: View {
     HomeView()
         .environmentObject(DeeplinkViewModel())
         .environmentObject(HomeViewModel())
-#if os(macOS)
         .environmentObject(MacCameraServiceViewModel())
         .environmentObject(MacCheckUpdateViewModel())
-#endif
 }
