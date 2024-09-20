@@ -16,7 +16,6 @@ struct KeysignView: View {
     let transferViewModel: TransferViewModel?
     let encryptionKeyHex: String
     
-    
     @StateObject var viewModel = KeysignViewModel()
     
     @State var showAlert = false
@@ -109,5 +108,6 @@ struct KeysignView: View {
         messsageToSign: ["message"],
         keysignPayload: nil,
         transferViewModel: nil,
-        encryptionKeyHex: "")
+        encryptionKeyHex: ""
+    )
 }

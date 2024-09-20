@@ -10,13 +10,13 @@ import SwiftUI
 
 extension KeysignView {
     var container: some View {
-        container
-        .onAppear {
-            setData()
-        }
-        .onDisappear(){
-            viewModel.stopMessagePuller()
-        }
+        content
+            .onAppear {
+                setData()
+            }
+            .onDisappear(){
+                viewModel.stopMessagePuller()
+            }
     }
 }
 #endif
