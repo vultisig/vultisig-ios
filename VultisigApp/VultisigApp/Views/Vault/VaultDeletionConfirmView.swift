@@ -33,7 +33,7 @@ struct VaultDeletionConfirmView: View {
         VaultDeletionDetails(vault: vault, isPhoneSE: isPhoneSE)
     }
     
-    private func delete() {
+    func delete() {
         guard allFieldsChecked() else {
             showAlert = true
             return
