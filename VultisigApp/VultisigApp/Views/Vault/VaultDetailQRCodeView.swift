@@ -16,31 +16,8 @@ struct VaultDetailQRCodeView: View {
     @StateObject var viewModel = VaultDetailQRCodeViewModel()
     @Environment(\.displayScale) var displayScale
     
-#if os(iOS)
-    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-#endif
-    
     var body: some View {
-        ZStack {
-            Background()
-            main
-        }
-#if os(iOS)
-        .navigationTitle(NSLocalizedString("shareVaultQR", comment: ""))
-#endif
-    }
-    
-    var main: some View {
-        VStack {
-#if os(macOS)
-            headerMac
-#endif
-            content
-        }
-    }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: "shareVaultQR")
+        content
     }
     
     var content: some View {
@@ -93,27 +70,6 @@ struct VaultDetailQRCodeView: View {
             }
         }
     }
-    
-#if os(iOS)
-    var shareButton: some View {
-        ZStack {
-            if idiom == .phone {
-                Button {
-                    viewModel.shareImage(imageName)
-                } label: {
-                    FilledButton(title: "share")
-                        .padding(.bottom, 22)
-                }
-            } else {
-                shareLinkButton
-            }
-        }
-    }
-#elseif os(macOS)
-    var shareButton: some View {
-        shareLinkButton
-    }
-#endif
     
     var shareLinkButton: some View {
         ZStack {
