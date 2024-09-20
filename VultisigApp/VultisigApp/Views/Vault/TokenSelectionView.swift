@@ -11,7 +11,7 @@ struct TokenSelectionView: View {
     @Environment(\.dismiss) var dismiss
     
     // Focus state for the search field to force layout update
-    @FocusState private var isSearchFieldFocused: Bool
+    @FocusState var isSearchFieldFocused: Bool
     @State private var isSearching = false
     
     var body: some View {

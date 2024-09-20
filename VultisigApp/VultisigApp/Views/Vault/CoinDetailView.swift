@@ -60,7 +60,7 @@ struct CoinDetailView: View {
         )
     }
     
-    var content: some View {
+    var cells: some View {
         VStack(spacing: 0) {
             cell
         }
@@ -71,7 +71,7 @@ struct CoinDetailView: View {
         CoinCell(coin: coin, group: group, vault: vault)
     }
     
-    private func refreshData() async {
+    func refreshData() async {
         isLoading = true
         await BalanceService.shared.updateBalance(for: coin)
         isLoading = false

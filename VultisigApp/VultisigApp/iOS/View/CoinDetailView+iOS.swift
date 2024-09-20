@@ -42,7 +42,7 @@ extension CoinDetailView {
         ScrollView {
             VStack(spacing: 20) {
                 actionButtons
-                content
+                cells
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 30)
