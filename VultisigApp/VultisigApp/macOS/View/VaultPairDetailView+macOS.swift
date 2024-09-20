@@ -28,7 +28,7 @@ extension VaultPairDetailView {
     }
     
     var view: some View {
-        content
+        cells
             .padding(.horizontal, 25)
     }
 }

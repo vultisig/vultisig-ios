@@ -20,7 +20,7 @@ struct VaultPairDetailView: View {
             }
     }
     
-    var content: some View {
+    var cells: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
                 

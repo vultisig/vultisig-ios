@@ -22,7 +22,7 @@ extension VaultPairDetailView {
     }
     
     var view: some View {
-        content
+        cells
     }
 }
 #endif
