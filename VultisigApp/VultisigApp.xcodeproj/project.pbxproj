@@ -1987,7 +1987,6 @@
 				A622C8552C9BCCB800908332 /* JoinKeygenView+iOS.swift */,
 				A622C8592C9BCD6600908332 /* KeygenView+iOS.swift */,
 				A622C85D2C9BCE6800908332 /* PeerDiscoveryView+iOS.swift */,
-				A6386D9F2C90234400DDD58E /* Components */,
 				A6C670832C9CF66400F59B6A /* JoinKeysignView+iOS.swift */,
 				A6C670872C9CFA9B00F59B6A /* KeysignDiscoveryView+iOS.swift */,
 				A6C6708B2C9CFD0100F59B6A /* KeysignView+iOS.swift */,
@@ -2005,6 +2004,7 @@
 				A6C670BC2C9D158500F59B6A /* BackupPasswordSetupView+iOS.swift */,
 				A6C670C02C9D16BD00F59B6A /* CustomTokenView+iOS.swift */,
 				A6C670C42C9D173800F59B6A /* VaultDetailQRCodeView+iOS.swift */,
+				A6386D9F2C90234400DDD58E /* Components */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -2040,7 +2040,6 @@
 				A622C8572C9BCCC600908332 /* JoinKeygenView+macOS.swift */,
 				A622C85B2C9BCD6E00908332 /* KeygenView+imacOS.swift */,
 				A622C85F2C9BCE7100908332 /* PeerDiscoveryView+macOS.swift */,
-				A6386DA22C90235600DDD58E /* Components */,
 				A6C670852C9CF67E00F59B6A /* JoinKeysignView+macOS.swift */,
 				A6C670892C9CFAA800F59B6A /* KeysignDiscoveryView+macOS.swift */,
 				A6C6708D2C9CFD0A00F59B6A /* KeysignView+macOS.swift */,
@@ -2058,6 +2057,7 @@
 				A6C670BE2C9D158F00F59B6A /* BackupPasswordSetupView+macOS.swift */,
 				A6C670C22C9D16C600F59B6A /* CustomTokenView+macOS.swift */,
 				A6C670C62C9D174000F59B6A /* VaultDetailQRCodeView+macOS.swift */,
+				A6386DA22C90235600DDD58E /* Components */,
 			);
 			path = View;
 			sourceTree = "<group>";
