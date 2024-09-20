@@ -20,7 +20,7 @@ extension VultisigApp {
                 .environmentObject(settingsViewModel)
                 .environmentObject(homeViewModel)
                 .environmentObject(settingsDefaultChainViewModel)
-                .environmentObject(checkUpdateViewModel)
+                .environmentObject(macCheckUpdateViewModel)
                 .environmentObject(macCameraServiceViewModel)
                 .onChange(of: scenePhase) {
                     switch scenePhase {

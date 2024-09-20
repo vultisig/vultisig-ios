@@ -1,42 +1,35 @@
 //
-//  MacCheckUpdateView.swift
+//  PHoneCheckUpdateView.swift
 //  VultisigApp
 //
-//  Created by Amol Kumar on 2024-09-11.
+//  Created by Amol Kumar on 2024-09-19.
 //
 
 import SwiftUI
 
-struct MacCheckUpdateView: View {
-    @EnvironmentObject var macCheckUpdateViewModel: MacCheckUpdateViewModel
+struct PhoneCheckUpdateView: View {
+    @EnvironmentObject var phoneCheckUpdateViewModel: PhoneCheckUpdateViewModel
     
     var body: some View {
         ZStack {
             Background()
             main
         }
+        .navigationTitle(NSLocalizedString("checkUpdate", comment: ""))
         .onAppear {
             setData()
         }
     }
     
     var main: some View {
-        VStack(spacing: 0) {
-            headerMac
-            view
-        }
-    }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: "checkUpdate")
-            .padding(.bottom, 8)
+        view
     }
     
     var view: some View {
         ZStack {
-            if macCheckUpdateViewModel.showDetails {
+            if phoneCheckUpdateViewModel.showDetails {
                 details
-            } else if macCheckUpdateViewModel.showError {
+            } else if phoneCheckUpdateViewModel.showError {
                 errorMessage
             } else {
                 loader
@@ -55,7 +48,7 @@ struct MacCheckUpdateView: View {
     
     var details: some View {
         ZStack {
-            if macCheckUpdateViewModel.isUpdateAvailable {
+            if phoneCheckUpdateViewModel.isUpdateAvailable {
                 updateAppMessage
             } else {
                 appUpToDateMessage
@@ -88,24 +81,22 @@ struct MacCheckUpdateView: View {
     }
     
     var appUpToDateMessage: some View {
-        UpdateCheckUpToDateView(currentVersion: macCheckUpdateViewModel.currentVersion)
+        UpdateCheckUpToDateView(currentVersion: phoneCheckUpdateViewModel.currentVersionString)
     }
     
     var updateAppMessage: some View {
-        let url = Endpoint.githubMacUpdateBase + macCheckUpdateViewModel.latestVersionBase
-        
-        return UpdateCheckUpdateNowView(
-            latestVersion: macCheckUpdateViewModel.latestVersion,
-            link: URL(string: url)!
+        UpdateCheckUpdateNowView(
+            latestVersion: phoneCheckUpdateViewModel.latestVersionString,
+            link: StaticURL.AppStoreVultisigURL
         )
     }
     
     private func setData() {
-        macCheckUpdateViewModel.checkForUpdates()
+        phoneCheckUpdateViewModel.checkForUpdates()
     }
 }
 
 #Preview {
-    MacCheckUpdateView()
-        .environmentObject(MacCheckUpdateViewModel())
+    PhoneCheckUpdateView()
+        .environmentObject(PhoneCheckUpdateViewModel())
 }

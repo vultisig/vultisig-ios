@@ -102,6 +102,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         participantDiscovery.$peersFound.sink {
                 $0.forEach { [weak self] peer in
                     self?.handleSelection(peer)
+                    self?.startFastVaultKeygenIfNeeded(state: state)
                 }
             }
             .store(in: &cancellables)
@@ -115,6 +116,11 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         } else {
             selections.insert(peer)
         }
+    }
+
+    func startFastVaultKeygenIfNeeded(state: SetupVaultState) {
+        guard isValidPeers(state: state), !state.hasOtherDevices else { return }
+        startKeygen()
     }
 
     func isValidPeers(state: SetupVaultState) -> Bool {

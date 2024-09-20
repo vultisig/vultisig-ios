@@ -11,9 +11,10 @@ import SwiftData
 struct NewWalletNameView: View {
     let tssType: TssType
     let selectedTab: SetupVaultState
-    
+
+    @State var name: String
+
     @State var didSet = false
-    @State var name = "Main Vault"
     @State var isLinkActive = false
     @State var showAlert = false
     
@@ -102,13 +103,10 @@ struct NewWalletNameView: View {
         }
         .padding(40)
         .navigationDestination(isPresented: $isLinkActive) {
-            let vaultName = name.isEmpty ? "Main Vault" : name
-            let vault = Vault(name: vaultName)
-
             if selectedTab.isFastVault {
-                FastVaultEmailView(tssType: tssType, vault: vault, selectedTab: selectedTab)
+                FastVaultEmailView(tssType: tssType, vault: Vault(name: name), selectedTab: selectedTab)
             } else {
-                PeerDiscoveryView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastVaultEmail: nil, fastVaultPassword: nil)
+                PeerDiscoveryView(tssType: tssType, vault: Vault(name: name), selectedTab: selectedTab, fastVaultEmail: nil, fastVaultPassword: nil)
             }
         }
     }
@@ -123,10 +121,7 @@ struct NewWalletNameView: View {
 
     private func verifyVault() {
         for vault in vaults {
-            if name.isEmpty && vault.name == "Main Vault" {
-                showAlert = true
-                return
-            } else if vault.name == name {
+            if name.isEmpty || vault.name == name {
                 showAlert = true
                 return
             }
@@ -137,7 +132,7 @@ struct NewWalletNameView: View {
     
     private func getVaultName() -> String {
         if name.isEmpty {
-            return "Main Vault "
+            return "Vault "
         } else {
             return name + " "
         }
@@ -154,5 +149,5 @@ struct NewWalletNameView: View {
 }
 
 #Preview {
-    NewWalletNameView(tssType: .Keygen, selectedTab: .fast)
+    NewWalletNameView(tssType: .Keygen, selectedTab: .fast, name: "Fast Vault #1")
 }

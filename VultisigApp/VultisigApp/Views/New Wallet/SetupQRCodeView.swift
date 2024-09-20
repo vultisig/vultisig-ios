@@ -10,8 +10,8 @@ import SwiftUI
 
 struct SetupQRCodeView: View {
     let tssType: TssType
-    let vault: Vault
-    
+    let vault: Vault?
+
     @State var selectedTab: SetupVaultState = .fast
     @State var showSheet: Bool = false
     @State var shouldJoinKeygen = false
@@ -75,9 +75,10 @@ struct SetupQRCodeView: View {
             if tssType == .Keygen {
                 NewWalletNameView(
                     tssType: tssType,
-                    selectedTab: selectedTab
+                    selectedTab: selectedTab,
+                    name: Vault.getUniqueVaultName(modelContext: modelContext, state: selectedTab)
                 )
-            } else {
+            } else if let vault {
                 if selectedTab.isFastVault {
                     FastVaultEmailView(
                         tssType: tssType,
@@ -93,7 +94,6 @@ struct SetupQRCodeView: View {
                         fastVaultPassword: nil
                     )
                 }
-
             }
         } label: {
             FilledButton(title: "start".uppercased())
@@ -118,11 +118,14 @@ struct SetupQRCodeView: View {
             )
         })
         .navigationDestination(isPresented: $shouldJoinKeygen) {
-            JoinKeygenView(vault: Vault(
-                name: Vault.getUniqueVaultName(modelContext: modelContext)
-            ))
+            JoinKeygenView(vault: makeVault())
         }
 #endif
+    }
+
+    private func makeVault() -> Vault {
+        let vaultName = Vault.getUniqueVaultName(modelContext: modelContext, state: selectedTab)
+        return Vault(name: vaultName)
     }
 }
 
