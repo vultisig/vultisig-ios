@@ -20,47 +20,10 @@ struct RenameVaultView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
-        ZStack {
-            Background()
-            main
-        }
-#if os(iOS)
-        .navigationTitle(NSLocalizedString("renameVault", comment: "Edit Rename Vault View title"))
-#endif
-        .onAppear {
-            setData()
-        }
-    }
-    
-    var main: some View {
-        VStack {
-#if os(macOS)
-            headerMac
-#endif
-            view
-        }
-    }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: "renameVault")
-    }
-    
-    var view: some View {
-        VStack {
-            content
-            Spacer()
-            button
-        }
-        .alert(isPresented: $showAlert) {
-            Alert(
-                title: Text(NSLocalizedString("error", comment: "")),
-                message: Text(errorMessage),
-                dismissButton: .default(Text("ok"))
-            )
-        }
-#if os(macOS)
-        .padding(.horizontal, 25)
-#endif
+        content
+            .onAppear {
+                setData()
+            }
     }
     
     var content: some View {
