@@ -76,38 +76,6 @@ struct VaultDetailView: View {
         })
     }
     
-    var view: some View {
-        list
-            .opacity(showVaultsList ? 0 : 1)
-#if os(iOS)
-            .sheet(isPresented: $showScanner, content: {
-                GeneralCodeScannerView(
-                    showSheet: $showScanner,
-                    shouldJoinKeygen: $shouldJoinKeygen,
-                    shouldKeysignTransaction: $shouldKeysignTransaction, 
-                    shouldSendCrypto: $shouldSendCrypto,
-                    selectedChain: $selectedChain, 
-                    sendTX: sendTx
-                )
-            })
-#endif
-            .navigationDestination(isPresented: $shouldJoinKeygen) {
-                JoinKeygenView(vault: Vault(name: "Main Vault"))
-            }
-            .navigationDestination(isPresented: $shouldKeysignTransaction) {
-                if let vault = homeViewModel.selectedVault {
-                    JoinKeysignView(vault: vault)
-                }
-            }
-            .navigationDestination(isPresented: $shouldSendCrypto) {
-                SendCryptoView(
-                    tx: sendTx,
-                    vault: vault,
-                    selectedChain: selectedChain
-                )
-            }
-    }
-    
     var list: some View {
         List {
             if isLoading {
@@ -136,24 +104,6 @@ struct VaultDetailView: View {
         .colorScheme(.dark)
         .scrollContentBackground(.hidden)
         .background(Color.backgroundBlue)
-    }
-    
-    var cells: some View {
-        let sortedGroups = viewModel.coinsGroupedByChains.sorted(by: {
-            $0.totalBalanceInFiatDecimal > $1.totalBalanceInFiatDecimal
-        })
-        
-        return ForEach(sortedGroups, id: \.id) { group in
-            ChainNavigationCell(
-                group: group,
-                vault: vault, 
-                showAlert: $showAlert
-            )
-        }
-        .background(Color.backgroundBlue)
-#if os(macOS)
-        .padding(.horizontal, 16)
-#endif
     }
     
     var emptyList: some View {
@@ -188,42 +138,11 @@ struct VaultDetailView: View {
             .listRowSeparator(.hidden)
     }
     
-    var chooseChainButton: some View {
-        ZStack {
-#if os(iOS)
-            Button {
-                showSheet.toggle()
-            } label: {
-                chooseChainButtonLabel
-            }
-#elseif os(macOS)
-            NavigationLink {
-                ChainSelectionView(showChainSelectionSheet: $showSheet, vault: vault)
-            } label: {
-                chooseChainButtonLabel
-            }
-            .padding(.horizontal, 16)
-            .frame(height: 20)
-#endif
-        }
-        .font(.body16MenloBold)
-        .foregroundColor(.turquoise600)
-    }
-    
     var chooseChainButtonLabel: some View {
         HStack(spacing: 10) {
             Image(systemName: "plus")
             Text(NSLocalizedString("chooseChains", comment: "Choose Chains"))
         }
-    }
-    
-    var scanButton: some View {
-        VaultDetailScanButton(showSheet: $showScanner, sendTx: sendTx)
-            .opacity(showVaultsList ? 0 : 1)
-            .buttonStyle(BorderlessButtonStyle())
-#if os(macOS)
-            .padding(.bottom, 30)
-#endif
     }
     
     var loader: some View {
