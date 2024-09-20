@@ -19,7 +19,7 @@ extension VaultDetailQRCodeView {
     var main: some View {
         VStack {
             headerMac
-            content
+            view
         }
     }
     

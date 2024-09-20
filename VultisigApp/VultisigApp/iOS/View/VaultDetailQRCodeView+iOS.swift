@@ -20,7 +20,7 @@ extension VaultDetailQRCodeView {
     }
     
     var main: some View {
-        content
+        view
     }
     
     var shareButton: some View {

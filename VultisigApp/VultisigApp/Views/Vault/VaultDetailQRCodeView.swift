@@ -20,7 +20,7 @@ struct VaultDetailQRCodeView: View {
         content
     }
     
-    var content: some View {
+    var view: some View {
         VStack {
             Spacer()
             qrCode

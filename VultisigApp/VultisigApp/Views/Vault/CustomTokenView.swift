@@ -19,8 +19,8 @@ struct CustomTokenView: View {
     @State private var tokenSymbol: String = ""
     @State private var tokenDecimals: Int = 0
     @State private var showTokenInfo: Bool = false
-    @State private var isLoading: Bool = false
-    @State private var error: Error?
+    @State var isLoading: Bool = false
+    @State var error: Error?
     
     @State private var isValidAddress: Bool = false
     @State private var token: CoinMeta? = nil
