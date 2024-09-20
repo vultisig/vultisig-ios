@@ -119,7 +119,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     }
 
     func startFastVaultKeygenIfNeeded(state: SetupVaultState) {
-        guard isValidPeers(state: state) else { return }
+        guard isValidPeers(state: state), !state.hasOtherDevices else { return }
         startKeygen()
     }
 
