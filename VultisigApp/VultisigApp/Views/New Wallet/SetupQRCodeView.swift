@@ -75,7 +75,7 @@ struct SetupQRCodeView: View {
         }
     }
 
-    private func makeVault() -> Vault {
+    func makeVault() -> Vault {
         let vaultName = Vault.getUniqueVaultName(modelContext: modelContext, state: selectedTab)
         return Vault(name: vaultName)
     }
