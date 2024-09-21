@@ -28,16 +28,6 @@ struct SendCryptoDoneView: View {
         }
     }
     
-    var view: some View {
-        VStack {
-            cards
-            continueButton
-        }
-#if os(macOS)
-        .padding(.horizontal, 25)
-#endif
-    }
-    
     var cards: some View {
         ScrollView {
             if let approveHash {
@@ -128,21 +118,6 @@ struct SendCryptoDoneView: View {
 
     func explorerLink(hash: String) -> String {
         return Endpoint.getExplorerURL(chainTicker: chain.ticker, txid: hash)
-    }
-
-    private func copyHash(hash: String) {
-        let explorerLink = explorerLink(hash: hash)
-        if !explorerLink.isEmpty {
-            showAlert = true
-#if os(iOS)
-            let pasteboard = UIPasteboard.general
-            pasteboard.string = explorerLink
-#elseif os(macOS)
-            let pasteboard = NSPasteboard.general
-            pasteboard.clearContents()
-            pasteboard.setString(explorerLink, forType: .string)
-#endif
-        }
     }
     
     private func shareLink(hash: String) {

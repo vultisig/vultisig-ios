@@ -13,7 +13,6 @@ protocol SendGasSettingsOutput {
 }
 
 struct SendGasSettingsView: View {
-
     @Environment(\.presentationMode) var presentationMode
 
     @ObservedObject var viewModel: SendGasSettingsViewModel
@@ -21,21 +20,7 @@ struct SendGasSettingsView: View {
     let output: SendGasSettingsOutput
 
     var body: some View {
-        NavigationView {
-            ZStack {
-                Background()
-                view
-            }
-            .navigationTitle("Advanced")
-#if os(iOS)
-            .navigationBarItems(leading: backButton, trailing: saveButton)
-            .navigationBarTitleTextColor(.neutral0)
-            .navigationBarTitleDisplayMode(.inline)
-#endif
-        }
-        .task {
-            try? await viewModel.fetch(chain: viewModel.chain)
-        }
+        content
     }
 
     var view: some View {
@@ -94,42 +79,6 @@ struct SendGasSettingsView: View {
 
             Spacer()
         }
-        .padding(.horizontal, 16)
-    }
-
-    func textField(title: String, text: Binding<String>, label: String? = nil, disabled: Bool = false) -> some View {
-        VStack {
-            HStack {
-                TextField("", text: text, prompt: Text(title).foregroundColor(.neutral300))
-                    .borderlessTextFieldStyle()
-                    .foregroundColor(disabled ? .neutral300 : .neutral0)
-                    .tint(.neutral0)
-                    .font(.body16Menlo)
-                    .submitLabel(.next)
-                    .disableAutocorrection(true)
-                    .textFieldStyle(TappableTextFieldStyle())
-#if os(iOS)
-                    .textInputAutocapitalization(.never)
-                    .keyboardType(.decimalPad)
-#elseif os(macOS)
-                    .colorScheme(.dark)
-#endif
-                    .textContentType(.oneTimeCode)
-                    .disabled(disabled)
-
-                if let label {
-                    Text(label)
-                        .foregroundColor(.neutral300)
-                        .font(.body16Menlo)
-                }
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 16)
-        }
-        .background(
-            RoundedRectangle(cornerSize: .init(width: 5, height: 5))
-                .foregroundColor(.blue600)
-        )
         .padding(.horizontal, 16)
     }
 
