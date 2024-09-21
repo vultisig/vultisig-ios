@@ -21,61 +21,18 @@ struct NewWalletNameView: View {
     @Query var vaults: [Vault]
     
     var body: some View {
-        ZStack {
-            Background()
-            main
-        }
-#if os(iOS)
-        .navigationTitle(NSLocalizedString("setup", comment: "Setup"))
-        .toolbar {
-            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                NavigationHelpButton()
-            }
-        }
-        .onTapGesture {
-            hideKeyboard()
-        }
-#endif
-    }
-    
-    var main: some View {
-        VStack {
-#if os(macOS)
-            headerMac
-#endif
-            view
-        }
-    }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: "setup")
+        content
     }
     
     var view: some View {
         VStack {
-            content
+            fields
             Spacer()
             button
         }
         .alert(isPresented: $showAlert) {
             alert
         }
-    }
-    
-    var content: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(NSLocalizedString("vaultName", comment: ""))
-                .font(.body14MontserratMedium)
-                .foregroundColor(.neutral0)
-            
-            textfield
-        }
-#if os(iOS)
-        .padding(.horizontal, 16)
-#elseif os(macOS)
-        .padding(.horizontal, 40)
-#endif
-        .padding(.top, 30)
     }
     
     var textfield: some View {
