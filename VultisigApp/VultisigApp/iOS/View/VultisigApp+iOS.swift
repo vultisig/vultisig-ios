@@ -22,17 +22,6 @@ extension VultisigApp {
                 .environmentObject(settingsDefaultChainViewModel)
                 .environmentObject(phoneCheckUpdateViewModel)
         }
-        .onChange(of: scenePhase) {
-            switch scenePhase {
-            case .active:
-                continueLogin()
-            case .background:
-                resetLogin()
-            default:
-                break
-            }
-        }
-        .modelContainer(sharedModelContainer)
     }
 }
 #endif
