@@ -25,48 +25,12 @@ struct EditVaultView: View {
         }
     }
     
-    var main: some View {
-        VStack {
-#if os(macOS)
-            headerMac
-#endif
-            view
-        }
-    }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: "editVault")
-    }
-    
-    var navigation: some View {
-        base
-#if os(iOS)
-            .navigationTitle(NSLocalizedString("editVault", comment: "Edit Vault View title"))
-#endif
-    }
-    
     var alert: some View {
         navigation
     }
     
     var exporter: some View {
         alert
-    }
-    
-    var view: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                deviceName
-                vaultDetails
-                backupVault
-                editVault
-                reshareVault
-                deleteVault
-            }
-#if os(macOS)
-        .padding(.horizontal, 25)
-#endif
-        }
     }
     
     var deviceName: some View {

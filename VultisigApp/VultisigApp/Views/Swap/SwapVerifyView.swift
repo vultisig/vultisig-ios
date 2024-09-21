@@ -172,3 +172,11 @@ struct SwapVerifyView: View {
         .foregroundColor(.neutral100)
     }
 }
+
+#Preview {
+    SwapVerifyView(
+        tx: SwapTransaction(),
+        swapViewModel: SwapCryptoViewModel(),
+        vault: Vault.example
+    )
+}

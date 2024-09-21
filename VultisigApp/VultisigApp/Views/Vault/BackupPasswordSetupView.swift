@@ -22,13 +22,7 @@ struct BackupPasswordSetupView: View {
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
-        ZStack {
-            Background()
-            main
-        }
-#if os(iOS)
-            .navigationTitle(NSLocalizedString("backup", comment: "Backup"))
-#endif
+        content
             .alert(isPresented: $backupViewModel.showAlert) {
                 alert
             }
@@ -44,34 +38,6 @@ struct BackupPasswordSetupView: View {
                     handleSaveTap()
                 }
             }
-    }
-    
-    var main: some View {
-        VStack {
-#if os(macOS)
-            headerMac
-#endif
-            view
-        }
-        .navigationDestination(isPresented: $navigationLinkActive) {
-            HomeView(selectedVault: vault, showVaultsList: false, shouldJoinKeygen: false)
-        }
-    }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: "backup")
-    }
-    
-    var view: some View {
-        VStack {
-            passwordField
-            Spacer()
-            disclaimer
-            buttons
-        }
-#if os(macOS)
-        .padding(.horizontal, 25)
-#endif
     }
     
     var passwordField: some View {
@@ -111,82 +77,6 @@ struct BackupPasswordSetupView: View {
         .padding(.horizontal, 16)
     }
     
-    var saveButton: some View {
-        Button(action: {
-            handleProxyTap()
-        }) {
-            FilledButton(title: "save")
-        }
-#if os(iOS)
-        .sheet(isPresented: $showSaveShareSheet, onDismiss: {
-            dismissView()
-        }) {
-            if let fileURL = backupViewModel.encryptedFileURLWithPassowrd {
-                ShareSheetViewController(activityItems: [fileURL])
-                    .presentationDetents([.medium])
-                    .ignoresSafeArea(.all)
-            }
-        }
-#elseif os(macOS)
-        .fileExporter(
-            isPresented: $showSaveShareSheet,
-            document: EncryptedDataFile(url: backupViewModel.encryptedFileURLWithPassowrd),
-            contentType: .data,
-            defaultFilename: "\(vault.getExportName())"
-        ) { result in
-            switch result {
-            case .success(let url):
-                print("File saved to: \(url)")
-                dismissView()
-            case .failure(let error):
-                print("Error saving file: \(error.localizedDescription)")
-                backupViewModel.alertTitle = "errorSavingFile"
-                backupViewModel.alertMessage = error.localizedDescription
-                backupViewModel.showAlert = true
-            }
-            
-        }
-#endif
-    }
-    
-    var skipButton: some View {
-        Button(action: {
-            showSkipShareSheet = true
-            fileSaved()
-        }) {
-            OutlineButton(title: "skip")
-        }
-#if os(iOS)
-        .sheet(isPresented: $showSkipShareSheet, onDismiss: {
-            dismissView()
-        }) {
-            if let fileURL = backupViewModel.encryptedFileURLWithoutPassowrd {
-                ShareSheetViewController(activityItems: [fileURL])
-                    .presentationDetents([.medium])
-                    .ignoresSafeArea(.all)
-            }
-        }
-#elseif os(macOS)
-        .fileExporter(
-            isPresented: $showSkipShareSheet,
-            document: EncryptedDataFile(url: backupViewModel.encryptedFileURLWithoutPassowrd),
-            contentType: .data,
-            defaultFilename: "\(vault.getExportName())"
-        ) { result in
-            switch result {
-            case .success(let url):
-                print("File saved to: \(url)")
-                dismissView()
-            case .failure(let error):
-                print("Error saving file: \(error.localizedDescription)")
-                backupViewModel.alertTitle = "errorSavingFile"
-                backupViewModel.alertMessage = error.localizedDescription
-                backupViewModel.showAlert = true
-            }
-        }
-#endif
-    }
-    
     var alert: Alert {
         Alert(
             title: Text(NSLocalizedString(backupViewModel.alertTitle, comment: "")),
@@ -204,7 +94,7 @@ struct BackupPasswordSetupView: View {
         export()
     }
     
-    private func handleProxyTap() {
+    func handleProxyTap() {
         guard !backupViewModel.encryptionPassword.isEmpty && !verifyPassword.isEmpty else {
             backupViewModel.alertTitle = "emptyField"
             backupViewModel.alertMessage = "checkEmptyField"
@@ -227,11 +117,11 @@ struct BackupPasswordSetupView: View {
         backupViewModel.exportFile(vault)
     }
     
-    private func fileSaved() {
+    func fileSaved() {
         vault.isBackedUp = true
     }
     
-    private func dismissView() {
+    func dismissView() {
         alreadyShowingPopup = false
         if isNewVault {
             navigationLinkActive = true

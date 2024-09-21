@@ -21,50 +21,8 @@ struct AddressQRCodeView: View {
     
     @Environment(\.displayScale) var displayScale
     
-#if os(iOS)
-    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-#endif
-    
     var body: some View {
-        ZStack {
-            Background()
-            main
-        }
-        .navigationBarBackButtonHidden(true)
-#if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationTitle(NSLocalizedString("address", comment: "AddressQRCodeView title"))
-        .toolbar {
-            ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                NavigationBackSheetButton(showSheet: $showSheet)
-            }
-            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                NavigationQRShareButton(
-                    vault: vault,
-                    type: .Address,
-                    renderedImage: shareSheetViewModel.renderedImage,
-                    title: groupedChain.name
-                )
-            }
-        }
-#endif
-    }
-    
-    var main: some View {
-        VStack {
-#if os(macOS)
-            headerMac
-#endif
-            view
-        }
-    }
-    
-    var headerMac: some View {
-        AddressQRCodeHeader(
-            vault: vault,
-            groupedChain: groupedChain,
-            shareSheetViewModel: shareSheetViewModel
-        )
+        content
     }
     
     var view: some View {

@@ -64,12 +64,11 @@ struct SendCryptoVerifyView: View {
     var content: some View {
         VStack(spacing: 16) {
             fields
-            if sendCryptoVerifyViewModel.blowfishShow {
-                blowfishView
-            }
+            
             if tx.isFastVault {
                 fastVaultButton
             }
+            
             pairedSignButton
         }
         .blur(radius: sendCryptoVerifyViewModel.isLoading ? 1 : 0)
@@ -88,6 +87,10 @@ struct SendCryptoVerifyView: View {
             VStack(spacing: 30) {
                 summary
                 checkboxes
+                
+                if sendCryptoVerifyViewModel.blowfishShow {
+                    blowfishView
+                }
             }
             .padding(.horizontal, 16)
         }

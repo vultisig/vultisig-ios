@@ -34,128 +34,73 @@ struct ChainDetailView: View {
     }
     
     var body: some View {
-        ZStack {
-            Background()
-            main
-            
-            if isLoading {
-                Loader()
-            }
-            
-            PopupCapsule(text: "addressCopied", showPopup: $showAlert)
-        }
-#if os(iOS)
-        .navigationTitle(NSLocalizedString(group.name, comment: ""))
-        .toolbar {
-            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                NavigationRefreshButton() {
-                    refreshAction()
+        content
+            .safeAreaInset(edge: .bottom) {
+                if group.chain == .base {
+                    #if os(macOS) || DEBUG
+                    weweButton()
+                    #endif
                 }
             }
-        }
-#endif
-        .safeAreaInset(edge: .bottom) {
-            if group.chain == .base {
-                #if os(macOS) || DEBUG
-                weweButton()
-                #endif
+            .navigationDestination(isPresented: $isSendLinkActive) {
+                SendCryptoView(
+                    tx: sendTx,
+                    vault: vault
+                )
             }
-        }
-        .navigationDestination(isPresented: $isSendLinkActive) {
-            SendCryptoView(
-                tx: sendTx,
-                vault: vault
-            )
-        }
-        .navigationDestination(isPresented: $isSwapLinkActive) {
-            if let fromCoin = tokens.first {
-                SwapCryptoView(fromCoin: fromCoin, vault: vault)
-            }
-        }
-        .navigationDestination(isPresented: $isWeweLinkActive) {
-            if let base = vault.coin(for: TokensStore.Token.baseEth), let wewe = vault.coin(for: TokensStore.Token.baseWewe) {
-                SwapCryptoView(fromCoin: base, toCoin: wewe, vault: vault)
-            }
-        }
-        .navigationDestination(isPresented: $isMemoLinkActive) {
-            TransactionMemoView(
-                tx: sendTx,
-                vault: vault
-            )
-        }
-        .refreshable {
-            refreshAction()
-        }
-        .sheet(isPresented: Binding<Bool>(
-            get: { sheetType != nil },
-            set: { newValue in
-                if !newValue {
-                    sheetType = nil
+            .navigationDestination(isPresented: $isSwapLinkActive) {
+                if let fromCoin = tokens.first {
+                    SwapCryptoView(fromCoin: fromCoin, vault: vault)
                 }
             }
-        )) {
-            if let sheetType = sheetType {
-                switch sheetType {
-                case .tokenSelection:
-                    NavigationView {
-                        TokenSelectionView(
-                            chainDetailView: self,
-                            vault: vault,
-                            group: group
-                        )
+            .navigationDestination(isPresented: $isWeweLinkActive) {
+                if let base = vault.coin(for: TokensStore.Token.baseEth), let wewe = vault.coin(for: TokensStore.Token.baseWewe) {
+                    SwapCryptoView(fromCoin: base, toCoin: wewe, vault: vault)
+                }
+            }
+            .navigationDestination(isPresented: $isMemoLinkActive) {
+                TransactionMemoView(
+                    tx: sendTx,
+                    vault: vault
+                )
+            }
+            .refreshable {
+                refreshAction()
+            }
+            .sheet(isPresented: Binding<Bool>(
+                get: { sheetType != nil },
+                set: { newValue in
+                    if !newValue {
+                        sheetType = nil
                     }
-                case .customToken:
-                    NavigationView {
-                        CustomTokenView(
-                            chainDetailView: self,
-                            vault: vault,
-                            group: group
-                        )
+                }
+            )) {
+                if let sheetType = sheetType {
+                    switch sheetType {
+                    case .tokenSelection:
+                        NavigationView {
+                            TokenSelectionView(
+                                chainDetailView: self,
+                                vault: vault,
+                                group: group
+                            )
+                        }
+                    case .customToken:
+                        NavigationView {
+                            CustomTokenView(
+                                chainDetailView: self,
+                                vault: vault,
+                                group: group
+                            )
+                        }
                     }
                 }
             }
-        }
-        .onAppear {
-            Task {
-                await setData()
-            }
-        }
-    }
-    
-    var main: some View {
-        VStack {
-#if os(macOS)
-            headerMac
-#endif
-            view
-        }
-    }
-    
-    var headerMac: some View {
-        ChainDetailHeader(title: group.name, refreshAction: refreshAction)
-    }
-    
-    var view: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                actionButtons
-                content
-                
-                if viewModel.hasTokens(chain: group.chain) {
-                    addButton
+            .onAppear {
+                Task {
+                    await setData()
                 }
             }
-            .buttonStyle(BorderlessButtonStyle())
-            .background(Color.backgroundBlue)
-            .colorScheme(.dark)
-            .padding(.horizontal, 16)
-    #if os(iOS)
-            .padding(.vertical, 30)
-    #elseif os(macOS)
-            .padding(.horizontal, 24)
-            .padding(.vertical, 8)
-    #endif
-        }
     }
     
     var actionButtons: some View {
@@ -168,7 +113,7 @@ struct ChainDetailView: View {
         )
     }
     
-    var content: some View {
+    var views: some View {
         VStack(spacing: 0) {
             header
             cells
@@ -189,25 +134,6 @@ struct ChainDetailView: View {
         ForEach(tokens, id: \.id) { coin in
             getCoinCell(coin)
         }
-    }
-    
-    var addButton: some View {
-#if os(iOS)
-        Button {
-            sheetType = .tokenSelection
-        } label: {
-            chooseTokensButton(NSLocalizedString("chooseTokens", comment: "Choose Tokens"))
-        }
-#elseif os(macOS)
-        NavigationLink {
-            sheetView
-                .onAppear {
-                    sheetType = .tokenSelection
-                }
-        } label: {
-            chooseTokensButton(NSLocalizedString("chooseTokens", comment: "Choose Tokens"))
-        }
-#endif
     }
     
     var sheetView: some View {
@@ -242,28 +168,6 @@ struct ChainDetailView: View {
         .padding(.bottom, 32)
     }
 
-    private func weweButton() -> some View {
-        Button {
-            viewModel.selectWeweIfNeeded(vault: vault)
-            isWeweLinkActive = true
-        } label: {
-            FilledLabelButton {
-                HStack(spacing: 10) {
-                    Image("BuyWewe")
-                    Text("BUY $WEWE")
-                        .foregroundColor(.blue600)
-#if os(iOS)
-                        .font(.body16MontserratBold)
-#elseif os(macOS)
-                        .font(.body14MontserratBold)
-#endif
-                }
-                .frame(height: 44)
-            }
-        }
-        .padding(40)
-    }
-
     private func getCoinCell(_ coin: Coin) -> some View {
         VStack(spacing: 0) {
             Separator()
@@ -284,7 +188,7 @@ struct ChainDetailView: View {
         }
     }
     
-    private func refreshAction(){
+    func refreshAction(){
         Task {
             isLoading = true
             for coin in group.coins {
