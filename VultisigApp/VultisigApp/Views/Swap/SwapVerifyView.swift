@@ -88,7 +88,7 @@ struct SwapVerifyView: View {
         Button {
             fastPasswordPresented = true
         } label: {
-            FilledButton(title: "Fast Sign")
+            FilledButton(title: NSLocalizedString("fastSign", comment: ""))
         }
         .disabled(!verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired))
         .opacity(verifyViewModel.isValidForm(shouldApprove: tx.isApproveRequired) ? 1 : 0.5)
@@ -171,4 +171,12 @@ struct SwapVerifyView: View {
         .font(.body16MenloBold)
         .foregroundColor(.neutral100)
     }
+}
+
+#Preview {
+    SwapVerifyView(
+        tx: SwapTransaction(),
+        swapViewModel: SwapCryptoViewModel(),
+        vault: Vault.example
+    )
 }
