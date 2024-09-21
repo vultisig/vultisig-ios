@@ -11,34 +11,15 @@ struct TransactionsView: View {
     @ObservedObject var group: GroupedChain
     
     var body: some View {
-        ZStack {
-            Background()
-            main
-        }
-#if os(iOS)
-        .navigationTitle(NSLocalizedString("transactions", comment: "Transactions"))
-#endif
-    }
-    
-    var main: some View {
-        VStack {
-#if os(macOS)
-            headerMac
-#endif
-            view
-        }
-    }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: "transactions")
+        content
     }
     
     var view: some View {
-        content
+        states
             .padding(.top, 30)
     }
     
-    var content: some View {
+    var states: some View {
         let coin = group.coins.first
         let bitcoinCondition = coin?.chain.chainType == .UTXO
         
