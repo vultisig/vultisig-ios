@@ -20,32 +20,7 @@ struct SetupQRCodeView: View {
     @EnvironmentObject var viewModel: HomeViewModel
     
     var body: some View {
-        ZStack {
-            Background()
-            main
-        }
-#if os(iOS)
-        .navigationTitle(NSLocalizedString("setup", comment: "Setup title"))
-        .toolbar {
-            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                NavigationHelpButton()
-            }
-        }
-#endif
-    }
-    
-    var main: some View {
-        VStack(spacing: 0) {
-#if os(macOS)
-            headerMac
-#endif
-            view
-        }
-    }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: "setup")
-            .padding(.bottom, 8)
+        content
     }
     
     var view: some View {
@@ -98,29 +73,6 @@ struct SetupQRCodeView: View {
         } label: {
             FilledButton(title: "start".uppercased())
         }
-    }
-
-    var pairButton: some View {
-        Button(action: {
-            showSheet = true
-        }) {
-            OutlineButton(title: "pair")
-        }
-#if os(iOS)
-        .sheet(isPresented: $showSheet, content: {
-            GeneralCodeScannerView(
-                showSheet: $showSheet,
-                shouldJoinKeygen: $shouldJoinKeygen,
-                shouldKeysignTransaction: .constant(false), // CodeScanner used for keygen only
-                shouldSendCrypto: .constant(false),         // -
-                selectedChain: .constant(nil),              // -
-                sendTX: SendTransaction()                   // -
-            )
-        })
-        .navigationDestination(isPresented: $shouldJoinKeygen) {
-            JoinKeygenView(vault: makeVault())
-        }
-#endif
     }
 
     private func makeVault() -> Vault {
