@@ -402,6 +402,7 @@
 		A6C670C52C9D173800F59B6A /* VaultDetailQRCodeView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C670C42C9D173800F59B6A /* VaultDetailQRCodeView+iOS.swift */; };
 		A6C670C72C9D174000F59B6A /* VaultDetailQRCodeView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C670C62C9D174000F59B6A /* VaultDetailQRCodeView+macOS.swift */; };
 		A6C670C92C9E773300F59B6A /* VULTFileDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C670C82C9E773300F59B6A /* VULTFileDocument.swift */; };
+		A6C670CB2C9E8BAB00F59B6A /* VultExtensionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C670CA2C9E8BAB00F59B6A /* VultExtensionViewModel.swift */; };
 		A6C9D5C12BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C9D5C02BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift */; };
 		A6CBA8F02BA2A629008B110C /* ImportWalletUploadSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CBA8EF2BA2A629008B110C /* ImportWalletUploadSection.swift */; };
 		A6CBF2DC2C251D4100FD8080 /* LookingForDevicesLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CBF2DB2C251D4100FD8080 /* LookingForDevicesLoader.swift */; };
@@ -1023,6 +1024,7 @@
 		A6C670C42C9D173800F59B6A /* VaultDetailQRCodeView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VaultDetailQRCodeView+iOS.swift"; sourceTree = "<group>"; };
 		A6C670C62C9D174000F59B6A /* VaultDetailQRCodeView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VaultDetailQRCodeView+macOS.swift"; sourceTree = "<group>"; };
 		A6C670C82C9E773300F59B6A /* VULTFileDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VULTFileDocument.swift; sourceTree = "<group>"; };
+		A6C670CA2C9E8BAB00F59B6A /* VultExtensionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VultExtensionViewModel.swift; sourceTree = "<group>"; };
 		A6C9D5C02BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignVaultMismatchErrorView.swift; sourceTree = "<group>"; };
 		A6CBA8EF2BA2A629008B110C /* ImportWalletUploadSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportWalletUploadSection.swift; sourceTree = "<group>"; };
 		A6CBF2DB2C251D4100FD8080 /* LookingForDevicesLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LookingForDevicesLoader.swift; sourceTree = "<group>"; };
@@ -1849,6 +1851,7 @@
 				A5F596BE2C7FB0C5008D5339 /* SendGasSettingsViewModel.swift */,
 				A6182F2A2C9225EA0059BFDD /* MacCheckUpdateViewModel.swift */,
 				A622C8612C9BEC2100908332 /* PhoneCheckUpdateViewModel.swift */,
+				A6C670CA2C9E8BAB00F59B6A /* VultExtensionViewModel.swift */,
 			);
 			path = "View Models";
 			sourceTree = "<group>";
@@ -3060,6 +3063,7 @@
 				A53287B52C4DB874009FD3D3 /* CoinPickerView.swift in Sources */,
 				A60CA7EB2BB1020900FDEB5C /* DetectOrientation.swift in Sources */,
 				B5C4A42C2C62EC6500AF9B8B /* AddressService.swift in Sources */,
+				A6C670CB2C9E8BAB00F59B6A /* VultExtensionViewModel.swift in Sources */,
 				D9AD8EDE2B6730430009F8D5 /* WelcomeView.swift in Sources */,
 				A6C6709C2C9D0B3F00F59B6A /* ChainSelectionView+iOS.swift in Sources */,
 				B53D8CCA2BF7F22500B795D3 /* TransactionMemoUnbond.swift in Sources */,

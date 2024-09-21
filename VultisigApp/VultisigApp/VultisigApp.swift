@@ -20,6 +20,7 @@ struct VultisigApp: App {
     @StateObject var settingsViewModel = SettingsViewModel.shared
     @StateObject var homeViewModel = HomeViewModel()
     @StateObject var settingsDefaultChainViewModel = SettingsDefaultChainViewModel()
+    @StateObject var vultExtensionViewModel = VultExtensionViewModel()
     @StateObject var macCheckUpdateViewModel = MacCheckUpdateViewModel()
     @StateObject var phoneCheckUpdateViewModel = PhoneCheckUpdateViewModel()
     
@@ -45,6 +46,10 @@ struct VultisigApp: App {
         
         DocumentGroup(newDocument: VULTFileDocument()) { file in
             contentView
+                .environmentObject(vultExtensionViewModel)
+                .onAppear {
+                    vultExtensionViewModel.documentData = file
+                }
         }
         .modelContainer(sharedModelContainer)
         .onChange(of: scenePhase) {
