@@ -25,6 +25,10 @@ struct SendCryptoView: View {
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     
     var body: some View {
+        container
+    }
+    
+    var content: some View {
         ZStack {
             Background()
             main
@@ -48,47 +52,6 @@ struct SendCryptoView: View {
             sendCryptoViewModel.stopMediator()
         }
         .navigationBarBackButtonHidden(sendCryptoViewModel.currentIndex != 1 ? true : false)
-#if os(iOS)
-        .navigationTitle(NSLocalizedString(sendCryptoViewModel.currentTitle, comment: "SendCryptoView title"))
-        .toolbar {
-            if sendCryptoViewModel.currentIndex != 1 {
-                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                    backButton
-                }
-            }
-            if showFeeSettings {
-                ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                    settingsButton
-                }
-            }
-            if sendCryptoViewModel.currentIndex == 3 {
-                ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                    NavigationQRShareButton(
-                        vault: vault,
-                        type: .Keysign,
-                        renderedImage: shareSheetViewModel.renderedImage
-                    )
-                }
-            }
-        }
-#endif
-    }
-    
-    var main: some View {
-        VStack {
-#if os(macOS)
-            headerMac
-#endif
-            view
-        }
-    }
-    
-    var headerMac: some View {
-        SendCryptoHeader(
-            vault: vault,
-            sendCryptoViewModel: sendCryptoViewModel,
-            shareSheetViewModel: shareSheetViewModel
-        )
     }
 
     var view: some View {
