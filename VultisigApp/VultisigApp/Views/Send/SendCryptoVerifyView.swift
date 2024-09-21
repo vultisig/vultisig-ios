@@ -136,7 +136,7 @@ struct SendCryptoVerifyView: View {
         Button {
             fastPasswordPresented = true
         } label: {
-            FilledButton(title: "Fast Sign")
+            FilledButton(title: NSLocalizedString("fastSign", comment: ""))
         }
         .padding(.horizontal, 40)
         .sheet(isPresented: $fastPasswordPresented) {
