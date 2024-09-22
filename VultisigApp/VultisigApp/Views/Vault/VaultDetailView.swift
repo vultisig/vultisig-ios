@@ -45,6 +45,9 @@ struct VaultDetailView: View {
             onAppear()
         }
         .onChange(of: homeViewModel.selectedVault?.pubKeyECDSA) {
+            if appState.currentVault?.pubKeyECDSA == homeViewModel.selectedVault?.pubKeyECDSA {
+                return
+            }
             print("on vault Pubkey change \(homeViewModel.selectedVault?.pubKeyECDSA ?? "")")
             appState.currentVault = homeViewModel.selectedVault
             setData()
