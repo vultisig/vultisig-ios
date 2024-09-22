@@ -61,7 +61,6 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         fastVaultPassword: String?,
         fastVaultEmail: String?
     ) {
-        print("KeygenPeerDiscoveryViewMode: setData called")
         self.vault = vault
         self.tssType = tssType
         self.participantDiscovery = participantDiscovery
