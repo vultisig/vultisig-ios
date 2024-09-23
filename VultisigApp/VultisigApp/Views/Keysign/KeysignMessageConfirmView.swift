@@ -27,7 +27,7 @@ struct KeysignMessageConfirmView: View {
             }
             .foregroundColor(.neutral0)
             .onAppear {
-                isLoading = true
+                isLoading = false // disabled so it does not block the sending
                 Task {
                     do {
                         try await viewModel.blowfishTransactionScan()

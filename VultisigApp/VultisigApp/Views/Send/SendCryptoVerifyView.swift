@@ -37,7 +37,7 @@ struct SendCryptoVerifyView: View {
             sendCryptoVerifyViewModel.isLoading = false
         }
         .onAppear {
-            isLoading = true
+            isLoading = false // disabled so it does not block the sending
             Task {
                 do {
                     try await sendCryptoVerifyViewModel.blowfishTransactionScan(tx: tx, vault: vault)
