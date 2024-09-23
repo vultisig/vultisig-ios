@@ -121,9 +121,11 @@ struct SendGasSettingsView: View {
                         .cornerRadius(30)
                 } else {
                     OutlineButton(title: mode.title, gradient: .primaryGradientHorizontal)
+                        .contentShape(Rectangle())
                 }
             }
         }
+        .buttonStyle(.plain)
     }
 
     var backButton: some View {
