@@ -10,15 +10,15 @@ import SwiftUI
 
 extension SendGasSettingsView {
     var content: some View {
-        NavigationView {
-            ZStack {
-                Background()
+        ZStack {
+            Background()
+                .frame(width: 500)
+            
+            VStack {
+                headerMac
                 view
+                buttons
             }
-            .navigationTitle("Advanced")
-        }
-        .task {
-            try? await viewModel.fetch(chain: viewModel.chain)
         }
     }
     
@@ -51,6 +51,27 @@ extension SendGasSettingsView {
                 .foregroundColor(.blue600)
         )
         .padding(.horizontal, 16)
+    }
+
+    var headerMac: some View {
+        GeneralMacHeader(title: "Advanced")
+    }
+
+    var buttons: some View {
+        VStack(spacing: 20) {
+            continueButton
+        }
+        .padding(40)
+    }
+
+    var continueButton: some View {
+        Button(action: {
+            save()
+            presentationMode.wrappedValue.dismiss()
+        }) {
+            FilledButton(title: "save")
+        }
+        .buttonStyle(.plain)
     }
 }
 #endif

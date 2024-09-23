@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SendCryptoHeader: View {
     let vault: Vault
+    @Binding var settingsPresented: Bool
     @ObservedObject var sendCryptoViewModel: SendCryptoViewModel
     @ObservedObject var shareSheetViewModel: ShareSheetViewModel
     
@@ -44,8 +45,17 @@ struct SendCryptoHeader: View {
                 type: .Keysign,
                 renderedImage: shareSheetViewModel.renderedImage
             )
-            .opacity(sendCryptoViewModel.currentIndex==3 ? 1 : 0)
+            .opacity(sendCryptoViewModel.currentIndex == 3 ? 1 : 0)
             .disabled(sendCryptoViewModel.currentIndex != 3)
+
+            Button {
+                settingsPresented = true
+            } label: {
+                Image(systemName: "gearshape")
+            }
+            .foregroundColor(.neutral0)
+            .opacity(sendCryptoViewModel.currentIndex == 1 ? 1 : 0)
+            .disabled(sendCryptoViewModel.currentIndex != 1)
         }
     }
     
@@ -73,7 +83,8 @@ struct SendCryptoHeader: View {
 
 #Preview {
     SendCryptoHeader(
-        vault: Vault.example,
+        vault: Vault.example, 
+        settingsPresented: .constant(false),
         sendCryptoViewModel: SendCryptoViewModel(),
         shareSheetViewModel: ShareSheetViewModel()
     )

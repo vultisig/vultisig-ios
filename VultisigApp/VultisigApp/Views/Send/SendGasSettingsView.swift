@@ -15,12 +15,15 @@ protocol SendGasSettingsOutput {
 struct SendGasSettingsView: View {
     @Environment(\.presentationMode) var presentationMode
 
-    @ObservedObject var viewModel: SendGasSettingsViewModel
+    @StateObject var viewModel: SendGasSettingsViewModel
 
     let output: SendGasSettingsOutput
 
     var body: some View {
         content
+            .task {
+                try? await viewModel.fetch(chain: viewModel.chain)
+            }
     }
 
     var view: some View {
@@ -38,7 +41,7 @@ struct SendGasSettingsView: View {
     var baseFeeRow: some View {
         VStack {
             title(text: "Current Base Fee (Gwei)")
-            textField(title: "Base Fee", text: $viewModel.baseFee, disabled: true)
+            label(title: "Base Fee", text: viewModel.baseFee)
         }
     }
 
@@ -82,6 +85,27 @@ struct SendGasSettingsView: View {
         .padding(.horizontal, 16)
     }
 
+    func label(title: String, text: String) -> some View {
+        VStack {
+            HStack {
+                Text(text.isEmpty ? title : text)
+                    .font(.body16Menlo)
+                    .foregroundColor(.neutral300)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 16)
+
+                Spacer()
+            }
+
+        }
+        .background(
+            RoundedRectangle(cornerSize: .init(width: 5, height: 5))
+                .foregroundColor(.blue600)
+        )
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 16)
+    }
+
     func modeTab(mode: FeeMode) -> some View {
         Button {
             viewModel.selectedMode = mode
@@ -97,9 +121,11 @@ struct SendGasSettingsView: View {
                         .cornerRadius(30)
                 } else {
                     OutlineButton(title: mode.title, gradient: .primaryGradientHorizontal)
+                        .contentShape(Rectangle())
                 }
             }
         }
+        .buttonStyle(.plain)
     }
 
     var backButton: some View {
