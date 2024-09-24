@@ -68,6 +68,6 @@ struct FastVaultSetPasswordView: View {
     }
 
     var isSaveButtonDisabled: Bool {
-        return password != verifyPassword
+        return password.isEmpty || password != verifyPassword
     }
 }
