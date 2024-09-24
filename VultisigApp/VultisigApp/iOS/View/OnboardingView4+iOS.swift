@@ -16,6 +16,6 @@ extension OnboardingView4 {
 }
 
 #Preview {
-    OnboardingView4()
+    OnboardingView4(tabIndex: .constant(4))
 }
 #endif

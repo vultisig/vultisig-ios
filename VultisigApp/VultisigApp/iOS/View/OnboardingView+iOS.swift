@@ -17,10 +17,10 @@ extension OnboardingView {
     
     var tabs: some View {
         TabView(selection: $tabIndex) {
-            OnboardingView1(tabIndex: .constant(nil)).tag(0)
-            OnboardingView2(tabIndex: .constant(nil)).tag(1)
-            OnboardingView3(tabIndex: .constant(nil)).tag(2)
-            OnboardingView4().tag(3)
+            OnboardingView1(tabIndex: .constant(1)).tag(0)
+            OnboardingView2(tabIndex: .constant(2)).tag(1)
+            OnboardingView3(tabIndex: .constant(3)).tag(2)
+            OnboardingView4(tabIndex: .constant(4)).tag(3)
         }
         .tabViewStyle(PageTabViewStyle())
         .frame(maxHeight: .infinity)

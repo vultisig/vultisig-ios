@@ -16,6 +16,6 @@ extension OnboardingView1 {
 }
 
 #Preview {
-    OnboardingView1(tabIndex: .constant(nil))
+    OnboardingView1(tabIndex: .constant(1))
 }
 #endif

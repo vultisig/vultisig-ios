@@ -9,7 +9,6 @@
 import SwiftUI
 
 extension OnboardingView {
-    
     var container: some View {
         content
     }
