@@ -19,7 +19,7 @@ extension OnboardingView {
         TabView(selection: $tabIndex) {
             OnboardingView1(tabIndex: .constant(nil)).tag(0)
             OnboardingView2(tabIndex: .constant(nil)).tag(1)
-            OnboardingView3().tag(2)
+            OnboardingView3(tabIndex: .constant(nil)).tag(2)
             OnboardingView4().tag(3)
         }
         .tabViewStyle(PageTabViewStyle())
