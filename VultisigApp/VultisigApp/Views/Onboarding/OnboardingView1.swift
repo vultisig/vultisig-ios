@@ -8,6 +8,10 @@
 import SwiftUI
 
 struct OnboardingView1: View {
+#if os(macOS)
+    @Binding var tabIndex: Int
+#endif
+    
     var body: some View {
         container
     }
@@ -32,9 +36,4 @@ struct OnboardingView1: View {
             .multilineTextAlignment(.center)
             .padding(.horizontal, 50)
     }
-}
-
-#Preview {
-//    OnboardingView1()
-//    OnboardingView1(tabIndex: .constant(0))
 }

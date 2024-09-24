@@ -77,7 +77,7 @@ struct OnboardingView: View {
         }
     }
     
-    private func skipTapped() {
+    func skipTapped() {
         moveToVaultView()
     }
     

@@ -23,7 +23,7 @@ struct SettingsCurrencySelectionView: View {
         }
     }
     
-    private func handleSelection(_ currency: SettingsCurrency) {
+    func handleSelection(_ currency: SettingsCurrency) {
         isLoading = true
         settingsViewModel.selectedCurrency = currency
         

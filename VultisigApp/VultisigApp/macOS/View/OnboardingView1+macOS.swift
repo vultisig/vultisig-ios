@@ -9,8 +9,6 @@
 import SwiftUI
 
 extension OnboardingView1 {
-    @Binding var tabIndex: Int
-    
     var container: some View {
         ZStack {
             content
@@ -37,5 +35,9 @@ extension OnboardingView1 {
         .buttonStyle(PlainButtonStyle())
         .background(Color.clear)
     }
+}
+
+#Preview {
+    OnboardingView1(tabIndex: .constant(0))
 }
 #endif

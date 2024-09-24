@@ -14,4 +14,8 @@ extension OnboardingView1 {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
+
+#Preview {
+    OnboardingView1()
+}
 #endif
