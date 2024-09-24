@@ -14,57 +14,13 @@ struct SettingsCurrencySelectionView: View {
     @State var isLoading = false
     
     var body: some View {
-        ZStack {
-            Background()
-            main
-            
-            if isLoading {
-                Loader()
-            }
-        }
-#if os(iOS)
-        .navigationTitle(NSLocalizedString("currency", comment: "Currency"))
-#endif
-    }
-    
-    var main: some View {
-        VStack(spacing: 0) {
-#if os(macOS)
-            headerMac
-#endif
-            view
-        }
-    }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: "currency")
-            .padding(.bottom, 8)
+        content
     }
     
     var view: some View {
         ScrollView {
             cells
         }
-    }
-    
-    var cells: some View {
-        VStack(spacing: 16) {
-            ForEach(SettingsCurrency.allCases, id: \.self) { currency in
-                Button {
-                    handleSelection(currency)
-                } label: {
-                    SettingSelectionCell(
-                        title: currency.rawValue,
-                        isSelected: currency.rawValue == settingsViewModel.selectedCurrency.rawValue
-                    )
-                }
-            }
-        }
-        .padding(15)
-        .padding(.top, 30)
-#if os(macOS)
-        .padding(.horizontal, 25)
-#endif
     }
     
     private func handleSelection(_ currency: SettingsCurrency) {
