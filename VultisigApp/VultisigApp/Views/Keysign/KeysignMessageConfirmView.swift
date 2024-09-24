@@ -23,20 +23,11 @@ struct KeysignMessageConfirmView: View {
             VStack(alignment: .leading, spacing: 24) {
                 title
                 summary
-                
-                HStack {
-                    Spacer()
-                    if viewModel.blowfishShow {
-                        blowfishView
-                    }
-                    Spacer()
-                }
-                
                 button
             }
             .foregroundColor(.neutral0)
             .onAppear {
-                isLoading = true
+                isLoading = false // disabled so it does not block the sending
                 Task {
                     do {
                         try await viewModel.blowfishTransactionScan()
@@ -59,10 +50,9 @@ struct KeysignMessageConfirmView: View {
     }
     
     var blowfishView: some View {
-        VStack {
-            BlowfishWarningInformationNote(viewModel: blowfishViewModel)
+        BlowfishWarningInformationNote(viewModel: blowfishViewModel)
                 .padding(.horizontal, 16)
-        }
+                .frame(maxWidth: .infinity)
     }
     
     var title: some View {
@@ -93,6 +83,10 @@ struct KeysignMessageConfirmView: View {
             .background(Color.blue600)
             .cornerRadius(10)
             .padding(16)
+            
+            if viewModel.blowfishShow {
+                blowfishView
+            }
         }
     }
     
@@ -145,5 +139,8 @@ struct KeysignMessageConfirmView: View {
 }
 
 #Preview {
-    KeysignMessageConfirmView(viewModel: JoinKeysignViewModel())
+    ZStack {
+        Background()
+        KeysignMessageConfirmView(viewModel: JoinKeysignViewModel())
+    }
 }

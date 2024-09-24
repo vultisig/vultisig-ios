@@ -52,6 +52,17 @@ struct SendCryptoView: View {
             sendCryptoViewModel.stopMediator()
         }
         .navigationBarBackButtonHidden(sendCryptoViewModel.currentIndex != 1 ? true : false)
+        .sheet(isPresented: $settingsPresented) {
+            SendGasSettingsView(
+                viewModel: SendGasSettingsViewModel(
+                    coin: tx.coin,
+                    vault: vault,
+                    gasLimit: tx.gasLimit,
+                    selectedMode: tx.feeMode
+                ),
+                output: self
+            )
+        }
     }
 
     var view: some View {
@@ -152,17 +163,6 @@ struct SendCryptoView: View {
             Image(systemName: "gearshape")
         }
         .foregroundColor(.neutral0)
-        .sheet(isPresented: $settingsPresented) {
-            SendGasSettingsView(
-                viewModel: SendGasSettingsViewModel(
-                    coin: tx.coin, 
-                    vault: vault,
-                    gasLimit: tx.gasLimit,
-                    selectedMode: tx.feeMode
-                ),
-                output: self
-            )
-        }
     }
 
     var showFeeSettings: Bool {

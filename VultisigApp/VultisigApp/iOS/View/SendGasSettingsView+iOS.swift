@@ -20,9 +20,6 @@ extension SendGasSettingsView {
             .navigationBarTitleTextColor(.neutral0)
             .navigationBarTitleDisplayMode(.inline)
         }
-        .task {
-            try? await viewModel.fetch(chain: viewModel.chain)
-        }
     }
     
     func textField(title: String, text: Binding<String>, label: String? = nil, disabled: Bool = false) -> some View {

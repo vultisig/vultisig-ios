@@ -12,7 +12,6 @@ struct EditVaultView: View {
     let vault: Vault
 
     @Query var vaults: [Vault]
-
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
