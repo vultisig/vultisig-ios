@@ -11,6 +11,10 @@ struct SettingsDefaultChainView: View {
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
 
     var body: some View {
+        container
+    }
+    
+    var content: some View {
         ZStack {
             Background()
             main
@@ -19,26 +23,9 @@ struct SettingsDefaultChainView: View {
                 Loader()
             }
         }
-#if os(iOS)
-        .navigationTitle(NSLocalizedString("defaultChains", comment: ""))
-#endif
-    }
-    
-    var main: some View {
-        VStack(spacing: 0) {
-#if os(macOS)
-            headerMac
-#endif
-            content
-        }
-    }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: "defaultChains")
-            .padding(.bottom, 8)
     }
 
-    var content: some View {
+    var cellContent: some View {
         VStack {
             search
             cells
