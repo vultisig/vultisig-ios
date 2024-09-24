@@ -29,7 +29,7 @@ struct SettingsLanguageSelectionView: View {
         }
     }
     
-    private func handleSelection(_ language: SettingsLanguage) {
+    func handleSelection(_ language: SettingsLanguage) {
         settingsViewModel.selectedLanguage = language
         showAlert = true
     }

@@ -9,11 +9,7 @@
 import SwiftUI
 
 extension OnboardingView {
-    init() {
-       UIPageControl.appearance().currentPageIndicatorTintColor = UIColor(Color.turquoise600)
-        UIPageControl.appearance().pageIndicatorTintColor = UIColor(Color.turquoise600).withAlphaComponent(0.2)
-   }
-    
+   
     var container: some View {
         content
             .toolbar(.hidden, for: .navigationBar)
@@ -37,6 +33,11 @@ extension OnboardingView {
         }
         .padding(.horizontal, 40)
         .padding(.bottom, 10)
+    }
+    
+    func tabViewSetup() {
+        UIPageControl.appearance().currentPageIndicatorTintColor = UIColor(Color.turquoise600)
+        UIPageControl.appearance().pageIndicatorTintColor = UIColor(Color.turquoise600).withAlphaComponent(0.2)
     }
 }
 #endif

@@ -9,6 +9,7 @@
 import SwiftUI
 
 extension OnboardingView {
+    
     var container: some View {
         content
     }
@@ -45,5 +46,7 @@ extension OnboardingView {
         .background(Color.clear)
         .padding(.bottom, 40)
     }
+    
+    func tabViewSetup() {}
 }
 #endif

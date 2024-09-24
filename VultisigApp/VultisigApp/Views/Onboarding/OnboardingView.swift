@@ -11,6 +11,10 @@ struct OnboardingView: View {
     @State var tabIndex = 0
     @EnvironmentObject var accountViewModel: AccountViewModel
     
+    init() {
+         tabViewSetup()
+    }
+    
     var body: some View {
         container
     }
