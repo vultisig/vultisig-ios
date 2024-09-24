@@ -13,61 +13,20 @@ struct SettingsLanguageSelectionView: View {
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
-        ZStack {
-            Background()
-            main
-        }
-#if os(iOS)
-        .navigationTitle(NSLocalizedString("language", comment: "Language"))
-#endif
-        .alert(isPresented: $showAlert) {
-            Alert(
-                title: Text(NSLocalizedString("languageChangeTitle", comment: "Language Changed")),
-                message: Text(NSLocalizedString("restart", comment: "Please restart the app to apply the new language settings.")),
-                dismissButton: .default(Text(NSLocalizedString("ok", comment: "OK")))
-            )
-        }
-    }
-    
-    var main: some View {
-        VStack(spacing: 0) {
-#if os(macOS)
-            headerMac
-#endif
-            view
-        }
-    }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: "language")
-            .padding(.bottom, 8)
+        content
+            .alert(isPresented: $showAlert) {
+                Alert(
+                    title: Text(NSLocalizedString("languageChangeTitle", comment: "Language Changed")),
+                    message: Text(NSLocalizedString("restart", comment: "Please restart the app to apply the new language settings.")),
+                    dismissButton: .default(Text(NSLocalizedString("ok", comment: "OK")))
+                )
+            }
     }
     
     var view: some View {
         ScrollView {
             cells
         }
-    }
-    
-    var cells: some View {
-        VStack(spacing: 16) {
-            ForEach(SettingsLanguage.allCases, id: \.self) { language in
-                Button {
-                    handleSelection(language)
-                } label: {
-                    SettingSelectionCell(
-                        title: language.rawValue,
-                        isSelected: language==settingsViewModel.selectedLanguage,
-                        description: language.description()
-                    )
-                }
-            }
-        }
-        .padding(15)
-        .padding(.top, 30)
-#if os(macOS)
-        .padding(.horizontal, 25)
-#endif
     }
     
     private func handleSelection(_ language: SettingsLanguage) {

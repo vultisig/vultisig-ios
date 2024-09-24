@@ -419,6 +419,8 @@
 		A6C670EB2C9E95E600F59B6A /* TransactionsView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C670EA2C9E95E600F59B6A /* TransactionsView+macOS.swift */; };
 		A6C670ED2CA26F5C00F59B6A /* SettingsView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C670EC2CA26F5C00F59B6A /* SettingsView+iOS.swift */; };
 		A6C670EF2CA26F6400F59B6A /* SettingsView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C670EE2CA26F6400F59B6A /* SettingsView+macOS.swift */; };
+		A6C670F12CA2744000F59B6A /* SettingsLanguageSelectionView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C670F02CA2744000F59B6A /* SettingsLanguageSelectionView+iOS.swift */; };
+		A6C670F32CA2744B00F59B6A /* SettingsLanguageSelectionView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C670F22CA2744B00F59B6A /* SettingsLanguageSelectionView+macOS.swift */; };
 		A6C9D5C12BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C9D5C02BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift */; };
 		A6CBA8F02BA2A629008B110C /* ImportWalletUploadSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CBA8EF2BA2A629008B110C /* ImportWalletUploadSection.swift */; };
 		A6CBF2DC2C251D4100FD8080 /* LookingForDevicesLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CBF2DB2C251D4100FD8080 /* LookingForDevicesLoader.swift */; };
@@ -1057,6 +1059,8 @@
 		A6C670EA2C9E95E600F59B6A /* TransactionsView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TransactionsView+macOS.swift"; sourceTree = "<group>"; };
 		A6C670EC2CA26F5C00F59B6A /* SettingsView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView+iOS.swift"; sourceTree = "<group>"; };
 		A6C670EE2CA26F6400F59B6A /* SettingsView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsView+macOS.swift"; sourceTree = "<group>"; };
+		A6C670F02CA2744000F59B6A /* SettingsLanguageSelectionView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsLanguageSelectionView+iOS.swift"; sourceTree = "<group>"; };
+		A6C670F22CA2744B00F59B6A /* SettingsLanguageSelectionView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsLanguageSelectionView+macOS.swift"; sourceTree = "<group>"; };
 		A6C9D5C02BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignVaultMismatchErrorView.swift; sourceTree = "<group>"; };
 		A6CBA8EF2BA2A629008B110C /* ImportWalletUploadSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportWalletUploadSection.swift; sourceTree = "<group>"; };
 		A6CBF2DB2C251D4100FD8080 /* LookingForDevicesLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LookingForDevicesLoader.swift; sourceTree = "<group>"; };
@@ -2056,6 +2060,7 @@
 				A6C670E42C9E954200F59B6A /* SendCryptoDoneView+iOS.swift */,
 				A6C670E82C9E95DC00F59B6A /* TransactionsView+iOS.swift */,
 				A6C670EC2CA26F5C00F59B6A /* SettingsView+iOS.swift */,
+				A6C670F02CA2744000F59B6A /* SettingsLanguageSelectionView+iOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -2118,6 +2123,7 @@
 				A6C670E62C9E954B00F59B6A /* SendCryptoDoneView+macOS.swift */,
 				A6C670EA2C9E95E600F59B6A /* TransactionsView+macOS.swift */,
 				A6C670EE2CA26F6400F59B6A /* SettingsView+macOS.swift */,
+				A6C670F22CA2744B00F59B6A /* SettingsLanguageSelectionView+macOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -3098,6 +3104,7 @@
 				DEFF58FC2BCFB384005DFDF9 /* MayaChainService.swift in Sources */,
 				DE63AE562BBA788D001BBE5C /* GaiaService.swift in Sources */,
 				A6966D202BA3DF0C00903CA4 /* OnboardingView1.swift in Sources */,
+				A6C670F12CA2744000F59B6A /* SettingsLanguageSelectionView+iOS.swift in Sources */,
 				B55C10762C6A724E0095D274 /* TransactionMemoAddPool.swift in Sources */,
 				A6725D432C40C45800D47716 /* AddressBookCell.swift in Sources */,
 				A6ECA1862C93F37200456110 /* NavigationQRShareButton+macOS.swift in Sources */,
@@ -3273,6 +3280,7 @@
 				A6C670B52C9D139100F59B6A /* CoinDetailView+iOS.swift in Sources */,
 				A50E793A2BFE30210031DB47 /* Storage.swift in Sources */,
 				A625D9C22C5AD15A0078FBF4 /* KeygenViewInstructions.swift in Sources */,
+				A6C670F32CA2744B00F59B6A /* SettingsLanguageSelectionView+macOS.swift in Sources */,
 				A6ECA1A92C9410D100456110 /* ShareSheetViewModel+iOS.swift in Sources */,
 				A63001B12C54AC0100D18E25 /* EditAddressBookView.swift in Sources */,
 				DEFF58F82BCF4E11005DFDF9 /* BackupVault.swift in Sources */,
