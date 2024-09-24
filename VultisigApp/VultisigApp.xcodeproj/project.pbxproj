@@ -423,6 +423,8 @@
 		A6C670F32CA2744B00F59B6A /* SettingsLanguageSelectionView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C670F22CA2744B00F59B6A /* SettingsLanguageSelectionView+macOS.swift */; };
 		A6C670F52CA2750C00F59B6A /* SettingsCurrencySelectionView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C670F42CA2750C00F59B6A /* SettingsCurrencySelectionView+iOS.swift */; };
 		A6C670F72CA2751500F59B6A /* SettingsCurrencySelectionView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C670F62CA2751500F59B6A /* SettingsCurrencySelectionView+macOS.swift */; };
+		A6C670F92CA2759E00F59B6A /* SettingsFAQView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C670F82CA2759E00F59B6A /* SettingsFAQView+iOS.swift */; };
+		A6C670FB2CA275A900F59B6A /* SettingsFAQView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C670FA2CA275A900F59B6A /* SettingsFAQView+macOS.swift */; };
 		A6C9D5C12BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C9D5C02BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift */; };
 		A6CBA8F02BA2A629008B110C /* ImportWalletUploadSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CBA8EF2BA2A629008B110C /* ImportWalletUploadSection.swift */; };
 		A6CBF2DC2C251D4100FD8080 /* LookingForDevicesLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CBF2DB2C251D4100FD8080 /* LookingForDevicesLoader.swift */; };
@@ -1065,6 +1067,8 @@
 		A6C670F22CA2744B00F59B6A /* SettingsLanguageSelectionView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsLanguageSelectionView+macOS.swift"; sourceTree = "<group>"; };
 		A6C670F42CA2750C00F59B6A /* SettingsCurrencySelectionView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsCurrencySelectionView+iOS.swift"; sourceTree = "<group>"; };
 		A6C670F62CA2751500F59B6A /* SettingsCurrencySelectionView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsCurrencySelectionView+macOS.swift"; sourceTree = "<group>"; };
+		A6C670F82CA2759E00F59B6A /* SettingsFAQView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsFAQView+iOS.swift"; sourceTree = "<group>"; };
+		A6C670FA2CA275A900F59B6A /* SettingsFAQView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsFAQView+macOS.swift"; sourceTree = "<group>"; };
 		A6C9D5C02BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignVaultMismatchErrorView.swift; sourceTree = "<group>"; };
 		A6CBA8EF2BA2A629008B110C /* ImportWalletUploadSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportWalletUploadSection.swift; sourceTree = "<group>"; };
 		A6CBF2DB2C251D4100FD8080 /* LookingForDevicesLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LookingForDevicesLoader.swift; sourceTree = "<group>"; };
@@ -2066,6 +2070,7 @@
 				A6C670EC2CA26F5C00F59B6A /* SettingsView+iOS.swift */,
 				A6C670F02CA2744000F59B6A /* SettingsLanguageSelectionView+iOS.swift */,
 				A6C670F42CA2750C00F59B6A /* SettingsCurrencySelectionView+iOS.swift */,
+				A6C670F82CA2759E00F59B6A /* SettingsFAQView+iOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -2130,6 +2135,7 @@
 				A6C670EE2CA26F6400F59B6A /* SettingsView+macOS.swift */,
 				A6C670F22CA2744B00F59B6A /* SettingsLanguageSelectionView+macOS.swift */,
 				A6C670F62CA2751500F59B6A /* SettingsCurrencySelectionView+macOS.swift */,
+				A6C670FA2CA275A900F59B6A /* SettingsFAQView+macOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -3118,6 +3124,7 @@
 				DEBF93972B8D5FEF002868CD /* KeysignPayload.swift in Sources */,
 				A6C670D32C9E8E2B00F59B6A /* NewWalletNameView+macOS.swift in Sources */,
 				A69069B72BCF53B600F28A8B /* NetworkPromptType.swift in Sources */,
+				A6C670FB2CA275A900F59B6A /* SettingsFAQView+macOS.swift in Sources */,
 				DE6DCB932B97D81C009A39D5 /* THORChainSwaps.swift in Sources */,
 				DE8AD74C2BC8E3FE00339775 /* KeygenVerify.swift in Sources */,
 				A6A41CAE2C63512D00C6858D /* ShareSheetViewController.swift in Sources */,
@@ -3329,6 +3336,7 @@
 				465B09A92B7C176700952DD9 /* SendTransaction.swift in Sources */,
 				A622C8542C9BC9E500908332 /* FastVaultSetPasswordView+macOS.swift in Sources */,
 				A622C83C2C9BB9C100908332 /* AddressBookView+macOS.swift in Sources */,
+				A6C670F92CA2759E00F59B6A /* SettingsFAQView+iOS.swift in Sources */,
 				A6C670862C9CF67E00F59B6A /* JoinKeysignView+macOS.swift in Sources */,
 				A6C670902C9CFE0B00F59B6A /* HomeView+iOS.swift in Sources */,
 				A69FBB9A2C8AD63C00A4B78B /* CreateVaultView+macOS.swift in Sources */,
