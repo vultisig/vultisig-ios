@@ -17,8 +17,8 @@ extension OnboardingView {
     
     var tabs: some View {
         TabView(selection: $tabIndex) {
-            OnboardingView1().tag(0)
-            OnboardingView2().tag(1)
+            OnboardingView1(tabIndex: .constant(nil)).tag(0)
+            OnboardingView2(tabIndex: .constant(nil)).tag(1)
             OnboardingView3().tag(2)
             OnboardingView4().tag(3)
         }

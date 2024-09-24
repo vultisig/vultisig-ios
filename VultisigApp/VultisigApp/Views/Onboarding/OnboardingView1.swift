@@ -8,9 +8,7 @@
 import SwiftUI
 
 struct OnboardingView1: View {
-#if os(macOS)
-    @Binding var tabIndex: Int
-#endif
+    @Binding var tabIndex: Int?
     
     var body: some View {
         container
