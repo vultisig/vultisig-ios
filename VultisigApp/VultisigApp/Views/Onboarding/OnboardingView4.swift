@@ -8,18 +8,10 @@
 import SwiftUI
 
 struct OnboardingView4: View {
-#if os(macOS)
-    @Binding var tabIndex: Int
-#endif
+    @Binding var tabIndex: Int?
     
     var body: some View {
-        ZStack {
-            content
-#if os(macOS)
-            navigationArrow
-#endif
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        container
     }
     
     var content: some View {
@@ -42,33 +34,4 @@ struct OnboardingView4: View {
             .multilineTextAlignment(.center)
             .padding(.horizontal, 50)
     }
-    
-#if os(macOS)
-    var navigationArrow: some View {
-        HStack {
-            previousButton
-            Spacer()
-            previousButton.opacity(0)
-        }
-        .padding(.horizontal, 30)
-        .buttonStyle(PlainButtonStyle())
-        .background(Color.clear)
-    }
-    
-    var previousButton: some View {
-        Button(action: {
-            tabIndex -= 1
-        }, label: {
-            NavigationButton(isLeft: true)
-        })
-    }
-#endif
-}
-
-#Preview {
-#if os(iOS)
-    OnboardingView4()
-#elseif os(macOS)
-    OnboardingView4(tabIndex: .constant(3))
-#endif
 }

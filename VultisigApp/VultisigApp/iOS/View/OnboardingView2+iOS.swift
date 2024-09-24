@@ -11,6 +11,7 @@ import SwiftUI
 extension OnboardingView2 {
     var container: some View {
         content
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 

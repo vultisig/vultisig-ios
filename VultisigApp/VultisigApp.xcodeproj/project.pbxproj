@@ -435,6 +435,8 @@
 		A6C6710B2CA27D1400F59B6A /* OnboardingView2+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C6710A2CA27D1400F59B6A /* OnboardingView2+macOS.swift */; };
 		A6C6710D2CA27EA000F59B6A /* OnboardingView3+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C6710C2CA27EA000F59B6A /* OnboardingView3+iOS.swift */; };
 		A6C6710F2CA27EAC00F59B6A /* OnboardingView3+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C6710E2CA27EAC00F59B6A /* OnboardingView3+macOS.swift */; };
+		A6C671112CA27F8C00F59B6A /* OnboardingView4+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C671102CA27F8C00F59B6A /* OnboardingView4+iOS.swift */; };
+		A6C671132CA27F9700F59B6A /* OnboardingView4+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C671122CA27F9700F59B6A /* OnboardingView4+macOS.swift */; };
 		A6C9D5C12BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C9D5C02BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift */; };
 		A6CBA8F02BA2A629008B110C /* ImportWalletUploadSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CBA8EF2BA2A629008B110C /* ImportWalletUploadSection.swift */; };
 		A6CBF2DC2C251D4100FD8080 /* LookingForDevicesLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CBF2DB2C251D4100FD8080 /* LookingForDevicesLoader.swift */; };
@@ -1089,6 +1091,8 @@
 		A6C6710A2CA27D1400F59B6A /* OnboardingView2+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OnboardingView2+macOS.swift"; sourceTree = "<group>"; };
 		A6C6710C2CA27EA000F59B6A /* OnboardingView3+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OnboardingView3+iOS.swift"; sourceTree = "<group>"; };
 		A6C6710E2CA27EAC00F59B6A /* OnboardingView3+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OnboardingView3+macOS.swift"; sourceTree = "<group>"; };
+		A6C671102CA27F8C00F59B6A /* OnboardingView4+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OnboardingView4+iOS.swift"; sourceTree = "<group>"; };
+		A6C671122CA27F9700F59B6A /* OnboardingView4+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OnboardingView4+macOS.swift"; sourceTree = "<group>"; };
 		A6C9D5C02BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignVaultMismatchErrorView.swift; sourceTree = "<group>"; };
 		A6CBA8EF2BA2A629008B110C /* ImportWalletUploadSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportWalletUploadSection.swift; sourceTree = "<group>"; };
 		A6CBF2DB2C251D4100FD8080 /* LookingForDevicesLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LookingForDevicesLoader.swift; sourceTree = "<group>"; };
@@ -2096,6 +2100,7 @@
 				A6C671042CA2792800F59B6A /* OnboardingView1+iOS.swift */,
 				A6C671082CA27D0500F59B6A /* OnboardingView2+iOS.swift */,
 				A6C6710C2CA27EA000F59B6A /* OnboardingView3+iOS.swift */,
+				A6C671102CA27F8C00F59B6A /* OnboardingView4+iOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -2166,6 +2171,7 @@
 				A6C671062CA2793F00F59B6A /* OnboardingView1+macOS.swift */,
 				A6C6710A2CA27D1400F59B6A /* OnboardingView2+macOS.swift */,
 				A6C6710E2CA27EAC00F59B6A /* OnboardingView3+macOS.swift */,
+				A6C671122CA27F9700F59B6A /* OnboardingView4+macOS.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -3192,6 +3198,7 @@
 				A622C8602C9BCE7100908332 /* PeerDiscoveryView+macOS.swift in Sources */,
 				B5E476AB2C1A13D7005DB485 /* dydx.swift in Sources */,
 				B5CA1A062C16C39700789B11 /* AsyncImageView.swift in Sources */,
+				A6C671112CA27F8C00F59B6A /* OnboardingView4+iOS.swift in Sources */,
 				B55C10782C6AC0820095D274 /* TransactionMemoWithdrawPool.swift in Sources */,
 				A6ECA1A02C93FC0000456110 /* VaultSetupCard+iOS.swift in Sources */,
 				A6C6708C2C9CFD0100F59B6A /* KeysignView+iOS.swift in Sources */,
@@ -3303,6 +3310,7 @@
 				A6833D862C65BF6D002029E1 /* JoinKeygenHeader.swift in Sources */,
 				A65BA9902BAD402A00B2D8AA /* KeysignMessageConfirmView.swift in Sources */,
 				B590DF8A2C2E88F900ED934E /* VoteOption.swift in Sources */,
+				A6C671132CA27F9700F59B6A /* OnboardingView4+macOS.swift in Sources */,
 				A6B7F49C2C4963F6006D83D1 /* VaultDetailQRCodeViewModel.swift in Sources */,
 				A5BA150C2C078FA000AA6C07 /* TokenSelectionViewModel.swift in Sources */,
 				A66A0BD52BA124D00021A483 /* EditVaultView.swift in Sources */,

@@ -1,5 +1,5 @@
 //
-//  OnboardingView3+iOS.swift
+//  OnboardingView4+iOS.swift
 //  VultisigApp
 //
 //  Created by Amol Kumar on 2024-09-24.
@@ -8,7 +8,7 @@
 #if os(iOS)
 import SwiftUI
 
-extension OnboardingView3 {
+extension OnboardingView4 {
     var container: some View {
         content
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -16,6 +16,6 @@ extension OnboardingView3 {
 }
 
 #Preview {
-    OnboardingView3(tabIndex: .constant(nil))
+    OnboardingView4()
 }
 #endif
