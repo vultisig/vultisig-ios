@@ -2082,7 +2082,6 @@
 				A6C670BC2C9D158500F59B6A /* BackupPasswordSetupView+iOS.swift */,
 				A6C670C02C9D16BD00F59B6A /* CustomTokenView+iOS.swift */,
 				A6C670C42C9D173800F59B6A /* VaultDetailQRCodeView+iOS.swift */,
-				A6386D9F2C90234400DDD58E /* Components */,
 				A6C670CC2C9E8D3500F59B6A /* SetupQRCodeView+iOS.swift */,
 				A6C670D02C9E8E1F00F59B6A /* NewWalletNameView+iOS.swift */,
 				A6C670D42C9E8EEF00F59B6A /* SwapCryptoView+iOS.swift */,
@@ -2101,6 +2100,7 @@
 				A6C671082CA27D0500F59B6A /* OnboardingView2+iOS.swift */,
 				A6C6710C2CA27EA000F59B6A /* OnboardingView3+iOS.swift */,
 				A6C671102CA27F8C00F59B6A /* OnboardingView4+iOS.swift */,
+				A6386D9F2C90234400DDD58E /* Components */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -2153,7 +2153,6 @@
 				A6C670BE2C9D158F00F59B6A /* BackupPasswordSetupView+macOS.swift */,
 				A6C670C22C9D16C600F59B6A /* CustomTokenView+macOS.swift */,
 				A6C670C62C9D174000F59B6A /* VaultDetailQRCodeView+macOS.swift */,
-				A6386DA22C90235600DDD58E /* Components */,
 				A6C670CE2C9E8D3F00F59B6A /* SetupQRCodeView+macOS.swift */,
 				A6C670D22C9E8E2B00F59B6A /* NewWalletNameView+macOS.swift */,
 				A6C670D62C9E8EFE00F59B6A /* SwapCryptoView+macOS.swift */,
@@ -2172,6 +2171,7 @@
 				A6C6710A2CA27D1400F59B6A /* OnboardingView2+macOS.swift */,
 				A6C6710E2CA27EAC00F59B6A /* OnboardingView3+macOS.swift */,
 				A6C671122CA27F9700F59B6A /* OnboardingView4+macOS.swift */,
+				A6386DA22C90235600DDD58E /* Components */,
 			);
 			path = View;
 			sourceTree = "<group>";
