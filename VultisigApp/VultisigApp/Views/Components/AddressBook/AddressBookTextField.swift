@@ -7,9 +7,6 @@
 
 import SwiftUI
 import UniformTypeIdentifiers
-#if os(iOS)
-import CodeScanner
-#endif
 
 struct AddressBookTextField: View {
     let title: String
@@ -22,47 +19,23 @@ struct AddressBookTextField: View {
     @State var isUploading: Bool = false
     
 #if os(iOS)
-    @State var selectedImage: UIImage?  // Store the selected image
+    @State var selectedImage: UIImage?
 #elseif os(macOS)
     @State var selectedImage: NSImage?
 #endif
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            titleContent
-            content
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-#if os(iOS)
-        .sheet(isPresented: $showScanner) {
-            codeScanner
-        }
-#elseif os(macOS)
-        .onDrop(of: [.image], isTargeted: $isUploading) { providers -> Bool in
-            OnDropQRUtils.handleOnDrop(providers: providers, handleImageQrCode: handleImageQrCode)
-        }
-#endif
-        .fileImporter(
-            isPresented: $showImagePicker,
-            allowedContentTypes: [UTType.image],
-            allowsMultipleSelection: false
-        ) { result in
-            do {
-                let qrCode = try Utils.handleQrCodeFromImage(result: result)
-                handleImageQrCode(data: qrCode)
-            } catch {
-                print(error)
-            }
-        }
-    }
-    
-    var content: some View {
-        textField
-            .overlay {
-                ZStack {
-                    if isUploading {
-                        overlay
-                    }
+        content
+            .fileImporter(
+                isPresented: $showImagePicker,
+                allowedContentTypes: [UTType.image],
+                allowsMultipleSelection: false
+            ) { result in
+                do {
+                    let qrCode = try Utils.handleQrCodeFromImage(result: result)
+                    handleImageQrCode(data: qrCode)
+                } catch {
+                    print(error)
                 }
             }
     }
@@ -90,48 +63,10 @@ struct AddressBookTextField: View {
             .font(.body14MontserratMedium)
     }
     
-    var textField: some View {
-        HStack {
-            field
-            
-            if showActions {
-                pasteButton
-#if os(iOS)
-                scanButton
-#elseif os(macOS)
-                fileButton
-#endif
-            }
-        }
-        .font(.body12Menlo)
-        .foregroundColor(.neutral0)
-        .frame(height: 48)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 12)
-        .background(Color.blue600)
-        .cornerRadius(10)
-        .colorScheme(.dark)
-    }
-    
     var placeholder: some View {
         Text(NSLocalizedString("typeHere", comment: ""))
             .foregroundColor(Color.neutral0)
             .frame(maxWidth: .infinity, alignment: .leading)
-    }
-    
-    var field: some View {
-        HStack(spacing: 0) {
-            TextField(NSLocalizedString("typeHere", comment: "").capitalized, text: $text)
-            .foregroundColor(.neutral0)
-            .submitLabel(.next)
-            .disableAutocorrection(true)
-            .borderlessTextFieldStyle()
-#if os(iOS)
-            .keyboardType(.default)
-            .textInputAutocapitalization(.never)
-            .textContentType(.oneTimeCode)
-#endif
-        }
     }
    
     var pasteButton: some View {
@@ -165,40 +100,9 @@ struct AddressBookTextField: View {
                 .foregroundColor(.neutral0)
                 .frame(width: 40, height: 40)
         }
-    }
+    }    
     
-#if os(iOS)
-    var codeScanner: some View {
-        QRCodeScannerView(showScanner: $showScanner, handleScan: handleScan)
-    }
-#endif
-    
-    private func pasteAddress() {
-#if os(iOS)
-        if let clipboardContent = UIPasteboard.general.string {
-            text = clipboardContent
-        }
-#elseif os(macOS)
-        let pasteboard = NSPasteboard.general
-        if let clipboardContent = pasteboard.string(forType: .string) {
-            text = clipboardContent
-        }
-#endif
-    }
-    
-#if os(iOS)
-    private func handleScan(result: Result<ScanResult, ScanError>) {
-        switch result {
-        case .success(let result):
-            text = result.string
-            showScanner = false
-        case .failure(let err):
-            print("fail to scan QR code,error:\(err.localizedDescription)")
-        }
-    }
-#endif
-    
-    private func handleImageQrCode(data: Data) {
+    func handleImageQrCode(data: Data) {
         text = String(data: data, encoding: .utf8) ?? ""
         showImagePicker = false
     }

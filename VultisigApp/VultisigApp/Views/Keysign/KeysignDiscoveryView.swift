@@ -154,8 +154,15 @@ struct KeysignDiscoveryView: View {
         if VultisigRelay.IsRelayEnabled {
             self.selectedNetwork = .Internet
         }
-        viewModel.setData(vault: vault, keysignPayload: keysignPayload, participantDiscovery: participantDiscovery, fastVaultPassword: fastVaultPassword)
-        
+
+        viewModel.setData(
+            vault: vault,
+            keysignPayload: keysignPayload,
+            participantDiscovery: participantDiscovery,
+            fastVaultPassword: fastVaultPassword,
+            onFastKeysign: { startKeysign() }
+        )
+
         qrCodeImage = viewModel.getQrImage(size: 100)
         
         guard let qrCodeImage else {
@@ -169,12 +176,9 @@ struct KeysignDiscoveryView: View {
         )
     }
     
-    func startKeysign(){
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            let isDisabled = viewModel.selections.count < (vault.getThreshold() + 1)
-            if !isDisabled {
-                keysignView = viewModel.startKeysign(vault: vault, viewModel: transferViewModel)
-            }
+    func startKeysign() {
+        if viewModel.isValidPeers(vault: vault) {
+            keysignView = viewModel.startKeysign(vault: vault, viewModel: transferViewModel)
         }
     }
     
@@ -199,7 +203,7 @@ struct KeysignDiscoveryView: View {
     private func setData(_ proxy: GeometryProxy) {
         let screenWidth = proxy.size.width
         
-        if screenWidth<380 {
+        if screenWidth < 380 {
             isPhoneSE = true
         }
     }

@@ -13,14 +13,14 @@ struct VaultDeletionDetails: View {
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
-    var body: some View {
 #if os(iOS)
         let spacing: CGFloat = 18
 #elseif os(macOS)
         let spacing: CGFloat = 12
 #endif
-                
-        return VStack(alignment: .leading, spacing: spacing) {
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: spacing) {
             title
             nameCell
             valueCell
@@ -95,17 +95,6 @@ struct VaultDeletionDetails: View {
         }
         .font(.body14Menlo)
         .foregroundColor(.neutral0)
-    }
-    
-    private func getDescriptionText(_ description: String, shouldShrink: Bool = false) -> some View {
-        Text(NSLocalizedString(description, comment: ""))
-#if os(iOS)
-            .font(shouldShrink ? .body10Menlo : .body12Menlo)
-#elseif os(macOS)
-            .font(.body12Menlo)
-#endif
-            .foregroundColor(.neutral0)
-            .fixedSize(horizontal: false, vertical: true)
     }
     
     private func getVaultType() -> String {

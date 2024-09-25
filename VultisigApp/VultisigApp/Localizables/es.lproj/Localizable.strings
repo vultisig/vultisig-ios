@@ -332,3 +332,6 @@
 "appUpToDate" = "La aplicación está actualizada";
 "fastSign" = "Firma rápida";
 "swapProgress" = "Progreso del intercambio";
+"retry" = "Reintentar";
+"loginUsingTouchID" = "Iniciar sesión con Touch ID";
+"loginUsingOpticID" = "Iniciar sesión con Optic ID";

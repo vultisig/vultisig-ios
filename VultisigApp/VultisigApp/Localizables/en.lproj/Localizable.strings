@@ -357,3 +357,6 @@
 "appUpToDate" = "Application is up to date";
 "fastSign" = "Fast";
 "swapProgress" = "Swap progress";
+"retry" = "Retry";
+"loginUsingTouchID" = "Login using Touch ID";
+"loginUsingOpticID" = "Login using Optic ID";
