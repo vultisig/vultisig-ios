@@ -24,70 +24,7 @@ struct SwapCryptoView: View {
     }
     
     var body: some View {
-        ZStack {
-            Background()
-            main
-        }
-        .onAppear {
-            swapViewModel.load(initialFromCoin: fromCoin, initialToCoin: toCoin, vault: vault, tx: tx)
-        }
-        .task {
-            await swapViewModel.loadFastVault(tx: tx, vault: vault)
-        }
-        .navigationBarBackButtonHidden(swapViewModel.currentIndex != 1 ? true : false)
-#if os(iOS)
-        .navigationTitle(NSLocalizedString(swapViewModel.currentTitle, comment: "SendCryptoView title"))
-        .ignoresSafeArea(.keyboard)
-        .toolbar {
-            if swapViewModel.currentIndex != 1 {
-                ToolbarItem(placement: Placement.topBarLeading.getPlacement()) {
-                    backButton
-                }
-            }
-            
-            if swapViewModel.currentIndex==3 {
-                ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                    NavigationQRShareButton(
-                        vault: vault,
-                        type: .Keysign,
-                        renderedImage: shareSheetViewModel.renderedImage
-                    )
-                }
-            }
-        }
-#endif
-    }
-    
-    var main: some View {
-        VStack {
-#if os(macOS)
-            headerMac
-#endif
-            content
-        }
-    }
-    
-    var headerMac: some View {
-        SwapCryptoHeader(
-            vault: vault,
-            swapViewModel: swapViewModel,
-            shareSheetViewModel: shareSheetViewModel
-        )
-    }
-    
-    var content: some View {
-        ZStack {
-            Background()
-            view
-        }
-        .onDisappear {
-            swapViewModel.stopMediator()
-        }
-#if os(iOS)
-        .onTapGesture {
-            hideKeyboard()
-        }
-#endif
+        content
     }
     
     var view: some View {

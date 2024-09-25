@@ -13,29 +13,17 @@ protocol SendGasSettingsOutput {
 }
 
 struct SendGasSettingsView: View {
-
     @Environment(\.presentationMode) var presentationMode
 
-    @ObservedObject var viewModel: SendGasSettingsViewModel
+    @StateObject var viewModel: SendGasSettingsViewModel
 
     let output: SendGasSettingsOutput
 
     var body: some View {
-        NavigationView {
-            ZStack {
-                Background()
-                view
+        content
+            .task {
+                try? await viewModel.fetch(chain: viewModel.chain)
             }
-            .navigationTitle("Advanced")
-#if os(iOS)
-            .navigationBarItems(leading: backButton, trailing: saveButton)
-            .navigationBarTitleTextColor(.neutral0)
-            .navigationBarTitleDisplayMode(.inline)
-#endif
-        }
-        .task {
-            try? await viewModel.fetch(chain: viewModel.chain)
-        }
     }
 
     var view: some View {
@@ -53,7 +41,7 @@ struct SendGasSettingsView: View {
     var baseFeeRow: some View {
         VStack {
             title(text: "Current Base Fee (Gwei)")
-            textField(title: "Base Fee", text: $viewModel.baseFee, disabled: true)
+            label(title: "Base Fee", text: viewModel.baseFee)
         }
     }
 
@@ -97,39 +85,24 @@ struct SendGasSettingsView: View {
         .padding(.horizontal, 16)
     }
 
-    func textField(title: String, text: Binding<String>, label: String? = nil, disabled: Bool = false) -> some View {
+    func label(title: String, text: String) -> some View {
         VStack {
             HStack {
-                TextField("", text: text, prompt: Text(title).foregroundColor(.neutral300))
-                    .borderlessTextFieldStyle()
-                    .foregroundColor(disabled ? .neutral300 : .neutral0)
-                    .tint(.neutral0)
+                Text(text.isEmpty ? title : text)
                     .font(.body16Menlo)
-                    .submitLabel(.next)
-                    .disableAutocorrection(true)
-                    .textFieldStyle(TappableTextFieldStyle())
-#if os(iOS)
-                    .textInputAutocapitalization(.never)
-                    .keyboardType(.decimalPad)
-#elseif os(macOS)
-                    .colorScheme(.dark)
-#endif
-                    .textContentType(.oneTimeCode)
-                    .disabled(disabled)
+                    .foregroundColor(.neutral300)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 16)
 
-                if let label {
-                    Text(label)
-                        .foregroundColor(.neutral300)
-                        .font(.body16Menlo)
-                }
+                Spacer()
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 16)
+
         }
         .background(
             RoundedRectangle(cornerSize: .init(width: 5, height: 5))
                 .foregroundColor(.blue600)
         )
+        .frame(maxWidth: .infinity)
         .padding(.horizontal, 16)
     }
 
@@ -148,9 +121,11 @@ struct SendGasSettingsView: View {
                         .cornerRadius(30)
                 } else {
                     OutlineButton(title: mode.title, gradient: .primaryGradientHorizontal)
+                        .contentShape(Rectangle())
                 }
             }
         }
+        .buttonStyle(.plain)
     }
 
     var backButton: some View {

@@ -37,7 +37,7 @@ struct SendCryptoVerifyView: View {
             sendCryptoVerifyViewModel.isLoading = false
         }
         .onAppear {
-            isLoading = true
+            isLoading = false // disabled so it does not block the sending
             Task {
                 do {
                     try await sendCryptoVerifyViewModel.blowfishTransactionScan(tx: tx, vault: vault)
@@ -136,7 +136,7 @@ struct SendCryptoVerifyView: View {
         Button {
             fastPasswordPresented = true
         } label: {
-            FilledButton(title: "Fast Sign")
+            FilledButton(title: NSLocalizedString("fastSign", comment: ""))
         }
         .padding(.horizontal, 40)
         .sheet(isPresented: $fastPasswordPresented) {

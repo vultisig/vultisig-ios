@@ -27,13 +27,16 @@ struct SendCryptoDetailsView: View {
     
     @State var isLoading = false
     @State var isCoinPickerActive = false
-#if os(iOS)
-    @StateObject private var keyboardObserver = KeyboardObserver()
-#endif
     
-    @FocusState private var focusedField: Field?
+    @StateObject var keyboardObserver = KeyboardObserver()
+    
+    @FocusState var focusedField: Field?
     
     var body: some View {
+        container
+    }
+    
+    var content: some View {
         ZStack {
             Background()
             view
@@ -43,19 +46,6 @@ struct SendCryptoDetailsView: View {
             }
         }
         .gesture(DragGesture())
-#if os(iOS)
-        .toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                
-                Button {
-                    hideKeyboard()
-                } label: {
-                    Text(NSLocalizedString("done", comment: "Done"))
-                }
-            }
-        }
-#endif
         .onAppear {
             setData()
         }
@@ -73,63 +63,12 @@ struct SendCryptoDetailsView: View {
         }
     }
     
-    var view: some View {
-        VStack {
-            fields
-            button
-        }
-#if os(macOS)
-        .padding(26)
-#endif
-    }
-    
     var alert: Alert {
         Alert(
             title: Text(NSLocalizedString("error", comment: "")),
             message: Text(NSLocalizedString(sendCryptoViewModel.errorMessage, comment: "")),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
-    }
-    
-    var fields: some View {
-        ScrollViewReader { value in
-            ScrollView {
-                VStack(spacing: 16) {
-                    coinSelector
-                    fromField
-                    toField
-                    
-                    if tx.coin.isNativeToken {
-                        memoField
-                    }
-                    
-                    amountField
-                    amountFiatField
-                    
-                    if !tx.coin.isNativeToken {
-                        balanceNativeTokenField
-                    }
-                    
-                    getSummaryCell(leadingText: NSLocalizedString("gas(auto)", comment: ""), trailingText: tx.gasInReadable)
-                    getSummaryCell(leadingText: NSLocalizedString("Estimated Fees", comment: ""), trailingText: sendCryptoViewModel.feesInReadable(tx: tx, vault: vault))
-                    
-                    if tx.canBeReaped {
-                        existentialDepositTextMessage
-                    }
-                    
-#if os(iOS)
-                    Spacer()
-                        .frame(height: keyboardObserver.keyboardHeight)
-#endif
-                }
-                .padding(.horizontal, 16)
-            }
-#if os(iOS)
-            .onChange(of: keyboardObserver.keyboardHeight) { oldValue, newValue in
-                scrollToField(value)
-            }
-#endif
-        }
     }
 
     var coinSelector: some View {
@@ -333,36 +272,16 @@ struct SendCryptoDetailsView: View {
             .cornerRadius(6)
     }
     
-    private func setData() {
-#if os(iOS)
-        keyboardObserver.keyboardHeight = 0
-#endif
-        
-        Task {
-            isLoading = true
-            await getBalance()
-            isLoading = false
-        }
-    }
-    
     private func validateForm() async {
         if await sendCryptoViewModel.validateForm(tx: tx) {
             sendCryptoViewModel.moveToNextView()
         }
     }
     
-    private func getBalance() async {
+    func getBalance() async {
         await BalanceService.shared.updateBalance(for: tx.coin)
         coinBalance = tx.coin.balanceString
     }
-    
-#if os(iOS)
-    private func scrollToField(_ value: ScrollViewProxy) {
-        withAnimation {
-            value.scrollTo(focusedField, anchor: .top)
-        }
-    }
-#endif
 }
 
 #Preview {
