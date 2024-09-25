@@ -7,6 +7,7 @@
 
 #if os(macOS)
 import SwiftUI
+import UniformTypeIdentifiers
 
 extension TransactionMemoAddressTextField {
     var container: some View {
