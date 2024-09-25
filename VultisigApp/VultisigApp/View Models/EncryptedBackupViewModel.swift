@@ -311,6 +311,16 @@ class EncryptedBackupViewModel: ObservableObject {
         }
     }
     
+    func handleFileDocument(_ url: URL) {
+        guard isValidFormat(url) else {
+            showInvalidFormatAlert()
+            return
+        }
+        
+        importedFileName = url.lastPathComponent
+        importFile(from: url)
+    }
+    
     func handleOnDrop(providers: [NSItemProvider]) -> Bool {
         guard let provider = providers.first(where: { $0.hasItemConformingToTypeIdentifier(UTType.data.identifier) }) else {
             print("Invalid file type.")
