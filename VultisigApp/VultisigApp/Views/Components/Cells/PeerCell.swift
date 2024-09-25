@@ -13,32 +13,11 @@ struct PeerCell: View {
     
     @State var isPhone: Bool = false
     
-#if os(iOS)
-    private var idiom : UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-#endif
-    
     var body: some View {
-        ZStack(alignment: .topTrailing) {
-            cell
-            check
-        }
-#if os(iOS)
-        .scaleEffect(isPhone ? 0.7 : 1)
-#elseif os(macOS)
-        .scaleEffect(0.7)
-#endif
-        .clipped()
-        .onAppear {
-            setData()
-        }
-#if os(iOS)
-        .frame(
-            width: isPhone ? 100 : 150,
-            height: isPhone ? 140 : 200
-        )
-#elseif os(macOS)
-        .frame(width: 110, height: 140)
-#endif
+        content
+            .onAppear {
+                setData()
+            }
     }
     
     var cell: some View {
@@ -129,14 +108,6 @@ struct PeerCell: View {
                 .resizable()
                 .frame(width: 30, height: 50)
         }
-    }
-    
-    private func setData() {
-#if os(iOS)
-        isPhone = idiom == .phone
-#elseif os(macOS)
-        isPhone = false
-#endif
     }
 }
 
