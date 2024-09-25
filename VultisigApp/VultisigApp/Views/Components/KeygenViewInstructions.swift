@@ -10,32 +10,16 @@ import SwiftUI
 struct KeygenViewInstructions: View {
     @State var tabIndex = 0
     
-#if os(iOS)
     init() {
-        UIPageControl.appearance().currentPageIndicatorTintColor = UIColor(Color.turquoise400)
-        UIPageControl.appearance().pageIndicatorTintColor = UIColor(Color.blue200)
+        setIndicator()
     }
-#endif
     
     var body: some View {
         cards
             .frame(maxHeight: 250)
     }
     
-    var cards: some View {
-        TabView(selection: $tabIndex) {
-            ForEach(0..<7) { index in
-                getCard(for: index)
-            }
-        }
-#if os(iOS)
-        .tabViewStyle(PageTabViewStyle())
-#endif
-        .frame(maxHeight: .infinity)
-        .foregroundColor(.blue)
-    }
-    
-    private func getCard(for index: Int) -> some View {
+    func getCard(for index: Int) -> some View {
         VStack(spacing: 22) {
             getTitle(for: index)
             getDescription(for: index)

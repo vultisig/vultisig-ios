@@ -2,45 +2,24 @@ import SwiftUI
 import OSLog
 import UniformTypeIdentifiers
 
-#if os(iOS)
-import CodeScanner
-#endif
-
 struct AddressTextField: View {
     @Binding var contractAddress: String
     var validateAddress: (String) -> Void
     
-    @State private var showScanner = false
-    @State private var showImagePicker = false
+    @State var showScanner = false
+    @State var showImagePicker = false
     
     @State var showScanIcon = true
     @State var showAddressBookIcon = true
     
 #if os(iOS)
-    @State private var selectedImage: UIImage?
+    @State var selectedImage: UIImage?
 #elseif os(macOS)
-    @State private var selectedImage: NSImage?
+    @State var selectedImage: NSImage?
 #endif
     
     var body: some View {
-        ZStack(alignment: .trailing) {
-            field
-        }
-        .font(.body12Menlo)
-        .foregroundColor(.neutral0)
-        .frame(height: 48)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 12)
-        .background(Color.blue600)
-        .cornerRadius(10)
-#if os(iOS)
-        .sheet(isPresented: $showScanner) {
-            codeScanner
-        }
-        .sheet(isPresented: $showImagePicker, onDismiss: processImage) {
-            ImagePicker(selectedImage: $selectedImage)
-        }
-#endif
+        content
     }
     
     var placeholder: some View {
@@ -48,45 +27,6 @@ struct AddressTextField: View {
             .foregroundColor(Color.neutral0)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
-    var field: some View {
-        HStack(spacing: 0) {
-            TextField(NSLocalizedString("enterContractAddress", comment: "").toFormattedTitleCase(), text: $contractAddress)
-                .foregroundColor(.neutral0)
-                .submitLabel(.next)
-                .disableAutocorrection(true)
-                .textContentType(.oneTimeCode)
-                .maxLength($contractAddress)
-                .onChange(of: contractAddress){oldValue,newValue in
-                    validateAddress(newValue)
-                }
-                .borderlessTextFieldStyle()
-#if os(iOS)
-                .textInputAutocapitalization(.never)
-                .keyboardType(.default)
-#endif
-            
-            pasteButton
-            
-            if showScanIcon {
-#if os(iOS)
-            scanButton
-#elseif os(macOS)
-            fileButton
-#endif
-            }
-
-            if showAddressBookIcon {
-                addressBookButton
-            }
-        }
-    }
-    
-#if os(iOS)
-    var codeScanner: some View {
-        QRCodeScannerView(showScanner: $showScanner, handleScan: handleScan)
-    }
-#endif
     
     var pasteButton: some View {
         Button {
@@ -131,49 +71,4 @@ struct AddressTextField: View {
                 .frame(width: 40, height: 40)
         }
     }
-    
-    private func processImage() {
-        guard let selectedImage = selectedImage else { return }
-#if os(iOS)
-        handleImageQrCode(image: selectedImage)
-#endif
-    }
-    
-    private func pasteAddress() {
-#if os(iOS)
-        if let clipboardContent = UIPasteboard.general.string {
-            contractAddress = clipboardContent
-            validateAddress(clipboardContent)
-        }
-#elseif os(macOS)
-        let pasteboard = NSPasteboard.general
-        if let clipboardContent = pasteboard.string(forType: .string) {
-            contractAddress = clipboardContent
-            validateAddress(clipboardContent)
-        }
-#endif
-    }
-    
-#if os(iOS)
-    private func handleScan(result: Result<ScanResult, ScanError>) {
-        switch result {
-        case .success(let result):
-            let qrCodeResult = result.string
-            contractAddress = qrCodeResult
-            validateAddress(qrCodeResult)
-            showScanner = false
-        case .failure(let err):
-            // Handle the error appropriately
-            print("Failed to scan QR code: \(err.localizedDescription)")
-        }
-    }
-    
-    private func handleImageQrCode(image: UIImage) {
-        if let qrCodeFromImage = Utils.handleQrCodeFromImage(image: image) as Data?,
-           let qrCodeString = String(data: qrCodeFromImage, encoding: .utf8) {
-            contractAddress = qrCodeString
-            validateAddress(qrCodeString)
-        }
-    }
-#endif
 }
