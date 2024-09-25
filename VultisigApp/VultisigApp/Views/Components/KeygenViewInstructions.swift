@@ -19,7 +19,7 @@ struct KeygenViewInstructions: View {
             .frame(maxHeight: 250)
     }
     
-    private func getCard(for index: Int) -> some View {
+    func getCard(for index: Int) -> some View {
         VStack(spacing: 22) {
             getTitle(for: index)
             getDescription(for: index)

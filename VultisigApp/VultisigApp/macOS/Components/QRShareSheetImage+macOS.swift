@@ -9,7 +9,7 @@
 import SwiftUI
 
 extension QRShareSheetImage {
-    var body: some View {
+    var content: some View {
         ZStack {
             Background()
             view
