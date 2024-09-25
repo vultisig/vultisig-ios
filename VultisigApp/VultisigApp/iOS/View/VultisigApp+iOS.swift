@@ -19,6 +19,7 @@ extension VultisigApp {
                 .environmentObject(deeplinkViewModel)
                 .environmentObject(settingsViewModel)
                 .environmentObject(homeViewModel)
+                .environmentObject(vultExtensionViewModel)
                 .environmentObject(settingsDefaultChainViewModel)
                 .environmentObject(phoneCheckUpdateViewModel)
         }

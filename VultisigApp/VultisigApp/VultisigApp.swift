@@ -46,7 +46,6 @@ struct VultisigApp: App {
         
         DocumentGroup(newDocument: VULTFileDocument()) { file in
             contentView
-                .environmentObject(vultExtensionViewModel)
                 .onAppear {
                     vultExtensionViewModel.documentData = file
                 }

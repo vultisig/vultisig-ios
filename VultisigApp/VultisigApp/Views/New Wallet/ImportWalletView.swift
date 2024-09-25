@@ -16,6 +16,7 @@ struct ImportWalletView: View {
     
     @Query var vaults: [Vault]
     @EnvironmentObject var settingsDefaultChainViewModel: SettingsDefaultChainViewModel
+    @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
     
     var body: some View {
         content
@@ -33,7 +34,7 @@ struct ImportWalletView: View {
                 HomeView(selectedVault: backupViewModel.selectedVault)
             }
             .onAppear {
-                resetData()
+                setData()
             }
             .onDisappear {
                 resetData()
@@ -109,6 +110,14 @@ struct ImportWalletView: View {
         ImportFileCell(name: name, resetData: resetData)
     }
     
+    private func setData() {
+        resetData()
+        
+        if let data = vultExtensionViewModel.documentData {
+            backupViewModel.handleFileImporter(data.document.content)
+        }
+    }
+    
     private func resetData() {
         backupViewModel.resetData()
     }
@@ -116,4 +125,5 @@ struct ImportWalletView: View {
 
 #Preview {
     ImportWalletView()
+        .environmentObject(VultExtensionViewModel())
 }

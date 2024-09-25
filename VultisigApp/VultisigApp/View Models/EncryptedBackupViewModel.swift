@@ -281,7 +281,7 @@ class EncryptedBackupViewModel: ObservableObject {
     private func isValidFormat(_ url: URL) -> Bool {
         let fileExtension = url.pathExtension.lowercased()
         
-        if fileExtension == "dat" || fileExtension == "bak"{
+        if fileExtension == "dat" || fileExtension == "bak" ||  fileExtension == "vult" {
             return true
         } else {
             return false
