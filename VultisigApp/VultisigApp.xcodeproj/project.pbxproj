@@ -1923,7 +1923,6 @@
 				A6951E8B2C52DC6B007292E7 /* SettingsDefaultChainViewModel.swift */,
 				B58156342C5D4DC9006164BF /* BlowfishViewModel.swift */,
 				A5F596BE2C7FB0C5008D5339 /* SendGasSettingsViewModel.swift */,
-				A6182F2A2C9225EA0059BFDD /* CheckUpdateViewModel.swift */,
 				A6C670812C9CDEE500F59B6A /* VaultCellViewModel.swift */,
 				A6182F2A2C9225EA0059BFDD /* MacCheckUpdateViewModel.swift */,
 				A622C8612C9BEC2100908332 /* PhoneCheckUpdateViewModel.swift */,

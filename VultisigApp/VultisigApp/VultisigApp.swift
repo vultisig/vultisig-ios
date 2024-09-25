@@ -29,37 +29,15 @@ struct VultisigApp: App {
     
     var body: some Scene {
         WindowGroup {
-            contentView
-        }
-        .modelContainer(sharedModelContainer)
-        .onChange(of: scenePhase) {
-            switch scenePhase {
-            case .active:
-                continueLogin()
-            case .background:
-                resetLogin()
-            default:
-                break
-            }
+            content
         }
         .modelContainer(sharedModelContainer)
         
         DocumentGroup(newDocument: VULTFileDocument()) { file in
-            contentView
+            content
                 .onAppear {
                     vultExtensionViewModel.documentData = file
                 }
-        }
-        .modelContainer(sharedModelContainer)
-        .onChange(of: scenePhase) {
-            switch scenePhase {
-            case .active:
-                continueLogin()
-            case .background:
-                resetLogin()
-            default:
-                break
-            }
         }
         .modelContainer(sharedModelContainer)
     }

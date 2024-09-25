@@ -9,5 +9,4 @@ import SwiftUI
 
 class VultExtensionViewModel: ObservableObject {
     @Published var documentData: FileDocumentConfiguration<VULTFileDocument>? = nil
-    
 }

@@ -9,7 +9,7 @@
 import SwiftUI
 
 extension VultisigApp {
-    var contentView: some View {
+    var content: some View {
         ContentView()
             .environmentObject(applicationState) // Shared monolithic mutable state
             .environmentObject(vaultDetailViewModel)
