@@ -12,44 +12,7 @@ struct SettingsView: View {
     @EnvironmentObject var homeViewModel: HomeViewModel
     
     var body: some View {
-        ZStack {
-            Background()
-            main
-        }
-#if os(iOS)
-        .navigationTitle(NSLocalizedString("settings", comment: "Settings"))
-#endif
-    }
-    
-    var main: some View {
-        VStack(spacing: 0) {
-#if os(macOS)
-            headerMac
-            Separator()
-#endif
-            view
-        }
-    }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: "settings")
-            .padding(.bottom, 8)
-    }
-    
-    var view: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                mainSection
-                otherSection
-                legalSection
-                bottomSection
-            }
-            .padding(15)
-            .padding(.top, 30)
-#if os(macOS)
-            .padding(.horizontal, 25)
-#endif
-        }
+        content
     }
     
     var mainSection: some View {
@@ -148,16 +111,6 @@ struct SettingsView: View {
             checkUpdateView
         } label: {
             SettingCell(title: "checkForUpdate", icon: "arrow.down.circle.dotted")
-        }
-    }
-    
-    var checkUpdateView: some View {
-        ZStack {
-#if os(iOS)
-            PhoneCheckUpdateView()
-#elseif os(macOS)
-            MacCheckUpdateView()
-#endif
         }
     }
     

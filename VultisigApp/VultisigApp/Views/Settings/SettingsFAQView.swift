@@ -9,46 +9,13 @@ import SwiftUI
 
 struct SettingsFAQView: View {
     var body: some View {
-        ZStack {
-            Background()
-            main
-        }
-#if os(iOS)
-        .navigationTitle(NSLocalizedString("faq", comment: "FAQ"))
-#endif
-    }
-    
-    var main: some View {
-        VStack(spacing: 0) {
-#if os(macOS)
-            headerMac
-#endif
-            view
-        }
-    }
-    
-    var headerMac: some View {
-        GeneralMacHeader(title: "faq")
-            .padding(.bottom, 8)
+        content
     }
     
     var view: some View {
         ScrollView {
             cells
         }
-    }
-    
-    var cells: some View {
-        VStack(spacing: 16) {
-            ForEach(SettingsOptionsStore.FAQData, id: \.question) { faq in
-                SettingFAQCell(question: faq.question, answer: faq.answer)
-            }
-        }
-        .padding(15)
-        .padding(.top, 30)
-#if os(macOS)
-        .padding(.horizontal, 25)
-#endif
     }
 }
 
