@@ -101,7 +101,8 @@ struct AddressBookTextField: View {
                 .frame(width: 40, height: 40)
         }
     }    
-    private func handleImageQrCode(data: Data) {
+    
+    func handleImageQrCode(data: Data) {
         text = String(data: data, encoding: .utf8) ?? ""
         showImagePicker = false
     }

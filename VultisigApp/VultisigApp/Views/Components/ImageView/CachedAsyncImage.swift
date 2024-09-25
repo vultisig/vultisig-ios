@@ -77,7 +77,7 @@ public struct CachedAsyncImage<Content>: View where Content: View {
 
     private let urlSession: URLSession
 
-    private let scale: CGFloat
+    let scale: CGFloat
 
     private let transaction: Transaction
 
@@ -137,16 +137,7 @@ public struct CachedAsyncImage<Content>: View where Content: View {
     ///     different value when loading images designed for higher resolution
     ///     displays. For example, set a value of `2` for an image that you
     ///     would name with the `@2x` suffix if stored in a file on disk.
-    public init(urlRequest: URLRequest?, urlCache: URLCache = .shared,  scale: CGFloat = 1) where Content == Image {
-        self.init(urlRequest: urlRequest, urlCache: urlCache, scale: scale) { phase in
-#if os(macOS)
-            phase.image ?? Image(nsImage: .init())
-#else
-            phase.image ?? Image(uiImage: .init())
-#endif
-        }
-    }
-
+    
     /// Loads and displays a modifiable image from the specified URL using
     /// a custom placeholder until the image loads.
     ///
@@ -346,7 +337,7 @@ public struct CachedAsyncImage<Content>: View where Content: View {
 // MARK: - LoadingError
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension AsyncImage {
+extension AsyncImage {
 
     struct LoadingError: Error {
     }
@@ -370,22 +361,6 @@ private extension CachedAsyncImage {
     private func cachedImage(from request: URLRequest, cache: URLCache) throws -> Image? {
         guard let cachedResponse = cache.cachedResponse(for: request) else { return nil }
         return try image(from: cachedResponse.data)
-    }
-
-    private func image(from data: Data) throws -> Image {
-#if os(macOS)
-        if let nsImage = NSImage(data: data) {
-            return Image(nsImage: nsImage)
-        } else {
-            throw AsyncImage<Content>.LoadingError()
-        }
-#else
-        if let uiImage = UIImage(data: data, scale: scale) {
-            return Image(uiImage: uiImage)
-        } else {
-            throw AsyncImage<Content>.LoadingError()
-        }
-#endif
     }
 }
 
