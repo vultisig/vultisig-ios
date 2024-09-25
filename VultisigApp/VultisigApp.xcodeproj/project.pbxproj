@@ -438,6 +438,8 @@
 		A6C6710F2CA27EAC00F59B6A /* OnboardingView3+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C6710E2CA27EAC00F59B6A /* OnboardingView3+macOS.swift */; };
 		A6C671112CA27F8C00F59B6A /* OnboardingView4+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C671102CA27F8C00F59B6A /* OnboardingView4+iOS.swift */; };
 		A6C671132CA27F9700F59B6A /* OnboardingView4+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C671122CA27F9700F59B6A /* OnboardingView4+macOS.swift */; };
+		A6C671172CA3B9A300F59B6A /* AddressBookTextField+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C671162CA3B9A300F59B6A /* AddressBookTextField+iOS.swift */; };
+		A6C671192CA3B9B400F59B6A /* AddressBookTextField+imacOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C671182CA3B9B400F59B6A /* AddressBookTextField+imacOS.swift */; };
 		A6C9D5C12BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C9D5C02BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift */; };
 		A6CBA8F02BA2A629008B110C /* ImportWalletUploadSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CBA8EF2BA2A629008B110C /* ImportWalletUploadSection.swift */; };
 		A6CBF2DC2C251D4100FD8080 /* LookingForDevicesLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6CBF2DB2C251D4100FD8080 /* LookingForDevicesLoader.swift */; };
@@ -1095,6 +1097,8 @@
 		A6C6710E2CA27EAC00F59B6A /* OnboardingView3+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OnboardingView3+macOS.swift"; sourceTree = "<group>"; };
 		A6C671102CA27F8C00F59B6A /* OnboardingView4+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OnboardingView4+iOS.swift"; sourceTree = "<group>"; };
 		A6C671122CA27F9700F59B6A /* OnboardingView4+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OnboardingView4+macOS.swift"; sourceTree = "<group>"; };
+		A6C671162CA3B9A300F59B6A /* AddressBookTextField+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AddressBookTextField+iOS.swift"; sourceTree = "<group>"; };
+		A6C671182CA3B9B400F59B6A /* AddressBookTextField+imacOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AddressBookTextField+imacOS.swift"; sourceTree = "<group>"; };
 		A6C9D5C02BDB5E4E00A864FB /* KeysignVaultMismatchErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignVaultMismatchErrorView.swift; sourceTree = "<group>"; };
 		A6CBA8EF2BA2A629008B110C /* ImportWalletUploadSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportWalletUploadSection.swift; sourceTree = "<group>"; };
 		A6CBF2DB2C251D4100FD8080 /* LookingForDevicesLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LookingForDevicesLoader.swift; sourceTree = "<group>"; };
@@ -1759,6 +1763,7 @@
 			children = (
 				A69FBB9F2C8AD7C700A4B78B /* ContentView+iOS.swift */,
 				A69FBBA12C8AD9F500A4B78B /* View */,
+				A6386D9F2C90234400DDD58E /* Components */,
 				A69FBBCB2C8BB85600A4B78B /* Native */,
 				A6ECA1A32C940FC900456110 /* View Model */,
 			);
@@ -1770,6 +1775,7 @@
 			children = (
 				A69FBB9D2C8AD7BD00A4B78B /* ContentView+macOS.swift */,
 				A69FBBA22C8AD9FD00A4B78B /* View */,
+				A6386DA22C90235600DDD58E /* Components */,
 				A69FBBCC2C8BB86300A4B78B /* Native */,
 				A6ECA1AA2C9410DA00456110 /* View Model */,
 			);
@@ -1853,6 +1859,7 @@
 				A6ECA1972C93FB0400456110 /* BlowfishWarningInformationNote+iOS.swift */,
 				A6ECA19B2C93FB7200456110 /* Search+iOS.swift */,
 				A6ECA19F2C93FC0000456110 /* VaultSetupCard+iOS.swift */,
+				A6C671162CA3B9A300F59B6A /* AddressBookTextField+iOS.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1882,6 +1889,7 @@
 				A6ECA1992C93FB0E00456110 /* BlowfishWarningInformationNote+macOS.swift */,
 				A6ECA19D2C93FB7B00456110 /* Search+macOS.swift */,
 				A6ECA1A12C93FC0D00456110 /* VaultSetupCard+macOS.swift */,
+				A6C671182CA3B9B400F59B6A /* AddressBookTextField+imacOS.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -1919,7 +1927,6 @@
 				A6951E8B2C52DC6B007292E7 /* SettingsDefaultChainViewModel.swift */,
 				B58156342C5D4DC9006164BF /* BlowfishViewModel.swift */,
 				A5F596BE2C7FB0C5008D5339 /* SendGasSettingsViewModel.swift */,
-				A6182F2A2C9225EA0059BFDD /* CheckUpdateViewModel.swift */,
 				A6C670812C9CDEE500F59B6A /* VaultCellViewModel.swift */,
 				A6182F2A2C9225EA0059BFDD /* MacCheckUpdateViewModel.swift */,
 				A622C8612C9BEC2100908332 /* PhoneCheckUpdateViewModel.swift */,
@@ -2104,7 +2111,6 @@
 				A6C671082CA27D0500F59B6A /* OnboardingView2+iOS.swift */,
 				A6C6710C2CA27EA000F59B6A /* OnboardingView3+iOS.swift */,
 				A6C671102CA27F8C00F59B6A /* OnboardingView4+iOS.swift */,
-				A6386D9F2C90234400DDD58E /* Components */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -2175,7 +2181,6 @@
 				A6C6710A2CA27D1400F59B6A /* OnboardingView2+macOS.swift */,
 				A6C6710E2CA27EAC00F59B6A /* OnboardingView3+macOS.swift */,
 				A6C671122CA27F9700F59B6A /* OnboardingView4+macOS.swift */,
-				A6386DA22C90235600DDD58E /* Components */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -3061,6 +3066,7 @@
 				A543B3A22BEA93D4003FB989 /* SwapQuote.swift in Sources */,
 				A6ECA1AC2C9410EA00456110 /* ShareSheetViewModel+macOS.swift in Sources */,
 				A6182F2D2C9226310059BFDD /* UpdateVersion.swift in Sources */,
+				A6C671192CA3B9B400F59B6A /* AddressBookTextField+imacOS.swift in Sources */,
 				A5D49F5A2BE26C87001766C8 /* Coin+ChainAction.swift in Sources */,
 				A51AE8C12C931C6000EF9A7A /* FastVaultEmailView.swift in Sources */,
 				A54676522C179A93004DD782 /* Coin+Swaps.swift in Sources */,
@@ -3121,6 +3127,7 @@
 				A6833D932C66A4EA002029E1 /* SwapCryptoHeader.swift in Sources */,
 				A6C670D12C9E8E1F00F59B6A /* NewWalletNameView+iOS.swift in Sources */,
 				DE5F7E1F2C8155C50022030F /* VaultCreateRequest.swift in Sources */,
+				A6C671172CA3B9A300F59B6A /* AddressBookTextField+iOS.swift in Sources */,
 				DE49A1B22B6A0F77000F3AFB /* JoinKeygenView.swift in Sources */,
 				A69FBB9E2C8AD7BD00A4B78B /* ContentView+macOS.swift in Sources */,
 				DE9EB0F62BA3F9C2001747D9 /* ParticipantDiscovery.swift in Sources */,
