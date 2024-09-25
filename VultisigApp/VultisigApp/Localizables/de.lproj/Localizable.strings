@@ -332,3 +332,6 @@
 "appUpToDate" = "Anwendung ist auf dem neuesten Stand";
 "fastSign" = "Schnelles Signieren";
 "swapProgress" = "Tauschfortschritt";
+"retry" = "Erneut versuchen";
+"loginUsingTouchID" = "Anmelden mit Touch ID";
+"loginUsingOpticID" = "Anmelden mit Optic ID";

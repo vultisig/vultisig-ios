@@ -20,10 +20,13 @@ class AccountViewModel: ObservableObject {
     @Published var didUserCancelAuthentication = false
     @Published var canLogin = true
     @Published var referenceID = UUID()
+    @Published var authenticationType: AuthenticationType = .None
     
     func authenticateUser() {
         let context = LAContext()
         var error: NSError?
+        
+        getBiometricType()
 
         if context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
             authenticate(context)
@@ -84,6 +87,24 @@ class AccountViewModel: ObservableObject {
         if interval>60*5 {
             resetLogin()
             continueLogin()
+        }
+    }
+    
+    func getBiometricType() {
+        let authContext = LAContext()
+        let _ = authContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil)
+        
+        switch(authContext.biometryType) {
+        case .none:
+            authenticationType = .None
+        case .touchID:
+            authenticationType = .TouchID
+        case .faceID:
+            authenticationType = .FaceID
+        case .opticID:
+            authenticationType = .OpticID
+        @unknown default:
+            authenticationType = .None
         }
     }
     
