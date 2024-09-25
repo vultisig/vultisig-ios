@@ -332,3 +332,6 @@
 "appUpToDate" = "Aplikacija je ažurirana";
 "fastSign" = "Brzo potpisivanje";
 "swapProgress" = "Napredak zamjene";
+"retry" = "Pokušaj ponovo";
+"loginUsingTouchID" = "Prijava pomoću Touch ID-a";
+"loginUsingOpticID" = "Prijava pomoću Optic ID-a";
