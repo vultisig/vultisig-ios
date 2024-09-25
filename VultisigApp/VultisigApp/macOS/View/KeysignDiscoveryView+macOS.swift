@@ -18,6 +18,8 @@ extension KeysignDiscoveryView {
             switch viewModel.status {
             case .WaitingForDevices:
                 waitingForDevices
+            case .WaitingForFast:
+                LookingForDevicesLoader()
             case .FailToStart:
                 errorText
             }

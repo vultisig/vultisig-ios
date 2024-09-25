@@ -4,18 +4,21 @@
 //
 
 import Foundation
+import Combine
 import Mediator
 import OSLog
 import SwiftUI
 
 enum KeysignDiscoveryStatus {
     case WaitingForDevices
+    case WaitingForFast
     case FailToStart
 }
 
 class KeysignDiscoveryViewModel: ObservableObject {
     
     private let logger = Logger(subsystem: "keysign-discovery", category: "viewmodel")
+    private var cancellables = Set<AnyCancellable>()
 
     var vault: Vault
     var keysignPayload: KeysignPayload
@@ -48,7 +51,8 @@ class KeysignDiscoveryViewModel: ObservableObject {
         vault: Vault,
         keysignPayload: KeysignPayload,
         participantDiscovery: ParticipantDiscovery,
-        fastVaultPassword: String?
+        fastVaultPassword: String?,
+        onFastKeysign: (() -> Void)?
     ) {
         self.vault = vault
         self.keysignPayload = keysignPayload
@@ -78,7 +82,8 @@ class KeysignDiscoveryViewModel: ObservableObject {
             }
 
             if let fastVaultPassword {
-                fastVaultService.sign(
+                self.status = .WaitingForFast
+                self.fastVaultService.sign(
                     publicKeyEcdsa: vault.pubKeyECDSA,
                     keysignMessages: self.keysignMessages,
                     sessionID: self.sessionID,
@@ -87,13 +92,22 @@ class KeysignDiscoveryViewModel: ObservableObject {
                     isECDSA: keysignPayload.coin.chain.isECDSA,
                     vaultPassword: fastVaultPassword
                 )
+
+                cancellables.forEach { $0.cancel() }
+
+                participantDiscovery.$peersFound.sink { [weak self] in
+                        $0.forEach { peer in
+                            self?.handleSelection(peer)
+                        }
+                        self?.startFastKeysignIfNeeded(vault: vault, onFastKeysign: onFastKeysign)
+                    }
+                    .store(in: &cancellables)
             }
         } catch {
             self.logger.error("Failed to get preSignedImageHash: \(error)")
             self.errorMessage = error.localizedDescription
             self.status = .FailToStart
         }
-        
     }
     
     func startDiscovery() async {
@@ -107,7 +121,27 @@ class KeysignDiscoveryViewModel: ObservableObject {
             pubKeyECDSA: vault.pubKeyECDSA
         )
     }
-    
+
+    func handleSelection(_ peer: String) {
+        if selections.contains(peer) {
+            // Don't remove itself
+            if peer != localPartyID {
+                selections.remove(peer)
+            }
+        } else {
+            selections.insert(peer)
+        }
+    }
+
+    func startFastKeysignIfNeeded(vault: Vault, onFastKeysign: (() -> Void)?) {
+        guard isValidPeers(vault: vault) else { return }
+        onFastKeysign?()
+    }
+
+    func isValidPeers(vault: Vault) -> Bool {
+        return selections.count >= (vault.getThreshold() + 1)
+    }
+
     @MainActor func startKeysign(vault: Vault, viewModel: TransferViewModel) -> KeysignView {
         kickoffKeysign(allParticipants: self.selections.map { $0 })
         participantDiscovery?.stop()
