@@ -99,11 +99,11 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             }
         }
 
-        participantDiscovery.$peersFound.sink {
-                $0.forEach { [weak self] peer in
+        participantDiscovery.$peersFound.sink { [weak self] in
+                $0.forEach { peer in
                     self?.handleSelection(peer)
-                    self?.startFastVaultKeygenIfNeeded(state: state)
                 }
+                self?.startFastVaultKeygenIfNeeded(state: state)
             }
             .store(in: &cancellables)
     }
