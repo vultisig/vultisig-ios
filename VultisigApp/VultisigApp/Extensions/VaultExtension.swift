@@ -28,13 +28,19 @@ extension Vault {
     }
     
     func getExportName() -> String{
-        let currentDate = Date()
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM"
-        let formattedDate = formatter.string(from: currentDate)
-        let totalSigners = self.signers.count
-        let threshold = getThreshold()
+        let vaultName = self.name
         let lastFourOfPubKey = String(self.pubKeyECDSA.suffix(4))
-        return "vultisig-\(self.name)-\(formattedDate)-\(threshold+1)of\(totalSigners)-\(lastFourOfPubKey)-\(self.localPartyID)" + ".vult"
+        
+        let signersCount = self.signers.count
+        var signersOrder = 0
+        
+        for index in 0..<self.signers.count {
+            if signers[index] == self.localPartyID {
+                signersOrder = index+1
+                continue
+            }
+        }
+        
+        return "\(vaultName)-\(lastFourOfPubKey)-part\(signersOrder)of\(signersCount)" + ".vult"
     }
 }
