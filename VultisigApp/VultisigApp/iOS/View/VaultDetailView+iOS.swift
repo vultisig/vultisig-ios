@@ -69,5 +69,35 @@ extension VaultDetailView {
             .opacity(showVaultsList ? 0 : 1)
             .buttonStyle(BorderlessButtonStyle())
     }
+    
+    var list: some View {
+        List {
+            if isLoading {
+                loader
+            } else if viewModel.coinsGroupedByChains.count >= 1 {
+                
+                if !vault.isBackedUp {
+                    backupNowWidget
+                }
+                
+                balanceContent
+                getActions()
+                cells
+            } else {
+                emptyList
+            }
+            
+            addButton
+            pad
+        }
+        .listStyle(PlainListStyle())
+        .buttonStyle(BorderlessButtonStyle())
+        .refreshable {
+            viewModel.updateBalance(vault: vault)
+        }
+        .colorScheme(.dark)
+        .scrollContentBackground(.hidden)
+        .background(Color.backgroundBlue)
+    }
 }
 #endif
