@@ -85,12 +85,6 @@ struct ReshareView: View {
             Button {
 
             } label: {
-                FilledButton(title: "Start Reshare")
-            }
-
-            Button {
-
-            } label: {
                 OutlineButton(title: "Start Reshare with Vultisigner")
             }
 
