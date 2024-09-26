@@ -13,12 +13,25 @@ extension ReshareView {
     var content: some View {
         ZStack {
             Background()
-            view
+            main
 
             if viewModel.isLoading {
                 Loader()
             }
         }
+    }
+
+    var main: some View {
+        VStack {
+            headerMac
+            view
+                .padding(.bottom, 30)
+                .padding(.horizontal, 40)
+        }
+    }
+
+    var headerMac: some View {
+        GeneralMacHeader(title: "reshare")
     }
 }
 #endif
