@@ -79,36 +79,6 @@ struct VaultDetailView: View {
         })
     }
     
-    var list: some View {
-        List {
-            if isLoading {
-                loader
-            } else if viewModel.coinsGroupedByChains.count >= 1 {
-                
-                if !vault.isBackedUp {
-                    backupNowWidget
-                }
-                
-                balanceContent
-                getActions()
-                cells
-            } else {
-                emptyList
-            }
-            
-            addButton
-            pad
-        }
-        .listStyle(PlainListStyle())
-        .buttonStyle(BorderlessButtonStyle())
-        .refreshable {
-            viewModel.updateBalance(vault: vault)
-        }
-        .colorScheme(.dark)
-        .scrollContentBackground(.hidden)
-        .background(Color.backgroundBlue)
-    }
-    
     var emptyList: some View {
         ErrorMessage(text: "noChainSelected")
             .padding(.vertical, 50)
@@ -192,7 +162,7 @@ struct VaultDetailView: View {
         settingsDefaultChainViewModel.setData(tokenSelectionViewModel.groupedAssets)
     }
     
-    private func getActions() -> some View {
+    func getActions() -> some View {
         let selectedGroup = viewModel.selectedGroup
         
         return ChainDetailActionButtons(group: selectedGroup ?? GroupedChain.example, sendTx: sendTx, isSendLinkActive: $isSendLinkActive, isSwapLinkActive: $isSwapLinkActive, isMemoLinkActive: $isMemoLinkActive)
