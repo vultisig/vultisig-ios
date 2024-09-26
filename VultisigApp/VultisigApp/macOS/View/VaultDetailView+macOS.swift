@@ -63,5 +63,29 @@ extension VaultDetailView {
             .buttonStyle(BorderlessButtonStyle())
             .padding(.bottom, 30)
     }
+    
+    var list: some View {
+        ScrollView {
+            VStack(spacing: 4) {
+                if isLoading {
+                    loader
+                } else if viewModel.coinsGroupedByChains.count >= 1 {
+                    
+                    if !vault.isBackedUp {
+                        backupNowWidget
+                    }
+                    
+                    balanceContent
+                    getActions()
+                    cells
+                } else {
+                    emptyList
+                }
+                
+                addButton
+                pad
+            }
+        }
+    }
 }
 #endif
