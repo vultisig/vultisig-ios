@@ -236,7 +236,7 @@
 "devicesOnSameNetwork" = "Conecta todos los dispositivos a la misma\nred con la aplicación Vultisig abierta.";
 "devicesOnSameInternet" = "Conecta todos los dispositivos a Internet\ncon la aplicación Vultisig abierta.";
 "invalidFileFormat" = "Formato de archivo no válido";
-"invalidFileFormatMessage" = "Asegúrate de haber seleccionado el archivo de respaldo correcto con extensión .dat/.bak.";
+"invalidFileFormatMessage" = "Asegúrate de haber seleccionado el archivo de respaldo correcto con extensión .dat, .bak or .vult.";
 "uploadBackupFile" = "Subir archivo de respaldo";
 "uploadQRCodeImage" = "Subir imagen de código QR";
 "uploadQRCodeImageKeygen" = "Subir código QR para unirse a Keygen";

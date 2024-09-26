@@ -125,7 +125,7 @@ class EncryptedBackupViewModel: ObservableObject {
     }
     
     func isBakFile() -> Bool {
-        return self.importedFileName?.hasSuffix(".bak") ?? false
+        return self.importedFileName?.hasSuffix(".bak") ?? false || self.importedFileName?.hasSuffix(".vult") ?? false
     }
     
     func importBakFile(data: Data) throws {
@@ -281,7 +281,7 @@ class EncryptedBackupViewModel: ObservableObject {
     private func isValidFormat(_ url: URL) -> Bool {
         let fileExtension = url.pathExtension.lowercased()
         
-        if fileExtension == "dat" || fileExtension == "bak"{
+        if fileExtension == "dat" || fileExtension == "bak" ||  fileExtension == "vult" {
             return true
         } else {
             return false
@@ -309,6 +309,16 @@ class EncryptedBackupViewModel: ObservableObject {
         case .failure(let error):
             print("Error importing file: \(error.localizedDescription)")
         }
+    }
+    
+    func handleFileDocument(_ url: URL) {
+        guard isValidFormat(url) else {
+            showInvalidFormatAlert()
+            return
+        }
+        
+        importedFileName = url.lastPathComponent
+        importFile(from: url)
     }
     
     func handleOnDrop(providers: [NSItemProvider]) -> Bool {

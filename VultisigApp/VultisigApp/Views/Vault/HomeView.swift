@@ -14,6 +14,7 @@ struct HomeView: View {
     @EnvironmentObject var deeplinkViewModel: DeeplinkViewModel
     @EnvironmentObject var viewModel: HomeViewModel
     @EnvironmentObject var phoneCheckUpdateViewModel: PhoneCheckUpdateViewModel
+    @EnvironmentObject var vultExtensionViewModel: VultExtensionViewModel
     @EnvironmentObject var macCameraServiceViewModel: MacCameraServiceViewModel
     @EnvironmentObject var macCheckUpdateViewModel: MacCheckUpdateViewModel
     
@@ -24,6 +25,7 @@ struct HomeView: View {
     @State var showMenu = false
     @State var didUpdate = true
     @State var shouldJoinKeygen = false
+    @State var shouldImportBackup = false
     @State var shouldKeysignTransaction = false
     
     @Environment(\.modelContext) private var modelContext
@@ -81,6 +83,10 @@ struct HomeView: View {
     }
     
     func presetValuesForDeeplink() {
+        if let _ = vultExtensionViewModel.documentData {
+            shouldImportBackup = true
+        }
+        
         guard let type = deeplinkViewModel.type else {
             return
         }
