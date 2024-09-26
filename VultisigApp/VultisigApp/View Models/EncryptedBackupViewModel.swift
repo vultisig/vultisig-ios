@@ -125,7 +125,7 @@ class EncryptedBackupViewModel: ObservableObject {
     }
     
     func isBakFile() -> Bool {
-        return self.importedFileName?.hasSuffix(".bak") ?? false
+        return self.importedFileName?.hasSuffix(".bak") ?? false || self.importedFileName?.hasSuffix(".vult") ?? false
     }
     
     func importBakFile(data: Data) throws {
