@@ -13,8 +13,10 @@ struct ReshareView: View {
 
     @State var showJoinReshare = false
     @State var shouldJoinKeygen = false
+    @State var showFastShareExists = false
+    @State var showFastShareNew = false
 
-    @ObservedObject var viewModel = ReshareViewModel()
+    @StateObject var viewModel = ReshareViewModel()
 
     var body: some View {
         ZStack {
@@ -82,8 +84,12 @@ struct ReshareView: View {
                 FilledButton(title: "Start Reshare")
             }
 
-            Button {
-
+            NavigationLink {
+                FastVaultEmailView(
+                    tssType:  viewModel.isFastVault ? .Reshare : .Keygen,
+                    vault: vault,
+                    selectedTab: .secure
+                )
             } label: {
                 OutlineButton(title: "Start Reshare with Vultisigner")
             }

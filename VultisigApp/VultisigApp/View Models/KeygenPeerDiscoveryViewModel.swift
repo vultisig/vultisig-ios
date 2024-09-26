@@ -90,7 +90,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         }
         self.selections.insert(self.localPartyID)
         
-        if let fastVaultPassword, let fastVaultEmail, state.isFastVault {
+        if let fastVaultPassword, let fastVaultEmail {
             switch tssType {
             case .Keygen:
                 fastVaultService.create(name: vault.name, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, hexChainCode: vault.hexChainCode, encryptionPassword: fastVaultPassword, email: fastVaultEmail)

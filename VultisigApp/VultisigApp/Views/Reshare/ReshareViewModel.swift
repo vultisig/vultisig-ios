@@ -11,6 +11,7 @@ final class ReshareViewModel: ObservableObject {
 
     @Published var isFastVault = false
     @Published var isLoading = false
+    @Published var fastVaultPassword: String = .empty
 
     private let fastVaultService = FastVaultService.shared
 

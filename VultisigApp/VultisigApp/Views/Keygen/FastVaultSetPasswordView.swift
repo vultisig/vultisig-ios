@@ -17,13 +17,31 @@ struct FastVaultSetPasswordView: View {
     @State var verifyPassword: String = ""
     @State var isLinkActive = false
 
+    var title: String {
+        switch tssType {
+        case .Keygen:
+            return "Protect your FastVault."
+        case .Reshare:
+            return "FastVault password"
+        }
+    }
+
+    var disclaimerText: String {
+        switch tssType {
+        case .Keygen:
+            return NSLocalizedString("fastVaultSetDisclaimer", comment: "")
+        case .Reshare:
+            return NSLocalizedString("fastVaultEnterDisclaimer", comment: "")
+        }
+    }
+
     var body: some View {
         content
     }
 
     var passwordField: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Protect your FastVault.")
+            Text(title)
                 .font(.body14MontserratMedium)
                 .foregroundColor(.neutral0)
 
@@ -41,10 +59,11 @@ struct FastVaultSetPasswordView: View {
 
     var verifyTextfield: some View {
         HiddenTextField(placeholder: "verifyPassword", password: $verifyPassword)
+            .opacity(tssType == .Keygen ? 1 : 0)
     }
 
     var disclaimer: some View {
-        OutlinedDisclaimer(text: NSLocalizedString("fastVaultSetDisclaimer", comment: ""))
+        OutlinedDisclaimer(text: disclaimerText)
             .padding(.horizontal, 16)
     }
 
@@ -68,6 +87,11 @@ struct FastVaultSetPasswordView: View {
     }
 
     var isSaveButtonDisabled: Bool {
-        return password.isEmpty || password != verifyPassword
+        switch tssType {
+        case .Keygen:
+            return password.isEmpty || password != verifyPassword
+        case .Reshare:
+            return password.isEmpty
+        }
     }
 }
