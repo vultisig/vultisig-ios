@@ -66,6 +66,8 @@
 		A527DD2E2C3E1D8500204464 /* ReshareMessage+ProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A527DD2D2C3E1D8500204464 /* ReshareMessage+ProtoMappable.swift */; };
 		A52B0D032CA53DCE00507966 /* ReshareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52B0D022CA53DCE00507966 /* ReshareView.swift */; };
 		A52B0D052CA59E8200507966 /* ReshareViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52B0D042CA59E8200507966 /* ReshareViewModel.swift */; };
+		A52B0D072CA6216400507966 /* ReshareView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52B0D062CA6216400507966 /* ReshareView+iOS.swift */; };
+		A52B0D092CA621B500507966 /* ReshareView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52B0D082CA621B500507966 /* ReshareView+macOS.swift */; };
 		A53287B52C4DB874009FD3D3 /* CoinPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A53287B42C4DB874009FD3D3 /* CoinPickerView.swift */; };
 		A542AE5B2C5B5F220061FEAF /* FilledLabelButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A542AE5A2C5B5F220061FEAF /* FilledLabelButton.swift */; };
 		A543B3A22BEA93D4003FB989 /* SwapQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = A543B3A12BEA93D4003FB989 /* SwapQuote.swift */; };
@@ -764,6 +766,8 @@
 		A527DD2D2C3E1D8500204464 /* ReshareMessage+ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReshareMessage+ProtoMappable.swift"; sourceTree = "<group>"; };
 		A52B0D022CA53DCE00507966 /* ReshareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReshareView.swift; sourceTree = "<group>"; };
 		A52B0D042CA59E8200507966 /* ReshareViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReshareViewModel.swift; sourceTree = "<group>"; };
+		A52B0D062CA6216400507966 /* ReshareView+iOS.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "ReshareView+iOS.swift"; sourceTree = "<group>"; };
+		A52B0D082CA621B500507966 /* ReshareView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReshareView+macOS.swift"; sourceTree = "<group>"; };
 		A53287B42C4DB874009FD3D3 /* CoinPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinPickerView.swift; sourceTree = "<group>"; };
 		A542AE5A2C5B5F220061FEAF /* FilledLabelButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilledLabelButton.swift; sourceTree = "<group>"; };
 		A543B3A12BEA93D4003FB989 /* SwapQuote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapQuote.swift; sourceTree = "<group>"; };
@@ -1706,6 +1710,8 @@
 		A52B0D012CA53DBE00507966 /* Reshare */ = {
 			isa = PBXGroup;
 			children = (
+				A52B0D062CA6216400507966 /* ReshareView+iOS.swift */,
+				A52B0D082CA621B500507966 /* ReshareView+macOS.swift */,
 				A52B0D022CA53DCE00507966 /* ReshareView.swift */,
 				A52B0D042CA59E8200507966 /* ReshareViewModel.swift */,
 			);
@@ -3618,6 +3624,7 @@
 				A6C671092CA27D0500F59B6A /* OnboardingView2+iOS.swift in Sources */,
 				A653242E2BA53D0900DDE6EB /* SendCryptoPairView.swift in Sources */,
 				DE63AE532BBA627B001BBE5C /* atom.swift in Sources */,
+				A52B0D072CA6216400507966 /* ReshareView+iOS.swift in Sources */,
 				A6C670ED2CA26F5C00F59B6A /* SettingsView+iOS.swift in Sources */,
 				A6C671052CA2792800F59B6A /* OnboardingView1+iOS.swift in Sources */,
 				A6182F532C9296CF0059BFDD /* StyledFloatingPointField+iOS.swift in Sources */,
@@ -3804,6 +3811,7 @@
 				A60CA7E72BB0EC6100FDEB5C /* AccountViewModel.swift in Sources */,
 				A66BFCCF2C1348E4004DCD4F /* QRCodeShareSheet.swift in Sources */,
 				A6C6709A2C9D09FB00F59B6A /* AddressQRCodeView+macOS.swift in Sources */,
+				A52B0D092CA621B500507966 /* ReshareView+macOS.swift in Sources */,
 				A6182F3D2C92332A0059BFDD /* FilledButton+macOS.swift in Sources */,
 				A52B0D032CA53DCE00507966 /* ReshareView.swift in Sources */,
 				A6725D3A2C3F9B4400D47716 /* AddAddressBookView.swift in Sources */,

@@ -19,25 +19,17 @@ struct ReshareView: View {
     @StateObject var viewModel = ReshareViewModel()
 
     var body: some View {
-        ZStack {
-            Background()
-            view
-
-            if viewModel.isLoading {
-                Loader()
+        content
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Image("LogoWithTitle")
+                        .resizable()
+                        .frame(width: 140, height: 32)
+                }
             }
-        }
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                Image("LogoWithTitle")
-                    .resizable()
-                    .frame(width: 140, height: 32)
+            .task {
+                await viewModel.load(vault: vault)
             }
-        }
-        .task {
-            await viewModel.load(vault: vault)
-        }
     }
 
     var view: some View {
@@ -99,16 +91,6 @@ struct ReshareView: View {
             } label: {
                 OutlineButton(title: "Join Reshare")
             }
-            .sheet(isPresented: $showJoinReshare, content: {
-                GeneralCodeScannerView(
-                    showSheet: $showJoinReshare,
-                    shouldJoinKeygen: $shouldJoinKeygen,
-                    shouldKeysignTransaction: .constant(false), // CodeScanner used for keygen only
-                    shouldSendCrypto: .constant(false),         // -
-                    selectedChain: .constant(nil),              // -
-                    sendTX: SendTransaction()                   // -
-                )
-            })
             .navigationDestination(isPresented: $shouldJoinKeygen) {
                 JoinKeygenView(vault: vault)
             }
