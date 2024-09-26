@@ -64,6 +64,7 @@
 		A52313DE2BDF665E00D4D0D5 /* KeysignSwapConfirmView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52313DD2BDF665E00D4D0D5 /* KeysignSwapConfirmView.swift */; };
 		A527DD2C2C3E1CE000204464 /* KeygenMessage+ProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A527DD2B2C3E1CE000204464 /* KeygenMessage+ProtoMappable.swift */; };
 		A527DD2E2C3E1D8500204464 /* ReshareMessage+ProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A527DD2D2C3E1D8500204464 /* ReshareMessage+ProtoMappable.swift */; };
+		A52B0D032CA53DCE00507966 /* ReshareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52B0D022CA53DCE00507966 /* ReshareView.swift */; };
 		A53287B52C4DB874009FD3D3 /* CoinPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A53287B42C4DB874009FD3D3 /* CoinPickerView.swift */; };
 		A542AE5B2C5B5F220061FEAF /* FilledLabelButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A542AE5A2C5B5F220061FEAF /* FilledLabelButton.swift */; };
 		A543B3A22BEA93D4003FB989 /* SwapQuote.swift in Sources */ = {isa = PBXBuildFile; fileRef = A543B3A12BEA93D4003FB989 /* SwapQuote.swift */; };
@@ -760,6 +761,7 @@
 		A52313DD2BDF665E00D4D0D5 /* KeysignSwapConfirmView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignSwapConfirmView.swift; sourceTree = "<group>"; };
 		A527DD2B2C3E1CE000204464 /* KeygenMessage+ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "KeygenMessage+ProtoMappable.swift"; sourceTree = "<group>"; };
 		A527DD2D2C3E1D8500204464 /* ReshareMessage+ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ReshareMessage+ProtoMappable.swift"; sourceTree = "<group>"; };
+		A52B0D022CA53DCE00507966 /* ReshareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReshareView.swift; sourceTree = "<group>"; };
 		A53287B42C4DB874009FD3D3 /* CoinPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinPickerView.swift; sourceTree = "<group>"; };
 		A542AE5A2C5B5F220061FEAF /* FilledLabelButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilledLabelButton.swift; sourceTree = "<group>"; };
 		A543B3A12BEA93D4003FB989 /* SwapQuote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapQuote.swift; sourceTree = "<group>"; };
@@ -1697,6 +1699,14 @@
 				A52287472C42BB0000E1CC5A /* LiFiService.swift */,
 			);
 			path = LiFi;
+			sourceTree = "<group>";
+		};
+		A52B0D012CA53DBE00507966 /* Reshare */ = {
+			isa = PBXGroup;
+			children = (
+				A52B0D022CA53DCE00507966 /* ReshareView.swift */,
+			);
+			path = Reshare;
 			sourceTree = "<group>";
 		};
 		A53287B32C4DB835009FD3D3 /* CoinPicker */ = {
@@ -2674,6 +2684,7 @@
 				D9AD8EDD2B6730430009F8D5 /* WelcomeView.swift */,
 				A6D0BA692C08353700E24DC9 /* NoCameraPermissionView.swift */,
 				A65518022BF849FC006BB924 /* CoverView.swift */,
+				A52B0D012CA53DBE00507966 /* Reshare */,
 				A53287B32C4DB835009FD3D3 /* CoinPicker */,
 				A6C3ABC62C3E594400F13ED0 /* Address Book */,
 				B5A97CEB2BF41554007574D7 /* TransactionMemo */,
@@ -3790,6 +3801,7 @@
 				A66BFCCF2C1348E4004DCD4F /* QRCodeShareSheet.swift in Sources */,
 				A6C6709A2C9D09FB00F59B6A /* AddressQRCodeView+macOS.swift in Sources */,
 				A6182F3D2C92332A0059BFDD /* FilledButton+macOS.swift in Sources */,
+				A52B0D032CA53DCE00507966 /* ReshareView.swift in Sources */,
 				A6725D3A2C3F9B4400D47716 /* AddAddressBookView.swift in Sources */,
 				A6ECA18A2C93F4F400456110 /* SetupVaultImageManager+macOS.swift in Sources */,
 				A6C670AA2C9D0D6600F59B6A /* ChainDetailView+macOS.swift in Sources */,
