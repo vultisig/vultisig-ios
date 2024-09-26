@@ -24,6 +24,7 @@ struct OutlinedDisclaimer: View {
             Text(text)
                 .font(.body12Menlo)
                 .foregroundColor(.neutral0)
+                .lineSpacing(4)
                 .multilineTextAlignment(alignment)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }

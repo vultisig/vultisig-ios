@@ -9,10 +9,21 @@ import SwiftUI
 
 struct ReshareView: View {
 
+    let vault: Vault
+
+    @State var showJoinReshare = false
+    @State var shouldJoinKeygen = false
+
+    @ObservedObject var viewModel = ReshareViewModel()
+
     var body: some View {
         ZStack {
             Background()
             view
+
+            if viewModel.isLoading {
+                Loader()
+            }
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -21,6 +32,9 @@ struct ReshareView: View {
                     .resizable()
                     .frame(width: 140, height: 32)
             }
+        }
+        .task {
+            await viewModel.load(vault: vault)
         }
     }
 
@@ -56,6 +70,18 @@ struct ReshareView: View {
 
     var buttons: some View {
         VStack(spacing: 12) {
+            NavigationLink {
+                PeerDiscoveryView(
+                    tssType: .Reshare,
+                    vault: vault,
+                    selectedTab: .secure,
+                    fastVaultEmail: nil,
+                    fastVaultPassword: nil
+                )
+            } label: {
+                FilledButton(title: "Start Reshare")
+            }
+
             Button {
 
             } label: {
@@ -69,9 +95,22 @@ struct ReshareView: View {
             }
 
             Button {
-
+                showJoinReshare = true
             } label: {
                 OutlineButton(title: "Join Reshare")
+            }
+            .sheet(isPresented: $showJoinReshare, content: {
+                GeneralCodeScannerView(
+                    showSheet: $showJoinReshare,
+                    shouldJoinKeygen: $shouldJoinKeygen,
+                    shouldKeysignTransaction: .constant(false), // CodeScanner used for keygen only
+                    shouldSendCrypto: .constant(false),         // -
+                    selectedChain: .constant(nil),              // -
+                    sendTX: SendTransaction()                   // -
+                )
+            })
+            .navigationDestination(isPresented: $shouldJoinKeygen) {
+                JoinKeygenView(vault: vault)
             }
         }
         .padding(.horizontal, 40)
