@@ -9,30 +9,28 @@
 import SwiftUI
 
 extension VultisigApp {
-    var content: some Scene {
-        WindowGroup {
-            ContentView()
-                .environmentObject(applicationState) // Shared monolithic mutable state
-                .environmentObject(vaultDetailViewModel)
-                .environmentObject(coinSelectionViewModel)
-                .environmentObject(accountViewModel)
-                .environmentObject(deeplinkViewModel)
-                .environmentObject(settingsViewModel)
-                .environmentObject(homeViewModel)
-                .environmentObject(settingsDefaultChainViewModel)
-                .environmentObject(phoneCheckUpdateViewModel)
-        }
-        .onChange(of: scenePhase) {
-            switch scenePhase {
-            case .active:
-                continueLogin()
-            case .background:
-                resetLogin()
-            default:
-                break
+    var content: some View {
+        ContentView()
+            .environmentObject(applicationState) // Shared monolithic mutable state
+            .environmentObject(vaultDetailViewModel)
+            .environmentObject(coinSelectionViewModel)
+            .environmentObject(accountViewModel)
+            .environmentObject(deeplinkViewModel)
+            .environmentObject(settingsViewModel)
+            .environmentObject(homeViewModel)
+            .environmentObject(vultExtensionViewModel)
+            .environmentObject(settingsDefaultChainViewModel)
+            .environmentObject(phoneCheckUpdateViewModel)
+            .onChange(of: scenePhase) {
+                switch scenePhase {
+                case .active:
+                    continueLogin()
+                case .background:
+                    resetLogin()
+                default:
+                    break
+                }
             }
-        }
-        .modelContainer(sharedModelContainer)
     }
 }
 #endif
