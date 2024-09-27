@@ -1,9 +1,10 @@
 //
-//  ImageFileDocument.swift
+//  ImageFileDocument+iOS.swift
 //  VultisigApp
 //
-//  Created by Amol Kumar on 2024-08-29.
+//  Created by Amol Kumar on 2024-09-27.
 //
+
 #if os(iOS)
 import SwiftUI
 import UniformTypeIdentifiers
@@ -45,5 +46,4 @@ struct ImageFileDocument: FileDocument {
         return FileWrapper(regularFileWithContents: pngData)
     }
 }
-
 #endif
