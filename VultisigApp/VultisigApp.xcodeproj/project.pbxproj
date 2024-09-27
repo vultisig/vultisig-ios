@@ -650,6 +650,8 @@
 		DEF2E2CB2B9AD5EA000737B8 /* UTXOChainsHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF2E2CA2B9AD5EA000737B8 /* UTXOChainsHelper.swift */; };
 		DEF2E2D02B9DA459000737B8 /* PublicKeyTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF2E2CF2B9DA459000737B8 /* PublicKeyTest.swift */; };
 		DEF2E2D32B9DC685000737B8 /* UTXOChainsHelperTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF2E2D22B9DC685000737B8 /* UTXOChainsHelperTest.swift */; };
+		DEF429592CA65AFD004B6D0B /* EvmTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF429582CA65AEF004B6D0B /* EvmTest.swift */; };
+		DEF4295B2CA66D57004B6D0B /* ERC20Test.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF4295A2CA66D51004B6D0B /* ERC20Test.swift */; };
 		DEF722602C520377002FFE8A /* THORChainNetworkStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEF7225F2C520377002FFE8A /* THORChainNetworkStatus.swift */; };
 		DEFC7BFB2B8D87370090B07A /* erc20.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC7BFA2B8D87370090B07A /* erc20.swift */; };
 		DEFC7BFF2B8EC95E0090B07A /* thorchain.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEFC7BFE2B8EC95E0090B07A /* thorchain.swift */; };
@@ -1328,6 +1330,8 @@
 		DEF2E2CA2B9AD5EA000737B8 /* UTXOChainsHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOChainsHelper.swift; sourceTree = "<group>"; };
 		DEF2E2CF2B9DA459000737B8 /* PublicKeyTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublicKeyTest.swift; sourceTree = "<group>"; };
 		DEF2E2D22B9DC685000737B8 /* UTXOChainsHelperTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTXOChainsHelperTest.swift; sourceTree = "<group>"; };
+		DEF429582CA65AEF004B6D0B /* EvmTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EvmTest.swift; sourceTree = "<group>"; };
+		DEF4295A2CA66D51004B6D0B /* ERC20Test.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ERC20Test.swift; sourceTree = "<group>"; };
 		DEF7225F2C520377002FFE8A /* THORChainNetworkStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = THORChainNetworkStatus.swift; sourceTree = "<group>"; };
 		DEFC7BFA2B8D87370090B07A /* erc20.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = erc20.swift; sourceTree = "<group>"; };
 		DEFC7BFE2B8EC95E0090B07A /* thorchain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = thorchain.swift; sourceTree = "<group>"; };
@@ -2763,6 +2767,8 @@
 		DEF2E2CE2B9DA41A000737B8 /* Chains */ = {
 			isa = PBXGroup;
 			children = (
+				DEF4295A2CA66D51004B6D0B /* ERC20Test.swift */,
+				DEF429582CA65AEF004B6D0B /* EvmTest.swift */,
 				DEF2E2CF2B9DA459000737B8 /* PublicKeyTest.swift */,
 				DEF2E2D22B9DC685000737B8 /* UTXOChainsHelperTest.swift */,
 			);
@@ -3567,9 +3573,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DEF429592CA65AFD004B6D0B /* EvmTest.swift in Sources */,
 				DEF2E2D32B9DC685000737B8 /* UTXOChainsHelperTest.swift in Sources */,
 				DEF2E2D02B9DA459000737B8 /* PublicKeyTest.swift in Sources */,
 				DE8AD74A2BC7A86200339775 /* EncryptionTest.swift in Sources */,
+				DEF4295B2CA66D57004B6D0B /* ERC20Test.swift in Sources */,
 				DE49A17B2B65F6DB000F3AFB /* VultisigAppTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
