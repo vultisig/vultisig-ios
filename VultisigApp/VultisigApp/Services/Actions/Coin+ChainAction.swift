@@ -67,12 +67,10 @@ extension Array where Element == CoinAction {
     var filtered: [CoinAction] {
 #if os(macOS)
         return self
-#else
-#if DEBUG
+#elseif DEBUG
         return self
 #else
         return filter { $0 != .swap && $0 != .memo }
-#endif
 #endif
     }
 }

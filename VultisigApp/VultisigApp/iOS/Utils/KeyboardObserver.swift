@@ -5,6 +5,7 @@
 //  Created by Amol Kumar on 2024-08-30.
 //
 
+#if os(iOS)
 import SwiftUI
 import Combine
 
@@ -15,7 +16,6 @@ final class KeyboardObserver: ObservableObject {
     private var cancellables: Set<AnyCancellable> = []
 
     init() {
-#if os(iOS)
         NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)
             .compactMap { $0.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect }
             .map { $0.height }
@@ -26,6 +26,6 @@ final class KeyboardObserver: ObservableObject {
             .map { _ in CGFloat(0) }
             .assign(to: \.keyboardHeight, on: self)
             .store(in: &cancellables)
-#endif
     }
 }
+#endif

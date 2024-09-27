@@ -11,7 +11,6 @@ import BigInt
 // MARK: - String Extensions for Padding and Hex Processing
 
 extension String {
-    
     func paddingLeft(toLength: Int, withPad character: String) -> String {
         let toPad = toLength - self.count
         

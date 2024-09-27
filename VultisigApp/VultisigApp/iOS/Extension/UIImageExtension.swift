@@ -5,9 +5,9 @@
 //  Created by Amol Kumar on 2024-09-03.
 //
 
+#if os(iOS)
 import SwiftUI
 
-#if os(iOS)
 extension UIImage {
     func resized(to size: CGSize) -> UIImage {
         UIGraphicsImageRenderer(size: size).image { _ in
