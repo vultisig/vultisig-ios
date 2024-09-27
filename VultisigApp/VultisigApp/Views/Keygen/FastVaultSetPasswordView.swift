@@ -12,25 +12,26 @@ struct FastVaultSetPasswordView: View {
     let vault: Vault
     let selectedTab: SetupVaultState
     let fastVaultEmail: String
+    let fastVaultExist: Bool
 
     @State var password: String = ""
     @State var verifyPassword: String = ""
     @State var isLinkActive = false
 
     var title: String {
-        switch tssType {
-        case .Keygen:
-            return "Protect your FastVault."
-        case .Reshare:
-            return "FastVault password"
+        switch fastVaultExist {
+        case false:
+            return NSLocalizedString("fastVaultSetPasswordTitle", comment: "")
+        case true:
+            return NSLocalizedString("fastVaultEnterPasswordTitle", comment: "")
         }
     }
 
     var disclaimerText: String {
-        switch tssType {
-        case .Keygen:
+        switch fastVaultExist {
+        case false:
             return NSLocalizedString("fastVaultSetDisclaimer", comment: "")
-        case .Reshare:
+        case true:
             return NSLocalizedString("fastVaultEnterDisclaimer", comment: "")
         }
     }
@@ -87,10 +88,10 @@ struct FastVaultSetPasswordView: View {
     }
 
     var isSaveButtonDisabled: Bool {
-        switch tssType {
-        case .Keygen:
+        switch fastVaultExist {
+        case false:
             return password.isEmpty || password != verifyPassword
-        case .Reshare:
+        case true:
             return password.isEmpty
         }
     }

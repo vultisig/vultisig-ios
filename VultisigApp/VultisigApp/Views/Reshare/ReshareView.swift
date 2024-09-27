@@ -45,11 +45,11 @@ struct ReshareView: View {
 
     var title: some View {
         VStack(spacing: 16) {
-            Text("Reshare your vault")
+            Text(NSLocalizedString("reshareLabelTitle", comment: ""))
                 .font(.body24MontserratMedium)
                 .foregroundColor(.neutral0)
 
-            Text("Reshare can be used to refresh, expand or reduce the amount of devices in a Vault.")
+            Text(NSLocalizedString("reshareLabelSubtitle", comment: ""))
                 .font(.body14Montserrat)
                 .foregroundColor(.neutral300)
                 .multilineTextAlignment(.center)
@@ -58,7 +58,7 @@ struct ReshareView: View {
     }
 
     var disclaimer: some View {
-        OutlinedDisclaimer(text: "For all Reshare actions the threshold of devices is always required.", alignment: .center)
+        OutlinedDisclaimer(text: NSLocalizedString("reshareLabelDisclaimer", comment: ""), alignment: .center)
             .padding(.horizontal, 16)
     }
 
@@ -73,23 +73,24 @@ struct ReshareView: View {
                     fastVaultPassword: nil
                 )
             } label: {
-                FilledButton(title: "Start Reshare")
+                FilledButton(title: "startReshare")
             }
 
             NavigationLink {
                 FastVaultEmailView(
-                    tssType:  viewModel.isFastVault ? .Reshare : .Keygen,
+                    tssType: .Reshare,
                     vault: vault,
-                    selectedTab: .secure
+                    selectedTab: .secure,
+                    fastVaultExist: viewModel.isFastVault
                 )
             } label: {
-                OutlineButton(title: "Start Reshare with Vultisigner")
+                OutlineButton(title: "startFastVaultReshare")
             }
 
             Button {
                 showJoinReshare = true
             } label: {
-                OutlineButton(title: "Join Reshare")
+                OutlineButton(title: "joinReshare")
             }
             .navigationDestination(isPresented: $shouldJoinKeygen) {
                 JoinKeygenView(vault: vault)
