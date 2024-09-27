@@ -59,7 +59,8 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         state: SetupVaultState,
         participantDiscovery: ParticipantDiscovery,
         fastVaultPassword: String?,
-        fastVaultEmail: String?
+        fastVaultEmail: String?,
+        fastVaultExist: Bool
     ) {
         self.vault = vault
         self.tssType = tssType
@@ -91,10 +92,10 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         self.selections.insert(self.localPartyID)
         
         if let fastVaultPassword, let fastVaultEmail {
-            switch tssType {
-            case .Keygen:
+            switch (tssType, fastVaultExist) {
+            case (.Keygen, _), (.Reshare, false):
                 fastVaultService.create(name: vault.name, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, hexChainCode: vault.hexChainCode, encryptionPassword: fastVaultPassword, email: fastVaultEmail)
-            case .Reshare:
+            case (.Reshare, true) :
                 fastVaultService.reshare(name: vault.name, publicKeyECDSA: vault.pubKeyECDSA, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, hexChainCode: vault.hexChainCode, encryptionPassword: fastVaultPassword, email: fastVaultEmail)
             }
         }
