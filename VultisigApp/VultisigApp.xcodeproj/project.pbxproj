@@ -245,6 +245,7 @@
 		A6505AEB2CA673860002FBF4 /* MacCameraServiceViewModel+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6505AEA2CA673860002FBF4 /* MacCameraServiceViewModel+iOS.swift */; };
 		A6505AED2CA674420002FBF4 /* Coin+ChainAction+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6505AEC2CA674420002FBF4 /* Coin+ChainAction+iOS.swift */; };
 		A6505AEF2CA6744F0002FBF4 /* Coin+ChainAction+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6505AEE2CA6744F0002FBF4 /* Coin+ChainAction+macOS.swift */; };
+		A6505AF12CA675F70002FBF4 /* KeyboardObserver+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6505AF02CA675F70002FBF4 /* KeyboardObserver+macOS.swift */; };
 		A6521C562C6EC769002D5C5F /* MacScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6521C552C6EC769002D5C5F /* MacScannerView.swift */; };
 		A6521C582C6ECA1A002D5C5F /* MacCameraPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6521C572C6ECA19002D5C5F /* MacCameraPreview.swift */; };
 		A6521C5A2C6ECA62002D5C5F /* MacCameraServiceViewModel+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6521C592C6ECA62002D5C5F /* MacCameraServiceViewModel+macOS.swift */; };
@@ -294,7 +295,7 @@
 		A6725D3E2C3FB61900D47716 /* AddressBookItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6725D3D2C3FB61900D47716 /* AddressBookItem.swift */; };
 		A6725D412C40C3C100D47716 /* AddressBookChainSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6725D402C40C3C100D47716 /* AddressBookChainSelector.swift */; };
 		A6725D432C40C45800D47716 /* AddressBookCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6725D422C40C45800D47716 /* AddressBookCell.swift */; };
-		A679D2A02C81951100FFCDA1 /* KeyboardObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A679D29F2C81951100FFCDA1 /* KeyboardObserver.swift */; };
+		A679D2A02C81951100FFCDA1 /* KeyboardObserver+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A679D29F2C81951100FFCDA1 /* KeyboardObserver+iOS.swift */; };
 		A67AA1C42C64715000D06C7E /* ChainDetailHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67AA1C32C64715000D06C7E /* ChainDetailHeader.swift */; };
 		A67AA1C62C64784F00D06C7E /* CoinDetailHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67AA1C52C64784F00D06C7E /* CoinDetailHeader.swift */; };
 		A67F4C5F2BE313220086ED09 /* ActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67F4C5E2BE313220086ED09 /* ActionButton.swift */; };
@@ -938,6 +939,7 @@
 		A6505AEA2CA673860002FBF4 /* MacCameraServiceViewModel+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MacCameraServiceViewModel+iOS.swift"; sourceTree = "<group>"; };
 		A6505AEC2CA674420002FBF4 /* Coin+ChainAction+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Coin+ChainAction+iOS.swift"; sourceTree = "<group>"; };
 		A6505AEE2CA6744F0002FBF4 /* Coin+ChainAction+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Coin+ChainAction+macOS.swift"; sourceTree = "<group>"; };
+		A6505AF02CA675F70002FBF4 /* KeyboardObserver+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "KeyboardObserver+macOS.swift"; sourceTree = "<group>"; };
 		A6521C552C6EC769002D5C5F /* MacScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacScannerView.swift; sourceTree = "<group>"; };
 		A6521C572C6ECA19002D5C5F /* MacCameraPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacCameraPreview.swift; sourceTree = "<group>"; };
 		A6521C592C6ECA62002D5C5F /* MacCameraServiceViewModel+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MacCameraServiceViewModel+macOS.swift"; sourceTree = "<group>"; };
@@ -986,7 +988,7 @@
 		A6725D3D2C3FB61900D47716 /* AddressBookItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookItem.swift; sourceTree = "<group>"; };
 		A6725D402C40C3C100D47716 /* AddressBookChainSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookChainSelector.swift; sourceTree = "<group>"; };
 		A6725D422C40C45800D47716 /* AddressBookCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookCell.swift; sourceTree = "<group>"; };
-		A679D29F2C81951100FFCDA1 /* KeyboardObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardObserver.swift; sourceTree = "<group>"; };
+		A679D29F2C81951100FFCDA1 /* KeyboardObserver+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "KeyboardObserver+iOS.swift"; sourceTree = "<group>"; };
 		A67AA1C32C64715000D06C7E /* ChainDetailHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailHeader.swift; sourceTree = "<group>"; };
 		A67AA1C52C64784F00D06C7E /* CoinDetailHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinDetailHeader.swift; sourceTree = "<group>"; };
 		A67F4C5E2BE313220086ED09 /* ActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionButton.swift; sourceTree = "<group>"; };
@@ -1991,7 +1993,7 @@
 				B5E95E082BED84D9003778F0 /* ImagePicker.swift */,
 				A6A831D52C803EBF00E28662 /* ImageFileDocument+iOS.swift */,
 				A6505AD82CA66CBA0002FBF4 /* Placement+iOS.swift */,
-				A679D29F2C81951100FFCDA1 /* KeyboardObserver.swift */,
+				A679D29F2C81951100FFCDA1 /* KeyboardObserver+iOS.swift */,
 				A60CA7EA2BB1020900FDEB5C /* DetectOrientation.swift */,
 				A6505AEC2CA674420002FBF4 /* Coin+ChainAction+iOS.swift */,
 			);
@@ -2005,6 +2007,7 @@
 				A6505AD62CA66C4B0002FBF4 /* ImageFileDocument+macOS.swift */,
 				A6505ADA2CA66CC20002FBF4 /* Placement+macOS.swift */,
 				A6505AEE2CA6744F0002FBF4 /* Coin+ChainAction+macOS.swift */,
+				A6505AF02CA675F70002FBF4 /* KeyboardObserver+macOS.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -3083,6 +3086,7 @@
 				A6386D8C2C8C274200DDD58E /* BackupVaultNowView+iOS.swift in Sources */,
 				A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */,
 				469ED3942B98E776008D4951 /* ThorchainService.swift in Sources */,
+				A6505AF12CA675F70002FBF4 /* KeyboardObserver+macOS.swift in Sources */,
 				462DCD702BCA14F3003D542F /* CoinPaprikaQuote.swift in Sources */,
 				A5E841CD2C63A987009325CB /* RateProvider.swift in Sources */,
 				A6B7F49A2C49418A006D83D1 /* VaultDetailQRCode.swift in Sources */,
@@ -3203,7 +3207,7 @@
 				A51AE8C62C958A0200EF9A7A /* FastVaultEnterPasswordView+macOS.swift in Sources */,
 				A69FBBC42C8BB5AD00A4B78B /* NoCameraPermissionView+iOS.swift in Sources */,
 				A66A0BD92BA12DF50021A483 /* RenameVaultView.swift in Sources */,
-				A679D2A02C81951100FFCDA1 /* KeyboardObserver.swift in Sources */,
+				A679D2A02C81951100FFCDA1 /* KeyboardObserver+iOS.swift in Sources */,
 				A633B1252B993FE7003D1738 /* FilledButton.swift in Sources */,
 				46F47CBB2B870EE900D964EA /* UTXOTransactionMempool.swift in Sources */,
 				A638752F2C38570F000CF242 /* BackupVaultNowView.swift in Sources */,

@@ -6,6 +6,7 @@
 //
 #if os(macOS)
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct ImageFileDocument: FileDocument {
     var image: NSImage
