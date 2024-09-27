@@ -11,7 +11,6 @@ import WalletCore
 import Mediator
 
 class SwapCryptoViewModel: ObservableObject, TransferViewModel {
-
     private let titles = ["send", "verify", "pair", "keysign", "done"]
 
     private let swapService = SwapService.shared

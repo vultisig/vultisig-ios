@@ -25,12 +25,7 @@ struct OutlineButton: View {
             .background(Color.clear)
             .cornerRadius(100)
             .overlay(
-                RoundedRectangle(cornerRadius: 100)
-                #if os(iOS)
-                    .stroke(gradient, lineWidth: 1)
-                #elseif os(macOS)
-                    .stroke(gradient, lineWidth: 2)
-                #endif
+                overlay
             )
     }
 }

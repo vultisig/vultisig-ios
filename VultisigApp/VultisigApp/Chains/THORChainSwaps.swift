@@ -8,7 +8,6 @@ import Tss
 import WalletCore
 
 class THORChainSwaps {
-
     static var affiliateFeeRateBp: String {
 #if DEBUG
         return "0"
