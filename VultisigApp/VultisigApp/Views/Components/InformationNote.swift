@@ -19,12 +19,7 @@ struct InformationNote: View {
         .background(Color.warningYellow.opacity(0.35))
         .cornerRadius(12)
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
-            #if os(iOS)
-                .stroke(Color.warningYellow, lineWidth: 1)
-            #elseif os(macOS)
-                .stroke(Color.warningYellow, lineWidth: 2)
-            #endif
+            overlay
         )
     }
     

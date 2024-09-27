@@ -5,9 +5,9 @@
 //  Created by Amol Kumar on 2024-03-24.
 //
 
+#if os(iOS)
 import SwiftUI
 
-#if os(iOS)
 struct DetectOrientation: ViewModifier {
     @Binding var orientation: UIDeviceOrientation
     

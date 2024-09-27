@@ -28,12 +28,7 @@ struct OutlinedDisclaimer: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
         .overlay(
-            RoundedRectangle(cornerRadius: 10)
-            #if os(iOS)
-                .stroke(LinearGradient.primaryGradient, lineWidth: 1)
-            #elseif os(macOS)
-                .stroke(LinearGradient.primaryGradient, lineWidth: 2)
-            #endif
+            overlay
         )
     }
 }

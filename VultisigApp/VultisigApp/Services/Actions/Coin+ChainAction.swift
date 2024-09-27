@@ -8,7 +8,6 @@
 import Foundation
 
 extension Chain {
-    
     var defaultActions: [CoinAction] {
         let actions: [CoinAction]
         switch self {
@@ -60,19 +59,5 @@ extension Chain {
             actions = [.send, .memo]
         }
         return actions.filtered
-    }
-}
-
-extension Array where Element == CoinAction {
-    var filtered: [CoinAction] {
-#if os(macOS)
-        return self
-#else
-#if DEBUG
-        return self
-#else
-        return filter { $0 != .swap && $0 != .memo }
-#endif
-#endif
     }
 }
