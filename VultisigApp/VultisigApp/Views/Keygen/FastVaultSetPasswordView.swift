@@ -60,7 +60,7 @@ struct FastVaultSetPasswordView: View {
 
     var verifyTextfield: some View {
         HiddenTextField(placeholder: "verifyPassword", password: $verifyPassword)
-            .opacity(tssType == .Keygen ? 1 : 0)
+            .opacity(fastVaultExist ? 0 : 1)
     }
 
     var disclaimer: some View {
