@@ -65,6 +65,9 @@ extension HomeView {
                 JoinKeysignView(vault: vault)
             }
         }
+        .navigationDestination(isPresented: $shouldImportBackup) {
+            ImportWalletView()
+        }
     }
     
     func setData() {

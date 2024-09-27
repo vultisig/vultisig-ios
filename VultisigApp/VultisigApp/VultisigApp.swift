@@ -9,7 +9,6 @@ import SwiftUI
 import WalletCore
 
 @main
-
 struct VultisigApp: App {
     @Environment(\.scenePhase) var scenePhase
     
@@ -21,18 +20,26 @@ struct VultisigApp: App {
     @StateObject var settingsViewModel = SettingsViewModel.shared
     @StateObject var homeViewModel = HomeViewModel()
     @StateObject var settingsDefaultChainViewModel = SettingsDefaultChainViewModel()
+    @StateObject var vultExtensionViewModel = VultExtensionViewModel()
     @StateObject var macCheckUpdateViewModel = MacCheckUpdateViewModel()
     @StateObject var phoneCheckUpdateViewModel = PhoneCheckUpdateViewModel()
     
     // Mac specific
     @StateObject var macCameraServiceViewModel = MacCameraServiceViewModel()
     
-    init(){
-        //setenv("GODEBUG", "asyncpreemptoff=1",1)
-    }
-    
     var body: some Scene {
-        content
+        WindowGroup {
+            content
+        }
+        .modelContainer(sharedModelContainer)
+        
+        DocumentGroup(newDocument: VULTFileDocument()) { file in
+            content
+                .onAppear {
+                    vultExtensionViewModel.documentData = file
+                }
+        }
+        .modelContainer(sharedModelContainer)
     }
     
     var sharedModelContainer: ModelContainer = {
