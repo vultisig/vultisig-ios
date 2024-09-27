@@ -20,6 +20,13 @@ extension ChainDetailView {
             
             PopupCapsule(text: "addressCopied", showPopup: $showAlert)
         }
+        .safeAreaInset(edge: .bottom) {
+            if group.chain == .base {
+                #if DEBUG
+                weweButton()
+                #endif
+            }
+        }
     }
     
     var main: some View {

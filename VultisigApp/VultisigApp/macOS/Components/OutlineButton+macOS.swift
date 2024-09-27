@@ -13,5 +13,10 @@ extension OutlineButton {
         content
             .font(.body14MontserratBold)
     }
+    
+    var overlay: some View {
+        RoundedRectangle(cornerRadius: 100)
+            .stroke(gradient, lineWidth: 2)
+    }
 }
 #endif
