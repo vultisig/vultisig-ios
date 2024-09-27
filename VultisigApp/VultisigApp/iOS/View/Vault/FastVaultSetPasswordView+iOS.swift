@@ -20,7 +20,7 @@ extension FastVaultSetPasswordView {
     var main: some View {
         view
             .navigationDestination(isPresented: $isLinkActive) {
-                PeerDiscoveryView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastVaultEmail: fastVaultEmail, fastVaultPassword: password)
+                PeerDiscoveryView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastVaultEmail: fastVaultEmail, fastVaultPassword: password, fastVaultExist: fastVaultExist)
             }
     }
     
