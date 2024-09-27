@@ -27,8 +27,9 @@
             buildForProfiling = "NO"
             buildForArchiving = "NO"
             buildForAnalyzing = "NO">
-            <AutocreatedTestPlanReference>
-            </AutocreatedTestPlanReference>
+            <TestPlanReference
+               reference = "container:VultisigApp.xctestplan">
+            </TestPlanReference>
          </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
