@@ -9,18 +9,11 @@ import SwiftUI
 
 struct VaultDeletionDetails: View {
     let vault: Vault
-    let isPhoneSE: Bool
     
     @EnvironmentObject var homeViewModel: HomeViewModel
     
-#if os(iOS)
-        let spacing: CGFloat = 18
-#elseif os(macOS)
-        let spacing: CGFloat = 12
-#endif
-    
     var body: some View {
-        VStack(alignment: .leading, spacing: spacing) {
+        VStack(alignment: .leading, spacing: 18) {
             title
             nameCell
             valueCell
@@ -105,7 +98,7 @@ struct VaultDeletionDetails: View {
 #Preview {
     ZStack {
         Background()
-        VaultDeletionDetails(vault: Vault.example, isPhoneSE: true)
+        VaultDeletionDetails(vault: Vault.example)
             .environmentObject(HomeViewModel())
     }
 }
