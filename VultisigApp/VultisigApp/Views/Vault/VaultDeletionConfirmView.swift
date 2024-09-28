@@ -18,8 +18,6 @@ struct VaultDeletionConfirmView: View {
     @State var showAlert = false
     @State var navigateBackToHome = false
     
-    @State var isPhoneSE = false
-    
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var homeViewModel: HomeViewModel
     
@@ -30,7 +28,7 @@ struct VaultDeletionConfirmView: View {
     }
     
     var details: some View {
-        VaultDeletionDetails(vault: vault, isPhoneSE: isPhoneSE)
+        VaultDeletionDetails(vault: vault)
     }
     
     func delete() {
@@ -59,14 +57,6 @@ struct VaultDeletionConfirmView: View {
             message: Text(NSLocalizedString("reviewConditionsMessage", comment: "")),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
-    }
-    
-    func setData(_ proxy: GeometryProxy) {
-        let screenWidth = proxy.size.width
-        
-        if screenWidth<380 {
-            isPhoneSE = true
-        }
     }
 }
 

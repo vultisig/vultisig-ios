@@ -13,41 +13,38 @@ extension VaultDeletionConfirmView {
     
     var content: some View {
         ZStack {
-            GeometryReader { proxy in
-                Background()
-                    .onAppear {
-                        setData(proxy)
-                    }
-            }
-            
+            Background()
             main
         }
         .navigationTitle(NSLocalizedString("deleteVaultTitle", comment: "Delete Vault"))
     }
     
     var main: some View {
-        view
+        VStack {
+            view
+            button
+        }
     }
     
     var view: some View {
-        VStack(spacing: 32) {
-            logo
-            details
-            
-            if !isPhoneSE {
-                Spacer()
+        list
+            .navigationDestination(isPresented: $navigateBackToHome) {
+                HomeView(selectedVault: vaults.first, showVaultsList: true)
             }
-            
-            checkboxes
-            button
-        }
-        .padding(18)
-        .padding(.top, 12)
-        .navigationDestination(isPresented: $navigateBackToHome) {
-            HomeView(selectedVault: vaults.first, showVaultsList: true)
-        }
-        .alert(isPresented: $showAlert) {
-            alert
+            .alert(isPresented: $showAlert) {
+                alert
+            }
+    }
+    
+    var list: some View {
+        ScrollView {
+            VStack(spacing: 32) {
+                logo
+                details
+                checkboxes
+            }
+            .padding(18)
+            .padding(.top, 12)
         }
     }
     
@@ -70,13 +67,12 @@ extension VaultDeletionConfirmView {
     }
     
     var checkboxes: some View {
-        let spacing: CGFloat = isPhoneSE ? 16 : 24
-                
-        return VStack(spacing: spacing) {
+        VStack(spacing: 24) {
             Checkbox(isChecked: $permanentDeletionCheck, text: "vaultWillBeDeletedPermanentlyPrompt")
             Checkbox(isChecked: $canLoseFundCheck, text: "canLoseFundsPrompt")
             Checkbox(isChecked: $vaultBackupCheck, text: "madeVaultBackupPrompt")
         }
+        .padding(.bottom, 50)
     }
     
     var button: some View {
@@ -84,6 +80,7 @@ extension VaultDeletionConfirmView {
             delete()
         } label: {
             FilledButton(title: "deleteVaultTitle", background: Color.alertRed)
+                .padding(18)
         }
     }
 }
