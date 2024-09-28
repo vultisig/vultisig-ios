@@ -186,7 +186,7 @@ struct KeysignDiscoveryView: View {
     func handleSelection(_ peer: String) {
         isLoading = true
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+        DispatchQueue.main.asyncAfter(deadline: .now()) {
             if viewModel.selections.contains(peer) {
                 // Don't remove itself
                 if peer != viewModel.localPartyID {
