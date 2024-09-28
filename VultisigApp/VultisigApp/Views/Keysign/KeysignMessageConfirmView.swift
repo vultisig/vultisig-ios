@@ -11,15 +11,8 @@ struct KeysignMessageConfirmView: View {
     @ObservedObject var viewModel: JoinKeysignViewModel
     @StateObject var blowfishViewModel = BlowfishWarningViewModel()
     
-    @State var isLoading = true
-    
     var body: some View {
         ZStack {
-            
-            if isLoading {
-                Loader()
-            }
-            
             VStack(alignment: .leading, spacing: 24) {
                 title
                 summary
@@ -27,15 +20,12 @@ struct KeysignMessageConfirmView: View {
             }
             .foregroundColor(.neutral0)
             .onAppear {
-                isLoading = false // disabled so it does not block the sending
                 Task {
                     do {
                         try await viewModel.blowfishTransactionScan()
                         blowfishViewModel.updateResponse(viewModel.blowfishWarnings)
-                        isLoading = false
                     } catch {
                         print("fail to scan the transaction on Blowfish, \(error.localizedDescription)")
-                        isLoading = false
                     }
                 }
             }

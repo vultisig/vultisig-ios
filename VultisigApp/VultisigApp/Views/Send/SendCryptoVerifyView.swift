@@ -18,16 +18,12 @@ struct SendCryptoVerifyView: View {
     
     let vault: Vault
     
-    @State var isLoading = true
     @State var fastPasswordPresented = false
 
     var body: some View {
         ZStack {
             Background()
             view
-            if isLoading {
-                Loader()
-            }
         }
         .gesture(DragGesture())
         .alert(isPresented: $sendCryptoVerifyViewModel.showAlert) {
@@ -37,15 +33,12 @@ struct SendCryptoVerifyView: View {
             sendCryptoVerifyViewModel.isLoading = false
         }
         .onAppear {
-            isLoading = false // disabled so it does not block the sending
             Task {
                 do {
                     try await sendCryptoVerifyViewModel.blowfishTransactionScan(tx: tx, vault: vault)
                     blowfishViewModel.updateResponse(sendCryptoVerifyViewModel.blowfishWarnings)
-                    isLoading = false
                 } catch {
                     print("Error scanning transaction: \(error)")
-                    isLoading = false
                 }
             }
         }
@@ -163,7 +156,7 @@ struct SendCryptoVerifyView: View {
     private func signPressed() {
         sendCryptoVerifyViewModel.isLoading = true
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+        DispatchQueue.main.asyncAfter(deadline: .now()) {
             Task {
                 keysignPayload = await sendCryptoVerifyViewModel.validateForm(
                     tx: tx,

@@ -54,9 +54,7 @@ extension SendCryptoDetailsView {
     
     func setData() {
         Task {
-            isLoading = true
             await getBalance()
-            isLoading = false
         }
     }
 }
