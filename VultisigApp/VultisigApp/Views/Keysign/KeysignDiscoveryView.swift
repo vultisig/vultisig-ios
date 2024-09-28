@@ -148,6 +148,7 @@ struct KeysignDiscoveryView: View {
     
     var instructions: some View {
         InstructionPrompt(networkType: selectedNetwork)
+            .padding(.bottom, participantDiscovery.peersFound.count == 0 ? 0 : 100)
     }
     
     private func setData() {
