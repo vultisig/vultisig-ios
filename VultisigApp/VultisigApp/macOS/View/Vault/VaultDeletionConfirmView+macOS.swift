@@ -11,13 +11,7 @@ import SwiftUI
 extension VaultDeletionConfirmView {
     var content: some View {
         ZStack {
-            GeometryReader { proxy in
-                Background()
-                    .onAppear {
-                        setData(proxy)
-                    }
-            }
-            
+            Background()
             main
         }
     }
@@ -26,6 +20,7 @@ extension VaultDeletionConfirmView {
         VStack {
             headerMac
             view
+            button
         }
     }
     
@@ -34,18 +29,14 @@ extension VaultDeletionConfirmView {
     }
     
     var view: some View {
-        VStack(spacing: 32) {
-            logo
-            details
-            
-            if !isPhoneSE {
-                Spacer()
+        ScrollView {
+            VStack(spacing: 32) {
+                logo
+                details
+                checkboxes
             }
-            
-            checkboxes
-            button
+            .padding(25)
         }
-        .padding(.horizontal, 25)
         .navigationDestination(isPresented: $navigateBackToHome) {
             HomeView(selectedVault: vaults.first, showVaultsList: true)
         }
@@ -55,30 +46,28 @@ extension VaultDeletionConfirmView {
     }
     
     var logo: some View {
-        let spacing: CGFloat = 12
-                
-        return VStack(spacing: spacing) {
+        VStack(spacing: 28) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .font(.title40MenloBold)
+                .font(.title80Menlo)
                 .symbolRenderingMode(.palette)
                 .foregroundStyle(Color.neutral0, Color.alertRed)
             
             Text(NSLocalizedString("youArePermanentlyDeletingVault", comment: ""))
                 .font(.body16MenloBold)
                 .foregroundColor(.neutral0)
+                .frame(maxWidth: 200)
                 .multilineTextAlignment(.center)
                 .fixedSize()
         }
     }
     
     var checkboxes: some View {
-        let spacing: CGFloat = 12
-                
-        return VStack(spacing: spacing) {
+        VStack(spacing: 12) {
             Checkbox(isChecked: $permanentDeletionCheck, text: "vaultWillBeDeletedPermanentlyPrompt")
             Checkbox(isChecked: $canLoseFundCheck, text: "canLoseFundsPrompt")
             Checkbox(isChecked: $vaultBackupCheck, text: "madeVaultBackupPrompt")
         }
+        .padding(.bottom, 50)
     }
     
     var button: some View {
@@ -87,7 +76,9 @@ extension VaultDeletionConfirmView {
         } label: {
             FilledButton(title: "deleteVaultTitle", background: Color.alertRed)
         }
+        .padding(.top, 25)
         .padding(.bottom, 40)
+        .padding(.horizontal, 25)
     }
 }
 #endif

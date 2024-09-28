@@ -49,9 +49,7 @@ extension VaultDeletionConfirmView {
     }
     
     var logo: some View {
-        let spacing: CGFloat = 28
-                
-        return VStack(spacing: spacing) {
+        VStack(spacing: 28) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.title80Menlo)
                 .symbolRenderingMode(.palette)
