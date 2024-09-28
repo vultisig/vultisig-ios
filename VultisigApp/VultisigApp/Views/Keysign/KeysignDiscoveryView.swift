@@ -148,6 +148,7 @@ struct KeysignDiscoveryView: View {
     
     var instructions: some View {
         InstructionPrompt(networkType: selectedNetwork)
+            .padding(.bottom, participantDiscovery.peersFound.count == 0 ? 0 : 100)
     }
     
     private func setData() {
@@ -186,7 +187,7 @@ struct KeysignDiscoveryView: View {
     func handleSelection(_ peer: String) {
         isLoading = true
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+        DispatchQueue.main.asyncAfter(deadline: .now()) {
             if viewModel.selections.contains(peer) {
                 // Don't remove itself
                 if peer != viewModel.localPartyID {

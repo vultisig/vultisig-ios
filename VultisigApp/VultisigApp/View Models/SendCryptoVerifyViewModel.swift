@@ -95,7 +95,6 @@ class SendCryptoVerifyViewModel: ObservableObject {
     }
     
     func validateForm(tx: SendTransaction, vault: Vault) async -> KeysignPayload? {
-        
         if !isValidForm {
             self.errorMessage = "mustAgreeTermsError"
             showAlert = true

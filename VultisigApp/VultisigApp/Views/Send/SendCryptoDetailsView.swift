@@ -25,7 +25,6 @@ struct SendCryptoDetailsView: View {
     @State var coinBalance: String? = nil
     @State var showMemoField = false
     
-    @State var isLoading = false
     @State var isCoinPickerActive = false
     
     @StateObject var keyboardObserver = KeyboardObserver()
@@ -40,10 +39,6 @@ struct SendCryptoDetailsView: View {
         ZStack {
             Background()
             view
-            
-            if isLoading {
-                Loader()
-            }
         }
         .gesture(DragGesture())
         .onAppear {

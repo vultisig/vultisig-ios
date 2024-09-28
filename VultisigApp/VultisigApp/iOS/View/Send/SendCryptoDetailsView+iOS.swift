@@ -72,9 +72,7 @@ extension SendCryptoDetailsView {
         keyboardObserver.keyboardHeight = 0
         
         Task {
-            isLoading = true
             await getBalance()
-            isLoading = false
         }
     }
     
