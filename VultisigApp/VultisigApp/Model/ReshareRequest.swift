@@ -16,4 +16,5 @@ struct ReshareRequest : Hashable,Codable{
     let old_parties: [String]
     let encryption_password: String
     let email: String
+    let old_reshare_prefix: String
 }

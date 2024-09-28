@@ -93,17 +93,22 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         
         if let fastVaultPassword, let fastVaultEmail {
             switch (tssType, fastVaultExist) {
-            case (.Keygen, _), (.Reshare, false):
+            case (.Keygen, _):
                 fastVaultService.create(name: vault.name, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, hexChainCode: vault.hexChainCode, encryptionPassword: fastVaultPassword, email: fastVaultEmail)
-            case (.Reshare, true) :
+            case (.Reshare, true), (.Reshare, false) :
+                var pubKeyECDSA = vault.pubKeyECDSA
+                if !fastVaultExist {
+                    pubKeyECDSA = ""
+                }
                 fastVaultService.reshare(name: vault.name,
-                                         publicKeyECDSA: vault.pubKeyECDSA,
+                                         publicKeyECDSA: pubKeyECDSA,
                                          sessionID: sessionID,
                                          hexEncryptionKey: encryptionKeyHex!,
                                          hexChainCode: vault.hexChainCode,
                                          encryptionPassword: fastVaultPassword,
                                          email: fastVaultEmail,
-                                         oldParties: vault.signers)
+                                         oldParties: vault.signers,
+                                         oldResharePrefix: vault.resharePrefix ?? "")
             }
         }
         
