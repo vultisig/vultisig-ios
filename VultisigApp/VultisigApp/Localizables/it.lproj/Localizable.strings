@@ -1,3 +1,11 @@
+"reshareLabelTitle" = "Condividi nuovamente il tuo vault";
+"reshareLabelSubtitle" = "La ricondivisione può essere utilizzata per aggiornare, espandere o ridurre il numero di dispositivi in un Vault.";
+"reshareLabelDisclaimer" = "Per tutte le azioni di ricondivisione è sempre richiesto il numero minimo di dispositivi.";
+"startReshare" = "Inizia la ricondivisione";
+"startFastVaultReshare" = "Inizia la ricondivisione con Vultisigner";
+"joinReshare" = "Unisciti alla ricondivisione";
+"fastVaultSetPasswordTitle" = "Proteggi il tuo FastVault.";
+"fastVaultEnterPasswordTitle" = "Password di FastVault";
 "fastVaultEmailBackup" = "Inserisci la tua email per ricevere il backup";
 "password" = "Password";
 "secureCryptoVault" = "CASSETTA DI SICUREZZA CRYPTO";

@@ -19,7 +19,7 @@ enum PeerDiscoveryStatus {
 class KeygenPeerDiscoveryViewModel: ObservableObject {
     
     private let logger = Logger(subsystem: "peers-discory-viewmodel", category: "communication")
-
+    
     var tssType: TssType
     var vault: Vault
     var participantDiscovery: ParticipantDiscovery?
@@ -39,7 +39,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     private let mediator = Mediator.shared
     private let fastVaultService = FastVaultService.shared
-
+    
     init() {
         self.tssType = .Keygen
         self.vault = Vault(name: "Main Vault")
@@ -59,7 +59,8 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         state: SetupVaultState,
         participantDiscovery: ParticipantDiscovery,
         fastVaultPassword: String?,
-        fastVaultEmail: String?
+        fastVaultEmail: String?,
+        fastVaultExist: Bool
     ) {
         self.vault = vault
         self.tssType = tssType
@@ -90,24 +91,33 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         }
         self.selections.insert(self.localPartyID)
         
-        if let fastVaultPassword, let fastVaultEmail, state.isFastVault {
+        if let fastVaultPassword, let fastVaultEmail {
             switch tssType {
             case .Keygen:
                 fastVaultService.create(name: vault.name, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, hexChainCode: vault.hexChainCode, encryptionPassword: fastVaultPassword, email: fastVaultEmail)
             case .Reshare:
-                fastVaultService.reshare(name: vault.name, publicKeyECDSA: vault.pubKeyECDSA, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, hexChainCode: vault.hexChainCode, encryptionPassword: fastVaultPassword, email: fastVaultEmail)
+                let pubKeyECDSA = fastVaultExist ? vault.pubKeyECDSA : .empty
+                fastVaultService.reshare(name: vault.name,
+                                         publicKeyECDSA: pubKeyECDSA,
+                                         sessionID: sessionID,
+                                         hexEncryptionKey: encryptionKeyHex!,
+                                         hexChainCode: vault.hexChainCode,
+                                         encryptionPassword: fastVaultPassword,
+                                         email: fastVaultEmail,
+                                         oldParties: vault.signers,
+                                         oldResharePrefix: vault.resharePrefix ?? "")
             }
         }
-
+        
         participantDiscovery.$peersFound.sink { [weak self] in
-                $0.forEach { peer in
-                    self?.handleSelection(peer)
-                }
-                self?.startFastVaultKeygenIfNeeded(state: state)
+            $0.forEach { peer in
+                self?.handleSelection(peer)
             }
-            .store(in: &cancellables)
+            self?.startFastVaultKeygenIfNeeded(state: state)
+        }
+        .store(in: &cancellables)
     }
-
+    
     func handleSelection(_ peer: String) {
         if selections.contains(peer) {
             if peer != localPartyID {
@@ -117,12 +127,12 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             selections.insert(peer)
         }
     }
-
+    
     func startFastVaultKeygenIfNeeded(state: SetupVaultState) {
         guard isValidPeers(state: state), !state.hasOtherDevices else { return }
         startKeygen()
     }
-
+    
     func isValidPeers(state: SetupVaultState) -> Bool {
         guard state.isFastVault else {
             return true
@@ -130,7 +140,7 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         let isValid = selections.contains(where: { $0.contains("Server-") })
         return isValid
     }
-
+    
     func startDiscovery() {
         self.mediator.start(name: self.serviceName)
         self.logger.info("mediator server started")

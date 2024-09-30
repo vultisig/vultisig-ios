@@ -55,10 +55,21 @@ final class FastVaultService {
         hexEncryptionKey: String,
         hexChainCode: String,
         encryptionPassword:String,
-        email: String
+        email: String,
+        oldParties: [String],
+        oldResharePrefix: String
     ) {
         let localPartyID = Self.localPartyID(sessionID: sessionID)
-        let req = ReshareRequest(name: name,public_key: publicKeyECDSA, session_id: sessionID, hex_encryption_key: hexEncryptionKey, hex_chain_code: hexChainCode, local_party_id: localPartyID, encryption_password: encryptionPassword, email: email)
+        let req = ReshareRequest(name: name,
+                                 public_key: publicKeyECDSA,
+                                 session_id: sessionID,
+                                 hex_encryption_key: hexEncryptionKey,
+                                 hex_chain_code: hexChainCode,
+                                 local_party_id: localPartyID,
+                                 old_parties: oldParties,
+                                 encryption_password: encryptionPassword,
+                                 email: email,
+                                 old_reshare_prefix: oldResharePrefix)
 
         Utils.sendRequest(urlString: "\(endpoint)/reshare", method: "POST", headers: [:], body: req) { _ in
             print("Send reshare request to vultisigner successfully")

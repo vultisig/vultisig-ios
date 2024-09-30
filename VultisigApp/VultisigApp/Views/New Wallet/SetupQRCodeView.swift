@@ -66,7 +66,8 @@ struct SetupQRCodeView: View {
                         vault: vault,
                         selectedTab: selectedTab, 
                         fastVaultEmail: nil,
-                        fastVaultPassword: nil
+                        fastVaultPassword: nil, 
+                        fastVaultExist: false
                     )
                 }
             }

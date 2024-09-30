@@ -12,10 +12,29 @@ struct FastVaultSetPasswordView: View {
     let vault: Vault
     let selectedTab: SetupVaultState
     let fastVaultEmail: String
+    let fastVaultExist: Bool
 
     @State var password: String = ""
     @State var verifyPassword: String = ""
     @State var isLinkActive = false
+
+    var title: String {
+        switch fastVaultExist {
+        case false:
+            return NSLocalizedString("fastVaultSetPasswordTitle", comment: "")
+        case true:
+            return NSLocalizedString("fastVaultEnterPasswordTitle", comment: "")
+        }
+    }
+
+    var disclaimerText: String {
+        switch fastVaultExist {
+        case false:
+            return NSLocalizedString("fastVaultSetDisclaimer", comment: "")
+        case true:
+            return NSLocalizedString("fastVaultEnterDisclaimer", comment: "")
+        }
+    }
 
     var body: some View {
         content
@@ -23,7 +42,7 @@ struct FastVaultSetPasswordView: View {
 
     var passwordField: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Protect your FastVault.")
+            Text(title)
                 .font(.body14MontserratMedium)
                 .foregroundColor(.neutral0)
 
@@ -41,10 +60,11 @@ struct FastVaultSetPasswordView: View {
 
     var verifyTextfield: some View {
         HiddenTextField(placeholder: "verifyPassword", password: $verifyPassword)
+            .opacity(fastVaultExist ? 0 : 1)
     }
 
     var disclaimer: some View {
-        OutlinedDisclaimer(text: NSLocalizedString("fastVaultSetDisclaimer", comment: ""))
+        OutlinedDisclaimer(text: disclaimerText)
             .padding(.horizontal, 16)
     }
 
@@ -68,6 +88,11 @@ struct FastVaultSetPasswordView: View {
     }
 
     var isSaveButtonDisabled: Bool {
-        return password.isEmpty || password != verifyPassword
+        switch fastVaultExist {
+        case false:
+            return password.isEmpty || password != verifyPassword
+        case true:
+            return password.isEmpty
+        }
     }
 }

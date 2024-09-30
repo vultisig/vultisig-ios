@@ -1,3 +1,11 @@
+"reshareLabelTitle" = "Ponovno podijeli svoj trezor";
+"reshareLabelSubtitle" = "Ponovna podjela može se koristiti za osvježavanje, proširenje ili smanjenje broja uređaja u Trezoru.";
+"reshareLabelDisclaimer" = "Za sve akcije ponovne podjele uvijek je potreban prag uređaja.";
+"startReshare" = "Započni ponovno dijeljenje";
+"startFastVaultReshare" = "Započni ponovno dijeljenje s Vultisignerom";
+"joinReshare" = "Pridruži se ponovnom dijeljenju";
+"fastVaultSetPasswordTitle" = "Zaštitite svoj FastVault.";
+"fastVaultEnterPasswordTitle" = "Lozinka za FastVault";
 "fastVaultEmailBackup" = "Unesite svoju e-mail adresu kako biste primili sigurnosnu kopiju";
 "password" = "Lozinka";
 "secureCryptoVault" = "SIGURNO KRIPTO SEF";

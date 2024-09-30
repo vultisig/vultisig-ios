@@ -9,7 +9,8 @@ import SwiftUI
 
 struct OutlinedDisclaimer: View {
     let text: String
-    
+    var alignment: TextAlignment = .leading
+
     var body: some View {
         content
     }
@@ -23,6 +24,8 @@ struct OutlinedDisclaimer: View {
             Text(text)
                 .font(.body12Menlo)
                 .foregroundColor(.neutral0)
+                .lineSpacing(4)
+                .multilineTextAlignment(alignment)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

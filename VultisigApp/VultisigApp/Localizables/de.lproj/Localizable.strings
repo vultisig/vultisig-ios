@@ -1,3 +1,11 @@
+"reshareLabelTitle" = "Teilen Sie Ihren Tresor erneut";
+"reshareLabelSubtitle" = "Erneutes Teilen kann verwendet werden, um die Anzahl der Geräte in einem Tresor zu aktualisieren, zu erweitern oder zu reduzieren.";
+"reshareLabelDisclaimer" = "Für alle Aktionen des erneuten Teilens ist immer das Schwellenwert der Geräte erforderlich.";
+"startReshare" = "Erneutes Teilen starten";
+"startFastVaultReshare" = "Erneutes Teilen mit Vultisigner starten";
+"joinReshare" = "Erneutem Teilen beitreten";
+"fastVaultSetPasswordTitle" = "Schützen Sie Ihren FastVault.";
+"fastVaultEnterPasswordTitle" = "FastVault-Passwort";
 "fastVaultEmailBackup" = "Geben Sie Ihre E-Mail-Adresse ein, um Ihre Sicherung zu erhalten";
 "password" = "Passwort";
 "secureCryptoVault" = "SICHERER KRYPTO-TRESOR";
