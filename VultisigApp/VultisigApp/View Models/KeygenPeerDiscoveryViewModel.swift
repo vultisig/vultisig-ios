@@ -92,14 +92,11 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         self.selections.insert(self.localPartyID)
         
         if let fastVaultPassword, let fastVaultEmail {
-            switch (tssType, fastVaultExist) {
-            case (.Keygen, _):
+            switch tssType {
+            case .Keygen:
                 fastVaultService.create(name: vault.name, sessionID: sessionID, hexEncryptionKey: encryptionKeyHex!, hexChainCode: vault.hexChainCode, encryptionPassword: fastVaultPassword, email: fastVaultEmail)
-            case (.Reshare, true), (.Reshare, false) :
-                var pubKeyECDSA = vault.pubKeyECDSA
-                if !fastVaultExist {
-                    pubKeyECDSA = ""
-                }
+            case .Reshare:
+                let pubKeyECDSA = fastVaultExist ? vault.pubKeyECDSA : .empty
                 fastVaultService.reshare(name: vault.name,
                                          publicKeyECDSA: pubKeyECDSA,
                                          sessionID: sessionID,
