@@ -12,6 +12,7 @@ struct PeerDiscoveryView: View {
     let selectedTab: SetupVaultState
     let fastVaultEmail: String?
     let fastVaultPassword: String?
+    let fastVaultExist: Bool
 
     @StateObject var viewModel = KeygenPeerDiscoveryViewModel()
     @StateObject var participantDiscovery = ParticipantDiscovery(isKeygen: true)
@@ -52,7 +53,8 @@ struct PeerDiscoveryView: View {
                     state: selectedTab,
                     participantDiscovery: participantDiscovery,
                     fastVaultPassword: fastVaultPassword, 
-                    fastVaultEmail: fastVaultEmail
+                    fastVaultEmail: fastVaultEmail,
+                    fastVaultExist: fastVaultExist
                 )
                 setData()
             }
@@ -225,5 +227,5 @@ struct PeerDiscoveryView: View {
 }
 
 #Preview {
-    PeerDiscoveryView(tssType: .Keygen, vault: Vault.example, selectedTab: .fast, fastVaultEmail: nil, fastVaultPassword: nil)
+    PeerDiscoveryView(tssType: .Keygen, vault: Vault.example, selectedTab: .fast, fastVaultEmail: nil, fastVaultPassword: nil, fastVaultExist: false)
 }

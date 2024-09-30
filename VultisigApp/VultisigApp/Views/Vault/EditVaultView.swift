@@ -75,7 +75,7 @@ struct EditVaultView: View {
     
     var reshareVault: some View {
         NavigationLink {
-            SetupQRCodeView(tssType: .Reshare, vault: vault)
+            ReshareView(vault: vault)
         } label: {
             EditVaultCell(title: "reshare", description: "reshareVault", icon: "tray.and.arrow.up")
         }

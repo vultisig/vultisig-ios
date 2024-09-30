@@ -1,3 +1,11 @@
+"reshareLabelTitle" = "Compartilhe novamente seu cofre";
+"reshareLabelSubtitle" = "O recurso de compartilhar novamente pode ser usado para atualizar, expandir ou reduzir a quantidade de dispositivos em um Cofre.";
+"reshareLabelDisclaimer" = "Para todas as ações de compartilhar novamente, é sempre necessário o limite de dispositivos.";
+"startReshare" = "Iniciar compartilhamento novamente";
+"startFastVaultReshare" = "Iniciar compartilhamento com Vultisigner";
+"joinReshare" = "Juntar-se ao compartilhamento";
+"fastVaultSetPasswordTitle" = "Proteja seu FastVault.";
+"fastVaultEnterPasswordTitle" = "Senha do FastVault";
 "fastVaultEmailBackup" = "Insira seu e-mail para receber o backup";
 "password" = "Senha";
 "secureCryptoVault" = "COFRE SEGURO DE CRIPTO";
