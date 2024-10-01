@@ -4,7 +4,7 @@
 "startReshare" = "Erneutes Teilen starten";
 "startFastVaultReshare" = "Erneutes Teilen mit Vultisigner starten";
 "joinReshare" = "Erneutem Teilen beitreten";
-"fastVaultSetPasswordTitle" = "Schützen Sie Ihren FastVault.";
+"fastVaultSetPasswordTitle" = "Schützen Sie Ihren Tresor und Ihr schnelles Zeichen.";
 "fastVaultEnterPasswordTitle" = "FastVault-Passwort";
 "fastVaultEmailBackup" = "Geben Sie Ihre E-Mail-Adresse ein, um Ihre Sicherung zu erhalten";
 "password" = "Passwort";

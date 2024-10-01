@@ -4,7 +4,7 @@
 "startReshare" = "Inizia la ricondivisione";
 "startFastVaultReshare" = "Inizia la ricondivisione con Vultisigner";
 "joinReshare" = "Unisciti alla ricondivisione";
-"fastVaultSetPasswordTitle" = "Proteggi il tuo FastVault.";
+"fastVaultSetPasswordTitle" = "Proteggi il tuo caveau e firma subito.";
 "fastVaultEnterPasswordTitle" = "Password di FastVault";
 "fastVaultEmailBackup" = "Inserisci la tua email per ricevere il backup";
 "password" = "Password";
