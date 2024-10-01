@@ -104,11 +104,6 @@ struct SendCryptoVerifyView: View {
                 getDetailsCell(for: "memo", with: tx.memo)
             }
             
-            if tx.sendMaxAmount {
-                Separator()
-                getDetailsCell(for: "Max Amount", with: tx.sendMaxAmount.description)
-            }
-            
             Separator()
             getDetailsCell(for: "gas", with: tx.gasInReadable)
         }
