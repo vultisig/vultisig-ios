@@ -120,11 +120,13 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         }
         .store(in: &cancellables)
     }
+
     func autoSelectPeer(_ peer: String){
         if !selections.contains(peer) {
             selections.insert(peer)
         }
     }
+
     func handleSelection(_ peer: String) {
         if selections.contains(peer) {
             if peer != localPartyID {
@@ -134,7 +136,11 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             selections.insert(peer)
         }
     }
-    
+
+    var isLookingForDevices: Bool {
+        return status == .WaitingForDevices && selections.count < 2
+    }
+
     func startFastVaultKeygenIfNeeded(state: SetupVaultState) {
         guard isValidPeers(state: state), !state.hasOtherDevices else { return }
         startKeygen()
