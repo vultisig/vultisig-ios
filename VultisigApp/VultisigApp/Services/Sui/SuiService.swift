@@ -29,7 +29,7 @@ class SuiService {
     
     func getBalance(coin: Coin) async throws -> String {
         var rawBalance = "0"
-
+        
         do {
             let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getBalance", params:  [coin.address])
             
@@ -81,8 +81,9 @@ class SuiService {
                 let allCoins = coins.filter{ $0.coinType == "0x2::sui::SUI" }.map { coin in
                     var coinDict = [String: String]()
                     coinDict["objectID"] = coin.coinObjectId.description
-                    coinDict["version"] = String(coin.version) // Converted version to String directly
+                    coinDict["version"] = String(coin.version)
                     coinDict["objectDigest"] = coin.digest
+                    coinDict["balance"] = String(coin.balance)
                     return coinDict
                 }
                 // Caching the transformed data instead of the raw data
