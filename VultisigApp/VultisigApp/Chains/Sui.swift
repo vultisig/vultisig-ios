@@ -76,7 +76,7 @@ enum SuiHelper {
         guard let publicKey = PublicKey(data: pubkeyData, type: .ed25519) else {
             throw HelperError.runtimeError("public key \(vaultHexPubKey) is invalid")
         }
-
+        
         let inputData = try getPreSignedInputData(keysignPayload: keysignPayload)
         let hashes = TransactionCompiler.preImageHashes(coinType: .sui, txInputData: inputData)
         let preSigningOutput = try TxCompilerPreSigningOutput(serializedData: hashes)
@@ -85,11 +85,11 @@ enum SuiHelper {
         let publicKeys = DataVector()
         let signatureProvider = SignatureProvider(signatures: signatures)
         let signature = signatureProvider.getSignature(preHash: preSigningOutputDataBlake2b)
-
+        
         guard publicKey.verify(signature: signature, message: preSigningOutputDataBlake2b) else {
             throw HelperError.runtimeError("SUI signature verification failed")
         }
-
+        
         allSignatures.add(data: signature)
         publicKeys.add(data: pubkeyData)
         let compileWithSignature = TransactionCompiler.compileWithSignatures(coinType: .sui,
