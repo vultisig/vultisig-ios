@@ -33,7 +33,7 @@ class SendCryptoVerifyViewModel: ObservableObject {
     var THORChainAccount: THORChainAccountValue? = nil
     var CosmosChainAccount: CosmosAccountValue? = nil
     
-    private var isValidForm: Bool {
+    var isValidForm: Bool {
         return isAddressCorrect && isAmountCorrect && isHackedOrPhished
     }
     
