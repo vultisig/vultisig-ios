@@ -33,7 +33,7 @@ extension PeerDiscoveryView {
         }
         .toolbar {
             // only show the QR share button when it is in peer discovery
-            if viewModel.status == .WaitingForDevices {
+            if isShareButtonVisible {
                 ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                     NavigationQRShareButton(
                         vault: vault,
@@ -146,7 +146,11 @@ extension PeerDiscoveryView {
         .opacity(disableContinueButton() ? 0.8 : 1)
         .grayscale(disableContinueButton() ? 1 : 0)
     }
-    
+
+    var isShareButtonVisible: Bool {
+        return viewModel.status == .WaitingForDevices && selectedTab.hasOtherDevices
+    }
+
     func setData() {
         updateScreenSize()
         qrCodeImage = viewModel.getQrImage(size: 100)
