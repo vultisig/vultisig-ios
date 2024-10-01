@@ -210,7 +210,7 @@ class Endpoint {
     static let broadcastKujiraTransaction = "https://kujira-rest.publicnode.com/cosmos/tx/v1beta1/txs"
     
     static func getSwapProgressURL(txid: String) -> String {
-        return "https://runescan.io/tx/\(txid.stripHexPrefix())"
+        return "https://thorchain.net/tx/\(txid.stripHexPrefix())"
     }
     
     static func getMayaSwapTracker(txid: String) -> String {
@@ -230,7 +230,7 @@ class Endpoint {
         case "DASH":
             return "https://blockchair.com/dash/transaction/\(txid)"
         case "RUNE":
-            return "https://runescan.io/tx/\(txid.stripHexPrefix())"
+            return "https://thorchain.net/tx/\(txid.stripHexPrefix())"
         case "SOL":
             return "https://explorer.solana.com/tx/\(txid)"
         case "ETH":
@@ -326,7 +326,7 @@ class Endpoint {
     static func getExplorerByAddressURLByGroup(chain: Chain?, address: String) -> String? {
         switch chain {
         case .thorChain:
-            return "https://runescan.io/address/\(address)"
+            return "https://thorchain.net/address/\(address)"
         case .solana:
             return "https://explorer.solana.com/address/\(address)"
         case .ethereum:
