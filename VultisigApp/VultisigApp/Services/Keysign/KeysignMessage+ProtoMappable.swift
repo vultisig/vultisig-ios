@@ -244,24 +244,19 @@ extension BlockChainSpecific {
                 genesisHash: value.genesisHash
             )
         case .suicheSpecific(let value):
-            
-            print(value.coinKeyValuePairs)
-            
-            let totalPropertiesPerCoin = 3 // Adjust if you have more or fewer properties per coin
-            let numberOfCoins = value.coinKeyValuePairs.count / totalPropertiesPerCoin
-
-            var coinsArray: [[String: String]] = Array(repeating: [String: String](), count: numberOfCoins)
-
-            for (index, pair) in value.coinKeyValuePairs.enumerated() {
-                let coinIndex = index % numberOfCoins
-                coinsArray[coinIndex][pair.key] = pair.value
+            let coinsArray: [[String: String]] = value.coins.map { coin in
+                return [
+                    "objectID": coin.coinObjectID,
+                    "version": coin.version,
+                    "objectDigest": coin.digest,
+                    "balance": coin.balance
+                ]
             }
-
+            
             self = .Sui(
                 referenceGasPrice: BigInt(stringLiteral: value.referenceGasPrice),
                 coins: coinsArray
             )
-
         }
     }
     
@@ -307,18 +302,22 @@ extension BlockChainSpecific {
                 $0.toTokenAssociatedAddress = toTokenAssociatedAddress ?? .empty
             })
         case .Sui(let referenceGasPrice, let coins):
+            // `coins` is of type `[[String: String]]`
+            let suiCoins: [VSSuiCoin] = coins.map { coinDict in
+                var suiCoin = VSSuiCoin()
+                suiCoin.coinObjectID = coinDict["objectID"] ?? ""
+                suiCoin.version = coinDict["version"] ?? ""
+                suiCoin.digest = coinDict["objectDigest"] ?? ""
+                suiCoin.balance = coinDict["balance"] ?? ""
+                return suiCoin
+            }
+            
             return .suicheSpecific(.with {
                 $0.referenceGasPrice = String(referenceGasPrice)
-                $0.coinKeyValuePairs = coins.flatMap { coin in
-                    coin.map { key, value in
-                        VSCoinKeyValuePair.with {
-                            $0.key = key
-                            $0.value = value
-                        }
-                    }
-                }.sorted { $0.key < $1.key }
+                $0.coins = suiCoins
             })
-
+            
+            
         case .Polkadot(let recentBlockHash, let nonce, let currentBlockNumber, let specVersion, let transactionVersion, let genesisHash):
             return .polkadotSpecific(.with {
                 $0.recentBlockHash = recentBlockHash

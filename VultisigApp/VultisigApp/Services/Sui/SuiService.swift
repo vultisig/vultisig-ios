@@ -77,14 +77,13 @@ class SuiService {
         
         do {
             let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getAllCoins", params: [coin.address])
-            print(String(decoding: data, as: UTF8.self))
             if let coins: [SuiCoin] = Utils.extractResultFromJson(fromData: data, path: "result.data", type: [SuiCoin].self) {
                 let allCoins = coins.filter{ $0.coinType == "0x2::sui::SUI" }.sorted(by: { $0.balance < $1.balance}).map { coin in
                     var coinDict = [String: String]()
                     coinDict["objectID"] = coin.coinObjectId.description
-                    coinDict["version"] = String(coin.version) // Converted version to String directly
+                    coinDict["version"] = String(coin.version) 
                     coinDict["objectDigest"] = coin.digest
-                    //coinDict["balance"] = String(coin.balance)
+                    coinDict["balance"] = String(coin.balance)
                     return coinDict
                 }
                 // Caching the transformed data instead of the raw data
