@@ -43,7 +43,7 @@ enum SuiHelper {
             print("  objectID: \(obj.objectID)")
             print("  version: \(obj.version)")
             print("  objectDigest: \(obj.objectDigest)")
-            print("  balance: \(coinDict["balance"] ?? "")")
+            //print("  balance: \(coinDict["balance"] ?? "")")
             return obj
         }
         print("Sui Coins:")

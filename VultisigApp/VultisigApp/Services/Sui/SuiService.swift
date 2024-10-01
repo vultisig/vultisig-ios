@@ -84,7 +84,7 @@ class SuiService {
                     coinDict["objectID"] = coin.coinObjectId.description
                     coinDict["version"] = String(coin.version) // Converted version to String directly
                     coinDict["objectDigest"] = coin.digest
-                    coinDict["balance"] = String(coin.balance)
+                    //coinDict["balance"] = String(coin.balance)
                     return coinDict
                 }
                 // Caching the transformed data instead of the raw data

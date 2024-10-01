@@ -244,24 +244,24 @@ extension BlockChainSpecific {
                 genesisHash: value.genesisHash
             )
         case .suicheSpecific(let value):
-            // I will leave this commented so we don't forget
-            // coinKeyValuePairs, results on this [["objectDigest":""], ["objectID":""],["version":""]]
-            // But we expect this, example:
-            // [
-            //     [
-            //        "objectDigest": "Ev46yomfjAPN29mNomVNbJRZLtaZUZ6xajg7LcXU3M4H",
-            //        "objectID": "0x722f75f09fd78f2b9ebc309dcc681f44035e6e32a6de8dd24a73168f08a22657",
-            //        "version": "97801387"
-            //     ]
-            //]
-            let coinsDic = value.coinKeyValuePairs.reduce(into: [String: String]()) { (result, coin) in
-                result[coin.key] = coin.value
-            }
             
+            print(value.coinKeyValuePairs)
+            
+            let totalPropertiesPerCoin = 3 // Adjust if you have more or fewer properties per coin
+            let numberOfCoins = value.coinKeyValuePairs.count / totalPropertiesPerCoin
+
+            var coinsArray: [[String: String]] = Array(repeating: [String: String](), count: numberOfCoins)
+
+            for (index, pair) in value.coinKeyValuePairs.enumerated() {
+                let coinIndex = index % numberOfCoins
+                coinsArray[coinIndex][pair.key] = pair.value
+            }
+
             self = .Sui(
                 referenceGasPrice: BigInt(stringLiteral: value.referenceGasPrice),
-                coins: [coinsDic]
+                coins: coinsArray
             )
+
         }
     }
     
