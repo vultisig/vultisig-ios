@@ -66,11 +66,12 @@ struct PeerDiscoveryView: View {
     var states: some View {
         VStack {
             switch (viewModel.status, selectedTab.hasOtherDevices) {
-            case (.WaitingForDevices, false): /// Direct to Keygen for FastVaults
-                // wait until server join to go to keygen view
-                if viewModel.selections.count < 2 {
+            case (.WaitingForDevices, false): 
+                if viewModel.isLookingForDevices {
+                    /// Wait until server join to go to keygen view
                     lookingForDevices
                 } else {
+                    /// Direct to Keygen for FastVaults
                     keygenView
                 }
             case (.WaitingForDevices, true):
@@ -85,7 +86,7 @@ struct PeerDiscoveryView: View {
         }
         .foregroundColor(.neutral0)
     }
-    
+
     var waitingForDevices: some View {
         VStack(spacing: 0) {
             views
