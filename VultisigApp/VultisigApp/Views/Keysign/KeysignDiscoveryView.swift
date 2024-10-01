@@ -154,6 +154,8 @@ struct KeysignDiscoveryView: View {
     private func setData() {
         if VultisigRelay.IsRelayEnabled {
             self.selectedNetwork = .Internet
+        } else {
+            self.selectedNetwork = .Local
         }
 
         viewModel.setData(

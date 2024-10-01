@@ -50,6 +50,9 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         if VultisigRelay.IsRelayEnabled {
             serverAddr = Endpoint.vultisigRelay
             selectedNetwork = .Internet
+        } else {
+            serverAddr = "http://127.0.0.1:18080"
+            selectedNetwork = .Local
         }
     }
     
