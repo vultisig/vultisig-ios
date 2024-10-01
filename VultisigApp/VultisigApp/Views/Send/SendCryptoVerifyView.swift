@@ -131,6 +131,8 @@ struct SendCryptoVerifyView: View {
         } label: {
             FilledButton(title: NSLocalizedString("fastSign", comment: ""))
         }
+        .disabled(!sendCryptoVerifyViewModel.isValidForm)
+        .opacity(!sendCryptoVerifyViewModel.isValidForm ? 0.5 : 1)
         .padding(.horizontal, 40)
         .sheet(isPresented: $fastPasswordPresented) {
             FastVaultEnterPasswordView(
@@ -150,6 +152,8 @@ struct SendCryptoVerifyView: View {
                 FilledButton(title: "sign")
             }
         }
+        .disabled(!sendCryptoVerifyViewModel.isValidForm)
+        .opacity(!sendCryptoVerifyViewModel.isValidForm ? 0.5 : 1)
         .padding(.horizontal, 40)
     }
 
