@@ -111,13 +111,17 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         
         participantDiscovery.$peersFound.sink { [weak self] in
             $0.forEach { peer in
-                self?.handleSelection(peer)
+                self?.autoSelectPeer(peer)
             }
             self?.startFastVaultKeygenIfNeeded(state: state)
         }
         .store(in: &cancellables)
     }
-    
+    func autoSelectPeer(_ peer: String){
+        if !selections.contains(peer) {
+            selections.insert(peer)
+        }
+    }
     func handleSelection(_ peer: String) {
         if selections.contains(peer) {
             if peer != localPartyID {
