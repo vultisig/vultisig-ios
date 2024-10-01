@@ -4,7 +4,7 @@
 "startReshare" = "Start Reshare";
 "startFastVaultReshare" = "Start Reshare with Vultisigner";
 "joinReshare" = "Join Reshare";
-"fastVaultSetPasswordTitle" = "Protect your FastVault.";
+"fastVaultSetPasswordTitle" = "Protect your vault and fast sign.";
 "fastVaultEnterPasswordTitle" = "FastVault password";
 "fastVaultEmailBackup" = "Enter your email to receive your backup";
 "password" = "Password";

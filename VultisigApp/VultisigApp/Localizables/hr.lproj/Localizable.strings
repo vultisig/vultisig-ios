@@ -4,7 +4,7 @@
 "startReshare" = "Započni ponovno dijeljenje";
 "startFastVaultReshare" = "Započni ponovno dijeljenje s Vultisignerom";
 "joinReshare" = "Pridruži se ponovnom dijeljenju";
-"fastVaultSetPasswordTitle" = "Zaštitite svoj FastVault.";
+"fastVaultSetPasswordTitle" = "Zaštitite svoj trezor i brzo potpišite.";
 "fastVaultEnterPasswordTitle" = "Lozinka za FastVault";
 "fastVaultEmailBackup" = "Unesite svoju e-mail adresu kako biste primili sigurnosnu kopiju";
 "password" = "Lozinka";
