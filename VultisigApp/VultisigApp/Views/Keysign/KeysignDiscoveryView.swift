@@ -129,7 +129,6 @@ struct KeysignDiscoveryView: View {
                 .onAppear {
                     if participantDiscovery.peersFound.count == 1 && participantDiscovery.peersFound.first == peer {
                         handleSelection(peer)
-                        startKeysign()
                     }
                 }
             }
@@ -154,6 +153,8 @@ struct KeysignDiscoveryView: View {
     private func setData() {
         if VultisigRelay.IsRelayEnabled {
             self.selectedNetwork = .Internet
+        } else {
+            self.selectedNetwork = .Local
         }
 
         viewModel.setData(
@@ -198,6 +199,8 @@ struct KeysignDiscoveryView: View {
                 viewModel.selections.insert(peer)
                 isLoading = false
             }
+            // startKeysign will determinate whether there is enough signers or not
+            startKeysign()
         }
     }
     

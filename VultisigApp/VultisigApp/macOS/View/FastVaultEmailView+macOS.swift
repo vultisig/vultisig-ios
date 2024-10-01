@@ -22,7 +22,7 @@ extension FastVaultEmailView {
             view
         }
         .navigationDestination(isPresented: $isLinkActive) {
-            FastVaultSetPasswordView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastVaultEmail: email)
+            FastVaultSetPasswordView(tssType: tssType, vault: vault, selectedTab: selectedTab, fastVaultEmail: email, fastVaultExist: fastVaultExist)
         }
     }
 

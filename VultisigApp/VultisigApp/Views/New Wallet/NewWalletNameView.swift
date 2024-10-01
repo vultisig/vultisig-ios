@@ -63,7 +63,7 @@ struct NewWalletNameView: View {
             if selectedTab.isFastVault {
                 FastVaultEmailView(tssType: tssType, vault: Vault(name: name), selectedTab: selectedTab)
             } else {
-                PeerDiscoveryView(tssType: tssType, vault: Vault(name: name), selectedTab: selectedTab, fastVaultEmail: nil, fastVaultPassword: nil)
+                PeerDiscoveryView(tssType: tssType, vault: Vault(name: name), selectedTab: selectedTab, fastVaultEmail: nil, fastVaultPassword: nil, fastVaultExist: false)
             }
         }
     }

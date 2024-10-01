@@ -13,6 +13,8 @@ struct ReshareRequest : Hashable,Codable{
     let hex_encryption_key: String
     let hex_chain_code: String
     let local_party_id: String
+    let old_parties: [String]
     let encryption_password: String
     let email: String
+    let old_reshare_prefix: String
 }
