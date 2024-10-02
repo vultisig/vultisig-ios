@@ -104,11 +104,6 @@ struct SendCryptoVerifyView: View {
                 getDetailsCell(for: "memo", with: tx.memo)
             }
             
-            if tx.sendMaxAmount {
-                Separator()
-                getDetailsCell(for: "Max Amount", with: tx.sendMaxAmount.description)
-            }
-            
             Separator()
             getDetailsCell(for: "gas", with: tx.gasInReadable)
         }
@@ -131,6 +126,8 @@ struct SendCryptoVerifyView: View {
         } label: {
             FilledButton(title: NSLocalizedString("fastSign", comment: ""))
         }
+        .disabled(!sendCryptoVerifyViewModel.isValidForm)
+        .opacity(!sendCryptoVerifyViewModel.isValidForm ? 0.5 : 1)
         .padding(.horizontal, 40)
         .sheet(isPresented: $fastPasswordPresented) {
             FastVaultEnterPasswordView(
@@ -150,6 +147,8 @@ struct SendCryptoVerifyView: View {
                 FilledButton(title: "sign")
             }
         }
+        .disabled(!sendCryptoVerifyViewModel.isValidForm)
+        .opacity(!sendCryptoVerifyViewModel.isValidForm ? 0.5 : 1)
         .padding(.horizontal, 40)
     }
 
