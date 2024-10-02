@@ -44,12 +44,12 @@ extension KeysignDiscoveryView {
         VStack(spacing: 4) {
             networkPrompts
             
-//            if participantDiscovery.peersFound.count == 0 {
-//                lookingForDevices
-//                    .frame(maxHeight: orientation == .landscapeLeft || orientation == .landscapeRight ? .infinity : 100)
-//            } else {
+            if participantDiscovery.peersFound.count == 0 {
+                lookingForDevices
+                    .frame(maxHeight: orientation == .landscapeLeft || orientation == .landscapeRight ? .infinity : 100)
+            } else {
                 deviceList
-//            }
+            }
             
             instructions
         }
