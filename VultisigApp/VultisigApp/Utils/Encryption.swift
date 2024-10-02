@@ -110,7 +110,7 @@ public extension Data {
     }
     
     func aesGCMEncrypt(key: Data) throws -> Data? {
-        let symmetricKey = SymmetricKey(data: key)
+        let symmetricKey = SymmetricKey(data: SHA256.hash(data:key))
         let nonce = AES.GCM.Nonce()
         guard let sealedBox = try? AES.GCM.seal(self, using: symmetricKey, nonce: nonce) else {
             throw AESError.encryptionFailed
@@ -119,7 +119,7 @@ public extension Data {
     }
     
     func aesGCMDecrypt(key: Data) throws -> Data {
-        let symmetricKey = SymmetricKey(data: key)
+        let symmetricKey = SymmetricKey(data: SHA256.hash(data:key))
         let sealedBox = try AES.GCM.SealedBox(combined: self)
         guard let decryptedData = try? AES.GCM.open(sealedBox, using: symmetricKey) else {
             throw AESError.decryptionFailed
