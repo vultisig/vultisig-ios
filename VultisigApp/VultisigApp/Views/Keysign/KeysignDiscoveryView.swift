@@ -28,6 +28,8 @@ struct KeysignDiscoveryView: View {
     
     @Environment(\.displayScale) var displayScale
     
+    let columns = [GridItem(.adaptive(minimum: 160))]
+    
     let logger = Logger(subsystem: "keysign-discovery", category: "view")
     
     var body: some View {

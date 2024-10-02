@@ -36,11 +36,11 @@ extension KeysignDiscoveryView {
         VStack(spacing: 18) {
             networkPrompts
             
-//            if participantDiscovery.peersFound.count == 0 {
-//                lookingForDevices
-//            } else {
+            if participantDiscovery.peersFound.count == 0 {
+                lookingForDevices
+            } else {
                 deviceList
-//            }
+            }
             
             instructions
         }
@@ -91,6 +91,27 @@ extension KeysignDiscoveryView {
         .background(Color.backgroundBlue.opacity(0.95))
         .edgesIgnoringSafeArea(.bottom)
         .padding(.bottom, 40)
+    }
+    
+    var deviceList: some View {
+        ScrollView {
+            LazyVGrid(columns: columns, spacing: 32) {
+                ForEach(participantDiscovery.peersFound, id: \.self) { peer in
+                    Button {
+                        handleSelection(peer)
+                    } label: {
+                        PeerCell(id: "peer", isSelected: true)
+                    }
+                    .onAppear {
+                        if participantDiscovery.peersFound.count == 1 && participantDiscovery.peersFound.first == peer {
+                            handleSelection(peer)
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal, 24)
+            .frame(maxHeight: .infinity)
+        }
     }
 }
 #endif
