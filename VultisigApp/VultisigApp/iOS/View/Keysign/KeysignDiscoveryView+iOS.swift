@@ -46,7 +46,7 @@ extension KeysignDiscoveryView {
             
             if participantDiscovery.peersFound.count == 0 {
                 lookingForDevices
-                    .frame(height: idiom == .phone ? 50 : 150)
+                    .frame(maxHeight: orientation == .landscapeLeft || orientation == .landscapeRight ? .infinity : 100)
             } else {
                 deviceList
             }
