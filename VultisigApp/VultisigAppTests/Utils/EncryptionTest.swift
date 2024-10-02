@@ -13,7 +13,9 @@ final class EncryptionTest: XCTestCase {
         let encryptionKey = Encryption.getEncryptionKey()
         XCTAssert(encryptionKey != nil)
         let result = "helloworld".aesEncrypt(key: encryptionKey!)
+        print(result ?? "")
         let decrypted = result?.aesDecrypt(key: encryptionKey!)
+        print(decrypted ?? "")
         XCTAssert(decrypted == "helloworld")
     }
     func testAndroidEncryption() throws{

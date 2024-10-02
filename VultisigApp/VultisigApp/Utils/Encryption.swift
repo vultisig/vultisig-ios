@@ -7,13 +7,20 @@
 
 import Foundation
 import CommonCrypto
+import CryptoKit
+
+enum AESError: Error {
+    case keyGeneration
+    case encryptionFailed
+    case decryptionFailed
+}
 
 public extension String {
     func aesEncrypt(key: String) -> String? {
         guard
             let data = self.data(using: .utf8),
             let key = Data(hexString: key),
-            let encrypt = data.encryptAES256(key: key)
+            let encrypt = try? data.aesGCMEncrypt(key: key)
         else { return nil }
         let base64Data = encrypt.base64EncodedData()
         return String(data: base64Data, encoding: .utf8)
@@ -22,9 +29,17 @@ public extension String {
     func aesDecrypt(key: String) -> String? {
         guard
             let data = Data(base64Encoded: self),
-            let key = Data(hexString: key),
-            let decrypt = data.decryptAES256(key: key)
+            let key = Data(hexString: key)
         else { return nil }
+        // try to decrypted with GCM
+        var decrypt = try? data.aesGCMDecrypt(key: key)
+        if decrypt == nil {
+            // fall back to AES-CCB
+            decrypt = data.decryptAES256(key: key)
+        }
+        guard let decrypt else {
+            return nil
+        }
         return String(data: decrypt, encoding: .utf8)
     }
 }
@@ -92,6 +107,24 @@ public extension Data {
                 }
             }
         }
+    }
+    
+    func aesGCMEncrypt(key: Data) throws -> Data? {
+        let symmetricKey = SymmetricKey(data: key)
+        let nonce = AES.GCM.Nonce()
+        guard let sealedBox = try? AES.GCM.seal(self, using: symmetricKey, nonce: nonce) else {
+            throw AESError.encryptionFailed
+        }
+        return sealedBox.combined
+    }
+    
+    func aesGCMDecrypt(key: Data) throws -> Data {
+        let symmetricKey = SymmetricKey(data: key)
+        let sealedBox = try AES.GCM.SealedBox(combined: self)
+        guard let decryptedData = try? AES.GCM.open(sealedBox, using: symmetricKey) else {
+            throw AESError.decryptionFailed
+        }
+        return decryptedData
     }
 }
 
