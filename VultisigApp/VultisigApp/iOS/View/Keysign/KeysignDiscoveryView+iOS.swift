@@ -44,12 +44,12 @@ extension KeysignDiscoveryView {
         VStack(spacing: 4) {
             networkPrompts
             
-            if participantDiscovery.peersFound.count == 0 {
-                lookingForDevices
-                    .frame(maxHeight: orientation == .landscapeLeft || orientation == .landscapeRight ? .infinity : 100)
-            } else {
+//            if participantDiscovery.peersFound.count == 0 {
+//                lookingForDevices
+//                    .frame(maxHeight: orientation == .landscapeLeft || orientation == .landscapeRight ? .infinity : 100)
+//            } else {
                 deviceList
-            }
+//            }
             
             instructions
         }
@@ -109,7 +109,7 @@ extension KeysignDiscoveryView {
                     Button {
                         handleSelection(peer)
                     } label: {
-                        PeerCell(id: "peer", isSelected: true)
+                        PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
                     }
                     .onAppear {
                         if participantDiscovery.peersFound.count == 1 && participantDiscovery.peersFound.first == peer {
