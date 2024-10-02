@@ -60,8 +60,7 @@ extension KeysignDiscoveryView {
                 .padding(2)
                 .background(Color.neutral0)
                 .cornerRadius(10)
-                .padding(4)
-                .padding(24)
+                .padding(16)
                 .background(Color.blue600)
                 .cornerRadius(20)
                 .overlay (
@@ -73,7 +72,7 @@ extension KeysignDiscoveryView {
         .foregroundColor(.neutral0)
         .cornerRadius(10)
         .shadow(radius: 5)
-        .padding(40)
+        .padding(4)
     }
     
     var bottomButtons: some View {
