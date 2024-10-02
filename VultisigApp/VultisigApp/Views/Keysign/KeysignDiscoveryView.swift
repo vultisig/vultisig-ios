@@ -28,11 +28,6 @@ struct KeysignDiscoveryView: View {
     
     @Environment(\.displayScale) var displayScale
     
-    let columns = [
-        GridItem(.adaptive(minimum: 160)),
-        GridItem(.adaptive(minimum: 160)),
-    ]
-    
     let logger = Logger(subsystem: "keysign-discovery", category: "view")
     
     var body: some View {
@@ -116,24 +111,6 @@ struct KeysignDiscoveryView: View {
     var lookingForDevices: some View {
         LookingForDevicesLoader()
             .padding()
-    }
-    
-    var deviceList: some View {
-        LazyVGrid(columns: columns, spacing: 32) {
-            ForEach(participantDiscovery.peersFound, id: \.self) { peer in
-                Button {
-                    handleSelection(peer)
-                } label: {
-                    PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
-                }
-                .onAppear {
-                    if participantDiscovery.peersFound.count == 1 && participantDiscovery.peersFound.first == peer {
-                        handleSelection(peer)
-                    }
-                }
-            }
-        }
-        .padding(20)
     }
     
     var networkPrompts: some View {

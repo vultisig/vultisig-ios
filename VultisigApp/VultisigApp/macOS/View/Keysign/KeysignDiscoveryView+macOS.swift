@@ -36,11 +36,11 @@ extension KeysignDiscoveryView {
         VStack(spacing: 18) {
             networkPrompts
             
-            if participantDiscovery.peersFound.count == 0 {
-                lookingForDevices
-            } else {
+//            if participantDiscovery.peersFound.count == 0 {
+//                lookingForDevices
+//            } else {
                 deviceList
-            }
+//            }
             
             instructions
         }
