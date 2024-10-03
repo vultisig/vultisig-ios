@@ -363,7 +363,7 @@
 "somethingWentWrongTryAgain" = "Something went wrong, please try again.";
 "newUpdateAvailable" = "New Update Available";
 "appUpToDate" = "Application is up to date";
-"fastSign" = "Fast";
+"fastSign" = "Fast Sign";
 "swapProgress" = "Swap progress";
 "retry" = "Retry";
 "loginUsingTouchID" = "Login using Touch ID";

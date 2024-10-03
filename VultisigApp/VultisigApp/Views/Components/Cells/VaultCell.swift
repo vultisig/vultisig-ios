@@ -67,7 +67,7 @@ struct VaultCell: View {
     }
     
     var fastVaultLabel: some View {
-        Text(NSLocalizedString("fastSign", comment: ""))
+        Text(NSLocalizedString("fastModeTitle", comment: "").capitalized)
             .font(.body14Menlo)
             .foregroundColor(.body)
             .padding(4)
