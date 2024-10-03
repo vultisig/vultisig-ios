@@ -60,8 +60,7 @@ extension KeysignDiscoveryView {
                 .padding(2)
                 .background(Color.neutral0)
                 .cornerRadius(10)
-                .padding(4)
-                .padding(24)
+                .padding(16)
                 .background(Color.blue600)
                 .cornerRadius(20)
                 .overlay (
@@ -73,7 +72,7 @@ extension KeysignDiscoveryView {
         .foregroundColor(.neutral0)
         .cornerRadius(10)
         .shadow(radius: 5)
-        .padding(40)
+        .padding(4)
     }
     
     var bottomButtons: some View {
@@ -92,6 +91,27 @@ extension KeysignDiscoveryView {
         .background(Color.backgroundBlue.opacity(0.95))
         .edgesIgnoringSafeArea(.bottom)
         .padding(.bottom, 40)
+    }
+    
+    var deviceList: some View {
+        ScrollView {
+            LazyVGrid(columns: columns, spacing: 32) {
+                ForEach(participantDiscovery.peersFound, id: \.self) { peer in
+                    Button {
+                        handleSelection(peer)
+                    } label: {
+                        PeerCell(id: peer, isSelected: viewModel.selections.contains(peer))
+                    }
+                    .onAppear {
+                        if participantDiscovery.peersFound.count == 1 && participantDiscovery.peersFound.first == peer {
+                            handleSelection(peer)
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal, 24)
+            .frame(maxHeight: .infinity)
+        }
     }
 }
 #endif
