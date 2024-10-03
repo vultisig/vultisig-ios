@@ -123,7 +123,7 @@ struct SendCryptoView: View {
                     fastVaultPassword: tx.fastVaultPassword.nilIfEmpty,
                     keysignView: $keysignView,
                     shareSheetViewModel: shareSheetViewModel,
-                    previewTitle: "send"
+                    previewType: .Send
                 )
             } else {
                 SendCryptoVaultErrorView()

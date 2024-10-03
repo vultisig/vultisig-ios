@@ -7,11 +7,20 @@
 
 import SwiftUI
 
+enum QRShareSheetType: String {
+    case Keygen = "JoinKeygen"
+    case Send = "JoinSend"
+    case Swap = "JoinSwap"
+    case Address = ""
+}
+
 struct QRShareSheetImage: View {
-    let title: String
     let image: Image
+    let type: QRShareSheetType
+    let addressData: String
     
     let padding: CGFloat = 30
+    
     
 #if os(iOS)
     let cornerRadius: CGFloat = 6
@@ -26,15 +35,42 @@ struct QRShareSheetImage: View {
     var view: some View {
         VStack(spacing: 32) {
             qrCode
-            text
+            titleContent
+            description
             Spacer()
             logo
         }
-        .padding(.vertical, 40)
+        .padding(.vertical, 48)
+        .font(.body16MenloBold)
+        .foregroundColor(.neutral0)
+        .multilineTextAlignment(.center)
+    }
+    
+    var description: some View {
+        ZStack {
+            switch type {
+            case .Keygen:
+                keygenDescription
+            case .Send:
+                keygenDescription
+            case .Swap:
+                keygenDescription
+            case .Address:
+                keygenDescription
+            }
+        }
+    }
+    
+    var keygenDescription: some View {
+        Text(NSLocalizedString("previewKeygenDescription", comment: ""))
     }
 }
 
 #Preview {
-    QRShareSheetImage(title: "thor1ls0p8e4ax7nxfeh37ncs25mn67ngmtzhwzkflk", image: Image("VultisigLogo"))
-        .frame(width: 900, height: 1500)
+    QRShareSheetImage(
+        image: Image("VultisigLogo"),
+        type: .Keygen,
+        addressData: "123456789123456789"
+    )
+    .ignoresSafeArea()
 }

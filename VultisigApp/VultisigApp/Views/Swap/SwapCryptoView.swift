@@ -74,7 +74,7 @@ struct SwapCryptoView: View {
                     fastVaultPassword: tx.fastVaultPassword.nilIfEmpty,
                     keysignView: $keysignView,
                     shareSheetViewModel: shareSheetViewModel,
-                    previewTitle: "swap"
+                    previewType: .Swap
                 )
             } else {
                 SendCryptoVaultErrorView()

@@ -14,28 +14,26 @@ extension QRShareSheetImage {
             Background()
             view
         }
-        .frame(width: 300, height: 500)
+        .frame(width: 375, height: 800)
     }
     
     var qrCode: some View {
-        GeometryReader { geometry in
-            image
-                .resizable()
-                .frame(width: 220, height: 220)
-                .frame(width: 240, height: 240)
-                .background(Color.turquoise600.opacity(0.15))
-                .cornerRadius(cornerRadius)
-                .overlay (
-                    RoundedRectangle(cornerRadius: cornerRadius)
-                    .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [24]))
-                )
-                .padding(.horizontal, padding)
-        }
+        image
+            .resizable()
+            .frame(width: 250, height: 250)
+            .frame(width: 300, height: 300)
+            .background(Color.turquoise600.opacity(0.15))
+            .cornerRadius(cornerRadius)
+            .overlay (
+                RoundedRectangle(cornerRadius: cornerRadius)
+                .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [24]))
+            )
+            .padding(.horizontal, padding)
     }
     
-    var text: some View {
-        Text(NSLocalizedString(title, comment: ""))
-            .font(.body12Menlo)
+    var titleContent: some View {
+        Text(NSLocalizedString(type.rawValue, comment: ""))
+            .font(.body16MenloBold)
             .frame(maxWidth: 200)
             .lineLimit(2)
             .foregroundColor(.neutral0)
@@ -43,10 +41,14 @@ extension QRShareSheetImage {
     }
     
     var logo: some View {
-        Image("VultisigLogo")
-            .resizable()
-            .frame(width: 48, height: 48)
-            .offset(y: -20)
+        VStack(spacing: 16) {
+            Image("VultisigLogo")
+                .resizable()
+                .frame(width: 110, height: 110)
+            
+            Text("vultisig.com")
+        }
+        .offset(y: -20)
     }
 }
 #endif

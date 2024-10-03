@@ -368,3 +368,7 @@
 "retry" = "Retry";
 "loginUsingTouchID" = "Login using Touch ID";
 "loginUsingOpticID" = "Login using Optic ID";
+"previewKeygenDescription" = "Scan with devices to join the vault generation";
+"JoinKeygen" = "Join Keygen";
+"JoinSend" = "Join Send";
+"JoinSwap" = "Join Swap";
