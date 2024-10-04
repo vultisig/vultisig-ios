@@ -67,6 +67,7 @@ struct FolderVaultCell: View {
         for index in 0..<selectedVaults.count {
             if areVaultsSame(selectedVaults[index], vault) {
                 selectedVaults.remove(at: index)
+                return
             }
         }
     }

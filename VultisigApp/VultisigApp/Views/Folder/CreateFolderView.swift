@@ -6,10 +6,16 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct CreateFolderView: View {
     @State var name = ""
     @State var selectedVaults: [Vault] = []
+    @State var vaultFolder: VaultFolder? = nil
+    
+    @Query var vaults: [Vault]
+    
+    @Environment(\.dismiss) var dismiss
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -34,8 +40,12 @@ struct CreateFolderView: View {
     }
     
     var button: some View {
-        FilledButton(title: "create")
-            .padding(16)
+        Button {
+            createFolder()
+        } label: {
+            FilledButton(title: "create")
+                .padding(16)
+        }
     }
     
     var folderName: some View {
@@ -44,6 +54,7 @@ struct CreateFolderView: View {
             folderNameTextField
         }
         .padding(.horizontal, 16)
+        .padding(.top, 30)
     }
     
     var folderNameTitle: some View {
@@ -84,8 +95,23 @@ struct CreateFolderView: View {
     
     var list: some View {
         VStack(spacing: 6) {
-            
+            ForEach(selectedVaults, id: \.self) { selectedVault in
+                Text(selectedVault.name)
+            }
+            ForEach(vaults, id: \.self) { vault in
+                FolderVaultCell(vault: vault, selectedVaults: $selectedVaults)
+            }
         }
+        .frame(maxWidth: .infinity)
+    }
+    
+    private func createFolder() {
+        vaultFolder = VaultFolder(
+            folderName: name,
+            containedVaults: selectedVaults
+        )
+        
+        dismiss()
     }
 }
 

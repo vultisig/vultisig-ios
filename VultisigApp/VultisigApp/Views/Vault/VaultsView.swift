@@ -74,7 +74,7 @@ struct VaultsView: View {
     
     var folderButton: some View {
         NavigationLink {
-            ImportWalletView()
+            CreateFolderView()
         } label: {
             OutlineButton(title: "createFolder")
         }
