@@ -19,9 +19,6 @@ class VaultDetailViewModel: ObservableObject {
         updateBalanceTask?.cancel()
         updateBalanceTask = Task {
             await balanceService.updateBalances(vault: vault)
-            for gc in coinsGroupedByChains {
-                gc.totalBalanceInFiatDecimal = gc.coins.totalBalanceInFiatDecimal
-            }
         }
     }
     
