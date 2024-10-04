@@ -9,16 +9,6 @@ import Foundation
 
 final class FeatureFlagService {
     static let ENCRYPT_GCM = "encrypt-gcm"
-    func isFeatureEnabledSync(feature: String) -> Bool {
-        let semaphore = DispatchSemaphore(value: 0)
-        var result: Bool = false
-        Task {
-            result = await isFeatureEnabled(feature: feature)
-            semaphore.signal()
-        }
-        semaphore.wait()
-        return result
-    }
     
     func isFeatureEnabled(feature: String) async -> Bool {
         do{
