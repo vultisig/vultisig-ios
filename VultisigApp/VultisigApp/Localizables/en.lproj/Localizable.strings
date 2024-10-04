@@ -372,3 +372,4 @@
 "create" = "Create";
 "folderName" = "Folder name";
 "addVaultsToFolder" = "Select Vaults to add to the folder";
+"deleteFolder" = "Delete Folder";

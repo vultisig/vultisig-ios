@@ -15,4 +15,6 @@ class VaultFolder {
         self.folderName = folderName
         self.containedVaults = containedVaults
     }
+    
+    static let example = VaultFolder(folderName: "Main Folder", containedVaults: [Vault.example])
 }

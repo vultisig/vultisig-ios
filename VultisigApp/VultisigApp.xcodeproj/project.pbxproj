@@ -304,6 +304,7 @@
 		A675305A2CAF9C4D00B1E344 /* CreateFolderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67530592CAF9C4D00B1E344 /* CreateFolderView.swift */; };
 		A675305E2CAFB2CE00B1E344 /* FolderVaultCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A675305D2CAFB2CE00B1E344 /* FolderVaultCell.swift */; };
 		A67530622CAFBDC200B1E344 /* VaultFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67530612CAFBDC200B1E344 /* VaultFolder.swift */; };
+		A67530642CB0716300B1E344 /* FolderDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67530632CB0716300B1E344 /* FolderDetailView.swift */; };
 		A67AA1C42C64715000D06C7E /* ChainDetailHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67AA1C32C64715000D06C7E /* ChainDetailHeader.swift */; };
 		A67AA1C62C64784F00D06C7E /* CoinDetailHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67AA1C52C64784F00D06C7E /* CoinDetailHeader.swift */; };
 		A67F4C5F2BE313220086ED09 /* ActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67F4C5E2BE313220086ED09 /* ActionButton.swift */; };
@@ -1008,6 +1009,7 @@
 		A67530592CAF9C4D00B1E344 /* CreateFolderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateFolderView.swift; sourceTree = "<group>"; };
 		A675305D2CAFB2CE00B1E344 /* FolderVaultCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderVaultCell.swift; sourceTree = "<group>"; };
 		A67530612CAFBDC200B1E344 /* VaultFolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultFolder.swift; sourceTree = "<group>"; };
+		A67530632CB0716300B1E344 /* FolderDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderDetailView.swift; sourceTree = "<group>"; };
 		A67AA1C32C64715000D06C7E /* ChainDetailHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailHeader.swift; sourceTree = "<group>"; };
 		A67AA1C52C64784F00D06C7E /* CoinDetailHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinDetailHeader.swift; sourceTree = "<group>"; };
 		A67F4C5E2BE313220086ED09 /* ActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionButton.swift; sourceTree = "<group>"; };
@@ -2365,6 +2367,7 @@
 			isa = PBXGroup;
 			children = (
 				A67530592CAF9C4D00B1E344 /* CreateFolderView.swift */,
+				A67530632CB0716300B1E344 /* FolderDetailView.swift */,
 			);
 			path = Folder;
 			sourceTree = "<group>";
@@ -3329,6 +3332,7 @@
 				A686C0B22C58C3AE00BBCE9C /* VaultSetupCard.swift in Sources */,
 				A6C670F72CA2751500F59B6A /* SettingsCurrencySelectionView+macOS.swift in Sources */,
 				A6D07E432C36756700594687 /* OnboardingView4.swift in Sources */,
+				A67530642CB0716300B1E344 /* FolderDetailView.swift in Sources */,
 				A622C8582C9BCCC600908332 /* JoinKeygenView+macOS.swift in Sources */,
 				B52196442C12C3540021D27A /* CustomTokenView.swift in Sources */,
 				B5A97CEF2BF41779007574D7 /* TransactionMemoViewModel.swift in Sources */,
