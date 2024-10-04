@@ -8,14 +8,21 @@
 import SwiftUI
 
 struct FolderVaultCell: View {
-    let title: String
+    let vault: Vault
+    @Binding var selectedVaults: [Vault]
     
-    @State var isSelected = false
+    @State var isSelected: Bool = false
     
     var body: some View {
         content
+            .onAppear {
+                setData()
+            }
             .onTapGesture {
                 isSelected.toggle()
+            }
+            .onChange(of: isSelected) { oldValue, newValue in
+                handleSelection()
             }
     }
     
@@ -31,7 +38,7 @@ struct FolderVaultCell: View {
     }
     
     var text: some View {
-        Text(title)
+        Text(vault.name)
             .foregroundColor(.neutral0)
             .font(.body14MontserratBold)
     }
@@ -41,8 +48,34 @@ struct FolderVaultCell: View {
             .labelsHidden()
             .scaleEffect(0.8)
     }
+    
+    private func setData() {
+        if selectedVaults.contains(vault) {
+            isSelected = true
+        }
+    }
+    
+    private func handleSelection() {
+        if isSelected {
+            selectedVaults.append(vault)
+        } else {
+            removeVault(vault)
+        }
+    }
+    
+    private func removeVault(_ vault: Vault) {
+        for index in 0..<selectedVaults.count {
+            if areVaultsSame(selectedVaults[index], vault) {
+                selectedVaults.remove(at: index)
+            }
+        }
+    }
+    
+    private func areVaultsSame(_ selectedVault: Vault, _ vault: Vault) -> Bool {
+        selectedVault.name == vault.name && selectedVault.pubKeyECDSA == vault.pubKeyECDSA && selectedVault.pubKeyEdDSA == vault.pubKeyEdDSA
+    }
 }
 
 #Preview {
-    FolderVaultCell(title: "Main Vault")
+    FolderVaultCell(vault: Vault.example, selectedVaults: .constant([]))
 }

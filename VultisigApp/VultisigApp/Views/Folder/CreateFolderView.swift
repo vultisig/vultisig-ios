@@ -9,6 +9,7 @@ import SwiftUI
 
 struct CreateFolderView: View {
     @State var name = ""
+    @State var selectedVaults: [Vault] = []
     
     var body: some View {
         ZStack(alignment: .bottom) {
