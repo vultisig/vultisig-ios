@@ -11,7 +11,7 @@ final class FeatureFlagService {
     static let ENCRYPT_GCM = "encrypt-gcm"
     func isFeatureEnabledSync(feature: String) -> Bool {
         let semaphore = DispatchSemaphore(value: 0)
-        var result = false
+        var result: Bool = false
         Task {
             result = await isFeatureEnabled(feature: feature)
             semaphore.signal()
