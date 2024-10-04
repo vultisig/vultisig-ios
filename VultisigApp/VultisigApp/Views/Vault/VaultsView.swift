@@ -63,11 +63,36 @@ struct VaultsView: View {
     }
     
     var buttons: some View {
+        ZStack {
+            folderButton
+            actionButtons
+        }
+        .frame(maxHeight: isEditingVaults ? 60 : 120)
+        .clipped()
+        .animation(.easeInOut, value: isEditingVaults)
+    }
+    
+    var folderButton: some View {
+        NavigationLink {
+            ImportWalletView()
+        } label: {
+            OutlineButton(title: "createFolder")
+        }
+        .padding(16)
+        .scaleEffect(showVaultsList ? 1 : 0)
+        .opacity(showVaultsList ? 1 : 0)
+        .buttonStyle(BorderlessButtonStyle())
+        .offset(y: isEditingVaults ? 0 : 200)
+    }
+    
+    var actionButtons: some View {
         VStack(spacing: 14) {
             addVaultButton
             importVaultButton
         }
         .padding(16)
+        .offset(y: isEditingVaults ? 200 : 0)
+        .animation(.easeInOut, value: isEditingVaults)
     }
     
     var addVaultButton: some View {
@@ -143,7 +168,7 @@ struct VaultsView: View {
 #Preview {
     ZStack {
         Background()
-        VaultsView(viewModel: HomeViewModel(), showVaultsList: .constant(true), isEditingVaults: .constant(true))
+        VaultsView(viewModel: HomeViewModel(), showVaultsList: .constant(true), isEditingVaults: .constant(false))
             .environmentObject(DeeplinkViewModel())
             .environmentObject(HomeViewModel())
     }

@@ -368,3 +368,4 @@
 "retry" = "Retry";
 "loginUsingTouchID" = "Login using Touch ID";
 "loginUsingOpticID" = "Login using Optic ID";
+"createFolder" = "Create Folder";

@@ -26,7 +26,9 @@ struct NavigationHomeEditButton: View {
     
     var vaultsListEditButton: some View {
         Button {
-            isEditingVaults.toggle()
+            withAnimation(.easeInOut) {
+                isEditingVaults.toggle()
+            }
         } label: {
             if isEditingVaults {
                 doneButton
