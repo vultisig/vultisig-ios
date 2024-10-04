@@ -27,11 +27,20 @@ extension Coin {
         case .mayaChain, .dash, .kujira:
             return [.mayachain]
         case .ethereum:
-            if thorEthTokens.contains(ticker) {
-                return [.thorchain, .oneinch(chain), .lifi]
-            } else {
-                return [.oneinch(chain), .lifi]
+            let defaultProviders: [SwapProvider] = [
+                .oneinch(chain),
+                .lifi
+            ]
+
+            var providers: [SwapProvider] = []
+
+            if mayaEthTokens.contains(ticker) {
+                providers.append(.mayachain)
+            } else if thorEthTokens.contains(ticker) {
+                providers.append(.thorchain)
             }
+
+            return providers + defaultProviders
         case .bscChain:
             if thorBscTokens.contains(ticker) {
                 return [.thorchain, .oneinch(chain), .lifi]
@@ -63,6 +72,10 @@ extension Coin {
 }
 
 private extension Coin {
+
+    var mayaEthTokens: [String] {
+        return ["ETH"]
+    }
 
     var thorEthTokens: [String] {
         return ["ETH", "USDT", "USDC", "WBTC", "THOR", "XRUNE", "DAI", "LUSD", "GUSD", "VTHOR", "USDP", "LINK", "WSTETH", "TGT", "AAVE", "FOX", "DPI", "SNX"]
