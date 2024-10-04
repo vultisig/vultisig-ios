@@ -6,14 +6,21 @@
 //
 
 import Foundation
+enum FeatureFlag: String {
+    case EncryptGCM
+    
+    var name: String{
+        switch self {
+        case .EncryptGCM: return "encrypt-gcm"
+        }
+    }
+}
 
 final class FeatureFlagService {
-    static let ENCRYPT_GCM = "encrypt-gcm"
-    
-    func isFeatureEnabled(feature: String) async -> Bool {
+    func isFeatureEnabled(feature: FeatureFlag) async -> Bool {
         do{
             let features = try await getFeatureFlagFromServer()
-            if let result = features[feature] as? Bool {
+            if let result = features[feature.name] as? Bool {
                 return result
             } else {
                 print("Feature flag for \(feature) is not a boolean value")
