@@ -1,18 +1,14 @@
 import Foundation
 
 class CosmosService {
+    
     func fetchBalances(address: String) async throws -> [CosmosBalance] {
-        let cachedBalances = loadBalancesFromCache(forAddress: address)
-        if cachedBalances.count > 0 {
-            return cachedBalances
-        }
         guard let url = balanceURL(forAddress: address) else {
             return [CosmosBalance]()
         }
         
         let (data, _) = try await URLSession.shared.data(from: url)
         let balanceResponse = try JSONDecoder().decode(CosmosBalanceResponse.self, from: data)
-        cacheBalances(balanceResponse.balances, forAddress: address)
         return balanceResponse.balances
     }
     
@@ -69,28 +65,5 @@ class CosmosService {
     
     func transactionURL() -> URL? {
         fatalError("Must override in subclass")
-    }
-    
-    // Cache-related methods
-    private func cacheBalances(_ balances: [CosmosBalance], forAddress address: String) {
-        let addressKey = "balancesCache_\(address)"
-        let cacheEntry = BalanceCacheEntry(balances: balances, timestamp: Date())
-        
-        if let encodedData = try? JSONEncoder().encode(cacheEntry) {
-            UserDefaults.standard.set(encodedData, forKey: addressKey)
-        }
-    }
-    
-    private func loadBalancesFromCache(forAddress address: String) -> [CosmosBalance] {
-        let addressKey = "balancesCache_\(address)"
-        
-        guard let savedData = UserDefaults.standard.object(forKey: addressKey) as? Data,
-              let cacheEntry = try? JSONDecoder().decode(BalanceCacheEntry.self, from: savedData),
-              -cacheEntry.timestamp.timeIntervalSinceNow < 60
-        else {
-            return [CosmosBalance]()
-        }
-        
-        return cacheEntry.balances
     }
 }
