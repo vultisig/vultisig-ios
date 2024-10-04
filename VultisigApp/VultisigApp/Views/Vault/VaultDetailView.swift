@@ -153,8 +153,8 @@ struct VaultDetailView: View {
         if homeViewModel.selectedVault == nil {
             return
         }
+        
         viewModel.fetchCoins(for: vault)
-        viewModel.setOrder()
         viewModel.updateBalance(vault: vault)
         viewModel.getGroupAsync(tokenSelectionViewModel)
         

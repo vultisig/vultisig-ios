@@ -16,7 +16,6 @@ class GroupedChain: ObservableObject {
     var logo: String
     var count: Int
     var coins: [Coin]
-    var order: Int = 0
 
     var totalBalanceInFiatDecimal: Decimal {
         return coins.totalBalanceInFiatDecimal
@@ -41,10 +40,6 @@ class GroupedChain: ObservableObject {
         self.logo = logo
         self.count = count
         self.coins = coins
-    }
-    
-    func setOrder(_ index: Int) {
-        order = index
     }
     
     static var example = GroupedChain(chain: .bitcoin, address: "bc1psrjtwm7682v6nhx2...uwfgcfelrennd7pcvq", logo: "btc", count: 3, coins: [Coin.example])

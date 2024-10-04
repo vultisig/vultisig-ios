@@ -10,24 +10,19 @@ import SwiftUI
 
 @MainActor
 class VaultDetailViewModel: ObservableObject {
-    @Published var coinsGroupedByChains = [GroupedChain]()
     @Published var selectedGroup: GroupedChain? = nil
-    let balanceService = BalanceService.shared
+    @Published var groups = [GroupedChain]()
+
+    private let balanceService = BalanceService.shared
     private var updateBalanceTask: Task<Void, Never>?
     
     func updateBalance(vault: Vault) {
         updateBalanceTask?.cancel()
         updateBalanceTask = Task {
             await balanceService.updateBalances(vault: vault)
+            categorizeCoins(vault: vault)
         }
     }
-    
-    func setOrder() {
-        for index in 0..<coinsGroupedByChains.count {
-            coinsGroupedByChains[index].setOrder(index)
-        }
-    }
-    
     
     func fetchCoins(for vault: Vault) {
         categorizeCoins(vault: vault)
@@ -40,7 +35,7 @@ class VaultDetailViewModel: ObservableObject {
     }
     
     private func getGroup(_ viewModel: CoinSelectionViewModel) async -> GroupedChain? {
-        for group in coinsGroupedByChains {
+        for group in groups {
             let actions = await viewModel.actionResolver.resolveActions(for: group.chain)
             
             for action in actions {
@@ -49,24 +44,24 @@ class VaultDetailViewModel: ObservableObject {
                 }
             }
         }
-        return coinsGroupedByChains.first
+        return groups.first
     }
     
-    private func categorizeCoins(vault: Vault) {
-        coinsGroupedByChains = [GroupedChain]()
-        
+    func categorizeCoins(vault: Vault) {
+        groups = [GroupedChain]()
+
         for coin in vault.coins {
             addCoin(coin)
         }
-        coinsGroupedByChains.sort { $0.name < $1.name }
+
+        groups.sort { $0.totalBalanceInFiatDecimal > $1.totalBalanceInFiatDecimal }
     }
     
     private func addCoin(_ coin: Coin) {
-        for group in coinsGroupedByChains {
+        for group in groups {
             if group.address == coin.address && group.name == coin.chain.name {
                 group.coins.append(coin)
-                group.totalBalanceInFiatDecimal = group.coins.totalBalanceInFiatDecimal
-                group.count+=1
+                group.count += 1
                 if coin.isNativeToken {
                     group.logo = coin.logo
                 }
@@ -81,6 +76,7 @@ class VaultDetailViewModel: ObservableObject {
             count: 1,
             coins: [coin]
         )
-        coinsGroupedByChains.append(chain)
+        
+        groups.append(chain)
     }
 }
