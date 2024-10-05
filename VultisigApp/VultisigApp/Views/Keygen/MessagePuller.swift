@@ -90,8 +90,10 @@ class MessagePuller: ObservableObject {
                         self.logger.debug("Got message from: \(msg.from), to: \(msg.to), key:\(key)")
                         var decryptedBody: String? = nil
                         if self.encryptGCM {
+                            print("decrypt with AES+GCM")
                             decryptedBody = msg.body.aesDecryptGCM(key: self.encryptionKeyHex)
                         }else{
+                            print("decrypt with AES+CBC")
                             decryptedBody = msg.body.aesDecrypt(key: self.encryptionKeyHex)
                         }
                         try tssService.applyData(decryptedBody)

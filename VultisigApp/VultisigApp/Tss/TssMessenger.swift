@@ -79,8 +79,10 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
         }
         var encryptedBody: String? = nil
         if self.encryptGCM {
+            print("decrypt with AES+GCM")
             encryptedBody = body.aesEncryptGCM(key: self.encryptionKeyHex)
         } else {
+            print("decrypt with AES+CBC")
             encryptedBody = body.aesEncrypt(key: self.encryptionKeyHex)
         }
         guard let encryptedBody else {

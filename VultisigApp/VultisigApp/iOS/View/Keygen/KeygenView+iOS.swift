@@ -22,6 +22,7 @@ extension KeygenView {
             BackupVaultNowView(vault: vault)
         }
         .task {
+            await setData()
             await viewModel.startKeygen(
                 context: context,
                 defaultChains: settingsDefaultChainViewModel.defaultChains
@@ -29,7 +30,6 @@ extension KeygenView {
         }
         .onAppear {
             UIApplication.shared.isIdleTimerDisabled = true
-            setData()
         }
         .onDisappear(){
             UIApplication.shared.isIdleTimerDisabled = false
