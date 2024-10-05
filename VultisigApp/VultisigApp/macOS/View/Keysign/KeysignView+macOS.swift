@@ -11,8 +11,8 @@ import SwiftUI
 extension KeysignView {
     var container: some View {
         content
-            .onAppear {
-                setData()
+            .task {
+                await setData()
             }
             .onDisappear(){
                 viewModel.stopMessagePuller()

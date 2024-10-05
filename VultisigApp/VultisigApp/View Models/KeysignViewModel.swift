@@ -61,7 +61,7 @@ class KeysignViewModel: ObservableObject {
                  vault: Vault,
                  keysignPayload: KeysignPayload?,
                  encryptionKeyHex: String
-    ) {
+    ) async {
         self.keysignCommittee = keysignCommittee
         self.mediatorURL = mediatorURL
         self.sessionID = sessionID
@@ -70,7 +70,8 @@ class KeysignViewModel: ObservableObject {
         self.vault = vault
         self.keysignPayload = keysignPayload
         self.encryptionKeyHex = encryptionKeyHex
-        self.messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex,pubKey: vault.pubKeyECDSA)
+        let isEncryptGCM =  await FeatureFlagService().isFeatureEnabled(feature: FeatureFlag.EncryptGCM)
+        self.messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex,pubKey: vault.pubKeyECDSA, encryptGCM:isEncryptGCM)
     }
 
     func getTransactionExplorerURL(txid: String) -> String {
@@ -121,12 +122,14 @@ class KeysignViewModel: ObservableObject {
         case .EdDSA:
             pubkey = vault.pubKeyEdDSA
         }
+        let isEncryptGCM = await FeatureFlagService().isFeatureEnabled(feature: FeatureFlag.EncryptGCM)
         self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL,
                                              sessionID: self.sessionID,
                                              messageID: msgHash,
                                              encryptionKeyHex: encryptionKeyHex,
                                              vaultPubKey: pubkey,
-                                             isKeygen: false)
+                                             isKeygen: false,
+                                             encryptGCM: isEncryptGCM)
         self.stateAccess = LocalStateAccessorImpl(vault: self.vault)
         var err: NSError?
         // keysign doesn't need to recreate preparams

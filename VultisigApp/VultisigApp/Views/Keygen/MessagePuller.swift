@@ -15,10 +15,13 @@ class MessagePuller: ObservableObject {
     private var pollingInboundMessages = true
     private let logger = Logger(subsystem: "message-puller", category: "communication")
     private var currentTask: Task<Void,Error>? = nil
-    
-    init(encryptionKeyHex:String,pubKey: String){
+    let encryptGCM: Bool
+    init(encryptionKeyHex:String,
+         pubKey: String,
+         encryptGCM: Bool){
         self.encryptionKeyHex = encryptionKeyHex
         self.vaultPubKey = pubKey
+        self.encryptGCM = encryptGCM
     }
     
     func stop() {
@@ -85,7 +88,12 @@ class MessagePuller: ObservableObject {
                             continue
                         }
                         self.logger.debug("Got message from: \(msg.from), to: \(msg.to), key:\(key)")
-                        let decryptedBody = msg.body.aesDecrypt(key: self.encryptionKeyHex)
+                        var decryptedBody: String? = nil
+                        if self.encryptGCM {
+                            decryptedBody = msg.body.aesDecryptGCM(key: self.encryptionKeyHex)
+                        }else{
+                            decryptedBody = msg.body.aesDecrypt(key: self.encryptionKeyHex)
+                        }
                         try tssService.applyData(decryptedBody)
                         self.cache.setObject(NSObject(), forKey: key)
                         Task {

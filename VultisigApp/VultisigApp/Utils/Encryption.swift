@@ -20,6 +20,15 @@ public extension String {
         guard
             let data = self.data(using: .utf8),
             let key = Data(hexString: key),
+            let encrypt = data.encryptAES256(key: key)
+        else { return nil }
+        let base64Data = encrypt.base64EncodedData()
+        return String(data: base64Data, encoding: .utf8)
+    }
+    func aesEncryptGCM(key: String) -> String? {
+        guard
+            let data = self.data(using: .utf8),
+            let key = Data(hexString: key),
             let encrypt = try? data.aesGCMEncrypt(key: key)
         else { return nil }
         let base64Data = encrypt.base64EncodedData()
@@ -32,11 +41,19 @@ public extension String {
             let key = Data(hexString: key)
         else { return nil }
         // try to decrypted with GCM
-        var decrypt = try? data.aesGCMDecrypt(key: key)
-        if decrypt == nil {
-            // fall back to AES-CCB
-            decrypt = data.decryptAES256(key: key)
+        let decrypt = data.decryptAES256(key: key)
+        guard let decrypt else {
+            return nil
         }
+        return String(data: decrypt, encoding: .utf8)
+    }
+    func aesDecryptGCM(key: String) -> String? {
+        guard
+            let data = Data(base64Encoded: self),
+            let key = Data(hexString: key)
+        else { return nil }
+        // try to decrypted with GCM
+        let decrypt = try? data.aesGCMDecrypt(key: key)
         guard let decrypt else {
             return nil
         }

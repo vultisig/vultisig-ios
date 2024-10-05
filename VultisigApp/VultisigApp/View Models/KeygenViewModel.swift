@@ -58,7 +58,7 @@ class KeygenViewModel: ObservableObject {
                  mediatorURL: String,
                  sessionID: String,
                  encryptionKeyHex: String,
-                 oldResharePrefix:String) {
+                 oldResharePrefix:String) async {
         self.vault = vault
         self.tssType = tssType
         self.keygenCommittee = keygenCommittee
@@ -67,7 +67,9 @@ class KeygenViewModel: ObservableObject {
         self.sessionID = sessionID
         self.encryptionKeyHex = encryptionKeyHex
         self.oldResharePrefix = oldResharePrefix
-        messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex,pubKey: vault.pubKeyECDSA)
+        let isEncryptGCM = await FeatureFlagService().isFeatureEnabled(feature: FeatureFlag.EncryptGCM)
+        messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex,pubKey: vault.pubKeyECDSA,
+                                      encryptGCM: isEncryptGCM)
     }
     
     func delaySwitchToMain() {
@@ -87,7 +89,7 @@ class KeygenViewModel: ObservableObject {
             self.messagePuller?.stop()
         }
         do {
-            
+            let isEncryptGCM = await FeatureFlagService().isFeatureEnabled(feature: FeatureFlag.EncryptGCM)
             // Create keygen instance, it takes time to generate the preparams
             let messengerImp = TssMessengerImpl(
                 mediatorUrl: self.mediatorURL,
@@ -95,7 +97,8 @@ class KeygenViewModel: ObservableObject {
                 messageID: nil,
                 encryptionKeyHex: encryptionKeyHex,
                 vaultPubKey: "",
-                isKeygen: true
+                isKeygen: true,
+                encryptGCM: isEncryptGCM
             )
             let stateAccessorImp = LocalStateAccessorImpl(vault: self.vault)
             self.tssMessenger = messengerImp

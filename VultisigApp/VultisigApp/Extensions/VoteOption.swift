@@ -9,7 +9,7 @@ import Foundation
 import WalletCore
 
 // Extend TW_Cosmos_Proto_Message.VoteOption to conform to Identifiable and Equatable
-extension TW_Cosmos_Proto_Message.VoteOption: Identifiable {
+extension TW_Cosmos_Proto_Message.VoteOption: @retroactive Identifiable {
     public var id: Int {
         return self.rawValue
     }
