@@ -17,16 +17,15 @@ class RpcEvmService: RpcService {
     private let oneInchService = OneInchService.shared
 
     func getBalance(coin: Coin) async throws -> String {
-        // Start fetching all information concurrently
-        do {
-            if coin.isNativeToken {
-                return String(try await fetchBalance(address: coin.address))
-            } else {
-                return String(try await fetchERC20TokenBalance(contractAddress: coin.contractAddress, walletAddress: coin.address))
-            }
-        } catch {
-            print("getBalance:: \(error.localizedDescription)")
-            return .zero
+        if coin.isNativeToken {
+            let balance = try await fetchBalance(address: coin.address)
+            return String(balance)
+        } else {
+            let balance = try await fetchERC20TokenBalance(
+                contractAddress: coin.contractAddress,
+                walletAddress: coin.address
+            )
+            return String(balance)
         }
     }
     

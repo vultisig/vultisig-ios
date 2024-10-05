@@ -40,11 +40,7 @@ extension VaultDetailView {
     }
     
     var cells: some View {
-        let sortedGroups = viewModel.coinsGroupedByChains.sorted(by: {
-            $0.totalBalanceInFiatDecimal > $1.totalBalanceInFiatDecimal
-        })
-        
-        return ForEach(sortedGroups, id: \.id) { group in
+        return ForEach(viewModel.groups, id: \.id) { group in
             ChainNavigationCell(
                 group: group,
                 vault: vault,
@@ -74,7 +70,7 @@ extension VaultDetailView {
         List {
             if isLoading {
                 loader
-            } else if viewModel.coinsGroupedByChains.count >= 1 {
+            } else if viewModel.groups.count >= 1 {
                 
                 if !vault.isBackedUp {
                     backupNowWidget

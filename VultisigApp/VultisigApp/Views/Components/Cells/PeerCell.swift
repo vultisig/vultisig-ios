@@ -15,6 +15,7 @@ struct PeerCell: View {
     
     var body: some View {
         content
+            .padding(1)
             .onAppear {
                 setData()
             }

@@ -108,13 +108,8 @@ class PolkadotService: RpcService {
     }
     
     func getBalance(coin: Coin) async throws -> String {
-        // Start fetching all information concurrently
-        do {
-            return String(try await fetchBalance(address: coin.address))
-        } catch {
-            print("getBalance:: \(error.localizedDescription)")
-            throw error
-        }
+        let balance = try await fetchBalance(address: coin.address)
+        return String(balance)
     }
     
     func getGasInfo(fromAddress: String) async throws -> (recentBlockHash: String, currentBlockNumber: BigInt, nonce: Int64, specVersion: UInt32, transactionVersion: UInt32, genesisHash: String) {
