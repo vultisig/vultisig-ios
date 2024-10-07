@@ -9,8 +9,8 @@ import Foundation
 
 class VaultFolder: Hashable {
     let id = UUID()
-    let folderName: String
-    let containedVaults: [Vault]
+    var folderName: String
+    var containedVaults: [Vault]
     
     init(folderName: String, containedVaults: [Vault]) {
         self.folderName = folderName

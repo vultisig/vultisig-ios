@@ -6,11 +6,14 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct FolderDetailView: View {
-    let vaultFolder: VaultFolder?
+    @Binding var vaultFolder: VaultFolder
     
     @State var isEditing = false
+    
+    @Query var vaults: [Vault]
     
     var body: some View {
         ZStack {
@@ -22,7 +25,10 @@ struct FolderDetailView: View {
     var content: some View {
         ScrollView {
             selectedVaultsList
-            remainingVaultsList
+            
+            if isEditing {
+                remainingVaultsList
+            }
         }
     }
     
@@ -42,7 +48,9 @@ struct FolderDetailView: View {
     
     var selectedVaultsList: some View {
         VStack(spacing: 16) {
-            
+            ForEach(vaultFolder.containedVaults, id: \.self) { vault in
+                FolderDetailSelectedVaultCell(vault: vault, isEditing: isEditing)
+            }
         }
         .padding(.top, 30)
         .padding(.horizontal, 16)
@@ -63,8 +71,8 @@ struct FolderDetailView: View {
     }
     
     var vaultsList: some View {
-        VStack(spacing: 16) {
-            
+        ForEach(vaults, id: \.self) { vault in
+            FolderDetailRemainingVaultCell(vault: vault)
         }
     }
     
@@ -91,5 +99,5 @@ struct FolderDetailView: View {
 }
 
 #Preview {
-    FolderDetailView(vaultFolder: VaultFolder.example)
+    FolderDetailView(vaultFolder: .constant(VaultFolder.example))
 }

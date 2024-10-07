@@ -18,7 +18,7 @@ struct VaultsView: View {
     @Environment(\.modelContext) var modelContext
     
     @State var showFolderDetails: Bool = false
-    @State var selectedFolder: VaultFolder? = nil
+    @State var selectedFolder: VaultFolder = .example
     @State var folders: [VaultFolder] = []
 
     var body: some View {
@@ -44,7 +44,7 @@ struct VaultsView: View {
     var view: some View {
         content
             .navigationDestination(isPresented: $showFolderDetails) {
-                FolderDetailView(vaultFolder: selectedFolder)
+                FolderDetailView(vaultFolder: $selectedFolder)
             }
     }
     

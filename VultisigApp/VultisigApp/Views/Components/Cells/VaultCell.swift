@@ -11,17 +11,11 @@ struct VaultCell: View {
     let vault: Vault
     let isEditing: Bool
     
-    @State var isFolder: Bool = false
-    
     @StateObject var viewModel = VaultCellViewModel()
     
     var body: some View {
         HStack(spacing: 4) {
             rearrange
-            
-            if isFolder {
-                folder
-            }
             
             title
             
@@ -103,7 +97,7 @@ struct VaultCell: View {
 
 #Preview {
     VStack {
-        VaultCell(vault: Vault.example, isEditing: true, isFolder: true)
+        VaultCell(vault: Vault.example, isEditing: true)
         VaultCell(vault: Vault.example, isEditing: true)
         VaultCell(vault: Vault.fastVaultExample, isEditing: false)
     }
