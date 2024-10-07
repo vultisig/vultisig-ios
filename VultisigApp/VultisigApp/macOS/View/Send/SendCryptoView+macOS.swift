@@ -23,6 +23,7 @@ extension SendCryptoView {
     var headerMac: some View {
         SendCryptoHeader(
             vault: vault, 
+            showFeeSettings: showFeeSettings,
             settingsPresented: $settingsPresented,
             sendCryptoViewModel: sendCryptoViewModel,
             shareSheetViewModel: shareSheetViewModel
