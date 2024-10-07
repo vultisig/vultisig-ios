@@ -101,7 +101,7 @@
 "activeModeDescription" = "• Brzo potpisivanje u pokretu\n• Upozorenja i politike transakcija\n• Potpuno samostalno skrbništvo\n\nKoristiti kao “glavni vault”";
 "secureModeDescription" = "• Samo vaši uređaji\n• Bez upozorenja i politika\n• Potpuno samostalno skrbništvo\n\nKoristiti kao “hladni vault”";
 "fastLoaderTitle" = "Tražim FastVaultServer";
-"activeLoaderTitle" = "Tražim još 1 uređaj...";
+"activeLoaderTitle" = "Traženje FastVaultServera i još 1 uređaja...";
 "secureLoaderTitle" = "Tražim uređaje...";
 "sign" = "Potpiši";
 "amount" = "Iznos";

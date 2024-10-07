@@ -22,7 +22,7 @@ extension KeysignDiscoveryView {
             case .WaitingForDevices:
                 waitingForDevices
             case .WaitingForFast:
-                LookingForDevicesLoader()
+                lookingForDevices
             case .FailToStart:
                 errorText
             }
