@@ -111,10 +111,14 @@ struct KeysignDiscoveryView: View {
     }
     
     var lookingForDevices: some View {
-        LookingForDevicesLoader()
+        LookingForDevicesLoader(selectedTab: keysignState)
             .padding()
     }
-    
+
+    var keysignState: SetupVaultState {
+        return fastVaultPassword == nil ? .secure : .fast
+    }
+
     var networkPrompts: some View {
         NetworkPrompts(selectedNetwork: $selectedNetwork)
             .onChange(of: selectedNetwork) {
