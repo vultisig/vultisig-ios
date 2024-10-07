@@ -11,8 +11,12 @@ import VultisigCommonData
 
 final class BlockChainService {
 
-    static func normalizeFee(_ value: BigInt, action: Action) -> BigInt {
-        return value *2 + value / 2 // x1.5 fee
+    static func normalizeUTXOFee(_ value: BigInt, action: Action) -> BigInt {
+        return value * 2 + value / 2 // x2.5 fee
+    }
+
+    static func normalizeEVMFee(_ value: BigInt, action: Action) -> BigInt {
+        return value + value / 2 // x1.5 fee
     }
 
     enum Action {
@@ -102,7 +106,7 @@ private extension BlockChainService {
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             let sats = try await utxo.fetchSatsPrice(coin: coin)
-            let normalized = Self.normalizeFee(sats, action: action)
+            let normalized = Self.normalizeUTXOFee(sats, action: action)
             return .UTXO(byteFee: normalized, sendMaxAmount: sendMaxAmount)
 
         case .thorChain:
@@ -166,7 +170,7 @@ private extension BlockChainService {
             let gasLimit = gasLimit ?? normalizeGasLimit(coin: coin, action: action)
             let priorityFeesMap = try await service.fetchMaxPriorityFeesPerGas()
             let priorityFee = priorityFeesMap[feeMode] ?? defaultPriorityFee
-            let normalizedBaseFee = Self.normalizeFee(baseFee, action: .transfer)
+            let normalizedBaseFee = Self.normalizeEVMFee(baseFee, action: .transfer)
             let maxFeePerGasWei = normalizedBaseFee + priorityFee
             return .Ethereum(maxFeePerGasWei: maxFeePerGasWei, priorityFeeWei: priorityFee, nonce: nonce, gasLimit: gasLimit)
 
