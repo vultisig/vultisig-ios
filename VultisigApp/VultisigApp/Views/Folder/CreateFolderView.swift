@@ -9,9 +9,15 @@ import SwiftUI
 import SwiftData
 
 struct CreateFolderView: View {
+    @Binding var folders: [VaultFolder]
+    
     @State var name = ""
     @State var selectedVaults: [Vault] = []
     @State var vaultFolder: VaultFolder? = nil
+    
+    @State var showAlert = false
+    @State var alertTitle = ""
+    @State var alertDescription = ""
     
     @Query var vaults: [Vault]
     
@@ -21,6 +27,9 @@ struct CreateFolderView: View {
         ZStack(alignment: .bottom) {
             Background()
             view
+        }
+        .alert(isPresented: $showAlert) {
+            alert
         }
     }
     
@@ -89,9 +98,6 @@ struct CreateFolderView: View {
     
     var list: some View {
         VStack(spacing: 6) {
-            ForEach(selectedVaults, id: \.self) { selectedVault in
-                Text(selectedVault.name)
-            }
             ForEach(vaults, id: \.self) { vault in
                 FolderVaultCell(vault: vault, selectedVaults: $selectedVaults)
             }
@@ -99,16 +105,55 @@ struct CreateFolderView: View {
         .frame(maxWidth: .infinity)
     }
     
+    var alert: Alert {
+        Alert(
+            title: Text(NSLocalizedString(alertTitle, comment: "")),
+            message: Text(NSLocalizedString(alertDescription, comment: "")),
+            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+        )
+    }
+    
     private func createFolder() {
+        guard runChecks() else {
+            return
+        }
+        
         vaultFolder = VaultFolder(
             folderName: name,
             containedVaults: selectedVaults
         )
         
+        guard let vaultFolder else {
+            alertTitle = "error"
+            alertDescription = "somethingWentWrongTryAgain"
+            showAlert = true
+            return
+        }
+        
+        folders.append(vaultFolder)
+        
         dismiss()
+    }
+    
+    private func runChecks() -> Bool {
+        if name.isEmpty {
+            alertTitle = "emptyField"
+            alertDescription = "enterValidFolderName"
+            showAlert = true
+            return false
+        }
+        
+        if selectedVaults.isEmpty {
+            alertTitle = "emptyField"
+            alertDescription = "selectAtleastOneVault"
+            showAlert = true
+            return false
+        }
+        
+        return true
     }
 }
 
 #Preview {
-    CreateFolderView()
+    CreateFolderView(folders: .constant([.example]))
 }

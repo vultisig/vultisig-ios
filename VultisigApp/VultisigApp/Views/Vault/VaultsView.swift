@@ -36,6 +36,9 @@ struct VaultsView: View {
         .onAppear {
             setData()
         }
+        .onDisappear {
+            isEditingVaults = false
+        }
     }
     
     var view: some View {
@@ -102,7 +105,7 @@ struct VaultsView: View {
     
     var folderButton: some View {
         NavigationLink {
-            CreateFolderView()
+            CreateFolderView(folders: $folders)
         } label: {
             OutlineButton(title: "createFolder")
         }

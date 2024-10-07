@@ -375,3 +375,6 @@
 "deleteFolder" = "Delete Folder";
 "folder" = "Folder";
 "folders" = "Folders";
+"enterValidFolderName" = "Please enter a valid folder name and try again.";
+"noVaultSelected" = "No Vault Selected";
+"selectAtleastOneVault" = "Please select at least one vault and try again.";
