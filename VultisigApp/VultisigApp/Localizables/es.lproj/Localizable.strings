@@ -101,7 +101,7 @@
 "activeModeDescription" = "• Firma rápida en movimiento\n• Alertas y políticas de transacciones\n• Completamente auto-custodial\n\nUsar como “vault principal”";
 "secureModeDescription" = "• Solo tus dispositivos\n• Sin alertas ni políticas\n• Completamente auto-custodial\n\nUsar como un “vault frío”";
 "fastLoaderTitle" = "Buscando FastVaultServer";
-"activeLoaderTitle" = "Buscando 1 dispositivo más...";
+"activeLoaderTitle" = "Buscando FastVaultServer y 1 dispositivo más...";
 "secureLoaderTitle" = "Buscando dispositivos...";
 "sign" = "Firmar";
 "amount" = "Cantidad";
