@@ -83,6 +83,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
 
             if let fastVaultPassword {
                 self.status = .WaitingForFast
+                
                 self.fastVaultService.sign(
                     publicKeyEcdsa: vault.pubKeyECDSA,
                     keysignMessages: self.keysignMessages,
@@ -91,7 +92,11 @@ class KeysignDiscoveryViewModel: ObservableObject {
                     derivePath: keysignPayload.coin.coinType.derivationPath(),
                     isECDSA: keysignPayload.coin.chain.isECDSA,
                     vaultPassword: fastVaultPassword
-                )
+                ) { isSuccess in
+                    if !isSuccess {
+                        self.status = .FailToStart
+                    }
+                }
 
                 cancellables.forEach { $0.cancel() }
 

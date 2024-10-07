@@ -79,6 +79,7 @@
 "mainDevice" = "Dispositivo Principal";
 "pleaseWait" = "Por favor, espere...";
 "joinKeygen" = "JUNTAR-SE À GERAÇÃO/RECOMPARTILHAÇÃO DE CHAVE";
+"failToStartKesign" = "Erro de assinatura. Por favor, tente novamente.";
 "failToStartKeygen" = "Não foi possível iniciar a geração de chave devido à falta de informações";
 "scanQRCodeJoinKeygen" = "Escanear o Código QR em outro aplicativo Vultisig para começar.";
 "discoveringMediator" = "Descobrindo serviço mediador, por favor, espere...";
@@ -100,7 +101,7 @@
 "activeModeDescription" = "• Assinatura rápida em movimento\n• Alertas e políticas de transação\n• Completamente auto-custodial\n\nUsar como “vault principal”";
 "secureModeDescription" = "• Apenas seus dispositivos\n• Sem alertas ou políticas\n• Completamente auto-custodial\n\nUsar como um “vault frio”";
 "fastLoaderTitle" = "Procurando FastVaultServer";
-"activeLoaderTitle" = "Procurando por mais 1 dispositivo...";
+"activeLoaderTitle" = "Procurando FastVaultServer e mais 1 dispositivo...";
 "secureLoaderTitle" = "Procurando dispositivos...";
 "sign" = "Assinar";
 "amount" = "Quantidade";

@@ -78,6 +78,7 @@
 "mainDevice" = "Main Device";
 "pleaseWait" = "Please wait...";
 "joinKeygen" = "JOIN KEYGEN";
+"failToStartKesign" = "Signing Error. Please try again.";
 "failToStartKeygen" = "Unable to start key generation due to missing information";
 "scanQRCodeJoinKeygen" = "Scan the QR Code on another Vultisig app to start.";
 "discoveringMediator" = "Discovering mediator service, please wait...";
@@ -99,7 +100,7 @@
 "activeModeDescription" = "• Fast Signing On The Move\n• Transaction Alerts & Policies\n• Fully self-custodial\n\nUse as a “main vault”";
 "secureModeDescription" = "• Only Your Devices\n• No Alerts or Policies\n• Fully self-custodial\n\nUse as a “cold vault”";
 "fastLoaderTitle" = "Looking for FastVaultServer";
-"activeLoaderTitle" = "Looking for  1  more device...";
+"activeLoaderTitle" = "Looking for FastVaultServer and 1  more device...";
 "secureLoaderTitle" = "Looking for devices...";
 "sign" = "Sign";
 "amount" = "Amount";

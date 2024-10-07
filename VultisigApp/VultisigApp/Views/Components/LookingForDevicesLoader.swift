@@ -9,8 +9,9 @@ import SwiftUI
 
 struct LookingForDevicesLoader: View {
     var selectedTab: SetupVaultState? = nil
-    @State var didSwitch = false
     
+    @State var didSwitch = false
+
     var body: some View {
         VStack {
             title
