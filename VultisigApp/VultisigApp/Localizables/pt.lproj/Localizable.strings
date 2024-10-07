@@ -79,6 +79,7 @@
 "mainDevice" = "Dispositivo Principal";
 "pleaseWait" = "Por favor, espere...";
 "joinKeygen" = "JUNTAR-SE À GERAÇÃO/RECOMPARTILHAÇÃO DE CHAVE";
+"failToStartKesign" = "Erro de assinatura. Por favor, tente novamente.";
 "failToStartKeygen" = "Não foi possível iniciar a geração de chave devido à falta de informações";
 "scanQRCodeJoinKeygen" = "Escanear o Código QR em outro aplicativo Vultisig para começar.";
 "discoveringMediator" = "Descobrindo serviço mediador, por favor, espere...";
