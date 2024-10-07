@@ -79,6 +79,7 @@
 "mainDevice" = "Glavni uređaj";
 "pleaseWait" = "Molimo pričekajte...";
 "joinKeygen" = "PRIDRUŽI SE GENERIRANJU KLJUČA/PONOVLJENOM DIJELJENJU";
+"failToStartKesign" = "Greška u potpisivanju. Pokušajte ponovno.";
 "failToStartKeygen" = "Nije moguće pokrenuti generiranje ključa zbog nedostatka informacija";
 "scanQRCodeJoinKeygen" = "Skenirajte QR kod na drugoj Vultisig aplikaciji za početak.";
 "discoveringMediator" = "Otkrivanje posredničke usluge, molimo pričekajte...";

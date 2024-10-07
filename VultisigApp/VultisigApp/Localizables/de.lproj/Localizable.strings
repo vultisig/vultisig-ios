@@ -79,6 +79,7 @@
 "mainDevice" = "Hauptgerät";
 "pleaseWait" = "Bitte warten...";
 "joinKeygen" = "BEITRETEN ZUR SCHLÜSSELGENERIERUNG/-TEILUNG";
+"failToStartKesign" = "Signierfehler. Bitte versuchen Sie es erneut.";
 "failToStartKeygen" = "Start der Schlüsselgenerierung aufgrund fehlender Informationen nicht möglich";
 "scanQRCodeJoinKeygen" = "Scannen Sie den QR-Code in einer anderen Vultisig, um zu beginnen.";
 "discoveringMediator" = "Vermittlungsdienst wird entdeckt, bitte warten...";
