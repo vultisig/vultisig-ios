@@ -70,7 +70,7 @@ class KeysignViewModel: ObservableObject {
         self.vault = vault
         self.keysignPayload = keysignPayload
         self.encryptionKeyHex = encryptionKeyHex
-        let isEncryptGCM =  await FeatureFlagService().isFeatureEnabled(feature: FeatureFlag.EncryptGCM)
+        let isEncryptGCM =  await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
         self.messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex,pubKey: vault.pubKeyECDSA, encryptGCM:isEncryptGCM)
     }
 
@@ -122,7 +122,7 @@ class KeysignViewModel: ObservableObject {
         case .EdDSA:
             pubkey = vault.pubKeyEdDSA
         }
-        let isEncryptGCM = await FeatureFlagService().isFeatureEnabled(feature: FeatureFlag.EncryptGCM)
+        let isEncryptGCM = await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
         self.tssMessenger = TssMessengerImpl(mediatorUrl: self.mediatorURL,
                                              sessionID: self.sessionID,
                                              messageID: msgHash,

@@ -67,7 +67,7 @@ class KeygenViewModel: ObservableObject {
         self.sessionID = sessionID
         self.encryptionKeyHex = encryptionKeyHex
         self.oldResharePrefix = oldResharePrefix
-        let isEncryptGCM = await FeatureFlagService().isFeatureEnabled(feature: FeatureFlag.EncryptGCM)
+        let isEncryptGCM = await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
         messagePuller = MessagePuller(encryptionKeyHex: encryptionKeyHex,pubKey: vault.pubKeyECDSA,
                                       encryptGCM: isEncryptGCM)
     }
@@ -89,7 +89,7 @@ class KeygenViewModel: ObservableObject {
             self.messagePuller?.stop()
         }
         do {
-            let isEncryptGCM = await FeatureFlagService().isFeatureEnabled(feature: FeatureFlag.EncryptGCM)
+            let isEncryptGCM = await FeatureFlagService().isFeatureEnabled(feature: .EncryptGCM)
             // Create keygen instance, it takes time to generate the preparams
             let messengerImp = TssMessengerImpl(
                 mediatorUrl: self.mediatorURL,
