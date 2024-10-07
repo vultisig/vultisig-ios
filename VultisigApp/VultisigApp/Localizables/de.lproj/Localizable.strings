@@ -101,7 +101,7 @@
 "activeModeDescription" = "• Schnelles Signieren unterwegs\n• Transaktionsbenachrichtigungen & -richtlinien\n• Vollständig selbstverwahrend\n\nAls „Haupttresor“ verwenden";
 "secureModeDescription" = "• Nur Ihre Geräte\n• Keine Benachrichtigungen oder Richtlinien\n• Vollständig selbstverwahrend\n\nAls „kalten Tresor“ verwenden";
 "fastLoaderTitle" = "Suche nach FastVaultServer";
-"activeLoaderTitle" = "Suche nach 1 weiterem Gerät...";
+"activeLoaderTitle" = "Suche nach FastVaultServer und 1 weiterem Gerät...";
 "secureLoaderTitle" = "Suche nach Geräten...";
 "sign" = "Unterschreiben";
 "amount" = "Menge";
