@@ -22,14 +22,6 @@ struct CreateFolderView: View {
             Background()
             view
         }
-        .navigationTitle(NSLocalizedString("createFolder", comment: ""))
-    }
-    
-    var view: some View {
-        VStack {
-            content
-            button
-        }
     }
     
     var content: some View {
@@ -76,6 +68,7 @@ struct CreateFolderView: View {
         .background(Color.blue600)
         .cornerRadius(12)
         .colorScheme(.dark)
+        .borderlessTextFieldStyle()
     }
     
     var vaultList: some View {
@@ -84,6 +77,7 @@ struct CreateFolderView: View {
             list
         }
         .padding(.horizontal, 16)
+        .padding(.bottom, 30)
     }
     
     var vaultsTitle: some View {

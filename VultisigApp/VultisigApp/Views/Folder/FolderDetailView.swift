@@ -17,19 +17,6 @@ struct FolderDetailView: View {
             Background()
             view
         }
-        .navigationTitle(NSLocalizedString(vaultFolder.folderName, comment: ""))
-        .toolbar {
-            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
-                navigationEditButton
-            }
-        }
-    }
-    
-    var view: some View {
-        VStack {
-            content
-            button
-        }
     }
     
     var content: some View {
