@@ -14,7 +14,7 @@ extension FolderDetailView {
             content
             button
         }
-        .navigationTitle(NSLocalizedString(vaultFolder.folderName, comment: ""))
+        .navigationTitle(vaultFolder?.folderName ?? NSLocalizedString("folder", comment: ""))
         .toolbar {
             ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
                 navigationEditButton

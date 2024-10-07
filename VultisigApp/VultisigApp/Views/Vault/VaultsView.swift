@@ -16,8 +16,11 @@ struct VaultsView: View {
     @Query(sort: \Vault.order, order: .forward) var vaults: [Vault]
         
     @Environment(\.modelContext) var modelContext
-
     
+    @State var showFolderDetails: Bool = false
+    @State var selectedFolder: VaultFolder? = nil
+    @State var folders: [VaultFolder] = []
+
     var body: some View {
         VStack {
             ZStack {
@@ -37,6 +40,9 @@ struct VaultsView: View {
     
     var view: some View {
         content
+            .navigationDestination(isPresented: $showFolderDetails) {
+                FolderDetailView(vaultFolder: selectedFolder)
+            }
     }
     
     var content: some View {
@@ -49,16 +55,38 @@ struct VaultsView: View {
     
     var list: some View {
         List {
-            ForEach(vaults, id: \.self) { vault in
-                getButton(for: vault)
+            if folders.count>0 {
+                getTitle(for: "folders")
+                foldersList
+                getTitle(for: "vaults")
             }
-            .onMove(perform: isEditingVaults ? move: nil)
-            .background(Color.backgroundBlue)
+            vaultsList
         }
         .listStyle(PlainListStyle())
         .buttonStyle(BorderlessButtonStyle())
         .colorScheme(.dark)
         .scrollContentBackground(.hidden)
+        .background(Color.backgroundBlue)
+    }
+    
+    var foldersList: some View {
+        ForEach(folders, id: \.self) { folder in
+            Button(action: {
+                handleFolderSelection(for: folder)
+            }, label: {
+                FolderCell(folder: folder, isEditing: isEditingVaults)
+            })
+            .listRowInsets(EdgeInsets())
+            .listRowSeparator(.hidden)
+            .background(Color.backgroundBlue)
+        }
+    }
+    
+    var vaultsList: some View {
+        ForEach(vaults, id: \.self) { vault in
+            getButton(for: vault)
+        }
+        .onMove(perform: isEditingVaults ? move: nil)
         .background(Color.backgroundBlue)
     }
     
@@ -78,7 +106,7 @@ struct VaultsView: View {
         } label: {
             OutlineButton(title: "createFolder")
         }
-        .padding(16)
+        .padding(.horizontal, 16)
         .scaleEffect(showVaultsList ? 1 : 0)
         .opacity(showVaultsList ? 1 : 0)
         .buttonStyle(BorderlessButtonStyle())
@@ -162,6 +190,23 @@ struct VaultsView: View {
         for index in toIndex...fromIndex {
             vaults[index].order = vaults[index].order+1
         }
+    }
+    
+    private func handleFolderSelection(for folder: VaultFolder) {
+        selectedFolder = folder
+        showFolderDetails = true
+    }
+    
+    private func getTitle(for text: String) -> some View {
+        Text(NSLocalizedString(text, comment: ""))
+            .foregroundColor(.neutral0)
+            .font(.body14MontserratSemiBold)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+            .listRowInsets(EdgeInsets())
+            .listRowSeparator(.hidden)
+            .background(Color.backgroundBlue)
     }
 }
 

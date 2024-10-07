@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct FolderDetailView: View {
-    let vaultFolder: VaultFolder
+    let vaultFolder: VaultFolder?
     
     @State var isEditing = false
     
