@@ -16,15 +16,13 @@ struct FolderDetailView: View {
         ZStack {
             Background()
             view
-            Button {
-                withAnimation {
-                    isEditing.toggle()
-                }
-            } label: {
-                Text("TOGGLE")
-            }
         }
         .navigationTitle(NSLocalizedString(vaultFolder.folderName, comment: ""))
+        .toolbar {
+            ToolbarItem(placement: Placement.topBarTrailing.getPlacement()) {
+                navigationEditButton
+            }
+        }
     }
     
     var view: some View {
@@ -38,6 +36,20 @@ struct FolderDetailView: View {
         ScrollView {
             selectedVaultsList
             remainingVaultsList
+        }
+    }
+    
+    var navigationEditButton: some View {
+        Button {
+            withAnimation {
+                isEditing.toggle()
+            }
+        } label: {
+            if isEditing {
+                doneLabel
+            } else {
+                editIcon
+            }
         }
     }
     
@@ -76,6 +88,18 @@ struct FolderDetailView: View {
             .frame(maxHeight: isEditing ? nil : 0)
             .clipped()
             .background(Color.backgroundBlue)
+    }
+    
+    var editIcon: some View {
+        Image(systemName: "square.and.pencil")
+            .foregroundColor(Color.neutral0)
+            .font(.body18MenloBold)
+    }
+    
+    var doneLabel: some View {
+        Text(NSLocalizedString("done", comment: ""))
+            .foregroundColor(Color.neutral0)
+            .font(.body18MenloBold)
     }
 }
 
