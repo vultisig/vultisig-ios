@@ -83,12 +83,17 @@ final class FastVaultService {
         hexEncryptionKey: String,
         derivePath:String,
         isECDSA: Bool,
-        vaultPassword: String
+        vaultPassword: String,
+        completion: @escaping (Bool) -> Void
     ) {
-        let req = KeysignRequest(public_key: publicKeyEcdsa, messages: keysignMessages, session: sessionID, hex_encryption_key: hexEncryptionKey, derive_path: derivePath, is_ecdsa: isECDSA, vault_password: vaultPassword)
+        let request = KeysignRequest(public_key: publicKeyEcdsa, messages: keysignMessages, session: sessionID, hex_encryption_key: hexEncryptionKey, derive_path: derivePath, is_ecdsa: isECDSA, vault_password: vaultPassword)
 
-        Utils.sendRequest(urlString: "\(endpoint)/sign", method: "POST", headers: [:], body: req) { _ in
-            print("Send sign request to vultisigner successfully")
-        }
+        Utils.sendRequest(
+            urlString: "\(endpoint)/sign",
+            method: "POST",
+            headers: [:],
+            body: request,
+            completion: completion
+        )
     }
 }

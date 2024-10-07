@@ -78,6 +78,7 @@
 "mainDevice" = "Main Device";
 "pleaseWait" = "Please wait...";
 "joinKeygen" = "JOIN KEYGEN";
+"failToStartKesign" = "Signing Error. Please try again.";
 "failToStartKeygen" = "Unable to start key generation due to missing information";
 "scanQRCodeJoinKeygen" = "Scan the QR Code on another Vultisig app to start.";
 "discoveringMediator" = "Discovering mediator service, please wait...";
