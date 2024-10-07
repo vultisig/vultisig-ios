@@ -19,17 +19,24 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
     let encryptionKeyHex: String
     let isKeygen: Bool
     var vaultPubKey = ""
-    
+    let encryptGCM: Bool
     
 
     var counter: Int64 = 1
-    init(mediatorUrl: String, sessionID: String, messageID: String?,encryptionKeyHex: String,vaultPubKey: String,isKeygen:Bool) {
+    init(mediatorUrl: String,
+         sessionID: String,
+         messageID: String?,
+         encryptionKeyHex: String,
+         vaultPubKey: String,
+         isKeygen:Bool,
+         encryptGCM:Bool) {
         self.mediatorUrl = mediatorUrl
         self.sessionID = sessionID
         self.messageID = messageID
         self.encryptionKeyHex = encryptionKeyHex
         self.vaultPubKey = vaultPubKey
         self.isKeygen = isKeygen
+        self.encryptGCM = encryptGCM
     }
 
     func send(_ fromParty: String?, to: String?, body: String?) throws {
@@ -70,15 +77,22 @@ final class TssMessengerImpl: NSObject, TssMessengerProtocol {
             }
             req.setValue("Basic \(authentication.base64EncodedString())", forHTTPHeaderField: "Authorization")
         }
-        
-        guard let encrypedBody = body.aesEncrypt(key: self.encryptionKeyHex) else {
+        var encryptedBody: String? = nil
+        if self.encryptGCM {
+            print("decrypt with AES+GCM")
+            encryptedBody = body.aesEncryptGCM(key: self.encryptionKeyHex)
+        } else {
+            print("decrypt with AES+CBC")
+            encryptedBody = body.aesEncrypt(key: self.encryptionKeyHex)
+        }
+        guard let encryptedBody else {
             logger.error("fail to encrypt message body")
             return
         }
         let msg = Message(session_id: sessionID, 
                           from: fromParty,
                           to: [to],
-                          body: encrypedBody,
+                          body: encryptedBody,
                           hash: Utils.getMessageBodyHash(msg: body),
                           sequenceNo: self.counter)
         self.counter += 1
