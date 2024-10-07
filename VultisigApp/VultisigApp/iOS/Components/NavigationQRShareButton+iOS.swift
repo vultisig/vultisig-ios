@@ -11,11 +11,11 @@ import SwiftUI
 extension NavigationQRShareButton {
     var container: some View {
         ZStack {
-            if type == .Address {
+            //if type == .Address {
                 shareLink
-            } else {
-                button
-            }
+            //} else {
+            //    button
+            //}
         }
     }
     
