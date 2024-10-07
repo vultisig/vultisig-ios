@@ -12,7 +12,7 @@ import VultisigCommonData
 final class BlockChainService {
 
     static func normalizeFee(_ value: BigInt, action: Action) -> BigInt {
-        return value + value / 2 // x1.5 fee
+        return value *2 + value / 2 // x1.5 fee
     }
 
     enum Action {
