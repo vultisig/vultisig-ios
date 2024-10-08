@@ -36,22 +36,27 @@ class SolanaService {
     }
     
     func getSolanaBalance(coin: Coin) async throws -> String {
-        do {
-            var rawBalance = "0"
+        if coin.isNativeToken {
+            let data = try await Utils.PostRequestRpc(
+                rpcURL: rpcURL,
+                method: "getBalance",
+                params: [coin.address]
+            )
 
-            if coin.isNativeToken {
-                let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "getBalance", params: [coin.address])
-                if let totalBalance = Utils.extractResultFromJson(fromData: data, path: "result.value") as? Int64 {
-                    rawBalance = totalBalance.description
-                }
-            } else {
-                rawBalance = try await fetchTokenBalance(for: coin.address, contractAddress: coin.contractAddress) ?? "0"
-            }
-            
-            return rawBalance
-        } catch {
-            print("Error in getSolanaBalance:")
-            throw error
+            guard let totalBalance = Utils.extractResultFromJson(
+                fromData: data,
+                path: "result.value"
+            ) as? Int64 else { throw Errors.getSolanaBalanceFailed }
+
+            return totalBalance.description
+
+        } else {
+            guard let balance = try await fetchTokenBalance(
+                for: coin.address,
+                contractAddress: coin.contractAddress
+            ) else { throw Errors.getSolanaBalanceFailed }
+
+            return balance
         }
     }
     
@@ -245,5 +250,12 @@ class SolanaService {
             print("Error in parseSolanaTokenResponse:")
             throw error
         }
+    }
+}
+
+private extension SolanaService {
+
+    enum Errors: Error {
+        case getSolanaBalanceFailed
     }
 }

@@ -65,7 +65,6 @@ enum SetupVaultState: CaseIterable {
     }
     
     var loaderTitle: String {
-        // TODO: Change loader titles
         switch self {
         case .fast:
             return NSLocalizedString("fastLoaderTitle", comment: "")

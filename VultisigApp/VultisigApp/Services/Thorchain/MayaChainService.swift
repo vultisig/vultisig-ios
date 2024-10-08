@@ -13,17 +13,12 @@ class MayachainService: ThorchainSwapProvider {
     private init() {}
     
     func fetchBalances(_ address: String) async throws -> [CosmosBalance] {
-        let cachedBalances = loadBalancesFromCache(forAddress: address)
-        if cachedBalances.count > 0 {
-            return cachedBalances
-        }
         guard let url = URL(string: Endpoint.fetchAccountBalanceMayachain(address: address)) else        {
             return [CosmosBalance]()
         }
         let (data, _) = try await URLSession.shared.data(for: get9RRequest(url: url))
         
         let balanceResponse = try JSONDecoder().decode(CosmosBalanceResponse.self, from: data)
-        self.cacheBalances(balanceResponse.balances, forAddress: address)
         return balanceResponse.balances
     }
     
@@ -62,28 +57,6 @@ class MayachainService: ThorchainSwapProvider {
             let error = try JSONDecoder().decode(ThorchainSwapError.self, from: data)
             throw error
         }
-    }
-    
-    private func cacheBalances(_ balances: [CosmosBalance], forAddress address: String) {
-        let addressKey = "balancesCache_\(address)"
-        let cacheEntry = BalanceCacheEntry(balances: balances, timestamp: Date())
-        
-        if let encodedData = try? JSONEncoder().encode(cacheEntry) {
-            UserDefaults.standard.set(encodedData, forKey: addressKey)
-        }
-    }
-    
-    private func loadBalancesFromCache(forAddress address: String) -> [CosmosBalance] {
-        let addressKey = "balancesCache_\(address)"
-        
-        guard let savedData = UserDefaults.standard.object(forKey: addressKey) as? Data,
-              let cacheEntry = try? JSONDecoder().decode(BalanceCacheEntry.self, from: savedData),
-              -cacheEntry.timestamp.timeIntervalSinceNow < 60
-        else { // Checks if the cache is older than 1 minute
-            return [CosmosBalance]()
-        }
-        
-        return cacheEntry.balances
     }
     
     func broadcastTransaction(jsonString: String) async -> Result<String,Error> {

@@ -209,13 +209,13 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
 
             let chainSpecific = try await blockchainService.fetchSpecific(tx: tx)
 
-            let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
-
             switch quote {
             case .mayachain(let quote):
+                let toAddress = tx.fromCoin.isNativeToken ? quote.inboundAddress : quote.router
+
                 keysignPayload = try await KeysignPayloadFactory().buildTransfer(
                     coin: tx.fromCoin,
-                    toAddress: toAddress,
+                    toAddress: toAddress ?? tx.fromCoin.address,
                     amount: tx.amountInCoinDecimal,
                     memo: tx.quote?.memo,
                     chainSpecific: chainSpecific,
@@ -230,6 +230,8 @@ class SwapCryptoViewModel: ObservableObject, TransferViewModel {
                 return true
 
             case .thorchain(let quote):
+                let toAddress = quote.router ?? quote.inboundAddress ?? tx.fromCoin.address
+
                 keysignPayload = try await KeysignPayloadFactory().buildTransfer(
                     coin: tx.fromCoin,
                     toAddress: toAddress,

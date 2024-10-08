@@ -179,7 +179,7 @@
 		A622C8562C9BCCB800908332 /* JoinKeygenView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8552C9BCCB800908332 /* JoinKeygenView+iOS.swift */; };
 		A622C8582C9BCCC600908332 /* JoinKeygenView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8572C9BCCC600908332 /* JoinKeygenView+macOS.swift */; };
 		A622C85A2C9BCD6600908332 /* KeygenView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8592C9BCD6600908332 /* KeygenView+iOS.swift */; };
-		A622C85C2C9BCD6E00908332 /* KeygenView+imacOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C85B2C9BCD6E00908332 /* KeygenView+imacOS.swift */; };
+		A622C85C2C9BCD6E00908332 /* KeygenView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C85B2C9BCD6E00908332 /* KeygenView+macOS.swift */; };
 		A622C85E2C9BCE6800908332 /* PeerDiscoveryView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C85D2C9BCE6800908332 /* PeerDiscoveryView+iOS.swift */; };
 		A622C8602C9BCE7100908332 /* PeerDiscoveryView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C85F2C9BCE7100908332 /* PeerDiscoveryView+macOS.swift */; };
 		A622C8622C9BEC2100908332 /* PhoneCheckUpdateViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C8612C9BEC2100908332 /* PhoneCheckUpdateViewModel.swift */; };
@@ -663,6 +663,7 @@
 		DE8AD74C2BC8E3FE00339775 /* KeygenVerify.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8AD74B2BC8E3FE00339775 /* KeygenVerify.swift */; };
 		DE8BDCCB2C47E34300A1EDA6 /* Vault+ProtoMappable.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8BDCCA2C47E34300A1EDA6 /* Vault+ProtoMappable.swift */; };
 		DE8BDCCD2C4A314D00A1EDA6 /* VaultPublicKeyExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE8BDCCC2C4A314D00A1EDA6 /* VaultPublicKeyExport.swift */; };
+		DE9773A62CAF97B00071C08C /* FeatureFlagService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9773A52CAF97A80071C08C /* FeatureFlagService.swift */; };
 		DE9EB0EC2BA2CC3C001747D9 /* TssType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0EB2BA2CC3C001747D9 /* TssType.swift */; };
 		DE9EB0EE2BA2CF49001747D9 /* KeygenMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0ED2BA2CF49001747D9 /* KeygenMessage.swift */; };
 		DE9EB0F02BA2CFB7001747D9 /* ReshareMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9EB0EF2BA2CFB7001747D9 /* ReshareMessage.swift */; };
@@ -893,7 +894,7 @@
 		A622C8552C9BCCB800908332 /* JoinKeygenView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JoinKeygenView+iOS.swift"; sourceTree = "<group>"; };
 		A622C8572C9BCCC600908332 /* JoinKeygenView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "JoinKeygenView+macOS.swift"; sourceTree = "<group>"; };
 		A622C8592C9BCD6600908332 /* KeygenView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "KeygenView+iOS.swift"; sourceTree = "<group>"; };
-		A622C85B2C9BCD6E00908332 /* KeygenView+imacOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "KeygenView+imacOS.swift"; sourceTree = "<group>"; };
+		A622C85B2C9BCD6E00908332 /* KeygenView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "KeygenView+macOS.swift"; sourceTree = "<group>"; };
 		A622C85D2C9BCE6800908332 /* PeerDiscoveryView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PeerDiscoveryView+iOS.swift"; sourceTree = "<group>"; };
 		A622C85F2C9BCE7100908332 /* PeerDiscoveryView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PeerDiscoveryView+macOS.swift"; sourceTree = "<group>"; };
 		A622C8612C9BEC2100908332 /* PhoneCheckUpdateViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneCheckUpdateViewModel.swift; sourceTree = "<group>"; };
@@ -1378,6 +1379,7 @@
 		DE8AD74B2BC8E3FE00339775 /* KeygenVerify.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenVerify.swift; sourceTree = "<group>"; };
 		DE8BDCCA2C47E34300A1EDA6 /* Vault+ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Vault+ProtoMappable.swift"; sourceTree = "<group>"; };
 		DE8BDCCC2C4A314D00A1EDA6 /* VaultPublicKeyExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultPublicKeyExport.swift; sourceTree = "<group>"; };
+		DE9773A52CAF97A80071C08C /* FeatureFlagService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureFlagService.swift; sourceTree = "<group>"; };
 		DE9EB0EB2BA2CC3C001747D9 /* TssType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TssType.swift; sourceTree = "<group>"; };
 		DE9EB0ED2BA2CF49001747D9 /* KeygenMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeygenMessage.swift; sourceTree = "<group>"; };
 		DE9EB0EF2BA2CFB7001747D9 /* ReshareMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReshareMessage.swift; sourceTree = "<group>"; };
@@ -1534,6 +1536,7 @@
 				46B60BBF2BBB20130043EBBA /* RpcEvmService.swift */,
 				A5F97C8D2BBF0BCF000C30DF /* BalanceService.swift */,
 				A57A03CA2BC47D4F00F6F3DF /* BlockChainService.swift */,
+				DE9773A52CAF97A80071C08C /* FeatureFlagService.swift */,
 				46AAA4962BBF7EBA00E5BAB4 /* EvmServiceFactory.swift */,
 				DEE2D8712C0D37A900D2F4C3 /* VaultDefaultCoinService.swift */,
 				B54B019B2BDE135C00FDA472 /* RpcService.swift */,
@@ -2199,7 +2202,7 @@
 		A6505B012CA67B910002FBF4 /* Keygen */ = {
 			isa = PBXGroup;
 			children = (
-				A622C85B2C9BCD6E00908332 /* KeygenView+imacOS.swift */,
+				A622C85B2C9BCD6E00908332 /* KeygenView+macOS.swift */,
 			);
 			path = Keygen;
 			sourceTree = "<group>";
@@ -3463,7 +3466,6 @@
 				A6386DA82C90244800DDD58E /* TokenSelectionCell+macOS.swift in Sources */,
 				A6182F252C9225B60059BFDD /* UpdateCheckUpToDateView.swift in Sources */,
 				A6C6708E2C9CFD0A00F59B6A /* KeysignView+macOS.swift in Sources */,
-				A6182F252C9225B60059BFDD /* UpdateCheckUpToDateView.swift in Sources */,
 				A6C670E52C9E954200F59B6A /* SendCryptoDoneView+iOS.swift in Sources */,
 				A6C0D55A2BB3AAA200156689 /* ChainHeaderCell.swift in Sources */,
 				B5E95E092BED84D9003778F0 /* ImagePicker.swift in Sources */,
@@ -3664,7 +3666,7 @@
 				A69FBBA02C8AD7C700A4B78B /* ContentView+iOS.swift in Sources */,
 				A6C6713D2CA3C87600F59B6A /* KeygenViewInstructions+macOS.swift in Sources */,
 				A622C83A2C9BB9B400908332 /* AddressBookView+iOS.swift in Sources */,
-				A622C85C2C9BCD6E00908332 /* KeygenView+imacOS.swift in Sources */,
+				A622C85C2C9BCD6E00908332 /* KeygenView+macOS.swift in Sources */,
 				B57DD59E2C3E69F500934CBB /* TokenAccountsByOwner.swift in Sources */,
 				A66BFCCD2C1347D5004DCD4F /* NavigationQRShareButton.swift in Sources */,
 				A622C8482C9BBD3900908332 /* TransactionMemoView+macOS.swift in Sources */,
@@ -3881,6 +3883,7 @@
 				A6C6709A2C9D09FB00F59B6A /* AddressQRCodeView+macOS.swift in Sources */,
 				A52B0D092CA621B500507966 /* ReshareView+macOS.swift in Sources */,
 				A6182F3D2C92332A0059BFDD /* FilledButton+macOS.swift in Sources */,
+				DE9773A62CAF97B00071C08C /* FeatureFlagService.swift in Sources */,
 				A52B0D032CA53DCE00507966 /* ReshareView.swift in Sources */,
 				A6725D3A2C3F9B4400D47716 /* AddAddressBookView.swift in Sources */,
 				A6ECA18A2C93F4F400456110 /* SetupVaultImageManager+macOS.swift in Sources */,
@@ -4114,10 +4117,11 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.vultisig.wallet;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				REGISTER_APP_GROUPS = NO;
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;
@@ -4169,10 +4173,11 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.vultisig.wallet;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				REGISTER_APP_GROUPS = NO;
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;
@@ -4189,7 +4194,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 0;
+				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -4199,7 +4204,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.voltix.voltixAppTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -4215,7 +4220,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 0;
+				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
@@ -4224,7 +4229,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.voltix.voltixAppTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -4239,7 +4244,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 0;
+				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
@@ -4261,7 +4266,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 0;
+				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
