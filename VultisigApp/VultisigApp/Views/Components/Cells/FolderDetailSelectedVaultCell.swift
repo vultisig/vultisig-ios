@@ -1,23 +1,30 @@
 //
-//  VaultCell.swift
+//  FolderDetailSelectedVaultCell.swift
 //  VultisigApp
 //
-//  Created by Amol Kumar on 2024-03-08.
+//  Created by Amol Kumar on 2024-10-07.
 //
 
 import SwiftUI
 
-struct VaultCell: View {
+struct FolderDetailSelectedVaultCell: View {
     let vault: Vault
     let isEditing: Bool
     
-    @StateObject var viewModel = VaultCellViewModel()
+    @StateObject var viewModel = FolderDetailCellViewModel()
     
     var body: some View {
-        HStack(spacing: 4) {
+        content
+            .animation(.easeInOut, value: isEditing)
+            .onAppear {
+                setData()
+            }
+    }
+    
+    var content: some View {
+        HStack {
             rearrange
-            
-            title
+            text
             
             if viewModel.isFastVault {
                 fastVaultLabel
@@ -25,17 +32,16 @@ struct VaultCell: View {
             
             Spacer()
             partAssignedCell
-            actions
+            
+            if isEditing {
+                toggle
+            } else {
+                chevron
+            }
         }
-        .frame(height: 48)
-        .padding(.horizontal, 16)
+        .padding(12)
         .background(Color.blue600)
         .cornerRadius(10)
-        .padding(.horizontal, 16)
-        .animation(.easeInOut, value: isEditing)
-        .onAppear {
-            setData()
-        }
     }
     
     var rearrange: some View {
@@ -46,23 +52,17 @@ struct VaultCell: View {
             .clipped()
     }
     
-    var folder: some View {
-        Image(systemName: "folder")
-            .font(.body14MontserratMedium)
-            .foregroundColor(.neutral100)
+    var text: some View {
+        Text(vault.name)
+            .foregroundColor(.neutral0)
+            .font(.body14MontserratBold)
     }
     
-    var title: some View {
-        Text(vault.name.capitalized)
-            .font(.body16MenloBold)
-            .foregroundColor(.neutral100)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .multilineTextAlignment(.leading)
-            .lineLimit(1)
-    }
-    
-    var actions: some View {
-        selectOption
+    var toggle: some View {
+        Toggle("Is selected", isOn: .constant(true))
+            .labelsHidden()
+            .scaleEffect(0.8)
+            .allowsHitTesting(false)
     }
     
     var partAssignedCell: some View {
@@ -82,23 +82,23 @@ struct VaultCell: View {
             .lineLimit(1)
     }
     
-    var selectOption: some View {
+    var chevron: some View {
         Image(systemName: "chevron.right")
             .font(.body16MontserratBold)
             .foregroundColor(.neutral100)
             .frame(maxWidth: isEditing ? 0 : nil)
-            .clipped()
+            .padding(.vertical, 8)
     }
     
-    private func setData() {
-        viewModel.setupCell(vault)
+    func setData() {
+        viewModel.assignSigners(vault)
+        viewModel.setupLabel(vault)
     }
 }
 
 #Preview {
     VStack {
-        VaultCell(vault: Vault.example, isEditing: true)
-        VaultCell(vault: Vault.example, isEditing: true)
-        VaultCell(vault: Vault.fastVaultExample, isEditing: false)
+        FolderDetailSelectedVaultCell(vault: Vault.example, isEditing: false)
+        FolderDetailSelectedVaultCell(vault: Vault.example, isEditing: true)
     }
 }

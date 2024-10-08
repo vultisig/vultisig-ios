@@ -344,3 +344,16 @@
 "retry" = "Erneut versuchen";
 "loginUsingTouchID" = "Anmelden mit Touch ID";
 "loginUsingOpticID" = "Anmelden mit Optic ID";
+"createFolder" = "Ordner erstellen";
+"create" = "Erstellen";
+"folderName" = "Ordnername";
+"addVaultsToFolder" = "Wählen Sie Tresore aus, die dem Ordner hinzugefügt werden sollen";
+"deleteFolder" = "Ordner löschen";
+"folder" = "Ordner";
+"folders" = "Ordner";
+"enterValidFolderName" = "Bitte geben Sie einen gültigen Ordnernamen ein und versuchen Sie es erneut.";
+"noVaultSelected" = "Kein Tresor ausgewählt";
+"selectAtleastOneVault" = "Bitte wählen Sie mindestens einen Tresor aus und versuchen Sie es erneut.";
+"folderNeedsOneVault" = "Der Ordner muss mindestens einen ausgewählten Tresor enthalten.";
+"sameNameFolder" = "Ein Ordner mit demselben Namen existiert bereits";
+"sameNameFolderDescription" = "Bitte wählen Sie einen eindeutigen Namen für den Ordner und versuchen Sie es erneut.";

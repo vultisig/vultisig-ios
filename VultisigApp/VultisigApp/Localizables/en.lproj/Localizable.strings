@@ -369,3 +369,16 @@
 "retry" = "Retry";
 "loginUsingTouchID" = "Login using Touch ID";
 "loginUsingOpticID" = "Login using Optic ID";
+"createFolder" = "Create Folder";
+"create" = "Create";
+"folderName" = "Folder name";
+"addVaultsToFolder" = "Select Vaults to add to the folder";
+"deleteFolder" = "Delete Folder";
+"folder" = "Folder";
+"folders" = "Folders";
+"enterValidFolderName" = "Please enter a valid folder name and try again.";
+"noVaultSelected" = "No Vault Selected";
+"selectAtleastOneVault" = "Please select at least one vault and try again.";
+"folderNeedsOneVault" = "Folder needs to have at least one selected vault.";
+"sameNameFolder" = "Folder with same name exists";
+"sameNameFolderDescription" = "Please choose a unique name for the folder and try again.";

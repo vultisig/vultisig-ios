@@ -44,6 +44,8 @@ extension Color {
     
     static let logoBlue = Color(hex: "#0D86BB")
     
+    static let miamiMarmalade = Color(hex: "#F7961B")
+    
     // Background
     static let backgroundBlue = Color(hex: "02122B")
 }

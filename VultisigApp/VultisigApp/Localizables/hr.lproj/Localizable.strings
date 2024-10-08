@@ -344,3 +344,16 @@
 "retry" = "Pokušaj ponovo";
 "loginUsingTouchID" = "Prijava pomoću Touch ID-a";
 "loginUsingOpticID" = "Prijava pomoću Optic ID-a";
+"createFolder" = "Kreiraj mapu";
+"create" = "Kreiraj";
+"folderName" = "Naziv mape";
+"addVaultsToFolder" = "Odaberite trezore za dodavanje u mapu";
+"deleteFolder" = "Izbriši mapu";
+"folder" = "Mapa";
+"folders" = "Mape";
+"enterValidFolderName" = "Unesite ispravan naziv mape i pokušajte ponovno.";
+"noVaultSelected" = "Nije odabran nijedan trezor";
+"selectAtleastOneVault" = "Odaberite barem jedan trezor i pokušajte ponovno.";
+"folderNeedsOneVault" = "Mapa mora sadržavati barem jedan odabrani trezor.";
+"sameNameFolder" = "Mapa s istim imenom već postoji";
+"sameNameFolderDescription" = "Odaberite jedinstveno ime za mapu i pokušajte ponovno.";
