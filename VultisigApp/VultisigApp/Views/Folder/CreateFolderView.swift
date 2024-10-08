@@ -12,6 +12,7 @@ struct CreateFolderView: View {
     let count: Int
     
     @Query var vaults: [Vault]
+    @Query var folders: [Folder]
     
     @StateObject var viewModel = CreateFolderViewModel()
     
@@ -109,7 +110,7 @@ struct CreateFolderView: View {
     }
     
     func createFolder() {
-        guard viewModel.runChecks() else {
+        guard viewModel.runChecks(folders) else {
             return
         }
         

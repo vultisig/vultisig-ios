@@ -16,7 +16,7 @@ class CreateFolderViewModel: ObservableObject {
     @Published var alertTitle = ""
     @Published var alertDescription = ""
     
-    func runChecks() -> Bool {
+    func runChecks(_ folders: [Folder]) -> Bool {
         if name.isEmpty {
             alertTitle = "emptyField"
             alertDescription = "enterValidFolderName"
@@ -29,6 +29,15 @@ class CreateFolderViewModel: ObservableObject {
             alertDescription = "selectAtleastOneVault"
             showAlert = true
             return false
+        }
+        
+        for folder in folders {
+            if folder.folderName == name {
+                alertTitle = "sameNameFolder"
+                alertDescription = "sameNameFolderDescription"
+                showAlert = true
+                return false
+            }
         }
         
         return true

@@ -14,6 +14,7 @@ struct FolderDetailSelectedVaultCell: View {
     @State var order: Int = 0
     @State var totalSigners: Int = 0
     @State var devicesInfo: [DeviceInfo] = []
+    @State var isFastVault: Bool = false
     
     var body: some View {
         content
@@ -27,6 +28,11 @@ struct FolderDetailSelectedVaultCell: View {
         HStack {
             rearrange
             text
+            
+            if isFastVault {
+                fastVaultLabel
+            }
+            
             Spacer()
             partAssignedCell
             
@@ -68,6 +74,17 @@ struct FolderDetailSelectedVaultCell: View {
             .foregroundColor(.body)
     }
     
+    var fastVaultLabel: some View {
+        Text(NSLocalizedString("fastModeTitle", comment: "").capitalized)
+            .font(.body14Menlo)
+            .foregroundColor(.body)
+            .padding(4)
+            .padding(.horizontal, 2)
+            .background(Color.blue200)
+            .cornerRadius(5)
+            .lineLimit(1)
+    }
+    
     var chevron: some View {
         Image(systemName: "chevron.right")
             .font(.body16MontserratBold)
@@ -89,7 +106,17 @@ struct FolderDetailSelectedVaultCell: View {
     
     private func setupLabel(_ vault: Vault) {
         totalSigners = devicesInfo.count
+        checkForFastSign()
         checkForAssignedPart(vault)
+    }
+    
+    private func checkForFastSign() {
+        for index in 0..<devicesInfo.count {
+            if devicesInfo[index].Signer.lowercased().hasPrefix("server-") {
+                isFastVault = true
+                return
+            }
+        }
     }
     
     private func checkForAssignedPart(_ vault: Vault) {
