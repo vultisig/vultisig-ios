@@ -13,13 +13,13 @@ extension FolderDetailView {
         VStack(spacing: 0) {
             headerMac
             Separator()
-            content
+            content.padding(.top, 30)
             button
         }
     }
     
     var headerMac: some View {
-        GeneralMacHeader(title: vaultFolder.folderName)
+        FolderDetailHeader(title: vaultFolder.folderName, isEditing: $folderViewModel.isEditing)
             .padding(.bottom, 8)
     }
 }

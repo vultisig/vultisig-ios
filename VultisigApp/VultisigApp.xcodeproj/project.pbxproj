@@ -266,6 +266,7 @@
 		A65617F92CB4F53C00E9CF19 /* CreateFolderViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65617F82CB4F53C00E9CF19 /* CreateFolderViewModel.swift */; };
 		A65617FB2CB4F6DF00E9CF19 /* FolderDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65617FA2CB4F6DF00E9CF19 /* FolderDetailViewModel.swift */; };
 		A65617FD2CB4FCEA00E9CF19 /* FolderDetailCellViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65617FC2CB4FCEA00E9CF19 /* FolderDetailCellViewModel.swift */; };
+		A65617FF2CB4FE1500E9CF19 /* FolderDetailHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65617FE2CB4FE1500E9CF19 /* FolderDetailHeader.swift */; };
 		A65649DF2B96602700E4B329 /* DecodableDefaultExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */; };
 		A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D82B96602700E4B329 /* BigUIntExtension.swift */; };
 		A65649E12B96602700E4B329 /* Int64Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D92B96602700E4B329 /* Int64Extension.swift */; };
@@ -982,6 +983,7 @@
 		A65617F82CB4F53C00E9CF19 /* CreateFolderViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateFolderViewModel.swift; sourceTree = "<group>"; };
 		A65617FA2CB4F6DF00E9CF19 /* FolderDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderDetailViewModel.swift; sourceTree = "<group>"; };
 		A65617FC2CB4FCEA00E9CF19 /* FolderDetailCellViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderDetailCellViewModel.swift; sourceTree = "<group>"; };
+		A65617FE2CB4FE1500E9CF19 /* FolderDetailHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderDetailHeader.swift; sourceTree = "<group>"; };
 		A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DecodableDefaultExtension.swift; sourceTree = "<group>"; };
 		A65649D82B96602700E4B329 /* BigUIntExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BigUIntExtension.swift; sourceTree = "<group>"; };
 		A65649D92B96602700E4B329 /* Int64Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Int64Extension.swift; sourceTree = "<group>"; };
@@ -2412,6 +2414,7 @@
 				A6833D922C66A4EA002029E1 /* SwapCryptoHeader.swift */,
 				A6833D942C66A697002029E1 /* SendCryptoHeader.swift */,
 				A6833D962C671F11002029E1 /* SettingsHeader.swift */,
+				A65617FE2CB4FE1500E9CF19 /* FolderDetailHeader.swift */,
 			);
 			path = "Navigation Header";
 			sourceTree = "<group>";
@@ -3720,6 +3723,7 @@
 				A6E52F802BBE430600FD3785 /* TransactionCell.swift in Sources */,
 				A6C670A22C9D0C1000F59B6A /* EditVaultView+macOS.swift in Sources */,
 				A6CBA8F02BA2A629008B110C /* ImportWalletUploadSection.swift in Sources */,
+				A65617FF2CB4FE1500E9CF19 /* FolderDetailHeader.swift in Sources */,
 				A6ECA1922C93F83B00456110 /* ProgressBar+macOS.swift in Sources */,
 				A6833D862C65BF6D002029E1 /* JoinKeygenHeader.swift in Sources */,
 				A65BA9902BAD402A00B2D8AA /* KeysignMessageConfirmView.swift in Sources */,
