@@ -44,13 +44,19 @@ struct FolderDetailView: View {
     }
     
     var content: some View {
-        ScrollView {
+        List {
             selectedVaultsList
             
             if isEditing {
-                remainingVaultsList
+                vaultsTitle
+                vaultsList
             }
         }
+        .listStyle(PlainListStyle())
+        .buttonStyle(BorderlessButtonStyle())
+        .colorScheme(.dark)
+        .scrollContentBackground(.hidden)
+        .background(Color.backgroundBlue)
     }
     
     var navigationEditButton: some View {
@@ -68,24 +74,18 @@ struct FolderDetailView: View {
     }
     
     var selectedVaultsList: some View {
-        VStack(spacing: 16) {
-            ForEach(selectedVaults, id: \.self) { vault in
-                FolderDetailSelectedVaultCell(vault: vault, isEditing: isEditing)
-                    .onTapGesture {
-                        handleVaultSelection(for: vault)
-                    }
-            }
-        }
-        .padding(.top, 30)
-        .padding(.horizontal, 16)
-    }
-    
-    var remainingVaultsList: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            vaultsTitle
-            vaultsList
+        ForEach(selectedVaults, id: \.self) { vault in
+            FolderDetailSelectedVaultCell(vault: vault, isEditing: isEditing)
+                .listRowInsets(EdgeInsets())
+                .listRowSeparator(.hidden)
+                .padding(.vertical, 8)
+                .background(Color.backgroundBlue)
+                .onTapGesture {
+                    handleVaultSelection(for: vault)
+                }
         }
         .padding(.horizontal, 16)
+        .background(Color.backgroundBlue)
     }
     
     var vaultsTitle: some View {
@@ -93,15 +93,25 @@ struct FolderDetailView: View {
             .foregroundColor(.neutral0)
             .font(.body14MontserratSemiBold)
             .padding(.top, 22)
+            .listRowInsets(EdgeInsets())
+            .listRowSeparator(.hidden)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            .background(Color.backgroundBlue)
     }
     
     var vaultsList: some View {
         ForEach(remaningVaults, id: \.self) { vault in
             FolderDetailRemainingVaultCell(vault: vault)
+                .listRowInsets(EdgeInsets())
+                .listRowSeparator(.hidden)
+                .padding(.vertical, 8)
+                .background(Color.backgroundBlue)
                 .onTapGesture {
                     selectVault(vault)
                 }
         }
+        .padding(.horizontal, 16)
+        .background(Color.backgroundBlue)
     }
     
     var button: some View {
