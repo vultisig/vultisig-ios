@@ -343,3 +343,16 @@
 "retry" = "Riprova";
 "loginUsingTouchID" = "Accedi con Touch ID";
 "loginUsingOpticID" = "Accedi con Optic ID";
+"createFolder" = "Crea cartella";
+"create" = "Crea";
+"folderName" = "Nome della cartella";
+"addVaultsToFolder" = "Seleziona i Vault da aggiungere alla cartella";
+"deleteFolder" = "Elimina cartella";
+"folder" = "Cartella";
+"folders" = "Cartelle";
+"enterValidFolderName" = "Si prega di inserire un nome di cartella valido e riprovare.";
+"noVaultSelected" = "Nessun Vault selezionato";
+"selectAtleastOneVault" = "Selezionare almeno un Vault e riprovare.";
+"folderNeedsOneVault" = "La cartella deve contenere almeno un Vault selezionato.";
+"sameNameFolder" = "Una cartella con lo stesso nome esiste già";
+"sameNameFolderDescription" = "Si prega di scegliere un nome univoco per la cartella e riprovare.";

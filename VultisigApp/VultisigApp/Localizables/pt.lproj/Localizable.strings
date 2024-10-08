@@ -344,3 +344,16 @@
 "retry" = "Tentar novamente";
 "loginUsingTouchID" = "Entrar usando Touch ID";
 "loginUsingOpticID" = "Entrar usando Optic ID";
+"createFolder" = "Criar pasta";
+"create" = "Criar";
+"folderName" = "Nome da pasta";
+"addVaultsToFolder" = "Selecione cofres para adicionar à pasta";
+"deleteFolder" = "Excluir pasta";
+"folder" = "Pasta";
+"folders" = "Pastas";
+"enterValidFolderName" = "Insira um nome de pasta válido e tente novamente.";
+"noVaultSelected" = "Nenhum cofre selecionado";
+"selectAtleastOneVault" = "Selecione pelo menos um cofre e tente novamente.";
+"folderNeedsOneVault" = "A pasta precisa ter pelo menos um cofre selecionado.";
+"sameNameFolder" = "Já existe uma pasta com o mesmo nome";
+"sameNameFolderDescription" = "Escolha um nome exclusivo para a pasta e tente novamente.";
