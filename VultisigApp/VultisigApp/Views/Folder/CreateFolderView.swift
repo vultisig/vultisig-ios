@@ -144,7 +144,7 @@ struct CreateFolderView: View {
         }
         
         if selectedVaults.isEmpty {
-            alertTitle = "emptyField"
+            alertTitle = "error"
             alertDescription = "selectAtleastOneVault"
             showAlert = true
             return false
