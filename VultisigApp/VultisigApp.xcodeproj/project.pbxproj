@@ -265,6 +265,7 @@
 		A65617F72CB492B200E9CF19 /* FolderDetailRemainingVaultCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65617F62CB492B200E9CF19 /* FolderDetailRemainingVaultCell.swift */; };
 		A65617F92CB4F53C00E9CF19 /* CreateFolderViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65617F82CB4F53C00E9CF19 /* CreateFolderViewModel.swift */; };
 		A65617FB2CB4F6DF00E9CF19 /* FolderDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65617FA2CB4F6DF00E9CF19 /* FolderDetailViewModel.swift */; };
+		A65617FD2CB4FCEA00E9CF19 /* FolderDetailCellViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65617FC2CB4FCEA00E9CF19 /* FolderDetailCellViewModel.swift */; };
 		A65649DF2B96602700E4B329 /* DecodableDefaultExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */; };
 		A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D82B96602700E4B329 /* BigUIntExtension.swift */; };
 		A65649E12B96602700E4B329 /* Int64Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D92B96602700E4B329 /* Int64Extension.swift */; };
@@ -980,6 +981,7 @@
 		A65617F62CB492B200E9CF19 /* FolderDetailRemainingVaultCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderDetailRemainingVaultCell.swift; sourceTree = "<group>"; };
 		A65617F82CB4F53C00E9CF19 /* CreateFolderViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateFolderViewModel.swift; sourceTree = "<group>"; };
 		A65617FA2CB4F6DF00E9CF19 /* FolderDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderDetailViewModel.swift; sourceTree = "<group>"; };
+		A65617FC2CB4FCEA00E9CF19 /* FolderDetailCellViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderDetailCellViewModel.swift; sourceTree = "<group>"; };
 		A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DecodableDefaultExtension.swift; sourceTree = "<group>"; };
 		A65649D82B96602700E4B329 /* BigUIntExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BigUIntExtension.swift; sourceTree = "<group>"; };
 		A65649D92B96602700E4B329 /* Int64Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Int64Extension.swift; sourceTree = "<group>"; };
@@ -2328,6 +2330,7 @@
 				A6C670CA2C9E8BAB00F59B6A /* VultExtensionViewModel.swift */,
 				A65617F82CB4F53C00E9CF19 /* CreateFolderViewModel.swift */,
 				A65617FA2CB4F6DF00E9CF19 /* FolderDetailViewModel.swift */,
+				A65617FC2CB4FCEA00E9CF19 /* FolderDetailCellViewModel.swift */,
 			);
 			path = "View Models";
 			sourceTree = "<group>";
@@ -3683,6 +3686,7 @@
 				A6C671092CA27D0500F59B6A /* OnboardingView2+iOS.swift in Sources */,
 				A653242E2BA53D0900DDE6EB /* SendCryptoPairView.swift in Sources */,
 				DE63AE532BBA627B001BBE5C /* atom.swift in Sources */,
+				A65617FD2CB4FCEA00E9CF19 /* FolderDetailCellViewModel.swift in Sources */,
 				A52B0D072CA6216400507966 /* ReshareView+iOS.swift in Sources */,
 				A6C670ED2CA26F5C00F59B6A /* SettingsView+iOS.swift in Sources */,
 				A6C671052CA2792800F59B6A /* OnboardingView1+iOS.swift in Sources */,

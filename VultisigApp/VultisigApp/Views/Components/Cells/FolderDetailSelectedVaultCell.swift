@@ -11,10 +11,7 @@ struct FolderDetailSelectedVaultCell: View {
     let vault: Vault
     let isEditing: Bool
     
-    @State var order: Int = 0
-    @State var totalSigners: Int = 0
-    @State var devicesInfo: [DeviceInfo] = []
-    @State var isFastVault: Bool = false
+    @StateObject var viewModel = FolderDetailCellViewModel()
     
     var body: some View {
         content
@@ -29,7 +26,7 @@ struct FolderDetailSelectedVaultCell: View {
             rearrange
             text
             
-            if isFastVault {
+            if viewModel.isFastVault {
                 fastVaultLabel
             }
             
@@ -69,7 +66,7 @@ struct FolderDetailSelectedVaultCell: View {
     }
     
     var partAssignedCell: some View {
-        Text("Part \(order)of\(totalSigners)")
+        Text("Part \(viewModel.order)of\(viewModel.totalSigners)")
             .font(.body14Menlo)
             .foregroundColor(.body)
     }
@@ -94,38 +91,8 @@ struct FolderDetailSelectedVaultCell: View {
     }
     
     func setData() {
-        assignSigners(vault)
-        setupLabel(vault)
-    }
-    
-    private func assignSigners(_ vault: Vault) {
-        devicesInfo = vault.signers.enumerated().map { index, signer in
-            DeviceInfo(Index: index, Signer: signer)
-        }
-    }
-    
-    private func setupLabel(_ vault: Vault) {
-        totalSigners = devicesInfo.count
-        checkForFastSign()
-        checkForAssignedPart(vault)
-    }
-    
-    private func checkForFastSign() {
-        for index in 0..<devicesInfo.count {
-            if devicesInfo[index].Signer.lowercased().hasPrefix("server-") {
-                isFastVault = true
-                return
-            }
-        }
-    }
-    
-    private func checkForAssignedPart(_ vault: Vault) {
-        for index in 0..<devicesInfo.count {
-            if devicesInfo[index].Signer == vault.localPartyID {
-                order = index+1
-                return
-            }
-        }
+        viewModel.assignSigners(vault)
+        viewModel.setupLabel(vault)
     }
 }
 
