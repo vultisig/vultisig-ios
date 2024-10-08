@@ -10,15 +10,27 @@ import SwiftData
 
 struct FolderDetailView: View {
     @Binding var vaultFolder: VaultFolder
+    @Binding var showVaultsList: Bool
+    @ObservedObject var viewModel: HomeViewModel
     
     @State var isEditing = false
+    @State var selectedVaults: [Vault] = []
+    @State var remaningVaults: [Vault] = []
     
     @Query var vaults: [Vault]
+    
+    @Environment(\.dismiss) var dismiss
     
     var body: some View {
         ZStack {
             Background()
             view
+        }
+        .onAppear {
+            setData()
+        }
+        .onChange(of: vaultFolder.containedVaults) { oldValue, newValue in
+            setData()
         }
     }
     
@@ -48,8 +60,11 @@ struct FolderDetailView: View {
     
     var selectedVaultsList: some View {
         VStack(spacing: 16) {
-            ForEach(vaultFolder.containedVaults, id: \.self) { vault in
+            ForEach(selectedVaults, id: \.self) { vault in
                 FolderDetailSelectedVaultCell(vault: vault, isEditing: isEditing)
+                    .onTapGesture {
+                        handleVaultSelection(for: vault)
+                    }
             }
         }
         .padding(.top, 30)
@@ -68,11 +83,15 @@ struct FolderDetailView: View {
         Text(NSLocalizedString("addVaultsToFolder", comment: ""))
             .foregroundColor(.neutral0)
             .font(.body14MontserratSemiBold)
+            .padding(.top, 22)
     }
     
     var vaultsList: some View {
-        ForEach(vaults, id: \.self) { vault in
+        ForEach(remaningVaults, id: \.self) { vault in
             FolderDetailRemainingVaultCell(vault: vault)
+                .onTapGesture {
+                    selectVault(vault)
+                }
         }
     }
     
@@ -96,8 +115,51 @@ struct FolderDetailView: View {
             .foregroundColor(Color.neutral0)
             .font(.body18MenloBold)
     }
+    
+    func setData() {
+        selectedVaults = []
+        remaningVaults = []
+        selectedVaults = vaultFolder.containedVaults
+        remaningVaults = vaults.filter({ vault in
+            !vaultFolder.containedVaults.contains(vault)
+        })
+    }
+    
+    private func selectVault(_ vault: Vault) {
+        selectedVaults.append(vault)
+        vaultFolder.containedVaults = selectedVaults
+    }
+    
+    private func handleVaultSelection(for vault: Vault) {
+        if isEditing {
+            removeVault(vault)
+        } else {
+            handleSelection(for: vault)
+        }
+    }
+    
+    private func removeVault(_ vault: Vault) {
+        for index in 0..<selectedVaults.count {
+            if selectedVaults[index] == vault {
+                selectedVaults.remove(at: index)
+                return
+            }
+        }
+        
+        vaultFolder.containedVaults = selectedVaults
+    }
+    
+    private func handleSelection(for vault: Vault) {
+        viewModel.setSelectedVault(vault)
+        showVaultsList = false
+        dismiss()
+    }
 }
 
 #Preview {
-    FolderDetailView(vaultFolder: .constant(VaultFolder.example))
+    FolderDetailView(
+        vaultFolder: .constant(VaultFolder.example),
+        showVaultsList: .constant(false),
+        viewModel: HomeViewModel()
+    )
 }

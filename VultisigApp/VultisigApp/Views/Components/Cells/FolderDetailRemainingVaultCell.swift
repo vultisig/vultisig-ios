@@ -35,6 +35,7 @@ struct FolderDetailRemainingVaultCell: View {
         Toggle("Is selected", isOn: .constant(false))
             .labelsHidden()
             .scaleEffect(0.8)
+            .allowsHitTesting(false)
     }
 }
 

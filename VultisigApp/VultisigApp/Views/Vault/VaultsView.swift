@@ -44,7 +44,11 @@ struct VaultsView: View {
     var view: some View {
         content
             .navigationDestination(isPresented: $showFolderDetails) {
-                FolderDetailView(vaultFolder: $selectedFolder)
+                FolderDetailView(
+                    vaultFolder: $selectedFolder,
+                    showVaultsList: $showVaultsList,
+                    viewModel: viewModel
+                )
             }
     }
     
@@ -81,6 +85,7 @@ struct VaultsView: View {
             })
             .listRowInsets(EdgeInsets())
             .listRowSeparator(.hidden)
+            .padding(.vertical, 8)
             .background(Color.backgroundBlue)
         }
     }
@@ -196,6 +201,10 @@ struct VaultsView: View {
     }
     
     private func handleFolderSelection(for folder: VaultFolder) {
+        guard !isEditingVaults else {
+            return
+        }
+        
         selectedFolder = folder
         showFolderDetails = true
     }

@@ -29,7 +29,12 @@ struct FolderDetailSelectedVaultCell: View {
             text
             Spacer()
             partAssignedCell
-            toggle
+            
+            if isEditing {
+                toggle
+            } else {
+                chevron
+            }
         }
         .padding(12)
         .background(Color.blue600)
@@ -54,12 +59,21 @@ struct FolderDetailSelectedVaultCell: View {
         Toggle("Is selected", isOn: .constant(true))
             .labelsHidden()
             .scaleEffect(0.8)
+            .allowsHitTesting(false)
     }
     
     var partAssignedCell: some View {
         Text("Part \(order)of\(totalSigners)")
             .font(.body14Menlo)
             .foregroundColor(.body)
+    }
+    
+    var chevron: some View {
+        Image(systemName: "chevron.right")
+            .font(.body16MontserratBold)
+            .foregroundColor(.neutral100)
+            .frame(maxWidth: isEditing ? 0 : nil)
+            .padding(.vertical, 8)
     }
     
     func setData() {
