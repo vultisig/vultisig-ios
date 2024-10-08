@@ -13,16 +13,10 @@ struct FolderDetailView: View {
     @Binding var showVaultsList: Bool
     @ObservedObject var viewModel: HomeViewModel
     
-    @State var isEditing = false
-    @State var selectedVaults: [Vault] = []
-    @State var remaningVaults: [Vault] = []
-    
-    @State var showAlert = false
-    @State var alertTitle = ""
-    @State var alertDescription = ""
-    
     @Query var folders: [Folder]
     @Query var vaults: [Vault]
+    
+    @StateObject var folderViewModel = FolderDetailViewModel()
     
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) private var modelContext
@@ -32,7 +26,7 @@ struct FolderDetailView: View {
             Background()
             view
         }
-        .alert(isPresented: $showAlert) {
+        .alert(isPresented: $folderViewModel.showAlert) {
             alert
         }
         .onAppear {
@@ -47,7 +41,7 @@ struct FolderDetailView: View {
         List {
             selectedVaultsList
             
-            if isEditing {
+            if folderViewModel.isEditing {
                 vaultsTitle
                 vaultsList
             }
@@ -62,10 +56,10 @@ struct FolderDetailView: View {
     var navigationEditButton: some View {
         Button {
             withAnimation {
-                isEditing.toggle()
+                folderViewModel.isEditing.toggle()
             }
         } label: {
-            if isEditing {
+            if folderViewModel.isEditing {
                 doneLabel
             } else {
                 editIcon
@@ -74,10 +68,10 @@ struct FolderDetailView: View {
     }
     
     var selectedVaultsList: some View {
-        ForEach(selectedVaults.sorted(by: {
+        ForEach(folderViewModel.selectedVaults.sorted(by: {
             $0.order < $1.order
         }), id: \.self) { vault in
-            FolderDetailSelectedVaultCell(vault: vault, isEditing: isEditing)
+            FolderDetailSelectedVaultCell(vault: vault, isEditing: folderViewModel.isEditing)
                 .listRowInsets(EdgeInsets())
                 .listRowSeparator(.hidden)
                 .padding(.vertical, 8)
@@ -86,7 +80,7 @@ struct FolderDetailView: View {
                     handleVaultSelection(for: vault)
                 }
         }
-        .onMove(perform: isEditing ? moveSelectedVaults : nil)
+        .onMove(perform: folderViewModel.isEditing ? move : nil)
         .padding(.horizontal, 16)
         .background(Color.backgroundBlue)
     }
@@ -104,7 +98,7 @@ struct FolderDetailView: View {
     }
     
     var vaultsList: some View {
-        ForEach(remaningVaults, id: \.self) { vault in
+        ForEach(folderViewModel.remaningVaults, id: \.self) { vault in
             FolderDetailRemainingVaultCell(vault: vault)
                 .listRowInsets(EdgeInsets())
                 .listRowSeparator(.hidden)
@@ -130,7 +124,7 @@ struct FolderDetailView: View {
         FilledButton(title: "deleteFolder", background: Color.miamiMarmalade)
             .padding(16)
             .edgesIgnoringSafeArea(.bottom)
-            .frame(maxHeight: isEditing ? nil : 0)
+            .frame(maxHeight: folderViewModel.isEditing ? nil : 0)
             .clipped()
             .background(Color.backgroundBlue)
     }
@@ -149,68 +143,51 @@ struct FolderDetailView: View {
     
     var alert: Alert {
         Alert(
-            title: Text(NSLocalizedString(alertTitle, comment: "")),
-            message: Text(NSLocalizedString(alertDescription, comment: "")),
+            title: Text(NSLocalizedString(folderViewModel.alertTitle, comment: "")),
+            message: Text(NSLocalizedString(folderViewModel.alertDescription, comment: "")),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }
     
-    func setData() {
-        selectedVaults = []
-        remaningVaults = []
-        selectedVaults = getContainedVaults()
-        remaningVaults = vaults.filter({ vault in
-            !selectedVaults.contains(vault)
-        })
-    }
-    
-    func getContainedVaults() -> [Vault] {
-        var containedVaults: [Vault] = []
-        
-        for containedVaultName in vaultFolder.containedVaultNames {
-            for vault in vaults {
-                if vault.name == containedVaultName {
-                    containedVaults.append(vault)
-                }
-            }
-        }
-        
-        return containedVaults
-    }
-    
-    private func selectVault(_ vault: Vault) {
-        selectedVaults.append(vault)
-        vaultFolder.containedVaultNames = selectedVaults.map({ vault in
-            vault.name
-        })
+    private func setData() {
+        folderViewModel.setData(vaults: vaults, vaultFolder: vaultFolder)
     }
     
     private func handleVaultSelection(for vault: Vault) {
-        if isEditing {
+        if folderViewModel.isEditing {
             removeVault(vault)
         } else {
             handleSelection(for: vault)
         }
     }
     
+    private func move(from: IndexSet, to: Int) {
+        var s = folderViewModel.selectedVaults.sorted(by: { $0.order < $1.order })
+        s.move(fromOffsets: from, toOffset: to)
+        for (index, item) in s.enumerated() {
+            item.order = index
+        }
+        try? self.modelContext.save()
+    }
+    
+    private func selectVault(_ vault: Vault) {
+        folderViewModel.selectedVaults.append(vault)
+        vaultFolder.containedVaultNames = folderViewModel.selectedVaults.map({ vault in
+            vault.name
+        })
+    }
+    
     private func removeVault(_ vault: Vault) {
-        let count = selectedVaults.count
+        let count = folderViewModel.selectedVaults.count
         
         guard count > 1 else {
-            alertTitle = "error"
-            alertDescription = "folderNeedsOneVault"
-            showAlert = true
+            folderViewModel.toggleAlert()
             return
         }
         
-        for index in 0..<count {
-            if selectedVaults[index] == vault {
-                selectedVaults.remove(at: index)
-                return
-            }
-        }
+        folderViewModel.removeVaultAtIndex(count: count, vault: vault)
         
-        vaultFolder.containedVaultNames = selectedVaults.map({ vault in
+        vaultFolder.containedVaultNames = folderViewModel.selectedVaults.map({ vault in
             vault.name
         })
     }
@@ -234,15 +211,6 @@ struct FolderDetailView: View {
                 return
             }
         }
-    }
-    
-    func moveSelectedVaults(from: IndexSet, to: Int) {
-        var s = selectedVaults.sorted(by: { $0.order < $1.order })
-        s.move(fromOffsets: from, toOffset: to)
-        for (index, item) in s.enumerated() {
-            item.order = index
-        }
-        try? self.modelContext.save()
     }
 }
 
