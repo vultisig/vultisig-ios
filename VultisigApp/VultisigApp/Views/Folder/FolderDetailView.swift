@@ -12,10 +12,15 @@ struct FolderDetailView: View {
     @Binding var vaultFolder: VaultFolder
     @Binding var showVaultsList: Bool
     @ObservedObject var viewModel: HomeViewModel
+    @Binding var folders: [VaultFolder]
     
     @State var isEditing = false
     @State var selectedVaults: [Vault] = []
     @State var remaningVaults: [Vault] = []
+    
+    @State var showAlert = false
+    @State var alertTitle = ""
+    @State var alertDescription = ""
     
     @Query var vaults: [Vault]
     
@@ -25,6 +30,9 @@ struct FolderDetailView: View {
         ZStack {
             Background()
             view
+        }
+        .alert(isPresented: $showAlert) {
+            alert
         }
         .onAppear {
             setData()
@@ -96,6 +104,14 @@ struct FolderDetailView: View {
     }
     
     var button: some View {
+        Button {
+            deleteFolder()
+        } label: {
+            label
+        }
+    }
+    
+    var label: some View {
         FilledButton(title: "deleteFolder", background: Color.miamiMarmalade)
             .padding(16)
             .edgesIgnoringSafeArea(.bottom)
@@ -114,6 +130,14 @@ struct FolderDetailView: View {
         Text(NSLocalizedString("done", comment: ""))
             .foregroundColor(Color.neutral0)
             .font(.body18MenloBold)
+    }
+    
+    var alert: Alert {
+        Alert(
+            title: Text(NSLocalizedString(alertTitle, comment: "")),
+            message: Text(NSLocalizedString(alertDescription, comment: "")),
+            dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
+        )
     }
     
     func setData() {
@@ -139,7 +163,16 @@ struct FolderDetailView: View {
     }
     
     private func removeVault(_ vault: Vault) {
-        for index in 0..<selectedVaults.count {
+        let count = selectedVaults.count
+        
+        guard count > 1 else {
+            alertTitle = "error"
+            alertDescription = "folderNeedsOneVault"
+            showAlert = true
+            return
+        }
+        
+        for index in 0..<count {
             if selectedVaults[index] == vault {
                 selectedVaults.remove(at: index)
                 return
@@ -154,12 +187,23 @@ struct FolderDetailView: View {
         showVaultsList = false
         dismiss()
     }
+    
+    private func deleteFolder() {
+        for index in 0..<folders.count {
+            if folders[index] == vaultFolder {
+                folders.remove(at: index)
+                dismiss()
+                return
+            }
+        }
+    }
 }
 
 #Preview {
     FolderDetailView(
         vaultFolder: .constant(VaultFolder.example),
         showVaultsList: .constant(false),
-        viewModel: HomeViewModel()
+        viewModel: HomeViewModel(), 
+        folders: .constant([])
     )
 }

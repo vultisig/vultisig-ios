@@ -47,7 +47,8 @@ struct VaultsView: View {
                 FolderDetailView(
                     vaultFolder: $selectedFolder,
                     showVaultsList: $showVaultsList,
-                    viewModel: viewModel
+                    viewModel: viewModel,
+                    folders: $folders
                 )
             }
     }
