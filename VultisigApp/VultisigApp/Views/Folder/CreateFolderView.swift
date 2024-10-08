@@ -11,15 +11,9 @@ import SwiftData
 struct CreateFolderView: View {
     let count: Int
     
-    @State var name = ""
-    @State var selectedVaults: [Vault] = []
-    @State var vaultFolder: Folder? = nil
-    
-    @State var showAlert = false
-    @State var alertTitle = ""
-    @State var alertDescription = ""
-    
     @Query var vaults: [Vault]
+    
+    @StateObject var viewModel = CreateFolderViewModel()
     
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) var modelContext
@@ -29,7 +23,7 @@ struct CreateFolderView: View {
             Background()
             view
         }
-        .alert(isPresented: $showAlert) {
+        .alert(isPresented: $viewModel.showAlert) {
             alert
         }
     }
@@ -68,7 +62,7 @@ struct CreateFolderView: View {
     var folderNameTextField: some View {
         TextField(
             NSLocalizedString("typeHere", comment: ""),
-            text: $name
+            text: $viewModel.name
         )
         .font(.body14Menlo)
         .foregroundColor(.neutral0)
@@ -100,7 +94,7 @@ struct CreateFolderView: View {
     var list: some View {
         VStack(spacing: 6) {
             ForEach(vaults, id: \.self) { vault in
-                FolderVaultCell(vault: vault, selectedVaults: $selectedVaults)
+                FolderVaultCell(vault: vault, selectedVaults: $viewModel.selectedVaults)
             }
         }
         .frame(maxWidth: .infinity)
@@ -108,29 +102,21 @@ struct CreateFolderView: View {
     
     var alert: Alert {
         Alert(
-            title: Text(NSLocalizedString(alertTitle, comment: "")),
-            message: Text(NSLocalizedString(alertDescription, comment: "")),
+            title: Text(NSLocalizedString(viewModel.alertTitle, comment: "")),
+            message: Text(NSLocalizedString(viewModel.alertDescription, comment: "")),
             dismissButton: .default(Text(NSLocalizedString("ok", comment: "")))
         )
     }
     
-    private func createFolder() {
-        guard runChecks() else {
+    func createFolder() {
+        guard viewModel.runChecks() else {
             return
         }
         
-        vaultFolder = Folder(
-            folderName: name,
-            containedVaultNames: selectedVaults.map({ vault in
-                vault.name
-            }),
-            order: count
-        )
+        viewModel.setupFolder(count)
         
-        guard let vaultFolder else {
-            alertTitle = "error"
-            alertDescription = "somethingWentWrongTryAgain"
-            showAlert = true
+        guard let vaultFolder = viewModel.vaultFolder else {
+            viewModel.showErrorAlert()
             return
         }
         
@@ -138,24 +124,6 @@ struct CreateFolderView: View {
             modelContext.insert(vaultFolder)
             dismiss()
         }
-    }
-    
-    private func runChecks() -> Bool {
-        if name.isEmpty {
-            alertTitle = "emptyField"
-            alertDescription = "enterValidFolderName"
-            showAlert = true
-            return false
-        }
-        
-        if selectedVaults.isEmpty {
-            alertTitle = "error"
-            alertDescription = "selectAtleastOneVault"
-            showAlert = true
-            return false
-        }
-        
-        return true
     }
 }
 

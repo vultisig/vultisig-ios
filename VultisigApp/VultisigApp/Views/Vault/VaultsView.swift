@@ -177,6 +177,18 @@ struct VaultsView: View {
         showVaultsList = false
     }
     
+    private func getTitle(for text: String) -> some View {
+        Text(NSLocalizedString(text, comment: ""))
+            .foregroundColor(.neutral0)
+            .font(.body14MontserratSemiBold)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+            .listRowInsets(EdgeInsets())
+            .listRowSeparator(.hidden)
+            .background(Color.backgroundBlue)
+    }
+    
     func move(from: IndexSet, to: Int) {
         let fromIndex = from.first ?? 0
         
@@ -217,18 +229,6 @@ struct VaultsView: View {
         
         selectedFolder = folder
         showFolderDetails = true
-    }
-    
-    private func getTitle(for text: String) -> some View {
-        Text(NSLocalizedString(text, comment: ""))
-            .foregroundColor(.neutral0)
-            .font(.body14MontserratSemiBold)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-            .padding(.horizontal, 16)
-            .padding(.top, 12)
-            .listRowInsets(EdgeInsets())
-            .listRowSeparator(.hidden)
-            .background(Color.backgroundBlue)
     }
 }
 

@@ -263,6 +263,7 @@
 		A65518052BF867CF006BB924 /* KeysignSameDeviceShareErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65518042BF867CF006BB924 /* KeysignSameDeviceShareErrorView.swift */; };
 		A65617F52CB492A400E9CF19 /* FolderDetailSelectedVaultCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65617F42CB492A400E9CF19 /* FolderDetailSelectedVaultCell.swift */; };
 		A65617F72CB492B200E9CF19 /* FolderDetailRemainingVaultCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65617F62CB492B200E9CF19 /* FolderDetailRemainingVaultCell.swift */; };
+		A65617F92CB4F53C00E9CF19 /* CreateFolderViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65617F82CB4F53C00E9CF19 /* CreateFolderViewModel.swift */; };
 		A65649DF2B96602700E4B329 /* DecodableDefaultExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */; };
 		A65649E02B96602700E4B329 /* BigUIntExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D82B96602700E4B329 /* BigUIntExtension.swift */; };
 		A65649E12B96602700E4B329 /* Int64Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65649D92B96602700E4B329 /* Int64Extension.swift */; };
@@ -976,6 +977,7 @@
 		A65518042BF867CF006BB924 /* KeysignSameDeviceShareErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignSameDeviceShareErrorView.swift; sourceTree = "<group>"; };
 		A65617F42CB492A400E9CF19 /* FolderDetailSelectedVaultCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderDetailSelectedVaultCell.swift; sourceTree = "<group>"; };
 		A65617F62CB492B200E9CF19 /* FolderDetailRemainingVaultCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderDetailRemainingVaultCell.swift; sourceTree = "<group>"; };
+		A65617F82CB4F53C00E9CF19 /* CreateFolderViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateFolderViewModel.swift; sourceTree = "<group>"; };
 		A65649D72B96602700E4B329 /* DecodableDefaultExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DecodableDefaultExtension.swift; sourceTree = "<group>"; };
 		A65649D82B96602700E4B329 /* BigUIntExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BigUIntExtension.swift; sourceTree = "<group>"; };
 		A65649D92B96602700E4B329 /* Int64Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Int64Extension.swift; sourceTree = "<group>"; };
@@ -2322,6 +2324,7 @@
 				A6182F2A2C9225EA0059BFDD /* MacCheckUpdateViewModel.swift */,
 				A622C8612C9BEC2100908332 /* PhoneCheckUpdateViewModel.swift */,
 				A6C670CA2C9E8BAB00F59B6A /* VultExtensionViewModel.swift */,
+				A65617F82CB4F53C00E9CF19 /* CreateFolderViewModel.swift */,
 			);
 			path = "View Models";
 			sourceTree = "<group>";
@@ -3370,6 +3373,7 @@
 				A6C670B32C9D12CF00F59B6A /* VaultPairDetailView+macOS.swift in Sources */,
 				A51AE8C22C931C6000EF9A7A /* FastVaultEnterPasswordView.swift in Sources */,
 				A500603F2C10E3EA008237D9 /* ThorchainSwapProvider.swift in Sources */,
+				A65617F92CB4F53C00E9CF19 /* CreateFolderViewModel.swift in Sources */,
 				B54B019C2BDE135C00FDA472 /* RpcService.swift in Sources */,
 				DE15729F2B70F284009BC7C5 /* KeysignDiscoveryView.swift in Sources */,
 				DE64A4C82BA7EBEC00C342E3 /* JoinKeygenViewModel.swift in Sources */,
