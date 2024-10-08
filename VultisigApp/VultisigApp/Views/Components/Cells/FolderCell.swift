@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct FolderCell: View {
-    let folder: VaultFolder
+    let folder: Folder
     let isEditing: Bool
     
     var body: some View {
@@ -61,7 +61,7 @@ struct FolderCell: View {
 
 #Preview {
     VStack {
-        FolderCell(folder: VaultFolder.example, isEditing: true)
-        FolderCell(folder: VaultFolder.example, isEditing: false)
+        FolderCell(folder: Folder.example, isEditing: true)
+        FolderCell(folder: Folder.example, isEditing: false)
     }
 }

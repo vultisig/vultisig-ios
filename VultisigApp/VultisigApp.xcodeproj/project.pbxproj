@@ -305,7 +305,7 @@
 		A6725D432C40C45800D47716 /* AddressBookCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6725D422C40C45800D47716 /* AddressBookCell.swift */; };
 		A675305A2CAF9C4D00B1E344 /* CreateFolderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67530592CAF9C4D00B1E344 /* CreateFolderView.swift */; };
 		A675305E2CAFB2CE00B1E344 /* FolderVaultCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A675305D2CAFB2CE00B1E344 /* FolderVaultCell.swift */; };
-		A67530622CAFBDC200B1E344 /* VaultFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67530612CAFBDC200B1E344 /* VaultFolder.swift */; };
+		A67530622CAFBDC200B1E344 /* Folder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67530612CAFBDC200B1E344 /* Folder.swift */; };
 		A67530642CB0716300B1E344 /* FolderDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67530632CB0716300B1E344 /* FolderDetailView.swift */; };
 		A67AA1C42C64715000D06C7E /* ChainDetailHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67AA1C32C64715000D06C7E /* ChainDetailHeader.swift */; };
 		A67AA1C62C64784F00D06C7E /* CoinDetailHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A67AA1C52C64784F00D06C7E /* CoinDetailHeader.swift */; };
@@ -1017,7 +1017,7 @@
 		A6725D422C40C45800D47716 /* AddressBookCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressBookCell.swift; sourceTree = "<group>"; };
 		A67530592CAF9C4D00B1E344 /* CreateFolderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateFolderView.swift; sourceTree = "<group>"; };
 		A675305D2CAFB2CE00B1E344 /* FolderVaultCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderVaultCell.swift; sourceTree = "<group>"; };
-		A67530612CAFBDC200B1E344 /* VaultFolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultFolder.swift; sourceTree = "<group>"; };
+		A67530612CAFBDC200B1E344 /* Folder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Folder.swift; sourceTree = "<group>"; };
 		A67530632CB0716300B1E344 /* FolderDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderDetailView.swift; sourceTree = "<group>"; };
 		A67AA1C32C64715000D06C7E /* ChainDetailHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChainDetailHeader.swift; sourceTree = "<group>"; };
 		A67AA1C52C64784F00D06C7E /* CoinDetailHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinDetailHeader.swift; sourceTree = "<group>"; };
@@ -2781,7 +2781,7 @@
 				DE5F7E1E2C8155C50022030F /* VaultCreateRequest.swift */,
 				DE320E6D2C846C610068D0E1 /* ReshareRequest.swift */,
 				DE5F7E202C816AC70022030F /* KeysignRequest.swift */,
-				A67530612CAFBDC200B1E344 /* VaultFolder.swift */,
+				A67530612CAFBDC200B1E344 /* Folder.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -3220,7 +3220,7 @@
 				46AAA49D2BC3B4CF00E5BAB4 /* DecimalExtension.swift in Sources */,
 				B51119332C0072620020B711 /* TransactionMemoCustom.swift in Sources */,
 				A564ED422BC350520056FDC0 /* SwapTransaction.swift in Sources */,
-				A67530622CAFBDC200B1E344 /* VaultFolder.swift in Sources */,
+				A67530622CAFBDC200B1E344 /* Folder.swift in Sources */,
 				A675305A2CAF9C4D00B1E344 /* CreateFolderView.swift in Sources */,
 				A594A9ED2C6436A800A3D09E /* DBMappable.swift in Sources */,
 				A68696212C1B5575004EDE0B /* BackupPasswordSetupView.swift in Sources */,

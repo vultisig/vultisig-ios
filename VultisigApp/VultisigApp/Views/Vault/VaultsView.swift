@@ -14,12 +14,12 @@ struct VaultsView: View {
     @Binding var isEditingVaults: Bool
     
     @Query(sort: \Vault.order, order: .forward) var vaults: [Vault]
+    @Query(sort: \Folder.order, order: .forward) var folders: [Folder]
         
     @Environment(\.modelContext) var modelContext
     
     @State var showFolderDetails: Bool = false
-    @State var selectedFolder: VaultFolder = .example
-    @State var folders: [VaultFolder] = []
+    @State var selectedFolder: Folder = .example
 
     var body: some View {
         VStack {
@@ -47,8 +47,7 @@ struct VaultsView: View {
                 FolderDetailView(
                     vaultFolder: $selectedFolder,
                     showVaultsList: $showVaultsList,
-                    viewModel: viewModel,
-                    folders: $folders
+                    viewModel: viewModel
                 )
             }
     }
@@ -89,13 +88,14 @@ struct VaultsView: View {
             .padding(.vertical, 8)
             .background(Color.backgroundBlue)
         }
+        .onMove(perform: isEditingVaults ? moveFolder : nil)
     }
     
     var vaultsList: some View {
         ForEach(vaults, id: \.self) { vault in
             getButton(for: vault)
         }
-        .onMove(perform: isEditingVaults ? move: nil)
+        .onMove(perform: isEditingVaults ? move : nil)
         .background(Color.backgroundBlue)
     }
     
@@ -111,7 +111,7 @@ struct VaultsView: View {
     
     var folderButton: some View {
         NavigationLink {
-            CreateFolderView(folders: $folders)
+            CreateFolderView(count: folders.count)
         } label: {
             OutlineButton(title: "createFolder")
         }
@@ -201,7 +201,16 @@ struct VaultsView: View {
         }
     }
     
-    private func handleFolderSelection(for folder: VaultFolder) {
+    func moveFolder(from: IndexSet, to: Int) {
+        var s = folders.sorted(by: { $0.order < $1.order })
+        s.move(fromOffsets: from, toOffset: to)
+        for (index, item) in s.enumerated() {
+                item.order = index
+        }
+        try? self.modelContext.save()
+    }
+    
+    private func handleFolderSelection(for folder: Folder) {
         guard !isEditingVaults else {
             return
         }

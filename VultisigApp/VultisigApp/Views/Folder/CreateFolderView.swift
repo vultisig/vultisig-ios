@@ -9,11 +9,11 @@ import SwiftUI
 import SwiftData
 
 struct CreateFolderView: View {
-    @Binding var folders: [VaultFolder]
+    let count: Int
     
     @State var name = ""
     @State var selectedVaults: [Vault] = []
-    @State var vaultFolder: VaultFolder? = nil
+    @State var vaultFolder: Folder? = nil
     
     @State var showAlert = false
     @State var alertTitle = ""
@@ -22,6 +22,7 @@ struct CreateFolderView: View {
     @Query var vaults: [Vault]
     
     @Environment(\.dismiss) var dismiss
+    @Environment(\.modelContext) var modelContext
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -118,9 +119,12 @@ struct CreateFolderView: View {
             return
         }
         
-        vaultFolder = VaultFolder(
+        vaultFolder = Folder(
             folderName: name,
-            containedVaults: selectedVaults
+            containedVaultNames: selectedVaults.map({ vault in
+                vault.name
+            }),
+            order: count
         )
         
         guard let vaultFolder else {
@@ -130,9 +134,10 @@ struct CreateFolderView: View {
             return
         }
         
-        folders.append(vaultFolder)
-        
-        dismiss()
+        DispatchQueue.main.asyncAfter(deadline: .now()) {
+            modelContext.insert(vaultFolder)
+            dismiss()
+        }
     }
     
     private func runChecks() -> Bool {
@@ -155,5 +160,5 @@ struct CreateFolderView: View {
 }
 
 #Preview {
-    CreateFolderView(folders: .constant([.example]))
+    CreateFolderView(count: 0)
 }

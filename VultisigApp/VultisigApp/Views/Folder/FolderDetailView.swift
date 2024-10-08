@@ -9,10 +9,9 @@ import SwiftUI
 import SwiftData
 
 struct FolderDetailView: View {
-    @Binding var vaultFolder: VaultFolder
+    @Binding var vaultFolder: Folder
     @Binding var showVaultsList: Bool
     @ObservedObject var viewModel: HomeViewModel
-    @Binding var folders: [VaultFolder]
     
     @State var isEditing = false
     @State var selectedVaults: [Vault] = []
@@ -22,9 +21,11 @@ struct FolderDetailView: View {
     @State var alertTitle = ""
     @State var alertDescription = ""
     
+    @Query var folders: [Folder]
     @Query var vaults: [Vault]
     
     @Environment(\.dismiss) var dismiss
+    @Environment(\.modelContext) private var modelContext
     
     var body: some View {
         ZStack {
@@ -37,7 +38,7 @@ struct FolderDetailView: View {
         .onAppear {
             setData()
         }
-        .onChange(of: vaultFolder.containedVaults) { oldValue, newValue in
+        .onChange(of: vaultFolder.containedVaultNames) { oldValue, newValue in
             setData()
         }
     }
@@ -143,15 +144,31 @@ struct FolderDetailView: View {
     func setData() {
         selectedVaults = []
         remaningVaults = []
-        selectedVaults = vaultFolder.containedVaults
+        selectedVaults = getContainedVaults()
         remaningVaults = vaults.filter({ vault in
-            !vaultFolder.containedVaults.contains(vault)
+            !selectedVaults.contains(vault)
         })
+    }
+    
+    func getContainedVaults() -> [Vault] {
+        var containedVaults: [Vault] = []
+        
+        for containedVaultName in vaultFolder.containedVaultNames {
+            for vault in vaults {
+                if vault.name == containedVaultName {
+                    containedVaults.append(vault)
+                }
+            }
+        }
+        
+        return containedVaults
     }
     
     private func selectVault(_ vault: Vault) {
         selectedVaults.append(vault)
-        vaultFolder.containedVaults = selectedVaults
+        vaultFolder.containedVaultNames = selectedVaults.map({ vault in
+            vault.name
+        })
     }
     
     private func handleVaultSelection(for vault: Vault) {
@@ -179,7 +196,9 @@ struct FolderDetailView: View {
             }
         }
         
-        vaultFolder.containedVaults = selectedVaults
+        vaultFolder.containedVaultNames = selectedVaults.map({ vault in
+            vault.name
+        })
     }
     
     private func handleSelection(for vault: Vault) {
@@ -189,9 +208,14 @@ struct FolderDetailView: View {
     }
     
     private func deleteFolder() {
-        for index in 0..<folders.count {
-            if folders[index] == vaultFolder {
-                folders.remove(at: index)
+        for folder in folders {
+            if folder == vaultFolder {
+                modelContext.delete(folder)
+                do {
+                    try modelContext.save()
+                } catch {
+                    print("Error: \(error)")
+                }
                 dismiss()
                 return
             }
@@ -201,9 +225,8 @@ struct FolderDetailView: View {
 
 #Preview {
     FolderDetailView(
-        vaultFolder: .constant(VaultFolder.example),
+        vaultFolder: .constant(Folder.example),
         showVaultsList: .constant(false),
-        viewModel: HomeViewModel(), 
-        folders: .constant([])
+        viewModel: HomeViewModel()
     )
 }
