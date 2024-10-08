@@ -74,7 +74,9 @@ struct FolderDetailView: View {
     }
     
     var selectedVaultsList: some View {
-        ForEach(selectedVaults, id: \.self) { vault in
+        ForEach(selectedVaults.sorted(by: {
+            $0.order < $1.order
+        }), id: \.self) { vault in
             FolderDetailSelectedVaultCell(vault: vault, isEditing: isEditing)
                 .listRowInsets(EdgeInsets())
                 .listRowSeparator(.hidden)
@@ -84,6 +86,7 @@ struct FolderDetailView: View {
                     handleVaultSelection(for: vault)
                 }
         }
+        .onMove(perform: isEditing ? moveSelectedVaults : nil)
         .padding(.horizontal, 16)
         .background(Color.backgroundBlue)
     }
@@ -93,6 +96,7 @@ struct FolderDetailView: View {
             .foregroundColor(.neutral0)
             .font(.body14MontserratSemiBold)
             .padding(.top, 22)
+            .padding(.horizontal, 16)
             .listRowInsets(EdgeInsets())
             .listRowSeparator(.hidden)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
@@ -230,6 +234,15 @@ struct FolderDetailView: View {
                 return
             }
         }
+    }
+    
+    func moveSelectedVaults(from: IndexSet, to: Int) {
+        var s = selectedVaults.sorted(by: { $0.order < $1.order })
+        s.move(fromOffsets: from, toOffset: to)
+        for (index, item) in s.enumerated() {
+            item.order = index
+        }
+        try? self.modelContext.save()
     }
 }
 
