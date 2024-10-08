@@ -97,7 +97,12 @@ class EVMHelper {
                     print("EVM transfer AMOUNT: \(keysignPayload.toAmount.description)")
                     $0.amount = keysignPayload.toAmount.serializeForEvm()
                     if let memo = keysignPayload.memo {
-                        $0.data = Data(memo.utf8)
+                        if memo.hasPrefix("0x") {
+                            // if memo start with 0x , meaning it is hex encoded string , then let's hex decode it first
+                            $0.data = Data(hex: memo)
+                        } else {
+                            $0.data = Data(memo.utf8)
+                        }
                     }
                 }
             }
