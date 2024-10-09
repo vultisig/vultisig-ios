@@ -53,6 +53,12 @@ extension Coin {
             } else {
                 return [.oneinch(chain), .lifi]
             }
+        case .arbitrum:
+            if mayaArbTokens.contains(ticker) {
+                return [.mayachain, .lifi]
+            } else {
+                return [.lifi]
+            }
         case .base:
             return [.lifi]
         case .optimism, .polygon:
@@ -63,7 +69,7 @@ extension Coin {
             return [.thorchain, .mayachain]
         case .dogecoin, .bitcoinCash, .litecoin, .gaiaChain:
             return [.thorchain]
-        case .blast, .arbitrum:
+        case .blast:
             return [.lifi]
         case .solana, .sui, .polkadot, .dydx, .cronosChain, .zksync:
             return []
@@ -74,7 +80,11 @@ extension Coin {
 private extension Coin {
 
     var mayaEthTokens: [String] {
-        return ["ETH"]
+        return ["ETH", "USDC", "USDT", "MOG", "PEPE", "WSTETH"]
+    }
+
+    var mayaArbTokens: [String] {
+        return ["ARB", "DAI", "ETH", "GLD", "LEO", "LINK", "PEPE", "TGT", "USDC", "USDT", "WBTC", "WSTETH"]
     }
 
     var thorEthTokens: [String] {
