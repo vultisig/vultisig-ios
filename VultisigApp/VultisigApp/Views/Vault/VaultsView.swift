@@ -92,7 +92,7 @@ struct VaultsView: View {
     }
     
     var vaultsList: some View {
-        ForEach(vaults, id: \.self) { vault in
+        ForEach(viewModel.filteredVaults, id: \.self) { vault in
             getButton(for: vault)
         }
         .onMove(perform: isEditingVaults ? move : nil)
@@ -170,6 +170,8 @@ struct VaultsView: View {
         for index in 0..<vaults.count {
             vaults[index].setOrder(index)
         }
+        
+        viewModel.filterVaults(vaults: vaults, folders: folders)
     }
     
     private func handleSelection(for vault: Vault) {
