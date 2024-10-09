@@ -109,7 +109,7 @@ struct SettingsView: View {
     
     var registerVaultCell: some View {
         NavigationLink {
-            
+            RegisterVaultView()
         } label: {
             SettingVaultRegistrationCell()
         }
