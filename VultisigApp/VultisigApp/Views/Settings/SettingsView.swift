@@ -29,6 +29,7 @@ struct SettingsView: View {
     var otherSection: some View {
         VStack(spacing: 16) {
             getTitle("other")
+            registerVaultCell
             checkUpdateCell
             shareAppCell
         }
@@ -103,6 +104,14 @@ struct SettingsView: View {
             SettingsFAQView()
         } label: {
             SettingCell(title: "faq", icon: "questionmark.circle")
+        }
+    }
+    
+    var registerVaultCell: some View {
+        NavigationLink {
+            
+        } label: {
+            SettingVaultRegistrationCell()
         }
     }
     

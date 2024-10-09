@@ -382,3 +382,4 @@
 "folderNeedsOneVault" = "Folder needs to have at least one selected vault.";
 "sameNameFolder" = "Folder with same name exists";
 "sameNameFolderDescription" = "Please choose a unique name for the folder and try again.";
+"registerYourVaults" = "Register your Vaults!";
