@@ -8,18 +8,11 @@
 import SwiftUI
 
 struct RegisterVaultView: View {
+    
     var body: some View {
         ZStack {
             Background()
             view
-        }
-        .navigationTitle(NSLocalizedString("registerVault", comment: ""))
-    }
-    
-    var view: some View {
-        VStack {
-            image
-            content
         }
     }
     
@@ -35,6 +28,7 @@ struct RegisterVaultView: View {
             text3
             text4
             Spacer()
+            button
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .font(.body20MenloBold)
@@ -49,7 +43,7 @@ struct RegisterVaultView: View {
     var text2: some View {
         HStack {
             Text(NSLocalizedString("registerVaultText2", comment: ""))
-            button
+            webButton
         }
     }
     
@@ -61,19 +55,23 @@ struct RegisterVaultView: View {
         Text(NSLocalizedString("registerVaultText4", comment: ""))
     }
     
-    var button: some View {
+    var webButton: some View {
         Link(destination: StaticURL.VultisigWeb) {
-            label
+            webLabel
         }
     }
     
-    var label: some View {
+    var webLabel: some View {
         Text("Vultisig Web")
             .foregroundColor(.turquoise600)
             .padding(.vertical, 12)
             .padding(.horizontal, 28)
             .background(Color.blue600)
             .cornerRadius(10)
+    }
+    
+    var button: some View {
+        FilledButton(title: "saveQRCode")
     }
 }
 
