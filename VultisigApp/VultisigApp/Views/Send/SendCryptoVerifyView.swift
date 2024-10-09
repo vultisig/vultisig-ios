@@ -16,6 +16,8 @@ struct SendCryptoVerifyView: View {
     @ObservedObject var tx: SendTransaction
     @StateObject private var blowfishViewModel = BlowfishWarningViewModel()
     
+    @State var isButtonDisabled = false
+    
     let vault: Vault
     
     @State var fastPasswordPresented = false
@@ -33,14 +35,7 @@ struct SendCryptoVerifyView: View {
             sendCryptoVerifyViewModel.isLoading = false
         }
         .onAppear {
-            Task {
-                do {
-                    try await sendCryptoVerifyViewModel.blowfishTransactionScan(tx: tx, vault: vault)
-                    blowfishViewModel.updateResponse(sendCryptoVerifyViewModel.blowfishWarnings)
-                } catch {
-                    print("Error scanning transaction: \(error)")
-                }
-            }
+            setData()
         }
     }
     
@@ -151,8 +146,26 @@ struct SendCryptoVerifyView: View {
         .opacity(!sendCryptoVerifyViewModel.isValidForm ? 0.5 : 1)
         .padding(.horizontal, 40)
     }
+    
+    private func setData() {
+        isButtonDisabled = false
+        
+        Task {
+            do {
+                try await sendCryptoVerifyViewModel.blowfishTransactionScan(tx: tx, vault: vault)
+                blowfishViewModel.updateResponse(sendCryptoVerifyViewModel.blowfishWarnings)
+            } catch {
+                print("Error scanning transaction: \(error)")
+            }
+        }
+    }
 
     private func signPressed() {
+        guard !isButtonDisabled else {
+            return
+        }
+        
+        isButtonDisabled = true
         sendCryptoVerifyViewModel.isLoading = true
 
         DispatchQueue.main.asyncAfter(deadline: .now()) {
