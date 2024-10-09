@@ -44,6 +44,7 @@ struct KeysignView: View {
             PopupCapsule(text: "urlCopied", showPopup: $showAlert)
         }
         .task {
+            await setData()
             await viewModel.startKeysign()
         }
         .onChange(of: viewModel.txid) {
