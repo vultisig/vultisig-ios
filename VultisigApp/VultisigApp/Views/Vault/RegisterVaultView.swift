@@ -21,21 +21,6 @@ struct RegisterVaultView: View {
             .padding(.vertical, 30)
     }
     
-    var content: some View {
-        VStack(alignment: .leading, spacing: 36) {
-            text1
-            text2
-            text3
-            text4
-            Spacer()
-            button
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .font(.body20MenloBold)
-        .foregroundColor(.neutral0)
-        .padding(16)
-    }
-    
     var text1: some View {
         Text(NSLocalizedString("registerVaultText1", comment: ""))
     }

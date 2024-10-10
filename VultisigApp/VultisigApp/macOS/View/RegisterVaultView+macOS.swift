@@ -20,5 +20,20 @@ extension RegisterVaultView {
     var header: some View {
         GeneralMacHeader(title: "registerVault")
     }
+    
+    var content: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            text1
+            text2
+            text3
+            text4
+            Spacer()
+            button
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .font(.body16MenloBold)
+        .foregroundColor(.neutral0)
+        .padding(16)
+    }
 }
 #endif
