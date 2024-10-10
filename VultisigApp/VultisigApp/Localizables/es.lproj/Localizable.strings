@@ -357,3 +357,10 @@
 "folderNeedsOneVault" = "La carpeta debe tener al menos un Vault seleccionado.";
 "sameNameFolder" = "Una carpeta con el mismo nombre ya existe";
 "sameNameFolderDescription" = "Elija un nombre único para la carpeta e inténtelo de nuevo.";
+"registerYourVaults" = "¡Registra tus Vaults!";
+"registerVault" = "Registrar Vault";
+"registerVaultText1" = "1. Guarda tu código QR del Vault";
+"registerVaultText2" = "2. Ve a ";
+"registerVaultText3" = "3. Sube tu código QR del Vault";
+"registerVaultText4" = "4. ¡Sigue tus VULTIES (Puntos Vault)!";
+"saveQRCode" = "Guardar código QR";

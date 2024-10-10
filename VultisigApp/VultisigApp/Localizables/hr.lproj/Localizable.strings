@@ -357,3 +357,10 @@
 "folderNeedsOneVault" = "Mapa mora sadržavati barem jedan odabrani trezor.";
 "sameNameFolder" = "Mapa s istim imenom već postoji";
 "sameNameFolderDescription" = "Odaberite jedinstveno ime za mapu i pokušajte ponovno.";
+"registerYourVaults" = "Registrirajte svoje trezore!";
+"registerVault" = "Registriraj trezor";
+"registerVaultText1" = "1. Spremite svoj QR kod trezora";
+"registerVaultText2" = "2. Idite na ";
+"registerVaultText3" = "3. Učitajte svoj QR kod trezora";
+"registerVaultText4" = "4. Pratite svoje VULTIES (Bodovi trezora)!";
+"saveQRCode" = "Spremi QR kod";
