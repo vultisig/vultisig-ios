@@ -33,7 +33,33 @@ extension RegisterVaultView {
         .frame(maxWidth: .infinity, alignment: .leading)
         .font(.body16MenloBold)
         .foregroundColor(.neutral0)
-        .padding(16)
+        .padding(.horizontal, 40)
+    }
+    
+    var button: some View {
+        ZStack {
+            if let renderedImage = viewModel.renderedImage {
+                Button {
+                    isExporting = true
+                } label: {
+                    label
+                        .padding(.bottom, 24)
+                }
+                .fileExporter(
+                    isPresented: $isExporting,
+                    document: ImageFileDocument(image: renderedImage),
+                    contentType: .png,
+                    defaultFilename: imageName
+                ) { result in
+                    switch result {
+                    case .success(let url):
+                        print("Image saved to: \(url.path)")
+                    case .failure(let error):
+                        print("Error saving image: \(error.localizedDescription)")
+                    }
+                }
+            }
+        }
     }
 }
 #endif

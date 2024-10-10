@@ -31,5 +31,20 @@ extension RegisterVaultView {
         .foregroundColor(.neutral0)
         .padding(16)
     }
+    
+    var button: some View {
+        ZStack {
+            if let renderedImage = viewModel.renderedImage {
+                ShareLink(
+                    item: renderedImage,
+                    preview: SharePreview(imageName, image: renderedImage)
+                ) {
+                    label
+                }
+            } else {
+                ProgressView()
+            }
+        }
+    }
 }
 #endif

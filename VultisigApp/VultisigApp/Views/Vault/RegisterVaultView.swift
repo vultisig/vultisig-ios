@@ -8,11 +8,22 @@
 import SwiftUI
 
 struct RegisterVaultView: View {
+    let vault: Vault
+    
+    @StateObject var viewModel = VaultDetailQRCodeViewModel()
+    
+    @State var imageName = ""
+    @State var isExporting: Bool = false
+    
+    @Environment(\.displayScale) var displayScale
     
     var body: some View {
         ZStack {
             Background()
             view
+        }
+        .onAppear {
+            setData()
         }
     }
     
@@ -55,11 +66,16 @@ struct RegisterVaultView: View {
             .cornerRadius(10)
     }
     
-    var button: some View {
+    var label: some View {
         FilledButton(title: "saveQRCode")
+    }
+    
+    private func setData() {
+        imageName = viewModel.generateName(vault: vault)
+        viewModel.render(vault: vault, displayScale: displayScale)
     }
 }
 
 #Preview {
-    RegisterVaultView()
+    RegisterVaultView(vault: Vault.example)
 }

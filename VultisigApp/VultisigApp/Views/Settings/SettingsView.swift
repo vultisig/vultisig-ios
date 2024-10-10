@@ -109,7 +109,11 @@ struct SettingsView: View {
     
     var registerVaultCell: some View {
         NavigationLink {
-            RegisterVaultView()
+            if let vault = homeViewModel.selectedVault {
+                RegisterVaultView(vault: vault)
+            } else {
+                ErrorMessage(text: "errorFetchingVault")
+            }
         } label: {
             SettingVaultRegistrationCell()
         }
