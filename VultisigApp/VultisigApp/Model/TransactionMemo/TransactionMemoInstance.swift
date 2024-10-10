@@ -72,7 +72,7 @@ enum TransactionMemoInstance {
         case .addPool(let memo):
             return memo.amount
         case .withdrawPool(_):
-            return 1 / pow(10, 8)
+            return 0
         }
     }
     
