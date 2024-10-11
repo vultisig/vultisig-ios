@@ -11,6 +11,7 @@ struct VultisigLogo: View {
     var isAnimated: Bool = true
     
     @State var didAppear = false
+    @State var showTexts = true
     
     var body: some View {
         container
@@ -22,8 +23,11 @@ struct VultisigLogo: View {
     var content: some View {
         VStack(spacing: 0) {
             logo
-            title
-            description
+            
+            if showTexts {
+                title
+                description
+            }
         }
     }
     

@@ -358,3 +358,10 @@
 "folderNeedsOneVault" = "A pasta precisa ter pelo menos um cofre selecionado.";
 "sameNameFolder" = "Já existe uma pasta com o mesmo nome";
 "sameNameFolderDescription" = "Escolha um nome exclusivo para a pasta e tente novamente.";
+"registerYourVaults" = "Registre seus Cofres!";
+"registerVault" = "Registrar Cofre";
+"registerVaultText1" = "1. Salve o código QR do seu Cofre";
+"registerVaultText2" = "2. Acesse ";
+"registerVaultText3" = "3. Carregue o código QR do seu Cofre";
+"registerVaultText4" = "4. Acompanhe seus VULTIES (Pontos de Cofre)!";
+"saveQRCode" = "Salvar código QR";

@@ -357,3 +357,10 @@
 "folderNeedsOneVault" = "Der Ordner muss mindestens einen ausgewählten Tresor enthalten.";
 "sameNameFolder" = "Ein Ordner mit demselben Namen existiert bereits";
 "sameNameFolderDescription" = "Bitte wählen Sie einen eindeutigen Namen für den Ordner und versuchen Sie es erneut.";
+"registerYourVaults" = "Registrieren Sie Ihre Tresore!";
+"registerVault" = "Tresor registrieren";
+"registerVaultText1" = "1. Speichern Sie Ihren Tresor-QR-Code";
+"registerVaultText2" = "2. Gehen Sie zu ";
+"registerVaultText3" = "3. Laden Sie Ihren Tresor-QR-Code hoch";
+"registerVaultText4" = "4. Verfolgen Sie Ihre VULTIES (Tresorpunkte)!";
+"saveQRCode" = "QR-Code speichern";
