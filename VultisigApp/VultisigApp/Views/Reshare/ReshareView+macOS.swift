@@ -33,5 +33,13 @@ extension ReshareView {
     var headerMac: some View {
         GeneralMacHeader(title: "reshare")
     }
+
+    var joinReshareButton: some View {
+        NavigationLink(destination: {
+            MacScannerView(type: .NewVault, sendTx: SendTransaction())
+        }) {
+            OutlineButton(title: "joinReshare")
+        }
+    }
 }
 #endif

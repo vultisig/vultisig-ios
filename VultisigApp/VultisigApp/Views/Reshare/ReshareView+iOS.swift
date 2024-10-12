@@ -31,5 +31,16 @@ extension ReshareView {
             )
         })
     }
+
+    var joinReshareButton: some View {
+        Button {
+            showJoinReshare = true
+        } label: {
+            OutlineButton(title: "joinReshare")
+        }
+        .navigationDestination(isPresented: $shouldJoinKeygen) {
+            JoinKeygenView(vault: vault)
+        }
+    }
 }
 #endif
