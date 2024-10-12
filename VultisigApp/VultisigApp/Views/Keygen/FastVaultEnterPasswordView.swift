@@ -70,7 +70,7 @@ struct FastVaultEnterPasswordView: View {
         .opacity(isSaveButtonDisabled ? 0.5 : 1)
         .disabled(isSaveButtonDisabled)
         .buttonStyle(.plain)
-        .alert("Wrong password", isPresented: $isWrongPassword) {
+        .alert(NSLocalizedString("wrongPassword", comment: ""), isPresented: $isWrongPassword) {
             Button("OK", role: .cancel) { }
         }
     }

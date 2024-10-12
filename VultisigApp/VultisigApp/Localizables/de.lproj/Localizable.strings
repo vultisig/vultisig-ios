@@ -1,3 +1,4 @@
+"wrongPassword" = "Falsches Passwort";
 "reshareLabelTitle" = "Teilen Sie Ihren Tresor erneut";
 "reshareLabelSubtitle" = "Erneutes Teilen kann verwendet werden, um die Anzahl der Geräte in einem Tresor zu aktualisieren, zu erweitern oder zu reduzieren.";
 "reshareLabelDisclaimer" = "Für alle Aktionen des erneuten Teilens ist immer das Schwellenwert der Geräte erforderlich.";

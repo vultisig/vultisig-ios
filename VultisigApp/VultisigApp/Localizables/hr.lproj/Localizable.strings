@@ -1,3 +1,4 @@
+"wrongPassword" = "Pogrešna lozinka";
 "reshareLabelTitle" = "Ponovno podijeli svoj trezor";
 "reshareLabelSubtitle" = "Ponovna podjela može se koristiti za osvježavanje, proširenje ili smanjenje broja uređaja u Trezoru.";
 "reshareLabelDisclaimer" = "Za sve akcije ponovne podjele uvijek je potreban prag uređaja.";
