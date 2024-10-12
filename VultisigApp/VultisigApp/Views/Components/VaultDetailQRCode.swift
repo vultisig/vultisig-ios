@@ -63,12 +63,16 @@ struct VaultDetailQRCode: View {
     }
     
     var uid: some View {
-        Text("UID: \(vault.localPartyID)")
-            .font(.body16MontserratMedium)
-            .foregroundColor(.neutral0)
-            .padding(.top, 10)
-            .lineLimit(2)
-            .multilineTextAlignment(.center)
+        Group {
+            Text("UID\n")
+                .font(.body16MontserratSemiBold) +
+            Text(viewModel.getId(for: vault))
+                .font(.body12Montserrat)
+        }
+        .multilineTextAlignment(.center)
+        .foregroundColor(.neutral0)
+        .padding(.top, 10)
+        .padding(.horizontal, 14)
     }
     
     var webLink: some View {

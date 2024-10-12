@@ -32,7 +32,7 @@ class VaultDetailQRCodeViewModel: ObservableObject {
         return VaultPublicKeyExport(uid: id, name: name, public_key_ecdsa: ecdsaKey, public_key_eddsa: eddsaKey, hex_chain_code: hexCode)
     }
     
-    func getId(vault: Vault) -> String {
+    func getId(for vault: Vault) -> String {
         let name = vault.name
         let ecdsaKey = vault.pubKeyECDSA
         let eddsaKey = vault.pubKeyEdDSA
