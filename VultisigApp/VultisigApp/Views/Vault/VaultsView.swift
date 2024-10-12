@@ -33,6 +33,9 @@ struct VaultsView: View {
             Spacer()
         }
         .allowsHitTesting(showVaultsList)
+        .onChange(of: isEditingVaults, { oldValue, newValue in
+            filterVaults()
+        })
         .onAppear {
             setData()
         }
@@ -92,7 +95,7 @@ struct VaultsView: View {
     }
     
     var vaultsList: some View {
-        ForEach(viewModel.filteredVaults, id: \.self) { vault in
+        ForEach(isEditingVaults ? vaults : viewModel.filteredVaults, id: \.self) { vault in
             getButton(for: vault)
         }
         .onMove(perform: isEditingVaults ? move : nil)
@@ -169,6 +172,14 @@ struct VaultsView: View {
     private func setData() {
         for index in 0..<vaults.count {
             vaults[index].setOrder(index)
+        }
+        
+        filterVaults()
+    }
+    
+    private func filterVaults() {
+        guard !isEditingVaults else {
+            return
         }
         
         viewModel.filterVaults(vaults: vaults, folders: folders)
