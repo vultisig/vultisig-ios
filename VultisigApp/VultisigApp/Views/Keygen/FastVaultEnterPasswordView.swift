@@ -9,10 +9,14 @@ import SwiftUI
 
 struct FastVaultEnterPasswordView: View {
 
+    @State var isLoading: Bool = false
+    @State var isWrongPassword: Bool = false
+
     @Binding var password: String
 
     @Environment(\.dismiss) var dismiss
 
+    let vault: Vault
     let onSubmit: (() -> Void)?
 
     var view: some View {
@@ -57,18 +61,39 @@ struct FastVaultEnterPasswordView: View {
 
     var continueButton: some View {
         Button(action: {
-            onSubmit?()
-            dismiss()
+            Task {
+                await checkPassword()
+            }
         }) {
             FilledButton(title: "continue")
         }
         .opacity(isSaveButtonDisabled ? 0.5 : 1)
         .disabled(isSaveButtonDisabled)
         .buttonStyle(.plain)
+        .alert(NSLocalizedString("wrongPassword", comment: ""), isPresented: $isWrongPassword) {
+            Button("OK", role: .cancel) { }
+        }
     }
 
     var isSaveButtonDisabled: Bool {
         return password.isEmpty
+    }
+
+    @MainActor func checkPassword() async {
+        isLoading = true
+        defer { isLoading = false }
+
+        let isValidPassword = await FastVaultService.shared.get(
+            pubKeyECDSA: vault.pubKeyECDSA,
+            password: password
+        )
+
+        if isValidPassword {
+            onSubmit?()
+            dismiss()
+        } else {
+            isWrongPassword = true
+        }
     }
 }
 

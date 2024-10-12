@@ -12,8 +12,10 @@ extension FastVaultEnterPasswordView {
         NavigationView {
             ZStack {
                 Background()
-                VStack {
-                    view
+                view
+
+                if isLoading {
+                    Loader()
                 }
             }
             .navigationBarItems(leading: backButton)
