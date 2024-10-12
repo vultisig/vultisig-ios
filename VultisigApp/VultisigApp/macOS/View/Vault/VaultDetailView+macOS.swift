@@ -30,7 +30,9 @@ extension VaultDetailView {
     }
     
     var cells: some View {
-        return ForEach(viewModel.groups, id: \.id) { group in
+        return ForEach(viewModel.groups.sorted(by: {
+            $0.totalBalanceInFiatDecimal > $1.totalBalanceInFiatDecimal
+        }), id: \.id) { group in
             ChainNavigationCell(
                 group: group,
                 vault: vault,

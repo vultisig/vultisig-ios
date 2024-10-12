@@ -160,6 +160,7 @@ struct VaultDetailView: View {
         
         tokenSelectionViewModel.setData(for: vault)
         settingsDefaultChainViewModel.setData(tokenSelectionViewModel.groupedAssets)
+        viewModel.categorizeCoins(vault: vault)
     }
     
     func getActions() -> some View {
