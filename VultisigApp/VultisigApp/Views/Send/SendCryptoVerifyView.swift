@@ -127,6 +127,7 @@ struct SendCryptoVerifyView: View {
         .sheet(isPresented: $fastPasswordPresented) {
             FastVaultEnterPasswordView(
                 password: $tx.fastVaultPassword,
+                vault: vault,
                 onSubmit: { signPressed() }
             )
         }

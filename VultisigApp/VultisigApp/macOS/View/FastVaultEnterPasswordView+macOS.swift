@@ -17,6 +17,9 @@ extension FastVaultEnterPasswordView {
                 view
                     .padding(.horizontal, 25)
             }
+            if isLoading {
+                Loader()
+            }
         }
     }
 
