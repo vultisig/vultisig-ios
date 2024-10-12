@@ -36,7 +36,7 @@ extension ReshareView {
 
     var joinReshareButton: some View {
         NavigationLink(destination: {
-            MacScannerView(type: .NewVault, sendTx: SendTransaction())
+            MacScannerView(vault: vault, type: .NewVault, sendTx: SendTransaction())
         }) {
             OutlineButton(title: "joinReshare")
         }

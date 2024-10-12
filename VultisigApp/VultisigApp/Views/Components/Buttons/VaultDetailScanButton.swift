@@ -9,6 +9,8 @@ import SwiftUI
 
 struct VaultDetailScanButton: View {
     @Binding var showSheet: Bool
+
+    let vault: Vault
     let sendTx: SendTransaction
     
     var body: some View {
@@ -34,5 +36,5 @@ struct VaultDetailScanButton: View {
 }
 
 #Preview {
-    VaultDetailScanButton(showSheet: .constant(true), sendTx: SendTransaction())
+    VaultDetailScanButton(showSheet: .constant(true), vault: .example, sendTx: SendTransaction())
 }

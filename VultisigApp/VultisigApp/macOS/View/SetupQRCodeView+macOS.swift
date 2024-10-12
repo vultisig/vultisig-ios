@@ -30,7 +30,7 @@ extension SetupQRCodeView {
     
     var pairButton: some View {
         NavigationLink(destination: {
-            MacScannerView(type: .NewVault, sendTx: SendTransaction())
+            MacScannerView(vault: makeVault(), type: .NewVault, sendTx: SendTransaction())
         }) {
             OutlineButton(title: "pair")
         }

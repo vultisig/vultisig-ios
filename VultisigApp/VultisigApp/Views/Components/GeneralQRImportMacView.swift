@@ -9,6 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct GeneralQRImportMacView: View {
+    let vault: Vault
     let type: DeeplinkFlowType
     
     @State var fileName: String? = nil
@@ -59,7 +60,7 @@ struct GeneralQRImportMacView: View {
         }
         .padding(40)
         .navigationDestination(isPresented: $shouldJoinKeygen) {
-            JoinKeygenView(vault: Vault(name: "Main Vault"))
+            JoinKeygenView(vault: vault)
         }
         .navigationDestination(isPresented: $shouldKeysignTransaction) {
             if let vault = homeViewModel.selectedVault {
@@ -198,7 +199,7 @@ struct GeneralQRImportMacView: View {
 }
 
 #Preview {
-    GeneralQRImportMacView(type: .NewVault)
+    GeneralQRImportMacView(vault: .example, type: .NewVault)
         .environmentObject(HomeViewModel())
         .environmentObject(DeeplinkViewModel())
 }
