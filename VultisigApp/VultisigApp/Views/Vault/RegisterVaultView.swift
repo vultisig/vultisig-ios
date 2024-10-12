@@ -67,7 +67,8 @@ struct RegisterVaultView: View {
     }
     
     var label: some View {
-        FilledButton(title: "saveQRCode")
+        FilledButton(title: "complete")
+            .padding(.bottom, 20)
     }
     
     private func setData() {

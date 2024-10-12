@@ -22,7 +22,7 @@ struct VaultDetailMacQRCode: View {
             webLink
         }
         .padding(22)
-        .frame(width: 960, height: 1380)
+        .frame(width: 960, height: 1400)
         .background(LinearGradient.primaryGradientLinear)
     }
     
@@ -64,12 +64,16 @@ struct VaultDetailMacQRCode: View {
     }
     
     var uid: some View {
-        Text("UID: \(vault.localPartyID)")
-            .font(.title36MontserratSemiBold)
-            .foregroundColor(.neutral0)
-            .padding(.top, 10)
-            .lineLimit(2)
-            .multilineTextAlignment(.center)
+        Group {
+            Text("UID\n")
+                .font(.title36MontserratSemiBold) +
+            Text(viewModel.getId(for: vault))
+                .font(.title36MontserratSemiBold)
+        }
+        .multilineTextAlignment(.center)
+        .foregroundColor(.neutral0)
+        .padding(.top, 10)
+        .padding(.horizontal, 14)
     }
     
     var webLink: some View {
