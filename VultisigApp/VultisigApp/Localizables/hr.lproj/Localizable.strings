@@ -215,7 +215,7 @@
 "youArePermanentlyDeletingVault" = "Trajno brišete svoje spremište";
 "reviewConditions" = "Pregled uvjeta";
 "reviewConditionsMessage" = "Molimo pregledajte i prihvatite sve navedene uvjete.";
-"deposit" = "Polog";
+"function" = "funkcija";
 "enterPassword" = "Unesite lozinku";
 "fastVaultEnterDisclaimer" = "Ova lozinka dešifrira vaš udio u FastVaultu";
 "fastVaultSetDisclaimer" = "Ova lozinka šifrira vaš FastVault Share";

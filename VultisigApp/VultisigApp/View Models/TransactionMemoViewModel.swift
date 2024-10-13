@@ -19,7 +19,7 @@ class TransactionMemoViewModel: ObservableObject, TransferViewModel {
     @Published var isValidForm = true
     @Published var showAlert = false
     @Published var currentIndex = 1
-    @Published var currentTitle = "deposit"
+    @Published var currentTitle = "function"
     @Published var priceRate = 0.0
     @Published var coinBalance: String = "0"
     @Published var errorMessage = ""
@@ -31,7 +31,7 @@ class TransactionMemoViewModel: ObservableObject, TransferViewModel {
     private let mediator = Mediator.shared
     
     let totalViews = 5
-    let titles = ["deposit", "verify", "pair", "keysign", "done"]
+    let titles = ["function", "verify", "pair", "keysign", "done"]
     
     let logger = Logger(subsystem: "deposit-input-details", category: "deposity")
     
