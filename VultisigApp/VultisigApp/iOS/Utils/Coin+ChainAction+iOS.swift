@@ -13,7 +13,7 @@ extension Array where Element == CoinAction {
 #if DEBUG
         return self
 #else
-        return filter { $0 != .swap && $0 != .memo }
+        return filter { $0 != .swap }
 #endif
     }
 }

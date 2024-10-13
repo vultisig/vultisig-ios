@@ -215,7 +215,7 @@
 "youArePermanentlyDeletingVault" = "Stai eliminando definitivamente il tuo caveau";
 "reviewConditions" = "Rivedi le Condizioni";
 "reviewConditionsMessage" = "Si prega di rivedere e accettare tutte le condizioni elencate.";
-"deposit" = "Deposito";
+"function" = "funzione";
 "enterPassword" = "Inserisci la password";
 "fastVaultEnterDisclaimer" = "Questa password decifra la tua condivisione FastVault";
 "fastVaultSetDisclaimer" = "Questa password crittografa la tua condivisione FastVault";
