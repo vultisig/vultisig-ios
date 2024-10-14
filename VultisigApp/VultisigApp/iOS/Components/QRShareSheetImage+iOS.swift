@@ -31,15 +31,6 @@ extension QRShareSheetImage {
             .padding(.horizontal, padding)
     }
     
-    var titleContent: some View {
-        Text(NSLocalizedString(type.rawValue, comment: ""))
-            .font(.body16MenloBold)
-            .frame(maxWidth: 200)
-            .lineLimit(2)
-            .foregroundColor(.neutral0)
-            .multilineTextAlignment(.center)
-    }
-    
     var logo: some View {
         VStack(spacing: 16) {
             Image("VultisigLogo")

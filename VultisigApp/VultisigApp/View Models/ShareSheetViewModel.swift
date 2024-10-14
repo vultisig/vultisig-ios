@@ -15,15 +15,25 @@ class ShareSheetViewModel: ObservableObject {
         qrCodeImage: Image,
         displayScale: CGFloat,
         type: QRShareSheetType,
-        addressData: String = ""
+        addressData: String = "",
+        vaultName: String = "",
+        amount: String = "",
+        toAddress: String = "",
+        fromAmount: String = "",
+        toAmount: String = ""
     ) {
         let renderer = ImageRenderer(
             content:
-                QRShareSheetImage(
-                    image: qrCodeImage,
-                    type: type,
-                    addressData: addressData
-                )
+            QRShareSheetImage(
+                image: qrCodeImage,
+                type: type,
+                vaultName: vaultName,
+                amount: amount,
+                toAddress: toAddress,
+                fromAmount: fromAmount,
+                toAmount: toAmount,
+                address: addressData
+            )
         )
 
         renderer.scale = displayScale

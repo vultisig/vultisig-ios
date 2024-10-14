@@ -394,3 +394,5 @@
 "registerVaultText3" = "3. Upload your Vault QR Code";
 "registerVaultText4" = "4. Track your VULTIES (Vault Points)!";
 "saveQRCode" = "Save QR Code";
+"joinSend" = "Join Send";
+"joinSwap" = "Join Swap";

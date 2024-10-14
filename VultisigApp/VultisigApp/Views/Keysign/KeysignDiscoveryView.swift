@@ -22,6 +22,8 @@ struct KeysignDiscoveryView: View {
     @State var selectedNetwork = NetworkPromptType.Internet
     @State var previewType: QRShareSheetType = .Send
     
+    var swapTransaction: SwapTransaction = SwapTransaction()
+    
 #if os(iOS)
     @State var orientation = UIDevice.current.orientation
 #endif
@@ -157,8 +159,33 @@ struct KeysignDiscoveryView: View {
         shareSheetViewModel.render(
             qrCodeImage: qrCodeImage,
             displayScale: displayScale, 
-            type: previewType
+            type: previewType,
+            vaultName: vault.name,
+            amount: previewType == .Send ? keysignPayload.toAmountString : "",
+            toAddress: previewType == .Send ? keysignPayload.toAddress : "",
+            fromAmount: previewType == .Swap ? getSwapFromAmount() : "",
+            toAmount: previewType == .Swap ? getSwapToAmount() : ""
         )
+    }
+    
+    func getSwapFromAmount() -> String {
+        let tx = swapTransaction
+        
+        if tx.fromCoin.chain == tx.toCoin.chain {
+            return "\(tx.fromAmount) \(tx.fromCoin.ticker)"
+        } else {
+            return "\(tx.fromAmount) \(tx.fromCoin.ticker) (\(tx.fromCoin.chain.ticker))"
+        }
+    }
+
+    func getSwapToAmount() -> String {
+        let tx = swapTransaction
+        
+        if tx.fromCoin.chain == tx.toCoin.chain {
+            return "\(tx.toAmountDecimal.description) \(tx.toCoin.ticker)"
+        } else {
+            return "\(tx.toAmountDecimal.description) \(tx.toCoin.ticker) (\(tx.toCoin.chain.ticker))"
+        }
     }
     
     func startKeysign() {

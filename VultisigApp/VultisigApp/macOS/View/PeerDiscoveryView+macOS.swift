@@ -136,9 +136,9 @@ extension PeerDiscoveryView {
         }
         
         shareSheetViewModel.render(
-            title: "joinKeygen",
             qrCodeImage: qrCodeImage,
-            displayScale: displayScale
+            displayScale: displayScale,
+            type: .Keygen
         )
     }
 }
