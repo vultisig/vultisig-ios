@@ -27,6 +27,16 @@ extension SetupQRCodeView {
     }
     
     var pairButton: some View {
+        ZStack {
+            if ProcessInfo.processInfo.isiOSAppOnMac {
+                pairMacButton
+            } else {
+                pairPhoneButton
+            }
+        }
+    }
+    
+    var pairPhoneButton: some View {
         Button(action: {
             showSheet = true
         }) {
@@ -44,6 +54,14 @@ extension SetupQRCodeView {
         })
         .navigationDestination(isPresented: $shouldJoinKeygen) {
             JoinKeygenView(vault: makeVault())
+        }
+    }
+    
+    var pairMacButton: some View {
+        NavigationLink {
+            GeneralQRImportMacView(type: .NewVault)
+        } label: {
+            OutlineButton(title: "pair")
         }
     }
 }
