@@ -4,7 +4,7 @@
 //
 //  Created by Amol Kumar on 2024-06-27.
 //
-#if os(macOS)
+
 import SwiftUI
 import SwiftData
 
@@ -12,7 +12,6 @@ struct GeneralQRImportMacView: View {
     let type: DeeplinkFlowType
     
     @State var fileName: String? = nil
-    @State private var selectedImage: NSImage?
     @State var alertDescription = ""
     @State var importResult: Result<[URL], Error>? = nil
     
@@ -20,6 +19,12 @@ struct GeneralQRImportMacView: View {
     @State var isButtonEnabled = false
     @State var shouldJoinKeygen = false
     @State var shouldKeysignTransaction = false
+   
+#if os(iOS)
+    @State var selectedImage: UIImage?
+#elseif os(macOS)
+    @State var selectedImage: NSImage?
+#endif
     
     @Query var vaults: [Vault]
     
@@ -72,9 +77,9 @@ struct GeneralQRImportMacView: View {
     var uploadSection: some View {
         FileQRCodeImporterMac(
             fileName: fileName,
-            selectedImage: selectedImage,
             resetData: resetData,
-            handleFileImport: handleFileImport
+            handleFileImport: handleFileImport,
+            selectedImage: selectedImage
         )
         .alert(isPresented: $showAlert) {
             alert
@@ -138,23 +143,6 @@ struct GeneralQRImportMacView: View {
         }
     }
     
-    private func setValues(_ urls: [URL]) {
-        do {
-            if let url = urls.first {
-                let _ = url.startAccessingSecurityScopedResource()
-                fileName = url.lastPathComponent
-                
-                let imageData = try Data(contentsOf: url)
-                if let nsImage = NSImage(data: imageData) {
-                    selectedImage = nsImage
-                }
-                isButtonEnabled = true
-            }
-        } catch {
-            print(error)
-        }
-    }
-    
     private func handleTap() {
         guard let importResult else {
             return
@@ -214,4 +202,3 @@ struct GeneralQRImportMacView: View {
         .environmentObject(HomeViewModel())
         .environmentObject(DeeplinkViewModel())
 }
-#endif

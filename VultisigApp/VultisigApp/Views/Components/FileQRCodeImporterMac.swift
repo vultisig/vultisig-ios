@@ -5,27 +5,25 @@
 //  Created by Amol Kumar on 2024-06-27.
 //
 
-#if os(macOS)
 import SwiftUI
 import UniformTypeIdentifiers
 
 struct FileQRCodeImporterMac: View {
     let fileName: String?
-    let selectedImage: NSImage?
     let resetData: () -> ()
     let handleFileImport: (_ result: Result<[URL], Error>) -> ()
+    
+#if os(iOS)
+    let selectedImage: UIImage?
+#elseif os(macOS)
+    let selectedImage: NSImage?
+#endif
     
     @State var showFileImporter = false
     @State var isUploading: Bool = false
     
     var body: some View {
-        VStack {
-            button
-            
-            if let name = fileName {
-                fileCell(name)
-            }
-        }
+        container
     }
     
     var button: some View {
@@ -40,12 +38,6 @@ struct FileQRCodeImporterMac: View {
             allowsMultipleSelection: false
         ) { result in
             handleFileImport(result)
-        }
-        .onDrop(of: [.data], isTargeted: $isUploading) { providers -> Bool in
-            OnDropQRUtils.handleFileQRCodeImporterMacDrop(providers: providers) { result in
-                handleFileImport(result)
-            }
-            return true
         }
     }
     
@@ -95,15 +87,8 @@ struct FileQRCodeImporterMac: View {
         showFileImporter = true
     }
     
-    private func fileCell(_ name: String) -> some View {
+    func fileCell(_ name: String) -> some View {
         ImportFileCell(name: name, resetData: resetData)
-    }
-    
-    private func getPreviewImage(_ image: NSImage) -> some View {
-        Image(nsImage: image)
-            .resizable()
-            .scaledToFit()
-            .padding(.vertical, 18)
     }
     
     private func getOverlay(_ lineWidth: CGFloat) -> some View {
@@ -121,7 +106,6 @@ struct FileQRCodeImporterMac: View {
         print("IMPORTED")
     }
     
-    return FileQRCodeImporterMac(fileName: "File", selectedImage: nil, resetData: reset, handleFileImport: handleFileImport)
+    return FileQRCodeImporterMac(fileName: "File", resetData: reset, handleFileImport: handleFileImport, selectedImage: nil)
         .padding(100)
 }
-#endif
