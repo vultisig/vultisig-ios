@@ -26,6 +26,9 @@ struct ChainNavigationCell: View {
         .listRowSeparator(.hidden)
         .disabled(isEditingChains ? true : false)
         .padding(.vertical, 8)
+        .onChange(of: group.totalBalanceInFiatString) { oldValue, newValue in
+            viewModel.categorizeCoins(vault: vault)
+        }
     }
     
     var cell: some View {
@@ -54,5 +57,6 @@ struct ChainNavigationCell: View {
         vault: Vault.example, 
         showAlert: .constant(false)
     )
+    .environmentObject(HomeViewModel())
     .environmentObject(VaultDetailViewModel())
 }
