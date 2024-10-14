@@ -1,3 +1,4 @@
+"wrongPassword" = "Senha incorreta";
 "reshareLabelTitle" = "Compartilhe novamente seu cofre";
 "reshareLabelSubtitle" = "O recurso de compartilhar novamente pode ser usado para atualizar, expandir ou reduzir a quantidade de dispositivos em um Cofre.";
 "reshareLabelDisclaimer" = "Para todas as ações de compartilhar novamente, é sempre necessário o limite de dispositivos.";
@@ -79,6 +80,7 @@
 "mainDevice" = "Dispositivo Principal";
 "pleaseWait" = "Por favor, espere...";
 "joinKeygen" = "JUNTAR-SE À GERAÇÃO/RECOMPARTILHAÇÃO DE CHAVE";
+"failToStartKesign" = "Erro de assinatura. Por favor, tente novamente.";
 "failToStartKeygen" = "Não foi possível iniciar a geração de chave devido à falta de informações";
 "scanQRCodeJoinKeygen" = "Escanear o Código QR em outro aplicativo Vultisig para começar.";
 "discoveringMediator" = "Descobrindo serviço mediador, por favor, espere...";
@@ -100,7 +102,7 @@
 "activeModeDescription" = "• Assinatura rápida em movimento\n• Alertas e políticas de transação\n• Completamente auto-custodial\n\nUsar como “vault principal”";
 "secureModeDescription" = "• Apenas seus dispositivos\n• Sem alertas ou políticas\n• Completamente auto-custodial\n\nUsar como um “vault frio”";
 "fastLoaderTitle" = "Procurando FastVaultServer";
-"activeLoaderTitle" = "Procurando por mais 1 dispositivo...";
+"activeLoaderTitle" = "Procurando FastVaultServer e mais 1 dispositivo...";
 "secureLoaderTitle" = "Procurando dispositivos...";
 "sign" = "Assinar";
 "amount" = "Quantidade";
@@ -213,7 +215,7 @@
 "youArePermanentlyDeletingVault" = "Você está excluindo permanentemente seu cofre";
 "reviewConditions" = "Revisar Condições";
 "reviewConditionsMessage" = "Por favor, reveja e concorde com todas as condições listadas.";
-"deposit" = "Depósito";
+"function" = "função";
 "enterPassword" = "Digite a senha";
 "fastVaultEnterDisclaimer" = "Esta palavra-passe desencripta o seu compartilhamento FastVault";
 "fastVaultSetDisclaimer" = "Esta palavra-passe encripta o seu FastVault Share";
@@ -344,3 +346,23 @@
 "retry" = "Tentar novamente";
 "loginUsingTouchID" = "Entrar usando Touch ID";
 "loginUsingOpticID" = "Entrar usando Optic ID";
+"createFolder" = "Criar pasta";
+"create" = "Criar";
+"folderName" = "Nome da pasta";
+"addVaultsToFolder" = "Selecione cofres para adicionar à pasta";
+"deleteFolder" = "Excluir pasta";
+"folder" = "Pasta";
+"folders" = "Pastas";
+"enterValidFolderName" = "Insira um nome de pasta válido e tente novamente.";
+"noVaultSelected" = "Nenhum cofre selecionado";
+"selectAtleastOneVault" = "Selecione pelo menos um cofre e tente novamente.";
+"folderNeedsOneVault" = "A pasta precisa ter pelo menos um cofre selecionado.";
+"sameNameFolder" = "Já existe uma pasta com o mesmo nome";
+"sameNameFolderDescription" = "Escolha um nome exclusivo para a pasta e tente novamente.";
+"registerYourVaults" = "Registre seus Cofres!";
+"registerVault" = "Registrar Cofre";
+"registerVaultText1" = "1. Salve o código QR do seu Cofre";
+"registerVaultText2" = "2. Acesse ";
+"registerVaultText3" = "3. Carregue o código QR do seu Cofre";
+"registerVaultText4" = "4. Acompanhe seus VULTIES (Pontos de Cofre)!";
+"saveQRCode" = "Salvar código QR";

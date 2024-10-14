@@ -166,8 +166,8 @@ struct KeygenView: View {
         }
     }
     
-    func setData() {
-        viewModel.setData(
+    func setData() async {
+        await viewModel.setData(
             vault: vault,
             tssType: tssType,
             keygenCommittee: keygenCommittee,

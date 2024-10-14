@@ -26,6 +26,7 @@ extension VultisigApp {
             .frame(minWidth: 900, minHeight: 600)
             .onAppear{
                 NSWindow.allowsAutomaticWindowTabbing = false
+                continueLogin()
             }
     }
 }

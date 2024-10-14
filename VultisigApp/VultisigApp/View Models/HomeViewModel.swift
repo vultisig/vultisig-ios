@@ -14,6 +14,7 @@ class HomeViewModel: ObservableObject {
     @AppStorage("showVaultBalance") var hideVaultBalance: Bool = false
     
     @Published var selectedVault: Vault? = nil
+    @Published var filteredVaults: [Vault] = []
 
     func loadSelectedVault(for vaults: [Vault]) {
         if vaultName.isEmpty || selectedPubKeyECDSA.isEmpty {
@@ -35,5 +36,13 @@ class HomeViewModel: ObservableObject {
         selectedVault = vault
         vaultName = vault?.name ?? ""
         selectedPubKeyECDSA = vault?.pubKeyECDSA ?? ""
+    }
+    
+    func filterVaults(vaults: [Vault], folders: [Folder]) {
+        let vaultNames = Set(folders.flatMap { $0.containedVaultNames })
+        
+        filteredVaults = vaults.filter({ vault in
+            !vaultNames.contains(vault.name)
+        })
     }
 }

@@ -28,20 +28,18 @@ class SuiService {
     }
     
     func getBalance(coin: Coin) async throws -> String {
-        var rawBalance = "0"
-        
-        do {
-            let data = try await Utils.PostRequestRpc(rpcURL: rpcURL, method: "suix_getBalance", params:  [coin.address])
-            
-            if let totalBalance = Utils.extractResultFromJson(fromData: data, path: "result.totalBalance") as? String {
-                rawBalance = totalBalance
-            }
-            
-        } catch {
-            print("Error fetching balance: \(error.localizedDescription)")
-            throw error
-        }
-        return rawBalance
+        let data = try await Utils.PostRequestRpc(
+            rpcURL: rpcURL,
+            method: "suix_getBalance",
+            params:  [coin.address]
+        )
+
+        guard let totalBalance = Utils.extractResultFromJson(
+            fromData: data,
+            path: "result.totalBalance"
+        ) as? String else { throw Errors.getBalanceFailed }
+
+        return totalBalance
     }
     
     func getReferenceGasPrice(coin: Coin) async throws -> BigInt{
@@ -114,5 +112,12 @@ class SuiService {
             return error.localizedDescription
         }
         return .empty
+    }
+}
+
+private extension SuiService {
+
+    enum Errors: Error {
+        case getBalanceFailed
     }
 }

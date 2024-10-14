@@ -11,8 +11,8 @@ import SwiftUI
 extension KeysignView {
     var container: some View {
         content
+            
             .onAppear {
-                setData()
                 UIApplication.shared.isIdleTimerDisabled = true
             }
             .onDisappear(){

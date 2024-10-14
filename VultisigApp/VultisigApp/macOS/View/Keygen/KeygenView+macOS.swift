@@ -20,13 +20,11 @@ extension KeygenView {
             BackupVaultNowView(vault: vault)
         }
         .task {
+            await setData()
             await viewModel.startKeygen(
                 context: context,
                 defaultChains: settingsDefaultChainViewModel.defaultChains
             )
-        }
-        .onAppear {
-            setData()
         }
     }
     

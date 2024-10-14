@@ -44,6 +44,7 @@ struct KeysignView: View {
             PopupCapsule(text: "urlCopied", showPopup: $showAlert)
         }
         .task {
+            await setData()
             await viewModel.startKeysign()
         }
         .onChange(of: viewModel.txid) {
@@ -69,13 +70,13 @@ struct KeysignView: View {
         JoinKeysignDoneView(vault: vault, viewModel: viewModel, showAlert: $showAlert)
     }
     
-    func setData() {
+    func setData() async {
         guard let keysignPayload, keysignPayload.vaultPubKeyECDSA == vault.pubKeyECDSA else {
             viewModel.status = .KeysignVaultMismatch
             return
         }
         
-        viewModel.setData(
+        await viewModel.setData(
             keysignCommittee: self.keysignCommittee,
             mediatorURL: self.mediatorURL,
             sessionID: self.sessionID,

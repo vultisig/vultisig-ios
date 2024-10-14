@@ -67,7 +67,7 @@ private extension BalanceService {
         switch coin.chain {
         case .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash:
             let blockChairData = try await utxo.fetchBlockchairData(coin: coin)
-            return blockChairData?.address?.balance?.description ?? "0"
+            return blockChairData.address?.balance?.description ?? "0"
 
         case .thorChain:
             let thorBalances = try await thor.fetchBalances(coin.address)

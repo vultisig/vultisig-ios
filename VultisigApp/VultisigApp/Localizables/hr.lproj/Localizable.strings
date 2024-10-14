@@ -1,3 +1,4 @@
+"wrongPassword" = "Pogrešna lozinka";
 "reshareLabelTitle" = "Ponovno podijeli svoj trezor";
 "reshareLabelSubtitle" = "Ponovna podjela može se koristiti za osvježavanje, proširenje ili smanjenje broja uređaja u Trezoru.";
 "reshareLabelDisclaimer" = "Za sve akcije ponovne podjele uvijek je potreban prag uređaja.";
@@ -79,6 +80,7 @@
 "mainDevice" = "Glavni uređaj";
 "pleaseWait" = "Molimo pričekajte...";
 "joinKeygen" = "PRIDRUŽI SE GENERIRANJU KLJUČA/PONOVLJENOM DIJELJENJU";
+"failToStartKesign" = "Greška u potpisivanju. Pokušajte ponovno.";
 "failToStartKeygen" = "Nije moguće pokrenuti generiranje ključa zbog nedostatka informacija";
 "scanQRCodeJoinKeygen" = "Skenirajte QR kod na drugoj Vultisig aplikaciji za početak.";
 "discoveringMediator" = "Otkrivanje posredničke usluge, molimo pričekajte...";
@@ -100,7 +102,7 @@
 "activeModeDescription" = "• Brzo potpisivanje u pokretu\n• Upozorenja i politike transakcija\n• Potpuno samostalno skrbništvo\n\nKoristiti kao “glavni vault”";
 "secureModeDescription" = "• Samo vaši uređaji\n• Bez upozorenja i politika\n• Potpuno samostalno skrbništvo\n\nKoristiti kao “hladni vault”";
 "fastLoaderTitle" = "Tražim FastVaultServer";
-"activeLoaderTitle" = "Tražim još 1 uređaj...";
+"activeLoaderTitle" = "Traženje FastVaultServera i još 1 uređaja...";
 "secureLoaderTitle" = "Tražim uređaje...";
 "sign" = "Potpiši";
 "amount" = "Iznos";
@@ -213,7 +215,7 @@
 "youArePermanentlyDeletingVault" = "Trajno brišete svoje spremište";
 "reviewConditions" = "Pregled uvjeta";
 "reviewConditionsMessage" = "Molimo pregledajte i prihvatite sve navedene uvjete.";
-"deposit" = "Polog";
+"function" = "funkcija";
 "enterPassword" = "Unesite lozinku";
 "fastVaultEnterDisclaimer" = "Ova lozinka dešifrira vaš udio u FastVaultu";
 "fastVaultSetDisclaimer" = "Ova lozinka šifrira vaš FastVault Share";
@@ -343,3 +345,23 @@
 "retry" = "Pokušaj ponovo";
 "loginUsingTouchID" = "Prijava pomoću Touch ID-a";
 "loginUsingOpticID" = "Prijava pomoću Optic ID-a";
+"createFolder" = "Kreiraj mapu";
+"create" = "Kreiraj";
+"folderName" = "Naziv mape";
+"addVaultsToFolder" = "Odaberite trezore za dodavanje u mapu";
+"deleteFolder" = "Izbriši mapu";
+"folder" = "Mapa";
+"folders" = "Mape";
+"enterValidFolderName" = "Unesite ispravan naziv mape i pokušajte ponovno.";
+"noVaultSelected" = "Nije odabran nijedan trezor";
+"selectAtleastOneVault" = "Odaberite barem jedan trezor i pokušajte ponovno.";
+"folderNeedsOneVault" = "Mapa mora sadržavati barem jedan odabrani trezor.";
+"sameNameFolder" = "Mapa s istim imenom već postoji";
+"sameNameFolderDescription" = "Odaberite jedinstveno ime za mapu i pokušajte ponovno.";
+"registerYourVaults" = "Registrirajte svoje trezore!";
+"registerVault" = "Registriraj trezor";
+"registerVaultText1" = "1. Spremite svoj QR kod trezora";
+"registerVaultText2" = "2. Idite na ";
+"registerVaultText3" = "3. Učitajte svoj QR kod trezora";
+"registerVaultText4" = "4. Pratite svoje VULTIES (Bodovi trezora)!";
+"saveQRCode" = "Spremi QR kod";

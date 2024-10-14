@@ -22,7 +22,7 @@ struct SendCryptoStartErrorView: View {
     }
     
     var errorMessage: some View {
-        ErrorMessage(text: "failToStart")
+        ErrorMessage(text: "failToStartKesign")
     }
     
     var bottomBar: some View {

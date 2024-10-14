@@ -18,23 +18,23 @@ class BlockchairService {
 
     private init() {}
 
-    func fetchBlockchairData(coin: Coin) async throws -> Blockchair? {
+    func fetchBlockchairData(coin: Coin) async throws -> Blockchair {
         let coinName = coin.chain.name.lowercased()
         let url = Endpoint.blockchairDashboard(coin.address, coinName)
-        do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            let decoder = JSONDecoder()
-            decoder.keyDecodingStrategy = .convertFromSnakeCase
-            let decodedData = try decoder.decode(BlockchairResponse.self, from: data)
-            if let d = decodedData.data[coin .address] {
-                self.blockchairData.set(coin.blockchairKey, d)
-                return d
-            }
-        } catch {
-            print("Error: \(error.localizedDescription)")
-            throw error
+        let (data, _) = try await URLSession.shared.data(from: url)
+        
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        
+        let decodedData = try decoder.decode(BlockchairResponse.self, from: data)
+
+        guard let d = decodedData.data[coin.address] else {
+            throw Errors.fetchBlockchairDataFailed
         }
-        return nil
+
+        blockchairData.set(coin.blockchairKey, d)
+
+        return d
     }
     
     func fetchSatsPrice(coin: Coin) async throws -> BigInt {
@@ -50,8 +50,15 @@ class BlockchairService {
             self.cacheFeePrice[cacheKey] = (data: bigIntResult, timestamp: Date())
             return bigIntResult
         } else {
-            print("JSON decoding error")
+            throw Errors.fetchSatsPriceFailed
         }
-        return BigInt(-1)
+    }
+}
+
+private extension BlockchairService {
+
+    enum Errors: Error {
+        case fetchSatsPriceFailed
+        case fetchBlockchairDataFailed
     }
 }

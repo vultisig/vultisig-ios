@@ -16,6 +16,7 @@ struct VaultCell: View {
     var body: some View {
         HStack(spacing: 4) {
             rearrange
+            
             title
             
             if viewModel.isFastVault {
@@ -45,6 +46,12 @@ struct VaultCell: View {
             .clipped()
     }
     
+    var folder: some View {
+        Image(systemName: "folder")
+            .font(.body14MontserratMedium)
+            .foregroundColor(.neutral100)
+    }
+    
     var title: some View {
         Text(vault.name.capitalized)
             .font(.body16MenloBold)
@@ -55,9 +62,7 @@ struct VaultCell: View {
     }
     
     var actions: some View {
-        HStack(spacing: 8) {
-            selectOption
-        }
+        selectOption
     }
     
     var partAssignedCell: some View {
@@ -81,6 +86,8 @@ struct VaultCell: View {
         Image(systemName: "chevron.right")
             .font(.body16MontserratBold)
             .foregroundColor(.neutral100)
+            .frame(maxWidth: isEditing ? 0 : nil)
+            .clipped()
     }
     
     private func setData() {
@@ -90,6 +97,7 @@ struct VaultCell: View {
 
 #Preview {
     VStack {
+        VaultCell(vault: Vault.example, isEditing: true)
         VaultCell(vault: Vault.example, isEditing: true)
         VaultCell(vault: Vault.fastVaultExample, isEditing: false)
     }
