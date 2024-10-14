@@ -71,9 +71,10 @@ struct AddressQRCodeView: View {
         }
         
         shareSheetViewModel.render(
-            title: addressData,
-            qrCodeImage: qrCodeImage,
-            displayScale: displayScale
+            qrCodeImage: qrCodeImage, 
+            displayScale: displayScale, 
+            type: .Address,
+            addressData: addressData
         )
     }
 }

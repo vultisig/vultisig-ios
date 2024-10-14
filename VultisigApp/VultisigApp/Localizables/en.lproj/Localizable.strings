@@ -370,6 +370,10 @@
 "retry" = "Retry";
 "loginUsingTouchID" = "Login using Touch ID";
 "loginUsingOpticID" = "Login using Optic ID";
+"previewKeygenDescription" = "Scan with devices to join the vault generation";
+"JoinKeygen" = "Join Keygen";
+"JoinSend" = "Join Send";
+"JoinSwap" = "Join Swap";
 "createFolder" = "Create Folder";
 "create" = "Create";
 "folderName" = "Folder name";
@@ -390,3 +394,5 @@
 "registerVaultText3" = "3. Upload your Vault QR Code";
 "registerVaultText4" = "4. Track your VULTIES (Vault Points)!";
 "saveQRCode" = "Save QR Code";
+"joinSend" = "Join Send";
+"joinSwap" = "Join Swap";
