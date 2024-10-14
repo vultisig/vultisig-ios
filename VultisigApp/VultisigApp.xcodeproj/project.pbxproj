@@ -380,6 +380,8 @@
 		A69FBBCE2C8BBA1900A4B78B /* TransactionMemoVerifyView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69FBBCD2C8BBA1900A4B78B /* TransactionMemoVerifyView+macOS.swift */; };
 		A69FBBD02C8BBA2100A4B78B /* TransactionMemoVerifyView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69FBBCF2C8BBA2100A4B78B /* TransactionMemoVerifyView+iOS.swift */; };
 		A6A41CAE2C63512D00C6858D /* ShareSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A41CAD2C63512D00C6858D /* ShareSheetViewController.swift */; };
+		A6A8163A2CBCAF50009EE114 /* GeneralQRImportMacView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A816392CBCAF50009EE114 /* GeneralQRImportMacView+macOS.swift */; };
+		A6A8163C2CBCAF60009EE114 /* GeneralQRImportMacView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A8163B2CBCAF60009EE114 /* GeneralQRImportMacView+iOS.swift */; };
 		A6AF960C2C2E2D6400992578 /* GeneralQRImportMacView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6AF960B2C2E2D6400992578 /* GeneralQRImportMacView.swift */; };
 		A6AF96102C2E2DC900992578 /* FileQRCodeImporterMac.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6AF960F2C2E2DC900992578 /* FileQRCodeImporterMac.swift */; };
 		A6AF96122C2E3D6100992578 /* ImportFileCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6AF96112C2E3D6100992578 /* ImportFileCell.swift */; };
@@ -1097,6 +1099,8 @@
 		A69FBBCD2C8BBA1900A4B78B /* TransactionMemoVerifyView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TransactionMemoVerifyView+macOS.swift"; sourceTree = "<group>"; };
 		A69FBBCF2C8BBA2100A4B78B /* TransactionMemoVerifyView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TransactionMemoVerifyView+iOS.swift"; sourceTree = "<group>"; };
 		A6A41CAD2C63512D00C6858D /* ShareSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSheetViewController.swift; sourceTree = "<group>"; };
+		A6A816392CBCAF50009EE114 /* GeneralQRImportMacView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GeneralQRImportMacView+macOS.swift"; sourceTree = "<group>"; };
+		A6A8163B2CBCAF60009EE114 /* GeneralQRImportMacView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GeneralQRImportMacView+iOS.swift"; sourceTree = "<group>"; };
 		A6AF960B2C2E2D6400992578 /* GeneralQRImportMacView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralQRImportMacView.swift; sourceTree = "<group>"; };
 		A6AF960F2C2E2DC900992578 /* FileQRCodeImporterMac.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileQRCodeImporterMac.swift; sourceTree = "<group>"; };
 		A6AF96112C2E3D6100992578 /* ImportFileCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportFileCell.swift; sourceTree = "<group>"; };
@@ -1496,6 +1500,7 @@
 				A625D9C52C5B5FE30078FBF4 /* KeygenViewInstructionsMac.swift */,
 				A649AB9D2C6C54AA004710A9 /* PopupCapsule.swift */,
 				A611CCC12C765F3000D64C9D /* OutlinedDisclaimer.swift */,
+				A6AF960B2C2E2D6400992578 /* GeneralQRImportMacView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -2003,6 +2008,7 @@
 				A6C6713A2CA3C86E00F59B6A /* KeygenViewInstructions+iOS.swift */,
 				A6505ACB2CA6683A0002FBF4 /* OutlinedDisclaimer+iOS.swift */,
 				A6505ACF2CA668AF0002FBF4 /* InformationNote+iOS.swift */,
+				A6A8163B2CBCAF60009EE114 /* GeneralQRImportMacView+iOS.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -2045,6 +2051,7 @@
 				A6C6713C2CA3C87600F59B6A /* KeygenViewInstructions+macOS.swift */,
 				A6505ACD2CA668460002FBF4 /* OutlinedDisclaimer+macOS.swift */,
 				A6505AD12CA668C20002FBF4 /* InformationNote+macOS.swift */,
+				A6A816392CBCAF50009EE114 /* GeneralQRImportMacView+macOS.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -2563,7 +2570,6 @@
 				A6521C552C6EC769002D5C5F /* MacScannerView.swift */,
 				A6521C572C6ECA19002D5C5F /* MacCameraPreview.swift */,
 				A6AF960F2C2E2DC900992578 /* FileQRCodeImporterMac.swift */,
-				A6AF960B2C2E2D6400992578 /* GeneralQRImportMacView.swift */,
 			);
 			path = Native;
 			sourceTree = "<group>";
@@ -3533,6 +3539,7 @@
 				DE15729E2B70F284009BC7C5 /* JoinKeysignView.swift in Sources */,
 				A52287482C42BB0000E1CC5A /* LiFiService.swift in Sources */,
 				A558D74E2C29808D007222EB /* SwapProvider.swift in Sources */,
+				A6A8163A2CBCAF50009EE114 /* GeneralQRImportMacView+macOS.swift in Sources */,
 				DEEADCF72B916676007978DE /* Solana.swift in Sources */,
 				B57DD59A2C3DA5EA00934CBB /* SolanaFmTokenInfo.swift in Sources */,
 				A69822322CB3AA3A00966D19 /* FolderDetailView+macOS.swift in Sources */,
@@ -3872,6 +3879,7 @@
 				B54E317F2BF5A1A700D4FC0A /* StyledNumberField.swift in Sources */,
 				A58CC34F2C32FC530086D16B /* BlockChainSpecific.swift in Sources */,
 				A6C670842C9CF66400F59B6A /* JoinKeysignView+iOS.swift in Sources */,
+				A6A8163C2CBCAF60009EE114 /* GeneralQRImportMacView+iOS.swift in Sources */,
 				469ED3A42B98F5DE008D4951 /* CosmosAccountValue.swift in Sources */,
 				DE5F7E212C816AC70022030F /* KeysignRequest.swift in Sources */,
 				A5199AF02BBD8C0400AA0A39 /* ThorchainSwapQuote.swift in Sources */,
