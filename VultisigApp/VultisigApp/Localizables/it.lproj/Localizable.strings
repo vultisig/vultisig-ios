@@ -365,3 +365,4 @@
 "registerVaultText3" = "3. Carica il tuo codice QR del Vault";
 "registerVaultText4" = "4. Monitora i tuoi VULTIES (Punti Vault)!";
 "saveQRCode" = "Salva codice QR";
+"saveVaultQR" = "Salva QR del Vault";

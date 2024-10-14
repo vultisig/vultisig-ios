@@ -365,3 +365,4 @@
 "registerVaultText3" = "3. Laden Sie Ihren Tresor-QR-Code hoch";
 "registerVaultText4" = "4. Verfolgen Sie Ihre VULTIES (Tresorpunkte)!";
 "saveQRCode" = "QR-Code speichern";
+"saveVaultQR" = "Tresor-QR speichern";

@@ -366,3 +366,4 @@
 "registerVaultText3" = "3. Carregue o código QR do seu Cofre";
 "registerVaultText4" = "4. Acompanhe seus VULTIES (Pontos de Cofre)!";
 "saveQRCode" = "Salvar código QR";
+"saveVaultQR" = "Salvar QR do Cofre";
