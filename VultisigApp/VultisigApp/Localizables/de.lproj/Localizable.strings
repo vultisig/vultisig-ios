@@ -215,7 +215,7 @@
 "youArePermanentlyDeletingVault" = "Sie löschen Ihren Tresor dauerhaft";
 "reviewConditions" = "Bedingungen überprüfen";
 "reviewConditionsMessage" = "Bitte überprüfen und stimmen Sie allen aufgeführten Bedingungen zu.";
-"deposit" = "Einzahlung";
+"function" = "Funktion";
 "enterPassword" = "Passwort eingeben";
 "fastVaultEnterDisclaimer" = "Dieses Passwort entschlüsselt Ihre FastVault Share";
 "fastVaultSetDisclaimer" = "Dieses Passwort verschlüsselt Ihren FastVault Share";
