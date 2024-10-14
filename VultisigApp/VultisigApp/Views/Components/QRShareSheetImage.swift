@@ -7,11 +7,32 @@
 
 import SwiftUI
 
+enum QRShareSheetType: String {
+    case Keygen = "joinKeygen"
+    case Send = "joinSend"
+    case Swap = "joinSwap"
+    case Address = "address"
+}
+
 struct QRShareSheetImage: View {
-    let title: String
     let image: Image
+    let type: QRShareSheetType
+    
+    let vaultName: String
+    
+    // Send
+    let amount: String
+    let toAddress: String
+    
+    // Swap
+    let fromAmount: String
+    let toAmount: String
+    
+    // Address
+    let address: String
     
     let padding: CGFloat = 30
+    
     
 #if os(iOS)
     let cornerRadius: CGFloat = 6
@@ -26,15 +47,112 @@ struct QRShareSheetImage: View {
     var view: some View {
         VStack(spacing: 32) {
             qrCode
-            text
+            titleContent
+            description
             Spacer()
             logo
         }
-        .padding(.vertical, 40)
+        .padding(.vertical, 48)
+        .font(.body16MenloBold)
+        .foregroundColor(.neutral0)
+        .multilineTextAlignment(.center)
+    }
+    
+    var titleContent: some View {
+        Text(NSLocalizedString(type.rawValue, comment: ""))
+            .font(.body16MenloBold)
+            .frame(maxWidth: 200)
+            .lineLimit(2)
+            .foregroundColor(.neutral0)
+            .multilineTextAlignment(.center)
+    }
+    
+    var description: some View {
+        ZStack {
+            switch type {
+            case .Keygen:
+                keygenDescription
+            case .Send:
+                sendDescription
+            case .Swap:
+                swapDescription
+            case .Address:
+                addressDescription
+            }
+        }
+        .padding(.horizontal, 30)
+    }
+    
+    var keygenDescription: some View {
+        Text(NSLocalizedString("previewKeygenDescription", comment: ""))
+    }
+    
+    var sendDescription: some View {
+        VStack(spacing: 10) {
+            vaultText
+            amountText
+            toAddressText
+        }
+    }
+    
+    var swapDescription: some View {
+        VStack(spacing: 10) {
+            vaultText
+            fromAmountText
+            toAmountText
+        }
+    }
+    
+    var vaultText: some View {
+        HStack(spacing: 4) {
+            Text(NSLocalizedString("vault", comment: "") + ":")
+            Text(vaultName)
+        }
+    }
+    
+    var amountText: some View {
+        HStack(spacing: 4) {
+            Text(NSLocalizedString("amount", comment: "") + ":")
+            Text(amount)
+        }
+    }
+    
+    var toAddressText: some View {
+        HStack(alignment: .top, spacing: 4) {
+            Text(NSLocalizedString("to", comment: "") + ":")
+            Text(toAddress)
+        }
+    }
+    
+    var fromAmountText: some View {
+        HStack(spacing: 4) {
+            Text(NSLocalizedString("from", comment: "") + ":")
+            Text(fromAmount)
+        }
+    }
+    
+    var toAmountText: some View {
+        HStack(spacing: 4) {
+            Text(NSLocalizedString("to", comment: "") + ":")
+            Text(toAmount)
+        }
+    }
+    
+    var addressDescription: some View {
+        Text(address)
     }
 }
 
 #Preview {
-    QRShareSheetImage(title: "thor1ls0p8e4ax7nxfeh37ncs25mn67ngmtzhwzkflk", image: Image("VultisigLogo"))
-        .frame(width: 900, height: 1500)
+    QRShareSheetImage(
+        image: Image("VultisigLogo"),
+        type: .Keygen,
+        vaultName: Vault.example.name,
+        amount: "10",
+        toAddress: "toAddress",
+        fromAmount: "10",
+        toAmount: "10",
+        address: "addressData"
+    )
+    .ignoresSafeArea()
 }
