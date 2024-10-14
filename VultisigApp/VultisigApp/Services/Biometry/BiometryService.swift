@@ -9,11 +9,13 @@ import Foundation
 import LocalAuthentication
 
 struct BiometryService {
-    
+
+    static let shared = BiometryService()
+
     func authenticate(
         reason: String,
         onSuccess: @escaping () -> Void,
-        onError: @escaping (Error) -> Void
+        onError: ((Error) -> Void)?
     ) {
         let context = LAContext()
         var error: NSError?
@@ -27,17 +29,17 @@ struct BiometryService {
                 context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason) { success, error in
                     DispatchQueue.main.async {
                         if let error, !success {
-                            onError(error)
+                            onError?(error)
                         } else if success {
                             onSuccess()
                         }
                     }
                 }
             default:
-                onError(Errors.wrongBiometryType)
+                onError?(Errors.wrongBiometryType)
             }
         } else {
-            onError(Errors.cantEvaluatePolicy)
+            onError?(Errors.cantEvaluatePolicy)
         }
     }
 }

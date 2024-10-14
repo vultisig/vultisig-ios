@@ -19,12 +19,18 @@ struct FastVaultEnterPasswordView: View {
     let vault: Vault
     let onSubmit: (() -> Void)?
 
+    private let keychain = DefaultKeychainService.shared
+    private let biometryService = BiometryService.shared
+
     var view: some View {
         VStack {
             passwordField
             Spacer(minLength: 20)
             disclaimer
             buttons
+        }
+        .onAppear {
+            tryAuthenticate()
         }
     }
 
@@ -89,11 +95,31 @@ struct FastVaultEnterPasswordView: View {
         )
 
         if isValidPassword {
+            savePassword()
             onSubmit?()
             dismiss()
         } else {
             isWrongPassword = true
         }
+    }
+
+    func savePassword() {
+        keychain.setFastPassword(password, pubKeyECDSA: vault.pubKeyECDSA)
+    }
+
+    func tryAuthenticate() {
+        biometryService.authenticate(
+            reason: "Authenticate to fill FastServer password",
+            onSuccess: {
+                guard let fastPassword = keychain.getFastPassword(pubKeyECDSA: vault.pubKeyECDSA) else {
+                    return
+                }
+
+                password = fastPassword
+                onSubmit?()
+                dismiss()
+            },
+            onError: nil)
     }
 }
 
