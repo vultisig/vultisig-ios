@@ -29,7 +29,7 @@ extension VaultDetailScanButton {
     
     var macContent: some View {
         NavigationLink {
-            <#code#>
+            GeneralQRImportMacView(type: .SignTransaction)
         } label: {
             label
         }

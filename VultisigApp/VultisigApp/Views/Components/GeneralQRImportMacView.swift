@@ -77,9 +77,9 @@ struct GeneralQRImportMacView: View {
     var uploadSection: some View {
         FileQRCodeImporterMac(
             fileName: fileName,
-            selectedImage: selectedImage,
             resetData: resetData,
-            handleFileImport: handleFileImport
+            handleFileImport: handleFileImport,
+            selectedImage: selectedImage
         )
         .alert(isPresented: $showAlert) {
             alert
