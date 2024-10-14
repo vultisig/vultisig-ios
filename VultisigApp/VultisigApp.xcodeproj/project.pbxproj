@@ -88,6 +88,9 @@
 		A57495822BBC3FCA00D5F172 /* SwapCryptoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57495812BBC3FCA00D5F172 /* SwapCryptoViewModel.swift */; };
 		A57A03CB2BC47D4F00F6F3DF /* BlockChainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57A03CA2BC47D4F00F6F3DF /* BlockChainService.swift */; };
 		A58760512CBD2D670070956A /* BiometryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58760502CBD2D670070956A /* BiometryService.swift */; };
+		A58760542CBD3CE00070956A /* Keychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58760532CBD3CE00070956A /* Keychain.swift */; };
+		A58760562CBD3D1E0070956A /* KeychainIdentifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58760552CBD3D1E0070956A /* KeychainIdentifier.swift */; };
+		A58760582CBD3F1A0070956A /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58760572CBD3F1A0070956A /* KeychainService.swift */; };
 		A588F2DB2BEE8090002EEC60 /* OneInchSwapPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = A588F2DA2BEE8090002EEC60 /* OneInchSwapPayload.swift */; };
 		A58CC3432C32C4EE0086D16B /* VultisigCommonData in Frameworks */ = {isa = PBXBuildFile; productRef = A58CC3422C32C4EE0086D16B /* VultisigCommonData */; };
 		A58CC3462C32EE120086D16B /* KeysignMessageFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58CC3452C32EE120086D16B /* KeysignMessageFactory.swift */; };
@@ -813,6 +816,9 @@
 		A57495812BBC3FCA00D5F172 /* SwapCryptoViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoViewModel.swift; sourceTree = "<group>"; };
 		A57A03CA2BC47D4F00F6F3DF /* BlockChainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockChainService.swift; sourceTree = "<group>"; };
 		A58760502CBD2D670070956A /* BiometryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometryService.swift; sourceTree = "<group>"; };
+		A58760532CBD3CE00070956A /* Keychain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keychain.swift; sourceTree = "<group>"; };
+		A58760552CBD3D1E0070956A /* KeychainIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainIdentifier.swift; sourceTree = "<group>"; };
+		A58760572CBD3F1A0070956A /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
 		A588F2DA2BEE8090002EEC60 /* OneInchSwapPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneInchSwapPayload.swift; sourceTree = "<group>"; };
 		A58CC3452C32EE120086D16B /* KeysignMessageFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignMessageFactory.swift; sourceTree = "<group>"; };
 		A58CC34A2C32FA760086D16B /* ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtoMappable.swift; sourceTree = "<group>"; };
@@ -1531,6 +1537,7 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				A58760522CBD3CD90070956A /* Keychain */,
 				A587604F2CBD2D580070956A /* Biometry */,
 				A51AE8BB2C931C2000EF9A7A /* FastVault */,
 				A5A6969C2C74D0DB0075AA45 /* Fee */,
@@ -1819,6 +1826,16 @@
 				A58760502CBD2D670070956A /* BiometryService.swift */,
 			);
 			path = Biometry;
+			sourceTree = "<group>";
+		};
+		A58760522CBD3CD90070956A /* Keychain */ = {
+			isa = PBXGroup;
+			children = (
+				A58760532CBD3CE00070956A /* Keychain.swift */,
+				A58760572CBD3F1A0070956A /* KeychainService.swift */,
+				A58760552CBD3D1E0070956A /* KeychainIdentifier.swift */,
+			);
+			path = Keychain;
 			sourceTree = "<group>";
 		};
 		A58CC3442C32EDDB0086D16B /* Keysign */ = {
@@ -3617,6 +3634,7 @@
 				A6C670C32C9D16C600F59B6A /* CustomTokenView+macOS.swift in Sources */,
 				A62766512C85275F002C666A /* ImportWalletView+iOS.swift in Sources */,
 				A6182F472C9292EC0059BFDD /* NavigationButton+iOS.swift in Sources */,
+				A58760562CBD3D1E0070956A /* KeychainIdentifier.swift in Sources */,
 				A6182F592C9299410059BFDD /* SwapCryptoAmountTextField+macOS.swift in Sources */,
 				A6ECA1902C93F7EF00456110 /* ProgressBar+iOS.swift in Sources */,
 				A6386DAE2C9025B000DDD58E /* ChainNavigationCell+iOS.swift in Sources */,
@@ -3789,6 +3807,7 @@
 				A5D0C9352BEE77190022D421 /* SwapPayload.swift in Sources */,
 				A5F596BF2C7FB0C5008D5339 /* SendGasSettingsViewModel.swift in Sources */,
 				B520B2FE2C3250230097C590 /* TextField.swift in Sources */,
+				A58760582CBD3F1A0070956A /* KeychainService.swift in Sources */,
 				A6BACF1C2BC79B3100084810 /* TokenSelectionView.swift in Sources */,
 				A6386D982C901D9F00DDD58E /* SendCryptoVerifyView+iOS.swift in Sources */,
 				A69069A12BCDEFD400F28A8B /* ProgressRing.swift in Sources */,
@@ -3931,6 +3950,7 @@
 				A52B0D032CA53DCE00507966 /* ReshareView.swift in Sources */,
 				A6725D3A2C3F9B4400D47716 /* AddAddressBookView.swift in Sources */,
 				A6ECA18A2C93F4F400456110 /* SetupVaultImageManager+macOS.swift in Sources */,
+				A58760542CBD3CE00070956A /* Keychain.swift in Sources */,
 				A6C670AA2C9D0D6600F59B6A /* ChainDetailView+macOS.swift in Sources */,
 				A588F2DB2BEE8090002EEC60 /* OneInchSwapPayload.swift in Sources */,
 				A6725D3E2C3FB61900D47716 /* AddressBookItem.swift in Sources */,
