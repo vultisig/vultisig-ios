@@ -1,3 +1,4 @@
+"wrongPassword" = "Contraseña incorrecta";
 "reshareLabelTitle" = "Compartir nuevamente tu bóveda";
 "reshareLabelSubtitle" = "La opción de compartir nuevamente se puede usar para actualizar, expandir o reducir la cantidad de dispositivos en una Bóveda.";
 "reshareLabelDisclaimer" = "Para todas las acciones de compartir nuevamente, siempre se requiere el umbral de dispositivos.";
@@ -214,7 +215,7 @@
 "youArePermanentlyDeletingVault" = "Estás eliminando permanentemente tu almacén";
 "reviewConditions" = "Revisar Condiciones";
 "reviewConditionsMessage" = "Por favor, revise y acepte todas las condiciones listadas.";
-"deposit" = "Depósito";
+"function" = "función";
 "enterPassword" = "Introduce la contraseña";
 "fastVaultEnterDisclaimer" = "Esta contraseña descifra su recurso compartido de FastVault";
 "fastVaultSetDisclaimer" = "Esta contraseña encripta su FastVault Share";

@@ -22,6 +22,16 @@ final class FastVaultService {
         return "Server-\(hash)"
     }
 
+    func get(pubKeyECDSA: String, password: String) async -> Bool {
+        do {
+            let urlString = "\(endpoint)/get/\(pubKeyECDSA)"
+            let _ = try await Utils.asyncGetRequest(urlString: urlString, headers: ["x-password": password])
+            return true
+        } catch {
+            return false
+        }
+    }
+
     func exist(pubKeyECDSA: String) async -> Bool {
         do {
             let urlString = "\(endpoint)/exist/\(pubKeyECDSA)"
