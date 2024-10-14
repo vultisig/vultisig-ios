@@ -1,3 +1,4 @@
+"wrongPassword" = "Pogrešna lozinka";
 "reshareLabelTitle" = "Ponovno podijeli svoj trezor";
 "reshareLabelSubtitle" = "Ponovna podjela može se koristiti za osvježavanje, proširenje ili smanjenje broja uređaja u Trezoru.";
 "reshareLabelDisclaimer" = "Za sve akcije ponovne podjele uvijek je potreban prag uređaja.";
@@ -214,7 +215,7 @@
 "youArePermanentlyDeletingVault" = "Trajno brišete svoje spremište";
 "reviewConditions" = "Pregled uvjeta";
 "reviewConditionsMessage" = "Molimo pregledajte i prihvatite sve navedene uvjete.";
-"deposit" = "Polog";
+"function" = "funkcija";
 "enterPassword" = "Unesite lozinku";
 "fastVaultEnterDisclaimer" = "Ova lozinka dešifrira vaš udio u FastVaultu";
 "fastVaultSetDisclaimer" = "Ova lozinka šifrira vaš FastVault Share";
@@ -357,3 +358,10 @@
 "folderNeedsOneVault" = "Mapa mora sadržavati barem jedan odabrani trezor.";
 "sameNameFolder" = "Mapa s istim imenom već postoji";
 "sameNameFolderDescription" = "Odaberite jedinstveno ime za mapu i pokušajte ponovno.";
+"registerYourVaults" = "Registrirajte svoje trezore!";
+"registerVault" = "Registriraj trezor";
+"registerVaultText1" = "1. Spremite svoj QR kod trezora";
+"registerVaultText2" = "2. Idite na ";
+"registerVaultText3" = "3. Učitajte svoj QR kod trezora";
+"registerVaultText4" = "4. Pratite svoje VULTIES (Bodovi trezora)!";
+"saveQRCode" = "Spremi QR kod";

@@ -29,7 +29,7 @@ struct ChainDetailActionButtons: View {
                 case .memo:
                     memoButton
                 case .deposit, .bridge:
-                    ActionButton(title: action.title, fontColor: action.color)
+                    ActionButton(title: "function", fontColor: action.color)
                 }
             }
         }
@@ -51,7 +51,7 @@ struct ChainDetailActionButtons: View {
         Button {
             isMemoLinkActive = true
         } label: {
-            ActionButton(title: "Deposit", fontColor: .turquoise600)
+            ActionButton(title: "function", fontColor: .turquoise600)
         }
 
     }

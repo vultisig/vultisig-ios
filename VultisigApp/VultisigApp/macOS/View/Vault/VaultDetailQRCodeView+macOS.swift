@@ -30,5 +30,13 @@ extension VaultDetailQRCodeView {
     var shareButton: some View {
         shareLinkButton
     }
+    
+    var buttons: some View {
+        HStack(spacing: 22) {
+            shareButton
+            saveButton
+        }
+        .padding(.horizontal, 25)
+    }
 }
 #endif

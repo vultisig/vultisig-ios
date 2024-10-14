@@ -61,6 +61,7 @@ extension Font {
     
     /// TITLE
     // Ultra-Light
+    static let title20MenloUltraLight = Font.custom("Menlo", size: 20).weight(.ultraLight)
     static let title30MenloUltraLight = Font.custom("Menlo", size: 30).weight(.ultraLight)
     
     // Light
@@ -69,6 +70,7 @@ extension Font {
     static let title80MontserratLight = Font.custom("Montserrat", size: 80).weight(.light)
     
     // Semi-bold
+    static let title28MontserratSemiBold = Font.custom("Montserrat", size: 28).weight(.semibold)
     static let title36MontserratSemiBold = Font.custom("Montserrat", size: 36).weight(.semibold)
     static let title40MontserratSemiBold = Font.custom("Montserrat", size: 40).weight(.semibold)
     

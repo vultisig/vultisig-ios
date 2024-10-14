@@ -1,3 +1,4 @@
+"wrongPassword" = "Password errata";
 "reshareLabelTitle" = "Condividi nuovamente il tuo vault";
 "reshareLabelSubtitle" = "La ricondivisione può essere utilizzata per aggiornare, espandere o ridurre il numero di dispositivi in un Vault.";
 "reshareLabelDisclaimer" = "Per tutte le azioni di ricondivisione è sempre richiesto il numero minimo di dispositivi.";
@@ -214,7 +215,7 @@
 "youArePermanentlyDeletingVault" = "Stai eliminando definitivamente il tuo caveau";
 "reviewConditions" = "Rivedi le Condizioni";
 "reviewConditionsMessage" = "Si prega di rivedere e accettare tutte le condizioni elencate.";
-"deposit" = "Deposito";
+"function" = "funzione";
 "enterPassword" = "Inserisci la password";
 "fastVaultEnterDisclaimer" = "Questa password decifra la tua condivisione FastVault";
 "fastVaultSetDisclaimer" = "Questa password crittografa la tua condivisione FastVault";
@@ -357,3 +358,10 @@
 "folderNeedsOneVault" = "La cartella deve contenere almeno un Vault selezionato.";
 "sameNameFolder" = "Una cartella con lo stesso nome esiste già";
 "sameNameFolderDescription" = "Si prega di scegliere un nome univoco per la cartella e riprovare.";
+"registerYourVaults" = "Registra i tuoi Vault!";
+"registerVault" = "Registra Vault";
+"registerVaultText1" = "1. Salva il tuo codice QR del Vault";
+"registerVaultText2" = "2. Vai su ";
+"registerVaultText3" = "3. Carica il tuo codice QR del Vault";
+"registerVaultText4" = "4. Monitora i tuoi VULTIES (Punti Vault)!";
+"saveQRCode" = "Salva codice QR";

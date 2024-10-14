@@ -23,14 +23,25 @@ extension VaultDetailQRCodeView {
         view
     }
     
+    var buttons: some View {
+        VStack(spacing: 0) {
+            shareButton
+            saveButton
+        }
+        .padding(.horizontal, 25)
+    }
+    
     var shareButton: some View {
         ZStack {
             if idiom == .phone {
                 Button {
                     viewModel.shareImage(imageName)
                 } label: {
-                    FilledButton(title: "share")
-                        .padding(.bottom, 22)
+                    FilledButton(
+                        title: "share",
+                        icon: "square.and.arrow.up"
+                    )
+                    .padding(.bottom, 22)
                 }
             } else {
                 shareLinkButton

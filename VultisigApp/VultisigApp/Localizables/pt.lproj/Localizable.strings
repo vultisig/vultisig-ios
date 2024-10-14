@@ -1,3 +1,4 @@
+"wrongPassword" = "Senha incorreta";
 "reshareLabelTitle" = "Compartilhe novamente seu cofre";
 "reshareLabelSubtitle" = "O recurso de compartilhar novamente pode ser usado para atualizar, expandir ou reduzir a quantidade de dispositivos em um Cofre.";
 "reshareLabelDisclaimer" = "Para todas as ações de compartilhar novamente, é sempre necessário o limite de dispositivos.";
@@ -214,7 +215,7 @@
 "youArePermanentlyDeletingVault" = "Você está excluindo permanentemente seu cofre";
 "reviewConditions" = "Revisar Condições";
 "reviewConditionsMessage" = "Por favor, reveja e concorde com todas as condições listadas.";
-"deposit" = "Depósito";
+"function" = "função";
 "enterPassword" = "Digite a senha";
 "fastVaultEnterDisclaimer" = "Esta palavra-passe desencripta o seu compartilhamento FastVault";
 "fastVaultSetDisclaimer" = "Esta palavra-passe encripta o seu FastVault Share";
@@ -358,3 +359,10 @@
 "folderNeedsOneVault" = "A pasta precisa ter pelo menos um cofre selecionado.";
 "sameNameFolder" = "Já existe uma pasta com o mesmo nome";
 "sameNameFolderDescription" = "Escolha um nome exclusivo para a pasta e tente novamente.";
+"registerYourVaults" = "Registre seus Cofres!";
+"registerVault" = "Registrar Cofre";
+"registerVaultText1" = "1. Salve o código QR do seu Cofre";
+"registerVaultText2" = "2. Acesse ";
+"registerVaultText3" = "3. Carregue o código QR do seu Cofre";
+"registerVaultText4" = "4. Acompanhe seus VULTIES (Pontos de Cofre)!";
+"saveQRCode" = "Salvar código QR";

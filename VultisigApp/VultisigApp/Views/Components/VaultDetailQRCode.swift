@@ -13,14 +13,16 @@ struct VaultDetailQRCode: View {
     @StateObject var viewModel = VaultDetailQRCodeViewModel()
     
     var body: some View {
-        VStack(spacing: 8) {
-            qrCodeContent
+        VStack(spacing: 0) {
             name
-            ECDSAKey
-            EdDSAKey
+            uid
+            Spacer()
+            qrCodeContent
+            Spacer()
+            webLink
         }
         .padding(16)
-        .frame(width: 278, height: 400)
+        .frame(width: 310, height: 400)
         .background(LinearGradient.primaryGradientLinear)
         .cornerRadius(25)
     }
@@ -35,7 +37,7 @@ struct VaultDetailQRCode: View {
     var qrCode: some View {
         getQRCode(vault: vault)
             .resizable()
-            .frame(width: 200, height: 200)
+            .frame(width: 230, height: 230)
             .scaledToFit()
             .padding(3)
             .cornerRadius(10)
@@ -60,38 +62,24 @@ struct VaultDetailQRCode: View {
             .multilineTextAlignment(.center)
     }
     
-    var ECDSAKey: some View {
-        VStack {
-            Text(NSLocalizedString("ECDSAKey", comment: ""))
-                .font(.body14MontserratSemiBold)
-                .foregroundColor(.neutral0)
-                .lineLimit(3)
-                .multilineTextAlignment(.center)
-            
-            Text(vault.pubKeyECDSA)
-                .font(.body10MontserratSemiBold)
-                .foregroundColor(.neutral0)
-                .lineLimit(3)
-                .multilineTextAlignment(.center)
-                .opacity(0.7)
+    var uid: some View {
+        Group {
+            Text("UID\n")
+                .font(.body16MontserratSemiBold) +
+            Text(viewModel.getId(for: vault))
+                .font(.body12Montserrat)
         }
+        .multilineTextAlignment(.center)
+        .foregroundColor(.neutral0)
+        .padding(.top, 10)
+        .padding(.horizontal, 14)
     }
     
-    var EdDSAKey: some View {
-        VStack {
-            Text(NSLocalizedString("EdDSAKey", comment: ""))
-                .font(.body14MontserratSemiBold)
-                .foregroundColor(.neutral0)
-                .lineLimit(3)
-                .multilineTextAlignment(.center)
-            
-            Text(vault.pubKeyEdDSA)
-                .font(.body10MontserratSemiBold)
-                .foregroundColor(.neutral0)
-                .lineLimit(3)
-                .multilineTextAlignment(.center)
-                .opacity(0.7)
-        }
+    var webLink: some View {
+        Text("vultisig.com")
+            .font(.body18MontserratMedium)
+            .foregroundColor(.neutral0)
+            .multilineTextAlignment(.center)
     }
     
     func getQRCode(vault: Vault) -> Image {

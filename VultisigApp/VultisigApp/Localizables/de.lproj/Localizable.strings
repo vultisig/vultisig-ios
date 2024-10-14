@@ -1,3 +1,4 @@
+"wrongPassword" = "Falsches Passwort";
 "reshareLabelTitle" = "Teilen Sie Ihren Tresor erneut";
 "reshareLabelSubtitle" = "Erneutes Teilen kann verwendet werden, um die Anzahl der Geräte in einem Tresor zu aktualisieren, zu erweitern oder zu reduzieren.";
 "reshareLabelDisclaimer" = "Für alle Aktionen des erneuten Teilens ist immer das Schwellenwert der Geräte erforderlich.";
@@ -214,7 +215,7 @@
 "youArePermanentlyDeletingVault" = "Sie löschen Ihren Tresor dauerhaft";
 "reviewConditions" = "Bedingungen überprüfen";
 "reviewConditionsMessage" = "Bitte überprüfen und stimmen Sie allen aufgeführten Bedingungen zu.";
-"deposit" = "Einzahlung";
+"function" = "Funktion";
 "enterPassword" = "Passwort eingeben";
 "fastVaultEnterDisclaimer" = "Dieses Passwort entschlüsselt Ihre FastVault Share";
 "fastVaultSetDisclaimer" = "Dieses Passwort verschlüsselt Ihren FastVault Share";
@@ -357,3 +358,10 @@
 "folderNeedsOneVault" = "Der Ordner muss mindestens einen ausgewählten Tresor enthalten.";
 "sameNameFolder" = "Ein Ordner mit demselben Namen existiert bereits";
 "sameNameFolderDescription" = "Bitte wählen Sie einen eindeutigen Namen für den Ordner und versuchen Sie es erneut.";
+"registerYourVaults" = "Registrieren Sie Ihre Tresore!";
+"registerVault" = "Tresor registrieren";
+"registerVaultText1" = "1. Speichern Sie Ihren Tresor-QR-Code";
+"registerVaultText2" = "2. Gehen Sie zu ";
+"registerVaultText3" = "3. Laden Sie Ihren Tresor-QR-Code hoch";
+"registerVaultText4" = "4. Verfolgen Sie Ihre VULTIES (Tresorpunkte)!";
+"saveQRCode" = "QR-Code speichern";
