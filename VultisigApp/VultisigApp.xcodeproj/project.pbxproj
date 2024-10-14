@@ -87,6 +87,7 @@
 		A571F46C2C7E9218000F46D3 /* SendGasSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A571F46B2C7E9218000F46D3 /* SendGasSettingsView.swift */; };
 		A57495822BBC3FCA00D5F172 /* SwapCryptoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57495812BBC3FCA00D5F172 /* SwapCryptoViewModel.swift */; };
 		A57A03CB2BC47D4F00F6F3DF /* BlockChainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57A03CA2BC47D4F00F6F3DF /* BlockChainService.swift */; };
+		A58760512CBD2D670070956A /* BiometryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58760502CBD2D670070956A /* BiometryService.swift */; };
 		A588F2DB2BEE8090002EEC60 /* OneInchSwapPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = A588F2DA2BEE8090002EEC60 /* OneInchSwapPayload.swift */; };
 		A58CC3432C32C4EE0086D16B /* VultisigCommonData in Frameworks */ = {isa = PBXBuildFile; productRef = A58CC3422C32C4EE0086D16B /* VultisigCommonData */; };
 		A58CC3462C32EE120086D16B /* KeysignMessageFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A58CC3452C32EE120086D16B /* KeysignMessageFactory.swift */; };
@@ -811,6 +812,7 @@
 		A571F46B2C7E9218000F46D3 /* SendGasSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendGasSettingsView.swift; sourceTree = "<group>"; };
 		A57495812BBC3FCA00D5F172 /* SwapCryptoViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoViewModel.swift; sourceTree = "<group>"; };
 		A57A03CA2BC47D4F00F6F3DF /* BlockChainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockChainService.swift; sourceTree = "<group>"; };
+		A58760502CBD2D670070956A /* BiometryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometryService.swift; sourceTree = "<group>"; };
 		A588F2DA2BEE8090002EEC60 /* OneInchSwapPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OneInchSwapPayload.swift; sourceTree = "<group>"; };
 		A58CC3452C32EE120086D16B /* KeysignMessageFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeysignMessageFactory.swift; sourceTree = "<group>"; };
 		A58CC34A2C32FA760086D16B /* ProtoMappable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtoMappable.swift; sourceTree = "<group>"; };
@@ -1529,6 +1531,7 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				A587604F2CBD2D580070956A /* Biometry */,
 				A51AE8BB2C931C2000EF9A7A /* FastVault */,
 				A5A6969C2C74D0DB0075AA45 /* Fee */,
 				A5E841C92C639550009325CB /* Rates */,
@@ -1807,6 +1810,15 @@
 				A56386812C3A2148008B848E /* ProtoCoinResolver.swift */,
 			);
 			path = Protobuf;
+			sourceTree = "<group>";
+		};
+		A587604F2CBD2D580070956A /* Biometry */ = {
+			isa = PBXGroup;
+			children = (
+				A6C671142CA396D600F59B6A /* AuthenticationType.swift */,
+				A58760502CBD2D670070956A /* BiometryService.swift */,
+			);
+			path = Biometry;
 			sourceTree = "<group>";
 		};
 		A58CC3442C32EDDB0086D16B /* Keysign */ = {
@@ -2399,7 +2411,6 @@
 				A6A793E22BB508C000CC5950 /* Keygen */,
 				A69069B62BCF53B600F28A8B /* NetworkPromptType.swift */,
 				A6F9E7AA2BED6CCC00BA36E1 /* SetupVaultState.swift */,
-				A6C671142CA396D600F59B6A /* AuthenticationType.swift */,
 			);
 			path = States;
 			sourceTree = "<group>";
@@ -3264,6 +3275,7 @@
 				A594A9ED2C6436A800A3D09E /* DBMappable.swift in Sources */,
 				A68696212C1B5575004EDE0B /* BackupPasswordSetupView.swift in Sources */,
 				463408662BA9C1D200246248 /* CoinTypeExtension.swift in Sources */,
+				A58760512CBD2D670070956A /* BiometryService.swift in Sources */,
 				DE8AD7472BC78FA400339775 /* Encryption.swift in Sources */,
 				A6182F332C922CCC0059BFDD /* ChainHeaderCell+iOS.swift in Sources */,
 				DE4DFA7B2B7B1692004F8E73 /* ModelContainerPreview.swift in Sources */,
