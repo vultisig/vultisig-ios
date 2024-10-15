@@ -1,6 +1,20 @@
 #!/bin/bash
-# Inform the user and request to log out, handling the "Cancel" option gracefully
-osascript <<EOF
+
+# Define the path to the plist file
+INSTALL_FLAG_FOLDER="/Library/Application Support/VultisigApp"
+INSTALL_FLAG_FILE="/Library/Application Support/VultisigApp/installed.flag"
+
+# Check if the file exists
+if [ -f "$INSTALL_FLAG_FILE" ]; then
+    echo "The file $PLIST_FILE exists. This is an update."
+else
+    echo "The file $INSTALL_FLAG_FILE does not exist. This is a first-time installation."
+    # Create the necessary directory and file to mark the first-time installation
+    mkdir -p $INSTALL_FLAG_FOLDER
+    touch $INSTALL_FLAG_FILE
+
+    # Inform the user and request to log out, handling the "Cancel" option gracefully
+    osascript <<EOF
 tell app "System Events"
     set userChoice to button returned of (display dialog "Vultisig application requires you to log out to complete the installation. Please save your work and choose 'Log out now' to log out or 'Cancel' to stay logged in." buttons {"Cancel", "Log out now"} default button 2)
     if userChoice is "Log out now" then
@@ -8,5 +22,6 @@ tell app "System Events"
     end if
 end tell
 EOF
+fi
 
 exit 0
