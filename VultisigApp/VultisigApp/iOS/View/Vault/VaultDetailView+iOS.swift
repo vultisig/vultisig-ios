@@ -61,7 +61,7 @@ extension VaultDetailView {
     }
     
     var scanButton: some View {
-        VaultDetailScanButton(showSheet: $showScanner, sendTx: sendTx)
+        VaultDetailScanButton(showSheet: $showScanner, vault: vault, sendTx: sendTx)
             .opacity(showVaultsList ? 0 : 1)
             .buttonStyle(BorderlessButtonStyle())
     }

@@ -11,6 +11,7 @@ import SwiftData
 import AVFoundation
 
 struct MacScannerView: View {
+    let vault: Vault
     let type: DeeplinkFlowType
     let sendTx: SendTransaction
     
@@ -28,7 +29,7 @@ struct MacScannerView: View {
             headerMac
         }
         .navigationDestination(isPresented: $cameraViewModel.shouldJoinKeygen) {
-            JoinKeygenView(vault: Vault(name: "Main Vault"))
+            JoinKeygenView(vault: vault)
         }
         .navigationDestination(isPresented: $cameraViewModel.shouldKeysignTransaction) {
             if let vault = homeViewModel.selectedVault {
@@ -157,7 +158,7 @@ struct MacScannerView: View {
 }
 
 #Preview {
-    MacScannerView(type: .NewVault, sendTx: SendTransaction())
+    MacScannerView(vault: .example, type: .NewVault, sendTx: SendTransaction())
         .environmentObject(HomeViewModel())
         .environmentObject(DeeplinkViewModel())
         .environmentObject(MacCameraServiceViewModel())

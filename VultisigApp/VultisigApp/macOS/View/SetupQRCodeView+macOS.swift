@@ -29,8 +29,8 @@ extension SetupQRCodeView {
     }
     
     var pairButton: some View {
-        Button(action: {
-            showSheet = true
+        NavigationLink(destination: {
+            MacScannerView(vault: makeVault(), type: .NewVault, sendTx: SendTransaction())
         }) {
             OutlineButton(title: "pair")
         }
