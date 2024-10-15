@@ -142,5 +142,4 @@ struct SendCryptoDoneView: View {
         chain: .thorChain,
         progressLink: "https://blockstream.info/tx/"
     )
-    .previewDevice("iPhone 13 Pro")
 }
