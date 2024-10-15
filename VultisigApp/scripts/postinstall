@@ -1,17 +1,20 @@
 #!/bin/bash
 
 # Define the path to the plist file
-INSTALL_FLAG_FOLDER="/Library/Application Support/VultisigApp"
-INSTALL_FLAG_FILE="/Library/Application Support/VultisigApp/installed.flag"
+INSTALL_FLAG_FOLDER="$HOME/Library/Application Support/VultisigApp"
+INSTALL_FLAG_FILE="$INSTALL_FLAG_FOLDER/installed.flag"
 
 # Check if the file exists
 if [ -f "$INSTALL_FLAG_FILE" ]; then
-    echo "The file $PLIST_FILE exists. This is an update."
+    echo "The file $INSTALL_FLAG_FILE exists. This is an update."
 else
     echo "The file $INSTALL_FLAG_FILE does not exist. This is a first-time installation."
     # Create the necessary directory and file to mark the first-time installation
-    mkdir -p $INSTALL_FLAG_FOLDER
-    touch $INSTALL_FLAG_FILE
+    mkdir -p "$INSTALL_FLAG_FOLDER"
+    if [ $? -ne 0 ]; then
+        echo "Error creating the directory $INSTALL_FLAG_FOLDER. Exiting..."
+    fi
+    touch "$INSTALL_FLAG_FILE"
 
     # Inform the user and request to log out, handling the "Cancel" option gracefully
     osascript <<EOF
