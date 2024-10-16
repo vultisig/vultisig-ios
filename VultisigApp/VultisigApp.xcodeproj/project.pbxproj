@@ -86,6 +86,7 @@
 		A56C98CE2CC00C6700FC1B08 /* SettingsBiometryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56C98CD2CC00C6700FC1B08 /* SettingsBiometryView.swift */; };
 		A56C98D02CC010C900FC1B08 /* SettingsBiometryView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56C98CF2CC010C900FC1B08 /* SettingsBiometryView+iOS.swift */; };
 		A56C98D22CC011D400FC1B08 /* SettingsBiometryView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56C98D12CC011D400FC1B08 /* SettingsBiometryView+macOS.swift */; };
+		A56C98D42CC013C500FC1B08 /* SettingsBiometryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56C98D32CC013C500FC1B08 /* SettingsBiometryViewModel.swift */; };
 		A571F4682C7E48A1000F46D3 /* FeeMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A571F4672C7E48A1000F46D3 /* FeeMode.swift */; };
 		A571F46C2C7E9218000F46D3 /* SendGasSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A571F46B2C7E9218000F46D3 /* SendGasSettingsView.swift */; };
 		A57495822BBC3FCA00D5F172 /* SwapCryptoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57495812BBC3FCA00D5F172 /* SwapCryptoViewModel.swift */; };
@@ -817,6 +818,7 @@
 		A56C98CD2CC00C6700FC1B08 /* SettingsBiometryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsBiometryView.swift; sourceTree = "<group>"; };
 		A56C98CF2CC010C900FC1B08 /* SettingsBiometryView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsBiometryView+iOS.swift"; sourceTree = "<group>"; };
 		A56C98D12CC011D400FC1B08 /* SettingsBiometryView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsBiometryView+macOS.swift"; sourceTree = "<group>"; };
+		A56C98D32CC013C500FC1B08 /* SettingsBiometryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsBiometryViewModel.swift; sourceTree = "<group>"; };
 		A571F4672C7E48A1000F46D3 /* FeeMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeMode.swift; sourceTree = "<group>"; };
 		A571F46B2C7E9218000F46D3 /* SendGasSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendGasSettingsView.swift; sourceTree = "<group>"; };
 		A57495812BBC3FCA00D5F172 /* SwapCryptoViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoViewModel.swift; sourceTree = "<group>"; };
@@ -2511,6 +2513,7 @@
 			children = (
 				A6980C232BC0836300F452AB /* SettingsView.swift */,
 				A56C98CD2CC00C6700FC1B08 /* SettingsBiometryView.swift */,
+				A56C98D32CC013C500FC1B08 /* SettingsBiometryViewModel.swift */,
 				A56C98CF2CC010C900FC1B08 /* SettingsBiometryView+iOS.swift */,
 				A56C98D12CC011D400FC1B08 /* SettingsBiometryView+macOS.swift */,
 				A6980C2B2BC0896C00F452AB /* SettingsLanguageSelectionView.swift */,
@@ -3726,6 +3729,7 @@
 				A61BC81B2BA26D9900484689 /* ChainSelectionCell.swift in Sources */,
 				A6182F4F2C9296350059BFDD /* StyledIntegerField+iOS.swift in Sources */,
 				A5E841CB2C639556009325CB /* DatabaseRate.swift in Sources */,
+				A56C98D42CC013C500FC1B08 /* SettingsBiometryViewModel.swift in Sources */,
 				A6725D412C40C3C100D47716 /* AddressBookChainSelector.swift in Sources */,
 				A66BFCD12C134B3B004DCD4F /* QRShareSheetImage.swift in Sources */,
 				A66A1DF82C268D6400C3EAF7 /* FontStyle.swift in Sources */,
