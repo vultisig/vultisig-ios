@@ -23,8 +23,7 @@ struct VaultPairDetailView: View {
     var cells: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
-                
-                VaultPairDetailCell(title: NSLocalizedString("vaultName", comment: ""), description: vault.name).frame(maxWidth: .infinity, alignment: .leading)
+                titleCell
                 
                 VaultPairDetailCell(title: NSLocalizedString("ECDSA", comment: ""), description: vault.pubKeyECDSA).frame(maxWidth: .infinity, alignment: .leading)
                 
@@ -38,15 +37,47 @@ struct VaultPairDetailView: View {
                     .frame(maxWidth: .infinity, alignment: .center)
                 
                 ForEach(devicesInfo, id: \.Index) { device in
-                    if device.Signer == vault.localPartyID {
-                        VaultPairDetailCell(title: device.Signer + " (This device)", description: .empty)
-                    } else {
-                        VaultPairDetailCell(title: device.Signer, description: .empty)
-                    }
+                    getDeviceCell(for: device)
                 }
             }
             .padding(.top, 30)
         }
+    }
+    
+    var titleCell: some View {
+        Text(titleText())
+            .foregroundColor(.neutral0)
+            .font(.body20MenloBold)
+            .padding(.vertical, 22)
+            .padding(.horizontal, 16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.blue600)
+            .cornerRadius(10)
+            .padding(.horizontal, 16)
+            .lineLimit(3)
+    }
+    
+    private func titleText() -> String {
+        let name = vault.name
+        let dash = " - "
+        let part = NSLocalizedString("part", comment: "")
+        let of = NSLocalizedString("of", comment: "")
+        let space = " "
+        let vaultIndex = "\(vault.getThreshold() + 1)"
+        let totalCount = "\(vault.signers.count)"
+        
+        return name + dash + part + space + vaultIndex + space + of + space + totalCount
+    }
+    
+    private func getDeviceCell(for device: DeviceInfo) -> some View {
+        let part = "Part of \(device.Index+1) of \(vault.signers.count): "
+        let signer = device.Signer
+        let suffix = device.Signer == vault.localPartyID ? " (This device)" : ""
+        
+        return VaultPairDetailCell(
+            title: .empty,
+            description: part + signer + suffix
+        )
     }
 }
 

@@ -28,9 +28,11 @@ struct VaultPairDetailCell: View {
     
     var content: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Text(NSLocalizedString(title, comment: ""))
-                .font(.body16MenloBold)
-                .foregroundColor( .neutral0)
+            if !title.isEmpty {
+                Text(NSLocalizedString(title, comment: ""))
+                    .font(.body16MenloBold)
+                    .foregroundColor( .neutral0)
+            }
             
             if !description.isEmpty {
                 Text(NSLocalizedString(description, comment: ""))

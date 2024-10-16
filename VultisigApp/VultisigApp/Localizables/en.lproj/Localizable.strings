@@ -397,3 +397,4 @@
 "joinSend" = "Join Send";
 "joinSwap" = "Join Swap";
 "nonNegativeFeeError" = "Not enough gas to cover transaction.";
+"part" = "Part";
