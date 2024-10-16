@@ -370,3 +370,4 @@
 "invalidAddress" = "Indirizzo non valido";
 "emptyAddressField" = "Campo indirizzo vuoto.";
 "nonNegativeFeeError" = "Non abbastanza gas per coprire la transazione.";
+"part" = "Parte";
