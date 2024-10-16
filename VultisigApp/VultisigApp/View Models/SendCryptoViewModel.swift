@@ -22,6 +22,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     @Published var currentTitle = "send"
     @Published var priceRate = 0.0
     @Published var coinBalance: String = "0"
+    @Published var errorTitle = ""
     @Published var errorMessage = ""
     @Published var hash: String? = nil
     @Published var approveHash: String? = nil
@@ -195,12 +196,14 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     }
     
     func validateAmount(amount: String) {
+        errorTitle = ""
         errorMessage = ""
         isValidForm = true
         
         isValidForm = amount.isValidDecimal()
         
         if !isValidForm {
+            errorTitle = "error"
             errorMessage = "The amount must be decimal."
             showAlert = true
         }
@@ -208,14 +211,25 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     
     func validateForm(tx: SendTransaction) async -> Bool {
         // Reset validation state at the beginning
+        errorTitle = ""
         errorMessage = ""
         isValidForm = true
         isNamespaceResolved = false
+        
+        guard !tx.toAddress.isEmpty else {
+            errorTitle = "invalidAddress"
+            errorMessage = "emptyAddressField"
+            showAlert = true
+            logger.log("Empty address field.")
+            isValidForm = false
+            return false
+        }
 
         do {
             tx.toAddress = try await AddressService.resolveInput(tx.toAddress, chain: tx.coin.chain)
             isNamespaceResolved = true
         } catch {
+            errorTitle = "error"
             errorMessage = "validAddressDomainError"
             showAlert = true
             logger.log("We were unable to resolve the address of this domain service on this chain.")
@@ -225,6 +239,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
 
         // Validate the "To" address
         if !isValidAddress && !isNamespaceResolved {
+            errorTitle = "error"
             errorMessage = "validAddressError"
             showAlert = true
             logger.log("Invalid address.")
@@ -235,6 +250,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         let gasFee = tx.gasDecimal
         
         if amount <= 0 {
+            errorTitle = "error"
             errorMessage = "positiveAmountError"
             showAlert = true
             logger.log("Invalid or non-positive amount.")
@@ -243,6 +259,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         }
         
         if gasFee <= 0 {
+            errorTitle = "error"
             errorMessage = "nonNegativeFeeError"
             showAlert = true
             logger.log("Invalid or negative fee.")
@@ -251,7 +268,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
         }
         
         if tx.isAmountExceeded {
-            
+            errorTitle = "error"
             errorMessage = "walletBalanceExceededError"
             showAlert = true
             logger.log("Total transaction cost exceeds wallet balance.")
@@ -264,6 +281,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 let evmToken = try await blockchainService.fetchSpecific(tx: tx)
                 let (hasEnoughFees, feeErrorMsg) = await tx.hasEnoughNativeTokensToPayTheFees(specific: evmToken)
                 if !hasEnoughFees {
+                    errorTitle = "error"
                     errorMessage = feeErrorMsg
                     showAlert = true
                     logger.log("\(feeErrorMsg)")
@@ -272,6 +290,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
             } catch {
                 let fetchErrorMsg = "Failed to fetch specific token data: \(tx.coin.ticker)"
                 logger.log("\(fetchErrorMsg)")
+                errorTitle = "error"
                 errorMessage = fetchErrorMsg
                 showAlert = true
                 isValidForm = false

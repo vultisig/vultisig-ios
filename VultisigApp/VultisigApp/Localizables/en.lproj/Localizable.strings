@@ -302,7 +302,7 @@
 "numberOfPairedDevicesMOfN" = "Number of paired devices %d of N";
 "saveOrShare" = "Save or Share";
 "shareVaultQR" = "Share Vault QR";
-"invalidAddress" = "This address is invalid for this chain.";
+"invalidAddressChain" = "This address is invalid for this chain.";
 "scannedByBlowfish" = "Transaction verified by Blowfish.";
 "defaultChains" = "Default Chains";
 "search" = "Search";
@@ -397,3 +397,6 @@
 "saveVaultQR" = "Save Vault QR";
 "joinSend" = "Join Send";
 "joinSwap" = "Join Swap";
+"invalidAddress" = "Invalid Address";
+"invalidAddress" = "Invalid Address";
+"emptyAddressField" = "Empty address field.";
