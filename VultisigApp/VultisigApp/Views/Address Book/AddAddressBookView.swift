@@ -122,7 +122,7 @@ struct AddAddressBookView: View {
     
     private func toggleAlertInvalidAddress() {
         alertTitle = "error"
-        alertMessage = "invalidAddress"
+        alertMessage = "invalidAddressChain"
         showAlert = true
     }
 }
