@@ -132,7 +132,6 @@
 "sameWifiEntendedInstruction" = "Halten Sie Geräte im selben WLAN, wählen Sie den richtigen Tresor und koppeln Sie die Geräte. Stellen Sie sicher, dass kein anderes Gerät Vultisig ausführt.";
 "validAddressError" = "Bitte geben Sie eine gültige Adresse ein.";
 "positiveAmountError" = "Die Menge muss eine positive Zahl sein. Versuchen Sie es erneut.";
-"nonNegativeFeeError" = "Die Gebühr muss eine nicht negative Zahl sein. Versuchen Sie es erneut.";
 "walletBalanceExceededError" = "Die Gesamtmenge und die Gebühr überschreiten das Saldo Ihrer Brieftasche. Versuchen Sie es erneut.";
 "mustHaveETHError" = "Sie müssen ETH haben, um Gas zu bezahlen, bevor Sie ein Token senden.";
 "unavailableBalanceError" = "Brieftaschensaldo nicht verfügbar.";
@@ -370,3 +369,4 @@
 "joinSwap" = "Swap beitreten";
 "invalidAddress" = "Ungültige Adresse";
 "emptyAddressField" = "Leeres Adressfeld.";
+"nonNegativeFeeError" = "Nicht genug Gas, um die Transaktion abzudecken.";
