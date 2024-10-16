@@ -83,6 +83,9 @@
 		A564ED402BC34B690056FDC0 /* SwapVerifyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A564ED3F2BC34B690056FDC0 /* SwapVerifyView.swift */; };
 		A564ED422BC350520056FDC0 /* SwapTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = A564ED412BC350520056FDC0 /* SwapTransaction.swift */; };
 		A564ED442BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A564ED432BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift */; };
+		A56C98CE2CC00C6700FC1B08 /* SettingsBiometryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56C98CD2CC00C6700FC1B08 /* SettingsBiometryView.swift */; };
+		A56C98D02CC010C900FC1B08 /* SettingsBiometryView+iOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56C98CF2CC010C900FC1B08 /* SettingsBiometryView+iOS.swift */; };
+		A56C98D22CC011D400FC1B08 /* SettingsBiometryView+macOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56C98D12CC011D400FC1B08 /* SettingsBiometryView+macOS.swift */; };
 		A571F4682C7E48A1000F46D3 /* FeeMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A571F4672C7E48A1000F46D3 /* FeeMode.swift */; };
 		A571F46C2C7E9218000F46D3 /* SendGasSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A571F46B2C7E9218000F46D3 /* SendGasSettingsView.swift */; };
 		A57495822BBC3FCA00D5F172 /* SwapCryptoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57495812BBC3FCA00D5F172 /* SwapCryptoViewModel.swift */; };
@@ -811,6 +814,9 @@
 		A564ED3F2BC34B690056FDC0 /* SwapVerifyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapVerifyView.swift; sourceTree = "<group>"; };
 		A564ED412BC350520056FDC0 /* SwapTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapTransaction.swift; sourceTree = "<group>"; };
 		A564ED432BC35D2B0056FDC0 /* SwapCryptoVerifyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoVerifyViewModel.swift; sourceTree = "<group>"; };
+		A56C98CD2CC00C6700FC1B08 /* SettingsBiometryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsBiometryView.swift; sourceTree = "<group>"; };
+		A56C98CF2CC010C900FC1B08 /* SettingsBiometryView+iOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsBiometryView+iOS.swift"; sourceTree = "<group>"; };
+		A56C98D12CC011D400FC1B08 /* SettingsBiometryView+macOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingsBiometryView+macOS.swift"; sourceTree = "<group>"; };
 		A571F4672C7E48A1000F46D3 /* FeeMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeeMode.swift; sourceTree = "<group>"; };
 		A571F46B2C7E9218000F46D3 /* SendGasSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendGasSettingsView.swift; sourceTree = "<group>"; };
 		A57495812BBC3FCA00D5F172 /* SwapCryptoViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapCryptoViewModel.swift; sourceTree = "<group>"; };
@@ -2504,6 +2510,9 @@
 			isa = PBXGroup;
 			children = (
 				A6980C232BC0836300F452AB /* SettingsView.swift */,
+				A56C98CD2CC00C6700FC1B08 /* SettingsBiometryView.swift */,
+				A56C98CF2CC010C900FC1B08 /* SettingsBiometryView+iOS.swift */,
+				A56C98D12CC011D400FC1B08 /* SettingsBiometryView+macOS.swift */,
 				A6980C2B2BC0896C00F452AB /* SettingsLanguageSelectionView.swift */,
 				A6980C2F2BC0A11100F452AB /* SettingsCurrencySelectionView.swift */,
 				A6980C312BC0A2F700F452AB /* SettingsFAQView.swift */,
@@ -3289,6 +3298,7 @@
 				A564ED422BC350520056FDC0 /* SwapTransaction.swift in Sources */,
 				A67530622CAFBDC200B1E344 /* Folder.swift in Sources */,
 				A675305A2CAF9C4D00B1E344 /* CreateFolderView.swift in Sources */,
+				A56C98D02CC010C900FC1B08 /* SettingsBiometryView+iOS.swift in Sources */,
 				A594A9ED2C6436A800A3D09E /* DBMappable.swift in Sources */,
 				A68696212C1B5575004EDE0B /* BackupPasswordSetupView.swift in Sources */,
 				463408662BA9C1D200246248 /* CoinTypeExtension.swift in Sources */,
@@ -3453,6 +3463,7 @@
 				DE63AE4F2BB4E96E001BBE5C /* JSONRPCError.swift in Sources */,
 				A6C671212CA3BD1E00F59B6A /* PeerCell+macOS.swift in Sources */,
 				469ED3992B98E896008D4951 /* CosmosBalanceResponse.swift in Sources */,
+				A56C98CE2CC00C6700FC1B08 /* SettingsBiometryView.swift in Sources */,
 				A69FBBC82C8BB76000A4B78B /* CoverView+macOS.swift in Sources */,
 				A6C6711D2CA3BADA00F59B6A /* CachedAsyncImage+macOS.swift in Sources */,
 				DE1572AC2B7174D3009BC7C5 /* Utils.swift in Sources */,
@@ -3475,6 +3486,7 @@
 				A6C670D72C9E8EFE00F59B6A /* SwapCryptoView+macOS.swift in Sources */,
 				DE3D44AF2BD2487900BD64CD /* CosmosSignature.swift in Sources */,
 				A623A09F2BF09FEE00AA2F8D /* NewWalletNameView.swift in Sources */,
+				A56C98D22CC011D400FC1B08 /* SettingsBiometryView+macOS.swift in Sources */,
 				A6C0D5652BB3BD0F00156689 /* UTXOTransactionCell.swift in Sources */,
 				A65649F82B96701300E4B329 /* UTXOTransactionMempoolPreviousOutput.swift in Sources */,
 				46F8F7212B99FDB70099454E /* TransactionBroadcastResponse.swift in Sources */,

@@ -79,7 +79,15 @@ struct SettingsView: View {
             SettingCell(title: "currency", icon: "dollarsign.circle", selection: SettingsCurrency.current.rawValue)
         }
     }
-    
+
+    var biometrySelectionCell: some View {
+        NavigationLink {
+
+        } label: {
+            SettingCell(title: "currency", icon: "dollarsign.circle", selection: SettingsCurrency.current.rawValue)
+        }
+    }
+
     var defaultChainsSelectionCell: some View {
         NavigationLink {
             SettingsDefaultChainView()
