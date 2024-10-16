@@ -80,6 +80,14 @@ struct EditVaultView: View {
             EditVaultCell(title: "reshare", description: "reshareVault", icon: "tray.and.arrow.up")
         }
     }
+
+    var biometrySelectionCell: some View {
+        NavigationLink {
+            SettingsBiometryView(vault: vault)
+        } label: {
+            EditVaultCell(title: "Biometrics for Fast Sign", description: "Enable Biometrics for Fast Sign", icon: "person.badge.key")
+        }
+    }
 }
 
 #Preview {
