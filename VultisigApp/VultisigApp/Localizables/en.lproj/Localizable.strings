@@ -131,7 +131,6 @@
 "sameWifiEntendedInstruction" = "Keep devices on the same WiFi Network, choose correct vault and pair devices. Make sure no other devices are running Vultisig.";
 "validAddressError" = "Please enter a valid address.";
 "positiveAmountError" = "Amount must be a positive number. Try again.";
-"nonNegativeFeeError" = "Fee must be a non-negative number. Try again.";
 "walletBalanceExceededError" = "The total amount and fee exceed your wallet's balance. Try again.";
 "mustHaveETHError" = "You must have ETH to pay for gas, before sending a token.";
 "unavailableBalanceError" = "Wallet balance is not available.";
@@ -397,3 +396,4 @@
 "saveVaultQR" = "Save Vault QR";
 "joinSend" = "Join Send";
 "joinSwap" = "Join Swap";
+"nonNegativeFeeError" = "Not enough gas to cover transaction.";

@@ -132,7 +132,6 @@
 "sameWifiEntendedInstruction" = "Držite uređaje na istoj WiFi mreži, odaberite točan sef i uparite uređaje. Provjerite da nema drugih uređaja koji pokreću Vultisig.";
 "validAddressError" = "Molimo unesite valjanu adresu.";
 "positiveAmountError" = "Iznos mora biti pozitivan broj. Pokušajte ponovno.";
-"nonNegativeFeeError" = "Naknada mora biti nenegativan broj. Pokušajte ponovno.";
 "walletBalanceExceededError" = "Ukupni iznosi naknada premašuju saldo vašeg novčanika. Pokušajte ponovno.";
 "mustHaveETHError" = "Morate imati ETH za plaćanje plina prije slanja tokena.";
 "unavailableBalanceError" = "Saldo novčanika nije dostupan.";
@@ -366,3 +365,4 @@
 "registerVaultText4" = "4. Pratite svoje VULTIES (Bodovi trezora)!";
 "saveQRCode" = "Spremi QR kod";
 "saveVaultQR" = "Spremi QR trezora";
+"nonNegativeFeeError" = "Nema dovoljno plina za pokrivanje transakcije.";

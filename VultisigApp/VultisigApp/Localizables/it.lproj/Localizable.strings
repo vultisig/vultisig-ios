@@ -132,7 +132,6 @@
 "sameWifiEntendedInstruction" = "Mantieni i dispositivi sulla stessa rete WiFi, scegli la cassaforte corretta e accoppia i dispositivi. Assicurati che nessun altro dispositivo stia eseguendo Vultisig.";
 "validAddressError" = "Per favore, inserisci un indirizzo valido.";
 "positiveAmountError" = "La quantità deve essere un numero positivo. Riprova.";
-"nonNegativeFeeError" = "La commissione deve essere un numero non negativo. Riprova.";
 "walletBalanceExceededError" = "La quantità totale e la commissione superano il saldo del tuo portafoglio. Riprova.";
 "mustHaveETHError" = "Devi avere ETH per pagare il gas, prima di inviare un token.";
 "unavailableBalanceError" = "Saldo del portafoglio non disponibile.";
@@ -366,3 +365,4 @@
 "registerVaultText4" = "4. Monitora i tuoi VULTIES (Punti Vault)!";
 "saveQRCode" = "Salva codice QR";
 "saveVaultQR" = "Salva QR del Vault";
+"nonNegativeFeeError" = "Non abbastanza gas per coprire la transazione.";
