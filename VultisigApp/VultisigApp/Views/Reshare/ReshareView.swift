@@ -88,14 +88,7 @@ struct ReshareView: View {
                 OutlineButton(title: "startFastVaultReshare")
             }
 
-            Button {
-                showJoinReshare = true
-            } label: {
-                OutlineButton(title: "joinReshare")
-            }
-            .navigationDestination(isPresented: $shouldJoinKeygen) {
-                JoinKeygenView(vault: vault)
-            }
+            joinReshareButton
         }
         .padding(.horizontal, 40)
     }
