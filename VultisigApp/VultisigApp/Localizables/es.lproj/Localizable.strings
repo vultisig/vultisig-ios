@@ -277,7 +277,7 @@
 "numberOfPairedDevicesTwoOfTwo" = "Número de dispositivos emparejados %d de 2";
 "numberOfPairedDevicesTwoOfThree" = "Número de dispositivos emparejados %d de 3";
 "numberOfPairedDevicesMOfN" = "Número de dispositivos emparejados %d de N";
-"invalidAddress" = "Esta dirección es inválida para esta cadena.";
+"invalidAddressChain" = "Esta dirección es inválida para esta cadena.";
 "scannedByBlowfish" = "Transacción verificada por Blowfish.";
 "defaultChains" = "Cadenas predeterminadas";
 "search" = "Buscar";
@@ -365,4 +365,8 @@
 "registerVaultText4" = "4. ¡Sigue tus VULTIES (Puntos Vault)!";
 "saveQRCode" = "Guardar código QR";
 "saveVaultQR" = "Guardar QR del Vault";
+"joinSend" = "Unirse a Enviar";
+"joinSwap" = "Unirse a Intercambio";
+"invalidAddress" = "Dirección no válida";
+"emptyAddressField" = "Campo de dirección vacío.";
 "nonNegativeFeeError" = "No hay suficiente gas para cubrir la transacción.";

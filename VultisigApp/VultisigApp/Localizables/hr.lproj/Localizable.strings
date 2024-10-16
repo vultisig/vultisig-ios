@@ -277,7 +277,7 @@
 "numberOfPairedDevicesTwoOfTwo" = "Broj uređaja uparenih u par %d od 2";
 "numberOfPairedDevicesTwoOfThree" = "Broj uređaja uparenih u par %d od 3";
 "numberOfPairedDevicesMOfN" = "Broj uređaja uparenih u par %d od N";
-"invalidAddress" = "Ova adresa je nevažeća za ovu lance.";
+"invalidAddressChain" = "Ova adresa je nevažeća za ovu lance.";
 "scannedByBlowfish" = "Transakcija provjerena Blowfishom.";
 "defaultChains" = "Zadani lanci";
 "search" = "Pretraži";
@@ -365,4 +365,8 @@
 "registerVaultText4" = "4. Pratite svoje VULTIES (Bodovi trezora)!";
 "saveQRCode" = "Spremi QR kod";
 "saveVaultQR" = "Spremi QR trezora";
+"joinSend" = "Pridruži se Slanju";
+"joinSwap" = "Pridruži se Zamjeni";
+"invalidAddress" = "Nevažeća adresa";
+"emptyAddressField" = "Prazno polje adrese.";
 "nonNegativeFeeError" = "Nema dovoljno plina za pokrivanje transakcije.";
