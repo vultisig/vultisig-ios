@@ -366,3 +366,7 @@
 "registerVaultText4" = "4. Verfolgen Sie Ihre VULTIES (Tresorpunkte)!";
 "saveQRCode" = "QR-Code speichern";
 "saveVaultQR" = "Tresor-QR speichern";
+"joinSend" = "Senden beitreten";
+"joinSwap" = "Swap beitreten";
+"invalidAddress" = "Ungültige Adresse";
+"emptyAddressField" = "Leeres Adressfeld.";

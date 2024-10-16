@@ -367,3 +367,7 @@
 "registerVaultText4" = "4. Acompanhe seus VULTIES (Pontos de Cofre)!";
 "saveQRCode" = "Salvar código QR";
 "saveVaultQR" = "Salvar QR do Cofre";
+"joinSend" = "Juntar-se ao Envio";
+"joinSwap" = "Juntar-se ao Swap";
+"invalidAddress" = "Endereço inválido";
+"emptyAddressField" = "Campo de endereço vazio.";

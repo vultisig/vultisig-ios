@@ -366,3 +366,7 @@
 "registerVaultText4" = "4. ¡Sigue tus VULTIES (Puntos Vault)!";
 "saveQRCode" = "Guardar código QR";
 "saveVaultQR" = "Guardar QR del Vault";
+"joinSend" = "Unirse a Enviar";
+"joinSwap" = "Unirse a Intercambio";
+"invalidAddress" = "Dirección no válida";
+"emptyAddressField" = "Campo de dirección vacío.";
