@@ -371,3 +371,6 @@
 "emptyAddressField" = "Campo indirizzo vuoto.";
 "nonNegativeFeeError" = "Non abbastanza gas per coprire la transazione.";
 "part" = "Parte";
+"devices" = "Dispositivi";
+"signers" = "Firmatari";
+"vaultPart" = "Parte della cassaforte";

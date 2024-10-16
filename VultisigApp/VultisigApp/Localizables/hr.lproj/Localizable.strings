@@ -371,3 +371,6 @@
 "emptyAddressField" = "Prazno polje adrese.";
 "nonNegativeFeeError" = "Nema dovoljno plina za pokrivanje transakcije.";
 "part" = "Dio";
+"devices" = "Uređaji";
+"signers" = "Potpisnici";
+"vaultPart" = "Dio trezora";
