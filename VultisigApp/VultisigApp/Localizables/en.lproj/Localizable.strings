@@ -401,3 +401,5 @@
 "nonNegativeFeeError" = "Not enough gas to cover transaction.";
 "part" = "Part";
 "devices" = "Devices";
+"signers" = "Signers";
+"vaultPart" = "Vault Part";

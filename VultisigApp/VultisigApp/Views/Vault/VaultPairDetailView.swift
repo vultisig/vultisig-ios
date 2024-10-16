@@ -25,14 +25,27 @@ struct VaultPairDetailView: View {
     var cells: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
-                getTitleCell(for: vault.name)
-                getTitleCell(for: titlePartText())
+                VaultPairDetailCell(
+                    title: NSLocalizedString("vaultName", comment: ""),
+                    description: vault.name,
+                    isBold: true
+                )
                 
-                VaultPairDetailCell(title: NSLocalizedString("ECDSA", comment: ""), description: vault.pubKeyECDSA).frame(maxWidth: .infinity, alignment: .leading)
+                VaultPairDetailCell(title: NSLocalizedString("vaultPart", comment: ""), description: titlePartText(),
+                    isBold: true
+                )
                 
-                VaultPairDetailCell(title: NSLocalizedString("EdDSA", comment: ""), description: vault.pubKeyEdDSA).frame(maxWidth: .infinity, alignment: .leading)
+                VaultPairDetailCell(
+                    title: NSLocalizedString("ECDSA", comment: ""),
+                    description: vault.pubKeyECDSA
+                )
                 
-                Text(NSLocalizedString("devices", comment: ""))
+                VaultPairDetailCell(
+                    title: NSLocalizedString("EdDSA", comment: ""),
+                    description: vault.pubKeyEdDSA
+                )
+                
+                Text(NSLocalizedString("signers", comment: ""))
                     .font(.body14MontserratMedium)
                     .foregroundColor(.neutral0)
                     .padding(.vertical, 12)
@@ -44,21 +57,9 @@ struct VaultPairDetailView: View {
                     getDeviceCell(for: device)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.top, 30)
         }
-    }
-    
-    private func getTitleCell(for text: String) -> some View {
-        Text(text)
-            .foregroundColor(.neutral0)
-            .font(.body20MenloBold)
-            .padding(.vertical, 22)
-            .padding(.horizontal, 16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.blue600)
-            .cornerRadius(10)
-            .padding(.horizontal, 16)
-            .lineLimit(3)
     }
     
     private func getDeviceCell(for device: DeviceInfo) -> some View {
