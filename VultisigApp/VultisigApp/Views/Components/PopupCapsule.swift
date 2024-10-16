@@ -68,7 +68,7 @@ struct PopupCapsule: View {
 }
 
 #Preview {
-    @Previewable @State var show = true
+    @State var show = true
     
     return ZStack {
         Background()
