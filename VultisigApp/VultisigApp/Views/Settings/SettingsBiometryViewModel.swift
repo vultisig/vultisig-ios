@@ -14,8 +14,9 @@ final class SettingsBiometryViewModel: ObservableObject {
 
     @Published var password: String = .empty
     @Published var isLoading: Bool = false
-    @Published var isPasswordChanged: Bool = false
     @Published var isWrongPassword: Bool = false
+
+    private var initialPassword: String = .empty
 
     private let keychain = DefaultKeychainService.shared
     private let fastVaultService = FastVaultService.shared
@@ -23,15 +24,12 @@ final class SettingsBiometryViewModel: ObservableObject {
     func setData(vault: Vault) {
         if let password = keychain.getFastPassword(pubKeyECDSA: vault.pubKeyECDSA) {
             self.password = password
+            self.initialPassword = password
         }
     }
 
-    func passwordChanged() {
-        isPasswordChanged = true
-    }
-
     var isSaveEnabled: Bool {
-        return isPasswordChanged && !password.isEmpty
+        return password != initialPassword && !password.isEmpty
     }
 
     @MainActor func validatePassword(vault: Vault) async -> Bool {
