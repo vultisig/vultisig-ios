@@ -63,7 +63,7 @@ struct VaultPairDetailView: View {
     }
     
     private func getDeviceCell(for device: DeviceInfo) -> some View {
-        let part = "Part of \(device.Index+1) of \(vault.signers.count): "
+        let part = "Part \(device.Index+1) of \(vault.signers.count): "
         let signer = device.Signer
         
         return ZStack {
