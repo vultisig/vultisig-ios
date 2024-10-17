@@ -15,7 +15,7 @@ extension SettingsBiometryView {
             Background()
             main
         }
-        .navigationTitle("Enable Biometrics")
+        .navigationTitle(NSLocalizedString("enableBiometrics", comment: ""))
     }
 }
 #endif

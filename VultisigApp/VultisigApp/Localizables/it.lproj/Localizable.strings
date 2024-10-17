@@ -1,3 +1,8 @@
+"enableBiometrics" = "Abilita i dati biometrici";
+"enterFastSigningPassword" = "Inserisci la password per la firma rapida";
+"typeHere" = "Scrivi qui";
+"settingsBiometricsTitle" = "Dati biometrici per firma rapida";
+"settingsBiometricsSubtitle" = "Abilita i dati biometrici per firma rapida";
 "wrongPassword" = "Password errata";
 "reshareLabelTitle" = "Condividi nuovamente il tuo vault";
 "reshareLabelSubtitle" = "La ricondivisione può essere utilizzata per aggiornare, espandere o ridurre il numero di dispositivi in un Vault.";

@@ -85,7 +85,7 @@ struct EditVaultView: View {
         NavigationLink {
             SettingsBiometryView(vault: vault)
         } label: {
-            EditVaultCell(title: "Biometrics for Fast Sign", description: "Enable Biometrics for Fast Sign", icon: "person.badge.key")
+            EditVaultCell(title: "settingsBiometricsTitle", description: "settingsBiometricsSubtitle", icon: "person.badge.key")
         }
     }
 }
