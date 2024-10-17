@@ -30,9 +30,6 @@ struct SettingsBiometryView: View {
         .task {
             viewModel.setData(vault: vault)
         }
-        .onChange(of: viewModel.password) { _, _ in
-            viewModel.passwordChanged()
-        }
         .safeAreaInset(edge: .bottom) {
             button
         }
