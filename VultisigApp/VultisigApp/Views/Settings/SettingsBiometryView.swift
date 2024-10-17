@@ -23,7 +23,10 @@ struct SettingsBiometryView: View {
         ScrollView {
             VStack(spacing: 16) {
                 enableCell
-                passwordCell
+
+                if viewModel.isBiometryEnabled {
+                    passwordCell
+                }
             }
             .padding(.horizontal, 16)
         }
@@ -31,7 +34,9 @@ struct SettingsBiometryView: View {
             viewModel.setData(vault: vault)
         }
         .safeAreaInset(edge: .bottom) {
-            button
+            if viewModel.isBiometryEnabled {
+                button
+            }
         }
         .alert(NSLocalizedString("wrongPassword", comment: ""), isPresented: $viewModel.isWrongPassword) {
             Button("OK", role: .cancel) { }
