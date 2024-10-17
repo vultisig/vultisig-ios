@@ -172,7 +172,6 @@ struct SendCryptoDetailsView: View {
         SendCryptoAmountTextField(
             amount: $tx.amount,
             onChange: {
-                sendCryptoViewModel.validateAmount(amount: tx.amount.description)
                 await sendCryptoViewModel.convertToFiat(newValue: $0, tx: tx)
             },
             onMaxPressed: { sendCryptoViewModel.setMaxValues(tx: tx) }
@@ -268,6 +267,7 @@ struct SendCryptoDetailsView: View {
     }
     
     private func validateForm() async {
+        sendCryptoViewModel.validateAmount(amount: tx.amount.description)
         if await sendCryptoViewModel.validateForm(tx: tx) {
             sendCryptoViewModel.moveToNextView()
         }
