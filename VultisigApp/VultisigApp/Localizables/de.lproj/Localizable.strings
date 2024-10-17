@@ -1,3 +1,8 @@
+"enableBiometrics" = "Biometrie aktivieren";
+"enterFastSigningPassword" = "Passwort für schnelles Signieren eingeben";
+"typeHere" = "Hier eingeben";
+"settingsBiometricsTitle" = "Biometrie für schnelles Signieren";
+"settingsBiometricsSubtitle" = "Biometrie für schnelles Signieren aktivieren";
 "wrongPassword" = "Falsches Passwort";
 "reshareLabelTitle" = "Teilen Sie Ihren Tresor erneut";
 "reshareLabelSubtitle" = "Erneutes Teilen kann verwendet werden, um die Anzahl der Geräte in einem Tresor zu aktualisieren, zu erweitern oder zu reduzieren.";

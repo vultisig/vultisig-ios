@@ -22,7 +22,7 @@ extension SettingsBiometryView {
     }
 
     var headerMac: some View {
-        GeneralMacHeader(title: "Enable Biometrics")
+        GeneralMacHeader(title: NSLocalizedString("enableBiometrics", comment: ""))
             .padding(.bottom, 8)
     }
 }

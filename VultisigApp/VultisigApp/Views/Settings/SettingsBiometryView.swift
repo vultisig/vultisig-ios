@@ -43,7 +43,7 @@ struct SettingsBiometryView: View {
 
     var enableCell: some View {
         HStack {
-            Text("Enable Biometrics")
+            Text(NSLocalizedString("enableBiometrics", comment: ""))
                 .foregroundColor(.neutral0)
                 .font(.body16MontserratSemiBold)
 
@@ -60,11 +60,11 @@ struct SettingsBiometryView: View {
 
     var passwordCell: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Enter Password for Fast Signing")
+            Text(NSLocalizedString("enterFastSigningPassword", comment: ""))
                 .font(.body14MontserratMedium)
                 .foregroundColor(.neutral0)
 
-            HiddenTextField(placeholder: "Type here", password: $viewModel.password)
+            HiddenTextField(placeholder: "typeHere", password: $viewModel.password)
                 .padding(.top, 8)
         }
     }
