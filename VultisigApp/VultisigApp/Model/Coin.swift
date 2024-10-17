@@ -5,12 +5,12 @@ import BigInt
 @Model
 class Coin: ObservableObject, Codable, Hashable {
     var id: String
-    let chain: Chain
-    let address: String
-    let hexPublicKey: String
-    let ticker: String
-    let contractAddress: String
-    let isNativeToken: Bool
+    var chain: Chain
+    var address: String
+    var hexPublicKey: String
+    var ticker: String
+    var contractAddress: String
+    var isNativeToken: Bool
     
     @Attribute(originalName: "decimals") private(set) var strDecimals: String
     

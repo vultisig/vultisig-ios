@@ -10,7 +10,7 @@ import SwiftData
 
 @Model
 class Folder: Hashable, Equatable {
-    let id = UUID()
+    var id = UUID()
     var folderName: String
     var containedVaultNames: [String]
     var order: Int

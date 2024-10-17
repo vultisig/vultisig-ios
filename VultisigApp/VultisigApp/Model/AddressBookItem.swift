@@ -10,7 +10,7 @@ import Foundation
 
 @Model
 class AddressBookItem: Equatable {
-    let id = UUID()
+    var id = UUID()
     var title: String
     var address: String
     var coinMeta: CoinMeta
