@@ -12,6 +12,7 @@ import SwiftUI
 struct VaultPairDetailCell: View {
     let title: String
     let description: String
+    var isBold: Bool = false
     
     var body: some View {
         HStack(spacing: 15) {
@@ -28,16 +29,19 @@ struct VaultPairDetailCell: View {
     
     var content: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Text(NSLocalizedString(title, comment: ""))
-                .font(.body16MenloBold)
-                .foregroundColor( .neutral0)
+            if !title.isEmpty {
+                Text(NSLocalizedString(title, comment: ""))
+                    .font(isBold ? .body20MenloBold : .body16MenloBold)
+                    .foregroundColor( .neutral0)
+            }
             
             if !description.isEmpty {
                 Text(NSLocalizedString(description, comment: ""))
-                    .font(.body12Menlo)
+                    .font(isBold ? .body16Menlo : .body12Menlo)
                     .foregroundColor(.neutral0)
                     .fixedSize(horizontal: false, vertical: true)
                     .lineLimit(nil)
+                    .opacity(0.8)
             }
         }
     }
