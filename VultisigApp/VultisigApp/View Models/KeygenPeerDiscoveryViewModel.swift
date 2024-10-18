@@ -93,6 +93,15 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             self.vault.localPartyID = self.localPartyID
         }
         self.selections.insert(self.localPartyID)
+        // ensure when active / fast vault , user is always using internet option
+        switch state {
+        case .active , .fast:
+            VultisigRelay.IsRelayEnabled = true
+            selectedNetwork = .Internet
+            serverAddr = Endpoint.vultisigRelay
+        case .secure:
+            break
+        }
         
         if let fastVaultPassword, let fastVaultEmail {
             switch tssType {
@@ -120,13 +129,13 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
         }
         .store(in: &cancellables)
     }
-
+    
     func autoSelectPeer(_ peer: String){
         if !selections.contains(peer) {
             selections.insert(peer)
         }
     }
-
+    
     func handleSelection(_ peer: String) {
         if selections.contains(peer) {
             if peer != localPartyID {
@@ -136,11 +145,11 @@ class KeygenPeerDiscoveryViewModel: ObservableObject {
             selections.insert(peer)
         }
     }
-
+    
     var isLookingForDevices: Bool {
         return status == .WaitingForDevices && selections.count < 2
     }
-
+    
     func startFastVaultKeygenIfNeeded(state: SetupVaultState) {
         guard isValidPeers(state: state), !state.hasOtherDevices else { return }
         startKeygen()

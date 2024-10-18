@@ -122,7 +122,9 @@ struct PeerDiscoveryView: View {
     
     var list: some View {
         VStack(spacing: isPhoneSE ? 4 : 12) {
-            networkPrompts
+            if selectedTab == .secure {
+                networkPrompts
+            }
             deviceContent
             instructions
         }
