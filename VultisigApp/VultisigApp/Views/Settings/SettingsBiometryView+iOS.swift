@@ -14,6 +14,10 @@ extension SettingsBiometryView {
         ZStack {
             Background()
             main
+
+            if viewModel.isLoading {
+                Loader()
+            }
         }
         .navigationTitle(NSLocalizedString("enableBiometrics", comment: ""))
     }
