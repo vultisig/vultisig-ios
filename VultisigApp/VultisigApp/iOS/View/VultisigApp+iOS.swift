@@ -31,6 +31,9 @@ extension VultisigApp {
                     break
                 }
             }
+            .onAppear() {
+                continueLogin()
+            }
     }
 }
 #endif
