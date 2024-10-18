@@ -150,7 +150,11 @@ struct FolderDetailView: View {
     }
     
     private func setData() {
-        folderViewModel.setData(vaults: vaults, vaultFolder: vaultFolder)
+        folderViewModel.setData(
+            vaults: vaults,
+            vaultFolder: vaultFolder,
+            filteredVaults: viewModel.filteredVaults
+        )
     }
     
     private func handleVaultSelection(for vault: Vault) {

@@ -16,11 +16,11 @@ class FolderDetailViewModel: ObservableObject {
     @Published var alertTitle = ""
     @Published var alertDescription = ""
     
-    func setData(vaults: [Vault], vaultFolder: Folder) {
+    func setData(vaults: [Vault], vaultFolder: Folder, filteredVaults: [Vault]) {
         selectedVaults = []
         remaningVaults = []
         selectedVaults = getContainedVaults(vaults: vaults, vaultFolder: vaultFolder)
-        remaningVaults = vaults.filter({ vault in
+        remaningVaults = filteredVaults.filter({ vault in
             !selectedVaults.contains(vault)
         })
     }
