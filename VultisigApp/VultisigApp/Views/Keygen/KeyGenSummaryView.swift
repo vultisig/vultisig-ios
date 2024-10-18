@@ -85,7 +85,7 @@ struct KeyGenSummaryView: View {
         var pairDevices = numberOfMainDevices
         
         return VStack(spacing: 16) {
-            ForEach(Array(viewModel.selections), id: \.self) { selection in
+            ForEach(viewModel.selections.map{ $0 }, id: \.self) { selection in
                 index += 1
                 pairDevices -= selection==viewModel.localPartyID ? 0 : 1
                 return getCell(index: index, title: selection, isPairDevice: pairDevices>0)
