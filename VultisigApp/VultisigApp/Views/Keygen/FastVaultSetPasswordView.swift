@@ -17,6 +17,10 @@ struct FastVaultSetPasswordView: View {
     @State var password: String = ""
     @State var verifyPassword: String = ""
     @State var isLinkActive = false
+    @State var isLoading: Bool = false
+    @State var isWrongPassword: Bool = false
+
+    private let fastVaultService: FastVaultService = .shared
 
     var title: String {
         switch fastVaultExist {
@@ -38,6 +42,9 @@ struct FastVaultSetPasswordView: View {
 
     var body: some View {
         content
+            .alert(NSLocalizedString("wrongPassword", comment: ""), isPresented: $isWrongPassword) {
+                Button("OK", role: .cancel) { }
+            }
     }
 
     var passwordField: some View {
@@ -79,7 +86,11 @@ struct FastVaultSetPasswordView: View {
 
     var saveButton: some View {
         Button(action: {
-            isLinkActive = true
+            if fastVaultExist {
+                Task { await checkPassword() }
+            } else {
+                isLinkActive = true
+            }
         }) {
             FilledButton(title: "continue")
         }
@@ -94,5 +105,23 @@ struct FastVaultSetPasswordView: View {
         case true:
             return password.isEmpty
         }
+    }
+
+    @MainActor func checkPassword() async {
+        isLoading = true
+        defer { isLoading = false }
+
+        let isValid = await fastVaultService.get(
+            pubKeyECDSA: vault.pubKeyECDSA,
+            password: password
+        )
+
+        guard isValid else {
+            isWrongPassword = true
+            password = .empty
+            return
+        }
+
+        isLinkActive = true
     }
 }
