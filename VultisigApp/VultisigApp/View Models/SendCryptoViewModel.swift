@@ -58,7 +58,9 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     }
 
     func loadFastVault(tx: SendTransaction, vault: Vault) async {
-        tx.isFastVault = await fastVaultService.exist(pubKeyECDSA: vault.pubKeyECDSA)
+        let isExist = await fastVaultService.exist(pubKeyECDSA: vault.pubKeyECDSA)
+        let isLocalBackup = vault.localPartyID.lowercased().contains("server-")
+        tx.isFastVault = isExist && !isLocalBackup
     }
 
     func setMaxValues(tx: SendTransaction, percentage: Double = 100)  {

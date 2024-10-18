@@ -268,7 +268,7 @@ class EncryptedBackupViewModel: ObservableObject {
     }
     
     private func isVaultUnique(backupVault: Vault,vaults: [Vault]) -> Bool {
-        for vault in vaults{
+        for vault in vaults {
             if vault.pubKeyECDSA == backupVault.pubKeyECDSA &&
                 vault.pubKeyEdDSA == backupVault.pubKeyEdDSA {
                 return false
