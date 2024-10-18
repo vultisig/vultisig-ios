@@ -39,7 +39,9 @@ class KeygenViewModel: ObservableObject {
     private var tssMessenger: TssMessengerImpl? = nil
     private var stateAccess: LocalStateAccessorImpl? = nil
     private var messagePuller: MessagePuller? = nil
-    
+
+    private let keychain = DefaultKeychainService.shared
+
     init() {
         self.vault = Vault(name: "Main Vault")
         self.tssType = .Keygen
@@ -211,6 +213,11 @@ class KeygenViewModel: ObservableObject {
         }
         
     }
+
+    func saveFastVaultPassword(_ fastVaultPassword: String, vault: Vault) {
+        keychain.setFastPassword(fastVaultPassword, pubKeyECDSA: vault.pubKeyECDSA)
+    }
+
     private func createTssInstance(messenger: TssMessengerProtocol,
                                    localStateAccessor: TssLocalStateAccessorProtocol) async throws -> TssServiceImpl?
     {
