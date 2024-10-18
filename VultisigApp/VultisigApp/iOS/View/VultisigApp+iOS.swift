@@ -32,7 +32,9 @@ extension VultisigApp {
                 }
             }
             .onAppear() {
-                continueLogin()
+                if ProcessInfo.processInfo.isiOSAppOnMac {
+                    continueLogin()
+                }
             }
     }
 }
