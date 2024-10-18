@@ -47,7 +47,7 @@
 "deleteVaultDescription" = "This vault will be removed permanently";
 "addNewVault" = "Add New Vault";
 "editVault" = "Edit Vault";
-"addressCopied" = "Address copied";
+"addressCopied" = "Address Copied";
 "hashCopied" = "Hash copied";
 "ok" = "OK";
 "next" = "Next";
