@@ -9,6 +9,8 @@ import SwiftUI
 
 struct FastVaultEnterPasswordView: View {
 
+    @AppStorage("isBiometryEnabled") var isBiometryEnabled: Bool = true
+
     @State var isLoading: Bool = false
     @State var isWrongPassword: Bool = false
 
@@ -19,12 +21,18 @@ struct FastVaultEnterPasswordView: View {
     let vault: Vault
     let onSubmit: (() -> Void)?
 
+    private let keychain = DefaultKeychainService.shared
+    private let biometryService = BiometryService.shared
+
     var view: some View {
         VStack {
             passwordField
             Spacer(minLength: 20)
             disclaimer
             buttons
+        }
+        .onAppear {
+            tryAuthenticate()
         }
     }
 
@@ -89,11 +97,35 @@ struct FastVaultEnterPasswordView: View {
         )
 
         if isValidPassword {
+            savePassword()
             onSubmit?()
             dismiss()
         } else {
             isWrongPassword = true
         }
+    }
+
+    func savePassword() {
+        keychain.setFastPassword(password, pubKeyECDSA: vault.pubKeyECDSA)
+    }
+
+    func tryAuthenticate() {
+        guard let fastPassword = keychain.getFastPassword(pubKeyECDSA: vault.pubKeyECDSA) else {
+            return
+        }
+
+        guard !fastPassword.isEmpty, isBiometryEnabled else {
+            return
+        }
+
+        biometryService.authenticate(
+            reason: "Authenticate to fill FastServer password",
+            onSuccess: {
+                password = fastPassword
+                onSubmit?()
+                dismiss()
+            },
+            onError: nil)
     }
 }
 

@@ -84,7 +84,9 @@ struct JoinKeygenView: View {
             mediatorURL: viewModel.serverAddress!,
             sessionID: self.viewModel.sessionID!,
             encryptionKeyHex: viewModel.encryptionKeyHex,
-            oldResharePrefix: viewModel.oldResharePrefix)
+            oldResharePrefix: viewModel.oldResharePrefix, 
+            fastVaultPassword: nil
+        )
     }
     
     var keygenErrorText: some View {

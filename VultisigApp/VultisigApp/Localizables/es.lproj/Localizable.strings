@@ -1,3 +1,8 @@
+"enableBiometrics" = "Habilitar biometría";
+"enterFastSigningPassword" = "Ingrese la contraseña para firma rápida";
+"typeHere" = "Escribe aquí";
+"settingsBiometricsTitle" = "Biometría para firma rápida";
+"settingsBiometricsSubtitle" = "Habilitar biometría para firma rápida";
 "wrongPassword" = "Contraseña incorrecta";
 "reshareLabelTitle" = "Compartir nuevamente tu bóveda";
 "reshareLabelSubtitle" = "La opción de compartir nuevamente se puede usar para actualizar, expandir o reducir la cantidad de dispositivos en una Bóveda.";
