@@ -13,9 +13,9 @@ final class DatabaseRate {
 
     @Attribute(.unique) var id: String
     
-    let fiat: String
-    let crypto: String
-    let value: Double
+    var fiat: String
+    var crypto: String
+    var value: Double
 
     init(id: String, fiat: String, crypto: String, value: Double) {
         self.id = id

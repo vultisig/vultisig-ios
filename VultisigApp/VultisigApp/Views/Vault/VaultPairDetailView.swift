@@ -11,6 +11,8 @@ struct VaultPairDetailView: View {
     let vault: Vault    
     @State var devicesInfo: [DeviceInfo] = []
     
+    @State var deviceIndex: Int = 0
+    
     var body: some View {
         content
             .onAppear {
@@ -23,30 +25,73 @@ struct VaultPairDetailView: View {
     var cells: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
+                VaultPairDetailCell(
+                    title: NSLocalizedString("vaultName", comment: ""),
+                    description: vault.name,
+                    isBold: true
+                )
                 
-                VaultPairDetailCell(title: NSLocalizedString("vaultName", comment: ""), description: vault.name).frame(maxWidth: .infinity, alignment: .leading)
+                VaultPairDetailCell(title: NSLocalizedString("vaultPart", comment: ""), description: titlePartText(),
+                    isBold: true
+                )
                 
-                VaultPairDetailCell(title: NSLocalizedString("ECDSA", comment: ""), description: vault.pubKeyECDSA).frame(maxWidth: .infinity, alignment: .leading)
+                VaultPairDetailCell(
+                    title: NSLocalizedString("ECDSA", comment: ""),
+                    description: vault.pubKeyECDSA
+                )
                 
-                VaultPairDetailCell(title: NSLocalizedString("EdDSA", comment: ""), description: vault.pubKeyEdDSA).frame(maxWidth: .infinity, alignment: .leading)
+                VaultPairDetailCell(
+                    title: NSLocalizedString("EdDSA", comment: ""),
+                    description: vault.pubKeyEdDSA
+                )
                 
-                Text("\(vault.getThreshold() + 1) of \(vault.signers.count) Vault")
+                Text(NSLocalizedString("signers", comment: ""))
                     .font(.body14MontserratMedium)
                     .foregroundColor(.neutral0)
                     .padding(.vertical, 12)
                     .padding(.horizontal, 16)
                     .frame(maxWidth: .infinity, alignment: .center)
+                    .offset(y: 8)
                 
                 ForEach(devicesInfo, id: \.Index) { device in
-                    if device.Signer == vault.localPartyID {
-                        VaultPairDetailCell(title: device.Signer + " (This device)", description: .empty)
-                    } else {
-                        VaultPairDetailCell(title: device.Signer, description: .empty)
-                    }
+                    getDeviceCell(for: device)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.top, 30)
         }
+    }
+    
+    private func getDeviceCell(for device: DeviceInfo) -> some View {
+        let part = "Part \(device.Index+1) of \(vault.signers.count): "
+        let signer = device.Signer
+        
+        return ZStack {
+            if device.Signer == vault.localPartyID {
+                VaultPairDetailCell(
+                    title: .empty,
+                    description: part + signer + " (This device)"
+                )
+                .onAppear {
+                    deviceIndex = device.Index + 1
+                }
+            } else {
+                VaultPairDetailCell(
+                    title: .empty,
+                    description: part + signer
+                )
+            }
+        }
+    }
+    
+    private func titlePartText() -> String {
+        let part = NSLocalizedString("part", comment: "")
+        let of = NSLocalizedString("of", comment: "")
+        let space = " "
+        let vaultIndex = "\(deviceIndex)"
+        let totalCount = "\(vault.signers.count)"
+        
+        return part + space + vaultIndex + space + of + space + totalCount
     }
 }
 
