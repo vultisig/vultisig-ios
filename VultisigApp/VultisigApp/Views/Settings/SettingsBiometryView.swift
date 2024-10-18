@@ -16,7 +16,15 @@ struct SettingsBiometryView: View {
     let vault: Vault
 
     var body: some View {
-        content
+        ZStack {
+            Background()
+            main
+
+            if viewModel.isLoading {
+                Loader()
+            }
+        }
+        .navigationTitle(NSLocalizedString("enableBiometrics", comment: ""))
     }
 
     var main: some View {
