@@ -27,7 +27,7 @@ struct PopupCapsule: View {
     }
     
     var capsule: some View {
-        Text(showText ? NSLocalizedString(text, comment: "") : "")
+        Text(showText ? text : "")
             .foregroundColor(.neutral0.opacity(showText ? 1 : 0))
             .font(.body14MenloBold)
             .padding()
@@ -46,7 +46,7 @@ struct PopupCapsule: View {
             offset = -50
         }
             
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             withAnimation {
                 showText = true
             }
