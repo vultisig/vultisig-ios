@@ -21,22 +21,23 @@ struct BiometryService {
         var error: NSError?
 
         if context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
-
-            guard isRunningOnPhysicalDevice() else { return }
-
-            switch context.biometryType {
-            case .touchID, .faceID, .opticID:
-                context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason) { success, error in
-                    DispatchQueue.main.async {
-                        if let error, !success {
-                            onError?(error)
-                        } else if success {
-                            onSuccess()
+            if isRunningOnPhysicalDevice() {
+                switch context.biometryType {
+                case .touchID, .faceID, .opticID:
+                    context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason) { success, error in
+                        DispatchQueue.main.async {
+                            if let error, !success {
+                                onError?(error)
+                            } else if success {
+                                onSuccess()
+                            }
                         }
                     }
+                default:
+                    onError?(Errors.wrongBiometryType)
                 }
-            default:
-                onError?(Errors.wrongBiometryType)
+            } else {
+                onSuccess()
             }
         } else {
             onError?(Errors.cantEvaluatePolicy)
