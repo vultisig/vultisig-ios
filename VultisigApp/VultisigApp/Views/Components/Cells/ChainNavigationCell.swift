@@ -10,10 +10,11 @@ import SwiftUI
 struct ChainNavigationCell: View {
     @ObservedObject var group: GroupedChain
     let vault: Vault
-    @Binding var showAlert: Bool
     
     @State private var isActive = false
     @State var isEditingChains: Bool = false
+    
+    @EnvironmentObject var homeViewModel: HomeViewModel
     @EnvironmentObject var viewModel: VaultDetailViewModel
     
     var body: some View {
@@ -40,7 +41,7 @@ struct ChainNavigationCell: View {
             isActive = true
         }
         .onLongPressGesture {
-            copyAddress()
+            copyAddress(for: group.name)
         }
     }
     
@@ -54,8 +55,7 @@ struct ChainNavigationCell: View {
 #Preview {
     ChainNavigationCell(
         group: GroupedChain.example,
-        vault: Vault.example, 
-        showAlert: .constant(false)
+        vault: Vault.example
     )
     .environmentObject(HomeViewModel())
     .environmentObject(VaultDetailViewModel())

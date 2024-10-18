@@ -43,8 +43,7 @@ extension VaultDetailView {
         return ForEach(viewModel.groups, id: \.id) { group in
             ChainNavigationCell(
                 group: group,
-                vault: vault,
-                showAlert: $showAlert
+                vault: vault
             )
         }
         .background(Color.backgroundBlue)

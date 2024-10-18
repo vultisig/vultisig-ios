@@ -28,7 +28,6 @@ struct VaultDetailView: View {
     @State var isSendLinkActive = false
     @State var isSwapLinkActive = false
     @State var isMemoLinkActive = false
-    @State var showAlert: Bool = false
     @State var selectedChain: Chain? = nil
 
     @StateObject var sendTx = SendTransaction()
@@ -38,7 +37,7 @@ struct VaultDetailView: View {
             Background()
             view
             scanButton
-            PopupCapsule(text: "addressCopied", showPopup: $showAlert)
+            popup
         }
         .onAppear {
             appState.currentVault = homeViewModel.selectedVault
@@ -140,6 +139,13 @@ struct VaultDetailView: View {
             .padding(.horizontal, 16)
             .padding(.top, 20)
             .background(Color.backgroundBlue)
+    }
+    
+    var popup: some View {
+        PopupCapsule(
+            text: homeViewModel.alertTitle,
+            showPopup: $homeViewModel.showAlert
+        )
     }
     
     private func onAppear() {

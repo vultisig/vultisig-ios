@@ -15,6 +15,9 @@ class HomeViewModel: ObservableObject {
     
     @Published var selectedVault: Vault? = nil
     @Published var filteredVaults: [Vault] = []
+    
+    @Published var showAlert: Bool = false
+    @Published var alertTitle: String = ""
 
     func loadSelectedVault(for vaults: [Vault]) {
         if vaultName.isEmpty || selectedPubKeyECDSA.isEmpty {
