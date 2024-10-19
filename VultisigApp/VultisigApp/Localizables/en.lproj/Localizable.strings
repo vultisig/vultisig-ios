@@ -238,7 +238,6 @@
 "function" = "Function";
 "enterPassword" = "Enter Password";
 "fastVaultEnterDisclaimer" = "This Password decrypt your FastVault Share";
-"fastVaultSetDisclaimer" = "This password encrypts your FastVault Share";
 "passwordProtectBackup" = "Password protect your backup";
 "errorSavingFile" = "Error saving file";
 "invalidVaultData" = "Invalid vault data";
@@ -403,3 +402,6 @@
 "devices" = "Devices";
 "signers" = "Signers";
 "vaultPart" = "Vault Part";
+"name" = "Name";
+"fastVaultSetDisclaimer" = "This Password encrypts your Vault Share received via email";
+"disclaimerEmailText" = "This email is only used to send the backup";

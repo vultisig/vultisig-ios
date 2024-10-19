@@ -37,6 +37,7 @@ struct FastVaultEmailView: View {
 
     var buttons: some View {
         VStack(spacing: 20) {
+            disclaimer
             continueButton
         }
         .padding(.top, 16)
@@ -52,6 +53,11 @@ struct FastVaultEmailView: View {
         }
         .opacity(isValid ? 1 : 0.5)
         .disabled(!isValid)
+    }
+    
+    var disclaimer: some View {
+        OutlinedDisclaimer(text: NSLocalizedString("disclaimerEmailText", comment: ""))
+            .padding(.horizontal, 16)
     }
 
     var isValid: Bool {
