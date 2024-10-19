@@ -135,12 +135,12 @@ class AccountViewModel: ObservableObject {
     }
     
     private func isRunningOnPhysicalDevice() -> Bool {
-        #if targetEnvironment(simulator)
-        return false
-        #elseif DEBUG
-        return false
-        #else
+//        #if targetEnvironment(simulator)
+//        return false
+//        #elseif DEBUG
+//        return false
+//        #else
         return true
-        #endif
+//        #endif
     }
 }
