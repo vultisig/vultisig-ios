@@ -122,7 +122,9 @@ struct PeerDiscoveryView: View {
     
     var list: some View {
         VStack(spacing: isPhoneSE ? 4 : 12) {
-            networkPrompts
+            if selectedTab == .secure {
+                networkPrompts
+            }
             deviceContent
             instructions
         }
@@ -177,7 +179,8 @@ struct PeerDiscoveryView: View {
             mediatorURL: viewModel.serverAddr,
             sessionID: viewModel.sessionID,
             encryptionKeyHex: viewModel.encryptionKeyHex ?? "",
-            oldResharePrefix: viewModel.vault.resharePrefix ?? ""
+            oldResharePrefix: viewModel.vault.resharePrefix ?? "", 
+            fastVaultPassword: fastVaultPassword
         )
     }
     

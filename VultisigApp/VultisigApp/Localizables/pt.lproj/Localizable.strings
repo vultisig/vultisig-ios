@@ -1,3 +1,8 @@
+"enableBiometrics" = "Ativar biometria";
+"enterFastSigningPassword" = "Digite a senha para assinatura rápida";
+"typeHere" = "Digite aqui";
+"settingsBiometricsTitle" = "Biometria para assinatura rápida";
+"settingsBiometricsSubtitle" = "Ativar biometria para assinatura rápida";
 "wrongPassword" = "Senha incorreta";
 "reshareLabelTitle" = "Compartilhe novamente seu cofre";
 "reshareLabelSubtitle" = "O recurso de compartilhar novamente pode ser usado para atualizar, expandir ou reduzir a quantidade de dispositivos em um Cofre.";

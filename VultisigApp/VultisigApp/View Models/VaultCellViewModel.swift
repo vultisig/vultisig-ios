@@ -26,15 +26,19 @@ class VaultCellViewModel: ObservableObject {
     
     private func setupLabel(_ vault: Vault) {
         totalSigners = devicesInfo.count
-        checkForFastSign()
+        checkForFastSign(localPartyID: vault.localPartyID)
         checkForAssignedPart(vault)
     }
     
-    private func checkForFastSign() {
-        for index in 0..<devicesInfo.count {
-            if devicesInfo[index].Signer.lowercased().hasPrefix("server-") {
-                isFastVault = true
-                return
+    private func checkForFastSign(localPartyID: String) {
+        if localPartyID.lowercased().contains("server-") {
+            isFastVault = false
+        } else {
+            for index in 0..<devicesInfo.count {
+                if devicesInfo[index].Signer.lowercased().hasPrefix("server-") {
+                    isFastVault = true
+                    return
+                }
             }
         }
     }

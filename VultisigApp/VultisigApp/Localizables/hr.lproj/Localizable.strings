@@ -1,3 +1,8 @@
+"enableBiometrics" = "Omogući biometriju";
+"enterFastSigningPassword" = "Unesite lozinku za brzo potpisivanje";
+"typeHere" = "Upišite ovdje";
+"settingsBiometricsTitle" = "Biometrija za brzo potpisivanje";
+"settingsBiometricsSubtitle" = "Omogući biometriju za brzo potpisivanje";
 "wrongPassword" = "Pogrešna lozinka";
 "reshareLabelTitle" = "Ponovno podijeli svoj trezor";
 "reshareLabelSubtitle" = "Ponovna podjela može se koristiti za osvježavanje, proširenje ili smanjenje broja uređaja u Trezoru.";

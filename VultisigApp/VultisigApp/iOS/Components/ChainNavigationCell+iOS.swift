@@ -9,8 +9,9 @@
 import SwiftUI
 
 extension ChainNavigationCell {
-    func copyAddress() {
-        showAlert = true
+    func copyAddress(for name: String) {
+        homeViewModel.alertTitle = name + " " + NSLocalizedString("addressCopied", comment: "")
+        homeViewModel.showAlert = true
         
         let pasteboard = UIPasteboard.general
         pasteboard.string = group.address

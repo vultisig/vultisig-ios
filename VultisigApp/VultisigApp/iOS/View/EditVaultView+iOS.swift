@@ -26,6 +26,7 @@ extension EditVaultView {
                 backupVault
                 editVault
                 reshareVault
+                biometrySelectionCell
                 deleteVault
             }
         }
