@@ -24,9 +24,18 @@ extension VultisigApp {
             .environmentObject(macCameraServiceViewModel)
             .buttonStyle(BorderlessButtonStyle())
             .frame(minWidth: 900, minHeight: 600)
+            .onChange(of: scenePhase) {
+                switch scenePhase {
+                case .active:
+                    continueLogin()
+                case .background:
+                    resetLogin()
+                default:
+                    break
+                }
+            }
             .onAppear{
                 NSWindow.allowsAutomaticWindowTabbing = false
-                continueLogin()
             }
     }
 }
