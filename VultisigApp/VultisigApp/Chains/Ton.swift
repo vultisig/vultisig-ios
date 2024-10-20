@@ -19,7 +19,7 @@ enum TonHelper {
         }
         
         guard case .Ton(let sequenceNumber, let expireAt, let bounceable) = keysignPayload.chainSpecific else {
-            throw HelperError.runtimeError("fail to get to address")
+            throw HelperError.runtimeError("fail to get Ton chain specific")
         }
         
         guard let toAddress = AnyAddress(string: keysignPayload.toAddress, coin: .ton) else {
