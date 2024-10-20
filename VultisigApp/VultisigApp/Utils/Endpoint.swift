@@ -137,6 +137,10 @@ class Endpoint {
         return "https://toncenter.com/api/v2/getExtendedAddressInformation?address=\(address)";
     }
     
+    static func broadcastTonTransaction() -> String {
+        return "https://toncenter.com/api/v2/sendBocReturnHash";
+    }
+    
     static func bitcoinLabelTxHash(_ value: String) -> String {
         "https://mempool.space/tx/\(value)"
     }

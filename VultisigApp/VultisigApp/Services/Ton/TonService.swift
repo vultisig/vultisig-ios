@@ -62,7 +62,7 @@ class TonService {
                 
         let body: [String: Any] = ["boc": obj]
         let dataPayload = try JSONSerialization.data(withJSONObject: body, options: [])
-        let data = try await Utils.asyncPostRequest(urlString: "https://toncenter.com/api/v2/sendBocReturnHash", headers: [:], body: dataPayload)
+        let data = try await Utils.asyncPostRequest(urlString: Endpoint.broadcastTonTransaction(), headers: [:], body: dataPayload)
         
         if let hash = Utils.extractResultFromJson(fromData: data, path: "result.hash") as? String {
             return hash
