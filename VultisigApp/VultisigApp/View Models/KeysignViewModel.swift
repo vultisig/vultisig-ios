@@ -379,12 +379,7 @@ class KeysignViewModel: ObservableObject {
                     self.txid = try await PolkadotService.shared.broadcastTransaction(hex: tx.rawTransaction)
                     
                 case .ton:
-                    
-                    print(tx.rawTransaction)
-                    print(tx.transactionHash)
-                    print(tx.signature)
-                    self.txid = tx.transactionHash
-                    
+                    self.txid = try await TonService.shared.broadcastTransaction(tx.rawTransaction)
                     
                 }
 

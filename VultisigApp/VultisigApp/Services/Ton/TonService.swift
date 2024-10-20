@@ -57,16 +57,17 @@ struct ResultData: Codable {
 class TonService {
     
     static let shared = TonService()
-    
-    func calculateFee(_ coin: Coin) -> Double {
-        return 0.0
-    }
 
-    func sendTransaction(_ encodedTransaction: String) -> String {
-        return ""
-    }
-
-    func broadcastTransaction(_ obj: String) -> String {
+    func broadcastTransaction(_ obj: String) async throws -> String {
+                
+        let body: [String: Any] = ["boc": obj]
+        let dataPayload = try JSONSerialization.data(withJSONObject: body, options: [])
+        let data = try await Utils.asyncPostRequest(urlString: "https://toncenter.com/api/v2/sendBocReturnHash", headers: [:], body: dataPayload)
+        
+        if let hash = Utils.extractResultFromJson(fromData: data, path: "result.hash") as? String {
+            return hash
+        }
+        
         return ""
     }
 
@@ -106,8 +107,10 @@ class TonService {
         print(String(data: data, encoding: .utf8) ?? "")
         
         var seqno = UInt64(0)
-        if let rseqno = Utils.extractResultFromJson(fromData: data, path: "result.account_state.seqno") as? String {
-            seqno = UInt64(rseqno) ?? 0
+        if let rseqno = Utils.extractResultFromJson(fromData: data, path: "result.account_state.seqno") as? UInt64 {
+            seqno = rseqno
+        } else if let rseqnoString = Utils.extractResultFromJson(fromData: data, path: "result.account_state.seqno") as? String {
+            seqno = UInt64(rseqnoString) ?? 0
         }
         
         return (seqno, expireAt)
