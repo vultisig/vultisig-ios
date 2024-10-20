@@ -14,7 +14,7 @@ enum ChainType: Codable, CustomStringConvertible {
     case Sui
     case THORChain
     case Cosmos
-    case Polkadot
+    case Ton
     
     var description: String {
         switch self {
@@ -30,8 +30,8 @@ enum ChainType: Codable, CustomStringConvertible {
             return "THORChain"
         case .Cosmos:
             return "Cosmos"
-        case .Polkadot:
-            return "Polkadot"
+        case .Ton:
+            return "Ton"
         }
     }
 }

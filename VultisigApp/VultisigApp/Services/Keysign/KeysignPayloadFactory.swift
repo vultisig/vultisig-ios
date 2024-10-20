@@ -35,12 +35,14 @@ struct KeysignPayloadFactory {
     private let gaia = GaiaService.shared
     private let sol = SolanaService.shared
 
-    func buildTransfer(coin: Coin, toAddress: String, amount: BigInt, memo: String?, chainSpecific: BlockChainSpecific, swapPayload: SwapPayload? = nil, approvePayload: ERC20ApprovePayload? = nil, vault: Vault) async throws -> KeysignPayload {
+    func buildTransfer(coin: Coin, toAddress: String, amount: BigInt, memo: String?, chainSpecific: BlockChainSpecific, swapPayload: THORChainSwapPayload? = nil) async throws -> KeysignPayload {
 
         var utxos: [UtxoInfo] = []
 
-        if case .UTXO(_, _) = chainSpecific {
-            guard let info = utxo.blockchairData.get(coin.blockchairKey)?.selectUTXOsForPayment().map({
+        if case let .UTXO(byteFee) = chainSpecific {
+            let totalAmountNeeded = amount + BigInt(byteFee)
+
+            guard let info = utxo.blockchairData[coin.blockchairKey]?.selectUTXOsForPayment(amountNeeded: Int64(totalAmountNeeded)).map({
                 UtxoInfo(
                     hash: $0.transactionHash ?? "",
                     amount: Int64($0.value ?? 0),
@@ -55,7 +57,7 @@ struct KeysignPayloadFactory {
         return KeysignPayload(
             coin: coin,
             toAddress: toAddress,
-            toAmount: amount,
+            toAmount: BigInt(amount),
             chainSpecific: chainSpecific,
             utxos: utxos,
             memo: memo,
