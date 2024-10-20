@@ -13,7 +13,7 @@ extension Chain {
         switch self {
         case .thorChain:
             actions = [.send, .swap, .memo]
-        case .solana:
+        case .solana, .ton:
             actions = [.send]
         case .ethereum:
             actions = [.send, .swap]

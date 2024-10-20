@@ -69,6 +69,8 @@ struct KeysignMessageFactory {
             return try PolkadotHelper.getPreSignedImageHash(keysignPayload: payload)
         case .dydx:
             return try DydxHelper().getPreSignedImageHash(keysignPayload: payload)
+        case .ton:
+            return try TonHelper.getPreSignedImageHash(keysignPayload: payload)
         }
     }
 }
