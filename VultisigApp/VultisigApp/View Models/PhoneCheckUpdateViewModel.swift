@@ -22,7 +22,7 @@ class PhoneCheckUpdateViewModel: ObservableObject {
     }
     
     func checkForUpdates(isAutoCheck: Bool = false) {
-        let currentVersion = currentAppVersion()
+        var currentVersion = currentAppVersion()
         let bundleID = Bundle.main.bundleIdentifier ?? ""
         
         fetchLatestAppStoreVersion(bundleID: bundleID) { latestVersion in
@@ -31,6 +31,9 @@ class PhoneCheckUpdateViewModel: ObservableObject {
                 print("Could not fetch the latest version from the App Store.")
                 return
             }
+            
+            let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0"
+            currentVersion += "." + build
             
             let comparisonResult = self.compareVersions(currentVersion, latestVersion)
             DispatchQueue.main.async {
@@ -58,8 +61,8 @@ class PhoneCheckUpdateViewModel: ObservableObject {
     
     func updateTextValues(_ currentVersion: String, _ latestVersion: String) {
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0"
-        currentVersionString = "Version " + currentVersion + "." + build
-        latestVersionString = "v" + latestVersion + ".0"
+        currentVersionString = "Version " + currentVersion
+        latestVersionString = "v" + latestVersion
     }
     
     func currentAppVersion() -> String {
