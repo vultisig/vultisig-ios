@@ -127,7 +127,7 @@ class Endpoint {
     
     static let polkadotServiceBalance = "https://polkadot.api.subscan.io/api/v2/scan/search"
     
-    static let tonServiceRpc = "https://toncenter.com/api/v2/jsonRPC"
+    static let tonServiceRpc = "https://api.vultisig.com/ton/v2/jsonRPC"
     
     static func fetchTonBalance(address: String) -> String {
         return "https://api.vultisig.com/ton/v3/addressInformation?address=\(address)&use_v2=false";
