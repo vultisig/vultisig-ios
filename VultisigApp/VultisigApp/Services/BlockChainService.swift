@@ -144,7 +144,7 @@ private extension BlockChainService {
                 throw Errors.failToGetRecentBlockHash
             }
 
-            if let fromAddress, let toAddress, !coin.isNativeToken {
+            if let fromAddress, let toAddress, !toAddress.isEmpty, !coin.isNativeToken {
                 async let associatedTokenAddressFromPromise = sol.fetchTokenAssociatedAccountByOwner(for: fromAddress, mintAddress: coin.contractAddress)
                 async let associatedTokenAddressToPromise = sol.fetchTokenAssociatedAccountByOwner(for: toAddress, mintAddress: coin.contractAddress)
                 let associatedTokenAddressFrom = try await associatedTokenAddressFromPromise
