@@ -18,7 +18,8 @@ enum BlockChainSpecific: Codable, Hashable {
     case Solana(recentBlockHash: String, priorityFee: BigInt, fromAddressPubKey: String?, toAddressPubKey: String?) // priority fee is in microlamports
     case Sui(referenceGasPrice: BigInt, coins: [[String:String]])
     case Polkadot(recentBlockHash: String, nonce: UInt64, currentBlockNumber: BigInt, specVersion: UInt32, transactionVersion: UInt32, genesisHash: String)
-    
+    case Ton(sequenceNumber: UInt64, expireAt: UInt64, bounceable: Bool)
+        
     var gas: BigInt {
         switch self {
         case .UTXO(let byteFee, _):
@@ -37,6 +38,8 @@ enum BlockChainSpecific: Codable, Hashable {
             return referenceGasPrice
         case .Polkadot:
             return PolkadotHelper.defaultFeeInPlancks
+        case .Ton(let sequenceNumber, let expireAt, let bounceable):
+            return BigInt.zero
         }
     }
     
@@ -44,7 +47,7 @@ enum BlockChainSpecific: Codable, Hashable {
         switch self {
         case .Ethereum(let maxFeePerGas, _, _, let gasLimit):
             return maxFeePerGas * gasLimit
-        case .UTXO, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot:
+        case .UTXO, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot, .Ton:
             return gas
         }
     }
@@ -53,7 +56,7 @@ enum BlockChainSpecific: Codable, Hashable {
         switch self {
         case .Ethereum(let maxFeePerGas, let priorityFee, _, _):
             return maxFeePerGas - priorityFee
-        case .UTXO, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot:
+        case .UTXO, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot, .Ton:
             return nil
         }
     }
@@ -62,7 +65,7 @@ enum BlockChainSpecific: Codable, Hashable {
         switch self {
         case .Ethereum(_, _, _, let gasLimit):
             return gasLimit
-        case .UTXO, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot:
+        case .UTXO, .THORChain, .MayaChain, .Cosmos, .Solana, .Sui, .Polkadot, .Ton:
             return nil
         }
     }
