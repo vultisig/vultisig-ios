@@ -39,7 +39,7 @@ enum BlockChainSpecific: Codable, Hashable {
         case .Polkadot:
             return PolkadotHelper.defaultFeeInPlancks
         case .Ton(let sequenceNumber, let expireAt, let bounceable):
-            return BigInt.zero
+            return BigInt(0.001 * 10e9)
         }
     }
     

@@ -30,6 +30,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
     case polkadot
     case zksync
     case dydx
+    case ton
     
     enum MigrationKeys: String, CodingKey {
         case ticker
@@ -60,6 +61,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .polkadot: return "Polkadot"
         case .zksync: return "Zksync"
         case .dydx: return "Dydx"
+        case .ton: return "Ton"
         }
     }
     var feeUnit: String{
@@ -78,6 +80,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .sui: return "SUI"
         case .polkadot: return "DOT"
         case .dydx: return "adydx"
+        case .ton: return "TON"
         }
     }
     
@@ -106,6 +109,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .polkadot: return "DOT"
         case .zksync: return "ZK"
         case .dydx: return "ADYDX"
+        case .ton: return "TON"
         }
     }
     
@@ -134,6 +138,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         case .polkadot: return "DOT"
         case .zksync: return "ZK"
         case .dydx: return "DYDX"
+        case .ton: return "TON"
         }
     }
     
@@ -141,7 +146,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
         switch self.chainType {
         case .Cosmos, .EVM, .THORChain, .UTXO:
             return .ECDSA
-        case .Solana, .Polkadot, .Sui:
+        case .Solana, .Polkadot, .Sui, .Ton:
             return .EdDSA
         }
     }
@@ -162,6 +167,8 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return .Cosmos
         case .polkadot:
             return .Polkadot
+        case .ton:
+            return .Ton
         }
     }
     
@@ -213,6 +220,9 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return "zsync_era"
         case .dydx:
             return "dydx"
+        case .ton:
+            return "ton"
+            
         }
     }
     
@@ -238,7 +248,7 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return 25
         case .zksync:
             return 324
-        case .solana, .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .sui, .polkadot, .dydx:
+        case .solana, .thorChain, .bitcoin, .bitcoinCash, .litecoin, .dogecoin, .dash, .gaiaChain, .kujira, .mayaChain, .sui, .polkadot, .dydx, .ton:
             return nil
         }
     }
@@ -291,9 +301,11 @@ enum Chain: String, Codable, Hashable, CaseIterable {
             return CoinType.zksync
         case .dydx:
             return CoinType.dydx
+        case .ton:
+            return CoinType.ton
         }
     }
-
+    
     var isECDSA: Bool {
         return signingKeyType == .ECDSA
     }

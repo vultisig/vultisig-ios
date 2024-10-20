@@ -292,6 +292,10 @@ class KeysignViewModel: ObservableObject {
                 let transaction = try DydxHelper().getSignedTransaction(vaultHexPubKey: vault.pubKeyECDSA, vaultHexChainCode: vault.hexChainCode, keysignPayload: keysignPayload, signatures: signatures)
                 return .regular(transaction)
             }
+            
+        case .Ton:
+            let transaction = try TonHelper.getSignedTransaction(vaultHexPubKey: vault.pubKeyEdDSA, keysignPayload: keysignPayload, signatures: signatures)
+            return .regular(transaction)
         }
 
         throw HelperError.runtimeError("Unexpected error")
@@ -373,6 +377,15 @@ class KeysignViewModel: ObservableObject {
                     self.txid = try await SuiService.shared.executeTransactionBlock(unsignedTransaction: tx.rawTransaction, signature: tx.signature ?? .empty)
                 case .polkadot:
                     self.txid = try await PolkadotService.shared.broadcastTransaction(hex: tx.rawTransaction)
+                    
+                case .ton:
+                    
+                    print(tx.rawTransaction)
+                    print(tx.transactionHash)
+                    print(tx.signature)
+                    self.txid = tx.transactionHash
+                    
+                    
                 }
 
             case .regularWithApprove(let approve, let transaction):
