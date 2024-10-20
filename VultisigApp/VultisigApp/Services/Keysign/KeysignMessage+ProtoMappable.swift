@@ -257,6 +257,10 @@ extension BlockChainSpecific {
                 referenceGasPrice: BigInt(stringLiteral: value.referenceGasPrice),
                 coins: coinsArray
             )
+        case .tonSpecific(let value):
+            self = .Ton(
+                sequenceNumber: value.sequenceNumber, expireAt: value.expireAt, bounceable: value.bounceable
+            )
         }
     }
     
@@ -315,6 +319,13 @@ extension BlockChainSpecific {
             return .suicheSpecific(.with {
                 $0.referenceGasPrice = String(referenceGasPrice)
                 $0.coins = suiCoins
+            })
+            
+        case .Ton(let sequenceNumber, let expireAt, let bounceable):
+            return .tonSpecific(.with {
+                $0.sequenceNumber = sequenceNumber
+                $0.expireAt = expireAt
+                $0.bounceable = bounceable
             })
             
             

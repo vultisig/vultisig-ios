@@ -30,6 +30,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
     @Published var thor = ThorchainService.shared
     @Published var sol: SolanaService = SolanaService.shared
     @Published var sui: SuiService = SuiService.shared
+    @Published var ton: TonService = TonService.shared
     @Published var cryptoPrice = CryptoPriceService.shared
     @Published var utxo = BlockchairService.shared
 
@@ -155,6 +156,27 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 setPercentageAmount(tx: tx, for: percentage)
                 
                 await convertToFiat(newValue: tx.amount, tx: tx)
+                
+                isLoading = false
+            }
+        case .ton:
+            Task {
+                do {
+                    let rawBalance = try await ton.getBalance(tx.coin)
+                    tx.coin.rawBalance = rawBalance
+                    
+                    var gas = BigInt.zero
+                    if percentage == 100 {
+                        gas = tx.coin.feeDefault.toBigInt()
+                    }
+                    
+                    tx.amount = "\(tx.coin.getMaxValue(gas))"
+                    setPercentageAmount(tx: tx, for: percentage)
+                    
+                    await convertToFiat(newValue: tx.amount, tx: tx)
+                } catch {
+                    print("fail to load solana balances,error:\(error.localizedDescription)")
+                }
                 
                 isLoading = false
             }
