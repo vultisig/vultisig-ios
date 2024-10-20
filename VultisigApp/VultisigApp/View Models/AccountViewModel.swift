@@ -1,4 +1,4 @@
-//
+    //
 //  AccountViewModel.swift
 //  VultisigApp
 //

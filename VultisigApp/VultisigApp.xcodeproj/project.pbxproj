@@ -595,6 +595,7 @@
 		B54E31832BF5A73500D4FC0A /* TransactionMemoTypeEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54E31822BF5A73500D4FC0A /* TransactionMemoTypeEnum.swift */; };
 		B55C10762C6A724E0095D274 /* TransactionMemoAddPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = B55C10752C6A724E0095D274 /* TransactionMemoAddPool.swift */; };
 		B55C10782C6AC0820095D274 /* TransactionMemoWithdrawPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = B55C10772C6AC0820095D274 /* TransactionMemoWithdrawPool.swift */; };
+		B571384B2CC55221000E925B /* Ton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B571384A2CC55221000E925B /* Ton.swift */; };
 		B57A1E012C51173B009C4B25 /* BlowfishSolanaRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57A1E002C51173B009C4B25 /* BlowfishSolanaRequest.swift */; };
 		B57DD59A2C3DA5EA00934CBB /* SolanaFmTokenInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57DD5992C3DA5EA00934CBB /* SolanaFmTokenInfo.swift */; };
 		B57DD59E2C3E69F500934CBB /* TokenAccountsByOwner.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57DD59D2C3E69F500934CBB /* TokenAccountsByOwner.swift */; };
@@ -1324,6 +1325,7 @@
 		B54E31822BF5A73500D4FC0A /* TransactionMemoTypeEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoTypeEnum.swift; sourceTree = "<group>"; };
 		B55C10752C6A724E0095D274 /* TransactionMemoAddPool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoAddPool.swift; sourceTree = "<group>"; };
 		B55C10772C6AC0820095D274 /* TransactionMemoWithdrawPool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoWithdrawPool.swift; sourceTree = "<group>"; };
+		B571384A2CC55221000E925B /* Ton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ton.swift; sourceTree = "<group>"; };
 		B57A1E002C51173B009C4B25 /* BlowfishSolanaRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlowfishSolanaRequest.swift; sourceTree = "<group>"; };
 		B57DD5992C3DA5EA00934CBB /* SolanaFmTokenInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolanaFmTokenInfo.swift; sourceTree = "<group>"; };
 		B57DD59D2C3E69F500934CBB /* TokenAccountsByOwner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenAccountsByOwner.swift; sourceTree = "<group>"; };
@@ -2974,6 +2976,7 @@
 		DE28F52C2B7B0E6200E33058 /* Chains */ = {
 			isa = PBXGroup;
 			children = (
+				B571384A2CC55221000E925B /* Ton.swift */,
 				B5F758172BD8E65D0097B5B9 /* Sui.swift */,
 				DEEADCF62B916676007978DE /* Solana.swift */,
 				DEFC7BFE2B8EC95E0090B07A /* thorchain.swift */,
@@ -3370,6 +3373,7 @@
 				A6980C262BC0848F00F452AB /* SettingCell.swift in Sources */,
 				A622C8522C9BC9D200908332 /* FastVaultSetPasswordView+iOS.swift in Sources */,
 				A60CA7E92BB0F60100FDEB5C /* ViewExtension.swift in Sources */,
+				B571384B2CC55221000E925B /* Ton.swift in Sources */,
 				A65BA9882BAAA0B700B2D8AA /* SendCryptoSigningErrorView.swift in Sources */,
 				DE64A4C62BA7E0E400C342E3 /* KeygenPeerDiscoveryViewModel.swift in Sources */,
 				A698222E2CB3A8B500966D19 /* CreateFolderView+iOS.swift in Sources */,
