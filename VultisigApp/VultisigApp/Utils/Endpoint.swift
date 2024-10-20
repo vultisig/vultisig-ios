@@ -130,15 +130,15 @@ class Endpoint {
     static let tonServiceRpc = "https://toncenter.com/api/v2/jsonRPC"
     
     static func fetchTonBalance(address: String) -> String {
-        return "https://toncenter.com/api/v3/addressInformation?address=\(address)&use_v2=false";
+        return "https://api.vultisig.com/ton/v3/addressInformation?address=\(address)&use_v2=false";
     }
     
     static func fetchExtendedAddressInformation(address: String) -> String {
-        return "https://toncenter.com/api/v2/getExtendedAddressInformation?address=\(address)";
+        return "https://api.vultisig.com/ton/v2/getExtendedAddressInformation?address=\(address)";
     }
     
     static func broadcastTonTransaction() -> String {
-        return "https://toncenter.com/api/v2/sendBocReturnHash";
+        return "https://api.vultisig.com/ton/v2/sendBocReturnHash";
     }
     
     static func bitcoinLabelTxHash(_ value: String) -> String {
