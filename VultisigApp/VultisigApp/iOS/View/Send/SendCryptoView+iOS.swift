@@ -37,6 +37,12 @@ extension SendCryptoView {
     
     var main: some View {
         view
+            .onAppear {
+                UIApplication.shared.isIdleTimerDisabled = true
+            }
+            .onDisappear(){
+                UIApplication.shared.isIdleTimerDisabled = false
+            }
     }
 }
 #endif
