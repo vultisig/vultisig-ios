@@ -14,5 +14,5 @@ class StaticURL {
     static let DiscordVultisigURL = URL(string: "https://discord.gg/ngvW8tRRfB")!
     static let PrivacyPolicyURL = URL(string: "https://vultisig.com/privacy")!
     static let TermsOfServiceURL = URL(string: "https://vultisig.com/termofservice")!
-    static let VultisigWeb = URL(string: "https://web.vultisig.com/")!
+    static let VultisigWeb = URL(string: "https://airdrop.vultisig.com/")!
 }
