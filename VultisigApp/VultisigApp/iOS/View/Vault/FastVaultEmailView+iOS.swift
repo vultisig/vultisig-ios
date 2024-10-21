@@ -27,6 +27,7 @@ extension FastVaultEmailView {
     var view: some View {
         VStack {
             emailField
+            emailMissmatchLabel
             Spacer()
             buttons
         }

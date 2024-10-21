@@ -35,9 +35,17 @@ struct FastVaultEmailView: View {
         .padding(.top, 30)
     }
 
-    var errorLabel: some View {
-        Text("") {
-
+    @ViewBuilder
+    var emailMissmatchLabel: some View {
+        if isMismatchError {
+            HStack {
+                Text(NSLocalizedString("emailMissmatch", comment: ""))
+                    .foregroundColor(.red)
+                    .font(.body14Montserrat)
+                    .frame(height: 40)
+                Spacer()
+            }
+            .padding(.horizontal, 16)
         }
     }
 
@@ -58,6 +66,10 @@ struct FastVaultEmailView: View {
         }
         .opacity(isValid ? 1 : 0.5)
         .disabled(!isValid)
+    }
+
+    var isMismatchError: Bool {
+        return !email.isEmpty && !verifyEmail.isEmpty && email != verifyEmail
     }
 
     var isValid: Bool {
