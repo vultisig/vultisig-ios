@@ -33,7 +33,7 @@ extension FastVaultEmailView {
     var view: some View {
         VStack {
             emailField
-            emailMissmatchLabel
+            emailMismatchLabel
             Spacer()
             buttons
         }

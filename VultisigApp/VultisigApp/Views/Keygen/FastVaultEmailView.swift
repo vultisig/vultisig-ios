@@ -36,10 +36,10 @@ struct FastVaultEmailView: View {
     }
 
     @ViewBuilder
-    var emailMissmatchLabel: some View {
+    var emailMismatchLabel: some View {
         if isMismatchError {
             HStack {
-                Text(NSLocalizedString("emailMissmatch", comment: ""))
+                Text(NSLocalizedString("emailMismatch", comment: ""))
                     .foregroundColor(.red)
                     .font(.body14Montserrat)
                     .frame(height: 40)
