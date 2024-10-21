@@ -35,6 +35,12 @@ struct FastVaultEmailView: View {
         .padding(.top, 30)
     }
 
+    var errorLabel: some View {
+        Text("") {
+
+        }
+    }
+
     var buttons: some View {
         VStack(spacing: 20) {
             continueButton
