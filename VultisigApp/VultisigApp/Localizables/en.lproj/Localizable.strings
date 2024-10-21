@@ -242,8 +242,8 @@
 "reviewConditionsMessage" = "Kindly review and agree to all the listed conditions.";
 "function" = "Function";
 "enterPassword" = "Enter Password";
-"fastVaultEnterDisclaimer" = "This Password decrypt your FastVault Share";
-"fastVaultSetDisclaimer" = "This password encrypts your FastVault Share";
+"fastVaultEnterDisclaimer" = "This Password decrypt your FastSign Share";
+"fastVaultSetDisclaimer" = "This password encrypts your FastSign Share";
 "passwordProtectBackup" = "Password protect your backup";
 "errorSavingFile" = "Error saving file";
 "invalidVaultData" = "Invalid vault data";
