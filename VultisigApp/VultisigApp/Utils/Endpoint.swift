@@ -121,6 +121,10 @@ class Endpoint {
     
     static let solanaTokenInfoServiceRpc = "https://api.solana.fm/v1/tokens"
     
+    static func solanaTokenInfoServiceRpc2(tokenAddress: String) -> String {
+        "https://tokens.jup.ag/token/\(tokenAddress)"
+    }
+    
     static let suiServiceRpc = "https://sui-rpc.publicnode.com"
     
     static let polkadotServiceRpc = "https://polkadot-rpc.publicnode.com"
