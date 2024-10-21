@@ -222,8 +222,8 @@
 "reviewConditionsMessage" = "Si prega di rivedere e accettare tutte le condizioni elencate.";
 "function" = "funzione";
 "enterPassword" = "Inserisci la password";
-"fastVaultEnterDisclaimer" = "Questa password decifra la tua condivisione FastVault";
-"fastVaultSetDisclaimer" = "Questa password crittografa la tua condivisione FastVault";
+"fastVaultEnterDisclaimer" = "Questa password decifra la tua condivisione FastSign";
+"fastVaultSetDisclaimer" = "Questa password crittografa la tua condivisione FastSign";
 "passwordProtectBackup" = "Proteggi il tuo backup con una password";
 "errorSavingFile" = "Errore nel salvataggio del file";
 "invalidVaultData" = "Dati del caveau non validi";
