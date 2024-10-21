@@ -79,7 +79,7 @@ class TransactionMemoUnbond: TransactionMemoAddressable, ObservableObject {
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("nodeAddress", self.nodeAddress)
-        dict.set("amount", "\(self.amount)")
+        dict.set("Unbond amount", "\(self.amount)")
         dict.set("provider", self.provider)
         dict.set("memo", self.toString())
         return dict
