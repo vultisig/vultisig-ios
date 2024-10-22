@@ -380,3 +380,4 @@
 "devices" = "Uređaji";
 "signers" = "Potpisnici";
 "vaultPart" = "Dio trezora";
+"fastVaultEmailDisclaimer" = "Ova e-pošta se koristi samo za slanje sigurnosne kopije";

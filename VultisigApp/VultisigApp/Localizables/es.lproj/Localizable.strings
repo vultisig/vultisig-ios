@@ -380,3 +380,4 @@
 "devices" = "Dispositivos";
 "signers" = "Firmantes";
 "vaultPart" = "Parte del cofre";
+"fastVaultEmailDisclaimer" = "Este correo electrónico solo se utiliza para enviar la copia de seguridad";
