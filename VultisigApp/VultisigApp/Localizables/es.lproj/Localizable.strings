@@ -1,3 +1,4 @@
+"emailMismatch" = "Las direcciones de correo no coinciden";
 "enableBiometrics" = "Habilitar biometría";
 "enterFastSigningPassword" = "Ingrese la contraseña para firma rápida";
 "typeHere" = "Escribe aquí";
@@ -221,8 +222,8 @@
 "reviewConditionsMessage" = "Por favor, revise y acepte todas las condiciones listadas.";
 "function" = "función";
 "enterPassword" = "Introduce la contraseña";
-"fastVaultEnterDisclaimer" = "Esta contraseña descifra su recurso compartido de FastVault";
-"fastVaultSetDisclaimer" = "Esta contraseña encripta su FastVault Share";
+"fastVaultEnterDisclaimer" = "Esta contraseña descifra su recurso compartido de FastSign";
+"fastVaultSetDisclaimer" = "Esta contraseña encripta su FastSign Share";
 "passwordProtectBackup" = "Protege tu copia de seguridad con una contraseña";
 "errorSavingFile" = "Error al guardar el archivo";
 "invalidVaultData" = "Datos del almacén no válidos";
@@ -379,3 +380,4 @@
 "devices" = "Dispositivos";
 "signers" = "Firmantes";
 "vaultPart" = "Parte del cofre";
+"fastVaultEmailDisclaimer" = "Este correo electrónico solo se utiliza para enviar la copia de seguridad";

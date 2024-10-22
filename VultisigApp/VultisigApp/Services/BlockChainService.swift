@@ -45,6 +45,7 @@ final class BlockChainService {
     private let maya = MayachainService.shared
     private let kuji = KujiraService.shared
     private let dydx = DydxService.shared
+    private let ton = TonService.shared
 
     func fetchSpecific(tx: SendTransaction) async throws -> BlockChainSpecific {
         guard !tx.coin.isNativeToken, tx.coin.chainType == .EVM else {
@@ -144,7 +145,7 @@ private extension BlockChainService {
                 throw Errors.failToGetRecentBlockHash
             }
 
-            if let fromAddress, let toAddress, !coin.isNativeToken {
+            if let fromAddress, let toAddress, !toAddress.isEmpty, !coin.isNativeToken {
                 async let associatedTokenAddressFromPromise = sol.fetchTokenAssociatedAccountByOwner(for: fromAddress, mintAddress: coin.contractAddress)
                 async let associatedTokenAddressToPromise = sol.fetchTokenAssociatedAccountByOwner(for: toAddress, mintAddress: coin.contractAddress)
                 let associatedTokenAddressFrom = try await associatedTokenAddressFromPromise
@@ -213,6 +214,9 @@ private extension BlockChainService {
                 throw Errors.failToGetSequenceNo
             }
             return .Cosmos(accountNumber: accountNumber, sequence: sequence, gas: 2500000000000000, transactionType: transactionType.rawValue)
+        case .ton:
+            let (seqno, expireAt) = try await ton.getSpecificTransactionInfo(coin)
+            return .Ton(sequenceNumber: seqno, expireAt: expireAt, bounceable: false)
         }
     }
 

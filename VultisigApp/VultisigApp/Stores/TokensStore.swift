@@ -495,6 +495,10 @@ class TokensStore {
             CoinMeta(chain: Chain.sui, ticker: "SUI", logo: "sui", decimals: 9, priceProviderId: "sui", contractAddress: "", isNativeToken: true)
         }
         
+        static var ton: CoinMeta {
+            CoinMeta(chain: Chain.ton, ticker: "TON", logo: "ton", decimals: 9, priceProviderId: "the-open-network", contractAddress: "", isNativeToken: true)
+        }
+        
         static var dotDOT: CoinMeta {
             CoinMeta(chain: Chain.polkadot, ticker: "DOT", logo: "dot", decimals: 10, priceProviderId: "polkadot", contractAddress: "", isNativeToken: true)
         }
@@ -531,6 +535,7 @@ class TokensStore {
         TokensStore.Token.dydx,
         TokensStore.Token.suiSUI,
         TokensStore.Token.dotDOT,
+        TokensStore.Token.ton,
         
         // START EVMS
         // ETHEREUM

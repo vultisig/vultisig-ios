@@ -15,7 +15,7 @@ struct OnboardingView4: View {
     }
     
     var content: some View {
-        VStack(spacing: 30) {
+        VStack {
             image
             text
         }
@@ -23,7 +23,10 @@ struct OnboardingView4: View {
     
     var image: some View {
         Image("OnboardingImage4")
-            .frame(height: 280)
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(maxHeight: 500)
+            .scaleEffect(0.7)
     }
     
     var text: some View {
@@ -33,5 +36,6 @@ struct OnboardingView4: View {
             .foregroundColor(.neutral0)
             .multilineTextAlignment(.center)
             .padding(.horizontal, 50)
+            .offset(y: -40)
     }
 }

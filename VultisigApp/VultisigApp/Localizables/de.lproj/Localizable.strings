@@ -1,3 +1,4 @@
+"emailMismatch" = "E-Mail-Adressen stimmen nicht überein";
 "enableBiometrics" = "Biometrie aktivieren";
 "enterFastSigningPassword" = "Passwort für schnelles Signieren eingeben";
 "typeHere" = "Hier eingeben";
@@ -221,8 +222,8 @@
 "reviewConditionsMessage" = "Bitte überprüfen und stimmen Sie allen aufgeführten Bedingungen zu.";
 "function" = "Funktion";
 "enterPassword" = "Passwort eingeben";
-"fastVaultEnterDisclaimer" = "Dieses Passwort entschlüsselt Ihre FastVault Share";
-"fastVaultSetDisclaimer" = "Dieses Passwort verschlüsselt Ihren FastVault Share";
+"fastVaultEnterDisclaimer" = "Dieses Passwort entschlüsselt Ihre FastSign Share";
+"fastVaultSetDisclaimer" = "Dieses Passwort verschlüsselt Ihren FastSign Share";
 "passwordProtectBackup" = "Sichern Sie Ihre Sicherung mit einem Passwort";
 "errorSavingFile" = "Fehler beim Speichern der Datei";
 "invalidVaultData" = "Ungültige Tresordaten";
@@ -379,3 +380,4 @@
 "devices" = "Geräte";
 "signers" = "Unterzeichner";
 "vaultPart" = "Tresorteil";
+"fastVaultEmailDisclaimer" = "Diese E-Mail wird nur verwendet, um das Backup zu senden";

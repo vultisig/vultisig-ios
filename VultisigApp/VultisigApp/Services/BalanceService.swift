@@ -21,7 +21,9 @@ class BalanceService {
     private let kuji = KujiraService.shared
     private let maya = MayachainService.shared
     private let dot = PolkadotService.shared
+    private let ton = TonService.shared
 
+    
     private let cryptoPriceService = CryptoPriceService.shared
 
     func updateBalances(vault: Vault) async {
@@ -101,6 +103,9 @@ private extension BalanceService {
 
         case .polkadot:
             return try await dot.getBalance(coin: coin)
+            
+        case .ton:
+            return try await ton.getBalance(coin)
         }
     }
 

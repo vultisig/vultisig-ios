@@ -595,6 +595,8 @@
 		B54E31832BF5A73500D4FC0A /* TransactionMemoTypeEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = B54E31822BF5A73500D4FC0A /* TransactionMemoTypeEnum.swift */; };
 		B55C10762C6A724E0095D274 /* TransactionMemoAddPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = B55C10752C6A724E0095D274 /* TransactionMemoAddPool.swift */; };
 		B55C10782C6AC0820095D274 /* TransactionMemoWithdrawPool.swift in Sources */ = {isa = PBXBuildFile; fileRef = B55C10772C6AC0820095D274 /* TransactionMemoWithdrawPool.swift */; };
+		B571384D2CC560F2000E925B /* Ton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B571384C2CC560F0000E925B /* Ton.swift */; };
+		B57138502CC5713E000E925B /* TonService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B571384F2CC5713A000E925B /* TonService.swift */; };
 		B57A1E012C51173B009C4B25 /* BlowfishSolanaRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57A1E002C51173B009C4B25 /* BlowfishSolanaRequest.swift */; };
 		B57DD59A2C3DA5EA00934CBB /* SolanaFmTokenInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57DD5992C3DA5EA00934CBB /* SolanaFmTokenInfo.swift */; };
 		B57DD59E2C3E69F500934CBB /* TokenAccountsByOwner.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57DD59D2C3E69F500934CBB /* TokenAccountsByOwner.swift */; };
@@ -604,6 +606,7 @@
 		B590DF882C2E815A00ED934E /* GenericSelectorDropDown.swift in Sources */ = {isa = PBXBuildFile; fileRef = B590DF872C2E815A00ED934E /* GenericSelectorDropDown.swift */; };
 		B590DF8A2C2E88F900ED934E /* VoteOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = B590DF892C2E88F900ED934E /* VoteOption.swift */; };
 		B59173312C641F3D007100E3 /* CoinService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B59173302C641F3D007100E3 /* CoinService.swift */; };
+		B596B2B02CC6F22E0068FCC8 /* SolanaJupiterTokenInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B596B2AF2CC6F22C0068FCC8 /* SolanaJupiterTokenInfo.swift */; };
 		B5A97CED2BF41573007574D7 /* TransactionMemoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CEC2BF41573007574D7 /* TransactionMemoView.swift */; };
 		B5A97CEF2BF41779007574D7 /* TransactionMemoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CEE2BF41779007574D7 /* TransactionMemoViewModel.swift */; };
 		B5A97CF12BF41903007574D7 /* TransactionMemoVerifyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CF02BF41903007574D7 /* TransactionMemoVerifyViewModel.swift */; };
@@ -1324,6 +1327,8 @@
 		B54E31822BF5A73500D4FC0A /* TransactionMemoTypeEnum.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoTypeEnum.swift; sourceTree = "<group>"; };
 		B55C10752C6A724E0095D274 /* TransactionMemoAddPool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoAddPool.swift; sourceTree = "<group>"; };
 		B55C10772C6AC0820095D274 /* TransactionMemoWithdrawPool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoWithdrawPool.swift; sourceTree = "<group>"; };
+		B571384C2CC560F0000E925B /* Ton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ton.swift; sourceTree = "<group>"; };
+		B571384F2CC5713A000E925B /* TonService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TonService.swift; sourceTree = "<group>"; };
 		B57A1E002C51173B009C4B25 /* BlowfishSolanaRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlowfishSolanaRequest.swift; sourceTree = "<group>"; };
 		B57DD5992C3DA5EA00934CBB /* SolanaFmTokenInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolanaFmTokenInfo.swift; sourceTree = "<group>"; };
 		B57DD59D2C3E69F500934CBB /* TokenAccountsByOwner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenAccountsByOwner.swift; sourceTree = "<group>"; };
@@ -1333,6 +1338,7 @@
 		B590DF872C2E815A00ED934E /* GenericSelectorDropDown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericSelectorDropDown.swift; sourceTree = "<group>"; };
 		B590DF892C2E88F900ED934E /* VoteOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoteOption.swift; sourceTree = "<group>"; };
 		B59173302C641F3D007100E3 /* CoinService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinService.swift; sourceTree = "<group>"; };
+		B596B2AF2CC6F22C0068FCC8 /* SolanaJupiterTokenInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolanaJupiterTokenInfo.swift; sourceTree = "<group>"; };
 		B5A97CEC2BF41573007574D7 /* TransactionMemoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoView.swift; sourceTree = "<group>"; };
 		B5A97CEE2BF41779007574D7 /* TransactionMemoViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoViewModel.swift; sourceTree = "<group>"; };
 		B5A97CF02BF41903007574D7 /* TransactionMemoVerifyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoVerifyViewModel.swift; sourceTree = "<group>"; };
@@ -1541,6 +1547,7 @@
 		461BD0962B7EFA8000BFF703 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				B571384E2CC57135000E925B /* Ton */,
 				A58760522CBD3CD90070956A /* Keychain */,
 				A587604F2CBD2D580070956A /* Biometry */,
 				A51AE8BB2C931C2000EF9A7A /* FastVault */,
@@ -1599,6 +1606,7 @@
 		465A8D552B9E6E0A006E7457 /* Solana */ = {
 			isa = PBXGroup;
 			children = (
+				B596B2AF2CC6F22C0068FCC8 /* SolanaJupiterTokenInfo.swift */,
 				465A8D542B9E6E0A006E7457 /* SolanaRpc.swift */,
 				B57DD5992C3DA5EA00934CBB /* SolanaFmTokenInfo.swift */,
 				B57DD59D2C3E69F500934CBB /* TokenAccountsByOwner.swift */,
@@ -2746,6 +2754,14 @@
 			path = Polkadot;
 			sourceTree = "<group>";
 		};
+		B571384E2CC57135000E925B /* Ton */ = {
+			isa = PBXGroup;
+			children = (
+				B571384F2CC5713A000E925B /* TonService.swift */,
+			);
+			path = Ton;
+			sourceTree = "<group>";
+		};
 		B5A51B532BD8C68B00791D78 /* Sui */ = {
 			isa = PBXGroup;
 			children = (
@@ -2974,6 +2990,7 @@
 		DE28F52C2B7B0E6200E33058 /* Chains */ = {
 			isa = PBXGroup;
 			children = (
+				B571384C2CC560F0000E925B /* Ton.swift */,
 				B5F758172BD8E65D0097B5B9 /* Sui.swift */,
 				DEEADCF62B916676007978DE /* Solana.swift */,
 				DEFC7BFE2B8EC95E0090B07A /* thorchain.swift */,
@@ -3376,6 +3393,7 @@
 				462DCD742BCA1F45003D542F /* CoinPaprikaCoin.swift in Sources */,
 				A527DD2E2C3E1D8500204464 /* ReshareMessage+ProtoMappable.swift in Sources */,
 				465B09B52B7D8E7B00952DD9 /* CryptoPriceService.swift in Sources */,
+				B571384D2CC560F2000E925B /* Ton.swift in Sources */,
 				B54E31812BF5A22700D4FC0A /* StyledFloatingPointField.swift in Sources */,
 				A65617F52CB492A400E9CF19 /* FolderDetailSelectedVaultCell.swift in Sources */,
 				A6980C342BC0A30900F452AB /* SettingFAQCell.swift in Sources */,
@@ -3485,6 +3503,7 @@
 				A6C0D5652BB3BD0F00156689 /* UTXOTransactionCell.swift in Sources */,
 				A65649F82B96701300E4B329 /* UTXOTransactionMempoolPreviousOutput.swift in Sources */,
 				46F8F7212B99FDB70099454E /* TransactionBroadcastResponse.swift in Sources */,
+				B57138502CC5713E000E925B /* TonService.swift in Sources */,
 				DEFF58F22BCBACDA005DFDF9 /* VultisigRelay.swift in Sources */,
 				A65518052BF867CF006BB924 /* KeysignSameDeviceShareErrorView.swift in Sources */,
 				A6980C2A2BC0870000F452AB /* SettingsOptionsStore.swift in Sources */,
@@ -3929,6 +3948,7 @@
 				A5BA150A2C078EED00AA6C07 /* TokenSelectionCell.swift in Sources */,
 				A65649E42B96602700E4B329 /* StringExtension.swift in Sources */,
 				A6C639492C1FED0F0078B8E3 /* NavigationButton.swift in Sources */,
+				B596B2B02CC6F22E0068FCC8 /* SolanaJupiterTokenInfo.swift in Sources */,
 				A6C670EB2C9E95E600F59B6A /* TransactionsView+macOS.swift in Sources */,
 				A6F9F7E92B9BBFD500790258 /* AddressQRCodeView.swift in Sources */,
 				A6833D882C65C129002029E1 /* PeerDiscoveryHeader.swift in Sources */,
@@ -4159,7 +4179,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 0;
+				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
@@ -4189,7 +4209,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.vultisig.wallet;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -4215,7 +4235,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 0;
+				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"VultisigApp/Preview Content\"";
 				DEVELOPMENT_TEAM = G8Q5XUAJD9;
@@ -4245,7 +4265,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.3;
+				MARKETING_VERSION = 1.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.vultisig.wallet;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

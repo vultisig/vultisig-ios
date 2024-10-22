@@ -1,3 +1,4 @@
+"emailMismatch" = "Email address mismatch";
 "enableBiometrics" = "Enable Biometrics";
 "enterFastSigningPassword" = "Enter Password for Fast Signing";
 "typeHere" = "Type here";
@@ -242,8 +243,8 @@
 "reviewConditionsMessage" = "Kindly review and agree to all the listed conditions.";
 "function" = "Function";
 "enterPassword" = "Enter Password";
-"fastVaultEnterDisclaimer" = "This Password decrypt your FastVault Share";
-"fastVaultSetDisclaimer" = "This password encrypts your FastVault Share";
+"fastVaultEnterDisclaimer" = "This Password decrypt your FastSign Share";
+"fastVaultSetDisclaimer" = "This password encrypts your FastSign Share";
 "passwordProtectBackup" = "Password protect your backup";
 "errorSavingFile" = "Error saving file";
 "invalidVaultData" = "Invalid vault data";
@@ -408,3 +409,4 @@
 "devices" = "Devices";
 "signers" = "Signers";
 "vaultPart" = "Vault Part";
+"fastVaultEmailDisclaimer" = "This email is only used to send the backup";

@@ -28,6 +28,7 @@ struct KeysignPayloadFactory {
         case thorchain(amountInSats: Int64, memo: String)
         case gaiachain(amountInCoinDecimal: Int64, memo: String)
         case solana(amountInLamports: Int64, memo: String)
+        case ton(sequenceNumber: UInt64, expireAt: UInt64, bounceable: Bool)
     }
 
     private let utxo = BlockchairService.shared

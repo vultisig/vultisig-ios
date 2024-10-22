@@ -43,6 +43,12 @@ extension PeerDiscoveryView {
                 }
             }
         }
+        .onAppear {
+            UIApplication.shared.isIdleTimerDisabled = true
+        }
+        .onDisappear {
+            UIApplication.shared.isIdleTimerDisabled = false
+        }
     }
     
     var main: some View {
