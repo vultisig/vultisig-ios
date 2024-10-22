@@ -19,7 +19,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
     
     private let logger = Logger(subsystem: "keysign-discovery", category: "viewmodel")
     private var cancellables = Set<AnyCancellable>()
-
+    
     var vault: Vault
     var keysignPayload: KeysignPayload
     var participantDiscovery: ParticipantDiscovery?
@@ -27,7 +27,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
     
     private let mediator = Mediator.shared
     private let fastVaultService = FastVaultService.shared
-
+    
     @Published var serverAddr = "http://127.0.0.1:18080"
     @Published var selections = Set<String>()
     @Published var sessionID = ""
@@ -70,18 +70,19 @@ class KeysignDiscoveryViewModel: ObservableObject {
             self.localPartyID = Utils.getLocalDeviceIdentity()
         }
         self.selections.insert(self.localPartyID)
-        
         do {
             let keysignFactory = KeysignMessageFactory(payload: keysignPayload)
             let preSignedImageHash = try keysignFactory.getKeysignMessages(vault: vault)
             self.keysignMessages = preSignedImageHash.sorted()
-
+            
             if self.keysignMessages.isEmpty {
                 self.logger.error("no meessage need to be signed")
                 self.status = .FailToStart
             }
-
+            
             if let fastVaultPassword {
+                // when fast sign , always using relay server
+                serverAddr = Endpoint.vultisigRelay
                 self.status = .WaitingForFast
                 
                 self.fastVaultService.sign(
@@ -97,16 +98,16 @@ class KeysignDiscoveryViewModel: ObservableObject {
                         self.status = .FailToStart
                     }
                 }
-
+                
                 cancellables.forEach { $0.cancel() }
-
+                
                 participantDiscovery.$peersFound.sink { [weak self] in
-                        $0.forEach { peer in
-                            self?.handleSelection(peer)
-                        }
-                        self?.startFastKeysignIfNeeded(vault: vault, onFastKeysign: onFastKeysign)
+                    $0.forEach { peer in
+                        self?.handleSelection(peer)
                     }
-                    .store(in: &cancellables)
+                    self?.startFastKeysignIfNeeded(vault: vault, onFastKeysign: onFastKeysign)
+                }
+                .store(in: &cancellables)
             }
         } catch {
             self.logger.error("Failed to get preSignedImageHash: \(error)")
@@ -126,7 +127,7 @@ class KeysignDiscoveryViewModel: ObservableObject {
             pubKeyECDSA: vault.pubKeyECDSA
         )
     }
-
+    
     func handleSelection(_ peer: String) {
         if selections.contains(peer) {
             // Don't remove itself
@@ -137,16 +138,16 @@ class KeysignDiscoveryViewModel: ObservableObject {
             selections.insert(peer)
         }
     }
-
+    
     func startFastKeysignIfNeeded(vault: Vault, onFastKeysign: (() -> Void)?) {
         guard isValidPeers(vault: vault) else { return }
         onFastKeysign?()
     }
-
+    
     func isValidPeers(vault: Vault) -> Bool {
         return selections.count >= (vault.getThreshold() + 1)
     }
-
+    
     @MainActor func startKeysign(vault: Vault, viewModel: TransferViewModel) -> KeysignView {
         kickoffKeysign(allParticipants: self.selections.map { $0 })
         participantDiscovery?.stop()
