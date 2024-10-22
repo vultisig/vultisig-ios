@@ -33,8 +33,7 @@ struct SetupVaultImageManager: View {
         Image(selectedTab.image)
             .resizable()
             .aspectRatio(contentMode: .fit)
-            .clipped()
-            .frame(maxHeight: 500)
+            .frame(maxWidth: 500)
     }
 }
 
