@@ -606,6 +606,7 @@
 		B590DF882C2E815A00ED934E /* GenericSelectorDropDown.swift in Sources */ = {isa = PBXBuildFile; fileRef = B590DF872C2E815A00ED934E /* GenericSelectorDropDown.swift */; };
 		B590DF8A2C2E88F900ED934E /* VoteOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = B590DF892C2E88F900ED934E /* VoteOption.swift */; };
 		B59173312C641F3D007100E3 /* CoinService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B59173302C641F3D007100E3 /* CoinService.swift */; };
+		B596B2B02CC6F22E0068FCC8 /* SolanaJupiterTokenInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B596B2AF2CC6F22C0068FCC8 /* SolanaJupiterTokenInfo.swift */; };
 		B5A97CED2BF41573007574D7 /* TransactionMemoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CEC2BF41573007574D7 /* TransactionMemoView.swift */; };
 		B5A97CEF2BF41779007574D7 /* TransactionMemoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CEE2BF41779007574D7 /* TransactionMemoViewModel.swift */; };
 		B5A97CF12BF41903007574D7 /* TransactionMemoVerifyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CF02BF41903007574D7 /* TransactionMemoVerifyViewModel.swift */; };
@@ -1337,6 +1338,7 @@
 		B590DF872C2E815A00ED934E /* GenericSelectorDropDown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericSelectorDropDown.swift; sourceTree = "<group>"; };
 		B590DF892C2E88F900ED934E /* VoteOption.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoteOption.swift; sourceTree = "<group>"; };
 		B59173302C641F3D007100E3 /* CoinService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinService.swift; sourceTree = "<group>"; };
+		B596B2AF2CC6F22C0068FCC8 /* SolanaJupiterTokenInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolanaJupiterTokenInfo.swift; sourceTree = "<group>"; };
 		B5A97CEC2BF41573007574D7 /* TransactionMemoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoView.swift; sourceTree = "<group>"; };
 		B5A97CEE2BF41779007574D7 /* TransactionMemoViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoViewModel.swift; sourceTree = "<group>"; };
 		B5A97CF02BF41903007574D7 /* TransactionMemoVerifyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoVerifyViewModel.swift; sourceTree = "<group>"; };
@@ -1604,6 +1606,7 @@
 		465A8D552B9E6E0A006E7457 /* Solana */ = {
 			isa = PBXGroup;
 			children = (
+				B596B2AF2CC6F22C0068FCC8 /* SolanaJupiterTokenInfo.swift */,
 				465A8D542B9E6E0A006E7457 /* SolanaRpc.swift */,
 				B57DD5992C3DA5EA00934CBB /* SolanaFmTokenInfo.swift */,
 				B57DD59D2C3E69F500934CBB /* TokenAccountsByOwner.swift */,
@@ -3945,6 +3948,7 @@
 				A5BA150A2C078EED00AA6C07 /* TokenSelectionCell.swift in Sources */,
 				A65649E42B96602700E4B329 /* StringExtension.swift in Sources */,
 				A6C639492C1FED0F0078B8E3 /* NavigationButton.swift in Sources */,
+				B596B2B02CC6F22E0068FCC8 /* SolanaJupiterTokenInfo.swift in Sources */,
 				A6C670EB2C9E95E600F59B6A /* TransactionsView+macOS.swift in Sources */,
 				A6F9F7E92B9BBFD500790258 /* AddressQRCodeView.swift in Sources */,
 				A6833D882C65C129002029E1 /* PeerDiscoveryHeader.swift in Sources */,
