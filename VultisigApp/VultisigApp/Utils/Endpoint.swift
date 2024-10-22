@@ -232,13 +232,13 @@ class Endpoint {
     }
     
     static func getMayaSwapTracker(txid: String) -> String {
-        return "https://www.mayascan.org/tx/\(txid.stripHexPrefix())"
+        return "https://www.xscanner.org/tx/\(txid.stripHexPrefix())"
     }
     
     static func getExplorerURL(chainTicker: String, txid: String) -> String {
         switch chainTicker {
         case "BTC":
-            return "https://blockchair.com/bitcoin/transaction/\(txid)"
+            return "https://mempool.space/tx/\(txid)"
         case "BCH":
             return "https://blockchair.com/bitcoin-cash/transaction/\(txid)"
         case "LTC":
@@ -293,7 +293,7 @@ class Endpoint {
     static func getExplorerByAddressURL(chainTicker:String, address:String) -> String? {
         switch chainTicker {
         case "BTC":
-            return "https://blockchair.com/bitcoin/address/\(address)"
+            return "https://mempool.space/address/\(address)"
         case "BCH":
             return "https://blockchair.com/bitcoin-cash/address/\(address)"
         case "LTC":
@@ -364,7 +364,7 @@ class Endpoint {
         case .bscChain:
             return "https://bscscan.com/address/\(address)"
         case .bitcoin:
-            return "https://www.blockchain.com/btc/address/\(address)"
+            return "https://mempool.space/address/\(address)"
         case .bitcoinCash:
             return "https://explorer.bitcoin.com/bch/address/\(address)"
         case .litecoin:
