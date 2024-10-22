@@ -280,8 +280,8 @@
 "FailedToLoadImage" = "Bild von URL konnte nicht geladen werden";
 "OnboardingView1Description" = "Vultisig ist ein sicherer, mehrgerätefähiger Krypto-Tresor, kompatibel mit allen gängigen Blockchains und über 10.000 Tokens. Vultisig ist vollständig selbstverwaltet.";
 "OnboardingView2Description" = "Vultisig verfolgt keine Aktivitäten und erfordert keine Registrierungen. Vultisig ist vollständig open-source, was Transparenz und Vertrauen gewährleistet.";
-"OnboardingView3Description" = "Vultisig ist geprüft und sicher. Schließe dich Tausenden von Nutzern an, die Vultisig mit ihren digitalen Vermögenswerten vertrauen.";
-"OnboardingView4Description" = "Vultisig ist eine Wallet ohne Seed-Phrasen.\nEs verwendet stattdessen einfach zu verwaltende Tresoranteile.";
+"OnboardingView3Description" = "Vultisig ist geprüft und sicher. Schließe dich tausenden von Nutzern an, die Vultisig mit ihren digitalen Vermögenswerten vertrauen.";
+"OnboardingView4Description" = "Vultisig ist eine Wallet ohne Seed-Phrasen.\nWir verwenden stattdessen einfach zu verwaltende Tresoranteile.";
 "NoQRCodesDetected" = "Kein QR-Code erkannt";
 "FailedToLoadImage" = "Bild von URL konnte nicht geladen werden";
 "memo(optional)" = "MEMO (Optional)";
@@ -350,7 +350,7 @@
 "noCameraFound" = "Keine Kamera gefunden.";
 "initializingCamera" = "Kamera wird initialisiert";
 "uploadQRCodeImage" = "QR-Code-Bild hochladen";
-"errorFetchingValuesTryAgain" = "Fehler beim Abrufen der Werte. Bitte versuchen Sie es erneut.";
+"errorFetchingValuesTryAgain" = "Fehler beim Abrufen der Werte. Bitte versuche es erneut.";
 "backupPasswordDisclaimer" = "Speichere niemals Tresoranteile von verschiedenen Geräten am selben Ort";
 "share" = "Teilen";
 "dropFileHere" = "Datei hier ablegen...";
@@ -380,7 +380,7 @@
 "folderNeedsOneVault" = "Der Ordner muss mindestens einen ausgewählten Tresor enthalten.";
 "sameNameFolder" = "Ein Ordner mit demselben Namen existiert bereits";
 "sameNameFolderDescription" = "Bitte wähle einen einzigartigen Namen für den Ordner und versuche es erneut.";
-"registerYourVaults" = "Registriere deine Ihre Tresore!";
+"registerYourVaults" = "Registriere deine Tresore!";
 "registerVault" = "Tresor registrieren";
 "registerVaultText1" = "1. Speicher deinen Tresor-QR-Code";
 "registerVaultText2" = "2. Öffne ";
