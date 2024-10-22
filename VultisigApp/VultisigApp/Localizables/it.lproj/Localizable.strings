@@ -380,3 +380,4 @@
 "devices" = "Dispositivi";
 "signers" = "Firmatari";
 "vaultPart" = "Parte della cassaforte";
+"fastVaultEmailDisclaimer" = "Questa email viene utilizzata solo per inviare il backup";

@@ -51,11 +51,16 @@ struct FastVaultEmailView: View {
 
     var buttons: some View {
         VStack(spacing: 20) {
+            disclaimer
             continueButton
         }
         .padding(.top, 16)
         .padding(.bottom, 40)
         .padding(.horizontal, 16)
+    }
+    
+    var disclaimer: some View {
+        OutlinedDisclaimer(text: NSLocalizedString("fastVaultEmailDisclaimer", comment: ""))
     }
 
     var continueButton: some View {
