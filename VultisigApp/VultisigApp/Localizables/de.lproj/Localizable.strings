@@ -380,3 +380,4 @@
 "devices" = "Geräte";
 "signers" = "Unterzeichner";
 "vaultPart" = "Tresorteil";
+"fastVaultEmailDisclaimer" = "Diese E-Mail wird nur verwendet, um das Backup zu senden";

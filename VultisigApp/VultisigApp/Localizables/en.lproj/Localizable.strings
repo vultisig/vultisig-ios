@@ -409,3 +409,4 @@
 "devices" = "Devices";
 "signers" = "Signers";
 "vaultPart" = "Vault Part";
+"fastVaultEmailDisclaimer" = "This email is only used to send the backup";

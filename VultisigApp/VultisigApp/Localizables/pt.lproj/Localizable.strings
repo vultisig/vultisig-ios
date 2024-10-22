@@ -381,3 +381,4 @@
 "devices" = "Dispositivos";
 "signers" = "Signatários";
 "vaultPart" = "Parte do cofre";
+"fastVaultEmailDisclaimer" = "Este e-mail é usado apenas para enviar o backup";
