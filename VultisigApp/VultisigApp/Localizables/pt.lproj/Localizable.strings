@@ -135,7 +135,7 @@
 "notHackedCheck" = "Não estou enviando meu dinheiro para uma fraude ou hacker";
 "wrongVaultTryAgain" = "Cofre ou Dispositivo Emparelhado Incorreto.";
 "signInErrorTryAgain" = "Erro ao Assinar. Por favor, tente novamente.";
-"sameWifiEntendedInstruction" = "Mantenha dispositivos na mesma Rede WiFi, escolha o cofre correto e emparelhe os dispositivos. Certifique-se de que nenhum outro dispositivo esteja executando Vultisig.";
+"sameWifiEntendedInstruction" = "Mantenha os dispositivos na mesma rede WiFi, tenha uma conexão estável e esteja no cofre correto para emparelhar os dispositivos.";
 "validAddressError" = "Por favor, insira um endereço válido.";
 "positiveAmountError" = "A quantidade deve ser um número positivo. Tente novamente.";
 "walletBalanceExceededError" = "O total da quantidade e da taxa excede o saldo da sua carteira. Tente novamente.";
