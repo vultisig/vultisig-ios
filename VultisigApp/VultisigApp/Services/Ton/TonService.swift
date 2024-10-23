@@ -64,6 +64,19 @@ class TonService {
         let dataPayload = try JSONSerialization.data(withJSONObject: body, options: [])
         let data = try await Utils.asyncPostRequest(urlString: Endpoint.broadcastTonTransaction(), headers: [:], body: dataPayload)
         
+        print("BROACAST TON TRANSACTION")
+        print("BROACAST TON TRANSACTION")
+        print("BROACAST TON TRANSACTION")
+        print("BROACAST TON TRANSACTION")
+        print("BROACAST TON TRANSACTION")
+        print(String(data: data, encoding: .utf8) ?? "")
+        print("------------------------")
+        print("------------------------")
+        print("------------------------")
+        print("------------------------")
+        print("------------------------")
+        
+        
         if let hash = Utils.extractResultFromJson(fromData: data, path: "result.hash") as? String {
             return hash
         }
@@ -79,9 +92,7 @@ class TonService {
         let request = URLRequest(url: url)
         
         let (data, _) = try await URLSession.shared.data(for: request)
-        
-        print(String(data: data, encoding: .utf8) ?? "")
-        
+                
         if let balance = Utils.extractResultFromJson(fromData: data, path: "balance") as? String {
             return balance
         }
