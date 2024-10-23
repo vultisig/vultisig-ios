@@ -59,7 +59,10 @@ struct SettingsBiometryView: View {
 
             Spacer()
 
-            Toggle("", isOn: $viewModel.isBiometryEnabled)
+            Toggle("", isOn: Binding(get: {
+                viewModel.isBiometryEnabled
+            }, set: {
+                viewModel.onBiometryEnabledChanged($0, vault: vault) }))
         }
         .frame(height: 46)
         .padding(.horizontal, 16)

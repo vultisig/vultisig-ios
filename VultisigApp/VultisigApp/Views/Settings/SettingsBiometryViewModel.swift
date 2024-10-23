@@ -10,7 +10,7 @@ import SwiftUI
 
 final class SettingsBiometryViewModel: ObservableObject {
 
-    @AppStorage("isBiometryEnabled") var isBiometryEnabled: Bool = true
+    @AppStorage("isBiometryEnabled") var isBiometryEnabled: Bool = false
 
     @Published var password: String = .empty
     @Published var isLoading: Bool = false
@@ -25,6 +25,15 @@ final class SettingsBiometryViewModel: ObservableObject {
         if let password = keychain.getFastPassword(pubKeyECDSA: vault.pubKeyECDSA) {
             self.password = password
             self.initialPassword = password
+        }
+    }
+
+    func onBiometryEnabledChanged(_ isOn: Bool, vault: Vault) {
+        isBiometryEnabled = isOn
+
+        if !isOn {
+            keychain.setFastPassword(nil, pubKeyECDSA: vault.pubKeyECDSA)
+            password = .empty
         }
     }
 
