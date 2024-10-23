@@ -10,7 +10,7 @@ import SwiftUI
 
 final class SettingsBiometryViewModel: ObservableObject {
 
-    @AppStorage("isBiometryEnabled") var isBiometryEnabled: Bool = true
+    @AppStorage("isBiometryEnabled") var isBiometryEnabled: Bool = false
 
     @Published var password: String = .empty
     @Published var isLoading: Bool = false
