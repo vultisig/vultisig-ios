@@ -28,6 +28,15 @@ final class SettingsBiometryViewModel: ObservableObject {
         }
     }
 
+    func onBiometryEnabledChanged(_ isOn: Bool, vault: Vault) {
+        isBiometryEnabled = isOn
+
+        if !isOn {
+            keychain.setFastPassword(nil, pubKeyECDSA: vault.pubKeyECDSA)
+            password = .empty
+        }
+    }
+
     var isSaveEnabled: Bool {
         return password != initialPassword && !password.isEmpty
     }
