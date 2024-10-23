@@ -10,8 +10,8 @@ import SwiftData
 
 struct CreateFolderView: View {
     let count: Int
+    let filteredVaults: [Vault]
     
-    @Query var vaults: [Vault]
     @Query var folders: [Folder]
     
     @StateObject var viewModel = CreateFolderViewModel()
@@ -94,7 +94,7 @@ struct CreateFolderView: View {
     
     var list: some View {
         VStack(spacing: 6) {
-            ForEach(vaults, id: \.self) { vault in
+            ForEach(filteredVaults, id: \.self) { vault in
                 FolderVaultCell(vault: vault, selectedVaults: $viewModel.selectedVaults)
             }
         }
@@ -109,7 +109,7 @@ struct CreateFolderView: View {
         )
     }
     
-    func createFolder() {
+    private func createFolder() {
         guard viewModel.runChecks(folders) else {
             return
         }
@@ -129,5 +129,5 @@ struct CreateFolderView: View {
 }
 
 #Preview {
-    CreateFolderView(count: 0)
+    CreateFolderView(count: 0, filteredVaults: [])
 }
