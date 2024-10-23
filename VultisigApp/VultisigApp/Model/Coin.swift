@@ -153,7 +153,7 @@ class Coin: ObservableObject, Codable, Hashable {
         case .dydx:
             return DydxHelper.DydxGasLimit.description
         case .sui:
-            return "500000000"
+            return "3000000"
         case .polkadot:
             return "10000000000"
         case .ton:
