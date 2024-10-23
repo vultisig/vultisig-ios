@@ -114,7 +114,10 @@ struct VaultsView: View {
     
     var folderButton: some View {
         NavigationLink {
-            CreateFolderView(count: folders.count)
+            CreateFolderView(
+                count: folders.count,
+                filteredVaults: viewModel.filteredVaults
+            )
         } label: {
             OutlineButton(title: "createFolder")
         }
