@@ -9,7 +9,9 @@ import SwiftUI
 
 struct BackupVaultNowView: View {
     let vault: Vault
-    
+
+    @State var isWarningShown = true
+
     var body: some View {
         ZStack {
             Background()
@@ -86,12 +88,16 @@ struct BackupVaultNowView: View {
     }
     
     var skipButton: some View {
-        NavigationLink {
-            HomeView(selectedVault: vault, showVaultsList: false, shouldJoinKeygen: false)
+        Button {
+            isWarningShown = true
         } label: {
             Image("x")
         }
         .padding(16)
+        .sheet(isPresented: $isWarningShown) {
+            BackupVaultWarningView(vault: vault, isPresented: $isWarningShown)
+                .presentationDetents([.height(256)])
+        }
     }
 }
 
