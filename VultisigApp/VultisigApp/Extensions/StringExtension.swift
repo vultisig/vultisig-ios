@@ -30,38 +30,7 @@ extension String {
     }
     
     func formatCurrency() -> String {
-        guard !self.isEmpty else { return self }
-                
-        // First handle decimal separator conversion (comma to dot)
-        var number = self.replacingOccurrences(of: ",", with: ".")
-        
-        // Split into whole and decimal parts
-        let components = number.split(separator: ".", maxSplits: 1)
-        
-        // Guard against empty components
-        guard !components.isEmpty else { return self }
-        
-        let wholeNumber = String(components[0])
-        let decimalPart = components.count > 1 ? String(components[1]) : ""
-        
-        // Format the whole number part with thousand separators
-        var result = ""
-        var count = 0
-        
-        for char in wholeNumber.reversed() {
-            if count > 0 && count % 3 == 0 {
-                result = "," + result
-            }
-            result = String(char) + result
-            count += 1
-        }
-        
-        // Add decimal part if it exists
-        if !decimalPart.isEmpty {
-            result += "." + decimalPart
-        }
-        
-        return result
+        return self.replacingOccurrences(of: ",", with: ".")
     }
     
     var isZero: Bool {
