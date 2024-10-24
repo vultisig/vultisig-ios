@@ -291,8 +291,8 @@
 "memo(optional)" = "MEMO (Optional)";
 "enterMemo" = "Enter Memo";
 "enterVaultName" = "Enter vault name";
-"pleaseBackupVault" = "Each device has its own unique share.";
-"pleaseBackupVaultNote" = "Please Backup all of your Vault Shares now.";
+"pleaseBackupVault" = "Backups need to be done on every device in Vultisig";
+"pleaseBackupVaultNote" = "Each device has its own unique vault share, which are needed for recovery ";
 "addressBook" = "Address Book";
 "addAddress" = "Add Address";
 "address" = "Address";
@@ -411,3 +411,4 @@
 "vaultPart" = "Vault Part";
 "fastVaultEmailDisclaimer" = "This email is only used to send the backup";
 "selectPairingDevices" = "Select the pairing devices";
+"backupVaultOnEveryDeviceIndividually!" = "Back up your vault on every device individually!";
