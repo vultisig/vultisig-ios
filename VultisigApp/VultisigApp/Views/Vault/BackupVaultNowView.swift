@@ -23,46 +23,56 @@ struct BackupVaultNowView: View {
     }
     
     var content: some View {
-        VStack(spacing: 22) {
-            title
+        VStack(spacing: 0) {
+            HStack {
+                Spacer()
+                Spacer()
+                logo
+                Spacer()
+                skipButton
+            }
             image
+            title
+            Spacer()
             disclaimer
+            Spacer()
             description
             Spacer()
-            buttons
+            backupButton
         }
         .font(.body14MontserratMedium)
         .foregroundColor(.neutral0)
         .multilineTextAlignment(.center)
     }
     
-    var title: some View {
+    var logo: some View {
         Image("LogoWithTitle")
             .padding(.top, 30)
     }
-    
+
+    var title: some View {
+        Text("Backups need to be done on every device in Vultisig")
+            .foregroundColor(.neutral0)
+            .font(.body24MontserratMedium)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
     var image: some View {
         Image("BackupNowImage")
             .offset(x: 5)
+            .padding(.bottom, 6)
     }
-    
+
     var disclaimer: some View {
-        Text(NSLocalizedString("pleaseBackupVault", comment: ""))
-            .padding(.horizontal, 80)
+        WarningView(text: "Back up your vault on every device individually!")
+            .padding(.horizontal, 16)
+            .fixedSize(horizontal: false, vertical: true)
     }
-    
+
     var description: some View {
-        Text(NSLocalizedString("pleaseBackupVaultNote", comment: ""))
-            .padding(.horizontal, 60)
-    }
-    
-    var buttons: some View {
-        VStack {
-            backupButton
-            skipButton
-        }
-        .padding(.horizontal, 40)
-        .padding(.bottom, 10)
+        Text("Each device has its own unique vault share, which are needed for recovery ")
+            .padding(.horizontal, 32)
+            .multilineTextAlignment(.center)
     }
     
     var backupButton: some View {
@@ -71,14 +81,17 @@ struct BackupVaultNowView: View {
         } label: {
             FilledButton(title: "Backup")
         }
+        .padding(.horizontal, 40)
+        .padding(.bottom, 10)
     }
     
     var skipButton: some View {
         NavigationLink {
             HomeView(selectedVault: vault, showVaultsList: false, shouldJoinKeygen: false)
         } label: {
-            OutlineButton(title: "skip")
+            Image("x")
         }
+        .padding(16)
     }
 }
 

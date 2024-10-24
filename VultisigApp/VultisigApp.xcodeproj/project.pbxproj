@@ -115,6 +115,7 @@
 		A5D49F582BE26C63001766C8 /* CoinActionResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D49F572BE26C63001766C8 /* CoinActionResolver.swift */; };
 		A5D49F5A2BE26C87001766C8 /* Coin+ChainAction.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D49F592BE26C87001766C8 /* Coin+ChainAction.swift */; };
 		A5DA62092BF79C1D00CBEAEE /* ThorchainSwapError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5DA62082BF79C1D00CBEAEE /* ThorchainSwapError.swift */; };
+		A5E66B512CCA472000B6DA47 /* WarningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E66B502CCA472000B6DA47 /* WarningView.swift */; };
 		A5E841CB2C639556009325CB /* DatabaseRate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E841CA2C639556009325CB /* DatabaseRate.swift */; };
 		A5E841CD2C63A987009325CB /* RateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E841CC2C63A987009325CB /* RateProvider.swift */; };
 		A5F596BF2C7FB0C5008D5339 /* SendGasSettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5F596BE2C7FB0C5008D5339 /* SendGasSettingsViewModel.swift */; };
@@ -849,6 +850,7 @@
 		A5D49F572BE26C63001766C8 /* CoinActionResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinActionResolver.swift; sourceTree = "<group>"; };
 		A5D49F592BE26C87001766C8 /* Coin+ChainAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Coin+ChainAction.swift"; sourceTree = "<group>"; };
 		A5DA62082BF79C1D00CBEAEE /* ThorchainSwapError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThorchainSwapError.swift; sourceTree = "<group>"; };
+		A5E66B502CCA472000B6DA47 /* WarningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarningView.swift; sourceTree = "<group>"; };
 		A5E841CA2C639556009325CB /* DatabaseRate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseRate.swift; sourceTree = "<group>"; };
 		A5E841CC2C63A987009325CB /* RateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RateProvider.swift; sourceTree = "<group>"; };
 		A5F596BE2C7FB0C5008D5339 /* SendGasSettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendGasSettingsViewModel.swift; sourceTree = "<group>"; };
@@ -1524,6 +1526,7 @@
 				A6CBF2DB2C251D4100FD8080 /* LookingForDevicesLoader.swift */,
 				B590DF872C2E815A00ED934E /* GenericSelectorDropDown.swift */,
 				A63875602C386647000CF242 /* BackupNowDisclaimer.swift */,
+				A5E66B502CCA472000B6DA47 /* WarningView.swift */,
 				A6B7F48B2C47A077006D83D1 /* InformationNote.swift */,
 				A6B7F4992C49418A006D83D1 /* VaultDetailQRCode.swift */,
 				A6B7F49D2C496EA8006D83D1 /* VaultDetailMacQRCode.swift */,
@@ -3341,6 +3344,7 @@
 				469ED3A02B98F5B4008D4951 /* THORChainAccountNumberResponse.swift in Sources */,
 				A622C84E2C9BC7C300908332 /* FastVaultEmailView+iOS.swift in Sources */,
 				A6E5823D2BE98C4F006DA410 /* NavigationBlankBackButton.swift in Sources */,
+				A5E66B512CCA472000B6DA47 /* WarningView.swift in Sources */,
 				A65324282BA51E8700DDE6EB /* QRCodeScannerView.swift in Sources */,
 				DE1572992B70F26A009BC7C5 /* KeyType.swift in Sources */,
 				A6C670C72C9D174000F59B6A /* VaultDetailQRCodeView+macOS.swift in Sources */,
