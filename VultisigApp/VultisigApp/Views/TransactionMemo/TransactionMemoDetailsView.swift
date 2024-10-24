@@ -44,6 +44,10 @@ struct TransactionMemoDetailsView: View {
                     txMemoInstance = .addPool(TransactionMemoAddPool())
                 case .withdrawPool:
                     txMemoInstance = .withdrawPool(TransactionMemoWithdrawPool())
+                case .stake:
+                    txMemoInstance = .stake(TransactionMemoStake())
+                case .unstake:
+                    txMemoInstance = .unstake(TransactionMemoUnstake())
                 }
             }
     }

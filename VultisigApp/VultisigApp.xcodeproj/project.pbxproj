@@ -615,6 +615,8 @@
 		B5A97CF72BF42BE1007574D7 /* TransactionMemoVerifyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CF62BF42BE1007574D7 /* TransactionMemoVerifyView.swift */; };
 		B5A97CF92BF42E72007574D7 /* TransactionMemoAddressTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CF82BF42E72007574D7 /* TransactionMemoAddressTextField.swift */; };
 		B5A97CFC2BF4365E007574D7 /* TransactionMemoInstance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A97CFB2BF4365E007574D7 /* TransactionMemoInstance.swift */; };
+		B5B5E2782CCADD69001167C3 /* TransactionMemoStake.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B5E2772CCADD69001167C3 /* TransactionMemoStake.swift */; };
+		B5B5E27A2CCADE85001167C3 /* TransactionMemoUnstake.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B5E2792CCADE85001167C3 /* TransactionMemoUnstake.swift */; };
 		B5C4A42C2C62EC6500AF9B8B /* AddressService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5C4A42B2C62EC6500AF9B8B /* AddressService.swift */; };
 		B5CA1A062C16C39700789B11 /* AsyncImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5CA1A052C16C39700789B11 /* AsyncImageView.swift */; };
 		B5E476AB2C1A13D7005DB485 /* dydx.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E476AA2C1A13D7005DB485 /* dydx.swift */; };
@@ -1347,6 +1349,8 @@
 		B5A97CF62BF42BE1007574D7 /* TransactionMemoVerifyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoVerifyView.swift; sourceTree = "<group>"; };
 		B5A97CF82BF42E72007574D7 /* TransactionMemoAddressTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoAddressTextField.swift; sourceTree = "<group>"; };
 		B5A97CFB2BF4365E007574D7 /* TransactionMemoInstance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoInstance.swift; sourceTree = "<group>"; };
+		B5B5E2772CCADD69001167C3 /* TransactionMemoStake.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoStake.swift; sourceTree = "<group>"; };
+		B5B5E2792CCADE85001167C3 /* TransactionMemoUnstake.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMemoUnstake.swift; sourceTree = "<group>"; };
 		B5C4A42B2C62EC6500AF9B8B /* AddressService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressService.swift; sourceTree = "<group>"; };
 		B5CA1A052C16C39700789B11 /* AsyncImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncImageView.swift; sourceTree = "<group>"; };
 		B5E476AA2C1A13D7005DB485 /* dydx.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = dydx.swift; sourceTree = "<group>"; };
@@ -2788,7 +2792,9 @@
 				B50E399A2BF5AB2100B9A269 /* TransactionMemoAddressable.swift */,
 				B50E399C2BF5AB4B00B9A269 /* TransactionMemoContractTypeEnum.swift */,
 				B53D8CC72BF7F21500B795D3 /* TransactionMemoBond.swift */,
+				B5B5E2772CCADD69001167C3 /* TransactionMemoStake.swift */,
 				B53D8CC92BF7F22500B795D3 /* TransactionMemoUnbond.swift */,
+				B5B5E2792CCADE85001167C3 /* TransactionMemoUnstake.swift */,
 				B53D8CCB2BF7F22F00B795D3 /* TransactionMemoLeave.swift */,
 				B51119322C0072620020B711 /* TransactionMemoCustom.swift */,
 				B590DF852C2E70B800ED934E /* TransactionMemoVote.swift */,
@@ -3529,6 +3535,7 @@
 				A51AE8C62C958A0200EF9A7A /* FastVaultEnterPasswordView+macOS.swift in Sources */,
 				A69FBBC42C8BB5AD00A4B78B /* NoCameraPermissionView+iOS.swift in Sources */,
 				A66A0BD92BA12DF50021A483 /* RenameVaultView.swift in Sources */,
+				B5B5E2782CCADD69001167C3 /* TransactionMemoStake.swift in Sources */,
 				A65617F72CB492B200E9CF19 /* FolderDetailRemainingVaultCell.swift in Sources */,
 				A633B1252B993FE7003D1738 /* FilledButton.swift in Sources */,
 				46F47CBB2B870EE900D964EA /* UTXOTransactionMempool.swift in Sources */,
@@ -3879,6 +3886,7 @@
 				A6505ACE2CA668460002FBF4 /* OutlinedDisclaimer+macOS.swift in Sources */,
 				A6386D9E2C90225000DDD58E /* SendCryptoSigningErrorView+iOS.swift in Sources */,
 				A5D49F582BE26C63001766C8 /* CoinActionResolver.swift in Sources */,
+				B5B5E27A2CCADE85001167C3 /* TransactionMemoUnstake.swift in Sources */,
 				DE8BDCCB2C47E34300A1EDA6 /* Vault+ProtoMappable.swift in Sources */,
 				B5A97CF12BF41903007574D7 /* TransactionMemoVerifyViewModel.swift in Sources */,
 				A69FBBCE2C8BBA1900A4B78B /* TransactionMemoVerifyView+macOS.swift in Sources */,
