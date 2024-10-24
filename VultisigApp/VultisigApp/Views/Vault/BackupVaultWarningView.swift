@@ -1,0 +1,78 @@
+//
+//  BackupVaultWarningView.swift
+//  VultisigApp
+//
+//  Created by Artur Guseinov on 25.10.2024.
+//
+
+import SwiftUI
+
+struct BackupVaultWarningView: View {
+
+    let vault: Vault
+
+    @Binding var isPresented: Bool
+
+    @State var isChecked: Bool = false
+
+    var body: some View {
+        ZStack {
+            Background()
+            view
+        }
+    }
+
+    var view: some View {
+        VStack {
+            header
+            Spacer()
+            checkbox
+            Spacer()
+            skipButton
+        }
+    }
+
+    var header: some View {
+        HStack {
+            Button {
+                isPresented = false
+            } label: {
+                Image("x")
+            }
+            .padding(16)
+            .offset(y: 2)
+
+            Spacer()
+
+            Text("Skip Backup")
+                .foregroundColor(.neutral0)
+                .font(.body20MontserratSemiBold)
+
+            Spacer()
+            Spacer()
+                .frame(width: 44)
+        }
+        .frame(height: 70)
+    }
+
+    var checkbox: some View {
+        Checkbox(
+            isChecked: $isChecked,
+            text: "I understand that by skipping the backup I may lose access to my funds.",
+            font: .body14MenloBold,
+            alignment: .leading
+        )
+        .padding(.horizontal, 28)
+    }
+
+    var skipButton: some View {
+        NavigationLink {
+            HomeView(selectedVault: vault, showVaultsList: false, shouldJoinKeygen: false)
+        } label: {
+            FilledButton(title: "Skip Backup", background: .miamiMarmalade)
+        }
+        .disabled(!isChecked)
+        .opacity(!isChecked ? 0.5 : 1.0)
+        .padding(16)
+    }
+}
