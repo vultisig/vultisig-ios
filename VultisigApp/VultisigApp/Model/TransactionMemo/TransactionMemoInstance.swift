@@ -86,7 +86,18 @@ enum TransactionMemoInstance {
         case .stake(let memo):
             return memo.amount
         case .unstake(let memo):
-            return 1 // You must send 1 TON to unstake with a "w" memo
+            return memo.amount // You must send 1 TON to unstake with a "w" memo
+        }
+    }
+    
+    var toAddress: String? {
+        switch self {
+        case .stake(let memo):
+            return memo.nodeAddress
+        case .unstake(let memo):
+            return memo.nodeAddress
+        default:
+            return nil
         }
     }
     

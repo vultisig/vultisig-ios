@@ -1,42 +1,30 @@
 //
-//  TransactionMemoBond.swift
+//  TransactionMemoStake.swift
 //  VultisigApp
 //
-//  Created by Enrique Souza Soares on 17/05/24.
-//
+//  Created by Enrique Souza Soares on 24/10/24.
 
 import SwiftUI
 import Foundation
 import Combine
 
 class TransactionMemoStake: TransactionMemoAddressable, ObservableObject {
-    @Published var amount: Double = 0.0
-    @Published var nodeAddress: String = ""
-    @Published var provider: String = ""
-    @Published var fee: Int64 = .zero
+    @Published var amount: Double = 1003
+    @Published var nodeAddress: String = "Ef8t6cZkqFuHjJ_a_ydEK_tu3LHWRA4JZXRyewLY4j8FZ6B5"
     
     // Internal
-    @Published var amountValid: Bool = false
-    @Published var nodeAddressValid: Bool = false
-    @Published var providerValid: Bool = true
-    @Published var feeValid: Bool = true
-    
-    @Published var isTheFormValid: Bool = false
+    @Published var amountValid: Bool = true
+    @Published var nodeAddressValid: Bool = true
+    @Published var isTheFormValid: Bool = true
     
     var addressFields: [String: String] {
         get {
-            var fields = ["nodeAddress": nodeAddress]
-            if !provider.isEmpty {
-                fields["provider"] = provider
-            }
+            let fields = ["nodeAddress": nodeAddress]
             return fields
         }
         set {
             if let value = newValue["nodeAddress"] {
                 nodeAddress = value
-            }
-            if let value = newValue["provider"] {
-                provider = value
             }
         }
     }
@@ -48,8 +36,8 @@ class TransactionMemoStake: TransactionMemoAddressable, ObservableObject {
     }
     
     private func setupValidation() {
-        Publishers.CombineLatest4($amountValid, $nodeAddressValid, $providerValid, $feeValid)
-            .map { $0 && $1 && $2 && $3 && (!self.provider.isEmpty ? self.fee != .zero : true) }
+        Publishers.CombineLatest($amountValid, $nodeAddressValid)
+            .map { $0 && $1 }
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
     }
@@ -59,25 +47,12 @@ class TransactionMemoStake: TransactionMemoAddressable, ObservableObject {
     }
     
     func toString() -> String {
-        var memo = "BOND:\(self.nodeAddress)"
-        if !self.provider.isEmpty {
-            memo += ":\(self.provider)"
-        }
-        if self.fee != .zero {
-            if self.provider.isEmpty {
-                memo += "::\(self.fee)"
-            } else {
-                memo += ":\(self.fee)"
-            }
-        }
-        return memo
+        return "d"
     }
     
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("nodeAddress", self.nodeAddress)
-        dict.set("provider", self.provider)
-        dict.set("fee", "\(self.fee)")
         dict.set("memo", self.toString())
         return dict
     }
@@ -92,29 +67,7 @@ class TransactionMemoStake: TransactionMemoAddressable, ObservableObject {
                     set: { self.nodeAddressValid = $0 }
                 )
             )
-            TransactionMemoAddressTextField(
-                memo: self,
-                addressKey: "provider",
-                isOptional: true,
-                isAddressValid: Binding(
-                    get: { self.providerValid },
-                    set: { self.providerValid = $0 }
-                )
-            )
-
-            StyledIntegerField(
-                placeholder: "Operator's Fee",
-                value: Binding(
-                    get: { self.fee },
-                    set: { self.fee = $0 }
-                ),
-                format: .number,
-                isValid: Binding(
-                    get: { self.feeValid },
-                    set: { self.feeValid = $0 }
-                ),
-                isOptional: true
-            )
+            
             StyledFloatingPointField(placeholder: "Amount", value: Binding(
                 get: { self.amount },
                 set: { self.amount = $0 }

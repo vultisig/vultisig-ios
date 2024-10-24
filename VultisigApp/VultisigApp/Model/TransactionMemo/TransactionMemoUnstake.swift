@@ -1,9 +1,8 @@
-
 //
-//  TransactionMemoUnbond.swift
+//  TransactionMemoUnstake.swift
 //  VultisigApp
 //
-//  Created by Enrique Souza Soares on 17/05/24.
+//  Created by Enrique Souza Soares on 24/10/24.
 //
 
 import SwiftUI
@@ -11,51 +10,35 @@ import Foundation
 import Combine
 
 class TransactionMemoUnstake: TransactionMemoAddressable, ObservableObject {
-    @Published var isTheFormValid: Bool = false
-    
-    @Published var nodeAddress: String = ""
-    @Published var amount: Double = 0.0
-    @Published var provider: String = ""
+    @Published var amount: Double = 1
+    @Published var nodeAddress: String = "Ef8t6cZkqFuHjJ_a_ydEK_tu3LHWRA4JZXRyewLY4j8FZ6B5"
     
     // Internal
-    @Published var nodeAddressValid: Bool = false
-    @Published var amountValid: Bool = false
-    @Published var providerValid: Bool = true
-    
-    private var cancellables = Set<AnyCancellable>()
+    @Published var amountValid: Bool = true
+    @Published var nodeAddressValid: Bool = true
+    @Published var isTheFormValid: Bool = true
     
     var addressFields: [String: String] {
         get {
-            var fields = ["nodeAddress": nodeAddress]
-            if !provider.isEmpty {
-                fields["provider"] = provider
-            }
+            let fields = ["nodeAddress": nodeAddress]
             return fields
         }
         set {
             if let value = newValue["nodeAddress"] {
                 nodeAddress = value
             }
-            if let value = newValue["provider"] {
-                provider = value
-            }
         }
     }
+    
+    private var cancellables = Set<AnyCancellable>()
     
     required init() {
         setupValidation()
     }
     
-    init(nodeAddress: String, amount: Double = 0.0, provider: String = "") {
-        self.nodeAddress = nodeAddress
-        self.amount = amount
-        self.provider = provider
-        setupValidation()
-    }
-    
     private func setupValidation() {
-        Publishers.CombineLatest3($nodeAddressValid, $amountValid, $providerValid)
-            .map { $0 && $1 && $2 }
+        Publishers.CombineLatest($amountValid, $nodeAddressValid)
+            .map { $0 && $1 }
             .assign(to: \.isTheFormValid, on: self)
             .store(in: &cancellables)
     }
@@ -64,31 +47,19 @@ class TransactionMemoUnstake: TransactionMemoAddressable, ObservableObject {
         return toString()
     }
     
-    var amountInUnits: String {
-        let amountInSats = Int64(self.amount * pow(10, 8))
-        return amountInSats.description
-    }
-    
     func toString() -> String {
-        var memo = "UNBOND:\(self.nodeAddress):\(amountInUnits)"
-        if !self.provider.isEmpty {
-            memo += ":\(self.provider)"
-        }
-        return memo
+        return "w"
     }
     
     func toDictionary() -> ThreadSafeDictionary<String, String> {
         let dict = ThreadSafeDictionary<String, String>()
         dict.set("nodeAddress", self.nodeAddress)
-        dict.set("Unbond amount", "\(self.amount)")
-        dict.set("provider", self.provider)
         dict.set("memo", self.toString())
         return dict
     }
     
     func getView() -> AnyView {
         AnyView(VStack {
-
             TransactionMemoAddressTextField(
                 memo: self,
                 addressKey: "nodeAddress",
@@ -97,29 +68,14 @@ class TransactionMemoUnstake: TransactionMemoAddressable, ObservableObject {
                     set: { self.nodeAddressValid = $0 }
                 )
             )
-
-            StyledFloatingPointField(
-                placeholder: "Amount",
-                value: Binding(
-                    get: { self.amount },
-                    set: { self.amount = $0 }
-                ),
-                format: .number,
-                isValid: Binding(
-                    get: { self.amountValid },
-                    set: { self.amountValid = $0 }
-                )
-            )
-
-            TransactionMemoAddressTextField(
-                memo: self,
-                addressKey: "provider",
-                isOptional: true,
-                isAddressValid: Binding(
-                    get: { self.providerValid },
-                    set: { self.providerValid = $0 }
-                )
-            )
+            
+            StyledFloatingPointField(placeholder: "Amount", value: Binding(
+                get: { self.amount },
+                set: { self.amount = $0 }
+            ), format: .number, isValid: Binding(
+                get: { self.amountValid },
+                set: { self.amountValid = $0 }
+            ))
         })
     }
 }
