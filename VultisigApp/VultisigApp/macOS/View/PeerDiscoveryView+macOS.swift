@@ -43,7 +43,7 @@ extension PeerDiscoveryView {
             qrCode
             
             VStack {
-                vaultDetail
+                networkPrompts
                 list
             }
             .padding(40)
@@ -62,12 +62,9 @@ extension PeerDiscoveryView {
                 .padding()
                 .background(Color.blue600)
                 .cornerRadius(15)
-                .overlay (
-                    RoundedRectangle(cornerRadius: 15)
-                        .strokeBorder(Color.turquoise600, style: StrokeStyle(lineWidth: 2, dash: [58]))
-                )
-                .padding(1)
                 .aspectRatio(contentMode: .fit)
+            
+            outline
         }
         .cornerRadius(10)
         .shadow(radius: 5)

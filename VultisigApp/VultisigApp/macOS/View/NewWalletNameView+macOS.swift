@@ -24,7 +24,7 @@ extension NewWalletNameView {
     }
     
     var headerMac: some View {
-        GeneralMacHeader(title: "setup")
+        GeneralMacHeader(title: header)
     }
     
     var fields: some View {

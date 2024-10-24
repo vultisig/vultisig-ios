@@ -24,11 +24,11 @@ struct OpenButton: View {
     var content: some View {
         HStack(spacing: 10) {
             Image(systemName: buttonIcon)
-                .font(.body18MontserratMedium)
+                .font(.body14MontserratMedium)
                 .foregroundColor(.blue600)
             
             Text(NSLocalizedString(buttonLabel, comment: ""))
-                .font(.body14MontserratBold)
+                .font(.body14MontserratMedium)
                 .foregroundColor(.blue600)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)

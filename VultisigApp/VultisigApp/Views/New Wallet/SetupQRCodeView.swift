@@ -51,6 +51,7 @@ struct SetupQRCodeView: View {
                 NewWalletNameView(
                     tssType: tssType,
                     selectedTab: selectedTab,
+                    header: selectedTab == .secure ? "setup" : "name", 
                     name: Vault.getUniqueVaultName(modelContext: modelContext, state: selectedTab)
                 )
             } else if let vault {

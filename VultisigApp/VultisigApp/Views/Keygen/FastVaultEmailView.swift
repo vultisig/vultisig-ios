@@ -72,6 +72,11 @@ struct FastVaultEmailView: View {
         .opacity(isValid ? 1 : 0.5)
         .disabled(!isValid)
     }
+    
+    var disclaimer: some View {
+        OutlinedDisclaimer(text: NSLocalizedString("disclaimerEmailText", comment: ""))
+            .padding(.horizontal, 16)
+    }
 
     var isMismatchError: Bool {
         return !email.isEmpty && !verifyEmail.isEmpty && email != verifyEmail

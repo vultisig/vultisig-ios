@@ -35,7 +35,7 @@ struct KeyGenSummaryView: View {
     
     var content: some View {
         ScrollView {
-            VStack(spacing: 32) {
+            VStack(spacing: 12) {
                 header
                 devicesList
             }
@@ -48,7 +48,6 @@ struct KeyGenSummaryView: View {
     
     var header: some View {
         VStack(spacing: 12) {
-            title
             numberOfDevicesTitle
         }
     }
@@ -58,11 +57,6 @@ struct KeyGenSummaryView: View {
             devicesListTitle
             list
         }
-    }
-    
-    var title: some View {
-        Text(NSLocalizedString("youAreCreatingA", comment: "You are creating a"))
-            .font(.body12MontserratSemiBold)
     }
     
     var numberOfDevicesTitle: some View {
@@ -78,6 +72,7 @@ struct KeyGenSummaryView: View {
     var devicesListTitle: some View {
         Text(NSLocalizedString("withTheseDevices", comment: "With these devices"))
             .font(.body12MontserratSemiBold)
+            .padding(.bottom, 20)
     }
     
     var list: some View {
