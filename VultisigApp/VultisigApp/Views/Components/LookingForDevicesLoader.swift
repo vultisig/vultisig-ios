@@ -16,6 +16,9 @@ struct LookingForDevicesLoader: View {
         VStack {
             title
             loader
+            pleaseWait
+            Spacer()
+            InstructionPrompt(networkType: .Internet)
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -40,6 +43,7 @@ struct LookingForDevicesLoader: View {
         .foregroundColor(.neutral0)
         .bold()
         .multilineTextAlignment(.center)
+        .padding(.top, 70)
     }
     
     var loader: some View {
@@ -56,6 +60,15 @@ struct LookingForDevicesLoader: View {
         }
         .animation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true), value: didSwitch)
         .frame(height: 20)
+    }
+    
+    var pleaseWait: some View {
+        Text(NSLocalizedString("pleaseWait", comment: ""))
+            .font(.body14Montserrat)
+            .foregroundColor(.neutral0)
+            .bold()
+            .multilineTextAlignment(.center)
+            .padding(.top, 70)
     }
 }
 
