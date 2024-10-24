@@ -223,7 +223,7 @@
 "mainVault" = "Haupttresor";
 "balance" = "Guthaben";
 "provider" = "Anbieter";
-"polkadotExistentialDepositError" = "Wenn ein Konto unter 1 DOT (Existenzielle Einzahlung) fällt, wird das Konto gelöscht (deaktiviert) und alle verbleibenden Mittel werden zerstört. Die Adresse kann jederzeit mit einer neuen Einzahlung, die größer ist als die existenzielle Einzahlung, reaktiviert werden. Dies wird die zerstörten Mittel nicht wiederherstellen.";
+"polkadotExistentialDepositError" = "Stellen Sie sicher, dass genügend Mittel vorhanden sind, um die Gebühren zu decken. Wenn das Guthaben eines Kontos unter 1 DOT (Existenzeinlage) fällt, wird das Konto deaktiviert und verbleibende Gelder werden verloren gehen. Sie können die Adresse jederzeit mit einer neuen Einzahlung über dem Existenzeinlage wieder aktivieren. Dies wird jedoch die verlorenen Gelder nicht wiederherstellen.";
 "noCameraPermissionError" = "Kameraberechtigung verweigert.\n\nBitte aktiviere sie in den Einstellungen.";
 "openSettings" = "Einstellungen öffnen";
 "fetchingVaultDetails" = "Tresordetails werden abgerufen";

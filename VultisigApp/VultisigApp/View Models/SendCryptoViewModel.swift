@@ -142,7 +142,7 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 
                 isLoading = false
             }
-        case .kujira, .gaiaChain, .mayaChain, .thorChain, .polkadot, .dydx:
+        case .kujira, .gaiaChain, .mayaChain, .thorChain, .dydx:
             Task {
                 await BalanceService.shared.updateBalance(for: tx.coin)
                 
@@ -153,6 +153,16 @@ class SendCryptoViewModel: ObservableObject, TransferViewModel {
                 }
                 
                 tx.amount = "\(tx.coin.getMaxValue(gas))"
+                setPercentageAmount(tx: tx, for: percentage)
+                
+                await convertToFiat(newValue: tx.amount, tx: tx)
+                
+                isLoading = false
+            }
+        case .polkadot:
+            Task {
+                await BalanceService.shared.updateBalance(for: tx.coin)
+                tx.amount = "\(tx.coin.getMaxValue(BigInt.zero))"
                 setPercentageAmount(tx: tx, for: percentage)
                 
                 await convertToFiat(newValue: tx.amount, tx: tx)
