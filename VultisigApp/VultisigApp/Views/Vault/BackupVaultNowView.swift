@@ -84,5 +84,4 @@ struct BackupVaultNowView: View {
 
 #Preview {
     BackupVaultNowView(vault: Vault.example)
-        .frame(height: 600)
 }

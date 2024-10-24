@@ -79,6 +79,6 @@ struct LookingForDevicesLoader: View {
 #Preview {
     ZStack {
         Background()
-        LookingForDevicesLoader(selectedTab: .fast)
+        LookingForDevicesLoader(selectedTab: .secure)
     }
 }
