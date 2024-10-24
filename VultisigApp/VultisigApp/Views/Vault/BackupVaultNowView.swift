@@ -10,18 +10,23 @@ import SwiftUI
 struct BackupVaultNowView: View {
     let vault: Vault
 
-    @State var isWarningShown = true
+    @State var isWarningShown = false
+    @State var isHomeAfterSkipShown = false
 
     var body: some View {
         ZStack {
             Background()
             view
+            shadowView
         }
         .navigationBarBackButtonHidden(true)
     }
     
     var view: some View {
         container
+            .navigationDestination(isPresented: $isHomeAfterSkipShown) {
+                HomeView(selectedVault: vault, showVaultsList: false, shouldJoinKeygen: false)
+            }
     }
     
     var content: some View {
@@ -46,7 +51,13 @@ struct BackupVaultNowView: View {
         .foregroundColor(.neutral0)
         .multilineTextAlignment(.center)
     }
-    
+
+    var shadowView: some View {
+        Background()
+            .opacity(isWarningShown ? 0.5 : 0)
+            .animation(.default, value: isWarningShown)
+    }
+
     var logo: some View {
         Image("LogoWithTitle")
             .padding(.top, 30)
@@ -95,7 +106,7 @@ struct BackupVaultNowView: View {
         }
         .padding(16)
         .sheet(isPresented: $isWarningShown) {
-            BackupVaultWarningView(vault: vault, isPresented: $isWarningShown)
+            BackupVaultWarningView(isPresented: $isWarningShown, isSkipPressed: $isHomeAfterSkipShown)
                 .presentationDetents([.height(256)])
         }
     }
