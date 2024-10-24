@@ -14,9 +14,14 @@ struct LookingForDevicesLoader: View {
 
     var body: some View {
         VStack {
+            Spacer()
             title
             loader
-            pleaseWait
+            
+            if selectedTab == .fast {
+                pleaseWait
+            }
+            
             Spacer()
             InstructionPrompt(networkType: .Internet)
         }
@@ -43,7 +48,6 @@ struct LookingForDevicesLoader: View {
         .foregroundColor(.neutral0)
         .bold()
         .multilineTextAlignment(.center)
-        .padding(.top, 70)
     }
     
     var loader: some View {
@@ -68,7 +72,7 @@ struct LookingForDevicesLoader: View {
             .foregroundColor(.neutral0)
             .bold()
             .multilineTextAlignment(.center)
-            .padding(.top, 70)
+            .padding(.top, 50)
     }
 }
 
