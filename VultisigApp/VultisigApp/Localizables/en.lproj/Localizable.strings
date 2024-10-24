@@ -69,7 +69,7 @@
 "keysign" = "Keysign";
 "done" = "Done";
 "gas(auto)" = "Gas (auto)";
-"enterPreviousVault" = "Upload your previously created vault share :";
+"enterPreviousVault" = "Upload your previously created vault share:";
 "uploadFile" = "Upload file, text or image";
 "devicesOnSameWifi" = "Keep devices on the same Network with Vultisig open";
 "need3Devices" = "You need at least 2 devices";
@@ -79,7 +79,7 @@
 "enterAmount" = "Enter Amount";
 "reshare" = "Reshare";
 "unknown" = "Unknown";
-"reshareVault" = "Reshare vault with new committee";
+"reshareVault" = "Reshare vault with new devices";
 "pairWithOtherDevices" = "Pair with other devices:";
 "scanQrCode" = "Scan QR Code";
 "mainDevice" = "Main Device";
@@ -134,7 +134,7 @@
 "notHackedCheck" = "I’m not sending my money to a scam or hacker";
 "wrongVaultTryAgain" = "Wrong Vault or Pair Device.";
 "signInErrorTryAgain" = "Signing Error. Please try again.";
-"sameWifiEntendedInstruction" = "Keep devices on the same WiFi Network, choose correct vault and pair devices. Make sure no other devices are running Vultisig.";
+"sameWifiEntendedInstruction" = "Keep devices on the same WiFi Network, have a stable connection and be on the correct vault and pair devices.";
 "validAddressError" = "Please enter a valid address.";
 "positiveAmountError" = "Amount must be a positive number. Try again.";
 "walletBalanceExceededError" = "The total amount and fee exceed your wallet's balance. Try again.";
@@ -184,7 +184,7 @@
 "moneyFAQQuestion" = "How does Vultisig make money?";
 "moneyFAQAnswer" = "Vultisig only charges a flat fee on swap and bridging. There are no other hidden fees.";
 "assetRecoveryFAQQuestion" = "Can I recover my assets if I lose a device?";
-"assetRecoveryFAQAnswer" = "You can back-up your vault by exporting the vault shares.";
+"assetRecoveryFAQAnswer" = "You can back-up your vault by exporting the vault shares of every device.";
 "registerFAQQuestion" = "Do I need to register?";
 "registerFAQAnswer" = "No, there are no registration requirements.";
 "languageChangeTitle" = "Language changed";

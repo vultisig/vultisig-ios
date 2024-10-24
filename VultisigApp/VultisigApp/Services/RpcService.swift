@@ -57,6 +57,8 @@ class RpcService {
                     || message.contains("nonce too high")
                     || message.contains("transaction already exists")
                     || message.contains("many requests for a specific RPC call")
+                    || message.contains("already")
+                    || message.contains("already mined")
                 {
                     return try decode("Transaction already broadcasted.")
                 }
