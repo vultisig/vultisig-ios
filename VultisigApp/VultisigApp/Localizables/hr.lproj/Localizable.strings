@@ -1,3 +1,9 @@
+"emailMismatch" = "Adrese e-pošte se ne podudaraju";
+"enableBiometrics" = "Omogući biometriju";
+"enterFastSigningPassword" = "Unesite lozinku za brzo potpisivanje";
+"typeHere" = "Upišite ovdje";
+"settingsBiometricsTitle" = "Biometrija za brzo potpisivanje";
+"settingsBiometricsSubtitle" = "Omogući biometriju za brzo potpisivanje";
 "wrongPassword" = "Pogrešna lozinka";
 "reshareLabelTitle" = "Ponovno podijeli svoj trezor";
 "reshareLabelSubtitle" = "Ponovna podjela može se koristiti za osvježavanje, proširenje ili smanjenje broja uređaja u Trezoru.";
@@ -129,7 +135,7 @@
 "notHackedCheck" = "Ne šaljem svoj novac prevarantu ili hakeru";
 "wrongVaultTryAgain" = "Pogrešan sef ili upareni uređaj.";
 "signInErrorTryAgain" = "Greška pri prijavi. Molimo pokušajte ponovno.";
-"sameWifiEntendedInstruction" = "Držite uređaje na istoj WiFi mreži, odaberite točan sef i uparite uređaje. Provjerite da nema drugih uređaja koji pokreću Vultisig.";
+"sameWifiEntendedInstruction" = "Držite uređaje na istoj WiFi mreži, osigurajte stabilnu vezu i budite na ispravnom trezoru te uparite uređaje.";
 "validAddressError" = "Molimo unesite valjanu adresu.";
 "positiveAmountError" = "Iznos mora biti pozitivan broj. Pokušajte ponovno.";
 "walletBalanceExceededError" = "Ukupni iznosi naknada premašuju saldo vašeg novčanika. Pokušajte ponovno.";
@@ -216,8 +222,8 @@
 "reviewConditionsMessage" = "Molimo pregledajte i prihvatite sve navedene uvjete.";
 "function" = "funkcija";
 "enterPassword" = "Unesite lozinku";
-"fastVaultEnterDisclaimer" = "Ova lozinka dešifrira vaš udio u FastVaultu";
-"fastVaultSetDisclaimer" = "Ova lozinka šifrira vaš FastVault Share";
+"fastVaultEnterDisclaimer" = "Ova lozinka dešifrira vaš udio u FastSign";
+"fastVaultSetDisclaimer" = "Ova lozinka šifrira vaš FastSign Share";
 "passwordProtectBackup" = "Zaštitite svoju sigurnosnu kopiju lozinkom";
 "errorSavingFile" = "Pogreška pri spremanju datoteke";
 "invalidVaultData" = "Nevažeći podaci spremišta";
@@ -374,3 +380,4 @@
 "devices" = "Uređaji";
 "signers" = "Potpisnici";
 "vaultPart" = "Dio trezora";
+"fastVaultEmailDisclaimer" = "Ova e-pošta se koristi samo za slanje sigurnosne kopije";

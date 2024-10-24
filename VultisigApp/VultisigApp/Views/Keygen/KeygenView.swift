@@ -13,6 +13,7 @@ import Tss
 
 struct KeygenView: View {
     @Environment(\.modelContext) var context
+
     let vault: Vault
     let tssType: TssType // keygen or reshare
     let keygenCommittee: [String]
@@ -21,11 +22,11 @@ struct KeygenView: View {
     let sessionID: String
     let encryptionKeyHex: String
     let oldResharePrefix: String
+    let fastVaultPassword: String?
+
     @StateObject var viewModel = KeygenViewModel()
     
     let progressTotalCount: Double = 4
-    let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-    let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
     
     @State var progressCounter: Double = 1
     @State var showProgressRing = true
@@ -183,7 +184,11 @@ struct KeygenView: View {
         if tssType == .Reshare {
             vault.isBackedUp = false
         }
-        
+
+        if let fastVaultPassword {
+            viewModel.saveFastVaultPassword(fastVaultPassword, vault: vault)
+        }
+
         progressCounter = 4
         viewModel.delaySwitchToMain()
     }
@@ -200,7 +205,8 @@ struct KeygenView: View {
             mediatorURL: "",
             sessionID: "",
             encryptionKeyHex: "",
-            oldResharePrefix: ""
+            oldResharePrefix: "",
+            fastVaultPassword: nil
         )
         .environmentObject(SettingsDefaultChainViewModel())
     }

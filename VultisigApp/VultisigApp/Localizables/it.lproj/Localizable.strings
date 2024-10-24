@@ -1,3 +1,9 @@
+"emailMismatch" = "Indirizzi email non corrispondono";
+"enableBiometrics" = "Abilita i dati biometrici";
+"enterFastSigningPassword" = "Inserisci la password per la firma rapida";
+"typeHere" = "Scrivi qui";
+"settingsBiometricsTitle" = "Dati biometrici per firma rapida";
+"settingsBiometricsSubtitle" = "Abilita i dati biometrici per firma rapida";
 "wrongPassword" = "Password errata";
 "reshareLabelTitle" = "Condividi nuovamente il tuo vault";
 "reshareLabelSubtitle" = "La ricondivisione può essere utilizzata per aggiornare, espandere o ridurre il numero di dispositivi in un Vault.";
@@ -129,7 +135,7 @@
 "notHackedCheck" = "Non sto inviando i miei soldi a una truffa o a un hacker";
 "wrongVaultTryAgain" = "Cassaforte o Dispositivo Accoppiato Errato.";
 "signInErrorTryAgain" = "Errore di Firma. Per favore, riprova.";
-"sameWifiEntendedInstruction" = "Mantieni i dispositivi sulla stessa rete WiFi, scegli la cassaforte corretta e accoppia i dispositivi. Assicurati che nessun altro dispositivo stia eseguendo Vultisig.";
+"sameWifiEntendedInstruction" = "Tieni i dispositivi sulla stessa rete WiFi, assicurati di avere una connessione stabile ed essere nella cassaforte corretta per accoppiare i dispositivi";
 "validAddressError" = "Per favore, inserisci un indirizzo valido.";
 "positiveAmountError" = "La quantità deve essere un numero positivo. Riprova.";
 "walletBalanceExceededError" = "La quantità totale e la commissione superano il saldo del tuo portafoglio. Riprova.";
@@ -216,8 +222,8 @@
 "reviewConditionsMessage" = "Si prega di rivedere e accettare tutte le condizioni elencate.";
 "function" = "funzione";
 "enterPassword" = "Inserisci la password";
-"fastVaultEnterDisclaimer" = "Questa password decifra la tua condivisione FastVault";
-"fastVaultSetDisclaimer" = "Questa password crittografa la tua condivisione FastVault";
+"fastVaultEnterDisclaimer" = "Questa password decifra la tua condivisione FastSign";
+"fastVaultSetDisclaimer" = "Questa password crittografa la tua condivisione FastSign";
 "passwordProtectBackup" = "Proteggi il tuo backup con una password";
 "errorSavingFile" = "Errore nel salvataggio del file";
 "invalidVaultData" = "Dati del caveau non validi";
@@ -374,3 +380,4 @@
 "devices" = "Dispositivi";
 "signers" = "Firmatari";
 "vaultPart" = "Parte della cassaforte";
+"fastVaultEmailDisclaimer" = "Questa email viene utilizzata solo per inviare il backup";

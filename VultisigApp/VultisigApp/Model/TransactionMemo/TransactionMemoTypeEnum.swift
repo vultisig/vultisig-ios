@@ -34,8 +34,10 @@ enum TransactionMemoType: String, CaseIterable, Identifiable {
     
     static func getCases(for coin: Coin) -> [TransactionMemoType] {
         switch coin.chain {
-        case .thorChain, .mayaChain:
+        case .thorChain:
             return [.bond, .unbond, .leave, .custom, .addPool, .withdrawPool]
+        case .mayaChain:
+            return [.bond, .unbond, .leave, .custom]
         case .dydx:
             return [.vote]
         default:

@@ -42,20 +42,20 @@ class SolanaService {
                 method: "getBalance",
                 params: [coin.address]
             )
-
+            
             guard let totalBalance = Utils.extractResultFromJson(
                 fromData: data,
                 path: "result.value"
             ) as? Int64 else { throw Errors.getSolanaBalanceFailed }
-
+            
             return totalBalance.description
-
+            
         } else {
             guard let balance = try await fetchTokenBalance(
                 for: coin.address,
                 contractAddress: coin.contractAddress
             ) else { throw Errors.getSolanaBalanceFailed }
-
+            
             return balance
         }
     }
@@ -89,6 +89,18 @@ class SolanaService {
             return tokenInfo
         } catch {
             print("Error in fetchSolanaTokenInfoList:")
+            throw error
+        }
+    }
+    
+    func fetchSolanaJupiterTokenInfoList(contractAddress: String) async throws -> SolanaJupiterToken {
+        do {
+            let urlString = Endpoint.solanaTokenInfoServiceRpc2(tokenAddress: contractAddress)
+            let dataResponse = try await Utils.asyncGetRequest(urlString: urlString, headers: [:])
+            let tokenInfo = try JSONDecoder().decode(SolanaJupiterToken.self, from: dataResponse)
+            return tokenInfo
+        } catch {
+            print("Error in fetchSolanaJupiterTokenInfoList:")
             throw error
         }
     }
@@ -164,21 +176,41 @@ class SolanaService {
             let tokenAddresses = accounts.map { $0.account.data.parsed.info.mint }
             let tokenInfos = try await fetchSolanaTokenInfoList(contractAddresses: tokenAddresses)
             
-            let coinMetaList = tokenInfos.map { tokenInfo in
-                CoinMeta(
+            var coinMetaList = [CoinMeta]()
+            for tokenAddress in tokenAddresses {
+                if let tokenInfo = tokenInfos[tokenAddress] {
+                    let coinMeta = CoinMeta(
+                        chain: .solana,
+                        ticker: tokenInfo.tokenMetadata.onChainInfo.symbol,
+                        logo: tokenInfo.tokenList.image.description,
+                        decimals: tokenInfo.decimals,
+                        priceProviderId: tokenInfo.tokenList.extensions.coingeckoId ?? .empty,
+                        contractAddress: tokenAddress,
+                        isNativeToken: false
+                    )
+                    coinMetaList.append(coinMeta)
+                }
+            }
+            
+            let missingTokenAddresses = tokenAddresses.filter { !tokenInfos.keys.contains($0) }
+            for tokenAddress in missingTokenAddresses {
+                let jupiterTokenInfo:SolanaJupiterToken = try await fetchSolanaJupiterTokenInfoList(contractAddress: tokenAddress)
+                let coinMeta = CoinMeta(
                     chain: .solana,
-                    ticker: tokenInfo.value.tokenMetadata.onChainInfo.symbol,
-                    logo: tokenInfo.value.tokenList.image.description,
-                    decimals: tokenInfo.value.decimals,
-                    priceProviderId: tokenInfo.value.tokenList.extensions.coingeckoId ?? .empty,
-                    contractAddress: tokenInfo.key,
+                    ticker: jupiterTokenInfo.symbol,
+                    logo: jupiterTokenInfo.logoURI.description,
+                    decimals: jupiterTokenInfo.decimals,
+                    priceProviderId: jupiterTokenInfo.extensions.coingeckoId,
+                    contractAddress: tokenAddress,
                     isNativeToken: false
                 )
+                coinMetaList.append(coinMeta)
+                
             }
             
             return coinMetaList
         } catch {
-            print("Error in fetchTokens:")
+            print("Error in fetchTokens: \(error)")
             throw error
         }
     }
@@ -254,7 +286,7 @@ class SolanaService {
 }
 
 private extension SolanaService {
-
+    
     enum Errors: Error {
         case getSolanaBalanceFailed
     }

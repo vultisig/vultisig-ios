@@ -1,3 +1,9 @@
+"emailMismatch" = "Las direcciones de correo no coinciden";
+"enableBiometrics" = "Habilitar biometría";
+"enterFastSigningPassword" = "Ingrese la contraseña para firma rápida";
+"typeHere" = "Escribe aquí";
+"settingsBiometricsTitle" = "Biometría para firma rápida";
+"settingsBiometricsSubtitle" = "Habilitar biometría para firma rápida";
 "wrongPassword" = "Contraseña incorrecta";
 "reshareLabelTitle" = "Compartir nuevamente tu bóveda";
 "reshareLabelSubtitle" = "La opción de compartir nuevamente se puede usar para actualizar, expandir o reducir la cantidad de dispositivos en una Bóveda.";
@@ -129,7 +135,7 @@
 "notHackedCheck" = "No estoy enviando mi dinero a una estafa o hacker";
 "wrongVaultTryAgain" = "Caja Fuerte o Dispositivo Emparejado Incorrecto.";
 "signInErrorTryAgain" = "Error al Firmar. Por favor intenta de nuevo.";
-"sameWifiEntendedInstruction" = "Mantén los dispositivos en la misma red WiFi, elige la caja fuerte correcta y empareja los dispositivos. Asegúrate de que no haya otros dispositivos ejecutando Vultisig.";
+"sameWifiEntendedInstruction" = "Mantén los dispositivos en la misma red WiFi, asegúrate de tener una conexión estable y estar en la bóveda correcta para emparejar los dispositivos.";
 "validAddressError" = "Por favor ingresa una dirección válida.";
 "positiveAmountError" = "La cantidad debe ser un número positivo. Intenta de nuevo.";
 "walletBalanceExceededError" = "El total de la cantidad y la tarifa excede el saldo de tu cartera. Intenta de nuevo.";
@@ -216,8 +222,8 @@
 "reviewConditionsMessage" = "Por favor, revise y acepte todas las condiciones listadas.";
 "function" = "función";
 "enterPassword" = "Introduce la contraseña";
-"fastVaultEnterDisclaimer" = "Esta contraseña descifra su recurso compartido de FastVault";
-"fastVaultSetDisclaimer" = "Esta contraseña encripta su FastVault Share";
+"fastVaultEnterDisclaimer" = "Esta contraseña descifra su recurso compartido de FastSign";
+"fastVaultSetDisclaimer" = "Esta contraseña encripta su FastSign Share";
 "passwordProtectBackup" = "Protege tu copia de seguridad con una contraseña";
 "errorSavingFile" = "Error al guardar el archivo";
 "invalidVaultData" = "Datos del almacén no válidos";
@@ -374,3 +380,4 @@
 "devices" = "Dispositivos";
 "signers" = "Firmantes";
 "vaultPart" = "Parte del cofre";
+"fastVaultEmailDisclaimer" = "Este correo electrónico solo se utiliza para enviar la copia de seguridad";

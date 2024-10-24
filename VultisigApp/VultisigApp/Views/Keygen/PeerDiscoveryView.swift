@@ -110,7 +110,7 @@ struct PeerDiscoveryView: View {
     
     var portraitContent: some View {
         VStack(spacing: 0) {
-            vaultDetail
+            networkPrompts
             qrCode
             list
         }
@@ -122,9 +122,7 @@ struct PeerDiscoveryView: View {
     
     var list: some View {
         VStack(spacing: isPhoneSE ? 4 : 12) {
-            networkPrompts
             deviceContent
-            instructions
         }
     }
     
@@ -150,11 +148,13 @@ struct PeerDiscoveryView: View {
                 scrollList
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
-    var instructions: some View {
-        InstructionPrompt(networkType: viewModel.selectedNetwork)
-            .padding(.vertical, isPhoneSE ? 0 : 10)
+    var outline: some View {
+        Image("QRScannerOutline")
+            .resizable()
+            .frame(maxWidth: 540, maxHeight: 540)
     }
     
     func disableContinueButton() -> Bool {
@@ -177,7 +177,8 @@ struct PeerDiscoveryView: View {
             mediatorURL: viewModel.serverAddr,
             sessionID: viewModel.sessionID,
             encryptionKeyHex: viewModel.encryptionKeyHex ?? "",
-            oldResharePrefix: viewModel.vault.resharePrefix ?? ""
+            oldResharePrefix: viewModel.vault.resharePrefix ?? "", 
+            fastVaultPassword: fastVaultPassword
         )
     }
     
@@ -190,10 +191,11 @@ struct PeerDiscoveryView: View {
         }
     }
     
-    var vaultDetail: some View {
-        Text(viewModel.vaultDetail)
-            .font(.body15MenloBold)
-            .multilineTextAlignment(.center)
+    var listTitle: some View {
+        Text(NSLocalizedString("selectPairingDevices", comment: ""))
+            .font(.body14MontserratSemiBold)
+            .foregroundColor(.neutral0)
+            .padding(.bottom, 8)
     }
     
     func getTitle() -> String {
@@ -202,20 +204,6 @@ struct PeerDiscoveryView: View {
         selectedTab.title +
         " " +
         NSLocalizedString("vault", comment: "")
-    }
-    
-    func setNumberOfPairedDevices() {
-        
-        let totalSigners = viewModel.selections.count
-        
-        switch selectedTab {
-        case .fast:
-            viewModel.vaultDetail = String(format:  NSLocalizedString("numberOfPairedDevicesTwoOfTwo", comment: ""), totalSigners)
-        case .active:
-            viewModel.vaultDetail = String(format:  NSLocalizedString("numberOfPairedDevicesTwoOfThree", comment: ""), totalSigners)
-        default:
-            viewModel.vaultDetail = String(format:  NSLocalizedString("numberOfPairedDevicesMOfN", comment: ""), totalSigners)
-        }
     }
     
     func setData(_ proxy: GeometryProxy) {

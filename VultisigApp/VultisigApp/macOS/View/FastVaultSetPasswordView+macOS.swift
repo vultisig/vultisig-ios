@@ -13,6 +13,10 @@ extension FastVaultSetPasswordView {
         ZStack {
             Background()
             main
+
+            if isLoading {
+                Loader()
+            }
         }
     }
     

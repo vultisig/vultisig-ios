@@ -13,7 +13,6 @@ extension KeygenView {
         VStack {
             fields
             instructions
-            appVersion
         }
         .navigationTitle(NSLocalizedString("joinKeygen", comment: ""))
         .navigationDestination(isPresented: $viewModel.isLinkActive) {
@@ -31,17 +30,6 @@ extension KeygenView {
     var keygenViewInstructions: some View {
         KeygenViewInstructionsMac()
             .padding(.vertical, 30)
-    }
-    
-    var appVersion: some View {
-        return VStack {
-            Text("Vultisig APP V\(version ?? "1")")
-            Text("(Build \(build ?? "1"))")
-        }
-        .textCase(.uppercase)
-        .font(.body14Menlo)
-        .foregroundColor(.turquoise600)
-        .padding(.bottom, 30)
     }
 }
 #endif

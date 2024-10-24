@@ -15,6 +15,7 @@ extension SwapCryptoView {
             main
         }
         .onAppear {
+            UIApplication.shared.isIdleTimerDisabled = true
             swapViewModel.load(initialFromCoin: fromCoin, initialToCoin: toCoin, vault: vault, tx: tx)
         }
         .task {
@@ -39,6 +40,9 @@ extension SwapCryptoView {
                     )
                 }
             }
+        }
+        .onDisappear {
+            UIApplication.shared.isIdleTimerDisabled = false
         }
     }
     

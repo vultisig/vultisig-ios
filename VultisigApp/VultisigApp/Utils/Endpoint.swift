@@ -121,11 +121,29 @@ class Endpoint {
     
     static let solanaTokenInfoServiceRpc = "https://api.solana.fm/v1/tokens"
     
+    static func solanaTokenInfoServiceRpc2(tokenAddress: String) -> String {
+        "https://tokens.jup.ag/token/\(tokenAddress)"
+    }
+    
     static let suiServiceRpc = "https://sui-rpc.publicnode.com"
     
     static let polkadotServiceRpc = "https://polkadot-rpc.publicnode.com"
     
     static let polkadotServiceBalance = "https://polkadot.api.subscan.io/api/v2/scan/search"
+    
+    static let tonServiceRpc = "https://api.vultisig.com/ton/v2/jsonRPC"
+    
+    static func fetchTonBalance(address: String) -> String {
+        return "https://api.vultisig.com/ton/v3/addressInformation?address=\(address)&use_v2=false";
+    }
+    
+    static func fetchExtendedAddressInformation(address: String) -> String {
+        return "https://api.vultisig.com/ton/v2/getExtendedAddressInformation?address=\(address)";
+    }
+    
+    static func broadcastTonTransaction() -> String {
+        return "https://api.vultisig.com/ton/v2/sendBocReturnHash";
+    }
     
     static func bitcoinLabelTxHash(_ value: String) -> String {
         "https://mempool.space/tx/\(value)"
@@ -177,11 +195,11 @@ class Endpoint {
     static func bscLabelTxHash(_ value: String) -> String {
         "https://bscscan.com/tx/\(value)"
     }
-
+    
     static func resolveTNS(name: String) -> URL {
         "https://midgard.ninerealms.com/v2/thorname/lookup/\(name)".asUrl
     }
-
+    
     static func fetchCosmosAccountBalance(address: String) -> String{
         "https://cosmos-rest.publicnode.com/cosmos/bank/v1beta1/balances/\(address)"
     }
@@ -214,13 +232,13 @@ class Endpoint {
     }
     
     static func getMayaSwapTracker(txid: String) -> String {
-        return "https://www.mayascan.org/tx/\(txid.stripHexPrefix())"
+        return "https://www.xscanner.org/tx/\(txid.stripHexPrefix())"
     }
     
     static func getExplorerURL(chainTicker: String, txid: String) -> String {
         switch chainTicker {
         case "BTC":
-            return "https://blockchair.com/bitcoin/transaction/\(txid)"
+            return "https://mempool.space/tx/\(txid)"
         case "BCH":
             return "https://blockchair.com/bitcoin-cash/transaction/\(txid)"
         case "LTC":
@@ -265,6 +283,8 @@ class Endpoint {
             return "https://polkadot.subscan.io/extrinsic/\(txid)"
         case "ZK":
             return "https://explorer.zksync.io/tx/\(txid)"
+        case "TON":
+            return "https://tonscan.org/tx/\(txid)"
         default:
             return ""
         }
@@ -273,7 +293,7 @@ class Endpoint {
     static func getExplorerByAddressURL(chainTicker:String, address:String) -> String? {
         switch chainTicker {
         case "BTC":
-            return "https://blockchair.com/bitcoin/address/\(address)"
+            return "https://mempool.space/address/\(address)"
         case "BCH":
             return "https://blockchair.com/bitcoin-cash/address/\(address)"
         case "LTC":
@@ -318,6 +338,8 @@ class Endpoint {
             return "https://polkadot.subscan.io/account/\(address)"
         case "ZK":
             return "https://explorer.zksync.io/address/\(address)"
+        case "TON":
+            return "https://tonscan.org/address/\(address)"
         default:
             return nil
         }
@@ -342,7 +364,7 @@ class Endpoint {
         case .bscChain:
             return "https://bscscan.com/address/\(address)"
         case .bitcoin:
-            return "https://www.blockchain.com/btc/address/\(address)"
+            return "https://mempool.space/address/\(address)"
         case .bitcoinCash:
             return "https://explorer.bitcoin.com/bch/address/\(address)"
         case .litecoin:
@@ -371,6 +393,8 @@ class Endpoint {
             return "https://polkadot.subscan.io/account/\(address)"
         case .zksync:
             return "https://explorer.zksync.io/address/\(address)"
+        case .ton:
+            return "https://tonscan.org/address/\(address)"
         case .none:
             return nil
         }

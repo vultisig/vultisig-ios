@@ -1,3 +1,9 @@
+"emailMismatch" = "Os endereços de email não coincidem";
+"enableBiometrics" = "Ativar biometria";
+"enterFastSigningPassword" = "Digite a senha para assinatura rápida";
+"typeHere" = "Digite aqui";
+"settingsBiometricsTitle" = "Biometria para assinatura rápida";
+"settingsBiometricsSubtitle" = "Ativar biometria para assinatura rápida";
 "wrongPassword" = "Senha incorreta";
 "reshareLabelTitle" = "Compartilhe novamente seu cofre";
 "reshareLabelSubtitle" = "O recurso de compartilhar novamente pode ser usado para atualizar, expandir ou reduzir a quantidade de dispositivos em um Cofre.";
@@ -129,7 +135,7 @@
 "notHackedCheck" = "Não estou enviando meu dinheiro para uma fraude ou hacker";
 "wrongVaultTryAgain" = "Cofre ou Dispositivo Emparelhado Incorreto.";
 "signInErrorTryAgain" = "Erro ao Assinar. Por favor, tente novamente.";
-"sameWifiEntendedInstruction" = "Mantenha dispositivos na mesma Rede WiFi, escolha o cofre correto e emparelhe os dispositivos. Certifique-se de que nenhum outro dispositivo esteja executando Vultisig.";
+"sameWifiEntendedInstruction" = "Mantenha os dispositivos na mesma rede WiFi, tenha uma conexão estável e esteja no cofre correto para emparelhar os dispositivos.";
 "validAddressError" = "Por favor, insira um endereço válido.";
 "positiveAmountError" = "A quantidade deve ser um número positivo. Tente novamente.";
 "walletBalanceExceededError" = "O total da quantidade e da taxa excede o saldo da sua carteira. Tente novamente.";
@@ -216,8 +222,8 @@
 "reviewConditionsMessage" = "Por favor, reveja e concorde com todas as condições listadas.";
 "function" = "função";
 "enterPassword" = "Digite a senha";
-"fastVaultEnterDisclaimer" = "Esta palavra-passe desencripta o seu compartilhamento FastVault";
-"fastVaultSetDisclaimer" = "Esta palavra-passe encripta o seu FastVault Share";
+"fastVaultEnterDisclaimer" = "Esta palavra-passe desencripta o seu compartilhamento FastSign";
+"fastVaultSetDisclaimer" = "Esta palavra-passe encripta o seu FastSign Share";
 "passwordProtectBackup" = "Proteja seu backup com uma senha";
 "errorSavingFile" = "Erro ao salvar o arquivo";
 "invalidVaultData" = "Dados do cofre inválidos";
@@ -375,3 +381,4 @@
 "devices" = "Dispositivos";
 "signers" = "Signatários";
 "vaultPart" = "Parte do cofre";
+"fastVaultEmailDisclaimer" = "Este e-mail é usado apenas para enviar o backup";
