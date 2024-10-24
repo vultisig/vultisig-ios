@@ -85,12 +85,6 @@ extension PeerDiscoveryView {
         .padding(isPhoneSE ? 8 : 20)
     }
     
-    var outline: some View {
-        Image("QRScannerOutline")
-            .resizable()
-            .frame(maxWidth: 540, maxHeight: 540)
-    }
-    
     var scrollList: some View {
         VStack {
             listTitle
