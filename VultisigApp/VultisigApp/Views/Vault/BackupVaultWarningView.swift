@@ -9,9 +9,8 @@ import SwiftUI
 
 struct BackupVaultWarningView: View {
 
-    let vault: Vault
-
     @Binding var isPresented: Bool
+    @Binding var isSkipPressed: Bool
 
     @State var isChecked: Bool = false
 
@@ -66,8 +65,9 @@ struct BackupVaultWarningView: View {
     }
 
     var skipButton: some View {
-        NavigationLink {
-            HomeView(selectedVault: vault, showVaultsList: false, shouldJoinKeygen: false)
+        Button {
+            isPresented = false
+            isSkipPressed = true
         } label: {
             FilledButton(title: "Skip Backup", background: .miamiMarmalade)
         }
