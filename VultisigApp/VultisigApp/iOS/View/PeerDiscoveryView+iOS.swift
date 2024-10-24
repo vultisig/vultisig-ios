@@ -69,8 +69,7 @@ extension PeerDiscoveryView {
             qrCodeImage?
                 .resizable()
                 .background(Color.blue600)
-                .frame(maxWidth: isPhoneSE ? 250 : nil)
-                .frame(maxHeight: isPhoneSE ? 250 : nil)
+                .frame(maxWidth: 500, maxHeight: 500)
                 .aspectRatio(contentMode: .fill)
                 .padding(2)
                 .background(Color.neutral0)
@@ -89,6 +88,7 @@ extension PeerDiscoveryView {
     var outline: some View {
         Image("QRScannerOutline")
             .resizable()
+            .frame(maxWidth: 540, maxHeight: 540)
     }
     
     var scrollList: some View {
