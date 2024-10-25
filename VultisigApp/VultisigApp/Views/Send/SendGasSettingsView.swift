@@ -28,9 +28,9 @@ struct SendGasSettingsView: View {
 
     var view: some View {
         VStack(spacing: 16) {
+            feeModeRow
             baseFeeRow
             gasLimitRow
-            feeModeRow
             totalFeeRow
 
             Spacer()

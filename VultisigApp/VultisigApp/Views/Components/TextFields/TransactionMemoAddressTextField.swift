@@ -142,6 +142,7 @@ struct TransactionMemoAddressTextField<MemoType: TransactionMemoAddressable>: Vi
         }
         
         isAddressValid = AddressService.validateAddress(address: newValue, chain: .thorChain) ||
-        AddressService.validateAddress(address: newValue, chain: .mayaChain)
+        AddressService.validateAddress(address: newValue, chain: .mayaChain) ||
+        AddressService.validateAddress(address: newValue, chain: .ton)
     }
 }
