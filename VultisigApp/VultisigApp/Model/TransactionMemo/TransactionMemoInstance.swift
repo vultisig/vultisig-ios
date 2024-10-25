@@ -18,6 +18,8 @@ enum TransactionMemoInstance {
     case vote(TransactionMemoVote)
     case addPool(TransactionMemoAddPool)
     case withdrawPool(TransactionMemoWithdrawPool)
+    case stake(TransactionMemoStake)
+    case unstake(TransactionMemoUnstake)
     
     var view: AnyView {
         switch self {
@@ -34,6 +36,10 @@ enum TransactionMemoInstance {
         case .addPool(let memo):
             return memo.getView()
         case .withdrawPool(let memo):
+            return memo.getView()
+        case .stake(let memo):
+            return memo.getView()
+        case .unstake(let memo):
             return memo.getView()
         }
     }
@@ -54,6 +60,10 @@ enum TransactionMemoInstance {
             return memo.description
         case .withdrawPool(let memo):
             return memo.description
+        case .stake(let memo):
+            return memo.description
+        case .unstake(let memo):
+            return memo.description
         }
     }
     
@@ -73,6 +83,21 @@ enum TransactionMemoInstance {
             return memo.amount
         case .withdrawPool(_):
             return .zero
+        case .stake(let memo):
+            return memo.amount
+        case .unstake(let memo):
+            return memo.amount // You must send 1 TON to unstake with a "w" memo
+        }
+    }
+    
+    var toAddress: String? {
+        switch self {
+        case .stake(let memo):
+            return memo.nodeAddress
+        case .unstake(let memo):
+            return memo.nodeAddress
+        default:
+            return nil
         }
     }
     
@@ -91,6 +116,10 @@ enum TransactionMemoInstance {
         case .addPool(let memo):
             return memo.toDictionary()
         case .withdrawPool(let memo):
+            return memo.toDictionary()
+        case .stake(let memo):
+            return memo.toDictionary()
+        case .unstake(let memo):
             return memo.toDictionary()
         }
     }
@@ -120,6 +149,10 @@ enum TransactionMemoInstance {
             return memo.isTheFormValid
         case .withdrawPool(let memo):
             return memo.isTheFormValid
+        case .stake(let memo):
+            return memo.isTheFormValid
+        case .unstake(let memo):
+            return memo.isTheFormValid
         }
     }
     
@@ -129,6 +162,8 @@ enum TransactionMemoInstance {
             return .bond(TransactionMemoBond())
         case .dydx:
             return .vote(TransactionMemoVote())
+        case .ton:
+            return .stake(TransactionMemoStake())
         default:
             return .custom(TransactionMemoCustom())
         }

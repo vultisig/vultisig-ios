@@ -44,6 +44,10 @@ struct TransactionMemoDetailsView: View {
                     txMemoInstance = .addPool(TransactionMemoAddPool())
                 case .withdrawPool:
                     txMemoInstance = .withdrawPool(TransactionMemoWithdrawPool())
+                case .stake:
+                    txMemoInstance = .stake(TransactionMemoStake())
+                case .unstake:
+                    txMemoInstance = .unstake(TransactionMemoUnstake())
                 }
             }
     }
@@ -92,6 +96,11 @@ struct TransactionMemoDetailsView: View {
                     tx.memoFunctionDictionary = txMemoInstance.toDictionary()
                     tx.transactionType = txMemoInstance.getTransactionType()
                     transactionMemoViewModel.moveToNextView()
+                                        
+                    if let toAddress = txMemoInstance.toAddress {
+                        tx.toAddress = toAddress
+                    }
+                    
                 } else {
                     showInvalidFormAlert = true
                 }
