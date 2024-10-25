@@ -32,11 +32,11 @@ struct BackupVaultNowView: View {
     var content: some View {
         VStack(spacing: 0) {
             HStack {
-                Spacer()
+                Spacer().frame(width: 44)
                 Spacer()
                 logo
                 Spacer()
-                skipButton
+                skipButton.frame(width: 44)
             }
             image
             title
@@ -94,6 +94,7 @@ struct BackupVaultNowView: View {
         } label: {
             FilledButton(title: "Backup")
         }
+        .buttonStyle(.plain)
         .padding(.horizontal, 40)
         .padding(.bottom, 10)
     }
@@ -104,6 +105,7 @@ struct BackupVaultNowView: View {
         } label: {
             Image("x")
         }
+        .buttonStyle(.plain)
         .padding(16)
         .sheet(isPresented: $isWarningShown) {
             BackupVaultWarningView(isPresented: $isWarningShown, isSkipPressed: $isHomeAfterSkipShown)

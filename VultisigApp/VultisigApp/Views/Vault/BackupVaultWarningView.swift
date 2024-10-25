@@ -40,6 +40,7 @@ struct BackupVaultWarningView: View {
             }
             .padding(16)
             .offset(y: 2)
+            .buttonStyle(.plain)
 
             Spacer()
 
@@ -74,5 +75,6 @@ struct BackupVaultWarningView: View {
         .disabled(!isChecked)
         .opacity(!isChecked ? 0.5 : 1.0)
         .padding(16)
+        .buttonStyle(.plain)
     }
 }
