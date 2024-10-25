@@ -151,12 +151,6 @@ struct PeerDiscoveryView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
-    var outline: some View {
-        Image("QRScannerOutline")
-            .resizable()
-            .frame(maxWidth: 540, maxHeight: 540)
-    }
-    
     func disableContinueButton() -> Bool {
         switch selectedTab {
         case .fast:

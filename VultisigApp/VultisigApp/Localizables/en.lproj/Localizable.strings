@@ -410,7 +410,6 @@
 "vaultPart" = "Vault Part";
 "name" = "Name";
 "fastVaultSetDisclaimer" = "This Password encrypts your Vault Share received via email";
-"disclaimerEmailText" = "This email is only used to send the backup";
 "fastVaultEmailDisclaimer" = "This email is only used to send the backup";
 "selectPairingDevices" = "Select the pairing devices";
 "backupVaultOnEveryDeviceIndividually!" = "Back up your vault on every device individually!";

@@ -55,20 +55,25 @@ extension PeerDiscoveryView {
             qrCodeImage?
                 .resizable()
                 .background(Color.blue600)
-                .frame(maxHeight: .infinity)
+                .aspectRatio(contentMode: .fill)
                 .padding(3)
                 .background(Color.neutral0)
-                .cornerRadius(10)
-                .padding()
+                .cornerRadius(12)
+                .padding(32)
                 .background(Color.blue600)
+                .cornerRadius(40)
                 .cornerRadius(15)
-                .aspectRatio(contentMode: .fit)
             
             outline
         }
         .cornerRadius(10)
         .shadow(radius: 5)
         .padding(40)
+    }
+    
+    var outline: some View {
+        Image("QRScannerOutline")
+            .resizable()
     }
     
     var scrollList: some View {

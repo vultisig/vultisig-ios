@@ -58,10 +58,6 @@ struct FastVaultEmailView: View {
         .padding(.bottom, 40)
         .padding(.horizontal, 16)
     }
-    
-    var disclaimer: some View {
-        OutlinedDisclaimer(text: NSLocalizedString("fastVaultEmailDisclaimer", comment: ""))
-    }
 
     var continueButton: some View {
         Button(action: {
@@ -74,7 +70,7 @@ struct FastVaultEmailView: View {
     }
     
     var disclaimer: some View {
-        OutlinedDisclaimer(text: NSLocalizedString("disclaimerEmailText", comment: ""))
+        OutlinedDisclaimer(text: NSLocalizedString("fastVaultEmailDisclaimer", comment: ""))
             .padding(.horizontal, 16)
     }
 
