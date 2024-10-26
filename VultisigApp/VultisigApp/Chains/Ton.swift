@@ -34,7 +34,7 @@ enum TonHelper {
             $0.dest = toAddress.description
             $0.amount = UInt64(keysignPayload.toAmount.description) ?? 0
             $0.mode = UInt32(TheOpenNetworkSendMode.payFeesSeparately.rawValue | TheOpenNetworkSendMode.ignoreActionPhaseErrors.rawValue)
-            $0.bounceable = true
+            $0.bounceable = false
             
             if let memo = keysignPayload.memo  {
                 $0.comment = memo
