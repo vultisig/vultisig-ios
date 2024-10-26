@@ -9,7 +9,7 @@ import SwiftUI
 
 struct FastVaultEnterPasswordView: View {
 
-    @AppStorage("isBiometryEnabled") var isBiometryEnabled: Bool = false
+    @AppStorage("isBiometryEnabled") var isBiometryEnabled: Bool = true
 
     @State var isLoading: Bool = false
     @State var isWrongPassword: Bool = false
