@@ -58,7 +58,7 @@ struct BackupVaultWarningView: View {
     var checkbox: some View {
         Checkbox(
             isChecked: $isChecked,
-            text: "I understand that by skipping the backup I may lose access to my funds.",
+            text: "backupNowCheckbox",
             font: .body14MenloBold,
             alignment: .leading
         )

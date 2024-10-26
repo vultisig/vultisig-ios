@@ -64,7 +64,7 @@ struct BackupVaultNowView: View {
     }
 
     var title: some View {
-        Text("Backups need to be done on every device in Vultisig")
+        Text(NSLocalizedString("backupNowTitle", comment: ""))
             .foregroundColor(.neutral0)
             .font(.body24MontserratMedium)
             .fixedSize(horizontal: false, vertical: true)
@@ -77,13 +77,13 @@ struct BackupVaultNowView: View {
     }
 
     var disclaimer: some View {
-        WarningView(text: "Back up your vault on every device individually!")
+        WarningView(text: NSLocalizedString("backupNowWarning", comment: ""))
             .padding(.horizontal, 16)
             .fixedSize(horizontal: false, vertical: true)
     }
 
     var description: some View {
-        Text("Each device has its own unique vault share, which are needed for recovery ")
+        Text(NSLocalizedString("backupNowSubtitle", comment: ""))
             .padding(.horizontal, 32)
             .multilineTextAlignment(.center)
     }

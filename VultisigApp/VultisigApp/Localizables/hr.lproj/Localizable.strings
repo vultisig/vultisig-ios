@@ -1,3 +1,7 @@
+"backupNowTitle" = "Potrebno je napraviti sigurnosnu kopiju na svakom uređaju u Vultisigu";
+"backupNowWarning" = "Sigurnosno kopirajte svoj trezor na svakom uređaju pojedinačno!";
+"backupNowSubtitle" = "Svaki uređaj ima svoj jedinstveni dio trezora, potreban za oporavak";
+"backupNowCheckbox" = "Razumijem da preskakanjem sigurnosne kopije mogu izgubiti pristup svojim sredstvima.";
 "emailMismatch" = "Adrese e-pošte se ne podudaraju";
 "enableBiometrics" = "Omogući biometriju";
 "enterFastSigningPassword" = "Unesite lozinku za brzo potpisivanje";
