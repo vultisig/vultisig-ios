@@ -34,10 +34,13 @@ enum TonHelper {
             $0.dest = toAddress.description
             $0.amount = UInt64(keysignPayload.toAmount.description) ?? 0
             $0.mode = UInt32(TheOpenNetworkSendMode.payFeesSeparately.rawValue | TheOpenNetworkSendMode.ignoreActionPhaseErrors.rawValue)
-            $0.bounceable = true
             
             if let memo = keysignPayload.memo  {
                 $0.comment = memo
+                // If it is a deposit or a withdraw for staking function, then it can be bounceable
+                $0.bounceable = (memo.trimmingCharacters(in: .whitespacesAndNewlines) == "d" ||
+                                 memo.trimmingCharacters(in: .whitespacesAndNewlines) == "w")
+                
             }
             
         }
@@ -64,7 +67,7 @@ enum TonHelper {
         }
         return [preSigningOutput.data.hexString]
     }
-        
+    
     static func getSignedTransaction(vaultHexPubKey: String,
                                      keysignPayload: KeysignPayload,
                                      signatures: [String: TssKeysignResponse]) throws -> SignedTransactionResult
@@ -95,15 +98,11 @@ enum TonHelper {
                                                                              publicKeys: publicKeys)
         
         let output = try TheOpenNetworkSigningOutput(serializedData: compileWithSignature)
+        
         let result = SignedTransactionResult(rawTransaction: output.encoded,
-                                             transactionHash: getHashFromRawTransaction(tx:output.encoded))
+                                             transactionHash: output.hash.base64EncodedString())
         
         return result
-    }
-    
-    static func getHashFromRawTransaction(tx: String) -> String {
-        let sig =  Data(tx.prefix(64).utf8)
-        return sig.base64EncodedString()
     }
 }
 

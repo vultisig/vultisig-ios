@@ -284,7 +284,7 @@ class Endpoint {
         case "ZK":
             return "https://explorer.zksync.io/tx/\(txid)"
         case "TON":
-            return "https://tonscan.org/tx/\(txid)"
+            return "https://tonviewer.com/transaction/\(txid)"
         default:
             return ""
         }
@@ -339,7 +339,7 @@ class Endpoint {
         case "ZK":
             return "https://explorer.zksync.io/address/\(address)"
         case "TON":
-            return "https://tonscan.org/address/\(address)"
+            return "https://tonviewer.com/\(address)"
         default:
             return nil
         }
@@ -394,7 +394,7 @@ class Endpoint {
         case .zksync:
             return "https://explorer.zksync.io/address/\(address)"
         case .ton:
-            return "https://tonscan.org/address/\(address)"
+            return "https://tonviewer.com/\(address)"
         case .none:
             return nil
         }
