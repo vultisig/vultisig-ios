@@ -25,7 +25,8 @@ final class FastVaultService {
     func get(pubKeyECDSA: String, password: String) async -> Bool {
         do {
             let urlString = "\(endpoint)/get/\(pubKeyECDSA)"
-            let pwd = password.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+            
+            let pwd = password.data(using: .utf8)?.base64EncodedString()
             guard let pwd else {
                 return false
             }
