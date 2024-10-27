@@ -1,3 +1,7 @@
+"backupNowTitle" = "Es necesario realizar copias de seguridad en cada dispositivo en Vultisig";
+"backupNowWarning" = "Haz una copia de seguridad de tu bóveda en cada dispositivo individualmente!";
+"backupNowSubtitle" = "Cada dispositivo tiene su propia parte única de la bóveda, necesaria para la recuperación";
+"backupNowCheckbox" = "Entiendo que al omitir la copia de seguridad, puedo perder el acceso a mis fondos.";
 "emailMismatch" = "Las direcciones de correo no coinciden";
 "enableBiometrics" = "Habilitar biometría";
 "enterFastSigningPassword" = "Ingrese la contraseña para firma rápida";
