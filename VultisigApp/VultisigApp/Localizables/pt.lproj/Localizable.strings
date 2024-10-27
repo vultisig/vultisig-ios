@@ -1,3 +1,7 @@
+"backupNowTitle" = "É necessário fazer backup em cada dispositivo no Vultisig";
+"backupNowWarning" = "Faça o backup do seu cofre em cada dispositivo individualmente!";
+"backupNowSubtitle" = "Cada dispositivo possui uma parte exclusiva do cofre, necessária para a recuperação";
+"backupNowCheckbox" = "Entendo que, ao pular o backup, posso perder o acesso aos meus fundos.";
 "emailMismatch" = "Os endereços de email não coincidem";
 "enableBiometrics" = "Ativar biometria";
 "enterFastSigningPassword" = "Digite a senha para assinatura rápida";

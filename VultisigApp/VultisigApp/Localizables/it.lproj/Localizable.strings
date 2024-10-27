@@ -1,3 +1,7 @@
+"backupNowTitle" = "È necessario eseguire il backup su ogni dispositivo in Vultisig";
+"backupNowWarning" = "Esegui il backup del tuo caveau su ogni dispositivo singolarmente!";
+"backupNowSubtitle" = "Ogni dispositivo ha una propria quota di caveau unica, necessaria per il recupero";
+"backupNowCheckbox" = "Capisco che, saltando il backup, potrei perdere l'accesso ai miei fondi.";
 "emailMismatch" = "Indirizzi email non corrispondono";
 "enableBiometrics" = "Abilita i dati biometrici";
 "enterFastSigningPassword" = "Inserisci la password per la firma rapida";
