@@ -18,7 +18,7 @@ enum TonHelper {
             throw HelperError.runtimeError("coin is not TON")
         }
         
-        guard case .Ton(let sequenceNumber, let expireAt, let bounceable) = keysignPayload.chainSpecific else {
+        guard case .Ton(let sequenceNumber, let expireAt, _) = keysignPayload.chainSpecific else {
             throw HelperError.runtimeError("fail to get Ton chain specific")
         }
         

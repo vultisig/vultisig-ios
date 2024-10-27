@@ -20,12 +20,19 @@ struct ResultData: Codable {
     struct AddressInfo: Codable {
         let type = "accountAddress"
         let account_address: String
+        enum CodingKeys: CodingKey {
+            case account_address
+        }
     }
 
     struct LastTransactionIdInfo: Codable {
         let type = "internal.transactionId"
         let lt: String
         let hash: String
+        enum CodingKeys: CodingKey {
+            case lt
+            case hash
+        }
     }
 
     struct BlockIdInfo: Codable {
@@ -35,12 +42,23 @@ struct ResultData: Codable {
         let seqno: Int
         let root_hash: String
         let file_hash: String
+        enum CodingKeys: CodingKey {
+            case workchain
+            case shard
+            case seqno
+            case root_hash
+            case file_hash
+        }
     }
 
     struct AccountStateInfo: Codable {
         let type = "wallet.v4.accountState"
         let wallet_id: String
         let seqno: Int
+        enum CodingKeys: CodingKey {
+            case wallet_id
+            case seqno
+        }
     }
 
     var type = "fullAccountState"
