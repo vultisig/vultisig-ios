@@ -1,3 +1,7 @@
+"backupNowTitle" = "Backups need to be done on every device in Vultisig";
+"backupNowWarning" = "Back up your vault on every device individually!";
+"backupNowSubtitle" = "Each device has its own unique vault share, which are needed for recovery";
+"backupNowCheckbox" = "I understand that by skipping the backup I may lose access to my funds.";
 "emailMismatch" = "Email address mismatch";
 "enableBiometrics" = "Enable Biometrics";
 "enterFastSigningPassword" = "Enter Password for Fast Signing";

@@ -1,3 +1,7 @@
+"backupNowTitle" = "Backups müssen auf jedem Gerät in Vultisig durchgeführt werden";
+"backupNowWarning" = "Sichern Sie Ihren Tresor auf jedem Gerät einzeln!";
+"backupNowSubtitle" = "Jedes Gerät hat seinen eigenen einzigartigen Tresoranteil, der für die Wiederherstellung benötigt wird";
+"backupNowCheckbox" = "Ich verstehe, dass ich durch das Überspringen des Backups den Zugang zu meinen Geldern verlieren könnte.";
 "emailMismatch" = "E-Mail-Adressen stimmen nicht überein";
 "enableBiometrics" = "Biometrie aktivieren";
 "enterFastSigningPassword" = "Passwort für schnelles Signieren eingeben";
