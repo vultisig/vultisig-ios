@@ -60,7 +60,7 @@ extension PeerDiscoveryView {
                 list
                     .padding(20)
                 
-                if selectedTab != .fast {
+                if selectedTab == .secure {
                     networkPrompts
                 }
             }

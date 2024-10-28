@@ -110,7 +110,7 @@ struct PeerDiscoveryView: View {
     
     var portraitContent: some View {
         VStack(spacing: 0) {
-            if selectedTab != .fast {
+            if selectedTab == .secure {
                 networkPrompts
             }
             

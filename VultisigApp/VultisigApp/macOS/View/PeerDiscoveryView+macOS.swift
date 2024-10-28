@@ -43,7 +43,7 @@ extension PeerDiscoveryView {
             qrCode
             
             VStack {
-                if selectedTab != .fast {
+                if selectedTab == .secure {
                     networkPrompts
                 }
                 
