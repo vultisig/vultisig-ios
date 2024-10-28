@@ -25,7 +25,12 @@ final class FastVaultService {
     func get(pubKeyECDSA: String, password: String) async -> Bool {
         do {
             let urlString = "\(endpoint)/get/\(pubKeyECDSA)"
-            let _ = try await Utils.asyncGetRequest(urlString: urlString, headers: ["x-password": password])
+            
+            let pwd = password.data(using: .utf8)?.base64EncodedString()
+            guard let pwd else {
+                return false
+            }
+            let _ = try await Utils.asyncGetRequest(urlString: urlString, headers: ["x-password": pwd])
             return true
         } catch {
             return false

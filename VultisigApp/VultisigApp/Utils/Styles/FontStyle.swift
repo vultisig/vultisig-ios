@@ -23,6 +23,7 @@ extension Font {
     static let body18Menlo = Font.custom("Menlo", size: 18)
     static let body20Menlo = Font.custom("Menlo", size: 20)
     
+    static let body10Montserrat = Font.custom("Montserrat", size: 10)
     static let body12Montserrat = Font.custom("Montserrat", size: 12)
     static let body14Montserrat = Font.custom("Montserrat", size: 14)
     
@@ -58,6 +59,7 @@ extension Font {
     static let body12MontserratBold = Font.custom("Montserrat", size: 12).bold()
     static let body14MontserratBold = Font.custom("Montserrat", size: 14).bold()
     static let body16MontserratBold = Font.custom("Montserrat", size: 16).bold()
+    static let body24MontserratBold = Font.custom("Montserrat", size: 24).bold()
     
     /// TITLE
     // Ultra-Light

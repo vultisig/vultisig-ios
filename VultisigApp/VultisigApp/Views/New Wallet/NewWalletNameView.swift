@@ -11,6 +11,7 @@ import SwiftData
 struct NewWalletNameView: View {
     let tssType: TssType
     let selectedTab: SetupVaultState
+    let header: String
 
     @State var name: String
 
@@ -106,5 +107,5 @@ struct NewWalletNameView: View {
 }
 
 #Preview {
-    NewWalletNameView(tssType: .Keygen, selectedTab: .fast, name: "Fast Vault #1")
+    NewWalletNameView(tssType: .Keygen, selectedTab: .fast, header: "name", name: "Fast Vault #1")
 }

@@ -60,7 +60,6 @@ class PhoneCheckUpdateViewModel: ObservableObject {
     }
     
     func updateTextValues(_ currentVersion: String, _ latestVersion: String) {
-        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0"
         currentVersionString = "Version " + currentVersion
         latestVersionString = "v" + latestVersion
     }
