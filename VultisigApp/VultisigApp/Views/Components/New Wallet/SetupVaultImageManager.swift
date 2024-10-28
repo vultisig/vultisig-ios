@@ -27,6 +27,7 @@ struct SetupVaultImageManager: View {
             .foregroundColor(.neutral0)
             .lineSpacing(8)
             .multilineTextAlignment(.center)
+            .font(.body12MontserratSemiBold)
     }
     
     var imageContent: some View {

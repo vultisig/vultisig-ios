@@ -89,13 +89,13 @@ struct ImportWalletView: View {
             )
         } label: {
             FilledButton(title: "continue")
-                .disabled(!backupViewModel.isFileUploaded)
-                .grayscale(backupViewModel.isFileUploaded ? 0 : 1)
         }
         .padding(.horizontal, 10)
         .padding(.bottom, 40)
         .buttonStyle(PlainButtonStyle())
         .background(Color.clear)
+        .disabled(!backupViewModel.isFileUploaded)
+        .grayscale(backupViewModel.isFileUploaded ? 0 : 1)
     }
     
     var alert: Alert {
