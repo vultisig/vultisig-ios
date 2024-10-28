@@ -103,6 +103,10 @@ struct PeerCell: View {
             return Image("macAsset")
                 .resizable()
                 .frame(width: 100, height: 67)
+        } else if idString.contains("server-") {
+            return Image("ServerAsset")
+                .resizable()
+                .frame(width: 46, height: 46)
         } else {
             // this could be android device, just show as phone
             return Image("iPhoneAsset")
