@@ -28,6 +28,19 @@ struct SettingsBiometryView: View {
     }
 
     var main: some View {
+        VStack {
+            headerMac
+            view
+                .padding(.bottom, 30)
+                .padding(.horizontal, 40)
+        }
+    }
+
+    var headerMac: some View {
+        GeneralMacHeader(title: "enableBiometrics")
+    }
+
+    var view: some View {
         ScrollView {
             VStack(spacing: 16) {
                 enableCell
