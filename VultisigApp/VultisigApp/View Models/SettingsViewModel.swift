@@ -27,5 +27,4 @@ class SettingsViewModel: ObservableObject {
     }
     
     static let shared = SettingsViewModel()
-    
 }
