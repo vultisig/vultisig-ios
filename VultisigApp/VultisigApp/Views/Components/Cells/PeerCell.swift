@@ -80,6 +80,8 @@ struct PeerCell: View {
             deviceName = "iPhone"
         } else if idString.contains("ipad") {
             deviceName = "iPad"
+        } else if idString.contains("server-") {
+            deviceName = "Server"
         } else {
             // likely it will be android device , let's treat it as phone
             // android eco-system has too many types of devices, hard to know what phone or tablet it is
