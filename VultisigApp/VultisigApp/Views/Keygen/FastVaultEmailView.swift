@@ -71,7 +71,6 @@ struct FastVaultEmailView: View {
     
     var disclaimer: some View {
         OutlinedDisclaimer(text: NSLocalizedString("fastVaultEmailDisclaimer", comment: ""))
-            .padding(.horizontal, 16)
     }
 
     var isMismatchError: Bool {
