@@ -234,34 +234,6 @@ class JoinKeysignViewModel: ObservableObject {
     }
     
     func blowfishTransactionScan() async throws {
-        
-        // Disabling blowfish until we find a replacement
-        // It is commented since we will reuse the same structure for the next provider
-        
-        
-        //        guard let payload = keysignPayload else {
-        //            throw NSError(domain: "JoinKeysignViewModel", code: 1, userInfo: [NSLocalizedDescriptionKey: "Keysign payload is missing."])
-        //        }
-        //
-        //        switch payload.coin.chainType {
-        //        case .EVM:
-        //            let blowfishResponse = try await blowfishEVMTransactionScan()
-        //            blowfishShow = true
-        //            blowfishWarningsShow = !(blowfishResponse.warnings?.isEmpty ?? true)
-        //            blowfishWarnings = blowfishResponse.warnings?.compactMap { $0.message } ?? []
-        //
-        //        case .Solana:
-        //            let blowfishResponse = try await blowfishSolanaTransactionScan()
-        //            blowfishShow = true
-        //            blowfishWarningsShow = !(blowfishResponse.aggregated?.warnings?.isEmpty ?? true)
-        //            blowfishWarnings = blowfishResponse.aggregated?.warnings?.compactMap { $0.message } ?? []
-        //
-        //        default:
-        //            blowfishShow = false
-        //            blowfishWarningsShow = false
-        //            blowfishWarnings = []
-        //        }
-        
         blowfishShow = false
         blowfishWarningsShow = false
         blowfishWarnings = []
